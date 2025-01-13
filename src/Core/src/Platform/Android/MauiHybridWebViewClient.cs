@@ -9,7 +9,12 @@ using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Android.Media.TV;
 using Android.Webkit;
+using Java.Nio;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Storage;
+using Xamarin.Google.Crypto.Tink.Prf;
 using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Platform
@@ -43,63 +48,65 @@ namespace Microsoft.Maui.Platform
 
 		private WebResourceResponse? GetResponseStream(AWebView? view, IWebResourceRequest? request)
 		{
-			if (Handler is not null)
+			if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
 			{
-				var fullUrl = request?.Url?.ToString();
-				var requestUri = HybridWebViewQueryStringHelper.RemovePossibleQueryString(fullUrl);
+				return null;
+			}
 
-				if (new Uri(requestUri) is Uri uri && HybridWebViewHandler.AppOriginUri.IsBaseOf(uri))
+			var fullUrl = request?.Url?.ToString();
+			var requestUri = HybridWebViewQueryStringHelper.RemovePossibleQueryString(fullUrl);
+			if (new Uri(requestUri) is not Uri uri || !HybridWebViewHandler.AppOriginUri.IsBaseOf(uri))
+			{
+				return null;
+			}
+
+			var relativePath = HybridWebViewHandler.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
+
+			// 1. Try special InvokeDotNet path
+			if (relativePath == HybridWebViewHandler.InvokeDotNetPath)
+			{
+				var fullUri = new Uri(fullUrl!);
+				var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
+				var contentBytesTask = Handler.InvokeDotNetAsync(invokeQueryString);
+				var responseStream = new DotNetInvokeAsyncStream(contentBytesTask, Handler);
+				return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), responseStream);
+			}
+
+			// 2. If nothing found yet, try to get static content from the asset path
+			string? contentType;
+			if (string.IsNullOrEmpty(relativePath))
+			{
+				relativePath = Handler.VirtualView.DefaultFile;
+				contentType = "text/html";
+			}
+			else
+			{
+				if (!HybridWebViewHandler.ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
 				{
-					var relativePath = HybridWebViewHandler.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
-
-					// 1. Try special InvokeDotNet path
-					if (relativePath == HybridWebViewHandler.InvokeDotNetPath)
-					{
-						var fullUri = new Uri(fullUrl!);
-						var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
-						var task = Handler.InvokeDotNetAsync(invokeQueryString);
-						return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), new DotNetInvokeAsyncStream(task));
-					}
-
-					// 2. If nothing found yet, try to get static content from the asset path
-					string? contentType;
-
-					if (string.IsNullOrEmpty(relativePath))
-					{
-						relativePath = Handler.VirtualView.DefaultFile;
-						contentType = "text/html";
-					}
-					else
-					{
-						if (!HybridWebViewHandler.ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
-						{
-							// TODO: Log this
-							contentType = "text/plain";
-						}
-					}
-
-					var assetPath = Path.Combine(Handler.VirtualView.HybridRoot!, relativePath!);
-					var contentStream = PlatformOpenAppPackageFile(assetPath);
-
-					if (contentStream is not null)
-					{
-						// 3.a. If something was found, return the content
-
-						// TODO: We don't know the content length because Android doesn't tell us. Seems to work without it!
-						return new WebResourceResponse(contentType, "UTF-8", 200, "OK", GetHeaders(contentType ?? "text/plain"), contentStream);
-					}
-
-					// 3.b. Otherwise, return a 404
-					var notFoundContent = "Resource not found (404)";
-
-					var notFoundByteArray = Encoding.UTF8.GetBytes(notFoundContent);
-					var notFoundContentStream = new MemoryStream(notFoundByteArray);
-
-					return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found", GetHeaders("text/plain"), notFoundContentStream);
+					contentType = "text/plain";
+					Handler.MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogWarning("Could not determine content type for '{relativePath}'", relativePath);
 				}
 			}
 
-			return null;
+			var assetPath = Path.Combine(Handler.VirtualView.HybridRoot!, relativePath!);
+			var contentStream = PlatformOpenAppPackageFile(assetPath);
+
+			if (contentStream is not null)
+			{
+				// 3.a. If something was found, return the content
+
+				// TODO: We don't know the content length because Android doesn't tell us. Seems to work without it!
+
+				return new WebResourceResponse(contentType, "UTF-8", 200, "OK", GetHeaders(contentType ?? "text/plain"), contentStream);
+			}
+
+			// 3.b. Otherwise, return a 404
+			var notFoundContent = "Resource not found (404)";
+
+			var notFoundByteArray = Encoding.UTF8.GetBytes(notFoundContent);
+			var notFoundContentStream = new MemoryStream(notFoundByteArray);
+
+			return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found", GetHeaders("text/plain"), notFoundContentStream);
 		}
 
 		private Stream? PlatformOpenAppPackageFile(string filename)
@@ -154,16 +161,19 @@ namespace Microsoft.Maui.Platform
 			private const int PauseThreshold = 32 * 1024;
 			private const int ResumeThreshold = 16 * 1024;
 
-			private readonly Pipe _pipe;
 			private readonly Task<byte[]?> _task;
+			private readonly WeakReference<HybridWebViewHandler> _handler;
+			private readonly Pipe _pipe;
 
 			private bool _isDisposed;
+
+			private HybridWebViewHandler? Handler => _handler?.GetTargetOrDefault();
 
 			public override bool CanRead => !_isDisposed;
 
 			public override bool CanSeek => false;
 
-			public override bool CanWrite => !_isDisposed;
+			public override bool CanWrite => false;
 
 			public override long Length => throw new NotSupportedException();
 
@@ -173,27 +183,49 @@ namespace Microsoft.Maui.Platform
 				set => throw new NotSupportedException();
 			}
 
-			public DotNetInvokeAsyncStream(Task<byte[]?> invokeTask)
+			public DotNetInvokeAsyncStream(Task<byte[]?> invokeTask, HybridWebViewHandler handler)
 			{
 				_task = invokeTask;
+				_handler = new(handler);
 
 				_pipe = new Pipe(new PipeOptions(
 					pauseWriterThreshold: PauseThreshold,
 					resumeWriterThreshold: ResumeThreshold,
 					useSynchronizationContext: false));
 
-				StartReading();
+				InvokeMethodAndWriteBytes();
 			}
 
-			private async void StartReading()
+			private async void InvokeMethodAndWriteBytes()
 			{
-				var data = await _task;
-				await WriteAsync(data);
-				_pipe.Writer.Complete();
+				try
+				{
+					var data = await _task;
+
+					// the stream or handler may be disposed after the method completes
+					ObjectDisposedException.ThrowIf(_isDisposed, nameof(DotNetInvokeAsyncStream));
+					ArgumentNullException.ThrowIfNull(Handler, nameof(Handler));
+
+					// copy the data into the pipe
+					if (data is not null && data.Length > 0)
+					{
+						var memory = _pipe.Writer.GetMemory(data.Length);
+						data.CopyTo(memory);
+						_pipe.Writer.Advance(data.Length);
+					}
+
+					_pipe.Writer.Complete();
+				}
+				catch (Exception ex)
+				{
+					Handler?.MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "Error invoking .NET method from JavaScript: {ErrorMessage}", ex.Message);
+
+					_pipe.Writer.Complete(ex);
+				}
 			}
 
 			public override void Flush() =>
-				_pipe.Writer.FlushAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+				throw new NotSupportedException();
 
 			public override int Read(byte[] buffer, int offset, int count)
 			{
@@ -201,16 +233,13 @@ namespace Microsoft.Maui.Platform
 				ArgumentOutOfRangeException.ThrowIfNegative(offset, nameof(offset));
 				ArgumentOutOfRangeException.ThrowIfNegative(count, nameof(count));
 				ArgumentOutOfRangeException.ThrowIfGreaterThan(offset + count, buffer.Length, nameof(count));
-				if (_isDisposed)
-				{
-					throw new ObjectDisposedException(nameof(DotNetInvokeAsyncStream));
-				}
+				ObjectDisposedException.ThrowIf(_isDisposed, nameof(DotNetInvokeAsyncStream));
+
+				// this is a blocking read, so we need to wait for data to be available
+				var readResult = _pipe.Reader.ReadAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+				var slice = readResult.Buffer.Slice(0, Math.Min(count, readResult.Buffer.Length));
 
 				var bytesRead = 0;
-
-				var readResult = _pipe.Reader.ReadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-
-				var slice = readResult.Buffer.Slice(0, Math.Min(count, readResult.Buffer.Length));
 				foreach (var span in slice)
 				{
 					var bytesToCopy = Math.Min(count, span.Length);
@@ -231,23 +260,8 @@ namespace Microsoft.Maui.Platform
 			public override void SetLength(long value) =>
 				throw new NotSupportedException();
 
-			public override void Write(byte[] buffer, int offset, int count)
-			{
-				ArgumentNullException.ThrowIfNull(buffer, nameof(buffer));
-				ArgumentOutOfRangeException.ThrowIfNegative(offset, nameof(offset));
-				ArgumentOutOfRangeException.ThrowIfNegative(count, nameof(count));
-				ArgumentOutOfRangeException.ThrowIfGreaterThan(offset + count, buffer.Length, nameof(count));
-				if (_isDisposed)
-				{
-					throw new ObjectDisposedException(nameof(DotNetInvokeAsyncStream));
-				}
-
-				var memory = _pipe.Writer.GetMemory(count);
-
-				buffer.AsMemory(offset, count).CopyTo(memory);
-
-				_pipe.Writer.Advance(count);
-			}
+			public override void Write(byte[] buffer, int offset, int count) =>
+				throw new NotSupportedException();
 
 			protected override void Dispose(bool disposing)
 			{

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -44,6 +45,7 @@ namespace Microsoft.Maui.Handlers
 					PlatformView.Source = new Uri(new Uri(AppOriginUri, "/").ToString());
 				}
 			});
+
 		}
 
 		void OnWebViewLoaded(object sender, RoutedEventArgs e)
@@ -189,6 +191,7 @@ namespace Microsoft.Maui.Handlers
 				return randomAccessStream;
 			}
 		}
+
 
 		[RequiresUnreferencedCode(DynamicFeatures)]
 #if !NETSTANDARD
