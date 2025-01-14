@@ -598,6 +598,7 @@ namespace Microsoft.Maui.Handlers
 
 		internal static bool HasDefaultVisibility(IView view)
 			=> view.Visibility == Visibility.Visible;
+
 		internal static bool HasDefaultFlowDirection(IView view)
 			=> view.FlowDirection == FlowDirection.MatchParent;
 

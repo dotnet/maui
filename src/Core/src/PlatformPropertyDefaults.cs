@@ -79,8 +79,7 @@ internal class PlatformPropertyDefaults<TVirtualView> : PlatformPropertyDefaults
 		{
 			if (element is TVirtualView virtualView)
 			{
-				hasDefaultFunc(virtualView);
-				return true;
+				return hasDefaultFunc(virtualView);
 			}
 
 			return false;
