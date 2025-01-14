@@ -36,7 +36,7 @@
     <!--
       Temporarily disable trimming warnings
     -->
-    <NoWarn>$(NoWarn);IL2026;IL2075;IL2067;IL2091;IL2087;IL2072</NoWarn>
+    <NoWarn>$(NoWarn);IL2026;IL2057;IL2062;IL2067;IL2072;IL2075;IL2087;IL2091;</NoWarn>
   </PropertyGroup>
 
   <!-- platform version number information -->
