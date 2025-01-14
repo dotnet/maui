@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				_defaultAccessibilityLabel = Control.AccessibilityLabel;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-			Control.AccessibilityLabel = (string)Element.GetValue(AutomationProperties.NameProperty) ?? _defaultAccessibilityLabel;
+			Control.AccessibilityLabel = SemanticProperties.GetDescription(Element) ?? (string)Element.GetValue(AutomationProperties.NameProperty) ?? _defaultAccessibilityLabel;
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			return _defaultAccessibilityLabel;
