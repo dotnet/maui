@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					var viewContent = template.CreateContent() as View;
 					wrapper = new ElementWrapper(_view.Handler.MauiContext);
+					//wrapper.HorizontalAlignment = HorizontalAlignment.Center;
 					wrapper.SetContent(viewContent);
 
 					((View)wrapper.VirtualView).SetValue(RecyclePool.OriginTemplateProperty, template);
@@ -58,7 +59,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				container ??= new ItemContainer()
 				{
 					Child = wrapper,
-					IsEnabled = !templateContext.IsHeader && !templateContext.IsFooter
+					IsEnabled = !templateContext.IsHeader && !templateContext.IsFooter,
+					HorizontalAlignment = HorizontalAlignment.Left
 					// CanUserSelect = !templateContext.IsHeader // 1.6 feature
 				};
 				return container;
@@ -87,7 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 	}
 
-	internal class ElementWrapper(IMauiContext context) : UserControl
+	internal class ElementWrapper(IMauiContext context) : ContentControl
 	{
 		public IView VirtualView { get; private set; }
 		
