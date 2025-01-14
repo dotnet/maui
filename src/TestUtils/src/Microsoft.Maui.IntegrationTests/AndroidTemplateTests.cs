@@ -24,7 +24,7 @@ namespace Microsoft.Maui.IntegrationTests
 		public void AndroidTemplateSetUp()
 		{
 			var emulatorLog = Path.Combine(TestDirectory, $"emulator-launch-{DateTime.UtcNow.ToFileTimeUtc()}.log");
-			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(480, emulatorLog), "Failed to launch Test AVD.");
+			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(600, emulatorLog), "Failed to launch Test AVD.");
 		}
 
 		[OneTimeTearDown]

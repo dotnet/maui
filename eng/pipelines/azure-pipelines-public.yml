@@ -59,7 +59,7 @@ stages:
     - name: win_unit_tests
       displayName: Windows Unit Tests
       pool: ${{ parameters.VM_IMAGE_HOST }}
-      timeout: 120
+      timeout: 90
       testOS: Windows
     - name: mac_unit_tests
       displayName: macOS Unit Tests
@@ -67,7 +67,7 @@ stages:
         name: Azure Pipelines
         vmImage: $(HostedMacImage)
         os: macOS
-      timeout: 120
+      timeout: 90
       testOS: macOS
     publishTaskPrefix: ''
 
@@ -141,7 +141,7 @@ stages:
     - name: mac_runandroid_tests
       pool:
         name: Azure Pipelines
-        vmImage: macos-14
+        vmImage: $(HostedMacImage)
         os: macOS
       timeout: 180
       testCategory: RunOnAndroid
