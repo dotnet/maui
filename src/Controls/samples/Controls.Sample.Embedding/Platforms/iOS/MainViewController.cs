@@ -44,7 +44,7 @@ public class MainViewController : UIViewController
 		_scenario = new EmbeddingScenarios.Scenario3_Correct();
 
 		// create the view and (maybe) the window
-		(_mauiView, _nativeView) = _scenario.Embed(ParentViewController!.View!.Window);
+		(_mauiView, _nativeView) = _scenario.Embed(ParentViewController!.View!.Window!);
 
 		// add the new view to the UI
 		stackView.AddArrangedSubview(new ContainerView(_nativeView));
@@ -78,7 +78,7 @@ public class MainViewController : UIViewController
 	private void AddNavBarButtons()
 	{
 		var addNewWindowButton = new UIBarButtonItem(
-			UIImage.GetSystemImage("macwindow.badge.plus"),
+			UIImage.GetSystemImage("macwindow.badge.plus")!,
 			UIBarButtonItemStyle.Plain,
 			(sender, e) => RequestSession());
 
