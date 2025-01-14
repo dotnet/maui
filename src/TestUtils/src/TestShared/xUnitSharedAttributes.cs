@@ -72,7 +72,12 @@ namespace Microsoft.Maui
 		/// Initializes a new instance of the <see cref="ClassDataAttribute"/> class.
 		/// </summary>
 		/// <param name="class">The class that provides the data.</param>
+#if NETSTANDARD
+		public ClassDataAttribute(Type @class)
+#else
 		public ClassDataAttribute([DynamicallyAccessedMembers (DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type @class)
+#endif
+
 		{
 			Class = @class;
 		}
@@ -80,7 +85,9 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the type of the class that provides the data.
 		/// </summary>
+#if !NETSTANDARD
 		[DynamicallyAccessedMembers (DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+#endif
 		public Type Class { get; private set; }
 
 		/// <inheritdoc/>
