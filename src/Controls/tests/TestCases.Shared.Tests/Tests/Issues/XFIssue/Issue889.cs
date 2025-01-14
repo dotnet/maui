@@ -21,13 +21,19 @@ public class Issue889 : _IssuesUITest
 		App.WaitForElement("PushPage");
 		App.Tap("PushPage");
 		App.WaitForElement("PushedPageLabel");
-		
+
 #if IOS || MACCATALYST
 		var initialPageQuery = AppiumQuery.ByName("Initial Page");
 		App.WaitForElement(initialPageQuery);
 		App.Tap(initialPageQuery);
 #else
+
+#if WINDOWS
+		App.TapBackArrow();
+#else
 		App.Back();
+#endif
+
 #endif
 
 #if ANDROID
