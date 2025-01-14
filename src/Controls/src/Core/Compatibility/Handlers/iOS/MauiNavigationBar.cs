@@ -81,4 +81,14 @@ internal class MauiNavigationBar : UINavigationBar
         }
     }
 #endif
+
+    internal void RefreshIfNeeded()
+    {
+        if (TitleBarNeedsRefresh)
+		{
+            Console.WriteLine("Refreshing TitleBar");
+			Superview?.SetNeedsLayout();
+			TitleBarNeedsRefresh = false;
+		}
+    }
 }

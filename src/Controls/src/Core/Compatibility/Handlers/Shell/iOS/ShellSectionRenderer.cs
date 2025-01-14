@@ -701,7 +701,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		class NavDelegate : MauiNavDelegate
+		class NavDelegate : UINavigationControllerDelegate
 		{
 			readonly ShellSectionRenderer _self;
 
@@ -722,7 +722,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
-				base.DidShowViewController(navigationController, viewController, animated);
+				(navigationController.NavigationBar as MauiNavigationBar)?.RefreshIfNeeded();
 
 				var tasks = _self._completionTasks;
 				var popTask = _self._popCompletionTask;
