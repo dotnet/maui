@@ -92,10 +92,8 @@ namespace Microsoft.Maui.Platform
 			{
 				platformLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
 				if (label.Handler is ILabelHandler labelHandler)
-				{
-					labelHandler.UpdateValue(nameof(ILabel.TextColor));
-					labelHandler.UpdateValue(nameof(ILabel.Font));
-				}
+					LabelHandler.ReapplyFormattingForHTMLLabel(labelHandler, label);
+					
 				label.InvalidateMeasure();
 			});
 		}
