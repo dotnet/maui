@@ -4,7 +4,7 @@ trigger:
     - main
     - release/*
     - net9.0
-    - net8.0
+    - net10.0
   tags:
     include:
     - '*'
@@ -29,7 +29,7 @@ pr:
     - main
     - release/*
     - net9.0
-    - net8.0
+    - net10.0
   paths:
     include:
     - '*'
@@ -123,14 +123,14 @@ stages:
       targetFrameworkVersion: ${{ targetFrameworkVersion }}
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 33, 30, 29, 28, 27, 26, 25, 24, 23 ]
-        iosVersions: [ 'simulator-18.0']
+        iosVersions: [ 'simulator-18.2']
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
         skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
       ${{ else }}:
         androidApiLevels: [ 33, 23 ]
-        iosVersions: [ 'simulator-18.0' ]
+        iosVersions: [ 'simulator-18.2' ]
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
