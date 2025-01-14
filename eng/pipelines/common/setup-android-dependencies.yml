@@ -17,3 +17,4 @@ steps:
     mauiSourcePath: ${{ parameters.mauiSourcePath }}
     project: $(Agent.TempDirectory)/TempDroid/TempDroid.csproj
     arguments: '-t:InstallAndroidDependencies -p:AndroidSdkDirectory=${{ parameters.androidSdkRoot }} -p:AcceptAndroidSdkLicenses=true -v:n -bl:${{ parameters.repoLogPath }}/install-android-dependencies.binlog'
+    retryCountOnTaskFailure: 3
