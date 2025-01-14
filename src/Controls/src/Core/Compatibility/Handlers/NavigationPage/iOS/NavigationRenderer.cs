@@ -1119,7 +1119,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		class MauiNavigationDelegate : UINavigationControllerDelegate
+		class MauiNavigationDelegate : MauiNavDelegate
 		{
 			bool _finishedWithInitialNavigation;
 			readonly WeakReference<NavigationRenderer> _navigation;
@@ -1133,13 +1133,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
+				base.DidShowViewController(navigationController, viewController, animated);
+
 				if (_navigation.TryGetTarget(out NavigationRenderer r))
 				{
-					if (r.NavigationBar is MauiNavigationBar navBar && navBar.TitleBarNeedsRefresh)
-					{
-						r.NavigationBar?.Superview?.SetNeedsLayout();
-						navBar.TitleBarNeedsRefresh = false;
-					}
 					r._navigating = false;
 					if (r.VisibleViewController is ParentingViewController pvc)
 					{
