@@ -86,7 +86,6 @@ internal class MauiNavigationBar : UINavigationBar
     {
         if (TitleBarNeedsRefresh)
 		{
-            Console.WriteLine("Refreshing TitleBar");
 			Superview?.SetNeedsLayout();
 			TitleBarNeedsRefresh = false;
 		}
