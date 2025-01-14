@@ -178,8 +178,9 @@ internal class WindowViewController : UIViewController
 		if (_contentWrapperTopConstraint is null || View is null)
 			return;
 
-		_isTitleBarVisible = isVisible;			
-		LayoutTitleBar();
+		_isTitleBarVisible = isVisible;
+		_iTitleBarRef.TryGetTarget(out var iTitleBar);
+		iTitleBar?.InvalidateMeasure();
 	}
 }
 #endif // MACCATALYST
