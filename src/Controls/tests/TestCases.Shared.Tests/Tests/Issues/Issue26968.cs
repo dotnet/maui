@@ -20,6 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("TestEditor");
 			App.Tap("TestEditor");
 			App.EnterText("TestEditor", "Test");
+			App.DismissKeyboard();
 
 			VerifyScreenshot();
 		}
@@ -31,6 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("TestEntry");
 			App.Tap("TestEntry");
 			App.EnterText("TestEntry", "Test");
+			App.DismissKeyboard();
 
 			VerifyScreenshot();
 		}
@@ -42,6 +44,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("TestSearchBar");
 			App.Tap("TestSearchBar");
 			App.EnterText("TestSearchBar", "Test");
+			App.DismissKeyboard();
 
 			VerifyScreenshot();
 		}
