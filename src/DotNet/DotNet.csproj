@@ -78,10 +78,14 @@
     <!-- Run 'dotnet workload install' for the current running 'dotnet' install -->
     <ItemGroup>
       <_WorkloadSource Include="$(NugetArtifactsPath)" />
+      <_LocalWorkloadIds Include="maui" />
+      <!-- NOTE: temporary for .NET 9 targeting https://github.com/xamarin/xamarin-macios/pull/21848/commits/cb1340221774ba9af226ac71a5aef551d765ee21 -->
+      <_LocalWorkloadIds Include="mobile-librarybuilder-net9" />
+      <_LocalWorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
     </ItemGroup>
     <Copy SourceFiles="$(MauiRootDirectory)NuGet.config" DestinationFolder="$(DotNetTempDirectory)" />
     <Exec Command="dotnet nuget add source &quot;$(NugetArtifactsPath)&quot; --name artifacts --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" />
-    <Exec Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install tizen maui --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
+    <Exec Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install %(_LocalWorkloadIds.Identity) --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
 
   </Target>
 
