@@ -12,6 +12,7 @@ internal class WindowViewController : UIViewController
 	WeakReference<IView?> _iTitleBarRef;
 	bool _isTitleBarVisible = true;
 	internal bool IsFirstLayout { get; set; }
+	internal bool HasCustomTitleBar { get; set; }
 
    	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in device test: 'TitleBar Does Not Leak'")]
 	UIView? _titleBar;
@@ -108,6 +109,7 @@ internal class WindowViewController : UIViewController
 		}
 
 		var newTitleBar = window.TitleBar?.ToPlatform(mauiContext);
+		HasCustomTitleBar = newTitleBar is not null;
 
 		IView? iTitleBar = null;
 		_iTitleBarRef?.TryGetTarget(out iTitleBar);

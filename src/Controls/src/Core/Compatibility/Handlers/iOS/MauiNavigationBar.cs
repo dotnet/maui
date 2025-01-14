@@ -61,7 +61,7 @@ internal class MauiNavigationBar : UINavigationBar
     {
         var controller = Window?.RootViewController as WindowViewController;
 
-        if (controller is not null && _originalSafeAreaConstant is nfloat originalSafeAreaConstant)
+        if (controller?.HasCustomTitleBar == true && _originalSafeAreaConstant is nfloat originalSafeAreaConstant)
         {
             var currentSafeAreaTop = SafeAreaInsets.Top;
             var titleBarHeight = controller._contentWrapperTopConstraint?.Constant ?? 0;
