@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		int _span = 1;
 
+		IItemsLayout _itemsLayout;
+
 		public SpacingItemDecoration(Context context, IItemsLayout itemsLayout)
 		{
 			// The original "SpacingItemDecoration" applied spacing based on an item's current span index.
@@ -59,6 +61,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			HorizontalOffset = (int)context.ToPixels(horizontalOffset);
 			VerticalOffset = (int)context.ToPixels(verticalOffset);
+			_itemsLayout = itemsLayout;
 		}
 
 		public override void GetItemOffsets(ARect outRect, AView view, RecyclerView parent, RecyclerView.State state)
@@ -68,6 +71,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			int itemCount = state.ItemCount;
 
 			int row = position / _span;
+			int column = position % _span;
 			int totalRows = (int)Math.Ceiling((double)itemCount / _span);
 
 			outRect.Left = HorizontalOffset;
@@ -75,13 +79,56 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			outRect.Bottom = VerticalOffset;
 			outRect.Top = VerticalOffset;
 
-			if (row == 0)
+
+			if (_itemsLayout is GridItemsLayout gridItemsLayout)
 			{
-				outRect.Top = 0;
+				if (gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+				{
+					if (row == 0)
+					{
+						outRect.Top = 0;
+					}
+					else if (row == totalRows - 1)
+					{
+						outRect.Bottom = 0;
+					}
+				}
+				else
+				{
+					if (column == 0)
+					{
+						outRect.Left = 0;
+					}
+					else if (column == _span - 1)
+					{
+						outRect.Right = 0;
+					}
+				}
 			}
-			else if (row == totalRows - 1)
+			else if (_itemsLayout is LinearItemsLayout linearItemsLayout)
 			{
-				outRect.Bottom = 0;
+				if (linearItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+				{
+					if (position == 0)
+					{
+						outRect.Top = 0;
+					}
+					else if (position == itemCount - 1)
+					{
+						outRect.Bottom = 0;
+					}
+				}
+				else
+				{
+					if (position == 0)
+					{
+						outRect.Left = 0;
+					}
+					else if (position == itemCount - 1)
+					{
+						outRect.Right = 0;
+					}
+				}
 			}
 		}
 	}
