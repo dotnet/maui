@@ -33,6 +33,8 @@
       * https://github.com/dotnet/roslyn/issues/72133
     -->
     <NoWarn>$(NoWarn);CS9270</NoWarn>
+    <!-- FIXME: various test projects have trimmer warnings -->
+    <EnableTrimAnalyzer Condition=" '$(IsTestProject)' == 'true' ">false</EnableTrimAnalyzer>
   </PropertyGroup>
 
   <!-- platform version number information -->

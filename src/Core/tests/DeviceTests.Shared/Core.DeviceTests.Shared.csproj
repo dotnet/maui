@@ -3,14 +3,13 @@
   <PropertyGroup>
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <SingleProject>true</SingleProject>
+    <IsTestProject>true</IsTestProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.DeviceTests.Shared</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
     <NoWarn>$(NoWarn),CA1416</NoWarn>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
     <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
-    <!-- FIXME: project has trimmer warnings -->
-    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
   </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
