@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public static void NavigateToGallery(this IApp app, string page, string visual)
 		{
 			app.WaitForElement(q => q.Raw(goToTestButtonQuery), "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
-			var text = Regex.Match(page, "'(?<text>[^']*)'").Groups["text"].Value;
+			var text = RegexHelper.TextRegex.Match(page).Groups["text"].Value;
 			NavigateTo(app, text, visual);
 		}
 
@@ -245,5 +245,23 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 			return elements;
 		}
+	}
+
+	internal static partial class RegexHelper
+	{
+		#if NET7_0_OR_GREATER
+		[GeneratedRegex ("'(?<text>[^']*)'", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex TextRegex
+		{
+			get;
+		}
+		#else
+		internal static readonly Regex TextRegex =
+										new (
+											"'(?<text>[^']*)'",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		#endif
 	}
 }

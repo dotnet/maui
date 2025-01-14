@@ -250,11 +250,11 @@ namespace Microsoft.Maui.Controls.ControlGallery
 
 
 				//get rid of HTML tags
-				caption = Regex.Replace(Description, "<[^>]*>", string.Empty);
+				caption = RegexHelper.HtmlTagsRegex.Replace(Description, string.Empty);
 
 
 				//get rid of multiple blank lines
-				caption = Regex.Replace(caption, @"^\s*$\n", string.Empty, RegexOptions.Multiline);
+				caption = RegexHelper.MultipleBlankLinesRegex.Replace(caption, string.Empty);
 
 				caption = caption.Substring(0, caption.Length < 200 ? caption.Length : 200).Trim() + "...";
 				return caption;
@@ -296,7 +296,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 					return firstImage;
 
 
-				var regx = new Regex("http://([\\w+?\\.\\w+])+([a-zA-Z0-9\\~\\!\\@\\#\\$\\%\\^\\&amp;\\*\\(\\)_\\-\\=\\+\\\\\\/\\?\\.\\:\\;\\'\\,]*)?.(?:jpg|bmp|gif|png)", RegexOptions.IgnoreCase);
+				var regx = RegexHelper.ImageUrlRegex;
 				var matches = regx.Matches(Description);
 
 				if (matches.Count == 0)
@@ -334,5 +334,45 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				return;
 			PropertyChanged(this, new PropertyChangedEventArgs(name));
 		}
+	}
+
+	internal static partial class RegexHelper
+	{
+		#if NET7_0_OR_GREATER
+		[GeneratedRegex ("<[^>]*>", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex HtmlTagsRegex
+		{
+			get;
+		}
+		[GeneratedRegex (@"^\s*$\n", RegexOptions.Multiline, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex MultipleBlankLinesRegex
+		{
+			get;
+		}
+		[GeneratedRegex ("http://([\\w+?\\.\\w+])+([a-zA-Z0-9\\~\\!\\@\\#\\$\\%\\^\\&amp;\\*\\(\\)_\\-\\=\\+\\\\\\/\\?\\.\\:\\;\\'\\,]*)?.(?:jpg|bmp|gif|png)", RegexOptions.IgnoreCase, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex ImageUrlRegex
+		{
+			get;
+		}
+		#else
+		internal static readonly Regex HtmlTagsRegex =
+										new (
+											"<[^>]*>",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		internal static readonly Regex MultipleBlankLinesRegex =
+										new (
+											@"^\s*$\n",
+											RegexOptions.Compiled | RegexOptions.Multiline,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		internal static readonly Regex ImageUrlRegex =
+										new (
+											"http://([\\w+?\\.\\w+])+([a-zA-Z0-9\\~\\!\\@\\#\\$\\%\\^\\&amp;\\*\\(\\)_\\-\\=\\+\\\\\\/\\?\\.\\:\\;\\'\\,]*)?.(?:jpg|bmp|gif|png)",
+											RegexOptions.Compiled | RegexOptions.IgnoreCase,	
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		#endif
 	}
 }

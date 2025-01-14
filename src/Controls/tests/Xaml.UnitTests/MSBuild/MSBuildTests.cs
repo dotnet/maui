@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 		{
 			// Returns something like `.NET 6.0.1`
 			var fd = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
-			if (Version.TryParse(System.Text.RegularExpressions.Regex.Match(fd, @"\d+\.\d+\.\d+")?.Value, out var version))
+			if (Version.TryParse(RegexHelper.VersionRegex.Match(fd)?.Value, out var version))
 				return $"net{version.Major}.{version.Minor}";
 			return "net7.0";
 		}
@@ -496,5 +496,23 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			var log = Build(projectFile, verbosity: "diagnostic");
 			Assert.IsTrue(log.Contains("Target \"XamlC\" skipped", StringComparison.Ordinal), "XamlC should be skipped if there are no .xaml files.");
 		}
+	}
+
+	internal static partial class RegexHelper
+	{
+		#if NET7_0_OR_GREATER
+		[GeneratedRegex (@"\d+\.\d+\.\d+", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex VersionRegex
+		{
+			get;
+		}
+		#else
+		internal static readonly Regex VersionRegex =
+										new (
+											@"\d+\.\d+\.\d+",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		#endif
 	}
 }

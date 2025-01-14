@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		{
 			Debug.WriteLine($">>>>> Converting raw query '{raw}' to {nameof(WinQuery)}");
 
-			var match = Regex.Match(raw, @"(.*)\s(marked|text):'((.|\n)*)'");
+			var match = RegexHelper.QueryRegex.Match(raw);
 
 			var controlType = match.Groups[1].Captures[0].Value;
 			var marked = match.Groups[3].Captures[0].Value;
@@ -63,5 +63,23 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		{
 			return $"{nameof(ControlType)}: {ControlType}, {nameof(Marked)}: {Marked}";
 		}
+	}
+
+	internal static partial class RegexHelper
+	{
+		#if NET7_0_OR_GREATER
+		[GeneratedRegex (@"(.*)\s(marked|text):'((.|\n)*)'", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex QueryRegex
+		{
+			get;
+		}
+		#else
+		internal static readonly Regex QueryRegex =
+										new (
+											@"(.*)\s(marked|text):'((.|\n)*)'",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		#endif
 	}
 }

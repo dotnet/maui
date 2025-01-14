@@ -93,10 +93,10 @@ namespace Xamarin.Forms.Core.macOS.UITests
 		{
 			var queryStr = query(new AppQuery(QueryPlatform.iOS)).ToString();
 
-			var isMarked = System.Text.RegularExpressions.Regex.IsMatch(queryStr, @"\bmarked\b");
+			var isMarked = RegexHelper.Marked1.IsMatch(queryStr, @"\bmarked\b");
 			if (isMarked)
 			{
-				var markedWord = System.Text.RegularExpressions.Regex.Split(queryStr, @"\bmarked\b:'");
+				var markedWord = RegexHelper.Marked2.Split(queryStr, @"\bmarked\b:'");
 				var isAll = markedWord[0].Trim() == "*";
 				var marked = markedWord[1].Replace("'", "");
 				ClearText(marked);
@@ -262,18 +262,18 @@ namespace Xamarin.Forms.Core.macOS.UITests
 		{
 			var queryStr = query(new AppQuery(QueryPlatform.iOS)).ToString();
 			var results = new List<Xamarin.UITest.Queries.AppResult>();
-			var isMarked = System.Text.RegularExpressions.Regex.IsMatch(queryStr, @"\bmarked\b");
-			var isText = System.Text.RegularExpressions.Regex.IsMatch(queryStr, @"\btext\b");
+			var isMarked = RegexHelper.Marked1.IsMatch(queryStr, @"\bmarked\b");
+			var isText = RegexHelper.Marked1.IsMatch(queryStr, @"\btext\b");
 			if (isMarked)
 			{
-				var markedWords = System.Text.RegularExpressions.Regex.Split(queryStr, @"\bmarked\b:'");
+				var markedWords = RegexHelper.Marked2.Split(queryStr, @"\bmarked\b:'");
 				var isAll = markedWords[0].Trim() == "*";
 				var markedWord = markedWords[1].Remove(markedWords[1].Length - 1).Trim();
 				return Query(markedWord);
 			}
 			if (isText)
 			{
-				var textWords = System.Text.RegularExpressions.Regex.Split(queryStr, @"\btext\b:'");
+				var textWords = RegexHelper.Text2.Split(queryStr, @"\btext\b:'");
 				var isAll = textWords[0].Trim() == "*";
 				var textWord = textWords[1].Remove(textWords[1].Length - 1).Trim();
 				return Query(textWord);
@@ -308,10 +308,10 @@ namespace Xamarin.Forms.Core.macOS.UITests
 
 			var results = new List<T>();
 			var queryStr = query(new AppQuery(QueryPlatform.iOS)).ToString();
-			var isMarked = System.Text.RegularExpressions.Regex.IsMatch(queryStr, @"\bmarked\b");
+			var isMarked = RegexHelper.Marked1.IsMatch(queryStr, @"\bmarked\b");
 			if (isMarked)
 			{
-				var markedWords = System.Text.RegularExpressions.Regex.Split(queryStr, @"\bmarked\b:'");
+				var markedWords = RegexHelper.Marked2.Split(queryStr, @"\bmarked\b:'");
 				var isAll = markedWords[0].Trim() == "*";
 				var markedWord = markedWords[1].Replace("'", "");
 				var ss = Query(markedWord);
@@ -572,10 +572,10 @@ namespace Xamarin.Forms.Core.macOS.UITests
 		public UITest.Queries.AppResult[] WaitForElement(Func<AppQuery, AppQuery> query, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = default(TimeSpan?), TimeSpan? retryFrequency = default(TimeSpan?), TimeSpan? postTimeout = default(TimeSpan?))
 		{
 			var queryStr = query(new AppQuery(QueryPlatform.iOS)).ToString();
-			var isMarked = System.Text.RegularExpressions.Regex.IsMatch(queryStr, @"\bmarked\b");
+			var isMarked = RegexHelper.Marked1.IsMatch(queryStr, @"\bmarked\b");
 			if (isMarked)
 			{
-				var markedWords = System.Text.RegularExpressions.Regex.Split(queryStr, @"\bmarked\b:'");
+				var markedWords = RegexHelper.Marked2.Split(queryStr, @"\bmarked\b:'");
 				var isAll = markedWords[0].Trim() == "*";
 				var markedWord = markedWords[1].Replace("'", "").Trim();
 				return WaitForElement(markedWord, timeoutMessage, timeout, retryFrequency, postTimeout);
@@ -609,10 +609,10 @@ namespace Xamarin.Forms.Core.macOS.UITests
 		public void WaitForNoElement(Func<AppQuery, AppQuery> query, string timeoutMessage = "Timed out waiting for no element...", TimeSpan? timeout = default(TimeSpan?), TimeSpan? retryFrequency = default(TimeSpan?), TimeSpan? postTimeout = default(TimeSpan?))
 		{
 			var queryStr = query(new AppQuery(QueryPlatform.iOS)).ToString();
-			var isMarked = System.Text.RegularExpressions.Regex.IsMatch(queryStr, @"\bmarked\b");
+			var isMarked = RegexHelper.Marked1.IsMatch(queryStr, @"\bmarked\b");
 			if (isMarked)
 			{
-				var markedWords = System.Text.RegularExpressions.Regex.Split(queryStr, @"\bmarked\b:'");
+				var markedWords = RegexHelper.Marked2.Split(queryStr, @"\bmarked\b:'");
 				var isAll = markedWords[0].Trim() == "*";
 				var markedWord = markedWords[1].Replace("'", "").Trim();
 				WaitForNoElement(markedWord, timeoutMessage, timeout, retryFrequency, postTimeout);
@@ -626,27 +626,27 @@ namespace Xamarin.Forms.Core.macOS.UITests
 			var isSuccess = false;
 
 			var queryStr = query(new AppQuery(QueryPlatform.iOS)).ToString();
-			var isIndex = System.Text.RegularExpressions.Regex.IsMatch(queryStr, @"\bindex\b");
+			var isIndex = RegexHelper.Index1.IsMatch(queryStr);
 			if (isIndex)
 			{
-				var indexWords = System.Text.RegularExpressions.Regex.Split(queryStr, @"\bindex\b:");
+				var indexWords = RegexHelper.Index2.Split(queryStr);
 				var indexWord = indexWords[1];
 				int.TryParse(indexWord, out indexMarked);
 				queryStr = indexWords[0].Trim();
 			}
-			var isMarked = System.Text.RegularExpressions.Regex.IsMatch(queryStr, @"\bmarked\b");
+			var isMarked = RegexHelper.Marked1.IsMatch(queryStr);
 			if (isMarked)
 			{
-				var markedWords = System.Text.RegularExpressions.Regex.Split(queryStr, @"\bmarked\b:'");
+				var markedWords = RegexHelper.Marked2.Split(queryStr);
 				var isAll = markedWords[0].Trim() == "*";
 				markedWord = markedWords[1].Replace("'", "").Trim();
 				isSuccess = true;
 
 			}
-			var isText = System.Text.RegularExpressions.Regex.IsMatch(queryStr, @"\btext\b");
+			var isText = RegexHelper.Text1.IsMatch(queryStr);
 			if (isText)
 			{
-				var markedWords = System.Text.RegularExpressions.Regex.Split(queryStr, @"\btext\b:'");
+				var markedWords = RegexHelper.Text2.Split(queryStr);
 				var isAll = markedWords[0].Trim() == "*";
 				markedWord = markedWords[1].Replace("'", "").Trim();
 				isSuccess = true;
@@ -721,4 +721,79 @@ namespace Xamarin.Forms.Core.macOS.UITests
 			Thread.Sleep(500);
 		}
 	}
+
+	internal static partial class RegexHelper
+	{
+        #if NET7_0_OR_GREATER
+		[GeneratedRegex (@"\bmarked\b", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex Marked1
+		{
+			get;
+		}
+		[GeneratedRegex (@"\bmarked\b:", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex Marked2
+		{
+			get;
+		}
+		[GeneratedRegex (@"\btext\b'", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex Text1
+		{
+			get;
+		}
+		[GeneratedRegex (@"\btext\b:'", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex Text2
+		{
+			get;
+		}
+		[GeneratedRegex (@"\bindex\b", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex Index1
+		{
+			get;
+		}
+		[GeneratedRegex (@"\bindex\b:", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex Index2
+		{
+			get;
+		}		
+        #else
+		internal static readonly Regex Marked1 =
+										new (
+											@"\bmarked\b",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		internal static readonly Regex Marked2 =
+										new (
+											@"\bmarked\b:",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		internal static readonly Regex Text1 =
+										new (
+											@"\btext\b'",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		internal static readonly Regex Text2 =
+										new (
+											@"\btext\b:'",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		internal static readonly Regex Index1 =
+										new (
+											@"\bindex\b",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		internal static readonly Regex Index2 =
+										new (
+											@"\bindex\b:",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+        #endif
+    }
+
 }
+
