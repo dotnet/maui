@@ -62,10 +62,11 @@ namespace Microsoft.Maui.Platform
 		{
 			if (Shadow?.Paint is { } shadowPaint)
 			{
+				var context = Context;
 				var shadowOpacity = Shadow.Opacity;
-				float radius = Context.ToPixels(Shadow.Radius);
-				float offsetX = Context.ToPixels(Shadow.Offset.X);
-				float offsetY = Context.ToPixels(Shadow.Offset.Y);
+				float radius = context.ToPixels(Shadow.Radius);
+				float offsetX = context.ToPixels(Shadow.Offset.X);
+				float offsetY = context.ToPixels(Shadow.Offset.Y);
 				int paintType;
 				int[] colors;
 				float[] positions;

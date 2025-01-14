@@ -41,6 +41,8 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
 
     private Paint shadowPaint;
     private Bitmap shadowBitmap;
+    private float shadowBitmapX;
+    private float shadowBitmapY;
     private Canvas shadowCanvas;
     private boolean shadowInvalidated = true;
     private boolean hasClip = false;
@@ -170,7 +172,7 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
             View child = getChildAt(0);
             Drawable background = child.getBackground();
             // See if we can quickly draw shadow through Canvas API thanks to the fact we have a solid content
-            if (background != null && background instanceof PlatformShadowDrawable && ((PlatformShadowDrawable)background).canDrawShadow()) {
+            if (false && background != null && background instanceof PlatformShadowDrawable && ((PlatformShadowDrawable)background).canDrawShadow()) {
                 background.setBounds(0, 0, viewWidth, viewHeight);
                 drawShadowViaPlatformShadowDrawable(canvas, (PlatformShadowDrawable)background, viewWidth, viewHeight);
                 return;
@@ -201,14 +203,14 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     }
 
     private void drawShadowViaDispatchDraw(@NonNull Canvas canvas, int viewWidth, int viewHeight) {
-        int radiusSafeSpace = getRadiusSafeSpace();
-        int bitmapWidth = viewWidth + radiusSafeSpace;
-        int bitmapHeight = viewHeight + radiusSafeSpace;
-        int drawOriginX = (bitmapWidth - viewWidth) / 2;
-        int drawOriginY = (bitmapHeight - viewHeight) / 2;
-
         if (shadowInvalidated) {
             shadowInvalidated = false;
+
+            int radiusSafeSpace = getRadiusSafeSpace();
+            int bitmapWidth = normalizeForPool(viewWidth + radiusSafeSpace);
+            int bitmapHeight = normalizeForPool(viewHeight + radiusSafeSpace);
+            int drawOriginX = (bitmapWidth - viewWidth) / 2;
+            int drawOriginY = (bitmapHeight - viewHeight) / 2;
 
             if (shadowBitmap != null) {
                 if (shadowBitmap.getWidth() == bitmapWidth && shadowBitmap.getHeight() == bitmapHeight) {
@@ -224,16 +226,9 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
             shadowCanvas.setBitmap(shadowBitmap);
 
             // Create the local copy of all content to draw bitmap as a bottom layer of natural canvas.
-            shadowCanvas.save();
-            shadowCanvas.translate(drawOriginX, drawOriginY);
-            super.dispatchDraw(shadowCanvas);
-            shadowCanvas.restore();
-
-            // Get the alpha bounds of bitmap
-            Bitmap extractAlpha = shadowBitmap.extractAlpha();
-
-            // Clear the shadow canvas
-            shadowCanvas.drawColor(Color.BLACK, PorterDuff.Mode.CLEAR);
+            Bitmap extractAlpha = bitmapPool.get(normalizeForPool(viewWidth), normalizeForPool(viewHeight), Bitmap.Config.ALPHA_8);
+            Canvas alphaCanvas = new Canvas(extractAlpha);
+            super.dispatchDraw(alphaCanvas);
 
             // Apply shader if needed
             Shader shader = createShader(bitmapWidth, bitmapHeight);
@@ -241,13 +236,20 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
                 shadowPaint.setShader(shader);
             }
 
-            shadowCanvas.drawBitmap(extractAlpha, 0, 0, shadowPaint);
+            // Why don't we simply draw the alpha bitmap directly on the view canvas?
+            // Reason: setMaskFilter (used by shadowPaint) is *not* supported in hardware accelerated mode
+            // https://developer.android.com/develop/ui/views/graphics/hardware-accel
+            // If we use `SOFTWARE` layer, than we fall into a view-clipped `Canvas` where we can't draw the outer shadow.
+            shadowCanvas.drawBitmap(extractAlpha, drawOriginX, drawOriginY, shadowPaint);
 
-            extractAlpha.recycle();
+            bitmapPool.put(extractAlpha);
+
+            shadowBitmapX = offsetX - drawOriginX;
+            shadowBitmapY = offsetY - drawOriginY;
         }
     
         // Draw shadow rectangle
-        canvas.drawBitmap(shadowBitmap, offsetX - drawOriginX, offsetY - drawOriginY, null);
+        canvas.drawBitmap(shadowBitmap, shadowBitmapX, shadowBitmapY, null);
     }
 
     private int getRadiusSafeSpace() {
@@ -256,6 +258,11 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
         }
 
         return (int)(radius * 3);
+    }
+
+    private static int normalizeForPool(int pixels) {
+        // We want to reuse memory as much as possible so let's normalize bitmaps to the nearest 48px grid.
+        return (int)(Math.ceil(((double)pixels) / 48.0) * 48.0);
     }
 
     private Shader createShader(int bitmapWidth, int bitmapHeight) {
