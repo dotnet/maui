@@ -28,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		internal void VisitInitialGallery(string collectionTestName)
 		{
 			var galleryName = $"{collectionTestName} Galleries";
-			var regexGalleryName = System.Text.RegularExpressions.Regex.Replace(galleryName, " |\\(|\\)", string.Empty);
+			var regexGalleryName = RegexHelper.AutomationIdRegex.Replace(galleryName, string.Empty);
 
 			App.WaitForElementTillPageNavigationSettled(regexGalleryName);
 			App.Tap(regexGalleryName);
@@ -39,5 +39,23 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled(galleryName);
 			App.Tap(galleryName);
 		}
+	}
+
+	internal static partial class RegexHelper
+	{
+		#if NET7_0_OR_GREATER
+		[GeneratedRegex (" |\\(|\\)", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex AutomationIdRegex
+		{
+			get;
+		}
+		#else
+		internal static readonly Regex AutomationIdRegex =
+										new (
+											" |\\(|\\)",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		#endif
 	}
 }

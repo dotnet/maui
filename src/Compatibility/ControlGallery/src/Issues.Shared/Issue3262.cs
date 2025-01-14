@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 										var currentCookies = _currentCookieValue;
 										cookieExpectation = (cookieValue) =>
 										{
-											if(Regex.Matches(_currentCookieValue, "TestCookie").Count != Regex.Matches(cookieValue, "TestCookie").Count)
+											if(RegexHelper.TestCookieRegex.Matches(_currentCookieValue).Count != RegexHelper.TestCookieRegex.Matches(cookieValue).Count)
 											{
 												cookieResult.Text = "Cookie Collection Incorrectly Modified";
 											}
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 										cookieResult.Text = String.Empty;
 										cookieExpectation = (cookieValue) =>
 										{
-											if(Regex.Matches(cookieValue, "TestCookie").Count > 1)
+											if(RegexHelper.TestCookieRegex.Matches(cookieValue).Count > 1)
 											{
 												cookieResult.Text = "Too many cookies in the jar";
 											}
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 										cookieExpectation = (cookieValue) =>
 										{
-											if(Regex.Matches(cookieValue, "TestCookie").Count != cookieCount)
+											if(RegexHelper.TestCookieRegex.Matches(cookieValue).Count != cookieCount)
 											{
 												cookieResult.Text = "Not enough cookies in the jar";
 											}
@@ -387,4 +387,23 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 #endif
 	}
+
+	internal static partial class RegexHelper
+	{
+		#if NET7_0_OR_GREATER
+		[GeneratedRegex ("TestCookie", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex TestCookieRegex
+		{
+			get;
+		}
+		#else
+		internal static readonly Regex TestCookieRegex =
+										new (
+											"TestCookie",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		#endif
+	}
+
 }
