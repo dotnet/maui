@@ -27,22 +27,22 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.AutomationId)] = HasDefaultAutomationId,
 			[nameof(IView.Clip)] = HasDefaultClip,
 
-			[nameof(IPadding.Padding)] = HasDefaultPadding,
+			// Uncommenting this leads to failing of the test Issue25887 (ContentPresenter just rendering component string in .Net9).
+			// [nameof(IPadding.Padding)] = HasDefaultPadding,
 
 			[nameof(IView.Shadow)] = HasDefaultShadow,
 			[nameof(IView.Visibility)] = HasDefaultVisibility,
 			[nameof(IView.FlowDirection)] = HasDefaultFlowDirection,
 
-			// TODO: Enabling these properties leads to failing of "Add a ScaleXTo and ScaleYTo animation extension method" test (Issue 8004) 
-			// and very likely many others. Not sure why, but it's worth investigating.
-			//[nameof(IView.Width)] = HasDefaultDimension,
-			//[nameof(IView.Height)] = HasDefaultDimension,
+			// TODO: Can this be enabled?
+			// [nameof(IView.Width)] = HasDefaultWidth,
+			// [nameof(IView.Height)] = HasDefaultHeight,
 
-			[nameof(IView.MinimumWidth)] = HasDefaultDimension,
-			[nameof(IView.MaximumWidth)] = HasDefaultDimension,
+			[nameof(IView.MinimumWidth)] = HasDefaultMinimumWidth,
+			[nameof(IView.MaximumWidth)] = HasDefaultMaximumWidth,
 
-			[nameof(IView.MinimumHeight)] = HasDefaultDimension,
-			[nameof(IView.MaximumHeight)] = HasDefaultDimension,
+			[nameof(IView.MinimumHeight)] = HasDefaultMinimumHeight,
+			[nameof(IView.MaximumHeight)] = HasDefaultMaximumHeight,
 
 			[nameof(IView.Scale)] = HasDefaultScale,
 			[nameof(IView.ScaleX)] = HasDefaultScaleX,
@@ -602,8 +602,17 @@ namespace Microsoft.Maui.Handlers
 		internal static bool HasDefaultFlowDirection(IView view)
 			=> view.FlowDirection == FlowDirection.MatchParent;
 
-		internal static bool HasDefaultDimension(IView view)
+		internal static bool HasDefaultMinimumWidth(IView view)
+			=> double.IsNaN(view.MinimumWidth);
+
+		internal static bool HasDefaultMaximumWidth(IView view)
+			=> double.IsNaN(view.MaximumWidth);
+
+		internal static bool HasDefaultMinimumHeight(IView view)
 			=> double.IsNaN(view.MinimumHeight);
+
+		internal static bool HasDefaultMaximumHeight(IView view)
+			=> double.IsNaN(view.MaximumHeight);
 
 		internal static bool HasDefaultScale(IView view)
 			=> view.Scale == 1;
