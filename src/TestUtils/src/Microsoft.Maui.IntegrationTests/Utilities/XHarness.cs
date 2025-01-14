@@ -34,7 +34,7 @@ namespace Microsoft.Maui.IntegrationTests
 			if (File.Exists(launchLog))
 			{
 				var launchLogContent = File.ReadAllText(launchLog);
-				launchLogMatch = Regex.IsMatch(launchLogContent, @"Killing process \d* as it was cancelled");
+				launchLogMatch = RegexHelper.ProcessRegex.IsMatch(launchLogContent);
 			}
 
 			bool didTimeoutAsExpected = xhOutput.Contains($"Run timed out after {launchTimeoutSeconds} seconds", StringComparison.OrdinalIgnoreCase)
@@ -70,6 +70,23 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			return DotnetInternal.RunForOutput(XHarnessTool, args, out exitCode, timeoutInSeconds);
 		}
+	}
 
+	internal static partial class RegexHelper
+	{
+		#if NET7_0_OR_GREATER
+		[GeneratedRegex (@"Killing process \d* as it was cancelled", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex ProcessRegex
+		{
+			get;
+		}
+		#else
+		internal static readonly Regex ProcessRegex =
+										new (
+											@"Killing process \d* as it was cancelled",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		#endif
 	}
 }

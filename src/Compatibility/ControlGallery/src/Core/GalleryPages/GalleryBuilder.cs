@@ -1,27 +1,15 @@
-﻿namespace Controls.Sample.UITests
+﻿using System;
+using Microsoft.Maui.Devices;
+
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 {
-	public static class TestBuilder
+	public static class GalleryBuilder
 	{
 		public static Button NavButton(string galleryName, Func<Page> gallery, INavigation nav)
 		{
 			var automationId = RegexHelper.AutomationIdRegex.Replace(galleryName, string.Empty);
-
-			var button = new Button
-			{
-				Text = $"{galleryName}",
-				AutomationId = automationId,
-				FontSize = 10,
-				HeightRequest = 30,
-				HorizontalOptions = LayoutOptions.Fill,
-				Margin = 2,
-				Padding = 2
-			};
-
-			button.Clicked += async (sender, args) =>
-			{
-				await nav.PushAsync(gallery());
-			};
-
+			var button = new Button { Text = $"{galleryName}", AutomationId = automationId, FontSize = 10, HeightRequest = DeviceInfo.Platform == DevicePlatform.Android ? 40 : 30 };
+			button.Clicked += (sender, args) => { nav.PushAsync(gallery()); };
 			return button;
 		}
 	}
