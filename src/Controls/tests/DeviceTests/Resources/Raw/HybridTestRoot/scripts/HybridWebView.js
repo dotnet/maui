@@ -101,6 +101,7 @@
             }
             window.HybridWebView.__TriggerAsyncCallback(taskId, result);
         } catch (ex) {
+            console.error(ex);
             window.HybridWebView.__TriggerAsyncFailedCallback(taskId, ex);
         }
     },
