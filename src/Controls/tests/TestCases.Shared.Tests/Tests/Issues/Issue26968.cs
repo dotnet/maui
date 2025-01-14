@@ -20,7 +20,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("TestEditor");
 			App.Tap("TestEditor");
 			App.EnterText("TestEditor", "Test");
+
 			App.DismissKeyboard();
+			QueryUntilKeyboardNotPresent(App.IsKeyboardShown);
 
 			VerifyScreenshot();
 		}
@@ -32,7 +34,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("TestEntry");
 			App.Tap("TestEntry");
 			App.EnterText("TestEntry", "Test");
+
 			App.DismissKeyboard();
+			QueryUntilKeyboardNotPresent(App.IsKeyboardShown);
 
 			VerifyScreenshot();
 		}
@@ -44,9 +48,29 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("TestSearchBar");
 			App.Tap("TestSearchBar");
 			App.EnterText("TestSearchBar", "Test");
+
 			App.DismissKeyboard();
+			QueryUntilKeyboardNotPresent(App.IsKeyboardShown);
 
 			VerifyScreenshot();
+		}
+		
+		static T QueryUntilKeyboardNotPresent<T>(
+			Func<T> func,
+			int retryCount = 10,
+			int delayInMs = 2000)
+		{
+			var result = func();
+
+			int counter = 0;
+			while ((result is true) && counter < retryCount)
+			{
+				Thread.Sleep(delayInMs);
+				result = func();
+				counter++;
+			}
+
+			return result;
 		}
 	}
 }
