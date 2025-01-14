@@ -33,10 +33,6 @@
       * https://github.com/dotnet/roslyn/issues/72133
     -->
     <NoWarn>$(NoWarn);CS9270</NoWarn>
-    <!--
-      Temporarily disable trimming warnings
-    -->
-    <NoWarn>$(NoWarn);IL2026;IL2045;IL2057;IL2062;IL2067;IL2072;IL2075;IL2087;IL2091;IL2104;IL2121;</NoWarn>
   </PropertyGroup>
 
   <!-- platform version number information -->

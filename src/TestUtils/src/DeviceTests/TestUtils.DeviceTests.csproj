@@ -9,6 +9,8 @@
     <Nullable>enable</Nullable>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
     <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
+    <!-- FIXME: project has trimmer warnings -->
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
   </PropertyGroup>
 
   <ItemGroup>
