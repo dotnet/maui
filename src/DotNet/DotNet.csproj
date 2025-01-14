@@ -164,6 +164,8 @@
     <_WorkloadIds Include="macos" />
     <_WorkloadIds Include="ios" />
     <_WorkloadIds Include="tvos" />
+    <!-- NOTE: temporary for .NET 9 targeting https://github.com/xamarin/xamarin-macios/pull/21848/commits/cb1340221774ba9af226ac71a5aef551d765ee21 -->
+    <_WorkloadIds Include="mobile-librarybuilder-net9" />
     <_WorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
   </ItemGroup>
 
