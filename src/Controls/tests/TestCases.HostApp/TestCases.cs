@@ -37,15 +37,8 @@ namespace Maui.Controls.Sample
 					{
 						return () =>
 						{
-							var page = new ContentPage()
-							{
-								Content = new Label()
-								{
-									Text = "This device doesn't have internet access",
-									AutomationId = "NoInternetAccessLabel"
-								}
-							};
-							Application.Current.Windows[0].Page = page;
+							var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
+							Application.Current.Windows[0].Page = noInternetConnectionPage;
 						};
 					}
 				}
