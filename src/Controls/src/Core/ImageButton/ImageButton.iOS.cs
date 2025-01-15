@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
