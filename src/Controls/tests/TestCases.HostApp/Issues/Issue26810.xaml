@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue26810">
+    <Grid RowDefinitions="100,100,Auto"
+          AutomationId="26810MainGrid">
+        <Button Text="Scroll to Random Item"
+                AutomationId="26810Button"
+                x:Name="ScrollToButton"
+                Grid.Row="0"
+                Clicked="ScrollToButton_Clicked"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"/>
+        <CollectionView x:Name="CollectionView"
+                        AutomationId="26810CollectionView"
+                        Grid.Row="2"
+                        Loaded="CollectionView_Loaded">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid HeightRequest="50">
+                        <Label Text="{Binding Name}"
+                               AutomationId="{Binding AutomationId}"
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>
