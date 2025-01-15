@@ -14,11 +14,27 @@ public class Issue18452 : _IssuesUITest
 	{
 	}
 
-	//[Test]
+	[Test]
 	public void WebViewLoadedWithoutException()
 	{
 		App.WaitForElement("Label");
 		string? label = App.FindElement("Label").GetText();
 		Assert.That(label, Is.EqualTo(expected));
+	}
+
+	public override void TestSetup()
+	{
+		base.TestSetup();
+
+		try
+		{
+			App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(1));
+			Assert.Inconclusive("This device doesn't have internet access");
+		}
+		catch (TimeoutException)
+		{
+			// Element not found within timeout, assume internet is available
+			// Continue with the test
+		}
 	}
 }

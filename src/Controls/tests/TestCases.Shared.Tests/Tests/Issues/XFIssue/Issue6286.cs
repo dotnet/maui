@@ -18,4 +18,19 @@ internal class Issue6286 : _IssuesUITest
 	{
 		App.QueryUntilPresent(() => App.WaitForElement("success"));
 	}
+	public override void TestSetup()
+	{
+		base.TestSetup();
+
+		try
+		{
+			App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(1));
+			Assert.Inconclusive("This device doesn't have internet access");
+		}
+		catch (TimeoutException)
+		{
+			// Element not found within timeout, assume internet is available
+			// Continue with the test
+		}
+	}
 }
