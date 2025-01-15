@@ -34,7 +34,7 @@
     -->
     <NoWarn>$(NoWarn);CS9270</NoWarn>
     <!-- FIXME: various test projects have trimmer warnings -->
-    <EnableTrimAnalyzer Condition=" '$(IsTestProject)' == 'true' ">false</EnableTrimAnalyzer>
+    <EnableTrimAnalyzer Condition=" '$(IsTestProject)' == 'true' or '$(SampleProject)' == 'true' ">false</EnableTrimAnalyzer>
   </PropertyGroup>
 
   <!-- platform version number information -->
