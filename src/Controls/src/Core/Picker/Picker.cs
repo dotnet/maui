@@ -465,7 +465,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"Items = {ItemsSource?.Count ?? 0}, SelectedItem = {SelectedItem}, " + base.GetDebuggerDisplay();
+			return $"Items = {ItemsSource?.Count ?? 0}, SelectedItem = {SelectedItem}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }

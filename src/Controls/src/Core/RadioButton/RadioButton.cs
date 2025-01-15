@@ -674,7 +674,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"IsChecked = {IsChecked}, Value = {Value}, " + base.GetDebuggerDisplay();
+			return $"IsChecked = {IsChecked}, Value = {Value}, {base.GetDebuggerDisplay()}";
 		}
 
 		private protected override Semantics UpdateSemantics()

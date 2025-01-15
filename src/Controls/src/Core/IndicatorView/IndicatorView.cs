@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"Position = {Position}, Count = {Count}, " + base.GetDebuggerDisplay();
+			return $"Position = {Position}, Count = {Count}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }

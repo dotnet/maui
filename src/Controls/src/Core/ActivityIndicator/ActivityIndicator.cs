@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"IsRunning = {IsRunning}, " + base.GetDebuggerDisplay();
+			return $"IsRunning = {IsRunning}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }

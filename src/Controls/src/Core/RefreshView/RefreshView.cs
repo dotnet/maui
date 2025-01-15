@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"Command = {Command}, IsRefreshing = {IsRefreshing}, " + base.GetDebuggerDisplay();
+			return $"Command = {Command}, IsRefreshing = {IsRefreshing}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }
