@@ -81,6 +81,7 @@ public class BindingCodeWriterTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {

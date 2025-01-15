@@ -92,6 +92,7 @@ public static class BindingCodeWriter
 			using System.CodeDom.Compiler;
 		
 			{{GeneratedCodeAttribute}}
+			[global::System.Diagnostics.Conditional("DEBUG")]
 			[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 			file sealed class InterceptsLocationAttribute : Attribute
 			{
