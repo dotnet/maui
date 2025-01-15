@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.AnchorX)] = HasDefaultAnchorX,
 			[nameof(IView.AnchorY)] = HasDefaultAnchorY,
 
-			// TODO: I suspect that uncommenting this line can lead to failure of SetOpacity test cases in HandlerTestBaseOfT.Tests.cs.
+			// TODO: I suspect thatHasDefaultInputTransparent uncommenting this line can lead to failure of SetOpacity test cases in HandlerTestBaseOfT.Tests.cs.
 			// [nameof(IView.Opacity)] = HasDefaultOpacity,
 
 			[nameof(IView.TranslationX)] = HasDefaultTranslationX,
@@ -63,7 +63,8 @@ namespace Microsoft.Maui.Handlers
 
 			[nameof(IContextFlyoutElement.ContextFlyout)] = HasDefaultContextFlyout,
 
-			[nameof(IView.InputTransparent)] = HasDefaultInputTransparent,
+			// TODO: The property is disabled because it breaks tests.
+			// [nameof(IView.InputTransparent)] = HasDefaultInputTransparent,
 			[nameof(IToolbarElement.Toolbar)] = HasDefaultToolbar,
 			[nameof(IToolTipElement.ToolTip)] = HasDefaultToolTip,
 		};
