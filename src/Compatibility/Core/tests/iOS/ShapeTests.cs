@@ -3,8 +3,6 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using ObjCRuntime;
 using UIKit;
-using static Microsoft.Maui.Controls.Compatibility.UITests.NumericExtensions;
-using static Microsoft.Maui.Controls.Compatibility.UITests.ParsingUtils;
 using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
