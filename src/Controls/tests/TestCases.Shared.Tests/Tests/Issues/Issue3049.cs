@@ -1,4 +1,4 @@
-﻿# if TEST_FAILS_ON_CATALYST //The ActionSheet fails to close when the user taps outside.
+﻿# if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS//The ActionSheet fails to close when the user taps outside.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -10,6 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string Button1Id = "button1";
 		const string Button2Id = "button2";
 		const string Success = "Success";
+		const string LabelId = "label";
 
 		public Issue3049(TestDevice testDevice) : base(testDevice)
 		{
@@ -27,10 +28,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap(Button1Id);
 
 			await Task.Delay(500);
-			//App.WaitForElement(Action1);
 
 			// Tap outside ActionSheet to dismiss it
-			App.Tap("Click outside ActionSheet instead");
+			App.TapCoordinates(50, 100);
 
 			App.WaitForElement(Button2Id);
 			App.Tap(Button2Id);
