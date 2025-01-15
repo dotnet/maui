@@ -24,9 +24,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void Slider_ValidateDefaultValues_VerifyLabels()
 		{
 			App.WaitForElement("Options");
-			Assert.That(App.FindElement("MinimumValueLabel").GetText(), Is.EqualTo("0"));
-			Assert.That(App.FindElement("MaximumValueLabel").GetText(), Is.EqualTo("1"));
-			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("0"));
+			Assert.That(App.FindElement("MinimumValueLabel").GetText(), Is.EqualTo("0.00"));
+			Assert.That(App.FindElement("MaximumValueLabel").GetText(), Is.EqualTo("1.00"));
+			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("0.00"));
 		}
 		[Test]
 		[Category(UITestCategories.Slider)]
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
-			Assert.That(App.FindElement("MinimumValueLabel").GetText(), Is.EqualTo("3"));
+			Assert.That(App.FindElement("MinimumValueLabel").GetText(), Is.EqualTo("3.00"));
 		}
 		[Test]
 		[Category(UITestCategories.Slider)]
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
-			Assert.That(App.FindElement("MaximumValueLabel").GetText(), Is.EqualTo("20"));
+			Assert.That(App.FindElement("MaximumValueLabel").GetText(), Is.EqualTo("20.00"));
 		}
 		[Test]
 		[Category(UITestCategories.Slider)]
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
-			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("1"));
+			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("1.00"));
 		}
 		[Test]
 		[Category(UITestCategories.Slider)]
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
-			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("100"));
+			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("100.00"));
 		}
 		[Test]
 		[Category(UITestCategories.Slider)]
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
-			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("50"));
+			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("50.00"));
 		}
 
 		[Test]
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
-			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("-2"));
+			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("-2.00"));
 		}
 		[Test]
 		[Category(UITestCategories.Slider)]
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
-			Assert.That(App.FindElement("MaximumValueLabel").GetText(), Is.EqualTo("25"));
+			Assert.That(App.FindElement("MaximumValueLabel").GetText(), Is.EqualTo("25.00"));
 		}
 		[Test]
 		[Category(UITestCategories.Slider)]
@@ -151,7 +151,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
-			Assert.That(App.FindElement("MaximumValueLabel").GetText(), Is.EqualTo("50"));
+			Assert.That(App.FindElement("MaximumValueLabel").GetText(), Is.EqualTo("50.00"));
 		}
 
 		[Test]
@@ -166,7 +166,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
-			Assert.That(App.FindElement("MaximumValueLabel").GetText(), Is.EqualTo("1"));
+			Assert.That(App.FindElement("MaximumValueLabel").GetText(), Is.EqualTo("1.00"));
 		}
 		[Test]
 		[Category(UITestCategories.Slider)]
@@ -184,7 +184,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
-			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("50"));
+			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("50.00"));
 		}
 
 		[Test]
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
-			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("20"));
+			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("20.00"));
 		}
 
 		[Test]
@@ -223,7 +223,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
-			Assert.That(App.FindElement("MinimumValueLabel").GetText(), Is.EqualTo("60"));
+			Assert.That(App.FindElement("MinimumValueLabel").GetText(), Is.EqualTo("60.00"));
 		}
 		[Test]
 		[Category(UITestCategories.Slider)]
@@ -239,13 +239,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
-			Assert.That(App.FindElement("MinimumValueLabel").GetText(), Is.EqualTo("20"));
+			Assert.That(App.FindElement("MinimumValueLabel").GetText(), Is.EqualTo("20.00"));
 		}
 
 #if !MACCATALYST
         [Test, Order(2)]
         [Category(UITestCategories.Slider)]
-        public void SliderDisplaysDragStartedStatusLabelOnHold()
+        public void Slider_DragStartedAndCompletedEventTrigged()
         {
             App.WaitForElement("Options");
 #if WINDOWS
@@ -255,24 +255,9 @@ namespace Microsoft.Maui.TestCases.Tests
 #elif ANDROID
             App.TouchAndHold("SliderControl");     
 #endif
-            Task.Delay(TimeSpan.FromSeconds(15)).Wait();
+            Task.Delay(TimeSpan.FromSeconds(1)).Wait();
             Assert.That(App.FindElement("DragStartStatusLabel").GetText(), Is.EqualTo("Drag Started"));
-        }
- 
-        [Test,Order(3)]
-        [Category(UITestCategories.Slider)]
-        public void SliderDisplaysDragCompletedStatusLabelOnRelease()
-        {
-            App.WaitForElement("Options");
-#if WINDOWS
-            App.DragCoordinates(480, 180, 580, 180);
-#elif IOS
-            App.DragCoordinates(50, 120, 150, 120);
-#elif ANDROID
-            App.TouchAndHold("SliderControl");  
-#endif
-            Task.Delay(TimeSpan.FromSeconds(15)).Wait();
-            Assert.That(App.FindElement("DragCompletedStatusLabel").GetText(), Is.EqualTo("Drag Completed"));
+			Assert.That(App.FindElement("DragCompletedStatusLabel").GetText(), Is.EqualTo("Drag Completed"));
         }
  
 		[Test]

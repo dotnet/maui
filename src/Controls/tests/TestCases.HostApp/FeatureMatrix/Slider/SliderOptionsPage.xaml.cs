@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 namespace Maui.Controls.Sample
 {
 
-	public partial class OptionsPage : ContentPage
+	public partial class SliderOptionsPage : ContentPage
 	{
 		private SliderViewModel _viewModel;
 
-		public OptionsPage(SliderViewModel viewModel)
+		public SliderOptionsPage(SliderViewModel viewModel)
 		{
 			InitializeComponent();
 			_viewModel = viewModel;
