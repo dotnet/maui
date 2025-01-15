@@ -54,7 +54,7 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="models:Category">
                         <Grid ColumnSpacing="{StaticResource LayoutSpacing}" ColumnDefinitions="4*,3*,30,Auto">
-                            <Entry Text="{Binding Title}" SemanticProperties.Description="{Binding Title}" Grid.Column="0" SemanticProperties.Description="Title" />
+                            <Entry Text="{Binding Title}" SemanticProperties.Description="{Binding Title}" Grid.Column="0" />
                             <Entry Text="{Binding Color}" Grid.Column="1" x:Name="ColorEntry"
                                 SemanticProperties.Description="Color"
                                 SemanticProperties.Hint="Category color in HEX format">
@@ -97,7 +97,7 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="models:Tag">
                         <Grid ColumnSpacing="{StaticResource LayoutSpacing}" ColumnDefinitions="4*,3*,30,Auto">
-                            <Entry Text="{Binding Title}" SemanticProperties.Description="{Binding Title}" Grid.Column="0" SemanticProperties.Description="Title" />
+                            <Entry Text="{Binding Title}" SemanticProperties.Description="{Binding Title}" Grid.Column="0" />
                             <Entry Text="{Binding Color}" Grid.Column="1" x:Name="ColorEntry"
                                 SemanticProperties.Description="Color"
                                 SemanticProperties.Hint="Tag color in HEX format">
