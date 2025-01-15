@@ -1752,7 +1752,7 @@ namespace UITest.Appium
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="performanceDataType">The available performance data types(cpuinfo | batteryinfo | networkinfo | memoryinfo).</param>
-		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		/// <exception cref="InvalidOperationException">GetPerformanceData is only supported on <see cref="AppiumAndroidApp"/>.</exception>
 		/// <returns>The information of the system related to the performance.</returns>
 		public static IList<object> GetPerformanceData(this IApp app, string performanceDataType)
 		{
@@ -1772,6 +1772,24 @@ namespace UITest.Appium
 			}
 
 			throw new InvalidOperationException($"Could not get the performance data");
+		}
+
+		/// <summary>
+		/// Gets the information of the system state regarding memory.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns>The information of the system related to the memory performance.</returns>
+		/// <exception cref="InvalidOperationException">GetPerformanceData is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static IReadOnlyDictionary<string, int> GetPerformanceMemoryInfo(this IApp app)
+		{
+			var performanceData = GetPerformanceData(app, "memoryinfo");
+			var countersTitles = (object?[])performanceData[0];
+			var countersStrings = (object?[])performanceData[1];
+			var data = countersTitles.Zip(countersStrings)
+				.Where(x => x is { First: string, Second: string })
+				.ToDictionary(x => (string)x.First!, x => int.TryParse((string)x.Second!, out var value) ? value : 0);
+			return data;
 		}
 		
 		/// <summary>

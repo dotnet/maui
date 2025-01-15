@@ -207,7 +207,7 @@ namespace Microsoft.Maui.Graphics
 
 			_stroke = null;
 			SetBorderColor(borderColor);
-			_isBorderSolid = color?.Alpha == 1;
+			_isBorderSolid = solidPaint.IsSolid();
 		}
 
 		public void SetBorderBrush(LinearGradientPaint linearGradientPaint)
@@ -219,7 +219,7 @@ namespace Microsoft.Maui.Graphics
 
 			_borderColor = null;
 			_stroke = linearGradientPaint;
-			_isBorderSolid = linearGradientPaint.GradientStops.All(s => s.Color.Alpha == 1);
+			_isBorderSolid = linearGradientPaint.IsSolid();
 
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Graphics
 
 			_borderColor = null;
 			_stroke = radialGradientPaint;
-			_isBorderSolid = radialGradientPaint.GradientStops.All(s => s.Color.Alpha == 1);
+			_isBorderSolid = radialGradientPaint.IsSolid();
 
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
@@ -575,7 +575,7 @@ namespace Microsoft.Maui.Graphics
 			{
 				var backgroundColor = new AColor(color);
 				_backgroundColor = backgroundColor;
-				_isBackgroundSolid = backgroundColor.A is 255;
+				_isBackgroundSolid = backgroundColor.IsSolid();
 			}
 		}
 

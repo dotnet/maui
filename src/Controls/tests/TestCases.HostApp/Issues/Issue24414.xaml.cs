@@ -32,7 +32,13 @@ public partial class Issue24414 : ContentPage
 						border.StrokeShape = new RoundRectangle { CornerRadius = border.WidthRequest };
 						break;
 					case 3:
-						border.Shadow.Radius -= 8;
+						border.Shadow.Radius = Math.Max(0, border.Shadow.Radius - 8);
+						break;
+					case 4:
+						border.Clip = null;
+						break;
+					case 5:
+						border.Shadow = null;
 						break;
 				}
 			}
@@ -40,6 +46,10 @@ public partial class Issue24414 : ContentPage
 			if (view is Label label)
 			{
 				label.Text = labels[fn % labels.Length];
+				if (fn == 5)
+				{
+					label.Shadow = null;
+				}
 			}
 		}
 
@@ -54,6 +64,8 @@ public partial class Issue24414 : ContentPage
 			1 => "Tap to resize the border",
 			2 => "Tap to change the border shape",
 			3 => "Tap to change the shadow radius",
+			4 => "Tap to remove the clip",
+			5 => "Tap to remove the shadow",
 			_ => "Done"
 		};
 	}

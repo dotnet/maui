@@ -44,6 +44,7 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     private float shadowBitmapX;
     private float shadowBitmapY;
     private Canvas shadowCanvas;
+    private Shader shadowShader;
     private boolean shadowInvalidated = true;
     private boolean hasClip = false;
 
@@ -189,10 +190,7 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
         int bitmapHeight = viewHeight + radiusSafeSpace;
 
         // Apply shader if needed
-        Shader shader = createShader(bitmapWidth, bitmapHeight);
-        if (shader != null) {
-            shadowPaint.setShader(shader);
-        }
+        updateShadowShader(bitmapWidth, bitmapHeight);
 
         Path clipPath = hasClip ? getClipPath(viewWidth, viewHeight) : null;
 
@@ -231,10 +229,7 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
             super.dispatchDraw(alphaCanvas);
 
             // Apply shader if needed
-            Shader shader = createShader(bitmapWidth, bitmapHeight);
-            if (shader != null) {
-                shadowPaint.setShader(shader);
-            }
+            updateShadowShader(bitmapWidth, bitmapHeight);
 
             // Why don't we simply draw the alpha bitmap directly on the view canvas?
             // Reason: setMaskFilter (used by shadowPaint) is *not* supported in hardware accelerated mode
@@ -253,10 +248,7 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
     }
 
     private int getRadiusSafeSpace() {
-        if (radius <= 0) {
-            return 4;
-        }
-
+        // Account for potentially different blurring algorithms
         return (int)(radius * 3);
     }
 
@@ -265,7 +257,7 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
         return (int)(Math.ceil(((double)pixels) / 48.0) * 48.0);
     }
 
-    private Shader createShader(int bitmapWidth, int bitmapHeight) {
+    private void updateShadowShader(int bitmapWidth, int bitmapHeight) {
         Shader shader = null;
 
         if (paintType == PlatformPaintType.LINEAR) {
@@ -286,6 +278,8 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
             );
         }
 
-        return shader;
+        if (shader != null) {
+            shadowPaint.setShader(shader);
+        }
     }
 }
