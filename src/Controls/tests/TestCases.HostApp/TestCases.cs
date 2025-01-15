@@ -28,6 +28,27 @@ namespace Maui.Controls.Sample
 			Action ActivatePageAndNavigate(IssueAttribute issueAttribute, Type type)
 			{
 				Action navigationAction = null;
+				
+				if(issueAttribute.IsInternetRequired)
+				{
+					NetworkAccess accessType = Connectivity.Current.NetworkAccess;
+
+					if (accessType != NetworkAccess.Internet)
+					{
+						return () =>
+						{
+							var page = new ContentPage()
+							{
+								Content = new Label()
+								{
+									Text = "This device doesn't have internet access",
+									AutomationId = "NoInternetAccessLabel"
+								}
+							};
+							Application.Current.Windows[0].Page = page;
+						};
+					}
+				}
 
 				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushAsync)
 				{
@@ -189,26 +210,6 @@ namespace Maui.Controls.Sample
 
 				if (issue == null)
 					return false;
-
-				if (issue.IsInternetRequired)
-				{
-					NetworkAccess accessType = Connectivity.Current.NetworkAccess;
-
-					if (accessType == NetworkAccess.Internet)
-					{
-						issue.Action();
-					}
-					else
-					{
-						Navigation.PushModalAsync(new ContentPage()
-						{
-							Content = new Label()
-							{
-								Text = "No Internet Connection"
-							}
-						});
-					}
-				}
 
 				issue.Action();
 				return true;
