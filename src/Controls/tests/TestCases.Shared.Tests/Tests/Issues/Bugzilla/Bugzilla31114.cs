@@ -1,7 +1,6 @@
 ﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
 // DragCoordinates not supported on Catalyst. 
 // On IOS the cells are disapper randomly https://github.com/dotnet/maui/issues/25656, 
-// On Android scroll positions not reseted on Android Issue: https://github.com/dotnet/maui/issues/26661.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
