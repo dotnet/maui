@@ -1,25 +1,25 @@
 using System;
 using System.Xml;
 
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-
-using Microsoft.Maui.Controls.Xaml;
-
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Diagnostics;
+
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls.SourceGen;
 
 using static LocationHelpers;
 static class NodeSGExtensions
 {
-    public delegate string ConverterDelegate(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context);
+    public delegate string ConverterDelegate(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null);
 
     public delegate string ProvideValueDelegate(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType);
 
@@ -50,7 +50,7 @@ static class NodeSGExtensions
         { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.PointCollectionConverter")!, (KnownTypeConverters.ConvertPointCollection, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.PointCollection")!) },
         { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.LayoutOptionsConverter")!, (KnownTypeConverters.ConvertLayoutOptions, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.LayoutOptions")!) },
         { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Compatibility.ConstraintTypeConverter")!, (KnownTypeConverters.ConvertConstraint, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Compatibility.Constraint")!) },
-        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary.RDSourceTypeConverter")!, (KnownTypeConverters.ConvertRDSource, context.Compilation.GetTypeByMetadataName("System.Uri")!) },
+        { context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary+RDSourceTypeConverter")!, (KnownTypeConverters.ConvertRDSource, context.Compilation.GetTypeByMetadataName("System.Uri")!) },
         
         // TODO: PathFigureCollectionConverter (used for PathGeometry and StrokeShape) is very complex, skipping for now, apart from that one all other shapes work though
         //{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.PathGeometryConverter")!, (KnownTypeConverters.ConvertPathGeometry, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Geometry")!) },
@@ -69,7 +69,7 @@ static class NodeSGExtensions
 
     public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
     {
-        name = default(XmlName);
+        name = default;
         if (parentNode is not IElementNode parentElement)
             return false;
         foreach (var kvp in parentElement.Properties)
@@ -150,8 +150,6 @@ static class NodeSGExtensions
             return true;
         if (toType.SpecialType == SpecialType.System_Boolean)
             return true;
-        if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.TimeSpan")!, SymbolEqualityComparer.Default))
-            return true;
         if (toType.SpecialType == SpecialType.System_DateTime)
             return true;
         if (toType.SpecialType == SpecialType.System_Object)
@@ -162,18 +160,20 @@ static class NodeSGExtensions
             return true;
         if (context.Compilation.HasImplicitConversion(context.Compilation.GetTypeByMetadataName("System.String")!, toType))
             return true;
+        if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.TimeSpan")!, SymbolEqualityComparer.Default))
+            return true;
         return false;
     }
 
-	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context)
+	public static string ConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var typeandconverter = bpFieldSymbol.GetBPTypeAndConverter(context);
         if (typeandconverter == null)
             return string.Empty;
-        return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, context);
+        return valueNode.ConvertTo(typeandconverter.Value.type, typeandconverter.Value.converter, context, parentVar);
     }
 
-    public static string ConvertTo(this ValueNode valueNode, IPropertySymbol property, SourceGenContext context)
+    public static string ConvertTo(this ValueNode valueNode, IPropertySymbol property, SourceGenContext context, LocalVariable? parentVar = null)
     {
         List<AttributeData> attributes = [
             .. property.GetAttributes().ToList(),
@@ -181,19 +181,19 @@ static class NodeSGExtensions
         ];
         
         var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;     
-        return valueNode.ConvertTo(property.Type, typeConverter, context);
+        return valueNode.ConvertTo(property.Type, typeConverter, context, parentVar);
     }
 
-    public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         List<AttributeData> attributes = [.. toType.GetAttributes()];
         
         var typeConverter = attributes.FirstOrDefault(ad => ad.AttributeClass?.ToString() == "System.ComponentModel.TypeConverterAttribute")?.ConstructorArguments[0].Value as ITypeSymbol;     
 
-        return valueNode.ConvertTo(toType, typeConverter, context);
+        return valueNode.ConvertTo(toType, typeConverter, context, parentVar);
     }
     
-    public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, SourceGenContext context)
+    public static string ConvertTo(this ValueNode valueNode, ITypeSymbol toType, ITypeSymbol? typeConverter, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var valueString = valueNode.Value as string ?? string.Empty;
 
@@ -204,21 +204,23 @@ static class NodeSGExtensions
                 //this could be left to the compiler to figure, but I've yet to find a way to test the compiler...
                 //FIXME: better error message
                 context.ReportDiagnostic(Diagnostic.Create(Descriptors.MemberResolution, LocationCreate(context.FilePath!, (IXmlLineInfo)valueNode, valueString), $"Cannot convert {returntype} to {toType}"));
-            return converterAndReturnType.Item1.Invoke(valueString, valueNode, toType, context);
+            return converterAndReturnType.Item1.Invoke(valueString, valueNode, toType, context, parentVar);
         }
 
         if (typeConverter is not null)
-            return valueNode.ConvertWithConverter(typeConverter, toType, context);
+            return valueNode.ConvertWithConverter(typeConverter, toType, context, parentVar);
 
         return ValueForLanguagePrimitive(valueString, toType, context, valueNode);
     }
 
     public static string ValueForLanguagePrimitive(string valueString, ITypeSymbol toType, SourceGenContext context, IXmlLineInfo lineInfo)
     {
-        void reportDiagnostic() 
+#pragma warning disable RS0030 // Do not use banned APIs
+		void reportDiagnostic() 
             => context.ReportDiagnostic(Diagnostic.Create(Descriptors.InvalidFormat, LocationHelpers.LocationCreate(context.FilePath!, lineInfo, valueString), valueString, toType.ToDisplayString()));
+#pragma warning restore RS0030 // Do not use banned APIs
 
-        if (toType.NullableAnnotation == NullableAnnotation.Annotated)
+		if (toType.NullableAnnotation == NullableAnnotation.Annotated)
             toType = ((INamedTypeSymbol)toType).TypeArguments[0];
 
         if (toType.SpecialType == SpecialType.System_SByte)
@@ -324,7 +326,7 @@ static class NodeSGExtensions
                 reportDiagnostic();
         }
         if (toType.TypeKind == TypeKind.Enum)
-            return string.Join(" | ", valueString.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(v => $"{toType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{v.Trim()}"));
+            return string.Join(" | ", valueString.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(v => $"{toType.ToFQDisplayString()}.{v.Trim()}"));
         if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.TimeSpan")!, SymbolEqualityComparer.Default))
         {
             if (TimeSpan.TryParse(valueString, CultureInfo.InvariantCulture, out var timeSpanValue))
@@ -339,7 +341,7 @@ static class NodeSGExtensions
         return SymbolDisplay.FormatLiteral(valueString, true);    
 	}
 
-    public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, SourceGenContext context)
+    public static string ConvertWithConverter(this ValueNode valueNode, ITypeSymbol typeConverter, ITypeSymbol targetType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var valueString = valueNode.Value as string ?? string.Empty;
         //TODO check if there's a SourceGen version of the converter
@@ -351,18 +353,18 @@ static class NodeSGExtensions
             {
                 var serviceProvider = valueNode.GetOrCreateServiceProvider(context.Writer, context, requiredServices);
                 if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
-                    return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.Name}) as {targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}";
+                    return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.Name}) as {targetType.ToFQDisplayString()}";
                 else
-                    return $"({targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.Name})";
+                    return $"({targetType.ToFQDisplayString()})((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", {serviceProvider.Name})";
             }
             else //should never happen. there's no point to implement IExtendedTypeConverter AND accept empty service provider
-                return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\", null) as {targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}";
+                return $"((global::Microsoft.Maui.Controls.IExtendedTypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\", null) as {targetType.ToFQDisplayString()}";
         }
         //TypeConverter returns an object, so we need to cast it to the target type
         if (targetType.IsReferenceType || targetType.NullableAnnotation == NullableAnnotation.Annotated)
-            return $"((global::System.ComponentModel.TypeConverter)new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}()).ConvertFromInvariantString(\"{valueString}\") as {targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}";
+            return $"((global::System.ComponentModel.TypeConverter)new {typeConverter.ToFQDisplayString()}()).ConvertFromInvariantString(\"{valueString}\") as {targetType.ToFQDisplayString()}";
         else
-            return $"({targetType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})new {typeConverter.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}().ConvertFromInvariantString(\"{valueString}\")!";
+            return $"({targetType.ToFQDisplayString()})new {typeConverter.ToFQDisplayString()}().ConvertFromInvariantString(\"{valueString}\")!";
     }
 
     public static bool IsValueProvider(this INode node, SourceGenContext context, 
@@ -422,11 +424,11 @@ static class NodeSGExtensions
         if (!acceptEmptyServiceProvider)
         {
             var serviceProviderVar = node.GetOrCreateServiceProvider(writer, context, requiredServices);                
-            writer.WriteLine($"var {variableName} = ({returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})(({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue({serviceProviderVar.Name});");
+            writer.WriteLine($"var {variableName} = ({returnType.ToFQDisplayString()})(({valueProviderFace!.ToFQDisplayString()}){valueProviderVariable.Name}).ProvideValue({serviceProviderVar.Name});");
             context.Variables[node] = new LocalVariable(returnType, variableName);
         }
         else {
-            writer.WriteLine($"var {variableName} = ({returnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)})(({valueProviderFace!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){valueProviderVariable.Name}).ProvideValue(null);");
+            writer.WriteLine($"var {variableName} = ({returnType.ToFQDisplayString()})(({valueProviderFace!.ToFQDisplayString()}){valueProviderVariable.Name}).ProvideValue(null);");
             context.Variables[node] = new LocalVariable(returnType, variableName);
         }
     }

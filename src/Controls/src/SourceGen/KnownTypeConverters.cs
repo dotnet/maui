@@ -204,7 +204,7 @@ static class KnownTypeConverters
     const string RoundRectangle = nameof(RoundRectangle);
     internal static readonly char[] Delimiter = [' '];
 
-    public static string ConvertRect(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertRect(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         // IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
@@ -229,7 +229,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    public static string ConvertColor(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertColor(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
@@ -267,7 +267,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    public static string ConvertPoint(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertPoint(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         // IMPORTANT! Update RectTypeDesignConverter.IsValid if making changes here
@@ -286,7 +286,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    public static string ConvertThickness(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertThickness(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         // IMPORTANT! Update ThicknessTypeDesignConverter.IsValid if making changes here
@@ -350,7 +350,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    public static string ConvertCornerRadius(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertCornerRadius(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         // IMPORTANT! Update CornerRadiusDesignTypeConverter.IsValid if making changes here
@@ -405,7 +405,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    public static string ConvertEasing(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertEasing(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         var easingName = value;
@@ -429,7 +429,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    public static string ConvertEnum(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertEnum(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrWhiteSpace(value) && toType is not null && toType.TypeKind == TypeKind.Enum)
@@ -439,16 +439,18 @@ static class KnownTypeConverters
 
             if (detectedEnumValue is not null)
             {
-                return $"{toType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}.{detectedEnumValue}";
+                return $"{toType.ToFQDisplayString()}.{detectedEnumValue}";
             }
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(Descriptors.EnumTypeConverterConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, value, toType?.ToDisplayString()));
+#pragma warning disable RS0030 // Do not use banned APIs
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.EnumTypeConverterConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, value, toType?.ToDisplayString()));
+#pragma warning restore RS0030 // Do not use banned APIs
 
-        return "default";
+		return "default";
     }
 
-    public static string ConvertFlexBasis(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertFlexBasis(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
@@ -477,7 +479,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    public static string ConvertFlowDirection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertFlowDirection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrWhiteSpace(value))
@@ -507,7 +509,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    public static string ConvertGridLength(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertGridLength(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
@@ -540,7 +542,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    public static string ConvertColumnDefinitionCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertColumnDefinitionCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
@@ -559,7 +561,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    public static string ConvertRowDefinitionCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertRowDefinitionCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
@@ -580,7 +582,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    public static string ConvertImageSource(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertImageSource(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         // IMPORTANT! Update ImageSourceDesignTypeConverter.IsValid if making changes here
@@ -597,7 +599,7 @@ static class KnownTypeConverters
         return "default";
     }
     
-    public static string ConvertListString(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertListString(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
@@ -612,7 +614,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertPointCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    internal static string ConvertPointCollection(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
@@ -662,7 +664,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertPathGeometry(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    internal static string ConvertPathGeometry(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
@@ -678,7 +680,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertStrokeShape(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    internal static string ConvertStrokeShape(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
@@ -796,7 +798,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertLayoutOptions(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    internal static string ConvertLayoutOptions(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         if (!string.IsNullOrEmpty(value))
@@ -837,7 +839,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-    internal static string ConvertConstraint(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    internal static string ConvertConstraint(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
         var xmlLineInfo = (IXmlLineInfo)node;
         // IMPORTANT! Update ConstraintDesignTypeConverter.IsValid if making changes here
@@ -854,7 +856,7 @@ static class KnownTypeConverters
         return "default";
     }
 
-	public static string ConvertBindableProperty(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+	public static string ConvertBindableProperty(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
 	{
         var parts = value.Split('.');
 
@@ -870,14 +872,73 @@ static class KnownTypeConverters
             var typesymbol = parts[0]!.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache, null!)!;
 
             var name = parts[1];
-            return typesymbol.GetBindableProperty("", ref name, out _, context, node)!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType));
+            return typesymbol.GetBindableProperty("", ref name, out _, context, node)!.ToFQDisplayString();
             
         }
         return "null";
 	}
 
-    public static string ConvertRDSource(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context)
+    public static string ConvertRDSource(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
     {
-        return $"new Uri({value})";
-    }
+        if (parentVar == null) //should never happen
+            throw new ArgumentException("parentVar is null");
+
+        const string GetResourcePathUriScheme = "maui://";
+        ITypeSymbol xamlResIdAttr = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute")!;
+
+        static string GetResourcePath(string value, string rootTargetPath)
+        {
+            var uri = new Uri(value, UriKind.RelativeOrAbsolute);
+            // GetResourcePathUriScheme is a fake scheme so it's not seen as file:// uri,
+            // and the forward slashes are valid on all plats
+            var resourceUri = uri.OriginalString.StartsWith("/", StringComparison.Ordinal)
+                                    ? new Uri($"{GetResourcePathUriScheme}{uri.OriginalString}", UriKind.Absolute)
+                                    : new Uri($"{GetResourcePathUriScheme}/{rootTargetPath}/../{uri.OriginalString}", UriKind.Absolute);
+
+            //drop the leading '/'
+            return resourceUri.AbsolutePath.Substring(1);
+        }
+
+		ITypeSymbol? GetTypeForResourcePath(string resourcePath, IAssemblySymbol assembly)
+        {
+            var attr = assembly.GetAttributes(xamlResIdAttr).FirstOrDefault(attr => (string)attr.ConstructorArguments[1].Value! == resourcePath);
+			return attr?.ConstructorArguments[2].Value as ITypeSymbol;
+		}
+
+		var uriVar = NamingHelpers.CreateUniqueVariableName(context, "sourceUri");
+        IAssemblySymbol asm;
+        if (value.Contains(";assembly="))
+        {
+            var parts = value.Split([";assembly="], StringSplitOptions.RemoveEmptyEntries);
+            value = parts[0];
+            var asmName = parts[1];
+            asm = context.Compilation.GetAssembly(asmName)!;
+
+            //FIXME if asm is null, reportDiagnostic
+        }
+        else
+        {
+            asm = context.RootType.ContainingAssembly;
+        }
+
+        context.Writer.WriteLine($"var {uriVar} = new global::System.Uri(\"{value};assembly={asm.Name}\", global::System.UriKind.RelativeOrAbsolute);");
+
+        //is there a type associated with the resource ?
+        if (GetTypeForResourcePath(GetResourcePath(value, ""), asm) is ITypeSymbol type)
+        {
+            //FIXME: this doesn't work for resources in current assembly, as the attribute is generated by sourcegen, and not in the compilation
+            context.Writer.WriteLine($"global::Microsoft.Maui.Controls.ResourceDictionarySetAndCreateSource<{type.ToFQDisplayString()}>({uriVar});");
+
+        }
+        //well, if not, we can still load it
+        else
+        {
+            context.Writer.WriteLine($"global::Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers.LoadFromSource({parentVar.Name}, {uriVar}, \"{GetResourcePath(value, "" )}\", typeof({context.RootType.ToFQDisplayString()}).Assembly, null);");
+
+        }
+
+
+
+		return uriVar;
+	}
 }

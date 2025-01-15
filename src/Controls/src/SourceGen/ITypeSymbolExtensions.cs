@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 using Microsoft.CodeAnalysis;
@@ -95,9 +96,8 @@ static partial class ITypeSymbolExtensions
         var baseType = symbol.GetBaseType(context);
         while (baseType != null) {
             foreach (var attribute in baseType.GetAttributes()) {
-                if (attribute.IsInherited()) {
-                    yield return attribute;
-                }
+                if (attribute.IsInherited())
+                    yield return attribute;                
             }
 
             baseType = baseType.GetBaseType(context);

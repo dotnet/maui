@@ -49,12 +49,12 @@ internal class KnownMarkups
 			if (field != null)
 			{
 				returnType = field.Type;
-				return field.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType));
+				return field.ToFQDisplayString();
 			}
 			if (property != null)
 			{
 				returnType = property.Type;
-				return property.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType));
+				return property.ToFQDisplayString();
 			}
 
 			//Should never happen
@@ -80,9 +80,9 @@ internal class KnownMarkups
 			targetsetter="";
 
 		if (valueNode is ValueNode vn)
-			return $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, Value = {vn.ConvertTo(bpRef, context)}}}";
+			return $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {vn.ConvertTo(bpRef, context)}}}";
 		else if (context.Variables.TryGetValue(valueNode, out var variable))
-			return $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}, Value = {variable.Name}}}";
+			return $"new global::Microsoft.Maui.Controls.Setter {{{targetsetter}Property = {bpRef.ToFQDisplayString()}, Value = {variable.Name}}}";
 	
 		//FIXME context.ReportDiagnostic
 		throw new Exception();
@@ -137,10 +137,10 @@ internal class KnownMarkups
 		{
 			var source = (string)(sourceNode as ValueNode)!.Value;
 			var uri = $"new global::System::Uri(\"{source}\", UriKind.Relative)";
-			var rootTargetPath = $"global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute.GetPathForType(typeof({context.RootType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}))";
+			var rootTargetPath = $"global::Microsoft.Maui.Controls.Xaml.XamlResourceIdAttribute.GetPathForType(typeof({context.RootType.ToFQDisplayString()}))";
 
 			var resourcePath = $"global::Microsoft.Maui.Controls.ResourceDictionary.RDSourceTypeConverter.GetResourcePath({uri}, {rootTargetPath})";
-			var assembly = $"typeof({context.RootType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}).Assembly";
+			var assembly = $"typeof({context.RootType.ToFQDisplayString()}).Assembly";
 
 			var lineInfo = $"global::Microsoft.Maui.Controls.Xaml.XmlLineInfo({((IXmlLineInfo)markupNode).LineNumber}, {((IXmlLineInfo)markupNode).LinePosition})";
 			return $"global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromResource({resourcePath}, {assembly}, {lineInfo})";
