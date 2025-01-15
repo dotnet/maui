@@ -9,7 +9,7 @@ using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents, IMauiPlatformView
+	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 	{
 		bool _invalidateParentWhenMovedToWindow;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
@@ -354,12 +354,12 @@ namespace Microsoft.Maui.Platform
 			return Layer;
 		}
 
-		void IMauiPlatformView.InvalidateAncestorsMeasuresWhenMovedToWindow()
+		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
 		{
 			_invalidateParentWhenMovedToWindow = true;
 		}
 
-		void IMauiPlatformView.InvalidateMeasure(bool isPropagating) => SetNeedsLayout();
+		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating) => SetNeedsLayout();
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;

@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public abstract partial class VisualElementRenderer<TElement> : UIView, IPlatformViewHandler, IElementHandler, IMauiPlatformView
+	public abstract partial class VisualElementRenderer<TElement> : UIView, IPlatformViewHandler, IElementHandler, IPlatformMeasureInvalidationController
 		where TElement : Element, IView
 	{
 		bool _invalidateParentWhenMovedToWindow;
@@ -94,12 +94,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateNativeWidget();
 		}
 
-		void IMauiPlatformView.InvalidateAncestorsMeasuresWhenMovedToWindow()
+		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
 		{
 			_invalidateParentWhenMovedToWindow = true;
 		}
 
-		void IMauiPlatformView.InvalidateMeasure(bool isPropagating) => SetNeedsLayout();
+		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating) => SetNeedsLayout();
 
 		public override void MovedToWindow()
 		{

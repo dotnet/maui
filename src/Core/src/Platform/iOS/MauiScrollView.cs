@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, IMauiPlatformView
+	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 	{
 		bool _invalidateParentWhenMovedToWindow;
 		double _lastMeasureHeight;
@@ -79,12 +79,12 @@ namespace Microsoft.Maui.Platform
 			return contentSize;
 		}
 
-		void IMauiPlatformView.InvalidateAncestorsMeasuresWhenMovedToWindow()
+		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
 		{
 			_invalidateParentWhenMovedToWindow = true;
 		}
 
-		void IMauiPlatformView.InvalidateMeasure(bool isPropagating)
+		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
 			SetNeedsLayout();
 			InvalidateConstraintsCache();

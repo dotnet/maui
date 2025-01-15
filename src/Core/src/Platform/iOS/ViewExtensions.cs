@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Platform
 		/// </remarks>
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
-			if (platformView is IMauiPlatformView mauiPlatformView)
+			if (platformView is IPlatformMeasureInvalidationController mauiPlatformView)
 			{
 				mauiPlatformView.InvalidateMeasure();
 			}
@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void InvalidateAncestorsMeasures(this UIView child)
 		{
-			var childMauiPlatformLayout = child as IMauiPlatformView;
+			var childMauiPlatformLayout = child as IPlatformMeasureInvalidationController;
 
 			while (true)
 			{
@@ -327,7 +327,7 @@ namespace Microsoft.Maui.Platform
 				}
 
 				// Now invalidate the parent view
-				var superviewMauiPlatformLayout = superview as IMauiPlatformView;
+				var superviewMauiPlatformLayout = superview as IPlatformMeasureInvalidationController;
 				if (superviewMauiPlatformLayout is not null)
 				{
 					superviewMauiPlatformLayout.InvalidateMeasure(isPropagating: true);

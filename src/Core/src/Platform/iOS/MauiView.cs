@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IMauiPlatformView
+	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 	{
 		bool _invalidateParentWhenMovedToWindow;
 		static bool? _respondsToSafeArea;
@@ -164,12 +164,12 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		void IMauiPlatformView.InvalidateAncestorsMeasuresWhenMovedToWindow()
+		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
 		{
 			_invalidateParentWhenMovedToWindow = true;
 		}
 
-		void IMauiPlatformView.InvalidateMeasure(bool isPropagating) => SetNeedsLayout();
+		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating) => SetNeedsLayout();
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;

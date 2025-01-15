@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items;
 
-internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IMauiPlatformView
+internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 {
 	bool _invalidateParentWhenMovedToWindow;
 
@@ -20,12 +20,12 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IM
 			base.ScrollRectToVisible(rect, animated);
 	}
 
-	void IMauiPlatformView.InvalidateAncestorsMeasuresWhenMovedToWindow()
+	void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
 	{
 		_invalidateParentWhenMovedToWindow = true;
 	}
 
-	void IMauiPlatformView.InvalidateMeasure(bool isPropagating)
+	void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 	{
 		if (!isPropagating)
 		{
