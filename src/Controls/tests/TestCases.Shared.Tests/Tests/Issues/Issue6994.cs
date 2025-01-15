@@ -14,13 +14,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Button)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void NullPointerExceptionOnFastLabelTextColorChange()
 		{
 			App.WaitForElement("Click me");
 			App.Tap("Click me");
-			App.WaitForElement("Success");
+			App.WaitForElement("Success", timeout: TimeSpan.FromSeconds(3));
 		}
 	}
 }
