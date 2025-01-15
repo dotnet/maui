@@ -1,4 +1,6 @@
-﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // As this test cases ensures the virutal keyboard so it is not applicable for desktop platforms.
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID
+// As this test cases ensures the virutal keyboard so it is not applicable for desktop platforms.
+// Need a reliable way to verify the keyboard type in the test. follow ups: https://github.com/dotnet/maui/issues/26968.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

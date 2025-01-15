@@ -22,6 +22,7 @@ stages:
           buildConfig: ${{ parameters.buildConfig }}
           repoLogPath: ${{ parameters.repoLogPath }}
           installPackageArtifacts: false
+          buildMSBuildTasks: true
 
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:
@@ -164,7 +165,7 @@ stages:
         displayName: Publish Logs
         inputs:
           targetPath: ${{ parameters.repoLogPath }}
-          artifact: Run Unit Tests - ${{ job.testOS }} Logs
+          artifact: Logs - Unit Tests ${{ job.testOS }} $(System.JobAttempt)
         condition: always()
 
       - template: /eng/pipelines/common/fail-on-issue.yml
