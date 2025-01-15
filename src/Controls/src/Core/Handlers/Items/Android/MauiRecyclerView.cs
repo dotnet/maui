@@ -589,6 +589,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				ScrollHelper.UndoNextScrollAdjustment();
 			}
+			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				ScrollTo(new ScrollToRequestEventArgs(0, 0, Microsoft.Maui.Controls.ScrollToPosition.Start, true));
+			}
 		}
 
 		GridLayoutManager CreateGridLayout(GridItemsLayout gridItemsLayout)
