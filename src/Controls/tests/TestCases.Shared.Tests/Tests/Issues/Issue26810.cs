@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.ActivityIndicator)]
+		[Category(UITestCategories.CollectionView)]
 		public void ScrollToFirstItemOnCollectionChanged()
 		{
 			// Is a Android and iOS issue; see https://github.com/dotnet/maui/issues/26810
