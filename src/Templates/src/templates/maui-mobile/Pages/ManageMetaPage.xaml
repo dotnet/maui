@@ -71,9 +71,8 @@
                                 SemanticProperties.HeadingLevel="None" />
 
                             <Button 
-                                ImageSource="{StaticResource IconDelete}"
-                                SemanticProperties.Hint="Tap to delete the category"                            
-                                SemanticProperties.Description="Delete"
+                                ImageSource="{StaticResource IconDelete}"                        
+                                SemanticProperties.Description="Delete Category"
                                 Background="Transparent"
                                 Command="{Binding DeleteCategoryCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManageMetaPageModel}}, x:DataType=pageModels:ManageMetaPageModel}" CommandParameter="{Binding .}"
                                 Grid.Column="3" />
@@ -115,8 +114,7 @@
         
                             <Button 
                                 ImageSource="{StaticResource IconDelete}"
-                                SemanticProperties.Hint="Tap to delete the tag"
-                                SemanticProperties.Description="Delete"
+                                SemanticProperties.Description="Delete Tag"
                                 Background="Transparent"
                                 Command="{Binding DeleteTagCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManageMetaPageModel}}, x:DataType=pageModels:ManageMetaPageModel}" CommandParameter="{Binding .}"
                                 Grid.Column="3"/>
