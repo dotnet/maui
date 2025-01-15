@@ -58,22 +58,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 		[Fact]
-		public Task InvokeJavaScriptMethodWithParametersAndStringResult() =>
-			RunTest(async (hybridWebView) =>
-			{
-				var x = "abc";
-				var y = "def";
-
-				var result = await hybridWebView.InvokeJavaScriptAsync<string>(
-					"EvaluateMeWithParamsAndStringReturn",
-					HybridWebViewTestContext.Default.String,
-					[x, y],
-					[HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String]);
-
-				Assert.Equal("abcdef", result);
-			});
-
-		[Fact]
 		public Task InvokeJavaScriptMethodWithParametersAndNullsAndComplexResult() =>
 			RunTest(async (hybridWebView) =>
 			{
@@ -92,7 +76,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 		[Fact]
-		public Task InvokeJavaScriptMethodWithParametersAndResult() =>
+		public Task InvokeJavaScriptMethodWithParametersAndDecimalResult() =>
 			RunTest(async (hybridWebView) =>
 			{
 				var x = 123.456m;
@@ -105,6 +89,151 @@ namespace Microsoft.Maui.DeviceTests
 					[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
 
 				Assert.Equal(777.777m, result);
+			});
+
+		[Theory]
+		[InlineData(-123.456)]
+		[InlineData(0.0)]
+		[InlineData(123.456)]
+		public Task InvokeJavaScriptMethodWithParametersAndDoubleResult(double expected) =>
+			RunTest(async (hybridWebView) =>
+			{
+				var result = await hybridWebView.InvokeJavaScriptAsync<double>(
+					"EchoParameter",
+					HybridWebViewTestContext.Default.Double,
+					[expected],
+					[HybridWebViewTestContext.Default.Double]);
+
+				Assert.Equal(expected, result);
+			});
+
+		[Theory]
+		[InlineData(null)]
+		[InlineData(-123.456)]
+		[InlineData(0.0)]
+		[InlineData(123.456)]
+		public Task InvokeJavaScriptMethodWithParametersAndNullableDoubleResult(double? expected) =>
+			RunTest(async (hybridWebView) =>
+			{
+				var result = await hybridWebView.InvokeJavaScriptAsync<double?>(
+					"EchoParameter",
+					HybridWebViewTestContext.Default.NullableDouble,
+					[expected],
+					[HybridWebViewTestContext.Default.NullableDouble]);
+
+				Assert.Equal(expected, result);
+			});
+
+		[Fact]
+		public Task InvokeJavaScriptMethodWithParametersAndNewDoubleResult() =>
+			RunTest(async (hybridWebView) =>
+			{
+				var x = 123.456m;
+				var y = 654.321m;
+
+				var result = await hybridWebView.InvokeJavaScriptAsync<double>(
+					"EvaluateMeWithParamsAndReturn",
+					HybridWebViewTestContext.Default.Double,
+					[x, y],
+					[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
+
+				Assert.Equal(777.777, result);
+			});
+
+		[Theory]
+		[InlineData(-123)]
+		[InlineData(0)]
+		[InlineData(123)]
+		public Task InvokeJavaScriptMethodWithParametersAndIntResult(int expected) =>
+			RunTest(async (hybridWebView) =>
+			{
+				var result = await hybridWebView.InvokeJavaScriptAsync<int>(
+					"EchoParameter",
+					HybridWebViewTestContext.Default.Int32,
+					[expected],
+					[HybridWebViewTestContext.Default.Int32]);
+
+				Assert.Equal(expected, result);
+			});
+
+		[Theory]
+		[InlineData(null)]
+		[InlineData(-123)]
+		[InlineData(0)]
+		[InlineData(123)]
+		public Task InvokeJavaScriptMethodWithParametersAndNullableIntResult(int? expected) =>
+			RunTest(async (hybridWebView) =>
+			{
+				var result = await hybridWebView.InvokeJavaScriptAsync<int?>(
+					"EchoParameter",
+					HybridWebViewTestContext.Default.NullableInt32,
+					[expected],
+					[HybridWebViewTestContext.Default.NullableInt32]);
+
+				Assert.Equal(expected, result);
+			});
+
+		[Fact]
+		public Task InvokeJavaScriptMethodWithParametersAndNewIntResult() =>
+			RunTest(async (hybridWebView) =>
+			{
+				var x = 123;
+				var y = 654;
+
+				var result = await hybridWebView.InvokeJavaScriptAsync<int>(
+					"EvaluateMeWithParamsAndReturn",
+					HybridWebViewTestContext.Default.Int32,
+					[x, y],
+					[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
+
+				Assert.Equal(777, result);
+			});
+
+		[Theory]
+		[InlineData(null)]
+		[InlineData("")]
+		[InlineData("foo")]
+		public Task InvokeJavaScriptMethodWithParametersAndStringResult(string expected) =>
+			RunTest(async (hybridWebView) =>
+			{
+				var result = await hybridWebView.InvokeJavaScriptAsync<string>(
+					"EchoParameter",
+					HybridWebViewTestContext.Default.String,
+					[expected],
+					[HybridWebViewTestContext.Default.String]);
+
+				Assert.Equal(expected, result);
+			});
+
+		[Fact]
+		public Task InvokeJavaScriptMethodWithParametersAndNewStringResult() =>
+			RunTest(async (hybridWebView) =>
+			{
+				var x = "abc";
+				var y = "def";
+
+				var result = await hybridWebView.InvokeJavaScriptAsync<string>(
+					"EvaluateMeWithParamsAndStringReturn",
+					HybridWebViewTestContext.Default.String,
+					[x, y],
+					[HybridWebViewTestContext.Default.String, HybridWebViewTestContext.Default.String]);
+
+				Assert.Equal("abcdef", result);
+			});
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public Task InvokeJavaScriptMethodWithParametersAndBoolResult(bool expected) =>
+			RunTest(async (hybridWebView) =>
+			{
+				var result = await hybridWebView.InvokeJavaScriptAsync<bool>(
+					"EchoParameter",
+					HybridWebViewTestContext.Default.Boolean,
+					[expected],
+					[HybridWebViewTestContext.Default.Boolean]);
+
+				Assert.Equal(expected, result);
 			});
 
 		[Fact]
@@ -330,6 +459,11 @@ namespace Microsoft.Maui.DeviceTests
 		[JsonSourceGenerationOptions(WriteIndented = true)]
 		[JsonSerializable(typeof(ComputationResult))]
 		[JsonSerializable(typeof(decimal))]
+		[JsonSerializable(typeof(bool))]
+		[JsonSerializable(typeof(int))]
+		[JsonSerializable(typeof(int?))]
+		[JsonSerializable(typeof(double))]
+		[JsonSerializable(typeof(double?))]
 		[JsonSerializable(typeof(string))]
 		[JsonSerializable(typeof(Dictionary<string, string>))]
 		internal partial class HybridWebViewTestContext : JsonSerializerContext
