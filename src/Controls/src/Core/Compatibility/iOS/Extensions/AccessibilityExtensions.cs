@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		// TODO OBSOLETE FOR NET10
 		public static string SetAccessibilityLabel(this UIBarItem Control, Element Element, string _defaultAccessibilityLabel = null)
-		{	
+		{
 			if (Element == null || Control == null)
 				return _defaultAccessibilityLabel;
 			
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				_defaultAccessibilityLabel = Control.AccessibilityLabel;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-			Control.AccessibilityLabel = SemanticProperties.GetDescription(Element) ?? (string)Element.GetValue(AutomationProperties.NameProperty) ?? _defaultAccessibilityLabel;
+			Control.AccessibilityLabel = (string)Element.GetValue(AutomationProperties.NameProperty) ?? _defaultAccessibilityLabel;
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			return _defaultAccessibilityLabel;
