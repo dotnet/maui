@@ -11,9 +11,9 @@ parameters:
 - name: sourceIndexParams
   type: object
   default: []
-- name: publishTaskPrefix
-  type: string
-  default: '1ES.'
+- name: runAsPublic
+  type: boolean
+  default: false
 
 stages:
 - stage: Pack
@@ -57,7 +57,7 @@ stages:
           displayName: 🛠️ Build
 
         # Run on public pipeline
-        - ${{ if eq(variables['_RunAsPublic'], 'true') }}:
+        - ${{ if eq(parameters.runAsPublic, 'true') }}:
           - script: $(_buildScript)
                     -restore -pack
                     -publish $(_PublishArgs)
@@ -67,7 +67,7 @@ stages:
             displayName: Pack & Publish
 
         # Run on internal pipeline
-        - ${{ if eq(variables['_RunAsInternal'], 'true') }}:
+        - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
           - script: $(_buildScript)
                     -restore -pack
                     -sign $(_SignArgs)
@@ -88,7 +88,7 @@ stages:
               $(_OfficialBuildIdArgs)
             displayName: Build Workloads
 
-          - task: ${{ parameters.publishTaskPrefix }}PublishPipelineArtifact@1
+          - task: 1ES.PublishPipelineArtifact@1
             displayName: Publish VSDrop MSIs
             inputs:
               targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
