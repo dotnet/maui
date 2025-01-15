@@ -24,6 +24,7 @@ public class Bugzilla31114 : _IssuesUITest
 			App.DragCoordinates(10, 500, 10, 200);
 		}
 		App.Tap("btnLoad");
+		App.WaitForElement("PIPE #1001");
 		App.DragCoordinates(10, 500, 10, 200);
 		App.WaitForElement("PIPE #1007");
 		App.WaitForElement("PIPE #1008");
