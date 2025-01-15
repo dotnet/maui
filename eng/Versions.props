@@ -50,7 +50,7 @@
     <MicrosoftExtensionsLoggingDebugVersion>10.0.0-alpha.1.25061.3</MicrosoftExtensionsLoggingDebugVersion>
     <MicrosoftExtensionsPrimitivesVersion>10.0.0-alpha.1.25061.3</MicrosoftExtensionsPrimitivesVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>35.99.0-ci.main.98</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>35.99.0-ci.main.110</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdknet100_182PackageVersion>18.2.10174-net10-p1</MicrosoftMacCatalystSdknet100_182PackageVersion>
     <MicrosoftmacOSSdknet100_152PackageVersion>15.2.10174-net10-p1</MicrosoftmacOSSdknet100_152PackageVersion>
