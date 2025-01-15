@@ -33,6 +33,7 @@ namespace Maui.Controls.Sample
 		private string _thumbImageSource;
 		private string _dragStartStatus;
 		private string _dragCompletedStatus;
+		private bool _isEventStatusLabelVisible = false;
  
 		public event PropertyChangedEventHandler PropertyChanged;
  
@@ -192,6 +193,10 @@ namespace Maui.Controls.Sample
 			{
 				if (_dragStartStatus != value)
 				{
+					if(!string.IsNullOrEmpty(value))
+					{
+						IsEventStatusLabelVisible = true;
+					}
 					_dragStartStatus = value;
 					OnPropertyChanged();
 				}
@@ -205,7 +210,24 @@ namespace Maui.Controls.Sample
 			{
 				if (_dragCompletedStatus != value)
 				{
+					if(!string.IsNullOrEmpty(value))
+					{
+						IsEventStatusLabelVisible = true;
+					}
 					_dragCompletedStatus = value;
+					OnPropertyChanged();
+				}
+			}
+		}
+
+		public bool IsEventStatusLabelVisible
+		{
+			get => _isEventStatusLabelVisible;
+			set
+			{
+				if (_isEventStatusLabelVisible != value)
+				{
+					_isEventStatusLabelVisible = value;
 					OnPropertyChanged();
 				}
 			}

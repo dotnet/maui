@@ -3,23 +3,24 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample
 {
-	public partial class ControlPage : NavigationPage
+	public class SliderControlPage : NavigationPage
 	{
 		private SliderViewModel _viewModel;
 
-		public ControlPage()
+		public SliderControlPage()
 		{
 			_viewModel = new SliderViewModel();
+			BarTextColor = Colors.White;
 			BindingContext = _viewModel;
-			PushAsync(new ControlMainPage(_viewModel));
+			PushAsync(new SliderControlMainPage(_viewModel));
 		}
 	}
 
-	public partial class ControlMainPage : ContentPage
+	public partial class SliderControlMainPage : ContentPage
 	{
 		private SliderViewModel _viewModel;
 
-		public ControlMainPage(SliderViewModel viewModel)
+		public SliderControlMainPage(SliderViewModel viewModel)
 		{
 			InitializeComponent();
 			_viewModel = viewModel;
@@ -29,7 +30,7 @@ namespace Maui.Controls.Sample
 		private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 		{
 			BindingContext = _viewModel = new SliderViewModel();
-			await Navigation.PushAsync(new OptionsPage(_viewModel));
+			await Navigation.PushAsync(new SliderOptionsPage(_viewModel));
 		}
 	}
 }
