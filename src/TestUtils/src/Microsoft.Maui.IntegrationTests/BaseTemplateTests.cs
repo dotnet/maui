@@ -19,4 +19,18 @@ public abstract class BaseTemplateTests : BaseBuildTest
 			{ "</TargetFrameworks> -->", "</TargetFrameworks>" },
 		});
 	}
+
+	protected void AssertContains(string expected, string actual)
+	{
+		Assert.IsTrue(
+			actual.Contains(expected, StringComparison.Ordinal),
+			$"Expected string '{actual}' to contain '{expected}'.");
+	}
+
+	protected void AssertDoesNotContain(string expected, string actual)
+	{
+		Assert.IsFalse(
+			actual.Contains(expected, StringComparison.Ordinal),
+			$"Expected string '{actual}' to not contain '{expected}'.");
+	}
 }
