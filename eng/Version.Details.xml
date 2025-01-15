@@ -8,9 +8,9 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>010e61a4f46d6d9b544cde169dc034417de7223a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.99.0-ci.main.108">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.99.0-ci.main.109">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>3127c47d2fee371201a115e847a1f85fe8f7b5f1</Sha>
+      <Sha>7aed4e3f2d3c9d76790520e176e7ce3b2c093b41</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk.net10.0_18.2" Version="18.2.10174-net10-p1">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
