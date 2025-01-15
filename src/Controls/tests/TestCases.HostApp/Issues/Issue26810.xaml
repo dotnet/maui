@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue26810">
-    <Grid RowDefinitions="100,100,Auto"
+    <Grid RowDefinitions="100,Auto"
           AutomationId="26810MainGrid">
         <Button Text="Scroll to Random Item"
                 AutomationId="26810Button"
@@ -13,7 +13,7 @@
                 VerticalOptions="Center"/>
         <CollectionView x:Name="CollectionView"
                         AutomationId="26810CollectionView"
-                        Grid.Row="2"
+                        Grid.Row="1"
                         Loaded="CollectionView_Loaded">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
