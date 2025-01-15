@@ -484,7 +484,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"Content = {Content}, " + base.GetDebuggerDisplay();
+			return $"Content = {Content}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }
