@@ -84,7 +84,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
             }
 
             Context.Variables[node] = new LocalVariable(Context.Compilation.CreateArrayTypeSymbol(arrayType), variableName);
-            Writer.WriteLine($"var {variableName} = new {arrayType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}[]");
+            Writer.WriteLine($"var {variableName} = new {arrayType.ToFQDisplayString()}[]");
             using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
             {
                 foreach (var cn in node.CollectionItems)
@@ -93,7 +93,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
                         continue;
 
                     var enVariable = Context.Variables[en];
-                    Writer.WriteLine($"({arrayType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){enVariable.Name},");
+                    Writer.WriteLine($"({arrayType.ToFQDisplayString()}){enVariable.Name},");
                 }
             }
 
@@ -108,7 +108,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 		//if type is Xaml2009Primitive
 		if (IsXaml2009LanguagePrimitive(node)) {
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
-            Writer.WriteLine($"{type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)} {variableName} = {ValueForLanguagePrimitive(type, node, Context)};");
+            Writer.WriteLine($"{type.ToFQDisplayString()} {variableName} = {ValueForLanguagePrimitive(type, node, Context)};");
             Context.Variables[node] = new LocalVariable(type, variableName);
             return;
         }
@@ -136,8 +136,10 @@ class CreateValuesVisitor : IXamlNodeVisitor
             ctor = type.InstanceConstructors.FirstOrDefault(c 
                 => c.MatchXArguments(node, Context, out parameters));
             if (ctor is null)
-                Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.FilePath!, node, type.Name), type.ToDisplayString()));
-        }
+#pragma warning disable RS0030 // Do not use banned APIs
+				Context.ReportDiagnostic(Diagnostic.Create(Descriptors.MethodResolution, LocationCreate(Context.FilePath!, node, type.Name), type.ToDisplayString()));
+#pragma warning restore RS0030 // Do not use banned APIs
+		}
         //x:FactoryMethod
         else if (node.Properties.ContainsKey(XmlName.xFactoryMethod))
         {
@@ -178,7 +180,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
                     if (!node.SkipProperties.Contains(n))
                         node.SkipProperties.Add(n);
 
-                Writer.WriteLine($"var {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}({string.Join(", ", parameters.ToMethodParameters(Context))});");
+                Writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters.ToMethodParameters(Context))});");
                 Context.Variables[node] = new LocalVariable(type, variableName);
                 node.RegisterSourceInfo(Context, Writer);
 
@@ -194,7 +196,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
             && (isColor || type.IsValueType))
         { //<Color>HotPink</Color>
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
-            var valueString = valueNode.ConvertTo(type, Context);
+            var valueString = valueNode.ConvertTo(type, null, Context);
             
             Writer.WriteLine($"var {variableName} = {valueString};");
             Context.Variables[node] = new LocalVariable(type, variableName);
@@ -204,7 +206,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
         else if (factoryMethod != null)
         {
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
-            Writer.WriteLine($"var {variableName} = {factoryMethod.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType))}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
+            Writer.WriteLine($"var {variableName} = {factoryMethod.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
             Context.Variables[node] = new LocalVariable(factoryMethod.ReturnType, variableName);
             node.RegisterSourceInfo(Context, Writer);
             return;
@@ -213,7 +215,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
         {
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
             
-            Writer.WriteLine($"var {variableName} = new {type.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
+            Writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
             Context.Variables[node] = new LocalVariable(type, variableName);
             node.RegisterSourceInfo(Context, Writer);
             return;

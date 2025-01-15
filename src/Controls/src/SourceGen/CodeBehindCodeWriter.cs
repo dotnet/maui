@@ -93,7 +93,7 @@ static class CodeBehindCodeWriter
 			sb.AppendLine($"\t[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
 		}
 
-		sb.AppendLine($"\t{accessModifier} partial class {rootType} : {baseType!.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}");
+		sb.AppendLine($"\t{accessModifier} partial class {rootType} : {baseType!.ToFQDisplayString()}");
 		sb.AppendLine("\t{");
 
 		//optional default ctor
@@ -289,20 +289,16 @@ static class CodeBehindCodeWriter
 		return true;
 	}
 
+	//true, unless explicitely false
 	static bool GetXamlCompilationProcessingInstruction(XmlDocument xmlDoc)
 	{
-		var instruction = xmlDoc.SelectSingleNode("processing-instruction('xaml-comp')") as XmlProcessingInstruction;
-		if (instruction == null)
-		{
+		if (xmlDoc.SelectSingleNode("processing-instruction('xaml-comp')") is not XmlProcessingInstruction instruction)
 			return true;
-		}
 
 		var parts = instruction.Data.Split(' ', '=');
 		var indexOfCompile = Array.IndexOf(parts, "compile");
 		if (indexOfCompile != -1)
-		{
 			return !parts[indexOfCompile + 1].Trim('"', '\'').Equals("false", StringComparison.OrdinalIgnoreCase);
-		}
 
 		return true;
 	}
@@ -336,26 +332,20 @@ static class CodeBehindCodeWriter
 			if (!accessModifiers.Contains(accessModifier)) //quick validation
 				accessModifier = "private";
 
-			yield return (name ?? "", xmlType.GetTypeSymbol(context.ReportDiagnostic, compilation, xmlnsCache)?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) ?? "", accessModifier);
+			yield return (name ?? "", xmlType.GetTypeSymbol(context.ReportDiagnostic, compilation, xmlnsCache)?.ToFQDisplayString() ?? "", accessModifier);
 		}
 	}
 
 	static string? GetAttributeValue(XmlNode node, string localName, params string[] namespaceURIs)
 	{
 		if (node == null)
-		{
 			throw new ArgumentNullException(nameof(node));
-		}
 
 		if (localName == null)
-		{
 			throw new ArgumentNullException(nameof(localName));
-		}
 
 		if (namespaceURIs == null)
-		{
 			throw new ArgumentNullException(nameof(namespaceURIs));
-		}
 
 		foreach (var namespaceURI in namespaceURIs)
 		{

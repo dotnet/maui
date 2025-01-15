@@ -24,7 +24,7 @@ public partial class FactoryMethodMissingMethod : MockView
 				Assert.Throws<MissingMemberException>(() => new FactoryMethodMissingMethod(inflator));
 			else if (inflator == XamlInflator.SourceGen)
 			{
-								var compilation = MockSourceGenerator.CreateMauiCompilation();
+				var compilation = MockSourceGenerator.CreateMauiCompilation();
 				//Add MockView to compilation
 				var resourcePath = XamlResourceIdAttribute.GetPathForType(typeof(FactoryMethods));
 				var directory = Path.GetDirectoryName(GetThisFilePath());

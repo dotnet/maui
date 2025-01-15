@@ -35,7 +35,7 @@ static class ServiceProviderExtensions
         var serviceProviderSymbol = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider")!;
         var serviceProviderVariableName = NamingHelpers.CreateUniqueVariableName(context, "XamlServiceProvider");
 
-        writer.WriteLine($"var {serviceProviderVariableName} = new {serviceProviderSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}(this);");
+        writer.WriteLine($"var {serviceProviderVariableName} = new {serviceProviderSymbol.ToFQDisplayString()}(this);");
   
         node.AddServices(writer, serviceProviderVariableName, requiredServices, context, bpFieldSymbol, propertySymbol);
 
@@ -56,8 +56,8 @@ static class ServiceProviderExtensions
             writer.WriteLine($"var {simpleValueTargetProvider} = new global::Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider(");
             writer.Indent++;
             writer.WriteLine($"new object[] {{{String.Join(", ", node.ObjectAndParents(context).Select(v=>v.Name))}}},");
-            var bpinfo = bpFieldSymbol?.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat.WithMemberOptions(SymbolDisplayMemberOptions.IncludeContainingType)) ?? String.Empty;
-            var pinfo = $"typeof({propertySymbol?.ContainingSymbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}).GetProperty(\"{propertySymbol?.Name}\")" ?? string.Empty;
+            var bpinfo = bpFieldSymbol?.ToFQDisplayString() ?? String.Empty;
+            var pinfo = $"typeof({propertySymbol?.ContainingSymbol.ToFQDisplayString()}).GetProperty(\"{propertySymbol?.Name}\")" ?? string.Empty;
             writer.WriteLine($"{(bpFieldSymbol != null ? bpFieldSymbol : propertySymbol != null ? pinfo : "null")},");
             if (context.Scopes.TryGetValue(node, out var scope))
                 writer.WriteLine($"new [] {{ {scope.namescope.Name} }},");
@@ -78,7 +78,7 @@ static class ServiceProviderExtensions
             foreach (var kvp in node.NamespaceResolver!.GetNamespacesInScope(XmlNamespaceScope.ExcludeXml))
                 writer.WriteLine($"{nsResolver}.Add(\"{kvp.Key}\", \"{kvp.Value}\");");
             
-            writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlTypeResolver), new global::Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver({nsResolver}, typeof({context.RootType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}).Assembly));");
+            writer.WriteLine($"{serviceProviderVariableName}.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlTypeResolver), new global::Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver({nsResolver}, typeof({context.RootType.ToFQDisplayString()}).Assembly));");
         }
     }
 

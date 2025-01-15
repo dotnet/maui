@@ -15,14 +15,25 @@ public class DoesNotFail : SourceGenXamlInitializeComponentTestBase
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:local="clr-namespace:Test"
 	x:Class="Test.TestPage" >
-	<ContentPage.Resources>
-		<ResourceDictionary>
-			<x:Array x:Key="stringArray" Type="{x:Type x:String}">
-				<x:String>Test1</x:String>
-				<x:String>Test2</x:String>
-			</x:Array>
-		</ResourceDictionary>
-	</ContentPage.Resources>
+	<ListView x:Name="lv">
+		<ListView.ItemTemplate>
+			<DataTemplate>
+				<ViewCell>
+					<StackLayout Orientation="Horizontal">
+						<StackLayout.Resources>
+							<ResourceDictionary>
+								<Style TargetType="Label">
+									<Setter Property="HorizontalOptions" Value="Center"/>
+								</Style>
+							</ResourceDictionary>
+						</StackLayout.Resources>
+						<Label Text="Example1"/>
+						<Label Text="2..."/>
+					</StackLayout>
+				</ViewCell>
+			</DataTemplate>
+		</ListView.ItemTemplate>
+	</ListView>
 </ContentPage>
 """;
 
