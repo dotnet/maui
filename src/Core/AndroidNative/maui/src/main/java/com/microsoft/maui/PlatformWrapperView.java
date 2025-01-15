@@ -173,7 +173,7 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
             View child = getChildAt(0);
             Drawable background = child.getBackground();
             // See if we can quickly draw shadow through Canvas API thanks to the fact we have a solid content
-            if (false && background != null && background instanceof PlatformShadowDrawable && ((PlatformShadowDrawable)background).canDrawShadow()) {
+            if (background != null && background instanceof PlatformShadowDrawable && ((PlatformShadowDrawable)background).canDrawShadow()) {
                 background.setBounds(0, 0, viewWidth, viewHeight);
                 drawShadowViaPlatformShadowDrawable(canvas, (PlatformShadowDrawable)background, viewWidth, viewHeight);
                 return;
