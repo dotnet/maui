@@ -22,7 +22,7 @@ public class Issue2470 : _IssuesUITest
 		App.WaitForElement("Switch");
 		// Tab 1
 		App.Tap("Switch");
-		App.TapTab(Results);
+		App.TapTab(Results, isTopTab: true);
 
 		// Tab 2
 		App.WaitForElementTillPageNavigationSettled("Entry 0 of 5");
@@ -31,12 +31,12 @@ public class Issue2470 : _IssuesUITest
 		App.WaitForElement("Entry 3 of 5");
 		App.WaitForElement("Entry 4 of 5");
 
-		App.TapTab(Generate);
+		App.TapTab(Generate, isTopTab: true);
 
 		// Tab 1
 		App.WaitForElementTillPageNavigationSettled("Switch");
 		App.Tap("Switch");
-		App.TapTab(Results);
+		App.TapTab(Results, isTopTab: true);
 
 		// Tab 2
 		App.WaitForElementTillPageNavigationSettled("Entry 0 of 2");
@@ -44,10 +44,10 @@ public class Issue2470 : _IssuesUITest
 
 
 		// Tab 1
-		App.TapTab(Generate);
+		App.TapTab(Generate, isTopTab: true);
 		App.WaitForElementTillPageNavigationSettled("Switch");
 		App.Tap("Switch");
-		App.TapTab(Results);
+		App.TapTab(Results, isTopTab: true);
 
 		// Tab 2
 		App.WaitForElementTillPageNavigationSettled("Entry 0 of 5");
