@@ -265,7 +265,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var view = NavigationItem.TitleView;
 				NavigationItem.TitleView = null;
-				view?.Dispose();
+
+				if (view is UIContainerView uIContainerView)
+					uIContainerView.Disconnect();
+				else
+					view?.Dispose();
 			}
 			else
 			{
@@ -303,12 +307,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (NavigationItem == null || Page is null)
 			{
 				return;
-			}
-
-			if (NavigationItem.RightBarButtonItems != null)
-			{
-				for (var i = 0; i < NavigationItem.RightBarButtonItems.Length; i++)
-					NavigationItem.RightBarButtonItems[i].Dispose();
 			}
 
 			var shellToolbarItems = _context?.Shell?.ToolbarItems;
@@ -843,12 +841,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void SetSearchBarIcon(UISearchBar searchBar, ImageSource source, UISearchBarIcon icon)
 		{
-			var mauiContext = source.FindMauiContext();
+			var mauiContext = source.FindMauiContext() ?? MauiContext;
 			if (mauiContext is null)
 				return;
 
 			source.LoadImage(mauiContext, image =>
 			{
+				if (_disposed)
+					return;
+
 				var result = image?.Value;
 				if (result != null)
 				{

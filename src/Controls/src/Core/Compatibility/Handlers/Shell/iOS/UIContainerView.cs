@@ -101,7 +101,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void WillRemoveSubview(UIView uiview)
 		{
-			Disconnect();
 			base.WillRemoveSubview(uiview);
 		}
 
@@ -135,6 +134,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect()
 		{
+			if (_platformView?.Superview == this)
+				_platformView.RemoveFromSuperview();
+
+			_renderer = null;
+			_platformView = null;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -145,12 +149,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (disposing)
 			{
 				Disconnect();
-
-				if (_platformView.Superview == this)
-					_platformView.RemoveFromSuperview();
-
-				_renderer = null;
-				_platformView = null;
 				_disposed = true;
 			}
 
