@@ -7,7 +7,7 @@
 		{
 			var tabBar = new TabBar();
 
-			tabBar.Items.Add(CreateShellContent("MainPage", typeof(Issue18193MainPage),	nameof(Issue18193MainPage)));
+			tabBar.Items.Add(CreateShellContent("MainPage", typeof(Issue18193MainPage), nameof(Issue18193MainPage)));
 			tabBar.Items.Add(CreateShellContent("Page 2", typeof(Issue18193Page2), nameof(Issue18193Page2)));
 			tabBar.Items.Add(CreateShellContent("Page 3", typeof(Issue18193Page3), nameof(Issue18193Page3)));
 			tabBar.Items.Add(CreateShellContent("Page 4", typeof(Issue18193Page4), nameof(Issue18193Page4)));
@@ -51,10 +51,11 @@
 	{
 		public Issue18193Page2()
 		{
-			Content = new Label()
+			Content = new Button()
 			{
-				Text = "Page 2",
-				AutomationId = "Page2Label"
+				Text = "Navigate to page 5",
+				Command = new Command(async () => await Issue18193.Current.GoToAsync("//" + nameof(Issue18193Page5))),
+				AutomationId = "NavigateToPage5Button"
 			};
 		}
 	}

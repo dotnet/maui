@@ -22,7 +22,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Click("NavigateToDetailButton");
 			App.Click("NavigateBackButton");
 			App.Click("NavigateToPage2Button");
-			App.WaitForElement("Page2Label");
+			App.Click("NavigateToPage5Button");
+			App.WaitForElement("More");
+			App.Click("More");
+			VerifyScreenshot();
 		}
 	}
 }
