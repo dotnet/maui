@@ -115,13 +115,6 @@ Task("uitest")
 		ExecuteUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
 	});
 
-Task("cg-uitest")
-	.IsDependentOn("dotnet-buildtasks")
-	.Does(() =>
-	{
-		ExecuteCGLegacyUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, configuration, targetFramework, dotnetToolPath, testAppInstrumentation);
-	});
-
 Task("logcat")
 	.Does(() =>
 {
@@ -129,43 +122,6 @@ Task("logcat")
 });
 
 RunTarget(TARGET);
-
-void ExecuteCGLegacyUITests(string project, string appProject, string appPackageName, string device, string resultsDir, string config, string tfm, string toolPath, string instrumentation)
-{
-	CleanDirectories(resultsDir);
-
-	Information("Starting Compatibility Gallery UI Tests...");
-
-	var testApp = GetTestApplications(appProject, device, config, tfm, "").FirstOrDefault();
-
-	if (string.IsNullOrEmpty(appPackageName))
-	{
-		var appFile = new FilePath(testApp);
-		appFile = appFile.GetFilenameWithoutExtension();
-		appPackageName = appFile.FullPath.Replace("-Signed", "");
-	}
-
-	Information($"Testing Device: {device}");
-	Information($"Testing App Project: {appProject}");
-	Information($"Testing App: {testApp}");
-	Information($"Testing App Package Name: {appPackageName}");
-	Information($"Results Directory: {resultsDir}");
-
-	InstallApk(testApp, appPackageName, resultsDir, deviceSkin);
-
-	//set env var for the app path for Xamarin.UITest setup
-	SetEnvironmentVariable("ANDROID_APP", $"{testApp}");
-
-	var resultName = $"{System.IO.Path.GetFileNameWithoutExtension(project)}-{config}-{DateTime.UtcNow.ToFileTimeUtc()}";
-	Information("Run UITests project {0}", resultName);
-	RunTestWithLocalDotNet(
-		project,
-		config: config,
-		pathDotnet: toolPath,
-		noBuild: false,
-		resultsFileNameWithoutExtension: resultName,
-		filter: Argument("filter", ""));
-}
 
 void ExecuteBuild(string project, string device, string binDir, string config, string tfm, string toolPath)
 {
