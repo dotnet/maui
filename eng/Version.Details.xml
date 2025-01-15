@@ -71,7 +71,7 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="10.0.0-alpha.2.25062.2" CoherentParentDependency="Microsoft.NET.Sdk">
+    <Dependency Name="Microsoft.AspNetCore.Components.WebView" Version="10.0.0-alpha.2.25064.2" CoherentParentDependency="Microsoft.NET.Sdk">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>d4880ed4160b476346850ac653ce4b829ab09c94</Sha>
     </Dependency>
