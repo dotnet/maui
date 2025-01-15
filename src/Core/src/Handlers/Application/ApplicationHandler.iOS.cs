@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 		public static partial void MapActivateWindow(ApplicationHandler handler, IApplication application, object? args)
 		{
 			// ActivateSceneSession requires 17+
-			if (!OperatingSystem.IsIOSVersionAtLeast(17) && !OperatingSystem.IsMacCatalystVersionAtLeast(17))
+			if (!OperatingSystem.IsIOSVersionAtLeast(17) && !OperatingSystem.IsMacCatalyst())
 			{
 				return;
 			}
