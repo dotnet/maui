@@ -19,6 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("WaitForStubControl");
 			//On InitialLoading returnType should work.
 			App.Tap("SearchEntry");
+			Thread.Sleep(500); // Add some wait for poping up the keyboard to resolve flakiness in CI.
+
 			VerifyScreenshot();
 		}
 
