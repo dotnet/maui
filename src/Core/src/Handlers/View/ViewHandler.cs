@@ -55,16 +55,15 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.AnchorX)] = HasDefaultAnchorX,
 			[nameof(IView.AnchorY)] = HasDefaultAnchorY,
 
-			// TODO: I suspect thatHasDefaultInputTransparent uncommenting this line can lead to failure of SetOpacity test cases in HandlerTestBaseOfT.Tests.cs.
-			// [nameof(IView.Opacity)] = HasDefaultOpacity,
-
+			[nameof(IView.Opacity)] = HasDefaultOpacity,
 			[nameof(IView.TranslationX)] = HasDefaultTranslationX,
 			[nameof(IView.TranslationY)] = HasDefaultTranslationY,
 
 			[nameof(IContextFlyoutElement.ContextFlyout)] = HasDefaultContextFlyout,
 
-			// TODO: The property is disabled because it breaks tests.
+			// Input transparency must always be mapped to make views user-interactable and allow gesture recognizers to work properly
 			// [nameof(IView.InputTransparent)] = HasDefaultInputTransparent,
+			
 			[nameof(IToolbarElement.Toolbar)] = HasDefaultToolbar,
 			[nameof(IToolTipElement.ToolTip)] = HasDefaultToolTip,
 		};
@@ -80,6 +79,9 @@ namespace Microsoft.Maui.Handlers
 			new PropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
 #endif
 			{
+				// This property is a special one and needs to be set before other properties.
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
+
 				[nameof(IView.AutomationId)] = MapAutomationId,
 				[nameof(IView.Clip)] = MapClip,
 				[nameof(IView.Shadow)] = MapShadow,
@@ -105,7 +107,6 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IView.RotationY)] = MapRotationY,
 				[nameof(IView.AnchorX)] = MapAnchorX,
 				[nameof(IView.AnchorY)] = MapAnchorY,
-				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 #pragma warning disable CS0618 // Type or member is obsolete
 				[nameof(IBorder.Border)] = MapBorderView,
 #pragma warning restore CS0618 // Type or member is obsolete
