@@ -4,10 +4,38 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class SemanticExtensions
 	{
-		public static void UpdateSemantics(this UIView platformView, IView view)
+		internal static void UpdateSemantics(this UIBarItem platformView, Semantics? semantics)
 		{
-			var semantics = view.Semantics;
+			if (semantics == null)
+				return;
 
+			platformView.AccessibilityLabel = semantics.Description;
+			platformView.AccessibilityHint = semantics.Hint;
+
+			var accessibilityTraits = platformView.AccessibilityTraits;
+			var hasHeader = (accessibilityTraits & UIAccessibilityTrait.Header) == UIAccessibilityTrait.Header;
+
+			if (semantics.IsHeading)
+			{
+				if (!hasHeader)
+				{
+					platformView.AccessibilityTraits = accessibilityTraits | UIAccessibilityTrait.Header;
+				}
+			}
+			else
+			{
+				if (hasHeader)
+				{
+					platformView.AccessibilityTraits = accessibilityTraits & ~UIAccessibilityTrait.Header;
+				}
+			}
+		}
+
+		public static void UpdateSemantics(this UIView platformView, IView view) =>
+			UpdateSemantics(platformView, view?.Semantics);
+
+		internal static void UpdateSemantics(this UIView platformView, Semantics? semantics)
+		{
 			if (semantics == null)
 				return;
 
@@ -24,7 +52,7 @@ namespace Microsoft.Maui.Platform
 			platformView.AccessibilityLabel = semantics.Description;
 			platformView.AccessibilityHint = semantics.Hint;
 
-			if ((!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description)))
+			if (!string.IsNullOrWhiteSpace(semantics.Hint) || !string.IsNullOrWhiteSpace(semantics.Description))
 			{
 				// Most UIControl elements automatically have IsAccessibilityElement set to true
 				if (platformView is not UIControl)
