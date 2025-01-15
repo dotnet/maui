@@ -5,7 +5,7 @@ namespace Maui.Controls.Sample.Issues;
 		PlatformAffected.Android)]
 public partial class Issue26810 : ContentPage
 {
-	private ObservableCollection<Item> Items { get; set; } = new ObservableCollection<Item>();
+	private ObservableCollection<Issue26810ItemModel> Items { get; set; } = new ObservableCollection<Issue26810ItemModel>();
 	private Random _random = new Random();
 
 	public Issue26810()
@@ -13,7 +13,7 @@ public partial class Issue26810 : ContentPage
 		InitializeComponent();
 		for (int i = 1; i <= 10; i++)
 		{
-			Items.Add(new Item { Name = $"Preloaded Item {i}", AutomationId = $"Item{i}" });
+			Items.Add(new Issue26810ItemModel { Name = $"Preloaded Item {i}", AutomationId = $"Item{i}" });
 		}
 		CollectionView.ItemsSource = Items;
 		this.BindingContext = this;
@@ -24,7 +24,7 @@ public partial class Issue26810 : ContentPage
 		// Adding items with a small delay in LoadedEvent
 		for (int i = 10; i <= 30; i++)
 		{
-			Items.Add(new Item { Name = $" Item {i}", AutomationId = $"Item{i}" });
+			Items.Add(new Issue26810ItemModel { Name = $" Item {i}", AutomationId = $"Item{i}" });
 			await Task.Delay(500); // Simulate delay
 		}
 	}
@@ -39,9 +39,8 @@ public partial class Issue26810 : ContentPage
 	}
 }
 
-public class Item
+public class Issue26810ItemModel
 {
 	public string Name { get; set; }
 	public string AutomationId { get; set; }
 }
-
