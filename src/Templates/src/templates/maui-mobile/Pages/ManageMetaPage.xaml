@@ -72,11 +72,11 @@
 
                             <Button 
                                 ImageSource="{StaticResource IconDelete}"
-                                SemanticProperties.Hint="Tap to delete the category"
+                                SemanticProperties.Hint="Tap to delete the category"                            
+                                SemanticProperties.Description="Delete"
                                 Background="Transparent"
                                 Command="{Binding DeleteCategoryCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManageMetaPageModel}}, x:DataType=pageModels:ManageMetaPageModel}" CommandParameter="{Binding .}"
-                                Grid.Column="3"
-                                SemanticProperties.Description="Delete" />
+                                Grid.Column="3" />
                         </Grid>
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
@@ -116,6 +116,7 @@
                             <Button 
                                 ImageSource="{StaticResource IconDelete}"
                                 SemanticProperties.Hint="Tap to delete the tag"
+                                SemanticProperties.Description="Delete"
                                 Background="Transparent"
                                 Command="{Binding DeleteTagCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManageMetaPageModel}}, x:DataType=pageModels:ManageMetaPageModel}" CommandParameter="{Binding .}"
                                 Grid.Column="3"/>
