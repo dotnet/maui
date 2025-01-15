@@ -128,9 +128,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			AToolBar aToolBar = settings.ToolBar;
 			IMenuItem menuItem = settings.MenuItemsCreated.First();
 
-#pragma warning disable XAOBS001 // Type or member is obsolete
 			MenuItemImpl menuItemImpl = (MenuItemImpl)menuItem;
-#pragma warning restore XAOBS001 // Type or member is obsolete
 			Assert.IsNotNull(menuItemImpl, "menuItem is not of type MenuItemImpl");
 
 			if (menuItemImpl.TitleFormatted is SpannableString tf)
@@ -204,11 +202,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			public Color TintColor;
 			public List<IMenuItem> MenuItemsCreated;
 
-#pragma warning disable XAOBS001 // Type or member is obsolete
 			public IEnumerable<ActionMenuItemView> TextViews =>
 				ToolBar.GetChildrenOfType<ActionMenuItemView>()
 					.OrderBy(x => x.Text);
-#pragma warning restore XAOBS001 // Type or member is obsolete
 		}
 	}
 }
