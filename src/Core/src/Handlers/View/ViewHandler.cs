@@ -55,7 +55,8 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.AnchorX)] = HasDefaultAnchorX,
 			[nameof(IView.AnchorY)] = HasDefaultAnchorY,
 
-			[nameof(IView.Opacity)] = HasDefaultOpacity,
+			// TODO: I suspect that uncommenting this line can lead to failure of SetOpacity test cases in HandlerTestBaseOfT.Tests.cs.
+			// [nameof(IView.Opacity)] = HasDefaultOpacity,
 
 			[nameof(IView.TranslationX)] = HasDefaultTranslationX,
 			[nameof(IView.TranslationY)] = HasDefaultTranslationY,
