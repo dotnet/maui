@@ -9,4 +9,5 @@
     WidthRequest="60" 
     VerticalOptions="End" 
     HorizontalOptions="End"
-    Margin="30" />
+    Margin="30" 
+    SemanticProperties.Description="Add" />

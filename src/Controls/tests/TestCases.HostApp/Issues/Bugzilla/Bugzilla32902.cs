@@ -2,7 +2,7 @@ namespace Maui.Controls.Sample.Issues;
 
 
 [Issue(IssueTracker.Bugzilla, 32902, "[iOS | iPad] App Crashes (without debug log) when Flyout Detail isPresented and navigation being popped")]
-public class Bugzilla32902 : TestContentPage
+public class Bugzilla32902 : TestNavigationPage
 {
 	ContentPage FirstContentPage { get; set; }
 
@@ -10,7 +10,7 @@ public class Bugzilla32902 : TestContentPage
 
 	NavigationPage DetailPage { get; set; }
 
-	ContentPage RootPage { get; set; }
+	ContentPage NewRootPage { get; set; }
 
 	protected override void Init()
 	{
@@ -28,13 +28,13 @@ public class Bugzilla32902 : TestContentPage
 		};
 
 		rootContentPageLayout.Children.Add(rootContentPageButton);
-		Content = rootContentPageLayout;
+
 
 		Title = "RootPage";
 		BackgroundColor = Color.FromArgb("#2c3e50");
 
 		//ROOT PAGE
-		RootPage = new ContentPage()
+		NewRootPage = new ContentPage()
 		{
 			Title = "Flyout",
 			BackgroundColor = Color.FromArgb("#1abc9c")
@@ -53,7 +53,7 @@ public class Bugzilla32902 : TestContentPage
 			await Navigation.PopToRootAsync();
 		};
 		rootPageLayout.Children.Add(rootPageButton);
-		RootPage.Content = rootPageLayout;
+		NewRootPage.Content = rootPageLayout;
 
 
 		//DETAIL PAGE
@@ -75,7 +75,8 @@ public class Bugzilla32902 : TestContentPage
 		//FLYOUTPAGE PAGE
 		HomePage = new FlyoutPage()
 		{
-			Flyout = RootPage,
+			FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover,// To ensure uniform behavior across platforms, set the FlyoutBehavior to Popover.
+			Flyout = NewRootPage,
 			Detail = DetailPage
 		};
 
@@ -99,5 +100,6 @@ public class Bugzilla32902 : TestContentPage
 		};
 		firstContentPageLayout.Children.Add(firstContentPageButton);
 		FirstContentPage.Content = firstContentPageLayout;
+		Navigation.PushAsync(new ContentPage() { Content = rootContentPageLayout });
 	}
 }
