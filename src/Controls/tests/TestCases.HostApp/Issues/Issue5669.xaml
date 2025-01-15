@@ -4,21 +4,12 @@
              x:Class="Maui.Controls.Sample.Issues.Issue5669">
   <ContentPage.Content>
     <StackLayout>
-      <SearchBar x:Name="searchbar"
-          Text="Searchbar Control"
-          MaxLength="3"
-          AutomationId="SearchBar"/>
+      <SearchBar x:Name="searchbar" Text="Searchbar Control" MaxLength="3" AutomationId="SearchBar"/>
       <HorizontalStackLayout>
         <Label Text="MaxLength value is: "/>
         <Label Text="{Binding Source={x:Reference searchbar}, Path=MaxLength}"/>
       </HorizontalStackLayout>
-      <Button AutomationId="ChangeValue"
-          Text="Change Value"
-          x:Name="button"
-          Clicked="Button_Clicked"/>
-      <Button AutomationId="HideKeyboardButton"
-          Text="Hide Keyboard"
-          Clicked="HideKeyboardButton_Clicked"/>
+      <Button AutomationId="ChangeValue" Text="Change Value" x:Name="button" Clicked="Button_Clicked"/>
     </StackLayout>
   </ContentPage.Content>
 </ContentPage>

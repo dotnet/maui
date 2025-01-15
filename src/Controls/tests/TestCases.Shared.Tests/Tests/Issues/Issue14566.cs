@@ -25,12 +25,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(CheckResultButton);
 			App.Tap(SearchBar);
-#if ANDROID
+#if ANDROID // Exception thrown when entering text on disabled SearchBar in Android.
 			try
 			{
 				App.EnterText(SearchBar, "Hello");
 			}
-			catch(InvalidElementStateException)
+			catch (InvalidElementStateException)
 			{
 				Assert.Pass("SearchBar is disabled");
 			}
