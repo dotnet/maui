@@ -117,9 +117,10 @@ namespace Microsoft.Maui.Controls.Platform
 						fe.Visibility = WVisibility.Visible;
 					}
 				}
-
+				base.MeasureOverride(availableSize);
 				var request = view.Measure(availableSize.Width, availableSize.Height);
 				Clip = new RectangleGeometry { Rect = new WRect(0, 0, request.Width, request.Height) };
+				return request.ToPlatform();
 			}
 
 			return base.MeasureOverride(availableSize);
