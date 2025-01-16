@@ -251,7 +251,6 @@ public static partial class AppHostBuilderExtensions
 		SwipeView.RemapForControls();
 		Picker.RemapForControls();
 		SearchBar.RemapForControls();
-		Stepper.RemapForControls();
 		TabbedPage.RemapForControls();
 		TimePicker.RemapForControls();
 		Layout.RemapForControls();

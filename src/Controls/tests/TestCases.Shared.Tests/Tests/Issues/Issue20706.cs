@@ -1,10 +1,11 @@
-﻿using NUnit.Framework;
+﻿#if !MACCATALYST
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	public class Issue20706 : _IssuesUITest
+    public class Issue20706 : _IssuesUITest
 	{
 		public override string Issue => "Stepper doesn't change increment value when being bound to a double in MVVM context (Windows)";
 		public Issue20706(TestDevice device) : base(device)
@@ -24,3 +25,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
