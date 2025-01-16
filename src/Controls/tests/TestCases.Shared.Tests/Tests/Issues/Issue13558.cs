@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Picker values are not displaying when loaded within a ListView";
 
 		[Test]
-		[Category(UITestCategories.ListView)]
+		[Category(UITestCategories.Picker)]
 		public void PickerValuesShouldBeDisplayedInListView()
 		{
 			App.WaitForElement("ListViewId");
