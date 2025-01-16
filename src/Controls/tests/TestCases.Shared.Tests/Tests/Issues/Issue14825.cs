@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,14 +14,28 @@ public class Issue14825 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.WebView)]
-	public void ValidateWebViewScreenshot()
+	public async Task ValidateWebViewScreenshot()
 	{
 		App.WaitForElement("TestInstructions");
-
+		await Task.Delay(TimeSpan.FromSeconds(5));
 		// Click the capture button to capture a WebView screenshot.
 		App.Click("Capture");
 
 		VerifyScreenshot();
 	}
+	public override void TestSetup()
+	{
+		base.TestSetup();
+
+		try
+		{
+			App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(1));
+			Assert.Inconclusive("This device doesn't have internet access");
+		}
+		catch (TimeoutException)
+		{
+			// Element not found within timeout, assume internet is available
+			// Continue with the test
+		}
+	}
 }
-#endif
