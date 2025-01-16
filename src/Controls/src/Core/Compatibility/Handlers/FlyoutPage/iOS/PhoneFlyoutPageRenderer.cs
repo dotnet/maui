@@ -205,18 +205,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void ViewWillTransitionToSize(CoreGraphics.CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
 		{
 			base.ViewWillTransitionToSize(toSize, coordinator);
-
-			if (FlyoutOverlapsDetailsInPopoverMode)
+			if (!OperatingSystem.IsMacCatalyst())
 			{
-				if (FlyoutPageController.ShouldShowSplitMode || Presented)
-					UpdatePresented(true);
+				if (FlyoutOverlapsDetailsInPopoverMode)
+				{
+					if (FlyoutPageController.ShouldShowSplitMode)
+						UpdatePresented(true);
+					else
+						UpdatePresented(false);
+				}
 				else
-					UpdatePresented(false);
-			}
-			else
-			{
-				if (!FlyoutPageController.ShouldShowSplitMode && _presented)
-					UpdatePresented(false);
+				{
+					if (!FlyoutPageController.ShouldShowSplitMode && _presented)
+						UpdatePresented(false);
+				}
 			}
 
 			UpdateLeftBarButton();
