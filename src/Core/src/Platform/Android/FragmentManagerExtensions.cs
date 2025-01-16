@@ -27,6 +27,13 @@ namespace Microsoft.Maui.Platform
 			return fragmentTransaction.Hide(fragment);
 		}
 
+		public static bool Contains(this FragmentManager fragmentManager, Fragment fragment)
+		{
+			// We can't trust `Fragment.IsAdded` due to the async nature of the fragment transactions
+			// See: https://stackoverflow.com/questions/22485899/fragment-isadded-returns-false-on-an-already-added-fragment
+			return fragmentManager.FindFragmentById(fragment.Id) != null;
+		}
+
 		public static FragmentTransaction ShowEx(this FragmentTransaction fragmentTransaction, Fragment fragment)
 		{
 			return fragmentTransaction.Show(fragment);

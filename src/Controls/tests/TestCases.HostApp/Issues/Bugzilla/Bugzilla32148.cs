@@ -31,7 +31,9 @@ public class Bugzilla32148 : TestContentPage
 			ItemsSource = _listViewItemSource,
 			IsPullToRefreshEnabled = true,
 			IsGroupingEnabled = true,
-			GroupShortNameBinding = new Binding("Key"),
+			// While using this GroupShortNameBinding property it throws an exception on Windows
+			// for more information:https://github.com/dotnet/maui/issues/26534. For this test case we don't need this property.
+			// GroupShortNameBinding = new Binding("Key"),
 			GroupHeaderTemplate = new DataTemplate(typeof(HeaderCell)),
 			HasUnevenRows = true,
 			ItemTemplate = new DataTemplate(typeof(ContactItemTemplate))

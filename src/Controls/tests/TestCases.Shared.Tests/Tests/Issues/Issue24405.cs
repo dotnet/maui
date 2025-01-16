@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void VerifyEntryHorizontalEndTextAlignmentPosition()
 		{
 			App.WaitForElement("button");

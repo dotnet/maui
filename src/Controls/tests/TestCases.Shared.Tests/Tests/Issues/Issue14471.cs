@@ -1,5 +1,4 @@
-﻿#if !MACCATALYST // VerifyScreenshot() is not supported on MacCatalyst
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,7 +12,6 @@ public class Issue14471 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Image)]
-	[FailsOnAndroidWhenRunningOnXamarinUITest("Suddenly failing. https://github.com/dotnet/maui/issues/24243")]
 	public void ImageDoesntDisappearWhenNavigatingBack()
 	{
 		App.WaitForElement("image");
@@ -26,4 +24,3 @@ public class Issue14471 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
-#endif

@@ -11,7 +11,7 @@ public partial class AppShell : Shell
 	{
 		InitializeComponent();
 #if (IncludeSampleContent)
-		var currentTheme = Application.Current!.UserAppTheme;		
+		var currentTheme = Application.Current!.RequestedTheme;		
 		ThemeSegmentedControl.SelectedIndex = currentTheme == AppTheme.Light ? 0 : 1;
 #endif
 	}
