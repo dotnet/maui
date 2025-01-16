@@ -175,7 +175,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-
 			if (isStillTheSameUnderlyingItemsSource && _collectionViewSource != null && !forceUpdate)
 				return;
 
