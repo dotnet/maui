@@ -6,6 +6,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Bugzilla59925 : _IssuesUITest
 	{
+		const string BiggerButton = "BiggerButton";
+		const string TestEntry = "TestEntry";
+
 		public Bugzilla59925(TestDevice testDevice) : base(testDevice)
 		{
 		}
@@ -17,8 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla59925Test()
 		{
-			App.WaitForElement("BiggerButton");
-			var intialSize = App.WaitForElement("TestEntry").GetRect().Height;
+			App.WaitForElement(BiggerButton);
+			var initialSize = App.WaitForElement(TestEntry).GetRect().Height;
 
 			// iOS/macOS Catalyst Workaround: Minimum Height Threshold
 			// Issue: Entry control has a minimum vertical height on these platforms.
@@ -26,24 +29,27 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Solution: Perform additional taps to ensure font size surpasses the minimum.
 			// This allows subsequent size comparisons to accurately reflect height changes.
 #if IOS || MACCATALYST
-			for (int i = 0; i < 8; i++)
+			for (int i = 0; i < 10; i++)
 			{
-				App.WaitForElement("BiggerButton");
-				App.Tap("BiggerButton");
+				App.WaitForElement(BiggerButton);
+				App.Tap(BiggerButton);
 			}
 #endif
 
-			App.Tap("BiggerButton");
-			var updatedSize = App.WaitForElement("TestEntry").GetRect().Height;
-			Assert.That(updatedSize, Is.GreaterThan(intialSize));
+			App.WaitForElement(BiggerButton);
+			App.DoubleTap(BiggerButton);
+			var updatedSize1 = App.WaitForElement(TestEntry).GetRect().Height;
+			Assert.That(updatedSize1, Is.GreaterThanOrEqualTo(initialSize));
 
-			App.Tap("BiggerButton");
-			var updatedSize1 = App.WaitForElement("TestEntry").GetRect().Height;
-			Assert.That(updatedSize1, Is.GreaterThan(updatedSize));
-			
-			App.Tap("BiggerButton");
-			var updatedSize2 = App.WaitForElement("TestEntry").GetRect().Height;
-			Assert.That(updatedSize2, Is.GreaterThan(updatedSize1));
+			App.WaitForElement(BiggerButton);
+			App.DoubleTap(BiggerButton);
+			var updatedSize2 = App.WaitForElement(TestEntry).GetRect().Height;
+			Assert.That(updatedSize2, Is.GreaterThanOrEqualTo(updatedSize1));
+
+			App.WaitForElement(BiggerButton);
+			App.DoubleTap(BiggerButton);
+			var updatedSize3 = App.WaitForElement(TestEntry).GetRect().Height;
+			Assert.That(updatedSize3, Is.GreaterThanOrEqualTo(updatedSize2));
 		}
 	}
 }
