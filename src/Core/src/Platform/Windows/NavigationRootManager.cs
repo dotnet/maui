@@ -80,6 +80,7 @@ namespace Microsoft.Maui.Platform
 
 		internal FrameworkElement? AppTitleBar => _rootView.AppTitleBar;
 		internal MauiToolbar? Toolbar => _rootView.Toolbar;
+		internal ITitleBar? TitleBar => _rootView.TitleBar;
 		public FrameworkElement RootView => _rootView;
 
 		public virtual void Connect(UIElement? platformView)
