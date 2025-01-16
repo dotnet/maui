@@ -340,15 +340,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (controller == null)
 				throw new InvalidOperationException("No UIViewController found to present.");
 
-			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone)
+			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone || (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad && actionSheet.PopoverPresentationController == null))
 			{
 				var cancel = UIAlertAction.Create(StringResources.Cancel, UIAlertActionStyle.Cancel, null);
 				actionSheet.AddAction(cancel);
 			}
 			else
 			{
-				actionSheet.PopoverPresentationController.SourceView = _tableView;
-				actionSheet.PopoverPresentationController.SourceRect = sourceRect;
+				if (actionSheet.PopoverPresentationController != null)
+				{
+					actionSheet.PopoverPresentationController.SourceView = _tableView;
+					actionSheet.PopoverPresentationController.SourceRect = sourceRect;
+				}
 			}
 
 			controller.PresentViewController(actionSheet, true, null);
