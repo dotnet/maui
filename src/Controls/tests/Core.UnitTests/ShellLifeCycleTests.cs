@@ -544,79 +544,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task VerifyPageAppearingSequence()
 		{
-			var shell = new Issue25089();
-			var viewModel = Issue25089.SharedViewModel;
+			var shell = new TestShell();
+			Routing.RegisterRoute("ShellLifeCycleTestPage1", typeof(ShellLifeCycleTestPage1));
+			Routing.RegisterRoute("ShellLifeCycleTestPage2", typeof(ShellLifeCycleTestPage2));
 
-			await shell.GoToAsync("_25089FirstPage");
-			await shell.GoToAsync("//_25089SecondPage");
-			await shell.GoToAsync("//_25089MainPage");
-
-			Assert.Equal(1, viewModel.FirstPageAppearingCount);
-		}
-
-		public class _25089SharedViewModel
-		{
-			public int FirstPageAppearingCount { get; set; }
-		}
-
-		public class _25089MainPage : ContentPage
-		{
-		}
-
-		public class _25089FirstPage : ContentPage
-		{
-			public _25089FirstPage()
+			shell.FlyoutBehavior = FlyoutBehavior.Disabled;
+			var mainContent = new ShellContent
 			{
-				Title = "First Page";
-				Appearing += FirstPage_Appearing;
-			}
+				Title = "Home",
+				ContentTemplate = new DataTemplate(() => new ShellLifeCycleTestHomePage()),
+				Route = "ShellLifeCycleTestHomePage",
+			};
 
-			private void FirstPage_Appearing(object sender, System.EventArgs e)
+			var tab = new Tab { Title = "TestTab" };
+			tab.Items.Add(new ShellContent
 			{
-				Issue25089.SharedViewModel.FirstPageAppearingCount++;
-			}
+				Title = "Parameter",
+				Route = "ShellLifeCycleTestPage2",
+				ContentTemplate = new DataTemplate(() => new ShellLifeCycleTestPage2())
+			});
+
+			shell.Items.Add(mainContent);
+			var tabbar = new TabBar();
+			tabbar.Items.Add(tab);
+			shell.Items.Add(tabbar);
+			int firstPageAppearingCount = 1;
+			await shell.GoToAsync("ShellLifeCycleTestPage1");
+			(shell.CurrentPage as ShellLifeCycleTestPage1).Appearing += (s, e) =>
+			{
+				firstPageAppearingCount++;
+			};
+
+			await shell.GoToAsync("//ShellLifeCycleTestPage2");
+			await shell.GoToAsync("//ShellLifeCycleTestHomePage");
+			Assert.Equal(1, firstPageAppearingCount);
 		}
 
-		public class _25089SecondPage : ContentPage
-		{
-			public _25089SecondPage()
-			{
-				Title = "Second Page";
-			}
-		}
+		public class ShellLifeCycleTestHomePage : ContentPage { }
 
-		public class Issue25089 : TestShell
-		{
-			public static _25089SharedViewModel SharedViewModel { get; } = new _25089SharedViewModel();
+		public class ShellLifeCycleTestPage1 : ContentPage { }
 
-			public Issue25089()
-			{
-				Routing.RegisterRoute("_25089FirstPage", typeof(_25089FirstPage));
-				Routing.RegisterRoute("_25089SecondPage", typeof(_25089SecondPage));
-
-				FlyoutBehavior = FlyoutBehavior.Disabled;
-
-				var mainContent = new ShellContent
-				{
-					Title = "Home",
-					ContentTemplate = new DataTemplate(() => new _25089MainPage()),
-					Route = "_25089MainPage",
-				};
-
-				var tab = new Tab { Title = "TestTab" };
-				tab.Items.Add(new ShellContent
-				{
-					Title = "Parameter",
-					Route = "_25089SecondPage",
-					ContentTemplate = new DataTemplate(() => new _25089SecondPage())
-				});
-
-				Items.Add(mainContent);
-				var tabbar = new TabBar();
-				tabbar.Items.Add(tab);
-				Items.Add(tabbar);
-			}
-		}
+		public class ShellLifeCycleTestPage2 : ContentPage { }
 
 		public class LifeCyclePage : ContentPage
 		{
