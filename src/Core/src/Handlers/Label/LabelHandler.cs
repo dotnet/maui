@@ -18,8 +18,15 @@ namespace Microsoft.Maui.Handlers
 		internal static readonly IPlatformPropertyDefaults<ILabel> LabelPropertyDefaults = new PlatformPropertyDefaults<ILabel>(ViewHandler.ViewPropertyDefaults)
 		{
 			[nameof(ILabel.CharacterSpacing)] = HasDefaultCharacterSpacing,
+
+#if !IOS && !MACATALYST
+			// TODO: It is not clear if this can be enabled on iOS-like platforms.
 			[nameof(ILabel.HorizontalTextAlignment)] = HasDefaultHorizontalTextAlignment,
+
+			// Test Issue21325 fails on Mac Catalyst if this is on as a label is not placed on the top but in the center. 
 			[nameof(ILabel.VerticalTextAlignment)] = HasDefaultVerticalTextAlignment,
+#endif
+
 			[nameof(ILabel.TextDecorations)] = HasDefaultTextDecorations,
 		};
 
