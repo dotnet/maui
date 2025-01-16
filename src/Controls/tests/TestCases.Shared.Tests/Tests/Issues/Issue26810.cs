@@ -18,10 +18,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ScrollToFirstItemOnCollectionChanged()
 		{
 			// Is a Android and iOS issue; see https://github.com/dotnet/maui/issues/26810
-			App.WaitForElement("26810MainGrid");
 			App.WaitForElement("Item1");
-			App.WaitForElement("26810Button");
 			App.Click("26810Button");
+			App.WaitForElement("Item19");
+			App.Click("26810AddButton");
 			App.WaitForElement("Item1");
 
 		}
