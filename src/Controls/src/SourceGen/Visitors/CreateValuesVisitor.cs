@@ -196,7 +196,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
             && (isColor || type.IsValueType))
         { //<Color>HotPink</Color>
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
-            var valueString = valueNode.ConvertTo(type, null, Context);
+            var valueString = valueNode.ConvertTo(type, Context);
             
             Writer.WriteLine($"var {variableName} = {valueString};");
             Context.Variables[node] = new LocalVariable(type, variableName);
