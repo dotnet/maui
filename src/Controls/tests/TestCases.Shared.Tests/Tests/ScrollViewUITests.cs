@@ -5,7 +5,7 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests
 {
 	[Category(UITestCategories.ScrollView)]
-	public class ScrollToUITests : UITest
+	public class ScrollToUITests : CoreGalleryBasePageTest
 	{
 		const string LayoutGallery = "ScrollView Gallery";
 
@@ -14,9 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void FixtureSetup()
+		protected override void NavigateToGallery()
 		{
-			base.FixtureSetup();
 			App.NavigateToGallery(LayoutGallery);
 		}
 

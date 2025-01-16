@@ -2,12 +2,6 @@ parameters:
   - name: condition
     default: true
 
-  - name: skipXcode
-    default: false
-
-  - name: skipProvisioning
-    default: true
-
   - name: artifactName
     type: string
     default: nuget
@@ -36,12 +30,6 @@ steps:
 - ${{ each step in parameters.prepareSteps }}:
   - ${{ each pair in step }}:
       ${{ pair.key }}: ${{ pair.value }}
-
-- template: provision.yml
-  parameters:
-    checkoutDirectory: ${{ parameters.checkoutDirectory }}
-    skipXcode: ${{ parameters.skipXcode }}
-    skipProvisioning: ${{ parameters.skipProvisioning }}
 
 - task: DownloadBuildArtifacts@0
   displayName: 'Download Packages'
@@ -104,9 +92,4 @@ steps:
     testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
     testRunTitle: ${{ parameters.category }} templates build tests
 
-- pwsh: |
-    Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
-    if ($env:AGENT_JOBSTATUS -eq "SucceededWithIssues") {
-        Write-Host "##vso[task.complete result=Failed;]DONE"
-    }
-  displayName: Fail if any issues occurred
+- template: /eng/pipelines/common/fail-on-issue.yml

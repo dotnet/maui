@@ -3,30 +3,38 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries.MultipleBoundSelection">
     <ContentPage.Content>
-        <StackLayout Spacing="2">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
 
             <Label 
                 Text="The selected items in the CollectionView should always match the 'Selected' Label below. If it does not, this test has failed."
-                FontSize="10" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" />
+                FontSize="10" VerticalOptions="Center" HorizontalOptions="Center" />
 
-            <Label 
+            <Label Grid.Row="1"
                 Text="{Binding SelectedItemsText, StringFormat='{}Selected: {0}'}" FontAttributes="Bold"
-                FontSize="10" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" />
+                FontSize="10" VerticalOptions="Center" HorizontalOptions="Center" />
 
-            <Button 
+            <Button Grid.Row="2"
                 AutomationId="ClearAndAdd" HeightRequest="35" 
                 FontSize="10" Text="Clear VM selection and add Items 1 and 2" Clicked="ClearAndAdd" />
 
-            <Button
+            <Button Grid.Row="3"
                 AutomationId="Reset" HeightRequest="35" FontSize="10" 
                 Text="Set VM selection to new list" Clicked="ResetClicked" />
 
-            <Button
+            <Button Grid.Row="4"
                 AutomationId="DirectUpdate" HeightRequest="35"
                 FontSize="10" Text="Clear CV selection and add Items 0 and 3" Clicked="DirectUpdateClicked" />
 
-            <CollectionView 
-                x:Name="CollectionView" ItemsSource="{Binding Items}" Header="This is the header"   
+            <CollectionView Grid.Row="5"
+                x:Name="TestCollectionView" ItemsSource="{Binding Items}" Header="This is the header"   
                 SelectionMode="Multiple" SelectedItems="{Binding SelectedItems}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -40,7 +48,6 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-
-        </StackLayout>
+        </Grid>
     </ContentPage.Content>
 </ContentPage>
