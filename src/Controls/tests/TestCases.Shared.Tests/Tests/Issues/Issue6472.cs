@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS //application crash while load the listview
+﻿#if TEST_FAILS_ON_WINDOWS //application crash while load the listview, for more information: https://github.com/dotnet/maui/issues/27174
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

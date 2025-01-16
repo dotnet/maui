@@ -1,4 +1,5 @@
-﻿# if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS//The ActionSheet fails to close when the user taps outside.
+﻿# if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
+//This issue affects the DisplayActionSheet feature, where on iPads with a custom renderer, the pop-up menu fails to close when the user taps outside its boundaries.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -21,6 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.DisplayAlert)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest("Skip this test -- this is not an iPad, so this is not relevant.")]
 		public async Task Issue3049Test()
 		{
 			App.WaitForElement(Button1Id);

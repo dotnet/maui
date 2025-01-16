@@ -23,6 +23,7 @@
 				{
 					AutomationId = "FirstPage";
 					Title = "First Page";
+					BackgroundColor = Colors.Black;
 
 					var nextPageBtn = new Button
 					{
@@ -51,6 +52,7 @@
 					};
 
 					nextPage2Btn.Clicked += (s, e) => Navigation.PushAsync(new NextPage2());
+					BackgroundColor = Colors.Black;
 					Content = nextPage2Btn;
 
 				}
@@ -70,6 +72,7 @@
 					};
 
 					popToRootButton.Clicked += (s, e) => Navigation.PopToRootAsync();
+					BackgroundColor = Colors.Black;
 					Content = popToRootButton;
 				}
 			}
