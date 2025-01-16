@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -26,11 +26,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			var toggleSwitch = App.FindElement(ToggleSwitchAutomationId);
 			ClassicAssert.AreNotEqual(toggleSwitch, null);
-
+			Assert.That(toggleSwitch?.IsEnabled(), Is.False);
+			App.WaitForElement(ToggleButtonAutomationId);
 			App.Tap(ToggleButtonAutomationId);
 
 			toggleSwitch = App.FindElement(ToggleSwitchAutomationId);
 			ClassicAssert.AreNotEqual(toggleSwitch, null);
+			Assert.That(toggleSwitch?.IsEnabled(), Is.True);
 		}
 	}
 }
