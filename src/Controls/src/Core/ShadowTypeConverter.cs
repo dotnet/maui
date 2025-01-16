@@ -21,13 +21,13 @@ namespace Microsoft.Maui.Controls
 			=> sourceType == typeof(string);
 
 		/// <summary>
-		/// Checks whether the given <paramref name="destinationType" /> is a string.
+		/// Checks whether the given <paramref name="destinationType" /> is a Shadow.
 		/// </summary>
 		/// <param name="context">The context to use for conversion.</param>
 		/// <param name="destinationType">The type to convert to.</param>
 		/// <returns></returns>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-			=> destinationType == typeof(string);
+			=> destinationType == typeof(Shadow);
 
 		/// <summary>
 		/// Converts <paramref name="value" /> to a Shadow.
