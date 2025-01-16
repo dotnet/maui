@@ -33,8 +33,12 @@
       * https://github.com/dotnet/roslyn/issues/72133
     -->
     <NoWarn>$(NoWarn);CS9270</NoWarn>
-    <!-- FIXME: various test projects have trimmer warnings -->
-    <EnableTrimAnalyzer Condition=" '$(IsTestProject)' == 'true' or '$(SampleProject)' == 'true' ">false</EnableTrimAnalyzer>
+  </PropertyGroup>
+
+  <!-- FIXME: various test projects have trimmer warnings, which are enabled by default on iOS/Catalyst -->
+  <PropertyGroup Condition=" '$(IsTestProject)' == 'true' or '$(SampleProject)' == 'true' ">
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
   <!-- platform version number information -->
