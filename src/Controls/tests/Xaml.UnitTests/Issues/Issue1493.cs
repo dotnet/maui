@@ -9,17 +9,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	public class Issue1493
 	{
 		CultureInfo _defaultCulture;
-		[SetUp]
-		public virtual void Setup()
-		{
-			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
-		}
+		[SetUp] public virtual void Setup() => _defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 
-		[TearDown]
-		public virtual void TearDown()
-		{
-			System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
-		}
+		[TearDown] public virtual void TearDown() => System.Threading.Thread.CurrentThread.CurrentCulture = _defaultCulture;
 
 		[TestCase("en-US"), TestCase("tr-TR"), TestCase("fr-FR")]
 		//mostly happens in european cultures
