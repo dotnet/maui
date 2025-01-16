@@ -541,6 +541,83 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.TestCount(1);
 		}
 
+		[Fact]
+		public async Task VerifyPageAppearingSequence()
+		{
+			var shell = new Issue25089();
+			var viewModel = Issue25089.SharedViewModel;
+
+			await shell.GoToAsync("_25089FirstPage");
+			await shell.GoToAsync("//_25089SecondPage");
+			await shell.GoToAsync("//_25089MainPage");
+
+			Assert.Equal(1, viewModel.FirstPageAppearingCount);
+		}
+
+		public class _25089SharedViewModel
+		{
+			public int FirstPageAppearingCount { get; set; }
+		}
+
+		public class _25089MainPage : ContentPage
+		{
+		}
+
+		public class _25089FirstPage : ContentPage
+		{
+			public _25089FirstPage()
+			{
+				Title = "First Page";
+				Appearing += FirstPage_Appearing;
+			}
+
+			private void FirstPage_Appearing(object sender, System.EventArgs e)
+			{
+				Issue25089.SharedViewModel.FirstPageAppearingCount++;
+			}
+		}
+
+		public class _25089SecondPage : ContentPage
+		{
+			public _25089SecondPage()
+			{
+				Title = "Second Page";
+			}
+		}
+
+		public class Issue25089 : TestShell
+		{
+			public static _25089SharedViewModel SharedViewModel { get; } = new _25089SharedViewModel();
+
+			public Issue25089()
+			{
+				Routing.RegisterRoute("_25089FirstPage", typeof(_25089FirstPage));
+				Routing.RegisterRoute("_25089SecondPage", typeof(_25089SecondPage));
+
+				FlyoutBehavior = FlyoutBehavior.Disabled;
+
+				var mainContent = new ShellContent
+				{
+					Title = "Home",
+					ContentTemplate = new DataTemplate(() => new _25089MainPage()),
+					Route = "_25089MainPage",
+				};
+
+				var tab = new Tab { Title = "TestTab" };
+				tab.Items.Add(new ShellContent
+				{
+					Title = "Parameter",
+					Route = "_25089SecondPage",
+					ContentTemplate = new DataTemplate(() => new _25089SecondPage())
+				});
+
+				Items.Add(mainContent);
+				var tabbar = new TabBar();
+				tabbar.Items.Add(tab);
+				Items.Add(tabbar);
+			}
+		}
+
 		public class LifeCyclePage : ContentPage
 		{
 			public bool Appearing;
