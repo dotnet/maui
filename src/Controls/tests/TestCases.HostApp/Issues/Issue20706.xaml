@@ -8,12 +8,16 @@
   </ContentPage.BindingContext>
   <ContentPage.Content>
     <VerticalStackLayout>
-      <Stepper AutomationId="myStepper" x:Name="stepperValue"
+      <Stepper AutomationId="myStepper"
+               x:Name="stepperValue"
                Maximum="1000"
-	            Increment="{Binding Increment}" />
-      <Entry AutomationId="entry" 
-	          Text="{Binding Value,Source={x:Reference stepperValue}} "/>
-      <Button AutomationId="incrementButton" Text="Change Increment Value" x:Name="button" Clicked="button_Clicked"/>
+               Increment="{Binding Increment}"/>
+      <Entry AutomationId="entry"
+             Text="{Binding Value,Source={x:Reference stepperValue}} "/>
+      <Button AutomationId="incrementButton"
+              Text="Change Increment Value"
+              x:Name="button"
+              Clicked="button_Clicked"/>
     </VerticalStackLayout>
   </ContentPage.Content>
 </ContentPage>
