@@ -104,15 +104,36 @@ namespace Microsoft.Maui.Platform
 			return (float)Math.Ceiling(dp * s_displayDensity);
 		}
 
+		/// <summary>
+		/// Converts dp to pixels, rounding to the nearest whole pixel.
+		/// </summary>
+		/// <remarks>
+		/// This is especially useful when converting coordinates to the nearest pixel.
+		/// Do not use this method when setting sizes, as it may lead to visual truncation of the content
+		/// when rounding down.
+		/// </remarks>
+		internal static float ToPixelsRound(this Context? self, double dp)
+		{
+			EnsureMetrics(self);
+
+			return (float)Math.Round(dp * s_displayDensity, MidpointRounding.AwayFromZero);
+		}
+
 		public static (int left, int top, int right, int bottom) ToPixels(this Context context, Graphics.Rect rectangle)
 		{
-			return
-			(
-				(int)context.ToPixels(rectangle.Left),
-				(int)context.ToPixels(rectangle.Top),
-				(int)context.ToPixels(rectangle.Right),
-				(int)context.ToPixels(rectangle.Bottom)
-			);
+			// Use `ToPixels` to get enough pixels to display the whole content
+			var width = (int)context.ToPixels(rectangle.Width);
+			var height = (int)context.ToPixels(rectangle.Height);
+			// Use `ToPixelsRound` to position the content on the nearest pixel
+			var left = (int)context.ToPixelsRound(rectangle.Left);
+			var top = (int)context.ToPixelsRound(rectangle.Top);
+
+			// Compute the right and bottom edges based on platform-specific sizes
+			// Do NOT compute them based on the rectangle's right and bottom as it may lead to visual truncation
+			var right = left + width;
+			var bottom = top + height;
+
+			return (left, top, right, bottom);
 		}
 
 		public static Thickness ToPixels(this Context context, Thickness thickness)
