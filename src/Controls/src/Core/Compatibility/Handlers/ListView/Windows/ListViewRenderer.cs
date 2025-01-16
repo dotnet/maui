@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return source is INotifyCollectionChanged && source is IList;
 		}
 
-		void ReloadData(bool hasUnevenRowsChanged = false)
+		void ReloadData(bool forceUpdate = false)
 		{
 			var isStillTheSameUnderlyingItemsSource = _collection != null && object.ReferenceEquals(_collection, Element?.ItemsSource);
 
@@ -175,13 +175,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			if (hasUnevenRowsChanged)
-			{
-				// We need to reset the ItemsSource when HasUnevenRowsChanged this causes the ListView to update the view
-				isStillTheSameUnderlyingItemsSource = false;
-			}
 
-			if (isStillTheSameUnderlyingItemsSource && _collectionViewSource != null)
+			if (isStillTheSameUnderlyingItemsSource && _collectionViewSource != null && !forceUpdate)
 				return;
 
 			if (_collectionViewSource != null)
