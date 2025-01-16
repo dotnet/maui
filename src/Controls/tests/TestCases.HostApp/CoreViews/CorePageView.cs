@@ -144,17 +144,6 @@ namespace Maui.Controls.Sample
 		{
 			if (_titleToPage.TryGetValue(pageTitle.ToLowerInvariant(), out GalleryPageFactory pageFactory))
 			{
-				if(pageTitle is "WebView Gallery")
-				{
-					NetworkAccess accessType = Connectivity.Current.NetworkAccess;
-
-					if (accessType != NetworkAccess.Internet)
-					{	
-						var noInternetPage = Activator.CreateInstance(typeof(NoInternetConnectionPage)) as Page;
-						this.Window.Page = noInternetPage;
-						return Task.FromResult(true);
-					}			
-				}
 				var page = pageFactory.Realize();
 				this.Window.Page = page;
 				return Task.FromResult(true);
