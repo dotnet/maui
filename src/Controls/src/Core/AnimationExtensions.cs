@@ -47,6 +47,12 @@ namespace Microsoft.Maui.Controls
 
 		static readonly Dictionary<AnimatableKey, Info> s_animations;
 		static readonly Dictionary<AnimatableKey, int> s_kinetics;
+
+		/// <summary>
+		/// This property is used for UnitTest 
+		/// </summary>
+		static internal int TweenersCounter => s_tweeners.Count;
+
 		static int s_currentTweener = 1;
 
 		static AnimationExtensions()
@@ -67,6 +73,12 @@ namespace Microsoft.Maui.Controls
 			};
 			s_tweeners[id] = animation;
 			animation.Commit(animationManager);
+
+			animation.Finished += () =>
+			{
+				s_tweeners.TryRemove(id, out _);
+				animation.Finished = null;
+			};
 			return id;
 		}
 
@@ -81,6 +93,13 @@ namespace Microsoft.Maui.Controls
 			};
 			s_tweeners[id] = animation;
 			animation.Commit(animationManager);
+
+			animation.Finished += () =>
+			{
+				s_tweeners.TryRemove(id, out _);
+				animation.Finished = null;
+			};
+
 			return id;
 		}
 

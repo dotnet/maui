@@ -13,30 +13,28 @@ public class Issue2883 : _IssuesUITest
 
 	public override string Issue => "ViewCell IsEnabled set to false does not disable a cell in a TableView";
 
-	// [UITests.FailsOnIOSWhenRunningOnXamarinUITest]
-	// [Test]
-	// public void Issue2883TestDisabled ()
-	// {
-	// 	App.Screenshot ("I am at Issue 2883");
-	// 	App.Tap( c=> c.Marked("btnCustomCellTable"));
-	// 	App.WaitForNoElement( c=> c.Marked("Clicked"));
-	// 	App.Screenshot ("I dont see the disable cell");
-	// 	App.Tap( c=> c.Marked("btnCustomCellListView"));
-	// 	App.WaitForNoElement( c=> c.Marked("Clicked"));
-	// 	App.Screenshot ("I dont see the disable cell");
-	// }
+	[Test]
+	public void Issue2883TestDisabled()
+	{
+		App.WaitForElement("btnCustomCellTable");
+		App.Tap("btnCustomCellTable");
+		App.WaitForNoElement("Clicked");
 
-	// [UITests.FailsOnIOSWhenRunningOnXamarinUITest]
-	// [Test]
-	// public void Issue2883TestEnabled ()
-	// {
+		App.Tap("btnCustomCellListView");
+		App.WaitForNoElement("Clicked");
+	}
 
-	// 	App.Tap( c=> c.Marked("btnCustomCellTableEnabled"));
-	// 	App.Screenshot ("I see the cell that is enabled");
-	// 	App.WaitForElement( c=> c.Marked("Clicked"));
-	// 	App.Tap (c => c.Marked ("ok"));
-	// 	App.Tap( c=> c.Marked("btnCustomCellListViewEnabled"));
-	// 	App.WaitForElement( c=> c.Marked("Clicked"));
-	// 	App.Tap (c => c.Marked ("ok"));
-	// }
+
+	[Test]
+	public void Issue2883TestEnabled()
+	{
+		App.WaitForElement("btnCustomCellTableEnabled");
+		App.Tap("btnCustomCellTableEnabled");
+		App.WaitForElement("Clicked");
+		App.TapDisplayAlertButton("ok");
+		App.WaitForElement("btnCustomCellListViewEnabled");
+		App.Tap("btnCustomCellListViewEnabled");
+		App.WaitForElement("Clicked");
+		App.TapDisplayAlertButton("ok");
+	}
 }

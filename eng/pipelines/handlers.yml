@@ -19,7 +19,6 @@ trigger:
     - LICENSE.TXT
     - PATENTS.TXT
     - README.md
-    - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
 
 pr:
@@ -41,7 +40,6 @@ pr:
     - LICENSE.TXT
     - PATENTS.TXT
     - README.md
-    - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
 
 variables:
@@ -100,7 +98,7 @@ parameters:
         vmImage: $(macOSXVmImage)
         demands:
           - macOS.Name -equals Sonoma
-          - macOS.Architecture -equals x64
+          - macOS.Architecture -equals arm64
         artifact: nuget-macos
 
   - name: BuildTemplatePlatforms
@@ -197,11 +195,12 @@ stages:
                   skipAndroidImages: true
                   installDefaultAndroidApi: false
                   skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                  ${{ if parameters.UseProvisionator }}:
-                    skipProvisioning: false
+                  ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
+                    skipProvisionator: false
                     gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-                  ${{ else }}:  
-                    skipProvisioning: true
+                  ${{ else }}:
+                    skipProvisionator: true
+            
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Install .NET'
                 retryCountOnTaskFailure: 3
@@ -270,11 +269,11 @@ stages:
                       skipAndroidImages: true
                       installDefaultAndroidApi: true
                       skipXcode: ${{ ne(PackPlatform.name , 'macOS') }}
-                      ${{ if parameters.UseProvisionator }}:
-                        skipProvisioning: false
+                      ${{ if or(eq(parameters.UseProvisionator, 'True'), eq(variables['internalProvisioning'],'True') )}}:
+                        skipProvisionator: false
                         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                       ${{ else }}:  
-                        skipProvisioning: true
+                        skipProvisionator: true
                       
   - stage: samples_net
     displayName: Test .NET MAUI Samples
@@ -298,11 +297,11 @@ stages:
                 skipAndroidImages: true
                 installDefaultAndroidApi: true
                 skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                ${{ if parameters.UseProvisionator }}:
-                  skipProvisioning: false
+                ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
+                  skipProvisionator: false
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                 ${{ else }}:  
-                  skipProvisioning: true
+                  skipProvisionator: true
             - task: DownloadBuildArtifacts@0
               displayName: 'Download Packages'
               inputs:
@@ -343,14 +342,26 @@ stages:
         RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
         BuildPlatforms: ${{ parameters.BuildTemplatePlatforms }}
         MacBuildPool: ${{ parameters.MacTemplatePool }}
-        ${{ if parameters.UseProvisionator }}:
-          skipProvisioning: false
-        ${{ else }}:
-          skipProvisioning: true
         conditionMacTemplates: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
               eq(variables['System.TeamProject'], 'devdiv'))
-
+        prepareSteps:
+          - template: common/provision.yml
+            parameters:
+              checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+              provisionatorChannel: ${{ parameters.provisionatorChannel }}
+              skipAndroidSdks: true
+              skipAndroidImages: true
+              installDefaultAndroidApi: true
+              skipXcode: false
+              ${{ if or(eq(parameters.UseProvisionator, 'True'), eq(variables['internalProvisioning'],'True') )}}:
+                skipProvisionator: false
+                gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+              ${{ else }}:  
+                skipProvisionator: true
+          
+        
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
+    - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]

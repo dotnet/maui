@@ -1,6 +1,7 @@
 ﻿using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
@@ -13,6 +14,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		const string ProjectDirectory = @"/usr/code/MyProject";
 		const string LibraryProjectDirectory = ProjectDirectory + @"/ClassLibrary1";
 #endif
+
+		public GetMauiAssetsPathTests(ITestOutputHelper output)
+			: base(output)
+		{
+		}
 
 		protected GetMauiAssetPath GetNewTask(string folderName, params ITaskItem[] input) => new()
 		{

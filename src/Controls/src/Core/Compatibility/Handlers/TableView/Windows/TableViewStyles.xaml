@@ -13,11 +13,11 @@
 
 
     <DataTemplate x:Key="TableRoot">
-        <TextBlock Margin="0,20,0,0" Text="{Binding Title,Converter={StaticResource LowerConverter}}" Style="{ThemeResource TitleTextBlockStyle}" Visibility="{Binding Text,RelativeSource={RelativeSource Mode=Self},Converter={StaticResource CollapseWhenEmpty}}" />
+        <TextBlock Margin="0,20,0,0" Text="{Binding Title}" Style="{ThemeResource TitleTextBlockStyle}" Visibility="{Binding Text,RelativeSource={RelativeSource Mode=Self},Converter={StaticResource CollapseWhenEmpty}}" />
     </DataTemplate>
 
     <DataTemplate x:Key="TableSection">
-        <TextBlock Margin="0,20,0,0" Text="{Binding Title,Converter={StaticResource LowerConverter}}" Style="{ThemeResource SubtitleTextBlockStyle}" Visibility="{Binding Text,RelativeSource={RelativeSource Mode=Self},Converter={StaticResource CollapseWhenEmpty}}" Foreground="{Binding TextColor,Converter={StaticResource ColorConverter},ConverterParameter=DefaultTextForegroundThemeBrush}" />
+        <TextBlock Margin="0,20,0,0" Text="{Binding Title}" Style="{ThemeResource SubtitleTextBlockStyle}" Visibility="{Binding Text,RelativeSource={RelativeSource Mode=Self},Converter={StaticResource CollapseWhenEmpty}}" Foreground="{Binding TextColor,Converter={StaticResource ColorConverter},ConverterParameter=DefaultTextForegroundThemeBrush}" />
     </DataTemplate>
 
 </ResourceDictionary>

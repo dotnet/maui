@@ -104,23 +104,55 @@ namespace Microsoft.Maui.Controls.Platform
 					newPage.Toolbar ??= new Toolbar(newPage);
 					_ = newPage.Toolbar.ToPlatform(modalContext);
 
-					var windowManager = modalContext.GetNavigationRootManager();
-
-					if (windowManager.RootView is WindowRootView wrv)
+					// Hide titlebar on previous page
+					var previousContext = previousPage.FindMauiContext();
+					if (previousContext is not null)
 					{
-						wrv.SetTitleBarBackgroundToTransparent(false);
+						var navRoot = previousContext.GetNavigationRootManager();
+						if (navRoot.RootView is WindowRootView wrv && wrv.AppTitleBarContainer is not null)
+						{
+							wrv.SetTitleBarVisibility(UI.Xaml.Visibility.Collapsed);
+						}
 					}
 
-					var platform = newPage.ToPlatform(modalContext);
-					_waitingForIncomingPage = platform.OnLoaded(() => completedCallback?.Invoke());
-					windowManager.Connect(platform);
-					Container.AddPage(windowManager.RootView);
+					var windowManager = modalContext.GetNavigationRootManager();
+					if (windowManager is not null)
+					{
+						// Set the titlebar on the new navigation root
+						if (previousPage is not null &&
+							previousPage.GetParentWindow() is Window window &&
+							window.TitleBar is TitleBar titlebar)
+						{
+							windowManager.SetTitleBar(titlebar, modalContext);
+						}
+
+						var platform = newPage.ToPlatform(modalContext);
+						_waitingForIncomingPage = platform.OnLoaded(() => completedCallback?.Invoke());
+						windowManager.Connect(platform);
+						Container.AddPage(windowManager.RootView);
+					}
 				}
 				// popping modal
 				else
 				{
-					var windowManager = newPage.FindMauiContext()?.GetNavigationRootManager() ??
+					var context = newPage.FindMauiContext();
+					var windowManager = context?.GetNavigationRootManager() ??
 						throw new InvalidOperationException("Previous Page Has Lost its MauiContext");
+
+					// Toggle the titlebar visibility on the new page
+					var navRoot = context.GetNavigationRootManager();
+					if (navRoot.RootView is WindowRootView wrv && wrv.AppTitleBarContainer is not null)
+					{
+						wrv.SetTitleBarVisibility(UI.Xaml.Visibility.Visible);
+					}
+
+					// Restore the titlebar
+					if (previousPage is not null &&
+						previousPage.GetParentWindow() is Window window &&
+						window.TitleBar is TitleBar titlebar)
+					{
+						windowManager.SetTitleBar(titlebar, context);
+					}
 
 					var platform = newPage.ToPlatform();
 					_waitingForIncomingPage = platform.OnLoaded(() => completedCallback?.Invoke());

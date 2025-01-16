@@ -4,6 +4,7 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -64,6 +65,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				//view.MeasureInvalidated -= MeasureInvalidated;
 				view.BindingContext = null;
+				(view.Parent as ItemsView)?.RemoveLogicalChild(view);
 			}
 		}
 
@@ -107,49 +109,41 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
 		{
-			if (PlatformHandler is null)
+			var virtualView = template.CreateContent(bindingContext, itemsView) as View;
+			BindVirtualView(virtualView, bindingContext, itemsView, false);
+		}
+
+		public void Bind(View virtualView, ItemsView itemsView)
+		{
+			BindVirtualView(virtualView, itemsView.BindingContext, itemsView, true);
+		}
+
+		void BindVirtualView(View virtualView, object bindingContext, ItemsView itemsView, bool needsContainer)
+		{
+			if (PlatformHandler is null && virtualView is not null)
 			{
-				var virtualView = template.CreateContent(bindingContext, itemsView) as View;
-
 				var mauiContext = itemsView.FindMauiContext()!;
-				var nativeView = virtualView!.ToPlatform(mauiContext);
+				var nativeView = virtualView.ToPlatform(mauiContext);
 
-				PlatformView = nativeView;
+				if (needsContainer)
+				{
+					PlatformView = new GeneralWrapperView(virtualView, mauiContext);
+				}
+				else
+				{
+					PlatformView = nativeView;
+				}
 
 				PlatformHandler = virtualView.Handler as IPlatformViewHandler;
-
-				InitializeContentConstraints(nativeView);
+				InitializeContentConstraints(PlatformView);
 
 				virtualView.BindingContext = bindingContext;
+				itemsView.AddLogicalChild(virtualView);
 			}
 
 			if (PlatformHandler?.VirtualView is View view)
 			{
 				view.SetValueFromRenderer(BindableObject.BindingContextProperty, bindingContext);
-			}
-		}
-
-		public void Bind(View virtualView, ItemsView itemsView)
-		{
-			if (PlatformHandler is null && virtualView is not null)
-			{
-				var mauiContext = itemsView.FindMauiContext()!;
-				var nativeView = virtualView!.ToPlatform(mauiContext);
-
-				var mauiWrapperView = new UIContainerView2(virtualView, mauiContext);
-
-				PlatformView = mauiWrapperView;
-
-				PlatformHandler = virtualView.Handler as IPlatformViewHandler;
-
-				InitializeContentConstraints(mauiWrapperView);
-
-				virtualView.BindingContext = itemsView.BindingContext;
-			}
-
-			if (PlatformHandler?.VirtualView is View view)
-			{
-				view.SetValueFromRenderer(BindableObject.BindingContextProperty, itemsView.BindingContext);
 			}
 		}
 
@@ -263,44 +257,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				SelectedBackgroundView.BackgroundColor = UIColor.Clear;
 			}
-		}
-	}
-
-	class UIContainerView2 : UIView
-	{
-		readonly IView _view;
-		readonly IMauiContext _mauiContext;
-
-		public UIContainerView2(IView view, IMauiContext mauiContext)
-		{
-			_view = view;
-			_mauiContext = mauiContext;
-			UpdatePlatformView();
-			ClipsToBounds = true;
-		}
-
-		internal void UpdatePlatformView()
-		{
-			var handler = _view.ToHandler(_mauiContext);
-			var nativeView = _view.ToPlatform();
-
-			if (nativeView.Superview == this)
-			{
-				nativeView.RemoveFromSuperview();
-			}
-
-			AddSubview(nativeView);
-		}
-
-		public override void LayoutSubviews()
-		{
-			_view?.Arrange(new Rect(0, 0, Frame.Width, Frame.Height));
-			base.LayoutSubviews();
-		}
-
-		public override CGSize SizeThatFits(CGSize size)
-		{
-			return _view.Measure(size.Width, size.Height).ToCGSize();
 		}
 	}
 }

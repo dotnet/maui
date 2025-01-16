@@ -25,7 +25,7 @@ namespace UITest.Appium
 			ClickCoordinatesCommand,
 			DoubleClickCommand,
 			DoubleClickCoordinatesCommand,
-			LongPressCommand,
+			LongPressCommand
 		};
 
 		public AppiumMouseActions(AppiumApp appiumApp)
@@ -192,7 +192,7 @@ namespace UITest.Appium
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
 			var longPress = new ActionSequence(touchDevice, 0);
 
-			longPress.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(0)));
+			longPress.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
 			longPress.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
 			longPress.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(2000)));
 			longPress.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));

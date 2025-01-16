@@ -7,6 +7,7 @@ parameters:
   version: '' #the iOS version'
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
+  skipProvisioning: true
   configuration : "Release"
   testFilter: ''
   runtimeVariant: 'Mono'
@@ -22,11 +23,15 @@ steps:
 
   - template: provision.yml
     parameters:
-      skipProvisioning: true
       # FIXME: 'Build the MSBuild Tasks' step fails for net9.0-android35 without API 35
       skipAndroidSdks: false
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      ${{ if parameters.skipProvisioning }}:
+        skipProvisionator: true
+      ${{ else }}:  
+        skipProvisionator: false
+        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
       
   - task: PowerShell@2
     condition: ne('${{ parameters.platform }}' , 'windows')
@@ -49,7 +54,9 @@ steps:
   - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: 'Add .NET to PATH'
 
-  - pwsh: ./build.ps1 --target=uitests-apphost --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant="${{ parameters.runtimeVariant }}"
+  - pwsh: |
+      Get-Content $PSCommandPath
+      ./build.ps1 --target=uitests-apphost --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false --runtimevariant="${{ parameters.runtimeVariant }}"
     displayName: 'Build the samples'
 
   - bash: |

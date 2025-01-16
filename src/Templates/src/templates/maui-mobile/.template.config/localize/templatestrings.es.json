@@ -3,12 +3,12 @@
   "name": "Aplicación .NET MAUI",
   "description": "Un proyecto para crear una aplicación .NET MAUI para iOS, Android, Mac Catalyst, Tizen y WinUI",
   "postActions/openInEditor/description": "Abre MainPage.xaml en el editor.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
+  "postActions/restore/description": "Restaure los paquetes NuGet necesarios para este proyecto.",
+  "postActions/restore/manualInstructions/default/text": "Ejecutar \"dotnet restore\"",
   "symbols/applicationId/description": "Reemplaza $(ApplicationId) en el proyecto",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
-  "symbols/IncludeSampleContent/displayName": "_Include sample content",
-  "symbols/IncludeSampleContent/description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns.",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create."
+  "symbols/Framework/description": "Marco de destino del proyecto.",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Objetivo DOTNET_TFM_VALUE",
+  "symbols/IncludeSampleContent/displayName": "_Incluir contenido de ejemplo",
+  "symbols/IncludeSampleContent/description": "Configura si se van a agregar páginas de ejemplo y funcionalidades para mostrar patrones de uso básicos.",
+  "symbols/skipRestore/description": "Si se especifica, se omite la restauración automática del proyecto durante la creación."
 }

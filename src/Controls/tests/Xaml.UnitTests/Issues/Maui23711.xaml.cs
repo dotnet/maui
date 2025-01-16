@@ -47,7 +47,8 @@ public partial class Maui23711 : ContentPage
 		[Test]
 		public void UsesReflectionBasedBindingsWhenCompilationOfBindingsWithSourceIsDisabled([Values(false, true)] bool compileBindingsWithSource)
 		{
-			MockCompiler.Compile(typeof(Maui23711), out MethodDefinition methodDefinition, compileBindingsWithSource: compileBindingsWithSource);
+			MockCompiler.Compile(typeof(Maui23711), out MethodDefinition methodDefinition, out bool hasLoggedErrors, compileBindingsWithSource: compileBindingsWithSource);
+			Assert.That(!hasLoggedErrors);
 			Assert.AreEqual(compileBindingsWithSource, ContainsTypedBindingInstantiation(methodDefinition));
 		}
 

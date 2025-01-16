@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,15 +12,12 @@ public class Issue3139 : _IssuesUITest
 
 	public override string Issue => "DisplayActionSheet is hiding behind Dialogs";
 
-	// [Test]
-	// [Category(UITestCategories.ActionSheet)]
-	// public void Issue3139Test ()
-	// {
-	// 	App.WaitForElement (q => q.Marked ("Click Yes"));
-	// 	App.Tap (c => c.Marked ("Yes"));
-	// 	App.WaitForElement (q => q.Marked ("Again Yes"));
-	// 	App.Tap (c => c.Marked ("Yes"));
-	// 	App.WaitForElement(q => q.Marked("Test passed"));
-	// }
+	[Test]
+	[Category(UITestCategories.ActionSheet)]
+	public void Issue3139Test()
+	{
+		App.TapDisplayAlertButton("Yes", buttonIndex: 2);
+		App.TapDisplayAlertButton("Yes", buttonIndex: 2);
+		Assert.That(App.WaitForElementTillPageNavigationSettled("StatusLabel")?.GetText(), Is.EqualTo("Test passed"));
+	}
 }
-#endif

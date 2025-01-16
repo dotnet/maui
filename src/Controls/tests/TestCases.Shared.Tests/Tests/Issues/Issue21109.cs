@@ -12,15 +12,27 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] MAUI 8.0.3 -> 8.0.6 regression: custom handler with key listener no longer works";
 
-		[Test]
+		[Test,Order(1)]
 		[Category(UITestCategories.Entry)]
-		public void EntryReturnTypeWorks()
+		public void VerifyInitialEntryReturnTypeChange()
+		{
+			App.WaitForElement("WaitForStubControl");
+			//On InitialLoading returnType should work.
+			App.Tap("SearchEntry");
+			Thread.Sleep(500); // Add some wait for poping up the keyboard to resolve flakiness in CI.
+
+			VerifyScreenshot();
+		}
+
+		[Test,Order(2)]
+		[Category(UITestCategories.Entry)]
+		public void VerifyDynamicEntryReturnTypeChange()
 		{
 			App.WaitForElement("WaitForStubControl");
 
 			// Verify that ReturnType works as expected.
 			if (App.IsKeyboardShown())
-				App.DismissKeyboard();
+			 	App.DismissKeyboard();
 
 			var returnType1 = App.FindElement("ReturnTypeResult").GetText();
 			App.Tap("ReturnTypeEntry");

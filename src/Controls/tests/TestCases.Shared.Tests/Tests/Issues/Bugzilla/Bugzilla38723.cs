@@ -15,11 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Picker)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void Bugzilla38723Test()
 		{
+			App.WaitForElement("SELECT");
 			App.Tap("SELECT");
-			App.WaitForNoElement("Selected");
+			App.WaitForElement("Selected");
 			App.WaitForNoElement("SELECT");
 		}
 	}

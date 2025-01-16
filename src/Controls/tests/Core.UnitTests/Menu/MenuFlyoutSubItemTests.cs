@@ -12,21 +12,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 		MenuTestBase<MenuFlyoutSubItem, IMenuElement, MenuFlyoutItem, MenuFlyoutSubItemHandlerUpdate>
 	{
 		[Fact]
-		public void StartsEnabled()
-		{
-			MenuBarItem menuBarItem = new MenuBarItem();
-			Assert.True(menuBarItem.IsEnabled);
-		}
-
-		[Fact]
-		public void DisableWorks()
-		{
-			MenuBarItem menuBarItem = new MenuBarItem();
-			menuBarItem.IsEnabled = false;
-			Assert.False(menuBarItem.IsEnabled);
-		}
-
-		[Fact]
 		public void CommandPropertyChangesEnabled()
 		{
 			MenuFlyoutItem menuBarItem = new MenuFlyoutItem();

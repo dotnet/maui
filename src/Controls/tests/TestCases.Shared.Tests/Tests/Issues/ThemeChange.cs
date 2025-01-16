@@ -1,4 +1,4 @@
-#if ANDROID || IOS
+#if ANDROID || IOS // Using AppThemeBinding and changing theme not working on Windows
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

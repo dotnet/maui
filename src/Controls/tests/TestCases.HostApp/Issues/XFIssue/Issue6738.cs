@@ -58,7 +58,7 @@ public class Issue6738 : TestShell
 		var returnButton = new Button { Text = "Go back to tab 1", AutomationId = returnAutomationId };
 
 		returnButton.Clicked += OnReturnTapped;
-		stackLayout.AddLogicalChild(returnButton);
+		stackLayout.Children.Add(returnButton);
 
 		var tabTwoPage = new ContentPage { Content = stackLayout };
 		tabOne.Items.Add(tabOnePage);

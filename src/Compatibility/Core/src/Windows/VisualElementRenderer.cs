@@ -106,8 +106,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		public virtual SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 			if (Children.Count == 0 || Control == null)
 				return new SizeRequest();
+#pragma warning restore RS0030 // Do not use banned APIs
 
 			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			TNativeElement child = Control;
@@ -229,7 +231,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			{
 				// in the event that a custom renderer has added native controls,
 				// we need to be sure to arrange them so that they are arranged.
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 				var nativeChildren = Children;
+#pragma warning restore RS0030 // Do not use banned APIs
+
 				for (int i = 0; i < nativeChildren.Count; i++)
 				{
 					var nativeChild = nativeChildren[i];
@@ -404,7 +409,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (oldControl != null)
 			{
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 				Children.Remove(oldControl);
+#pragma warning restore RS0030 // Do not use banned APIs
 
 				oldControl.Loaded -= OnControlLoaded;
 				oldControl.GotFocus -= OnControlGotFocus;
@@ -432,7 +439,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			control.GotFocus += OnControlGotFocus;
 			control.LostFocus += OnControlLostFocus;
+
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 			Children.Add(control);
+#pragma warning restore RS0030 // Do not use banned APIs
 
 			UpdateBackgroundColor();
 			UpdateBackground();
@@ -669,7 +679,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			// Panel will be our Background color
 
 			_backgroundLayer = new Canvas { IsHitTestVisible = false };
+
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 			Children.Insert(0, _backgroundLayer);
+#pragma warning restore RS0030 // Do not use banned APIs
 
 			UpdateBackgroundColor();
 			UpdateBackground();
@@ -682,7 +695,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				return;
 			}
 
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 			Children.Remove(_backgroundLayer);
+#pragma warning restore RS0030 // Do not use banned APIs
+
 			_backgroundLayer = null;
 
 			UpdateBackgroundColor();

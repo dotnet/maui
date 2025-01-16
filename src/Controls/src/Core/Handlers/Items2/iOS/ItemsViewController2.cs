@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
 		List<string> _cellReuseIds = new List<string>();
+		CGSize _previousContentSize;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
@@ -190,6 +191,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			base.ViewWillLayoutSubviews();
 			LayoutEmptyView();
+			InvalidateMeasureIfContentSizeChanged();
 		}
 
 		void Items.MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
@@ -210,83 +212,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			ItemsSource = new Items.EmptySource();
 			CollectionView.ReloadData();
 		}
-
-		// void InvalidateMeasureIfContentSizeChanged()
-		// {
-		// 	var contentSize = CollectionView?.CollectionViewLayout?.CollectionViewContentSize;
-		//
-		// 	if (!contentSize.HasValue)
-		// 	{
-		// 		return;
-		// 	}
-		//
-		// 	bool widthChanged = _previousContentSize.Width != contentSize.Value.Width;
-		// 	bool heightChanged = _previousContentSize.Height != contentSize.Value.Height;
-		//
-		// 	if (_initialized && (widthChanged || heightChanged))
-		// 	{
-		// 		var screenFrame = CollectionView?.Window?.Frame;
-		//
-		// 		if (!screenFrame.HasValue)
-		// 		{
-		// 			return;
-		// 		}
-		//
-		// 		var screenWidth = screenFrame.Value.Width;
-		// 		var screenHeight = screenFrame.Value.Height;
-		// 		bool invalidate = false;
-		//
-		// 		// If both the previous content size and the current content size are larger
-		// 		// than the screen size, then we know that we're already maxed out and the 
-		// 		// CollectionView items are scrollable. There's no reason to force an invalidation
-		// 		// of the CollectionView to expand/contract it.
-		//
-		// 		// If either size is smaller than that, we need to invalidate to ensure that the 
-		// 		// CollectionView is re-measured and set to the correct size.
-		//
-		// 		if (widthChanged && (contentSize.Value.Width < screenWidth || _previousContentSize.Width < screenWidth))
-		// 		{
-		// 			invalidate = true;
-		// 		}
-		//
-		// 		if (heightChanged && (contentSize.Value.Height < screenHeight || _previousContentSize.Height < screenHeight))
-		// 		{
-		// 			invalidate = true;
-		// 		}
-		//
-		// 		if (invalidate)
-		// 		{
-		// 			(ItemsView as IView)?.InvalidateMeasure();
-		// 		}
-		// 	}
-		// 	_previousContentSize = contentSize.Value;
-		// }
-
-		const int HeaderTag = 111;
-
-		// internal Size? GetSize()
-		// {
-		// 	if (_emptyViewDisplayed)
-		// 	{
-		// 		return _emptyUIView.Frame.Size.ToSize();
-		// 	}
-
-		// 	nfloat headerHeight = 0;
-		// 	var headerView = CollectionView.ViewWithTag(HeaderTag);
-
-		// 	if (headerView != null)
-		// 		headerHeight = headerView.Frame.Height;
-
-		// 	var sizeColl = CollectionView.CollectionViewLayout.CollectionViewContentSize;
-		// 	return sizeColl.ToSize();
-		// }
-
-		// void ConstrainItemsToBounds()
-		// {
-		// 	var contentBounds = CollectionView.AdjustedContentInset.InsetRect(CollectionView.Bounds);
-		// 	var constrainedSize = contentBounds.Size;
-		// 	ItemsViewLayout.UpdateConstraints(constrainedSize);
-		// }
 
 		void EnsureLayoutInitialized()
 		{
@@ -340,6 +265,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override nint NumberOfSections(UICollectionView collectionView)
 		{
+			// https://github.com/dotnet/maui/issues/26997
+			// On iOS versions 15 and 16, this method is called immediately after the base LoadView method is invoked.
+			// At this point, ItemsSource was not set, which caused a crash when accessed.
+			// To handle this scenario, we check if ItemsSource is null before proceeding.
+			// In iOS 17 and later versions, this behavior works properly, as the method is no longer called prematurely.
+			// To ensure compatibility with older iOS versions, we include this null check and return 0 if ItemsSource is null.
+			if (ItemsSource == null)
+			{
+				return 0;
+			}
+
 			CheckForEmptySource();
 			return ItemsSource.GroupCount;
 		}
@@ -370,7 +306,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (!_cellReuseIds.Contains(reuseId))
 				{
-					Console.WriteLine($"REGISTER CELL ID: {reuseId}");
 					CollectionView.RegisterClassForCell(cellType, new NSString(reuseId));
 					_cellReuseIds.Add(reuseId);
 				}
@@ -397,6 +332,63 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				CollectionView.Frame.Width, CollectionView.Frame.Height);
 		}
 
+		void InvalidateMeasureIfContentSizeChanged()
+		{
+			if (CollectionView?.CollectionViewLayout?.CollectionViewContentSize is not { } contentSize)
+			{
+				return;
+			}
+
+			var previousContentSize = _previousContentSize;
+			_previousContentSize = contentSize;
+
+			bool widthChanged = previousContentSize.Width != contentSize.Width;
+			bool heightChanged = previousContentSize.Height != contentSize.Height;
+
+			if (_initialized && (widthChanged || heightChanged))
+			{
+				if (CollectionView?.Bounds is not { } bounds)
+				{
+					return;
+				}
+
+				var cvWidth = bounds.Width;
+				var cvHeight = bounds.Height;
+				bool invalidate = false;
+
+				// If both the previous content size and the current content size are larger
+				// than the UICollectionView size, then we know that we're already maxed out and the 
+				// CollectionView items are scrollable. There's no reason to force an invalidation
+				// of the CollectionView to expand/contract it.
+
+				// If either size is smaller than that, we need to invalidate to ensure that the 
+				// CollectionView is re-measured and set to the correct size.
+
+				if (widthChanged && (contentSize.Width <= cvWidth || previousContentSize.Width <= cvWidth))
+				{
+					invalidate = true;
+				}
+				else if (heightChanged && (contentSize.Height <= cvHeight || previousContentSize.Height <= cvHeight))
+				{
+					invalidate = true;
+				}
+
+				if (invalidate)
+				{
+					(ItemsView as IView)?.InvalidateMeasure();
+				}
+			}
+		}
+
+		internal Size GetSize()
+		{
+			if (_emptyViewDisplayed)
+			{
+				return _emptyUIView.Frame.Size.ToSize();
+			}
+
+			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
+		}
 
 		internal void UpdateView(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
 		{
@@ -408,9 +400,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					//Platform.GetRenderer(formsElement)?.DisposeRendererAndChildren();
 				}
 
-				uiView?.Dispose();
 				uiView = null;
-
+				formsElement?.Handler?.DisconnectHandler();
 				formsElement = null;
 			}
 			else
