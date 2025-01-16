@@ -476,7 +476,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// SpacingItemDecoration applies spacing to all items & all 4 sides of the items.
 				// We need to adjust the padding on the RecyclerView so this spacing isn't visible around the outer edge of our control.
 				// Horizontal & vertical spacing should only exist between items. 
-
 				if (ItemsLayout is GridItemsLayout gridItemsLayout)
 				{
 					if(gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
