@@ -4,7 +4,6 @@ using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Appium.Mac;
 using OpenQA.Selenium.Interactions;
-using OpenQA.Selenium.Support.UI;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -16,6 +15,8 @@ namespace UITest.Appium
 		const string DoubleClickCommand = "doubleClick";
 		const string DoubleClickCoordinatesCommand = "doubleClickCoordinates";
 		const string LongPressCommand = "longPress";
+		const string MovePointerToCommand = "movePointerTo";
+		const string MovePointerToCoordinatesCommand = "movePointerToCoordinates";
 
 		readonly AppiumApp _appiumApp;
 
@@ -25,7 +26,9 @@ namespace UITest.Appium
 			ClickCoordinatesCommand,
 			DoubleClickCommand,
 			DoubleClickCoordinatesCommand,
-			LongPressCommand
+			LongPressCommand,
+			MovePointerToCommand,
+			MovePointerToCoordinatesCommand
 		};
 
 		public AppiumMouseActions(AppiumApp appiumApp)
@@ -47,6 +50,8 @@ namespace UITest.Appium
 				DoubleClickCommand => DoubleClick(parameters),
 				DoubleClickCoordinatesCommand => DoubleClickCoordinates(parameters),
 				LongPressCommand => LongPress(parameters),
+				MovePointerToCommand => MovePointerTo(parameters),
+				MovePointerToCoordinatesCommand => MovePointerToCoordinates(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -201,15 +206,39 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
-		CommandResponse TapCoordinates(IDictionary<string, object> parameters)
+		CommandResponse MovePointerTo(IDictionary<string, object> parameters)
+		{
+			var element = GetAppiumElement(parameters["element"]);
+
+			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
+			var movePointer = new ActionSequence(touchDevice, 0);
+
+			movePointer.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(100)));
+			_appiumApp.Driver.PerformActions([movePointer]);
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		CommandResponse MovePointerToCoordinates(IDictionary<string, object> parameters)
 		{
 			if (parameters.TryGetValue("x", out var x) &&
 				parameters.TryGetValue("y", out var y))
 			{
-				return ClickCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
+				return MovePointerToCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
 			}
 
 			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse MovePointerToCoordinates(float x, float y)
+		{
+			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
+			var movePointer = new ActionSequence(touchDevice, 0);
+
+			movePointer.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(100)));
+			_appiumApp.Driver.PerformActions([movePointer]);
+
+			return CommandResponse.SuccessEmptyResponse;
 		}
 
 		static AppiumElement? GetAppiumElement(object element)

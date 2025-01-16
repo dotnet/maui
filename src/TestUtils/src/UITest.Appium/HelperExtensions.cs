@@ -58,6 +58,34 @@ namespace UITest.Appium
 			app.FindElement(query).Click();
 		}
 
+		/// <summary>
+		/// Moves the pointer to the specified element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
+		public static void MovePointerTo(this IApp app, string element)
+		{
+			var uiElement = FindElement(app, element);
+			uiElement.Command.Execute("movePointerTo", new Dictionary<string, object>()
+			{
+				{ "element", uiElement },
+			});
+		}
+
+		/// <summary>
+		/// Moves the pointer to the element specified by the query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query"></param>
+		public static void MovePointerTo(this IApp app, IQuery query)
+		{
+			var uiElement = app.FindElement(query);
+			uiElement.Command.Execute("movePointerTo", new Dictionary<string, object>()
+			{
+				{ "element", uiElement },
+			});
+		}
+
 		public static void RightClick(this IApp app, string element)
 		{
 			var uiElement = FindElement(app, element);
@@ -1307,6 +1335,21 @@ namespace UITest.Appium
 		public static void TapCoordinates(this IApp app, float x, float y)
 		{
 			app.CommandExecutor.Execute("tapCoordinates", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y }
+			});
+		}
+
+		/// <summary>
+		/// Moves the pointer to the specified coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x-coordinate to which the pointer should be moved.</param> 
+		/// <param name="y">The y-coordinate to which the pointer should be moved.</param>
+		public static void MovePointerToCoordinates(this IApp app, float x, float y)
+		{
+			app.CommandExecutor.Execute("movePointerToCoordinates", new Dictionary<string, object>
 			{
 				{ "x", x },
 				{ "y", y }
