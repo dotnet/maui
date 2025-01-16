@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue26810">
-    <Grid RowDefinitions="100,*"
+    <Grid RowDefinitions="100,100,*"
           AutomationId="26810MainGrid">
         <Button Text="Scroll to Random Item"
                 AutomationId="26810Button"
@@ -11,10 +11,16 @@
                 Clicked="ScrollToButton_Clicked"
                 HorizontalOptions="Center"
                 VerticalOptions="Center"/>
+        <Button Text="Add New Item"
+                AutomationId="26810AddButton"
+                x:Name="AddButton"
+                Grid.Row="1"
+                Clicked="AddButton_Clicked"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"/>
         <CollectionView x:Name="CollectionView"
                         AutomationId="26810CollectionView"
-                        Grid.Row="1"
-                        Loaded="CollectionView_Loaded">
+                        Grid.Row="2">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid HeightRequest="50">
