@@ -69,11 +69,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.GetItemOffsets(outRect, view, parent, state);
 			int position = parent.GetChildAdapterPosition(view);
 			int itemCount = state.ItemCount;
-
-			int row = position / _span;
-			int column = position % _span;
-			int totalRows = (int)Math.Ceiling((double)itemCount / _span);
-
 			outRect.Left = HorizontalOffset;
 			outRect.Right = HorizontalOffset;
 			outRect.Bottom = VerticalOffset;
@@ -84,6 +79,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
 				{
+					int row = position / _span;
+					int totalRows = (int)Math.Ceiling((double)itemCount / _span);
+
 					if (row == 0)
 					{
 						outRect.Top = 0;
@@ -95,11 +93,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 				else
 				{
-					if (column == 0)
+					int column = position / _span;
+					int totalColumns = (int)Math.Ceiling((double)itemCount / _span);
+
+					if (position < _span)
 					{
 						outRect.Left = 0;
 					}
-					else if (column == _span - 1)
+					else if (column == totalColumns - 1)
 					{
 						outRect.Right = 0;
 					}
