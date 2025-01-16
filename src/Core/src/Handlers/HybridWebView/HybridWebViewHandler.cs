@@ -30,7 +30,6 @@ using Microsoft.Maui.Hosting;
 using System.Collections.Specialized;
 using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
-using System.Security.AccessControl;
 
 namespace Microsoft.Maui.Handlers
 {
