@@ -68,11 +68,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(0, appearingCounter);
 		}
 
-
 		[Fact]
 		public void AppearingOnCreateFromTemplate()
 		{
-			Shell shell = new TestShell();
+			var shell = new TestShell()
+			{
+				CreateTemplatedContentWhenNavigatedTo = false
+			};
 
 			FlyoutItem flyoutItem = new FlyoutItem();
 			Tab tab = new Tab();
@@ -130,8 +132,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			page.ParentSet += (_, __) => parentSet = true;
 			shell.Items.Add(CreateShellItem(page, templated: templated));
-
-			var createdContent = (shell.Items[0].Items[0].Items[0] as IShellContentController).GetOrCreateContent();
 
 			Assert.True(pageAppearing);
 		}
@@ -197,7 +197,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task NavigatedFiresAfterContentIsCreatedWhenUsingTemplate()
 		{
-			Shell shell = new TestShell();
+			var shell = new TestShell()
+			{
+				CreateTemplatedContentWhenNavigatedTo = false
+			};
 
 			FlyoutItem flyoutItem = new FlyoutItem();
 			Tab tab = new Tab();
@@ -246,7 +249,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var item = CreateShellItem(shellContentRoute: ContentRoute, shellSectionRoute: SectionRoute, shellItemRoute: ItemRoute);
 			var section = item.SearchForRoute<ShellSection>(SectionRoute);
 
-			var content = new ShellContent();
+			var content = new ShellContent(){ Content = new ContentPage()};
 			section.Items.Insert(0, content);
 			section.CurrentItem = content;
 			shell.Items.Add(item);
@@ -546,13 +549,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var shell = new TestShell();
 			Routing.RegisterRoute("ShellLifeCycleTestPage1", typeof(ShellLifeCycleTestPage1));
-			Routing.RegisterRoute("ShellLifeCycleTestPage2", typeof(ShellLifeCycleTestPage2));
 
+			int appearingCountHomePage = 0;
 			shell.FlyoutBehavior = FlyoutBehavior.Disabled;
 			var mainContent = new ShellContent
 			{
 				Title = "Home",
-				ContentTemplate = new DataTemplate(() => new ShellLifeCycleTestHomePage()),
+				ContentTemplate = new DataTemplate(() => 
+				{
+					var homePage =  new ShellLifeCycleTestHomePage();
+					homePage.Appearing += (s, e) => 
+					{
+						appearingCountHomePage++;
+					};
+					return homePage;
+				}),
 				Route = "ShellLifeCycleTestHomePage",
 			};
 
@@ -578,11 +589,75 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("//ShellLifeCycleTestPage2");
 			await shell.GoToAsync("//ShellLifeCycleTestHomePage");
 			Assert.Equal(1, firstPageAppearingCount);
+			Assert.Equal(2, appearingCountHomePage);
+		}
+
+
+
+		[Fact]
+		public async Task VerifyPageAppearingSequence2() // Temporary Name
+		{
+			var shell = new TestShell();
+			Routing.RegisterRoute("ShellLifeCycleTestPage1", typeof(ShellLifeCycleTestPage1));
+
+			int appearingCountHomePage = 0;
+			shell.FlyoutBehavior = FlyoutBehavior.Disabled;
+			var mainContent = new ShellContent
+			{
+				Title = "Home",
+				ContentTemplate = new DataTemplate(() => 
+				{
+					var homePage =  new ShellLifeCycleTestHomePage();
+					homePage.Appearing += (s, e) => 
+					{
+						appearingCountHomePage++;
+					};
+					return homePage;
+				}),
+				Route = "ShellLifeCycleTestHomePage",
+			};
+
+			var tab = new Tab { Title = "TestTab" };
+			tab.Items.Add(new ShellContent
+			{
+				Title = "Parameter",
+				Route = "ShellLifeCycleTestPage2",
+				ContentTemplate = new DataTemplate(() => new ShellLifeCycleTestPage2())
+			});
+
+			shell.Items.Add(mainContent);
+			var tabbar = new TabBar();
+			tabbar.Items.Add(tab);
+			shell.Items.Add(tabbar);
+			int firstPageAppearingCount = 1;
+
+			// Push page onto ShellLifeCycleTestHomePage
+			await shell.GoToAsync("ShellLifeCycleTestPage1");
+			(shell.CurrentPage as ShellLifeCycleTestPage1).Appearing += (s, e) =>
+			{
+				firstPageAppearingCount++;
+			};
+
+
+			// Switch to tab 2
+			await shell.GoToAsync("//ShellLifeCycleTestPage2");
+
+			// Switch back to tab 1 but maintain stack
+			shell.CurrentItem = mainContent;
+
+			// This should fire when returning to tab 1 because it's still visible
+			Assert.Equal(2, firstPageAppearingCount);
+			Assert.Equal(1, appearingCountHomePage);
 		}
 
 		public class ShellLifeCycleTestHomePage : ContentPage { }
 
-		public class ShellLifeCycleTestPage1 : ContentPage { }
+		public class ShellLifeCycleTestPage1 : ContentPage 
+		{ 
+			public ShellLifeCycleTestPage1()
+			{
+			}
+		}
 
 		public class ShellLifeCycleTestPage2 : ContentPage { }
 
