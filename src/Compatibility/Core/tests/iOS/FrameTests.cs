@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		public async Task ReusingFrameRendererDoesCauseOverlapWithPreviousContent()
 		{
 			ContentPage page = new ContentPage();
+#pragma warning disable CS0618 // Type or member is obsolete
 			Frame frame1 = new Frame()
+#pragma warning restore CS0618 // Type or member is obsolete
 			{
 				Content = new Label()
 				{
@@ -35,8 +37,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				using (var renderer = GetRenderer(frame1))
 				{
 					var frameRenderer = GetRenderer(frame1);
-
+#pragma warning disable CS0618 // Type or member is obsolete
 					Frame frame2 = new Frame()
+#pragma warning restore CS0618 // Type or member is obsolete
 					{
 						Content = new Label()
 						{
@@ -70,8 +73,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 
 					var uILabel = (UILabel)labelRenderer.NativeView.Subviews[0];
 					Assert.AreEqual("I am frame 2", uILabel.Text);
-
+#pragma warning disable CS0618 // Type or member is obsolete
 					Frame frameWithButton = new Frame()
+#pragma warning restore CS0618 // Type or member is obsolete
 					{
 						Content = new Button()
 						{

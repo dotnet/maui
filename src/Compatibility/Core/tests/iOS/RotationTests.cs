@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			var transform = await GetRendererProperty(view, r => r.NativeView.Layer.Transform, requiresLayout: true);
 			var actual = ParsingUtils.ParseCATransform3D(transform.ToString());
-			var expected = CalculateRotationMatrixForDegrees((float)view.RotationX, Axis.X);
+			var expected = NumericExtensions.CalculateRotationMatrixForDegrees((float)view.RotationX, Axis.X);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
 
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			var transform = await GetRendererProperty(view, r => r.NativeView.Layer.Transform, requiresLayout: true);
 			var actual = ParsingUtils.ParseCATransform3D(transform.ToString());
-			var expected = CalculateRotationMatrixForDegrees((float)view.RotationY, Axis.Y);
+			var expected = NumericExtensions.CalculateRotationMatrixForDegrees((float)view.RotationY, Axis.Y);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
 
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			var transform = await GetRendererProperty(view, r => r.NativeView.Layer.Transform, requiresLayout: true);
 			var actual = ParsingUtils.ParseCATransform3D(transform.ToString());
-			var expected = CalculateRotationMatrixForDegrees((float)view.Rotation, Axis.Z);
+			var expected = NumericExtensions.CalculateRotationMatrixForDegrees((float)view.Rotation, Axis.Z);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
 	}

@@ -31,7 +31,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		[Description("Frame background should match renderer background")]
 		public async Task FrameLinearGradientBrushConsistent()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var frame = new Frame { HeightRequest = 50, WidthRequest = 50, Background = LinearGradientBrush };
+#pragma warning restore CS0618 // Type or member is obsolete
 			var screenshot = await GetRendererProperty(frame, (ver) => ver.NativeView.ToBitmap(), requiresLayout: true);
 
 			var screenshotHeight = (int)screenshot.Size.Height;

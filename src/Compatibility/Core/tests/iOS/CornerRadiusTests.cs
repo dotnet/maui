@@ -43,8 +43,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		public async Task FrameCornerRadius()
 		{
 			var backgroundColor = Colors.CadetBlue;
-
+#pragma warning disable CS0618 // Type or member is obsolete
 			var frame = new Frame
+#pragma warning restore CS0618 // Type or member is obsolete
 			{
 				HeightRequest = 100,
 				WidthRequest = 200,
