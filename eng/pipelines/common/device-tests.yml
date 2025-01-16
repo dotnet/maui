@@ -8,6 +8,7 @@ parameters:
   iosDeviceVersions: [ '15' ]
   catalystVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
+  skipProvisioning: true
   agentPoolAccessToken: ''
   artifactName: 'nuget'
   artifactItemPattern: '**/*.nupkg'
@@ -72,7 +73,8 @@ stages:
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
             poolName: ${{ parameters.androidPool.name }}
-            androidConfiguration: $(ANDROID_CONFIGURATION)
+            deviceTestConfiguration: $(ANDROID_CONFIGURATION)
+            skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} iOS Device Tests
@@ -98,6 +100,7 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.ios }}
+                    IOS_CONFIGURATION: ${{ project.iOSConfiguration }}
                     TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
                     ${{ if contains(version, 'device') }}:
                       DEVICE: ios-device
@@ -120,6 +123,8 @@ stages:
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
             poolName: 'Azure Pipelines'
+            skipProvisioning: ${{ parameters.skipProvisioning }}
+            deviceTestConfiguration: $(IOS_CONFIGURATION)
 
   - stage: catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} macOS Device Tests
@@ -145,6 +150,7 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.catalyst }}
+                    IOS_CONFIGURATION: ${{ project.iOSConfiguration }}
                     TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
                     ${{ if eq(version, 'latest') }}:
                       DEVICE: maccatalyst
@@ -165,6 +171,8 @@ stages:
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
             poolName: 'Azure Pipelines'
+            skipProvisioning: ${{ parameters.skipProvisioning }}
+            deviceTestConfiguration: $(IOS_CONFIGURATION)
 
 
   - stage: windows_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
@@ -192,6 +200,7 @@ stages:
                   PACKAGE_ID: ${{ project.windowsPackageId }}
                   DEVICE: ${{ version }}
                   TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
+                  WINDOWS_CONFIGURATION: ${{ project.windowsConfiguration }}
       steps:
         - template: device-tests-steps.yml
           parameters:
@@ -206,3 +215,5 @@ stages:
             artifactItemPattern: ${{ parameters.artifactItemPattern }}
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
+            skipProvisioning: ${{ parameters.skipProvisioning }}
+            deviceTestConfiguration: $(WINDOWS_CONFIGURATION)

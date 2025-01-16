@@ -2,6 +2,12 @@ parameters:
   - name: condition
     default: true
 
+  - name: conditionMacTemplates
+    default: true
+  
+  - name: skipProvisioning
+    default: true
+
   - name: artifactName
     type: string
     default: nuget
@@ -52,8 +58,8 @@ jobs:
       clean: all
     displayName: 'Build ${{ category }}: macOS' 
     timeoutInMinutes: 240
-    condition: ${{ parameters.condition}}
-    pool: ${{ parameters.MacBuildPool}}
+    condition: ${{ parameters.conditionMacTemplates }}
+    pool: ${{ parameters.MacBuildPool }}
     steps:
       - template: maui-templates-steps.yml
         parameters:
@@ -119,13 +125,6 @@ jobs:
     #     continueOnError: true
     #     timeoutInMinutes: 60
 
-    - template: provision.yml
-      parameters:
-        skipXcode: ${{ eq(RunPlatform.testName, 'RunOnAndroid') }}
-        skipProvisioning: true
-        skipAndroidImages: ${{ ne(RunPlatform.testName, 'RunOnAndroid') }}
-        checkoutDirectory: ${{ parameters.checkoutDirectory }}
-
     - task: DownloadBuildArtifacts@0
       displayName: 'Download Packages'
       inputs:
@@ -187,9 +186,5 @@ jobs:
         testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
         testRunTitle: ${{ RunPlatform.testName }} templates run tests
 
-    - pwsh: |
-        Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
-        if ($env:AGENT_JOBSTATUS -eq "SucceededWithIssues") {
-            Write-Host "##vso[task.complete result=Failed;]DONE"
-        }
-      displayName: Fail if any issues occurred
+    - template: /eng/pipelines/common/fail-on-issue.yml
+

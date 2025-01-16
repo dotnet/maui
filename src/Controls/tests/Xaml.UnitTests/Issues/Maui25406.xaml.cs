@@ -40,7 +40,8 @@ public partial class Maui25406 : ContentPage
 		[Test]
 		public void WhenBindingIsCompiledBindingExtensionDoesNotReceiveServiceProviderWithXamlTypeResolver()
 		{
-			MockCompiler.Compile(typeof(Maui25406), out var md, generateFullIl: false);
+			MockCompiler.Compile(typeof(Maui25406), out var md, out bool hasLoggedErrors, generateFullIl: false);
+			Assert.That(!hasLoggedErrors);
 			Assert.That(!md.Body.Instructions.Any(static i => i.OpCode == OpCodes.Newobj && i.Operand.ToString().Contains("XamlServiceProvider", StringComparison.Ordinal)));
 		}
 	}

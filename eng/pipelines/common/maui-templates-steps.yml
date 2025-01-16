@@ -31,12 +31,6 @@ steps:
   - ${{ each pair in step }}:
       ${{ pair.key }}: ${{ pair.value }}
 
-- template: provision.yml
-  parameters:
-    checkoutDirectory: ${{ parameters.checkoutDirectory }}
-    skipXcode: false
-    skipProvisioning: true
-
 - task: DownloadBuildArtifacts@0
   displayName: 'Download Packages'
   inputs:
@@ -98,9 +92,4 @@ steps:
     testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
     testRunTitle: ${{ parameters.category }} templates build tests
 
-- pwsh: |
-    Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
-    if ($env:AGENT_JOBSTATUS -eq "SucceededWithIssues") {
-        Write-Host "##vso[task.complete result=Failed;]DONE"
-    }
-  displayName: Fail if any issues occurred
+- template: /eng/pipelines/common/fail-on-issue.yml

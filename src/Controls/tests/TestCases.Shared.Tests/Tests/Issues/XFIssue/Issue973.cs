@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID // IsPresented value is not reflected when change this on list view item tapped in flyout. Issue: https://github.com/dotnet/maui/issues/26324
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -9,34 +10,26 @@ public class Issue973 : _IssuesUITest
 	public Issue973(TestDevice testDevice) : base(testDevice)
 	{
 	}
+	const string Tab1 = "Tab 1";
+	const string Tab2 = "Tab 2";
 
 	public override string Issue => "ActionBar doesn't immediately update when nested TabbedPage is changed";
 
-	//[Test]
-	//[Category(UITestCategories.TabbedPage)]
-	//[FailsOnAndroidWhenRunningOnXamarinUITest]
-	//[Description("Test tab reset when swapping out detail")]
-	//public void Issue973TestsTabResetAfterDetailSwap()
-	//{
-	//	App.WaitForElement(q => q.Marked("Initial Page Left aligned"));
-	//	App.WaitForElement(q => q.Marked("Tab 1"));
-
-	//	App.Tap(q => q.Marked("Tab 2"));
-	//	App.WaitForElement(q => q.Marked("Initial Page Right aligned"));
-	//	App.Screenshot("Tab 2 showing");
-
-	//	App.Tap(q => q.Marked("Present Flyout"));
-
-	//	App.Tap(q => q.Marked("Page 4"));
-	//	App.Screenshot("Change detail page");
-
-	//	App.Tap(q => q.Marked("Close Flyout"));
-
-	//	App.WaitForElement(q => q.Marked("Page 4 Left aligned"));
-	//	App.Screenshot("Tab 1 Showing and tab 1 should be selected");
-
-	//	App.Tap(q => q.Marked("Tab 2"));
-	//	App.WaitForElement(q => q.Marked("Page 4 Right aligned"));
-	//	App.Screenshot("Tab 2 showing");
-	//}
+	[Test]
+	[Category(UITestCategories.TabbedPage)]
+	[Description("Test tab reset when swapping out detail")]
+	public void Issue973TestsTabResetAfterDetailSwap()
+	{
+		App.WaitForElement("Initial Page Left aligned");
+		App.TapTab(Tab2);
+		App.WaitForElement("Initial Page Right aligned");
+		App.Tap("Present Flyout");
+		App.Tap("Page 4");
+		App.WaitForElement("Close Flyout");
+		App.Tap("Close Flyout");
+		App.WaitForElement("Page 4 Left aligned");
+		App.TapTab(Tab2);
+		App.WaitForElement("Page 4 Right aligned");
+	}
 }
+#endif
