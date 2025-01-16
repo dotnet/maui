@@ -14,10 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnMac]
-		[FailsOnWindows]
 		public void TestDoesntCrashWithCachingDisable()
 		{
 			App.WaitForElement("ImageLoaded");

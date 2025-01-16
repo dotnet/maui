@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.TabbedPage)]
-		[FailsOnMac]
 		public void TabbedPageUnselectedBarTextColorConsistency()
 		{
 			App.WaitForElement("MauiLabel");

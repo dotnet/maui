@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// If the IndexPath is less than 2, it's a header or footer for a section not a group
 			if (indexPath.Length < 2 || (ItemsView.GroupFooterTemplate is null && ItemsView.GroupHeaderTemplate is null))
 			{
-			
+
 				var suplementaryViewFromStructuredView = base.GetViewForSupplementaryElement(collectionView, elementKind, indexPath);
 				if (suplementaryViewFromStructuredView is not null)
 				{

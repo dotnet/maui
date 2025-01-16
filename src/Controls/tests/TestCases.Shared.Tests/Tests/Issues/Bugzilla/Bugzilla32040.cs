@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,17 +13,18 @@ public class Bugzilla32040 : _IssuesUITest
 
 	public override string Issue => "EntryCell.Tapped or SwitchCell.Tapped does not fire when within a TableView ";
 
-	// [Test]
-	// [Category(UITestCategories.Cells)]
-	// [FailsOnIOS]
-	// [FailsOnWindows]
-	// public void TappedWorksForEntryAndSwithCellTest()
-	// {
-	// 	App.WaitForElement("blahblah");
-	// 	App.Tap("blahblah");
-	// 	App.Tap("yaddayadda");
+	[Test]
+	[Category(UITestCategories.Cells)]
+	public void TappedWorksForEntryAndSwithCellTest()
+	{ 
+		App.WaitForElement("blahblah");
+		App.Tap("blahblah");
+		App.WaitForElement("Tapped");
 
-	// 	Assert.That(App.FindElements("Tapped").Count,
-	// 		Is.GreaterThanOrEqualTo(2));
-	// }
+		App.Tap("Click Here");
+
+		//FindElements consistently returns a zero count, despite the "Tapped" text being visible in the UI.
+		//Assert.That(App.FindElements("Tapped").Count, Is.GreaterThanOrEqualTo(2));
+		App.WaitForTextToBePresentInElement("yaddayadda", "Tapped");
+	}
 }

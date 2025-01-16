@@ -19,7 +19,7 @@ public class Issue12246 : TestContentPage
 			$"If the '{Success}' Label does not appear or the application hangs, this test has failed."
 		};
 
-		var result = new Label { Text = Success, IsVisible = false };
+		var result = new Label { Text = Success, IsVisible = false, AutomationId = Success };
 
 		var entry = new Entry()
 		{

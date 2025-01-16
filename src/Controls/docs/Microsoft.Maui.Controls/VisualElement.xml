@@ -49,8 +49,6 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AnchorX">
@@ -76,7 +74,6 @@
       <Docs>
         <summary>Gets or sets the X component of the center point for any transform, relative to the bounds of the element. This is a bindable property.</summary>
         <value>The value that declares the X component of the transform. The default value is 0.5.</value>
-        <remarks>To be added.</remarks>
         <altmember cref="P:Microsoft.Maui.Controls.VisualElement.AnchorY" />
       </Docs>
     </Member>
@@ -102,7 +99,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the AnchorX bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AnchorY">
@@ -128,7 +124,6 @@
       <Docs>
         <summary>Gets or sets the Y component of the center point for any transform, relative to the bounds of the element. This is a bindable property.</summary>
         <value>The value that declares the Y component of the transform. The default value is 0.5.</value>
-        <remarks>To be added.</remarks>
         <altmember cref="P:Microsoft.Maui.Controls.VisualElement.AnchorX" />
       </Docs>
     </Member>
@@ -154,7 +149,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the AnchorY bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Background">
@@ -176,9 +170,6 @@
         <ReturnType>Microsoft.Maui.Controls.Brush</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BackgroundColor">
@@ -204,7 +195,6 @@
       <Docs>
         <summary>Gets or sets the color which will fill the background of a VisualElement. This is a bindable property.</summary>
         <value>The color that is used to fill the background of a VisualElement.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BackgroundColorProperty">
@@ -229,7 +219,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the BackgroundColor bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BackgroundProperty">
@@ -246,8 +235,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BatchBegin">
@@ -332,7 +319,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Batched">
@@ -359,8 +345,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Behaviors">
@@ -384,7 +368,6 @@
         <summary>Gets the list of Behaviors associated to this element. This is a bindable property.</summary>
         <value>
         </value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BehaviorsProperty">
@@ -406,7 +389,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the Behaviors bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Bounds">
@@ -454,7 +436,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ChildrenReordered">
@@ -479,7 +460,6 @@
       </ReturnValue>
       <Docs>
         <summary>Occurs when the Children of a VisualElement have been re-ordered.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Clip">
@@ -501,9 +481,6 @@
         <ReturnType>Microsoft.Maui.Controls.Shapes.Geometry</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ClipProperty">
@@ -520,8 +497,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DisableLayout">
@@ -548,8 +523,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FlowDirection">
@@ -569,7 +542,6 @@
       <Docs>
         <summary>Gets or sets the layout flow direction.</summary>
         <value>The layout flow direction.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FlowDirectionProperty">
@@ -588,7 +560,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.VisualElement.FlowDirection" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Focus">
@@ -643,7 +614,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Focused">
@@ -720,7 +690,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the Height bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HeightRequest">
@@ -769,7 +738,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the HeightRequest property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="InputTransparent">
@@ -822,7 +790,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the InputTransparent bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="InvalidateMeasure">
@@ -848,7 +815,6 @@
       <Parameters />
       <Docs>
         <summary>Method that is called to invalidate the layout of this <see cref="T:Microsoft.Maui.Controls.VisualElement" />. Raises the <see cref="E:Microsoft.Maui.Controls.VisualElement.MeasureInvalidated" /> event.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="InvalidateMeasureNonVirtual">
@@ -876,7 +842,6 @@
       <Docs>
         <param name="trigger">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsEnabled">
@@ -947,7 +912,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the IsEnabled bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsFocused">
@@ -1014,7 +978,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the IsFocused bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsFocusedPropertyKey">
@@ -1038,7 +1001,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsInNativeLayout">
@@ -1065,8 +1027,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsNativeStateConsistent">
@@ -1093,8 +1053,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsPlatformEnabled">
@@ -1121,8 +1079,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsTabStop">
@@ -1163,7 +1119,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.VisualElement.IsTabStop" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsVisible">
@@ -1254,7 +1209,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the IsVisible bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Layout">
@@ -1338,7 +1292,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when the layout of a visual element is invalidated.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MinimumHeightRequest">
@@ -1410,7 +1363,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the MinimumHeightRequest property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MinimumWidthRequest">
@@ -1483,7 +1435,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the MinimumWidthRequest property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NativeSizeChanged">
@@ -1511,7 +1462,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NavigationProperty">
@@ -1528,8 +1478,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnBindingContextChanged">
@@ -1547,8 +1495,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnChildAdded">
@@ -1624,8 +1570,6 @@
       <Docs>
         <param name="child">To be added.</param>
         <param name="oldLogicalIndex">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnChildrenReordered">
@@ -1676,8 +1620,6 @@
         <param name="widthConstraint">The width constraint to request.</param>
         <param name="heightConstraint">The height constraint to request.</param>
         <summary>Method that is called when a layout measurement happens.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnSizeAllocated">
@@ -1771,8 +1713,6 @@
       <Docs>
         <param name="oldValue">To be added.</param>
         <param name="newValue">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnTabStopPropertyChanged">
@@ -1795,8 +1735,6 @@
       <Docs>
         <param name="oldValue">To be added.</param>
         <param name="newValue">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Opacity">
@@ -1870,7 +1808,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the Opacity bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Resources">
@@ -1974,7 +1911,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the Rotation bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RotationX">
@@ -2025,7 +1961,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the RotationX bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RotationY">
@@ -2076,7 +2011,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the RotationY bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Scale">
@@ -2127,7 +2061,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the Scale bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScaleX">
@@ -2147,7 +2080,6 @@
       <Docs>
         <summary>Gets or sets a scale value to apply to the X direction.</summary>
         <value>The scale value to apply to the X direction.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScaleXProperty">
@@ -2166,7 +2098,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.VisualElement.ScaleX" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScaleY">
@@ -2186,7 +2117,6 @@
       <Docs>
         <summary>Gets or sets a scale value to apply to the Y direction.</summary>
         <value>The scale value to apply to the Y direction.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScaleYProperty">
@@ -2205,7 +2135,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.VisualElement.ScaleY" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SizeAllocated">
@@ -2278,8 +2207,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TabIndex">
@@ -2299,9 +2226,6 @@
         <ReturnType>System.Int32</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TabIndexDefaultValueCreator">
@@ -2319,9 +2243,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TabIndexProperty">
@@ -2339,7 +2260,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.VisualElement.TabIndex" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TabStopDefaultValueCreator">
@@ -2357,9 +2277,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TranslationX">
@@ -2406,7 +2323,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the TranslationX bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TranslationY">
@@ -2453,7 +2369,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the TranslationY bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Triggers">
@@ -2477,7 +2392,6 @@
         <summary>Gets the list of Trigger associated to this element. This is a bindable property.</summary>
         <value>
         </value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TriggersProperty">
@@ -2499,7 +2413,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the Triggers bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Unfocus">
@@ -2567,9 +2480,6 @@
         <ReturnType>Microsoft.Maui.Controls.IVisual</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="VisualProperty">
@@ -2587,7 +2497,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.VisualElement.Visual" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Width">
@@ -2638,7 +2547,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the Width bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WidthRequest">
@@ -2687,7 +2595,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the WidthRequest property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="X">
@@ -2736,7 +2643,6 @@
       <Docs>
         <summary>Gets the effective visual flow direction for the element on the platform, taking into account the locale and logical flow settings.</summary>
         <value>The effective flow direction for the visual element.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IVisualElementController.InvalidateMeasure">
@@ -2762,7 +2668,6 @@
       <Docs>
         <param name="trigger">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>This method is for internal use.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="XProperty">
@@ -2787,7 +2692,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the X bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Y">
@@ -2838,7 +2742,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the Y bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

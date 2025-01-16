@@ -1,3 +1,4 @@
+﻿using System.Diagnostics;
 using Maui.Controls.Sample.Issues;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -10,12 +11,13 @@ namespace Maui.Controls.Sample
 		{
 			var appBuilder = MauiApp.CreateBuilder();
 
-#if IOS || ANDROID
+#if IOS || ANDROID || MACCATALYST
 			appBuilder.UseMauiMaps();
 #endif
 			appBuilder.UseMauiApp<App>()
 				.ConfigureFonts(fonts =>
 				{
+					fonts.AddEmbeddedResourceFont(typeof(MauiProgram).Assembly, "Dokdo-Regular.ttf", "Dokdo");
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 					fonts.AddFont("FontAwesome.ttf", "FA");
 					fonts.AddFont("ionicons.ttf", "Ion");
@@ -25,17 +27,25 @@ namespace Maui.Controls.Sample
 				.Issue18720AddMappers()
 				.Issue18720EditorAddMappers()
 				.Issue18720DatePickerAddMappers()
-				.Issue18720TimePickerAddMappers();
+				.Issue18720TimePickerAddMappers()
+				.Issue25436RegisterNavigationService();
 
 #if IOS || MACCATALYST
 
-			appBuilder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
-					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
-				});
-				
+			appBuilder.ConfigureCollectionViewHandlers();
+
 #endif
+			// Register the custom handler
+			appBuilder.ConfigureMauiHandlers(handlers =>
+			{
+#if IOS || MACCATALYST || ANDROID || WINDOWS
+				handlers.AddHandler(typeof(_60122Image), typeof(_60122ImageHandler));
+				handlers.AddHandler(typeof(_57114View), typeof(_57114ViewHandler));
+#endif
+#if IOS || MACCATALYST
+				handlers.AddHandler(typeof(Issue11132Control), typeof(Issue11132ControlHandler));
+#endif
+			});
 
 			appBuilder.Services.AddTransient<TransientPage>();
 			appBuilder.Services.AddScoped<ScopedPage>();

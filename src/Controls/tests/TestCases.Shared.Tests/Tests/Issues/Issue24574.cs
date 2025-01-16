@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Tap Double Tap";
 
 		[Test]
-		[FailsOnMac]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		[Category(UITestCategories.Gestures)]
 		[Category(UITestCategories.Compatibility)]
 		public void TapThenDoubleTap()

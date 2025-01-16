@@ -10,7 +10,7 @@ using WSelectionChangedEventArgs = Microsoft.UI.Xaml.Controls.SelectionChangedEv
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	internal class CarouselPageRenderer : FlipView, IVisualElementRenderer
+	internal partial class CarouselPageRenderer : FlipView, IVisualElementRenderer
 	{
 		bool _fromUpdate;
 		bool _disposed;

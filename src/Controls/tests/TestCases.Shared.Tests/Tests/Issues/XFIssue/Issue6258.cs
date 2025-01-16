@@ -16,8 +16,8 @@ public class Issue6258 : _IssuesUITest
 	//[Category(UITestCategories.ListView)]
 	//public void ContextActionsIconImageSource()
 	//{
-	//	RunningApp.WaitForElement("ListViewItem");
-	//	RunningApp.ActivateContextMenu("ListViewItem");
-	//	RunningApp.WaitForElement("coffee.png");
+	//	App.WaitForElement("ListViewItem");
+	//	App.ActivateContextMenu("ListViewItem");
+	//	App.WaitForElement("coffee.png");
 	//}
 }

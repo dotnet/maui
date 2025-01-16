@@ -204,12 +204,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal UIEdgeInsets GetInsetForSection(ItemsViewLayout itemsViewLayout,
 			UICollectionView collectionView, nint section)
 		{
-			var uIEdgeInsets = itemsViewLayout.GetInsetForSection(collectionView, itemsViewLayout, section);
-
 			if (!ItemsView.IsGrouped)
 			{
-				return uIEdgeInsets;
+				return UIEdgeInsets.Zero;
 			}
+
+			var uIEdgeInsets = itemsViewLayout.GetInsetForSection(collectionView, itemsViewLayout, section);
 
 			// If we're grouping, we'll need to inset the sections to maintain the spacing between the 
 			// groups and their group headers/footers

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// Bugzilla28570 (src\Compatibility\ControlGallery\src\Issues.Shared\Bugzilla28570.cs)
 		[Test]
-		[FailsOnAndroid("This test is failing, likely due to product issue")]
+		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void Bugzilla28570Test()
 		{
 			App.WaitForElement ("Tap");

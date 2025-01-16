@@ -31,8 +31,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		AView PlatformView => Content?.ContainerView ?? Content?.PlatformView;
 
-		internal Func<Size?> RetrieveStaticSize 
-		{ 
+		internal Func<Size?> RetrieveStaticSize
+		{
 			get => _retrieveStaticSize?.Target as Func<Size?>;
 			set => _retrieveStaticSize = new WeakReference(value);
 		}
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// This means a different cell has already set our new size
 			// so let's just use that instead of perform our own speculative measure
-			if (possibleNewSize is not null && 
+			if (possibleNewSize is not null &&
 				_pixelSize is not null &&
 				!_pixelSize.Equals(possibleNewSize))
 			{

@@ -12,27 +12,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] TapGestureRecognizer does not work with a nested StackLayout";
 
-		/*	
+
 		const string InnerLayout = "innerlayout";
 		const string OuterLayout = "outerlayout";
 		const string Success = "Success";
 
 		[Test]
-		[Category(UITestCategories.LifeCycle)]
+		[Category(UITestCategories.Gestures)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnIOS]
-		[FailsOnMac]
 		public void VerifyNestedStacklayoutTapsBubble()
 		{
 			App.WaitForElement(InnerLayout);
 			App.Tap(InnerLayout);
 
-			App.WaitForElement(OuterLayout);
 			App.Tap(OuterLayout);
 
-			App.WaitForNoElement(Success);
+			Assert.That(App.FindElement(Success).GetText(), Is.EqualTo("Success"));
 		}
-		*/
+
 	}
 }

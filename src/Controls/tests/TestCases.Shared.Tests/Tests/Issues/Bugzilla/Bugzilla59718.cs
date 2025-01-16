@@ -6,30 +6,35 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Bugzilla59718 : _IssuesUITest
 {
+	const string GoBackButtonId = "GoBackButtonId";
+	const string Target1 = "Label with TapGesture Cricket";
+	const string Target1b = "Label with TapGesture Cricket Tapped!";
+	const string Target2 = "Label with no TapGesture Cricket";
+	const string Target3 = "You came here from Cricket.";
+
 	public Bugzilla59718(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
 	public override string Issue => "Multiple issues with listview and navigation in UWP";
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
-	// public void Bugzilla59718Test()
-	// {
-	// 	RunningApp.WaitForElement(q => q.Marked(Target1));
-	// 	RunningApp.Tap(q => q.Marked(Target1));
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void Bugzilla59718Test()
+	{
+		App.WaitForElement(Target1);
+		App.Tap(Target1);
 
-	// 	RunningApp.WaitForElement(q => q.Marked(Target1b));
+		App.WaitForElementTillPageNavigationSettled(Target1b);
 
-	// 	RunningApp.WaitForElement(q => q.Marked(Target2));
-	// 	RunningApp.Tap(q => q.Marked(Target2));
+		App.WaitForElementTillPageNavigationSettled(Target2);
+		App.Tap(Target2);
 
-	// 	RunningApp.WaitForElement(q => q.Marked(Target3));
+		App.WaitForElementTillPageNavigationSettled(Target3);
 
-	// 	RunningApp.WaitForElement(q => q.Marked(GoBackButtonId));
-	// 	RunningApp.Tap(q => q.Marked(GoBackButtonId));
+		App.WaitForElementTillPageNavigationSettled(GoBackButtonId);
+		App.Tap(GoBackButtonId);
 
-	// 	RunningApp.WaitForElement(q => q.Marked(Target1));
-	// }
+		App.WaitForElementTillPageNavigationSettled(Target1);
+	}
 }

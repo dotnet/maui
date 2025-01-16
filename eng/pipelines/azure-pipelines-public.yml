@@ -35,136 +35,121 @@ pr:
       - THIRD-PARTY-NOTICES.TXT
 
 variables:
-  - template: /eng/common/templates/variables/pool-providers.yml
+  - template: /eng/common/templates/variables/pool-providers.yml@self 
+  - template: /eng/pipelines/common/variables.yml@self
+  - template: /eng/pipelines/arcade/variables.yml@self
 
-  - name: _BuildConfig
-    value: Release
-  - name: Build.Arcade.ArtifactsPath
-    value: $(Build.SourcesDirectory)/artifacts/
-  - name: Build.Arcade.LogsPath
-    value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
-  - name: Build.Arcade.TestResultsPath
-    value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
-
-  # needed for darc (dependency flow) publishing
-  - name: _PublishArgs
-    value: ''
-  - name: _OfficialBuildIdArgs
-    value: ''
-  # needed for signing
-  - name: _SignType
-    value: test
-  - name: _SignArgs
-    value: ''
-  - name: _Sign
-    value: false
-  - name: HelixApiAccessToken
-    value: ''
-  - name: _InternalBuildArgs
-    value: ''
-
+parameters:
+  - name: VM_IMAGE_HOST
+    type: object
+    default:
+      name: NetCore-Public
+      image: 1es-windows-2022
+      os: windows
 
 stages:
+- template: /eng/pipelines/arcade/stage-pack.yml@self
+  parameters:
+    pool: ${{ parameters.VM_IMAGE_HOST }}
+    runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
 
-# ----------------------------------------------------------------
-# This stage performs build, test, packaging
-# ----------------------------------------------------------------
-- stage: build
-  displayName: Build
-  jobs:
-  - template: /eng/common/templates/jobs/jobs.yml
-    parameters:
-      artifacts:
-        publish:
-          artifacts: false
-          logs:
-            name: 'Logs_Build_$(Agent.JobName)_$(_BuildConfig)'
-          manifests: true
-      enableMicrobuild: true
-      enablePublishUsingPipelines: true
-      publishAssetsImmediately: true
-      enablePublishTestResults: true
-      enableSourceBuild: true
-      testResultsFormat: vstest
-      enableSourceIndex: false
-      workspace:
-        clean: all
+- template: /eng/pipelines/arcade/stage-unit-tests.yml@self
+  parameters:
+    jobMatrix:
+    - name: win_unit_tests
+      displayName: Windows Unit Tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+      timeout: 90
+      testOS: Windows
+    - name: mac_unit_tests
+      displayName: macOS Unit Tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 90
+      testOS: macOS
+    publishTaskPrefix: ''
 
-      jobs:
+- template: /eng/pipelines/arcade/stage-integration-tests.yml@self
+  parameters:
+    stageDependsOn: Pack
+    publishTaskPrefix: ''
+    jobMatrix:
+    - name: win_sample_tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+      timeout: 120
+      testCategory: Samples
+    - name: mac_sample_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 120
+      testCategory: Samples
 
-      - ${{ each testVariant in split(',_helix_tests', ',') }}:
-        - job: Windows${{ testVariant }}
+    - name: win_wintemplate_tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+      timeout: 120
+      testCategory: WindowsTemplates
+    - name: mac_wintemplate_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 120
+      testCategory: WindowsTemplates
 
-          # timeout accounts for wait times for helix agents up to 30mins
-          timeoutInMinutes: 90
+    - name: win_buildtemplate_tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+      timeout: 120
+      testCategory: Build
+    - name: mac_buildtemplate_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 120
+      testCategory: Build
 
-          pool:
-            name: $(DncEngPublicBuildPool)
-            demands: ImageOverride -equals windows.vs2022preview.amd64.open
+    - name: win_blazortemplate_tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+      timeout: 120
+      testCategory: Blazor
+    - name: mac_blazortemplate_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 120
+      testCategory: Blazor
 
-          variables:
-            - name: _buildScript
-              value: $(Build.SourcesDirectory)/build.cmd -ci
+    - name: win_multitemplate_tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+      timeout: 120
+      testCategory: MultiProject
+    - name: mac_multitemplate_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 120
+      testCategory: MultiProject
 
-          preSteps:
-            - checkout: self
-              fetchDepth: 1
-              clean: true
+    # TODO: macOSTemplates and AOT template categories
 
-          steps:
-            - template: /eng/pipelines/common/build-test-pack.yml
-              parameters:
-                runAsPublic: true
-                dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
-                buildScript: $(_buildScript)
-                buildConfig: $(_BuildConfig)
-                repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
-                repoLogPath: $(Build.Arcade.LogsPath)
-                repoTestResultsPath: $(Build.Arcade.TestResultsPath)
-                isWindows: true
-                runHelixTests: ${{ contains(testVariant, 'helix') }}
+    - name: mac_runandroid_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 180
+      testCategory: RunOnAndroid
 
-# ----------------------------------------------------------------
-# This stage performs quality gates checks
-# ----------------------------------------------------------------
-- stage: codecoverage
-  displayName: CodeCoverage
-  dependsOn:
-    - build
-  condition: succeeded('build')
-  variables:
-  - template: /eng/common/templates/variables/pool-providers.yml
-  jobs:
-  - template: /eng/common/templates/jobs/jobs.yml
-    parameters:
-      enableMicrobuild: true
-      enableTelemetry: true
-      runAsPublic: false
-      workspace:
-        clean: all
-
-      # ----------------------------------------------------------------
-      # This stage downloads the code coverage reports from the build jobs,
-      # merges those and validates the combined test coverage.
-      # ----------------------------------------------------------------
-      jobs:
-      - job: CodeCoverageReport
-        timeoutInMinutes: 10
-
-        pool:
-          name: $(DncEngPublicBuildPool)
-          demands: ImageOverride -equals build.ubuntu.2004.amd64.open
-
-        preSteps:
-          - checkout: self
-            fetchDepth: 1
-            clean: true
-
-        steps:
-        - script: $(Build.SourcesDirectory)/build.sh --ci --restore
-          displayName: Init toolset
-
-        - template: /eng/pipelines/templates/VerifyCoverageReport.yml
-          parameters:
-            # matches what is used in the conditions for the build/test jobs
-            testVariants: ',_helix_tests'
+    - name: mac_runios_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 180
+      testCategory: RunOniOS

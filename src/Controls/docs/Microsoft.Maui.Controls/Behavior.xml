@@ -33,7 +33,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new Behavior with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AssociatedType">
@@ -55,8 +54,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the type of the objects with which this <see cref="T:Microsoft.Maui.Controls.Behavior" /> can be associated.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnAttachedTo">
@@ -82,7 +79,6 @@
       <Docs>
         <param name="bindable">The bindable object to which the behavior was attached.</param>
         <summary>Application developers override this method to implement the behaviors that will be associated with <paramref name="bindable" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnDetachingFrom">
@@ -108,7 +104,6 @@
       <Docs>
         <param name="bindable">The bindable object from which the behavior was detached.</param>
         <summary>Application developers override this method to remove the behaviors from <paramref name="bindable" /> that were implemented in a previous call to the <see cref="M:Microsoft.Maui.Controls.Behavior.OnAttachedTo(Microsoft.Maui.Controls.BindableObject)" /> method.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

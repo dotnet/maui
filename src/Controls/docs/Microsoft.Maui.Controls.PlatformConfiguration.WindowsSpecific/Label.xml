@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Provides access to reading order detection on the Windows platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="DetectReadingOrderFromContentProperty">
@@ -33,7 +32,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls whether the reading order is detected from the label's content.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetDetectReadingOrderFromContent">
@@ -57,7 +55,6 @@
         <param name="element">The label element whose reading order detection behavior to get.</param>
         <summary>Returns a Boolean value that tells whether the reading order is detected from the label's content.</summary>
         <returns>A Boolean value that tells whether the reading order is detected from the label's content.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetDetectReadingOrderFromContent">
@@ -81,7 +78,6 @@
         <param name="config">The platform configuration for the label element whose reading order detection behavior to get.</param>
         <summary>Returns a Boolean value that tells whether the reading order is detected from the label's content.</summary>
         <returns>A Boolean value that tells whether the reading order is detected from the label's content.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetDetectReadingOrderFromContent">
@@ -107,7 +103,6 @@
         <param name="value">
           <see langword="true" /> to detect the reading order from the content. Otherwise, <see langword="false" />.</param>
         <summary>Sets a Boolean value that controls whether the reading order is detected from the label's content.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetDetectReadingOrderFromContent">
@@ -134,7 +129,6 @@
           <see langword="true" /> to detect the reading order from the content. Otherwise, <see langword="false" />.</param>
         <summary>Sets a Boolean value that controls whether the reading order is detected from the label's content.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -9,6 +9,7 @@ namespace UITest.Appium
 	{
 		const string LockCommand = "lock";
 		const string UnlockCommand = "unlock";
+		const string IsLockedCommand = "isLocked";
 		const string StartRecordingScreenCommand = "startRecordingScreen";
 		const string StopRecordingScreenCommand = "stopRecordingScreen";
 
@@ -18,6 +19,7 @@ namespace UITest.Appium
 		{
 			LockCommand,
 			UnlockCommand,
+			IsLockedCommand,
 			StartRecordingScreenCommand,
 			StopRecordingScreenCommand,
 		};
@@ -38,6 +40,7 @@ namespace UITest.Appium
 			{
 				LockCommand => Lock(parameters),
 				UnlockCommand => Unlock(parameters),
+				IsLockedCommand => IsLocked(parameters),
 				StartRecordingScreenCommand => StartRecordingScreen(parameters),
 				StopRecordingScreenCommand => StopRecordingScreen(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
@@ -75,6 +78,20 @@ namespace UITest.Appium
 				iOSDriver.Unlock();
 
 				return CommandResponse.SuccessEmptyResponse;
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse IsLocked(IDictionary<string, object> parameters)
+		{
+			if (_appiumApp.Driver is AndroidDriver androidDriver)
+			{
+				return new CommandResponse(androidDriver.IsLocked(), CommandResponseResult.Success);
+			}
+			if (_appiumApp.Driver is IOSDriver iOSDriver)
+			{
+				return new CommandResponse(iOSDriver.IsLocked(), CommandResponseResult.Success);
 			}
 
 			return CommandResponse.FailedEmptyResponse;

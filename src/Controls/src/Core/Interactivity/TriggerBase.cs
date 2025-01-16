@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls
 				// this should never happen
 				return;
 			}
-			
+
 			if (newValue)
 			{
 				foreach (TriggerAction action in EnterActions)
