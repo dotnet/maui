@@ -63,11 +63,10 @@
   <ItemGroup Condition="!$(TargetFramework.Contains('-windows'))">
     <Compile Remove="**\*.Windows.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Update="Xaml\RadioButtonUsing.xaml.cs">
-      <DependentUpon>%(Filename)</DependentUpon>
-    </Compile>
-  </ItemGroup>
+
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) or $(TargetFramework.Contains('-maccatalyst'))">
+    <HybridGlobalization>false</HybridGlobalization>
+  </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
