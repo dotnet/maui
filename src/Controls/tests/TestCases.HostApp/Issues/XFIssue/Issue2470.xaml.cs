@@ -79,7 +79,7 @@ public class Issue2470MainViewModel : Issue2470ViewModelBase
 }
 
 [Issue(IssueTracker.Github, 2470, "ObservableCollection changes do not update ListView", PlatformAffected.Android)]
-public partial class Issue2470 : TestTabbedPage
+public partial class Issue2470 : TestShell
 {
 	protected override void Init()
 	{

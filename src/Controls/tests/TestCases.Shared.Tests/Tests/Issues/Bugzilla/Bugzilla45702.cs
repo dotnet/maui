@@ -15,13 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue45702Test()
 		{
 			App.WaitForElement("ClickMe");
 			App.Tap("ClickMe");
-			App.WaitForNoElement("Success");
+			App.WaitForElement("Success");
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ListView IsEnabled property is not working on iOS and Catalyst, Issue: https://github.com/dotnet/maui/issues/19768.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,18 +11,18 @@ public class Bugzilla34912 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "Can't change IsPresented when setting SplitOnLandscape ";
+	public override string Issue => "ListView.IsEnabled has no effect on iOS";
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void Bugzilla34912Test()
-	// {
-	// 	App.Tap("Allen");
-	// 	App.WaitForElement("You tapped Allen");
-	// 	App.Tap("OK");
-	// 	App.Tap("btnDisable");
-	// 	App.Tap("Allen");
-	// 	App.WaitForNoElement("You tapped Allen");
-	// }
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void Bugzilla34912Test()
+	{
+		App.Tap("Allen");
+		App.WaitForElement("You tapped Allen");
+		App.Tap("OK");
+		App.Tap("Disable ListView");
+		App.Tap("Allen");
+		App.WaitForNoElement("You tapped Allen");
+	}
 }
+#endif

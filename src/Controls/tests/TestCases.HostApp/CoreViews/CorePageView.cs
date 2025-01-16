@@ -40,6 +40,7 @@ namespace Maui.Controls.Sample
 			// Concepts & Abstracts
 			new GalleryPageFactory(() => new BorderGallery(), "Border Gallery"),
 			new GalleryPageFactory(() => new DragAndDropGallery(), "Drag and Drop Gallery"),
+			new GalleryPageFactory(() => new FontsGalleryPage(), "Fonts Gallery"),
 			new GalleryPageFactory(() => new GestureRecognizerGallery(), "Gesture Recognizer Gallery"),
 			new GalleryPageFactory(() => new InputTransparencyGalleryPage(), "Input Transparency Gallery"),
 			new GalleryPageFactory(() => new ImageLoadingGalleryPage(), "Image Loading Gallery"),
