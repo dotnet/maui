@@ -277,10 +277,7 @@ namespace Microsoft.Maui.Controls
 			if (newValue != null)
 			{
 				((LockableObservableListWrapper)Items).IsLocked = true;
-				var selectedItem = oldValue == null ? SelectedItem : null;
 				ResetItems();
-				if (selectedItem != null)
-					SelectedItem = selectedItem;
 			}
 			else
 			{
@@ -353,7 +350,13 @@ namespace Microsoft.Maui.Controls
 			foreach (object item in ItemsSource)
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
 			Handler?.UpdateValue(nameof(IPicker.Items));
-
+			// If the SelectedItem is set before the ItemsSource is updated, 
+			// the picker may not load with the correct SelectedItem, leaving the SelectedIndex at its default value of -1. 
+			// Therefore, the SelectedIndex is properly updated here to match the SelectedItem.
+			if (SelectedItem is not null && SelectedItem is -1)
+			{
+				UpdateSelectedIndex(SelectedItem);
+			}
 			ClampSelectedIndex();
 		}
 
