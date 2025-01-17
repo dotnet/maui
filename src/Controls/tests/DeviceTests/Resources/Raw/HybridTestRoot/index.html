@@ -49,6 +49,16 @@
             };
             return result;
         }
+        
+        // test method invoke with simple parameters and no return value
+        function EvaluateMeWithParamsAndVoidReturn(a, b) {
+            window.EvaluateMeWithParamsAndVoidReturnResult = a + b;
+        }
+        function EvaluateMeWithParamsAndVoidReturnGetResult() {
+            var result = window.EvaluateMeWithParamsAndVoidReturnResult;
+            window.EvaluateMeWithParamsAndVoidReturnResult = undefined;
+            return result;
+        }
 
         // test async method invoke with parameters, and returning complex type
         async function EvaluateMeWithParamsAndAsyncReturn(s1, s2) {

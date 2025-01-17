@@ -339,10 +339,17 @@ namespace Microsoft.Maui.Handlers
 
 			var stringResult = await callback.Task;
 
+			// if there is no result or if the result was null/undefined, then treat it as null
 			if (stringResult is null)
 			{
 				invokeJavaScriptRequest.SetResult(null);
 			}
+			// if we are not looking for a return object, then return null
+			else if (invokeJavaScriptRequest.ReturnTypeJsonTypeInfo is null)
+			{
+				invokeJavaScriptRequest.SetResult(null);
+			}
+			// if we are expecting a result, then deserialize what we have
 			else
 			{
 				var typedResult = JsonSerializer.Deserialize(stringResult, invokeJavaScriptRequest.ReturnTypeJsonTypeInfo);
