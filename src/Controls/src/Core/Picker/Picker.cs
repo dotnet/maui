@@ -277,10 +277,7 @@ namespace Microsoft.Maui.Controls
 			if (newValue != null)
 			{
 				((LockableObservableListWrapper)Items).IsLocked = true;
-				var selectedItem = oldValue == null ? SelectedItem : null;
 				ResetItems();
-				if (selectedItem != null)
-					SelectedItem = selectedItem;
 			}
 			else
 			{
