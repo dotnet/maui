@@ -1,8 +1,7 @@
-namespace Microsoft.Maui
+namespace Microsoft.Maui;
+
+internal interface ILabelCompat
 {
-	internal interface ILabelCompat
-	{
-		TextType TextType { get; }
-		TextTransform TextTransform { get; }
-	}
+	TextType TextType { get; }
+	TextTransform TextTransform { get; }
 }

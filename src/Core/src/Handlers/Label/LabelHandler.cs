@@ -85,10 +85,10 @@ namespace Microsoft.Maui.Handlers
 
 		PlatformView ILabelHandler.PlatformView => PlatformView;
 
-		// This is a legacy property automatically remapped to `Text`, so it can always be considered as a default value.
+		/// <summary>This is a legacy property automatically remapped to `Text`, so it can always be considered as a default value.</summary>
 		internal static bool HasDefaultTextTransform(ILabel arg) => true;
 
-		// This is a legacy property automatically remapped to `Text`, so it can always be considered as a default value.
+		/// <summary>This is a legacy property automatically remapped to `Text`, so it can always be considered as a default value.</summary>
 		internal static bool HasDefaultTextType(ILabel arg) => true;
 
 		internal static bool HasDefaultTextDecorations(ILabel label)
