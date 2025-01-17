@@ -1,36 +1,65 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:cv1="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.Issues.Issue26810">
-    <Grid RowDefinitions="100,100,*"
-          AutomationId="26810MainGrid">
-        <Button Text="Scroll to Random Item"
-                AutomationId="26810Button"
-                x:Name="ScrollToButton"
-                Grid.Row="0"
-                Clicked="ScrollToButton_Clicked"
-                HorizontalOptions="Center"
-                VerticalOptions="Center"/>
-        <Button Text="Add New Item"
-                AutomationId="26810AddButton"
-                x:Name="AddButton"
-                Grid.Row="1"
-                Clicked="AddButton_Clicked"
-                HorizontalOptions="Center"
-                VerticalOptions="Center"/>
-        <CollectionView x:Name="CollectionView"
-                        AutomationId="26810CollectionView"
-                        Grid.Row="2">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <Grid HeightRequest="50">
-                        <Label Text="{Binding Name}"
-                               AutomationId="{Binding AutomationId}"
-                               VerticalOptions="Center"
-                               HorizontalOptions="Center"/>
-                    </Grid>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-    </Grid>
+        <Grid RowDefinitions="50,50,50,*"
+              AutomationId="26810MainGrid">
+                <Grid Grid.Row="0"
+                      ColumnDefinitions="*,*,*">
+                        <Button Text="KeepItemsInView"
+                                AutomationId="26810FirstItemButton"
+                                x:Name="KeepItemsInView"
+                                Grid.Column="0"
+                                Clicked="ItemsUpdatingScrollMode_Clicked"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"/>
+                        <Button Text="KeepScrollOffset"
+                                AutomationId="26810ScrollOffsetButton"
+                                x:Name="KeepScrollOffset"
+                                Grid.Column="1"
+                                Clicked="ItemsUpdatingScrollMode_Clicked"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"/>
+                        <Button Text="KeepLastItemInView"
+                                AutomationId="26810LastItemButton"
+                                x:Name="KeepLastItemInView"
+                                Grid.Column="2"
+                                Clicked="ItemsUpdatingScrollMode_Clicked"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"/>
+                </Grid>
+                <Button Text="Scroll to Random Item"
+                        AutomationId="26810Button"
+                        x:Name="ScrollToButton"
+                        Grid.Row="1"
+                        Clicked="ScrollToButton_Clicked"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+                <Button Text="Add New Item"
+                        AutomationId="26810AddButton"
+                        x:Name="AddButton"
+                        Grid.Row="2"
+                        Clicked="AddButton_Clicked"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+                <cv1:CollectionView1 x:Name="CollectionView"
+                                     AutomationId="26810CollectionView"
+                                     Grid.Row="3">
+                        <cv1:CollectionView1.ItemsLayout>
+                                <LinearItemsLayout ItemSpacing="5"
+                                                   Orientation="Horizontal"/>
+                        </cv1:CollectionView1.ItemsLayout>
+                        <cv1:CollectionView1.ItemTemplate>
+                                <DataTemplate>
+                                        <Grid HeightRequest="50">
+                                                <Label Text="{Binding Name}"
+                                                       AutomationId="{Binding AutomationId}"
+                                                       VerticalOptions="Center"
+                                                       HorizontalOptions="Center"/>
+                                        </Grid>
+                                </DataTemplate>
+                        </cv1:CollectionView1.ItemTemplate>
+                </cv1:CollectionView1>
+        </Grid>
 </ContentPage>

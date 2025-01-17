@@ -502,7 +502,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
-				ForceScrollToFirstItem(CollectionView);
+				ForceScrollToFirstItem(CollectionView, _itemsLayout);
 			}
 		}
 
@@ -569,7 +569,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return false;
 		}
 
-		static void ForceScrollToFirstItem(UICollectionView collectionView)
+		static void ForceScrollToFirstItem(UICollectionView collectionView, ItemsLayout itemsLayout)
 		{
 			//Fix Added for ItemsUpdatingScrollMode.KeepItemsInView
 			int sections = (int)collectionView.NumberOfSections();
@@ -582,7 +582,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (collectionView.NumberOfItemsInSection(0) > 0)
 			{
 				var indexPath = NSIndexPath.FromItemSection(0, 0);
-				collectionView.ScrollToItem(indexPath, UICollectionViewScrollPosition.Top, true);
+				if (itemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+					collectionView.ScrollToItem(indexPath, UICollectionViewScrollPosition.Top, true);
+				else
+					collectionView.ScrollToItem(indexPath, UICollectionViewScrollPosition.Right, true);
 			}
 		}
 
