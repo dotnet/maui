@@ -51,12 +51,19 @@ namespace Microsoft.Maui.Platform
 			var context = seekBar.Context;
 			if (context == null)
 				return;
+
+			var defaultThumbDrawable = context.GetDrawable(Resource.Drawable.abc_seekbar_thumb_material);
+
+			int defaultThumbWidth = defaultThumbDrawable!.IntrinsicWidth;
+			int defaultThumbHeight = defaultThumbDrawable.IntrinsicHeight;
+
 			var thumbImageSource = slider.ThumbImageSource;
 			if (thumbImageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var result = await service.GetDrawableAsync(thumbImageSource, context);
 				var thumbDrawable = result?.Value;
+
 				if (seekBar.IsAlive() && thumbDrawable != null)
 				{
 					using var value = new TypedValue();
@@ -66,27 +73,14 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					seekBar.SetThumb(context.GetDrawable(Resource.Drawable.abc_seekbar_thumb_material));
-					if (slider.ThumbColor is null && context.Theme is not null)
-					{
-						using var value = new TypedValue();
-						context.Theme.ResolveAttribute(Android.Resource.Attribute.ColorAccent, value, true);
-						var color = new Color(value.Data);
-						seekBar.Thumb?.SetColorFilter(color, FilterMode.SrcIn);
-					}
-					else
-					{
-						seekBar.UpdateThumbColor(slider);
-					}
+					seekBar.UpdateThumbColor(slider);
 				}
 			}
 		}
 
-		static Bitmap ScaleBitmap(Bitmap bitmap, float scaleFactor)
+		static Bitmap ResizeBitmap(Bitmap originalBitmap, int targetWidth, int targetHeight)
 		{
-			int width = (int)(bitmap.Width * scaleFactor);
-			int height = (int)(bitmap.Height * scaleFactor);
-			return Bitmap.CreateScaledBitmap(bitmap, width, height, true);
+			return Bitmap.CreateScaledBitmap(originalBitmap, targetWidth, targetHeight, true);
 		}
 	}
 }
