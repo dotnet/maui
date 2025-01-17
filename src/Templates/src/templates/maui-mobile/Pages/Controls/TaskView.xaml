@@ -41,8 +41,18 @@
                             Command="{Binding NavigateToTaskCommand, Source={RelativeSource AncestorType={x:Type pageModels:IProjectTaskPageModel}}, x:DataType=pageModels:IProjectTaskPageModel}" 
                             CommandParameter="{Binding .}"/>
                     </Grid.GestureRecognizers>
-                    <CheckBox Grid.Column="0" IsChecked="{Binding IsCompleted, Mode=OneTime}" VerticalOptions="Center" CheckedChanged="CheckBox_CheckedChanged"/>
-                    <Label Grid.Column="1" Text="{Binding Title}" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
+                    
+                    <CheckBox Grid.Column="0"
+                        IsChecked="{Binding IsCompleted, Mode=OneTime}"
+                        VerticalOptions="Center"
+                        CheckedChanged="CheckBox_CheckedChanged"
+                        SemanticProperties.Description="{Binding Title}"/>
+
+                    <Label Grid.Column="1"
+                        Text="{Binding Title}"
+                        VerticalOptions="Center"
+                        LineBreakMode="TailTruncation"
+                        AutomationProperties.IsInAccessibleTree="False" />
                 </Grid>
             </shimmer:SfShimmer.Content>
         </shimmer:SfShimmer>
