@@ -235,7 +235,10 @@ namespace Microsoft.Maui.Platform
 				int start = GetSelectionStart(editText, entry);
 				int end = GetSelectionEnd(editText, entry, start);
 
-				editText.Post(() => editText.SetSelection(start, end));
+				if (editText.IsFocused)
+					editText.Post(() => editText.SetSelection(start, end));
+				else
+					editText.SetSelection(start, end);
 			}
 		}
 
