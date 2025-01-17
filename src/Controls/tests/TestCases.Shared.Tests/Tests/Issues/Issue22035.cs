@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Android] CarouselView: VirtualView cannot be null here, when clearing and adding items on second navigation";
 
 		[Test]
-		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, App.Back() is not working as expected.")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue. More information: https://github.com/dotnet/maui/issues/22287")]
 		public void CarouselViewVirtualViewNotNull()
 		{
@@ -25,7 +24,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.WaitForElement("TestLoadButton");
 				App.Tap("TestLoadButton");
 				App.WaitForElement("Item1");
+				# if MACCATALYST
+				App.TapBackArrow();
+				#else
 				App.Back();
+				#endif
 			}
 
 			// Without exceptions, the test has passed.

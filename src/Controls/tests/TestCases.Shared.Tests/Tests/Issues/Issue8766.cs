@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿# if TEST_FAILS_ON_WINDOWS
+// AutomationId does not work layouts in windows, for more information: https://github.com/dotnet/maui/issues/4715
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,7 +21,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void VisualPropagatesToEmptyView()
 		{
 			App.WaitForElement("TestReady");
-			App.Screenshot("CollectionViewWithEmptyView");
+			VerifyScreenshot();
 		}
 	}
 }
+#endif
