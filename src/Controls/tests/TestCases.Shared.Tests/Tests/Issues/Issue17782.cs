@@ -1,4 +1,3 @@
-#if !MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -30,4 +29,3 @@ public class Issue17782 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
-#endif
