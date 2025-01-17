@@ -25,4 +25,5 @@ class SourceGenContext (IndentedTextWriter writer, Compilation compilation, Sour
 	public IDictionary<INode, (LocalVariable namescope, IList<string> namesInScope)> Scopes = new Dictionary<INode, (LocalVariable, IList<string>)>(); 
     public SourceGenContext? ParentContext {get;set;}
 	public ITypeSymbol? BaseType { get; } = baseType;
+	public IDictionary<INode, ITypeSymbol> Types { get; } = new Dictionary<INode, ITypeSymbol>();
 }

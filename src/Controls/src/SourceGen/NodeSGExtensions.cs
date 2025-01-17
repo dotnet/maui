@@ -65,6 +65,8 @@ static class NodeSGExtensions
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, KnownMarkups.ProvideValueForSetter},
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DynamicResourceExtension")!, KnownMarkups.ProvideValueForDynamicResourceExtension},
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StyleSheetExtension")!, KnownMarkups.ProvideValueForStyleSheetExtension},
+        {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TypeExtension")!, KnownMarkups.ProvideValueForTypeExtension},
+        
     };
 
     public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
@@ -448,38 +450,40 @@ static class NodeSGExtensions
 
     public static IFieldSymbol GetBindableProperty(this ValueNode node, SourceGenContext context)
     {
-        //FIXME: report diagnostic on missing TargetType
-        static string? GetTargetTypeName(INode node)
-			=> (((ElementNode)node).Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+		static ITypeSymbol? GetTargetTypeSymbol(INode node, SourceGenContext context)
+		{
+            var ttnode = (node as ElementNode)?.Properties[new XmlName("", "TargetType")];
+            //it's either a value
+            if (ttnode is ValueNode { Value: string tt })
+                return  XmlTypeExtensions.GetTypeSymbol(tt, context.ReportDiagnostic, context.Compilation, context.XmlnsCache, node);
+            //or a x:Type that we parsed earlier
+            if (context.Types.TryGetValue(ttnode!, out var typeSymbol))
+                return typeSymbol;
+            //FIXME: report diagnostic on missing TargetType
+            return null;
+		}
 
-
-        var parts = ((string)node.Value).Split('.');
+		var parts = ((string)node.Value).Split('.');
         if (parts.Length == 1)
         {
-            string? typeName = null;
+            ITypeSymbol? typeSymbol = null;
             var parent = node.Parent?.Parent as IElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as IElementNode;
             if (   node.Parent is ElementNode { XmlType.NamespaceUri: XamlParser.MauiUri }
                 && (   node.Parent is ElementNode { XmlType.Name: "Setter" }
                     || node.Parent is ElementNode { XmlType.Name: "PropertyCondition" }))
             {
                 if (parent!.XmlType.NamespaceUri == XamlParser.MauiUri &&
-                    (parent.XmlType.Name == "Trigger"
+                    (      parent.XmlType.Name == "Trigger"
                         || parent.XmlType.Name == "DataTrigger"
                         || parent.XmlType.Name == "MultiTrigger"
                         || parent.XmlType.Name == "Style"))
-                {
-                    typeName = GetTargetTypeName(parent);
-                }
+                    typeSymbol = GetTargetTypeSymbol(parent, context);
                 else if (parent.XmlType.NamespaceUri == XamlParser.MauiUri && parent.XmlType.Name == "VisualState")
-                {
-                    typeName = FindTypeNameForVisualState(parent, context, node);
-                }
+                    typeSymbol = FindTypeSymbolForVisualState(parent, context, node);
             }
-            else if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.MauiUri && (node.Parent as ElementNode)?.XmlType.Name == "Trigger")
-            {
-                typeName = GetTargetTypeName(node.Parent!);
-            }
-            var typeSymbol = XmlTypeExtensions.GetTypeSymbol(typeName!, context.ReportDiagnostic, context.Compilation, context.XmlnsCache, node);
+            else if (node.Parent is ElementNode { XmlType.NamespaceUri: XamlParser.MauiUri } && node.Parent is ElementNode { XmlType.Name: "Trigger" })
+                typeSymbol = GetTargetTypeSymbol(node.Parent!, context);
+
             var propertyName = parts[0];
             return typeSymbol!.GetBindableProperty("", ref propertyName, out _, context, node)!;
         }
@@ -496,7 +500,7 @@ static class NodeSGExtensions
         }
     }
 
-    static string? FindTypeNameForVisualState(IElementNode parent, SourceGenContext context, IXmlLineInfo lineInfo)
+    static ITypeSymbol? FindTypeSymbolForVisualState(IElementNode parent, SourceGenContext context, IXmlLineInfo lineInfo)
     {
         //1. parent is VisualState, don't check that
 
@@ -513,10 +517,13 @@ static class NodeSGExtensions
         else
             target = (IElementNode)target.Parent;
 
+        string? typeName = null;
         //4. target is now a Setter in a Style, or a VE
         if (target.XmlType.NamespaceUri == XamlParser.MauiUri && target.XmlType.Name == "Setter")
-            return ((target?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
+            typeName = ((target?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
         else
-            return target.XmlType.Name;
+            typeName = target.XmlType.Name;
+        
+        return XmlTypeExtensions.GetTypeSymbol(typeName!, context.ReportDiagnostic, context.Compilation, context.XmlnsCache, parent);
     }
 }

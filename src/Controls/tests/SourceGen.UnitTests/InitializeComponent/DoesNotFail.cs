@@ -15,25 +15,13 @@ public class DoesNotFail : SourceGenXamlInitializeComponentTestBase
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 	xmlns:local="clr-namespace:Test"
 	x:Class="Test.TestPage" >
-	<ListView x:Name="lv">
-		<ListView.ItemTemplate>
-			<DataTemplate>
-				<ViewCell>
-					<StackLayout Orientation="Horizontal">
-						<StackLayout.Resources>
-							<ResourceDictionary>
-								<Style TargetType="Label">
-									<Setter Property="HorizontalOptions" Value="Center"/>
-								</Style>
-							</ResourceDictionary>
-						</StackLayout.Resources>
-						<Label Text="Example1"/>
-						<Label Text="2..."/>
-					</StackLayout>
-				</ViewCell>
-			</DataTemplate>
-		</ListView.ItemTemplate>
-	</ListView>
+    <ContentPage.Resources>
+        <x:Array x:Key="myArray" Type="{x:Type x:Object}">
+            <x:String>Some string</x:String>
+            <x:Int32>69</x:Int32>
+            <x:Int32>32</x:Int32>
+        </x:Array>
+    </ContentPage.Resources>
 </ContentPage>
 """;
 
@@ -45,25 +33,6 @@ using Microsoft.Maui.Controls.Xaml;
 using System.Collections.Generic;
 
 namespace Test;
-
-[AcceptEmptyServiceProvider]
-public class TestConverter : IValueConverter
-{
-	public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-	{
-		throw new NotImplementedException();
-	}
-
-	public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-	{
-		throw new NotImplementedException();
-	}
-
-	public object ProvideValue(IServiceProvider serviceProvider)
-	{
-		throw new NotImplementedException();
-	}
-}
 
 [XamlProcessing(XamlInflator.SourceGen)]
 public partial class TestPage : ContentPage

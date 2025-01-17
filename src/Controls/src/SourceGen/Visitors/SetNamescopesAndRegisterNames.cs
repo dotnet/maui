@@ -37,14 +37,10 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 	}
 
 	public void Visit(MarkupNode node, INode parentNode)
-	{
-		Context.Scopes[node] = Context.Scopes[parentNode];
-	}
+		=> Context.Scopes[node] = Context.Scopes[parentNode];
 
 	public void Visit(ElementNode node, INode parentNode)
 	{
-
-
 		LocalVariable namescope;
 		IList<string> namesInNamescope;
 		var setNameScope = false;
@@ -60,8 +56,8 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 			namescope = Context.Scopes[parentNode].namescope;
 			namesInNamescope = Context.Scopes[parentNode].namesInScope;
 		}
-		if (setNameScope && Context.Variables[node].Type.Implements(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!))
-			Writer.Write($"global::Maui.Controls.Internals.NameScope.SetNameScope({Context.Variables[node].Name}, {namescope.Name});");
+		if (setNameScope && Context.Variables[node].Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!))
+			Writer.WriteLine($"global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope({Context.Variables[node].Name}, {namescope.Name});");
 		//workaround when VSM tries to apply state before parenting
 		else if (Context.Variables.TryGetValue(node, out var variable) && variable.Type.Implements(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!))
 			Writer.WriteLine($"{Context.Variables[node].Name}.transientNamescope = {namescope.Name};");
@@ -107,7 +103,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 	LocalVariable CreateNamescope()
 	{
         var namescope = NamingHelpers.CreateUniqueVariableName(Context, "NameScope");
-		Writer.WriteLine($"var {namescope} = new global::Microsoft.Maui.Controls.Internals.NameScope();");
+		Writer.WriteLine($"global::Microsoft.Maui.Controls.Internals.INameScope {namescope} = new global::Microsoft.Maui.Controls.Internals.NameScope();");
         return new LocalVariable(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.NameScope")!, namescope);
 	}
 
