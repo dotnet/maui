@@ -1899,7 +1899,7 @@ namespace UITest.Appium
 		{
 			return app switch
 			{
-				AppiumAndroidApp _ => AppiumQuery.ByXPath($"//android.widget.LinearLayout[@resource-id=\"{app.GetAppId()}:id/navigationlayout_appbar\"]/android.view.ViewGroup/*[1]"),
+				AppiumAndroidApp _ => AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"),
 				AppiumIOSApp _ => AppiumQuery.ByAccessibilityId("Back"),
 				AppiumCatalystApp _ => AppiumQuery.ByAccessibilityId("Back"),
 				AppiumWindowsApp _ => AppiumQuery.ByAccessibilityId("NavigationViewBackButton"),
