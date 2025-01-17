@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using CoreGraphics;
 using Microsoft.Extensions.DependencyInjection;
 using ObjCRuntime;
 using UIKit;
@@ -41,18 +43,40 @@ namespace Microsoft.Maui.Platform
 				uiSlider.ThumbTintColor = slider.ThumbColor.ToPlatform();
 		}
 
+
 		public static async Task UpdateThumbImageSourceAsync(this UISlider uiSlider, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var thumbImageSource = slider.ThumbImageSource;
-
 			if (thumbImageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var scale = uiSlider.GetDisplayDensity();
 				var result = await service.GetImageAsync(thumbImageSource, scale);
 				var thumbImage = result?.Value;
-
-				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);
+				if (thumbImage != null)
+				{
+					// Standard iOS slider thumb size is approximately 28x28 points
+					const float TARGET_SIZE = 28f;
+					var thumbWidth = (float)thumbImage.Size.Width;
+					var thumbHeight = (float)thumbImage.Size.Height;
+					// Calculate scale factor based on the larger dimension
+					float scaleFactor = TARGET_SIZE / Math.Max(thumbWidth, thumbHeight);
+					// Create a new size maintaining aspect ratio
+					var newSize = new CGSize(
+						thumbWidth * scaleFactor,
+						thumbHeight * scaleFactor
+					);
+					UIGraphics.BeginImageContextWithOptions(newSize, false, 0);
+					thumbImage.Draw(new CGRect(0, 0, newSize.Width, newSize.Height));
+					var scaledImage = UIGraphics.GetImageFromCurrentImageContext();
+					UIGraphics.EndImageContext();
+					uiSlider.SetThumbImage(scaledImage, UIControlState.Normal);
+				}
+				else
+				{
+					uiSlider.SetThumbImage(null, UIControlState.Normal);
+					uiSlider.UpdateThumbColor(slider);
+				}
 			}
 			else
 			{
