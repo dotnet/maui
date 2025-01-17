@@ -565,7 +565,7 @@ namespace Microsoft.Maui.Platform
 		{
 			// Ensure the default Window Title template is reapplied when switching from a TitleBar.
 			// The ContentTemplateSelector is reset to the default when ContentTemplate is null, restoring proper title display.
-			if (AppTitleBarContentControl.ContentTemplateSelector is null)
+			if (AppTitleBarContentControl is not null && AppTitleBarContentControl.ContentTemplateSelector is null)
 			{
 				AppTitleBarContentControl.ContentTemplateSelector =
 				(DataTemplateSelector)Application.Current.Resources["MauiAppTitleBarTemplateSelector"];
