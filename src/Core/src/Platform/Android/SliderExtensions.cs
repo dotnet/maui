@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Android.Content.Res;
 using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Widget;
 
@@ -47,26 +49,15 @@ namespace Microsoft.Maui.Platform
 		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var context = seekBar.Context;
-
 			if (context == null)
 				return;
-
 			var thumbImageSource = slider.ThumbImageSource;
-
 			if (thumbImageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var result = await service.GetDrawableAsync(thumbImageSource, context);
-
 				var thumbDrawable = result?.Value;
-
 				if (seekBar.IsAlive() && thumbDrawable != null)
-					seekBar.SetThumb(thumbDrawable);
-			}
-			else
-			{
-				seekBar.SetThumb(context.GetDrawable(Resource.Drawable.abc_seekbar_thumb_material));
-				if (slider.ThumbColor is null && context.Theme is not null)
 				{
 					using var value = new TypedValue();
 					context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true);
@@ -75,9 +66,27 @@ namespace Microsoft.Maui.Platform
 				}
 				else
 				{
-					seekBar.UpdateThumbColor(slider);
+					seekBar.SetThumb(context.GetDrawable(Resource.Drawable.abc_seekbar_thumb_material));
+					if (slider.ThumbColor is null && context.Theme is not null)
+					{
+						using var value = new TypedValue();
+						context.Theme.ResolveAttribute(Android.Resource.Attribute.ColorAccent, value, true);
+						var color = new Color(value.Data);
+						seekBar.Thumb?.SetColorFilter(color, FilterMode.SrcIn);
+					}
+					else
+					{
+						seekBar.UpdateThumbColor(slider);
+					}
 				}
 			}
+		}
+
+		static Bitmap ScaleBitmap(Bitmap bitmap, float scaleFactor)
+		{
+			int width = (int)(bitmap.Width * scaleFactor);
+			int height = (int)(bitmap.Height * scaleFactor);
+			return Bitmap.CreateScaledBitmap(bitmap, width, height, true);
 		}
 	}
 }
