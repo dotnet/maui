@@ -2,6 +2,7 @@
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Primitives;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -11,20 +12,6 @@ namespace Microsoft.Maui.Handlers
 		const nint ContentTag = 0x845fed;
 
 		readonly ScrollEventProxy _eventProxy = new();
-
-		public override bool NeedsContainer
-		{
-			get
-			{
-				//if we are being wrapped by a BorderView we need a container
-				//so we can handle masks and clip shapes
-				if (VirtualView?.Parent is IBorderView)
-				{
-					return true;
-				}
-				return base.NeedsContainer;
-			}
-		}
 
 		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
 
@@ -167,7 +154,7 @@ namespace Microsoft.Maui.Handlers
 			var scrollOrientation = scrollView.Orientation;
 			var contentWidthConstraint = scrollOrientation is ScrollOrientation.Horizontal or ScrollOrientation.Both ? double.PositiveInfinity : widthConstraint;
 			var contentHeightConstraint = scrollOrientation is ScrollOrientation.Vertical or ScrollOrientation.Both ? double.PositiveInfinity : heightConstraint;
-			var contentSize = scrollView.MeasureContent(scrollView.Padding, contentWidthConstraint, contentHeightConstraint);
+			var contentSize = MeasureContent(scrollView, scrollView.Padding, contentWidthConstraint, contentHeightConstraint);
 
 			// Our target size is the smaller of it and the constraints
 			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
@@ -177,6 +164,31 @@ namespace Microsoft.Maui.Handlers
 			height = ViewHandlerExtensions.ResolveConstraints(height, scrollView.Height, scrollView.MinimumHeight, scrollView.MaximumHeight);
 
 			return new Size(width, height);
+		}
+
+		static Size MeasureContent(IContentView contentView, Thickness inset, double widthConstraint, double heightConstraint)
+		{
+			var content = contentView.PresentedContent;
+
+			var contentSize = Size.Zero;
+
+			if (!double.IsInfinity(widthConstraint) && Dimension.IsExplicitSet(contentView.Width))
+			{
+				widthConstraint = contentView.Width;
+			}
+
+			if (!double.IsInfinity(heightConstraint) && Dimension.IsExplicitSet(contentView.Height))
+			{
+				heightConstraint = contentView.Height;
+			}
+
+			if (content is not null)
+			{
+				contentSize = content.Measure(widthConstraint - inset.HorizontalThickness,
+					heightConstraint - inset.VerticalThickness);
+			}
+
+			return new Size(contentSize.Width + inset.HorizontalThickness, contentSize.Height + inset.VerticalThickness);
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)

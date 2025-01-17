@@ -88,7 +88,7 @@ namespace Microsoft.Maui.IntegrationTests
 			if (string.IsNullOrEmpty(sdkPath))
 				sdkPath = IsWindows
 					? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Android", "android-sdk")
-					: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Developer", "Xamarin", "android-sdk-macosx");
+					: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Android", "sdk");
 
 			return sdkPath;
 		}

@@ -17,6 +17,7 @@ namespace Maui.Controls.Sample
 			appBuilder.UseMauiApp<App>()
 				.ConfigureFonts(fonts =>
 				{
+					fonts.AddEmbeddedResourceFont(typeof(MauiProgram).Assembly, "Dokdo-Regular.ttf", "Dokdo");
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 					fonts.AddFont("FontAwesome.ttf", "FA");
 					fonts.AddFont("ionicons.ttf", "Ion");

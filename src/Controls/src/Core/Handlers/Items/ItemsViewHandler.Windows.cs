@@ -626,6 +626,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				if (CollectionViewSource.IsSourceGrouped && args.GroupIndex >= 0)
 				{
+					if (args.GroupIndex >= CollectionViewSource.View.CollectionGroups.Count)
+					{
+						return null;
+					}
+
 					// CollectionGroups property is of type IObservableVector, but these objects should implement ICollectionViewGroup
 					var itemGroup = CollectionViewSource.View.CollectionGroups[args.GroupIndex] as ICollectionViewGroup;
 					if (itemGroup != null && 

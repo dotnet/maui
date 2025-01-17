@@ -14,12 +14,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue2777Test()
 		{
-			App.Screenshot("I am at Issue 2965");
-			App.WaitForNoElement("The letter A");
+			App.WaitForElement("The letter A");
 		}
 	}
 }
