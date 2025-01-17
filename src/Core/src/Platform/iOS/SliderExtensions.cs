@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using CoreGraphics;
 using Microsoft.Extensions.DependencyInjection;
 using ObjCRuntime;
 using UIKit;
@@ -48,10 +50,10 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+
 		public static async Task UpdateThumbImageSourceAsync(this UISlider uiSlider, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var thumbImageSource = slider.ThumbImageSource;
-
 			if (thumbImageSource != null)
 			{
 				// Clear the thumb color if we have a thumb image, so that slider doesn't clear image when sliding
