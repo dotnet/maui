@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void Issue3884Test()
 		{
-			App.WaitForElement("TestReady");
+			App.WaitForElement("You should see a blue circle");
 			VerifyScreenshot();
 		}
 	}
