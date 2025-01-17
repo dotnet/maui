@@ -25,14 +25,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallHeightRequest");
-			App.Back();
+			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest");
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_StartPageWithSmallTitleBar");
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallHeightRequest");
-			App.Back();
+			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("SetTitleBarToNull").Tap();
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
@@ -51,14 +51,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
-			App.Back();
+			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest");
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_StartPageWithSmallTitleBar");
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
-			App.Back();
+			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("SetTitleBarToNull").Tap();
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void NavBarResetsColorAfterSmallTitleBarShell()
 		{
 			App.WaitForElement("OpenTitlebarWithSmallHeightRequest").Tap();
-			App.Back();
+			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("OpenPageThatOpensEmptyTitleBar").Tap();
 			VerifyScreenshot();
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void NavBarResetsColorAfterLargeTitleBarShell()
 		{
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
-			App.Back();
+			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("OpenPageThatOpensEmptyTitleBar").Tap();
 			VerifyScreenshot();
