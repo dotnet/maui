@@ -9,12 +9,8 @@ using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using Android.Media.TV;
 using Android.Webkit;
-using Java.Nio;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Storage;
-using Xamarin.Google.Crypto.Tink.Prf;
 using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.Platform
