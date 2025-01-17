@@ -61,6 +61,38 @@ internal class KnownMarkups
 			return "null";
 	}
 
+	public static string ProvideValueForTypeExtension(IElementNode node, SourceGenContext context, out ITypeSymbol? returnType)
+	{
+		returnType = context.Compilation.GetTypeByMetadataName("System.Type")!;
+		if (!node.Properties.TryGetValue(new XmlName("", "Type"), out INode? typeNameNode) &&
+			!node.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Type"), out typeNameNode) &&
+			node.CollectionItems.Count == 1)
+			typeNameNode = node.CollectionItems[0];
+
+		if (typeNameNode is not ValueNode vn){
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"invalid x:Type"));
+			return string.Empty;
+		}
+
+
+		var typeName = vn.Value as string;
+		if (IsNullOrEmpty(typeName))
+		{
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"invalid x:Type"));
+			return string.Empty;
+		}
+
+		var typeSymbol = typeName!.GetTypeSymbol(context.ReportDiagnostic, context.Compilation, context.XmlnsCache, node);
+		if (typeSymbol == null)
+		{
+			//FIXME
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"Type not found {typeSymbol}"));
+			return string.Empty;
+		}
+		context.Types[node] = typeSymbol;
+		return $"typeof({typeSymbol.ToFQDisplayString()})";
+	}
+
 	public static string ProvideValueForSetter(IElementNode node, SourceGenContext context, out ITypeSymbol? returnType)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!;

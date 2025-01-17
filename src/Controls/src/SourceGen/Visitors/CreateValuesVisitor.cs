@@ -63,9 +63,8 @@ class CreateValuesVisitor : IXamlNodeVisitor
             }
 
             var typeNode = node.Properties[new XmlName("", "Type")];
-            ValueNode vTypeNode = typeNode as ValueNode ?? (typeNode as ElementNode)!.CollectionItems[0] as ValueNode ?? throw new Exception("ArrayExtension Type not found");
-            var arrayType = (vTypeNode.Value as string)?.GetTypeSymbol(Context.ReportDiagnostic, Context.Compilation, Context.XmlnsCache, vTypeNode) 
-                ?? throw new Exception($"Type {vTypeNode.Value} not found");
+            if (!Context.Types.TryGetValue(typeNode, out var arrayType))
+                throw new Exception("ArrayExtension Type not found");
 
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, arrayType.Name!.Split('.').Last()+"Array");
 
@@ -158,7 +157,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
         if (ctor is null && factoryMethod is null)
         {
-            //TODO we need an extension method for that and cache the result. it happens eveytime we have a Style
+            //TODO we might need an extension method for that and cache the result. it happens eveytime we have a Style
             ctor = type.InstanceConstructors.FirstOrDefault(c 
                 => c.Parameters.Length >=0
                 && c.Parameters.All(p => p.GetAttributes().Any(a => a?.AttributeClass?.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ParameterAttribute")!, SymbolEqualityComparer.Default)?? false))
@@ -180,7 +179,8 @@ class CreateValuesVisitor : IXamlNodeVisitor
                     if (!node.SkipProperties.Contains(n))
                         node.SkipProperties.Add(n);
 
-                Writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters.ToMethodParameters(Context))});");
+                var paramString = string.Join(", ", parameters.ToMethodParameters(Context));
+                Writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({paramString});");
                 Context.Variables[node] = new LocalVariable(type, variableName);
                 node.RegisterSourceInfo(Context, Writer);
 

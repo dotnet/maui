@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Xml;
 using Microsoft.CodeAnalysis;
@@ -53,5 +54,23 @@ static class IMethodSymbolExtensions
     }
 
 	public static IEnumerable<string> ToMethodParameters(this IEnumerable<(INode node, ITypeSymbol type, ITypeSymbol? converter)> parameters, SourceGenContext context)
-        => parameters.Select(p => p.node is ValueNode vn ? vn.ConvertTo(p.type, p.converter, context) : p.node is ElementNode en ? context.Variables[en].Name : "null");
+	{
+        foreach (var p in parameters)
+        {
+            if (p.node is ValueNode vn)
+                yield return vn.ConvertTo(p.type, p.converter, context);
+            else if (p.node is ElementNode en)
+            {
+                if (en.IsValueProvider(context, 
+                        out ITypeSymbol? returnType,
+                        out ITypeSymbol? valueProviderFace,
+                        out bool acceptEmptyServiceProvider,
+                        out ImmutableArray<ITypeSymbol>? requiredServices))
+                    en.ProvideValue(context.Writer, context, returnType, valueProviderFace, acceptEmptyServiceProvider, requiredServices);
+                    yield return context.Variables[en].Name;
+            }
+            else
+                yield return "null";
+        }
+	}
 }

@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (valueNode is IElementNode)
 				yield break;
 
-			var value = ((string)((ValueNode)valueNode).Value);
+			var value = (string)((ValueNode)valueNode).Value;
 			var setterType = ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Setter");
 
 			//push the setter
