@@ -54,6 +54,9 @@ interface DotNetInvokeResult {
 
 (() => {
 
+    // Cached function to send messages to the host application.
+    let sendMessageFunction: (message: any) => void = null;
+
     /*
      * Initialize the HybridWebView messaging system.
      * This method is called once when the page is loaded.
@@ -64,6 +67,7 @@ interface DotNetInvokeResult {
             window.dispatchEvent(event);
         }
 
+        // Determine the mechanism to receive messages from the host application.
         if (window.chrome?.webview?.addEventListener) {
             // Windows WebView2
             window.chrome.webview.addEventListener('message', (arg: any) => {
@@ -83,6 +87,18 @@ interface DotNetInvokeResult {
                 dispatchHybridWebViewMessage(arg.data);
             });
         }
+
+        // Determine the function to use to send messages to the host application.
+        if (window.chrome?.webview) {
+            // Windows WebView2
+            sendMessageFunction = window.chrome.webview.postMessage;
+        } else if (window.webkit?.messageHandlers?.webwindowinterop) {
+            // iOS and MacCatalyst WKWebView
+            sendMessageFunction = window.webkit.messageHandlers.webwindowinterop.postMessage;
+        } else if (window.hybridWebViewHost) {
+            // Android WebView
+            sendMessageFunction = window.hybridWebViewHost.sendMessage;
+        }
     }
 
     /*
@@ -92,15 +108,8 @@ interface DotNetInvokeResult {
     function sendMessageToDotNet(type: string, message: string) {
         const messageToSend = type + '|' + message;
 
-        if (window.chrome && window.chrome.webview) {
-            // Windows WebView2
-            window.chrome.webview.postMessage(messageToSend);
-        } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
-            // iOS and MacCatalyst WKWebView
-            window.webkit.messageHandlers.webwindowinterop.postMessage(messageToSend);
-        } else if (window.hybridWebViewHost) {
-            // Android WebView
-            window.hybridWebViewHost.sendMessage(messageToSend);
+        if (sendMessageFunction) {
+            sendMessageFunction(messageToSend);
         } else {
             console.error('Unable to send messages to .NET because the host environment for the HybridWebView was unknown.');
         }
