@@ -14,11 +14,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
+		[Category(UITestCategories.Label)]
 		public void VerifyLabelHeightInGridWithColumnSpacing()
 		{
-			App.WaitForElement("WaitForTargetLabel");
-			App.WaitForElement("WaitForTargetLabel2");
-			VerifyScreenshot();
+			App.WaitForElement("Label1");
+
+			var text1 = App.FindElement("Label1").GetText();
+			var text2 = App.FindElement("Label2").GetText();
+
+			Assert.That(text1, Is.EqualTo(text2));
 		}
 	}
 }

@@ -77,14 +77,13 @@
         </HorizontalStackLayout>
 
         <Label
-            HorizontalOptions="Start" Margin="0, 15, 0, -5">
-            <Label.FormattedText>
-                <FormattedString>
-                    <Span Text="The Label`s Height in Grid with ColumnSpacing is: &#10;" TextColor="Red"/>
-                    <Span Text="{Binding Source={x:Reference LabelInGridWithColumnSpacing}, Path=Height, x:DataType=Label}" FontAttributes="Bold" />
-                </FormattedString>
-            </Label.FormattedText>
-        </Label>
+            HorizontalOptions="Start" Margin="0, 15, 0, 0"
+            Text="The Label`s Height in Grid with ColumnSpacing is:"/>
+        <Label
+            x:Name="Label1"
+            AutomationId="Label1"
+            HorizontalOptions="Start" Margin="0, 0, 0, -5"
+            Text="{Binding Source={x:Reference LabelInGridWithColumnSpacing}, Path=Height, x:DataType=Label}" FontAttributes="Bold"/>
         <Grid 
             ColumnDefinitions="auto,*,auto" ColumnSpacing="6"
             RowDefinitions="10,*,10"
@@ -108,14 +107,13 @@
         </Grid>
         
         <Label
-            HorizontalOptions="Start" Margin="0, 15, 0, -5">
-            <Label.FormattedText>
-                <FormattedString>
-                    <Span Text="The Label`s Height in Grid without ColumnSpacing is: &#10;" />
-                    <Span Text="{Binding Source={x:Reference LabelInGridWithoutColumnSpacing}, Path=Height, x:DataType=Label}" FontAttributes="Bold" />
-                </FormattedString>
-            </Label.FormattedText>
-        </Label>
+            HorizontalOptions="Start" Margin="0, 15, 0, 0"
+            Text="The Label`s Height in Grid without ColumnSpacing is:"/>
+        <Label
+            x:Name="Label2"
+            AutomationId="Label2"
+            HorizontalOptions="Start" Margin="0, 0, 0, -5"
+            Text="{Binding Source={x:Reference LabelInGridWithoutColumnSpacing}, Path=Height, x:DataType=Label}" FontAttributes="Bold"/>
         <Grid
             ColumnDefinitions="*" ColumnSpacing="6"
             RowDefinitions="10,*,10"
