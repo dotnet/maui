@@ -161,5 +161,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.NotNull(defaultWebView.Cookies);
 		}
+
+		[Fact]
+		public void TestUrlWithTurkishCharacters()
+        {
+
+           string testUrl = "https://example.com/test-Ağ-Sistem%20Bilgi%20Güvenliği%20Md/Guide.pdf";
+ 
+            bool isWellFormed = Uri.TryCreate(testUrl, UriKind.Absolute, out _);
+
+            Assert.True(isWellFormed, "The URL with Turkish characters should be well-formed.");
+        }
 	}
 }
