@@ -28,6 +28,9 @@ namespace Microsoft.Maui.Handlers
 #endif
 
 			[nameof(ILabel.TextDecorations)] = HasDefaultTextDecorations,
+
+			[nameof(ILabelCompat.TextType)] = HasDefaultTextType,
+			[nameof(ILabelCompat.TextTransform)] = HasDefaultTextTransform,
 		};
 
 		public static IPropertyMapper<ILabel, ILabelHandler> Mapper = new PropertyMapper<ILabel, ILabelHandler>(ViewHandler.ViewMapper)
@@ -81,7 +84,13 @@ namespace Microsoft.Maui.Handlers
 		ILabel ILabelHandler.VirtualView => VirtualView;
 
 		PlatformView ILabelHandler.PlatformView => PlatformView;
-				
+
+		// This is a legacy property automatically remapped to `Text`, so it can always be considered as a default value.
+		internal static bool HasDefaultTextTransform(ILabel arg) => true;
+
+		// This is a legacy property automatically remapped to `Text`, so it can always be considered as a default value.
+		internal static bool HasDefaultTextType(ILabel arg) => true;
+
 		internal static bool HasDefaultTextDecorations(ILabel label)
 			=> label.TextDecorations == TextDecorations.None;
 
