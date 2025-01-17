@@ -184,7 +184,7 @@ namespace Microsoft.Maui.DeviceTests
 					"EvaluateMeWithParamsAndReturn",
 					HybridWebViewTestContext.Default.Int32,
 					[x, y],
-					[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
+					[HybridWebViewTestContext.Default.Int32, HybridWebViewTestContext.Default.Int32]);
 
 				Assert.Equal(777, result);
 			});
