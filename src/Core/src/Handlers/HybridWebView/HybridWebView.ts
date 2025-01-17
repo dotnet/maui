@@ -192,13 +192,7 @@ interface DotNetInvokeResult {
          */
         __InvokeJavaScript: async function (taskId: string, methodName: Function, args: any[]) {
             try {
-                let result: any = null;
-                // @ts-ignore - We are checking the type of the function here
-                if (methodName[Symbol.toStringTag] === 'AsyncFunction') {
-                    result = await methodName(...args);
-                } else {
-                    result = methodName(...args);
-                }
+                const result = await methodName(...args);
                 invokeJavaScriptCallbackInDotNet(taskId, result);
             } catch (ex) {
                 console.error(ex);
