@@ -340,7 +340,7 @@ namespace Microsoft.Maui.Handlers
 			var stringResult = await callback.Task;
 
 			// if there is no result or if the result was null/undefined, then treat it as null
-			if (stringResult is null)
+			if (stringResult is null || stringResult == "null" || stringResult == "undefined")
 			{
 				invokeJavaScriptRequest.SetResult(null);
 			}
