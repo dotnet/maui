@@ -25,11 +25,6 @@ namespace Microsoft.Maui.Platform
 		public MauiToolbar()
 		{
 			InitializeComponent();
-			titleIcon.Visibility = UI.Xaml.Visibility.Collapsed;
-			textBlockBorder.Visibility = UI.Xaml.Visibility.Collapsed;
-			menuContent.Visibility = UI.Xaml.Visibility.Collapsed;
-			titleView.Visibility = UI.Xaml.Visibility.Collapsed;
-			commandBar.Style = (Style)Application.Current.Resources["DefaultCommandBarStyle"];
 		}
 
 		internal string? Title
