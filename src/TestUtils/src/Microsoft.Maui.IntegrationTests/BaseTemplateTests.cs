@@ -13,10 +13,11 @@ public abstract class BaseTemplateTests : BaseBuildTest
 
 	protected void EnableTizen(string projectFile)
 	{
-		FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
-		{
-			{ "<!-- <TargetFrameworks>", "<TargetFrameworks>" },
-			{ "</TargetFrameworks> -->", "</TargetFrameworks>" },
-		});
+		// TODO: enable Tizen in future
+		// FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
+		// {
+		// 	{ "<!-- <TargetFrameworks>", "<TargetFrameworks>" },
+		// 	{ "</TargetFrameworks> -->", "</TargetFrameworks>" },
+		// });
 	}
 }
