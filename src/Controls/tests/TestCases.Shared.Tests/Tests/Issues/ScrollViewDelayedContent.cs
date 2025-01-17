@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			// 1. Let's add a child after a second.
 			// 2. Verify that the child has been added without exceptions.
-			App.WaitForElement("Foo");
+			App.WaitForElementTillPageNavigationSettled("Foo");
 		}
 	}
 }

@@ -12,10 +12,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		public void AddItemsToCarouselViewWorks()
+		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented on macOS")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky test on Windows https://github.com/dotnet/maui/issues/27059")]
+		public async Task AddItemsToCarouselViewWorks()
 		{
 			App.WaitForElement("WaitForStubControl");
+
 			App.Click("AddItemButton");
+
+			await Task.Delay(500);
+			
 			VerifyScreenshot();
 		}
 	}

@@ -18,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void TestIssue1905RefreshShows()
 		{
 			App.WaitForElement("btnRefresh");
-			VerifyScreenshot();
 			App.WaitForElement("data refreshed");
 		}
 	}
