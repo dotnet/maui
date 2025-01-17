@@ -17,13 +17,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Animation)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public async Task AnimateScaleOfBoxView()
 		{
 			App.WaitForElement("TestReady");
-			App.Screenshot("Small blue box");
-
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallBox");
 			// Check the box and button elements.
 			App.WaitForElement(BoxToScale);
 			App.WaitForElement(AnimateBoxViewButton);
@@ -34,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Wait for animation to finish.
 			await Task.Delay(500);
 
-			App.Screenshot("Bigger blue box");
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_BigBox");
 		}
 	}
 }
