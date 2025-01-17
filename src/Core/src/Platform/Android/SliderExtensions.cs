@@ -51,57 +51,54 @@ namespace Microsoft.Maui.Platform
 			var context = seekBar.Context;
 			if (context == null)
 				return;
+
+			var defaultThumbDrawable = context.GetDrawable(Resource.Drawable.abc_seekbar_thumb_material);
+
+			int defaultThumbWidth = defaultThumbDrawable!.IntrinsicWidth;
+			int defaultThumbHeight = defaultThumbDrawable.IntrinsicHeight;
+
 			var thumbImageSource = slider.ThumbImageSource;
 			if (thumbImageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var result = await service.GetDrawableAsync(thumbImageSource, context);
 				var thumbDrawable = result?.Value;
+
 				if (seekBar.IsAlive() && thumbDrawable != null)
 				{
 					if (thumbDrawable is BitmapDrawable bitmapDrawable)
 					{
+						// Resize the bitmap to the desired size
 						var bitmap = bitmapDrawable.Bitmap;
-						if (bitmap != null)
+						if (bitmap is not null)
 						{
-							// Get screen density
-							var density = context.Resources?.DisplayMetrics?.Density ?? 1.0f;
-							// Calculate target size in pixels
-							// Using a reasonable default size of 24dp (common for touch targets)
-							const int DEFAULT_THUMB_DP = 24;
-							int targetSizeInPixels = (int)(DEFAULT_THUMB_DP * density);
-							// Calculate scale factor based on original bitmap size
-							float scaleFactor = (float)targetSizeInPixels / Math.Max(bitmap.Width, bitmap.Height);
-							// Scale the bitmap
-							var scaledBitmap = ScaleBitmap(bitmap, scaleFactor);
-							thumbDrawable = new BitmapDrawable(context.Resources, scaledBitmap);
+							var resizedBitmap = ResizeBitmap(bitmap, defaultThumbWidth, defaultThumbHeight);
+							thumbDrawable = new BitmapDrawable(context.Resources, resizedBitmap);
 						}
-						seekBar.SetThumb(thumbDrawable);
 					}
+					seekBar.SetThumb(thumbDrawable);
+				}
+			}
+			else
+			{
+				seekBar.SetThumb(defaultThumbDrawable);
+				if (slider.ThumbColor is null && context.Theme is not null)
+				{
+					using var value = new TypedValue();
+					context.Theme.ResolveAttribute(Android.Resource.Attribute.ColorAccent, value, true);
+					var color = new Color(value.Data);
+					seekBar.Thumb?.SetColorFilter(color, FilterMode.SrcIn);
 				}
 				else
 				{
-					seekBar.SetThumb(context.GetDrawable(Resource.Drawable.abc_seekbar_thumb_material));
-					if (slider.ThumbColor is null && context.Theme is not null)
-					{
-						using var value = new TypedValue();
-						context.Theme.ResolveAttribute(Android.Resource.Attribute.ColorAccent, value, true);
-						var color = new Color(value.Data);
-						seekBar.Thumb?.SetColorFilter(color, FilterMode.SrcIn);
-					}
-					else
-					{
-						seekBar.UpdateThumbColor(slider);
-					}
+					seekBar.UpdateThumbColor(slider);
 				}
 			}
 		}
 
-		static Bitmap ScaleBitmap(Bitmap bitmap, float scaleFactor)
+		static Bitmap ResizeBitmap(Bitmap originalBitmap, int targetWidth, int targetHeight)
 		{
-			int width = (int)(bitmap.Width * scaleFactor);
-			int height = (int)(bitmap.Height * scaleFactor);
-			return Bitmap.CreateScaledBitmap(bitmap, width, height, true);
+			return Bitmap.CreateScaledBitmap(originalBitmap, targetWidth, targetHeight, true);
 		}
 	}
 }

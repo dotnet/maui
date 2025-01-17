@@ -57,14 +57,11 @@ namespace Microsoft.Maui.Platform
 				{
 					// Standard iOS slider thumb size is approximately 28x28 points
 					const float TARGET_SIZE = 28f;
-					var thumbWidth = (float)thumbImage.Size.Width;
-					var thumbHeight = (float)thumbImage.Size.Height;
+
 					// Calculate scale factor based on the larger dimension
-					float scaleFactor = TARGET_SIZE / Math.Max(thumbWidth, thumbHeight);
 					// Create a new size maintaining aspect ratio
 					var newSize = new CGSize(
-						thumbWidth * scaleFactor,
-						thumbHeight * scaleFactor
+						TARGET_SIZE, TARGET_SIZE
 					);
 					UIGraphics.BeginImageContextWithOptions(newSize, false, 0);
 					thumbImage.Draw(new CGRect(0, 0, newSize.Width, newSize.Height));
