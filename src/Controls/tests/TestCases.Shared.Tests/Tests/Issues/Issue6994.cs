@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS //Application crash while load the listview, for more information: https://github.com/dotnet/maui/issues/27174
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,7 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("Click me");
 			App.Tap("Click me");
-			App.WaitForElement("Success", timeout: TimeSpan.FromSeconds(3));
+			App.WaitForElementTillPageNavigationSettled("Success");
 		}
 	}
 }
+#endif
