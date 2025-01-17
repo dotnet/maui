@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using CoreGraphics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Graphics.Platform;
 using ObjCRuntime;
 using UIKit;
 
