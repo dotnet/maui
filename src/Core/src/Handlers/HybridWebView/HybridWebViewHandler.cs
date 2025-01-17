@@ -343,10 +343,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				invokeJavaScriptRequest.SetResult(null);
 			}
-			else if (invokeJavaScriptRequest.ReturnTypeJsonTypeInfo.Type == typeof(string))
-			{
-				invokeJavaScriptRequest.SetResult(stringResult);
-			}
 			else
 			{
 				var typedResult = JsonSerializer.Deserialize(stringResult, invokeJavaScriptRequest.ReturnTypeJsonTypeInfo);

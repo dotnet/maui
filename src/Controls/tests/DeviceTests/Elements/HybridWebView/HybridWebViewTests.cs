@@ -193,6 +193,8 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(null)]
 		[InlineData("")]
 		[InlineData("foo")]
+		[InlineData("null")]
+		[InlineData("undefined")]
 		public Task InvokeJavaScriptMethodWithParametersAndStringResult(string expected) =>
 			RunTest(async (hybridWebView) =>
 			{
