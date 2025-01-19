@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS //Application crashes when ToolbarItem is created with invalid IconImageSource name.Issue Link: https://github.com/dotnet/maui/issues/27095
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,4 +20,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif
