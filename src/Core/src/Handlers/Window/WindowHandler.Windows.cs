@@ -79,6 +79,7 @@ namespace Microsoft.Maui.Handlers
 
 			var windowManager = handler.MauiContext.GetNavigationRootManager();
 			var previousRootView = windowManager.RootView;
+			var previousTitleBar = windowManager.TitleBar;
 
 			windowManager.Disconnect();
 			windowManager.Connect(handler.VirtualView.Content?.ToPlatform(handler.MauiContext));
@@ -89,6 +90,12 @@ namespace Microsoft.Maui.Handlers
 					container.RemovePage(previousRootView);
 
 				container.AddPage(windowManager.RootView);
+			}
+
+			// Restore the titlebar, which will be cleared in `windowManager.Disconnect`
+			if (previousTitleBar is not null)
+			{
+				windowManager.SetTitleBar(previousTitleBar, handler.MauiContext);
 			}
 
 			window.VisualDiagnosticsOverlay?.Initialize();
