@@ -102,10 +102,10 @@ namespace Microsoft.Maui
 		{
 			var platformView = viewHandler.ToPlatform();
 
-			var Context = viewHandler.MauiContext?.Context;
-			var MauiContext = viewHandler.MauiContext;
+			var context = viewHandler.MauiContext?.Context;
+			var mauiContext = viewHandler.MauiContext;
 
-			if (platformView == null || MauiContext == null || Context == null)
+			if (platformView == null || mauiContext == null || context == null)
 			{
 				return;
 			}
@@ -116,10 +116,7 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			var left = Context.ToPixels(frame.Left);
-			var top = Context.ToPixels(frame.Top);
-			var bottom = Context.ToPixels(frame.Bottom);
-			var right = Context.ToPixels(frame.Right);
+			var (left, top, right, bottom) = context.ToPixels(frame);
 
 			var viewParent = platformView.Parent;
 			if (viewParent?.LayoutDirection == LayoutDirection.Rtl && viewParent is View parentView)
@@ -130,7 +127,7 @@ namespace Microsoft.Maui
 				right = left + width;
 			}
 
-			platformView.Layout((int)left, (int)top, (int)right, (int)bottom);
+			platformView.Layout(left, top, right, bottom);
 
 			viewHandler.Invoke(nameof(IView.Frame), frame);
 		}
