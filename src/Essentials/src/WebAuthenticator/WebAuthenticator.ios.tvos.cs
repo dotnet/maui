@@ -13,6 +13,7 @@ using UIKit;
 using WebKit;
 using Microsoft.Maui.Authentication;
 using Microsoft.Maui.ApplicationModel;
+using System.Threading;
 
 namespace Microsoft.Maui.Authentication
 {
@@ -146,6 +147,116 @@ namespace Microsoft.Maui.Authentication
 
 			return await tcsResponse.Task;
 		}
+
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions, CancellationToken cancellationToken)
+		{
+			currentOptions = webAuthenticatorOptions;
+			var url = webAuthenticatorOptions?.Url;
+			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
+			var prefersEphemeralWebBrowserSession = webAuthenticatorOptions?.PrefersEphemeralWebBrowserSession ?? false;
+
+			if (!VerifyHasUrlSchemeOrDoesntRequire(callbackUrl.Scheme))
+				throw new InvalidOperationException("You must register your URL Scheme handler in your app's Info.plist.");
+
+			// Cancel any previous task that's still pending
+			if (tcsResponse?.Task != null && !tcsResponse.Task.IsCompleted)
+				tcsResponse.TrySetCanceled();
+
+			tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
+			redirectUri = callbackUrl;
+			var scheme = redirectUri.Scheme;
+
+			// Use the CancellationToken to cancel the operation
+			using (cancellationToken.Register(() => tcsResponse.TrySetCanceled()))
+			{
+#if __IOS__
+				void AuthSessionCallback(NSUrl cbUrl, NSError error)
+				{
+					if (error == null)
+						OpenUrlCallback(cbUrl);
+					else if (error.Domain == asWebAuthenticationSessionErrorDomain && error.Code == asWebAuthenticationSessionErrorCodeCanceledLogin)
+						tcsResponse.TrySetCanceled();
+					else if (error.Domain == sfAuthenticationErrorDomain && error.Code == sfAuthenticationErrorCanceledLogin)
+						tcsResponse.TrySetCanceled();
+					else
+						tcsResponse.TrySetException(new NSErrorException(error));
+
+					was = null;
+					sf = null;
+				}
+
+				if (OperatingSystem.IsIOSVersionAtLeast(12))
+				{
+#if IOS17_4_OR_GREATER || MACCATALYST17_4_OR_GREATER
+					if (OperatingSystem.IsIOSVersionAtLeast(17, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(17, 4))
+					{
+						var callback = ASWebAuthenticationSessionCallback.Create(scheme);
+						was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), callback, AuthSessionCallback);
+					}
+					else
+#endif
+					{
+						was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
+					}
+
+					if (OperatingSystem.IsIOSVersionAtLeast(13))
+					{
+						var ctx = new ContextProvider(WindowStateManager.Default.GetCurrentUIWindow());
+						was.PresentationContextProvider = ctx;
+						was.PrefersEphemeralWebBrowserSession = prefersEphemeralWebBrowserSession;
+					}
+					else if (prefersEphemeralWebBrowserSession)
+					{
+						ClearCookies();
+					}
+
+					using (was)
+					{
+#pragma warning disable CA1416
+						was.Start();
+#pragma warning restore CA1416
+						return await tcsResponse.Task;
+					}
+				}
+
+				if (prefersEphemeralWebBrowserSession)
+					ClearCookies();
+
+#pragma warning disable CA1422
+				if (OperatingSystem.IsIOSVersionAtLeast(11))
+				{
+					sf = new SFAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
+					using (sf)
+					{
+						sf.Start();
+						return await tcsResponse.Task;
+					}
+				}
+#pragma warning restore CA1422
+
+				var controller = new SFSafariViewController(WebUtils.GetNativeUrl(url), false)
+				{
+					Delegate = new NativeSFSafariViewControllerDelegate
+					{
+						DidFinishHandler = (svc) =>
+						{
+							if (!(tcsResponse?.Task?.IsCompleted ?? true))
+								tcsResponse.TrySetCanceled();
+						}
+					},
+				};
+
+				currentViewController = controller;
+				await WindowStateManager.Default.GetCurrentUIViewController().PresentViewControllerAsync(controller, true);
+#else
+        var opened = UIApplication.SharedApplication.OpenUrl(url);
+        if (!opened)
+            tcsResponse.TrySetException(new Exception("Error opening Safari"));
+#endif
+				return await tcsResponse.Task;
+			}
+		}
+
 
 		void ClearCookies()
 		{
