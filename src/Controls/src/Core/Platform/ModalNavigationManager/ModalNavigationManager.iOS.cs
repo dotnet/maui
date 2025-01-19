@@ -83,7 +83,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async Task<Page> PopModalPlatformAsync(bool animated)
 		{
-			var modal = CurrentPlatformModalPage;
+			var poppingMultiplePagesWithoutAnimation = _isPoppingModalStack && !animated;
+			var modal = poppingMultiplePagesWithoutAnimation ? _platformModalPages[0] : CurrentPlatformModalPage;
 			_platformModalPages.Remove(modal);
 
 			var controller = (modal.Handler as IPlatformViewHandler)?.ViewController;
