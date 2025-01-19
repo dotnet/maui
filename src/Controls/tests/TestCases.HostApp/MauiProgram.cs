@@ -46,9 +46,14 @@ namespace Maui.Controls.Sample
 				handlers.AddHandler(typeof(Issue11132Control), typeof(Issue11132ControlHandler));
 #endif
 			});
+	
+			NoCaretEditorHandler.RemoveCaret();
+			NoCaretEntryHandler.RemoveCaret();
+			NoCaretSearchBarHandler.RemoveCaret();
 
 			appBuilder.Services.AddTransient<TransientPage>();
 			appBuilder.Services.AddScoped<ScopedPage>();
+
 			return appBuilder.Build();
 		}
 	}
@@ -110,8 +115,6 @@ namespace Maui.Controls.Sample
 #endif
 
 #endif
-
-
 			return window;
 		}
 	}
