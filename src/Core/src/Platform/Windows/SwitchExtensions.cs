@@ -1,4 +1,6 @@
 ﻿using Microsoft.UI.Xaml.Controls;
+using Windows.UI;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Platform
 {
@@ -19,20 +21,18 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (view.TrackColor == null)
-			{
-				return;
-			}
+			var trackColor = view.TrackColor?.ToPlatform() ?? new SolidColorBrush(Color.FromArgb(6, 0, 0, 0));
 
-			if (view.TrackColor != null)
-			{
-				toggleSwitch.TryUpdateResource(
-					view.TrackColor.ToPlatform(),
+			toggleSwitch.TryUpdateResource(
+				    trackColor,
 					"ToggleSwitchFillOn",
 					"ToggleSwitchFillOnPointerOver",
 					"ToggleSwitchFillOnPressed",
-					"ToggleSwitchFillOnDisabled");
-			}
+					"ToggleSwitchFillOnDisabled",
+					"ToggleSwitchFillOff",
+					"ToggleSwitchFillOffPointerOver",
+					"ToggleSwitchFillOffPressed",
+					"ToggleSwitchFillOffDisabled");
 		}
 
 		public static void UpdateThumbColor(this ToggleSwitch toggleSwitch, ISwitch view)
