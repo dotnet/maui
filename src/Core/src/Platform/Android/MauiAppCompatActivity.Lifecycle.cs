@@ -11,6 +11,16 @@ namespace Microsoft.Maui
 {
 	public partial class MauiAppCompatActivity
 	{
+		private UiMode currentNightMode = UiMode.NightUndefined;
+
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
+
+		internal event EventHandler<UiMode> ThemeChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
+
 		protected override void OnActivityResult(int requestCode, Result resultCode, Intent? data)
 		{
 			base.OnActivityResult(requestCode, resultCode, data);
@@ -43,6 +53,12 @@ namespace Microsoft.Maui
 		public override void OnConfigurationChanged(Configuration newConfig)
 		{
 			base.OnConfigurationChanged(newConfig);
+			var newNightMode = newConfig.UiMode & UiMode.NightMask;
+			if (newNightMode != currentNightMode)
+			{
+				_weakEventManager.HandleEvent(this, newNightMode, nameof(ThemeChanged));
+				currentNightMode = newNightMode;
+			}
 
 			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnConfigurationChanged>(del => del(this, newConfig));
 		}

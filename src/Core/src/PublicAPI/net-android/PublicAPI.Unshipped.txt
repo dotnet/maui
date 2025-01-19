@@ -1,4 +1,5 @@
 #nullable enable
+override Microsoft.Maui.Handlers.TimePickerHandler.ConnectHandler(Microsoft.Maui.Platform.MauiTimePicker! platformView) -> void
 Microsoft.Maui.ElementHandlerExtensions
 Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.HandlerDisconnectPolicy.Automatic = 0 -> Microsoft.Maui.HandlerDisconnectPolicy
