@@ -179,7 +179,7 @@ public abstract class PlatformWrapperView extends PlatformContentViewGroup {
                 int top = child.getTop();
                 int right = child.getRight();
                 int bottom = child.getBottom();
-                background.setBounds(left, top, right - left, bottom - top);
+                background.setBounds(0, 0, right - left, bottom - top);
                 // Draw shadow through the drawable
                 drawShadowViaPlatformShadowDrawable(canvas, (PlatformShadowDrawable)background, viewWidth, viewHeight);
                 return;
