@@ -346,7 +346,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return _emptyUIView.Frame.Size.ToSize();
 			}
 
-			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
+			var fullSize = CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
+			double width = fullSize.Width;
+			double height = fullSize.Height;
+
+			if (ItemsView.VerticalOptions != LayoutOptions.Fill &&
+				ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+			{
+				height = ItemsViewLayout.AutoMeasuredHeight;
+			}
+
+			if (ItemsView.HorizontalOptions != LayoutOptions.Fill &&
+				ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Vertical)
+			{
+				width = ItemsViewLayout.AutoMeasuredWidth;
+			}
+
+			return new Size(width, height);
 		}
 
 		void ConstrainItemsToBounds()
@@ -665,11 +681,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Is view set on the ItemsView?
 			if (view is null && (viewTemplate is null || viewTemplate is DataTemplateSelector))
 			{
-				if (formsElement != null)
-				{
-					//Platform.GetRenderer(formsElement)?.DisposeRendererAndChildren();
-				}
-
 				uiView?.Dispose();
 				uiView = null;
 				formsElement?.Handler?.DisconnectHandler();
