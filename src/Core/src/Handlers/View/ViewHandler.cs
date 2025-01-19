@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -20,6 +22,52 @@ namespace Microsoft.Maui.Handlers
 	/// Handlers are also responsible for instantiating the underlying platform view, and mapping the cross-platform control API to the platform view API. </remarks>
 	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
+		internal static readonly IPlatformPropertyDefaults<IView> ViewPropertyDefaults = new PlatformPropertyDefaults<IView>
+		{
+			[nameof(IView.AutomationId)] = HasDefaultAutomationId,
+			[nameof(IView.Clip)] = HasDefaultClip,
+
+			// Uncommenting this leads to failing of the test Issue25887 (ContentPresenter just rendering component string in .Net9).
+			// [nameof(IPadding.Padding)] = HasDefaultPadding,
+
+			[nameof(IView.Shadow)] = HasDefaultShadow,
+			[nameof(IView.Visibility)] = HasDefaultVisibility,
+			[nameof(IView.FlowDirection)] = HasDefaultFlowDirection,
+
+			// TODO: Can this be enabled?
+			// [nameof(IView.Width)] = HasDefaultWidth,
+			// [nameof(IView.Height)] = HasDefaultHeight,
+
+			[nameof(IView.MinimumWidth)] = HasDefaultMinimumWidth,
+			[nameof(IView.MaximumWidth)] = HasDefaultMaximumWidth,
+
+			[nameof(IView.MinimumHeight)] = HasDefaultMinimumHeight,
+			[nameof(IView.MaximumHeight)] = HasDefaultMaximumHeight,
+
+			[nameof(IView.Scale)] = HasDefaultScale,
+			[nameof(IView.ScaleX)] = HasDefaultScaleX,
+			[nameof(IView.ScaleY)] = HasDefaultScaleY,
+
+			[nameof(IView.Rotation)] = HasDefaultRotation,
+			[nameof(IView.RotationX)] = HasDefaultRotationX,
+			[nameof(IView.RotationY)] = HasDefaultRotationY,
+
+			[nameof(IView.AnchorX)] = HasDefaultAnchorX,
+			[nameof(IView.AnchorY)] = HasDefaultAnchorY,
+
+			[nameof(IView.Opacity)] = HasDefaultOpacity,
+			[nameof(IView.TranslationX)] = HasDefaultTranslationX,
+			[nameof(IView.TranslationY)] = HasDefaultTranslationY,
+
+			[nameof(IContextFlyoutElement.ContextFlyout)] = HasDefaultContextFlyout,
+
+			// Input transparency must always be mapped to make views user-interactable and allow gesture recognizers to work properly
+			// [nameof(IView.InputTransparent)] = HasDefaultInputTransparent,
+			
+			[nameof(IToolbarElement.Toolbar)] = HasDefaultToolbar,
+			[nameof(IToolTipElement.ToolTip)] = HasDefaultToolTip,
+		};
+
 		/// <summary>
 		/// A dictionary that maps the virtual view properties to their platform view counterparts.
 		/// </summary>
@@ -31,6 +79,9 @@ namespace Microsoft.Maui.Handlers
 			new PropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
 #endif
 			{
+				// This property is a special one and needs to be set before other properties.
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
+
 				[nameof(IView.AutomationId)] = MapAutomationId,
 				[nameof(IView.Clip)] = MapClip,
 				[nameof(IView.Shadow)] = MapShadow,
@@ -56,7 +107,6 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IView.RotationY)] = MapRotationY,
 				[nameof(IView.AnchorX)] = MapAnchorX,
 				[nameof(IView.AnchorY)] = MapAnchorY,
-				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 #pragma warning disable CS0618 // Type or member is obsolete
 				[nameof(IBorder.Border)] = MapBorderView,
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -100,6 +150,7 @@ namespace Microsoft.Maui.Handlers
 		protected ViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
 			: base(mapper, commandMapper ?? ViewCommandMapper)
 		{
+			PlatformPropertyDefaults = ViewPropertyDefaults;
 		}
 
 		/// <summary>
@@ -535,5 +586,79 @@ namespace Microsoft.Maui.Handlers
 				handler.ToPlatform().UpdateToolTip(tooltipContainer.ToolTip);
 #endif
 		}
+
+		internal static bool HasDefaultAutomationId(IView view)
+			=> string.IsNullOrEmpty(view.AutomationId);
+
+		internal static bool HasDefaultClip(IView view)
+			=> view.Clip is null;
+
+		internal static bool HasDefaultPadding(IView view)
+			=> view is IPadding padding && (padding.Padding.IsEmpty || padding.Padding.IsNaN);
+
+		internal static bool HasDefaultShadow(IView view)
+			=> view.Shadow is null;
+
+		internal static bool HasDefaultVisibility(IView view)
+			=> view.Visibility == Visibility.Visible;
+
+		internal static bool HasDefaultFlowDirection(IView view)
+			=> view.FlowDirection == FlowDirection.MatchParent;
+
+		internal static bool HasDefaultMinimumWidth(IView view)
+			=> double.IsNaN(view.MinimumWidth);
+
+		internal static bool HasDefaultMaximumWidth(IView view)
+			=> double.IsNaN(view.MaximumWidth);
+
+		internal static bool HasDefaultMinimumHeight(IView view)
+			=> double.IsNaN(view.MinimumHeight);
+
+		internal static bool HasDefaultMaximumHeight(IView view)
+			=> double.IsNaN(view.MaximumHeight);
+
+		internal static bool HasDefaultScale(IView view)
+			=> view.Scale == 1;
+
+		internal static bool HasDefaultScaleX(IView view)
+			=> view.Scale == 1 && view.ScaleX == 1;
+
+		internal static bool HasDefaultScaleY(IView view)
+			=> view.Scale == 1 && view.ScaleY == 1;
+
+		internal static bool HasDefaultRotation(IView view)
+			=> view.Rotation % 360 == 0;
+
+		internal static bool HasDefaultRotationX(IView view)
+			=> view.RotationX % 360 == 0;
+
+		internal static bool HasDefaultRotationY(IView view)
+			=> view.RotationY % 360 == 0;
+
+		internal static bool HasDefaultAnchorX(IView view)
+			=> view.AnchorX == 0.5;
+
+		internal static bool HasDefaultAnchorY(IView view)
+			=> view.AnchorY == 0.5;
+
+		internal static bool HasDefaultOpacity(IView view)
+			=> view.Opacity == 1;
+
+		internal static bool HasDefaultTranslationX(IView view)
+			=> view.TranslationX == 0;
+
+		internal static bool HasDefaultTranslationY(IView view)
+			=> view.TranslationY == 0;
+
+		internal static bool HasDefaultContextFlyout(IView view)
+			=> view is IContextFlyoutElement { ContextFlyout: null };
+		internal static bool HasDefaultInputTransparent(IView view)
+			=> !view.InputTransparent;
+
+		internal static bool HasDefaultToolbar(IView view)
+			=> view is IToolbarElement { Toolbar: null };
+
+		internal static bool HasDefaultToolTip(IView view)
+			=> view is IToolTipElement { ToolTip: null };
 	}
 }
