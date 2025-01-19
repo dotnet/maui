@@ -15,8 +15,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		{
 			get
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				foreach (var element in BasicViews
 					.Where(e => !(e is Label) && !(e is BoxView) && !(e is Frame)))
+#pragma warning restore CS0618 // Type or member is obsolete
 				{
 					element.BackgroundColor = Colors.AliceBlue;
 					yield return new TestCaseData(element)
@@ -38,7 +40,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		[Description("Frame background color should match renderer background color")]
 		public async Task FrameBackgroundColorConsistent()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var frame = new Frame { BackgroundColor = Colors.AliceBlue };
+#pragma warning restore CS0618 // Type or member is obsolete
 			var expectedColor = frame.BackgroundColor.ToPlatform();
 			var screenshot = await GetRendererProperty(frame, (ver) => ver.NativeView.ToBitmap(), requiresLayout: true);
 			screenshot.AssertColorAtCenter(expectedColor);

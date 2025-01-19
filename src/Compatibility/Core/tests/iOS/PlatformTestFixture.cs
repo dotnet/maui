@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 				yield return new DatePicker { };
 				yield return new Editor { };
 				yield return new Entry { };
+#pragma warning disable CS0618 // Type or member is obsolete
 				yield return new Frame { };
+#pragma warning restore CS0618 // Type or member is obsolete
 				yield return new Image { };
 				yield return new ImageButton { };
 				yield return new Label { };

@@ -1,8 +1,6 @@
 using System.Collections;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using static Microsoft.Maui.Controls.Compatibility.UITests.NumericExtensions;
-using static Microsoft.Maui.Controls.Compatibility.UITests.ParsingUtils;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 {
@@ -50,8 +48,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		public async Task RotationXConsistent(View view)
 		{
 			var transform = await GetRendererProperty(view, r => r.NativeView.Layer.Transform, requiresLayout: true);
-			var actual = ParseCATransform3D(transform.ToString());
-			var expected = CalculateRotationMatrixForDegrees((float)view.RotationX, UITests.Axis.X);
+			var actual = ParsingUtils.ParseCATransform3D(transform.ToString());
+			var expected = NumericExtensions.CalculateRotationMatrixForDegrees((float)view.RotationX, Axis.X);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
 
@@ -60,8 +58,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		public async Task RotationYConsistent(View view)
 		{
 			var transform = await GetRendererProperty(view, r => r.NativeView.Layer.Transform, requiresLayout: true);
-			var actual = ParseCATransform3D(transform.ToString());
-			var expected = CalculateRotationMatrixForDegrees((float)view.RotationY, UITests.Axis.Y);
+			var actual = ParsingUtils.ParseCATransform3D(transform.ToString());
+			var expected = NumericExtensions.CalculateRotationMatrixForDegrees((float)view.RotationY, Axis.Y);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
 
@@ -70,8 +68,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 		public async Task RotationConsistent(View view)
 		{
 			var transform = await GetRendererProperty(view, r => r.NativeView.Layer.Transform, requiresLayout: true);
-			var actual = ParseCATransform3D(transform.ToString());
-			var expected = CalculateRotationMatrixForDegrees((float)view.Rotation, UITests.Axis.Z);
+			var actual = ParsingUtils.ParseCATransform3D(transform.ToString());
+			var expected = NumericExtensions.CalculateRotationMatrixForDegrees((float)view.Rotation, Axis.Z);
 			Assert.That(actual, Is.EqualTo(expected));
 		}
 	}

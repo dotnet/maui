@@ -19,9 +19,4 @@
     <ProjectReference Include="..\..\..\Core\src\Compatibility.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\..\..\ControlGallery\src\UITests.Shared\Utilities\NumericExtensions.cs" />
-    <Compile Include="..\..\..\ControlGallery\src\UITests.Shared\Utilities\ParsingUtils.cs" />
-  </ItemGroup>
-
 </Project>

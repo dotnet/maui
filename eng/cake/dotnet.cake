@@ -266,6 +266,8 @@ Task("dotnet-test")
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
             "**/Compatibility.Core.UnitTests.csproj",
+            "**/Compatibility.iOS.UnitTests.csproj",
+            "**/Compatibility.Android.UnitTests.csproj",
         };
 
         var success = true;
