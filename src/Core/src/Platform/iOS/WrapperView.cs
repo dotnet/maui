@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Platform
 
 		partial void ShadowChanged()
 		{
-			SetShadow();
+			this.SetShadow(Shadow);
 		}
 
 		partial void BorderChanged() => SetBorder();
@@ -324,6 +324,8 @@ namespace Microsoft.Maui.Platform
 				shadowLayer.ClearShadow();
 			else
 				shadowLayer.SetShadow(Shadow);
+
+			Layer.Mask = shadowLayer;
 		}
 
 		void SetBorder()
