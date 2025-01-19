@@ -624,21 +624,21 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			if (horizAlignment == HorizontalAlignment.Left)
 			{
-				_canvas.DrawText(value, x, y, CurrentState.FontPaint);
+				_canvas.DrawText(value, x, y, CurrentState.FontFont, CurrentState.FontPaint);
 			}
 			else if (horizAlignment == HorizontalAlignment.Right)
 			{
-				var paint = CurrentState.FontPaint;
-				var width = paint.MeasureText(value);
+				var font = CurrentState.FontFont;
+				var width = font.MeasureText(value);
 				x -= width;
-				_canvas.DrawText(value, x, y, CurrentState.FontPaint);
+				_canvas.DrawText(value, x, y, CurrentState.FontFont, CurrentState.FontPaint);
 			}
 			else
 			{
-				var paint = CurrentState.FontPaint;
-				var width = paint.MeasureText(value);
+				var font = CurrentState.FontFont;
+				var width = font.MeasureText(value);
 				x -= width / 2;
-				_canvas.DrawText(value, x, y, CurrentState.FontPaint);
+				_canvas.DrawText(value, x, y, CurrentState.FontFont, CurrentState.FontPaint);
 			}
 		}
 
@@ -660,27 +660,27 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			var attributes = new StandardTextAttributes()
 			{
-				FontSize = CurrentState.FontPaint.TextSize,
+				FontSize = CurrentState.FontFont.Size,
 				Font = CurrentState.Font,
 				HorizontalAlignment = horizAlignment,
 				VerticalAlignment = vertAlignment,
 			};
 
-			LayoutLine callback = (
-				point,
-				textual,
-				text,
-				ascent,
-				descent,
-				leading) =>
+			var align = horizAlignment switch
 			{
-				_canvas.DrawText(text, point.X, point.Y, CurrentState.FontPaint);
+				HorizontalAlignment.Left => SKTextAlign.Left,
+				HorizontalAlignment.Center => SKTextAlign.Center,
+				HorizontalAlignment.Right => SKTextAlign.Right,
+				_ => SKTextAlign.Left,
 			};
 
-			using (var textLayout = new SkiaTextLayout(value, rect, attributes, callback, textFlow, CurrentState.FontPaint))
+			void DrawLineCallback(PointF point, ITextAttributes textual, string text, float ascent, float descent, float leading)
 			{
-				textLayout.LayoutText();
+				_canvas.DrawText(text, point.X, point.Y, align, CurrentState.FontFont, CurrentState.FontPaint);
 			}
+
+			using var textLayout = new SkiaTextLayout(value, rect, attributes, DrawLineCallback, textFlow, CurrentState.FontFont);
+			textLayout.LayoutText();
 		}
 
 		public override void DrawText(IAttributedText value, float x, float y, float width, float height)
