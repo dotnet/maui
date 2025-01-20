@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Click("AddItemButton");
 
 			await Task.Delay(500);
-		
+
 			VerifyScreenshot();
 		}
 	}
