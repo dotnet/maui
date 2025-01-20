@@ -265,6 +265,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override nint NumberOfSections(UICollectionView collectionView)
 		{
+			// https://github.com/dotnet/maui/issues/26997
+			// On iOS versions 15 and 16, this method is called immediately after the base LoadView method is invoked.
+			// At this point, ItemsSource was not set, which caused a crash when accessed.
+			// To handle this scenario, we check if ItemsSource is null before proceeding.
+			// In iOS 17 and later versions, this behavior works properly, as the method is no longer called prematurely.
+			// To ensure compatibility with older iOS versions, we include this null check and return 0 if ItemsSource is null.
+			if (ItemsSource == null)
+			{
+				return 0;
+			}
+
 			CheckForEmptySource();
 			return ItemsSource.GroupCount;
 		}

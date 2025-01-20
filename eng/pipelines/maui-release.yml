@@ -18,7 +18,6 @@ trigger:
     - LICENSE.TXT
     - PATENTS.TXT
     - README.md
-    - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
 
 schedules:
@@ -51,7 +50,12 @@ parameters:
       docsArtifact: xml-docs
 
   - name: Skip1ESComplianceTasks
+    type: boolean
     default: false
+
+  - name: PushMauiPackagesToMaestro
+    type: boolean
+    default: true
 
 resources:
   repositories:
@@ -182,7 +186,7 @@ extends:
             poolName: ${{ parameters.VM_IMAGE_HOST.name }}
             vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
             os: ${{ parameters.VM_IMAGE_HOST.os }}
-            pushMauiPackagesToMaestro: ${{ eq(variables['PushMauiPackagesToMaestro'], 'true') }}
+            pushMauiPackagesToMaestro: ${{ parameters.PushMauiPackagesToMaestro }}
 
         - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
           parameters:
