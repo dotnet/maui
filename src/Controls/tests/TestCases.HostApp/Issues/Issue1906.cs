@@ -1,8 +1,4 @@
-using Microsoft.Maui.Controls.PlatformConfiguration;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-using ListView = Microsoft.Maui.Controls.ListView;
- 
-namespace Maui.Controls.Sample.Issues
+ namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 1906, "AlertView doesn't scroll when text is to large", PlatformAffected.iOS | PlatformAffected.Android)]
 	public class Issue1906 : Microsoft.Maui.Controls.NavigationPage
