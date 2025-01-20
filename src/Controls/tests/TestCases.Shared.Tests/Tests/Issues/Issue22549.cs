@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Border should have radius
 			VerifyScreenshot("BindingOnStrokeShapeWithRadius");
 
-			App.Tap("button");
+			App.Click("button");
 
 			// The test passes if border radius is equal to 0
 			VerifyScreenshot("BindingOnStrokeShapeWithoutRadius");
