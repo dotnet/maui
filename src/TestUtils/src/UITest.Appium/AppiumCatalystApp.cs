@@ -15,6 +15,7 @@ namespace UITest.Appium
 			_commandExecutor.AddCommandGroup(new AppiumCatalystAlertActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystSpecificActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystVirtualKeyboardActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumCatalystScrollActions(this));
 		}
 
 		public override ApplicationState AppState

@@ -40,7 +40,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			base.UpdateBackgroundColor();
 
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 			if (GetValue(BackgroundProperty) == null && Children.Count == 0)
+#pragma warning restore RS0030 // Do not use banned APIs
 			{
 				// Forces the layout to take up actual space if it's otherwise empty
 				Background = new WSolidColorBrush(Colors.Transparent);
