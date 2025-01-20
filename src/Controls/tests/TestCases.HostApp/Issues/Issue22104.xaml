@@ -8,37 +8,34 @@
     <local:Issue22104ViewModel/>
   </ContentPage.BindingContext>
   <ContentPage.Resources>
-    <ResourceDictionary>
-      <Style TargetType="Label">
-        <Setter Property="TextColor"
+    <Style TargetType="Label">
+      <Setter Property="TextColor"
       Value="Blue"/>
-        <Setter Property="Background"
+      <Setter Property="Background"
       Value="Transparent"/>
-        <Setter Property="VisualStateManager.VisualStateGroups">
-          <VisualStateGroupList>
-            <VisualStateGroup x:Name="CommonStates">
-              <VisualState x:Name="Normal">
-                <VisualState.Setters>
-                  <Setter Property="TextColor"
+      <Setter Property="VisualStateManager.VisualStateGroups">
+        <VisualStateGroupList>
+          <VisualStateGroup x:Name="CommonStates">
+            <VisualState x:Name="Normal">
+              <VisualState.Setters>
+                <Setter Property="TextColor"
             Value="Black"/>
-                  <Setter Property="Background"
+                <Setter Property="Background"
             Value="AliceBlue"/>
-                </VisualState.Setters>
-              </VisualState>
-              <VisualState x:Name="Selected">
-                <VisualState.Setters>
-                  <Setter Property="TextColor"
+              </VisualState.Setters>
+            </VisualState>
+            <VisualState x:Name="Selected">
+              <VisualState.Setters>
+                <Setter Property="TextColor"
             Value="Blue"/>
-                  <Setter Property="Background"
+                <Setter Property="Background"
             Value="Red"/>
-                </VisualState.Setters>
-              </VisualState>
-            </VisualStateGroup>
-          </VisualStateGroupList>
-        </Setter>
-      </Style>
-    </ResourceDictionary>
-
+              </VisualState.Setters>
+            </VisualState>
+          </VisualStateGroup>
+        </VisualStateGroupList>
+      </Setter>
+    </Style>
   </ContentPage.Resources>
 
   <VerticalStackLayout
