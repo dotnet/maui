@@ -1,7 +1,7 @@
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 7856,
-	"[Bug]  Shell BackButtonBehaviour TextOverride breaks back",
+	"[Bug] Shell BackButtonBehaviour TextOverride breaks back",
 	PlatformAffected.iOS)]
 public class Issue7856 : TestShell
 {

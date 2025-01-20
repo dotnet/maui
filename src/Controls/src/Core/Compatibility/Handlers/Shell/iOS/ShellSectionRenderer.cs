@@ -621,15 +621,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var renderer = (IPlatformViewHandler)page.ToHandler(_shellSection.FindMauiContext());
 
 			var tracker = _context.CreatePageRendererTracker();
-			tracker.ViewController = renderer.ViewController;
+			var pageViewController = renderer.ViewController!;
+			tracker.ViewController = pageViewController;
 			tracker.Page = page;
 
 			_trackers[page] = tracker;
 
-			if (completionSource != null)
-				_completionTasks[renderer.ViewController] = completionSource;
+			var parentTabBar = ParentViewController as UITabBarController;
+			var showsPresentation = parentTabBar == null || ReferenceEquals(parentTabBar.SelectedViewController, this);
+			if (completionSource != null && showsPresentation)
+				_completionTasks[pageViewController] = completionSource;
 
-			PushViewController(renderer.ViewController, animated);
+			PushViewController(pageViewController, animated);
+			
+			if (completionSource != null && !showsPresentation)
+				completionSource.TrySetResult(true);
 		}
 
 		async void SendPoppedOnCompletion(Task popTask)

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
@@ -10,15 +10,35 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="xunit" Version="$(XunitPackageVersion)"/>
-		<PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)" >
+		<PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+		<PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.Extended" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\samples\GraphicsTester.Portable\GraphicsTester.Portable.csproj" />
+		<ProjectReference Include="..\..\src\Graphics.Skia\Graphics.Skia.csproj" />
 		<ProjectReference Include="..\..\src\Graphics\Graphics.csproj" />
 	</ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\samples\GraphicsTester.Portable\Resources\**" Link="Resources\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="TestImages\**" />
+    <None Update="TestImages\Windows\**" CopyToOutputDirectory="PreserveNewest" Condition="$([MSBuild]::IsOSPlatform('windows'))" />
+    <None Update="TestImages\Mac\**" CopyToOutputDirectory="PreserveNewest" Condition="$([MSBuild]::IsOSPlatform('osx'))" />
+    <None Update="TestImages\Linux\**" CopyToOutputDirectory="PreserveNewest" Condition="!$([MSBuild]::IsOSPlatform('windows')) and !$([MSBuild]::IsOSPlatform('osx'))" />
+    <None Include="Errors\**" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Errors\" />
+  </ItemGroup>
 
 </Project>

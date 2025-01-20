@@ -11,8 +11,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "Image reuse"; 
-		
+		public override string Issue => "Image reuse";
+
 		[Test]
 		[Category(UITestCategories.Image)]
 		[Category(UITestCategories.Compatibility)]

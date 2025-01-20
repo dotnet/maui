@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample
 		{
 			var appBuilder = MauiApp.CreateBuilder();
 
-#if IOS || ANDROID
+#if IOS || ANDROID || MACCATALYST
 			appBuilder.UseMauiMaps();
 #endif
 			appBuilder.UseMauiApp<App>()
@@ -26,13 +26,25 @@ namespace Maui.Controls.Sample
 				.Issue18720AddMappers()
 				.Issue18720EditorAddMappers()
 				.Issue18720DatePickerAddMappers()
-				.Issue18720TimePickerAddMappers();
+				.Issue18720TimePickerAddMappers()
+				.Issue25436RegisterNavigationService();
 
 #if IOS || MACCATALYST
 
 			appBuilder.ConfigureCollectionViewHandlers();
-				
+
 #endif
+			// Register the custom handler
+			appBuilder.ConfigureMauiHandlers(handlers =>
+			{
+#if IOS || MACCATALYST || ANDROID || WINDOWS
+				handlers.AddHandler(typeof(_60122Image), typeof(_60122ImageHandler));
+				handlers.AddHandler(typeof(_57114View), typeof(_57114ViewHandler));
+#endif
+#if IOS || MACCATALYST
+				handlers.AddHandler(typeof(Issue11132Control), typeof(Issue11132ControlHandler));
+#endif
+			});
 
 			appBuilder.Services.AddTransient<TransientPage>();
 			appBuilder.Services.AddScoped<ScopedPage>();

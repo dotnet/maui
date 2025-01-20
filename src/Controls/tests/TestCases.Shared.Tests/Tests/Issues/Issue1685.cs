@@ -14,8 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "Entry clears when upadting text from native with one-way binding"; 
-		
+		public override string Issue => "Entry clears when upadting text from native with one-way binding";
+
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Compatibility)]

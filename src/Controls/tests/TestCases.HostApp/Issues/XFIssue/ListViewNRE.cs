@@ -12,6 +12,20 @@ public class ListViewNRE : TestContentPage
 			ItemsSource = Enumerable.Range(0, 10)
 		};
 
+		listView.ItemTemplate = new DataTemplate(() =>
+		{
+			var label = new Label();
+			label.SetBinding(Label.TextProperty, ".");
+			label.SetBinding(Label.AutomationIdProperty, new Binding("."));
+
+			var viewCell = new ViewCell
+			{
+				View = label
+			};
+
+			return viewCell;
+		});
+
 		listView.ItemSelected += ListView_ItemSelected;
 
 		Content = listView;
@@ -19,6 +33,6 @@ public class ListViewNRE : TestContentPage
 
 	void ListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
 	{
-		Content = new Label { Text = Success };
+		Content = new Label { AutomationId = Success, Text = Success };
 	}
 }

@@ -17,6 +17,7 @@ using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Google.Android.Material.Tabs;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
@@ -25,7 +26,6 @@ using AColor = Android.Graphics.Color;
 using ADrawableCompat = AndroidX.Core.Graphics.Drawable.DrawableCompat;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
-using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
@@ -652,7 +652,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				return _newTabIconColors;
 
 			int defaultColor;
-			
+
 			if (barItemColor is not null)
 			{
 				defaultColor = barItemColor.ToPlatform().ToArgb();
@@ -660,16 +660,16 @@ namespace Microsoft.Maui.Controls.Handlers
 			else
 			{
 #pragma warning disable XAOBS001 // Obsolete
-				var styledAttributes = 
+				var styledAttributes =
 					TintTypedArray.ObtainStyledAttributes(_context.Context, null, Resource.Styleable.NavigationBarView, Resource.Attribute.bottomNavigationStyle, 0);
 #pragma warning restore XAOBS001 // Obsolete
 
 				try
 				{
-					var defaultColors =  styledAttributes.GetColorStateList(Resource.Styleable.NavigationBarView_itemIconTint);
+					var defaultColors = styledAttributes.GetColorStateList(Resource.Styleable.NavigationBarView_itemIconTint);
 					if (defaultColors is not null)
 					{
-						defaultColor = defaultColors.DefaultColor;		
+						defaultColor = defaultColors.DefaultColor;
 					}
 					else
 					{
@@ -678,7 +678,7 @@ namespace Microsoft.Maui.Controls.Handlers
 						// NavigationBarView_itemIconTint should always resolve
 						// But just in case, we'll just hard code to some defaults
 						// instead of leaving the application in a broken state
-						if(IsDarkTheme)
+						if (IsDarkTheme)
 							defaultColor = new Color(1, 1, 1, 0.6f).ToPlatform();
 						else
 							defaultColor = new Color(0, 0, 0, 0.6f).ToPlatform();
