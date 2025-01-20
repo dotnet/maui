@@ -1859,7 +1859,7 @@ namespace UITest.Appium
 		/// <param name="query">The custom IQuery for the back button.</param>
 		public static void TapBackArrow(this IApp app, IQuery query)
 		{
-			app.Tap(query);
+			app.WaitForElement(query).Tap();
 		}
 
 		/// <summary>
