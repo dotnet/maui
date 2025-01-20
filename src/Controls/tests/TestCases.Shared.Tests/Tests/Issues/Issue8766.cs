@@ -1,6 +1,4 @@
-﻿# if TEST_FAILS_ON_WINDOWS
-// AutomationId does not work layouts in windows, for more information: https://github.com/dotnet/maui/issues/4715
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,12 +15,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void VisualPropagatesToEmptyView()
 		{
-			App.WaitForElement("TestReady");
+			App.WaitForElement("InstructionsLabel");
 			VerifyScreenshot();
 		}
 	}
 }
-#endif
