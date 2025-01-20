@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
             App.WaitForElement("TestReady");
 //The BoxView's AutomationId doesn't work correctly on the Windows platform, and using a Label also doesn't ensure the BoxView's size changes.
 #if WINDOWS
-			VerifyScreenshot();
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallBox");
 #else
             var rect = App.WaitForElement(BoxToScale).GetRect();
 #endif
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
             // Wait for animation to finish.
             Thread.Sleep(500);
  #if WINDOWS
-			VerifyScreenshot();
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_BigBox");
 #else
             var scaledRect = App.WaitForElement(BoxToScale).GetRect();
 			Assert.That(scaledRect.Width, Is.GreaterThan(rect.Width));
