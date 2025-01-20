@@ -1,6 +1,5 @@
-#if TEST_FAILS_ON_CATALYST //ScrollDown is not working on Catalyst
+﻿#if TEST_FAILS_ON_CATALYST //ScrollDown is not working on Catalyst
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -8,9 +7,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue7167 : _IssuesUITest
 {
-	const string ListViewId = "ListViewId";
-	const string AddRangeCommandId = "AddRangeCommandId";
-
 	public Issue7167(TestDevice testDevice) : base(testDevice)
 	{
 	}
