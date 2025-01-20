@@ -108,12 +108,8 @@
     },
 
     "__TriggerAsyncCallback": function __TriggerAsyncCallback(taskId, result) {
-        // Make sure the result is a string
-        if (result && typeof (result) !== 'string') {
-            result = JSON.stringify(result);
-        }
-
-        window.HybridWebView.__SendMessageInternal('__InvokeJavaScriptCompleted', taskId + '|' + result);
+        const json = JSON.stringify(result);
+        window.HybridWebView.__SendMessageInternal('__InvokeJavaScriptCompleted', taskId + '|' + json);
     }
 }
 

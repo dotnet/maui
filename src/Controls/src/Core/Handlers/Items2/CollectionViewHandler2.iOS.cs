@@ -155,21 +155,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var itemSizingStrategy = ItemsView.ItemSizingStrategy;
 			var itemsLayout = ItemsView.ItemsLayout;
-
-			//TODO: Find a better way to do this 
-			itemsLayout.PropertyChanged += (sender, args) =>
-			{
-				if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
-					args.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
-					args.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
-					args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
-					args.PropertyName == nameof(GridItemsLayout.Span) ||
-					args.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
-
-				{
-					UpdateLayout();
-				}
-			};
+		
+			SubscribeToItemsLayoutPropertyChanged(itemsLayout);
 
 			if (itemsLayout is GridItemsLayout gridItemsLayout)
 			{
@@ -182,7 +169,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			// Fall back to vertical list
-			return LayoutFactory2.CreateList(new LinearItemsLayout(ItemsLayoutOrientation.Vertical), groupInfo, headerFooterInfo);
+			var fallbackItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
+			// Manually setting the value to ensure the property changed event is properly wired..
+			ItemsView.ItemsLayout = fallbackItemsLayout;
+			return LayoutFactory2.CreateList(fallbackItemsLayout, groupInfo, headerFooterInfo);
 		}
 
 		public static void MapHeaderTemplate(CollectionViewHandler2 handler, StructuredItemsView itemsView)
@@ -205,6 +195,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapItemSizingStrategy(CollectionViewHandler2 handler, StructuredItemsView itemsView)
 		{
 			handler.UpdateLayout();
+		}
+
+		void SubscribeToItemsLayoutPropertyChanged(IItemsLayout itemsLayout)
+		{
+			if(itemsLayout is not null)
+			{
+				itemsLayout.PropertyChanged += (sender, args) =>
+				{
+					if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
+						args.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
+						args.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
+						args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
+						args.PropertyName == nameof(GridItemsLayout.Span) ||
+						args.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
+
+					{
+						UpdateLayout();
+					}
+				};
+			}
 		}
 	}
 }

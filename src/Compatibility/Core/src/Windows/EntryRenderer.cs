@@ -502,8 +502,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 		{
 			FormsTextBox child = Control;
 
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 			if (Children.Count == 0 || child == null)
 				return new SizeRequest();
+#pragma warning restore RS0030 // Do not use banned APIs
 
 			var constraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 			child.Measure(constraint);

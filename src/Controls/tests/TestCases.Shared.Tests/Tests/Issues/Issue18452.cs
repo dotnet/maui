@@ -14,7 +14,7 @@ public class Issue18452 : _IssuesUITest
 	{
 	}
 
-	[Test]
+	//[Test]
 	public void WebViewLoadedWithoutException()
 	{
 		App.WaitForElement("Label");

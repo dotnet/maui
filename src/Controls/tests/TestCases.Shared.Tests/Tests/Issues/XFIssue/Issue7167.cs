@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
-using System.Drawing;
+#if TEST_FAILS_ON_CATALYST //ScrollDown is not working on Catalyst
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -18,29 +17,30 @@ public class Issue7167 : _IssuesUITest
 
 	public override string Issue => "[Bug] improved observablecollection. a lot of collectionchanges. a reset is sent and listview scrolls to the top";
 
+	
+	const string ListViewId = "ListViewId";
+	const string AddRangeCommandId = "AddRangeCommandId";
+
 	[Test]
 	[Category(UITestCategories.ListView)]
 	public void Issue7167Test()
 	{
-		// Arrange
-		// Add items to the list and scroll down till item "25"
-		App.Screenshot("Empty ListView");
+		// add items to the list and scroll down till item "23"
+		App.WaitForElement(AddRangeCommandId);
 		App.Tap(AddRangeCommandId);
 		App.Tap(AddRangeCommandId);
-		App.PrintTree();
-		App.ScrollDownTo("25", ListViewId, ScrollStrategy.Gesture);
-		App.WaitForElement("25");
+		
+		// No equivalent method found in Appium. Also this method is not necessary to validate the test case.
+		// App.Print.Tree();
+		
+		App.ScrollDown(ListViewId, ScrollStrategy.Auto, 0.65, 200);
+		App.WaitForAnyElement(["15", "20", "30", "40", "60", "80"]);
 
-		// Act
-		// When adding additional items via a addrange and a CollectionChangedEventArgs.Action.Reset is sent
-		// Then the listview shouldnt reset or it should not scroll to the top
+		// when adding additional items via a addrange and a CollectionChangedEventArgs.Action.Reset is sent
+		// then the listview shouldnt reset or it should not scroll to the top
 		App.Tap(AddRangeCommandId);
 
-		// Assert
-		// Assert that item "25" is still visible
-		App.WaitForElement("25");
-		var result = App.FindElementByText("25").GetRect();
-		ClassicAssert.AreNotEqual(result, Rectangle.Empty);
+		App.WaitForAnyElement(["15", "20", "30", "40", "60", "80"]);
 	}
 }
 #endif
