@@ -83,6 +83,13 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			if (scrollView.Orientation == ScrollOrientation.Neither)
+			{
+				platformView.ScrollEnabled = false;
+				return;
+			}
+
+			platformView.ScrollEnabled = true;
 			platformView.InvalidateMeasure(scrollView);
 		}
 
