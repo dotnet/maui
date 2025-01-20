@@ -200,6 +200,8 @@ namespace Microsoft.Maui.Controls.Platform
 				_visualElement.BindingContext = dataContext;
 			}
 
+			itemsView?.AddLogicalChild(_visualElement);
+
 			if (_handler.VirtualView is ICrossPlatformLayout)
 			{
 				Content = _handler.ToPlatform();
@@ -208,8 +210,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				Content = new ContentLayoutPanel(_handler.VirtualView);
 			}
-
-			itemsView?.AddLogicalChild(_visualElement);
 
 			if (itemsView is SelectableItemsView selectableItemsView && selectableItemsView.SelectionMode is not SelectionMode.None)
 			{
