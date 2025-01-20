@@ -61,13 +61,8 @@ static class IMethodSymbolExtensions
                 yield return vn.ConvertTo(p.type, p.converter, context);
             else if (p.node is ElementNode en)
             {
-                if (en.IsValueProvider(context, 
-                        out ITypeSymbol? returnType,
-                        out ITypeSymbol? valueProviderFace,
-                        out bool acceptEmptyServiceProvider,
-                        out ImmutableArray<ITypeSymbol>? requiredServices))
-                    en.ProvideValue(context.Writer, context, returnType, valueProviderFace, acceptEmptyServiceProvider, requiredServices);
-                    yield return context.Variables[en].Name;
+                en.TryProvideValue(context);
+                yield return context.Variables[en].Name;
             }
             else
                 yield return "null";

@@ -5,4 +5,4 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Style", "IDE0011:Add braces", Justification = "Rule doesn't make any sense")]
+[assembly: SuppressMessage("Style", "IDE0011:Add braces", Justification = "Rule doesn't make code any clearer")]

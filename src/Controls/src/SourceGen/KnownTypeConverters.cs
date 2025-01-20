@@ -600,7 +600,7 @@ static class KnownTypeConverters
         {
             value = value.Trim();
             
-            return $"new global::System.Collections.Generic.List<string>(new[] {{ {string.Join(", ", value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v => $"\"{v.Trim()}\""))} }})";
+            return $"new global::System.Collections.Generic.List<string> {{ {string.Join(", ", value.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(v => $"\"{v.Trim()}\""))} }}";
         }
 
         context.ReportDiagnostic(Diagnostic.Create(Descriptors.ListStringConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));

@@ -57,16 +57,22 @@ static class NodeSGExtensions
         //{ context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.StrokeShapeTypeConverter")!, (KnownTypeConverters.ConvertStrokeShape, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Shapes.Shape")!) },
 	};
 
-    static Dictionary<ITypeSymbol, ProvideValueDelegate>? KnownSGMarkups;
+    static Dictionary<ITypeSymbol, ProvideValueDelegate>? KnownSGValueProviders;
     public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownValueProviders(SourceGenContext context)
-        => KnownSGMarkups ??= new (SymbolEqualityComparer.Default)
+        => KnownSGValueProviders ??= new (SymbolEqualityComparer.Default)
+    {
+        {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, KnownMarkups.ProvideValueForSetter},
+    };
+
+    static Dictionary<ITypeSymbol, ProvideValueDelegate>? KnownSGMarkupExtensions;
+
+    public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownMarkupExtensions(SourceGenContext context)
+        => KnownSGMarkupExtensions ??= new (SymbolEqualityComparer.Default)
     {
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticExtension")!, KnownMarkups.ProvideValueForStaticExtension},
-        {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, KnownMarkups.ProvideValueForSetter},
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DynamicResourceExtension")!, KnownMarkups.ProvideValueForDynamicResourceExtension},
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StyleSheetExtension")!, KnownMarkups.ProvideValueForStyleSheetExtension},
-        {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TypeExtension")!, KnownMarkups.ProvideValueForTypeExtension},
-        
+        {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TypeExtension")!, KnownMarkups.ProvideValueForTypeExtension},        
     };
 
     public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
@@ -369,14 +375,14 @@ static class NodeSGExtensions
             return $"({targetType.ToFQDisplayString()})new {typeConverter.ToFQDisplayString()}().ConvertFromInvariantString(\"{valueString}\")!";
     }
 
-    public static bool IsValueProvider(this INode node, SourceGenContext context, 
+    static bool IsValueProvider(this INode node, SourceGenContext context, 
             out ITypeSymbol returnType, 
             out ITypeSymbol? iface, 
             out bool acceptEmptyServiceProvider, 
             out ImmutableArray<ITypeSymbol>? requiredServices)
     {
         returnType = context.Compilation.ObjectType;
-        
+
         iface = null;
         acceptEmptyServiceProvider = false;
         requiredServices = null;
@@ -387,8 +393,6 @@ static class NodeSGExtensions
         if (variable.Type.Implements(iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IValueProvider")!))
         {
             //HACK waiting for the ValueProvider to be compiled
-            if (variable.Type.Equals(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, SymbolEqualityComparer.Default))
-                returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!;
             if (variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TriggerBase")!))
                 returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TriggerBase")!;
             //the following 2 should go away when https://github.com/dotnet/maui/pull/26671 is merged    
@@ -417,7 +421,7 @@ static class NodeSGExtensions
         return true;
     }
 
-    public static void ProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context, ITypeSymbol returnType, ITypeSymbol? valueProviderFace, bool acceptEmptyServiceProvider, ImmutableArray<ITypeSymbol>? requiredServices)
+    static void ProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context, ITypeSymbol returnType, ITypeSymbol valueProviderFace, bool acceptEmptyServiceProvider, ImmutableArray<ITypeSymbol>? requiredServices)
     {
         var valueProviderVariable = context.Variables[node];
         var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType);
@@ -426,13 +430,45 @@ static class NodeSGExtensions
         if (!acceptEmptyServiceProvider)
         {
             var serviceProviderVar = node.GetOrCreateServiceProvider(writer, context, requiredServices);                
-            writer.WriteLine($"var {variableName} = ({returnType.ToFQDisplayString()})(({valueProviderFace!.ToFQDisplayString()}){valueProviderVariable.Name}).ProvideValue({serviceProviderVar.Name});");
+            writer.WriteLine($"var {variableName} = ({returnType.ToFQDisplayString()})(({valueProviderFace.ToFQDisplayString()}){valueProviderVariable.Name}).ProvideValue({serviceProviderVar.Name});");
             context.Variables[node] = new LocalVariable(returnType, variableName);
         }
         else {
-            writer.WriteLine($"var {variableName} = ({returnType.ToFQDisplayString()})(({valueProviderFace!.ToFQDisplayString()}){valueProviderVariable.Name}).ProvideValue(null);");
+            writer.WriteLine($"var {variableName} = ({returnType.ToFQDisplayString()})(({valueProviderFace.ToFQDisplayString()}){valueProviderVariable.Name}).ProvideValue(null);");
             context.Variables[node] = new LocalVariable(returnType, variableName);
         }
+    }
+
+    public static bool TryProvideValue(this ElementNode node, SourceGenContext context)
+    {
+        if (!context.Variables.TryGetValue(node, out var variable))
+            return false;
+
+        if (GetKnownMarkupExtensions(context).TryGetValue(variable.Type, out var provideValue))
+        {
+            var value = provideValue.Invoke(node, context, out var returnType0);
+            var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
+            context.Writer.WriteLine($"var {variableName} = {value};");
+            context.Variables[node] = new LocalVariable(returnType0 ?? context.Compilation.ObjectType, variableName);
+
+            return true;
+        }
+
+        if (GetKnownValueProviders(context).TryGetValue(variable.Type, out provideValue))
+        {
+            var value = provideValue.Invoke(node, context, out var returnType0);
+            var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
+            context.Writer.WriteLine($"var {variableName} = {value};");
+            context.Variables[node] = new LocalVariable(returnType0 ?? context.Compilation.ObjectType, variableName);
+            
+            return true;
+        }
+
+        if (!node.IsValueProvider(context, out var returnType, out var iface, out var acceptEmptyServiceProvider, out var requiredServices))
+            return false;
+
+        node.ProvideValue(context.Writer, context, returnType, iface!, acceptEmptyServiceProvider, requiredServices);
+        return true;
     }
 
     [Conditional("_SOURCEGEN_SOURCEINFO_ENABLE")]
