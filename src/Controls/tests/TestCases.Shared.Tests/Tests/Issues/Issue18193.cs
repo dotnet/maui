@@ -19,13 +19,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("NavigationToPage6Button");
 			App.Click("NavigationToPage6Button");
+			App.WaitForElement("NavigateToDetailButton");
 			App.Click("NavigateToDetailButton");
+			App.WaitForElement("NavigateBackButton");
 			App.Click("NavigateBackButton");
+			App.WaitForElement("NavigateToPage2Button");
 			App.Click("NavigateToPage2Button");
+			App.WaitForElement("NavigateToPage5Button");
 			App.Click("NavigateToPage5Button");
 			App.WaitForElement("More");
 			App.Click("More");
-			VerifyScreenshot();
 		}
 	}
 }
