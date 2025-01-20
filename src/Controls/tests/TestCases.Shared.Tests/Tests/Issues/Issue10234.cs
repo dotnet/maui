@@ -1,4 +1,4 @@
-﻿#if IOS || MACCATALYST
+﻿#if TEST_FAILS_ON_WINDOWS // AutomationId not set for CarouselView Image
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnMacWhenRunningOnXamarinUITest("ScrollRight is not implemented on Mac")]
 		public void ScrollCarouselViewAfterDispose()
 		{
 			App.WaitForElement("goToShow");
@@ -37,4 +36,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif
+ #endif
