@@ -1,7 +1,6 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
-using OpenQA.Selenium.Appium.Mac;
 using OpenQA.Selenium.Interactions;
 using UITest.Core;
 
@@ -214,8 +213,8 @@ namespace UITest.Appium
 
 			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed, element?.Id);
 		}
-
-		static AppiumElement? ScrollToDownTo(AppiumDriver driver, string marked, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
+		
+		AppiumElement? ScrollToDownTo(AppiumDriver driver, string marked, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
 			var timeout = DefaultTimeout;
 			var retryFrequency = TimeSpan.FromMilliseconds(500);
@@ -239,19 +238,22 @@ namespace UITest.Appium
 			return result;
 		}
 
-		static AppiumElement? ScrollDownUntilPresent(AppiumDriver driver, string marked, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
+		AppiumElement? ScrollDownUntilPresent(AppiumDriver driver, string marked, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
 			ScrollToDown(driver, element, strategy, swipePercentage, swipeSpeed, withInertia);
 
 			var result = driver.FindElement(By.Id(marked));
 
 			if (result is null)
-				result = driver.FindElement(By.XPath("//*[@text='" + marked + "']"));
+			{
+				// Android (text), iOS (label), Windows (Name)
+				result = driver.FindElement(By.XPath("//*[@text='" + marked + "' or @label='" + marked + "' or @Name='" + marked + "']"));
+			}
 
 			return result;
 		}
 
-		static void ScrollToRight(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
+		void ScrollToRight(AppiumDriver driver, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
 			var position = element is not null ? element.Location : System.Drawing.Point.Empty;
 			var size = element is not null ? element.Size : driver.Manage().Window.Size;
@@ -276,7 +278,7 @@ namespace UITest.Appium
 			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed, element?.Id);
 		}
 
-		static AppiumElement? ScrollToUpTo(AppiumDriver driver, string target, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
+		AppiumElement? ScrollToUpTo(AppiumDriver driver, string target, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
 			var timeout = DefaultTimeout;
 			var retryFrequency = TimeSpan.FromMilliseconds(500);
@@ -300,14 +302,17 @@ namespace UITest.Appium
 			return result;
 		}
 
-		static AppiumElement? ScrollUpUntilPresent(AppiumDriver driver, string marked, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
+		AppiumElement? ScrollUpUntilPresent(AppiumDriver driver, string marked, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
 			ScrollToUp(driver, element, strategy, swipePercentage, swipeSpeed, withInertia);
-
+			
 			var result = driver.FindElement(By.Id(marked));
 
 			if (result is null)
-				result = driver.FindElement(By.XPath("//*[@text='" + marked + "']"));
+			{
+				// Android (text), iOS (label), Windows (Name)
+				result = driver.FindElement(By.XPath("//*[@text='" + marked + "' or @label='" + marked + "' or @Name='" + marked + "']"));
+			}
 
 			return result;
 		}
