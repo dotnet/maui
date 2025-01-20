@@ -53,19 +53,9 @@ namespace Microsoft.Maui.Platform
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var scale = uiSlider.GetDisplayDensity();
 				var result = await service.GetImageAsync(thumbImageSource, scale);
-				UIImage? thumbImage = null;
-
 				var thumbImageSize = result?.Value.Size ?? CGSize.Empty;
 				const float TARGET_SIZE = 28f;
-				var buffer = 0.1;
-				if (thumbImageSize.Height - TARGET_SIZE > buffer || thumbImageSize.Width - TARGET_SIZE > buffer)
-				{
-					thumbImage = result?.Value?.ResizeImageSource(TARGET_SIZE, TARGET_SIZE, thumbImageSize);
-				}
-				else
-				{
-					thumbImage = result?.Value;
-				}
+				UIImage? thumbImage = result?.Value?.ResizeImageSource(TARGET_SIZE, TARGET_SIZE, thumbImageSize);
 				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);
 			}
 			else
