@@ -55,9 +55,11 @@ namespace Microsoft.Maui.Platform
 			if (scrollView.Orientation == ScrollOrientation.Neither)
 			{
 				nativeScrollView.ScrollEnabled = false;
-				return;
 			}
-			nativeScrollView.ScrollEnabled = scrollView.IsEnabled;
+			else
+			{
+				nativeScrollView.ScrollEnabled = scrollView.IsEnabled;
+			}
 		}
 	}
 }
