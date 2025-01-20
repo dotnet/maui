@@ -11,7 +11,7 @@
 
 		public class MainPage : ContentPage
 		{
-			const string kSuccess = "If you're reading this the test has passed";
+			const string kSuccess = "If youre reading this the test has passed";
 
 			public MainPage()
 			{
