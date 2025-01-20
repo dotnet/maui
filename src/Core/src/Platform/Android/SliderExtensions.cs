@@ -52,11 +52,6 @@ namespace Microsoft.Maui.Platform
 			if (context == null)
 				return;
 
-			var defaultThumbDrawable = context.GetDrawable(Resource.Drawable.abc_seekbar_thumb_material);
-
-			int defaultThumbWidth = defaultThumbDrawable!.IntrinsicWidth;
-			int defaultThumbHeight = defaultThumbDrawable.IntrinsicHeight;
-
 			var thumbImageSource = slider.ThumbImageSource;
 			if (thumbImageSource != null)
 			{
@@ -78,9 +73,27 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		static Bitmap ResizeBitmap(Bitmap originalBitmap, int targetWidth, int targetHeight)
+		internal static Bitmap? ResizeImageSource(this Bitmap sourceImage, float maxWidth, float maxHeight, Size originalImageSize)
 		{
-			return Bitmap.CreateScaledBitmap(originalBitmap, targetWidth, targetHeight, true);
+			if (sourceImage == null)
+				return null;
+
+			maxWidth = Math.Min(maxWidth, originalImageSize.Width);
+			maxHeight = Math.Min(maxHeight, originalImageSize.Height);
+
+			var sourceSize = new Size(sourceImage.Width, sourceImage.Height);
+
+			float maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
+
+			if (maxResizeFactor > 1)
+			{
+				return sourceImage;
+			}
+
+			int newWidth = (int)(sourceSize.Width * maxResizeFactor);
+			int newHeight = (int)(sourceSize.Height * maxResizeFactor);
+
+			return Bitmap.CreateScaledBitmap(sourceImage, newWidth, newHeight, true);
 		}
 	}
 }
