@@ -74,12 +74,14 @@ class CreateValuesVisitor : IXamlNodeVisitor
                 if (cn is not ElementNode en)
                     continue;
 
-                if (en.IsValueProvider(Context, 
-                        out ITypeSymbol? returnType,
-                        out ITypeSymbol? valueProviderFace,
-                        out bool acceptEmptyServiceProvider,
-                        out ImmutableArray<ITypeSymbol>? requiredServices))
-                    en.ProvideValue(Writer, Context, returnType, valueProviderFace, acceptEmptyServiceProvider, requiredServices);
+                en.TryProvideValue(Context);
+                
+                // if (en.IsValueProvider(Context, 
+                //         out ITypeSymbol? returnType,
+                //         out ITypeSymbol? valueProviderFace,
+                //         out bool acceptEmptyServiceProvider,
+                //         out ImmutableArray<ITypeSymbol>? requiredServices))
+                //     en.ProvideValue(Writer, Context, returnType, valueProviderFace!, acceptEmptyServiceProvider, requiredServices);
             }
 
             Context.Variables[node] = new LocalVariable(Context.Compilation.CreateArrayTypeSymbol(arrayType), variableName);
@@ -113,7 +115,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
         }
 
 
-        if (NodeSGExtensions.GetKnownValueProviders(Context).TryGetValue(type, out var handler))
+        if (NodeSGExtensions.GetKnownMarkupExtensions(Context).TryGetValue(type, out var handler))
         {
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
             Writer.WriteLine($"var {variableName} = {handler(node, Context, out var returnType)};");

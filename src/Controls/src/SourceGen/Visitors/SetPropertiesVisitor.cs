@@ -58,19 +58,32 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
                 return;
         }
 
-        //TODO set runtimename
-        // 	if (TrySetRuntimeName(propertyName, Context.Variables[(IElementNode)parentNode], node))
-        // return;
+        if (TrySetRuntimeName(propertyName, Context.Variables[(IElementNode)parentNode], node))
+            return;
         if (skips.Contains(propertyName))
             return;
-        if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains(propertyName))
+        if (parentNode is IElementNode node1 && node1.SkipProperties.Contains(propertyName))
             return;
         if (propertyName.Equals(XamlParser.McUri, "Ignorable"))
             return;
         SetPropertyValue(Writer, Context.Variables[(IElementNode)parentNode], propertyName, node, Context);
     }
 
-    public void Visit(MarkupNode node, INode parentNode)
+	bool TrySetRuntimeName(XmlName propertyName, LocalVariable localVariable, ValueNode node)
+	{
+        if (propertyName != XmlName.xName)
+            return false;
+        var runtimeNameAttr = localVariable.Type.GetAllAttributes(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.RuntimeNamePropertyAttribute")!, Context).FirstOrDefault();
+        if (runtimeNameAttr == null)
+            return false;
+        var name = runtimeNameAttr.ConstructorArguments[0].Value as string;
+        if (string.IsNullOrEmpty(name))
+            return false;
+        Writer.WriteLine($"{localVariable.Name}.{name} = \"{node.Value}\";");
+        return true;
+	}
+
+	public void Visit(MarkupNode node, INode parentNode)
     {
     }
 
@@ -110,12 +123,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         }
 
         //IMarkupExtension or IValueProvider => ProvideValue()
-        if (node.IsValueProvider(context, 
-                out ITypeSymbol? returnType,
-                out ITypeSymbol? valueProviderFace,
-                out bool acceptEmptyServiceProvider,
-                out ImmutableArray<ITypeSymbol>? requiredServices))
-            node.ProvideValue(Writer, Context, returnType, valueProviderFace, acceptEmptyServiceProvider, requiredServices);
+        node.TryProvideValue(context);
 
         if (propertyName != XmlName.Empty)
         {

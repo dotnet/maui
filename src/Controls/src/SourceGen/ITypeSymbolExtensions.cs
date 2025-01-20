@@ -103,8 +103,9 @@ static partial class ITypeSymbolExtensions
             baseType = baseType.GetBaseType(context);
         }
     }
-	public static IEnumerable<AttributeData> GetAllAttributes(this ITypeSymbol symbol, string name, SourceGenContext? context)
-        => symbol.GetAllAttributes(context).Where(ad => ad.AttributeClass?.ToString() == name);
+    
+    public static IEnumerable<AttributeData> GetAllAttributes(this ITypeSymbol symbol, ITypeSymbol attributeType, SourceGenContext? context)
+        => symbol.GetAllAttributes(context).Where(ad => SymbolEqualityComparer.Default.Equals(ad.AttributeClass, attributeType));
     public static IEnumerable<AttributeData> GetAttributes(this ITypeSymbol symbol, ITypeSymbol attributeType)
         => symbol.GetAttributes().Where(ad => SymbolEqualityComparer.Default.Equals(ad.AttributeClass, attributeType));
 
