@@ -32,7 +32,7 @@ steps:
   # Provision Xcode
   - ${{ if ne(parameters.skipXcode, 'true') }}:
     - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-      - task: xamops.azdevex.provisionator-task.provisionator@3
+      - task: xamops.azdevex.provisionator-task.provisionator@2
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
         displayName: 'Provision Xcode'
         inputs:
@@ -70,7 +70,7 @@ steps:
   # Provision Additional Software
   - ${{ if ne(parameters.skipProvisioning, 'true') }}:
     - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-      - task: xamops.azdevex.provisionator-task.provisionator@3
+      - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Additional Software'
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
         continueOnError: true
@@ -99,7 +99,7 @@ steps:
   # Prepare Windows
   # Provision Additional Software
   - ${{ if ne(parameters.skipProvisioning, 'true') }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@3
+    - task: xamops.azdevex.provisionator-task.provisionator@2
       displayName: 'Provision Additional Software'
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
       inputs:
