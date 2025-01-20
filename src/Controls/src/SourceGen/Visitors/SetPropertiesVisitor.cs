@@ -187,7 +187,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
             //TODO if the var is already created and in context.Variables, use that
             //TODO if we don't need the var, don't create it (this will likely be optimized by the compiler anyway, but...)
-            var variable = new LocalVariable(propertyType, NamingHelpers.CreateUniqueVariableName(Context, propertyType.Name!.Split('.').Last()));
+            var variable = new LocalVariable(propertyType, NamingHelpers.CreateUniqueVariableName(Context, propertyType));
             Writer.WriteLine($"var {variable.Name} = {GetOrGetValue(parentVar, bpFieldSymbol, propertySymbol, node, Context)};");
 
             if (CanAddToResourceDictionary(variable, propertyType, node, Context))
@@ -514,7 +514,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
         if (CanAddToResourceDictionary(parentVar, propertyType!, (IElementNode)valueNode, context))
         {
-            var rdVar = new LocalVariable(propertyType!, NamingHelpers.CreateUniqueVariableName(context, propertyType!.Name!.Split('.').Last()));
+            var rdVar = new LocalVariable(propertyType!, NamingHelpers.CreateUniqueVariableName(context, propertyType!));
             writer.WriteLine($"var {rdVar.Name} = {GetOrGetValue(parentVar, bpFieldSymbol, propertySymbol, valueNode, context)};");
             AddToResourceDictionary(writer, rdVar, (IElementNode)valueNode, context);
             return;

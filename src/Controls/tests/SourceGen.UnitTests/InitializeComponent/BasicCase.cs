@@ -64,9 +64,9 @@ public partial class TestPage
 #if _MAUIXAML_SG_SOURCEINFO
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
 #endif
-		global::Microsoft.Maui.Controls.Internals.INameScope nameScope = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
-		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, nameScope);
-		nameScope.RegisterName("MyButton", button);
+		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
+		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
+		iNameScope.RegisterName("MyButton", button);
 		button.StyleId ??= "MyButton";
 		this.MyButton = button;
 		button.SetValue(global::Microsoft.Maui.Controls.Button.TextProperty, "Hello MAUI!");

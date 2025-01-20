@@ -33,7 +33,7 @@ static class ServiceProviderExtensions
 
         //TODO based on the node, the service provider, or some of the services, could be reused
         var serviceProviderSymbol = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider")!;
-        var serviceProviderVariableName = NamingHelpers.CreateUniqueVariableName(context, "XamlServiceProvider");
+        var serviceProviderVariableName = NamingHelpers.CreateUniqueVariableName(context, serviceProviderSymbol);
 
         writer.WriteLine($"var {serviceProviderVariableName} = new {serviceProviderSymbol.ToFQDisplayString()}(this);");
   
@@ -52,7 +52,7 @@ static class ServiceProviderExtensions
                 || requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IReferenceProvider")!, SymbolEqualityComparer.Default))
             && objectAndParents.Length > 0)
         {
-            var simpleValueTargetProvider = NamingHelpers.CreateUniqueVariableName(context, "ValueTargetProvider");
+            var simpleValueTargetProvider = NamingHelpers.CreateUniqueVariableName(context, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IProvideValueTarget")!);
             writer.WriteLine($"var {simpleValueTargetProvider} = new global::Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider(");
             writer.Indent++;
             writer.WriteLine($"new object[] {{{String.Join(", ", node.ObjectAndParents(context).Select(v=>v.Name))}}},");
@@ -72,7 +72,7 @@ static class ServiceProviderExtensions
         if (createAllServices
             || requiredServices!.Value.Contains(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IXamlTypeResolver")!, SymbolEqualityComparer.Default))      
         {
-            var nsResolver = NamingHelpers.CreateUniqueVariableName(context, "NSResolver");
+            var nsResolver = NamingHelpers.CreateUniqueVariableName(context, context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver")!);
             writer.WriteLine($"var {nsResolver} = new global::Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver();");
             
             foreach (var kvp in node.NamespaceResolver!.GetNamespacesInScope(XmlNamespaceScope.ExcludeXml))

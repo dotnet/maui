@@ -66,7 +66,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
             if (!Context.Types.TryGetValue(typeNode, out var arrayType))
                 throw new Exception("ArrayExtension Type not found");
 
-            var variableName = NamingHelpers.CreateUniqueVariableName(Context, arrayType.Name!.Split('.').Last()+"Array");
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, Context.Compilation.CreateArrayTypeSymbol(arrayType));
 
             //Provide value for Providers
             foreach (var cn in node.CollectionItems)
@@ -106,7 +106,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
 		//if type is Xaml2009Primitive
 		if (IsXaml2009LanguagePrimitive(node)) {
-            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
             Writer.WriteLine($"{type.ToFQDisplayString()} {variableName} = {ValueForLanguagePrimitive(type, node, Context)};");
             Context.Variables[node] = new LocalVariable(type, variableName);
             return;
@@ -115,7 +115,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
 
         if (NodeSGExtensions.GetKnownValueProviders(Context).TryGetValue(type, out var handler))
         {
-            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
             Writer.WriteLine($"var {variableName} = {handler(node, Context, out var returnType)};");
             Context.Variables[node] = new LocalVariable(returnType!, variableName);
 
@@ -165,7 +165,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
             //TODO validate ctor arguments
             if (ctor is not null)
             {
-                var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
+                var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
                 var paramsTuple = ctor.Parameters
                     .Select(p => (  p.Type, 
                                     p.GetAttributes().FirstOrDefault(a => a.AttributeClass!.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ParameterAttribute")!, SymbolEqualityComparer.Default))?.ConstructorArguments[0].Value as string,
@@ -195,7 +195,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
             && node.CollectionItems[0] is ValueNode valueNode
             && (isColor || type.IsValueType))
         { //<Color>HotPink</Color>
-            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
             var valueString = valueNode.ConvertTo(type, Context);
             
             Writer.WriteLine($"var {variableName} = {valueString};");
@@ -205,7 +205,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
         }
         else if (factoryMethod != null)
         {
-            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
             Writer.WriteLine($"var {variableName} = {factoryMethod.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
             Context.Variables[node] = new LocalVariable(factoryMethod.ReturnType, variableName);
             node.RegisterSourceInfo(Context, Writer);
@@ -213,7 +213,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
         }
         else if (ctor != null)
         {
-            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type!.Name!.Split('.').Last());
+            var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
             
             Writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
             Context.Variables[node] = new LocalVariable(type, variableName);

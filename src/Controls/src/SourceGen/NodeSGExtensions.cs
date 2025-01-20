@@ -417,10 +417,10 @@ static class NodeSGExtensions
         return true;
     }
 
-    public static void ProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context, ITypeSymbol? returnType, ITypeSymbol? valueProviderFace, bool acceptEmptyServiceProvider, ImmutableArray<ITypeSymbol>? requiredServices)
+    public static void ProvideValue(this ElementNode node, IndentedTextWriter writer, SourceGenContext context, ITypeSymbol returnType, ITypeSymbol? valueProviderFace, bool acceptEmptyServiceProvider, ImmutableArray<ITypeSymbol>? requiredServices)
     {
         var valueProviderVariable = context.Variables[node];
-        var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType!.Name!.Split('.').Last());
+        var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType);
 
         //if it require a serviceprovider, create one
         if (!acceptEmptyServiceProvider)
