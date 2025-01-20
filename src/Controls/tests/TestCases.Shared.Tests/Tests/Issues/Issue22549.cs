@@ -12,7 +12,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Border)]
-		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented")]
 		public void BindingOnStrokeShapeShouldWork()
 		{
 			App.WaitForElement("button");
@@ -20,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Border should have radius
 			VerifyScreenshot("BindingOnStrokeShapeWithRadius");
 
-			App.Click("button");
+			App.Tap("button");
 
 			// The test passes if border radius is equal to 0
 			VerifyScreenshot("BindingOnStrokeShapeWithoutRadius");

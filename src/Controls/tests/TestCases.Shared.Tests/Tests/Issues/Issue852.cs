@@ -26,11 +26,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Login");
 
 			App.Tap(UsernameId);
-			App.WaitForElement("WelcomeLabel");
+			Assert.That(App.WaitForElement("WelcomeLabel").GetText(), Is.EqualTo("Clicked User"));
 			App.EnterText(UsernameId, "Usertest");
 			App.WaitForElement(PasswordId);
 			App.Tap(PasswordId);
-			App.WaitForElement("WelcomeLabel");
+			Assert.That(App.WaitForElement("WelcomeLabel").GetText(), Is.EqualTo("Clicked Password"));
 			App.EnterText(PasswordId, "Userpass");
 		}
 	}

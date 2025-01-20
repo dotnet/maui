@@ -22,9 +22,10 @@
 			{
 				AutomationId = AnimateBoxViewButton,
 				Text = "Animate BoxView",
-				BackgroundColor = Colors.Black,
-				TextColor = Colors.White,
-				VerticalOptions = LayoutOptions.EndAndExpand
+				// Commented out due to tap issues on the Mac platform when setting VerticalOptions.
+				// BackgroundColor = Colors.Black,
+				// TextColor = Colors.White,
+				// VerticalOptions = LayoutOptions.EndAndExpand
 			};
 #pragma warning restore CS0618 // Type or member is obsolete
 

@@ -14,14 +14,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Switch)]
-		public async Task SwitchOnOffVisualStatesTest()
+		public void SwitchOnOffVisualStatesTest()
 		{
 			App.WaitForElement("Switch");
 			App.Tap("Switch");
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SwitchOff");
 			App.WaitForElement("Switch");
 			App.Tap("Switch");
-			await Task.Delay(500);
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SwitchOn");
 		}
 	}
