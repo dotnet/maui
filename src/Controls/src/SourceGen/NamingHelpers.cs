@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.Maui.Controls.SourceGen;
@@ -8,16 +9,41 @@ namespace Microsoft.Maui.Controls.SourceGen;
 static class NamingHelpers
 {
     static IDictionary<object, IDictionary<string, int>> _lastId = new Dictionary<object, IDictionary<string, int>>();
-    
-    public static string CreateUniqueVariableName(SourceGenContext context, string typeName)
+
+    public static string CreateUniqueVariableName(SourceGenContext context, ISymbol symbol)
     {
         while (context.ParentContext != null)
             context = context.ParentContext;
     
-        return CreateUniqueVariableName((object)context, typeName);
+        return CreateUniqueVariableNameImpl(context, symbol);
     }
-    
-    static string CreateUniqueVariableName(object context, string baseName)
+
+	internal static string CreateUniqueVariableNameImpl(object context, ISymbol symbol)
+	{
+        string suffix = "";
+        if (symbol is IArrayTypeSymbol arrayTypeSymbol)
+        {
+            symbol = arrayTypeSymbol.ElementType;
+            suffix = "Array";
+        }        
+            
+        SymbolDisplayFormat ShortFormat =
+        new(
+            globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.OmittedAsContaining,
+            typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameOnly,
+            propertyStyle: SymbolDisplayPropertyStyle.NameOnly,
+            parameterOptions: SymbolDisplayParameterOptions.IncludeName,
+            miscellaneousOptions:
+                SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers |
+                SymbolDisplayMiscellaneousOptions.UseSpecialTypes |
+                SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+
+#pragma warning disable RS0030 // Do not use banned APIs
+		return CreateUniqueVariableNameImpl(context, symbol.ToDisplayString(ShortFormat)+suffix);
+#pragma warning restore RS0030 // Do not use banned APIs
+	}
+
+	static string CreateUniqueVariableNameImpl(object context, string baseName)
     {
         baseName = CamelCase(baseName);
         if (!_lastId.TryGetValue(context, out var lastIdForContext))
@@ -26,9 +52,8 @@ static class NamingHelpers
             _lastId[context] = lastIdForContext;
         }
         if (!lastIdForContext.TryGetValue(baseName, out var lastId))
-        {
             lastId = 0;
-        }
+
         lastIdForContext[baseName] = lastId + 1;
         return lastId == 0 && SyntaxFacts.GetKeywordKind(baseName) == SyntaxKind.None ? baseName : $"{baseName}{lastId}";
     }

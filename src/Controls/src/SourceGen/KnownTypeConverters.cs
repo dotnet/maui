@@ -899,7 +899,7 @@ static class KnownTypeConverters
 			return attr?.ConstructorArguments[2].Value as ITypeSymbol;
 		}
 
-		var uriVar = NamingHelpers.CreateUniqueVariableName(context, "sourceUri");
+		var uriVar = NamingHelpers.CreateUniqueVariableName(context, context.Compilation.GetTypeByMetadataName("System.Uri")!);
         IAssemblySymbol asm;
         if (value.Contains(";assembly="))
         {
