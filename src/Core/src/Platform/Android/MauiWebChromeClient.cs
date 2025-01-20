@@ -105,7 +105,9 @@ namespace Microsoft.Maui.Platform
 			// Hide the SystemBars and Status bar
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
+#pragma warning disable CA1422 // Validate platform compatibility
 				context.Window.SetDecorFitsSystemWindows(false);
+#pragma warning restore CA1422 // Validate platform compatibility
 
 				var windowInsets = context.Window.DecorView.RootWindowInsets;
 				_isSystemBarVisible = windowInsets.IsVisible(WindowInsetsCompat.Type.NavigationBars()) || windowInsets.IsVisible(WindowInsetsCompat.Type.StatusBars());
@@ -144,7 +146,9 @@ namespace Microsoft.Maui.Platform
 			// Show again the SystemBars and Status bar
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
+#pragma warning disable CA1422 // Validate platform compatibility
 				context.Window.SetDecorFitsSystemWindows(true);
+#pragma warning restore CA1422 // Validate platform compatibility
 
 				if (_isSystemBarVisible)
 					context.Window.InsetsController?.Show(WindowInsets.Type.SystemBars());
