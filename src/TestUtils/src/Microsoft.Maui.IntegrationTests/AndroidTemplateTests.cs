@@ -16,14 +16,15 @@ namespace Microsoft.Maui.IntegrationTests
 			if (TestEnvironment.IsMacOS && RuntimeInformation.OSArchitecture == Architecture.Arm64)
 				TestAvd.Abi = "arm64-v8a";
 
-			TestAvd.InstallAvd();
+			Assert.IsTrue(TestAvd.AcceptLicenses(out var licenseOutput), $"Failed to accept SDK licenses.\n{licenseOutput}");
+			Assert.IsTrue(TestAvd.InstallAvd(out var installOutput), $"Failed to install Test AVD.\n{installOutput}");
 		}
 
 		[SetUp]
 		public void AndroidTemplateSetUp()
 		{
 			var emulatorLog = Path.Combine(TestDirectory, $"emulator-launch-{DateTime.UtcNow.ToFileTimeUtc()}.log");
-			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(720, emulatorLog), "Failed to launch Test AVD.");
+			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(600, emulatorLog), "Failed to launch Test AVD.");
 		}
 
 		[OneTimeTearDown]

@@ -15,6 +15,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void EntrySelectionLengthRuntimeUpdate()
 		{
 			App.WaitForElement("entry");
+
+			Thread.Sleep(1000); // Wait some time for the keyboard to appear
+			
+			if(App.IsKeyboardShown())
+				App.DismissKeyboard();
+
 			VerifyScreenshot();
 		}
 

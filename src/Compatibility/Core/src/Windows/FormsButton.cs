@@ -109,7 +109,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 			if (content is StackPanel sp)
 			{
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 				foreach (var item in sp.Children)
+#pragma warning restore RS0030 // Do not use banned APIs
 				{
 					if (item is TextBlock textBlock)
 					{

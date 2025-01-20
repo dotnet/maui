@@ -1,5 +1,4 @@
-﻿#if ANDROID
-// https://github.com/dotnet/maui/issues/22892
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Header not rendering issue: https://github.com/dotnet/maui/issues/27177
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

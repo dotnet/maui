@@ -518,7 +518,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
 				var observer = NSNotificationCenter.DefaultCenter.AddObserver(UIDevice.OrientationDidChangeNotification,
-					n => { alert.PopoverPresentationController.SourceRect = window.RootViewController.View.Bounds; });
+					n =>
+					{
+						if (alert.PopoverPresentationController != null)
+							alert.PopoverPresentationController.SourceRect = window.RootViewController.View.Bounds;
+					});
 
 				arguments.Result.Task.ContinueWith(t =>
 				{
@@ -526,9 +530,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
 				}, TaskScheduler.FromCurrentSynchronizationContext());
 
-				alert.PopoverPresentationController.SourceView = window.RootViewController.View;
-				alert.PopoverPresentationController.SourceRect = window.RootViewController.View.Bounds;
-				alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
+				if (alert.PopoverPresentationController != null)
+				{
+					alert.PopoverPresentationController.SourceView = window.RootViewController.View;
+					alert.PopoverPresentationController.SourceRect = window.RootViewController.View.Bounds;
+					alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
+				}
 			}
 
 			window.RootViewController.PresentViewController(alert, true, null);

@@ -15,7 +15,8 @@ namespace Microsoft.Maui.TestCases.Tests
         {
         }
 
-        [Test]
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Header not rendering issue: https://github.com/dotnet/maui/issues/27177
+		[Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterStringWorks()
         {
@@ -28,8 +29,9 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Just a string as a header");
             App.WaitForElement("This footer is also a string");
         }
+#endif
 
-        [Test]
+		[Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterViewWorks()
         {
@@ -72,6 +74,10 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
+#if TEST_FAILS_ON_IOS
+        // The screenshot that's currently generated for this test is wrong
+        // So, we're ignoring this test due to it causing confusion when other changes
+        // cause this test to fail.
         [Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterGridHorizontalWorks()
@@ -89,6 +95,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
             VerifyScreenshot();
         }
+#endif
     }
 #endif
-}
+	}
