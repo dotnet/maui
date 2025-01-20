@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			StackLayout rootLayout = new StackLayout();
 			Slider slider = new Slider() { AutomationId = "slider" };
-			slider.ThumbImageSource = "dotnet_bot.png";
+			slider.ThumbImageSource = "coffee.png";
 			rootLayout.Children.Add(slider);
 			Content = rootLayout;
 		}
