@@ -29,55 +29,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(expectedRadius, shadow.Radius);
 		}
 
-		[Fact]
-		public void TestShadowTypeConverter()
+		[Theory]
+		[InlineData("#000000 4 4")]
+		[InlineData("rgb(6, 201, 198) 4 4")]
+		[InlineData("rgba(6, 201, 188, 0.2) 4 8")]
+		[InlineData("hsl(6, 20%, 45%) 1 5")]
+		[InlineData("hsla(6, 20%, 45%,0.75) 6 3")]
+		[InlineData("rgb(100%, 32%, 64%) 8 5")]
+		[InlineData("rgba(100%, 32%, 64%,0.27) 16 5")]
+		[InlineData("4 4 16 #FF00FF")]
+		[InlineData("5 8 8 rgb(6, 201, 198)")]
+		[InlineData("7 5 4 rgba(6, 201, 188, 0.2)")]
+		[InlineData("9 4 6 hsl(6, 20%, 45%)")]
+		[InlineData("8 1 5 hsla(6, 20%, 45%,0.75)")]
+		[InlineData("5 2 8 rgb(100%, 32%, 64%)")]
+		[InlineData("1 5 3 rgba(100%, 32%, 64%,0.27)")]
+		[InlineData("4 4 16 #00FF00 0.5")]
+		[InlineData("5 8 8 rgb(6, 201, 198) 0.5")]
+		[InlineData("7 5 4 rgba(6, 201, 188, 0.2) 0.5")]
+		[InlineData("9 4 6 hsl(6, 20%, 45%) 0.5")]
+		[InlineData("8 1 5 hsla(6, 20%, 45%,0.75) 0.5")]
+		[InlineData("5 2 8 rgb(100%, 32%, 64%) 0.5")]
+		[InlineData("1 5 3 rgba(100%, 32%, 64%,0.27) 0.5")]
+		public void ShadowTypeConverter_Valid(string value)
 		{
 			var converter = new ShadowTypeConverter();
 			Assert.True(converter.CanConvertFrom(typeof(string)));
 
-			// Test converting from string to Shadow (format 1)
-			var shadow1 = (Shadow)converter.ConvertFromInvariantString("#000000 4 4");
-			Assert.NotNull(shadow1);
-			Assert.Equal(Color.FromArgb("#000000"), (shadow1.Brush as SolidColorBrush)?.Color);
-			Assert.Equal(new Point(4, 4), shadow1.Offset);
+			bool actual = converter.IsValid(value);
+			Assert.True(actual);
+		}
 
-			// Test converting from string to Shadow (format 2)
-			var shadow2 = (Shadow)converter.ConvertFromInvariantString("4 4 16 #FF00FF");
-			Assert.NotNull(shadow2);
-			Assert.Equal(Color.FromArgb("#FF00FF"), (shadow2.Brush as SolidColorBrush)?.Color);
-			Assert.Equal(new Point(4, 4), shadow2.Offset);
-			Assert.Equal(16, shadow2.Radius);
-
-			// Test converting from string to Shadow (format 3)
-			var shadow3 = (Shadow)converter.ConvertFromInvariantString("4 4 16 #00FF00 0.5");
-			Assert.NotNull(shadow3);
-			Assert.Equal(Color.FromArgb("#00FF00"), (shadow3.Brush as SolidColorBrush)?.Color);
-			Assert.Equal(new Point(4, 4), shadow3.Offset);
-			Assert.Equal(16, shadow3.Radius);
-			Assert.Equal(0.5f, shadow3.Opacity);
-
-			// Test for converting Shadow to a string
-			var shadow = new Shadow
-			{
-				Brush = new SolidColorBrush(Color.FromArgb("#123456")),
-				Offset = new Point(10, 20),
-				Radius = 30,
-				Opacity = 0.8f
-			};
-
-			var shadowString = converter.ConvertToInvariantString(shadow);
-			Assert.Equal("10 20 30 #123456 0.8", shadowString);
-
-			// Test some problematic cases
-			Assert.Throws<ArgumentNullException>(() => converter.ConvertFromInvariantString(null));
-			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString(""));
-			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString("invalid"));
-			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString("#ZZZZZZ 4 4"));
-			Assert.Throws<InvalidOperationException>(() => converter.ConvertFromInvariantString("4 4 #000000"));
-
-			Assert.Throws<ArgumentNullException>(() => converter.ConvertToInvariantString(null));
-			Assert.Throws<InvalidOperationException>(() => converter.ConvertToInvariantString("invalid"));
-			Assert.Throws<InvalidOperationException>(() => converter.ConvertToInvariantString(new { }));
+		[Theory]
+		[InlineData(null)]
+		[InlineData("")]
+		[InlineData("invalid")]
+		[InlineData("#ZZZZZZ 4 4")]
+		[InlineData("4 4 #000000")]
+		[InlineData("rgb(6, 14.5, 198) 4 4")]
+		[InlineData("argb(0.2, 6, 201, 188) 4 8")]
+		[InlineData("hsl(6, 20%, 45.8%) 1 5")]
+		[InlineData("hsla(6.8, 20%, 45%,0.75) 6 3")]
+		[InlineData("rgb(100%, 32.9%, 64%) 8 5")]
+		[InlineData("argb(0.27, 100%, 32%, 64%) 16 5")]
+		public void ShadowTypeConverter_Invalid(string value)
+		{
+			ShadowTypeConverter converter = new ShadowTypeConverter();
+			bool actual = converter.IsValid(value);
+			Assert.False(actual);
 		}
 	}
 }

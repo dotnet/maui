@@ -1,8 +1,12 @@
 ﻿#nullable disable
+
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls
 {
@@ -11,6 +15,8 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public class ShadowTypeConverter : TypeConverter
 	{
+		readonly BrushTypeConverter _brushTypeConverter = new BrushTypeConverter();
+
 		/// <summary>
 		/// Checks whether the given <paramref name="sourceType" /> is a string.
 		/// </summary>
@@ -47,15 +53,33 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(strValue));
 			}
 
-			var parts = strValue.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
-
 			try
 			{
-				if (parts.Length == 3) // <color> | <float> | <float> e.g. #000000 4 4
+                var regex = new Regex(@"
+                    # Match colors
+                    (
+                        \#([0-9a-fA-F]{3,8}) # Hex colors (#RGB, #RRGGBB, #RRGGBBAA)
+                        |rgb\(\s*\d+%\s*,\s*\d+%\s*,\s*\d+%\s*\) # rgb(percent, percent, percent)
+                        |rgba\(\s*\d+%\s*,\s*\d+%\s*,\s*\d+%\s*,\s*\d+(?:\.\d+)?\s*\) # rgba(percent, percent, percent, alpha)
+                        |rgb\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*\) # rgb(int, int, int)
+                        |rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*\d+(?:\.\d+)?\s*\) # rgba(int, int, int, alpha)
+                        |hsl\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*\) # hsl(hue, saturation, lightness)
+                        |hsla\(\s*\d+\s*,\s*\d+%\s*,\s*\d+%\s*,\s*\d+(?:\.\d+)?\s*\) # hsla(hue, saturation, lightness, alpha)
+                    )
+                    | # Match numbers
+                    (
+                        -?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?  # Floats or scientific notation
+                    )
+                ", RegexOptions.IgnorePatternWhitespace);
+
+                var matches = regex.Matches(strValue);
+                //var parts = matches.Select(m => m.Value).ToArray();
+
+                if (matches.Count == 3) // <color> | <float> | <float> e.g. #000000 4 4
 				{
-					var brush = new SolidColorBrush(Color.FromArgb(parts[0]));
-					var offsetX = float.Parse(parts[1], CultureInfo.InvariantCulture);
-					var offsetY = float.Parse(parts[2], CultureInfo.InvariantCulture);
+					var brush = ParseBrush(matches[0].Value);
+					var offsetX = float.Parse(matches[1].Value, CultureInfo.InvariantCulture);
+					var offsetY = float.Parse(matches[2].Value, CultureInfo.InvariantCulture);
 
 					return new Shadow
 					{
@@ -63,12 +87,12 @@ namespace Microsoft.Maui.Controls
 						Offset = new Point(offsetX, offsetY)
 					};
 				}
-				else if (parts.Length == 4) // <float> | <float> | <float> | <color> e.g. 4 4 16 #000000
+				else if (matches.Count == 4) // <float> | <float> | <float> | <color> e.g. 4 4 16 #000000
 				{
-					var offsetX = float.Parse(parts[0], CultureInfo.InvariantCulture);
-					var offsetY = float.Parse(parts[1], CultureInfo.InvariantCulture);
-					var radius = float.Parse(parts[2], CultureInfo.InvariantCulture);
-					var brush = new SolidColorBrush(Color.FromArgb(parts[3]));
+					var offsetX = float.Parse(matches[0].Value, CultureInfo.InvariantCulture);
+					var offsetY = float.Parse(matches[1].Value, CultureInfo.InvariantCulture);
+					var radius = float.Parse(matches[2].Value, CultureInfo.InvariantCulture);
+					var brush = ParseBrush(matches[3].Value);
 
 					return new Shadow
 					{
@@ -77,13 +101,13 @@ namespace Microsoft.Maui.Controls
 						Brush = brush
 					};
 				}
-				else if (parts.Length == 5) // <float> | <float> | <float> | <color> | <float> e.g. 4 4 16 #000000 0.5
+				else if (matches.Count == 5) // <float> | <float> | <float> | <color> | <float> e.g. 4 4 16 #000000 0.5
 				{
-					var offsetX = float.Parse(parts[0], CultureInfo.InvariantCulture);
-					var offsetY = float.Parse(parts[1], CultureInfo.InvariantCulture);
-					var radius = float.Parse(parts[2], CultureInfo.InvariantCulture);
-					var brush = new SolidColorBrush(Color.FromArgb(parts[3]));
-					var opacity = float.Parse(parts[4], CultureInfo.InvariantCulture);
+					var offsetX = float.Parse(matches[0].Value, CultureInfo.InvariantCulture);
+					var offsetY = float.Parse(matches[1].Value, CultureInfo.InvariantCulture);
+					var radius = float.Parse(matches[2].Value, CultureInfo.InvariantCulture);
+					var brush = ParseBrush(matches[3].Value);
+					var opacity = float.Parse(matches[4].Value, CultureInfo.InvariantCulture);
 
 					return new Shadow
 					{
@@ -136,6 +160,23 @@ namespace Microsoft.Maui.Controls
 			}
 
 			throw new InvalidOperationException($"Cannot convert \"{value}\" into string.");
+		}
+
+		/// <summary>
+		/// Parses a string value into a SolidColorBrush.
+		/// </summary>
+		/// <param name="value">The value to parse.</param>
+		/// <returns>A SolidColorBrush.</returns>
+		/// <exception cref="InvalidOperationException">Thrown when the value is not a SolidColorBrush or has no Color.</exception>
+		SolidColorBrush ParseBrush(string value)
+		{
+			// If the value is a color, return a SolidColorBrush
+			if (_brushTypeConverter.ConvertFrom(value) is SolidColorBrush solidColorBrush)
+			{
+				return solidColorBrush;
+			}
+
+			throw new InvalidOperationException("Cannot convert Shadow to string: Brush is not a valid SolidColorBrush or has no Color.");
 		}
 	}
 }
