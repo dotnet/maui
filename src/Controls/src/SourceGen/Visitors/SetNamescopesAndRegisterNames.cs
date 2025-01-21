@@ -56,10 +56,10 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 			namescope = Context.Scopes[parentNode].namescope;
 			namesInNamescope = Context.Scopes[parentNode].namesInScope;
 		}
-		if (setNameScope && Context.Variables[node].Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!))
+		if (setNameScope && Context.Variables[node].Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!, Context))
 			Writer.WriteLine($"global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope({Context.Variables[node].Name}, {namescope.Name});");
 		//workaround when VSM tries to apply state before parenting (https://github.com/dotnet/maui/issues/16208)
-		else if (Context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!))
+		else if (Context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!, Context))
 			Writer.WriteLine($"{Context.Variables[node].Name}.transientNamescope = {namescope.Name};");
 
 		Context.Scopes[node] = (namescope, namesInNamescope);
@@ -68,7 +68,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 	public void Visit(RootNode node, INode parentNode)
 	{
 		var namescope = GetOrCreateNameScope(node);
-		if (Context.RootType.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!))
+		if (Context.RootType.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!, Context))
 			Writer.WriteLine($"global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope({Context.Variables[node].Name}, {namescope.Name});");
 		
 		Context.Scopes[node] = new (namescope, []);
@@ -93,7 +93,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 	{
  		var namescope = NamingHelpers.CreateUniqueVariableName(Context, Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.INameScope")!);
 		Writer.Write($"global::Microsoft.Maui.Controls.Internals.INameScope {namescope} = ");
-		if (Context.Variables[node].Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!))
+		if (Context.Variables[node].Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!, Context))
 			Writer.Write($"global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope({Context.Variables[node].Name}) ?? ");
 		Writer.WriteLine($"new global::Microsoft.Maui.Controls.Internals.NameScope();");
 		
@@ -109,7 +109,7 @@ class SetNamescopesAndRegisterNamesVisitor(SourceGenContext context) : IXamlNode
 
 	void SetStyleId(string str, LocalVariable element)
 	{
-		if (!element.Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!))
+		if (!element.Type.InheritsFrom(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Element")!, Context))
 			return;
 
 		Writer.WriteLine($"{element.Name}.StyleId ??= \"{str}\";");

@@ -114,7 +114,7 @@ static partial class ITypeSymbolExtensions
     public static IEnumerable<IEventSymbol> GetAllEvents(this ITypeSymbol symbol, string name, SourceGenContext? context)
         => symbol.GetAllMembers(name, context).OfType<IEventSymbol>();
 
-    public static bool InheritsFrom(this ITypeSymbol type, ITypeSymbol baseType)
+    public static bool InheritsFrom(this ITypeSymbol type, ITypeSymbol baseType, SourceGenContext? context)
     {
         if (type == null || baseType == null)
             return false;
@@ -122,7 +122,7 @@ static partial class ITypeSymbolExtensions
         if (SymbolEqualityComparer.Default.Equals(type, baseType))
             return true;
 
-        return type.BaseType?.InheritsFrom(baseType) ?? false;
+        return type.GetBaseType(context)?.InheritsFrom(baseType, context) ?? false;
     }
 
     public static bool Implements(this ITypeSymbol type, ITypeSymbol iface)

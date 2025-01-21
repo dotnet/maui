@@ -279,7 +279,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         if (!context.Variables.TryGetValue(en, out var localVar))
             return false;
         
-        return localVar.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!);
+        return localVar.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Internals.DynamicResource")!, context);
 	}
 
 	private static void SetDynamicResource(IndentedTextWriter writer, LocalVariable parentVar, IFieldSymbol fieldSymbol, INode valueNode, SourceGenContext context)
@@ -315,7 +315,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         if (HasDoubleImplicitConversion(localVar.Type, bpTypeAndConverter?.type, context, out _))
             return true;
         
-        return localVar.Type.InheritsFrom(bpTypeAndConverter?.type!) 
+        return localVar.Type.InheritsFrom(bpTypeAndConverter?.type!, context) 
             || bpFieldSymbol.Type.IsInterface() && localVar.Type.Implements(bpTypeAndConverter?.type!);
     }
 
@@ -349,7 +349,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         if (bpFieldSymbol == null)
             return false;
 
-        if (!parentVar.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!))
+        if (!parentVar.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindableObject")!, context))
             return false;
 
         propertyType = bpFieldSymbol.GetBPTypeAndConverter(context)?.type;
@@ -381,7 +381,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             return false;
         if (!context.Variables.TryGetValue(elementNode, out var localVar))
             return false;
-        if (localVar.Type.InheritsFrom(property.Type))
+        if (localVar.Type.InheritsFrom(property.Type, context))
             return true;
         if (property.Type.IsInterface() && localVar.Type.Implements(property.Type))
             return true;
@@ -459,7 +459,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
         var bindingBaseSymbol = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 
-        if(localVariable.Type.InheritsFrom(bindingBaseSymbol))
+        if(localVariable.Type.InheritsFrom(bindingBaseSymbol, context))
             return true;
 
         if (context.Compilation.HasImplicitConversion(localVariable.Type, bindingBaseSymbol))
@@ -499,7 +499,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 
 	static bool CanAddToResourceDictionary(LocalVariable parentVar, ITypeSymbol collectionType, IElementNode node, SourceGenContext context)
 	{
-		if (!collectionType.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!))
+		if (!collectionType.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!, context))
             return false;
         if (node.Properties.ContainsKey(XmlName.xKey))
             //TODO check for dupe key

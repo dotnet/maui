@@ -98,7 +98,7 @@ static class NodeSGExtensions
     }
 
 	public static bool IsResourceDictionary(this IElementNode node, SourceGenContext context)
-        => context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!);
+        => context.Variables.TryGetValue(node, out var variable) && variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!, context);
 
     public static bool CanConvertTo(this ValueNode valueNode, IFieldSymbol bpFieldSymbol, SourceGenContext context)
     {
@@ -393,12 +393,12 @@ static class NodeSGExtensions
         if (variable.Type.Implements(iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IValueProvider")!))
         {
             //HACK waiting for the ValueProvider to be compiled
-            if (variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TriggerBase")!))
+            if (variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TriggerBase")!, context))
                 returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.TriggerBase")!;
             //the following 2 should go away when https://github.com/dotnet/maui/pull/26671 is merged    
-            if (variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.PropertyCondition")!))
+            if (variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.PropertyCondition")!, context))
                 returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.PropertyCondition")!;
-            if (variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingCondition")!))
+            if (variable.Type.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingCondition")!, context))
                 returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingCondition")!;
         }
         else if (variable.Type.ImplementsGeneric(iface = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.IMarkupExtension`1")!, out var typeArg))

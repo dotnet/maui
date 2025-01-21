@@ -8,17 +8,10 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui25608_2
 {
-	public Maui25608_2()
-	{
-		InitializeComponent();
-	}
-
-	public Maui25608_2(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
+	public Maui25608_2() => InitializeComponent();
 
 	[TestFixture]
 	class Test
@@ -44,7 +37,7 @@ public partial class Maui25608_2
 		}
 
 		[Test]
-		public void TestInvalidBindingWithRelativeSource([Values(false, true)] bool useCompiledXaml)
+		public void TestInvalidBindingWithRelativeSource([Values] XamlInflator inflator)
 		{
 			bool bindingFailureReported = false;
 			_bindingFailureHandler = (sender, args) =>
@@ -54,7 +47,7 @@ public partial class Maui25608_2
 			};
 			BindingDiagnostics.BindingFailed += _bindingFailureHandler;
 
-			var page = new Maui25608_2(useCompiledXaml);
+			var page = new Maui25608_2(inflator);
 
 			Assert.AreNotEqual(25, page.Image.HeightRequest);
 			Assert.IsTrue(bindingFailureReported);
