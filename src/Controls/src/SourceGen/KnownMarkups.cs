@@ -64,8 +64,8 @@ internal class KnownMarkups
 	public static string ProvideValueForTypeExtension(IElementNode node, SourceGenContext context, out ITypeSymbol? returnType)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("System.Type")!;
-		if (!node.Properties.TryGetValue(new XmlName("", "Type"), out INode? typeNameNode) &&
-			!node.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Type"), out typeNameNode) &&
+		if (!node.Properties.TryGetValue(new XmlName("", "TypeName"), out INode? typeNameNode) &&
+			!node.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "TypeName"), out typeNameNode) &&
 			node.CollectionItems.Count == 1)
 			typeNameNode = node.CollectionItems[0];
 
