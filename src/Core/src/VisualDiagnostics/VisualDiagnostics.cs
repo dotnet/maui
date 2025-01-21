@@ -36,8 +36,12 @@ namespace Microsoft.Maui
 
 		/// <include file="../../docs/Microsoft.Maui/VisualDiagnostics.xml" path="//Member[@MemberName='GetXamlSourceInfo']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static SourceInfo? GetSourceInfo(object obj) =>
-			sourceInfos.TryGetValue(obj, out var sourceinfo) ? sourceinfo : null;
+		public static SourceInfo? GetSourceInfo(object obj)
+		{
+			if (obj is null)
+				return null;
+			return sourceInfos.TryGetValue(obj, out var sourceinfo) ? sourceinfo : null;
+		}
 
 		public static void OnChildAdded(IVisualTreeElement parent, IVisualTreeElement child)
 		{

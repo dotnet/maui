@@ -432,10 +432,12 @@ static class NodeSGExtensions
             var serviceProviderVar = node.GetOrCreateServiceProvider(writer, context, requiredServices);                
             writer.WriteLine($"var {variableName} = ({returnType.ToFQDisplayString()})(({valueProviderFace.ToFQDisplayString()}){valueProviderVariable.Name}).ProvideValue({serviceProviderVar.Name});");
             context.Variables[node] = new LocalVariable(returnType, variableName);
+            node.RegisterSourceInfo(context, context.Writer, update: false);
         }
         else {
             writer.WriteLine($"var {variableName} = ({returnType.ToFQDisplayString()})(({valueProviderFace.ToFQDisplayString()}){valueProviderVariable.Name}).ProvideValue(null);");
             context.Variables[node] = new LocalVariable(returnType, variableName);
+            node.RegisterSourceInfo(context, context.Writer, update: false);
         }
     }
 
@@ -450,6 +452,7 @@ static class NodeSGExtensions
             var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
             context.Writer.WriteLine($"var {variableName} = {value};");
             context.Variables[node] = new LocalVariable(returnType0 ?? context.Compilation.ObjectType, variableName);
+            node.RegisterSourceInfo(context, context.Writer, update: false);
 
             return true;
         }
@@ -460,7 +463,8 @@ static class NodeSGExtensions
             var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
             context.Writer.WriteLine($"var {variableName} = {value};");
             context.Variables[node] = new LocalVariable(returnType0 ?? context.Compilation.ObjectType, variableName);
-            
+            node.RegisterSourceInfo(context, context.Writer, update: false);
+
             return true;
         }
 
@@ -472,7 +476,7 @@ static class NodeSGExtensions
     }
 
     [Conditional("_SOURCEGEN_SOURCEINFO_ENABLE")]
-    public static void RegisterSourceInfo(this INode node, SourceGenContext context, IndentedTextWriter writer)
+    public static void RegisterSourceInfo(this INode node, SourceGenContext context, IndentedTextWriter writer, bool update = true)
     {
         if (!context.Variables.TryGetValue(node, out var variable))
             return;
@@ -481,7 +485,16 @@ static class NodeSGExtensions
         var filePath = context.FilePath;
         var lineInfo = node as IXmlLineInfo;
         using (PrePost.NewConditional(writer, "_MAUIXAML_SG_SOURCEINFO"))
+        {
+            if (!update)
+            {
+                writer.WriteLine($"if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo({variable.Name}!) == null)");
+                writer.Indent++;
+            }
             writer.WriteLine($"global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo({variable.Name}!, new global::System.Uri(\"{filePath};assembly={assembly}\", global::System.UriKind.Relative), {lineInfo?.LineNumber ?? -1}, {lineInfo?.LinePosition ?? -1});");
+            if (!update)
+                writer.Indent--;
+        }
     }
 
     public static IFieldSymbol GetBindableProperty(this ValueNode node, SourceGenContext context)
