@@ -21,6 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         {
             App.WaitForElement("TestReady");
 //The BoxView's AutomationId doesn't work correctly on the Windows platform, and using a Label also doesn't ensure the BoxView's size changes.
+//Issue Link: https://github.com/dotnet/maui/issues/27195
 #if WINDOWS
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallBox");
 #else
