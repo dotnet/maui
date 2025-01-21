@@ -1,5 +1,6 @@
-﻿#if TEST_FAILS_ON_WINDOWS 
-//Boxview automationId does not work in windows, for more information: https://github.com/dotnet/maui/issues/27195
+﻿#if TEST_FAILS_ON_WINDOWS
+//The BoxView's AutomationId doesn't work correctly on the Windows platform, and using a Label also doesn't ensure the BoxView's drag-and-drop functionality works.
+//for more information: https://github.com/dotnet/maui/issues/27195 
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

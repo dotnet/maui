@@ -24,11 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.WaitForElement("TestLoadButton");
 				App.Tap("TestLoadButton");
 				App.WaitForElement("Item1");
-				# if MACCATALYST
 				App.TapBackArrow();
-				#else
-				App.Back();
-				#endif
 			}
 
 			// Without exceptions, the test has passed.
