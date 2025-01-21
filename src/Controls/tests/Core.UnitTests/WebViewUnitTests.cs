@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.Maui.Graphics;
 using Xunit;
+using Microsoft.Maui.Platform;
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -163,14 +164,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void TestUrlWithTurkishCharacters()
-        {
+		public void TestUrlWithNonWesternCharacters()
+		{
+			// Arrange
+			// This test validates that URLs with non-Western characters (e.g., "Ğ" and spaces encoded as "%20")
+			// are correctly identified as absolute URLs and not treated as relative URLs.
 
-           string testUrl = "https://example.com/test-Ağ-Sistem%20Bilgi%20Güvenliği%20Md/Guide.pdf";
- 
-            bool isWellFormed = Uri.TryCreate(testUrl, UriKind.Absolute, out _);
+			string finalUrl = "https://example.com/test-Ağ-Sistem%20Bilgi%20Güvenliği%20Md/Guide.pdf";
 
-            Assert.True(isWellFormed, "The URL with Turkish characters should be well-formed.");
-        }
+			// Act
+			bool valid = WebViewHelper.IsRelativeUrl(finalUrl);
+
+			// Assert
+			Assert.False(valid, "The URL was identified as a relative URL");
+		}
 	}
 }
