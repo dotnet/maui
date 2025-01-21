@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<controls:TestContentPage 
+  xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+  x:Class="Maui.Controls.Sample.Issues.Issue27194">
+  <controls:TestContentPage.Resources>
+    <ResourceDictionary>
+      
+      <RoundRectangle 
+        x:Key="StrokeShape1"
+        CornerRadius="24"/>
+      
+      <Rectangle 
+        x:Key="StrokeShape2"/>
+      
+      <Style x:Key="BorderStyle1" TargetType="Border">
+        <Setter Property="StrokeShape" Value="{DynamicResource StrokeShape1}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+        <Setter Property="BackgroundColor" Value="LightGreen" />
+      </Style>
+      
+      <Style x:Key="BorderStyle2" TargetType="Border">
+        <Setter Property="StrokeShape" Value="{DynamicResource StrokeShape2}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+        <Setter Property="BackgroundColor" Value="Red" />
+      </Style>
+
+    </ResourceDictionary>
+  </controls:TestContentPage.Resources>
+  <StackLayout>
+    <Border  
+      x:Name="BorderTest1"
+      AutomationId="BorderTest1"
+      Style="{StaticResource BorderStyle1}">
+      <Label 
+        Text="Using StaticResource"/>
+    </Border>
+    <Border 
+      x:Name="BorderTest2"
+      AutomationId="BorderTest2"
+      Style="{DynamicResource BorderStyle1}">
+      <Label 
+        Text="Using DynamicResource"/>
+    </Border>
+    <Button 
+      Text="Update StrokeShape"
+      Clicked="UpdateStrokeShapeClicked"/>
+    <Button 
+      Text="Update Style"
+      Clicked="UpdateStyleClicked"/>
+  </StackLayout>
+</controls:TestContentPage>
