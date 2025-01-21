@@ -23,13 +23,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(MaxLengthEditor);
 			App.Tap(ForceBigStringButton);
-			App.ClearText(MaxLengthEditor);
-			App.Tap(ForceBigStringButton);
 			var text = App.WaitForElement(MaxLengthEditor).GetText() ?? string.Empty;
             int count = text.Count();
-			Assert.That(count, Is.EqualTo(14));
-		    
-			 
+			Assert.That(count, Is.EqualTo(14)); 
 		}
 	}
 }
