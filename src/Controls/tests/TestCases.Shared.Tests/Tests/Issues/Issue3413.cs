@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,13 +15,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.SearchBar)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void Issue3413Test()
 		{
 			App.WaitForElement("srb_vertical");
 			App.WaitForElement("srb_horizontal");
-			App.Screenshot("Please verify we have 2 SearchBars. One below the label, other side by side with the label");
 		}
 	}
 }
-#endif

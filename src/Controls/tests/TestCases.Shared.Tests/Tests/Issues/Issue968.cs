@@ -9,7 +9,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue968(TestDevice testDevice) : base(testDevice)
 		{
 		}
-
+		const string StackLabel = "You should see me after rotating";
 		public override string Issue => "StackLayout does not relayout on device rotation";
 
 		[Test]
@@ -22,10 +22,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("TestReady");
 			App.SetOrientationLandscape();
-			App.Screenshot("Rotated to Landscape");
-			App.WaitForElement("You should see me after rotating");
-			App.Screenshot("StackLayout in Modal respects rotation");
+			App.WaitForElement(StackLabel);
 			App.SetOrientationPortrait();
+			App.WaitForElement(StackLabel);
 		}
 	}
 }

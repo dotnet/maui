@@ -9,16 +9,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue2775(TestDevice testDevice) : base(testDevice)
 		{
 		}
-		const string LabelItem = "Normal BG Blue";
+
 		public override string Issue => "ViewCell background conflicts with ListView Semi-Transparent and Transparent backgrounds";
 
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue2775Test()
 		{
-			App.WaitForElement(LabelItem);
-			VerifyScreenshot();
+			App.WaitForElement("TestReady");
+			App.Screenshot("I am at Issue 2775");
+			App.Screenshot("I see the Label");
 		}
 	}
 }

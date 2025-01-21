@@ -6,7 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue3333 : _IssuesUITest
 	{
-		const string KSuccess = "If youre reading this the test has passed";
+		const string KSuccess = "If you are reading this the test has passed";
 
 		public Issue3333(TestDevice testDevice) : base(testDevice)
 		{
