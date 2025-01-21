@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <Import Condition="'$(SampleProject)' != 'true'" Project="eng\Versions.targets" />
-  <Import Condition="'$(SampleProject)' != 'true' and '$(IsTestProject)' != 'true'" Project="eng\BannedApis.targets" />
+  <Import Condition="'$(SampleProject)' != 'true' and '$(MauiTestProject)' != 'true'" Project="eng\BannedApis.targets" />
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\NuGetVersions.targets" />
 
@@ -36,7 +36,7 @@
   </PropertyGroup>
 
   <!-- FIXME: various test projects have trimmer warnings, which are enabled by default on iOS/Catalyst -->
-  <PropertyGroup Condition=" '$(IsTestProject)' == 'true' or '$(SampleProject)' == 'true' ">
+  <PropertyGroup Condition=" '$(MauiTestProject)' == 'true' or '$(SampleProject)' == 'true' ">
     <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>

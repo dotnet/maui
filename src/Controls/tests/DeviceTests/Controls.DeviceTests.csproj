@@ -4,7 +4,7 @@
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
-    <IsTestProject>true</IsTestProject>
+    <MauiTestProject>true</MauiTestProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.DeviceTests</AssemblyName>
     <NoWarn>$(NoWarn),CA1416</NoWarn>

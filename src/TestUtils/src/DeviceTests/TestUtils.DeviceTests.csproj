@@ -4,7 +4,7 @@
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
     <SingleProject>true</SingleProject>
-    <IsTestProject>true</IsTestProject>
+    <MauiTestProject>true</MauiTestProject>
     <RootNamespace>Microsoft.Maui.TestUtils.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests</AssemblyName>
     <Nullable>enable</Nullable>
