@@ -71,14 +71,14 @@ namespace Microsoft.Maui.Controls.StyleSheets
 				if (property == null)
 					continue;
 				if (string.Equals(decl.Value, "initial", StringComparison.OrdinalIgnoreCase))
-					styleable.SetValue(property, property.DefaultValue, new SetterSpecificity(SetterSpecificity.StyleImplicit, selectorSpecificity.Id, selectorSpecificity.Class, selectorSpecificity.Type));					
+					styleable.SetValue(property, property.DefaultValue, new SetterSpecificity(SetterSpecificity.StyleImplicit, (byte)selectorSpecificity.Id, (byte)selectorSpecificity.Class, (byte)selectorSpecificity.Type));					
 				else
 				{
 					object value;
 					if (!convertedValues.TryGetValue(decl, out value))
 						convertedValues[decl] = (value = Convert(styleable, decl.Value, property));
 					//FIXME: compute distance
-					styleable.SetValue(property, value, new SetterSpecificity(SetterSpecificity.StyleImplicit, selectorSpecificity.Id, selectorSpecificity.Class, selectorSpecificity.Type));
+					styleable.SetValue(property, value, new SetterSpecificity(SetterSpecificity.StyleImplicit, (byte)selectorSpecificity.Id, (byte)selectorSpecificity.Class, (byte)selectorSpecificity.Type));
 				}
 			}
 
