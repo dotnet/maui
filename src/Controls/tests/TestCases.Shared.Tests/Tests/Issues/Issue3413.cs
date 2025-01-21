@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Issue3413Test()
 		{
 			App.WaitForElement("srb_vertical");
-			App.WaitForElement("srb_horizontal");
+			VerifyScreenshot();
 		}
 	}
 }
