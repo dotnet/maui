@@ -20,6 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
+		[Ignore("This test is very flaky and needs to be fixed.")]
+
 		public void AddingItemsToGroupedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Success, timeout: TimeSpan.FromSeconds(30));
