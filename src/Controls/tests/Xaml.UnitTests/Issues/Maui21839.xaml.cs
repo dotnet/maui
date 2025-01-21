@@ -1,34 +1,18 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
-using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
-
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui21839
 {
-	public Maui21839()
-	{
-		InitializeComponent();
-	}
+	public Maui21839() => InitializeComponent();
 
-	public Maui21839(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		[SetUp]
@@ -41,7 +25,7 @@ public partial class Maui21839
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public async Task VSMLeak([Values(false, true)] bool useCompiledXaml)
+		public async Task VSMLeak([Values] XamlInflator inflator)
 		{
 			Application.Current.Resources.Add("buttonStyle",
 				new Style(typeof(Button))
@@ -59,7 +43,7 @@ public partial class Maui21839
 						} }
 					}
 				});
-			var pagewr = new WeakReference(new Maui21839(useCompiledXaml));
+			var pagewr = new WeakReference(new Maui21839(inflator));
 			await Task.Delay(10);
 			GC.Collect();
 			Assert.IsNull(pagewr.Target, "Page leaked");

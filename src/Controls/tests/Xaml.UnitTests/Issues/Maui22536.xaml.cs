@@ -7,19 +7,11 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
+[XamlProcessing(XamlInflator.Default, true)]
 public partial class Maui22536
 {
-	public Maui22536()
-	{
-		InitializeComponent();
-	}
+	public Maui22536() => InitializeComponent();
 
-	public Maui22536(bool useCompiledXaml)
-	{
-		//this stub will be replaced at compile time
-	}
-
-	[TestFixture]
 	class Test
 	{
 		[SetUp]
@@ -32,9 +24,9 @@ public partial class Maui22536
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void TestNonCompiledResourceDictionary([Values(false, true)] bool useCompiledXaml)
+		public void TestNonCompiledResourceDictionary([Values] XamlInflator inflator)
 		{
-			var page = new Maui22536(useCompiledXaml);
+			var page = new Maui22536(inflator);
 			Assert.AreEqual(page.Button.BackgroundColor, Color.FromArgb("#010203"));
 		}
 	}

@@ -38,7 +38,7 @@ static class IMethodSymbolExtensions
             // }
 
             var argType = context.Variables[(IElementNode)nodeparameters[i]].Type;
-            if (!argType.InheritsFrom(paramType))
+            if (!argType.InheritsFrom(paramType, context))
             {
                 parameters = null;
                 return false;

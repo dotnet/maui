@@ -92,6 +92,8 @@ public static class MockSourceGenerator
 				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Private.CoreLib.dll")),
 				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Runtime.dll")),
 				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.ObjectModel.dll")),
+				MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
+
 				MetadataReference.CreateFromFile(typeof(Color).Assembly.Location),						//System.Drawings
                 MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Converters.ThicknessTypeConverter).Assembly.Location),			//Core
                 MetadataReference.CreateFromFile(typeof(Microsoft.Maui.Graphics.Converters.RectTypeConverter).Assembly.Location),			//Graphics
