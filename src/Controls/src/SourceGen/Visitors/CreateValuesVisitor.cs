@@ -74,14 +74,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
                 if (cn is not ElementNode en)
                     continue;
 
-                en.TryProvideValue(Context);
-                
-                // if (en.IsValueProvider(Context, 
-                //         out ITypeSymbol? returnType,
-                //         out ITypeSymbol? valueProviderFace,
-                //         out bool acceptEmptyServiceProvider,
-                //         out ImmutableArray<ITypeSymbol>? requiredServices))
-                //     en.ProvideValue(Writer, Context, returnType, valueProviderFace!, acceptEmptyServiceProvider, requiredServices);
+                en.TryProvideValue(Context);                
             }
 
             Context.Variables[node] = new LocalVariable(Context.Compilation.CreateArrayTypeSymbol(arrayType), variableName);
