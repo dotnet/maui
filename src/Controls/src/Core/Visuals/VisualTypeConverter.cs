@@ -26,15 +26,39 @@ namespace Microsoft.Maui.Controls
 		void InitMappings()
 		{
 			var mappings = new Dictionary<string, IVisual>(StringComparer.OrdinalIgnoreCase);
+
+			if (RuntimeFeature.IsIVisualAssemblyScanningEnabled)
+			{
+#if NET8_0
+#pragma warning disable IL2026 // FeatureGuardAttribute is not supported on .NET 8
+#endif
+				ScanAllAssemblies(mappings);
+#if NET8_0
+#pragma warning restore IL2026 // FeatureGuardAttribute is not supported on .NET 8
+#endif
+			}
+			else
+			{
+				Register(typeof(VisualMarker.MaterialVisual), mappings);
+				Register(typeof(VisualMarker.DefaultVisual), mappings);
+				Register(typeof(VisualMarker.MatchParentVisual), mappings);
+			}
+
+			_visualTypeMappings = mappings;
+		}
+
+		[RequiresUnreferencedCode("The IVisual types might be removed by trimming and automatic registration via assembly scanning may not work as expected.")]
+		void ScanAllAssemblies(Dictionary<string, IVisual> mappings)
+		{
 			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
 			// Check for IVisual Types
 			foreach (var assembly in assemblies)
-				Register(assembly, mappings);
+				RegisterAllIVisualTypesInAssembly(assembly, mappings);
 
 			if (Internals.Registrar.ExtraAssemblies != null)
 				foreach (var assembly in Internals.Registrar.ExtraAssemblies)
-					Register(assembly, mappings);
+					RegisterAllIVisualTypesInAssembly(assembly, mappings);
 
 
 			// Check for visual assembly attributes	after scanning for IVisual Types
@@ -46,46 +70,44 @@ namespace Microsoft.Maui.Controls
 				foreach (var assembly in Internals.Registrar.ExtraAssemblies)
 					RegisterFromAttributes(assembly, mappings);
 
-			_visualTypeMappings = mappings;
-		}
-
-		static void RegisterFromAttributes(Assembly assembly, Dictionary<string, IVisual> mappings)
-		{
-			object[] attributes = assembly.GetCustomAttributesSafe(typeof(VisualAttribute));
-
-			if (attributes != null)
+			static void RegisterAllIVisualTypesInAssembly(Assembly assembly, Dictionary<string, IVisual> mappings)
 			{
-				foreach (VisualAttribute attribute in attributes)
+				if (assembly.IsDynamic)
+					return;
+
+				try
 				{
-					var visual = CreateVisual(attribute.Visual);
-					if (visual != null)
-						mappings[attribute.Key] = visual;
+					foreach (var type in assembly.GetExportedTypes())
+						if (typeof(IVisual).IsAssignableFrom(type) && type != typeof(IVisual))
+							Register(type, mappings);
+				}
+				catch (NotSupportedException)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Cannot scan assembly {assembly} for Visual types.", assembly.FullName);
+				}
+				catch (FileNotFoundException)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to load a dependent assembly for {assembly}. It cannot be scanned for Visual types.", assembly.FullName);
+				}
+				catch (ReflectionTypeLoadException)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to load a dependent assembly for {assembly}. Types cannot be loaded.", assembly.FullName);
 				}
 			}
-		}
 
-		static void Register(Assembly assembly, Dictionary<string, IVisual> mappings)
-		{
-			if (assembly.IsDynamic)
-				return;
+			static void RegisterFromAttributes(Assembly assembly, Dictionary<string, IVisual> mappings)
+			{
+				object[] attributes = assembly.GetCustomAttributesSafe(typeof(VisualAttribute));
 
-			try
-			{
-				foreach (var type in assembly.GetExportedTypes())
-					if (typeof(IVisual).IsAssignableFrom(type) && type != typeof(IVisual))
-						Register(type, mappings);
-			}
-			catch (NotSupportedException)
-			{
-				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Cannot scan assembly {assembly} for Visual types.", assembly.FullName);
-			}
-			catch (FileNotFoundException)
-			{
-				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to load a dependent assembly for {assembly}. It cannot be scanned for Visual types.", assembly.FullName);
-			}
-			catch (ReflectionTypeLoadException)
-			{
-				Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning("Unable to load a dependent assembly for {assembly}. Types cannot be loaded.", assembly.FullName);
+				if (attributes != null)
+				{
+					foreach (VisualAttribute attribute in attributes)
+					{
+						var visual = CreateVisual(attribute.Visual);
+						if (visual != null)
+							mappings[attribute.Key] = visual;
+					}
+				}
 			}
 		}
 
@@ -137,6 +159,13 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_visualTypeMappings.TryGetValue(strValue, out IVisual returnValue))
 					return returnValue;
+
+				if (!RuntimeFeature.IsIVisualAssemblyScanningEnabled)
+				{
+					Application.Current?.FindMauiContext()?.CreateLogger<IVisual>()?.LogWarning(
+						"Unable to find visual {key}. Automatic discovery of IVisual types is disabled. You can enabled it by setting the $(MauiEnableIVisualAssemblyScanning)=true MSBuild property. " +
+						"Note: automatic registration of IVisual types through assembly scanning is not trimming-compatible and it can lead to slower app startup.", strValue);
+				}
 
 				return VisualMarker.Default;
 			}

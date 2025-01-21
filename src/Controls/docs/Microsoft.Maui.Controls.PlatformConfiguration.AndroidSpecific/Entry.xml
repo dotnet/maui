@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Controls input method editor (IME) options for entry fields on the Android platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetImeOptions">
@@ -38,7 +37,6 @@
         <param name="element">The Android entry for which to get the input method editor options.</param>
         <summary>Returns flags that specify input method editor options, such as the kind of action that is sent by the editor.</summary>
         <returns>The flags that specify input method editor options, such as the kind of action that is sent by the editor.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ImeOptions">
@@ -62,7 +60,6 @@
         <param name="config">The platform configuration for the Android entry for which to get the input method editor options.</param>
         <summary>Returns flags that specify input method editor options, such as the kind of action that is sent by the editor.</summary>
         <returns>The flags that specify input method editor options, such as the kind of action that is sent by the editor.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ImeOptionsProperty">
@@ -81,7 +78,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that specifies input method editor options.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetImeOptions">
@@ -106,7 +102,6 @@
         <param name="element">The Android entry for which to set the input method editor options.</param>
         <param name="value">The new options to set.</param>
         <summary>Sets the attached property that specifies input method editor options</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetImeOptions">
@@ -131,8 +126,6 @@
         <param name="config">The platform configuration for the Android entry for which to set the input method editor options.</param>
         <param name="value">The new options to set.</param>
         <summary>Sets the attached property that specifies input method editor options</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

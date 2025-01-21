@@ -1,10 +1,6 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 38723, "Update Content in Picker's SelectedIndexChanged event causes NullReferenceException", PlatformAffected.All)]
 	public class Bugzilla38723 : TestContentPage
 	{
@@ -23,7 +19,12 @@ namespace Maui.Controls.Sample.Issues
 
 			picker.SelectedIndexChanged += (sender, args) =>
 			{
-				label.Text = "Selected";
+				//Android and Windows crashes when adding a View to a Layout that is already in another Layout
+				//For more information : https://github.com/dotnet/maui/issues/15920
+				var label = new Label
+				{
+					Text = "Selected"
+				};
 				Content = label;
 			};
 

@@ -1,10 +1,6 @@
-using System;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 36955, "[iOS] ViewCellRenderer.UpdateIsEnabled referencing null object", PlatformAffected.iOS)]
 public class Bugzilla36955 : TestContentPage
 {
@@ -16,10 +12,14 @@ public class Bugzilla36955 : TestContentPage
 
 		var sc = new SwitchCell
 		{
-			Text = "Toggle switch; nothing should crash"
+			Text = "Toggle switch; nothing should crash",
+			AutomationId = "Switch"
 		};
 
-		var button = new Button();
+		var button = new Button
+		{
+			AutomationId = "Button"
+		};
 		button.SetBinding(Button.TextProperty, new Binding("On", source: sc));
 
 		var vc = new ViewCell

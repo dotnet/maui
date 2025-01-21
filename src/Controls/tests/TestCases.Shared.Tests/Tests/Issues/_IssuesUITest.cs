@@ -35,6 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
 					if (retries++ < SetupMaxRetries)
 					{
+						App.Back();
 						Reset();
 					}
 					else

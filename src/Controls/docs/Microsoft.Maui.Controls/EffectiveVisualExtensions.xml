@@ -17,8 +17,6 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="IsDefault">
@@ -39,9 +37,6 @@
       </Parameters>
       <Docs>
         <param name="visual">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsMatchParent">
@@ -62,9 +57,6 @@
       </Parameters>
       <Docs>
         <param name="visual">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsMaterial">
@@ -85,9 +77,6 @@
       </Parameters>
       <Docs>
         <param name="visual">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

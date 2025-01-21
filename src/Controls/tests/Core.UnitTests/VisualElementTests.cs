@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Data.Common;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Shapes;
-
 using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
-
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Primitives;
 using Xunit;
 using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
@@ -173,11 +171,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var geometry = (Geometry)Activator.CreateInstance(type);
 			var reference = new WeakReference(new VisualElement { Clip = geometry });
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.False(reference.IsAlive, "VisualElement should not be alive!");
+			Assert.False(await reference.WaitForCollect(), "VisualElement should not be alive!");
 		}
 
 		[Fact]
@@ -250,8 +244,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var mapper = new PropertyMapper<IView, ViewHandler>(ViewHandler.ViewMapper)
 			{
-				[nameof(IView.Height)] = (_,_) => mapperCalled = true,
-				[nameof(IView.Width)] = (_,_) => mapperCalled = true,
+				[nameof(IView.Height)] = (_, _) => mapperCalled = true,
+				[nameof(IView.Width)] = (_, _) => mapperCalled = true,
 			};
 
 			var mauiApp1 = MauiApp.CreateBuilder()
@@ -263,7 +257,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var platformView = element.ToPlatform(new MauiContext(mauiApp1.Services));
 
 			mapperCalled = false;
-			element.Frame = new Rect(0,0,100,100);
+			element.Frame = new Rect(0, 0, 100, 100);
 			Assert.False(mapperCalled);
 		}
 
@@ -274,10 +268,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var mapper = new PropertyMapper<IView, ViewHandler>(ViewHandler.ViewMapper)
 			{
-				[nameof(IView.Height)] = (_,_) => mapperCalled = true,
-				[nameof(IView.Width)] = (_,_) => mapperCalled = true,
+				[nameof(IView.Height)] = (_, _) => mapperCalled = true,
+				[nameof(IView.Width)] = (_, _) => mapperCalled = true,
 			};
-			
+
 			var mauiApp1 = MauiApp.CreateBuilder()
 				.UseMauiApp<ApplicationStub>()
 				.ConfigureMauiHandlers(handlers => handlers.AddHandler<BasicVisualElement>((services) => new BasicVisualElementHandler(mapper)))
@@ -286,9 +280,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var element = new BasicVisualElement();
 			var platformView = element.ToPlatform(new MauiContext(mauiApp1.Services));
 
-			element.SizeChanged += (_,_) => element.HeightRequest = 100;
+			element.SizeChanged += (_, _) => element.HeightRequest = 100;
 			mapperCalled = false;
-			element.Frame = new Rect(0,0,100,100);
+			element.Frame = new Rect(0, 0, 100, 100);
 
 			Assert.True(mapperCalled);
 		}
@@ -301,8 +295,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var mapper = new PropertyMapper<IView, ViewHandler>(ViewHandler.ViewMapper)
 			{
-				[nameof(IView.Height)] = (_,_) => heightMapperCalled++,
-				[nameof(IView.Width)] = (_,_) => widthMapperCalled++,
+				[nameof(IView.Height)] = (_, _) => heightMapperCalled++,
+				[nameof(IView.Width)] = (_, _) => widthMapperCalled++,
 			};
 
 			var mauiApp1 = MauiApp.CreateBuilder()

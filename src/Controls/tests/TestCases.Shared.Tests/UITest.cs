@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using NUnit.Framework;
-using OpenQA.Selenium.Appium.iOS;
 using UITest.Appium;
 using UITest.Appium.NUnit;
 using UITest.Core;
@@ -10,7 +9,7 @@ using VisualTestUtils.MagickNet;
 namespace Microsoft.Maui.TestCases.Tests
 {
 #if ANDROID
-		[TestFixture(TestDevice.Android)]
+	[TestFixture(TestDevice.Android)]
 #elif IOSUITEST
 		[TestFixture(TestDevice.iOS)]
 #elif MACUITEST
@@ -44,7 +43,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public override IConfig GetTestConfig()
 		{
-			var frameworkVersion = "net8.0";
+			var frameworkVersion = "net9.0";
 #if DEBUG
 			var configuration = "Debug";
 #else
@@ -63,7 +62,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "17.2");
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.0");
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
@@ -84,6 +83,18 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 			}
 
+			// This currently doesn't work
+			if (!String.IsNullOrEmpty(TestContext.CurrentContext.Test.ClassName))
+			{
+				config.SetTestConfigurationArg("StartingTestClass", TestContext.CurrentContext.Test.ClassName);
+			}
+
+			var commandLineArgs = Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "";
+			if (!String.IsNullOrEmpty(commandLineArgs))
+			{
+				config.SetTestConfigurationArg("TEST_CONFIGURATION_ARGS", commandLineArgs);
+			}
+
 			return config;
 		}
 
@@ -92,8 +103,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ResetApp();
 		}
 
-		public void VerifyScreenshot(string? name = null)
+		public void VerifyScreenshot(string? name = null, TimeSpan? retryDelay = null)
 		{
+			retryDelay ??= TimeSpan.FromMilliseconds(500);
 			// Retry the verification once in case the app is in a transient state
 			try
 			{
@@ -101,14 +113,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			catch
 			{
-				Thread.Sleep(500);
+				Thread.Sleep(retryDelay.Value);
 				Verify(name);
 			}
 
 			void Verify(string? name)
 			{
 				string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
-				
+
 				// Remove the XHarness suffix if present
 				deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
 
@@ -132,7 +144,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						var deviceScreenSize = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize");
 						var deviceScreenDensity = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity");
 
-						if (! (deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
+						if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
 						{
 							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}
@@ -142,7 +154,11 @@ namespace Microsoft.Maui.TestCases.Tests
 						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
 						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
 
-						if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
+						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
+						{
+							environmentName = "ios";
+						}
+						else if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
 						{
 							environmentName = "ios";
 						}
@@ -161,11 +177,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						break;
 
 					case TestDevice.Mac:
-						// For now, ignore visual tests on Mac Catalyst since the Appium screenshot on Mac (unlike Windows)
-						// is of the entire screen, not just the app. Later when xharness relay support is in place to
-						// send a message to the MAUI app to get the screenshot, we can use that to just screenshot
-						// the app.
-						Assert.Ignore("MacCatalyst isn't supported yet for visual tests");
+						environmentName = "mac";
 						break;
 
 					default:
@@ -181,7 +193,11 @@ namespace Microsoft.Maui.TestCases.Tests
 					Thread.Sleep(350);
 				}
 
+#if MACUITEST
+				byte[] screenshotPngBytes = TakeScreenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+#else
 				byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+#endif
 
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
@@ -224,10 +240,43 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			base.TestSetup();
 			var device = App.GetTestDevice();
-			if(device == TestDevice.Android || device == TestDevice.iOS)
+			if (device == TestDevice.Android || device == TestDevice.iOS)
 			{
-				App.SetOrientationPortrait();
+				try
+				{
+					App.SetOrientationPortrait();
+				}
+				catch
+				{
+					// The app might not be ready
+					// Probably reduce this value if this works
+					Thread.Sleep(1000);
+					App.SetOrientationPortrait();
+				}
 			}
 		}
+		
+#if MACUITEST
+		byte[] TakeScreenshot()
+		{
+			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
+			// we are going to maximize the App before take the screenshot.
+			App.EnterFullScreen();
+
+			// The app might not be ready to take the screenshot.
+			// Wait a little bit to complete the system animation moving the App Window to FullScreen.
+			Thread.Sleep(1000);
+
+			byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+
+			// TODO: After take the screenshot, restore the App Window to the previous state.
+			App.ExitFullScreen();
+
+			// Wait a little bit to complete the system animation moving the App Window to previous state.
+			Thread.Sleep(500);
+
+			return screenshotPngBytes;
+		}
+#endif
 	}
 }

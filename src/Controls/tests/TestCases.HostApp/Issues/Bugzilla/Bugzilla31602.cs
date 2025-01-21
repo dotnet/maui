@@ -1,13 +1,10 @@
-using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 31602, "not possible to programmatically open master page after iPad landscape -> portrait rotation, also tests 31664")]
 public class Bugzilla31602 : TestFlyoutPage
 {
@@ -25,7 +22,7 @@ public class Bugzilla31602 : TestFlyoutPage
 		public SidemenuPage()
 		{
 			Title = "Side";
-			IconImageSource = "menuIcon.png";
+			IconImageSource = "menu_icon.png";
 			var lbl = new Label { Text = "SideMenu", AutomationId = "SideMenu" };
 			var btn = new Button { Text = "Menu Opener" };
 
@@ -63,7 +60,7 @@ public class Bugzilla31602 : TestFlyoutPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class MasterViewModel1 : INotifyPropertyChanged
 	{
 		public FlyoutPage MasterPage;

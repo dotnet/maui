@@ -20,7 +20,6 @@
   <Interfaces />
   <Docs>
     <summary>Static class that provides the <see cref="M:Microsoft.Maui.Controls.DependencyService.Get``1(Microsoft.Maui.Controls.DependencyFetchTarget)" /> factory method for retrieving platform-specific implementations of the specified type T.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Get&lt;T&gt;">
@@ -57,8 +56,6 @@
         <typeparam name="T">The type of object to fetch.</typeparam>
         <param name="fetchTarget">The dependency fetch target.</param>
         <summary>Returns the platform-specific implementation of type <paramref name="T" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Register&lt;T&gt;">
@@ -89,7 +86,6 @@
       <Docs>
         <typeparam name="T">The type of object to register.</typeparam>
         <summary>Registers the platform-specific implementation of type T.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Register&lt;T,TImpl&gt;">
@@ -127,7 +123,6 @@
         <typeparam name="T">The type of object to register.</typeparam>
         <typeparam name="TImpl">The implementation to register.</typeparam>
         <summary>Registers the platform-specific implementation of type T.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RegisterSingleton&lt;T&gt;">
@@ -156,8 +151,6 @@
       <Docs>
         <typeparam name="T">To be added.</typeparam>
         <param name="instance">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Resolve&lt;T&gt;">
@@ -189,7 +182,6 @@
         <param name="fallbackFetchTarget">The fetch target to use if fetching initially fails.</param>
         <summary>The method to use to resolve dependencies by type.</summary>
         <returns>The resolved dependency instance.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

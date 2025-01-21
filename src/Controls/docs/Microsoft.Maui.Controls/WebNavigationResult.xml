@@ -16,7 +16,6 @@
   </Base>
   <Docs>
     <summary>Enumerates values that indicate the outcome of a web navigation.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Cancel">

@@ -25,7 +25,6 @@
   </Attributes>
   <Docs>
     <summary>A <see cref="T:System.ComponentModel.TypeConverter" /> that converts from a string or <see cref="T:System.Uri" /> to a <see cref="T:System.Uri" />.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -47,7 +46,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.UriTypeConverter" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConvertFromInvariantString">
@@ -70,8 +68,6 @@
       <Docs>
         <param name="value">The value to convert.</param>
         <summary>Returns a <see cref="T:System.Uri" /> object for a string representation of a URI.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

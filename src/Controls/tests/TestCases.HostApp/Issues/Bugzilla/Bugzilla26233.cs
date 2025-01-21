@@ -1,27 +1,31 @@
-using System;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Bugzilla, 26233, "Windows phone crashing when going back to page containing listview with Frame inside ViewCell")]
-public class Bugzilla26233 : TestContentPage
+public class Bugzilla26233 : NavigationPage
 {
-	protected override void Init()
+	public Bugzilla26233()
 	{
-		var listview = new ListView();
-		listview.ItemTemplate = new DataTemplate(typeof(ItemTemplate));
-		listview.ItemsSource = new string[] { "item1", "item2", "item3", "item4", "item5", null, null };
-		var btnBack = new Button { Text = "back", Command = new Command(() => Navigation.PopAsync()) };
-		listview.ItemSelected += (s, e) => Navigation.PushAsync(new ContentPage { Content = btnBack });
-		var btnPush = new Button
-		{
-			Text = "Next",
-			AutomationId = "btnPush",
-			Command = new Command(() => Navigation.PushAsync(new ContentPage { Content = btnBack }))
-		};
+		Navigation.PushAsync(new MainPage());
+	}
 
-		Content = new StackLayout { Children = { btnPush, listview } };
+	public class MainPage : ContentPage
+	{
+		public MainPage()
+		{
+			var listview = new ListView();
+			listview.ItemTemplate = new DataTemplate(typeof(ItemTemplate));
+			listview.ItemsSource = new string[] { "item1", "item2", "item3", "item4", "item5", null, null };
+			var btnBack = new Button { Text = "back", AutomationId = "btnBack", Command = new Command(() => Navigation.PopAsync()) };
+			listview.ItemSelected += (s, e) => Navigation.PushAsync(new ContentPage { Content = btnBack });
+			var btnPush = new Button
+			{
+				Text = "Next",
+				AutomationId = "btnPush",
+				Command = new Command(() => Navigation.PushAsync(new ContentPage { Content = btnBack }))
+			};
+
+			Content = new StackLayout { Children = { btnPush, listview } };
+		}
 	}
 
 	internal class ItemTemplate : ViewCell

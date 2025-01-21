@@ -10,7 +10,7 @@ using WBorder = Microsoft.UI.Xaml.Controls.Border;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[Obsolete("Use Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer instead")]
-	public class FrameRenderer : ViewRenderer<Frame, WBorder>
+	public partial class FrameRenderer : ViewRenderer<Frame, WBorder>
 	{
 		public FrameRenderer()
 		{

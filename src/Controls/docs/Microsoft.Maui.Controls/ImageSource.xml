@@ -26,7 +26,6 @@
   </Attributes>
   <Docs>
     <summary>Abstract class whose implementors load images from files or the Web.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -42,7 +41,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.ImageSource" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Cancel">
@@ -125,8 +123,6 @@
       <Docs>
         <param name="file">The name of a file that contains a valid image.</param>
         <summary>Returns a new <see cref="T:Microsoft.Maui.Controls.FileImageSource" /> that reads from <paramref name="file" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FromResource">
@@ -152,8 +148,6 @@
         <param name="resource">The name of a valid image resource in <paramref name="sourceAssembly" />.</param>
         <param name="sourceAssembly">The source assembly in which to search for the image.</param>
         <summary>Creates a <see cref="T:Microsoft.Maui.Controls.ImageSource" /> from the specified resource in the specified source assembly.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FromResource">
@@ -179,8 +173,6 @@
         <param name="resource">The name of a valid image resource in the assembly to which <paramref name="resolvingType" /> belongs.</param>
         <param name="resolvingType">A type from the assembly in which to look up the image resource with <paramref name="resource" />.</param>
         <summary>Creates a <see cref="T:Microsoft.Maui.Controls.ImageSource" /> from the specified resource in the specified source assembly.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FromStream">
@@ -262,8 +254,6 @@
       <Docs>
         <param name="uri">A URI that identifies a valid image.</param>
         <summary>Returns a new <see cref="T:Microsoft.Maui.Controls.UriImageSource" /> that reads from <paramref name="uri" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsEmpty">
@@ -280,9 +270,6 @@
         <ReturnType>System.Boolean</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnLoadingCompleted">
@@ -363,7 +350,6 @@
       <Parameters />
       <Docs>
         <summary>Called by inheritors to indicate that the source changed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -392,8 +378,6 @@
       <Docs>
         <param name="source">A string that represents an image location.</param>
         <summary>Allows implicit casting from a string that represents an absolute URI.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -422,8 +406,6 @@
       <Docs>
         <param name="uri">A absolute URI that specifies an image location.</param>
         <summary>Allows implicit casting from <see cref="T:System.Uri" /> objects that were created with an absolute URI.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

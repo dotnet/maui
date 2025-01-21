@@ -5,7 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue10744 : _IssuesUITest
+	public class Issue10744 : _IssuesUITest
 	{
 		public Issue10744(TestDevice testDevice) : base(testDevice)
 		{
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void WebViewEvalCrashesOnAndroidWithLongString()
 		{
 			App.WaitForElement("navigatedLabel");

@@ -40,8 +40,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, WKWebView webview, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string contentRootRelativeToAppRoot, string hostPageRelativePath, ILogger logger)
 			: base(provider, dispatcher, BlazorWebViewHandler.AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 		{
-			ArgumentNullException.ThrowIfNull(nameof(blazorMauiWebViewHandler));
-			ArgumentNullException.ThrowIfNull(nameof(webview));
+			ArgumentNullException.ThrowIfNull(blazorMauiWebViewHandler);
+			ArgumentNullException.ThrowIfNull(webview);
 
 			if (provider.GetService<MauiBlazorMarkerService>() is null)
 			{

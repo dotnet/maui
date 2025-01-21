@@ -1,11 +1,6 @@
-﻿using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 41600, "[Android] Invalid item param value for ScrollTo throws an error", PlatformAffected.Android)]
 	public class Bugzilla41600 : TestContentPage
 	{
@@ -24,12 +19,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				ItemsSource = items
 			};
-			Content = new StackLayout
-			{
-				Children =
-				{
-					listView,
-					new Button
+			var firstbutton = new Button
 					{
 						AutomationId = _btnScrollToNonExistentItem,
 						Text = "Click for ScrollTo (should do nothing)",
@@ -37,8 +27,8 @@ namespace Maui.Controls.Sample.Issues
 						{
 							listView.ScrollTo("Hello", ScrollToPosition.Start, true);
 						})
-					},
-					new Button
+					};
+			var secondbutton = new Button
 					{
 						AutomationId = _btnScrollToExistentItem,
 						Text = "Click for ScrollTo (should go to 15)",
@@ -46,7 +36,25 @@ namespace Maui.Controls.Sample.Issues
 						{
 							listView.ScrollTo(_middleListItem, ScrollToPosition.Start, false);
 						})
-					}
+					};
+			
+			Grid.SetRow(listView, 2);
+			Grid.SetRow(firstbutton, 0);
+			Grid.SetRow(secondbutton, 1);
+			
+			Content = new Grid
+			{
+				RowDefinitions = new RowDefinitionCollection
+				{
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Star },
+				},
+				Children =
+				{
+					firstbutton,
+					secondbutton,
+					listView
 				}
 			};
 		}

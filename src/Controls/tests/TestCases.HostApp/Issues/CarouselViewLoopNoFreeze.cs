@@ -1,11 +1,6 @@
-﻿using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -18,7 +13,7 @@ namespace Maui.Controls.Sample.Issues
 		readonly string _btnRemoveAllAutomationId = "btnRemoveAll";
 
 		readonly ViewModelIssue12574 _viewModel;
-		readonly CarouselView _carouselView;
+		readonly CarouselView2 _carouselView;
 		readonly Button _btn;
 		readonly Button _btn2;
 
@@ -38,7 +33,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 			_btn2.SetBinding(Button.CommandProperty, "RemoveAllItemsCommand");
 
-			_carouselView = new CarouselView
+			_carouselView = new CarouselView2
 			{
 				AutomationId = _carouselAutomationId,
 				Margin = new Thickness(30),
@@ -47,9 +42,9 @@ namespace Maui.Controls.Sample.Issues
 				{
 
 					var stacklayout = new StackLayout();
-					var labelId = new Label();
-					var labelText = new Label();
-					var labelDescription = new Label();
+					var labelId = new Label { TextColor = Colors.Black };
+					var labelText = new Label { TextColor = Colors.Black };
+					var labelDescription = new Label { TextColor = Colors.Black };
 					labelId.SetBinding(Label.TextProperty, "Id");
 					labelText.SetBinding(Label.TextProperty, "Text");
 					labelDescription.SetBinding(Label.TextProperty, "Description");

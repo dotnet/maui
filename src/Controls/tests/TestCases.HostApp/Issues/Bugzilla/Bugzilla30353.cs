@@ -1,12 +1,6 @@
-using System;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Devices;
-using Microsoft.Maui.Graphics;
-
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 30353, "FlyoutPage.IsPresentedChanged is not raised")]
 public class Bugzilla30353 : TestFlyoutPage
 {
@@ -35,11 +29,11 @@ public class Bugzilla30353 : TestFlyoutPage
 #pragma warning restore CS0618 // Type or member is obsolete
 		var btn = new Button()
 		{
-			Text = "Toggle"
+			Text = "DetailToggle"
 		};
 		var btn1 = new Button()
 		{
-			Text = "Toggle"
+			Text = "FlyoutToggle"
 		};
 
 		btn.Clicked += (object sender, EventArgs e) => IsPresented = !IsPresented;

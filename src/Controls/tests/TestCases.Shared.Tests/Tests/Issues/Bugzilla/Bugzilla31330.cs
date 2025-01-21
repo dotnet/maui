@@ -14,8 +14,8 @@ public class Bugzilla31330 : _IssuesUITest
 
 	// TODO: porting over from Xamarin.UITest
 	// We don't seem to have "ActivateContextMenu" (yet)?
-	// [FailsOnAndroid]
-	// [FailsOnIOS]
+	// [FailsOnAndroidWhenRunningOnXamarinUITest]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// [Test]
 	//[Category(UITestCategories.ListView)]
 	// public void Bugzilla31330Test()

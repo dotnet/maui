@@ -1,10 +1,6 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Bugzilla, 36703,
 		"TapGestureRecognizer inside initially disable Image will never fire Tapped event", PlatformAffected.All)]
 	public class Bugzilla36703 : TestContentPage
@@ -16,7 +12,7 @@ namespace Maui.Controls.Sample.Issues
 
 		protected override void Init()
 		{
-			var image = new Image { Source = "coffee.png", IsEnabled = false, AutomationId = TestImage };
+			var image = new Image { Source = "coffee.png", HeightRequest=58, WidthRequest=46, IsEnabled = false, AutomationId = TestImage };
 			var button = new Button { Text = $"Toggle IsEnabled (now {image.IsEnabled})", AutomationId = Toggle };
 			var resultLabel = new Label { Text = "Testing..." };
 			var instructions = new Label

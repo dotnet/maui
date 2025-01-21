@@ -57,13 +57,15 @@ namespace Microsoft.Maui.Handlers
 
 			if (platformView.Content is WindowRootViewContainer container)
 			{
-				container.Children.Clear();
+				container.CachedChildren.Clear();
 				platformView.Content = null;
 			}
 
 			var appWindow = platformView.GetAppWindow();
 			if (appWindow is not null)
+			{
 				appWindow.Changed -= OnWindowChanged;
+			}
 
 			base.DisconnectHandler(platformView);
 		}
@@ -79,7 +81,7 @@ namespace Microsoft.Maui.Handlers
 			var previousRootView = windowManager.RootView;
 
 			windowManager.Disconnect();
-			windowManager.Connect(handler.VirtualView.Content.ToPlatform(handler.MauiContext));
+			windowManager.Connect(handler.VirtualView.Content?.ToPlatform(handler.MauiContext));
 
 			if (handler.PlatformView.Content is WindowRootViewContainer container)
 			{
@@ -89,8 +91,7 @@ namespace Microsoft.Maui.Handlers
 				container.AddPage(windowManager.RootView);
 			}
 
-			if (window.VisualDiagnosticsOverlay != null)
-				window.VisualDiagnosticsOverlay.Initialize();
+			window.VisualDiagnosticsOverlay?.Initialize();
 		}
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>
@@ -186,6 +187,13 @@ namespace Microsoft.Maui.Handlers
 
 				titleBar.SetDragRectangles(dragRects);
 			}
+		}
+
+		internal static void MapTitleBar(IWindowHandler handler, IWindow window)
+		{
+			handler
+				.PlatformView
+				.UpdateTitleBar(window, handler.MauiContext);
 		}
 
 		void OnWindowChanged(AppWindow sender, AppWindowChangedEventArgs args)

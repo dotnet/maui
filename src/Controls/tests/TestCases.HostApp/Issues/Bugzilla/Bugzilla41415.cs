@@ -1,9 +1,4 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.None, 41415, "ScrollX and ScrollY values are not consistent with iOS", PlatformAffected.Android)]
 	public class Bugzilla41415 : ContentPage
@@ -19,14 +14,15 @@ namespace Maui.Controls.Sample.Issues
 			var grid = new Grid
 			{
 				BackgroundColor = Colors.Yellow,
-				WidthRequest = 1000,
-				HeightRequest = 1000,
+				// To make this test works for desktop apps, we need to set a big size for the grid
+				WidthRequest = 3000,
+				HeightRequest = 3000,
 				Children =
 				{
 					new BoxView
 					{
-						WidthRequest =  200,
-						HeightRequest = 200,
+						WidthRequest =  2200,
+						HeightRequest = 2200,
 						BackgroundColor = Colors.Red,
 						HorizontalOptions = LayoutOptions.Center,
 						VerticalOptions = LayoutOptions.Center
@@ -87,7 +83,34 @@ namespace Maui.Controls.Sample.Issues
 				_x = 100;
 			};
 
-			Content = new StackLayout { Children = { button, labelx, labely, labelz, labela, scrollView } };
+			Grid.SetRow(button, 0);
+			Grid.SetRow(labelx, 1);
+			Grid.SetRow(labely, 2);
+			Grid.SetRow(labelz, 3);
+			Grid.SetRow(labela, 4);
+			Grid.SetRow(scrollView, 5);
+
+			Content = new Grid
+			{
+				RowDefinitions = new RowDefinitionCollection
+				{
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Star },
+				},
+				Children =
+				{
+					button,
+					labelx,
+					labely,
+					labelz,
+					labela,
+					scrollView,
+				}
+			};
 		}
 	}
 }

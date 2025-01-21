@@ -1,11 +1,5 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3342, "[Android] BoxView BackgroundColor not working on 3.2.0-pre1", PlatformAffected.Android)]
 	public class Issue3342 : TestContentPage
 	{
@@ -18,7 +12,9 @@ namespace Maui.Controls.Sample.Issues
 
 			var hiddenLabel = new Label
 			{
-				Text = "FAIL"
+				Text = "FAIL",
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center
 			};
 
 			var target = new BoxView

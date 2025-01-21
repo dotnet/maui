@@ -1,16 +1,10 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 32148, " Pull to refresh hides the first item on a list view")]
 public class Bugzilla32148 : TestContentPage
 {
@@ -37,7 +31,9 @@ public class Bugzilla32148 : TestContentPage
 			ItemsSource = _listViewItemSource,
 			IsPullToRefreshEnabled = true,
 			IsGroupingEnabled = true,
-			GroupShortNameBinding = new Binding("Key"),
+			// While using this GroupShortNameBinding property it throws an exception on Windows
+			// for more information:https://github.com/dotnet/maui/issues/26534. For this test case we don't need this property.
+			// GroupShortNameBinding = new Binding("Key"),
 			GroupHeaderTemplate = new DataTemplate(typeof(HeaderCell)),
 			HasUnevenRows = true,
 			ItemTemplate = new DataTemplate(typeof(ContactItemTemplate))
@@ -139,7 +135,7 @@ public class Bugzilla32148 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class ContactViewModel1
 	{
 		public string FirstName { get; set; }
@@ -162,7 +158,7 @@ public class Bugzilla32148 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class Contact1
 	{
 		public string FirstName { get; set; }
@@ -178,7 +174,7 @@ public class Bugzilla32148 : TestContentPage
 		public string CountryCode { get; set; }
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class HeaderCell : ViewCell
 	{
 		public HeaderCell()
@@ -212,7 +208,7 @@ public class Bugzilla32148 : TestContentPage
 		}
 	}
 
-	[Preserve(AllMembers = true)]
+
 	public class ContactItemTemplate : ImageCell
 	{
 		public ContactItemTemplate()

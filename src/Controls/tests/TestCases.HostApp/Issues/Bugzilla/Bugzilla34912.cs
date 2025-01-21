@@ -1,13 +1,9 @@
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues;
 
 // Note: Fails on UWP due to https://bugzilla.xamarin.com/show_bug.cgi?id=60521
-[Preserve(AllMembers = true)]
+
 [Issue(IssueTracker.Bugzilla, 34912, "ListView.IsEnabled has no effect on iOS")]
 public class Bugzilla34912 : TestContentPage
 {
@@ -27,7 +23,8 @@ public class Bugzilla34912 : TestContentPage
 			},
 
 			GroupDisplayBinding = new Binding("LongTitle"),
-			GroupShortNameBinding = new Binding("Title"),
+			// While using this GroupShortNameBinding property it throws an exception on Windows for more information:https://github.com/dotnet/maui/issues/26534. For this test case we don't need this property.
+			// GroupShortNameBinding = new Binding("Title"),
 			Header = "HEADER",
 			Footer = "FOOTER",
 			IsGroupingEnabled = true,

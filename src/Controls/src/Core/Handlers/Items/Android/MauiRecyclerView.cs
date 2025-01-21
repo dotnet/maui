@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using Android.Content;
+using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
@@ -47,16 +48,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		~MauiRecyclerView() => _layoutPropertyChangedProxy?.Unsubscribe();
 
-		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(context)
+		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(new ContextThemeWrapper(context, Resource.Style.collectionViewTheme))
 		{
 			_getItemsLayout = getItemsLayout ?? throw new ArgumentNullException(nameof(getItemsLayout));
 			CreateAdapter = getAdapter ?? throw new ArgumentNullException(nameof(getAdapter));
 
 			_emptyCollectionObserver = new DataChangeObserver(UpdateEmptyViewVisibility);
 			_itemsUpdateScrollObserver = new DataChangeObserver(AdjustScrollForItemUpdate);
-
-			VerticalScrollBarEnabled = false;
-			HorizontalScrollBarEnabled = false;
 		}
 
 		public virtual void TearDownOldElement(TItemsView oldElement)
@@ -531,7 +529,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
 			base.OnLayout(changed, l, t, r, b);
+#pragma warning disable CS0618 // Obsolete
 			AViewCompat.SetClipBounds(this, new ARect(0, 0, Width, Height));
+#pragma warning restore CS0618 // Obsolete
 
 			// After a direct (non-animated) scroll operation, we may need to make adjustments
 			// to align the target item; if an adjustment is pending, execute it here.

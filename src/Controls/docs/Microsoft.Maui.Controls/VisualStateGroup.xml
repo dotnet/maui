@@ -19,7 +19,6 @@
   </Attributes>
   <Docs>
     <summary>Contains a list of related visual states that can be applied to a visual element.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -35,7 +34,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.VisualStateGroup" /> object with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CurrentState">
@@ -55,7 +53,6 @@
       <Docs>
         <summary>Gets the current visual state.</summary>
         <value>The current visual state.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Name">
@@ -75,7 +72,6 @@
       <Docs>
         <summary>Gets or sets the name of the visual state.</summary>
         <value>The name of the visual state.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="States">
@@ -95,7 +91,6 @@
       <Docs>
         <summary>Gets the list of states that comprise the group.</summary>
         <value>The list of states that comprise the group.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TargetType">
@@ -115,7 +110,6 @@
       <Docs>
         <summary>Gets or sets the type of element that <see langword="this" /> visual state group can target.</summary>
         <value>The type of element that <see langword="this" /> visual state group can target.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

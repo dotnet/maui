@@ -2,15 +2,11 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace Microsoft.Maui.Resizetizer
 {
 	internal class AppleIconAssetsGenerator
 	{
-		private JsonSerializerOptions options;
-
 		public AppleIconAssetsGenerator(ResizeImageInfo info, string appIconName, string intermediateOutputPath, DpiPath[] dpis, ILogger logger)
 		{
 			Info = info;
@@ -18,7 +14,6 @@ namespace Microsoft.Maui.Resizetizer
 			IntermediateOutputPath = intermediateOutputPath;
 			AppIconName = appIconName;
 			Dpis = dpis;
-			options = new JsonSerializerOptions { WriteIndented = true };
 		}
 
 		public string AppIconName { get; }
@@ -52,16 +47,7 @@ namespace Microsoft.Maui.Resizetizer
 				};
 			}
 
-			var infoJsonProp = new JsonObject
-			{
-				["info"] = new JsonObject
-				{
-					["version"] = 1,
-					["author"] = "xcode",
-				}
-			};
-
-			var appIconImagesJson = new JsonArray();
+			var appIconImagesJson = new List<string>();
 
 			foreach (var dpi in Dpis)
 			{
@@ -71,31 +57,35 @@ namespace Microsoft.Maui.Resizetizer
 					var h = dpi.Size.Value.Height.ToString("0.#", CultureInfo.InvariantCulture);
 					var s = dpi.Scale.ToString("0", CultureInfo.InvariantCulture);
 
-					var imageIcon = new JsonObject
-					{
-						["idiom"] = idiom,
-						["size"] = $"{w}x{h}",
-						["scale"] = $"{s}x",
-						["filename"] = AppIconName + dpi.FileSuffix + Resizer.RasterFileExtension,
-					};
+					var imageIcon =
+					$$"""
+							{
+								"idiom": "{{idiom}}",
+								"size": "{{w}}x{{h}}",
+								"scale": "{{s}}x",
+								"filename": "{{AppIconName + dpi.FileSuffix + Resizer.RasterFileExtension}}"
+							}
+					""";
 
 					appIconImagesJson.Add(imageIcon);
 				}
 			}
 
-			var appIconContentsJson = new JsonObject
+			var appIconContentsJson =
+			$$"""
 			{
-				["images"] = appIconImagesJson,
-				["properties"] = new JsonObject(),
-				["info"] = new JsonObject
-				{
-					["version"] = 1,
-					["author"] = "xcode",
-				},
-			};
+				"images": [
+			{{string.Join("," + Environment.NewLine, appIconImagesJson)}}
+				],
+				"properties": {},
+				"info": {
+					"version": 1,
+					"author": "xcode"
+				}
+			}
+			""";
 
-			//File.WriteAllText(assetContentsFile, infoJsonProp.ToString());
-			File.WriteAllText(appIconSetContentsFile, appIconContentsJson.ToJsonString(options));
+			File.WriteAllText(appIconSetContentsFile, appIconContentsJson.Replace("\t", "  "));
 
 			return new List<ResizedImageInfo> {
 				//new ResizedImageInfo { Dpi = new DpiPath("", 1), Filename = assetContentsFile },

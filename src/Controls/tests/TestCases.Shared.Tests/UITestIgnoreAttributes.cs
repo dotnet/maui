@@ -2,99 +2,99 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class FailsOnAllPlatforms : IgnoreAttribute
+	public class FailsOnAllPlatformsWhenRunningOnXamarinUITest : IgnoreAttribute
 	{
-		public FailsOnAllPlatforms() : base(nameof(FailsOnAndroid))
+		public FailsOnAllPlatformsWhenRunningOnXamarinUITest() : base(nameof(FailsOnAllPlatformsWhenRunningOnXamarinUITest))
 		{
 		}
-		public FailsOnAllPlatforms(string reason) : base(reason)
+		public FailsOnAllPlatformsWhenRunningOnXamarinUITest(string reason) : base(reason)
 		{
 		}
 	}
 
 #if ANDROID
-	public class FailsOnAndroid : IgnoreAttribute
+	public class FailsOnAndroidWhenRunningOnXamarinUITest : IgnoreAttribute
 	{
-		public FailsOnAndroid() : base(nameof(FailsOnAndroid))
+		public FailsOnAndroidWhenRunningOnXamarinUITest() : base(nameof(FailsOnAndroidWhenRunningOnXamarinUITest))
 		{
 		}
-		public FailsOnAndroid(string reason) : base(reason)
+		public FailsOnAndroidWhenRunningOnXamarinUITest(string reason) : base(reason)
 		{
 		}
 	}
 #else
-	public class FailsOnAndroid : CategoryAttribute
+	public class FailsOnAndroidWhenRunningOnXamarinUITest : CategoryAttribute
 	{
-		public FailsOnAndroid() : base(nameof(FailsOnAndroid))
+		public FailsOnAndroidWhenRunningOnXamarinUITest() : base(nameof(FailsOnAndroidWhenRunningOnXamarinUITest))
 		{
 		}
-		public FailsOnAndroid(string description) : base(description)
+		public FailsOnAndroidWhenRunningOnXamarinUITest(string description) : base(description)
 		{
 		}
 	}
 #endif
 
 #if IOS
-	public class FailsOnIOS : IgnoreAttribute
+	public class FailsOnIOSWhenRunningOnXamarinUITest : IgnoreAttribute
 	{
-		public FailsOnIOS() : base(nameof(FailsOnIOS))
+		public FailsOnIOSWhenRunningOnXamarinUITest() : base(nameof(FailsOnIOSWhenRunningOnXamarinUITest))
 		{
 		}
-		public FailsOnIOS(string reason) : base(reason)
+		public FailsOnIOSWhenRunningOnXamarinUITest(string reason) : base(reason)
 		{
 		}
 	}
 #else
-	public class FailsOnIOS : CategoryAttribute
+	public class FailsOnIOSWhenRunningOnXamarinUITest : CategoryAttribute
 	{
-		public FailsOnIOS() : base(nameof(FailsOnIOS))
+		public FailsOnIOSWhenRunningOnXamarinUITest() : base(nameof(FailsOnIOSWhenRunningOnXamarinUITest))
 		{
 		}
-		public FailsOnIOS(string description) : base(description)
+		public FailsOnIOSWhenRunningOnXamarinUITest(string description) : base(description)
 		{
 		}
 	}
 #endif
 
 #if MACCATALYST
-	public class FailsOnMac : IgnoreAttribute
+	public class FailsOnMacWhenRunningOnXamarinUITest : IgnoreAttribute
 	{
-		public FailsOnMac() : base(nameof(FailsOnMac))
+		public FailsOnMacWhenRunningOnXamarinUITest() : base(nameof(FailsOnMacWhenRunningOnXamarinUITest))
 		{
 		}
-		public FailsOnMac(string reason) : base(reason)
+		public FailsOnMacWhenRunningOnXamarinUITest(string reason) : base(reason)
 		{
 		}
 	}
 #else
-	public class FailsOnMac : CategoryAttribute
+	public class FailsOnMacWhenRunningOnXamarinUITest : CategoryAttribute
 	{
-		public FailsOnMac() : base(nameof(FailsOnMac))
+		public FailsOnMacWhenRunningOnXamarinUITest() : base(nameof(FailsOnMacWhenRunningOnXamarinUITest))
 		{
 		}
-		public FailsOnMac(string description) : base(description)
+		public FailsOnMacWhenRunningOnXamarinUITest(string description) : base(description)
 		{
 		}
 	}
 #endif
 
 #if WINDOWS
-	public class FailsOnWindows : IgnoreAttribute
+	public class FailsOnWindowsWhenRunningOnXamarinUITest : IgnoreAttribute
 	{
-		public FailsOnWindows() : base(nameof(FailsOnWindows))
+		public FailsOnWindowsWhenRunningOnXamarinUITest() : base(nameof(FailsOnWindowsWhenRunningOnXamarinUITest))
 		{
 		}
-		public FailsOnWindows(string reason) : base(reason)
+		public FailsOnWindowsWhenRunningOnXamarinUITest(string reason) : base(reason)
 		{
 		}
 	}
 #else
-	public class FailsOnWindows : CategoryAttribute
+	public class FailsOnWindowsWhenRunningOnXamarinUITest : CategoryAttribute
 	{
-		public FailsOnWindows() : base(nameof(FailsOnWindows))
+		public FailsOnWindowsWhenRunningOnXamarinUITest() : base(nameof(FailsOnWindowsWhenRunningOnXamarinUITest))
 		{
 		}
-		public FailsOnWindows(string description) : base(description)
+		public FailsOnWindowsWhenRunningOnXamarinUITest(string description) : base(description)
 		{
 		}
 	}

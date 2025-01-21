@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Platform
 			_toolbarElement = toolbarElement;
 		}
 
-		internal void Connect(IView view, IMauiContext? mauiContext = null)
+		internal void Connect(IView? view, IMauiContext? mauiContext = null)
 		{
 			ClearPlatformParts();
 
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Platform
 
 				if (FragmentManager.IsDestroyed(context))
 					_viewFragment = null;
-				
+
 				RootViewChanged?.Invoke(this, EventArgs.Empty);
 			}
 			else

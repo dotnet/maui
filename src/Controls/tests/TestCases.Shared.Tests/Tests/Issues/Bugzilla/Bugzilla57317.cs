@@ -17,14 +17,14 @@ public class Bugzilla57317 : _IssuesUITest
 
 	// [Test]
 	// [Category(UITestCategories.TableView)]
-	// [FailsOnIOS]
+	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla57317Test()
 	// {
-	// 	RunningApp.WaitForFirstElement("Cell");
+	// 	App.WaitForFirstElement("Cell");
 
-	// 	RunningApp.ActivateContextMenu("Cell");
+	// 	App.ActivateContextMenu("Cell");
 
-	// 	RunningApp.WaitForFirstElement("Self-Deleting item");
-	// 	RunningApp.Tap(c => c.Marked("Self-Deleting item"));
+	// 	App.WaitForFirstElement("Self-Deleting item");
+	// 	App.Tap(c => c.Marked("Self-Deleting item"));
 	// }
 }

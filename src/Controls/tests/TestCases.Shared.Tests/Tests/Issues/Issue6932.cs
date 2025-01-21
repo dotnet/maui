@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS // StackLayout AutomationId and EmptyView are not accessible through appium.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,37 +21,28 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnWindows]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void EmptyViewBecomesVisibleWhenItemsSourceIsCleared()
 		{
-			App.Screenshot("Screen opens, items are shown");
-
 			App.WaitForElement(LayoutAutomationId);
+			App.WaitForElement(ClearAutomationId);
 			App.Tap(ClearAutomationId);
 			App.WaitForElement(EmptyViewAutomationId);
-
-			App.Screenshot("Empty view is visible");
 		}
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnIOS]
-		[FailsOnMac]
-		[FailsOnWindows]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void EmptyViewHidesWhenItemsSourceIsFilled()
 		{
-			App.Screenshot("Screen opens, items are shown");
-
 			App.WaitForElement(LayoutAutomationId);
+			App.WaitForElement(ClearAutomationId);
 			App.Tap(ClearAutomationId);
 			App.WaitForElement(EmptyViewAutomationId);
-
-			App.Screenshot("Items are cleared, empty view visible");
-
+			App.WaitForElement(AddAutomationId);
 			App.Tap(AddAutomationId);
 			App.WaitForNoElement(EmptyViewAutomationId);
-
-			App.Screenshot("Item is added, empty view is not visible");
 		}
 	}
 }
+#endif

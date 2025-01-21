@@ -1,4 +1,4 @@
-﻿using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.Mac;
 using UITest.Core;
@@ -13,6 +13,9 @@ namespace UITest.Appium
 			_commandExecutor.AddCommandGroup(new AppiumCatalystMouseActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystTouchActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystAlertActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumCatalystSpecificActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumCatalystVirtualKeyboardActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumCatalystScrollActions(this));
 		}
 
 		public override ApplicationState AppState

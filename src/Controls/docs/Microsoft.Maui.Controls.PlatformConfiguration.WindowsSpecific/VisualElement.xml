@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Provides access to platform-specific features of visual elements on the Windows platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="AccessKeyHorizontalOffsetProperty">
@@ -33,7 +32,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that gets and sets the horizontal offset from the nominal position to use for displaying the access key tip.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AccessKeyPlacementProperty">
@@ -52,7 +50,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that gets and sets the nominal position to use for displaying the access key tip.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AccessKeyProperty">
@@ -71,7 +68,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that gets and sets the access key.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AccessKeyVerticalOffsetProperty">
@@ -90,7 +86,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that gets and sets the vertical offset from the nominal position to use for displaying the access key tip.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetAccessKey">
@@ -114,7 +109,6 @@
         <param name="element">The element for which to get the access key.</param>
         <summary>Returns the access key value.</summary>
         <returns>The access key value.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetAccessKey">
@@ -138,7 +132,6 @@
         <param name="config">The platform configuration for the element for which to get the access key.</param>
         <summary>Returns the access key value.</summary>
         <returns>The access key value.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetAccessKeyHorizontalOffset">
@@ -162,7 +155,6 @@
         <param name="element">The element for which to get the horizontal offset.</param>
         <summary>Gets the horizontal offset from the nominal position to use for displaying the access key tip.</summary>
         <returns>The horizontal offset from the nominal position to use for displaying the access key tip.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetAccessKeyHorizontalOffset">
@@ -186,7 +178,6 @@
         <param name="config">The platform configuration for the element for which to get the horizontal offset.</param>
         <summary>Gets the horizontal offset from the nominal position to use for displaying the access key tip.</summary>
         <returns>The horizontal offset from the nominal position to use for displaying the access key tip.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetAccessKeyPlacement">
@@ -210,7 +201,6 @@
         <param name="element">The element for which to get the access key placement.</param>
         <summary>Gets the nominal position to use for displaying the access key tip.</summary>
         <returns>The nominal position to use for displaying the access key tip.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetAccessKeyPlacement">
@@ -234,7 +224,6 @@
         <param name="config">The platform configuration for the element for which to get the access key placement.</param>
         <summary>Gets the nominal position to use for displaying the access key tip.</summary>
         <returns>The nominal position to use for displaying the access key tip.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetAccessKeyVerticalOffset">
@@ -258,7 +247,6 @@
         <param name="element">The element for which to get the vertical offset.</param>
         <summary>Gets the vertical offset from the nominal position to use for displaying the access key tip.</summary>
         <returns>The vertical offset from the nominal position to use for displaying the access key tip.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetAccessKeyVerticalOffset">
@@ -282,7 +270,6 @@
         <param name="config">The platform configuration for the element for which to get the vertical offset.</param>
         <summary>Gets the vertical offset from the nominal position to use for displaying the access key tip.</summary>
         <returns>The vertical offset from the nominal position to use for displaying the access key tip.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetIsLegacyColorModeEnabled">
@@ -307,7 +294,6 @@
         <summary>Returns a Boolean value that controls whether legacy color mode is enabled.</summary>
         <returns>
           <see langword="true" /> if legacy color mode is enabled. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetIsLegacyColorModeEnabled">
@@ -332,7 +318,6 @@
         <summary>Returns a Boolean value that controls whether legacy color mode is enabled.</summary>
         <returns>
           <see langword="true" /> if legacy color mode is enabled. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsLegacyColorModeEnabledProperty">
@@ -351,7 +336,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the legacy color mode.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAccessKey">
@@ -376,7 +360,6 @@
         <param name="element">The element for which to set the access key string.</param>
         <param name="value">The new access key value.</param>
         <summary>Sets the value that the access key displays.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAccessKey">
@@ -402,7 +385,6 @@
         <param name="value">The new access key value.</param>
         <summary>Sets the value that the access key displays.</summary>
         <returns>A fluent object on which the developer may make furter method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAccessKeyHorizontalOffset">
@@ -427,7 +409,6 @@
         <param name="element">The element for which to set the horizontal access key offset.</param>
         <param name="value">The new offset value.</param>
         <summary>Sets the horizontal offset from the nominal position to use for displaying the access key.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAccessKeyHorizontalOffset">
@@ -453,7 +434,6 @@
         <param name="value">The new offset value.</param>
         <summary>Sets the horizontal offset from the nominal position to use for displaying the access key.</summary>
         <returns>A fluent object on which the developer may make furter method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAccessKeyPlacement">
@@ -478,7 +458,6 @@
         <param name="element">The element for which to set the horizontal access key placement.</param>
         <param name="value">The new placement value.</param>
         <summary>Sets nominal position to use for displaying the access key.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAccessKeyPlacement">
@@ -504,7 +483,6 @@
         <param name="value">The new placement value.</param>
         <summary>Sets nominal position to use for displaying the access key.</summary>
         <returns>A fluent object on which the developer may make furter method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAccessKeyVerticalOffset">
@@ -529,7 +507,6 @@
         <param name="element">The element for which to set the vertical access key offset.</param>
         <param name="value">The new offset value.</param>
         <summary>Sets the vertical offset from the nominal position to use for displaying the access key.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAccessKeyVerticalOffset">
@@ -555,7 +532,6 @@
         <param name="value">The new offset value.</param>
         <summary>Sets the vertical offset from the nominal position to use for displaying the access key.</summary>
         <returns>A fluent object on which the developer may make furter method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsLegacyColorModeEnabled">
@@ -581,7 +557,6 @@
         <param name="value">
           <see langword="true" /> to enable legacy color mode. Otherwise, <see langword="false" />.</param>
         <summary>Turns the legacy color mode on and off.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsLegacyColorModeEnabled">
@@ -608,7 +583,6 @@
           <see langword="true" /> to enable legacy color mode. Otherwise, <see langword="false" />.</param>
         <summary>Turns the legacy color mode on and off.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

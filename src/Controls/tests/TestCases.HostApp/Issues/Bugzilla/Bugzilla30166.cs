@@ -1,10 +1,5 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 30166, "NavigationBar.BarBackgroundColor resets on Lollipop after popping modal page", PlatformAffected.Android)]
 	public class Bugzilla30166 : NavigationPage
 	{
@@ -27,8 +22,8 @@ namespace Maui.Controls.Sample.Issues
 						{
 							Content = new Button
 							{
-								AutomationId = "Back",
-								Text = "Back",
+								AutomationId = "GoBack",
+								Text = "GoBack",
 								Command = new Command(async () => await Navigation.PopModalAsync()),
 							},
 						})),

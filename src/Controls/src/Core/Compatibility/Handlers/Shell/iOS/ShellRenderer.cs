@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				};
 			}
 		}
-			
+
 
 		#region IShellContext
 

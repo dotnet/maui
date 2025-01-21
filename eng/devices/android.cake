@@ -47,6 +47,7 @@ Information("Android SDK Root: {0}", androidSdkRoot);
 Information("Project File: {0}", projectPath);
 Information("Build Binary Log (binlog): {0}", binlogDirectory);
 Information("Build Configuration: {0}", configuration);
+Information("Build Target Framework: {0}", targetFramework);
 
 var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = androidSdkRoot };
 var adbSettings = new AdbToolSettings { SdkRoot = androidSdkRoot };
@@ -114,13 +115,6 @@ Task("uitest")
 		ExecuteUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
 	});
 
-Task("cg-uitest")
-	.IsDependentOn("dotnet-buildtasks")
-	.Does(() =>
-	{
-		ExecuteCGLegacyUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, configuration, targetFramework, dotnetToolPath, testAppInstrumentation);
-	});
-
 Task("logcat")
 	.Does(() =>
 {
@@ -128,43 +122,6 @@ Task("logcat")
 });
 
 RunTarget(TARGET);
-
-void ExecuteCGLegacyUITests(string project, string appProject, string appPackageName, string device, string resultsDir, string config, string tfm, string toolPath, string instrumentation)
-{
-	CleanDirectories(resultsDir);
-
-	Information("Starting Compatibility Gallery UI Tests...");
-
-	var testApp = GetTestApplications(appProject, device, config, tfm, "").FirstOrDefault();
-
-	if (string.IsNullOrEmpty(appPackageName))
-	{
-		var appFile = new FilePath(testApp);
-		appFile = appFile.GetFilenameWithoutExtension();
-		appPackageName = appFile.FullPath.Replace("-Signed", "");
-	}
-
-	Information($"Testing Device: {device}");
-	Information($"Testing App Project: {appProject}");
-	Information($"Testing App: {testApp}");
-	Information($"Testing App Package Name: {appPackageName}");
-	Information($"Results Directory: {resultsDir}");
-
-	InstallApk(testApp, appPackageName, resultsDir, deviceSkin);
-
-	//set env var for the app path for Xamarin.UITest setup
-	SetEnvironmentVariable("ANDROID_APP", $"{testApp}");
-
-	var resultName = $"{System.IO.Path.GetFileNameWithoutExtension(project)}-{config}-{DateTime.UtcNow.ToFileTimeUtc()}";
-	Information("Run UITests project {0}", resultName);
-	RunTestWithLocalDotNet(
-		project,
-		config: config,
-		pathDotnet: toolPath,
-		noBuild: false,
-		resultsFileNameWithoutExtension: resultName,
-		filter: Argument("filter", ""));
-}
 
 void ExecuteBuild(string project, string device, string binDir, string config, string tfm, string toolPath)
 {
@@ -250,6 +207,11 @@ void ExecuteTests(string project, string device, string appPath, string appPacka
 	}
 	finally
 	{
+		if (testsFailed)
+		{
+			// uncomment if you want to copy the test app to the results directory for any reason
+			// CopyFile(testApp, new DirectoryPath(resultsDir).CombineWithFilePath(new FilePath(testApp).GetFilename()));
+		}
 
 		HandleTestResults(resultsDir, testsFailed, false);
 	}
@@ -322,8 +284,8 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-{platform}.binlog";
-	var appiumLog = $"{binDir}/appium_{platform}.log";
 	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-{platform}-{testFilter}");
+	var appiumLog = $"{binDir}/appium_{platform}_{resultsFileName}.log";
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{

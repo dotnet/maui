@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Enumerates navigation transition styles.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Crossfade">

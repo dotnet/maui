@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "Xamarin.forms 2.5.0.280555 and android circle button issue";
-		
+
 		// [Test]
 		// [Category(UITestCategories.Button)]
 		// [Category(UITestCategories.Compatibility)]

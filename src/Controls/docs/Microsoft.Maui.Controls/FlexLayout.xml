@@ -19,7 +19,7 @@
     <summary>A Flexbox-like layout that lays out child elements in optionally wrappable rows or columns of child elements.</summary>
     <remarks>
       <para>FlexLayout is a <see cref="T:Microsoft.Maui.Controls.Layout" /> that efficiently lays out it's <see cref="P:Microsoft.Maui.Controls.Layout.Children" /> in a manner similar to that of <format type="text/html"><a href="https://www.w3.org/TR/css-flexbox-1/">CSS Flexbox</a></format>.</para>
-      <para>The <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> property determines the primary axis of the layout. The <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> property determines how <see cref="P:Microsoft.Maui.Controls.Layout.Children" /> are laid out along the primary axis. The <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> property specifies how <see cref="P:Microsoft.Maui.Controls.Layout.Children" /> are laid out along the cross axis; the <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignContent" /> property works similarly, but applies to entire rows or columns, not individual elements.</para>
+      <para>The <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> property determines the primary axis of the layout. The <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> property determines how <see cref="P:Microsoft.Maui.Controls.Layout.Children" /> are arranged along the primary axis. The <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> property specifies how <see cref="P:Microsoft.Maui.Controls.Layout.Children" /> are arranged along the cross axis; the <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignContent" /> property works similarly, but applies to entire rows or columns, not individual elements.</para>
       <para>The initial size of a child element is set with <see cref="M:Microsoft.Maui.Controls.FlexLayout.SetBasis(Microsoft.Maui.Controls.BindableObject,Microsoft.Maui.Layouts.FlexBasis)" /> and its resizing behavior is set with  <see cref="M:Microsoft.Maui.Controls.FlexLayout.SetGrow(Microsoft.Maui.Controls.BindableObject,System.Single)" /> and <see cref="M:Microsoft.Maui.Controls.FlexLayout.SetShrink(Microsoft.Maui.Controls.BindableObject,System.Single)" />.</para>
     </remarks>
     <related type="article" href="https://learn.microsoft.com/dotnet/maui/user-interface/layouts/flexlayout">The .NET MAUI FlexLayout</related>
@@ -38,7 +38,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.FlexLayout" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AlignContent">
@@ -57,7 +56,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a value that controls how multiple rows or columns of child elements are aligned.</summary>
-        <value>To be added.</value>
         <remarks>
           <para>This property behaves similarly to <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" />, but applies to how entire rows or columns are aligned, not individual elements. The below image illustrates three different <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignContent" /> values working on wrapped rows. The iOS screenshot shows <see cref="F:Microsoft.Maui.Layouts.FlexAlignContent.SpaceBetween" />, the Android screenshot shows <see cref="F:Microsoft.Maui.Layouts.FlexAlignContent.SpaceAround" />, and the UWP screenshot shows <see cref="F:Microsoft.Maui.Layouts.FlexAlignContent.SpaceEvenly" />.</para>
           <para>
@@ -82,7 +80,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignContent" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AlignItems">
@@ -100,8 +97,8 @@
         <ReturnType>Microsoft.Maui.Layouts.FlexAlignItems</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets a value that controls how child elements are laid out within their row or column.</summary>
-        <value>A value that controls how child elements are laid out within their row or column.</value>
+        <summary>Gets or sets a value that controls how child elements are arranged within their row or column.</summary>
+        <value>A value that controls how child elements are arranged within their row or column.</value>
         <remarks>
           <para>The following image shows the options for <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> with <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> set to <see cref="F:Microsoft.Maui.Layouts.FlexDirection.Column" /> and <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> set to <see cref="F:Microsoft.Maui.Layouts.FlexJustify.Start" />:</para>
           <para>
@@ -126,7 +123,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.FlexLayout.AlignItems" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AlignSelfProperty">
@@ -145,7 +141,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that optionally overrides the item alignment for this child within its row or column in the parent.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BasisProperty">
@@ -164,7 +159,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that contains information about this element's relative or absolute basis.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Direction">
@@ -208,7 +202,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.FlexLayout.Direction" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetAlignSelf">
@@ -232,7 +225,6 @@
         <param name="bindable">The object for which to retrieve the property value.</param>
         <summary>Returns the value that optionally overrides the item alignment for this child within its row or column in the parent.</summary>
         <returns>The value that optionally overrides the item alignment for this child within its row or column in the parent.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetBasis">
@@ -256,7 +248,6 @@
         <param name="bindable">The object for which to retrieve the property value.</param>
         <summary>Returns the value that describes this element's relative or absolute basis length.</summary>
         <returns>The value that describes this element's relative or absolute basis length.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetGrow">
@@ -280,7 +271,6 @@
         <param name="bindable">The object for which to retrieve the property value.</param>
         <summary>Returns the value that determines the proportional growth that this element will accept to acccommodate the layout in the row or column.</summary>
         <returns>The value that determines the proportional growth that this element will accept to acccommodate the layout in the row or column.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetOrder">
@@ -304,7 +294,6 @@
         <param name="bindable">The object for which to retrieve the property value.</param>
         <summary>Returns the visual order of the element among its siblings.</summary>
         <returns>The visual order of the element among its siblings.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetShrink">
@@ -328,7 +317,6 @@
         <param name="bindable">The object for which to retrieve the property value.</param>
         <summary>Returns the value that determines the proportional reduction in size that this element will accept to acccommodate the layout in the row or column.</summary>
         <returns>The proportional reduction in size that this element will accept to acccommodate the layout in the row or column.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GrowProperty">
@@ -347,7 +335,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that determines the proportional growth that this element will accept to acccommodate the layout in the row or column.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="JustifyContent">
@@ -391,7 +378,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.FlexLayout.JustifyContent" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LayoutChildren">
@@ -420,7 +406,6 @@
         <param name="width">The width of the rectangle.</param>
         <param name="height">The height of the rectangle.</param>
         <summary>Lays out the <see cref="P:Microsoft.Maui.Controls.Layout.Children" /> in the specified rectangle.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnAdded">
@@ -443,7 +428,6 @@
       <Docs>
         <param name="view">The view to which the layout was added.</param>
         <summary>Method that is called when the flex layout is added to a view.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnMeasure">
@@ -468,8 +452,6 @@
         <param name="widthConstraint">The width constraint.</param>
         <param name="heightConstraint">The height constraint.</param>
         <summary>Method that is called to request that the layout measure its child elements.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnParentSet">
@@ -489,7 +471,6 @@
       <Parameters />
       <Docs>
         <summary>Method that is called when the layout's parent is set.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnRemoved">
@@ -512,7 +493,6 @@
       <Docs>
         <param name="view">The view from which the layout was removed.</param>
         <summary>Method that is called when the layout is removed from a view.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OrderProperty">
@@ -531,7 +511,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that determines this element's visual order among its siblings.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Position">
@@ -551,7 +530,6 @@
       <Docs>
         <summary>Gets or sets a value that controls whether the coordinates of child elements are specified in absolute or relative terms.</summary>
         <value>A value that controls whether the coordinates of child elements are specified in absolute or relative terms.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PositionProperty">
@@ -570,7 +548,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.FlexLayout.Position" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAlignSelf">
@@ -625,7 +602,6 @@
         <param name="bindable">The object for which to retrieve the property value.</param>
         <param name="value">The new flex basis value.</param>
         <summary>Sets the value that describes this element's relative or absolute basis length.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetGrow">
@@ -650,7 +626,6 @@
         <param name="bindable">The object for which to retrieve the property value.</param>
         <param name="value">The new flex growth value.</param>
         <summary>Sets the value that determines the proportional growth that this element will accept to acccommodate the layout in the row or column.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetOrder">
@@ -706,7 +681,6 @@
         <param name="bindable">The object for which to retrieve the property value.</param>
         <param name="value">The new flex shrink value.</param>
         <summary>Sets the value that determines the proportional reduction in size that this element will accept to acccommodate the layout in the row or column.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ShrinkProperty">
@@ -725,7 +699,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that determines the proportional reduction in size that this element will accept to acccommodate the layout in the row or column.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Wrap">
@@ -745,7 +718,6 @@
       <Docs>
         <summary>Gets or sets a value that controls whether and how child elements within this layout wrap.</summary>
         <value>A value that controls whether and how child elements within this layout wrap.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WrapProperty">
@@ -764,7 +736,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.FlexLayout.Wrap" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>
