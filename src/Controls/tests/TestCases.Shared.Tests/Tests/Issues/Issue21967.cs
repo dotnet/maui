@@ -35,9 +35,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var itemSize = App.WaitForElement("Item1").GetRect();
 			ClassicAssert.Greater(200, itemSize.Height);
 		}
-#if ANDROID || IOS // Orientation not supported in MacCatalyst and Windows
+
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public async Task CollectionViewWorksWhenRotatingDevice()
 		{
 			try
@@ -51,7 +53,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				await Task.Delay(100);
 				var itemSizeLandscape = App.WaitForElement("Item1").GetRect();
 				App.SetOrientationPortrait();
-				await Task.Delay(250);
+				await Task.Delay(100);
 				var itemSizePortrait2 = App.WaitForElement("Item1").GetRect();
 
 				ClassicAssert.Greater(itemSizeLandscape.Width, itemSizePortrait.Width);
@@ -62,6 +64,5 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.SetOrientationPortrait();
 			}
 		}
-#endif
 	}
 }

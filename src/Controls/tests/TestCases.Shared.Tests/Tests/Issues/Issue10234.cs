@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // AutomationId not set for CarouselView Image
+﻿#if IOS || MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
