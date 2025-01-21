@@ -36,10 +36,6 @@ public partial class Maui16208
 		[Test]
 		public void SetterAndTargetName([Values] XamlInflator inflator)
 		{
-			if (inflator == XamlInflator.SourceGen)
-			{
-				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui16208));
-			}
 			Assert.DoesNotThrow(() => new Maui16208(inflator));
 			var page = new Maui16208(inflator);
 			Assert.That(page!.ItemLabel.BackgroundColor, Is.EqualTo(Colors.Green));

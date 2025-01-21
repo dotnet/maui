@@ -104,6 +104,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
             Writer.WriteLine($"{type.ToFQDisplayString()} {variableName} = {ValueForLanguagePrimitive(type, node, Context)};");
             Context.Variables[node] = new LocalVariable(type, variableName);
+            node.RegisterSourceInfo(Context, Writer);
             return;
         }
 
@@ -113,12 +114,14 @@ class CreateValuesVisitor : IXamlNodeVisitor
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
             Writer.WriteLine($"var {variableName} = {handler(node, Context, out var returnType)};");
             Context.Variables[node] = new LocalVariable(returnType!, variableName);
+            node.RegisterSourceInfo(Context, Writer);
 
             //skip the node as it has been fully exhausted
             foreach (var prop in node.Properties)
                 if (!node.SkipProperties.Contains(prop.Key))
                     node.SkipProperties.Add(prop.Key);
             node.CollectionItems.Clear();
+
             return;
         }
 
