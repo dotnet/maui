@@ -137,14 +137,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				case SelectionMode.None:
 					CollectionView.AllowsSelection = false;
 					CollectionView.AllowsMultipleSelection = false;
+					ClearsSelectionOnViewWillAppear = true;
 					break;
 				case SelectionMode.Single:
 					CollectionView.AllowsSelection = true;
 					CollectionView.AllowsMultipleSelection = false;
+					ClearsSelectionOnViewWillAppear = false;
 					break;
 				case SelectionMode.Multiple:
 					CollectionView.AllowsSelection = true;
 					CollectionView.AllowsMultipleSelection = true;
+					ClearsSelectionOnViewWillAppear = false;
 					break;
 			}
 

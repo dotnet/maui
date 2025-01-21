@@ -26,7 +26,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.TapBackArrow();
 
 			// App should not have crashed
-			App.WaitForElement("GoForward");
+			App.WaitForElementTillPageNavigationSettled("GoForward");
 		}
 
 		[Test]
@@ -35,14 +35,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("GoForward");
 			App.Tap("GoForward");
-			App.WaitForElement("GoBackDelayedSafe");
+			App.WaitForElementTillPageNavigationSettled("GoBackDelayedSafe");
 			App.Tap("GoBackDelayedSafe");
 			App.TapBackArrow();
 
+			App.WaitForElementTillPageNavigationSettled("GoForward");
 			App.Tap("GoForward");
 
 			// App should navigate
-			App.WaitForElement("GoBackDelayedSafe");
+			App.WaitForElementTillPageNavigationSettled("GoBackDelayedSafe");
 		}
 	}
 }

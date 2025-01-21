@@ -1859,7 +1859,34 @@ namespace UITest.Appium
 		/// <param name="query">The custom IQuery for the back button.</param>
 		public static void TapBackArrow(this IApp app, IQuery query)
 		{
-			app.Tap(query);
+			app.WaitForElement(query).Tap();
+		}
+
+		/// <summary>
+		/// Taps a button in a display alert dialog.
+		/// For AppiumCatalystApp, it uses specific element identifiers to locate and tap the alert button.
+		/// For other app types, it locates and taps the button using the provided text.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="text">The text of the button to tap in the display alert (used for non-AppiumCatalystApp instances).</param>
+		/// <param name="buttonIndex">
+		/// The index of the button in the alert dialog, used to generate the correct element identifier.
+		/// For example, in a alert with two buttons:
+		/// - 0 (default) corresponds to the leftmost button (e.g., "OK" with identifier ending in 999)
+		/// - 1 corresponds to the button to its right (e.g., "Cancel" with identifier ending in 998)
+		/// </param>
+		public static void TapDisplayAlertButton(this IApp app, string text, int buttonIndex = 0)
+		{
+			if(app is AppiumCatalystApp)
+			{
+				app.WaitForElement(AppiumQuery.ById($"action-button--{999 - buttonIndex}"));
+				app.Tap(AppiumQuery.ById($"action-button--{999 - buttonIndex}"));
+			}
+			else
+			{
+				app.WaitForElement(text);
+				app.Tap(text);
+			}
 		}
 
 		/// <summary>
