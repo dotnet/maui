@@ -15,7 +15,7 @@ public partial class Issue27200 : ContentPage
 	}
 }
 
-public class Issue27200ViewModel : INotifyPropertyChanged
+class Issue27200ViewModel : INotifyPropertyChanged
 {
 	private bool _showHeader;
 
@@ -82,7 +82,7 @@ public class Issue27200ViewModel : INotifyPropertyChanged
 	}
 }
 
-public class Issue27200ItemGroupViewModel : List<string>
+class Issue27200ItemGroupViewModel : List<string>
 {
 	public string Name { get; private set; }
 
