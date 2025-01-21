@@ -90,6 +90,12 @@ namespace Microsoft.Maui.Handlers
 
 		internal HybridWebViewDeveloperTools DeveloperTools => MauiContext?.Services.GetService<HybridWebViewDeveloperTools>() ?? new HybridWebViewDeveloperTools();
 
+		private const string InvokeJavaScriptThrowsExceptionsSwitch = "HybridWebView.InvokeJavaScriptThrowsExceptions";
+
+		// TODO: .NET 10 flip the default to true for .NET 10
+		private static bool IsInvokeJavaScriptThrowsExceptionsEnabled =>
+			AppContext.TryGetSwitch(InvokeJavaScriptThrowsExceptionsSwitch, out var enabled) && enabled;
+
 		void MessageReceived(string rawMessage)
 		{
 			if (string.IsNullOrEmpty(rawMessage))
@@ -130,16 +136,19 @@ namespace Microsoft.Maui.Handlers
 						var taskManager = this.GetRequiredService<IHybridWebViewTaskManager>();
 						if (messageType == "__InvokeJavaScriptFailed")
 						{
-							if (string.IsNullOrWhiteSpace(result))
+							if (IsInvokeJavaScriptThrowsExceptionsEnabled)
 							{
-								taskManager.SetTaskFailed(taskId, new HybridWebViewInvokeJavaScriptException());
-							}
-							else
-							{
-								var jsError = JsonSerializer.Deserialize(result, HybridWebViewHandlerJsonContext.Default.JSInvokeError);
-								var jsException = new HybridWebViewInvokeJavaScriptException(jsError?.Message, jsError?.Name, jsError?.StackTrace);
-								var ex = new HybridWebViewInvokeJavaScriptException($"InvokeJavaScript threw an exception: {jsException.Message}", jsException);
-								taskManager.SetTaskFailed(taskId, ex);
+								if (string.IsNullOrWhiteSpace(result))
+								{
+									taskManager.SetTaskFailed(taskId, new HybridWebViewInvokeJavaScriptException());
+								}
+								else
+								{
+									var jsError = JsonSerializer.Deserialize(result, HybridWebViewHandlerJsonContext.Default.JSInvokeError);
+									var jsException = new HybridWebViewInvokeJavaScriptException(jsError?.Message, jsError?.Name, jsError?.StackTrace);
+									var ex = new HybridWebViewInvokeJavaScriptException($"InvokeJavaScript threw an exception: {jsException.Message}", jsException);
+									taskManager.SetTaskFailed(taskId, ex);
+								}
 							}
 						}
 						else
