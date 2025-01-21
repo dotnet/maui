@@ -52,7 +52,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Description("Scroll element to the end")]
-
 		public void ScrollToElement3End()
 		{
 			App.WaitForElement("WaitForStubControl");
@@ -74,10 +73,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			// 1. Tap a button to scroll 100 px.
 			App.Tap("Scroll100");
 		}
-#if ANDROID // Test fails on Windows, IOS and MacCatalyst because the ScrollView's ScrollToAsync doesn't complete when called twice with the same value More Information:https://github.com/dotnet/maui/issues/27250
+
 		// ScrollToYTwice (src\Compatibility\ControlGallery\src\UITests.Shared\Tests\ScrollViewUITests.cs)
 		[Test]
 		[Description("ScrollTo Y = 100")]
+		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue, More Information: https://github.com/dotnet/maui/issues/27250")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue, More Information: https://github.com/dotnet/maui/issues/27250")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue, More Information: https://github.com/dotnet/maui/issues/27250")]
 		public void ScrollToYTwice()
 		{
 			App.WaitForElement("WaitForStubControl");
@@ -90,7 +92,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Scroll100");
 			App.WaitForElement("completed");
 		}
-#endif
+
 		[Test]
 		[Description("Scroll down the ScrollView using a gesture")]
 		public void ScrollUpAndDownWithGestures()
