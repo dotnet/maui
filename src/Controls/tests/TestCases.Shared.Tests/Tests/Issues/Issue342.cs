@@ -18,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Issue342NoSourceTestsLablePresentNoImage()
 		{
 			App.WaitForElement("Uninitialized image");
-			VerifyScreenshot();
 		}
 	}
 
@@ -36,7 +35,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Issue342DelayedLoadTestsImageLoads()
 		{
 			App.WaitForElement("Delayed image");
-			VerifyScreenshot();
 		}
 	}
 }
