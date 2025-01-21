@@ -119,6 +119,7 @@ public class MacTemplateTest : BaseTemplateTests
 		{
 			buildWithCodeSignProps.Add("EnableCodeSigning=true");
 		}
+		buildWithCodeSignProps.Add("TrimMode=full"); // Project has trimmer warnings with TrimMode=partial
 
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
 		Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
