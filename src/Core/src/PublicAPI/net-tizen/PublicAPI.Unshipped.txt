@@ -42,6 +42,8 @@ Microsoft.Maui.ITitleBar.Title.get -> string?
 Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
 *REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
+Microsoft.Maui.Platform.WebViewHelper
+static Microsoft.Maui.Platform.WebViewHelper.IsRelativeUrl(string! url) -> bool
 Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.WebProcessTerminatedEventArgs
 Microsoft.Maui.WebProcessTerminatedEventArgs.WebProcessTerminatedEventArgs() -> void
