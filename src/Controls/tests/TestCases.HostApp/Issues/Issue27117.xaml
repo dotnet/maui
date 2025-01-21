@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue27117"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
+
+    <ContentPage.BindingContext>
+        <local:_27117MainViewModel/>
+    </ContentPage.BindingContext>
+
+    <Grid>
+        <CollectionView AutomationId="collectionView"
+                        x:Name="collectionView"
+                        x:DataType="local:_27117MainViewModel"
+                        ItemsSource="{Binding _27117People}"
+                        Loaded="CollectionView_Loaded"
+                        BackgroundColor="DarkGray">
+            <CollectionView.Header>
+                <StackLayout BackgroundColor="LightGray">
+                    <Label Margin="10,0,0,0"
+                           Text="People"
+                           FontSize="Header"
+                           FontAttributes="Bold"/>
+                </StackLayout>
+            </CollectionView.Header>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="local:_27117Person">
+                    <VerticalStackLayout>
+                        <Label Text="{Binding Name}"
+                               FontSize="Medium"/>
+                        <Rectangle HeightRequest="2"
+                                   BackgroundColor="Black"/>
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.Footer>
+                <StackLayout BackgroundColor="LightGray">
+                    <Label Margin="10,0,0,0"
+                           Text="Footer"
+                           FontSize="Header"
+                           FontAttributes="Bold"/>
+                </StackLayout>
+            </CollectionView.Footer>
+        </CollectionView>
+    </Grid>
+</ContentPage>
