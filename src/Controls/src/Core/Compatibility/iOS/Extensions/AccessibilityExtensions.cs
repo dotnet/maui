@@ -99,6 +99,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var semantics = SemanticProperties.UpdateSemantics(Element, null);
 			if (semantics is not null)
 			{
+				semantics.Description = semantics.Description ?? (Element as ToolbarItem)?.Text;
 				Microsoft.Maui.Platform.SemanticExtensions.UpdateSemantics(Control, semantics);
 				return String.Empty;
 			}
