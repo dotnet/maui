@@ -102,6 +102,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				Microsoft.Maui.Platform.SemanticExtensions.UpdateSemantics(Control, semantics);
 				return String.Empty;
 			}
+			else if (!string.IsNullOrEmpty((Element as ToolbarItem)?.Text))
+			{
+				Microsoft.Maui.Platform.SemanticExtensions.UpdateSemantics(Control, new Semantics() { Description = (Element as ToolbarItem)?.Text });
+				return String.Empty;
+			}
 
 			if (_defaultAccessibilityLabel == null)
 				_defaultAccessibilityLabel = Control.AccessibilityLabel;
@@ -112,7 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			//     On Android only the icon will be displayed but the text will be read by screenreaders.
 			//     On MacCatalyst and iOS only the icon will be displayed but the text will NOT be read by screenreaders.
 			// As a result, we will add the text value to the Accessibility Label to ensure that the text is read by screenreaders on all the platforms.
-			Control.AccessibilityLabel = (string)Element.GetValue(AutomationProperties.NameProperty) ?? _defaultAccessibilityLabel ?? (Element as ToolbarItem)?.Text;
+			Control.AccessibilityLabel = (string)Element.GetValue(AutomationProperties.NameProperty) ?? _defaultAccessibilityLabel;
 #pragma warning restore CS0618 // Type or member is obsolete
 
 			return _defaultAccessibilityLabel;
