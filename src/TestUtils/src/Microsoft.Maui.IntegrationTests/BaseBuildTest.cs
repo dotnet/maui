@@ -68,6 +68,8 @@ namespace Microsoft.Maui.IntegrationTests
 			$"DisableTransitiveFrameworkReferenceDownloads=true",
 			// Surface warnings as build errors
 			"TreatWarningsAsErrors=true",
+			// Detailed trimmer warnings, if present
+			"TrimmerSingleWarn=false",
 		};
 
 
