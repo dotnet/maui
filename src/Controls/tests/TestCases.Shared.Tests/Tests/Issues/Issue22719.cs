@@ -15,9 +15,9 @@ public class Issue22719 : _IssuesUITest
 	public void ShouldFlyoutBeVisibleAfterMaximizingWindow()
 	{
 		App.WaitForElement("Label");
-#if WINDOWS || MACCATALYST
+#if MACCATALYST
 		App.EnterFullScreen();
-#else
+#elif ANDROID || IOS
 		App.SetOrientationLandscape();
 #endif
 		VerifyScreenshot();
