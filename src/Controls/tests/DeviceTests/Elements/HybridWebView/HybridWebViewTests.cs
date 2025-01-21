@@ -318,6 +318,14 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("Async")]
 		public async Task InvokeJavaScriptMethodThatThrowsNumber(string type)
 		{
+#if ANDROID
+			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				return;
+			}
+#endif
+
 			var ex = await RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 1);
 			Assert.Equal("InvokeJavaScript threw an exception: 777.777", ex.Message);
 			Assert.Equal("777.777", ex.InnerException.Message);
@@ -330,6 +338,14 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("Async")]
 		public async Task InvokeJavaScriptMethodThatThrowsString(string type)
 		{
+#if ANDROID
+			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				return;
+			}
+#endif
+
 			var ex = await RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 2);
 			Assert.Equal("InvokeJavaScript threw an exception: String: 777.777", ex.Message);
 			Assert.Equal("String: 777.777", ex.InnerException.Message);
@@ -342,6 +358,14 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("Async")]
 		public async Task InvokeJavaScriptMethodThatThrowsError(string type)
 		{
+#if ANDROID
+			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				return;
+			}
+#endif
+
 			var ex = await RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 3);
 			Assert.Equal("InvokeJavaScript threw an exception: Generic Error: 777.777", ex.Message);
 			Assert.Equal("Generic Error: 777.777", ex.InnerException.Message);
@@ -354,6 +378,14 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("Async")]
 		public async Task InvokeJavaScriptMethodThatThrowsTypedNumber(string type)
 		{
+#if ANDROID
+			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				return;
+			}
+#endif
+
 			var ex = await RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 4);
 			Assert.Contains("undefined", ex.Message, StringComparison.OrdinalIgnoreCase);
 			Assert.Contains("undefined", ex.InnerException.Message, StringComparison.OrdinalIgnoreCase);
