@@ -12,8 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		: base(device)
 		{ }
 
-		// Disabling the testcases as we have reverted the Deselect the selected item in CollectionView https://github.com/dotnet/maui/pull/27225
-		//[Test]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void SelectedItemVisualIsCleared()
 		{
