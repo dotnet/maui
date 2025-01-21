@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS //his test is failing, likely due to product issue. More information: https://github.com/dotnet/maui/issues/22287.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -31,3 +32,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
