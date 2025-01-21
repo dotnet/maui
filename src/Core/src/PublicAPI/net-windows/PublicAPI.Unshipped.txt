@@ -43,6 +43,7 @@ Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEve
 *REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
 Microsoft.Maui.IWindow.TitleBar.get -> Microsoft.Maui.ITitleBar?
+Microsoft.Maui.Platform.CalendarDatePickerExtensions
 Microsoft.Maui.Platform.MauiHybridWebView
 Microsoft.Maui.Platform.MauiHybridWebView.MauiHybridWebView(Microsoft.Maui.Handlers.HybridWebViewHandler! handler) -> void
 Microsoft.Maui.Platform.MauiHybridWebView.RunAfterInitialize(System.Action! action) -> void
@@ -66,10 +67,13 @@ static Microsoft.Maui.Handlers.HybridWebViewHandler.MapEvaluateJavaScriptAsync(M
 static Microsoft.Maui.Handlers.HybridWebViewHandler.MapInvokeJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
 static Microsoft.Maui.Handlers.HybridWebViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
 static Microsoft.Maui.Handlers.HybridWebViewHandler.MapSendRawMessage(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
+static Microsoft.Maui.Handlers.TimePickerHandler.MapBackground(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions.AddHybridWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
+static Microsoft.Maui.Platform.CalendarDatePickerExtensions.ToDateFormat(this string! dateFormat) -> string!
+static Microsoft.Maui.Platform.TimePickerExtensions.UpdateBackground(this Microsoft.UI.Xaml.Controls.TimePicker! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 *REMOVED*virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement! platformView) -> void
 virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement? platformView) -> void

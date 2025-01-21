@@ -1,5 +1,6 @@
 #nullable enable
 Microsoft.Maui.ElementHandlerExtensions
+Microsoft.Maui.Graphics.MauiDrawable.SetEmptyBorderBrush() -> void
 Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.HandlerDisconnectPolicy.Automatic = 0 -> Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.HandlerDisconnectPolicy.Manual = 1 -> Microsoft.Maui.HandlerDisconnectPolicy
