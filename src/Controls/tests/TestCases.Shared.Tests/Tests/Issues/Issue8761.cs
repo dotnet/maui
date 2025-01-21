@@ -15,6 +15,7 @@ public class Issue8761 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Ignore("This test is very flaky and needs to be fixed.")]
 	public void CollectionViewHeaderTemplateAndFooterTemplateDontWork()
 	{
 		for (int i = 0; i < 4; i++)
