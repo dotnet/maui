@@ -1,6 +1,6 @@
  namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 1906, "AlertView doesn't scroll when text is to large", PlatformAffected.iOS | PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 1906, "AlertView doesn't scroll when text is too large", PlatformAffected.iOS | PlatformAffected.Android)]
 	public class Issue1906 : Microsoft.Maui.Controls.NavigationPage
 	{
 		public Issue1906() : base(new MainPage())
