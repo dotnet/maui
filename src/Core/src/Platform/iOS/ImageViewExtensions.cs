@@ -38,14 +38,14 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		// TODO: This method does not appear to be used, should we obsolete in net9?
+		[Obsolete]
 		public static void UpdateSource(this UIImageView imageView, UIImage? uIImage, IImageSourcePart image)
 		{
 			imageView.Image = uIImage;
 			imageView.UpdateIsAnimationPlaying(image);
 		}
 
-		// TODO: This method does not appear to be used, should we obsolete in net9?
+		[Obsolete]
 		public static Task<IImageSourceServiceResult<UIImage>?> UpdateSourceAsync(
 			this UIImageView imageView,
 			IImageSourcePart image,

@@ -3,6 +3,9 @@ Microsoft.Maui.ElementHandlerExtensions
 Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.HandlerDisconnectPolicy.Automatic = 0 -> Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.HandlerDisconnectPolicy.Manual = 1 -> Microsoft.Maui.HandlerDisconnectPolicy
+Microsoft.Maui.Handlers.DataFlowDirection
+Microsoft.Maui.Handlers.DataFlowDirection.FromPlatform = 1 -> Microsoft.Maui.Handlers.DataFlowDirection
+Microsoft.Maui.Handlers.DataFlowDirection.ToPlatform = 0 -> Microsoft.Maui.Handlers.DataFlowDirection
 Microsoft.Maui.Handlers.HybridWebViewHandler
 Microsoft.Maui.Handlers.HybridWebViewHandler.HybridWebViewHandler() -> void
 Microsoft.Maui.Handlers.HybridWebViewHandler.HybridWebViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
@@ -73,6 +76,7 @@ static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Platform.CalendarDatePickerExtensions.ToDateFormat(this string! dateFormat) -> string!
+static Microsoft.Maui.Platform.DatePickerExtensions.UpdateBackground(this Microsoft.UI.Xaml.Controls.CalendarDatePicker! platformDatePicker, Microsoft.Maui.IDatePicker! datePicker) -> void
 static Microsoft.Maui.Platform.TimePickerExtensions.UpdateBackground(this Microsoft.UI.Xaml.Controls.TimePicker! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 *REMOVED*virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement! platformView) -> void

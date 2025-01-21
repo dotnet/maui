@@ -150,7 +150,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 
-		// TODO obsolete or delete this for NET9
+		[Obsolete]
 		public new void Dispose()
 		{
 			Disconnect();
