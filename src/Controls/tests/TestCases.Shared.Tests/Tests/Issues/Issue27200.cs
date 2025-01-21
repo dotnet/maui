@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewHeaderSizewithIsVisibleBinding()
 		{
-			App.WaitForElement("groupHeader");
+			App.WaitForElement("collectionView");
 
 			VerifyScreenshot();
 		}

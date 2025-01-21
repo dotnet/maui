@@ -17,23 +17,9 @@ public partial class Issue27200 : ContentPage
 
 public class Issue27200ViewModel : INotifyPropertyChanged
 {
-	private bool _isRefreshing;
 	private bool _showHeader;
 
 	public event PropertyChangedEventHandler PropertyChanged;
-
-	public bool IsRefreshing
-	{
-		get => _isRefreshing;
-		set
-		{
-			if (_isRefreshing != value)
-			{
-				_isRefreshing = value;
-				OnPropertyChanged();
-			}
-		}
-	}
 
 	public bool ShowHeader
 	{
@@ -49,39 +35,19 @@ public class Issue27200ViewModel : INotifyPropertyChanged
 	}
 
 	public ObservableCollection<Issue27200ItemGroupViewModel> Items { get; } = new();
-	public System.Windows.Input.ICommand RefreshCommand { get; }
 
 	public Issue27200ViewModel()
 	{
-		RefreshCommand = new Command(async () => await RefreshAsync());
-		_ = InitItems();
+		InitItems();
 	}
 
-	public async Task RefreshAsync()
+	private void InitItems()
 	{
-		try
+		Items.Clear();
+		foreach (var vm in GetItemGroups())
 		{
-			IsRefreshing = true;
-			await InitItems();
+			Items.Add(vm);
 		}
-		finally
-		{
-			IsRefreshing = false;
-		}
-	}
-
-	private async Task InitItems()
-	{
-		await Task.Delay(2000);
-
-		Application.Current?.Dispatcher.Dispatch(() =>
-		{
-			Items.Clear();
-			foreach (var vm in GetItemGroups())
-			{
-				Items.Add(vm);
-			}
-		});
 	}
 
 	private List<Issue27200ItemGroupViewModel> GetItemGroups()
@@ -93,20 +59,20 @@ public class Issue27200ViewModel : INotifyPropertyChanged
 		};
 	}
 
-	private List<Issue27200ItemViewModel> GetItems()
+	private List<string> GetItems()
 	{
-		return new List<Issue27200ItemViewModel>
+		return new List<string>
 		{
-			new() { TextLine1 = "1" },
-			new() { TextLine1 = "2" },
-			new() { TextLine1 = "3" },
-			new() { TextLine1 = "4" },
-			new() { TextLine1 = "5" },
-			new() { TextLine1 = "6" },
-			new() { TextLine1 = "7" },
-			new() { TextLine1 = "8" },
-			new() { TextLine1 = "9" },
-			new() { TextLine1 = "10" },
+			"1",
+			"2",
+			"3",
+			"4",
+			"5",
+			"6",
+			"7",
+			"8",
+			"9",
+			"10"
 		};
 	}
 
@@ -116,40 +82,12 @@ public class Issue27200ViewModel : INotifyPropertyChanged
 	}
 }
 
-public class Issue27200ItemGroupViewModel : List<Issue27200ItemViewModel>
+public class Issue27200ItemGroupViewModel : List<string>
 {
 	public string Name { get; private set; }
 
-	public Issue27200ItemGroupViewModel(string name, List<Issue27200ItemViewModel> items) : base(items)
+	public Issue27200ItemGroupViewModel(string name, List<string> items) : base(items)
 	{
 		Name = name;
-	}
-}
-
-public class Issue27200ItemViewModel : INotifyPropertyChanged
-{
-	private string _textLine1;
-
-	public string TextLine1
-	{
-		get => _textLine1;
-		set
-		{
-			if (_textLine1 != value)
-			{
-				_textLine1 = value;
-				OnPropertyChanged();
-			}
-		}
-	}
-
-	public bool ShowTextLine1 => !string.IsNullOrWhiteSpace(TextLine1);
-
-
-	public event PropertyChangedEventHandler PropertyChanged;
-
-	protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-	{
-		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 }
