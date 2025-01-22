@@ -14,15 +14,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ViewBaseTests)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void ForcingGCDoesNotCrash()
 		{
 			App.WaitForElement("Clear");
 			App.Tap("Clear");
 			App.Tap("Garbage");
-			App.WaitForNoElement("Success");
+			App.WaitForElement("Success");
 		}
 	}
 }

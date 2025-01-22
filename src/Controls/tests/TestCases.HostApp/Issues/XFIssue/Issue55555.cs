@@ -14,7 +14,9 @@ public class Issue55555 : TestContentPage
 		lstView.HasUnevenRows = true;
 		lstView.IsGroupingEnabled = true;
 		lstView.GroupDisplayBinding = new Binding("LongName");
+#if !WINDOWS // Getting exception while running the sample with GroupShortNameBinding on windows, Issue: https://github.com/dotnet/maui/issues/26534.
 		lstView.GroupShortNameBinding = new Binding("ShortName");
+#endif
 
 		lstView.ItemTemplate = new DataTemplate(typeof(DemoTextCell));
 		lstView.ItemTemplate.SetBinding(DemoTextCell.TextProperty, "Name");
