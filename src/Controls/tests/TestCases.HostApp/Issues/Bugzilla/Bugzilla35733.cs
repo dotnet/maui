@@ -24,7 +24,6 @@
 					}
 				}
 			});
-
 		}
 		async Task ShowLocation(string locationString)
 		{

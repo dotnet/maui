@@ -25,6 +25,5 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.Tap("LoadNewWebView");
 			}
 		}
-	 
 	}
 }

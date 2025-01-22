@@ -236,7 +236,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		public void VerifyInternetConnectivity()
+		protected void VerifyInternetConnectivity()
 		{
 			try
 			{
@@ -270,7 +270,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 			}
 		}
-		
+
 #if MACUITEST
 		byte[] TakeScreenshot()
 		{

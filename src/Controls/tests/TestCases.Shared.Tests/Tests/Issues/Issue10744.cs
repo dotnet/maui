@@ -19,8 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			VerifyInternetConnectivity();
 			App.WaitForElement("navigatedLabel");
-		}
-		 
+		}	 
 	}
 }
  
