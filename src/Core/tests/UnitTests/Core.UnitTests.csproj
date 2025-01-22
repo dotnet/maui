@@ -32,7 +32,7 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
     <ProjectReference Include="..\..\src\Core.csproj" />
-    
+
     <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.resx" Link="Resources\StringResources.resx" />
     <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.cs.resx" Link="Resources\StringResources.cs.resx" />
     <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.de.resx" Link="Resources\StringResources.de.resx" />
@@ -62,6 +62,21 @@
     <EmbeddedResource Include="..\..\..\Controls\src\Build.Tasks\xlf\ErrorMessages.tr.resx" Link="Resources\ErrorMessages.tr.resx" />
     <EmbeddedResource Include="..\..\..\Controls\src\Build.Tasks\xlf\ErrorMessages.zh-Hans.resx" Link="Resources\ErrorMessages.zh-Hans.resx" />
     <EmbeddedResource Include="..\..\..\Controls\src\Build.Tasks\xlf\ErrorMessages.zh-Hant.resx" Link="Resources\ErrorMessages.zh-Hant.resx" />
+
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.resx" Link="Resources\MauiGResources.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.cs.resx" Link="Resources\MauiGResources.cs.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.de.resx" Link="Resources\MauiGResources.de.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.es.resx" Link="Resources\MauiGResources.es.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.fr.resx" Link="Resources\MauiGResources.fr.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.it.resx" Link="Resources\MauiGResources.it.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.ja.resx" Link="Resources\MauiGResources.ja.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.ko.resx" Link="Resources\MauiGResources.ko.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.pl.resx" Link="Resources\MauiGResources.pl.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.pt-BR.resx" Link="Resources\MauiGResources.pt-BR.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.ru.resx" Link="Resources\MauiGResources.ru.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.tr.resx" Link="Resources\MauiGResources.tr.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.zh-Hans.resx" Link="Resources\MauiGResources.zh-Hans.resx" />
+    <EmbeddedResource Include="..\..\..\Controls\src\SourceGen\MauiGResources.zh-Hant.resx" Link="Resources\MauiGResources.zh-Hant.resx" />
 
   </ItemGroup>
 

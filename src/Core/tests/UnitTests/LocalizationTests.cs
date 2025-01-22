@@ -17,6 +17,9 @@ namespace Microsoft.Maui.UnitTests
 		string _mauiRoot = Path.Combine("..", "..", "..", "..", "..");
 		static string _globalFilePath = Path.Combine("localizationTestsOutput", "GlobalLog.txt");
 
+		// Since one word phrases are sometimes not translated, we can filter them out if needed
+		bool _ignoreOneWordPhrases = true;
+
 		/// <summary>
 		/// This test checks that all the .lcl files' <str> elements have a corresponding
 		/// <tgt> element with their translations. Since there may be times that we have untranslated
@@ -116,7 +119,7 @@ namespace Microsoft.Maui.UnitTests
 				writer.WriteLine("This file is created by the ResxLocalizationStringsAreDisplayedProperly test.");
 				writer.WriteLine("This test checks that the strings inside the resx files are actually translated inside the assemblies when the locale is changed. It compares the actual value inside the assembly to the culture specific .lcl file.");
 				writer.WriteLine("Following lines in this file mean that those strings showing up as the 'actual' are what we see from the ResourceManager when using a different locale and we would expect them to match 'expected' string from the lcl file.\n");
-				
+
 				foreach (var file in lclFiles)
 				{
 					string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(file);
@@ -136,7 +139,7 @@ namespace Microsoft.Maui.UnitTests
 
 							// Compare with the expected translation in the .lcl file
 							// if (key.Value.Target != actualTranslation)
-							if (!IsDifferenceOnly5D(key.Value.Target, actualTranslation))
+							if (!IsDifferenceOnly5D(key.Value.Target, actualTranslation) && FilterOneWordPhrases(key.Value.Target))
 							{
 								sb.AppendLine($"    Key: {keyName}");
 								sb.AppendLine($"        Expected: {key.Value.Target}");
@@ -184,10 +187,10 @@ namespace Microsoft.Maui.UnitTests
 		[InlineData("zh-Hant")]
 		public void JsonLocalizationStringsAreTranslated(string culture)
 		{
-			var jsonfiles = Directory.GetFiles(_mauiRoot, "*templatestrings.json", SearchOption.AllDirectories);
+			var jsonfiles = GetFilesExcludingArtifacts(_mauiRoot, "*templatestrings.json");
 
 			var outputFilePath = Path.Combine("localizationTestsOutput", "JsonLocalizationTranslationsIncorrect_" + culture + ".txt");
-			
+
 			// Ensure the directory exists
 			var directoryPath = Path.GetDirectoryName(outputFilePath);
 			if (!Directory.Exists(directoryPath))
@@ -229,7 +232,7 @@ namespace Microsoft.Maui.UnitTests
 						{
 							if (localized.TryGetProperty(property.Name, out JsonElement localizedProperty))
 							{
-								if (localizedProperty.GetRawText() == property.Value.GetRawText() && property.Name != "author")
+								if (localizedProperty.GetRawText() == property.Value.GetRawText() && property.Name != "author" && FilterOneWordPhrases(localizedProperty.GetRawText()))
 								{
 									sb.AppendLine($"    String not translated:");
 									sb.AppendLine($"        Name: {property.Name}");
@@ -275,10 +278,10 @@ namespace Microsoft.Maui.UnitTests
 		[InlineData("zh-Hant")]
 		public void LclFilesMissingJsonKeys(string culture)
 		{
-			var jsonfiles = Directory.GetFiles(_mauiRoot, "*templatestrings.json", SearchOption.AllDirectories);
+			var jsonfiles = GetFilesExcludingArtifacts(_mauiRoot, "*templatestrings.json");
 
 			string lclFilePath = Path.Combine(_mauiRoot, "loc", culture);
-			var lclFiles = Directory.GetFiles(lclFilePath, "*.json.lcl", SearchOption.AllDirectories);
+			var lclFiles = GetFilesExcludingArtifacts(lclFilePath, "*.json.lcl");
 
 			var outputFilePath = Path.Combine("localizationTestsOutput", "LclFilesMissingJsonKeys_" + culture + ".txt");
 
@@ -442,6 +445,23 @@ namespace Microsoft.Maui.UnitTests
 
 			return expectedWithout5D == actualWithout5D;
 		}
+
+		bool FilterOneWordPhrases(string phrase)
+		{
+			var words = phrase.Split(' ');
+
+			if (words.Length == 1 && _ignoreOneWordPhrases)
+			{
+				return false;
+			}
+
+			return true;
+		}
+
+		string[] GetFilesExcludingArtifacts(string root, string searchPattern) =>
+			Directory.GetFiles(root, searchPattern, SearchOption.AllDirectories)
+				.Where(file => !file.Contains("/artifacts/", StringComparison.Ordinal))
+				.ToArray();
 	}
 
 	public class CultureFixture : IDisposable
