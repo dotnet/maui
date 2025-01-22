@@ -163,17 +163,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(defaultWebView.Cookies);
 		}
 
-		[Fact]
-		public void TestUrlWithNonWesternCharacters()
+		/// <summary>
+		/// This test validates that absolute URIs are not treated as relative ones. 
+		/// Notably, we test URIs with non-Western characters (e.g., "Ğ" and spaces encoded as "%20").
+		/// </summary>
+		[Theory]
+		[InlineData("https://example.com/test-Ağ-Sistem%20Bilgi%20Güvenliği%20Md/Guide.pdf")]
+		[InlineData("https://google.com/[]")]
+		public void TestUrisWithSpecialCharacters(string uri)
 		{
-			// This test validates that URLs with non-Western characters (e.g., "Ğ" and spaces encoded as "%20")
-			// are correctly identified as absolute URLs and not treated as relative URLs.
-
-			string finalUrl = "https://example.com/test-Ağ-Sistem%20Bilgi%20Güvenliği%20Md/Guide.pdf";
-
-			bool valid = WebViewHelper.IsRelativeUrl(finalUrl);
-
-			Assert.False(valid, "The URL was identified as a relative URL");
+			bool valid = WebViewHelper.IsRelativeUrl(uri);
+			Assert.False(valid, $"The URI '{uri}' was identified as a relative URI.");
 		}
 	}
 }
