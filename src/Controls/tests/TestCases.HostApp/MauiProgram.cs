@@ -110,7 +110,7 @@ namespace Maui.Controls.Sample
 #endif
 
 #endif
-
+			NoCaretEntryHandler.RemoveCaret();
 
 			return window;
 		}
