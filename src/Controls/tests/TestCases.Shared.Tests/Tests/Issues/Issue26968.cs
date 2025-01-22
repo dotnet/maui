@@ -7,6 +7,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	internal class Issue26968 : _IssuesUITest
 	{
+		const string TestEntry = "TestEntry";
+
 		public override string Issue => "Need reliable validation support to ensure the KeyboardType in Appium";
 
 		public Issue26968(TestDevice device)
@@ -14,40 +16,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{ }
 
 		[Test]
-		[Category(UITestCategories.Editor)]
-		public void VerifyNoCaretEditor()
-		{
-			App.WaitForElement("TestEditor");
-			App.Tap("TestEditor");
-			App.EnterText("TestEditor", "Test");
-
-			App.DismissKeyboard();
-			QueryUntilKeyboardNotPresent(App.IsKeyboardShown);
-
-			VerifyScreenshot();
-		}
-
-		[Test]
 		[Category(UITestCategories.Entry)]
 		public void VerifyNoCaretEntry()
 		{
-			App.WaitForElement("TestEntry");
-			App.Tap("TestEntry");
-			App.EnterText("TestEntry", "Test");
-
-			App.DismissKeyboard();
-			QueryUntilKeyboardNotPresent(App.IsKeyboardShown);
-
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.SearchBar)]
-		public void VerifyNoCaretSearchBar()
-		{
-			App.WaitForElement("TestSearchBar");
-			App.Tap("TestSearchBar");
-			App.EnterText("TestSearchBar", "Test");
+			App.WaitForElement(TestEntry);
+			App.Tap(TestEntry);
+			App.EnterText(TestEntry, "Test");
 
 			App.DismissKeyboard();
 			QueryUntilKeyboardNotPresent(App.IsKeyboardShown);

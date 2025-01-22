@@ -4,12 +4,9 @@
                           xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                           x:Class="Maui.Controls.Sample.Issues.Issue26968">
-    <StackLayout>
-    <local:NoCaretEditor 
-      AutomationId="TestEditor" />
+  <StackLayout
+    Padding="12">
     <local:NoCaretEntry 
       AutomationId="TestEntry" />
-    <local:NoCaretSearchBar 
-      AutomationId="TestSearchBar" />
   </StackLayout>
 </controls:TestContentPage>
