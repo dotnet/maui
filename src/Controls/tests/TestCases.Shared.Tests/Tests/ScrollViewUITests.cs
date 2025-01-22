@@ -8,7 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests
 	public class ScrollToUITests : CoreGalleryBasePageTest
 	{
 		const string LayoutGallery = "ScrollView Gallery";
-
+		protected override bool ResetAfterEachTest => true;
 		public ScrollToUITests(TestDevice device)
 			: base(device)
 		{
