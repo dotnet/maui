@@ -53,8 +53,6 @@ Microsoft.Maui.Platform.MauiHybridWebViewClient.MauiHybridWebViewClient(Microsof
 Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
 Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
 Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
-Microsoft.Maui.Platform.WebViewHelper
-static Microsoft.Maui.Platform.WebViewHelper.IsRelativeUrl(string! url) -> bool
 Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.WebProcessTerminatedEventArgs
 Microsoft.Maui.WebProcessTerminatedEventArgs.RenderProcessGoneDetail.get -> Android.Webkit.RenderProcessGoneDetail?
