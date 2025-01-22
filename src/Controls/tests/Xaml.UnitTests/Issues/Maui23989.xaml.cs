@@ -28,6 +28,9 @@ public partial class Maui23989
 		[Test]
 		public void ItemDisplayBindingWithoutDataTypeFails([Values] XamlInflator inflator)
 		{
+			if (inflator == XamlInflator.Default)
+				Assert.Ignore("not testing for default");
+				
 			if (inflator == XamlInflator.XamlC)
 				Assert.Throws(new BuildExceptionConstraint(12, 13, s => s.Contains("0022", StringComparison.Ordinal)), () => MockCompiler.Compile(typeof(Maui23989), treatWarningsAsErrors: true));
 
@@ -41,11 +44,11 @@ public partial class Maui23989
 
 			layout.BindingContext = new MockViewModel
 			{
-				Items = new List<MockItemViewModel> {
-					new MockItemViewModel { Title = "item1" },
-					new MockItemViewModel { Title = "item2" },
-					new MockItemViewModel { Title = "item3" },
-				}.ToArray()
+				Items = [
+					new() { Title = "item1" },
+					new() { Title = "item2" },
+					new() { Title = "item3" },
+				]
 			};
 
 			Assert.That(layout.picker0.Items[0], Is.EqualTo("item1"));

@@ -233,6 +233,8 @@ static class NodeSGExtensions
 
         if (toType.SpecialType == SpecialType.System_SByte)
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if(sbyte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var sbyteValue))
                 return SymbolDisplay.FormatPrimitive(sbyteValue, true, false);
             else
@@ -240,6 +242,8 @@ static class NodeSGExtensions
         }
         if (toType.SpecialType == SpecialType.System_Byte)
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if (byte.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var byteValue))
                 return SymbolDisplay.FormatPrimitive(byteValue, true, false);
             else
@@ -247,6 +251,8 @@ static class NodeSGExtensions
         }
         if (toType.SpecialType == SpecialType.System_Int16)
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if (short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var shortValue))
                 return SymbolDisplay.FormatPrimitive(shortValue, true, false);
             else
@@ -254,6 +260,8 @@ static class NodeSGExtensions
         }
         if (toType.SpecialType == SpecialType.System_UInt16)
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if (short.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var ushortValue))
                 return SymbolDisplay.FormatPrimitive(ushortValue, true, false);
             else
@@ -261,6 +269,8 @@ static class NodeSGExtensions
         }
         if (toType.SpecialType == SpecialType.System_Int32)
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if (int.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var intValue))
                 return SymbolDisplay.FormatPrimitive(intValue, true, false);
             else
@@ -268,41 +278,53 @@ static class NodeSGExtensions
         }
         if (toType.SpecialType == SpecialType.System_UInt32)
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if (uint.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var uintValue))
-                return SymbolDisplay.FormatPrimitive(uintValue, true, false);
+                return $"{SymbolDisplay.FormatPrimitive(uintValue, true, false)}U";
             else
                 reportDiagnostic();
         }
         if (toType.SpecialType == SpecialType.System_Int64)
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if (long.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var longValue))
-                return SymbolDisplay.FormatPrimitive(longValue, true, false);
+                return $"{SymbolDisplay.FormatPrimitive(longValue, true, false)}L";
             else
                 reportDiagnostic();
         }
         if (toType.SpecialType == SpecialType.System_UInt64)
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if (ulong.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var ulongValue))
-                return SymbolDisplay.FormatPrimitive(ulongValue, true, false);
+                return $"{SymbolDisplay.FormatPrimitive(ulongValue, true, false)}UL";
             else
                 reportDiagnostic();
         }
         if (toType.SpecialType == SpecialType.System_Single)
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if (float.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var floatValue))
-                return SymbolDisplay.FormatPrimitive(floatValue, true, false);
+                return $"{SymbolDisplay.FormatPrimitive(floatValue, true, false)}F";
             else
                 reportDiagnostic();
         }
         if (toType.SpecialType == SpecialType.System_Double)
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if (double.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var doubleValue))
-                return SymbolDisplay.FormatPrimitive(doubleValue, true, false);
+                return $"{SymbolDisplay.FormatPrimitive(doubleValue, true, false)}D";
             else
                 reportDiagnostic();
         }    
         if (toType.SpecialType == SpecialType.System_Boolean)
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if (bool.TryParse(valueString, out var boolValue))
                 return SymbolDisplay.FormatPrimitive(boolValue, true, false);
             else
@@ -310,6 +332,8 @@ static class NodeSGExtensions
         }
         if (toType.SpecialType == SpecialType.System_Char)
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if (char.TryParse(valueString, out var charValue))
                 return SymbolDisplay.FormatPrimitive(charValue, true, false);
             else
@@ -321,6 +345,8 @@ static class NodeSGExtensions
             return SymbolDisplay.FormatLiteral(valueString, true);    
         if (toType.SpecialType == SpecialType.System_DateTime)
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if (DateTime.TryParse(valueString, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTimeValue))
                 return $"new global::System.DateTime({dateTimeValue.Ticks})";
             else
@@ -328,15 +354,24 @@ static class NodeSGExtensions
         }
         if (toType.SpecialType == SpecialType.System_Decimal)
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if (decimal.TryParse(valueString, NumberStyles.Number, CultureInfo.InvariantCulture, out var decimalValue))
-                return $"new global::System.Decimal({decimalValue})";
+                return $"{SymbolDisplay.FormatPrimitive(decimalValue, true, false)}M";
             else
                 reportDiagnostic();
         }
         if (toType.TypeKind == TypeKind.Enum)
+        {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             return string.Join(" | ", valueString.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(v => $"{toType.ToFQDisplayString()}.{v.Trim()}"));
+        }   
+
         if (toType.Equals(context.Compilation.GetTypeByMetadataName("System.TimeSpan")!, SymbolEqualityComparer.Default))
         {
+            if (string.IsNullOrEmpty(valueString))
+                return "default";
             if (TimeSpan.TryParse(valueString, CultureInfo.InvariantCulture, out var timeSpanValue))
                 return $"new global::System.TimeSpan({timeSpanValue.Ticks})";
             else

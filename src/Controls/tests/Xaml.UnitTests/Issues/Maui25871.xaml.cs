@@ -20,11 +20,7 @@ public partial class Maui25871 : ContentPage
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-		[TearDown]
-		public void TearDown()
-		{
-			AppInfo.SetCurrent(null);
-		}
+		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
 		public void CompilationDoesNotFail()
