@@ -16,6 +16,7 @@ public class Issue4720 : _IssuesUITest
 	[Category(UITestCategories.WebView)]
 	public void WebViewDoesntCrashWhenLoadingAHeavyPageAndUsingExecutionModeSeparateProcess()
 	{
+		VerifyInternetConnectivity();
 		//4 iterations were enough to run out of memory before the fix.
 		int iterations = 10;
 
@@ -27,20 +28,5 @@ public class Issue4720 : _IssuesUITest
 			App.Tap("ClosePage");
 		}
 		App.Tap("GC");
-	}
-	public override void TestSetup()
-	{
-		base.TestSetup();
-
-		try
-		{
-			App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(1));
-			Assert.Inconclusive("This device doesn't have internet access");
-		}
-		catch (TimeoutException)
-		{
-			// Element not found within timeout, assume internet is available
-			// Continue with the test
-		}
 	}
 }

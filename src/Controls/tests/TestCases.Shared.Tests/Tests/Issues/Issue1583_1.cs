@@ -17,6 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public async Task Issue1583_1_WebviewTest()
 		{
+			VerifyInternetConnectivity();
 			App.WaitForElement("label", "Could not find label", TimeSpan.FromSeconds(10), null, null);
 			await Task.Delay(TimeSpan.FromSeconds(3));
 			App.Screenshot("I didn't crash and i can see Skøyen");
@@ -27,20 +28,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			await Task.Delay(TimeSpan.FromSeconds(3));
 			App.Screenshot("I didn't crash and i can see google search ");
 		}
-		public override void TestSetup()
-		{
-			base.TestSetup();
-
-			try
-			{
-				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(1));
-				Assert.Inconclusive("This device doesn't have internet access");
-			}
-			catch (TimeoutException)
-			{
-				// Element not found within timeout, assume internet is available
-				// Continue with the test
-			}
-		}
+		 
 	}
 }

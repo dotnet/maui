@@ -17,6 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.DatePicker)]
 		public void DatePickerDoesNotLeak()
 		{
+			VerifyInternetConnectivity();
 			App.WaitForElement("DataTypeEntry");
 			App.EnterText("DataTypeEntry", "DatePicker");
 			App.Tap("RunMemoryTestButton");
@@ -27,25 +28,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void WebViewDoesNotLeak()
 		{
+			VerifyInternetConnectivity();
 			App.WaitForElement("DataTypeEntry");
 			App.EnterText("DataTypeEntry", "WebView");
 			App.Tap("RunMemoryTestButton");
 			App.AssertMemoryTest();
-		}
-		public override void TestSetup()
-		{
-			base.TestSetup();
-
-			try
-			{
-				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(1));
-				Assert.Inconclusive("This device doesn't have internet access");
-			}
-			catch (TimeoutException)
-			{
-				// Element not found within timeout, assume internet is available
-				// Continue with the test
-			}
 		}
 	}
 }

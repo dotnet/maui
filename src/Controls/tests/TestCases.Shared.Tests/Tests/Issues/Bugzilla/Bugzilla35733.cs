@@ -16,24 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void Bugzilla35733Test()
 		{
+			VerifyInternetConnectivity();
 			App.WaitForElement("btnGo");
 			App.Tap("btnGo");
 			App.WaitForElement("WebViewTest");
-		}
-		public override void TestSetup()
-		{
-			base.TestSetup();
-
-			try
-			{
-				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(1));
-				Assert.Inconclusive("This device doesn't have internet access");
-			}
-			catch (TimeoutException)
-			{
-				// Element not found within timeout, assume internet is available
-				// Continue with the test
-			}
 		}
 	}
 }

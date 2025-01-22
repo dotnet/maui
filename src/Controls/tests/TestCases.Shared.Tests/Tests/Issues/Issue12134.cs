@@ -18,26 +18,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	 
 		public void CookiesCorrectlyLoadWithMultipleWebViews()
 		{
+			VerifyInternetConnectivity();
 			for (int i = 0; i < 10; i++)
 			{
 				App.WaitForElement("Success", $"Failied on: {i}");
 				App.Tap("LoadNewWebView");
 			}
 		}
-		public override void TestSetup()
-		{
-			base.TestSetup();
-
-			try
-			{
-				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(1));
-				Assert.Inconclusive("This device doesn't have internet access");
-			}
-			catch (TimeoutException)
-			{
-				// Element not found within timeout, assume internet is available
-				// Continue with the test
-			}
-		}
+	 
 	}
 }
