@@ -1,14 +1,14 @@
 {
   "author": "Microsoft",
-  "name": "Aplikacja platformy .NET MAUI",
-  "description": "Projekt służący do tworzenia aplikacji .NET MAUI dla systemów iOS, Android, Mac Catalyst, Tizen i WinUI",
+  "name": "Aplikacja .NET MAUI",
+  "description": "Projekt służący do tworzenia aplikacji platformy .NET MAUI dla systemów iOS, Android, Mac Catalyst, WinUI i Tizen",
   "postActions/openInEditor/description": "Otwiera plik MainPage.xaml w edytorze.",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
+  "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
+  "postActions/restore/manualInstructions/default/text": "Uruchom polecenie „dotnet restore”",
   "symbols/applicationId/description": "Zastępuje $(ApplicationId) w projekcie",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
-  "symbols/IncludeSampleContent/displayName": "_Include sample content",
-  "symbols/IncludeSampleContent/description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns.",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create."
+  "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Docelowa wartość DOTNET_TFM_VALUE",
+  "symbols/IncludeSampleContent/displayName": "_Dołącz przykładową zawartość",
+  "symbols/IncludeSampleContent/description": "Konfiguruje, czy dodać przykładowe strony i funkcje, aby zademonstrować podstawowe wzorce użycia.",
+  "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia."
 }

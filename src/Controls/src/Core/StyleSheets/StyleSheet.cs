@@ -111,7 +111,8 @@ namespace Microsoft.Maui.Controls.StyleSheets
 				var style = kvp.Value;
 				if (!selector.Matches(styleable))
 					continue;
-				style.Apply(visualStylable);
+
+				style.Apply(visualStylable, Selector.SelectorSpecificity.FromSelector(selector));
 			}
 		}
 

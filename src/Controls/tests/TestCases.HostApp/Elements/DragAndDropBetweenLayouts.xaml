@@ -63,8 +63,15 @@
                 </StackLayout>
             </ScrollView>
         </Grid>
-        <Label x:Name="events" AutomationId="DragEventsLabel" Text="EventsLabel: "/>
-        <!-- DragStarting Labels-->
+        
+        <Label x:Name="dragStartEvent" AutomationId="DragStartEventsLabel" Text="DragStartEvents: "/>
+        <Label x:Name="dragOverEvent"  AutomationId="DragOverEventsLabel" Text="DragOverEvents: "/>
+        <Label x:Name="dragCompletedEvent" AutomationId="DragCompletedEventsLabel" Text="DragCompletedEvents: "/>
+        <Label x:Name="dragLeaveEvent" AutomationId="DragLeaveEventsLabel" Text="DragLeaveEvents: "/>
+        <Label x:Name="ranibowColors" AutomationId="RainBowColorsLabel" Text="RainbowColorsAdd: "/>
+        <Label x:Name="dropEvent" AutomationId="DropEventsLabel" Text="DropEvents: "/>
+
+    <!-- DragStarting Labels-->
         <Label x:Name="dragStartRelativeSelf" AutomationId="DragStartRelativeSelf" Text="Drag Start relative to self:"/>
         <Label x:Name="dragStartRelativeScreen" AutomationId="DragStartRelativeScreen" Text="Drag Start relative to screen:"/>
         <Label x:Name="dragStartRelativeLabel" AutomationId="DragStartRelativeLabel" Text="Drag Start relative to this label:"/>

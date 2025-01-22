@@ -21,6 +21,7 @@ public class LandingPage1023 : ContentPage
 		Label = new Label
 		{
 			Text = "Counter: " + Counter,
+			AutomationId = "Counter",
 			HorizontalTextAlignment = TextAlignment.Center,
 			VerticalTextAlignment = TextAlignment.Center
 		};

@@ -73,6 +73,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		internal virtual void Disconnect()
+		{
+			DisposeItemsSource();
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -533,8 +538,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual CGRect DetermineEmptyViewFrame()
 		{
-			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y,
-				CollectionView.Frame.Width, CollectionView.Frame.Height);
+			nfloat emptyViewHeight = CollectionView.Frame.Height;
+
+			if (_emptyViewFormsElement is IView emptyView)
+			{
+				emptyViewHeight = (nfloat)emptyView.Measure(CollectionView.Frame.Width, double.PositiveInfinity).Height;
+			}
+			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y, CollectionView.Frame.Width, emptyViewHeight);
 		}
 
 		protected void RemeasureLayout(VisualElement formsElement)
@@ -567,13 +577,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void UpdateView(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
 		{
 			// Is view set on the ItemsView?
-			if (view is null && viewTemplate is null)
+			if (view is null && (viewTemplate is null || viewTemplate is DataTemplateSelector))
 			{
 				if (formsElement != null)
 				{
 					//Platform.GetRenderer(formsElement)?.DisposeRendererAndChildren();
 				}
-
 
 				uiView?.Dispose();
 				uiView = null;

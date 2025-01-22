@@ -6,6 +6,7 @@ public class ShellFlyoutSizing : TestShell
 {
 	protected override void Init()
 	{
+		FlyoutBehavior = FlyoutBehavior.Locked; //After tapping on items, the flyout closes on Windows. To ensure uniform behavior across platforms, set the FlyoutBehavior to Locked.
 		AddContentPage(new ContentPage()
 		{
 			Title = "Main Page",

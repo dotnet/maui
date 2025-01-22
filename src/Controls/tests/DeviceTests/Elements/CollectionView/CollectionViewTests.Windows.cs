@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -295,6 +297,45 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(data.Count == 30);
 			});
 		}
+		
+		[Fact]
+		public async Task VerifyGroupCollectionDoesntLeak()
+		{
+			var groupHeaderTemplate = new Controls.DataTemplate(() =>
+			{
+				var label = new Label();
+				label.SetBinding(Label.TextProperty, new Binding("Name"));
+				return label;
+			});
+			var footerTemplate = new Controls.DataTemplate(() =>
+			{
+				var label = new Label();
+				label.SetBinding(Label.TextProperty, new Binding("Count"));
+				return label;
+			});
+			var itemTemplate = new Controls.DataTemplate(() =>
+			{
+				var label = new Label();
+				label.SetBinding(Label.TextProperty, new Binding("Name"));
+				return label;
+			});
+
+			WeakReference reference;
+			var itemSource = new ObservableCollection<string>() { "Hello", "World" };
+			{
+				var collection = new GroupedItemTemplateCollection(itemSource,
+					itemTemplate, groupHeaderTemplate, footerTemplate, null);
+
+				reference = new WeakReference(collection);
+				collection.Dispose();
+			}
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.False(reference.IsAlive, "Subscriber should not be alive!");
+		}
 
 		[Fact]
 		public async Task CollectionViewContentHeightChanged()
@@ -352,6 +393,35 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return cellContent.ToPlatform().GetParentOfType<ItemContentControl>().GetBoundingBox();
+		}
+
+		class Subscriber
+		{
+			public void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) { }
+		}
+
+		private interface IItem { }
+
+		private class AnimalGroup : ObservableCollection<IItem>, IItem
+		{
+			internal string Name { get; }
+
+			internal AnimalGroup(string name, ObservableCollection<IItem> animals) : base(animals)
+			{
+				Name = name;
+			}
+		}
+
+		private class Animal : IItem
+		{
+			internal string Name { get; }
+			internal string Location { get; }
+
+			internal Animal(string name, string location)
+			{
+				Name = name;
+				Location = location;
+			}
 		}
 	}
 }
