@@ -277,6 +277,12 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			return screenshotPngBytes;
 		}
+		
+		/// <summary>
+		/// Enters full screen mode and waits for the transition animation to complete.
+		/// This is particularly useful in CI environments to prevent UI element overlap with the dock.
+		/// </summary>
+		protected void EnterFullScreen()
 		{
 			// In CI the window goes to left bottom corner in Catalyst, use full screen mode to prevent dock overlap with UI elements.
 			App.EnterFullScreen();
