@@ -7,7 +7,7 @@
 	</PropertyGroup>
 
 	<!-- FIXME: https://github.com/xamarin/xamarin-macios/pull/21351 -->
-	<PropertyGroup Condition=" '$(_MauiDoNotSetEnableTrimAnalyzer)' != 'true' and '$(PublishAot)' != 'true' and '$(TrimMode)' == '' ">
+	<PropertyGroup Condition=" '$(_MauiDoNotConfigureTrimAnalyzer)' != 'true' and '$(PublishAot)' != 'true' and '$(TrimMode)' != 'full' ">
 		<EnableTrimAnalyzer>false</EnableTrimAnalyzer>
 		<SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
 	</PropertyGroup>
