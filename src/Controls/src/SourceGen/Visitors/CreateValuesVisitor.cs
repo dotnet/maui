@@ -268,11 +268,10 @@ class CreateValuesVisitor : IXamlNodeVisitor
     // TODO duplicate code with NodeSGExtensions.cs, should we share somehow?
     static string ValueForLanguagePrimitive(ITypeSymbol type, ElementNode node, SourceGenContext context)
     {
-        var hasValue = node.CollectionItems.Count == 1 && node.CollectionItems[0] is ValueNode &&
-                ((ValueNode)node.CollectionItems[0]).Value is string;
-        if (!hasValue)
-            return "default";
-        var valueString = (string)((ValueNode)node.CollectionItems[0]).Value;
+        if (!( node.CollectionItems.Count == 1
+            && node.CollectionItems[0] is ValueNode
+            && ((ValueNode)node.CollectionItems[0]).Value is string valueString))
+                 valueString = string.Empty;
 
         return NodeSGExtensions.ValueForLanguagePrimitive(valueString, toType: type, context, node);
     }

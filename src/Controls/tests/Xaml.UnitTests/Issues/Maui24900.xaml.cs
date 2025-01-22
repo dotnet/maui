@@ -42,9 +42,6 @@ public partial class Maui24900 : ContentPage
 		{
 			mockDeviceInfo.Platform = DevicePlatform.WinUI;
 			Assert.DoesNotThrow(() => new Maui24900(inflator));
-
-
-
 		}
 	}
 }
