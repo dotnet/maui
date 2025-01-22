@@ -166,16 +166,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestUrlWithNonWesternCharacters()
 		{
-			// Arrange
 			// This test validates that URLs with non-Western characters (e.g., "Ğ" and spaces encoded as "%20")
 			// are correctly identified as absolute URLs and not treated as relative URLs.
 
 			string finalUrl = "https://example.com/test-Ağ-Sistem%20Bilgi%20Güvenliği%20Md/Guide.pdf";
 
-			// Act
 			bool valid = WebViewHelper.IsRelativeUrl(finalUrl);
 
-			// Assert
 			Assert.False(valid, "The URL was identified as a relative URL");
 		}
 	}
