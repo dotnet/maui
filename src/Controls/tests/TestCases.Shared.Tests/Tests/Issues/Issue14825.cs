@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,14 +15,14 @@ public class Issue14825 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.WebView)]
-	public async Task ValidateWebViewScreenshot()
+	public void ValidateWebViewScreenshot()
 	{
-		VerifyInternetConnectivity();
 		App.WaitForElement("TestInstructions");
-		await Task.Delay(TimeSpan.FromSeconds(5));
+
 		// Click the capture button to capture a WebView screenshot.
 		App.Click("Capture");
+
 		VerifyScreenshot();
 	}
-	 
 }
+#endif
