@@ -138,9 +138,15 @@ namespace Microsoft.Maui.Handlers
 
 			if (scrollView.PresentedContent is { } content)
 			{
+				var contentContainer = new ContentView()
+				{
+					View = scrollView.PresentedContent,
+					Tag = ContentTag
+				};
+
 				var platformContent = content.ToPlatform(mauiContext);
-				platformContent.Tag = ContentTag;
-				platformView.AddSubview(platformContent);
+				contentContainer.AddSubview(platformContent);
+				platformView.AddSubview(contentContainer);
 			}
 		}
 
