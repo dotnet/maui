@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				_previousPage = tabbedPage.CurrentPage;
 
 				((IPageController)tabbedPage).InternalChildren.CollectionChanged += OnChildrenCollectionChanged;
-
+				UpdateOffscreenPageLimit();
 				SetTabLayout();
 			}
 		}
