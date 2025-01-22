@@ -1,4 +1,6 @@
 #nullable enable
+Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider
+~Microsoft.Maui.Controls.Xaml.Internals.XamlDataTypeProvider.XamlDataTypeProvider(string dataType) -> void
 ~Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.Dark.get -> object
 ~Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.Dark.set -> void
 ~Microsoft.Maui.Controls.Xaml.AppThemeBindingExtension.Default.get -> object

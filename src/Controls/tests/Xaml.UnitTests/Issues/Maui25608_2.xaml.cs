@@ -15,39 +15,40 @@ public partial class Maui25608_2
 
 	class Test
 	{
-		EventHandler<BindingBaseErrorEventArgs> _bindingFailureHandler;
-
 		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			BindingDiagnostics.BindingFailed += BindingFailed;
+			bindingFailureReported = false;
 		}
 
 		[TearDown]
 		public void TearDown()
 		{
-			if (_bindingFailureHandler is not null)
-			{
-				BindingDiagnostics.BindingFailed -= _bindingFailureHandler;
-			}
-
+			BindingDiagnostics.BindingFailed -= BindingFailed;
 			AppInfo.SetCurrent(null);
+		}
+
+		bool bindingFailureReported = false;
+
+		void BindingFailed (object sender, BindingBaseErrorEventArgs args)
+		{
+			bindingFailureReported = true;
+			Assert.AreEqual("Mismatch between the specified x:DataType (Microsoft.Maui.Controls.VerticalStackLayout) and the current binding context (Microsoft.Maui.Controls.Xaml.UnitTests.Maui25608_2).", args.Message);
 		}
 
 		[Test]
 		public void TestInvalidBindingWithRelativeSource([Values] XamlInflator inflator)
 		{
 			if (inflator == XamlInflator.SourceGen)
-				Assert.Ignore("not testing for sourcegen, it crashes the test runner");
-
-			bool bindingFailureReported = false;
-			_bindingFailureHandler = (sender, args) =>
 			{
-				bindingFailureReported = true;
-				Assert.AreEqual("Mismatch between the specified x:DataType (Microsoft.Maui.Controls.VerticalStackLayout) and the current binding context (Microsoft.Maui.Controls.Xaml.UnitTests.Maui25608_2).", args.Message);
-			};
-			BindingDiagnostics.BindingFailed += _bindingFailureHandler;
+				var result = MockSourceGenerator.RunMauiSourceGenerator(MockSourceGenerator.CreateMauiCompilation(), typeof(Maui25608_2));
+
+				Assert.Ignore("not testing for sourcegen, it crashes the test runner");
+			}
+
 
 			var page = new Maui25608_2(inflator);
 
