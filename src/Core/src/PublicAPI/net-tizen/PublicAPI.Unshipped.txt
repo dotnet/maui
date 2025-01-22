@@ -67,3 +67,6 @@ static Microsoft.Maui.Platform.ElementExtensions.ToContainerView(this Microsoft.
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
+Microsoft.Maui.Handlers.DataFlowDirection
+Microsoft.Maui.Handlers.DataFlowDirection.FromPlatform = 1 -> Microsoft.Maui.Handlers.DataFlowDirection
+Microsoft.Maui.Handlers.DataFlowDirection.ToPlatform = 0 -> Microsoft.Maui.Handlers.DataFlowDirection
