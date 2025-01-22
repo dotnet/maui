@@ -6,7 +6,7 @@
 		{
 			Content = new Label()
 			{
-				Text = "This device doesn't have internet access",
+				Text = "This device doesn't have Internet access",
 				AutomationId = "NoInternetAccessLabel",
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center
