@@ -15,7 +15,7 @@ namespace UITest.Appium
 
 	public class AppiumScrollActions : ICommandExecutionGroup
 	{
-		static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
+		static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
 		const int ScrollTouchDownTime = 100;
 		const int ProgrammaticallyScrollTime = 0;

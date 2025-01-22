@@ -1253,7 +1253,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Scroll up until an element that matches the toMarked is shown on the screen.
+		/// Scroll up until an element that matches the <paramref name="toMarked"/> is shown on the screen in <paramref name="withinMarked"/>.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="toMarked">Marked selector to select what element to bring on screen.</param>
@@ -1270,7 +1270,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Scroll up until an element that matches the marked is shown on the screen.
+		/// Scroll up until an element that matches <paramref name="toMarked"/> is shown on the screen.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="toMarked">Marked selector to select what element to bring on screen.</param>
