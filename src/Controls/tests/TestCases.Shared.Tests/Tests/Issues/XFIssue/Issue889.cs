@@ -18,6 +18,12 @@ public class Issue889 : _IssuesUITest
 	[Category(UITestCategories.FlyoutPage)]
 	public void Issue899TestsAppCrashWhenSwitchingTabs()
 	{
+
+#if MACCATALYST
+		// In CI the window goes to left bottom corner in Catalyst randomly to avoid the flakiness, use full screen mode to prevent dock overlap with UI elements.
+		EnterFullScreen();
+#endif
+
 		App.WaitForElement("PushPage");
 		App.Tap("PushPage");
 		App.WaitForElement("PushedPageLabel");

@@ -277,6 +277,12 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			return screenshotPngBytes;
 		}
+		{
+			// In CI the window goes to left bottom corner in Catalyst, use full screen mode to prevent dock overlap with UI elements.
+			App.EnterFullScreen();
+			// Wait a little bit to complete the system animation moving the App Window to FullScreen.
+			Thread.Sleep(500);	
+		}
 #endif
 	}
 }

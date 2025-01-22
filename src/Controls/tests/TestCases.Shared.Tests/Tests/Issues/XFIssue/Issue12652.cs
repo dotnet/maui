@@ -21,6 +21,13 @@ public class Issue12652 : _IssuesUITest
     [Category(UITestCategories.Shell)]
     public void NavigatingBackToAlreadySelectedTopTabDoesntCrash()
     {
+        
+#if MACCATALYST
+		// In CI the window goes to left bottom corner in Catalyst randomly to avoid the flakiness, use full screen mode to prevent dock overlap with UI elements.
+		EnterFullScreen();
+#endif
+
+
         // On the Windows platform, there is a dropdown menu that has to be accessed to view the "TopTab" choices.
         // The "navViewItem" tap emulates user actions to open the dropdown and display the TopTab for navigation.
 #if WINDOWS

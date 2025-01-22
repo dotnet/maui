@@ -33,6 +33,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public  void AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash()
 		{
+#if MACCATALYST
+			// In CI the window goes to left bottom corner in Catalyst randomly to avoid the flakiness, use full screen mode to prevent dock overlap with UI elements.
+			EnterFullScreen();
+#endif
 			App.WaitForElement(Add2);
 			App.Tap(Add2);
 			App.TapTab(Tab3);

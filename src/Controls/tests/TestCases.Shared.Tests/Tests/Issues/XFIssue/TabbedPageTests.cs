@@ -23,6 +23,10 @@ public class TabbedPageTests : _IssuesUITest
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithModalIssueTestsAllElementsPresent()
 	{
+#if MACCATALYST
+		// In CI the window goes to left bottom corner in Catalyst randomly to avoid the flakiness, use full screen mode to prevent dock overlap with UI elements.
+		EnterFullScreen();
+#endif
 		App.WaitForElement(HomePage);
 		App.Tap(HomePage);
 		App.WaitForTabElement(Page1);
