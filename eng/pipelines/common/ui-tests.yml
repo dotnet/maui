@@ -99,7 +99,6 @@ stages:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
-                  name: android_ui_tests_${{ project.name }}_${{ api }}_${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -138,7 +137,6 @@ stages:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
-                  name: ios_ui_tests_mono_${{ project.name }}_${{ api }}_${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -175,7 +173,7 @@ stages:
         - ${{ if ne(project.ios, '') }}:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
-              - job: ios_ui_tests_mono_cv2_${{ project.name }}_${{ replace(version, '.', '_') }}
+              - job: ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -220,7 +218,6 @@ stages:
                       ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                         ${{ categoryGroup }}:
                           CATEGORYGROUP: ${{ categoryGroup }}
-                    name: ios_ui_tests_nativeaot_${{ project.name }}_${{ api }}_${{ categoryGroup }}
                   timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                   workspace:
                     clean: all
@@ -261,7 +258,6 @@ stages:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
-                  name: winui_ui_tests_${{ project.name }}_${{ api }}_${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -294,7 +290,6 @@ stages:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
-                  name: mac_ui_tests_${{ project.name }}_${{ api }}_${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
