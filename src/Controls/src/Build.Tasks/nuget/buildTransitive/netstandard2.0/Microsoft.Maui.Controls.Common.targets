@@ -4,6 +4,8 @@
 		<_IsHotRestartDefined>$([System.Text.RegularExpressions.Regex]::IsMatch('$(DefineConstants.Trim())', '(^|;)HOTRESTART($|;)'))</_IsHotRestartDefined>
 		<DefineConstants Condition="!$(_IsHotRestartDefined) And '$(IsHotRestartBuild)' == 'true'">HOTRESTART;$(DefineConstants)</DefineConstants>
 		<UseInterpreter Condition="'$(UseInterpreter)' == '' and '$(Configuration)' == 'Debug'">True</UseInterpreter>
+		<!-- FIXME: https://github.com/xamarin/xamarin-macios/pull/21351 -->
+		<EnableTrimAnalyzer Condition=" '$(_MauiDoNotSetEnableTrimAnalyzer)' != 'true' and '$(EnableTrimAnalyzer)' != 'true' and '$(PublishAot)' != 'true' and '$(TrimMode)' == 'partial' ">false</EnableTrimAnalyzer>
 	</PropertyGroup>
 
 	<ItemGroup>
