@@ -45,7 +45,14 @@ namespace UITest.Appium
 
 		CommandResponse IsKeyboardShown(IDictionary<string, object> parameters)
 		{
-			return new CommandResponse(_app.Driver.IsKeyboardShown(), CommandResponseResult.Success);
+			try
+			{
+				return new CommandResponse(_app.Driver.IsKeyboardShown(), CommandResponseResult.Success);
+			}
+			catch
+			{
+				return new CommandResponse(false, CommandResponseResult.Failed);
+			}
 		}
 
 		protected virtual CommandResponse DismissKeyboard(IDictionary<string, object> parameters)
