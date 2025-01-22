@@ -68,9 +68,10 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[TestCase("maui-blazor", "Project Space", "projectspace")]
 	[TestCase("mauilib", "Project Space", "projectspace")]
 	// with invalid characters
-	[TestCase("maui", "Project@Symbol", "projectsymbol")]
-	[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
-	[TestCase("mauilib", "Project@Symbol", "projectsymbol")]
+	// @ character issue in MSBuild, to be fixed in: https://github.com/dotnet/msbuild/issues/11237
+	//[TestCase("maui", "Project@Symbol", "projectsymbol")]
+	//[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
+	//[TestCase("mauilib", "Project@Symbol", "projectsymbol")]
 	public void BuildsWithSpecialCharacters(string id, string projectName, string expectedId)
 	{
 		var projectDir = Path.Combine(TestDirectory, projectName);
