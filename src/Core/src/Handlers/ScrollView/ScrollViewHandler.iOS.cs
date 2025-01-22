@@ -145,6 +145,8 @@ namespace Microsoft.Maui.Handlers
 				};
 
 				var platformContent = content.ToPlatform(mauiContext);
+
+				platformView.ClearSubviews();
 				contentContainer.AddSubview(platformContent);
 				platformView.AddSubview(contentContainer);
 			}
