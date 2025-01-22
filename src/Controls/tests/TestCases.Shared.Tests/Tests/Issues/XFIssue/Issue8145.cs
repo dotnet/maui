@@ -16,6 +16,11 @@ public class Issue8145 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void Issue8145ShellToolbarDisposedException()
 	{
+
+#if MACCATALYST
+		// In CI the window goes to left bottom corner in Catalyst randomly to avoid the flakiness, use full screen mode to prevent dock overlap with UI elements.
+		EnterFullScreen();
+#endif
 		App.WaitForElement("More");
 		App.Tap("More");
 		App.WaitForElementTillPageNavigationSettled("target");
