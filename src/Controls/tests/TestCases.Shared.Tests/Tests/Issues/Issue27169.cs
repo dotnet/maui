@@ -16,8 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ScrollView)]
 		public void ScrollViewContentShouldNotBeClipped()
 		{
-			App.WaitForElement("Button");
-			App.Tap("Button");
+			App.WaitForElement("gridView");
 
 			VerifyScreenshot();
 		}

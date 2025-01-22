@@ -42,7 +42,8 @@ public partial class Issue27169 : ContentPage
 
 		Content = new Grid
 		{
-			Children = { scrollView }
+			Children = { scrollView },
+			AutomationId = "gridView",
 		};
 	}
 
