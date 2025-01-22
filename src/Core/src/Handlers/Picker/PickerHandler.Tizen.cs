@@ -1,4 +1,5 @@
-﻿using Tizen.NUI;
+﻿using System;
+using Tizen.NUI;
 using Tizen.UIExtensions.NUI;
 using NColor = Tizen.NUI.Color;
 using NEntry = Tizen.UIExtensions.NUI.Entry;
