@@ -5,7 +5,7 @@
 		<DefineConstants Condition="!$(_IsHotRestartDefined) And '$(IsHotRestartBuild)' == 'true'">HOTRESTART;$(DefineConstants)</DefineConstants>
 		<UseInterpreter Condition="'$(UseInterpreter)' == '' and '$(Configuration)' == 'Debug'">True</UseInterpreter>
 		<!-- FIXME: https://github.com/xamarin/xamarin-macios/pull/21351 -->
-		<EnableTrimAnalyzer Condition=" '$(_MauiDoNotSetEnableTrimAnalyzer)' != 'true' and '$(PublishAot)' != 'true' and '$(TrimMode)' == 'partial' ">false</EnableTrimAnalyzer>
+		<EnableTrimAnalyzer Condition=" '$(_MauiDoNotSetEnableTrimAnalyzer)' != 'true' and '$(PublishAot)' != 'true' and '$(TrimMode)' == '' ">false</EnableTrimAnalyzer>
 	</PropertyGroup>
 
 	<ItemGroup>
