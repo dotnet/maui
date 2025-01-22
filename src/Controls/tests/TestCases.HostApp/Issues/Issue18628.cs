@@ -27,10 +27,4 @@ namespace Maui.Controls.Sample.Issues
 			Content = grid;
 		}
 	}
-}
-
-						
-
-
-
-			
+}			
