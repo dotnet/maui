@@ -291,7 +291,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 	public class XmlNamespaceResolver : IXmlNamespaceResolver
 	{
-		readonly Dictionary<string, string> namespaces = new Dictionary<string, string>(StringComparer.Ordinal);
+		readonly Dictionary<string, string> namespaces = new(StringComparer.Ordinal);
 
 		public IDictionary<string, string> GetNamespacesInScope(XmlNamespaceScope scope) => throw new NotImplementedException();
 
@@ -306,13 +306,15 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		public void Add(string prefix, string ns) => namespaces.Add(prefix, ns);
 	}
 
-	class XamlDataTypeProvider : IXamlDataTypeProvider
+	public class XamlDataTypeProvider : IXamlDataTypeProvider
 	{
+		public XamlDataTypeProvider (string dataType) => this.dataType = dataType;
+
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #if !NETSTANDARD
 		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #endif
-		public XamlDataTypeProvider(IElementNode node, HydrationContext context)
+		internal XamlDataTypeProvider(IElementNode node, HydrationContext context)
 		{
 			Context = context;
 
@@ -379,9 +381,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 				n = GetParent(n);
 			}
 			if (dataTypeNode is ValueNode valueNode)
-				BindingDataType = valueNode.Value as string;
+				this.dataType = valueNode.Value as string;
 		}
-		public string BindingDataType { get; }
-		public HydrationContext Context { get; }
+		string dataType;
+		string IXamlDataTypeProvider.BindingDataType => dataType;
+		internal HydrationContext Context { get; }
 	}
 }
