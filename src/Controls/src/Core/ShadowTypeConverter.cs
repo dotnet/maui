@@ -173,6 +173,7 @@ namespace Microsoft.Maui.Controls
         /// <returns>A SolidColorBrush.</returns>
         /// <exception cref="InvalidOperationException">Thrown when the value is not a SolidColorBrush or has no Color.</exception>
         SolidColorBrush ParseBrush(string value)
+		{
             // If the value is a color, return a SolidColorBrush
             if (_colorTypeConverter.ConvertFrom(value) is Color color)
             {
