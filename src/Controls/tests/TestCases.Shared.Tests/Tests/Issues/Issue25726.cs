@@ -23,6 +23,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Ensure the label on Page 3 is present to verify navigation completed successfully
     		// If the app crashes during navigation, the test will fail before reaching this line.
             App.WaitForElement("Page3Label");
+
+			#if IOS || MACCATALYST
+				App.WaitForElement("Page 1");
+				App.TapBackArrow("Page 1");
+			#endif
+			#if ANDROID || WINDOWS
+				App.TapBackArrow();
+			#endif
+			App.WaitForElement("NavigateToPage2Button");
         }
     }
 }
