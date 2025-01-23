@@ -1615,15 +1615,21 @@ namespace UITest.Appium
 		/// Functionality that's only available on Android and iOS.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="unlockType">This capability supports the following possible values: pin, pinWithKeyEvent, password, pattern.</param>
+		/// <param name="unlockKey">a valid pin (digits in range 0-9), password (latin characters) or pattern (treat the pattern pins similarly to numbers on a digital phone dial).</param>
 		/// <exception cref="InvalidOperationException">Unlock is only supported on <see cref="AppiumAndroidApp"/>.</exception>
-		public static void Unlock(this IApp app)
+		public static void Unlock(this IApp app, string unlockType = "", string unlockKey = "")
 		{
 			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
 			{
 				throw new InvalidOperationException($"Unlock is only supported on AppiumAndroidApp and AppiumIOSApp");
 			}
 
-			app.CommandExecutor.Execute("unlock", ImmutableDictionary<string, object>.Empty);
+			app.CommandExecutor.Execute("unlock", new Dictionary<string, object>()
+			{
+				{ "unlockType", unlockType },
+				{ "unlockKey", unlockKey },
+			});
 		}
 
 		/// <summary>
