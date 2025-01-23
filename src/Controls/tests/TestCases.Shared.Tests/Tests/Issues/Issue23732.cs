@@ -16,12 +16,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void TabbedPageTabContentUpdated()
 		{
 #if ANDROID
-			App.WaitForElement("PAGE 4"); // Tab tile displayed as uppercase in Android.
-			App.Tap("PAGE 4");
+			string pageTitle = "PAGE 4";
 #else
-			App.WaitForElement("Page 4");
-			App.Tap("Page 4");
+			string pageTitle = "Page 4";
 #endif
+			App.WaitForElement(pageTitle);
+			App.Tap(pageTitle);
 			var label = App.WaitForElement("label");
 			Assert.That(label.GetText(), Is.EqualTo("page4"));
 		}
