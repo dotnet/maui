@@ -7,12 +7,15 @@ namespace UITest.Appium
 	{
 		const string DoubleTapCommand = "doubleTap";
 		const string DragAndDropCommand = "dragAndDrop";
+		const string DragCoordinatesCommand = "dragCoordinates";
 
 		readonly List<string> _commands = new()
 		{
 			DoubleTapCommand,
 			DragAndDropCommand,
+			DragCoordinatesCommand,
 		};
+
 		readonly AppiumApp _appiumApp;
 
 		public AppiumCatalystTouchActions(AppiumApp appiumApp)
@@ -31,6 +34,7 @@ namespace UITest.Appium
 			{
 				DoubleTapCommand => DoubleTap(parameters),
 				DragAndDropCommand => DragAndDrop(parameters),
+				DragCoordinatesCommand => DragCoordinates(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -66,6 +70,31 @@ namespace UITest.Appium
 				});
 				return CommandResponse.SuccessEmptyResponse;
 			}
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse DragCoordinates(IDictionary<string, object> parameters)
+		{
+			parameters.TryGetValue("fromX", out var fromX);
+			parameters.TryGetValue("fromY", out var fromY);
+
+			parameters.TryGetValue("toX", out var toX);
+			parameters.TryGetValue("toY", out var toY);
+
+			if (fromX is not null && fromY is not null && toX is not null && toY is not null)
+			{
+				_appiumApp.Driver.ExecuteScript("macos: clickAndDrag", new Dictionary<string, object>
+				{
+					{ "startX", fromX },
+					{ "startY", fromY },
+					{ "endX", toX },
+					{ "endY", toY },
+					{ "duration", 1 }, // The number of float seconds to hold the mouse button
+				});
+
+				return CommandResponse.SuccessEmptyResponse;
+			}
+
 			return CommandResponse.FailedEmptyResponse;
 		}
 
