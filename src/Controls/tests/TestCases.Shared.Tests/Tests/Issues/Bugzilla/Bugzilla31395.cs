@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Bugzilla31395Test()
 		{
 			App.WaitForElement("SwitchMainPage");
@@ -25,8 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			{
 				App.Tap("SwitchMainPage");
 			});
-			App.WaitForNoElement("Hello");
+			App.WaitForElement("Hello");
 		}
 	}
 }
-#endif

@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
-			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
+			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
 			platformView.FocusChange += OnFocusedChange;
 			platformView.Touch += OnTouch;
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
-			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
+			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusedChange;
 			platformView.Touch -= OnTouch;
@@ -64,6 +64,14 @@ namespace Microsoft.Maui.Handlers
 				editText.SelectionChanged -= OnSelectionChanged;
 
 			_set = false;
+		}
+
+		void OnViewAttachedToWindow(object? sender, ViewAttachedToWindowEventArgs e)
+		{
+			if (PlatformView is null || VirtualView is null)
+				return;
+
+			PlatformView.UpdateReturnType(VirtualView);
 		}
 
 		public static void MapBackground(IEntryHandler handler, IEntry entry) =>
@@ -145,16 +153,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is FocusRequest request)
 				handler.PlatformView.Focus(request);
-		}
-
-		void OnPlatformViewAttachedToWindow(object? sender, ViewAttachedToWindowEventArgs e)
-		{
-			if (PlatformView.IsAlive() && PlatformView.Enabled)
-			{
-				// https://issuetracker.google.com/issues/37095917
-				PlatformView.Enabled = false;
-				PlatformView.Enabled = true;
-			}
 		}
 
 		void OnTextChanged(object? sender, TextChangedEventArgs e)
