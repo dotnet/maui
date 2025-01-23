@@ -100,7 +100,7 @@ namespace Maui.Controls.Sample
 			window.X = (screenWidth - desktopWindowWidth) / 2;
 			window.Y = (screenHeight - desktopWindowHeight) / 2;
 #elif MACCATALYST
-			// Setting X and Y without delay doesn't work on Catalyst
+			// Setting X and Y without delay doesn't work on Catalyst, Issue: https://github.com/dotnet/maui/issues/27304 
 			window.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(200), () =>
 			{
 				window.Width = desktopWindowWidth;
