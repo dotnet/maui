@@ -381,7 +381,7 @@ namespace Microsoft.Maui.Handlers
 			// if we are not looking for a return object, then return null
 			else if (invokeJavaScriptRequest.ReturnTypeJsonTypeInfo is null)
 			{
-				invokeJavaScriptRequest.SetResult(null);
+				return null;
 			}
 			// if we are expecting a result, then deserialize what we have
 			else
