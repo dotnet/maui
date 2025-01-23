@@ -5,7 +5,7 @@
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
     <InstallDotNet Condition=" '$(InstallDotNet)' == '' ">true</InstallDotNet>
     <InternalAzureFeed>https://dotnetbuilds.blob.core.windows.net/internal</InternalAzureFeed>
-    <DotNetFeedUrl>https://builds.dotnet.microsoft.com/dotnet</DotNetFeedUrl>
+    <DotNetFeedUrl>https://dotnetbuilds.blob.core.windows.net/public</DotNetFeedUrl>
     <NugetArtifactsPath>$(MauiRootDirectory)/artifacts</NugetArtifactsPath>
     <PrivateSdk>$(PRIVATE_BUILD)</PrivateSdk>
     <PrivateSdk  Condition=" '$(PrivateSdk)' == ''">false</PrivateSdk>
