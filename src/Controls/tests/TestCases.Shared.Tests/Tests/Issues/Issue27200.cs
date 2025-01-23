@@ -18,7 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("collectionView");
 
-			VerifyScreenshot();
+			// Load content and hide scrollbar
+			VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));
 		}
 	}
 }
