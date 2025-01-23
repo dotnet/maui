@@ -10,12 +10,12 @@
     <Label
       AutomationId="WaitForStubControl"
       Text="ReturnType (Search)" />
-    <local:NoCaretEntry
+    <local:UITestEntry
       AutomationId="SearchEntry"
       ReturnType="Search" />
     <Label
       Text="Update the ReturnType just typing" />
-    <local:NoCaretEntry 
+    <local:UITestEntry 
       x:Name="ReturnTypeEntry"
       AutomationId="ReturnTypeEntry"
       TextChanged="OnReturnTypeEntryTextChanged"/>

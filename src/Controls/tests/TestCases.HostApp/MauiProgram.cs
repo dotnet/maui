@@ -45,6 +45,9 @@ namespace Maui.Controls.Sample
 #if IOS || MACCATALYST
 				handlers.AddHandler(typeof(Issue11132Control), typeof(Issue11132ControlHandler));
 #endif
+#if IOS || MACCATALYST || ANDROID
+				handlers.AddHandler(typeof(UITestEntry), typeof(UITestEntryHandler));
+#endif
 			});
 
 			appBuilder.Services.AddTransient<TransientPage>();
@@ -110,8 +113,6 @@ namespace Maui.Controls.Sample
 #endif
 
 #endif
-			NoCaretEntryHandler.RemoveCaret();
-
 			return window;
 		}
 	}
