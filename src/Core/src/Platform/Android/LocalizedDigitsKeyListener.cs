@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 			CultureInfo netCulture = CultureInfo.CurrentCulture;
 			Locale locale = GetAndroidLocaleFromNetCulture(netCulture);
 			DecimalFormatSymbols sym = new DecimalFormatSymbols(locale);
- 
+
 			return sym == null ? '.' : sym.DecimalSeparator;
 		}
 
@@ -36,8 +36,8 @@ namespace Microsoft.Maui.Platform
 		{
 			string cultureName = netCulture.Name;
 			string[] cultureParts = cultureName.Split('-');
-			string language = cultureParts[0].ToLower(netCulture);
-			string country = cultureParts.Length > 1 ? cultureParts[1].ToUpper(netCulture) : "";
+			string language = cultureParts[0];
+			string country = cultureParts.Length > 1 ? cultureParts[1] : "";
  
 			return new Locale(language, country);
  		}
