@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <Import Condition="'$(SampleProject)' != 'true'" Project="eng\Versions.targets" />
-  <Import Condition="'$(SampleProject)' != 'true' and '$(IsTestProject)' != 'true'" Project="eng\BannedApis.targets" />
+  <Import Condition="'$(SampleProject)' != 'true' and '$(MauiTestProject)' != 'true'" Project="eng\BannedApis.targets" />
   <Import Project="eng\AndroidX.targets" />
   <Import Project="eng\NuGetVersions.targets" />
 
@@ -27,6 +27,18 @@
     <!-- Microsoft.Build.Msix.props" cannot be imported again -->
     <!-- Found version-specific or distribution-specific runtime identifier(s)-->
     <NoWarn>$(NoWarn);MSB4011;NETSDK1206</NoWarn>
+    <!--
+      Temporarily disable warning about Roslyn interceptors
+      * https://github.com/dotnet/roslyn/pull/76312
+      * https://github.com/dotnet/roslyn/issues/72133
+    -->
+    <NoWarn>$(NoWarn);CS9270</NoWarn>
+  </PropertyGroup>
+
+  <!-- FIXME: various test projects have trimmer warnings, which are enabled by default on iOS/Catalyst -->
+  <PropertyGroup Condition=" '$(MauiTestProject)' == 'true' or '$(SampleProject)' == 'true' ">
+    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
   </PropertyGroup>
 
   <!-- platform version number information -->
