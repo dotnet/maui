@@ -80,8 +80,33 @@ namespace Microsoft.Maui.Platform
 
 		internal FrameworkElement? AppTitleBar => _rootView.AppTitleBar;
 		internal MauiToolbar? Toolbar => _rootView.Toolbar;
-		internal ITitleBar? TitleBar => _rootView.TitleBar;
 		public FrameworkElement RootView => _rootView;
+
+		internal void Connect(IWindowHandler handler)
+		{
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			var platformWindow = _platformWindow.GetTargetOrDefault();
+			if (platformWindow is null)
+			{
+				return;
+			}
+
+			var previousRootView = RootView;
+
+			Disconnect();
+			Connect(handler.VirtualView.Content?.ToPlatform(handler.MauiContext));
+
+			if (platformWindow.Content is WindowRootViewContainer container)
+			{
+				if (previousRootView is not null && previousRootView != RootView)
+				{
+					container.RemovePage(previousRootView);
+				}
+
+				container.AddPage(RootView);
+			}
+		}
 
 		public virtual void Connect(UIElement? platformView)
 		{
@@ -121,7 +146,6 @@ namespace Microsoft.Maui.Platform
 			}
       
 			SetToolbar(null);
-			SetTitleBar(null, null);
 
 			if (_rootView.Content is RootNavigationView navView)
 				navView.Content = null;
