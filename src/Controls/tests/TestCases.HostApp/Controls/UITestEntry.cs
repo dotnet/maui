@@ -8,7 +8,7 @@
 	public class UITestEntry : Entry, IUITestEntry
 	{
 		public static readonly BindableProperty IsCursorVisibleProperty =
-		BindableProperty.Create(nameof(IsCursorVisible), typeof(bool), typeof(UITestEntry), false);
+		BindableProperty.Create(nameof(IsCursorVisible), typeof(bool), typeof(UITestEntry), true);
 
 		public bool IsCursorVisible
 		{

@@ -12,12 +12,14 @@
       Text="ReturnType (Search)" />
     <local:UITestEntry
       AutomationId="SearchEntry"
+      IsCursorVisible="False"
       ReturnType="Search" />
     <Label
       Text="Update the ReturnType just typing" />
     <local:UITestEntry 
       x:Name="ReturnTypeEntry"
       AutomationId="ReturnTypeEntry"
+      IsCursorVisible="False"
       TextChanged="OnReturnTypeEntryTextChanged"/>
     <Label
       x:Name="ReturnTypeResult"
