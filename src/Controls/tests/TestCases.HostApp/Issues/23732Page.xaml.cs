@@ -1,99 +1,57 @@
 ﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace Maui.Controls.Sample.Issues
 {
 	public partial class _23732Page : ContentPage
 	{
-		public ObservableCollection<_23732IconIdModel> Models { get; } = new();
+		public ObservableCollection<string> Models { get; } = new();
 		public _23732Page()
 		{
 			InitializeComponent();
 			BindingContext = this;
-
-			string[] glyphs = [
-			_23732Constants.FontAwesomeBell,
-			_23732Constants.FontAwesomeHome,
-			_23732Constants.FontAwesomeEditSquare,
-			_23732Constants.FontAwesomeSearch,
-			_23732Constants.FontAwesomeSetting,
-			_23732Constants.FontAwesomeDownChevron,
-			_23732Constants.FontAwesomeLeftChevron,
-			];
-
-			int i = 0;
-			foreach (string glyph in glyphs)
+			for (int i = 0; i <= 6; i++)
 			{
-				Models.Add(new()
-				{
-					Name = $"Glyph {i++}",
-					Glyph = glyph
-				});
-			}
-
-		}
-
-		public static readonly BindableProperty IconProperty = BindableProperty.Create(nameof(Icon), typeof(string), typeof(ContentPage), null, BindingMode.OneWay);
-		public string Icon
-		{
-			get => (string)GetValue(IconProperty);
-			set
-			{
-				SetValue(IconProperty, value);
-				OnPropertyChanged();
+				Models.Add(string.Empty);
 			}
 		}
 
-		public static readonly BindableProperty LabelProperty = BindableProperty.Create(nameof(Label), typeof(string), typeof(ContentPage), null, BindingMode.OneWay);
+		private string _label;
 		public string Label
 		{
-			get => (string)GetValue(LabelProperty);
+			get => _label;
 			set
 			{
-				SetValue(LabelProperty, value);
-				OnPropertyChanged();
+				if (_label != value)
+				{
+					_label = value;
+					OnPropertyChanged();
+				}
+			}
+		}
+	}
+
+	[Issue(IssueTracker.Github, 23732, "TabBar content not displayed properly", PlatformAffected.Android)]
+	public partial class Issue23732 : TabbedPage
+	{
+		public Issue23732()
+		{
+			for (int i = 1; i <= 5; i++)
+			{
+				Children.Add(CreateNavigationPage($"Page {i}", $"page{i}"));
 			}
 		}
 
-	}
-
-	public static class _23732Constants
-	{
-		public const string FontAwesomeHome = "\uf015";
-		public const string FontAwesomeSearch = "\uf002";
-		public const string FontAwesomeSetting = "\uf013";
-		public const string FontAwesomeEditSquare = "\uf044";
-		public const string FontAwesomeBell = "\uf0f3";
-		public const string FontAwesomeDownChevron = "\uf078";
-		public const string FontAwesomeLeftChevron = "\uf053";
-	}
-
-	public class _23732IconIdModel : INotifyPropertyChanged
-	{
-		public event PropertyChangedEventHandler PropertyChanged;
-		public void OnPropertyChanged([CallerMemberName] string name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-
-		private string name;
-		public string Name
+		private NavigationPage CreateNavigationPage(string title, string label)
 		{
-			get => name ?? string.Empty;
-			set
+			var mainPage = new _23732Page
 			{
-				name = value;
-				OnPropertyChanged();
-			}
-		}
+				Label = label
+			};
 
-		private string glyph;
-		public string Glyph
-		{
-			get => glyph;
-			set
+			return new NavigationPage(mainPage)
 			{
-				glyph = value;
-				OnPropertyChanged();
-			}
+				Title = title
+			};
 		}
 	}
 }
