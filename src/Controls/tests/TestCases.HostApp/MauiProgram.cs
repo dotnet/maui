@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using Maui.Controls.Sample.Issues;
+using Microsoft.Maui.Handlers;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
@@ -38,7 +39,18 @@ namespace Maui.Controls.Sample
 			// Register the custom handler
 			appBuilder.ConfigureMauiHandlers(handlers =>
 			{
-				handlers.AddHandler(typeof(Entry), typeof(UITestEntryHandler));
+				EntryHandler.Mapper.ReplaceMapping<IEntry, IEntryHandler>("_HideCursor", (handler, entry) =>
+				{
+					if (entry is VisualElement ve && ve.Behaviors.OfType<IsCursorVisibleBehavior>().Any())
+					{
+						return;
+					}
+	#if ANDROID
+					handler.PlatformView.SetCursorVisible(false);
+	#elif IOS || MACCATALYST
+					handler.PlatformView.TintColor = UIKit.UIColor.Clear;
+	#endif
+				});
 
 #if IOS || MACCATALYST || ANDROID || WINDOWS
 				handlers.AddHandler(typeof(_60122Image), typeof(_60122ImageHandler));
