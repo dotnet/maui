@@ -473,7 +473,7 @@ configuration:
           isActivitySender:
             user: PaulAndersonS
             issueAuthor: False
-     - not:
+      - not:
           isActivitySender:
             user: prakashKannanSf3972
             issueAuthor: False
