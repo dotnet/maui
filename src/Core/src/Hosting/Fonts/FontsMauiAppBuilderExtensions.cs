@@ -57,26 +57,23 @@ namespace Microsoft.Maui.Hosting
 
 		internal class FontInitializer : IMauiInitializeService
 		{
-			private readonly IEnumerable<FontsRegistration> _fontsRegistrations;
+			readonly FontsRegistration _fontsRegistration;
 			readonly IFontRegistrar _fontRegistrar;
 
-			public FontInitializer(IEnumerable<FontsRegistration> fontsRegistrations, IFontRegistrar fontRegistrar)
+			public FontInitializer(FontsRegistration fontsRegistration, IFontRegistrar fontRegistrar)
 			{
-				_fontsRegistrations = fontsRegistrations;
+				_fontsRegistration = fontsRegistration;
 				_fontRegistrar = fontRegistrar;
 			}
 
 			public void Initialize(IServiceProvider __)
 			{
-				if (_fontsRegistrations != null)
+				if (_fontsRegistration != null)
 				{
 					var fontsBuilder = new FontCollection();
 
 					// Run all the user-defined registrations
-					foreach (var font in _fontsRegistrations)
-					{
-						font.AddFonts(fontsBuilder);
-					}
+					_fontsRegistration.AddFonts(fontsBuilder);
 
 					// Register the fonts in the registrar
 					foreach (var font in fontsBuilder)
