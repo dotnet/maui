@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Platform
 				// imposed by the parent (i.e. scroll view) with the current bounds.
 				// But we _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
 				// the window); there's no guarantee that SizeThatFits has been called in that case.
-				if (!IsMeasureValid(widthConstraint, heightConstraint) && Superview is not ICrossPlatformLayoutBacking)
+				if (!IsMeasureValid(widthConstraint, heightConstraint) && !this.IsFinalMeasureHandledBySuperView())
 				{
 					crossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
 					CacheMeasureConstraints(widthConstraint, heightConstraint);
