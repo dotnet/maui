@@ -35,7 +35,11 @@ namespace Microsoft.Maui.Hosting
 			{
 				builder.Services.AddSingleton<FontsRegistration>(new FontsRegistration(configureDelegate));
 			}
-			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, FontInitializer>());
+			builder.Services.TryAddEnumerable(
+				ServiceDescriptor.Transient<IMauiInitializeService>(
+					svc => new FontInitializer(svc.GetServices<FontsRegistration>(), svc.GetRequiredService<IFontRegistrar>())
+				)
+			);
 			return builder;
 		}
 
@@ -57,7 +61,7 @@ namespace Microsoft.Maui.Hosting
 
 		internal class FontInitializer : IMauiInitializeService
 		{
-			private readonly IEnumerable<FontsRegistration> _fontsRegistrations;
+			readonly IEnumerable<FontsRegistration> _fontsRegistrations;
 			readonly IFontRegistrar _fontRegistrar;
 
 			public FontInitializer(IEnumerable<FontsRegistration> fontsRegistrations, IFontRegistrar fontRegistrar)
