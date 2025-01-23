@@ -105,6 +105,8 @@
     <SystemIOUnmanagedMemoryStreamPackageVersion>4.3.0</SystemIOUnmanagedMemoryStreamPackageVersion>
     <SystemObjectModelPackageVersion>4.3.0</SystemObjectModelPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>6.0.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <MicrosoftBuildFrameworkPackageVersion>17.9.5</MicrosoftBuildFrameworkPackageVersion>
+    <MicrosoftBuildUtilitiesCorePackageVersion>17.9.5</MicrosoftBuildUtilitiesCorePackageVersion>
     <!-- GLIDE - the android maven artifact in /src/Core/AndroidNative/maui/build.gradle -->
     <!-- must be kept in sync with the binding library version to it here: -->
     <_XamarinAndroidGlideVersion>4.16.0.6</_XamarinAndroidGlideVersion>
