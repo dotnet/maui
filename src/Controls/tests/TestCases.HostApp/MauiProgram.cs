@@ -92,14 +92,14 @@ namespace Maui.Controls.Sample
 			int screenWidth = (int)(info.Width / info.Density);
 			int screenHeight = (int)(info.Height / info.Density);
 
+#if WINDOWS
+
 			window.Width = desktopWindowWidth;
 			window.Height = desktopWindowHeight;
-
-#if WINDOWS
-			
 			// Center the window on the screen, to ensure no part of it goes off screen in CI
 			window.X = (screenWidth - desktopWindowWidth) / 2;
 			window.Y = (screenHeight - desktopWindowHeight) / 2;
+
 #elif MACCATALYST
 			
 			//Setting max and min is currently needed to force the size on Catalyst;
@@ -112,11 +112,12 @@ namespace Maui.Controls.Sample
 
 			// Center the window on the screen, to ensure no part of it goes off screen in CI
 			// Setting X and Y without delay doesn't work on Catalyst
-			window.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(100), () =>
+			window.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(200), () =>
 			{
 				window.X = (screenWidth - desktopWindowWidth) / 2;
 				window.Y = (screenHeight - desktopWindowHeight) / 2;
 			});
+
 #endif
 
 #endif
