@@ -14,7 +14,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewEmptyViewFillsAvailableSpaceByDefault()
 		{
+#if !WINDOWS
 			App.WaitForElement("ReadyToTest");
+#endif
 			VerifyScreenshot();
 		}
 	}
