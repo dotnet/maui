@@ -21,7 +21,7 @@ namespace Microsoft.Maui.IntegrationTests
 		// MauiVersionCurrent: this should be the current .NET version of MAUI, but the latest released build.
 		// For example, if this branch is for .NET 9, then this must be a 9.0.x number. If the latest MAUI release
 		// is 9.0.100, then this should preferrable be some older build to make sure things work, like 9.0.30.
-		public const string MauiVersionCurrent = "9.0.0-rc.1.24453.9";
+		public const string MauiVersionCurrent = "9.0.20";
 		// MauiVersionPrevious: this should be the previous .NET version of MAUI.
 		// For example, if this branch is for .NET 9, then this must be a 8.0.x number, but should preferrably
 		// not be the same as the default in MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
