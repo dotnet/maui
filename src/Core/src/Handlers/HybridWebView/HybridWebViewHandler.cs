@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Handlers
 #if !NETSTANDARD
 	[RequiresDynamicCode(DynamicFeatures)]
 #endif
-	public partial class HybridWebViewHandler : IHybridWebViewHandler, IHybridWebViewTaskManager
+	public partial class HybridWebViewHandler : IHybridWebViewHandler
 	{
 		internal const string DynamicFeatures = "HybridWebView uses dynamic System.Text.Json serialization features.";
 		internal const string NotSupportedMessage = DynamicFeatures + " Enable the $(MauiHybridWebViewSupported) property in your .csproj file to use in a trimming unsafe manner.";
@@ -90,22 +90,11 @@ namespace Microsoft.Maui.Handlers
 
 		internal HybridWebViewDeveloperTools DeveloperTools => MauiContext?.Services.GetService<HybridWebViewDeveloperTools>() ?? new HybridWebViewDeveloperTools();
 
+		private const string InvokeJavaScriptThrowsExceptionsSwitch = "HybridWebView.InvokeJavaScriptThrowsExceptions";
 
-		/// <summary>
-		/// Handler for when the an Async JavaScript task has completed and needs to notify .NET.
-		/// </summary>
-		private void AsyncTaskCompleted(string taskId, string result)
-		{
-			// Look for the callback in the list of pending callbacks
-			if (!string.IsNullOrEmpty(taskId) && _asyncTaskCallbacks.TryGetValue(taskId, out var callback))
-			{
-				// Get the callback and remove it from the list
-				callback.SetResult(result);
-
-				// Remove the callback
-				_asyncTaskCallbacks.TryRemove(taskId, out var _);
-			}
-		}
+		// TODO: .NET 10 flip the default to true for .NET 10
+		private static bool IsInvokeJavaScriptThrowsExceptionsEnabled =>
+			AppContext.TryGetSwitch(InvokeJavaScriptThrowsExceptionsSwitch, out var enabled) && enabled;
 
 		void MessageReceived(string rawMessage)
 		{
@@ -128,6 +117,7 @@ namespace Microsoft.Maui.Handlers
 
 			switch (messageType)
 			{
+				case "__InvokeJavaScriptFailed":
 				case "__InvokeJavaScriptCompleted":
 					{
 #if !NETSTANDARD2_0
@@ -142,7 +132,29 @@ namespace Microsoft.Maui.Handlers
 
 						var taskId = messageContent.Substring(0, indexOfPipeInContent);
 						var result = messageContent.Substring(indexOfPipeInContent + 1);
-						AsyncTaskCompleted(taskId, result);
+
+						var taskManager = this.GetRequiredService<IHybridWebViewTaskManager>();
+						if (messageType == "__InvokeJavaScriptFailed")
+						{
+							if (IsInvokeJavaScriptThrowsExceptionsEnabled)
+							{
+								if (string.IsNullOrWhiteSpace(result))
+								{
+									taskManager.SetTaskFailed(taskId, new HybridWebViewInvokeJavaScriptException());
+								}
+								else
+								{
+									var jsError = JsonSerializer.Deserialize(result, HybridWebViewHandlerJsonContext.Default.JSInvokeError);
+									var jsException = new HybridWebViewInvokeJavaScriptException(jsError?.Message, jsError?.Name, jsError?.StackTrace);
+									var ex = new HybridWebViewInvokeJavaScriptException($"InvokeJavaScript threw an exception: {jsException.Message}", jsException);
+									taskManager.SetTaskFailed(taskId, ex);
+								}
+							}
+						}
+						else
+						{
+							taskManager.SetTaskCompleted(taskId, result);
+						}
 					}
 					break;
 				case "__RawMessage":
@@ -243,6 +255,13 @@ namespace Microsoft.Maui.Handlers
 			public string[]? ParamValues { get; set; }
 		}
 
+		private sealed class JSInvokeError
+		{
+			public string? Name { get; set; }
+			public string? Message { get; set; }
+			public string? StackTrace { get; set; }
+		}
+
 		private sealed class DotNetInvokeResult
 		{
 			public object? Result { get; set; }
@@ -251,6 +270,7 @@ namespace Microsoft.Maui.Handlers
 
 		[JsonSourceGenerationOptions()]
 		[JsonSerializable(typeof(JSInvokeMethodData))]
+		[JsonSerializable(typeof(JSInvokeError))]
 		private partial class HybridWebViewHandlerJsonContext : JsonSerializerContext
 		{
 		}
@@ -315,17 +335,31 @@ namespace Microsoft.Maui.Handlers
 		public static async void MapInvokeJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
 		{
 #if PLATFORM && !TIZEN
-			if (arg is not HybridWebViewInvokeJavaScriptRequest invokeJavaScriptRequest ||
-				handler.PlatformView is not MauiHybridWebView hybridPlatformWebView ||
-				handler is not IHybridWebViewTaskManager taskManager)
+			if (arg is not HybridWebViewInvokeJavaScriptRequest invokeJavaScriptRequest)
 			{
 				return;
 			}
 
+			try
+			{
+				var result = await MapInvokeJavaScriptAsyncImpl(handler, hybridWebView, invokeJavaScriptRequest);
+
+				invokeJavaScriptRequest.SetResult(result);
+			}
+			catch (Exception ex)
+			{
+				invokeJavaScriptRequest.SetException(ex);
+			}
+#else
+			await Task.CompletedTask;
+#endif
+		}
+
+		static async Task<object?> MapInvokeJavaScriptAsyncImpl(IHybridWebViewHandler handler, IHybridWebView hybridWebView, HybridWebViewInvokeJavaScriptRequest invokeJavaScriptRequest)
+		{
 			// Create a callback for async JavaScript methods to invoke when they are done
-			var callback = new TaskCompletionSource<string>();
-			var currentInvokeTaskId = $"{taskManager.GetNextInvokeTaskId()}";
-			taskManager.AsyncTaskCallbacks.TryAdd(currentInvokeTaskId, callback);
+			var taskManager = handler.GetRequiredService<IHybridWebViewTaskManager>();
+			var (currentInvokeTaskId, callback) = taskManager.CreateTask();
 
 			var paramsValuesStringArray =
 				invokeJavaScriptRequest.ParamValues == null
@@ -341,17 +375,15 @@ namespace Microsoft.Maui.Handlers
 
 			if (stringResult is null)
 			{
-				invokeJavaScriptRequest.SetResult(null);
+				return null;
 			}
 			else
 			{
 				var typedResult = JsonSerializer.Deserialize(stringResult, invokeJavaScriptRequest.ReturnTypeJsonTypeInfo);
-				invokeJavaScriptRequest.SetResult(typedResult);
+				return typedResult;
 			}
-#else
-			await Task.CompletedTask;
-#endif
 		}
+
 
 #if PLATFORM && !TIZEN
 		// Copied from WebView.cs
@@ -419,15 +451,5 @@ namespace Microsoft.Maui.Handlers
 #if !NETSTANDARD
 		internal static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
 #endif
-
-		// IHybridWebViewTaskManager implementation
-		ConcurrentDictionary<string, TaskCompletionSource<string>> _asyncTaskCallbacks = new ConcurrentDictionary<string, TaskCompletionSource<string>>();
-		int _asyncInvokeTaskId;
-
-		int IHybridWebViewTaskManager.GetNextInvokeTaskId()
-		{
-			return Interlocked.Increment(ref _asyncInvokeTaskId);
-		}
-		ConcurrentDictionary<string, TaskCompletionSource<string>> IHybridWebViewTaskManager.AsyncTaskCallbacks => _asyncTaskCallbacks;
 	}
 }
