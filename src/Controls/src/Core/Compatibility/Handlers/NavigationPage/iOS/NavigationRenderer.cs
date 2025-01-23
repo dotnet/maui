@@ -1133,6 +1133,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
+				(navigationController.NavigationBar as MauiNavigationBar)?.RefreshIfNeeded();
+
 				if (_navigation.TryGetTarget(out NavigationRenderer r))
 				{
 					r._navigating = false;
@@ -1830,7 +1832,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_viewHandlerWrapper.DisconnectHandler();
 		}
 
-		internal class MauiControlsNavigationBar : UINavigationBar
+		internal class MauiControlsNavigationBar : MauiNavigationBar
 		{
 			[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 			public MauiControlsNavigationBar() : base()
