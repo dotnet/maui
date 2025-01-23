@@ -31,7 +31,7 @@ steps:
         AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
   # Provision Xcode
   - ${{ if ne(parameters.skipXcode, 'true') }}:
-    - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - ${{ if ne(parameters.skipProvisionator, true) }}:
       - task: xamops.azdevex.provisionator-task.provisionator@3
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
         displayName: 'Provision Xcode'
