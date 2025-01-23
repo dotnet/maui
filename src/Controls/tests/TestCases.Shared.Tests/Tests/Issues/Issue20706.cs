@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST // Stepper interaction is not implemented on catalyst
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -19,14 +20,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("entry");
 			// check the current value.
 			var initialValue = App.FindElement("entry").GetText();
-		    Assert.That("0", Is.EqualTo(initialValue));
+			ClassicAssert.AreEqual("0", initialValue);
 
 			// Increase the value.
 			App.IncreaseStepper("myStepper");
 
 			// Verify that the value has been increased.
 			var step1Value = App.FindElement("entry").GetText();
-			Assert.That("2", Is.EqualTo(step1Value));
+			ClassicAssert.AreEqual("2", step1Value);
 
 			// Change the Stepper increment value.
 			App.Click("incrementButton");
@@ -34,14 +35,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Increase the value.
 			App.IncreaseStepper("myStepper");
 			var step2Value = App.FindElement("entry").GetText();
-			Assert.That("12", Is.EqualTo(step2Value));
+			ClassicAssert.AreEqual("12", step2Value);
 
 			// Decrease the value.
 			App.DecreaseStepper("myStepper");
 
 			// Verify that the value has decreased.
 			var step3Value = App.FindElement("entry").GetText();
-			Assert.That("2", Is.EqualTo(step3Value));
+			ClassicAssert.AreEqual("2", step3Value);
 		}
 	}
 }
+#endif
