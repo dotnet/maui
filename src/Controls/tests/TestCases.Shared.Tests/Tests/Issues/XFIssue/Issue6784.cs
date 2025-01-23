@@ -18,12 +18,6 @@ public class Issue6784 : _IssuesUITest
 	[Test]
 	public void CurrentItemIsSetWhenSelectingShellSectionAggregatedInMoreTab()
 	{
-
-#if MACCATALYST
-		// In CI the window goes to left bottom corner in Catalyst randomly to avoid the flakiness, use full screen mode to prevent dock overlap with UI elements.
-		EnterFullScreen();
-#endif
-
 		App.WaitForElement("More");
 		App.Tap("More");
 		App.WaitForElement("Tab 11");
