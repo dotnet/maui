@@ -430,9 +430,9 @@ configuration:
             user: devanathan-vaithiyanathan
             issueAuthor: False
       - not:
-        isActivitySender:
-          user: Dhivya-SF4094
-          issueAuthor: False
+          isActivitySender:
+            user: Dhivya-SF4094
+            issueAuthor: False
       - not:
           isActivitySender:
             user: HarishKumarSF4517
