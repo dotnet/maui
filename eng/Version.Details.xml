@@ -1,12 +1,12 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.NET.Sdk" Version="10.0.100-alpha.1.25073.3">
+    <Dependency Name="Microsoft.NET.Sdk" Version="10.0.100-alpha.1.25073.4">
       <Uri>https://github.com/dotnet/sdk</Uri>
-      <Sha>58703319aaef7d2aec1117bac91dc9a2909a3ad1</Sha>
+      <Sha>15f99ba898bc9bc6194c3366b2c88e1ddaaf2923</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-alpha.1.25071.14" CoherentParentDependency="Microsoft.NET.Sdk">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-alpha.1.25072.13" CoherentParentDependency="Microsoft.NET.Sdk">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>abf8e94296b7842e4d8ba7c9791eaffaf63d2a09</Sha>
+      <Sha>e2874f53ff8ba0d15cc552e380419f2e7c1217fa</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.99.0-ci.main.117">
       <Uri>https://github.com/dotnet/android</Uri>
@@ -83,9 +83,9 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>aa38ac354da344c4b567210f3f37c3ff2e674c9c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.JSInterop" Version="10.0.0-alpha.2.25070.2">
+    <Dependency Name="Microsoft.JSInterop" Version="10.0.0-alpha.2.25072.6" CoherentParentDependency="Microsoft.NET.Sdk">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>e9839101d92562b0c51e6235eeeb85f2a8ba72cb</Sha>
+      <Sha>aa38ac354da344c4b567210f3f37c3ff2e674c9c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Tasks" Version="7.0.100-preview.2.22102.8">
       <Uri>https://github.com/dotnet/templating</Uri>
