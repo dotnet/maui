@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using Android.Text;
 using Android.Text.Method;
 using Java.Lang;
 using Java.Text;
+using Java.Util;
 
 namespace Microsoft.Maui.Platform
 {
@@ -23,10 +25,22 @@ namespace Microsoft.Maui.Platform
 				return '.';
 
 
-			DecimalFormatSymbols? sym = format.DecimalFormatSymbols;
-
+			CultureInfo netCulture = CultureInfo.CurrentCulture;
+			Locale locale = GetAndroidLocaleFromNetCulture(netCulture);
+			DecimalFormatSymbols sym = new DecimalFormatSymbols(locale);
+ 
 			return sym == null ? '.' : sym.DecimalSeparator;
 		}
+
+		private static Locale GetAndroidLocaleFromNetCulture(CultureInfo netCulture)
+		{
+			string cultureName = netCulture.Name;
+			string[] cultureParts = cultureName.Split('-');
+			string language = cultureParts[0].ToLower(netCulture);
+			string country = cultureParts.Length > 1 ? cultureParts[1].ToUpper(netCulture) : "";
+ 
+			return new Locale(language, country);
+ 		}
 
 		public static NumberKeyListener Create(InputTypes inputTypes)
 		{
