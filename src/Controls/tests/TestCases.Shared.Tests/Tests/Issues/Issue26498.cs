@@ -15,16 +15,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ListView)]
 		public void Issue26498TestNullExeption()
 		{
-			App.WaitForElement("OpenListViewPage");
-			App.Tap("OpenListViewPage");
-			App.WaitForElement("BackButton");
-			App.Click("BackButton");
-			App.WaitForElement("OpenListViewPage");
-			App.Click("OpenListViewPage");
-			App.WaitForElement("ClearButton");
-			App.Click("ClearButton");
-			VerifyScreenshot();
-											
+			const string OpenListViewPage = "OpenListViewPage";
+			const string ClearButton = "ClearButton";
+			const string BackButton = "BackButton";
+
+			App.WaitForElement(OpenListViewPage);
+			App.Tap(OpenListViewPage);
+			App.WaitForElement(BackButton);
+			App.Click(BackButton);
+			App.WaitForElement(OpenListViewPage);
+			App.Click(OpenListViewPage);
+			App.WaitForElement(ClearButton);
+			App.Click(ClearButton);
+			App.WaitForElement(ClearButton);
 		}
 	}
 }

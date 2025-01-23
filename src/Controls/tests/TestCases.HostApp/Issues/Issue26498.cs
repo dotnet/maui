@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Issues
 
 		public class Issue26498TestPage() : TestContentPage
 		{
-			private Page _listviewPage = null;
+			Page _listviewPage = null;
 
 			protected override void Init()
 			{
@@ -41,8 +41,8 @@ namespace Maui.Controls.Sample.Issues
 
 	public class ListViewPage : ContentPage
 	{
-		private readonly ObservableCollection<string> _listOfStrings = new ObservableCollection<string>();
-		private ListView _stringListView = new ListView();
+		readonly ObservableCollection<string> _listOfStrings = new ObservableCollection<string>();
+		ListView _stringListView = new ListView();
 		public ListViewPage()
 		{
 			var stackLayout = new StackLayout();
