@@ -159,9 +159,12 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		// set <MauiVersion> in the csproj as that is the reccommended place
 		var mv = framework == DotNetPrevious ? MauiVersionPrevious : MauiVersionCurrent;
-		FileUtilities.ReplaceInFile(projectFile,
-			"</Project>",
-			$"<PropertyGroup><MauiVersion>{mv}</MauiVersion></PropertyGroup></Project>");
+		if (mv is not null or "")
+		{
+			FileUtilities.ReplaceInFile(projectFile,
+				"</Project>",
+				$"<PropertyGroup><MauiVersion>{mv}</MauiVersion></PropertyGroup></Project>");
+		}
 
 		string binlogDir = Path.Combine(TestEnvironment.GetMauiDirectory(), $"artifacts\\log\\{Path.GetFileName(projectDir)}.binlog");
 
