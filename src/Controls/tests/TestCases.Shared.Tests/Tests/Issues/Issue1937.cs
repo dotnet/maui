@@ -19,7 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
         {
             App.WaitForElement("FAST_TIMER");
             App.Tap("FAST_TIMER");
-            App.WaitForElement("COMPLETE", timeout: TimeSpan.FromSeconds(2));
+            Thread.Sleep(TimeSpan.FromSeconds(1));
+            App.WaitForElement("COMPLETE");
             var result = App.WaitForElement("RESULT");
             int.TryParse(result.GetText(), out int timerTicks1);
 
@@ -28,7 +29,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
                 $"Expected timer ticks are greater than 30. Actual: {timerTicks1}");
 
             App.Tap("SLOW_TIMER");
-            App.WaitForElement("COMPLETE", timeout: TimeSpan.FromSeconds(2));
+            Thread.Sleep(TimeSpan.FromSeconds(1));
+            App.WaitForElement("COMPLETE");
             result = App.WaitForElement("RESULT");
             int.TryParse(result.GetText(), out int timerTicks2);
 
