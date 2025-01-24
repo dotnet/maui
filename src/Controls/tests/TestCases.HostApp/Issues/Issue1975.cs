@@ -32,8 +32,9 @@ namespace Maui.Controls.Sample.Issues
 				lv.SetBinding(ListView.ItemsSourceProperty, new Binding("Items"));
 				lv.IsGroupingEnabled = true;
 				lv.GroupDisplayBinding = new Binding("Description");
-#if !WINDOWS
-				//The ListView cannot be accessed via automation on Windows when the GroupShortNameBinding property is used.
+#if !Windows
+				//It appears that the ListView is not detectable in the CI environment
+				//For more information : https://github.com/dotnet/maui/issues/27336
 				lv.GroupShortNameBinding = new Binding("ShortName");
 #endif
 				lv.ItemTemplate = new DataTemplate(() =>
