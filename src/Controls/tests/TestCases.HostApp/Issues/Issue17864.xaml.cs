@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Windows.Input;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -8,13 +7,13 @@ namespace Maui.Controls.Sample.Issues
 		PlatformAffected.UWP)]
 	public partial class Issue17864 : TestContentPage
 	{
-		readonly ItemListViewModel _ItemListViewModel;
+		readonly Issue17864_ItemListViewModel _ItemListViewModel;
 		protected override void Init() { }
 
 		public Issue17864()
 		{
 			InitializeComponent();
-			_ItemListViewModel = new ItemListViewModel();
+			_ItemListViewModel = new Issue17864_ItemListViewModel();
 			BindingContext = _ItemListViewModel;
 		}
 
@@ -24,38 +23,38 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	internal class GroupViewModel : ObservableCollection<ItemViewModel>, IItemViewModel
+	internal class Issue17864_GroupViewModel : ObservableCollection<Issue17864_ItemViewModel>, Issue17864_IItemViewModel
 	{
 
-		public GroupViewModel(int groupIndex)
+		public Issue17864_GroupViewModel(int groupIndex)
 		{
 			ItemText = $"Group #{groupIndex}";
 		}
 
 		public string ItemText { get; }
 	}
-	
-	public interface IItemViewModel
+
+	public interface Issue17864_IItemViewModel
 	{
 		string ItemText { get; }
 	}
 
-	internal class ItemListViewModel : INotifyPropertyChanged
+	internal class Issue17864_ItemListViewModel : INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		ObservableCollection<IItemViewModel> items = new();
+		ObservableCollection<Issue17864_IItemViewModel> items = new();
 
 		private bool isGrouped = true;
 
 
-		public ItemListViewModel()
+		public Issue17864_ItemListViewModel()
 		{
 			Populate();
 		}
 
 		private void Populate()
-		{			
+		{
 			items.Clear();
 			if (isGrouped)
 			{
@@ -68,23 +67,23 @@ namespace Maui.Controls.Sample.Issues
 			else
 			{
 				int itemIndex = 0;
-				items.Add(new ItemViewModel(itemIndex++));
-				items.Add(new ItemViewModel(itemIndex++));
-				items.Add(new ItemViewModel(itemIndex++));
+				items.Add(new Issue17864_ItemViewModel(itemIndex++));
+				items.Add(new Issue17864_ItemViewModel(itemIndex++));
+				items.Add(new Issue17864_ItemViewModel(itemIndex++));
 			}
 		}
 
-		private IItemViewModel GetGroup(int groupIndex, int itemCount)
+		private Issue17864_IItemViewModel GetGroup(int groupIndex, int itemCount)
 		{
-			var group = new GroupViewModel(groupIndex);
+			var group = new Issue17864_GroupViewModel(groupIndex);
 			for (int i = 0; i < itemCount; i++)
 			{
-				group.Add(new ItemViewModel(i));
+				group.Add(new Issue17864_ItemViewModel(i));
 			}
 			return group;
 		}
 
-		public ObservableCollection<IItemViewModel> Items => items;
+		public ObservableCollection<Issue17864_IItemViewModel> Items => items;
 		public bool IsGrouped
 		{
 			get => isGrouped;
@@ -98,10 +97,10 @@ namespace Maui.Controls.Sample.Issues
 
 	}
 
-	internal class ItemViewModel : IItemViewModel
+	internal class Issue17864_ItemViewModel : Issue17864_IItemViewModel
 	{
 
-		public ItemViewModel(int itemIndex)
+		public Issue17864_ItemViewModel(int itemIndex)
 		{
 			ItemText = $"Item #{itemIndex}";
 		}
