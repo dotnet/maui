@@ -70,19 +70,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			nfloat headerHeight = 0;
 			var headerView = CollectionView.ViewWithTag(HeaderTag);
 
-			if (headerView is not null)
+			if (headerView != null)
 				headerHeight = headerView.Frame.Height;
 
 			nfloat footerHeight = 0;
 			var footerView = CollectionView.ViewWithTag(FooterTag);
 
-			if (footerView is not null)
+			if (footerView != null)
 				footerHeight = footerView.Frame.Height;
-
-			var emptyView = CollectionView.ViewWithTag(EmptyTag);
-
-			if (emptyView is not null)
-				return base.DetermineEmptyViewFrame();
 
 			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y, CollectionView.Frame.Width,
 				Math.Abs(CollectionView.Frame.Height - (headerHeight + footerHeight)));
