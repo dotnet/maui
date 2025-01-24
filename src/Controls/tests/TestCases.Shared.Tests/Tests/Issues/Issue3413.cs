@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
+//For more information : https://github.com/dotnet/maui/issues/27329
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,3 +24,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
