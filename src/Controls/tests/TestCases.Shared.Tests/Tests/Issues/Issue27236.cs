@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID || IOS // Desktop platforms do not have a soft keyboard, so the test is restricted to Android and iOS.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -39,3 +40,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
