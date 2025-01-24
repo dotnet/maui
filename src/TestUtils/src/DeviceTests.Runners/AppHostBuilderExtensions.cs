@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Hosting;
@@ -11,6 +12,13 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 	public static class AppHostBuilderExtensions
 	{
 		public static MauiAppBuilder ConfigureTests(this MauiAppBuilder appHostBuilder, TestOptions options)
+		{
+			appHostBuilder.Services.AddSingleton(options);
+
+			return appHostBuilder;
+		}
+
+		public static MauiAppBuilder ConfigureTests(this MauiAppBuilder appHostBuilder, Func<IServiceProvider, TestOptions> options)
 		{
 			appHostBuilder.Services.AddSingleton(options);
 
