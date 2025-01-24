@@ -198,7 +198,7 @@ namespace Microsoft.Maui.DeviceTests
 
 							if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
 							{
-								var batchTcs = new TaskCompletionSource();
+								var batchTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 								vc.BatchCommitted += OnBatchCommitted;
 								await batchTcs.Task.WaitAsync(timeOut.Value);
 								if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
@@ -406,7 +406,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected async Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			var source = new TaskCompletionSource();
+			var source = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
 			{
 				await Task.Delay(50);
@@ -440,7 +440,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected async Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			var source = new TaskCompletionSource();
+			var source = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
 			{
 				await Task.Delay(50);

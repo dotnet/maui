@@ -118,7 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 			// Because of queued change propagation on BPs
 			// sometimes the appearing will fire a bit later than we expect.
 			// This ensures the first one fires before we move on
-			TaskCompletionSource waitForFirstAppearing = new TaskCompletionSource();
+			TaskCompletionSource waitForFirstAppearing = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 			initialPage.Appearing += OnInitialPageAppearing;
 			void OnInitialPageAppearing(object sender, EventArgs e)
 			{

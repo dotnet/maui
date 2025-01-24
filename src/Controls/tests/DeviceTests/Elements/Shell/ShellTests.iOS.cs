@@ -97,7 +97,7 @@ namespace Microsoft.Maui.DeviceTests
 				var modalVC = GetModalWrapper(modalPage);
 				int navigatedFired = 0;
 				ShellNavigationSource? shellNavigationSource = null;
-				var finishedNavigation = new TaskCompletionSource<bool>();
+				var finishedNavigation = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 				shell.Navigated += ShellNavigated;
 
 				modalVC.DidDismiss(null);
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.DeviceTests
 				var modalVC = GetModalWrapper(modalPage);
 				int navigatedFired = 0;
 				ShellNavigationSource? shellNavigationSource = null;
-				var finishedNavigation = new TaskCompletionSource<bool>();
+				var finishedNavigation = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 				shell.Navigated += ShellNavigated;
 
 				modalVC.DidDismiss(null);
@@ -181,7 +181,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				int navigatingFired = 0;
 				int navigatedFired = 0;
-				var finishedNavigation = new TaskCompletionSource<bool>();
+				var finishedNavigation = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 				ShellNavigationSource? shellNavigationSource = null;
 
 				shell.Navigating += ShellNavigating;
@@ -232,7 +232,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				shell.Navigating += ShellNavigating;
 				shell.Navigated += ShellNavigated;
-				var finishedNavigation = new TaskCompletionSource<bool>();
+				var finishedNavigation = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 				sectionRenderer.SendPop();
 
 				// Give Navigated time to fire just in case

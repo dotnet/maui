@@ -10,7 +10,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public class WindowHandlerStub : ElementHandler<IWindow, UIWindow>, IWindowHandler
 	{
-		TaskCompletionSource _finishedDisconnecting = new TaskCompletionSource();
+		TaskCompletionSource _finishedDisconnecting = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 		public Task FinishedDisconnecting => _finishedDisconnecting.Task;
 		IView _currentView;
 		WorkspaceViewController _workSpace;

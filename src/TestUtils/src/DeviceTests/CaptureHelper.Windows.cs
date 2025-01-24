@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<CanvasBitmap> RenderAsync(this GraphicsCaptureItem item, CanvasDevice device)
 		{
-			var tcs = new TaskCompletionSource<CanvasBitmap>();
+			var tcs = new TaskCompletionSource<CanvasBitmap>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			using (var framePool = Direct3D11CaptureFramePool.Create(device, DirectXPixelFormat.B8G8R8A8UIntNormalized, 1, item.Size))
 			using (var session = framePool.CreateCaptureSession(item))

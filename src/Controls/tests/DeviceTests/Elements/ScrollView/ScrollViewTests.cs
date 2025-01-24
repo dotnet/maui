@@ -232,7 +232,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		static Task<bool> WatchContentSizeChanged(ScrollView scrollView)
 		{
-			var tcs = new TaskCompletionSource<bool>();
+			var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			void handler(object sender, PropertyChangedEventArgs args)
 			{

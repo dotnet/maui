@@ -128,7 +128,7 @@ namespace Microsoft.Maui.DeviceTests
 				return;
 			}
 
-			var taskCompletionSource = new TaskCompletionSource<bool>();
+			var taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 			flyout.LayoutChange += OnLayoutChanged;
 
 			try

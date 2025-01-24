@@ -112,7 +112,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			var tcs = new TaskCompletionSource();
+			var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			Window = new UIWindow(UIScreen.MainScreen.Bounds)
 			{

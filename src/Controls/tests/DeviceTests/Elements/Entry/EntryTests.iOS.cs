@@ -91,7 +91,7 @@ namespace Microsoft.Maui.DeviceTests
 
 							var finalEntryBox = entry.GetBoundingBox();
 
-							var taskCompletion = new TaskCompletionSource<bool>();
+							var taskCompletion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 							uIWindow.RootViewController.DismissViewController(true, () => { taskCompletion.SetResult(true); });
 

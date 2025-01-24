@@ -70,7 +70,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				if (!view.IsFocused)
 				{
-					TaskCompletionSource focusSource = new TaskCompletionSource();
+					TaskCompletionSource focusSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 					view.FocusChange += OnFocused;
 
 					try
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			if (view.IsFocused)
 			{
-				TaskCompletionSource focusSource = new TaskCompletionSource();
+				TaskCompletionSource focusSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 				view.FocusChange += OnUnFocused;
 
 				try
@@ -225,7 +225,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static Task<bool> WaitForLayout(this AView view, int timeout = 1000)
 		{
-			var tcs = new TaskCompletionSource<bool>();
+			var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			view.LayoutChange += OnLayout;
 			var cts = new CancellationTokenSource();

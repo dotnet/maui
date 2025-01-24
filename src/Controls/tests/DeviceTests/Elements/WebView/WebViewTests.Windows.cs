@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 				await AttachAndRun(webView, async (handler) =>
 				{
 					// Wait for the page to load
-					var tcsLoaded = new TaskCompletionSource<bool>();
+					var tcsLoaded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 					var ctsTimeout = new CancellationTokenSource(pageLoadTimeout);
 					ctsTimeout.Token.Register(() => tcsLoaded.TrySetException(new TimeoutException($"Failed to load HTML")));
 
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.DeviceTests
 				await AttachAndRun(webView, async (handler) =>
 				{
 					// Wait for the page to load
-					var tcsLoaded = new TaskCompletionSource<bool>();
+					var tcsLoaded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 					var ctsTimeout = new CancellationTokenSource(pageLoadTimeout);
 					ctsTimeout.Token.Register(() => tcsLoaded.TrySetException(new TimeoutException($"Failed to load HTML")));
 

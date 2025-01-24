@@ -221,8 +221,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		class WindowTestFragment : Fragment
 		{
-			TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>();
-			TaskCompletionSource<bool> _finishedDestroying = new TaskCompletionSource<bool>();
+			TaskCompletionSource<bool> _taskCompletionSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+			TaskCompletionSource<bool> _finishedDestroying = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 			readonly IMauiContext _mauiContext;
 			readonly IWindow _window;
 

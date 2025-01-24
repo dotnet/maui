@@ -83,7 +83,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 
 		public Task<IReadOnlyList<TestAssemblyViewModel>> DiscoverAsync()
 		{
-			var tcs = new TaskCompletionSource<IReadOnlyList<TestAssemblyViewModel>>();
+			var tcs = new TaskCompletionSource<IReadOnlyList<TestAssemblyViewModel>>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			RunAsync(() =>
 			{

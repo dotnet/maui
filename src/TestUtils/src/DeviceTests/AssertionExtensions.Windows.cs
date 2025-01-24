@@ -49,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task WaitForFocused(this FrameworkElement view, int timeout = 1000)
 		{
-			TaskCompletionSource focusSource = new TaskCompletionSource();
+			TaskCompletionSource focusSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			FocusManager.GotFocus += OnFocused;
 
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task WaitForUnFocused(this FrameworkElement view, int timeout = 1000)
 		{
-			TaskCompletionSource focusSource = new TaskCompletionSource();
+			TaskCompletionSource focusSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			FocusManager.LostFocus += OnUnFocused;
 
@@ -202,8 +202,8 @@ namespace Microsoft.Maui.DeviceTests
 				await _attachAndRunSemaphore.WaitAsync();
 
 				// prepare to wait for element to be in the UI
-				var loadedTcs = new TaskCompletionSource();
-				var unloadedTcs = new TaskCompletionSource();
+				var loadedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+				var unloadedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
 				view.Loaded += OnViewLoaded;
 
