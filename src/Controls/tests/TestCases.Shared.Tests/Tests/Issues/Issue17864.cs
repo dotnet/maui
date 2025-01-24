@@ -1,7 +1,4 @@
-﻿using System.Globalization;
-using System.Reflection.Metadata;
-using NUnit.Framework;
-using NUnit.Framework.Legacy;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
