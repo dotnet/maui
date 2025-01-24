@@ -189,6 +189,12 @@ public static partial class AppHostBuilderExtensions
 			handlers.AddControlsHandlers();
 		});
 
+		// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
+		if (RuntimeFeature.IsHybridWebViewSupported)
+		{
+			builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
+		}
+
 #if WINDOWS
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiControlsInitializer>());
 #endif
