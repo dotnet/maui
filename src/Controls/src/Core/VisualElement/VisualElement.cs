@@ -1979,22 +1979,8 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Semantics? IView.Semantics => UpdateSemantics();
 
-		private protected virtual Semantics? UpdateSemantics()
-		{
-			if (!this.IsSet(SemanticProperties.HintProperty) &&
-				!this.IsSet(SemanticProperties.DescriptionProperty) &&
-				!this.IsSet(SemanticProperties.HeadingLevelProperty))
-			{
-				_semantics = null;
-				return _semantics;
-			}
-
-			_semantics ??= new Semantics();
-			_semantics.Description = SemanticProperties.GetDescription(this);
-			_semantics.HeadingLevel = SemanticProperties.GetHeadingLevel(this);
-			_semantics.Hint = SemanticProperties.GetHint(this);
-			return _semantics;
-		}
+		private protected virtual Semantics? UpdateSemantics() =>
+			_semantics = SemanticProperties.UpdateSemantics(this, _semantics);
 
 		static double EnsurePositive(double value)
 		{

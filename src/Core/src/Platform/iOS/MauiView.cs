@@ -125,19 +125,19 @@ namespace Microsoft.Maui.Platform
 			var widthConstraint = bounds.Width;
 			var heightConstraint = bounds.Height;
 
-			// If the SuperView is a MauiView (backing a cross-platform ContentView or Layout), then measurement
-			// has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews. But we
-			// _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
+			// If the SuperView is a cross-platform layout backed view (i.e. MauiView, MauiScrollView, LayoutView, ..),
+			// then measurement has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews.
+			// This is especially important to avoid overriding potentially infinite measurement constraints
+			// imposed by the parent (i.e. scroll view) with the current bounds.
+			// But we _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
 			// the window); there's no guarantee that SizeThatFits has been called in that case.
-
-			if (!IsMeasureValid(widthConstraint, heightConstraint) && Superview is not MauiView)
+			if (!IsMeasureValid(widthConstraint, heightConstraint) && !this.IsFinalMeasureHandledBySuperView())
 			{
 				CrossPlatformMeasure(widthConstraint, heightConstraint);
 				CacheMeasureConstraints(widthConstraint, heightConstraint);
 			}
 
 			CrossPlatformArrange(bounds);
-			OnLayoutChanged();
 		}
 
 		public override void SetNeedsLayout()
@@ -198,14 +198,6 @@ namespace Microsoft.Maui.Platform
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
 			TryToInvalidateSuperView(true);
-		}
-
-		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
-		internal event EventHandler? LayoutChanged;
-
-		private void OnLayoutChanged()
-		{
-			LayoutChanged?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }
