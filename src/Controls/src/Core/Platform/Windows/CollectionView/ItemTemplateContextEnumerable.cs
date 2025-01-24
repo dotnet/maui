@@ -32,12 +32,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public IEnumerator GetEnumerator()
 		{
-			if(_itemsSource is not null)
+			foreach (var item in _itemsSource)
 			{
-				foreach (var item in _itemsSource)
-				{
-					yield return new ItemTemplateContext(_formsDataTemplate, item, _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext);
-				}
+				yield return new ItemTemplateContext(_formsDataTemplate, item, _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext);
 			}
 		}
 	}

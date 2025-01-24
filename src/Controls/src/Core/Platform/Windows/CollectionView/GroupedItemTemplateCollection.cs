@@ -72,8 +72,12 @@ namespace Microsoft.Maui.Controls.Platform
 			var groupFooterTemplateContext = _groupFooterTemplate != null
 				? new GroupFooterItemTemplateContext(_groupFooterTemplate, group, _container, mauiContext: _mauiContext) : null;
 
-			// This is where we'll eventually look at GroupItemPropertyName
-			var groupItemsList = TemplatedItemSourceFactory.Create(group as IEnumerable, _itemTemplate, _container, mauiContext: _mauiContext);
+			object groupItemsList = null;
+			if(group is IEnumerable enumerableGroup)
+			{
+				// This is where we'll eventually look at GroupItemPropertyName
+				groupItemsList = TemplatedItemSourceFactory.Create(enumerableGroup, _itemTemplate, _container, mauiContext: _mauiContext);
+			}
 
 			return new GroupTemplateContext(groupHeaderTemplateContext, groupFooterTemplateContext, groupItemsList);
 		}
