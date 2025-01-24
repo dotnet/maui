@@ -100,11 +100,18 @@ namespace Maui.Controls.Sample
 			window.X = (screenWidth - desktopWindowWidth) / 2;
 			window.Y = (screenHeight - desktopWindowHeight) / 2;
 #elif MACCATALYST
+
+			// Setting max and min is currently needed to force the size on Catalyst;
+			// just setting width/height has no effect on Catalyst
+			window.MaximumWidth = desktopWindowWidth;
+			window.MinimumWidth = desktopWindowWidth;
+
+			window.MaximumHeight = desktopWindowHeight;
+			window.MinimumHeight = desktopWindowHeight;
+
 			// Setting X and Y without delay doesn't work on Catalyst, Issue: https://github.com/dotnet/maui/issues/27304 
 			window.Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(200), () =>
 			{
-				window.Width = desktopWindowWidth;
-				window.Height = desktopWindowHeight;
 				window.X = (screenWidth - desktopWindowWidth) / 2;
 				window.Y = (screenHeight - desktopWindowHeight) / 2;
 			});
