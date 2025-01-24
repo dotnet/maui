@@ -13,13 +13,28 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ListView, ImageCell and disabled source cache and same image url";
 
 		[Test]
-		[Ignore("This test is very flaky and needs to be fixed. See https://github.com/dotnet/maui/issues/27272")]
 		[Category(UITestCategories.ListView)]
 		public void TestDoesntCrashWithCachingDisable()
 		{
 			App.WaitForElement("ImageLoaded");
 			App.ScrollDown("TestListView", ScrollStrategy.Programmatically);
 			App.ScrollDown("TestListView", ScrollStrategy.Programmatically);
+		}
+
+		public override void TestSetup()
+		{
+			base.TestSetup();
+
+			try
+			{
+				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(1));
+				Assert.Inconclusive("This device doesn't have internet access");
+			}
+			catch (TimeoutException)
+			{
+				// Element not found within timeout, assume internet is available
+				// Continue with the test
+			}
 		}
 	}
 }
