@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS // Fails on windows, More information :https://github.com/dotnet/maui/issues/24243
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,26 +16,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue31366PushingAndPoppingModallyCausesArgumentOutOfRangeException()
 		{
 			App.WaitForElement("StartPopOnAppearingTest");
 			App.Tap("StartPopOnAppearingTest");
-			App.WaitForNoElement("If this is visible, the PopOnAppearing test has passed.");
+			App.WaitForElement("If this is visible, the PopOnAppearing test has passed.");
 		}
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("Suddenly failing. https://github.com/dotnet/maui/issues/24243")]
 		public void Issue31366PushingWithModalStackCausesIncorrectStackOrder()
 		{
 			App.WaitForElement("StartModalStackTest");
 			App.Tap("StartModalStackTest");
-			App.WaitForNoElement("If this is visible, the modal stack test has passed.");
+			App.WaitForElement("If this is visible, the modal stack test has passed.");
 			App.Back();
 		}
 	}
 }
+#endif

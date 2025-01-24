@@ -135,6 +135,18 @@
     <value>Enlace: tipo de índice del indizador no admitido: "{0}".</value>
     <comment>0 is indexer type name</comment>
   </data>
+  <data name="BindingWithoutDataType" xml:space="preserve">
+    <value>El enlace podría compilarse para mejorar el rendimiento en tiempo de ejecución si se especifica x:DataType. Consulte https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings para más información.</value>
+  </data>
+  <data name="BindingWithNullDataType" xml:space="preserve">
+    <value>El enlace podría compilarse para mejorar el rendimiento en tiempo de ejecución si x:DataType no es null explícitamente. Consulte https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings para más información.</value>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>El enlace podría compilarse incorrectamente porque la anotación x:DataType procede de un ámbito externo. Asegúrese de anotar todos los elementos XAML DataTemplate con el x:DataType correcto. Consulte https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings para más información.</value>
+  </data>
+  <data name="BindingWithSourceCompilationSkipped" xml:space="preserve">
+    <value>No se compiló el enlace porque tiene una propiedad Source establecida explícitamente y la compilación de enlaces con Source no está habilitada. Considere la posibilidad de habilitar esta optimización estableciendo &lt;MauiEnableXamlCBindingWithSourceCompilation&gt;true&lt;/MauiEnableXamlCBindingWithSourceCompilation&gt; en el archivo de proyecto y asegúrese de que se especifica el x:DataType correcto para este enlace. Consulte https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings para más información.</value>
+  </data>
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>Enlace: no se encontró la propiedad "{0}" en "{1}".</value>
     <comment>0 is property name, 1 is type name</comment>
@@ -193,6 +205,9 @@
     <value>Ya existe un elemento con el nombre "{0}" en este elemento NameScope.</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="ObsoleteProperty" xml:space="preserve">
+    <value>Property, Property setter o BindableProperty "{0}" están en desuso.</value>
+  </data>
   <data name="PropertyMissing" xml:space="preserve">
     <value>Falta la propiedad obligatoria "{0}" en "{1}".</value>
     <comment>0 is a property name, 1 is a type</comment>
@@ -234,6 +249,10 @@
   <data name="XDataTypeSyntax" xml:space="preserve">
     <value>x:DataType espera un literal de cadena, una marca {{x:Type}} o {{x:Null}}.</value>
   </data>
+  <data name="UnattributedMarkupType" xml:space="preserve">
+    <value>Considere la posibilidad de atribuir la extensión de marcado "{0}" con [RequireService] o [AcceptEmptyServiceProvider] si no requiere ninguna.</value>
+    <comment>0 is type name</comment>
+  </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>Prefijo xmlns no declarado "{0}".</value>
     <comment>0 is the xmlns prefix</comment>
@@ -247,5 +266,8 @@
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:Clave espera un literal de cadena.</value>
+  </data>
+  <data name="StaticResourceSyntax" xml:space="preserve">
+    <value>Se requiere una clave en {StaticResource}.</value>
   </data>
 </root>

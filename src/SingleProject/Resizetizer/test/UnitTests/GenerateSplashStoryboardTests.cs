@@ -6,6 +6,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using SkiaSharp;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
@@ -15,7 +16,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		readonly string _storyboard;
 
-		public GenerateSplashStoryboardTests()
+		public GenerateSplashStoryboardTests(ITestOutputHelper outputHelper)
+			: base(outputHelper)
 		{
 			_storyboard = Path.Combine(DestinationDirectory, "MauiSplash.storyboard");
 		}

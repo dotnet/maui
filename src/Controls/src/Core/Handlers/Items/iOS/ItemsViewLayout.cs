@@ -113,6 +113,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			ClearCellSizeCache();
 
+			EstimatedItemSize = CGSize.Empty;
+			
 			_currentSize = size;
 
 			var newSize = new CGSize(Math.Floor(size.Width), Math.Floor(size.Height));
@@ -133,17 +135,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public virtual UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,
 			nint section)
 		{
+			// If we're at the last section, we don't need to add the right inset
+			if (section >= (collectionView.NumberOfSections() - 1))
+			{
+				return UIEdgeInsets.Zero;
+			}
+
 			if (_itemsLayout is GridItemsLayout gridItemsLayout)
 			{
 				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 				{
-					return new UIEdgeInsets(0, 0, 0, new nfloat(gridItemsLayout.HorizontalItemSpacing * collectionView.NumberOfItemsInSection(section)));
+					return new UIEdgeInsets(0, 0, 0, new nfloat(gridItemsLayout.HorizontalItemSpacing));
 				}
 
-				return new UIEdgeInsets(0, 0, new nfloat(gridItemsLayout.VerticalItemSpacing * collectionView.NumberOfItemsInSection(section)), 0);
+				return new UIEdgeInsets(0, 0, new nfloat(gridItemsLayout.VerticalItemSpacing), 0);
 			}
+			else if (_itemsLayout is LinearItemsLayout listViewLayout)
+			{
+				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+				{
+					return new UIEdgeInsets(0, 0, 0, new nfloat(listViewLayout.ItemSpacing));
+				}
 
-			return UIEdgeInsets.Zero;
+				return new UIEdgeInsets(0, 0, new nfloat(listViewLayout.ItemSpacing), 0);
+			}
+			else
+			{
+				return UIEdgeInsets.Zero;
+			}
 		}
 
 		public virtual nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView,

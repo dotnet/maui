@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // This test is specific to iOS because: Only on iOS is the title icon centered; on other platforms, it's aligned to the left.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,13 +13,12 @@ public class Issue4138 : _IssuesUITest
 
 	public override string Issue => "[iOS] NavigationPage.TitleIcon no longer centered";
 
-	//[Test]
-	//[Category(UITestCategories.Navigation)]
-	//[FailsOnIOS]
-	//public void TitleIconIsCentered()
-	//{
-	//	var element = App.WaitForElement("coffee.png")[0];
-	//	var rect = App.RootViewRect();
-	//	Assert.AreEqual(element.Rect.CenterX, rect.CenterX);
-	//}
+	[Test]
+	[Category(UITestCategories.Navigation)]
+	public void TitleIconIsCentered()
+	{
+		App.WaitForElement("ContentPage");
+		VerifyScreenshot();
+	}
 }
+#endif
