@@ -52,6 +52,7 @@ namespace Microsoft.Maui.Handlers
 			if (windowRootContentManager is not null)
 			{
 				windowRootContentManager.OnApplyTemplateFinished -= WindowRootContentManagerOnApplyTemplateFinished;
+				windowRootContentManager.SetTitleBar(null, null);
 				windowRootContentManager.Disconnect();
 			}
 
