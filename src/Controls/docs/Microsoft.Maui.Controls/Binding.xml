@@ -42,7 +42,6 @@
       <Parameters />
       <Docs>
         <summary>Constructs and initializes a new instance of the <see cref="T:Microsoft.Maui.Controls.Binding" /> class.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -140,7 +139,6 @@ Debug.WriteLine (person.Name); //prints "Foo". ReverseConverter.ConvertBack () i
       <Docs>
         <summary>Gets or sets the converter to be used for this binding ?</summary>
         <value>An IValueConverter, or <see langword="null" />.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConverterParameter">
@@ -166,7 +164,6 @@ Debug.WriteLine (person.Name); //prints "Foo". ReverseConverter.ConvertBack () i
       <Docs>
         <summary>Gets or sets the parameter passed as argument to the converter.</summary>
         <value>An object, or <see langword="null" />.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Create&lt;TSource&gt;">
@@ -250,8 +247,6 @@ Debug.WriteLine (label.Text); //prints "John Doe".
         <ReturnType>System.Object</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Path">
@@ -277,7 +272,6 @@ Debug.WriteLine (label.Text); //prints "John Doe".
       <Docs>
         <summary>Gets or sets the path of the property</summary>
         <value>A string indicating the path to the property.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Source">
@@ -324,8 +318,6 @@ Debug.WriteLine (label.Text); //prints "John Doe".
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

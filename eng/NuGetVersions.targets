@@ -304,7 +304,16 @@
         Update="System.Drawing.Common"
         Version="$(SystemDrawingCommonPackageVersion)"
     />
-
+    <PackageReference
+        Update="Microsoft.Build.Framework"
+        Version="$(MicrosoftBuildFrameworkPackageVersion)"
+        PrivateAssets="All"
+    />
+    <PackageReference
+        Update="Microsoft.Build.Utilities.Core"
+        Version="$(MicrosoftBuildUtilitiesCorePackageVersion)"
+        PrivateAssets="All"
+    />
 
     <PackageReference Update="Microsoft.DotNet.Build.Tasks.Workloads" Version="$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)" />
     <PackageReference Update="Microsoft.Signed.WiX" Version="$(MicrosoftSignedWixVersion)" />

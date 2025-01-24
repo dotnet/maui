@@ -306,11 +306,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 			InitItemProperties(view, item);
 			if (!(view is FlexLayout))
 			{ //inner layouts don't get measured
-				item.SelfSizing = (Flex.Item it, ref float w, ref float h) =>
+				item.SelfSizing = (Flex.Item it, ref float w, ref float h, bool inMeasureMode) =>
 				{
 					var sizeConstrains = item.GetConstraints();
-					sizeConstrains.Width = (_measuring && sizeConstrains.Width == 0) ? double.PositiveInfinity : sizeConstrains.Width;
-					sizeConstrains.Height = (_measuring && sizeConstrains.Height == 0) ? double.PositiveInfinity : sizeConstrains.Height;
+					sizeConstrains.Width = (inMeasureMode && sizeConstrains.Width == 0) ? double.PositiveInfinity : sizeConstrains.Width;
+					sizeConstrains.Height = (inMeasureMode && sizeConstrains.Height == 0) ? double.PositiveInfinity : sizeConstrains.Height;
 					var request = view.Measure(sizeConstrains.Width, sizeConstrains.Height, MeasureFlags.None).Request;
 					w = (float)request.Width;
 					h = (float)request.Height;
@@ -489,7 +489,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return;
 			_root.Width = !double.IsPositiveInfinity((width)) ? (float)width : 0;
 			_root.Height = !double.IsPositiveInfinity((height)) ? (float)height : 0;
-			_root.Layout();
+			_root.Layout(_measuring);
 		}
 	}
 }

@@ -23,7 +23,6 @@
   </Attributes>
   <Docs>
     <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -39,7 +38,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetModalStack">
@@ -60,7 +58,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetNavigationStack">
@@ -81,7 +78,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Inner">
@@ -101,7 +97,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <value>For internal use by the Microsoft.Maui.Controls platform.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="InsertPageBefore">
@@ -129,7 +124,6 @@
         <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="before">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ModalStack">
@@ -152,7 +146,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <value>For internal use by the Microsoft.Maui.Controls platform.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NavigationStack">
@@ -175,7 +168,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <value>For internal use by the Microsoft.Maui.Controls platform.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnInsertPageBefore">
@@ -200,7 +192,6 @@
         <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="before">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnPopAsync">
@@ -224,7 +215,6 @@
         <param name="animated">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnPopModal">
@@ -248,7 +238,6 @@
         <param name="animated">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnPopToRootAsync">
@@ -272,7 +261,6 @@
         <param name="animated">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnPushAsync">
@@ -298,7 +286,6 @@
         <param name="animated">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnPushModal">
@@ -324,7 +311,6 @@
         <param name="animated">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnRemovePage">
@@ -347,7 +333,6 @@
       <Docs>
         <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopAsync">
@@ -371,7 +356,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopAsync">
@@ -398,7 +382,6 @@
         <param name="animated">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopModalAsync">
@@ -422,7 +405,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopModalAsync">
@@ -449,7 +431,6 @@
         <param name="animated">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopToRootAsync">
@@ -473,7 +454,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopToRootAsync">
@@ -500,7 +480,6 @@
         <param name="animated">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PushAsync">
@@ -527,7 +506,6 @@
         <param name="root">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PushAsync">
@@ -556,7 +534,6 @@
         <param name="animated">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PushModalAsync">
@@ -583,7 +560,6 @@
         <param name="modal">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PushModalAsync">
@@ -612,7 +588,6 @@
         <param name="animated">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RemovePage">
@@ -638,7 +613,6 @@
       <Docs>
         <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

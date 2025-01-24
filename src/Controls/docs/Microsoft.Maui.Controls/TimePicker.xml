@@ -85,9 +85,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CharacterSpacingProperty">
@@ -104,8 +101,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontAttributes">
@@ -124,8 +119,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
       </ReturnValue>
       <Docs>
         <summary>TGets a value that indicates whether the font for the searchbar text is bold, italic, or neither.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontAttributesProperty">
@@ -144,7 +137,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.TimePicker.FontAttributes" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontFamily">
@@ -163,8 +155,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the font family for the picker text.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontFamilyProperty">
@@ -183,7 +173,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.TimePicker.FontFamily" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontSize">
@@ -208,7 +197,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
       <Docs>
         <summary>Gets or sets the size of the font for the text in the picker.</summary>
         <value>A <see langword="double" /> that indicates the size of the font.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontSizeProperty">
@@ -227,7 +215,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.TimePicker.FontSize" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Format">
@@ -310,8 +297,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
       <Docs>
         <typeparam name="T">To be added.</typeparam>
         <summary>Returns the platform-specific instance of this <see cref="T:Microsoft.Maui.Controls.TimePicker" />, on which a platform-specific method may be called.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextColor">
@@ -330,8 +315,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the text color.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextColorProperty">
@@ -350,7 +333,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.TimePicker.TextColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextTransform">
@@ -367,9 +349,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
         <ReturnType>Microsoft.Maui.Controls.TextTransform</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextTransformProperty">
@@ -386,8 +365,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Time">
@@ -413,7 +390,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
       <Docs>
         <summary>Gets or sets the displayed time. This is a bindable property.</summary>
         <value>The <see cref="T:System.TimeSpan" /> displayed in the TimePicker.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TimeProperty">
@@ -462,9 +438,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
       <Docs>
         <param name="source">To be added.</param>
         <param name="textTransform">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.FontSizeDefaultValueCreator">
@@ -487,8 +460,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontAttributesChanged">
@@ -516,7 +487,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontChanged">
@@ -544,7 +514,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontFamilyChanged">
@@ -572,7 +541,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontSizeChanged">
@@ -600,7 +568,6 @@ var beeroclock = new TimePicker () { Time = new TimeSpan (17,0,0) };
         <param name="oldValue">TFor internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

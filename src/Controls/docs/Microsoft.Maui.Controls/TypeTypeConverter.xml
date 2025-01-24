@@ -24,7 +24,6 @@
   </Attributes>
   <Docs>
     <summary>Class that takes a string representation of a <see cref="T:System.Type" /> and returns a corresponding <see cref="T:System.Type" />.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -41,7 +40,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.TypeTypeConverter" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConvertFromInvariantString">
@@ -64,8 +62,6 @@
       <Docs>
         <param name="value">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>Returns a type for a valid type name.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IExtendedTypeConverter.ConvertFrom">
@@ -104,8 +100,6 @@
         <param name="value">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="serviceProvider">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use only.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IExtendedTypeConverter.ConvertFromInvariantString">
@@ -133,8 +127,6 @@
         <param name="value">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="serviceProvider">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use only.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

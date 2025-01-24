@@ -85,9 +85,14 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
-		handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
+		if (RuntimeFeature.IsHybridWebViewSupported)
+		{
+			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
+			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
+		}
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
+		handlersCollection.AddHandler<ContentView, ContentViewHandler>();
 		handlersCollection.AddHandler<Shapes.Ellipse, ShapeViewHandler>();
 		handlersCollection.AddHandler<Shapes.Line, LineHandler>();
 		handlersCollection.AddHandler<Shapes.Path, PathHandler>();
@@ -184,6 +189,12 @@ public static partial class AppHostBuilderExtensions
 			handlers.AddControlsHandlers();
 		});
 
+		// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
+		if (RuntimeFeature.IsHybridWebViewSupported)
+		{
+			builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
+		}
+
 #if WINDOWS
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiControlsInitializer>());
 #endif
@@ -246,6 +257,7 @@ public static partial class AppHostBuilderExtensions
 		SwipeView.RemapForControls();
 		Picker.RemapForControls();
 		SearchBar.RemapForControls();
+		Stepper.RemapForControls();
 		TabbedPage.RemapForControls();
 		TimePicker.RemapForControls();
 		Layout.RemapForControls();

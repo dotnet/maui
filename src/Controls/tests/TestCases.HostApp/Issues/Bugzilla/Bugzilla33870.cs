@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
 
-
 [Issue(IssueTracker.Bugzilla, 33870, "[W] Crash when the ListView Selection is set to null", PlatformAffected.WinRT)]
 
 public class Bugzilla33870 : TestContentPage

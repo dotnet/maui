@@ -280,7 +280,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(1, loadedCnt);
 			Assert.Equal(0, unLoadedCnt);
-			
+
 			await navigationPage.PopAsync();
 
 			Assert.Equal(1, loadedCnt);
@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, loadedCnt);
 
 			lcPage.Loaded -= OnLoaded;
-			lcPage.Loaded += OnLoaded;		
+			lcPage.Loaded += OnLoaded;
 			Assert.Equal(2, loadedCnt);
 
 			void OnLoaded(object sender, System.EventArgs e)
@@ -330,7 +330,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(lcPage.IsLoaded);
 
 			// Wire up to loaded event to setup wiring
-			lcPage.Loaded += (_, _) => 
+			lcPage.Loaded += (_, _) =>
 			{
 				loadedCnt++;
 			};
@@ -339,7 +339,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// Subscribing to loaded a second time
 			// Should fire the event on the new subsciber;
-			lcPage.Loaded += (_, _) => 
+			lcPage.Loaded += (_, _) =>
 			{
 				secondLoadedSubscriberCnt++;
 			};
@@ -349,7 +349,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, loadedCnt);
 			Assert.Equal(1, secondLoadedSubscriberCnt);
 			Assert.Equal(0, unLoadedCnt);
-			
+
 			await navigationPage.PopAsync();
 
 			Assert.Equal(1, loadedCnt);

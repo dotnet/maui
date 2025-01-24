@@ -24,7 +24,6 @@
   </Attributes>
   <Docs>
     <summary>A <see cref="T:System.ComponentModel.TypeConverter" /> for bindable properties.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -41,7 +40,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.BindablePropertyConverter" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConvertFromInvariantString">
@@ -64,8 +62,6 @@
       <Docs>
         <param name="value">The value to convert.</param>
         <summary>Returns a bindable property when supplied a string of the form <c>Type.PropertyName</c>.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IExtendedTypeConverter.ConvertFrom">
@@ -96,8 +92,6 @@
         <param name="value">For internal use only.</param>
         <param name="serviceProvider">For internal use only.</param>
         <summary>For internal use only.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IExtendedTypeConverter.ConvertFromInvariantString">
@@ -125,8 +119,6 @@
         <param name="value">For internal use only.</param>
         <param name="serviceProvider">For internal use only.</param>
         <summary>For internal use only.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

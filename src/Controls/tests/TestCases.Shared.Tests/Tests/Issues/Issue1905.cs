@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.DisplayAlert)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void TestIssue1905RefreshShows()
 		{
 			// wait for test to load

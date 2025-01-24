@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (view == null)
 				return false;
-			
+
 			var platformPointerArgs = new PlatformPointerEventArgs(control, e);
 
 			foreach (var gesture in view.GetCompositeGestureRecognizers())
