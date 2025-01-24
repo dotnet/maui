@@ -15,16 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void PushButton()
 		{
 			App.WaitForElement("ModalPushPopTest");
 			App.Tap("ModalPushPopTest");
-			Thread.Sleep(2000);
-
-			// if it didn't crash, yay
-			App.WaitForElement("ModalPushPopTest");
+			App.WaitForElementTillPageNavigationSettled("ModalPushPopTest");
 		}
 	}
 }
