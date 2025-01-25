@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (s_displayDensity != float.MinValue)
 				return pixels / s_displayDensity;
+
 			return view.Context.FromPixels(pixels);
 		}
 

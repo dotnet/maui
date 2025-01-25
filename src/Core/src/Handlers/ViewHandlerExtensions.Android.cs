@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Views;
+using Android.Widget;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using static Android.Views.View;
@@ -77,35 +78,47 @@ namespace Microsoft.Maui
 
 		internal static Size GetDesiredSizeFromHandler(this IViewHandler viewHandler, double widthConstraint, double heightConstraint)
 		{
-			var Context = viewHandler.MauiContext?.Context;
+			var context = viewHandler.MauiContext?.Context;
 			var platformView = viewHandler.ToPlatform();
 			var virtualView = viewHandler.VirtualView;
 
-			if (platformView == null || virtualView == null || Context == null)
+			if (platformView == null || virtualView == null || context == null)
 			{
 				return Size.Zero;
 			}
 
 			// Create a spec to handle the native measure
-			var widthSpec = Context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
-			var heightSpec = Context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
+			var widthSpec = context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
+			var heightSpec = context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
 
 			var packed = PlatformInterop.MeasureAndGetWidthAndHeight(platformView, widthSpec, heightSpec);
 			var measuredWidth = (int)(packed >> 32);
 			var measuredHeight = (int)(packed & 0xffffffffL);
 
+			// The way we arrange content aims to match coordinates instead of size,
+			// which may lead to rounding the platform view size to shrink by 1 px.
+			// Android's TextView has a strange way of rendering the text when
+			// the space is not enough - even by 1px - which causes unwanted text truncation.
+			// Adding a small px to the desired size ensures that even when round happens during arrange
+			// the text will not be truncated. We're checking handler's platform view here
+			// because `ToPlatform` may return the `WrapperView`.
+			if (viewHandler.PlatformView is TextView)
+			{
+				measuredWidth += 1;
+			}
+
 			// Convert back to xplat sizes for the return value
-			return Context.FromPixels(measuredWidth, measuredHeight);
+			return context.FromPixels(measuredWidth, measuredHeight);
 		}
 
 		internal static void PlatformArrangeHandler(this IViewHandler viewHandler, Rect frame)
 		{
 			var platformView = viewHandler.ToPlatform();
 
-			var Context = viewHandler.MauiContext?.Context;
-			var MauiContext = viewHandler.MauiContext;
+			var context = viewHandler.MauiContext?.Context;
+			var mauiContext = viewHandler.MauiContext;
 
-			if (platformView == null || MauiContext == null || Context == null)
+			if (platformView == null || mauiContext == null || context == null)
 			{
 				return;
 			}
@@ -116,10 +129,7 @@ namespace Microsoft.Maui
 				return;
 			}
 
-			var left = Context.ToPixels(frame.Left);
-			var top = Context.ToPixels(frame.Top);
-			var bottom = Context.ToPixels(frame.Bottom);
-			var right = Context.ToPixels(frame.Right);
+			var (left, top, right, bottom) = context.ToPixels(frame);
 
 			var viewParent = platformView.Parent;
 			if (viewParent?.LayoutDirection == LayoutDirection.Rtl && viewParent is View parentView)
@@ -130,7 +140,7 @@ namespace Microsoft.Maui
 				right = left + width;
 			}
 
-			platformView.Layout((int)left, (int)top, (int)right, (int)bottom);
+			platformView.Layout(left, top, right, bottom);
 
 			viewHandler.Invoke(nameof(IView.Frame), frame);
 		}
