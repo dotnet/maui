@@ -15,6 +15,24 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class LabelHandler : ILabelHandler
 	{
+		internal static readonly IPlatformPropertyDefaults<ILabel> LabelPropertyDefaults = new PlatformPropertyDefaults<ILabel>(ViewHandler.ViewPropertyDefaults)
+		{
+			[nameof(ILabel.CharacterSpacing)] = HasDefaultCharacterSpacing,
+
+#if !IOS && !MACATALYST
+			// TODO: It is not clear if this can be enabled on iOS-like platforms.
+			[nameof(ILabel.HorizontalTextAlignment)] = HasDefaultHorizontalTextAlignment,
+
+			// Test Issue21325 fails on Mac Catalyst if this is on as a label is not placed on the top but in the center. 
+			[nameof(ILabel.VerticalTextAlignment)] = HasDefaultVerticalTextAlignment,
+#endif
+
+			[nameof(ILabel.TextDecorations)] = HasDefaultTextDecorations,
+
+			[nameof(ILabelCompat.TextType)] = HasDefaultTextType,
+			[nameof(ILabelCompat.TextTransform)] = HasDefaultTextTransform,
+		};
+
 		public static IPropertyMapper<ILabel, ILabelHandler> Mapper = new PropertyMapper<ILabel, ILabelHandler>(ViewHandler.ViewMapper)
 		{
 #if IOS || TIZEN
@@ -48,20 +66,41 @@ namespace Microsoft.Maui.Handlers
 
 		public LabelHandler() : base(Mapper, CommandMapper)
 		{
+			PlatformPropertyDefaults = LabelPropertyDefaults;
 		}
 
 		public LabelHandler(IPropertyMapper? mapper)
 			: base(mapper ?? Mapper, CommandMapper)
 		{
+			PlatformPropertyDefaults = LabelPropertyDefaults;
 		}
 
 		public LabelHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
+			PlatformPropertyDefaults = LabelPropertyDefaults;
 		}
 
 		ILabel ILabelHandler.VirtualView => VirtualView;
 
 		PlatformView ILabelHandler.PlatformView => PlatformView;
+
+		/// <summary>This is a legacy property automatically remapped to `Text`, so it can always be considered as a default value.</summary>
+		internal static bool HasDefaultTextTransform(ILabel arg) => true;
+
+		/// <summary>This is a legacy property automatically remapped to `Text`, so it can always be considered as a default value.</summary>
+		internal static bool HasDefaultTextType(ILabel arg) => true;
+
+		internal static bool HasDefaultTextDecorations(ILabel label)
+			=> label.TextDecorations == TextDecorations.None;
+
+		internal static bool HasDefaultCharacterSpacing(ILabel label)
+			=> label.CharacterSpacing == 0;
+
+		internal static bool HasDefaultHorizontalTextAlignment(ILabel label)
+			=> label.HorizontalTextAlignment == TextAlignment.Start;
+
+		internal static bool HasDefaultVerticalTextAlignment(ILabel label)
+			=> label.VerticalTextAlignment == TextAlignment.Start;
 	}
 }

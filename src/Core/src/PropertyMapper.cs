@@ -13,7 +13,7 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui
 {
-	public abstract class PropertyMapper : IPropertyMapper
+	public abstract class PropertyMapper : IPropertyMapper, IPropertyInitializerMapper
 	{
 		protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new(StringComparer.Ordinal);
 
@@ -74,11 +74,38 @@ namespace Microsoft.Maui
 
 		public void UpdateProperties(IElementHandler viewHandler, IElement? virtualView)
 		{
-			if (virtualView == null)
+			if (virtualView is null)
+			{
 				return;
+			}
 
 			foreach (var key in UpdateKeys)
 			{
+				UpdatePropertyCore(key, viewHandler, virtualView);
+			}
+		}
+
+		void IPropertyInitializerMapper.InitializeProperties(IElementHandler viewHandler, IElement virtualView)
+		{
+			if (viewHandler is not IPlatformPropertyDefaultsProvider { PlatformPropertyDefaults: { } platformPropertyDefaults })
+			{
+				UpdateProperties(viewHandler, virtualView);
+				return;
+			}
+
+			if (virtualView is null)
+			{
+				return;
+			}
+
+			foreach (var key in UpdateKeys)
+			{
+				// If the property has a default value, we don't need to map it to platform view
+				if (platformPropertyDefaults.GetProperty(key) is { } hasDefaultValue && hasDefaultValue(virtualView))
+				{
+					continue;
+				}
+
 				UpdatePropertyCore(key, viewHandler, virtualView);
 			}
 		}
