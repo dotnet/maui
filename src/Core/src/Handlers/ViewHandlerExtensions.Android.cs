@@ -95,18 +95,6 @@ namespace Microsoft.Maui
 			var measuredWidth = (int)(packed >> 32);
 			var measuredHeight = (int)(packed & 0xffffffffL);
 
-			// The way we arrange content aims to match coordinates instead of size,
-			// which may lead to rounding the platform view size to shrink by 1 px.
-			// Android's TextView has a strange way of rendering the text when
-			// the space is not enough - even by 1px - which causes unwanted text truncation.
-			// Adding a small px to the desired size ensures that even when round happens during arrange
-			// the text will not be truncated. We're checking handler's platform view here
-			// because `ToPlatform` may return the `WrapperView`.
-			if (viewHandler.PlatformView is TextView)
-			{
-				measuredWidth += 1;
-			}
-
 			// Convert back to xplat sizes for the return value
 			return context.FromPixels(measuredWidth, measuredHeight);
 		}
