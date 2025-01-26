@@ -135,12 +135,15 @@ namespace Microsoft.Maui.Controls
 			if (newValue is bool canMaximize)
 			{
 #if WINDOWS
-				var nativeWindow = (UI.Xaml.Window)titleBar.Window?.Handler!.PlatformView!;
-				var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow);
-				var windowId = UI.Win32Interop.GetWindowIdFromWindow(hWnd);
-				var appWindow = UI.Windowing.AppWindow.GetFromWindowId(windowId);
-				var presenter = (UI.Windowing.OverlappedPresenter)appWindow.Presenter;
-				presenter.IsMaximizable = canMaximize;
+				if (titleBar.Window?.Handler?.PlatformView is UI.Xaml.Window platformWindow)
+				{
+					var appWindow = platformWindow.GetAppWindow();
+
+					if (appWindow?.Presenter is UI.Windowing.OverlappedPresenter presenter)
+					{
+						presenter.IsMaximizable = canMaximize;
+					}
+				}
 #endif
 			}
 		}
