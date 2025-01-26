@@ -86,6 +86,11 @@
                     Text="Show TitleBar"
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
+
+            <HorizontalStackLayout>
+                <CheckBox IsChecked="{Binding CanMaximize, Mode=TwoWay}"/>
+                <Label Text="Can Maximize Window" VerticalOptions="Center"/>
+            </HorizontalStackLayout>
         </VerticalStackLayout>
   
         <VerticalStackLayout

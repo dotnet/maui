@@ -71,84 +71,104 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ForegroundColorProperty = BindableProperty.Create(nameof(ForegroundColor),
 			typeof(Color), typeof(TitleBar));
 
+		/// <summary>Bindable property for <see cref="CanMaximize"/>.</summary>
+		public static readonly BindableProperty CanMaximizeProperty = BindableProperty.Create(nameof(CanMaximize),
+			typeof(bool), typeof(TitleBar), defaultValue: true, propertyChanged: OnCanMaximizeChanged);
+
 		static void OnLeadingChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titlebar = (TitleBar)bindable;
+			var titleBar = (TitleBar)bindable;
 			if (newValue is null)
 			{
-				titlebar.ApplyVisibleState(LeadingHiddenState);
+				titleBar.ApplyVisibleState(LeadingHiddenState);
 			}
 			else
 			{
-				titlebar.ApplyVisibleState(LeadingVisibleState);
+				titleBar.ApplyVisibleState(LeadingVisibleState);
 				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
 		static void OnIconChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titlebar = (TitleBar)bindable;
+			var titleBar = (TitleBar)bindable;
 			var imageSource = newValue as ImageSource;
 			if (imageSource is null || imageSource.IsEmpty)
 			{
-				titlebar.ApplyVisibleState(IconHiddenState);
+				titleBar.ApplyVisibleState(IconHiddenState);
 			}
 			else
 			{
-				titlebar.ApplyVisibleState(IconVisibleState);
+				titleBar.ApplyVisibleState(IconVisibleState);
 			}
 		}
 
 		static void OnTitleChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titlebar = (TitleBar)bindable;
+			var titleBar = (TitleBar)bindable;
 			if (newValue is null)
 			{
-				titlebar.ApplyVisibleState(TitleHiddenState);
+				titleBar.ApplyVisibleState(TitleHiddenState);
 			}
 			else
 			{
-				titlebar.ApplyVisibleState(TitleVisibleState);
+				titleBar.ApplyVisibleState(TitleVisibleState);
 			}
 		}
 
 		static void OnSubtitleChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titlebar = (TitleBar)bindable;
+			var titleBar = (TitleBar)bindable;
 			if (newValue is null)
 			{
-				titlebar.ApplyVisibleState(SubtitleHiddenState);
+				titleBar.ApplyVisibleState(SubtitleHiddenState);
 			}
 			else
 			{
-				titlebar.ApplyVisibleState(SubtitleVisibleState);
+				titleBar.ApplyVisibleState(SubtitleVisibleState);
+			}
+		}
+
+		static void OnCanMaximizeChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titleBar = (TitleBar)bindable;
+			if (newValue is bool canMaximize)
+			{
+#if WINDOWS
+				var nativeWindow = (UI.Xaml.Window)titleBar.Window?.Handler!.PlatformView!;
+				var hWnd = WinRT.Interop.WindowNative.GetWindowHandle(nativeWindow);
+				var windowId = UI.Win32Interop.GetWindowIdFromWindow(hWnd);
+				var appWindow = UI.Windowing.AppWindow.GetFromWindowId(windowId);
+				var presenter = (UI.Windowing.OverlappedPresenter)appWindow.Presenter;
+				presenter.IsMaximizable = canMaximize;
+#endif
 			}
 		}
 
 		static void OnContentChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titlebar = (TitleBar)bindable;
+			var titleBar = (TitleBar)bindable;
 			if (newValue is null)
 			{
-				titlebar.ApplyVisibleState(ContentHiddenState);
+				titleBar.ApplyVisibleState(ContentHiddenState);
 			}
 			else
 			{
-				titlebar.ApplyVisibleState(ContentVisibleState);
+				titleBar.ApplyVisibleState(ContentVisibleState);
 				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
 		static void OnTrailingContentChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var titlebar = (TitleBar)bindable;
+			var titleBar = (TitleBar)bindable;
 			if (newValue is null)
 			{
-				titlebar.ApplyVisibleState(TrailingHiddenState);
+				titleBar.ApplyVisibleState(TrailingHiddenState);
 			}
 			else
 			{
-				titlebar.ApplyVisibleState(TrailingVisibleState);
+				titleBar.ApplyVisibleState(TrailingVisibleState);
 				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
@@ -234,6 +254,13 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (Color)GetValue(ForegroundColorProperty); }
 			set { SetValue(ForegroundColorProperty, value); }
+		}
+
+		/// <summary>Gets or sets if the maximize button of the window is visible or not.</summary>
+		public bool CanMaximize
+		{
+			get { return (bool)GetValue(CanMaximizeProperty); }
+			set { SetValue(CanMaximizeProperty, value); }
 		}
 
 		/// <inheritdoc/>
