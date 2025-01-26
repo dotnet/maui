@@ -10,7 +10,7 @@
 
     <Grid IgnoreSafeArea="True"
           RowDefinitions="Auto,*"
-          ColumnDefinitions="*,*">
+        ColumnDefinitions="*,*">
         <VerticalStackLayout IgnoreSafeArea="True"
             Spacing="16"
             Margin="16"
@@ -30,20 +30,20 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
-            <Entry
+            <Entry 
                 x:Name="TitleTextBox"
                 Placeholder="Title Text"
                 HorizontalOptions="Start"
                 Text="{Binding Title, Mode=TwoWay}"
                 WidthRequest="120" />
-            <Entry
+            <Entry 
                 x:Name="SubtitleTextBox"
                 Placeholder="Subtitle Text"
                 HorizontalOptions="Start"
                 Text="{Binding Subtitle, Mode=TwoWay}"
                 WidthRequest="120" />
           
-            <HorizontalStackLayout>
+            <HorizontalStackLayout >
                 <CheckBox
                     x:Name="LeadingContentCheckBox"
                     IsChecked="False"
@@ -53,7 +53,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
   
-            <HorizontalStackLayout>
+            <HorizontalStackLayout >
                 <CheckBox 
                     x:Name="ContentCheckBox"
                     IsChecked="False"
@@ -63,7 +63,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout>
+            <HorizontalStackLayout >
                 <CheckBox 
                     x:Name="TrailingContentCheckBox"
                     IsChecked="False"
@@ -73,7 +73,7 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
 
-            <HorizontalStackLayout>
+            <HorizontalStackLayout >
                 <CheckBox
                     x:Name="TallModeCheckBox"
                     IsChecked="False"
@@ -83,21 +83,16 @@
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
   
-            <HorizontalStackLayout>
+            <HorizontalStackLayout >
                 <CheckBox
                     IsChecked="{Binding ShowTitleBar, Mode=TwoWay}"/>
                 <Label
                     Text="Show TitleBar"
                     VerticalOptions="Center"/>
             </HorizontalStackLayout>
-
-            <HorizontalStackLayout>
-                <CheckBox IsChecked="{Binding CanMaximize, Mode=TwoWay}"/>
-                <Label Text="Can Maximize Window" VerticalOptions="Center"/>
-            </HorizontalStackLayout>
         </VerticalStackLayout>
   
-        <VerticalStackLayout
+        <VerticalStackLayout  
             Spacing="16"
             Margin="16"
             Grid.Column="1">
