@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>$(_MauiDotNetTfm)</TargetFrameworks>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <GenerateMSBuildEditorConfigFile>False</GenerateMSBuildEditorConfigFile>
+    <SingleProject>true</SingleProject>
+    <ImplicitUsings>true</ImplicitUsings>
+    <RootNamespace>Microsoft.Maui.TestCases.CollectionViewTests</RootNamespace>
+	</PropertyGroup>
+
+  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
+    <!--<ProjectReference Condition="'$(IncludeCompatibilityProjects)' == 'true'" Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />-->
+    <ProjectReference Include="..\..\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\Foldable\src\Controls.Foldable.csproj" />
+    <ProjectReference Include="..\..\..\Graphics\src\Graphics\Graphics.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
+    <PackageReference Include="Microsoft.Maui.Controls.Foldable" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
+  </ItemGroup>
+
+	 <PropertyGroup>
+    <DefineConstants Condition=" '$(ExtraDefineConstants)' != '' ">$(DefineConstants);$(ExtraDefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(_MauiTargetPlatformIsAndroid)' == 'True' ">
+    <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(_MauiTargetPlatformIsiOS)' == 'True' ">
+    <DefineConstants>$(DefineConstants);IOS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(_MauiTargetPlatformIsMacCatalyst)' == 'True' ">
+    <DefineConstants>$(DefineConstants);MACCATALYST</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'True' ">
+    <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <MauiImage Include="*\Resources\Images\**" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+  x:Class="Microsoft.Maui.TestCases.CollectionViewTests.Template.TemplateTestPage"
+  xmlns:test="Microsoft.Maui.TestCases.CollectionViewTests.Template"
+  x:DataType="test:TemplateTestViewModel"
+  Title="TemplateTestPage">
+  <CollectionView x:Name="collectionView" ItemsSource="{Binding Monkeys}">
+    <CollectionView.ItemTemplate>
+      <DataTemplate x:DataType="test:Monkey">
+        <Grid RowDefinitions="*,*">
+          <Label Text="{Binding Name}" Grid.Row="0" FontSize="18" />
+          <Label Text="{Binding Location}" Grid.Row="0" FontSize="14" />
+        </Grid>
+      </DataTemplate>
+    </CollectionView.ItemTemplate>
+  </CollectionView>
+</ContentPage>

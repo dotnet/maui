@@ -153,8 +153,27 @@ namespace Maui.Controls.Sample
 				// Issues tests are disabled with NativeAOT (see https://github.com/dotnet/maui/issues/20553)
 				_issues = new();
 #else
-				_issues =
-					(from type in assembly.GetTypes()
+				_issues = GatherIssueTestCases([assembly]);
+				_issues.Add(new IssueModel
+				{
+					 IssueTracker = IssueTracker.None,
+					 Name = "CollectionViewTests",
+					 Description = "CollectionView Tests from the Controls.TestCases.Shared.CollectionViewTests project",
+					 IsInternetRequired = true,
+					 Action = () => Navigation.PushAsync(new Microsoft.Maui.TestCases.CollectionViewTests.CollectionViewTestsPage())
+				});
+#endif
+
+				VerifyNoDuplicates();
+				FilterIssues();
+			}
+
+			List<IssueModel> GatherIssueTestCases(Assembly[] assemblies)
+			{
+				var results = new List<IssueModel>();
+				foreach (Assembly assembly in assemblies)
+				{
+					results.AddRange((from type in assembly.GetTypes()
 					 let attribute = type.GetCustomAttribute<IssueAttribute>()
 					 where attribute != null
 					 select new IssueModel
@@ -166,11 +185,10 @@ namespace Maui.Controls.Sample
 						 Description = attribute.Description,
 						 IsInternetRequired = attribute.IsInternetRequired,
 						 Action = ActivatePageAndNavigate(attribute, type)
-					 }).ToList();
-#endif
+					 }).ToList());
+				}
 
-				VerifyNoDuplicates();
-				FilterIssues();
+				return results;
 			}
 
 			public void FilterTracker(IssueTracker tracker)
