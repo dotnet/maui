@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 			if (!(obj is GradientStop dest))
 				return false;
 
-			return Color == dest.Color && global::System.Math.Abs(Offset - dest.Offset) < 0.00001;
+			return Color.Equals(dest.Color) && global::System.Math.Abs(Offset - dest.Offset) < 0.00001;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/GradientStop.xml" path="//Member[@MemberName='GetHashCode']/Docs/*" />

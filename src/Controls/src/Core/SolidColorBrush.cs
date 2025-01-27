@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 			if (!(obj is SolidColorBrush dest))
 				return false;
 
-			return Color == dest.Color;
+			return Color.Equals(dest.Color);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SolidColorBrush.xml" path="//Member[@MemberName='GetHashCode']/Docs/*" />
