@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Platform
 
 		static char GetDecimalSeparator()
 		{
-			if (!(NumberFormat.Instance is DecimalFormat format))
+			if (!(NumberFormat.Instance is DecimalFormat))
 				return '.';
 
 			string symbol = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
