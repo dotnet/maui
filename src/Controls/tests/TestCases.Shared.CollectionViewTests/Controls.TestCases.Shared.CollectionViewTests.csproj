@@ -1,11 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>$(_MauiDotNetTfm)</TargetFrameworks>
+		<TargetFrameworks>$(MauiSamplePlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(UseMaui)' != 'true' and '$(IncludePreviousTfms)' == 'true' ">$(TargetFrameworks);$(MauiSamplePreviousPlatforms)</TargetFrameworks>
+    <SingleProject>true</SingleProject>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Disable multi-RID builds to workaround a parallel build issue -->
+    <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <GenerateMSBuildEditorConfigFile>False</GenerateMSBuildEditorConfigFile>
-    <SingleProject>true</SingleProject>
-    <ImplicitUsings>true</ImplicitUsings>
     <RootNamespace>Microsoft.Maui.TestCases.CollectionViewTests</RootNamespace>
 	</PropertyGroup>
 
