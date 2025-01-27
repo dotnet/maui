@@ -113,13 +113,6 @@ Task("uitest")
 		ExecuteUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath);
 	});
 
-Task("cg-uitest")
-	.IsDependentOn("dotnet-buildtasks")
-	.Does(() =>
-	{
-		ExecuteCGLegacyUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath);
-	});
-
 RunTarget(TARGET);
 
 void ExecuteBuild(string project, string device, string binDir, string config, string rid, string tfm, string toolPath)
@@ -293,54 +286,6 @@ void ExecuteBuildUITestApp(string appProject, string device, string binDir, stri
 	});
 
 	Information("UI Test app build completed.");
-}
-
-void ExecuteCGLegacyUITests(string project, string appProject, string device, string resultsDir, string config, string tfm, string rid, string iosVersion, string toolPath)
-{
-	Information("Starting Compatibility Gallery UI Tests...");
-
-	CleanDirectories(resultsDir);
-
-	Information("Starting Compatibility Gallery UI Tests...");
-	
-	var testApp = GetTestApplications(appProject, device, config, tfm, rid).FirstOrDefault();
-
-	Information($"Testing Device: {device}");
-	Information($"Testing App Project: {appProject}");
-	Information($"Testing App: {testApp}");
-	Information($"Results Directory: {resultsDir}");
-
-	InstallIpa(testApp, "com.microsoft.mauicompatibilitygallery", device, $"{resultsDir}/ios", iosVersion, toolPath);
-
-	// For non-CI builds we assume that this is configured correctly on your machine
-	if (IsCIBuild())
-	{
-		// Install IDB (and prerequisites)
-		StartProcess("brew", "tap facebook/fb");
-		StartProcess("brew", "install idb-companion");
-		StartProcess("pip3", "install --user fb-idb");
-
-		// Create a temporary script file to hold the inline Bash script
-		var makeSymLinkScript = "./temp_script.sh";
-		// Below is an attempt to somewhat dynamically determine the path to idb and make a symlink to /usr/local/bin this is needed in order for Xamarin.UITest to find it
-		System.IO.File.AppendAllLines(makeSymLinkScript, new[] { "sudo ln -s $(find /Users/$(whoami)/Library/Python/?.*/bin -name idb | head -1) /usr/local/bin" });
-
-		StartProcess("bash", makeSymLinkScript);
-		System.IO.File.Delete(makeSymLinkScript);
-	}
-
-	//set env var for the app path for Xamarin.UITest setup
-	SetEnvironmentVariable("iOS_APP", $"{testApp}");
-
-	var resultName = $"{System.IO.Path.GetFileNameWithoutExtension(project)}-{config}-{DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss")}";
-	Information("Run UITests project {0}", resultName);
-	RunTestWithLocalDotNet(
-		project,
-		config: config,
-		pathDotnet: toolPath,
-		noBuild: false,
-		resultsFileNameWithoutExtension: resultName,
-		filter: Argument("filter", ""));
 }
 
 // Helper methods

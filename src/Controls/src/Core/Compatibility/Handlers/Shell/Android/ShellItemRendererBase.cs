@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				case ShellNavigationSource.Pop:
 					if (_fragmentMap.TryGetValue(page, out var frag))
 					{
-						if (frag.Fragment.IsAdded && !isForCurrentTab)
+						if (ChildFragmentManager.Contains(frag.Fragment) && !isForCurrentTab)
 							RemoveFragment(frag.Fragment);
 						_fragmentMap.Remove(page);
 					}
@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				case ShellNavigationSource.Remove:
 					if (_fragmentMap.TryGetValue(page, out var removeFragment))
 					{
-						if (removeFragment.Fragment.IsAdded && !isForCurrentTab && removeFragment != _currentFragment)
+						if (ChildFragmentManager.Contains(removeFragment.Fragment) && !isForCurrentTab && removeFragment != _currentFragment)
 							RemoveFragment(removeFragment.Fragment);
 						_fragmentMap.Remove(page);
 					}
@@ -241,21 +241,29 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (_currentFragment != null)
 						t.HideEx(_currentFragment.Fragment);
 
-					if (!target.Fragment.IsAdded)
+					if (!ChildFragmentManager.Contains(target.Fragment))
 						t.AddEx(GetNavigationTarget().Id, target.Fragment);
 					t.ShowEx(target.Fragment);
 					break;
 
+				case ShellNavigationSource.ShellSectionChanged:
+					if (_currentFragment != null)
+						t.HideEx(_currentFragment.Fragment);
+
+					if (!ChildFragmentManager.Contains(target.Fragment))
+						t.AddEx(GetNavigationTarget().Id, target.Fragment);
+
+					t.ShowEx(target.Fragment);
+					break;
 				case ShellNavigationSource.Pop:
 				case ShellNavigationSource.PopToRoot:
-				case ShellNavigationSource.ShellSectionChanged:
 				case ShellNavigationSource.Remove:
 					trackFragment = _currentFragment;
 
 					if (_currentFragment != null)
 						t.RemoveEx(_currentFragment.Fragment);
 
-					if (!target.Fragment.IsAdded)
+					if (!ChildFragmentManager.Contains(target.Fragment))
 						t.AddEx(GetNavigationTarget().Id, target.Fragment);
 					t.ShowEx(target.Fragment);
 					break;
