@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WIconElement = Microsoft.UI.Xaml.Controls.IconElement;
 
@@ -110,7 +111,7 @@ namespace Microsoft.Maui.Platform
 
 		public WBrush? Background
 		{
-			get => IsSelected ? SelectedBackground : UnselectedBackground;
+			get => (IsSelected ? SelectedBackground : UnselectedBackground) ?? new SolidColorBrush(Microsoft.UI.Colors.Transparent);
 		}
 
 		public object? Data
