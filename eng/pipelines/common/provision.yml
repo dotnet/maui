@@ -20,15 +20,14 @@ parameters:
 
 steps:
   # Prepare macOS
-  - ${{ if or(eq(variables['System.TeamProject'], 'devdiv'), ne(parameters.poolName, 'Azure Pipelines')) }}:
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: agent-cleanser/v1.yml@yaml-templates
       parameters:
-        condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
         UninstallMono: false
-        UninstallXamarinMac: false
+        UninstallXamarinMac: true
         CleanseAgentToolsDotNet: true
         SelfHealPowerShell: false
-        AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
+        
   # Provision Xcode
   - ${{ if ne(parameters.skipXcode, 'true') }}:
     - ${{ if ne(parameters.skipProvisionator, true) }}:
