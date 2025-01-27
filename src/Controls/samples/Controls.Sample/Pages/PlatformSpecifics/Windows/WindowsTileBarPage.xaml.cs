@@ -25,6 +25,7 @@ namespace Maui.Controls.Sample.Pages
 					Title="{Binding Title}"
 					Subtitle="{Binding Subtitle}"
 					IsVisible="{Binding ShowTitleBar}"
+					CanMinimize="{Binding CanMinimize}"
 					CanMaximize="{Binding CanMaximize}"/>
 				""";
 

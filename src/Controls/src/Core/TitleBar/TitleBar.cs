@@ -71,6 +71,10 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ForegroundColorProperty = BindableProperty.Create(nameof(ForegroundColor),
 			typeof(Color), typeof(TitleBar));
 
+		/// <summary>Bindable property for <see cref="CanMinimize"/>.</summary>
+		public static readonly BindableProperty CanMinimizeProperty = BindableProperty.Create(nameof(CanMinimize),
+			typeof(bool), typeof(TitleBar), defaultValue: true, propertyChanged: OnCanMinimizeChanged);
+
 		/// <summary>Bindable property for <see cref="CanMaximize"/>.</summary>
 		public static readonly BindableProperty CanMaximizeProperty = BindableProperty.Create(nameof(CanMaximize),
 			typeof(bool), typeof(TitleBar), defaultValue: true, propertyChanged: OnCanMaximizeChanged);
@@ -126,6 +130,25 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				titleBar.ApplyVisibleState(SubtitleVisibleState);
+			}
+		}
+
+		static void OnCanMinimizeChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var titleBar = (TitleBar)bindable;
+			if (newValue is bool canMinimize)
+			{
+#if WINDOWS
+				if (titleBar.Window?.Handler?.PlatformView is UI.Xaml.Window platformWindow)
+				{
+					var appWindow = platformWindow.GetAppWindow();
+
+					if (appWindow?.Presenter is UI.Windowing.OverlappedPresenter presenter)
+					{
+						presenter.IsMinimizable = canMinimize;
+					}
+				}
+#endif
 			}
 		}
 
@@ -258,6 +281,13 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (Color)GetValue(ForegroundColorProperty); }
 			set { SetValue(ForegroundColorProperty, value); }
+		}
+
+		/// <summary>Gets or sets if the minimize button of the window is visible or not.</summary>
+		public bool CanMinimize
+		{
+			get { return (bool)GetValue(CanMinimizeProperty); }
+			set { SetValue(CanMinimizeProperty, value); }
 		}
 
 		/// <summary>Gets or sets if the maximize button of the window is visible or not.</summary>
