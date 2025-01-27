@@ -9,15 +9,21 @@ using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
+	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents, ICrossPlatformLayoutBacking, IPlatformMeasureInvalidationController
 	{
 		bool _invalidateParentWhenMovedToWindow;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
-		internal ICrossPlatformLayout? CrossPlatformLayout
+		ICrossPlatformLayout? ICrossPlatformLayoutBacking.CrossPlatformLayout
 		{
 			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
 			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);
+		}
+		
+		internal ICrossPlatformLayout? CrossPlatformLayout
+		{
+			get => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout;
+			set => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout = value;
 		}
 
 		double _lastMeasureHeight = double.NaN;
@@ -96,12 +102,6 @@ namespace Microsoft.Maui.Platform
 				if (_shadowLayer != null)
 					Layer.InsertSublayer(_shadowLayer, 0);
 			}
-		}
-
-		public override void SetNeedsLayout()
-		{
-			InvalidateConstraintsCache();
-			base.SetNeedsLayout();
 		}
 
 		public override void LayoutSubviews()
@@ -241,6 +241,12 @@ namespace Microsoft.Maui.Platform
 
 			CacheMeasureConstraints(widthConstraint, heightConstraint);
 			return returnSize;
+		}
+
+		public override void SetNeedsLayout()
+		{
+			InvalidateConstraintsCache();
+			base.SetNeedsLayout();
 		}
 
 		partial void ClipChanged()

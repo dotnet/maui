@@ -9,7 +9,8 @@ public class BindingTransformerTests
 	public void WrapMemberAccessInConditionalAccessWhenSourceTypeIsReferenceType()
 	{
 		var binding = new BindingInvocationDescription(
-			Location: new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+			InterceptableLocation: new InterceptableLocationRecord(1, "serializedData"),
+			SimpleLocation: new SimpleLocation(@"Path\To\Program.cs", 3, 7),
 			SourceType: new TypeDescription("MyType", IsValueType: false),
 			PropertyType: new TypeDescription("MyType2"),
 			Path: new EquatableArray<IPathPart>([new MemberAccess("A")]),
@@ -28,7 +29,8 @@ public class BindingTransformerTests
 	public void WrapMemberAccessInConditionalAccessWhePreviousPartTypeIsReferenceType()
 	{
 		var binding = new BindingInvocationDescription(
-			Location: new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+			InterceptableLocation: new InterceptableLocationRecord(1, "serializedData"),
+			SimpleLocation: new SimpleLocation(@"Path\To\Program.cs", 3, 7),
 			SourceType: new TypeDescription("MyType", IsValueType: true),
 			PropertyType: new TypeDescription("MyType2"),
 			Path: new EquatableArray<IPathPart>(
@@ -55,7 +57,8 @@ public class BindingTransformerTests
 	public void DoNotWrapMemberAccessInConditionalAccessWhePreviousPartTypeIsValueType()
 	{
 		var binding = new BindingInvocationDescription(
-			Location: new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+			InterceptableLocation: new InterceptableLocationRecord(1, "serializedData"),
+			SimpleLocation: new SimpleLocation(@"Path\To\Program.cs", 3, 7),
 			SourceType: new TypeDescription("MyType", IsValueType: false),
 			PropertyType: new TypeDescription("MyType2"),
 			Path: new EquatableArray<IPathPart>(
@@ -82,7 +85,8 @@ public class BindingTransformerTests
 	public void WrapAccessInConditionalAccessWhenAllPartsAreReferenceTypes()
 	{
 		var binding = new BindingInvocationDescription(
-			Location: new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+			InterceptableLocation: new InterceptableLocationRecord(1, "serializedData"),
+			SimpleLocation: new SimpleLocation(@"Path\To\Program.cs", 3, 7),
 			SourceType: new TypeDescription("MyType"),
 			PropertyType: new TypeDescription("MyType2"),
 			Path: new EquatableArray<IPathPart>(
@@ -111,7 +115,8 @@ public class BindingTransformerTests
 	public void DoNotWrapAccessInConditionalAccessWhenNoPartsAreReferenceTypes()
 	{
 		var binding = new BindingInvocationDescription(
-			Location: new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
+			InterceptableLocation: new InterceptableLocationRecord(1, "serializedData"),
+			SimpleLocation: new SimpleLocation(@"Path\To\Program.cs", 3, 7),
 			SourceType: new TypeDescription("MyType", IsValueType: true),
 			PropertyType: new TypeDescription("MyType2"),
 			Path: new EquatableArray<IPathPart>(
