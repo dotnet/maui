@@ -4,7 +4,7 @@
 
 var ext = IsRunningOnWindows() ? ".exe" : "";
 var dotnetPath = $"./.dotnet/dotnet{ext}";
-string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "DEBUG"));
+string configuration = GetBuildVariable("configuration", GetBuildVariable("BUILD_CONFIGURATION", "RELEASE"));
 var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var vsVersion = GetBuildVariable("VS", "");
 string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
