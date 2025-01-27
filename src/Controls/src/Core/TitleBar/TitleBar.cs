@@ -142,6 +142,7 @@ namespace Microsoft.Maui.Controls
 					if (appWindow?.Presenter is UI.Windowing.OverlappedPresenter presenter)
 					{
 						presenter.IsMaximizable = canMaximize;
+						presenter.IsResizable = !canMaximize;
 					}
 				}
 #endif
