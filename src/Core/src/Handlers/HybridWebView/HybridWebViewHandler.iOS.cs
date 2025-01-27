@@ -92,11 +92,11 @@ namespace Microsoft.Maui.Handlers
 			platformView.LoadRequest(request);
 		}
 
-		protected override void DisconnectHandler(WKWebView platformView)
+#pragma warning disable CA1822
+		void Disconnect(WKWebView platformView)
+#pragma warning restore CA1822
 		{
 			platformView.Configuration.UserContentController.RemoveScriptMessageHandler(ScriptMessageHandlerName);
-
-			base.DisconnectHandler(platformView);
 		}
 
 

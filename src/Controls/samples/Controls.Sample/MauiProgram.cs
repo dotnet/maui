@@ -34,6 +34,11 @@ namespace Maui.Controls.Sample
 
 	public static class MauiProgram
 	{
+		static MauiProgram()
+		{
+			AppContext.SetSwitch("HybridWebView.InvokeJavaScriptThrowsExceptions", isEnabled: true);
+		}
+
 		static bool UseMauiGraphicsSkia = false;
 
 		static bool UseCollectionView2 = true;

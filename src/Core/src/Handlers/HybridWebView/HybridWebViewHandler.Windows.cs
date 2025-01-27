@@ -69,12 +69,6 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		protected override void DisconnectHandler(WebView2 platformView)
-		{
-			Disconnect(platformView);
-			base.DisconnectHandler(platformView);
-		}
-
 		internal static void EvaluateJavaScript(IHybridWebViewHandler handler, IHybridWebView hybridWebView, EvaluateJavaScriptAsyncRequest request)
 		{
 			if (handler.PlatformView is not MauiHybridWebView hybridPlatformWebView)
@@ -175,7 +169,7 @@ namespace Microsoft.Maui.Handlers
 
 			// 3.b. Otherwise, return a 404
 			var ras404 = new InMemoryRandomAccessStream();
-			using (var writer = new StreamWriter(ras404.AsStreamForWrite()))
+			using (var writer = new StreamWriter(ras404.AsStreamForWrite(), leaveOpen: true))
 			{
 				writer.WriteLine("Resource not found (404)");
 			}

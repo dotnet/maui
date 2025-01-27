@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="HybridWebView.js"></script>
+    <script>
+        async function callDotNet() {
+
+            // var param1 = JSON.stringify({first:'This', second:'taht'});
+
+            // var req = {
+            //     MethodName: 'GetName',
+            //     ParamValues: [ param1 ]
+            // };
+
+            // var args = JSON.stringify(req);
+
+            // HybridWebView.SendRawMessage(args);
+
+            var object = await HybridWebView.InvokeDotNet('GetName', [{first:'This', second:'taht'}]);
+            document.getElementById('namehere').innerText = JSON.stringify(object);
+        }
+
+        function dotnetCallback(object) {
+            document.getElementById('namehere').innerText = object;
+        }
+    </script>
+</head>
+<body>
+    <h1>Hybrid sample!</h1>
+    <p>Text here!</p>
+    <button onclick="callDotNet()">Click me!</button>
+    <p id="namehere">loading...</p>
+</body>
+</html>

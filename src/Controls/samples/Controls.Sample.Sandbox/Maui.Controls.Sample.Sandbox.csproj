@@ -48,6 +48,8 @@
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#FFFFFF" BaseSize="168,208" />
     <MauiFont Include="Resources\Fonts\*" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <MauiAsset Include="wwwroot\**" />
+    <MauiAsset Include="..\..\..\Core\src\Handlers\HybridWebView\HybridWebView.js" Link="wwwroot\HybridWebView.js" />
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />

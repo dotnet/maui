@@ -2,9 +2,12 @@
 
 public static class MauiProgram
 {
-	public static MauiApp CreateMauiApp() =>
-		MauiApp
-			.CreateBuilder()
+	public static MauiApp CreateMauiApp()
+	{
+		var builder = MauiApp
+			.CreateBuilder();
+		builder.Services.AddHybridWebViewDeveloperTools();
+		return builder
 #if __ANDROID__ || __IOS__
 			.UseMauiMaps()
 #endif
@@ -23,4 +26,5 @@ public static class MauiProgram
 				fonts.AddFont("SegoeUI-Bold-Italic.ttf", "Segoe UI Bold Italic");
 			})
 			.Build();
+	}
 }
