@@ -1834,7 +1834,7 @@ namespace UITest.Appium
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="enableSystemAnimations">Enable/disable the system animations.</param>
-		/// <exception cref="InvalidOperationException">ToggleSystemAnimations is only supported on <see cref="AppiumAndroidApp"/> nad <see cref="AppiumCatalystApp"/>.</exception>
+		/// <exception cref="InvalidOperationException">ToggleSystemAnimations is only supported on <see cref="AppiumAndroidApp"/> and <see cref="AppiumCatalystApp"/>.</exception>
 		public static void ToggleSystemAnimations(this IApp app, bool enableSystemAnimations)
 		{
 			if (app is not AppiumAndroidApp && app is not AppiumCatalystApp)
