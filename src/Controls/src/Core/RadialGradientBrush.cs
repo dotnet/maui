@@ -1,4 +1,5 @@
 #nullable disable
+using System.Linq;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -55,6 +56,22 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (double)GetValue(RadiusProperty);
 			set => SetValue(RadiusProperty, value);
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (!(obj is RadialGradientBrush dest))
+				return false;
+
+			return
+				Center.Equals(dest.Center) &&
+				Radius.Equals(dest.Radius) &&
+				GradientStops.SequenceEqual(dest.GradientStops);
+		}
+
+		public override int GetHashCode()
+		{
+			return -1234567890 + Center.GetHashCode() + Radius.GetHashCode() + GradientStops.GetHashCode();
 		}
 	}
 }

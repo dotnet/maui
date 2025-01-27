@@ -1,6 +1,9 @@
 #nullable enable
 Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.Style?
+override Microsoft.Maui.Controls.GradientBrush.GetHashCode() -> int
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Controls.LinearGradientBrush.GetHashCode() -> int
+override Microsoft.Maui.Controls.RadialGradientBrush.GetHashCode() -> int
 ~abstract Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.CreateController(TItemsView newElement, UIKit.UICollectionViewLayout layout) -> Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>
 ~abstract Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.SelectLayout() -> UIKit.UICollectionViewLayout
 *REMOVED*~Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.ShellScrollViewTracker(Microsoft.Maui.IPlatformViewHandler renderer) -> void
@@ -64,10 +67,10 @@ override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.G
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
 ~Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource<T>(System.Uri value) -> void
-
 ~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.RequireServiceAttribute(System.Type[] serviceTypes) -> void
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.ServiceTypes.get -> System.Type[]
+~override Microsoft.Maui.Controls.GradientBrush.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.CreateDelegator() -> UIKit.UICollectionViewDelegateFlowLayout
 ~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.CreateItemsViewSource() -> Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource
 ~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.DetermineCellReuseId(Foundation.NSIndexPath indexPath) -> string
@@ -113,6 +116,8 @@ Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) ->
 ~override Microsoft.Maui.Controls.Handlers.Items2.SelectableItemsViewDelegator2<TItemsView, TViewController>.ItemSelected(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.GetViewForSupplementaryElement(UIKit.UICollectionView collectionView, Foundation.NSString elementKind, Foundation.NSIndexPath indexPath) -> UIKit.UICollectionReusableView
 ~override Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.PreferredLayoutAttributesFittingAttributes(UIKit.UICollectionViewLayoutAttributes layoutAttributes) -> UIKit.UICollectionViewLayoutAttributes
+~override Microsoft.Maui.Controls.LinearGradientBrush.Equals(object obj) -> bool
+~override Microsoft.Maui.Controls.RadialGradientBrush.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.ShellContent.OnPropertyChanged(string propertyName = null) -> void
 *REMOVED*~static Microsoft.Maui.Controls.Application.ControlsApplicationMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IApplication, Microsoft.Maui.Handlers.ApplicationHandler>
 ~static Microsoft.Maui.Controls.Brush.DarkGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
