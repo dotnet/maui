@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,20 +18,36 @@ public class Bugzilla42329 : _IssuesUITest
 
 	public override string Issue => "ListView in Frame and FormsAppCompatActivity Memory Leak";
 
-	// TODO From Xamarin.UITest migration: test fails, so disabled for now
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// public void MemoryLeakB42329()
-	// {
-	// 	App.WaitForElement(Page1Title);
-	// 	App.Tap(LabelPage1);
-	// 	App.WaitForElement(Page1Title);
-	// 	App.Tap(Page2Title);
-	// 	App.WaitForElement(LabelPage2);
-	// 	App.Tap(LabelPage2);
-	// 	App.WaitForElement(Page2Title);
-	// 	App.Tap(Page3Title);
-	// 	App.WaitForElement("Destructor called");
-	// }
-}
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public async Task MemoryLeakB42329()
+	{
+		App.WaitForElement(LabelPage1);
+		App.Tap(LabelPage1);
+
+		await WaitForFlyoutAnimation();
+		App.WaitForElement(Page2Title);
+		App.Tap(Page2Title);
+
+		await WaitForFlyoutAnimation();
+		App.WaitForElement(LabelPage2);
+		App.Tap(LabelPage2);
+
+		await WaitForFlyoutAnimation();
+		App.WaitForElement(Page3Title);
+		App.Tap(Page3Title);
+
+#if ANDROID || WINDOWS //In random scenario, the destructor called upon the fourth navigation. So added one more navigation for Android and Windows to make this test work.
+		App.TapInFlyoutPageFlyout(Page2Title);
+		App.TapInFlyoutPageFlyout(Page3Title);
 #endif
+		App.WaitForElement("Destructor called");
+	}
+
+	static async Task WaitForFlyoutAnimation()
+	{
+		// give it time to complete flyout animation
+		// sometimes the test runner is too fast and taps on wrong coordinates
+		await Task.Delay(100);
+	}
+}

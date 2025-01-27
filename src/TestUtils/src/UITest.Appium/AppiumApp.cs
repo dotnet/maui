@@ -22,6 +22,7 @@ namespace UITest.Appium
 			_commandExecutor.AddCommandGroup(new AppiumTouchActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumTextActions());
 			_commandExecutor.AddCommandGroup(new AppiumGeneralActions());
+			_commandExecutor.AddCommandGroup(new AppiumClipboardActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumDeviceActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumVirtualKeyboardActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumPinchToZoomActions(this));
@@ -90,7 +91,8 @@ namespace UITest.Appium
 #nullable disable
 		public virtual IUIElement FindElementByText(string text)
 		{
-			return AppiumQuery.ByXPath("//*[@text='" + text + "' or @Name='" + text + "']").FindElement(this);
+			// Android (text), iOS (label), Windows (Name)
+			return AppiumQuery.ByXPath("//*[@text='" + text + "' or @label='" + text + "' or @Name='" + text + "']").FindElement(this);
 		}
 #nullable enable
 
@@ -101,7 +103,8 @@ namespace UITest.Appium
 
 		public virtual IReadOnlyCollection<IUIElement> FindElementsByText(string text)
 		{
-			return AppiumQuery.ByXPath("//*[@text='" + text + "' or @Name='" + text + "']").FindElements(this);
+      // Android (text), iOS (label), Windows (Name)
+			return AppiumQuery.ByXPath("//*[@text='" + text + "' or @label='" + text + "' or @Name='" + text + "']").FindElements(this);
 		}
 
 		public virtual IReadOnlyCollection<IUIElement> FindElements(IQuery query)

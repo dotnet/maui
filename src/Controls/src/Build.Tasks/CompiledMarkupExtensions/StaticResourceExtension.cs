@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						&& xKeyNode is ValueNode xKeyValueNode
 						&& xKeyValueNode.Value as string == keyValueNode.Value as string)
 					{
-						if (context.Variables[resourcesNode as IElementNode].VariableType.FullName == "System.String")
+						if (context.Variables[irn].VariableType.FullName == "System.String")
 						{
 							foreach (var instruction in TryConvert(irn.CollectionItems[0] as ValueNode, eNode, vardefref, module, context))
 								yield return instruction;
@@ -56,9 +56,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								&& xKeyNode2 is ValueNode xKeyValueNode2
 								&& xKeyValueNode2.Value as string == keyValueNode.Value as string)
 							{
-								if (irn2.CollectionItems.Count == 1 && irn2.CollectionItems[0] is ValueNode vn2 && vn2.Value is string)
+								if (context.Variables[irn2].VariableType.FullName == "System.String")
 								{
-									foreach (var instruction in TryConvert(vn2, eNode, vardefref, module, context))
+									foreach (var instruction in TryConvert(irn2.CollectionItems[0] as ValueNode, eNode, vardefref, module, context))
 										yield return instruction;
 									yield break;
 								}
@@ -81,9 +81,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								&& xKeyNode3 is ValueNode xKeyValueNode3
 								&& xKeyValueNode3.Value as string == keyValueNode.Value as string)
 							{
-								if (irn3.CollectionItems.Count == 1 && irn3.CollectionItems[0] is ValueNode vn3 && vn3.Value is string)
+								if (context.Variables[irn3].VariableType.FullName == "System.String")
 								{
-									foreach (var instruction in TryConvert(vn3, eNode, vardefref, module, context))
+									foreach (var instruction in TryConvert(irn3.CollectionItems[0] as ValueNode, eNode, vardefref, module, context))
 										yield return instruction;
 									yield break;
 								}
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var propertyRef = parentType.GetProperty(context.Cache, pd => pd.Name == localName, out var declaringTypeReference);
 			if (propertyRef != null)
 			{
-				var propertyType = propertyRef.PropertyType.ResolveGenericParameters(declaringTypeReference);
+				var propertyType = module.ImportReference(propertyRef.PropertyType.ResolveGenericParameters(declaringTypeReference));
 
 				foreach (var instruction in stringResourceNode.PushConvertedValue(
 						context,

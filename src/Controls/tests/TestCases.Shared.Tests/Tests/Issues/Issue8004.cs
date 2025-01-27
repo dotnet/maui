@@ -16,25 +16,31 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Add a ScaleXTo and ScaleYTo animation extension method";
 
 		[Test]
-		[Category(UITestCategories.Animation)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
-		public async Task AnimateScaleOfBoxView()
-		{
-			App.WaitForElement("TestReady");
-			App.Screenshot("Small blue box");
-
-			// Check the box and button elements.
-			App.WaitForElement(BoxToScale);
-			App.WaitForElement(AnimateBoxViewButton);
-
-			// Tap the button.
-			App.Tap(AnimateBoxViewButton);
-
-			// Wait for animation to finish.
-			await Task.Delay(500);
-
-			App.Screenshot("Bigger blue box");
-		}
+        [Category(UITestCategories.Animation)]
+        public void AnimateScaleOfBoxView()
+        {
+            App.WaitForElement("TestReady");
+//The BoxView's AutomationId doesn't work correctly on the Windows platform, and using a Label also doesn't ensure the BoxView's size changes.
+//Issue Link: https://github.com/dotnet/maui/issues/27195
+#if WINDOWS
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallBox");
+#else
+            var rect = App.WaitForElement(BoxToScale).GetRect();
+#endif
+            App.WaitForElement(AnimateBoxViewButton);
+        
+            // Tap the button.
+            App.Tap(AnimateBoxViewButton);
+ 
+            // Wait for animation to finish.
+            Thread.Sleep(500);
+ #if WINDOWS
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_BigBox");
+#else
+            var scaledRect = App.WaitForElement(BoxToScale).GetRect();
+			Assert.That(scaledRect.Width, Is.GreaterThan(rect.Width));
+            Assert.That(scaledRect.Height, Is.GreaterThan(rect.Height));
+#endif        
+        }
 	}
 }
