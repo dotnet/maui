@@ -63,4 +63,6 @@
     <MauiImage Include="*\Resources\Images\**" />
   </ItemGroup>
 
+    <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
+
 </Project>
