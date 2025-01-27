@@ -20,13 +20,12 @@ parameters:
 
 steps:
   # Prepare macOS
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - template: agent-cleanser/v1.yml@yaml-templates
-      parameters:
-        UninstallMono: false
-        UninstallXamarinMac: true
-        CleanseAgentToolsDotNet: true
-        SelfHealPowerShell: false
+  - template: agent-cleanser/v1.yml@yaml-templates
+    parameters:
+      UninstallMono: false
+      UninstallXamarinMac: true
+      CleanseAgentToolsDotNet: true
+      SelfHealPowerShell: false
         
   # Provision Xcode
   - ${{ if ne(parameters.skipXcode, 'true') }}:
