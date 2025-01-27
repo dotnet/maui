@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	internal class Issue17864_GroupViewModel : ObservableCollection<Issue17864_ItemViewModel>, Issue17864_IItemViewModel
+	class Issue17864_GroupViewModel : ObservableCollection<Issue17864_ItemViewModel>, Issue17864_IItemViewModel
 	{
 
 		public Issue17864_GroupViewModel(int groupIndex)
@@ -34,12 +34,12 @@ namespace Maui.Controls.Sample.Issues
 		public string ItemText { get; }
 	}
 
-	public interface Issue17864_IItemViewModel
+	interface Issue17864_IItemViewModel
 	{
 		string ItemText { get; }
 	}
 
-	internal class Issue17864_ItemListViewModel : INotifyPropertyChanged
+	class Issue17864_ItemListViewModel : INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler PropertyChanged;
 
@@ -97,7 +97,7 @@ namespace Maui.Controls.Sample.Issues
 
 	}
 
-	internal class Issue17864_ItemViewModel : Issue17864_IItemViewModel
+	class Issue17864_ItemViewModel : Issue17864_IItemViewModel
 	{
 
 		public Issue17864_ItemViewModel(int itemIndex)
@@ -106,6 +106,5 @@ namespace Maui.Controls.Sample.Issues
 		}
 
 		public string ItemText { get; }
-
 	}
 }
