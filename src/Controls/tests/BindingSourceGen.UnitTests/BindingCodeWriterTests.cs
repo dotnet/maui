@@ -50,7 +50,8 @@ public class BindingCodeWriterTests
 	public void BuildsWholeBinding()
 	{
 		var code = BindingCodeWriter.GenerateBinding(new BindingInvocationDescription(
-			Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
+			InterceptableLocation: new InterceptableLocationRecord(Version: 1, Data: "serializedData"),
+			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
 			SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
 			Path: new EquatableArray<IPathPart>([
@@ -80,19 +81,15 @@ public class BindingCodeWriterTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -107,7 +104,7 @@ public class BindingCodeWriterTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 20, 30)]
+                    [InterceptsLocationAttribute(1, @"serializedData")]
                     public static void SetBinding1(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -164,8 +161,8 @@ public class BindingCodeWriterTests
 	{
 		var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
 		codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
-			Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
-			SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
+			InterceptableLocation: new InterceptableLocationRecord(Version: 1, Data: "serializedData"),
+			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
 			Path: new EquatableArray<IPathPart>([
 				new MemberAccess("A"),
@@ -180,7 +177,7 @@ public class BindingCodeWriterTests
 		AssertExtensions.CodeIsEqual(
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
-            [InterceptsLocationAttribute(@"Path\To\Program.cs", 20, 30)]
+            [InterceptsLocationAttribute(1, @"serializedData")]
             public static void SetBinding1(
                 this BindableObject bindableObject,
                 BindableProperty bindableProperty,
@@ -236,8 +233,8 @@ public class BindingCodeWriterTests
 	{
 		var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
 		codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
-			Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
-			SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
+			InterceptableLocation: new InterceptableLocationRecord(Version: 1, Data: "serializedData"),
+			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
 			Path: new EquatableArray<IPathPart>([
 				new MemberAccess("A"),
@@ -252,7 +249,7 @@ public class BindingCodeWriterTests
 		AssertExtensions.CodeIsEqual(
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
-            [InterceptsLocationAttribute(@"Path\To\Program.cs", 20, 30)]
+            [InterceptsLocationAttribute(1, @"serializedData")]
             public static void SetBinding1(
                 this BindableObject bindableObject,
                 BindableProperty bindableProperty,
@@ -304,8 +301,8 @@ public class BindingCodeWriterTests
 	{
 		var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
 		codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
-			Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
-			SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false, IsValueType: false),
+			InterceptableLocation: new InterceptableLocationRecord(Version: 1, Data: "serializedData"),
+			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false, IsValueType: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false, IsValueType: false),
 			Path: new EquatableArray<IPathPart>([
 				new MemberAccess("A"),
@@ -320,7 +317,7 @@ public class BindingCodeWriterTests
 		AssertExtensions.CodeIsEqual(
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
-            [InterceptsLocationAttribute(@"Path\To\Program.cs", 20, 30)]
+            [InterceptsLocationAttribute(1, @"serializedData")]
             public static void SetBinding1(
                 this BindableObject bindableObject,
                 BindableProperty bindableProperty,
@@ -369,8 +366,8 @@ public class BindingCodeWriterTests
 	{
 		var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
 		codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
-			Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
-			SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
+			InterceptableLocation: new InterceptableLocationRecord(Version: 1, Data: "serializedData"),
+			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: true, IsGenericParameter: false),
 			Path: new EquatableArray<IPathPart>([
 				new IndexAccess("Item", 12),
@@ -385,7 +382,7 @@ public class BindingCodeWriterTests
 		AssertExtensions.CodeIsEqual(
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
-            [InterceptsLocationAttribute(@"Path\To\Program.cs", 20, 30)]
+            [InterceptsLocationAttribute(1, @"serializedData")]
             public static void SetBinding1(
                 this BindableObject bindableObject,
                 BindableProperty bindableProperty,
@@ -448,8 +445,8 @@ public class BindingCodeWriterTests
 	{
 		var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
 		codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
-			Location: new InterceptorLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
-			SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
+			InterceptableLocation: new InterceptableLocationRecord(Version: 1, Data: "serializedData"),
+			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false),
 			Path: new EquatableArray<IPathPart>([
 				new MemberAccess("A"),
@@ -469,7 +466,7 @@ public class BindingCodeWriterTests
 		AssertExtensions.CodeIsEqual(
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
-            [InterceptsLocationAttribute(@"Path\To\Program.cs", 20, 30)]
+            [InterceptsLocationAttribute(1, @"serializedData")]
             public static void SetBinding1(
                 this BindableObject bindableObject,
                 BindableProperty bindableProperty,

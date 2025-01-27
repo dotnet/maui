@@ -945,5 +945,7 @@ namespace Microsoft.Maui.Platform
 		internal static bool ShowSoftInput(this UIView inputView) => inputView.BecomeFirstResponder();
 
 		internal static bool IsSoftInputShowing(this UIView inputView) => inputView.IsFirstResponder;
+
+		internal static bool IsFinalMeasureHandledBySuperView(this UIView? view) => view?.Superview is ICrossPlatformLayoutBacking { CrossPlatformLayout: not null };
 	}
 }
