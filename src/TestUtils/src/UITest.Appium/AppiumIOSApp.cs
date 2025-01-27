@@ -77,6 +77,9 @@ namespace UITest.Appium
 				{ "env", args! }
 			});
 
+			// It can be faster for Appium to deal with the app hierarchy internally as JSON, rather than XML.
+			config.SetProperty("useJSONSource", "true");
+
 			return options;
 		}
 	}
