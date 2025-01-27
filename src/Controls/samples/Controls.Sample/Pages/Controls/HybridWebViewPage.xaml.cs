@@ -123,6 +123,36 @@ namespace Maui.Controls.Sample.Pages
 					Value = i,
 				};
 			}
+
+			public async Task DoAsyncWork()
+			{
+				await Task.Delay(1000);
+				Debug.WriteLine("DoAsyncWork");
+			}
+
+			public async Task DoAsyncWorkParams(int i, string s)
+			{
+				await Task.Delay(1000);
+				Debug.WriteLine($"DoAsyncWorkParams: {i}, {s}");
+			}
+
+			public async Task<string> DoAsyncWorkReturn()
+			{
+				await Task.Delay(1000);
+				Debug.WriteLine("DoAsyncWorkReturn");
+				return "Hello from C#!";
+			}
+
+			public async Task<SyncReturn> DoAsyncWorkParamsReturn(int i, string s)
+			{
+				await Task.Delay(1000);
+				Debug.WriteLine($"DoAsyncWorkParamsReturn: {i}, {s}");
+				return new SyncReturn
+				{
+					Message = "Hello from C#! " + s,
+					Value = i,
+				};
+			}
 		}
 
 		public class SyncReturn

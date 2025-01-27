@@ -14,16 +14,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void Issue465TestsPushPopModal()
 		{
 			App.WaitForElement("PopPage");
-			App.Screenshot("All elements exist");
 
 			App.Tap("PopPage");
 			App.WaitForElement("Popppppped");
-			App.Screenshot("Popped modal successful");
 		}
 	}
 }
