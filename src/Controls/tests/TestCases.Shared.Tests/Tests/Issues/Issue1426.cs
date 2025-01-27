@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,16 +15,15 @@ public class Issue1426 : _IssuesUITest
 	[Test]
 	[Category(UITestCategories.LifeCycle)]
 	[Category(UITestCategories.Compatibility)]
-	public void Github1426Test()
-	{
-		App.Screenshot("You can see the coffe mug");
+	public void Issue1426Test()
+	{	
 		App.WaitForElement("CoffeeImageId");
 		App.WaitForElement("NextButtonID");
+		VerifyScreenshot("Issue1426Test_BeforeTap");
 		App.Tap("NextButtonID");
 		App.WaitForElement("PopButtonId");
 		App.Tap("PopButtonId");
 		App.WaitForElement("CoffeeImageId");
-		App.Screenshot("Coffe mug Image is still there on the bottom");
+		VerifyScreenshot("Issue1426Test_AfterTap");	
 	}
 }
-#endif

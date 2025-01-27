@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,10 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(ButtonId);
 
-			App.Click(ButtonId);
+			App.Tap(ButtonId);
 
 			// NOTE: Without crashes the test has passed.
 		}
 	}
 }
-#endif
