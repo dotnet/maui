@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWs || ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,24 +13,15 @@ public class Issue2414 : _IssuesUITest
 
 	public override string Issue => "NullReferenceException when swiping over Context Actions";
 
-	// [Test]
-	// [Category(UITestCategories.TableView)]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void TestDoesntCrashShowingContextMenu()
-	// {
-	// 	App.ActivateContextMenu("Swipe ME");
-	// 	App.WaitForElement(c => c.Marked("Text0"));
-	// 	App.Screenshot("Didn't crash");
-	// 	App.Tap(c => c.Marked("Text0"));
-	// }
-
-	// [Test]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void TestShowContextMenuItemsInTheRightOrder()
-	// {
-	// 	App.ActivateContextMenu("Swipe ME");
-	// 	App.WaitForElement(c => c.Marked("Text0"));
-	// 	App.Screenshot("Are the menuitems in the right order?");
-	// 	App.Tap(c => c.Marked("Text0"));
-	// }
+	[Test]
+	[Category(UITestCategories.TableView)]
+	public void TestShowContextMenuItemsInTheRightOrder()
+	{
+		App.WaitForElement("Swipe ME");
+		App.ContextActions("Swipe ME");
+		App.WaitForElement("Text0");
+		VerifyScreenshot();
+		App.Tap("Text0");
+	}
 }
+#endif

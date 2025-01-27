@@ -1,4 +1,4 @@
-﻿#if MACCATALYST
+﻿#if WINDOWS || ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -12,19 +12,17 @@ public class Issue1658 : _IssuesUITest
 	}
 
 	public override string Issue => "[macOS] GestureRecognizer on ListView Item not working";
-	
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// public void ContextActionsIconImageSource()
-	// {
-	// 	App.ActivateContextMenu("ListViewItem");
-	// 	App.WaitForElement("coffee.png");
-	// 	App.DismissContextMenu();
 
-	// 	App.WaitForElement("ColorBox");
-	// 	App.Screenshot("Box should be red");
-	// 	App.Tap("ColorBox");
-	// 	App.Screenshot("Box should be yellow");
-	// }
+	[Test]
+	[Category(UITestCategories.ActivityIndicator)]
+	public void ContextActionsIconImageSource()
+	{
+		App.WaitForElement("ListViewItem");
+		App.ContextActions("ListViewItem");
+		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "WithCoffeeIcon");
+		App.WaitForElement("ColorBox");
+		App.Tap("ColorBox");
+		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "InYellowBox");
+	}
 }
 #endif

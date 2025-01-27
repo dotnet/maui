@@ -2288,6 +2288,35 @@ namespace UITest.Appium
 			return app.WaitForElementTillPageNavigationSettled(tabName);
 		}
 
+		/// <summary>
+		/// Performs platform-specific context actions (e.g., long press, swipe, or touch-and-hold) on a specified element in the app.
+		/// - On Android, it performs a long press gesture on the element.
+		/// - On Windows, it simulates a right-click (touch-and-hold) on the element.
+		/// - On iOS, it performs a swipe from right to left on the element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+
+		public static void ContextActions(this IApp app, string element)
+		{
+			var uiElement = FindElement(app, element);
+			if (app is AppiumAndroidApp)
+			{
+				app.LongPress(element);
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				app.TouchAndHold(uiElement);
+			}
+			else if (app is AppiumIOSApp)
+			{
+				app.SwipeRightToLeft(uiElement, swipePercentage: 0.9, swipeSpeed: 500, withInertia: true);
+			}
+			else if (app is AppiumCatalystApp)
+            {
+                app.ScrollRight(uiElement);
+            }
+		}
+
 		static IUIElement Wait(Func<IUIElement?> query,
 			Func<IUIElement?, bool> satisfactory,
 			string? timeoutMessage = null,
