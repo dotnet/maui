@@ -9,32 +9,32 @@ public class Bugzilla46363 : _IssuesUITest
 	public Bugzilla46363(TestDevice testDevice) : base(testDevice)
 	{
 	}
-
+	const string Target = "Two";
+	const string ContextAction = "Context Action";
+	const string ContextSuccess = "Context Menu Success";
+	const string TapSuccess = "Tap Success";
 	public override string Issue => "TapGestureRecognizer blocks List View Context Actions";
 
-	// [FailsOnAndroidWhenRunningOnXamarinUITest]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// [Test]
-	// public void _46363_Tap_Succeeds()
-	// {
-	// 	App.WaitForElement(Testing);
-	// 	App.Tap(Target);
-	// 	App.WaitForElement(TapSuccess);
-
-	// 	// First run at fixing this caused the context menu to open on a regular tap
-	// 	// So this check is to ensure that doesn't happen again
-	// 	App.WaitForNoElement(ContextAction);
-	// }
-
-	// [FailsOnAndroidWhenRunningOnXamarinUITest]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// [Test]
-	// public void _46363_ContextAction_Succeeds()
-	// {
-	// 	App.WaitForElement(Testing);
-	// 	App.ActivateContextMenu(Target);
-	// 	App.WaitForElement(ContextAction);
-	// 	App.Tap(ContextAction);
-	// 	App.WaitForElement(ContextSuccess);
-	// }
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void _46363_Tap_Succeeds()
+	{
+		App.WaitForElement("TestingLabel");
+		App.Tap(Target);
+		App.WaitForElement(TapSuccess);
+		App.WaitForNoElement(ContextAction);
+	}
+	
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void _46363_ContextAction_Succeeds()
+	{
+		App.WaitForElement("TestingLabel");
+		App.ContextActions(Target);
+		App.WaitForElement(ContextAction);
+		App.Tap(ContextAction);
+		App.WaitForElement(ContextSuccess);
+	}
+#endif
 }

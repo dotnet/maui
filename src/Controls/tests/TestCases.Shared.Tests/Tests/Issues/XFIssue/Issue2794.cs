@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -13,18 +13,17 @@ public class Issue2794 : _IssuesUITest
 
 	public override string Issue => "TableView does not react on underlying collection change";
 
-	// [Test]
-	// [Category(UITestCategories.TableView)]
-	// [FailsOnAndroidWhenRunningOnXamarinUITest]
-	// public void Issue2794Test()
-	// {
-	// 	App.TouchAndHold(x => x.Marked("Cell2"));
-	// 	App.Tap(x => x.Text("Delete me first"));
-	// 	App.WaitForNoElement(q => q.Marked("Cell2"));
+	[Test]
+	[Category(UITestCategories.TableView)]
+	public void Issue2794Test()
+	{
+		App.ContextActions("Cell2");
+		App.Tap("Delete me first");
+		App.WaitForNoElement("Cell2");
 
-	// 	App.TouchAndHold(x => x.Marked("Cell1"));
-	// 	App.Tap(x => x.Text("Delete me after"));
-	// 	App.WaitForNoElement(q => q.Marked("Cell1"));
-	// }
+		App.ContextActions("Cell1");
+		App.Tap("Delete me after");
+		App.WaitForNoElement("Cell1");
+	}
 }
 #endif

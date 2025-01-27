@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,22 +15,12 @@ public class Bugzilla44338 : _IssuesUITest
 
 	public override string Issue => "Tapping off of a cell with an open context action causes a crash in iOS 10";
 
-	// #if IOS
-	// 	[Test]
-	// 	[FailsOnIOSWhenRunningOnXamarinUITest]
-	// 	public void Bugzilla44338Test()
-	// 	{
-	// 		App.SwipeRightToLeft("A");
-	// 		App.Tap("C");
-	// 	}
-	// #endif
 
-	//  #if ANDROID
-	// 	[Test]
-	// 	public void Bugzilla44338Test()
-	// 	{
-	// 		App.TouchAndHold("A");
-	// 		App.Tap("C");
-	// 	}
-	// #endif
+	[Test]
+	public void Bugzilla44338Test()
+	{
+		App.ContextActions("A");
+		App.Tap("C");
+	}
 }
+#endif

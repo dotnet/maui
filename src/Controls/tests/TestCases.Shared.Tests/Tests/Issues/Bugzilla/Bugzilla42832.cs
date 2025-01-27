@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -13,23 +13,20 @@ public class Bugzilla42832 : _IssuesUITest
 
 	public override string Issue => "Scrolling a ListView with active ContextAction Items causes NRE";
 
-	// TODO From Xamarin.UITest migration: test failed
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// public void ContextActionsScrollNRE()
-	// {
-	// 	App.TouchAndHold("Item #0");
-	// 	App.WaitForElement("Test Item");
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void ContextActionsScrollNRE()
+	{
+		App.ContextActions("Item #0");
+		App.WaitForElement("Test Item");
 
-	// 	int counter = 0;
-	// 	while(counter < 5)
-	// 	{
-	// 		App.ScrollDown("Item #15", ScrollStrategy.Gesture);
-	// 		App.ScrollUp("Item #0", ScrollStrategy.Gesture);
-	// 		counter++;
-	// 	}
-
-	// 	App.Screenshot("If the app did not crash, then the test has passed.");
-	// }
+		int counter = 0;
+		while(counter < 5)
+		{
+			App.ScrollDown("Item #10", ScrollStrategy.Gesture);
+			App.ScrollUp("Item #0", ScrollStrategy.Gesture);
+			counter++;
+		}
+	}
 }
 #endif
