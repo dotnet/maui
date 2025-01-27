@@ -4,7 +4,6 @@ using Android.Text;
 using Android.Text.Method;
 using Java.Lang;
 using Java.Text;
-using Java.Util;
 
 namespace Microsoft.Maui.Platform
 {
