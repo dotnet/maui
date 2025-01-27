@@ -156,16 +156,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
 		{
-			View virtualView = null;
-			if (CurrentTemplate != template)
-			{
-				CurrentTemplate = template;
-				virtualView = template.CreateContent(bindingContext, itemsView) as View;
-			}
-			else if (PlatformHandler?.VirtualView is View existingView)
-			{
-				virtualView = existingView;
-			}
+			var virtualView = PlatformHandler?.VirtualView as View ??
+							  template.CreateContent(bindingContext, itemsView) as View;
 
 			BindVirtualView(virtualView, bindingContext, itemsView, false);
 		}
@@ -190,6 +182,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (PlatformHandler is null && virtualView is not null)
 			{
 				var mauiContext = itemsView.FindMauiContext()!;
+				virtualView.BindingContext = bindingContext;
+				itemsView.AddLogicalChild(virtualView);
 				var nativeView = virtualView.ToPlatform(mauiContext);
 
 				if (needsContainer)
@@ -204,9 +198,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				PlatformHandler = virtualView.Handler as IPlatformViewHandler;
 				SetupPlatformView(PlatformView, needsContainer);
 				ContentView.MarkAsCrossPlatformLayoutBacking();
-
-				virtualView.BindingContext = bindingContext;
-				itemsView.AddLogicalChild(virtualView);
 			}
 
 			if (PlatformHandler?.VirtualView is View view)
