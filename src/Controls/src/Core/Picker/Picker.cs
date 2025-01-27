@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
@@ -13,6 +14,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="Type[@FullName='Microsoft.Maui.Controls.Picker']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>, IPicker
 	{
 		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
@@ -459,6 +461,11 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return string.Empty;
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"Items = {ItemsSource?.Count ?? 0}, SelectedItem = {SelectedItem}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }
