@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using Android.Text;
 using Android.Text.Method;
 using Java.Lang;
@@ -23,8 +22,10 @@ namespace Microsoft.Maui.Platform
 			if (!(NumberFormat.Instance is DecimalFormat format))
 				return '.';
 
-			string symbol = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-			return symbol == string.Empty ? '.' : symbol[0];
+
+			DecimalFormatSymbols? sym = format.DecimalFormatSymbols;
+
+			return sym == null ? '.' : sym.DecimalSeparator;
 		}
 
 		public static NumberKeyListener Create(InputTypes inputTypes)
