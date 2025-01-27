@@ -1,4 +1,4 @@
-﻿using System.Xml.Linq;
+using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
 
@@ -60,6 +60,24 @@ public class SimpleTemplateTest : BaseTemplateTests
 		string target = shouldPack ? "Pack" : "";
 		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true, warningsToIgnore: warningsToIgnore),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+	}
+
+	[Test]
+	[TestCase("maui", DotNetPrevious, "Debug")]
+	public void InstallPackagesIntoUnsupportedTfmFails(string id, string framework, string config)
+	{
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			$"Unable to create template {id}. Check test output for errors.");
+
+		FileUtilities.ReplaceInFile(projectFile,
+			"$(MauiVersion)",
+			MauiPackageVersion);
+
+		Assert.False(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+			$"Project {Path.GetFileName(projectFile)} built, but should not have. Check test output/attachments for why.");
 	}
 
 	[Test]
@@ -310,5 +328,33 @@ public class SimpleTemplateTest : BaseTemplateTests
 		
 		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+	}
+
+	// This test is super temporary and is just for the interim
+	// while we productize the CollectionViewHandler2. Once we
+	// ship it as the default, this test will fail and can be deleted.
+	[Test]
+	[TestCase("maui", DotNetCurrent, "", false)]
+	[TestCase("maui", DotNetCurrent, "--sample-content", true)]
+	public void SampleShouldHaveHandler2Registered(string id, string framework, string additionalDotNetNewParams, bool shouldHaveHandler2)
+	{
+		var projectDir = TestDirectory;
+		var programFile = Path.Combine(projectDir, "MauiProgram.cs");
+
+		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams),
+			$"Unable to create template {id}. Check test output for errors.");
+
+		var programContents = File.ReadAllText(programFile);
+
+		if (shouldHaveHandler2)
+		{
+			AssertContains("#if IOS || MACCATALYST", programContents);
+			AssertContains("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
+		}
+		else
+		{
+			AssertDoesNotContain("#if IOS || MACCATALYST", programContents);
+			AssertDoesNotContain("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
+		}
 	}
 }

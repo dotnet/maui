@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -10,6 +11,8 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="Type[@FullName='Microsoft.Maui.Controls.IndicatorView']/Docs/*" />
 	[ContentProperty(nameof(IndicatorLayout))]
+
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class IndicatorView : TemplatedView, ITemplatedIndicatorView
 	{
 		const int DefaultPadding = 4;
@@ -192,6 +195,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get => Position;
 			set => SetValue(PositionProperty, value, SetterSpecificity.FromHandler);
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"Position = {Position}, Count = {Count}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }

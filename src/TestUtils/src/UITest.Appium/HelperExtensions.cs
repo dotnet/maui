@@ -68,6 +68,20 @@ namespace UITest.Appium
 			});
 		}
 
+		/// <summary>
+		/// Performs a down/press on the matched element, without a matching release
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="element"></param>
+		public static void PressDown(this IApp app, string element)
+		{
+			var uiElement = FindElement(app, element);
+			uiElement.Command.Execute("pressDown", new Dictionary<string, object>()
+			{
+				{ "element", uiElement }
+			});
+		}
+
 		public static string? GetText(this IUIElement element)
 		{
 			var response = element.Command.Execute("getText", new Dictionary<string, object>()
@@ -634,7 +648,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Wait function that will repeatly query the app until a matching element is found. 
+		/// Wait function that will repeatedly query the app until a matching element is found. 
 		/// Throws a TimeoutException if no element is found within the time limit.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -652,7 +666,25 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Wait function that will repeatly query the app until a matching element is found. 
+		/// Wait function that will repeatedly query the app until any matching element is found. 
+		/// Throws a TimeoutException if no element is found within the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Collection of target Elements.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
+		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
+		public static IUIElement WaitForAnyElement(this IApp app, string[] marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
+		{
+			IUIElement result() => FindAnyElement(app, marked);
+			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency);
+
+			return results;
+		}
+
+		/// <summary>
+		/// Wait function that will repeatedly query the app until a matching element is found. 
 		/// Throws a TimeoutException if no element is found within the time limit.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -670,7 +702,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Wait function that will repeatly query the app until a matching element is found. 
+		/// Wait function that will repeatedly query the app until a matching element is found. 
 		/// Throws a TimeoutException if no element is found within the time limit.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -691,7 +723,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Wait function that will repeatly query the app until a matching element is no longer found. 
+		/// Wait function that will repeatedly query the app until a matching element is no longer found. 
 		/// Throws a TimeoutException if the element is visible at the end of the time limit.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -707,7 +739,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Wait function that will repeatly query the app until a matching element is no longer found. 
+		/// Wait function that will repeatedly query the app until a matching element is no longer found. 
 		/// Throws a TimeoutException if the element is visible at the end of the time limit.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -723,7 +755,7 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Wait function that will repeatly query the app until a matching element is no longer found. 
+		/// Wait function that will repeatedly query the app until a matching element is no longer found. 
 		/// Throws a TimeoutException if the element is visible at the end of the time limit.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -1002,9 +1034,9 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollLeft(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = FindElement(app, marked);
+			var elementToScroll = FindElement(app, marked);
 
-			app.ScrollLeft(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+			app.ScrollLeft(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		/// <summary>
@@ -1018,9 +1050,9 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollLeft(this IApp app, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = app.FindElement(query);
+			var elementToScroll = app.FindElement(query);
 
-			app.ScrollLeft(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+			app.ScrollLeft(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		internal static void ScrollLeft(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
@@ -1049,9 +1081,9 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollDown(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = FindElement(app, marked);
+			var elementToScroll = FindElement(app, marked);
 
-			app.ScrollDown(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+			app.ScrollDown(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		/// <summary>
@@ -1065,9 +1097,9 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollDown(this IApp app, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = app.FindElement(query);
+			var elementToScroll = app.FindElement(query);
 
-			app.ScrollDown(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+			app.ScrollDown(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		internal static void ScrollDown(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
@@ -1076,6 +1108,56 @@ namespace UITest.Appium
 			{
 				app.CommandExecutor.Execute("scrollDown", new Dictionary<string, object>
 				{
+					{ "element", element },
+					{ "strategy", strategy },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
+		}
+
+		/// <summary>
+		/// Scroll down until an element that matches the toMarked is shown on the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="toMarked">Marked selector to select what element to bring on screen.</param>
+		/// <param name="withinMarked">Marked selector to select what element to scroll within.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollDownTo(this IApp app, string toMarked, string withinMarked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToScroll = FindElement(app, withinMarked);
+
+			app.ScrollDownTo(toMarked, elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		/// <summary>
+		/// Scroll down until an element that matches the query is shown on the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="toMarked">Marked selector to select what element to bring on screen.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollDownTo(this IApp app, string toMarked, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToScroll = app.FindElement(query);
+
+			app.ScrollDownTo(toMarked, elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		internal static void ScrollDownTo(this IApp app, string toMarked, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			if (element is not null)
+			{
+				app.CommandExecutor.Execute("scrollDown", new Dictionary<string, object>
+				{
+					{ "marked", toMarked },
 					{ "element", element },
 					{ "strategy", strategy },
 					{ "swipePercentage", swipePercentage },
@@ -1112,9 +1194,9 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollRight(this IApp app, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = app.FindElement(query);
+			var elementToScroll = app.FindElement(query);
 
-			app.ScrollRight(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+			app.ScrollRight(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		internal static void ScrollRight(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
@@ -1143,16 +1225,16 @@ namespace UITest.Appium
 		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static void ScrollUp(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = FindElement(app, marked);
+			var elementToScroll = FindElement(app, marked);
 
-			app.ScrollUp(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+			app.ScrollUp(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		public static void ScrollUp(this IApp app, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			var elementToSwipe = app.FindElement(query);
+			var elementToScroll = app.FindElement(query);
 
-			app.ScrollUp(elementToSwipe, strategy, swipePercentage, swipeSpeed, withInertia);
+			app.ScrollUp(elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		public static void ScrollUp(this IApp app, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
@@ -1161,6 +1243,56 @@ namespace UITest.Appium
 			{
 				app.CommandExecutor.Execute("scrollUp", new Dictionary<string, object>
 				{
+					{ "element", element },
+					{ "strategy", strategy },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
+		}
+
+		/// <summary>
+		/// Scroll up until an element that matches the <paramref name="toMarked"/> is shown on the screen in <paramref name="withinMarked"/>.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="toMarked">Marked selector to select what element to bring on screen.</param>
+		/// <param name="withinMarked">Marked selector to select what element to scroll within.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollUpTo(this IApp app, string toMarked, string withinMarked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToScroll = FindElement(app, withinMarked);
+
+			app.ScrollUpTo(toMarked, elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		/// <summary>
+		/// Scroll up until an element that matches <paramref name="toMarked"/> is shown on the screen.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="toMarked">Marked selector to select what element to bring on screen.</param>
+		/// <param name="query">Represents the query that identify an element by parameters such as type, text it contains or identifier.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollUpTo(this IApp app, string toMarked, IQuery query, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToScroll = app.FindElement(query);
+
+			app.ScrollUpTo(toMarked, elementToScroll, strategy, swipePercentage, swipeSpeed, withInertia);
+		}
+
+		internal static void ScrollUpTo(this IApp app, string toMarked, IUIElement? element, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			if (element is not null)
+			{
+				app.CommandExecutor.Execute("scrollUpTo", new Dictionary<string, object>
+				{
+					{ "marked", toMarked },
 					{ "element", element },
 					{ "strategy", strategy },
 					{ "swipePercentage", swipePercentage },
@@ -1218,7 +1350,7 @@ namespace UITest.Appium
 			}
 
 			var response = app.CommandExecutor.Execute("getClipboardText", new Dictionary<string, object>());
-			
+
 			if (response?.Value != null)
 			{
 				return (string)response.Value;
@@ -1583,15 +1715,21 @@ namespace UITest.Appium
 		/// Functionality that's only available on Android and iOS.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="unlockType">This capability supports the following possible values: pin, pinWithKeyEvent, password, pattern.</param>
+		/// <param name="unlockKey">a valid pin (digits in range 0-9), password (latin characters) or pattern (treat the pattern pins similarly to numbers on a digital phone dial).</param>
 		/// <exception cref="InvalidOperationException">Unlock is only supported on <see cref="AppiumAndroidApp"/>.</exception>
-		public static void Unlock(this IApp app)
+		public static void Unlock(this IApp app, string unlockType = "", string unlockKey = "")
 		{
 			if (app is not AppiumAndroidApp && app is not AppiumIOSApp)
 			{
 				throw new InvalidOperationException($"Unlock is only supported on AppiumAndroidApp and AppiumIOSApp");
 			}
 
-			app.CommandExecutor.Execute("unlock", ImmutableDictionary<string, object>.Empty);
+			app.CommandExecutor.Execute("unlock", new Dictionary<string, object>()
+			{
+				{ "unlockType", unlockType },
+				{ "unlockKey", unlockKey },
+			});
 		}
 
 		/// <summary>
@@ -1690,6 +1828,27 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Switch the System animations state.
+		/// Optimize and accelerate tests, eliminating animations entirely when Appium is executing tests, as they serve no practical purpose in this context.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="enableSystemAnimations">Enable/disable the system animations.</param>
+		/// <exception cref="InvalidOperationException">ToggleSystemAnimations is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static void ToggleSystemAnimations(this IApp app, bool enableSystemAnimations)
+		{
+			if (app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"ToggleSystemAnimations is only supported on AppiumAndroidApp");
+			}
+
+			app.CommandExecutor.Execute("toggleSystemAnimations", new Dictionary<string, object>()
+			{
+				{ "enableSystemAnimations", enableSystemAnimations },
+			});
+		}
+
+		/// <summary>
 		/// Switch the state of data service.
 		/// Functionality that's only available on Android.
 		/// This API does not work for Android API level 21+ because it requires system or carrier privileged permission, 
@@ -1736,6 +1895,49 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Maximize the active App window.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void EnterFullScreen(this IApp app)
+		{
+			if (app is not AppiumCatalystApp)
+			{
+				throw new InvalidOperationException($"EnterFullScreen is only supported on AppiumCatalystApp");
+			}
+
+			app.CommandExecutor.Execute("enterFullScreen", new Dictionary<string, object>());
+		}
+
+		/// <summary>
+		/// Leave the App full screen mode.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void ExitFullScreen(this IApp app)
+		{
+			if (app is not AppiumCatalystApp)
+			{
+				throw new InvalidOperationException($"ExitFullScreen is only supported on AppiumCatalystApp");
+			}
+
+			app.CommandExecutor.Execute("exitFullScreen", new Dictionary<string, object>());
+		}
+
+		/// <summary>
+		/// Print in the Output the current application hierarchy XML (app).
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void PrintTree(this IApp app)
+		{
+			if (app is not AppiumApp aaa)
+			{
+				throw new InvalidOperationException($"PrintTree is only supported on AppiumApp");
+			}
+
+			var pageSource = aaa.Driver.PageSource;
+			Console.WriteLine(pageSource);
+		}
+
+		/// <summary>
 		/// Retrieve visibility and bounds information of the status and navigation bars
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -1755,41 +1957,335 @@ namespace UITest.Appium
 			}
 
 			throw new InvalidOperationException($"Could not get the Android System Bars");
-    }
-    
+		}
+
 		/// <summary>
-		/// Navigates back in the application by simulating a tap on the platform-specific back navigation button.
+		/// Navigates back in the application by simulating a tap on the platform-specific back navigation button or using a custom identifier.
 		/// </summary>
 		/// <param name="app">The IApp instance representing the main gateway to interact with the application.</param>
-		/// <param name="customBackButtonIdentifier">Optional. The custom identifier for the back button. If not provided, default platform-specific identifiers will be used.</param>
+		/// <param name="customBackButtonIdentifier">Optional custom identifier string for the back button. If not provided, the default back arrow query will be used.</param>
 		public static void TapBackArrow(this IApp app, string customBackButtonIdentifier = "")
 		{
-			switch (app)
-			{
-				case AppiumAndroidApp _:
-					app.Tap(AppiumQuery.ByXPath(string.IsNullOrEmpty(customBackButtonIdentifier)
-						? "//android.widget.ImageButton[@content-desc='Navigate up']"
-						: $"//android.widget.ImageButton[@content-desc='{customBackButtonIdentifier}']"));
-					break;
+			var query = string.IsNullOrEmpty(customBackButtonIdentifier)
+				? GetDefaultBackArrowQuery(app)
+				: GetCustomBackArrowQuery(app, customBackButtonIdentifier);
 
-				case AppiumIOSApp _:
-				case AppiumCatalystApp _:
-					if (string.IsNullOrEmpty(customBackButtonIdentifier))
+			TapBackArrow(app, query);
+		}
+
+		/// <summary>
+		/// Navigates back in the application using a custom IQuery.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the main gateway to interact with the application.</param>
+		/// <param name="query">The custom IQuery for the back button.</param>
+		public static void TapBackArrow(this IApp app, IQuery query)
+		{
+			app.WaitForElement(query).Tap();
+		}
+
+		/// <summary>
+		/// Taps a button in a display alert dialog.
+		/// For AppiumCatalystApp, it uses specific element identifiers to locate and tap the alert button.
+		/// For other app types, it locates and taps the button using the provided text.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="text">The text of the button to tap in the display alert (used for non-AppiumCatalystApp instances).</param>
+		/// <param name="buttonIndex">
+		/// The index of the button in the alert dialog, used to generate the correct element identifier.
+		/// For example, in a alert with two buttons:
+		/// - 0 (default) corresponds to the leftmost button (e.g., "OK" with identifier ending in 999)
+		/// - 1 corresponds to the button to its right (e.g., "Cancel" with identifier ending in 998)
+		/// </param>
+		public static void TapDisplayAlertButton(this IApp app, string text, int buttonIndex = 0)
+		{
+			if(app is AppiumCatalystApp)
+			{
+				app.WaitForElement(AppiumQuery.ById($"action-button--{999 - buttonIndex}"));
+				app.Tap(AppiumQuery.ById($"action-button--{999 - buttonIndex}"));
+			}
+			else
+			{
+				app.WaitForElement(text);
+				app.Tap(text);
+			}
+		}
+
+		/// <summary>
+		/// Gets the default query for the back arrow button based on the app type.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <returns>An IQuery for the default back arrow button.</returns>
+		/// <exception cref="ArgumentException">Thrown when an unsupported app type is provided.</exception>
+		static IQuery GetDefaultBackArrowQuery(IApp app)
+		{
+			return app switch
+			{
+				AppiumAndroidApp _ => AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Navigate up']"),
+				AppiumIOSApp _ => AppiumQuery.ByAccessibilityId("Back"),
+				AppiumCatalystApp _ => AppiumQuery.ByAccessibilityId("Back"),
+				AppiumWindowsApp _ => AppiumQuery.ByAccessibilityId("NavigationViewBackButton"),
+				_ => throw new ArgumentException("Unsupported app type", nameof(app))
+			};
+		}
+
+		/// <summary>
+		/// Gets a custom query for the back arrow button based on the app type and a custom identifier.
+		/// Note that for Windows apps, the back button is not customizable, so the default identifier is used.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="customBackButtonIdentifier">The custom identifier for the back button.</param>
+		/// <returns>An IQuery for the custom back arrow button.</returns>
+		/// <exception cref="ArgumentException">Thrown when an unsupported app type is provided.</exception>
+		static IQuery GetCustomBackArrowQuery(IApp app, string customBackButtonIdentifier)
+		{
+			return app switch
+			{
+				AppiumAndroidApp _ => AppiumQuery.ByXPath($"//android.widget.ImageButton[@content-desc='{customBackButtonIdentifier}']"),
+				AppiumIOSApp _ => AppiumQuery.ByXPath($"//XCUIElementTypeButton[@name='{customBackButtonIdentifier}']"),
+				AppiumCatalystApp _ => AppiumQuery.ByName(customBackButtonIdentifier),
+				AppiumWindowsApp _ => AppiumQuery.ByAccessibilityId("NavigationViewBackButton"),
+				_ => throw new ArgumentException("Unsupported app type", nameof(app))
+			};
+		}
+
+		/// <summary>
+		/// Waits for an element to be ready until page navigation has settled, with additional waiting for MacCatalyst.
+		/// This method helps prevent null reference exceptions during page transitions, especially in MacCatalyst.
+		/// </summary>
+		/// <param name="app">The IApp instance.</param>
+		/// <param name="elementId">The id of the element to wait for.</param>
+		/// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
+		public static IUIElement WaitForElementTillPageNavigationSettled(this IApp app, string elementId, TimeSpan? timeout = null)
+		{
+			if (app is AppiumCatalystApp)
+				app.WaitForElement(AppiumQuery.ById(elementId), timeout: timeout);
+
+			return app.WaitForElement(elementId, timeout: timeout);
+		}
+
+		/// <summary>
+		/// Waits for an element to be ready until page navigation has settled, with additional waiting for MacCatalyst.
+		/// This method helps prevent null reference exceptions during page transitions, especially in MacCatalyst.
+		/// </summary>
+		/// <param name="app">The IApp instance.</param>
+		/// <param name="query">The query to use for finding the element.</param>
+		/// <param name="timeout">Optional timeout for the wait operation. Default is null, which uses the default timeout.</param>
+		public static void WaitForElementTillPageNavigationSettled(this IApp app, IQuery query, TimeSpan? timeout = null)
+		{
+			if (app is AppiumCatalystApp)
+				app.WaitForElement(query, timeout: timeout);
+
+			app.WaitForElement(query, timeout: timeout);
+		}
+
+		/// <summary>
+		/// Waits for the flyout icon to appear in the app.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="automationId">The automation ID of the flyout icon (default is an empty string).</param>
+		/// <param name="isShell">Indicates whether the app is using Shell navigation (default is true).</param>
+		public static void WaitForFlyoutIcon(this IApp app, string automationId = "", bool isShell = true)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc=\"Open navigation drawer\"]"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumWindowsApp)
+			{
+				if (isShell)
+				{
+					app.WaitForElement("OK");
+				}
+				if (!isShell)
+				{
+					if (app is AppiumWindowsApp)
 					{
-						app.Tap(AppiumQuery.ByAccessibilityId("Back"));
+						app.WaitForElement(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
 					}
 					else
 					{
-						app.Tap(app is AppiumIOSApp
-							? AppiumQuery.ByXPath($"//XCUIElementTypeButton[@name='{customBackButtonIdentifier}']")
-							: AppiumQuery.ByName(customBackButtonIdentifier));
+						app.WaitForElement(automationId);
 					}
-					break;
-
-				case AppiumWindowsApp _:
-					app.Tap(AppiumQuery.ByAccessibilityId("NavigationViewBackButton"));
-					break;
+				}
 			}
+		}
+
+		/// <summary>
+		/// Shows the flyout menu in the app.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="automationId">The automation ID of the flyout icon (default is an empty string).</param>
+		/// <param name="usingSwipe">Indicates whether to use swipe gesture to open the flyout (default is false).</param>
+		/// <param name="waitForFlyoutIcon">Indicates whether to wait for the flyout icon before showing the flyout (default is true).</param>
+		/// <param name="isShell">Indicates whether the app is using Shell navigation (default is true).</param>
+		public static void ShowFlyout(this IApp app, string automationId = "", bool usingSwipe = false, bool waitForFlyoutIcon = true, bool isShell = true)
+		{
+			if (waitForFlyoutIcon)
+			{
+				app.WaitForFlyoutIcon(automationId, isShell);
+			}
+
+			if (usingSwipe)
+			{
+				app.DragCoordinates(5, 500, 800, 500);
+			}
+			else
+			{
+				app.TapFlyoutIcon(automationId, isShell, false);
+			}
+		}
+
+		/// <summary>
+		/// Taps the Flyout icon for Shell or FlyoutPage.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="title">Optional title for FlyoutPage (default is empty string).</param>
+		/// <param name="isShell">Indicates whether the Flyout is for Shell (true) or FlyoutPage (false).</param>
+		private static void TapFlyoutIcon(this IApp app, string title = "", bool isShell = true, bool waitForFlyoutIcon = true)
+		{
+			if (waitForFlyoutIcon)
+			{
+				app.WaitForFlyoutIcon(title, isShell);
+			}
+			if (app is AppiumAndroidApp)
+			{
+				app.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc=\"Open navigation drawer\"]"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumWindowsApp)
+			{
+				if (isShell)
+				{
+					app.Tap(AppiumQuery.ByAccessibilityId("OK"));
+				}
+				else
+				{
+					if (app is AppiumWindowsApp)
+					{
+						app.Tap(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
+					}
+					else
+					{
+						app.Tap(title);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Taps the Flyout icon for Shell pages.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void TapShellFlyoutIcon(this IApp app)
+		{
+			app.TapFlyoutIcon();
+		}
+
+		/// <summary>
+		/// Taps the Flyout icon for FlyoutPage.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="title">Optional title for FlyoutPage (default is empty string).</param>
+		public static void TapFlyoutPageIcon(this IApp app, string title = "")
+		{
+			app.TapFlyoutIcon(title, false);
+		}
+
+		/// <summary>
+		/// Taps an item in the specified flyout menu.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="flyoutItem">The text or accessibility identifier of the flyout item to tap.</param>
+		/// <param name="isShellFlyout">True if it's a Shell flyout, false for FlyoutPage flyout.</param>
+		private static void TapInFlyout(this IApp app, string flyoutItem, bool isShellFlyout)
+		{
+			if (isShellFlyout)
+			{
+				app.TapShellFlyoutIcon();
+			}
+			else
+			{
+				app.TapFlyoutPageIcon();
+			}
+
+			app.WaitForElement(flyoutItem);
+			app.Tap(flyoutItem);
+		}
+
+		/// <summary>
+		/// Taps an item in the Shell flyout menu.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="flyoutItem">The text or accessibility identifier of the flyout item to tap.</param>
+		public static void TapInShellFlyout(this IApp app, string flyoutItem)
+		{
+			app.TapInFlyout(flyoutItem, true);
+		}
+
+		/// <summary>
+		/// Taps an item in the FlyoutPage flyout menu.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="flyoutItem">The text or accessibility identifier of the flyout item to tap.</param>
+		public static void TapInFlyoutPageFlyout(this IApp app, string flyoutItem)
+		{
+			app.TapInFlyout(flyoutItem, false);
+		}
+
+		/// <summary>
+		/// Taps the "More" button in the app, with platform-specific logic for Android and Windows.
+		/// This method does not currently support iOS and macOS platforms, where the "More" button is not shown.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void TapMoreButton(this IApp app)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.Tap(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc=\"More options\"]"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				app.Tap(AppiumQuery.ByAccessibilityId("MoreButton"));
+			}
+		}
+
+		/// <summary>
+		/// Taps a tab in the application.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="tabName">The name of the tab to tap.</param>
+		/// <param name="isTopTab">Indicates whether the tab is a top tab (default is false).</param>
+		/// <remarks>
+		/// This method handles platform-specific behaviors:
+		/// - For Android, it converts the tab name to uppercase.
+		/// - For Windows, if it's a top tab, it taps the navigation view item first.
+		/// The method waits for the tab element to be available before tapping it.
+		/// </remarks>
+		public static void TapTab(this IApp app, string tabName, bool isTopTab = false)
+		{
+			tabName = app is AppiumAndroidApp ? tabName.ToUpperInvariant() : tabName;
+
+			if (isTopTab && app is AppiumWindowsApp)
+			{
+				app.WaitForElement("navViewItem");
+				app.Tap("navViewItem");
+			}
+
+			app.WaitForElementTillPageNavigationSettled(tabName);
+			app.Tap(tabName);
+		}
+
+		/// <summary>
+		/// Waits for a tab element with the specified name to appear and for page navigation to settle.
+		/// </summary>
+		/// <param name="app">The IApp instance.</param>
+		/// <param name="tabName">The name of the tab to wait for.</param>
+		/// <remarks>
+		/// For Android apps, the tab name is converted to uppercase before searching.
+		/// </remarks>
+		public static IUIElement WaitForTabElement(this IApp app, string tabName)
+		{
+			tabName = app is AppiumAndroidApp ? tabName.ToUpperInvariant() : tabName;
+			return app.WaitForElementTillPageNavigationSettled(tabName);
 		}
 
 		static IUIElement Wait(Func<IUIElement?> query,
@@ -1847,6 +2343,17 @@ namespace UITest.Appium
 				result = app.FindElementByText(element);
 
 			return result;
+		}
+
+		static IUIElement FindAnyElement(IApp app, string[] elements)
+		{
+			foreach (var element in elements)
+			{
+				if (FindElement(app, element) is IUIElement result)
+					return result;
+			}
+
+			throw new InvalidOperationException($"Did not find any elements in the list: {string.Join(", ", elements)}");
 		}
 
 		static IReadOnlyCollection<IUIElement> FindElements(IApp app, string element)

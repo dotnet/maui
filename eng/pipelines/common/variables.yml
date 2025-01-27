@@ -18,7 +18,7 @@ variables:
 - name: isMainBranch
   value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
 - name: isLocBranch
-  value: $[or(eq(variables['Build.SourceBranch'], 'refs/heads/loc'), startsWith(variables['Build.SourceBranch'], 'refs/heads/loc-'))]
+  value: $[or(eq(variables['Build.SourceBranch'], 'refs/heads/lego'), startsWith(variables['Build.SourceBranch'], 'refs/heads/lego'))]
 - name: isTargetMainBranch
   value: $[eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')]
 - name: isLocPRBranch
@@ -35,6 +35,10 @@ variables:
             startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')
           )]
 # Common Agent Pools in use
+- name: HostedMacImage
+  value: macOS-15
+- name: HostedWindowsImage
+  value: windows-2022
 - name: LogDirectory
   value: $(Build.ArtifactStagingDirectory)/logs
 - name: TestResultsDirectory
@@ -43,6 +47,8 @@ variables:
   value: 'eng/provisioning/xcode.csx'
 - name: provisionator.path
   value: 'eng/provisioning/provisioning.csx'
+- name: internalProvisioning
+  value: false
 - name: provisionator.extraArguments
   value: '-vvvv'
 - name: DotNet.Dir
@@ -67,7 +73,9 @@ variables:
   - group: Xamarin-Secrets
 
 - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
-  - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}:
+  - name: internalProvisioning
+    value: true
+  - ${{ if notin(variables['Build.Reason'], 'PullRequest') }}: 
     - name: PrivateBuild
       value: false
     - name: _RunAsPublic
@@ -78,8 +86,6 @@ variables:
       value: real
     # - name: PostBuildSign
     #   value: true
-    # For eng/common/SetupNugetSources.ps1
-    # - group: Xamarin-Secrets
 
     - group: DotNetBuilds storage account read tokens
     - group: AzureDevOps-Artifact-Feeds-Pats

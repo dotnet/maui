@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 {
 	public partial class ShellChromeGallery
 	{
-		AppShell? AppShell => this.Window!.Page as AppShell;
+		AppShell? AppShell => this.Window?.Page as AppShell;
 
 		public ShellChromeGallery()
 		{
@@ -24,7 +24,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			flyoutHeaderBehavior.ItemsSource = Enum.GetNames(typeof(FlyoutHeaderBehavior));
 			flyoutHeaderBehavior.SelectedIndexChanged += OnFlyoutHeaderBehaviorSelectedIndexChanged;
 
-			if (AppShell != null)
+			if (AppShell is not null)
 			{
 				flyoutBehavior.SelectedIndex = (int)AppShell.FlyoutBehavior;
 				flyoutHeaderBehavior.SelectedIndex = (int)AppShell.FlyoutHeaderBehavior;
@@ -62,28 +62,39 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 
 		void OnFlyoutHeaderBehaviorSelectedIndexChanged(object? sender, EventArgs e)
 		{
-			AppShell!.FlyoutHeaderBehavior = (FlyoutHeaderBehavior)flyoutHeaderBehavior.SelectedIndex;
+			if (AppShell is null)
+				return;
+
+			AppShell.FlyoutHeaderBehavior = (FlyoutHeaderBehavior)flyoutHeaderBehavior.SelectedIndex;
 		}
 
 		void OnFlyoutBehaviorSelectedIndexChanged(object? sender, EventArgs e)
 		{
-			AppShell!.FlyoutBehavior = (FlyoutBehavior)flyoutBehavior.SelectedIndex;
+			if (AppShell is null)
+				return;
+			AppShell.FlyoutBehavior = (FlyoutBehavior)flyoutBehavior.SelectedIndex;
 		}
 
 		protected override void OnAppearing()
 		{
-			AppShell!.FlyoutBehavior = (FlyoutBehavior)flyoutBehavior.SelectedIndex;
-			AppShell!.FlyoutHeaderBehavior = (FlyoutHeaderBehavior)flyoutHeaderBehavior.SelectedIndex;
+			if (AppShell is null)
+				return;
+			AppShell.FlyoutBehavior = (FlyoutBehavior)flyoutBehavior.SelectedIndex;
+			AppShell.FlyoutHeaderBehavior = (FlyoutHeaderBehavior)flyoutHeaderBehavior.SelectedIndex;
 		}
 
 		void OnToggleFlyoutIsPresented(object sender, EventArgs e)
 		{
-			AppShell!.FlyoutIsPresented = !AppShell!.FlyoutIsPresented;
+			if (AppShell is null)
+				return;
+			AppShell.FlyoutIsPresented = !AppShell.FlyoutIsPresented;
 		}
 
 		void OnToggleFlyoutBackgroundColor(object sender, EventArgs e)
 		{
-			AppShell!.RemoveBinding(Shell.FlyoutBackgroundProperty);
+			if (AppShell is null)
+				return;
+			AppShell.RemoveBinding(Shell.FlyoutBackgroundProperty);
 			if (AppShell.FlyoutBackground.IsEmpty ||
 				AppShell.FlyoutBackground == SolidColorBrush.Purple)
 			{
