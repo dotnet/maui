@@ -165,8 +165,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				var currentInset = CollectionView.ContentInset;
 
-				nfloat headerWidth = _headerViewFormsElement?.ToPlatform()?.Frame.Width ?? _headerUIView?.Frame.Height?? 0f;
-				nfloat footerWidth = _footerViewFormsElement?.ToPlatform()?.Frame.Width ?? _footerUIView?.Frame.Height?? 0f;
+				nfloat headerWidth = _headerViewFormsElement?.ToPlatform()?.Frame.Width ?? _headerUIView?.Frame.Width?? 0f;
+				nfloat footerWidth = _footerViewFormsElement?.ToPlatform()?.Frame.Width ?? _footerUIView?.Frame.Width?? 0f;
 				nfloat emptyWidth = emptyView?.Frame.Width ?? 0f;
 
 				if (_headerUIView != null && _headerUIView.Frame.X != headerWidth)
