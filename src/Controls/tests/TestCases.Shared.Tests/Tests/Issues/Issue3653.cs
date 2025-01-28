@@ -1,4 +1,5 @@
-﻿#if WINDOWS || ANDROID
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
+//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -22,7 +23,7 @@ public class Issue3652 : _IssuesUITest
 			string searchFor = $"Remove me using the context menu. #{i}";
 			App.WaitForElement(searchFor);
 
-			App.ContextActions(searchFor);
+			App.ActivateContextMenu(searchFor);
 			App.WaitForElement("Remove");
 			App.Tap("Remove");
 		}
@@ -32,7 +33,7 @@ public class Issue3652 : _IssuesUITest
 			App.Tap("Add an item");
 			string searchFor = $"Remove me using the context menu. #{i}";
 
-			App.ContextActions(searchFor);
+			App.ActivateContextMenu(searchFor);
 			App.WaitForElement("Remove");
 			App.Tap("Remove");
 		}

@@ -1,4 +1,5 @@
-﻿#if WINDOWs || ANDROID
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
+//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -31,7 +32,7 @@ public class GitHub1331 : _IssuesUITest
 		App.WaitForNoElement("Context Action");
 
 		// But a Long Press *should* still display the context action
-		App.ContextActions(CellItem);
+		App.ActivateContextMenu(CellItem);
 		App.WaitForElement("Context Action");
 	}
 }

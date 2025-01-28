@@ -1,4 +1,5 @@
-﻿#if WINDOWS || ANDROID
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
+//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -28,7 +29,7 @@ public class Bugzilla58833 : _IssuesUITest
 		App.WaitForElement("TapGesture Fired");
 
 		// Both items should allow access to the context menu
-		App.ContextActions("Item #2");
+		App.ActivateContextMenu("Item #2");
 		App.WaitForElement("2 Action");
 #if ANDROID
 		App.TapBackArrow();
@@ -36,7 +37,7 @@ public class Bugzilla58833 : _IssuesUITest
 		App.Tap("Item #3");
 #endif
 
-		App.ContextActions("Item #1");
+		App.ActivateContextMenu("Item #1");
 		App.WaitForElement("1 Action");
 #if ANDROID
 		App.TapBackArrow();

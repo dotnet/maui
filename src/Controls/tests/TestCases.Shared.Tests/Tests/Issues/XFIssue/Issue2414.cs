@@ -1,4 +1,5 @@
-﻿#if WINDOWs || ANDROID
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
+//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -18,7 +19,7 @@ public class Issue2414 : _IssuesUITest
 	public void TestShowContextMenuItemsInTheRightOrder()
 	{
 		App.WaitForElement("Swipe ME");
-		App.ContextActions("Swipe ME");
+		App.ActivateContextMenu("Swipe ME");
 		App.WaitForElement("Text0");
 		VerifyScreenshot();
 		App.Tap("Text0");

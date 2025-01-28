@@ -2293,28 +2293,29 @@ namespace UITest.Appium
 		/// - On Android, it performs a long press gesture on the element.
 		/// - On Windows, it simulates a right-click (touch-and-hold) on the element.
 		/// - On iOS, it performs a swipe from right to left on the element.
+		/// - On Catalyst, it performs a scroll from right to left on the element.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
-
-		public static void ContextActions(this IApp app, string element)
+		/// <param name="element">The element on which to perform the context action.</param>
+		public static void ActivateContextMenu(this IApp app, string element)
 		{
-			var uiElement = FindElement(app, element);
-			if (app is AppiumAndroidApp)
+			var uiElement = WaitForElement(app, element);
+
+			switch (app)
 			{
-				app.LongPress(element);
+				case AppiumAndroidApp _:
+					app.LongPress(element);
+					break;
+				case AppiumWindowsApp _:
+					app.TouchAndHold(uiElement);
+					break;
+				case AppiumIOSApp _:
+					app.SwipeRightToLeft(uiElement, swipePercentage: 5, swipeSpeed: 500, withInertia: true);
+					break;
+				case AppiumCatalystApp _:
+					app.ScrollRight(uiElement, swipePercentage: 5, swipeSpeed: 500, withInertia: true);
+					break;
 			}
-			else if (app is AppiumWindowsApp)
-			{
-				app.TouchAndHold(uiElement);
-			}
-			else if (app is AppiumIOSApp)
-			{
-				app.SwipeRightToLeft(uiElement, swipePercentage: 0.9, swipeSpeed: 500, withInertia: true);
-			}
-			else if (app is AppiumCatalystApp)
-            {
-                app.ScrollRight(uiElement);
-            }
 		}
 
 		static IUIElement Wait(Func<IUIElement?> query,
