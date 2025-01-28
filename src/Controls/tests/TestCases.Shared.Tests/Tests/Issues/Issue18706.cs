@@ -9,10 +9,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue18706(TestDevice device) : base(device) { }
 
 		public override string Issue => "Editor Background works";
-
 		[Test]
 		[Category(UITestCategories.Editor)]
-		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented on macOS")]
 		public void EditorBackgroundWorks()
 		{
 			App.WaitForElement("WaitForStubControl");
