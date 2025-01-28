@@ -81,7 +81,10 @@ public class MemoryTests : ControlsHandlerTestBase
 
 	[Theory("Pages Do Not Leak")]
 	[InlineData(typeof(ContentPage))]
+#if !ANDROID
 	[InlineData(typeof(NavigationPage))]
+	//https://github.com/dotnet/maui/issues/27411
+#endif
 	[InlineData(typeof(TabbedPage))]
 	public async Task PagesDoNotLeak(Type type)
 	{
