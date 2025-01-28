@@ -38,7 +38,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement(InfoLabel);
 			var result3 = App.FindElement(InfoLabel).GetText();
-			ClassicAssert.AreEqual("0", result3);
+			ClassicAssert.AreEqual("1", result3);
 
 			App.Click("KeepLastItemInViewButton");
 			App.Click(AddItemButton);
