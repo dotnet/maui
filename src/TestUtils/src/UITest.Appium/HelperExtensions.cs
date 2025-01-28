@@ -1830,16 +1830,16 @@ namespace UITest.Appium
 		/// <summary>
 		/// Switch the System animations state.
 		/// Optimize and accelerate tests, eliminating animations entirely when Appium is executing tests, as they serve no practical purpose in this context.
-		/// Functionality that's only available on Android.
+		/// Functionality that's only available on Android and Catalyst.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="enableSystemAnimations">Enable/disable the system animations.</param>
-		/// <exception cref="InvalidOperationException">ToggleSystemAnimations is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		/// <exception cref="InvalidOperationException">ToggleSystemAnimations is only supported on <see cref="AppiumAndroidApp"/> and <see cref="AppiumCatalystApp"/>.</exception>
 		public static void ToggleSystemAnimations(this IApp app, bool enableSystemAnimations)
 		{
-			if (app is not AppiumAndroidApp)
+			if (app is not AppiumAndroidApp && app is not AppiumCatalystApp)
 			{
-				throw new InvalidOperationException($"ToggleSystemAnimations is only supported on AppiumAndroidApp");
+				throw new InvalidOperationException($"ToggleSystemAnimations is not supported");
 			}
 
 			app.CommandExecutor.Execute("toggleSystemAnimations", new Dictionary<string, object>()
