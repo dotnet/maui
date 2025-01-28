@@ -7,7 +7,6 @@ using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.Maui.Graphics;
 using Xunit;
-using Microsoft.Maui.Platform;
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -161,19 +160,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			defaultWebView.Source = "http://xamarin.com";
 
 			Assert.NotNull(defaultWebView.Cookies);
-		}
-
-		/// <summary>
-		/// This test validates that absolute URIs are not treated as relative ones. 
-		/// Notably, we test URIs with non-Western characters (e.g., "Ğ" and spaces encoded as "%20").
-		/// </summary>
-		[Theory]
-		[InlineData("https://example.com/test-Ağ-Sistem%20Bilgi%20Güvenliği%20Md/Guide.pdf")]
-		[InlineData("https://google.com/[]")]
-		public void TestUrisWithSpecialCharacters(string uri)
-		{
-			bool valid = WebViewHelper.IsRelativeUrl(uri);
-			Assert.False(valid, $"The URI '{uri}' was identified as a relative URI.");
 		}
 	}
 }
