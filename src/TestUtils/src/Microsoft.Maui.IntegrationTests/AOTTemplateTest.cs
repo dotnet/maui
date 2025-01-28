@@ -26,9 +26,8 @@ public class AOTTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-		// FIXME: NativeAOT not working yet on .NET 10
-		//var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
-		//actualWarnings.AssertNoWarnings();
+		var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
+		actualWarnings.AssertNoWarnings();
 	}
 
 	[Test]
@@ -76,9 +75,8 @@ public class AOTTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.Build(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-		// FIXME: NativeAOT not working yet on .NET 10
-		//var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
-		//actualWarnings.AssertWarnings(BuildWarningsUtilities.ExpectedNativeAOTWarnings);
+		var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
+		actualWarnings.AssertWarnings(BuildWarningsUtilities.ExpectedNativeAOTWarnings);
 	}
 
 	private List<string> PrepareNativeAotBuildProps()
