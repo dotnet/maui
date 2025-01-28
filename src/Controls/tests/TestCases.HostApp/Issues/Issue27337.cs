@@ -18,6 +18,7 @@
 							Text = "Navigate to Second Page",
 							HorizontalOptions = LayoutOptions.Fill,
 							Command = new Command(() => Shell.Current.GoToAsync("secondPage"))
+							Command = new Command(() => Shell.Current.GoToAsync("Issue27337_SecondPage"))
 						}
 					}
 				}
@@ -37,28 +38,15 @@
 				}
 			});
 
-			Routing.RegisterRoute("secondPage", typeof(SecondPage));
+			Routing.RegisterRoute("Issue27337_SecondPage", typeof(Issue27337_SecondPage));
 		}
 	}
 
-	public class SecondPage : ContentPage
+	public class Issue27337_SecondPage : ContentPage
 	{
-		public SecondPage()
+		public Issue27337_SecondPage()
 		{
 			Title = "Second Page";
-			Content = new VerticalStackLayout
-			{
-				Children =
-				{
-					new Button
-					{
-						AutomationId = "GoBackButton",
-						Text = "Go Back",
-						HorizontalOptions = LayoutOptions.Fill,
-						Command = new Command(()=> Shell.Current.GoToAsync(".."))
-					}
-				}
-			};
 		}
 	}
 }

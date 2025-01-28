@@ -18,9 +18,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("SecondPageButton");
 			App.Tap("SecondPageButton");
-			App.WaitForElement("GoBackButton");
-			App.Tap("GoBackButton");
-			VerifyScreenshot();
+			App.Back();
+			VerifyNoFlyoutIconAfterBackNavigation();
+		}
+
+		void VerifyNoFlyoutIconAfterBackNavigation()
+		{
+#if ANDROID
+			App.WaitForNoElement(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc=\"Open navigation drawer\"]"));
+#elif IOS || MACCATALYST
+			App.WaitForNoElement("OK");
+#elif WINDOWS
+			App.WaitForNoElement(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
+#endif
 		}
 	}
 }
