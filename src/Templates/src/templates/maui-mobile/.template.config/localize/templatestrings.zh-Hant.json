@@ -1,14 +1,14 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI 應用程式",
-  "description": "此專案可用於建立適用於 iOS、Android、Mac Catalyst、Tizen 和 WinUI 的 .NET MAUI 應用程式",
+  "description": "此專案可用於建立適用於 iOS、Android、Mac Catalyst、WinUI 和 Tizen 的 .NET MAUI 應用程式",
   "postActions/openInEditor/description": "在編輯器中開啟 MainPage.xaml。",
-  "postActions/restore/description": "Restore NuGet packages required by this project.",
-  "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'",
+  "postActions/restore/description": "還原此專案所需的 NuGet 套件。",
+  "postActions/restore/manualInstructions/default/text": "執行 'dotnet restore'",
   "symbols/applicationId/description": "覆寫專案中的 $(ApplicationId)",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
-  "symbols/IncludeSampleContent/displayName": "_Include sample content",
-  "symbols/IncludeSampleContent/description": "Configures whether to add sample pages and functionality to demonstrate basic usage patterns.",
-  "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create."
+  "symbols/Framework/description": "專案的目標 Framework。",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "目標 DOTNET_TFM_VALUE",
+  "symbols/IncludeSampleContent/displayName": "包含範例內容(_I)",
+  "symbols/IncludeSampleContent/description": "設定是否要新增範例頁面和功能，以示範基本使用模式。",
+  "symbols/skipRestore/description": "如果指定，則會在建立時跳過專案的自動還原。"
 }

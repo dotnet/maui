@@ -14,11 +14,11 @@ public partial class Issue12429 : TestShell
 		InitializeComponent();
 
 		// TODO: make this work
-		//if (DeviceInfo.Platform == DevicePlatform.Android)
-		//	SmallFlyoutItem = SmallFlyoutItem / DeviceDisplay.MainDisplayInfo.Density;
+		if (DeviceInfo.Platform == DevicePlatform.Android)
+			SmallFlyoutItem = SmallFlyoutItem / DeviceDisplay.MainDisplayInfo.Density;
 
-		//if (DeviceInfo.Platform == DevicePlatform.Android)
-		//	SizeToModifyBy = SizeToModifyBy / DeviceDisplay.MainDisplayInfo.Density;
+		if (DeviceInfo.Platform == DevicePlatform.Android)
+			SizeToModifyBy = SizeToModifyBy / DeviceDisplay.MainDisplayInfo.Density;
 
 		this.BindingContext = this;
 	}
