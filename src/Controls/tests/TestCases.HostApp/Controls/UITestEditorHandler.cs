@@ -2,15 +2,15 @@
 
 namespace Maui.Controls.Sample
 {
-	public class UITestEntryHandler : EntryHandler
+	public class UITestEditorHandler : EditorHandler
 	{
-		public UITestEntryHandler() : base(EntryHandler.Mapper)
+		public UITestEditorHandler() : base(EditorHandler.Mapper)
 		{
-			Mapper.AppendToMapping(nameof(IUITestEntry.IsCursorVisible), (handler, entry) =>
+			Mapper.AppendToMapping(nameof(IUITestEditor.IsCursorVisible), (handler, editor) =>
 			{
-				if (entry is UITestEntry testEntry)
+				if (editor is UITestEditor testEditor)
 				{
-					bool isCursorVisible = testEntry.IsCursorVisible;
+					bool isCursorVisible = testEditor.IsCursorVisible;
 #if ANDROID
 					handler.PlatformView.SetCursorVisible(isCursorVisible);
 #elif IOS || MACCATALYST
