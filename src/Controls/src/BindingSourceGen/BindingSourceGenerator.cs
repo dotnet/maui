@@ -84,7 +84,10 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(interceptedMethodTypeResult.Diagnostics);
 		}
 
+#pragma warning disable RSEXPERIMENTAL002
 		var interceptableLocation = context.SemanticModel.GetInterceptableLocation(invocation, t);
+#pragma warning restore RSEXPERIMENTAL002
+
 		var sourceCodeLocation = SourceCodeLocation.CreateFrom(method.Name.GetLocation());
 
 
