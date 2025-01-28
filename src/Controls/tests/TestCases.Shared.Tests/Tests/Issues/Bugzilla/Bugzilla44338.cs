@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,8 +18,7 @@ public class Bugzilla44338 : _IssuesUITest
 	[Test]
 	public void Bugzilla44338Test()
 	{
-		App.ContextActions("A");
+		App.ActivateContextMenu("A");
 		App.Tap("C");
 	}
 }
-#endif

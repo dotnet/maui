@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // MoreInformation: https://github.com/dotnet/maui/issues/27394
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,12 +23,12 @@ public class Bugzilla45027 : _IssuesUITest
 		var firstItemList = "0";
 		var secondItemList = "1";
 		App.WaitForElement(firstItemList);
-		App.ContextActions(firstItemList);
+		App.ActivateContextMenu(firstItemList);
 		App.WaitForElement(BUTTON_ACTION_TEXT);
 		App.DoubleTap(BUTTON_ACTION_TEXT);
 		App.WaitForElement(secondItemList);
 		App.Tap(secondItemList);
-		App.ContextActions(firstItemList);
+		App.ActivateContextMenu(firstItemList);
 		App.WaitForElement(BUTTON_DELETE_TEXT);
 		App.DoubleTap(BUTTON_DELETE_TEXT);
 	}

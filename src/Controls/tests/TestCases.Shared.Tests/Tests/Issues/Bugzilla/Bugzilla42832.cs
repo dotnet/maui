@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // MoreInformation: https://github.com/dotnet/maui/issues/27394
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -17,7 +17,7 @@ public class Bugzilla42832 : _IssuesUITest
 	[Category(UITestCategories.ListView)]
 	public void ContextActionsScrollNRE()
 	{
-		App.ContextActions("Item #0");
+		App.ActivateContextMenu("Item #0");
 		App.WaitForElement("Test Item");
 
 		int counter = 0;

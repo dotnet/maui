@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // MoreInformation: https://github.com/dotnet/maui/issues/27394
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -17,11 +17,11 @@ public class Issue2794 : _IssuesUITest
 	[Category(UITestCategories.TableView)]
 	public void Issue2794Test()
 	{
-		App.ContextActions("Cell2");
+		App.ActivateContextMenu("Cell2");
 		App.Tap("Delete me first");
 		App.WaitForNoElement("Cell2");
 
-		App.ContextActions("Cell1");
+		App.ActivateContextMenu("Cell1");
 		App.Tap("Delete me after");
 		App.WaitForNoElement("Cell1");
 	}
