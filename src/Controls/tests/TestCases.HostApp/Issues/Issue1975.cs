@@ -32,8 +32,11 @@ namespace Maui.Controls.Sample.Issues
 				lv.SetBinding(ListView.ItemsSourceProperty, new Binding("Items"));
 				lv.IsGroupingEnabled = true;
 				lv.GroupDisplayBinding = new Binding("Description");
+#if !WINDOWS
+				//It appears that the ListView is not detectable in the CI environment
+				//For more information : https://github.com/dotnet/maui/issues/27336
 				lv.GroupShortNameBinding = new Binding("ShortName");
-
+#endif
 				lv.ItemTemplate = new DataTemplate(() =>
 				{
 					var textCell = new TextCell();

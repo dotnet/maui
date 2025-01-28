@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Header not rendering issue: https://github.com/dotnet/maui/issues/27177
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,6 +15,7 @@ public class Issue8761 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
+	[Ignore("This test is very flaky and needs to be fixed. See https://github.com/dotnet/maui/issues/27272")]
 	public void CollectionViewHeaderTemplateAndFooterTemplateDontWork()
 	{
 		for (int i = 0; i < 4; i++)
@@ -24,3 +26,4 @@ public class Issue8761 : _IssuesUITest
 		}
 	}
 }
+#endif
