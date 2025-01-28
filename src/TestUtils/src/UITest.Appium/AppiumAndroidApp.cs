@@ -100,10 +100,6 @@ namespace UITest.Appium
 			// Because our tests don’t require this feature, disable it to improve performance and consistency, especially in scrolling actions.
 			options.AddAdditionalAppiumOption("disableAndroidWatchers", "true");
 
-			// Compresses the Android layout hierarchy, simplifying the XML structure and speeding up XPath queries.
-			// This reduces the time it takes to retrieve page sources, improving overall test speed.
-			options.AddAdditionalAppiumOption("ignoreUnimportantViews", "true");
-
 			return options;
 		}
 	}
