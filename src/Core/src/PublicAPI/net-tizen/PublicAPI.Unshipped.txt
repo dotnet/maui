@@ -67,9 +67,3 @@ static Microsoft.Maui.Platform.ElementExtensions.ToContainerView(this Microsoft.
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
-override Microsoft.Maui.Controls.GradientBrush.GetHashCode() -> int
-override Microsoft.Maui.Controls.LinearGradientBrush.GetHashCode() -> int
-override Microsoft.Maui.Controls.RadialGradientBrush.GetHashCode() -> int
-~override Microsoft.Maui.Controls.GradientBrush.Equals(object obj) -> bool
-~override Microsoft.Maui.Controls.LinearGradientBrush.Equals(object obj) -> bool
-~override Microsoft.Maui.Controls.RadialGradientBrush.Equals(object obj) -> bool
