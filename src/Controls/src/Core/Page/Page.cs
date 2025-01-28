@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	/// <remarks><see cref = "Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="Page"/> class are most prominently used as the top level UI element in .NET MAUI applications. In addition to their role as the main pages of applications, <see cref="Page"/> objects and their descendants can be used with navigation classes, such as <see cref="NavigationPage"/> or <see cref="FlyoutPage"/>, among others, to provide rich user experiences that conform to the expected behaviors on each platform.
 	/// </remarks>
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement
 #if IOS
 	,IiOSPageSpecifics
@@ -499,11 +501,12 @@ namespace Microsoft.Maui.Controls
 			if (TitleView != null)
 				SetInheritedBindingContext(TitleView, BindingContext);
 		}
-		
-		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+
+
+		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger, int depth)
 		{
 			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
-			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger, depth));
 		}
 
 		/// <summary>
@@ -513,8 +516,19 @@ namespace Microsoft.Maui.Controls
 		/// <param name="e">The event arguments.</param>
 		protected virtual void OnChildMeasureInvalidated(object sender, EventArgs e)
 		{
-			InvalidationTrigger trigger = (e as InvalidationEventArgs)?.Trigger ?? InvalidationTrigger.Undefined;
-			OnChildMeasureInvalidated((VisualElement)sender, trigger);
+			var depth = 0;
+			InvalidationTrigger trigger;
+			if (e is InvalidationEventArgs args)
+			{
+				trigger = args.Trigger;
+				depth = args.CurrentInvalidationDepth;
+			}
+			else
+			{
+				trigger = InvalidationTrigger.Undefined;
+			}
+
+			OnChildMeasureInvalidated((VisualElement)sender, trigger, depth);
 		}
 
 		/// <summary>
@@ -593,7 +607,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
+		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger, int depth)
 		{
 			var container = this as IPageContainer<Page>;
 			if (container != null)
@@ -613,7 +627,14 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			if (depth <= 1)
+			{
+				InvalidateMeasureInternal(new InvalidationEventArgs(InvalidationTrigger.MeasureChanged, depth));
+			}
+			else
+			{
+				FireMeasureChanged(trigger, depth);
+			}
 		}
 
 		internal void OnAppearing(Action action)
@@ -732,12 +753,12 @@ namespace Microsoft.Maui.Controls
 					}
 
 					InsertLogicalChild(insertIndex, item);
-					
+
 					if (item is VisualElement)
 					{
 						InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 					}
-					
+
 					if (index >= 0)
 					{
 						index++;
@@ -866,7 +887,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			if (args.NavigationType == NavigationType.Pop || 
+			if (args.NavigationType == NavigationType.Pop ||
 				args.NavigationType == NavigationType.PopToRoot)
 			{
 				if (!this.IsLoaded)
@@ -919,5 +940,10 @@ namespace Microsoft.Maui.Controls
 		/// <returns>The <see cref="Window"/> instance that parents the page.</returns>
 		public virtual Window GetParentWindow()
 			=> this.FindParentOfType<Window>();
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"BindingContext = {BindingContext}, Title = {Title}";
+		}
 	}
 }

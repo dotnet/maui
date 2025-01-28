@@ -78,7 +78,6 @@ namespace ContentPageExample
       <Parameters />
       <Docs>
         <summary>Initializes a new ContentPage instance.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Content">
@@ -104,7 +103,6 @@ namespace ContentPageExample
       <Docs>
         <summary>Gets or sets the view that contains the content of the Page.</summary>
         <value>A <see cref="T:Microsoft.Maui.Controls.View" /> subclass, or <see langword="null" />.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ContentProperty">
@@ -123,7 +121,6 @@ namespace ContentPageExample
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.ContentPage.Content" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnBindingContextChanged">
@@ -143,7 +140,6 @@ namespace ContentPageExample
       <Parameters />
       <Docs>
         <summary>Method that is called when the binding context changes.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

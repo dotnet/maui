@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Editor)]
-		[FailsOnMac("Currently IsKeyboardShown is not implemented.")]
-		[FailsOnWindows("Currently IsKeyboardShown is not implemented.")]
+		[FailsOnMacWhenRunningOnXamarinUITest("Currently IsKeyboardShown is not implemented.")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("Currently IsKeyboardShown is not implemented.")]
 		public void Issue18754Test()
 		{
 			App.WaitForElement("WaitForStubControl");

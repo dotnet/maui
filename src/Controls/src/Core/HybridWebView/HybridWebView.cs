@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
@@ -33,6 +34,28 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(HybridRootProperty, value); }
 		}
 
+		/// <inheritdoc/>
+		object? IHybridWebView.InvokeJavaScriptTarget { get; set; }
+
+		[UnconditionalSuppressMessage("Trimming", "IL2114", Justification = "Base type VisualElement specifies DynamicallyAccessedMemberTypes.NonPublicFields: https://github.com/dotnet/runtime/issues/108978#issuecomment-2420091986")]
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+		Type? _invokeJavaScriptType;
+
+		/// <inheritdoc/>
+		[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+		Type? IHybridWebView.InvokeJavaScriptType
+		{
+			get => _invokeJavaScriptType;
+			set => _invokeJavaScriptType = value;
+		}
+
+		/// <inheritdoc/>
+		public void SetInvokeJavaScriptTarget<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(T target) where T : class
+		{
+			((IHybridWebView)this).InvokeJavaScriptTarget = target;
+			((IHybridWebView)this).InvokeJavaScriptType = typeof(T);
+		}
+
 		void IHybridWebView.RawMessageReceived(string rawMessage)
 		{
 			RawMessageReceived?.Invoke(this, new HybridWebViewRawMessageReceivedEventArgs(rawMessage));
@@ -55,6 +78,35 @@ namespace Microsoft.Maui.Controls
 				{
 					Message = rawMessage,
 				});
+		}
+
+		/// <inheritdoc/>
+		/// TODO: make this public for .NET 10 (or a .NET 9 SR)
+		internal async Task InvokeJavaScriptAsync(
+			string methodName,
+			object?[]? paramValues = null,
+			JsonTypeInfo?[]? paramJsonTypeInfos = null)
+		{
+			if (string.IsNullOrEmpty(methodName))
+			{
+				throw new ArgumentException($"The method name cannot be null or empty.", nameof(methodName));
+			}
+			if (paramValues != null && paramJsonTypeInfos == null)
+			{
+				throw new ArgumentException($"The parameter values were provided, but the parameter JSON type infos were not.", nameof(paramJsonTypeInfos));
+			}
+			if (paramValues == null && paramJsonTypeInfos != null)
+			{
+				throw new ArgumentException($"The parameter JSON type infos were provided, but the parameter values were not.", nameof(paramValues));
+			}
+			if (paramValues != null && paramValues.Length != paramJsonTypeInfos!.Length)
+			{
+				throw new ArgumentException($"The number of parameter values does not match the number of parameter JSON type infos.", nameof(paramValues));
+			}
+
+			await Handler?.InvokeAsync(
+				nameof(IHybridWebView.InvokeJavaScriptAsync),
+				new HybridWebViewInvokeJavaScriptRequest(methodName, null, paramValues, paramJsonTypeInfos))!;
 		}
 
 		/// <inheritdoc/>

@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>The list view instance that Microsoft.Maui.Controls created on the Android platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetIsFastScrollEnabled">
@@ -38,7 +37,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns a Boolean value that tells whether fast scrolling is enabled.</summary>
         <returns>A Boolean value that tells whether fast scrolling is enabled.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsFastScrollEnabled">
@@ -62,7 +60,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns a Boolean value that tells whether fast scrolling is enabled.</summary>
         <returns>A Boolean value that tells whether fast scrolling is enabled.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsFastScrollEnabledProperty">
@@ -81,7 +78,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls whether fast scrolling is enabled.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsFastScrollEnabled">
@@ -106,7 +102,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">The new property value to assign.</param>
         <summary>Sets the attached property that controls whether fast scrolling is enabled.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsFastScrollEnabled">
@@ -132,7 +127,6 @@
         <param name="value">The new property value to assign.</param>
         <summary>Sets the attached property that controls whether fast scrolling is enabled.</summary>
         <returns>The updated configuration object, on which more methods may be called.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

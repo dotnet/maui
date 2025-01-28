@@ -6,7 +6,7 @@ class Issue5793 : TestNavigationPage
 	protected override void Init()
 	{
 
-		//PushAsync(new GalleryPages.CollectionViewGalleries.ObservableCollectionResetGallery());
+		PushAsync(new CollectionViewGalleries.ObservableCollectionResetGallery());
 	}
 
 }

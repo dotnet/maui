@@ -13,8 +13,8 @@ public class Issue5500 : TestContentPage
 
 		editor = new Editor();
 		entry = new Entry();
-
-		editor.SetBinding(Editor.TextProperty, "Text");
+		// On iOS, the app freezes. Changing the binding mode to one-way resolves the issue. It seems an infinite loop occurs when properties bind to each other.
+		editor.SetBinding(Editor.TextProperty, "Text", mode: BindingMode.OneWay);
 		editor.BindingContext = entry;
 		editor.Placeholder = "Editor";
 		editor.AutoSize = EditorAutoSizeOption.TextChanges;
@@ -36,10 +36,6 @@ public class Issue5500 : TestContentPage
 	protected override void OnAppearing()
 	{
 		base.OnAppearing();
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0612 // Type or member is obsolete
-		Device.BeginInvokeOnMainThread(GarbageCollectionHelper.Collect);
-#pragma warning restore CS0612 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
+		MainThread.BeginInvokeOnMainThread(GarbageCollectionHelper.Collect);
 	}
 }

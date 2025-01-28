@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
 		public void SelectedItemsNotInSourceDoesNotCrash()
-		{      
+		{
 			// If this page didn't crash, then we're good
 			App.WaitForElement("FirstLabel");
 		}

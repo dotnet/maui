@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS // Text is not rendered on windows. Issue -  https://github.com/dotnet/maui/issues/22731
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,24 +13,23 @@ public class Issue2927 : _IssuesUITest
 
 	public override string Issue => "ListView item tapped not firing multiple times";
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
-	// public void Issue2927Test()
-	// {
-	// 	RunningApp.Screenshot("I am at Issue 2927");
-	// 	RunningApp.WaitForElement(q => q.Marked("Cell1 0"));
-	// 	RunningApp.Tap(q => q.Marked("Cell1 0"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Cell1 1"));
-	// 	RunningApp.Screenshot("Tapped Once");
-	// 	RunningApp.Tap(q => q.Marked("Cell1 1"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Cell1 2"));
-	// 	RunningApp.Screenshot("Tapped Twice");
-	// 	RunningApp.Tap(q => q.Marked("Cell3 0"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Cell3 1"));
-	// 	RunningApp.Screenshot("Click other cell");
-	// 	RunningApp.Tap(q => q.Marked("Cell1 2"));
-	// 	RunningApp.WaitForElement(q => q.Marked("Cell1 3"));
-	// 	RunningApp.Screenshot("Click first cell again");
-	// }
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void Issue2927Test()
+	{
+
+		App.WaitForElement("Cell1 0");
+		App.Tap("Cell1 0");
+		App.WaitForElement("Cell1 1");
+
+		App.Tap("Cell1 1");
+		App.WaitForElement("Cell1 2");
+
+		App.Tap("Cell3 0");
+		App.WaitForElement("Cell3 1");
+
+		App.Tap("Cell1 2");
+		App.WaitForElement("Cell1 3");
+	}
 }
+#endif

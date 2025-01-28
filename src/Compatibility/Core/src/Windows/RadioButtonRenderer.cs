@@ -10,7 +10,7 @@ using WThickness = Microsoft.UI.Xaml.Thickness;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class RadioButtonRenderer : ViewRenderer<RadioButton, FormsRadioButton>
+	public partial class RadioButtonRenderer : ViewRenderer<RadioButton, FormsRadioButton>
 	{
 		bool _fontApplied;
 

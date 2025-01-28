@@ -9,15 +9,21 @@ using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents
+	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents, ICrossPlatformLayoutBacking
 	{
 		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
-		internal ICrossPlatformLayout? CrossPlatformLayout
+		ICrossPlatformLayout? ICrossPlatformLayoutBacking.CrossPlatformLayout
 		{
 			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
 			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);
+		}
+		
+		internal ICrossPlatformLayout? CrossPlatformLayout
+		{
+			get => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout;
+			set => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout = value;
 		}
 
 		double _lastMeasureHeight = double.NaN;
@@ -213,7 +219,7 @@ namespace Microsoft.Maui.Platform
 
 				if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null))
 				{
-					if(CrossPlatformLayout is not null)
+					if (CrossPlatformLayout is not null)
 					{
 						returnSize = CrossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
 					}

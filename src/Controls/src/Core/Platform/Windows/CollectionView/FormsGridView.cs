@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls.Platform
 		int _span;
 		ItemsWrapGrid _wrapGrid;
 		ContentControl _emptyViewContentControl;
+		ScrollViewer _scrollViewer;
 		FrameworkElement _emptyView;
 		View _formsEmptyView;
 		Orientation _orientation;
@@ -145,6 +146,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_emptyViewContentControl = GetTemplateChild("EmptyViewContentControl") as ContentControl;
 
+			_scrollViewer = GetTemplateChild("ScrollViewer") as ScrollViewer;
+
 			if (_emptyView != null && _emptyViewContentControl != null)
 			{
 				_emptyViewContentControl.Content = _emptyView;
@@ -167,9 +170,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateEmptyViewVisibility(WVisibility visibility)
 		{
-			if (_emptyViewContentControl == null)
+			if (_emptyViewContentControl is null)
 			{
 				return;
+			}
+
+			// Adjust the ScrollViewer's hit test visibility if it exists
+			if (_scrollViewer is not null)
+			{
+				// When the empty view is visible, disable hit testing for the ScrollViewer.
+				// This ensures that interactions are directed to the empty view instead of the ScrollViewer.
+				// In the template, the empty view is placed below the ScrollViewer in the visual tree.
+				_scrollViewer.IsHitTestVisible = visibility != WVisibility.Visible;
 			}
 
 			_emptyViewContentControl.Visibility = visibility;

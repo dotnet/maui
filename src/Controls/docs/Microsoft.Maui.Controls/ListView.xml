@@ -67,7 +67,6 @@
       <Parameters />
       <Docs>
         <summary>Creates and initializes a new instance of the <see cref="T:Microsoft.Maui.Controls.ListView" /> class.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -116,7 +115,6 @@
       <Parameters />
       <Docs>
         <summary>Enters the refreshing state by setting the <see cref="P:Microsoft.Maui.Controls.ListView.IsRefreshing" /> property to <see langword="true" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CachingStrategy">
@@ -135,8 +133,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CreateDefault">
@@ -208,8 +204,6 @@
       <Docs>
         <param name="item">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="EndRefresh">
@@ -232,7 +226,6 @@
       <Parameters />
       <Docs>
         <summary>Exits the refreshing state by setting the <see cref="P:Microsoft.Maui.Controls.ListView.IsRefreshing" /> property to <see langword="false" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Footer">
@@ -254,8 +247,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the string, binding, or view that will be displayed at the bottom of the list view.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FooterElement">
@@ -282,8 +273,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FooterProperty">
@@ -305,7 +294,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.ListView.Footer" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FooterTemplate">
@@ -327,8 +315,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a data template to use to format a data object for display at the bottom of the list view.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FooterTemplateProperty">
@@ -350,7 +336,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.ListView.FooterTemplate" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetDisplayTextFromGroup">
@@ -381,8 +366,6 @@
       <Docs>
         <param name="cell">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GroupDisplayBinding">
@@ -545,7 +528,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the <see cref="P:Microsoft.Maui.Controls.ListView.GroupHeaderTemplate" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GroupShortNameBinding">
@@ -703,7 +685,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Identifies the <see cref="F:Microsoft.Maui.Controls.ListView.HasUnevenRowsProperty" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Header">
@@ -725,8 +706,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the string, binding, or view that will be displayed at the top of the list view.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HeaderElement">
@@ -753,8 +732,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HeaderProperty">
@@ -776,7 +753,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.ListView.Header" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HeaderTemplate">
@@ -798,8 +774,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a data template to use to format a data object for display at the top of the list view.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HeaderTemplateProperty">
@@ -821,7 +795,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.ListView.HeaderTemplate" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HorizontalScrollBarVisibility">
@@ -838,9 +811,6 @@ ListView CreateListView()
         <ReturnType>Microsoft.Maui.Controls.ScrollBarVisibility</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HorizontalScrollBarVisibilityProperty">
@@ -858,7 +828,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.ListView.HorizontalScrollBarVisibility" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsGroupingEnabled">
@@ -887,7 +856,6 @@ ListView CreateListView()
         <value>
           <see langword="true" /> if grouping is enabled, <see langword="false" /> otherwise and by default.
         </value>
-        <remarks>To be added.</remarks>
         <altmember cref="P:Microsoft.Maui.Controls.ListView.GroupDisplayBinding" />
         <altmember cref="P:Microsoft.Maui.Controls.ListView.GroupHeaderTemplate" />
       </Docs>
@@ -915,7 +883,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Identifies the <see cref="F:Microsoft.Maui.Controls.ListView.IsGroupingEnabledProperty" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsPullToRefreshEnabled">
@@ -937,8 +904,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a value that tells whether the user can swipe down to cause the application to refresh.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsPullToRefreshEnabledProperty">
@@ -960,7 +925,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.ListView.IsPullToRefreshEnabled" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsRefreshing">
@@ -982,8 +946,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a value that tells whether the list view is currently refreshing.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsRefreshingProperty">
@@ -1005,7 +967,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.ListView.IsRefreshing" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ItemAppearing">
@@ -1083,7 +1044,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when a new item is selected.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ItemTapped">
@@ -1109,7 +1069,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when an item is tapped.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NotifyRowTapped">
@@ -1142,7 +1101,6 @@ ListView CreateListView()
         <param name="index">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="cell">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NotifyRowTapped">
@@ -1177,7 +1135,6 @@ ListView CreateListView()
         <param name="inGroupIndex">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="cell">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NotifyRowTapped">
@@ -1210,8 +1167,6 @@ ListView CreateListView()
         <param name="index">To be added.</param>
         <param name="cell">To be added.</param>
         <param name="isContextmenuRequested">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NotifyRowTapped">
@@ -1246,8 +1201,6 @@ ListView CreateListView()
         <param name="inGroupIndex">To be added.</param>
         <param name="cell">To be added.</param>
         <param name="isContextMenuRequested">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="On&lt;T&gt;">
@@ -1278,8 +1231,6 @@ ListView CreateListView()
       <Docs>
         <typeparam name="T">To be added.</typeparam>
         <summary>Returns the platform-specific instance of this <see cref="T:Microsoft.Maui.Controls.ListView" />, on which a platform-specific method may be called.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnBindingContextChanged">
@@ -1299,7 +1250,6 @@ ListView CreateListView()
       <Parameters />
       <Docs>
         <summary>Method that is called when the binding context changes.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnSizeRequest">
@@ -1336,8 +1286,6 @@ ListView CreateListView()
         <param name="widthConstraint">The width constraint.</param>
         <param name="heightConstraint">The height constraint.</param>
         <summary>Method that is called when a size request is made.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RefreshAllowed">
@@ -1361,8 +1309,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RefreshCommand">
@@ -1384,8 +1330,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the command that is run when the list view enters the refreshing state.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RefreshCommandProperty">
@@ -1407,7 +1351,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.ListView.RefreshCommand" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RefreshControlColor">
@@ -1424,9 +1367,6 @@ ListView CreateListView()
         <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RefreshControlColorProperty">
@@ -1444,7 +1384,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.ListView.RefreshControlColor" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Refreshing">
@@ -1466,7 +1405,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when the list view refreshes.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RowHeight">
@@ -1492,8 +1430,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a value that represents the height of a row.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RowHeightProperty">
@@ -1519,7 +1455,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="F:Microsoft.Maui.Controls.ListView.RowHeightProperty" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Scrolled">
@@ -1536,8 +1471,6 @@ ListView CreateListView()
         <ReturnType>System.EventHandler&lt;Microsoft.Maui.Controls.ScrolledEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScrollTo">
@@ -1639,7 +1572,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectedItem">
@@ -1666,7 +1598,6 @@ ListView CreateListView()
       <Docs>
         <summary>Gets or sets the currently selected item from the <see cref="P:Microsoft.Maui.Controls.ItemsView`1.ItemsSource" />.</summary>
         <value>The selected item or <see langword="null" /> if no item is selected.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectedItemProperty">
@@ -1692,7 +1623,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Identifies the <see cref="F:Microsoft.Maui.Controls.ListView.SelectedItemProperty" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectionMode">
@@ -1732,7 +1662,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.ListView.SelectionMode" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendCellAppearing">
@@ -1763,7 +1692,6 @@ ListView CreateListView()
       <Docs>
         <param name="cell">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendCellDisappearing">
@@ -1794,7 +1722,6 @@ ListView CreateListView()
       <Docs>
         <param name="cell">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendRefreshing">
@@ -1822,7 +1749,6 @@ ListView CreateListView()
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendScrolled">
@@ -1848,8 +1774,6 @@ ListView CreateListView()
       </Parameters>
       <Docs>
         <param name="args">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SeparatorColor">
@@ -1871,7 +1795,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the color of the bar that separates list items.</summary>
-        <value>To be added.</value>
         <remarks>The default value is <c>Color.Default</c>. This property has no effect if <see cref="P:Microsoft.Maui.Controls.ListView.SeparatorVisibility" /> is <see langword="false" />.</remarks>
       </Docs>
     </Member>
@@ -1894,7 +1817,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.ListView.SeparatorColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SeparatorVisibility">
@@ -1916,8 +1838,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a value that tells whether separators are visible between items.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SeparatorVisibilityProperty">
@@ -1939,7 +1859,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.ListView.SeparatorVisibility" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetupContent">
@@ -2027,7 +1946,6 @@ ListView CreateListView()
         <summary>Returns <see langword="false" /> if <paramref name="template" /> is a template selector and elements are being retained. Otherwise, returns <see langword="true" />.</summary>
         <returns>
           <see langword="false" /> if <paramref name="template" /> is a template selector and elements are being retained. Otherwise, <see langword="true" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="VerticalScrollBarVisibility">
@@ -2044,9 +1962,6 @@ ListView CreateListView()
         <ReturnType>Microsoft.Maui.Controls.ScrollBarVisibility</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="VerticalScrollBarVisibilityProperty">
@@ -2064,7 +1979,6 @@ ListView CreateListView()
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.ListView.VerticalScrollBarVisibility" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

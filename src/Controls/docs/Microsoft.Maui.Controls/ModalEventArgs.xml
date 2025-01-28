@@ -17,7 +17,6 @@
   <Interfaces />
   <Docs>
     <summary>Base class for <see cref="T:Microsoft.Maui.Controls.ModalPushedEventArgs" />, <see cref="T:Microsoft.Maui.Controls.ModalPushingEventArgs" />, <see cref="T:Microsoft.Maui.Controls.ModalPoppedEventArgs" />, and <see cref="T:Microsoft.Maui.Controls.ModalPoppingEventArgs" />.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -40,7 +39,6 @@
       <Docs>
         <param name="modal">The modal page.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.ModalEventArgs" /> object for a navigation event that happened to the <paramref name="modal" /> page.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Modal">
@@ -62,8 +60,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the page whose navigation triggered the event.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -13,60 +13,51 @@ public class ScrollToGroup : _IssuesUITest
 
 	public override string Issue => "CollectionView Scroll To Grouped Item";
 
-	// TODO: HostApp UI pushes some ControlGallery specific page? Commented out now, fix that first!
-	//[Test]
-	//[FailsOnIOS]
-	//public void CanScrollToGroupAndItemIndex()
-	//{
-	//	RunningApp.WaitForElement("GroupIndexEntry");
-	//	RunningApp.Tap("GroupIndexEntry");
-	//	RunningApp.ClearText();
-	//	RunningApp.EnterText("5");
+	[Test, Order(2)]
+	public void CanScrollToGroupAndItemIndex()
+	{
+		App.WaitForElement("GroupIndexEntry");
+		App.ClearText("GroupIndexEntry");
+		App.EnterText("GroupIndexEntry","5");
 
-	//	RunningApp.Tap("ItemIndexEntry");
-	//	RunningApp.ClearText();
-	//	RunningApp.EnterText("1");
+		App.ClearText("ItemIndexEntry");
+		App.EnterText("ItemIndexEntry","1");
 
-	//	RunningApp.Tap("GoButton");
+		App.Tap("GoButton");
 
-	//	// Should scroll enough to display this item
-	//	RunningApp.WaitForElement("Squirrel Girl");
-	//}
+		// Should scroll enough to display this item
+		App.WaitForElement("Squirrel Girl");
+	}
 
-	//[Test]
-	//public void InvalidScrollToIndexShouldNotCrash()
-	//{
-	//	RunningApp.WaitForElement("GroupIndexEntry");
-	//	RunningApp.Tap("GroupIndexEntry");
-	//	RunningApp.ClearText();
-	//	RunningApp.EnterText("55");
+	[Test, Order(1)]
+	public void InvalidScrollToIndexShouldNotCrash()
+	{
+		App.WaitForElement("GroupIndexEntry");	
+		App.ClearText("GroupIndexEntry");
+		App.EnterText("GroupIndexEntry","55");
 
-	//	RunningApp.Tap("ItemIndexEntry");
-	//	RunningApp.ClearText();
-	//	RunningApp.EnterText("1");
+		App.ClearText("ItemIndexEntry");
+		App.EnterText("ItemIndexEntry","1");
+		
+		App.Tap("GoButton");
 
-	//	RunningApp.Tap("GoButton");
+		// Should scroll enough to display this item
+		App.WaitForElement("Avengers");
+	}
 
-	//	// Should scroll enough to display this item
-	//	RunningApp.WaitForElement("Avengers");
-	//}
+	[Test, Order(3)]
+	public void CanScrollToGroupAndItem()
+	{
+		App.WaitForElement("GroupNameEntry");
+		App.ClearText("GroupNameEntry");
+		App.EnterText("GroupNameEntry","Heroes for Hire");
 
-	//[Test]
-	//[Compatibility.UITests.FailsOnIOS]
-	//public void CanScrollToGroupAndItem()
-	//{
-	//	RunningApp.WaitForElement("GroupNameEntry");
-	//	RunningApp.Tap("GroupNameEntry");
-	//	RunningApp.ClearText();
-	//	RunningApp.EnterText("Heroes for Hire");
+		App.ClearText("ItemNameEntry");
+		App.EnterText("ItemNameEntry","Misty Knight");
 
-	//	RunningApp.Tap("ItemNameEntry");
-	//	RunningApp.ClearText();
-	//	RunningApp.EnterText("Misty Knight");
+		App.Tap("GoItemButton");
 
-	//	RunningApp.Tap("GoItemButton");
-
-	//	// Should scroll enough to display this item
-	//	RunningApp.WaitForElement("Luke Cage");
-	//}
+		// Should scroll enough to display this item
+		App.WaitForElement("Luke Cage");
+	}
 }

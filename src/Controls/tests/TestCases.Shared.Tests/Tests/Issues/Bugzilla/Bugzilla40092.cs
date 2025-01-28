@@ -6,26 +6,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Bugzilla40092 : _IssuesUITest
 {
+
+	const string Ok = "Ok";
+
 	public Bugzilla40092(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
 	public override string Issue => "Ensure android devices with fractional scale factors (3.5) don't have a white line around the border";
 
-	// TODO: From Xamarin.UITest migration. 
-	// Does some advanced commands to determine layouts, need to find the equivalent on Appium
-	// [Test]
-	// [Category(UITestCategories.BoxView)]
-	// public void AllScreenIsBlack()
-	// {
-	// 	App.WaitForElement(Ok);
-	// 	App.Tap(Ok);
-	// 	var box = App.WaitForElement(Black)[0];
-	// 	var layout = App.WaitForElement(White)[0];
 
-	// 	var assert = box.Rect.Height == layout.Rect.Height &&
-	// 		box.Rect.Width == layout.Rect.Width;
-
-	// 	Assert.IsTrue(assert);
-	// }
+	[Test]
+	[Category(UITestCategories.BoxView)]
+	public void AllScreenIsBlack()
+	{
+#if !ANDROID // Display alert not shown in android also this is not a needed one for ensuring this case, so ignored the below steps on Android.
+		App.TapDisplayAlertButton(Ok);
+#else
+		App.WaitForElement("black");
+#endif
+		VerifyScreenshot();
+	}
 }
