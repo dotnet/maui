@@ -1,10 +1,12 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="Type[@FullName='Microsoft.Maui.Controls.CheckBox']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class CheckBox : View, IElementConfiguration<CheckBox>, IBorderElement, IColorElement, ICheckBox
 	{
 		readonly Lazy<PlatformConfigurationRegistry<CheckBox>> _platformConfigurationRegistry;
@@ -78,6 +80,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get => IsChecked;
 			set => SetValue(IsCheckedProperty, value, SetterSpecificity.FromHandler);
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"IsChecked = {IsChecked}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }
