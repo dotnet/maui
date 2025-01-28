@@ -18,16 +18,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			// 1. Navigate to a second page.
 			App.WaitForElement("FirstButton");
-			App.Click("FirstButton");
+			App.Tap("FirstButton");
 
 			// 2. Double tap (gesture) a Label to navigate again.
 			// Without exceptions, the test already passed.
 			App.WaitForElement("SecondLabel");
-			App.DoubleClick("SecondLabel");
+			App.DoubleTap("SecondLabel");
 
 			// 3. Navigate back.
 			App.WaitForElement("ThirdButton");
-			App.DoubleClick("ThirdButton");
+			App.DoubleTap("ThirdButton");
 			App.Back();
 		}
 	}
