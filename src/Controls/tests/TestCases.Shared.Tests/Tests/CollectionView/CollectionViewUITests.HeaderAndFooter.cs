@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-#if IOS
+
     public class CollectionViewHeaderAndFooterTests : CollectionViewUITests
     {
 
@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests
         {
         }
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Header not rendering issue: https://github.com/dotnet/maui/issues/27177
 		[Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterStringWorks()
@@ -29,7 +28,6 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Just a string as a header");
             App.WaitForElement("This footer is also a string");
         }
-#endif
 
 		[Test]
         [Category(UITestCategories.CollectionView)]
@@ -97,5 +95,4 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 #endif
     }
-#endif
 	}
