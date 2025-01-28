@@ -25,7 +25,8 @@ public class Bugzilla46363 : _IssuesUITest
 		App.WaitForNoElement(ContextAction);
 	}
 	
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //MoreInformation:https://github.com/dotnet/maui/issues/27394
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
+//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
 	[Test]
 	[Category(UITestCategories.ListView)]
 	public void _46363_ContextAction_Succeeds()

@@ -1,4 +1,5 @@
-﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // MoreInformation: https://github.com/dotnet/maui/issues/27394 
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
+//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

@@ -8,12 +8,11 @@
     xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
     xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    x:Name="Issue1455MainPage"
     mc:Ignorable="d">
     <controls:TestContentPage.Resources>
         <ResourceDictionary>
             <DataTemplate x:Key="Temp1">
-                <ViewCell android:ViewCell.IsContextActionsLegacyModeEnabled="{Binding BindingContext.IsContextActionsLegacyModeEnabled, Source={x:Reference Issue1455MainPage}}">
+                <ViewCell android:ViewCell.IsContextActionsLegacyModeEnabled="{Binding BindingContext.IsContextActionsLegacyModeEnabled, Source={x:Reference Issue1455Page}}">
                     <ViewCell.ContextActions>
                         <MenuItem Text="{Binding Item1Text}" />
                         <MenuItem Text="{Binding Item2Text}" />
@@ -26,7 +25,7 @@
                 </ViewCell>
             </DataTemplate>
             <DataTemplate x:Key="Temp2">
-                <ViewCell android:ViewCell.IsContextActionsLegacyModeEnabled="{Binding BindingContext.IsContextActionsLegacyModeEnabled, Source={x:Reference Issue1455MainPage}}">
+                <ViewCell android:ViewCell.IsContextActionsLegacyModeEnabled="{Binding BindingContext.IsContextActionsLegacyModeEnabled, Source={x:Reference Issue1455Page}}">
                     <ViewCell.ContextActions>
                         <MenuItem Text="{Binding Item1Text}" />
                         <MenuItem Text="{Binding Item2Text}" />
