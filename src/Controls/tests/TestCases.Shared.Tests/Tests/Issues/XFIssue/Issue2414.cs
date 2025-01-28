@@ -21,8 +21,8 @@ public class Issue2414 : _IssuesUITest
 		App.WaitForElement("Swipe ME");
 		App.ActivateContextMenu("Swipe ME");
 		App.WaitForElement("Text0");
-		VerifyScreenshot();
 		App.Tap("Text0");
+		App.WaitForElement("Swipe ME");
 	}
 }
 #endif

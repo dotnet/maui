@@ -25,9 +25,8 @@ public class Bugzilla58875 : _IssuesUITest
 		App.WaitForElement(Target);
 		App.ActivateContextMenu(Target);
 		App.WaitForElement("More");
+		App.DismissContextMenu();
 		App.TapBackArrow();
-		App.TapBackArrow(); // back button dismisses the ContextAction first, so we need to hit back one more time to get to previous page
-
 		App.WaitForElement(Button1Id);
 		App.Tap(Button1Id);
 		App.WaitForElement(Target);

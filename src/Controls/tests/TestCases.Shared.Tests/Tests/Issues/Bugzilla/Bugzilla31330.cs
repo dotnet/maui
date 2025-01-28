@@ -22,7 +22,7 @@ public class Bugzilla31330 : _IssuesUITest
 		App.ActivateContextMenu("Something 1");
 		App.WaitForElement("Delete");
 		App.Tap("Delete");
-		App.TapCoordinates(150,150);
+		App.DismissContextMenu();
 		App.Tap("Something 2");
 		App.ActivateContextMenu("Something 2");
 		App.WaitForElement("Delete");

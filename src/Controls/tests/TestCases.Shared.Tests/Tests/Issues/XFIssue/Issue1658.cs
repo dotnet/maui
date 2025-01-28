@@ -20,10 +20,11 @@ public class Issue1658 : _IssuesUITest
 	{
 		App.WaitForElement("ListViewItem");
 		App.ActivateContextMenu("ListViewItem");
-		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "WithCoffeeIcon");
-		App.WaitForElement("ColorBox");
-		App.Tap("ColorBox");
-		VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "InYellowBox");
+		App.WaitForElement(AppiumQuery.ByAccessibilityId("coffee.png"));
+		App.DismissContextMenu();
+		Assert.That(App.WaitForElement("labelId").GetText(), Is.EqualTo("Tap label"));
+		App.Tap("labelId");
+		Assert.That(App.WaitForElement("labelId").GetText(), Is.EqualTo("Success"));
 	}
 }
 #endif

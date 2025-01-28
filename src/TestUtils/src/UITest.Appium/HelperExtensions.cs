@@ -2318,6 +2318,26 @@ namespace UITest.Appium
 			}
 		}
 
+		/// <summary>
+		/// Dismisses the context menu in the application.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <remarks>
+		/// For Android apps, it taps the back arrow.
+		/// For other platforms, it taps at coordinates (150, 150).
+		/// </remarks>
+		public static void DismissContextMenu(this IApp app)
+		{	
+			if (app is AppiumAndroidApp)
+			{
+				app.TapBackArrow();
+			}
+			else
+			{
+				app.TapCoordinates(150, 150);
+			}	
+		}
+
 		static IUIElement Wait(Func<IUIElement?> query,
 			Func<IUIElement?, bool> satisfactory,
 			string? timeoutMessage = null,

@@ -31,19 +31,11 @@ public class Bugzilla58833 : _IssuesUITest
 		// Both items should allow access to the context menu
 		App.ActivateContextMenu("Item #2");
 		App.WaitForElement("2 Action");
-#if ANDROID
-		App.TapBackArrow();
-#else
-		App.Tap("Item #3");
-#endif
+		App.DismissContextMenu();
 
 		App.ActivateContextMenu("Item #1");
 		App.WaitForElement("1 Action");
-#if ANDROID
-		App.TapBackArrow();
-#else
-		App.Tap("Item #3");
-#endif
+		App.DismissContextMenu();
 	}
 }
 #endif

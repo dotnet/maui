@@ -24,20 +24,18 @@ public class Issue1658 : TestNavigationPage
 					AutomationId = "coffee.png"
 				});
 
-				var box = new BoxView
+				var label = new Label
 				{
-					WidthRequest = 30,
-					HeightRequest = 30,
-					Color = Colors.Red,
-					AutomationId = "ColorBox"
+					Text = "Tap label",
+					AutomationId = "labelId"
 				};
 
 				var gr = new TapGestureRecognizer();
 				gr.Command = new Command(() =>
 				{
-					box.Color = box.Color == Colors.Red ? Colors.Yellow : Colors.Red;
+					label.Text = label.Text == "Tap label" ? "Success" : "Tap label";
 				});
-				box.GestureRecognizers.Add(gr);
+				label.GestureRecognizers.Add(gr);
 				cells.View = new StackLayout()
 				{
 					Orientation = StackOrientation.Horizontal,
@@ -50,7 +48,7 @@ public class Issue1658 : TestNavigationPage
 							VerticalOptions = LayoutOptions.Center,
                             HorizontalOptions = LayoutOptions.FillAndExpand
 						},
-						box
+						label
 					}
 				};
 

@@ -21,6 +21,7 @@ public class Issue6258 : _IssuesUITest
 		App.WaitForElement("ListViewItem");
 		App.ActivateContextMenu("ListViewItem");
 		VerifyScreenshot();
+		App.WaitForElement(AppiumQuery.ByAccessibilityId("coffee.png"));
 	}
 }
 #endif
