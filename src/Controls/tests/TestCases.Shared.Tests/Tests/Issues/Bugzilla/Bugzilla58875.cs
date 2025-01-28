@@ -1,4 +1,5 @@
-﻿#if TEST_FAILS_ON_WINDOWS // Using ActivateContextMenu internally does a right click and is not working correctly.
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
+//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -29,7 +30,7 @@ public class Bugzilla58875 : _IssuesUITest
 		App.Back();
 
 #if ANDROID
-		App.Back(); // back button dismisses the ContextAction first, so we need to hit back one more time to get to previous page
+		App.Back(); // Back button dismisses the ContextAction first, so we need to hit back one more time to get to previous page
 #endif
 
 		App.WaitForElement(Button1Id);
