@@ -2,6 +2,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui;
 using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Dispatching;
@@ -52,6 +54,7 @@ namespace Microsoft.Maui.DeviceTests
 			_mauiContext = new ContextStub(_servicesProvider);
 		}
 
+		protected ILogger TestLogger => MauiContext.CreateLogger(this.GetType());
 		protected virtual MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
 		{
 			return mauiAppBuilder;

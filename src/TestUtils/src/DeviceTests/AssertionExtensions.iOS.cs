@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -206,9 +207,10 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static Task<UIImage> ToBitmap(this UIView view, IMauiContext mauiContext)
 		{
+			var logger = mauiContext.CreateLogger(nameof(ToBitmap));
+			logger?.LogDebug("Start");
 			if (view.Superview is WrapperView wrapper)
 				view = wrapper;
-
 
 			var imageRect = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);
 
@@ -228,6 +230,7 @@ namespace Microsoft.Maui.DeviceTests
 			var image = UIGraphics.GetImageFromCurrentImageContext();
 
 			UIGraphics.EndImageContext();
+			logger?.LogDebug("Finish");
 
 			return Task.FromResult(image);
 		}
@@ -365,14 +368,22 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor, IMauiContext mauiContext, double? tolerance = null)
 		{
+			var logger = mauiContext.CreateLogger(nameof(AssertContainsColor));
+			logger?.LogDebug("Start");
 			var bitmap = await view.ToBitmap(mauiContext);
-			return bitmap.AssertContainsColor(expectedColor, tolerance: tolerance);
+			var result = bitmap.AssertContainsColor(expectedColor, tolerance: tolerance);
+			logger?.LogDebug("Finish");
+			return result;
 		}
 
 		public static async Task<UIImage> AssertDoesNotContainColor(this UIView view, UIColor unexpectedColor, IMauiContext mauiContext)
 		{
+			var logger = mauiContext.CreateLogger(nameof(AssertDoesNotContainColor));
+			logger?.LogDebug("Start");
 			var bitmap = await view.ToBitmap(mauiContext);
-			return bitmap.AssertDoesNotContainColor(unexpectedColor);
+			var result = bitmap.AssertDoesNotContainColor(unexpectedColor);
+			logger?.LogDebug("Finish");
+			return result;
 		}
 
 		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor, IMauiContext mauiContext, double? tolerance = null) =>
@@ -816,10 +827,15 @@ namespace Microsoft.Maui.DeviceTests
 		static async Task AssertTabItemIconColor(
 			this UITabBar navigationView, string tabText, Color expectedColor, bool hasColor,
 			IMauiContext mauiContext)
-		{
+		{			
+			var logger = mauiContext.CreateLogger(nameof(AssertTabItemIconColor));
+			logger?.LogDebug("Start");
 			var tabBarItemView = GetTabItemView(navigationView, tabText).FindDescendantView<UIImageView>();
+
 			if (tabBarItemView is null)
 				throw new Exception($"Unable to locate Tab Item Icon Container: {tabText}");
+
+			logger?.LogDebug("Retrieved GetTabItemView");
 
 			if (hasColor)
 			{

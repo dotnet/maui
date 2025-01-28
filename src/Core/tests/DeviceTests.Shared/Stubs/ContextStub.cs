@@ -1,6 +1,8 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Animations;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
@@ -69,6 +71,13 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 #endif
 			if (serviceType == typeof(IDispatcher))
 				return _services.GetService(serviceType) ?? TestDispatcher.Current;
+
+			if (serviceType.IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(ILogger<>) || 
+				serviceType == typeof(ILogger) ||
+				serviceType == typeof(ILoggerFactory))
+			{
+				return TestServices.Services.GetService(serviceType) ?? _services.GetService(serviceType);
+			}
 
 			return _services.GetService(serviceType);
 		}
