@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Handlers
 
 					try
 					{
-						button.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
+						button.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.Automatic), UIControlState.Normal);
 						var tintColor = item.GetTextColor();
 
 						if (tintColor != null)
