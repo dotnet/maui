@@ -16,14 +16,13 @@ public class Issue1426 : _IssuesUITest
 	[Category(UITestCategories.LifeCycle)]
 	[Category(UITestCategories.Compatibility)]
 	public void Issue1426Test()
-	{	
+	{
 		App.WaitForElement("CoffeeImageId");
 		App.WaitForElement("NextButtonID");
-		VerifyScreenshot("Issue1426Test_BeforeTap");
 		App.Tap("NextButtonID");
 		App.WaitForElement("PopButtonId");
 		App.Tap("PopButtonId");
 		App.WaitForElement("CoffeeImageId");
-		VerifyScreenshot("Issue1426Test_AfterTap");	
+		VerifyScreenshot("Issue1426Test");
 	}
 }

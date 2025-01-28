@@ -17,8 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Issue17865Test()
 		{
 			App.WaitForElement(ButtonId);
-
-			App.Tap(ButtonId);
+			App.Click(ButtonId);
+			App.WaitForElement(ButtonId);
 
 			// NOTE: Without crashes the test has passed.
 		}
