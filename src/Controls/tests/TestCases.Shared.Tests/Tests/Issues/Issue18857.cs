@@ -1,4 +1,4 @@
-#if ANDROID && TEST_FAILS_ON_ANDROID // Related issue: https://github.com/dotnet/maui/issues/26159
+#if TEST_FAILS_ON_ANDROID // Related issue: https://github.com/dotnet/maui/issues/26159
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -15,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ImageButton)]
-		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented")]
 		public async Task GradientImageButtonBackground()
 		{
 			App.WaitForElement("TestImageButton");
