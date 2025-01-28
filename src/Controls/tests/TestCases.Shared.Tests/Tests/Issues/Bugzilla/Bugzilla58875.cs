@@ -25,7 +25,7 @@ public class Bugzilla58875 : _IssuesUITest
 		App.Tap(Button1Id);
 		App.WaitForElement(Target);
 		App.ActivateContextMenu(Target);
-		App.WaitForElement(ContextAction);
+		App.WaitForElement(ContextAction, timeout: TimeSpan.FromSeconds(2));
 		App.Back();
 
 #if ANDROID
@@ -36,7 +36,7 @@ public class Bugzilla58875 : _IssuesUITest
 		App.Tap(Button1Id);
 		App.WaitForElement(Target);
 		App.ActivateContextMenu(Target);
-		App.WaitForElement(ContextAction);
+		App.WaitForElement(ContextAction, timeout: TimeSpan.FromSeconds(2));
 	}
 }
 #endif
