@@ -648,10 +648,18 @@ namespace Microsoft.Maui.Platform
 							break;
 					}
 
-					child.Measure(
+					if (item is ISwipeItemView)
+					{
+						child.Measure(
 						MeasureSpec.MakeMeasureSpec(swipeItemWidth, MeasureSpecMode.AtMost),
-						MeasureSpec.MakeMeasureSpec(swipeItemHeight, MeasureSpecMode.AtMost)
-					);
+						MeasureSpec.MakeMeasureSpec(swipeItemHeight, MeasureSpecMode.AtMost));
+					}
+					else
+					{
+						child.Measure(
+						MeasureSpec.MakeMeasureSpec(swipeItemWidth, MeasureSpecMode.Exactly),
+						MeasureSpec.MakeMeasureSpec(swipeItemHeight, MeasureSpecMode.Exactly));
+					}
 
 					child.Layout(l, t, r, b);
 
