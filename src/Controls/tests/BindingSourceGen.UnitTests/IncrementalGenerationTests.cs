@@ -103,31 +103,6 @@ public class IncrementalGenerationTests
 	}
 
 	[Fact]
-	public void DoesNotRegenerateCodeWhenNewCodeInsertedBelow()
-	{
-		var source = """
-        using Microsoft.Maui.Controls;
-        var label = new Label();
-        label.SetBinding(Label.RotationProperty, static (string s) => s.Length);
-        """;
-
-		var newSource = """
-        using Microsoft.Maui.Controls;
-        var label = new Label();
-        label.SetBinding(Label.RotationProperty, static (string s) => s.Length);
-
-        var x = 42;
-        """;
-
-		var results = RunGeneratorOnMultipleSourcesAndReturnSteps(
-			new Dictionary<string, string> { { nameof(source), source } },
-			new Dictionary<string, string> { { nameof(source), newSource } });
-
-		var outputs = results[nameof(source)].SelectMany(step => step.Outputs);
-		Assert.All(outputs, output => Assert.True(output.Reason == IncrementalStepRunReason.Unchanged || output.Reason == IncrementalStepRunReason.Cached));
-	}
-
-	[Fact]
 	public void DoesNotRegerateCodeWhenDifferentFileEdited()
 	{
 		var fileASource = """
@@ -197,7 +172,7 @@ public class IncrementalGenerationTests
 		// Sometimes the binding has more than one run of the same step associated with it. 
 		// In such cases keep the one with Modified reason for safety.
 		return bindingRunPairs
-		.GroupBy(bindingRunPair => bindingRunPair.binding.Location.FilePath)
+		.GroupBy(bindingRunPair => bindingRunPair.binding.SimpleLocation.FilePath)
 		.ToDictionary(
 			x => x.Key,
 			x => x

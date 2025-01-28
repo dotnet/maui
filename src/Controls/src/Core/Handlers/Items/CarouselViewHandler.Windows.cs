@@ -588,9 +588,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				item.ItemHeight = itemHeight;
 				item.ItemWidth = itemWidth;
-
-				item.InvalidateMeasure();
 			}
+			ListViewBase.InvalidateMeasure();
 		}
 	}
 }

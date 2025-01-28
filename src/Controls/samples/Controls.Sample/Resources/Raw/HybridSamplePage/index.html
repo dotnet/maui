@@ -69,6 +69,30 @@
             LogMessage("Invoked DoSyncWorkParamsReturn, return value: message=" + retValue.Message + ", value=" + retValue.Value);
         }
 
+        async function InvokeDoAsyncWork() {
+            LogMessage("Invoking DoAsyncWork");
+            await window.HybridWebView.InvokeDotNet('DoAsyncWork');
+            LogMessage("Invoked DoAsyncWork");
+        }
+
+        async function InvokeDoAsyncWorkParams() {
+            LogMessage("Invoking DoAsyncWorkParams");
+            await window.HybridWebView.InvokeDotNet('DoAsyncWorkParams', [123, 'hello']);
+            LogMessage("Invoked DoAsyncWorkParams");
+        }
+
+        async function InvokeDoAsyncWorkReturn() {
+            LogMessage("Invoking DoAsyncWorkReturn");
+            const retValue = await window.HybridWebView.InvokeDotNet('DoAsyncWorkReturn');
+            LogMessage("Invoked DoAsyncWorkReturn, return value: " + retValue);
+        }
+
+        async function InvokeDoAsyncWorkParamsReturn() {
+            LogMessage("Invoking DoAsyncWorkParamsReturn");
+            const retValue = await window.HybridWebView.InvokeDotNet('DoAsyncWorkParamsReturn', [123, 'hello']);
+            LogMessage("Invoked DoAsyncWorkParamsReturn, return value: message=" + retValue.Message + ", value=" + retValue.Value);
+        }
+
     </script>
 </head>
 <body>
@@ -83,6 +107,12 @@
         <button onclick="InvokeDoSyncWorkParams()">Call C# sync method (params)</button>
         <button onclick="InvokeDoSyncWorkReturn()">Call C# method (no params) and get simple return value</button>
         <button onclick="InvokeDoSyncWorkParamsReturn()">Call C# method (params) and get complex return value</button>
+    </div>
+    <div>
+        <button onclick="InvokeDoAsyncWork()">Call C# async method (no params)</button>
+        <button onclick="InvokeDoAsyncWorkParams()">Call C# async method (params)</button>
+        <button onclick="InvokeDoAsyncWorkReturn()">Call C# async method (no params) and get simple return value</button>
+        <button onclick="InvokeDoAsyncWorkParamsReturn()">Call C# async method (params) and get complex return value</button>
     </div>
     <div>
         Log: <textarea readonly id="messageLog" style="width: 80%; height: 10em;"></textarea>
