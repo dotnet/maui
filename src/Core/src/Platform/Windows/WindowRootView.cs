@@ -80,6 +80,8 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal ITitleBar? TitleBar => _titleBar;
+
 		public DataTemplate? AppTitleBarTemplate
 		{
 			get => (DataTemplate?)GetValue(AppTitleBarTemplateProperty);
