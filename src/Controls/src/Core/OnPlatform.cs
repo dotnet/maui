@@ -35,10 +35,17 @@ namespace Microsoft.Maui.Controls
 		{
 			if (s_valueConverter != null)
 			{
+				On explicitDefault = null;
+
 				foreach (var onPlat in onPlatform.Platforms)
 				{
 					if (onPlat.Platform == null)
 						continue;
+					if (onPlat.Platform.Contains("Default"))
+					{
+						explicitDefault = onPlat;
+						continue;
+					}
 					if (!onPlat.Platform.Contains(DeviceInfo.Platform.ToString()))
 						continue;
 					return (T)s_valueConverter.Convert(onPlat.Value, typeof(T), null, null);
@@ -50,6 +57,10 @@ namespace Microsoft.Maui.Controls
 					if (onPlat.Platform != null && onPlat.Platform.Contains("UWP") && DeviceInfo.Platform == DevicePlatform.WinUI)
 						return (T)s_valueConverter.Convert(onPlat.Value, typeof(T), null, null);
 				}
+
+				// fallback for explicit default
+				if (explicitDefault != null)
+					return (T)s_valueConverter.Convert(explicitDefault.Value, typeof(T), null, null);
 			}
 
 			return onPlatform.hasDefault ? onPlatform.@default : default(T);
