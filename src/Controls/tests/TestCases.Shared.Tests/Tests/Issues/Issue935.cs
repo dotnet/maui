@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,10 +20,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("TestLabel");
 			App.Tap("TestLabel");
-			App.Screenshot("Tapped Cell Once");
+			VerifyScreenshot("Tapped_Cell_Once");
 			App.Tap("TestLabel");
-			App.Screenshot("Tapped Cell Twice");
+			VerifyScreenshot("Tapped_Cell_Twice");
 		}
 	}
 }
-#endif

@@ -6,18 +6,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue12652 : _IssuesUITest
 {
-#if ANDROID
-    const string Top3 = "TOP 3";
-#else
+
     const string Top3 = "Top 3";
-#endif
+
     public Issue12652(TestDevice testDevice) : base(testDevice)
     {
     }
     
     public override string Issue => "[Bug] NullReferenceException in the Shell on UWP when navigating back to Shell Section with multiple content items";
     
-        [Test]
+    [Test]
     [Category(UITestCategories.Shell)]
     public void NavigatingBackToAlreadySelectedTopTabDoesntCrash()
     {
@@ -26,7 +24,7 @@ public class Issue12652 : _IssuesUITest
 #if WINDOWS
         App.Tap("navViewItem");
 #endif
-        App.Tap(Top3);
+        App.TapTab(Top3);
         App.WaitForElement("TopTabPage3");
         App.Tap("Main 2");
         App.WaitForElement("TopTabPage2");

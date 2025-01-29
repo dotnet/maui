@@ -1,4 +1,4 @@
-#if IOS
+// #if IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -21,11 +21,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("MoveToNextPage");
 			App.WaitForElement("SecondPageLabel");
 
-			App.LongPress("Back");
+			App.TapBackArrow();
 
 			var navigationToLabel = App.FindElement("FirstPageLabel").GetText();
 			Assert.That(navigationToLabel, Is.EqualTo("OnNavigationTo method is called"));
 		}
 	}
 }
-#endif
+// #endif

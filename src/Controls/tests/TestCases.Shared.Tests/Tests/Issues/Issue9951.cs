@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,15 +21,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(SwitchId);
 
-			App.Screenshot("Initial switch state");
+			VerifyScreenshot("SwitchColorTest_before_toggling");
 
 			App.Tap(SwitchId);
 
 			//Delay so that the switch toggling is finished
 			await Task.Delay(200);
 
-			App.Screenshot("Toggled switch state");
+			VerifyScreenshot("SwitchColorTest_after_toggling");
 		}
 	}
 }
-#endif

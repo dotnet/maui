@@ -1,4 +1,4 @@
-﻿#if MACCATALYST
+﻿// #if MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -26,4 +26,4 @@ public class Issue3001 : _IssuesUITest
 		App.WaitForElement(ReadyId, timeout: TimeSpan.FromSeconds(5));
 	}
 }
-#endif
+// #endif

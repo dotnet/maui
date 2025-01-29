@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -39,8 +38,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// 6. Screenshot to validate the result.
 			VerifyScreenshot();
-			App.Back();
+			App.TapBackArrow();
 		}
 	}
 }
-#endif
