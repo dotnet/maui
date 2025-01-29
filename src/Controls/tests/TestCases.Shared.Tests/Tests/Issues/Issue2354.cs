@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void TestDoesntCrashWithCachingDisable()
 		{
 			VerifyInternetConnectivity();
-			Thread.Sleep(5000);
+			Thread.Sleep(TimeSpan.FromSeconds(2));
 			App.WaitForElement("ImageLoaded");
 			App.ScrollDown("TestListView", ScrollStrategy.Programmatically);
 			App.ScrollDown("TestListView", ScrollStrategy.Programmatically);
