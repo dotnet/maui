@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			return Utils.OnMainThread(async () =>
 			{
 				await Flashlight.TurnOnAsync();
-				await Flashlight.TurnOffAsync();
+				await Flashlight.TurnOffAsync().ConfigureAwait(false);
 			});
 		}
 	}
