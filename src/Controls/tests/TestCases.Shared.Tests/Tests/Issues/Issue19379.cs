@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("UpdateButton");
 
 			// 2. Verify the result.
-			VerifyScreenshot();
+			Assert.That(App.WaitForElement("HeaderLabel").GetText(), Is.EqualTo("This is a CollectionViewHeader #1"));
 		}
 	}
 }

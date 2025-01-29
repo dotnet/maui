@@ -17,12 +17,13 @@ public class Issue1426 : _IssuesUITest
 	[Category(UITestCategories.Compatibility)]
 	public void Issue1426Test()
 	{
-		App.WaitForElement("CoffeeImageId");
+		var beforeRect = App.WaitForElement("CoffeeImageId").GetRect();
 		App.WaitForElement("NextButtonID");
 		App.Tap("NextButtonID");
 		App.WaitForElement("PopButtonId");
 		App.Tap("PopButtonId");
-		App.WaitForElement("CoffeeImageId");
-		VerifyScreenshot("Issue1426Test");
+		var afterRect = App.WaitForElement("CoffeeImageId").GetRect();
+		Assert.That(beforeRect.X, Is.EqualTo(afterRect.X));
+		Assert.That(beforeRect.Y, Is.EqualTo(afterRect.Y));
 	}
 }

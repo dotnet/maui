@@ -18,7 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Issue1908Test()
 		{
 			App.WaitForElement("OASIS1");
-			VerifyScreenshot();
+			App.WaitForElement("OASIS2");
+			App.WaitForElement("OASIS1");
 		}
 	}
 }

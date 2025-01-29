@@ -11,7 +11,7 @@ public class Issue19877 : _IssuesUITest
 	public override string Issue => "RoundRectangle Border is messed up when contains an Image with AspectFill";
 
 	[Test]
-	[Category(UITestCategories.Entry)]
+	[Category(UITestCategories.Border)]
 	public void BorderRoundRectangleWithImage()
 	{
 		App.WaitForElement("OasisImage");
