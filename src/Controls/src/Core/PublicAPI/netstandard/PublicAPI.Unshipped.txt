@@ -145,3 +145,6 @@ virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Contro
 ~static readonly Microsoft.Maui.Controls.Switch.OffColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~Microsoft.Maui.Controls.Switch.OffColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.Switch.OffColor.set -> void
+~Microsoft.Maui.Controls.SearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.SearchBar.SearchIconColor.set -> void
+~static readonly Microsoft.Maui.Controls.SearchBar.SearchIconColorProperty -> Microsoft.Maui.Controls.BindableProperty
