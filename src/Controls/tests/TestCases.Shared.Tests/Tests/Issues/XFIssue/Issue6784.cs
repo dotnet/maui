@@ -36,6 +36,10 @@ public class Issue6784 : _IssuesUITest
 		App.Tap("Tab 4");
 		App.WaitForElement("More");
 		App.Tap("More");
+		// On iOS and Mac Catalyst, the first 'more' tab goes back to tab 11, the second click goes to the 'more' menu
+#if IOS || MACCATALYST
+		App.Tap("More");
+#endif
 		App.WaitForElement("Tab 12");
 		App.Tap("Tab 12");
 	}

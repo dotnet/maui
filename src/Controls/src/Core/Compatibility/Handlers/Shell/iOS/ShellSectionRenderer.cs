@@ -588,12 +588,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void PushViewController(UIViewController viewController, bool animated)
 		{
 			_pendingViewControllers = null;
-			base.PushViewController(viewController, animated);
+			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
+			{
+				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
+			}
+			else
+			{
+				base.PushViewController(viewController, animated);
+			}
 		}
 
 		public override UIViewController PopViewController(bool animated)
 		{
 			_pendingViewControllers = null;
+			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
+			{
+				return tabBarController.MoreNavigationController.PopViewController(animated);
+			}
+			
 			return base.PopViewController(animated);
 		}
 
