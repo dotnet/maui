@@ -242,24 +242,17 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("MinimumValueLabel").GetText(), Is.EqualTo("20.00"));
 		}
 
-#if !MACCATALYST
-        [Test, Order(2)]
-        [Category(UITestCategories.Slider)]
-        public void Slider_DragStartedAndCompletedEventTrigged()
-        {
-            App.WaitForElement("Options");
-#if WINDOWS
-            App.DragCoordinates(480,180,580,180);
-#elif IOS
-            App.DragCoordinates(50, 208, 150, 208);
-#elif ANDROID
-            App.TouchAndHold("SliderControl");     
-#endif
-            Task.Delay(TimeSpan.FromSeconds(1)).Wait();
-            Assert.That(App.WaitForElement("DragStartStatusLabel").GetText(), Is.EqualTo("Drag Started"));
+		[Test, Order(2)]
+		[Category(UITestCategories.Slider)]
+		public void Slider_DragStartedAndCompletedEventTrigged()
+		{
+			App.WaitForElement("Options");
+			App.SetSliderValue("SliderControl", 0, 1);
+			Task.Delay(TimeSpan.FromSeconds(1)).Wait();
+			Assert.That(App.WaitForElement("DragStartStatusLabel").GetText(), Is.EqualTo("Drag Started"));
 			Assert.That(App.WaitForElement("DragCompletedStatusLabel").GetText(), Is.EqualTo("Drag Completed"));
-        }
- 
+		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetEnabledStateToFalse_VerifyVisualState()
@@ -943,7 +936,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
-#endif
 
 	}
 }

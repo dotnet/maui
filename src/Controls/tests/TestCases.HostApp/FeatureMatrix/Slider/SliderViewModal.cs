@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
- 
+
 namespace Maui.Controls.Sample
 {
 	public class SliderViewModel : INotifyPropertyChanged
@@ -11,38 +11,39 @@ namespace Maui.Controls.Sample
 		private double _minimum = 0;
 		private double _maximum = 1;
 		private double _value = 0;
-	#if WINDOWS  // Set all color properties to null for Windows as default values, and define platform-specific colors for Android, iOS, and Mac Catalyst.
-        private Color _thumbColor = null;
-        private Color _minTrackColor = null;
-        private Color _maxTrackColor = null;
-        private Color _backgroundColor = null;
-    #elif ANDROID
+
+#if ANDROID  // Set all color properties to null for Windows as default values, and define platform-specific colors for Android, iOS, and Mac Catalyst.
         private Color _thumbColor = Color.FromRgba(1,122,255,255);
         private Color _minTrackColor = Color.FromRgba(1,122,255,255) ;
         private Color _maxTrackColor = Color.FromRgba(227,227,229,255);
         private Color _backgroundColor = Colors.Transparent ;
-     #elif IOS || MACCATALYST
-        private Color _thumbColor = Color.FromRgba(255, 255, 255, 255);
-        private Color _minTrackColor = Color.FromRgba(1, 122, 255, 255);
-        private Color _maxTrackColor = Color.FromRgba(227, 227, 229, 255);
-        private Color _backgroundColor =Colors.Transparent;
-    #endif
-		private FlowDirection _flowDirection = FlowDirection.LeftToRight; 
+#elif IOS || MACCATALYST
+		private Color _thumbColor = Color.FromRgba(255, 255, 255, 255);
+		private Color _minTrackColor = Color.FromRgba(1, 122, 255, 255);
+		private Color _maxTrackColor = Color.FromRgba(227, 227, 229, 255);
+		private Color _backgroundColor = Colors.Transparent;
+#else
+        private Color _thumbColor = null;
+        private Color _minTrackColor = null;
+        private Color _maxTrackColor = null;
+        private Color _backgroundColor = null;
+#endif
+		private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 		private bool _isEnabled = true;
 		private bool _isVisible = true;
 		private string _thumbImageSource;
 		private string _dragStartStatus;
 		private string _dragCompletedStatus;
 		private bool _isEventStatusLabelVisible = false;
- 
+
 		public event PropertyChangedEventHandler PropertyChanged;
- 
+
 		public SliderViewModel()
 		{
 			DragStartedCommand = new Command(OnDragStarted);
 			DragCompletedCommand = new Command(OnDragCompleted);
 		}
- 
+
 		public double Minimum
 		{
 			get => _minimum;
@@ -55,7 +56,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 		}
- 
+
 		public double Maximum
 		{
 			get => _maximum;
@@ -68,7 +69,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 		}
- 
+
 		public double Value
 		{
 			get => _value;
@@ -81,7 +82,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 		}
- 
+
 		public Color ThumbColor
 		{
 			get => _thumbColor;
@@ -94,7 +95,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 		}
- 
+
 		public Color MinTrackColor
 		{
 			get => _minTrackColor;
@@ -107,7 +108,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 		}
- 
+
 		public Color MaxTrackColor
 		{
 			get => _maxTrackColor;
@@ -120,7 +121,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 		}
- 
+
 		public Color BackgroundColor
 		{
 			get => _backgroundColor;
@@ -133,7 +134,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 		}
- 
+
 		public FlowDirection FlowDirection
 		{
 			get => _flowDirection;
@@ -146,7 +147,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 		}
- 
+
 		public bool IsEnabled
 		{
 			get => _isEnabled;
@@ -159,7 +160,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 		}
- 
+
 		public bool IsVisible
 		{
 			get => _isVisible;
@@ -172,7 +173,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 		}
- 
+
 		public string ThumbImageSource
 		{
 			get => _thumbImageSource;
@@ -185,7 +186,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 		}
- 
+
 		public string DragStartStatus
 		{
 			get => _dragStartStatus;
@@ -193,7 +194,7 @@ namespace Maui.Controls.Sample
 			{
 				if (_dragStartStatus != value)
 				{
-					if(!string.IsNullOrEmpty(value))
+					if (!string.IsNullOrEmpty(value))
 					{
 						IsEventStatusLabelVisible = true;
 					}
@@ -202,7 +203,7 @@ namespace Maui.Controls.Sample
 				}
 			}
 		}
- 
+
 		public string DragCompletedStatus
 		{
 			get => _dragCompletedStatus;
@@ -210,7 +211,7 @@ namespace Maui.Controls.Sample
 			{
 				if (_dragCompletedStatus != value)
 				{
-					if(!string.IsNullOrEmpty(value))
+					if (!string.IsNullOrEmpty(value))
 					{
 						IsEventStatusLabelVisible = true;
 					}
@@ -235,21 +236,20 @@ namespace Maui.Controls.Sample
 
 		public ICommand DragStartedCommand { get; }
 		public ICommand DragCompletedCommand { get; }
- 
+
 		private void OnDragStarted()
 		{
 			DragStartStatus = "Drag Started";
 		}
- 
+
 		private void OnDragCompleted()
 		{
 			DragCompletedStatus = "Drag Completed";
 		}
- 
+
 		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 	}
 }
-
