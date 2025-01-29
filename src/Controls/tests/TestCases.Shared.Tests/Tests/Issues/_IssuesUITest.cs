@@ -27,6 +27,9 @@ namespace Microsoft.Maui.TestCases.Tests
 				try
 				{
 					base.FixtureSetup();
+#if ANDROID || MACCATALYST
+					App.ToggleSystemAnimations(false);
+#endif
 					NavigateToIssue(Issue);
 					break;
 				}
@@ -36,6 +39,9 @@ namespace Microsoft.Maui.TestCases.Tests
 					if (retries++ < SetupMaxRetries)
 					{
 						App.Back();
+#if ANDROID || MACCATALYST
+						App.ToggleSystemAnimations(true);
+#endif
 						Reset();
 					}
 					else
