@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿//This test case verifies "The background property of AppCompatEditText (DatePicker) works" exclusively on the Android platform.
+#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -26,3 +28,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
