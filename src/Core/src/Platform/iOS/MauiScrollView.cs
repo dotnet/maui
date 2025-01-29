@@ -40,13 +40,7 @@ namespace Microsoft.Maui.Platform
 				_lastArrangeWidth = widthConstraint;
 				_lastArrangeHeight = heightConstraint;
 
-				// If the SuperView is a cross-platform layout backed view (i.e. MauiView, MauiScrollView, LayoutView, ..),
-				// then measurement has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews.
-				// This is especially important to avoid overriding potentially infinite measurement constraints
-				// imposed by the parent (i.e. scroll view) with the current bounds.
-				// But we _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
-				// the window); there's no guarantee that SizeThatFits has been called in that case.
-				if (!IsMeasureValid(widthConstraint, heightConstraint) && !this.IsFinalMeasureHandledBySuperView())
+				if (!IsMeasureValid(widthConstraint, heightConstraint))
 				{
 					crossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
 					CacheMeasureConstraints(widthConstraint, heightConstraint);
