@@ -1,0 +1,71 @@
+# Template for build + pack on dnceng
+parameters:
+- name: pool
+  type: object
+- name: enableSourceBuild
+  type: boolean
+  default: false
+- name: enableSourceIndex
+  type: boolean
+  default: false
+- name: sourceIndexParams
+  type: object
+  default: []
+- name: runAsPublic
+  type: boolean
+  default: false
+- name: buildProjects
+  type: string
+  default: 'Microsoft.Maui.sln'
+
+stages:
+- stage: Build
+  displayName: Build .NET MAUI
+  dependsOn: []
+  jobs:
+  - template: /eng/common/templates-official/jobs/jobs.yml
+    parameters:
+      helixRepo: dotnet/maui
+      pool: ${{ parameters.pool }}
+      enableMicrobuild: true
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: true
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: true
+      workspace:
+        clean: all
+      jobs:
+      - job: build_net_Windows
+        displayName: Build Windows
+        timeoutInMinutes: 240
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+        steps:
+        - template: /eng/pipelines/common/setup-jdk.yml
+
+        - script: $(_buildScript)
+                  -restore -build
+                  -configuration $(_BuildConfig)
+                  -projects "Microsoft.Maui.BuildTasks.slnf"
+                  /p:ArchiveTests=false
+                  /p:TreatWarningsAsErrors=false
+                  /bl:$(Build.Arcade.LogsPath)buildtasks.binlog
+                  $(_OfficialBuildIdArgs)
+          displayName: 🛠️ Build BuildTasks
+
+        - script: $(_buildScript)
+                  -restore -build
+                  -configuration $(_BuildConfig)
+                  -projects "${{ parameters.buildProjects }}"
+                  /p:ArchiveTests=false
+                  /p:TreatWarningsAsErrors=false
+                  /bl:$(Build.Arcade.LogsPath)build.binlog
+                  $(_OfficialBuildIdArgs)
+          displayName: 🛠️ Build ${{ parameters.buildProjects }}
