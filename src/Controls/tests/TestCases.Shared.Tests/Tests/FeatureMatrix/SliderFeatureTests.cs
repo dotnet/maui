@@ -251,13 +251,13 @@ namespace Microsoft.Maui.TestCases.Tests
 #if WINDOWS
             App.DragCoordinates(480,180,580,180);
 #elif IOS
-            App.DragCoordinates(50, 120, 150, 120);
+            App.DragCoordinates(50, 208, 150, 208);
 #elif ANDROID
             App.TouchAndHold("SliderControl");     
 #endif
             Task.Delay(TimeSpan.FromSeconds(1)).Wait();
-            Assert.That(App.FindElement("DragStartStatusLabel").GetText(), Is.EqualTo("Drag Started"));
-			Assert.That(App.FindElement("DragCompletedStatusLabel").GetText(), Is.EqualTo("Drag Completed"));
+            Assert.That(App.WaitForElement("DragStartStatusLabel").GetText(), Is.EqualTo("Drag Started"));
+			Assert.That(App.WaitForElement("DragCompletedStatusLabel").GetText(), Is.EqualTo("Drag Completed"));
         }
  
 		[Test]
