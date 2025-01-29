@@ -2,16 +2,21 @@
 [Issue(IssueTracker.Github, 27367, "[Android] Right SwipeView items are not visible in the SwipeView", PlatformAffected.Android)]
 public class Issue27367 : ContentPage
 {
-
     public Issue27367()
     {
-        // Create SwipeView
-        Content = CreateSwipeView();
+        var verticalStackLayout = new VerticalStackLayout();
+        var swipeview = CreateSwipeViewWithSwipeItem();
+        var swipeView1 = CreateSwipeViewWithSwipeItemView();
+
+        verticalStackLayout.Add(swipeview);
+        verticalStackLayout.Add(swipeView1);
+        Content = verticalStackLayout;
     }
 
-    SwipeView CreateSwipeView()
+    //SwipeView with SwipeItem
+    SwipeView CreateSwipeViewWithSwipeItem()
     {
-        // Define Right Swipe
+        // Define Right SwipeItem
         var rightSwipeItem = new SwipeItem
         {
             Text = "Right",
@@ -23,23 +28,11 @@ public class Issue27367 : ContentPage
         rightSwipeItems.SwipeBehaviorOnInvoked = SwipeBehaviorOnInvoked.RemainOpen;
         rightSwipeItems.Mode = SwipeMode.Execute;
 
-        // Define Left Swipe
-        var leftSwipeItem = new SwipeItem
-        {
-            Text = "Left",
-            BackgroundColor = Colors.Red,
-        };
-
-        var leftSwipeItems = new SwipeItems { leftSwipeItem };
-
-        leftSwipeItems.SwipeBehaviorOnInvoked = SwipeBehaviorOnInvoked.RemainOpen;
-        leftSwipeItems.Mode = SwipeMode.Execute;
-
         var stackLayout = new StackLayout
         {
             new Label
             {
-                Text = "SwipeView",
+                Text = "SwipeItem",
                 HorizontalOptions = LayoutOptions.Center,
             }
         };
@@ -49,11 +42,65 @@ public class Issue27367 : ContentPage
         var swipeView = new SwipeView
         {
             RightItems = rightSwipeItems,
-            LeftItems = leftSwipeItems,
             Content = stackLayout,
             HeightRequest = 80
         };
-        swipeView.AutomationId = "SwipeView";
+        swipeView.AutomationId = "SwipeItem";
+
+        return swipeView;
+    }
+
+    //SwipeView with SwipeItemView
+    SwipeView CreateSwipeViewWithSwipeItemView()
+    {
+        // Define Right SwipeItemView
+        var rightSwipeItemView = new SwipeItemView
+        {
+            Content = new StackLayout
+            {
+                Margin = new Thickness(10),
+                Children =
+        {
+            new Entry
+            {
+                Placeholder = "Right Side Entry",
+                HorizontalOptions = LayoutOptions.Center,
+            },
+            new Label
+            {
+                Text = "Right Side Label",
+                TextColor = Colors.Red,
+                FontAttributes = FontAttributes.Bold,
+                HorizontalOptions = LayoutOptions.Center
+            }
+        }
+            }
+        };
+
+
+        var rightSwipeItems = new SwipeItems { rightSwipeItemView };
+
+        rightSwipeItems.SwipeBehaviorOnInvoked = SwipeBehaviorOnInvoked.RemainOpen;
+        rightSwipeItems.Mode = SwipeMode.Execute;
+
+        var stackLayout = new StackLayout
+        {
+            new Label
+            {
+                Text = "SwipeItemView",
+                HorizontalOptions = LayoutOptions.Center,
+            }
+        };
+        stackLayout.BackgroundColor = Colors.LightBlue;
+
+        // Create SwipeView
+        var swipeView = new SwipeView
+        {
+            RightItems = rightSwipeItems,
+            Content = stackLayout,
+            HeightRequest = 80
+        };
+        swipeView.AutomationId = "SwipeItemView";
 
         return swipeView;
     }
