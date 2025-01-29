@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
@@ -18,6 +19,8 @@ namespace Microsoft.Maui.Controls
 	/// <remarks>
 	/// The base class for most .NET MAUI on-screen elements. Provides most properties, events, and methods for presenting an item on screen.
 	/// </remarks>
+	
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement
 	{
 		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>
@@ -2397,6 +2400,12 @@ namespace Microsoft.Maui.Controls
 					throw new NotSupportedException();
 				return visibility.ToString();
 			}
+		}
+
+
+		private protected virtual string GetDebuggerDisplay()
+		{
+			return $"BindingContext = {BindingContext}, Bounds = {Bounds}";
 		}
 	}
 }

@@ -1324,6 +1324,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				base.WillMoveToParentViewController(parent);
 
+				if (_tracker is null)
+				{
+					return;
+				}
+				
 				if (parent is null)
 				{
 					_tracker.CollectionChanged -= TrackerOnCollectionChanged;

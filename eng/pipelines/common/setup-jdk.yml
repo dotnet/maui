@@ -11,7 +11,7 @@ steps:
     else
       echo "Installed JDKs:"
       /usr/libexec/java_home -V
-      jdkPath=$(/usr/libexec/java_home -V 2>&1 | grep -E "${{ parameters.jdkMajorVersion }}.jdk" | head -n 1 | awk '{print $NF}')
+      jdkPath=$(/usr/libexec/java_home -V 2>&1 | grep -E "${{ parameters.jdkMajorVersion }}.*jdk" | head -n 1 | awk '{print $NF}')
       if [ -n "$jdkPath" ]; then
         echo "Found JDK path: $jdkPath"
       else

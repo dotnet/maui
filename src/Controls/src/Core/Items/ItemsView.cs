@@ -225,5 +225,10 @@ namespace Microsoft.Maui.Controls
 			if (InternalItemsLayout is BindableObject bo)
 				SetInheritedBindingContext(bo, BindingContext);
 		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"ItemsSource = {ItemsSource}, {base.GetDebuggerDisplay()}";
+		}
 	}
 }
