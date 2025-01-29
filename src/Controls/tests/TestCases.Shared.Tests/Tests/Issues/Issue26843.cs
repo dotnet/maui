@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS //for more information: https://github.com/dotnet/maui/issues/27425
+#if TEST_FAILS_ON_WINDOWS // Skipping this test on Windows due to WebView's OnNavigated event returning WebNavigationResult.Failure for URLs with non-Western characters. More information: https://github.com/dotnet/maui/issues/27425
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
