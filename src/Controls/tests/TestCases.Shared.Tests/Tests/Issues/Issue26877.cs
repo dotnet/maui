@@ -18,8 +18,12 @@ public class Issue26877 : _IssuesUITest
     [Category(UITestCategories.ScrollView)]
     public void ScrollToBottom()
     {
-        App.WaitForElement("Rectangle");
+        App.WaitForElement("ScrollToBottom");
+#if ANDROID || WINDOWS
+        VerifyScreenshot();
+#else
         App.ScrollTo("Label");
         App.WaitForElement("Label");
+#endif
     }
 }

@@ -14,15 +14,15 @@ public class Issue26877 : ContentPage
         var stackLayout = new StackLayout();
         stackLayout.Children.Add(new Label
         {
-            Text = "1. Scroll to the bottom of the page.",
+            Text = "ScrollToBottom",
             TextColor = Colors.Black,
+            AutomationId = "ScrollToBottom"
         });
 
         stackLayout.Children.Add(new RoundRectangle
         {
             BackgroundColor = Colors.Red,
             HeightRequest = 100,
-            AutomationId = "Rectangle"
         });
 
         stackLayout.Children.Add(new Rectangle
