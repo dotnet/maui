@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			}
 #endif
 
-			Assert.True(await Launcher.CanOpenAsync(uri)).ConfigureAwait(false);
+			Assert.True(await Launcher.CanOpenAsync(uri).ConfigureAwait(false));
 		}
 
 		[Theory]
