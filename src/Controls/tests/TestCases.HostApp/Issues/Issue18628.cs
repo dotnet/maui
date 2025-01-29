@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Issues
 			var grid = new Grid
 			{
 				WidthRequest = 600,
-				HeightRequest = 200,
+				HeightRequest = 250,
 				RowDefinitions = new RowDefinitionCollection
 				{
 					new RowDefinition { Height = new GridLength(1, GridUnitType.Auto) },
