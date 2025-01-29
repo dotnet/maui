@@ -14,9 +14,9 @@ public class Issue26877 : ContentPage
         var stackLayout = new StackLayout();
         stackLayout.Children.Add(new Label
         {
-            Text = "ScrollToBottom",
+            Text = "ScrollToBottomPage",
             TextColor = Colors.Black,
-            AutomationId = "ScrollToBottom"
+            AutomationId = "ScrollToBottomPage"
         });
 
         stackLayout.Children.Add(new RoundRectangle

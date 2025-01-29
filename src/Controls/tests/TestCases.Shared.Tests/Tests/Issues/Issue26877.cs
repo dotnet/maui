@@ -7,23 +7,19 @@ namespace Microsoft.Maui.TestCases.Tests.Tests.Issues;
 
 public class Issue26877 : _IssuesUITest
 {
-    public Issue26877(TestDevice testDevice) : base(testDevice)
-    {
-    }
+        public Issue26877(TestDevice testDevice) : base(testDevice)
+        {
+        }
 
-    public override string Issue => "The iOS platform page cannot scroll to the bottom";
+        public override string Issue => "The iOS platform page cannot scroll to the bottom";
 
-    [Test]
-    [Category(UITestCategories.Shape)]
-    [Category(UITestCategories.ScrollView)]
-    public void ScrollToBottom()
-    {
-        App.WaitForElement("ScrollToBottom");
-#if ANDROID || WINDOWS
-        VerifyScreenshot();
-#else
-        App.ScrollTo("Label");
-        App.WaitForElement("Label");
-#endif
-    }
+        [Test]
+        [Category(UITestCategories.Shape)]
+        [Category(UITestCategories.ScrollView)]
+        public void ScrollToBottom()
+        {
+                App.WaitForElement("ScrollToBottomPage");
+                App.ScrollTo("Label");
+                App.WaitForElement("Label");
+        }
 }
