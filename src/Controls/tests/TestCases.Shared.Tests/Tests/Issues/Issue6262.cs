@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID //Image Control Passes Touch Events to Visually Behind Controls on Android. 
+//Issue Link: https://github.com/dotnet/maui/issues/27227
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Button)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void ImageShouldLayoutOnTopOfButton()
 		{
 			App.WaitForElement("ClickMe");
@@ -30,3 +30,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
