@@ -344,5 +344,3 @@ override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWin
 ~Microsoft.Maui.Controls.SearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.SearchBar.SearchIconColor.set -> void
 ~static readonly Microsoft.Maui.Controls.SearchBar.SearchIconColorProperty -> Microsoft.Maui.Controls.BindableProperty
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions.ToUIBarButtonItem(this Microsoft.Maui.Controls.ToolbarItem item, Microsoft.Maui.Graphics.Color itemColor) -> UIKit.UIBarButtonItem
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.OnAppearanceChanged(Microsoft.Maui.Controls.ShellAppearance appearance) -> void
