@@ -66,6 +66,11 @@ stages:
           skipProvisioning: true
           skipXcode: true
 
+- template: /eng/pipelines/arcade/stage-build.yml@self
+  parameters:
+    pool: ${{ parameters.VM_IMAGE_HOST }}
+    runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
+
 - template: /eng/pipelines/arcade/stage-unit-tests.yml@self
   parameters:
     jobMatrix:
