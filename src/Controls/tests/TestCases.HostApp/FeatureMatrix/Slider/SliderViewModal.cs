@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample
 		private double _minimum = 0;
 		private double _maximum = 1;
 		private double _value = 0;
-	#if WINDOWS
+	#if WINDOWS  // Set all color properties to null for Windows as default values, and define platform-specific colors for Android, iOS, and Mac Catalyst.
         private Color _thumbColor = null;
         private Color _minTrackColor = null;
         private Color _maxTrackColor = null;
