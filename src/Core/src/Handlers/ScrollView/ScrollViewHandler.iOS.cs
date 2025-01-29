@@ -169,31 +169,15 @@ namespace Microsoft.Maui.Handlers
 			var contentWidthConstraint = scrollOrientation is ScrollOrientation.Horizontal or ScrollOrientation.Both ? double.PositiveInfinity : widthConstraint;
 			var contentHeightConstraint = scrollOrientation is ScrollOrientation.Vertical or ScrollOrientation.Both ? double.PositiveInfinity : heightConstraint;
 			var contentSize = MeasureContent(scrollView, scrollView.Padding, contentWidthConstraint, contentHeightConstraint);
+
 			// Our target size is the smaller of it and the constraints
 			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
 			var height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
 
-			// Since the UIScrollView might not be arranged yet, we can't rely on its Bounds for the viewport height/width
-			// So we'll use the constraints instead.
-			SetContentSizeForOrientation(PlatformView, widthConstraint, heightConstraint, VirtualView.Orientation, contentSize);
 			width = ViewHandlerExtensions.ResolveConstraints(width, scrollView.Width, scrollView.MinimumWidth, scrollView.MaximumWidth);
 			height = ViewHandlerExtensions.ResolveConstraints(height, scrollView.Height, scrollView.MinimumHeight, scrollView.MaximumHeight);
 
 			return new Size(width, height);
-		}
-
-		static void SetContentSizeForOrientation(UIScrollView platformView, double widthConstraint, double heightConstraint, ScrollOrientation orientation, Size contentSize)
-		{
-			if (orientation is ScrollOrientation.Vertical or ScrollOrientation.Neither)
-			{
-				contentSize.Width = Math.Min(contentSize.Width, widthConstraint);
-			}
-			if (orientation is ScrollOrientation.Horizontal or ScrollOrientation.Neither)
-			{
-				contentSize.Height = Math.Min(contentSize.Height, heightConstraint);
-			}
-
-			platformView.ContentSize = contentSize;
 		}
 
 		static Size MeasureContent(IContentView contentView, Thickness inset, double widthConstraint, double heightConstraint)
