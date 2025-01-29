@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shape)]
 		public void VerifyRectangleWidth()
 		{
-			App.WaitForElement("Rectangle");
+			App.WaitForElement("Label");
 			VerifyScreenshot();
 		}
 	}
