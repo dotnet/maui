@@ -23,12 +23,9 @@ namespace UITest.Appium
 				{ "startY" , startY },
 				{ "endX" , endX },
 				{ "endY" , endY },
-				{ "duration" , swipeSpeed },
+				{ "duration" , 0.5 },
 			};
 
-			if (element is not null)
-				parameters.Add("sourceElementId", element.Id);
-			
 			driver.ExecuteScript("macos: clickAndDrag", parameters);
 		}
 
@@ -49,11 +46,8 @@ namespace UITest.Appium
 				{ "startY" , startY },
 				{ "endX" , endX },
 				{ "endY" , endY },
-				{ "duration" , swipeSpeed },
+				{ "duration" , 0.5 },
 			};
-
-			if (element is not null)
-				parameters.Add("sourceElementId", element.Id);
 			
 			driver.ExecuteScript("macos: pressAndDrag", parameters);
 		}
