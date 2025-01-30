@@ -2336,9 +2336,8 @@ namespace UITest.Appium
 		/// <param name="query"></param>
 		public static void MoveCursor(this IApp app, IQuery query)
 		{
-			var elementToDoubleTap = app.FindElement(query);
-
-			app.MoveCursor(elementToDoubleTap);
+			var element = app.FindElement(query);
+			app.MoveCursor(element);
 		}
 
 		internal static void MoveCursor(this IApp app, IUIElement? element)
