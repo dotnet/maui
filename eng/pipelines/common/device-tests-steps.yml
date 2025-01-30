@@ -44,7 +44,7 @@ steps:
       ${{ if eq(parameters.skipLocalWorkloads, true) }}:
         installMaui: true
   
-  - ${{ if eq(parameters.skipLocalWorkloads, true) }}:
+  - ${{ if eq(parameters.skipLocalWorkloads, false) }}:
     - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
       displayName: 'Install .NET'
       retryCountOnTaskFailure: 3
