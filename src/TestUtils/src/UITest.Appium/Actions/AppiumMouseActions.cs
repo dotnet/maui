@@ -1,4 +1,5 @@
 ﻿using System.Drawing;
+using System.Runtime.InteropServices;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
@@ -9,7 +10,7 @@ using UITest.Core;
 
 namespace UITest.Appium
 {
-	public class AppiumMouseActions : ICommandExecutionGroup
+	public partial class AppiumMouseActions : ICommandExecutionGroup
 	{
 		const string ClickCommand = "click";
 		const string ClickCoordinatesCommand = "clickCoordinates";
@@ -310,22 +311,49 @@ namespace UITest.Appium
 			return new PointF(x, y);
 		}
 
-		const double screenDensity = 1; // TODO: actually find a way to get it for local testing
-
 		static Rectangle GetAbsoluteRect(AppiumElement element)
 		{
 			var rect = element.Rect;
+			var wndPos = element.WrappedDriver.Manage().Window.Position;
+
+			var screenDensity = GetCurrentMonitorScaleFactor(wndPos);
 
 			var x = (int)(rect.X / screenDensity);
 			var y = (int)(rect.Y / screenDensity);
 			var w = (int)(rect.Width / screenDensity);
 			var h = (int)(rect.Height / screenDensity);
 
-			var wnd = element.WrappedDriver.Manage().Window.Position;
-			x += (int)(wnd.X / screenDensity);
-			y += (int)(wnd.Y / screenDensity);
+			x += (int)(wndPos.X / screenDensity);
+			y += (int)(wndPos.Y / screenDensity);
 
 			return new Rectangle(x, y, w, h);
 		}
+
+		static double GetCurrentMonitorScaleFactor(Point windowLocation)
+		{
+			if (!OperatingSystem.IsWindows())
+			{
+				return 1;
+			}
+
+			var hwnd = GetForegroundWindow();
+			if (hwnd == 0)
+			{
+				return 1;
+			}
+
+			var dpi = GetDpiForWindow(hwnd);
+
+			// Calculate the scale factor (assuming 96 DPI is 100%)
+			var scaleFactor = dpi / 96.0;
+
+			return Math.Max(1, scaleFactor);
+		}
+
+		[LibraryImport("user32.dll")]
+		private static partial IntPtr GetForegroundWindow();
+
+		[LibraryImport("user32.dll")]
+		private static partial uint GetDpiForWindow(IntPtr hWnd);
 	}
 }
