@@ -6,6 +6,6 @@ public class NestedCollectionViews : TestNavigationPage
 {
 	protected override void Init()
 	{
-		//PushAsync(new GalleryPages.CollectionViewGalleries.NestedGalleries.NestedCollectionViewGallery());
+		PushAsync(new CollectionViewGalleries.NestedGalleries.NestedCollectionViewGallery());
 	}
 }

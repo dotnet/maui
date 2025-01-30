@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using Microsoft.Maui.Devices;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebView']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>, IWebView
 	{
 		/// <summary>Bindable property for <see cref="Source"/>.</summary>
@@ -382,6 +384,11 @@ namespace Microsoft.Maui.Controls
 			var webViewProcessTerminatedEventArgs = new WebViewProcessTerminatedEventArgs();
 #endif
 			ProcessTerminated?.Invoke(this, webViewProcessTerminatedEventArgs);
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"Source = {Source}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }
