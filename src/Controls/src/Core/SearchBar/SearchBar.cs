@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Debugger;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -167,7 +168,8 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"SearchCommand = {SearchCommand}, {base.GetDebuggerDisplay()}";
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(SearchCommand), SearchCommand);
+			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
 	}
 }
