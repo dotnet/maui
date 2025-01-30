@@ -600,6 +600,9 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 						}
 	};
 
+    Information("Use the Android emulators in a headless mode:");
+    SetEnvironmentVariable("HEADLESS", true);
+
 	Information("The platform version to run tests:");
 	SetEnvironmentVariable("DEVICE_SKIN", skin);
 
