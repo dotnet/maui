@@ -16,6 +16,8 @@ namespace UITest.Appium
 		const string DoubleClickCommand = "doubleClick";
 		const string DoubleClickCoordinatesCommand = "doubleClickCoordinates";
 		const string LongPressCommand = "longPress";
+		const string MoveCursorCommand = "moveCursor";
+		const string MoveCursorCoordinatesCommand = "moveCursorCoordinates";
 
 		readonly AppiumApp _appiumApp;
 
@@ -25,7 +27,9 @@ namespace UITest.Appium
 			ClickCoordinatesCommand,
 			DoubleClickCommand,
 			DoubleClickCoordinatesCommand,
-			LongPressCommand
+			LongPressCommand,
+			MoveCursorCommand,
+			MoveCursorCoordinatesCommand,
 		};
 
 		public AppiumMouseActions(AppiumApp appiumApp)
@@ -47,6 +51,8 @@ namespace UITest.Appium
 				DoubleClickCommand => DoubleClick(parameters),
 				DoubleClickCoordinatesCommand => DoubleClickCoordinates(parameters),
 				LongPressCommand => LongPress(parameters),
+				MoveCursorCommand => MoveCursor(parameters),
+				MoveCursorCoordinatesCommand => MoveCursorCoordinates(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -201,6 +207,85 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
+		CommandResponse TapCoordinates(IDictionary<string, object> parameters)
+		{
+			if (parameters.TryGetValue("x", out var x) &&
+				parameters.TryGetValue("y", out var y))
+			{
+				return ClickCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse MoveCursor(IDictionary<string, object> parameters)
+		{
+			var element = GetAppiumElement(parameters["element"]);
+			if (element is null)
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+
+			// Mouse actions are not supported on Windows
+			if (_appiumApp.GetTestDevice() == TestDevice.Windows)
+			{
+				var rect = GetAbsoluteRect(element);
+
+				var centerX = rect.X + rect.Width / 2;
+				var centerY = rect.Y + rect.Height / 2;
+
+				_appiumApp.Driver.ExecuteScript("windows: hover", new Dictionary<string, object>
+				{
+					{ "startX", centerX },
+					{ "startY", centerY },
+					{ "endX", centerX },
+					{ "endY", centerY },
+				});
+			}
+			else
+			{
+				var touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
+
+				var sequence = new ActionSequence(touchDevice, 0);
+				sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
+
+				_appiumApp.Driver.PerformActions(new List<ActionSequence> { sequence });
+			}
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		CommandResponse MoveCursorCoordinates(IDictionary<string, object> parameters)
+		{
+			if (!parameters.TryGetValue("x", out var x) || !parameters.TryGetValue("y", out var y))
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+
+			// Mouse actions are not supported on Windows
+			if (_appiumApp.GetTestDevice() == TestDevice.Windows)
+			{
+				_appiumApp.Driver.ExecuteScript("windows: hover", new Dictionary<string, object>
+				{
+					{ "startX", 0 },
+					{ "startY", 0 },
+					{ "endX", x },
+					{ "endY", y },
+				});
+			}
+			else
+			{
+				var touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
+
+				var sequence = new ActionSequence(touchDevice, 0);
+				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(5)));
+
+				_appiumApp.Driver.PerformActions(new List<ActionSequence> { sequence });
+			}
+
+			return CommandResponse.SuccessEmptyResponse;
+		}
+
 		static AppiumElement? GetAppiumElement(object element)
 		{
 			if (element is AppiumElement appiumElement)
@@ -223,6 +308,24 @@ namespace UITest.Appium
 			float y = float.Parse(parts[1]);
 
 			return new PointF(x, y);
+		}
+
+		const double screenDensity = 1; // TODO: actually find a way to get it for local testing
+
+		static Rectangle GetAbsoluteRect(AppiumElement element)
+		{
+			var rect = element.Rect;
+
+			var x = (int)(rect.X / screenDensity);
+			var y = (int)(rect.Y / screenDensity);
+			var w = (int)(rect.Width / screenDensity);
+			var h = (int)(rect.Height / screenDensity);
+
+			var wnd = element.WrappedDriver.Manage().Window.Position;
+			x += (int)(wnd.X / screenDensity);
+			y += (int)(wnd.Y / screenDensity);
+
+			return new Rectangle(x, y, w, h);
 		}
 	}
 }

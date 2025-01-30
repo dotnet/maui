@@ -2315,6 +2315,66 @@ namespace UITest.Appium
 		/// <remarks>
 		/// For Android apps, the tab name is converted to uppercase before searching.
 		/// </remarks>
+
+
+		/// <summary>
+		/// Moves the mouse cursor to the specified element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
+		public static void MoveCursor(this IApp app, string element)
+		{
+			var elementToDoubleTap = app.FindElement(element);
+
+			app.MoveCursor(elementToDoubleTap);
+		}
+
+		/// <summary>
+		/// Moves the mouse cursor to the matched element by 'query'.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="query"></param>
+		public static void MoveCursor(this IApp app, IQuery query)
+		{
+			var elementToDoubleTap = app.FindElement(query);
+
+			app.MoveCursor(elementToDoubleTap);
+		}
+
+		internal static void MoveCursor(this IApp app, IUIElement? element)
+		{
+			if (element is not null)
+			{
+				app.CommandExecutor.Execute("moveCursor", new Dictionary<string, object>
+				{
+					{ "element", element },
+				});
+			}
+		}
+
+		/// <summary>
+		/// Moves the mouse cursor to the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate to double tap.</param>
+		/// <param name="y">The y coordinate to double tap.</param>
+		public static void MoveCursorCoordinates(this IApp app, float x, float y)
+		{
+			app.CommandExecutor.Execute("moveCursorCoordinates", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y }
+			});
+		}
+
+		/// <summary>
+		/// Waits for a tab element with the specified name to appear and for page navigation to settle.
+		/// </summary>
+		/// <param name="app">The IApp instance.</param>
+		/// <param name="tabName">The name of the tab to wait for.</param>
+		/// <remarks>
+		/// For Android apps, the tab name is converted to uppercase before searching.
+		/// </remarks>
 		public static IUIElement WaitForTabElement(this IApp app, string tabName)
 		{
 			tabName = app is AppiumAndroidApp ? tabName.ToUpperInvariant() : tabName;
