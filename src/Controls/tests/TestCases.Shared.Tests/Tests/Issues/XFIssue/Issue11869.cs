@@ -7,16 +7,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Issue11869 : _IssuesUITest
 {
 
-	// In Android the top tab title was displayed with uppercase so we need to use uppercase string to find the element
-#if ANDROID 
-	const string TopTab2 = "TOPTAB2";
-	const string TopTab3 = "TOPTAB3";
-
-#else
-    const string TopTab2 = "TopTab2";
+	const string TopTab2 = "TopTab2";
 	const string TopTab3 = "TopTab3";
-#endif
-    const string HideTop2 = "HideTop2";
+
+	const string HideTop2 = "HideTop2";
 	const string HideTop3 = "HideTop3";
 	const string HideBottom2 = "HideBottom2";
 	const string HideBottom3 = "HideBottom3";
@@ -36,18 +30,17 @@ public class Issue11869 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void IsVisibleWorksForShowingHidingTabs()
 	{
-		// Ignored on Windows: The BottomTabs are displayed as a popup with a dropdown icon on Windows. 
-		// This causes a visibility issue where the content does not function as expected, a bug has been logged to address this behavior. 
-		// Once the issue is fixed, the test case should be re-enabled for Windows. https://github.com/dotnet/maui/issues/25913
-#if !WINDOWS
-		App.WaitForElement(TopTab2);
+		App.TapTab(TopTab2);
 		App.Tap(HideTop2);
-		App.WaitForNoElement(TopTab2);
+#if WINDOWS
+		App.Tap("navViewItem");
+#endif
+		App.WaitForTabElement(TopTab2);
 
-		App.WaitForElement(TopTab3);
+		App.WaitForTabElement(TopTab3);
 		App.Tap(HideTop3);
 		App.WaitForNoElement(TopTab3);
-#endif
+
 
 		App.WaitForElement(Tab2);
 		App.Tap(HideBottom2);
@@ -58,10 +51,12 @@ public class Issue11869 : _IssuesUITest
 		App.WaitForNoElement(Tab3);
 
 		App.Tap(ShowAllTabs);
-#if !WINDOWS
+#if WINDOWS
+		App.Tap("navViewItem");
+#endif
 		App.WaitForElement(TopTab2);
 		App.WaitForElement(TopTab3);
-#endif
+
 		App.WaitForElement(Tab2);
 		App.WaitForElement(Tab3);
 	}

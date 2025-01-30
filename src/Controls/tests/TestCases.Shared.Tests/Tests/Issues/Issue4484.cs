@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if ANDROID || IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -16,6 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ImageButton)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnMacWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 		public void RotatingDeviceDoesntCrashTitleView()
 		{
 			App.WaitForElement("Instructions");
