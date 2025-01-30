@@ -10,9 +10,11 @@ namespace Maui.Controls.Sample.Issues
 		protected override void Init()
 		{
 			StackLayout rootLayout = new StackLayout();
-			Slider slider = new Slider() { AutomationId = "slider" };
-			slider.ThumbImageSource = "coffee.png";
-			rootLayout.Children.Add(slider);
+			Slider slider1 = new Slider() { ThumbImageSource = "avatar.png" };
+			Slider slider2 = new Slider() { AutomationId = "slider" };
+			slider2.ThumbImageSource = "coffee.png";
+			rootLayout.Children.Add(slider1);
+			rootLayout.Children.Add(slider2);
 			Content = rootLayout;
 		}
 	}

@@ -5,6 +5,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Widget;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
 {
@@ -61,16 +62,21 @@ namespace Microsoft.Maui.Platform
 
 				if (seekBar.IsAlive() && thumbDrawable != null)
 				{
-					if (thumbDrawable is BitmapDrawable bitmapDrawable)
+					if (thumbDrawable is BitmapDrawable bitmapDrawable && bitmapDrawable.Bitmap is { } bitmap)
 					{
-						// Resize the bitmap to the desired size
-						var bitmap = bitmapDrawable.Bitmap;
-						if (bitmap is not null)
-						{
-							const float TARGET_SIZE = 28f;
-							var thumbImage = bitmap.ResizeImageSource(TARGET_SIZE, TARGET_SIZE, new Size(thumbDrawable.IntrinsicWidth, thumbDrawable.IntrinsicHeight));
-							seekBar.SetThumb(new BitmapDrawable(context.Resources, thumbImage));
-						}
+						// Define the target size for the thumb image
+						const int TARGET_SIZE = 48; // 48dp - default size of the thumb in Android
+
+						// Resize the bitmap to the target size
+						var thumbImage = bitmap.Downsize(TARGET_SIZE);
+
+						// Set the resized thumb image
+						seekBar.SetThumb(new BitmapDrawable(context.Resources, thumbImage));
+					}
+					else
+					{
+						// Set the original drawable if it's not a BitmapDrawable or the bitmap is null
+						seekBar.SetThumb(thumbDrawable);
 					}
 				}
 			}
@@ -89,29 +95,6 @@ namespace Microsoft.Maui.Platform
 					seekBar.UpdateThumbColor(slider);
 				}
 			}
-		}
-
-		internal static Bitmap? ResizeImageSource(this Bitmap sourceImage, float maxWidth, float maxHeight, Size originalImageSize)
-		{
-			if (sourceImage == null)
-				return null;
-
-			maxWidth = Math.Min(maxWidth, originalImageSize.Width);
-			maxHeight = Math.Min(maxHeight, originalImageSize.Height);
-
-			var sourceSize = new Size(sourceImage.Width, sourceImage.Height);
-
-			float maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
-
-			if (maxResizeFactor > 1)
-			{
-				return sourceImage;
-			}
-
-			int newWidth = (int)(sourceSize.Width * maxResizeFactor);
-			int newHeight = (int)(sourceSize.Height * maxResizeFactor);
-
-			return Bitmap.CreateScaledBitmap(sourceImage, newWidth, newHeight, true);
 		}
 	}
 }
