@@ -1,5 +1,4 @@
-﻿//This test case verifies the "System Specific Fonts" exclusively on the Android platform.
-#if ANDROID
+﻿#if ANDROID //This test case verifies the "System Specific Fonts" exclusively on the Android platform.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
