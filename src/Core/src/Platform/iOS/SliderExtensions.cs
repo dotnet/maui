@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using CoreGraphics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics.Platform;
@@ -50,7 +49,6 @@ namespace Microsoft.Maui.Platform
 				uiSlider.ThumbTintColor = slider.ThumbColor.ToPlatform();
 			}
 		}
-
 
 		public static async Task UpdateThumbImageSourceAsync(this UISlider uiSlider, ISlider slider, IImageSourceServiceProvider provider)
 		{

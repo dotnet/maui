@@ -5,6 +5,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Util;
 using Android.Widget;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
 {
@@ -71,29 +72,6 @@ namespace Microsoft.Maui.Platform
 					seekBar.UpdateThumbColor(slider);
 				}
 			}
-		}
-
-		internal static Bitmap? ResizeImageSource(this Bitmap sourceImage, float maxWidth, float maxHeight, Size originalImageSize)
-		{
-			if (sourceImage == null)
-				return null;
-
-			maxWidth = Math.Min(maxWidth, originalImageSize.Width);
-			maxHeight = Math.Min(maxHeight, originalImageSize.Height);
-
-			var sourceSize = new Size(sourceImage.Width, sourceImage.Height);
-
-			float maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
-
-			if (maxResizeFactor > 1)
-			{
-				return sourceImage;
-			}
-
-			int newWidth = (int)(sourceSize.Width * maxResizeFactor);
-			int newHeight = (int)(sourceSize.Height * maxResizeFactor);
-
-			return Bitmap.CreateScaledBitmap(sourceImage, newWidth, newHeight, true);
 		}
 	}
 }
