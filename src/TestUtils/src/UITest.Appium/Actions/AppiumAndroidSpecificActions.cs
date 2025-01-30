@@ -114,17 +114,17 @@ namespace UITest.Appium
 
 				if (enableSystemAnimations)
 				{
-					ShellHelper.ExecuteAdbCommand($"adb shell settings put global window_animation_scale 0");
-					ShellHelper.ExecuteAdbCommand($"adb shell settings put global transition_animation_scale 0");
-					ShellHelper.ExecuteAdbCommand($"adb shell settings put global animator_duration_scale 0");
+					ShellHelper.ExecuteShellCommand($"adb shell settings put global window_animation_scale 0");
+					ShellHelper.ExecuteShellCommand($"adb shell settings put global transition_animation_scale 0");
+					ShellHelper.ExecuteShellCommand($"adb shell settings put global animator_duration_scale 0");
 
 					return CommandResponse.SuccessEmptyResponse;
 				}
 				else
 				{
-					ShellHelper.ExecuteAdbCommand($"adb shell settings put global window_animation_scale 1");
-					ShellHelper.ExecuteAdbCommand($"adb shell settings put global transition_animation_scale 1");
-					ShellHelper.ExecuteAdbCommand($"adb shell settings put global animator_duration_scale 1");
+					ShellHelper.ExecuteShellCommand($"adb shell settings put global window_animation_scale 1");
+					ShellHelper.ExecuteShellCommand($"adb shell settings put global transition_animation_scale 1");
+					ShellHelper.ExecuteShellCommand($"adb shell settings put global animator_duration_scale 1");
 
 					return CommandResponse.SuccessEmptyResponse;
 				}
