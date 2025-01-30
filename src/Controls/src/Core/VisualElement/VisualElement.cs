@@ -1606,39 +1606,43 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected internal virtual void ChangeVisualState()
 		{
-			// States regarding a control's enabled or pointer events influence the main style
-			// of the element.
-			//
-			// Disabled, PointerOver, Pressed and Normal are typically put into the
-			// CommonStates visual state group.
+			// A disabled control should never be in a focused state as part of the feature
+			// of being disabled is that it cannot receive focus. If it was in focus, then
+			// it has to go out of focus.
+			var shouldFocus = IsFocused && IsEnabled;
+
+			// If the control cannot have focus, make sure it appears unfocused by moving to
+			// the Unfocused state.
+			if (!shouldFocus)
+			{
+				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Unfocused);
+			}
+
+			// Set the Disabled or Normal states depending on the value of IsEnabled and
+			// IsPointerOver. We set the PointerOver state later, after the Focused state.
 			if (!IsEnabled)
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
 			}
-			else if (IsPointerOver)
-			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
-			}
-			else
+			else if (!IsPointerOver)
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
 			}
 
-			// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
-			// in the control's visual states, the state can end up stuck in PointerOver after the pointer
-			// exits and the control still has focus.
-			//
-			// Focused and Unfocused states are typically put into the FocusStates visual state group.
-			if (IsFocused && IsEnabled)
+			// Go to the Focus state after the Normal state, so that the Focus state can
+			// override the Normal state's properties if a control is both focused and
+			// hovered.
+			if (shouldFocus)
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Focused);
 			}
-			else
+
+			// The PointerOver state is applied last so that it can override all the states. Even
+			// though this state is separate here, it should still be part of the CommonStates
+			// visual state group.
+			if (IsPointerOver)
 			{
-				// A disabled control should never be in a focused state as part of the feature
-				// of being disabled is that it cannot receive focus. If it was in focus, then
-				// it has to go out of focus.
-				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Unfocused);
+				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
 			}
 		}
 
