@@ -2341,8 +2341,8 @@ namespace UITest.Appium
 		/// Moves the mouse cursor to the given coordinates.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		/// <param name="x">The x coordinate to double tap.</param>
-		/// <param name="y">The y coordinate to double tap.</param>
+		/// <param name="x">The X coordinate to move to.</param>
+		/// <param name="y">The Y coordinate to move to.</param>
 		public static void MoveCursorCoordinates(this IApp app, float x, float y)
 		{
 			app.CommandExecutor.Execute("moveCursorCoordinates", new Dictionary<string, object>
