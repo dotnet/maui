@@ -125,6 +125,7 @@ steps:
         script: |
               dotnet workload install maui --source https://api.nuget.org/v3/index.json
               dotnet workload install android ios maccatalyst macos maui --source https://api.nuget.org/v3/index.json
+              dotnet tool restore
 
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
