@@ -96,7 +96,7 @@ namespace UITest.Appium
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, $"{appId}.MainActivity");
 			}
 			
-			var headless = config.GetProperty<bool>("Headless");
+			var headless = config.GetProperty<string>("Headless");
 			if (!string.IsNullOrWhiteSpace(headless))
 			{
 				// Appium has the ability to start Android emulators in a "headless" mode.
