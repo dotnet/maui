@@ -10,6 +10,8 @@ public class HeaderFooterShellFlyout : TestShell
 {
 	protected override void Init()
 	{
+		// Lock FlyoutBehavior to keep the flyout open when interacting with menu items, ensuring consistent testing across platforms.
+		Shell.SetFlyoutBehavior(this, FlyoutBehavior.Locked);
 		var page = new ContentPage();
 
 		AddFlyoutItem(page, "Flyout Item");
@@ -73,7 +75,8 @@ public class HeaderFooterShellFlyout : TestShell
 
 					FlyoutFooter = new StackLayout()
 					{
-						Orientation = StackOrientation.Horizontal,
+						// Problem with footer rendering when orientation is configured on iOS. Related issue: https://github.com/dotnet/maui/issues/26395 
+						// Orientation = StackOrientation.Horizontal,
 						Children = {
 							new Label() { Text = "Footer" }
 						},
@@ -98,7 +101,7 @@ public class HeaderFooterShellFlyout : TestShell
 						Children = {
 							new Label() { Text = "Header" }
 						},
-						AutomationId = "Header View"
+						AutomationId = "HeaderView"
 					};
 
 					FlyoutFooter = new StackLayout()
@@ -106,7 +109,7 @@ public class HeaderFooterShellFlyout : TestShell
 						Children = {
 							new Label() { Text = "Footer" }
 						},
-						AutomationId = "Footer View"
+						AutomationId = "FooterView"
 					};
 
 					await Task.Delay(10);

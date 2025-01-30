@@ -12,9 +12,10 @@ public class Unreported1 : _IssuesUITest
 
 	public override string Issue => "NRE when switching page on Appearing";
 
-	//[Test]
-	//public void Unreported1Test()
-	//{
-	//	App.Screenshot("ensure there is no crash");
-	//}
+	[Test]
+	[Category(UITestCategories.FlyoutPage)]
+	public void Unreported1Test()
+	{
+		App.WaitForElement("Label");
+	}
 }

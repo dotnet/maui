@@ -56,6 +56,15 @@ namespace Microsoft.Maui.DeviceTests
 			bitmap.AssertContainsColor(expectedColor.ToPlatform());
 		}
 
+		[Theory]
+		[InlineData("25d0", "\u25d0")]
+		[InlineData("25d025d1", "\u25d0\u25d1")]
+		[InlineData(null, null)]
+		public void GetGlyphHexSerializesCorrectly(string expected, string input)
+		{
+			Assert.Equal(expected, PlatformInterop.GetGlyphHex(input));
+		}
+
 		[Fact]
 		public async Task GetDrawableAsyncWithCustomFont()
 		{

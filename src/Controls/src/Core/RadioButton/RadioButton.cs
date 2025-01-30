@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
@@ -9,6 +10,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="Type[@FullName='Microsoft.Maui.Controls.RadioButton']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class RadioButton : TemplatedView, IElementConfiguration<RadioButton>, ITextElement, IFontElement, IBorderElement, IRadioButton
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='CheckedVisualState']/Docs/*" />
@@ -643,7 +645,7 @@ namespace Microsoft.Maui.Controls
 
 		Font ITextStyle.Font => this.ToFont();
 
-#if ANDROID	
+#if ANDROID
 		object IContentView.Content 
 		{
 			get
@@ -668,6 +670,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get => IsChecked;
 			set => SetValue(IsCheckedProperty, value, SetterSpecificity.FromHandler);
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"IsChecked = {IsChecked}, Value = {Value}, {base.GetDebuggerDisplay()}";
 		}
 
 		private protected override Semantics UpdateSemantics()

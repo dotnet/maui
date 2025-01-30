@@ -14,7 +14,6 @@ public class Issue20156 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Border)]
-	[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented on macOS")]
 	public void BorderShouldHaveNoThickness()
 	{
 		_ = App.WaitForElement("WaitForStubControl");
