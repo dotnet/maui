@@ -12,16 +12,11 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	protected override bool ResetAfterEachTest => true;
 
 	[Test]
-	public void InitialStateAreAllUnfocused()
+	public void InitialStateAreAllCorrect()
 	{
-		var buttonsIds = new[] { "button1", "button2", "button3" };
-
-		foreach (var buttonsId in buttonsIds)
-		{
-			// it is normal AND unfocused, but we are using the same Text
-			// property to make sure focused runs after normal
-			Assert.That(App.FindElement(buttonsId).GetText(), Is.EqualTo("Unfocused"));
-		}
+		Assert.That(App.FindElement("button1").GetText(), Is.EqualTo("Normal"));
+		Assert.That(App.FindElement("button2").GetText(), Is.EqualTo("Disabled"));
+		Assert.That(App.FindElement("button3").GetText(), Is.EqualTo("Normal"));
 	}
 
 	[Test]
@@ -52,14 +47,14 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	//	}
 
 	[Test]
-	public void PressingAndReleasingButtonMovesToFocusedState()
+	public void PressingAndReleasingButtonMovesToPointerOverState()
 	{
 		var rectBefore = App.FindElement("button1").GetRect();
 
 		App.Tap("button1");
 
-		// pressing a button sets it to be focused
-		Assert.That(App.FindElement("button1").GetText(), Is.EqualTo("Focused"));
+		// pressing a button sets it to be focused, but the pointer over state is appplied after
+		Assert.That(App.FindElement("button1").GetText(), Is.EqualTo("PointerOver"));
 
 		// we are shrinking the focused button a bit
 		var rectAfter = App.FindElement("button1").GetRect();
@@ -112,7 +107,7 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 	}
 
 	[Test]
-	public void DisablingFocusedButtonMovesToUnfocusedState()
+	public void DisablingFocusedButtonMovesToDisabledState()
 	{
 		var rectBefore = App.FindElement("button3").GetRect();
 
@@ -120,8 +115,8 @@ public class Issue19752(TestDevice device) : _IssuesUITest(device)
 		App.Tap("button2"); // move the focus to button 2, but then disable it forcing focus to button 3
 		App.Tap("button3"); // disable the focused button
 
-		// this disabled the button, but the focus change is applied on top of the normal state
-		Assert.That(App.FindElement("button3").GetText(), Is.EqualTo("Unfocused"));
+		// this disables the button, but the unfocus change is applied before all states
+		Assert.That(App.FindElement("button3").GetText(), Is.EqualTo("Disabled"));
 
 		// we are shrinking the focused button a bit, so it should have been unfocused after disabling
 		var rectAfter = App.FindElement("button3").GetRect();
