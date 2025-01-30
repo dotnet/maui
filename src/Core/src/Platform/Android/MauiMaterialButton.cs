@@ -82,10 +82,14 @@ namespace Microsoft.Maui.Platform
 			// After the layout pass, we swap the icon from the top to the bottom.
 			if (ForceBottomIconGravity)
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				var icons = TextViewCompat.GetCompoundDrawablesRelative(this);
+#pragma warning restore CS0618 // Type or member is obsolete
 				if (icons[1] is { } icon)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					TextViewCompat.SetCompoundDrawablesRelative(this, null, null, null, icon);
+#pragma warning restore CS0618 // Type or member is obsolete
 					icon.SetBounds(0, 0, icon.IntrinsicWidth, icon.IntrinsicHeight);
 				}
 			}
