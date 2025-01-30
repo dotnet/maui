@@ -2324,9 +2324,8 @@ namespace UITest.Appium
 		/// <param name="element">Target Element.</param>
 		public static void MoveCursor(this IApp app, string element)
 		{
-			var elementToDoubleTap = app.FindElement(element);
-
-			app.MoveCursor(elementToDoubleTap);
+			var elementToMoveTo = app.FindElement(element);
+			app.MoveCursor(elementToMoveTo);
 		}
 
 		/// <summary>
