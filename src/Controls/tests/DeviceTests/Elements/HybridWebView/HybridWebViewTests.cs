@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -24,6 +25,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 
 				builder.Services.AddHybridWebViewDeveloperTools();
+				builder.Services.AddScoped<IHybridWebViewTaskManager, HybridWebViewTaskManager>();
 			});
 		}
 
@@ -277,6 +279,69 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 		[Fact]
+		public Task InvokeJavaScriptMethodWithParametersAndVoidReturn() =>
+			RunTest(async (hybridWebView) =>
+			{
+				var x = 123.456m;
+				var y = 654.321m;
+
+				await hybridWebView.InvokeJavaScriptAsync(
+					"EvaluateMeWithParamsAndVoidReturn",
+					[x, y],
+					[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
+
+				var result = await hybridWebView.InvokeJavaScriptAsync<decimal>(
+					"EvaluateMeWithParamsAndVoidReturnGetResult",
+					HybridWebViewTestContext.Default.Decimal);
+
+				Assert.Equal(777.777m, result);
+			});
+
+		[Fact]
+		public Task InvokeJavaScriptMethodWithParametersAndVoidReturnUsingObjectReturnMethod() =>
+			RunTest(async (hybridWebView) =>
+			{
+				var x = 123.456m;
+				var y = 654.321m;
+
+				var firstResult = await hybridWebView.InvokeJavaScriptAsync<ComputationResult>(
+					"EvaluateMeWithParamsAndVoidReturn",
+					HybridWebViewTestContext.Default.ComputationResult,
+					[x, y],
+					[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
+
+				Assert.Null(firstResult);
+
+				var result = await hybridWebView.InvokeJavaScriptAsync<decimal>(
+					"EvaluateMeWithParamsAndVoidReturnGetResult",
+					HybridWebViewTestContext.Default.Decimal);
+
+				Assert.Equal(777.777m, result);
+			});
+
+		[Fact]
+		public Task InvokeJavaScriptMethodWithParametersAndVoidReturnUsingNullReturnMethod() =>
+			RunTest(async (hybridWebView) =>
+			{
+				var x = 123.456m;
+				var y = 654.321m;
+
+				var firstResult = await hybridWebView.InvokeJavaScriptAsync<object>(
+					"EvaluateMeWithParamsAndVoidReturn",
+					null,
+					[x, y],
+					[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal]);
+
+				Assert.Null(firstResult);
+
+				var result = await hybridWebView.InvokeJavaScriptAsync<decimal>(
+					"EvaluateMeWithParamsAndVoidReturnGetResult",
+					HybridWebViewTestContext.Default.Decimal);
+
+				Assert.Equal(777.777m, result);
+			});
+
+		[Fact]
 		public Task EvaluateJavaScriptAndGetResult() =>
 			RunTest(async (hybridWebView) =>
 			{
@@ -310,6 +375,106 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedReturnValue, result);
 				Assert.Equal(methodName, invokeJavaScriptTarget.LastMethodCalled);
 			});
+
+		[Theory]
+		[InlineData("")]
+		[InlineData("Async")]
+		public async Task InvokeJavaScriptMethodThatThrowsNumber(string type)
+		{
+#if ANDROID
+			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				return;
+			}
+#endif
+
+			var ex = await RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 1);
+			Assert.Equal("InvokeJavaScript threw an exception: 777.777", ex.Message);
+			Assert.Equal("777.777", ex.InnerException.Message);
+			Assert.Null(ex.InnerException.Data["JavaScriptErrorName"]);
+			Assert.NotNull(ex.InnerException.StackTrace);
+		}
+
+		[Theory]
+		[InlineData("")]
+		[InlineData("Async")]
+		public async Task InvokeJavaScriptMethodThatThrowsString(string type)
+		{
+#if ANDROID
+			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				return;
+			}
+#endif
+
+			var ex = await RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 2);
+			Assert.Equal("InvokeJavaScript threw an exception: String: 777.777", ex.Message);
+			Assert.Equal("String: 777.777", ex.InnerException.Message);
+			Assert.Null(ex.InnerException.Data["JavaScriptErrorName"]);
+			Assert.NotNull(ex.InnerException.StackTrace);
+		}
+
+		[Theory]
+		[InlineData("")]
+		[InlineData("Async")]
+		public async Task InvokeJavaScriptMethodThatThrowsError(string type)
+		{
+#if ANDROID
+			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				return;
+			}
+#endif
+
+			var ex = await RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 3);
+			Assert.Equal("InvokeJavaScript threw an exception: Generic Error: 777.777", ex.Message);
+			Assert.Equal("Generic Error: 777.777", ex.InnerException.Message);
+			Assert.Equal("Error", ex.InnerException.Data["JavaScriptErrorName"]);
+			Assert.NotNull(ex.InnerException.StackTrace);
+		}
+
+		[Theory]
+		[InlineData("")]
+		[InlineData("Async")]
+		public async Task InvokeJavaScriptMethodThatThrowsTypedNumber(string type)
+		{
+#if ANDROID
+			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				return;
+			}
+#endif
+
+			var ex = await RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 4);
+			Assert.Contains("undefined", ex.Message, StringComparison.OrdinalIgnoreCase);
+			Assert.Contains("undefined", ex.InnerException.Message, StringComparison.OrdinalIgnoreCase);
+			Assert.Equal("TypeError", ex.InnerException.Data["JavaScriptErrorName"]);
+			Assert.NotNull(ex.InnerException.StackTrace);
+		}
+
+		async Task<Exception> RunExceptionTest(string method, int errorType)
+		{
+			Exception exception = null;
+
+			await RunTest(async (hybridWebView) =>
+			{
+				var x = 123.456m;
+				var y = 654.321m;
+
+				exception = await Assert.ThrowsAnyAsync<Exception>(() =>
+					hybridWebView.InvokeJavaScriptAsync<decimal>(
+						method,
+						HybridWebViewTestContext.Default.Decimal,
+						[x, y, errorType],
+						[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Int32]));
+			});
+
+			return exception;
+		}
 
 		Task RunTest(Func<HybridWebView, Task> test) =>
 			RunTest(null, test);
@@ -367,6 +532,33 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				UpdateLastMethodCalled();
 				return null;
+			}
+
+			public async Task Invoke_NoParam_ReturnTask()
+			{
+				await Task.Delay(1);
+				UpdateLastMethodCalled();
+			}
+
+			public async Task<object> Invoke_NoParam_ReturnTaskNull()
+			{
+				await Task.Delay(1);
+				UpdateLastMethodCalled();
+				return null;
+			}
+
+			public async Task<int> Invoke_NoParam_ReturnTaskValueType()
+			{
+				await Task.Delay(1);
+				UpdateLastMethodCalled();
+				return 2;
+			}
+
+			public async Task<ComputationResult> Invoke_NoParam_ReturnTaskComplex()
+			{
+				await Task.Delay(1);
+				UpdateLastMethodCalled();
+				return NewComplexResult;
 			}
 
 			public int Invoke_OneParam_ReturnValueType(Dictionary<string, int> dict)
@@ -440,6 +632,10 @@ namespace Microsoft.Maui.DeviceTests
 				// 3. Methods with different return values (none, simple, complex, etc.)
 				yield return new object[] { "Invoke_NoParam_NoReturn", null };
 				yield return new object[] { "Invoke_NoParam_ReturnNull", null };
+				yield return new object[] { "Invoke_NoParam_ReturnTask", null };
+				yield return new object[] { "Invoke_NoParam_ReturnTaskNull", null };
+				yield return new object[] { "Invoke_NoParam_ReturnTaskValueType", ValueTypeResult };
+				yield return new object[] { "Invoke_NoParam_ReturnTaskComplex", ComplexResult };
 				yield return new object[] { "Invoke_OneParam_ReturnValueType", ValueTypeResult };
 				yield return new object[] { "Invoke_OneParam_ReturnDictionary", DictionaryResult };
 				yield return new object[] { "Invoke_NullParam_ReturnComplex", ComplexResult };
@@ -460,6 +656,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[JsonSourceGenerationOptions(WriteIndented = true)]
 		[JsonSerializable(typeof(ComputationResult))]
+		[JsonSerializable(typeof(int))]
 		[JsonSerializable(typeof(decimal))]
 		[JsonSerializable(typeof(bool))]
 		[JsonSerializable(typeof(int))]
