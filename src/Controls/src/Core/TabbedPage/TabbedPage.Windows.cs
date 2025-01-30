@@ -333,6 +333,7 @@ namespace Microsoft.Maui.Controls
 						vm.UnselectedTitleColor = view.BarTextColor?.AsPaint()?.ToPlatform();
 						vm.SelectedForeground = view.SelectedTabColor?.AsPaint()?.ToPlatform();
 						vm.UnselectedForeground = view.UnselectedTabColor?.AsPaint()?.ToPlatform();
+						vm.IsSelected = page == view.CurrentPage;
 					});
 
 				handler.UpdateValue(nameof(TabbedPage.CurrentPage));
