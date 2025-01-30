@@ -19,7 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			base.FixtureSetup();
 			App.NavigateToGallery(SliderFeatureMatrix);
 		}
-		[Test,Order(1)]
+
+		[Test, Order(1)]
 		[Category(UITestCategories.Slider)]
 		public void Slider_ValidateDefaultValues_VerifyLabels()
 		{
@@ -28,6 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("MaximumValueLabel").GetText(), Is.EqualTo("1.00"));
 			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("0.00"));
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetMinimumValue_VerifyMaximumLabel()
@@ -42,6 +44,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			Assert.That(App.FindElement("MinimumValueLabel").GetText(), Is.EqualTo("3.00"));
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetMaximumValue_VerifyMinimumLabel()
@@ -56,6 +59,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			Assert.That(App.FindElement("MaximumValueLabel").GetText(), Is.EqualTo("20.00"));
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetCurrentValue_VerifyValueLabel()
@@ -70,11 +74,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("1.00"));
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetValueExceedsMaximum()
 		{
-
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("MaximumEntry");
@@ -87,6 +91,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("100.00"));
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetValueWithinRange()
@@ -108,7 +113,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetMinimumValue_CheckValueLabel()
 		{
-
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("MinimumEntry");
@@ -121,6 +125,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("-2.00"));
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_MinimumExceedsMaximum_SetsMaximumToMinimum()
@@ -168,6 +173,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			Assert.That(App.FindElement("MaximumValueLabel").GetText(), Is.EqualTo("1.00"));
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void SliderCurrentValueHigherThanMinimumAndMaximumTest()
@@ -225,6 +231,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			Assert.That(App.FindElement("MinimumValueLabel").GetText(), Is.EqualTo("60.00"));
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_ValueBelowMinimum_CheckMinimumLabel()
@@ -242,6 +249,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("MinimumValueLabel").GetText(), Is.EqualTo("20.00"));
 		}
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // SetSliderValue method not supported on Catalyst and windows
 		[Test, Order(2)]
 		[Category(UITestCategories.Slider)]
 		public void Slider_DragStartedAndCompletedEventTrigged()
@@ -252,6 +260,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.WaitForElement("DragStartStatusLabel").GetText(), Is.EqualTo("Drag Started"));
 			Assert.That(App.WaitForElement("DragCompletedStatusLabel").GetText(), Is.EqualTo("Drag Completed"));
 		}
+#endif
 
 		[Test]
 		[Category(UITestCategories.Slider)]
@@ -265,7 +274,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
-
 		}
 
 		[Test]
@@ -295,6 +303,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Options");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_ChangeThumbColor_VerifyVisualState()
@@ -307,8 +316,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
-
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_ChangeMinTrackColor_VerifyVisualState()
@@ -336,6 +345,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_ChangeBackgroundColor_VerifyVisualState()
@@ -348,8 +358,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
-
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_ChangeThumbImageSource_VerifyVisualState()
@@ -363,6 +373,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetMinimumAndChangeFlowDirection_RTL()
@@ -395,7 +406,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetValueAndMinTrackColor_VerifyVisualState()
@@ -410,13 +420,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
-
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetValueAndMaxTrackColor_VerifyVisualState()
 		{
-
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("ValueEntry");
@@ -427,13 +436,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
-
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetValueAndThumbImageSource_VerifyVisualState()
 		{
-
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("ValueEntry");
@@ -444,13 +452,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
-
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetValueAndFlowDirection_RTL_VerifyVisualState()
 		{
-
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("ValueEntry");
@@ -477,6 +484,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetThumbAndMinTrackColor_VerifyVisualState()
@@ -491,6 +499,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetThumbAndBackgroundColor_VerifyVisualState()
@@ -505,6 +514,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetThumbColorAndThumbImageSource_VerifyVisualState()
@@ -524,7 +534,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetMinTrackColorAndValue_VerifyVisualState()
 		{
-
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("MinTrackColorYellowButton");
@@ -535,8 +544,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
-
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetMinTrackAndThumbColor_VerifyVisualState()
@@ -551,6 +560,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetMinTrackAndMaxTrackColor_VerifyVisualState()
@@ -565,6 +575,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetMinTrackAndBackgroundColor_VerifyVisualState()
@@ -579,6 +590,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetMinTrackColorTestFlowDirection_VerifyVisualState()
@@ -598,7 +610,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetMaxTrackColorAndValue_VerifyVisualState()
 		{
-
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("MaxTrackColorRedButton");
@@ -609,8 +620,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
-
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetMaxTrackAndThumbColor_VerifyVisualState()
@@ -625,6 +636,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetMaxTrackAndMinTrackColor_VerifyVisualState()
@@ -639,6 +651,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetMaxTrackAndBackgroundColor_VerifyVisualState()
@@ -653,6 +666,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetMaxTrackColorTestFlowDirection_VerifyVisualState()
@@ -682,6 +696,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetIsEnableAndMinTrackColor_VerifyVisualState()
@@ -696,6 +711,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetIsEnableAndMaxTrackColor_VerifyVisualState()
@@ -740,6 +756,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetIsVisibleAndMinTrackColor_VerifyVisualState()
@@ -753,8 +770,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
-
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetIsVisibleAndMaxTrackColor_VerifyVisualState()
@@ -768,8 +785,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
-
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetIsVisibleAndBackgroundColor_VerifyVisualState()
@@ -828,6 +845,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_SetBackgroundColorAndIsEnable_VerifyVisualState()
@@ -841,7 +859,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
-
 		}
 
 		[Test]
@@ -875,6 +892,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
+
 		[Test]
 		[Category(UITestCategories.Slider)]
 		public void Slider_FlowDirection_RTL_SetMaximumValue_VerifyVisualState()
@@ -936,6 +954,5 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("SliderControl");
 			VerifyScreenshot();
 		}
-
 	}
 }
