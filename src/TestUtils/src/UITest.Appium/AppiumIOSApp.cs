@@ -81,7 +81,7 @@ namespace UITest.Appium
 			config.SetProperty("useJSONSource", "true");
 			
 			var headless = config.GetProperty<string>("Headless");
-			if (!string.IsNullOrWhiteSpace(appId))
+			if (!string.IsNullOrWhiteSpace(headless))
 			{
 				// Appium has the ability to start iOS simulators in a "headless" mode.
 				// This means that the devices won't have any graphical user interface; but they will still be running silently, testing the app.
