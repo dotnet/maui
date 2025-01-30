@@ -6,12 +6,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue889 : _IssuesUITest
 {
+	string _tab2Title = "Tab 2 Title";
 
-#if ANDROID
-	const string Tab2Title = "TAB 2 TITLE";
-#else
-	const string Tab2Title = "Tab 2 Title";
-#endif
 	public Issue889(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -25,14 +21,26 @@ public class Issue889 : _IssuesUITest
 		App.WaitForElement("PushPage");
 		App.Tap("PushPage");
 		App.WaitForElement("PushedPageLabel");
-		
+
 #if IOS || MACCATALYST
-		App.Tap(AppiumQuery.ByName("Initial Page"));
+		var initialPageQuery = AppiumQuery.ByName("Initial Page");
+		App.WaitForElement(initialPageQuery);
+		App.Tap(initialPageQuery);
 #else
+
+#if WINDOWS
 		App.TapBackArrow();
+#else
+		App.Back();
 #endif
 
-		App.Tap(Tab2Title);
+#endif
+
+#if ANDROID
+		_tab2Title = _tab2Title.ToUpperInvariant();
+#endif
+		App.WaitForElement(_tab2Title);
+		App.TapTab(_tab2Title);
 		App.WaitForElement("SecondTabPageButton");
 	}
 }

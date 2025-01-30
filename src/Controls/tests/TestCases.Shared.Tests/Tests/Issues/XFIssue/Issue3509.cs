@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -26,4 +25,3 @@ public class Issue3509 : _IssuesUITest
 		App.Back();
 	}
 }
-#endif

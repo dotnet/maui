@@ -19,12 +19,7 @@
 			{
 				ItemsSource = items
 			};
-			Content = new StackLayout
-			{
-				Children =
-				{
-					listView,
-					new Button
+			var firstbutton = new Button
 					{
 						AutomationId = _btnScrollToNonExistentItem,
 						Text = "Click for ScrollTo (should do nothing)",
@@ -32,8 +27,8 @@
 						{
 							listView.ScrollTo("Hello", ScrollToPosition.Start, true);
 						})
-					},
-					new Button
+					};
+			var secondbutton = new Button
 					{
 						AutomationId = _btnScrollToExistentItem,
 						Text = "Click for ScrollTo (should go to 15)",
@@ -41,7 +36,25 @@
 						{
 							listView.ScrollTo(_middleListItem, ScrollToPosition.Start, false);
 						})
-					}
+					};
+			
+			Grid.SetRow(listView, 2);
+			Grid.SetRow(firstbutton, 0);
+			Grid.SetRow(secondbutton, 1);
+			
+			Content = new Grid
+			{
+				RowDefinitions = new RowDefinitionCollection
+				{
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Star },
+				},
+				Children =
+				{
+					firstbutton,
+					secondbutton,
+					listView
 				}
 			};
 		}

@@ -648,7 +648,9 @@ namespace Microsoft.Maui.Platform
 
 				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
 				{
-					OnLoadedCheck(null);
+					//The MovedToWindow fires multiple times during navigation animations, causing repeated OnLoadedCheck calls. 
+					//BeginInvokeOnMainThread ensures OnLoadedCheck executes after all window transitions are complete.
+					uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
 				}
 			}
 			else
@@ -728,7 +730,9 @@ namespace Microsoft.Maui.Platform
 
 				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
 				{
-					UnLoadedCheck();
+					//The MovedToWindow fires multiple times during navigation animations, causing repeated UnLoadedCheck calls. 
+					//BeginInvokeOnMainThread ensures UnLoadedCheck executes after all window transitions are complete.
+					uiView.BeginInvokeOnMainThread(UnLoadedCheck);
 				}
 			}
 
@@ -941,5 +945,7 @@ namespace Microsoft.Maui.Platform
 		internal static bool ShowSoftInput(this UIView inputView) => inputView.BecomeFirstResponder();
 
 		internal static bool IsSoftInputShowing(this UIView inputView) => inputView.IsFirstResponder;
+
+		internal static bool IsFinalMeasureHandledBySuperView(this UIView? view) => view?.Superview is ICrossPlatformLayoutBacking { CrossPlatformLayout: not null };
 	}
 }
