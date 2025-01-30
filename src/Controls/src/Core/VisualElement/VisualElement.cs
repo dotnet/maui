@@ -1762,11 +1762,15 @@ namespace Microsoft.Maui.Controls
 
 			X = bounds.X;
 			Y = bounds.Y;
+			var previousWidth = Width;
+			var previousHeight = Height;
 			Width = bounds.Width;
 			Height = bounds.Height;
-
 			SizeAllocated(Width, Height);
-			SizeChanged?.Invoke(this, EventArgs.Empty);
+			if (previousHeight != Height || previousWidth != Width)
+			{
+				SizeChanged?.Invoke(this, EventArgs.Empty);
+			}
 
 			BatchCommit();
 		}
