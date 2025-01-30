@@ -17,6 +17,7 @@ parameters:
   outputVariableName: 'dotnetbuilds-internal-container-read-token'
   expiryInHours: 1
   base64Encode: false
+  installMaui: false
 
 steps:
   # Prepare macOS
@@ -115,6 +116,16 @@ steps:
   - ${{ if eq(parameters.clearCaches, 'true') }}:
     - pwsh: dotnet nuget locals all --clear
       displayName: 'Clear all NuGet caches'
+  
+  - ${{ if eq(parameters.installMaui, true) }}:
+    - task: Bash@3
+      displayName: Install MAUI
+      inputs:
+        targetType: 'inline'
+        script: |
+              dotnet workload install maui
+              dotnet workload install android ios maccatalyst macos maui
+
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: ../../common/templates-official/steps/enable-internal-sources.yml

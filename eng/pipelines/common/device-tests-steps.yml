@@ -14,6 +14,7 @@ parameters:
   rebootAgent: true
   poolName: 'Azure Pipelines'
   skipProvisioning: true
+  skipLocalWorkloads: false
 
 steps:
   - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines')) }}:
@@ -40,16 +41,19 @@ steps:
         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
       ${{ else }}:  
         skipProvisionator: true
+      ${{ if eq(parameters.skipLocalWorkloads, true) }}:
+        installMaui: true
+  
+  - ${{ if eq(parameters.skipLocalWorkloads, true) }}:
+    - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+      displayName: 'Install .NET'
+      retryCountOnTaskFailure: 3
+      env:
+        DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+        PRIVATE_BUILD: $(PrivateBuild)
 
-  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
-    displayName: 'Install .NET'
-    retryCountOnTaskFailure: 3
-    env:
-      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-      PRIVATE_BUILD: $(PrivateBuild)
-
-  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
-    displayName: 'Add .NET to PATH'
+    - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+      displayName: 'Add .NET to PATH'
 
   - ${{ if eq(parameters.useArtifacts, true) }}:
 
@@ -72,7 +76,7 @@ steps:
         PRIVATE_BUILD: $(PrivateBuild)
 
   - ${{ else }}:
-    - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
+    - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release" --workloads="global"
       displayName: 'Build the MSBuild Tasks'
 
   - pwsh: |
@@ -97,7 +101,7 @@ steps:
 
   - pwsh: |
       Get-Content $PSCommandPath
-      ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --configuration=${{ parameters.deviceTestConfiguration }}
+      ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --configuration=${{ parameters.deviceTestConfiguration }} --workloads="global"
     displayName: $(Agent.JobName)
     workingDirectory: ${{ parameters.checkoutDirectory }}
     condition: and(succeeded(), ne(variables['Platform.Name'], 'Mac'))      
@@ -106,7 +110,7 @@ steps:
   # Execute the powershell script from a bash shell on Mac to avoid interference between powershell processes that lead to this error: The STDIO streams did not close within 10 seconds of the exit event from process '/usr/local/bin/pwsh'. This may indicate a child process inherited the STDIO streams and has not yet exited.
   - bash: |
       cat ${BASH_SOURCE[0]}
-      pwsh ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --configuration=${{ parameters.deviceTestConfiguration }}
+      pwsh ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --configuration=${{ parameters.deviceTestConfiguration }} --workloads="global"
     displayName: $(Agent.JobName)
     workingDirectory: ${{ parameters.checkoutDirectory }}
     condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))
@@ -114,7 +118,7 @@ steps:
 
   - ${{ if eq(parameters.platform, 'ios')}}:
     - bash: |
-        pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
+        pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }} --workloads="global"
       displayName: Cleanup and Create Simulator Logs if Test Run Failed To
       condition: always()
       continueOnError: true

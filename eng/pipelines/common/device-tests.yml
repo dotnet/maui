@@ -75,6 +75,7 @@ stages:
             poolName: ${{ parameters.androidPool.name }}
             deviceTestConfiguration: $(ANDROID_CONFIGURATION)
             skipProvisioning: ${{ parameters.skipProvisioning }}
+            skipLocalWorkloads: true
 
   - stage: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} iOS Device Tests
@@ -125,6 +126,8 @@ stages:
             poolName: 'Azure Pipelines'
             skipProvisioning: ${{ parameters.skipProvisioning }}
             deviceTestConfiguration: $(IOS_CONFIGURATION)
+            skipLocalWorkloads: true
+
 
   - stage: catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} macOS Device Tests
@@ -173,7 +176,7 @@ stages:
             poolName: 'Azure Pipelines'
             skipProvisioning: ${{ parameters.skipProvisioning }}
             deviceTestConfiguration: $(IOS_CONFIGURATION)
-
+            skipLocalWorkloads: true
 
   - stage: windows_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} Windows Device Tests
@@ -217,3 +220,5 @@ stages:
             useArtifacts: ${{ parameters.useArtifacts }}
             skipProvisioning: ${{ parameters.skipProvisioning }}
             deviceTestConfiguration: $(WINDOWS_CONFIGURATION)
+            skipLocalWorkloads: true
+
