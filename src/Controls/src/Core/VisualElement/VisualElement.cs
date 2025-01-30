@@ -20,7 +20,6 @@ namespace Microsoft.Maui.Controls
 	/// <remarks>
 	/// The base class for most .NET MAUI on-screen elements. Provides most properties, events, and methods for presenting an item on screen.
 	/// </remarks>
-
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement
 	{
@@ -1607,6 +1606,11 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected internal virtual void ChangeVisualState()
 		{
+			// States regarding a control's enabled or pointer events influence the main style
+			// of the element.
+			//
+			// Disabled, PointerOver, Pressed and Normal are typically put into the
+			// CommonStates visual state group.
 			if (!IsEnabled)
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
@@ -1620,13 +1624,21 @@ namespace Microsoft.Maui.Controls
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
 			}
 
-			if (IsEnabled && !IsPointerOver)
+			// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
+			// in the control's visual states, the state can end up stuck in PointerOver after the pointer
+			// exits and the control still has focus.
+			//
+			// Focused and Unfocused states are typically put into the FocusStates visual state group.
+			if (IsFocused && IsEnabled)
 			{
-				// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
-				// in the control's visual states, the state can end up stuck in PointerOver after the pointer
-				// exits and the control still has focus.
-				VisualStateManager.GoToState(this,
-					IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Focused);
+			}
+			else
+			{
+				// A disabled control should never be in a focused state as part of the feature
+				// of being disabled is that it cannot receive focus. If it was in focus, then
+				// it has to go out of focus.
+				VisualStateManager.GoToState(this, VisualStateManager.FocusStates.Unfocused);
 			}
 		}
 
