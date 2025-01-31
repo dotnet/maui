@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Fix ShellContent Title Does Not Update at Runtime";
 
-		[Test]
+		[Test, Order(1)]
 		[Category(UITestCategories.Shell)]
 		public void VerifyFirstShellContentTitle()
 		{
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(2)]
 		[Category(UITestCategories.Shell)]
 		public void VerifyNewlyAddedShellContentTitle()
 		{
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(3)]
 		[Category(UITestCategories.Shell)]
 		public void VerifyExistingTabTitle()
 		{
