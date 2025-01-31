@@ -1,4 +1,4 @@
-#if WINDOWS // mac does not respond to the window size change. so, ignored test on mac.
+#if WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
