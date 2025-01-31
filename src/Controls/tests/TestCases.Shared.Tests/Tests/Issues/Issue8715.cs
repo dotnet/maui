@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,14 +19,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ReappearingCollectionViewShouldNotThrowNRE()
 		{
 			App.WaitForElement("8715 About");
-			App.TapFlyoutPageIcon(FlyoutIconAutomationId);
+			App.TapShellFlyoutIcon();
 			App.Tap("CollectionView");
 			App.Tap("Toggle");
 			App.Tap("Toggle");
-			App.TapFlyoutPageIcon(FlyoutIconAutomationId);
+			App.TapShellFlyoutIcon();
 			App.Tap("About");
 			App.WaitForElement("8715 About");
-			App.TapFlyoutPageIcon(FlyoutIconAutomationId);
+			App.TapShellFlyoutIcon();
 			App.Tap("CollectionView");
 		}
 	}
