@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -139,6 +140,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action, IMauiContext mauiContext = null, TimeSpan? timeOut = null)
 			where THandler : class, IElementHandler
 		{
+			var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 			mauiContext ??= MauiContext;
 
 			if (System.Diagnostics.Debugger.IsAttached)
@@ -146,8 +148,11 @@ namespace Microsoft.Maui.DeviceTests
 			else
 				timeOut ??= TimeSpan.FromSeconds(15);
 
+			TestLogger.LogDebug($"Before InvokeOnMainThreadAsync");
+
 			return InvokeOnMainThreadAsync(async () =>
 			{
+				TestLogger.LogDebug($"Starting InvokeOnMainThreadAsync");
 				IWindow window = CreateWindowForContent(view);
 
 				var application = mauiContext.Services.GetService<IApplication>();
@@ -162,10 +167,13 @@ namespace Microsoft.Maui.DeviceTests
 
 				try
 				{
+					TestLogger.LogDebug($"Requesting Semaphore to Start");
 					await _takeOverMainContentSempahore.WaitAsync();
+					TestLogger.LogDebug($"Obtained Semaphore");
 
 					await SetupWindowForTests<THandler>(window, async () =>
 					{
+						TestLogger.LogDebug($"Window Setup For Tests");
 						IView content = window.Content;
 
 						if (content is FlyoutPage fp)
@@ -249,7 +257,11 @@ namespace Microsoft.Maui.DeviceTests
 						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
 
+
+						TestLogger.LogDebug($"Running Test");
 						await action(handler).WaitAsync(timeOut.Value);
+
+						
 
 
 #if !WINDOWS
@@ -268,6 +280,11 @@ namespace Microsoft.Maui.DeviceTests
 				finally
 				{
 					_takeOverMainContentSempahore.Release();
+					stopwatch.Stop();
+					TestLogger.LogDebug($"Finished Running Test: {stopwatch.Elapsed}");
+
+					if (stopwatch.ElapsedMilliseconds > 15000)
+						TestLogger.LogError($"Test took longer than 15 seconds to complete.");
 				}
 			});
 		}

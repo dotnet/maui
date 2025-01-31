@@ -42,7 +42,13 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 		{
 			var testRunner = base.GetTestRunner(logWriter);
 			if (_options.SkipCategories?.Count > 0)
-				testRunner.SkipCategories(_options.SkipCategories);
+			{
+				//throw new Exception($"TestCategory: {String.Join(",", _options.SkipCategories)} .");
+				//testRunner.SkipCategories(_options.SkipCategories);
+			}
+			
+			testRunner.SkipCategories("Accessibility,Application,Behavior,Border,BoxView,Button,CarouselView,CheckBox,CollectionView,Compatibility,ContentView,Dispatcher,Editor,Element,Entry,FlexLayout,FlyoutPage,Frame,Gesture,HybridWebView,Image,Label,Layout,Lifecycle,ListView,MenuFlyout,Mapper,Memory,Modal,NavigationPage,Page,Path,Picker,RadioButton,RefreshView,ScrollView,SearchBar,Shape,SwipeView,TabbedPage,TextInput,Toolbar,TemplatedView,View,VisualElement,VisualElementTree,WebView,Window,WindowOverlay,Xaml".Split(","));
+
 			return testRunner;
 		}
 

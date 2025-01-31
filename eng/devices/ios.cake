@@ -172,6 +172,7 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 				$"--timeout=01:15:00 " +
 				$"--launch-timeout=00:06:00 " +
 				xcode_args +
+				$"--set-env=TestCategory=Shell " +
 				$"--verbosity=\"Debug\" ");
 
 			if (device.Contains("device"))

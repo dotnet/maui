@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Xunit;
+using Microsoft.Extensions.Logging;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
@@ -84,10 +85,15 @@ namespace Microsoft.Maui.DeviceTests
 			await RunShellTabBarTests(shell => Shell.SetTabBarUnselectedColor(shell, expectedColor),
 				async (shell) =>
 				{
+					TestLogger.LogDebug($"LOGGER 1");
 					await ValidateTabBarTextColor(shell.CurrentSection, expectedColor, false);
+					TestLogger.LogDebug($"LOGGER 2");
 					await ValidateTabBarIconColor(shell.CurrentSection, expectedColor, false);
+					TestLogger.LogDebug($"LOGGER 3");
 					await ValidateTabBarTextColor(shell.Items[0].Items[1], expectedColor, true);
+					TestLogger.LogDebug($"LOGGER 4");
 					await ValidateTabBarIconColor(shell.Items[0].Items[1], expectedColor, true);
+					TestLogger.LogDebug($"LOGGER 5");
 				});
 		}
 
