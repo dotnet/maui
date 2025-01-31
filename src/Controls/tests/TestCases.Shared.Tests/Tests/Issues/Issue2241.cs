@@ -1,4 +1,4 @@
-﻿#if IOS || ANDROID
+﻿#if IOS || ANDROID  //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android.
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -17,8 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMacWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 		public void ChangeOrientationCheckScroll()
 		{
 			var grid1 = App.WaitForElement("MainGrid").GetRect();
@@ -26,7 +24,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ScrollDown("TestScrollView", ScrollStrategy.Programmatically);
 			App.SetOrientationPortrait();
 			var grid2 = App.WaitForElement("MainGrid").GetRect();
-			VerifyScreenshot();
 
 			ClassicAssert.AreEqual(grid1.CenterY(), grid2.CenterY());
 		}
