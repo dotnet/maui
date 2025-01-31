@@ -75,5 +75,12 @@ namespace Microsoft.Maui.Platform
 				uiSlider.UpdateThumbColor(slider);
 			}
 		}
+
+		static CGSize CalculateDefaultThumbSize(UISlider uiSlider)
+		{
+			var trackRect = uiSlider.TrackRectForBounds(uiSlider.Bounds);
+			var thumbRect = uiSlider.ThumbRectForBounds(uiSlider.Bounds, trackRect, 0);
+			return thumbRect.Size;
+		}
 	}
 }
