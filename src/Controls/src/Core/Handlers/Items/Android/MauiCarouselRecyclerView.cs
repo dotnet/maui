@@ -603,8 +603,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					var viewHolder = (ViewHolder)ItemsViewAdapter.CreateViewHolder(this, viewType);
 					ItemsViewAdapter.BindViewHolder(viewHolder, 0);
 					viewHolder.ItemView.Measure(widthMeasureSpec, heightMeasureSpec);
-					widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredWidth);
-					heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredHeight);
+
+					if (widthMeasureSpec == 0)
+					{
+						widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredWidth);
+					}
+					if (heightMeasureSpec == 0)
+					{
+						heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredHeight);
+					}
 				}
 			}
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
