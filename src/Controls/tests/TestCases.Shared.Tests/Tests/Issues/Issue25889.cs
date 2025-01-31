@@ -18,7 +18,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void RemainingItemsThresholdReachedCommandFired()
 		{
 			App.WaitForElement("collectionView");
-			App.ScrollDown("collectionView");
+			App.ScrollDown("collectionView", ScrollStrategy.Gesture);
+			
+			App.WaitForElement("collectionView");
+			App.ScrollDown("collectionView", ScrollStrategy.Gesture);
+
 			var label = App.WaitForElement("mainPageLabel");
 			Assert.That(label.GetText(), Is.EqualTo("Command Fired!"));
 		}

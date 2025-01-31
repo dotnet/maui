@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	/// <remarks><see cref = "Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="Page"/> class are most prominently used as the top level UI element in .NET MAUI applications. In addition to their role as the main pages of applications, <see cref="Page"/> objects and their descendants can be used with navigation classes, such as <see cref="NavigationPage"/> or <see cref="FlyoutPage"/>, among others, to provide rich user experiences that conform to the expected behaviors on each platform.
 	/// </remarks>
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement
 #if IOS
 	,IiOSPageSpecifics
@@ -938,5 +940,10 @@ namespace Microsoft.Maui.Controls
 		/// <returns>The <see cref="Window"/> instance that parents the page.</returns>
 		public virtual Window GetParentWindow()
 			=> this.FindParentOfType<Window>();
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"BindingContext = {BindingContext}, Title = {Title}";
+		}
 	}
 }

@@ -46,9 +46,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		[SupportedOSPlatform("maccatalyst13.0")]
 		public static partial void MapActivateWindow(ApplicationHandler handler, IApplication application, object? args)
 		{
+			// ActivateSceneSession requires 17+
+			if (!OperatingSystem.IsIOSVersionAtLeast(17) && !OperatingSystem.IsMacCatalyst())
+			{
+				return;
+			}
+
 			if (args is IWindow window)
 			{
 				var sceneSession = (window.Handler?.PlatformView as UIWindow)?.WindowScene?.Session;
