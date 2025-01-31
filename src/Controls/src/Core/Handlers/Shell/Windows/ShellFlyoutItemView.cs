@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.Platform
 						fe.Visibility = WVisibility.Visible;
 					}
 				}
-
+				base.MeasureOverride(availableSize);
 				var request = view.Measure(availableSize.Width, availableSize.Height);
 				Clip = new RectangleGeometry { Rect = new WRect(0, 0, request.Width, request.Height) };
 				return request.ToPlatform();
@@ -131,6 +131,9 @@ namespace Microsoft.Maui.Controls.Platform
 			base.ArrangeOverride(finalSize);
 
 			if (this.ActualWidth > 0 && _content is IView view)
+			// Replaced ActualWidth with finalSize.Width since ActualWidth updates only after ArrangeOverride completes, 
+			// ensuring accurate layout during the initial arrangement phase.
+			if (finalSize.Width > 0 && _content is IView view)
 			{
 				view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
 			}
