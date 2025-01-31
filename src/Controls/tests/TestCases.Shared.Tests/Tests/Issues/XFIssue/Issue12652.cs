@@ -19,11 +19,6 @@ public class Issue12652 : _IssuesUITest
     [Category(UITestCategories.Shell)]
     public void NavigatingBackToAlreadySelectedTopTabDoesntCrash()
     {
-        // On the Windows platform, there is a dropdown menu that has to be accessed to view the "TopTab" choices.
-        // The "navViewItem" tap emulates user actions to open the dropdown and display the TopTab for navigation.
-#if WINDOWS
-        App.Tap("navViewItem");
-#endif
         App.TapTab(Top3);
         App.WaitForElement("TopTabPage3");
         App.Tap("Main 2");

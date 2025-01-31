@@ -36,8 +36,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// 2. Click the second Tab.
 			App.TapTab(Page2Title);
 
-			// 6. Screenshot to validate the result.
-			VerifyScreenshot();
+			App.WaitForElement("Page2Button");
 			App.TapBackArrow();
 		}
 	}

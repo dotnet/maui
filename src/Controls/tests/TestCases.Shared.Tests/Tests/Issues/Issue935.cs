@@ -20,9 +20,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("TestLabel");
 			App.Tap("TestLabel");
-			VerifyScreenshot("Tapped_Cell_Once");
+			var label=App.WaitForElement("TestLabel").GetText();
+			Assert.That("I have been selected:1", Is.EqualTo(label));
 			App.Tap("TestLabel");
-			VerifyScreenshot("Tapped_Cell_Twice");
+			var label1=App.WaitForElement("TestLabel").GetText();
+			Assert.That("I have been selected:2", Is.EqualTo(label1));
 		}
 	}
 }

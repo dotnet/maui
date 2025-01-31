@@ -17,16 +17,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Switch)]
 		[Category(UITestCategories.Compatibility)]
-		public async Task SwitchColorTest()
+		public void SwitchColorTest()
 		{
 			App.WaitForElement(SwitchId);
 
 			VerifyScreenshot("SwitchColorTest_before_toggling");
 
 			App.Tap(SwitchId);
-
-			//Delay so that the switch toggling is finished
-			await Task.Delay(200);
 
 			VerifyScreenshot("SwitchColorTest_after_toggling");
 		}
