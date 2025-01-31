@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 23803, "FlyoutItem in overlow menu not fully interactable", PlatformAffected.UWP)]
+	[Issue(IssueTracker.Github, 23803, "FlyoutItem in overflow menu not fully interactable", PlatformAffected.UWP)]
 	public partial class Issue23803 : TestShell
 	{
 		protected override void Init()
