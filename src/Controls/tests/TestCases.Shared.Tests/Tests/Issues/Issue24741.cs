@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("NavigateButton");
 
 			// 2. Click the second Tab.
-			App.Tap(Page2Title);
+			App.TapTab(Page2Title);
 
 			// 3. Navigate back.
 			App.WaitForElement("Page2Button");
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("NavigateButton");
 
 			// 2. Click the second Tab.
-			App.Tap(Page2Title);
+			App.TapTab(Page2Title);
 
 			// 6. Screenshot to validate the result.
 			VerifyScreenshot();
