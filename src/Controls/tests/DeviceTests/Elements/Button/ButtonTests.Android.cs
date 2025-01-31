@@ -7,6 +7,9 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
+using AColor = Android.Graphics.Color;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -19,6 +22,11 @@ namespace Microsoft.Maui.DeviceTests
 		Task<string?> GetPlatformText(ButtonHandler buttonHandler)
 		{
 			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).Text);
+		}
+
+		Task<Android.Content.Res.ColorStateList?> GetPlatformTextColor(ButtonHandler buttonHandler)
+		{
+			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).TextColors);
 		}
 
 		Android.Text.TextUtils.TruncateAt? GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
@@ -81,5 +89,22 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task ButtonDisabledColorWorks()
+		{
+			Button myButton = new Button()
+			{
+				BackgroundColor = Colors.Green,
+				TextColor = Colors.White,
+				BindingContext = new object(),
+				Text = "test text",
+				IsEnabled = false
+			};
+			
+			var textColors = await GetPlatformTextColor(await CreateHandlerAsync<ButtonHandler>(myButton));	
+			var disabledColor = textColors!.GetColorForState(new[] { -global::Android.Resource.Attribute.StateActive }, AColor.Green);
+			int compareTo = Colors.White.ToPlatform();
+			Assert.NotEqual(compareTo, disabledColor);
+		}
 	}
 }
