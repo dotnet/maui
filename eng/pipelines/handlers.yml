@@ -132,7 +132,6 @@ resources:
       name: xamarin/yaml-templates
       endpoint: xamarin
       ref: refs/heads/main
-      endpoint: xamarin
 
 stages:
 
