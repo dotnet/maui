@@ -15,21 +15,6 @@ static class DebuggerDisplayHelpers
 	const string NullString = "(null)";
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static string GetDebugString(string name, object? value)
-	{
-		var valueString = GetDebugString(value);
-		return $"{name} = {valueString}";
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static string GetDebugString(object? value)
-	{
-		var valueString = value is null ? NullString : value.ToString();
-		Debug.Assert(valueString is not null);
-		return valueString!;
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static string GetDebugText(string key1, object? value1, bool includeNullValues = true)
 	{
 		return GetDebugText([Create(key1, value1)], includeNullValues);
@@ -125,17 +110,5 @@ static class DebuggerDisplayHelpers
 		return true;
 	}
 
-
-	public static string GetDebugString(object? value, bool showIfNull)
-	{
-		if (value is null && !showIfNull)
-		{
-			return string.Empty;
-		}
-
-		return GetDebugString(value);
-	}
-
 	static KeyValuePair<string, object?> Create(string key, object? value) => new KeyValuePair<string, object?>(key, value);
-
 }
