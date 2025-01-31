@@ -52,8 +52,8 @@ namespace Microsoft.Maui.Platform
 				var scale = uiSlider.GetDisplayDensity();
 				var result = await service.GetImageAsync(thumbImageSource, scale);
 				var thumbImageSize = result?.Value.Size ?? CGSize.Empty;
-				const float TARGET_SIZE = 28f;
-				UIImage? thumbImage = result?.Value?.ResizeImageSource(TARGET_SIZE, TARGET_SIZE, thumbImageSize);
+				var defaultThumbSize = CalculateDefaultThumbSize(uiSlider);
+				UIImage? thumbImage = result?.Value?.ResizeImageSource(defaultThumbSize.Width, defaultThumbSize.Height, thumbImageSize);
 				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);
 			}
 			else
@@ -61,6 +61,13 @@ namespace Microsoft.Maui.Platform
 				uiSlider.SetThumbImage(null, UIControlState.Normal);
 				uiSlider.UpdateThumbColor(slider);
 			}
+		}
+
+		static CGSize CalculateDefaultThumbSize(UISlider uiSlider)
+		{
+			var trackRect = uiSlider.TrackRectForBounds(uiSlider.Bounds);
+			var thumbRect = uiSlider.ThumbRectForBounds(uiSlider.Bounds, trackRect, 0);
+			return thumbRect.Size;
 		}
 	}
 }
