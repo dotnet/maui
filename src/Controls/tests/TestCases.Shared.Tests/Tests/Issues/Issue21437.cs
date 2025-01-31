@@ -17,7 +17,7 @@ public class Issue21437 : _IssuesUITest
 	public void ExceptionShouldNotBeThrown()
 	{
 		App.WaitForElement("Item2");
-		App.DoubleClick("Item2");
+		App.DoubleTap("Item2");
 		App.WaitForNoElement("Item2");
 
 		//The test passes if no exception is thrown

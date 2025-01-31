@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -23,3 +24,4 @@ public class Issue22630 : _IssuesUITest
 		ClassicAssert.AreEqual("Success", result);
 	}
 }
+#endif
