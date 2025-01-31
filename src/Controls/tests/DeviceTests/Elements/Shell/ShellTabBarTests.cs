@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Xunit;
+using Microsoft.Extensions.Logging;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
@@ -100,7 +101,7 @@ namespace Microsoft.Maui.DeviceTests
 				Route = "Tab1",
 				Title = "Tab1",
 				Content = new ContentPage(),
-				Icon = "white.png"
+				Icon = "white_tab.png"
 			};
 
 			var unselectedContent = new ShellContent()
@@ -108,7 +109,7 @@ namespace Microsoft.Maui.DeviceTests
 				Route = "Tab2",
 				Title = "Tab2",
 				Content = new ContentPage(),
-				Icon = "white.png"
+				Icon = "white_tab.png"
 			};
 
 			var unselectedContent_2 = new ShellContent()
@@ -116,7 +117,7 @@ namespace Microsoft.Maui.DeviceTests
 				Route = "Tab3",
 				Title = "Tab3",
 				Content = new ContentPage(),
-				Icon = "white.png"
+				Icon = "white_tab.png"
 			};
 
 			var shell = await CreateShellAsync((shell) =>
