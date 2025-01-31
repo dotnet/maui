@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Shell)]
-		public void VerifyClickAround()
+		public void VerifyClickAroundOverflowMenuItem()
 		{
 			App.Tap("More");
 #if WINDOWS			
