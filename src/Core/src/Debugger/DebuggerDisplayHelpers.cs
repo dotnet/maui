@@ -14,11 +14,6 @@ static class DebuggerDisplayHelpers
 {
 	const string NullString = "(null)";
 
-	public static void Test()
-	{
-		_ = GetDebugString("batata", new LabelHandler());
-	}
-
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static string GetDebugString(string name, object? value)
 	{
