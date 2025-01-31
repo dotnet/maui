@@ -321,10 +321,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else if (e.PropertyName == Shell.TitleViewProperty.PropertyName)
 				UpdateTitleView();
-			else if (e.PropertyName == Shell.ForegroundColorProperty.PropertyName)
-			{
-				UpdateLeftBarButtonItem();
-			}
 		}
 
 		void OnBackButtonBehaviorChanged(object sender, PropertyChangedEventArgs e)
@@ -421,7 +417,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			DrawerArrowDrawable icon = null;
 			bool defaultDrawerArrowDrawable = false;
 
-			var tintColor = Shell.GetForegroundColor(page) ?? Shell.GetForegroundColor(_shell) ?? Colors.White;
+			var tintColor = Colors.White;
 			if (TintColor != null)
 				tintColor = TintColor;
 
