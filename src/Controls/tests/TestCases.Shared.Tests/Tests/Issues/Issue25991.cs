@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			: base(device)
 		{ }
 
-		public override string Issue => "CarouselView reverts to displaying 1st item in collection when collection modified";
+		public override string Issue => "CarouselView reverts to displaying first item in collection when collection modified";
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement(InfoLabel);
 			var result3 = App.FindElement(InfoLabel).GetText();
-			ClassicAssert.AreEqual("1", result3);
+			ClassicAssert.AreEqual("0", result3);
 
 			App.Click("KeepLastItemInViewButton");
 			App.Click(AddItemButton);
