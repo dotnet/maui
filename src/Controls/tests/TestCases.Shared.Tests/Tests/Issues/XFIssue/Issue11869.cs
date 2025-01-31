@@ -54,8 +54,8 @@ public class Issue11869 : _IssuesUITest
 #if WINDOWS
 		App.Tap("navViewItem");
 #endif
-		App.WaitForElement(TopTab2);
-		App.WaitForElement(TopTab3);
+		App.WaitForTabElement(TopTab2);
+		App.WaitForTabElement(TopTab3);
 
 		App.WaitForElement(Tab2);
 		App.WaitForElement(Tab3);
