@@ -130,7 +130,6 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			base.ArrangeOverride(finalSize);
 
-			if (this.ActualWidth > 0 && _content is IView view)
 			// Replaced ActualWidth with finalSize.Width since ActualWidth updates only after ArrangeOverride completes, 
 			// ensuring accurate layout during the initial arrangement phase.
 			if (finalSize.Width > 0 && _content is IView view)
