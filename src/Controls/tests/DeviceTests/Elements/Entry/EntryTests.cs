@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Xunit;
 
@@ -186,6 +187,20 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		[Fact]
+		public async Task EntryBackgroundColorConsistent()
+		{
+			var expected = Colors.AliceBlue;
+			var button = new Entry()
+			{
+				BackgroundColor = expected,
+				HeightRequest = 100,
+				WidthRequest = 200
+			};
+
+			await ValidateHasColor(button, expected, typeof(EntryHandler));
+		}
 
 		[Category(TestCategory.Entry)]
 		[Category(TestCategory.TextInput)]
