@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_CATALYST // more information:https://github.com/dotnet/maui/issues/26864
+﻿#if TEST_FAILS_ON_CATALYST // more information:https://github.com/dotnet/maui/issues/26864
 using System;
 using System.Collections.Generic;
 using System.Linq;
