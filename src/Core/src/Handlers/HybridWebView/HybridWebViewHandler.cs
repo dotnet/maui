@@ -33,6 +33,7 @@ using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -98,6 +99,17 @@ namespace Microsoft.Maui.Handlers
 		// TODO: .NET 10 flip the default to true for .NET 10
 		private static bool IsInvokeJavaScriptThrowsExceptionsEnabled =>
 			AppContext.TryGetSwitch(InvokeJavaScriptThrowsExceptionsSwitch, out var enabled) && enabled;
+
+#if ANDROID || IOS || MACCATALYST || WINDOWS
+		protected override void DisconnectHandler(PlatformView platformView)
+		{
+			Disconnect(platformView);
+
+			_targetManager = null;
+
+			base.DisconnectHandler(platformView);
+		}
+#endif
 
 		void MessageReceived(string rawMessage)
 		{
@@ -168,12 +180,29 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		private WeakReference<HybridWebViewInvokeJavaScriptTargetManager>? _targetManager;
+
 		internal async Task<byte[]?> InvokeDotNetAsync(NameValueCollection invokeQueryString)
 		{
 			try
 			{
 				var invokeTarget = VirtualView.InvokeJavaScriptTarget ?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
 				var invokeTargetType = VirtualView.InvokeJavaScriptType ?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptType)} property must have a value in order to invoke a .NET method from JavaScript.");
+
+				var targetManager = _targetManager?.GetTargetOrDefault();
+				if (targetManager?.InvokeTarget != invokeTarget)
+				{
+					//if (invokeTarget is IHybridWebViewInvokeJavaScriptTarget concreteTarget)
+					//{
+					//targetManager = new HybridWebViewInvokeJavaScriptTargetManager(concreteTarget);
+					//}
+					//else
+					//{
+					targetManager = new ReflectionBasedHybridWebViewInvokeJavaScriptTargetManager(invokeTarget, invokeTargetType);
+					//}
+
+					_targetManager = new WeakReference<HybridWebViewInvokeJavaScriptTargetManager>(targetManager);
+				}
 
 				var invokeDataString = invokeQueryString["data"];
 				if (string.IsNullOrEmpty(invokeDataString))
@@ -187,9 +216,15 @@ namespace Microsoft.Maui.Handlers
 					throw new ArgumentException("The invoke data did not provide a method name.", nameof(invokeQueryString));
 				}
 
-				var invokeResultRaw = await InvokeDotNetMethodAsync(invokeTargetType, invokeTarget, invokeData);
-				var invokeResult = CreateInvokeResult(invokeResultRaw);
-				var json = JsonSerializer.Serialize(invokeResult);
+				var invokeResult = await targetManager.InvokeDotNetMethodAsync(invokeData.MethodName, invokeData.ParamValues);
+
+				var invokeResultData = new DotNetInvokeResultData
+				{
+					Result = invokeResult,
+					IsJson = true,
+				};
+
+				var json = JsonSerializer.Serialize(invokeResultData, HybridWebViewHandlerJsonContext.Default.DotNetInvokeResultData);
 				var contentBytes = Encoding.UTF8.GetBytes(json);
 
 				return contentBytes;
@@ -200,92 +235,6 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			return default;
-		}
-
-		private static DotNetInvokeResult CreateInvokeResult(object? result)
-		{
-			// null invoke result means an empty result
-			if (result is null)
-			{
-				return new();
-			}
-
-			// a reference type or an array should be serialized to JSON
-			var resultType = result.GetType();
-			if (resultType.IsArray || resultType.IsClass)
-			{
-				return new DotNetInvokeResult()
-				{
-					Result = JsonSerializer.Serialize(result),
-					IsJson = true,
-				};
-			}
-
-			// a value type should be returned as is
-			return new DotNetInvokeResult()
-			{
-				Result = result,
-			};
-		}
-
-		private static async Task<object?> InvokeDotNetMethodAsync(
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type targetType,
-			object jsInvokeTarget,
-			JSInvokeMethodData invokeData)
-		{
-			var requestMethodName = invokeData.MethodName!;
-			var requestParams = invokeData.ParamValues;
-
-			// get the method and its parameters from the .NET object instance
-			var dotnetMethod = targetType.GetMethod(requestMethodName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod);
-			if (dotnetMethod is null)
-			{
-				throw new InvalidOperationException($"The method {requestMethodName} couldn't be found on the {nameof(jsInvokeTarget)} of type {jsInvokeTarget.GetType().FullName}.");
-			}
-			var dotnetParams = dotnetMethod.GetParameters();
-			if (requestParams is not null && dotnetParams.Length != requestParams.Length)
-			{
-				throw new InvalidOperationException($"The number of parameters on {nameof(jsInvokeTarget)}'s method {requestMethodName} ({dotnetParams.Length}) doesn't match the number of values passed from JavaScript code ({requestParams.Length}).");
-			}
-
-			// deserialize the parameters from JSON to .NET types
-			object?[]? invokeParamValues = null;
-			if (requestParams is not null)
-			{
-				invokeParamValues = new object?[requestParams.Length];
-				for (var i = 0; i < requestParams.Length; i++)
-				{
-					var reqValue = requestParams[i];
-					var paramType = dotnetParams[i].ParameterType;
-					var deserialized = JsonSerializer.Deserialize(reqValue, paramType);
-					invokeParamValues[i] = deserialized;
-				}
-			}
-
-			// invoke the .NET method
-			var dotnetReturnValue = dotnetMethod.Invoke(jsInvokeTarget, invokeParamValues);
-
-			if (dotnetReturnValue is null) // null result
-			{
-				return null;
-			}
-
-			if (dotnetReturnValue is Task task) // Task or Task<T> result
-			{
-				await task;
-
-				// Task<T>
-				if (dotnetMethod.ReturnType.IsGenericType)
-				{
-					var resultProperty = dotnetMethod.ReturnType.GetProperty(nameof(Task<object>.Result));
-					return resultProperty?.GetValue(task);
-				}
-
-				// Task
-				return null;
-			}
-
-			return dotnetReturnValue; // regular result
 		}
 
 		private sealed class JSInvokeMethodData
@@ -301,7 +250,7 @@ namespace Microsoft.Maui.Handlers
 			public string? StackTrace { get; set; }
 		}
 
-		private sealed class DotNetInvokeResult
+		private sealed class DotNetInvokeResultData
 		{
 			public object? Result { get; set; }
 			public bool IsJson { get; set; }
@@ -310,6 +259,7 @@ namespace Microsoft.Maui.Handlers
 		[JsonSourceGenerationOptions()]
 		[JsonSerializable(typeof(JSInvokeMethodData))]
 		[JsonSerializable(typeof(JSInvokeError))]
+		[JsonSerializable(typeof(DotNetInvokeResultData))]
 		private partial class HybridWebViewHandlerJsonContext : JsonSerializerContext
 		{
 		}

@@ -66,7 +66,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.LoadUrl(new Uri(AppOriginUri, "/").ToString());
 		}
 
-		protected override void DisconnectHandler(AWebView platformView)
+#pragma warning disable CA1822
+		void Disconnect(AWebView platformView)
+#pragma warning restore CA1822
 		{
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
@@ -74,19 +76,11 @@ namespace Microsoft.Maui.Handlers
 				{
 					webViewClient.Disconnect();
 				}
-				//if (platformView.WebChromeClient is MauiWebChromeClient webChromeClient)
-				//{
-				//	webChromeClient.Disconnect();
-				//}
 			}
 
 			platformView.SetWebViewClient(null!);
-			//platformView.SetWebChromeClient(null);
 
 			platformView.StopLoading();
-
-
-			base.DisconnectHandler(platformView);
 		}
 
 		internal static void EvaluateJavaScript(IHybridWebViewHandler handler, IHybridWebView hybridWebView, EvaluateJavaScriptAsyncRequest request)

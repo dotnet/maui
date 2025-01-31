@@ -2,4 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+  <Grid RowDefinitions="Auto,*">
+    <VerticalStackLayout>
+      <Button Clicked="CallJS" Text="Call JS" />
+    </VerticalStackLayout>
+    <HybridWebView Grid.Row="1" x:Name="hwv" />
+  </Grid>
+
 </ContentPage>
