@@ -1,6 +1,8 @@
-#if !WINDOWS
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID
 // https://github.com/dotnet/maui/issues/26148
 // In Windows, the foreground color is not applied to the custom icon, so as of now, the test is not applicable for Windows.
+// https://github.com/dotnet/maui/pull/27502
+// For Android, we have separate PR to fix the issue, so the test is not applicable for Android.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,7 +21,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("Label");
 
-			//The test passes on Android if the foreground color is applied to the icon, and on iOS, the custom icon should be aligned to the left.
 			VerifyScreenshot();
 		}
 	}
