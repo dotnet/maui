@@ -1,8 +1,8 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 25991, "CarouselView reverts to displaying 1st item in collection when collection modified", PlatformAffected.UWP)]
+	[Issue(IssueTracker.Github, 25991, "CarouselView reverts to displaying first item in collection when collection modified", PlatformAffected.UWP)]
 	public class Issue25991 : ContentPage
 	{
 		public class Issue25991Model
@@ -45,7 +45,8 @@ namespace Maui.Controls.Sample.Issues
 			{
 				ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset,
 				ItemsSource = _collection,
-				Loop = false
+				Loop = false,
+				HeightRequest = 400
 			};
 
 			TestCarouselView.ItemTemplate = new DataTemplate(() =>
