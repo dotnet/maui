@@ -15,10 +15,12 @@
 
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="local:Card">
-                            <Border Width="3" Stroke="Black" Padding="10">
-                                <Label Text="{Binding Title}" />
-                                <Label Text="{Binding Description}" />
-                                
+                            <Border Width="3" Stroke="Black" Padding="10" SemanticProperties.Description="Empty">
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Title}" />
+                                    <Label Text="{Binding Description}" />
+                                </VerticalStackLayout>
+
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="TappedG"/>
                                 </Border.GestureRecognizers>
