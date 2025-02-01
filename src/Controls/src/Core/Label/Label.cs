@@ -7,7 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Debugger;
+
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls

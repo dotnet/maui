@@ -1,7 +1,7 @@
 #nullable disable
 using System;
 using System.Diagnostics;
-using Microsoft.Maui.Debugger;
+
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls

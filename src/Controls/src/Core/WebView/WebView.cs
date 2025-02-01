@@ -7,7 +7,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Debugger;
+
 using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls

@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
-using Microsoft.Maui.Debugger;
+
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 

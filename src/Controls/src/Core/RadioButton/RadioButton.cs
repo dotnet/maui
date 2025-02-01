@@ -4,7 +4,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Debugger;
+
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 

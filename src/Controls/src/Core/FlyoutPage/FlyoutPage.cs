@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Debugger;
+
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 

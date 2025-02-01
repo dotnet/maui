@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Debugger;
+
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;

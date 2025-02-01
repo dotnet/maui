@@ -9,7 +9,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Debugger;
+
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls

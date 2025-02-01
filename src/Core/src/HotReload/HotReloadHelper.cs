@@ -23,7 +23,7 @@ namespace Microsoft.Maui.HotReload
 		{
 			replacedViews.Clear();
 		}
-		public static bool IsEnabled { get; set; } = System.Diagnostics.Debugger.IsAttached;
+		public static bool IsEnabled { get; set; } = Debugger.IsAttached;
 
 		internal static bool IsSupported
 #if !NETSTANDARD

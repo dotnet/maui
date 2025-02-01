@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace Microsoft.Maui.Debugger;
+namespace Microsoft.Maui;
 /// <summary>
 /// Inspired on https://github.com/dotnet/aspnetcore/blob/befc463e34b17edf8aee1fbf9dec44c75f13000b/src/Shared/Debugger/DebuggerHelpers.cs from Asp.NET
 /// </summary>

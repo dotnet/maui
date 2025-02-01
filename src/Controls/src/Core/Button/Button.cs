@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Debugger;
+
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
