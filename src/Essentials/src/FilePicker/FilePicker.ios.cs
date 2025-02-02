@@ -31,8 +31,7 @@ namespace Microsoft.Maui.Storage
 			using var documentPicker = new UIDocumentPickerViewController(allowedUtis, UIDocumentPickerMode.Open);
 #pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416 // Constructor UIDocumentPickerViewController  has [UnsupportedOSPlatform("ios14.0")]
-			if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
-				documentPicker.AllowsMultipleSelection = allowMultiple;
+			documentPicker.AllowsMultipleSelection = allowMultiple;
 			documentPicker.Delegate = new PickerDelegate
 			{
 				PickHandler = urls => GetFileResults(urls, tcs)
