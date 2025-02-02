@@ -683,7 +683,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					{
 						if (previousPartTypeRef.IsArray)
 							previousPartTypeRef = previousPartTypeRef.GetElementType();
-						
+
 						previousPartTypeRef.ResolveCached(context.Cache);
 					}
 

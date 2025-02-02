@@ -68,7 +68,8 @@ public class Bugzilla45125 : TestContentPage
 		InitTest(ListViewCachingStrategy.RecycleElement, true);
 	}
 
-	void InitializeControls(){
+	void InitializeControls()
+	{
 
 		_status = new Label
 		{

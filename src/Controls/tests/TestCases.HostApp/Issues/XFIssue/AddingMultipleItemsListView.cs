@@ -33,7 +33,7 @@ public class AddingMultipleItemsListView : TestContentPage
 		};
 		addTwoJobsButton.SetBinding(Button.CommandProperty, new Binding("AddTwoCommand"));
 
-		var layout = new VerticalStackLayout() {Spacing = 10};
+		var layout = new VerticalStackLayout() { Spacing = 10 };
 		layout.Children.Add(listView);
 		layout.Children.Add(addOneJobButton);
 		layout.Children.Add(addTwoJobsButton);
