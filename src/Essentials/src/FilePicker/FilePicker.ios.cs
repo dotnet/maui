@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Storage
 				};
 
 #if !MACCATALYST
-				if (documentPicker.PresentationController != null)
+				if (documentPicker.PresentationController != null && !(OperatingSystem.IsIOSVersionAtLeast(14, 0) && NSProcessInfo.ProcessInfo.IsiOSApplicationOnMac))
 				{
 					documentPicker.PresentationController.Delegate =
 						new UIPresentationControllerDelegate(() => GetFileResults(null, tcs));
