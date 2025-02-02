@@ -17,11 +17,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void PaddingEqualToSafeAreaWorks()
 		{
 			var somePadding = App.WaitForElement("Hello").GetRect();
-			ClassicAssert.AreEqual(20f, somePadding.Y);
+			Assert.That(20f, Is.EqualTo(somePadding.Y));
 		}
 	}
 }

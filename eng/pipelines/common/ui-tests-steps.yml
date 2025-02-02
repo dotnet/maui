@@ -103,6 +103,7 @@ steps:
       APPIUM_HOME: $(APPIUM_HOME)
 
   - pwsh: |
+      Get-Content $PSCommandPath
       $command = "./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project=""${{ parameters.path }}"""
       $command += " --appproject=""${{ parameters.app }}"" --device=""${{ parameters.device }}"" --apiversion=""${{ parameters.version }}"" --configuration=""${{ parameters.configuration }}"""
       $command += " --runtimevariant=""${{ parameters.runtimeVariant }}"""
@@ -125,6 +126,8 @@ steps:
         $command += " --test-filter ""$testFilter"""
       }
 
+      Write-Host "Running command: $command"
+
       Invoke-Expression $command  
     displayName: $(Agent.JobName)
     ${{ if ne(parameters.platform, 'android')}}:
@@ -133,6 +136,7 @@ steps:
       APPIUM_HOME: $(APPIUM_HOME)
 
   - bash: |
+      cat ${BASH_SOURCE[0]}
       pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
     displayName: Cleanup and Create Simulator Logs if Test Run Failed To
     condition: ${{ eq(parameters.platform, 'ios') }}
@@ -144,7 +148,7 @@ steps:
     inputs:
       testResultsFormat: VSTest
       testResultsFiles: '$(TestResultsDirectory)/*.trx'
-      testRunTitle: '$(System.PhaseName)'
+      testRunTitle: '${{ parameters.testFilter }}_$(System.PhaseName)'
       failTaskOnFailedTests: true
 
   - task: PublishBuildArtifacts@1
