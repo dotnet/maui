@@ -32,21 +32,28 @@ namespace Microsoft.Maui.Storage
 #pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416 // Constructor UIDocumentPickerViewController  has [UnsupportedOSPlatform("ios14.0")]
 			documentPicker.AllowsMultipleSelection = allowMultiple;
-			documentPicker.Delegate = new PickerDelegate
+			
+			if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
 			{
-				PickHandler = urls => GetFileResults(urls, tcs)
-			};
+				documentPicker.DidPickDocumentAtUrls += (_, e) => GetFileResults(e.Urls, tcs);
+			}
+			else 
+			{
+				documentPicker.Delegate = new PickerDelegate
+				{
+					PickHandler = urls => GetFileResults(urls, tcs)
+				};
 
 #if !MACCATALYST
-			if (documentPicker.PresentationController != null)
-			{
-				documentPicker.PresentationController.Delegate =
-					new UIPresentationControllerDelegate(() => GetFileResults(null, tcs));
-			}
+				if (documentPicker.PresentationController != null)
+				{
+					documentPicker.PresentationController.Delegate =
+						new UIPresentationControllerDelegate(() => GetFileResults(null, tcs));
+				}
 #endif
+			}
 
 			var parentController = WindowStateManager.Default.GetCurrentUIViewController(true);
-
 			parentController.PresentViewController(documentPicker, true, null);
 
 			return await tcs.Task;
