@@ -107,8 +107,15 @@ namespace Microsoft.Maui.Platform
 		{
 			if (platformView.Background is Android.Graphics.Drawables.RippleDrawable ripple)
 			{
-				ripple.SetColor(Android.Content.Res.ColorStateList.ValueOf(rippleColor.ToPlatform()));
-			};
+				if (rippleColor?.ToPlatform() is not null)
+				{
+					ripple.SetColor(Android.Content.Res.ColorStateList.ValueOf(rippleColor.ToPlatform()));
+				}
+				else
+				{
+					ripple.ClearColorFilter();
+				}
+			}
 		}
 	}
 }

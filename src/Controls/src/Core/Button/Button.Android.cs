@@ -24,11 +24,8 @@ namespace Microsoft.Maui.Controls
 
 		internal static void MapRippleColor(IButtonHandler handler, Button button)
 		{
-			if(button.IsSet(PlatformConfiguration.AndroidSpecific.Button.RippleColorProperty))
-			{
-				var color = button.OnThisPlatform().GetRippleColor();
-				handler.PlatformView?.UpdateRippleColor(color);
-			}
+			var color = button?.OnThisPlatform()?.GetRippleColor();
+			handler.PlatformView?.UpdateRippleColor(color);
 		}
 	}
 }
