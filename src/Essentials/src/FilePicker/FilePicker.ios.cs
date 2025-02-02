@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Storage
 #pragma warning restore CA1416 // Constructor UIDocumentPickerViewController  has [UnsupportedOSPlatform("ios14.0")]
 			documentPicker.AllowsMultipleSelection = allowMultiple;
 			
-			if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+			if (!OperatingSystem.IsMacCatalyst() || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
 			{
 				documentPicker.DidPickDocumentAtUrls += (_, e) => GetFileResults(e.Urls, tcs);
 			}
