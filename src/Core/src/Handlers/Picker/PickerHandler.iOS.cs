@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiPicker CreatePlatformView() =>
 			new MauiPicker(null) { BorderStyle = UITextBorderStyle.RoundedRect };
 
-		void DisplayAlert(MauiPicker uITextField)
+		void DisplayAlert(MauiPicker uITextField, int selectedIndex)
 		{
 			var paddingTitle = 0;
 			if (!string.IsNullOrEmpty(VirtualView.Title))
@@ -48,6 +48,9 @@ namespace Microsoft.Maui.Handlers
 			var frame = new RectangleF(0, paddingTitle, 269, pickerHeight);
 			var pickerView = new UIPickerView(frame);
 			pickerView.Model = new PickerSource(this);
+			var source = (PickerSource)pickerView.Model;
+			source.SelectedIndex = selectedIndex;
+			pickerView.Select(Math.Max(selectedIndex, 0), 0, true);
 			pickerView?.ReloadAllComponents();
 
 			var pickerController = UIAlertController.Create(VirtualView.Title, "", UIAlertControllerStyle.ActionSheet);
@@ -223,7 +226,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 #if MACCATALYST
-			bool OnShouldBeginEditing (UITextField textField)
+			bool OnShouldBeginEditing(UITextField textField)
 			{
 				if (Handler is not PickerHandler handler)
 					return false;
@@ -231,7 +234,8 @@ namespace Microsoft.Maui.Handlers
 
 				// The PlatformView will always be a MauiPicker (which derives from UITextfield) by definition, but we're forced to use
 				// UITextField as the parameter to satisfy the signature for ShouldBeginEditing. The following cast is safe. 
-				handler.DisplayAlert((MauiPicker)textField);
+				int selectedIndex = handler.VirtualView?.SelectedIndex ?? 0;
+				handler.DisplayAlert((MauiPicker)textField, selectedIndex);
 				return false;
 			}
 #else
