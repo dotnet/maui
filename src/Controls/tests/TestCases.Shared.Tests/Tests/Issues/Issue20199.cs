@@ -12,11 +12,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 		[Test]
-		[Category(UITestCategories.Page)]		
+		[Category(UITestCategories.Page)]
 		public void TitleViewShouldBeVisible()
 		{
 			_ = App.WaitForElement("button");
-			App.Click("button"); 
+			App.Click("button");
 			// The test passes if the 'Home Page' title is visible
 			VerifyScreenshot();
 		}

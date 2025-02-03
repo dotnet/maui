@@ -322,13 +322,13 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			int @class;
 			int type;
 
-			public int Id { get => id;  }
-			public int Class { get => @class;  }
+			public int Id { get => id; }
+			public int Class { get => @class; }
 			public int Type { get => type; }
 
 			public static SelectorSpecificity FromSelector(Selector selector)
 			{
-				switch(selector)
+				switch (selector)
 				{
 					case Selector.Class c:
 						return new SelectorSpecificity { @class = 1 };

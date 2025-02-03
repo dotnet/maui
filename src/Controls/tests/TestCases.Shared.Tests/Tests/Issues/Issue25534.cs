@@ -4,8 +4,8 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue25534 : _IssuesUITest
-		{
+	public class Issue25534 : _IssuesUITest
+	{
 		public Issue25534(TestDevice testDevice) : base(testDevice)
 		{
 		}
@@ -19,13 +19,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("GoToSecondPage");
 			App.Tap("GoToSecondPage");
 			App.WaitForElement("SecondPageLabel");
-			#if IOS || MACCATALYST
+#if IOS || MACCATALYST
 			App.WaitForElement("HomePage");
 			App.TapBackArrow("HomePage");
-			#endif
-			#if ANDROID || WINDOWS
+#endif
+#if ANDROID || WINDOWS
 			App.TapBackArrow();
-			#endif
+#endif
 			App.WaitForElement("GoToSecondPage");
 			App.Tap("GoToSecondPage");
 			App.WaitForElement("SecondPageLabel");

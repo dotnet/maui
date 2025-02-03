@@ -343,3 +343,4 @@ override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWin
 ~Microsoft.Maui.Controls.SearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.SearchBar.SearchIconColor.set -> void
 ~static readonly Microsoft.Maui.Controls.SearchBar.SearchIconColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~Microsoft.Maui.Controls.Internals.TypedBindingBase.UpdateSourceEventName.set -> void

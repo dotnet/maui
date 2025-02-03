@@ -35,13 +35,13 @@ public class Issue24847 : ContentPage
 			Spacing = 16,
 			Padding = 16
 		};
-		
+
 		vsl.Add(_borderView);
 		vsl.Add(_frameView);
 		vsl.Add(button);
 
 		ToggleSize();
-		
+
 		Content = vsl;
 	}
 
