@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using ImageMagick;
 using NUnit.Framework;
 using UITest.Appium;
@@ -105,6 +105,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			base.FixtureSetup();
 #if MACUITEST || WINTEST
 			_titleBarHeight = GetTitleBarHeight();
+#else
+			_titleBarHeight = 0;
 #endif
 		}
 
@@ -117,7 +119,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			string? name = null,
 			TimeSpan? retryDelay = null
 #if MACUITEST || WINTEST
-			,bool includeTitleBar = false
+			, bool includeTitleBar = false
 #endif
 		)
 		{
