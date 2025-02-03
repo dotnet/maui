@@ -312,6 +312,74 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 							foreach (var instruction in instructions)
 								yield return instruction;
+
+							//extension.Typedbinding.Mode = extension.Mode;
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "Mode"));
+							yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase"), propertyName: "Mode"));
+							// extension.TypedBinding.Converter = extension.Converter;
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "Converter"));
+							yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "TypedBindingBase"), propertyName: "Converter"));
+							// extension.TypedBinding.ConverterParameter = extensionConverterParameter;
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "ConverterParameter"));
+							yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "TypedBindingBase"), propertyName: "ConverterParameter"));
+							// // extension.TypedBinding.StringFormat = extensionStringFormat;
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "StringFormat"));
+							yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase"), propertyName: "StringFormat"));
+							
+							if (bindingExtensionType.Value.Item3 == "BindingExtension")
+							{
+								// // extension.TypedBinding.Source = extension.Source;
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "Source"));
+								yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "TypedBindingBase"), propertyName: "Source"));
+								// extension.TypedBinding.UpdateSourceEventName = extension.UpdateSourceEventName;
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "UpdateSourceEventName"));
+								yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "TypedBindingBase"), propertyName: "UpdateSourceEventName"));
+								// extension.TypedBinding.FallbackValue = extension.FallbackValue;
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "FallbackValue"));
+								yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase"), propertyName: "FallbackValue"));
+								// extension.TypedBinding.TargetNullValue = extension.TargetNullValue;
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TargetNullValue"));
+								yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase"), propertyName: "TargetNullValue"));
+							} else //TemplateBindingExtension
+							{
+								// extension.TypedBinding.Source = RelativeBindingSource.TemplatedParent,
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+								yield return Create(Call, module.ImportPropertyGetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "RelativeBindingSource"), propertyName: "TemplatedParent", isStatic: true));
+								yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "TypedBindingBase"), propertyName: "Source"));
+							}
+
+							//var binding = extension.TypedBinding;
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+							vardefref.VariableDefinition = new VariableDefinition(module.ImportReference(genericArguments.First()));
+
+							yield return Create(Stloc, vardefref.VariableDefinition);
+							yield break;
 						}
 					}
 					else
@@ -323,8 +391,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				var markExt = markupExtension.ResolveCached(context.Cache);
 				var provideValueInfo = markExt.Methods.First(md => md.Name == "ProvideValue");
 				var provideValue = module.ImportReference(provideValueInfo);
-				provideValue =
-					module.ImportReference(provideValue.ResolveGenericParameters(markupExtension, module));
+				provideValue = module.ImportReference(provideValue.ResolveGenericParameters(markupExtension, module));
 
 				vardefref.VariableDefinition = new VariableDefinition(module.ImportReference(genericArguments.First()));
 				foreach (var instruction in context.Variables[node].LoadAs(context.Cache, markupExtension, module))
@@ -334,8 +401,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				else
 					foreach (var instruction in node.PushServiceProvider(context, requiredServiceType, bpRef, propertyRef, propertyDeclaringTypeRef))
 						yield return instruction;
-				yield return Instruction.Create(OpCodes.Callvirt, provideValue);
-				yield return Instruction.Create(OpCodes.Stloc, vardefref.VariableDefinition);
+				yield return Create(Callvirt, provideValue);
+				yield return Create(Stloc, vardefref.VariableDefinition);
 			}
 			else if (context.Variables[node].VariableType.ImplementsInterface(context.Cache, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IMarkupExtension"))))
 			{
@@ -683,7 +750,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					{
 						if (previousPartTypeRef.IsArray)
 							previousPartTypeRef = previousPartTypeRef.GetElementType();
-						
+
 						previousPartTypeRef.ResolveCached(context.Cache);
 					}
 

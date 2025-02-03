@@ -1,12 +1,12 @@
 ﻿#if IOS || MACCATALYST
-using UIKit;
 using System.Diagnostics;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
-using Microsoft.Maui.Graphics;
+using UIKit;
 #endif
 
 namespace Maui.Controls.Sample.Issues
@@ -57,56 +57,56 @@ namespace Maui.Controls.Sample.Issues
 
 #if IOS || MACCATALYST
 
-public class Issue11132ControlHandler : Microsoft.Maui.Handlers.ViewHandler<Issue11132Control, UIKit.UIView>
-{
-	public Issue11132ControlHandler() : base(ViewHandler.ViewMapper, ViewHandler.ViewCommandMapper)
-    {
-    }
+	public class Issue11132ControlHandler : Microsoft.Maui.Handlers.ViewHandler<Issue11132Control, UIKit.UIView>
+	{
+		public Issue11132ControlHandler() : base(ViewHandler.ViewMapper, ViewHandler.ViewCommandMapper)
+		{
+		}
 
-    protected override UIKit.UIView CreatePlatformView()
-    {
-        return new UIKit.UIView();
-    }
+		protected override UIKit.UIView CreatePlatformView()
+		{
+			return new UIKit.UIView();
+		}
 
-    protected override void ConnectHandler(UIKit.UIView platformView)
-    {
-        base.ConnectHandler(platformView);
+		protected override void ConnectHandler(UIKit.UIView platformView)
+		{
+			base.ConnectHandler(platformView);
 
-        var layer = platformView.Layer;
+			var layer = platformView.Layer;
 
-        if (layer != null)
-        {
-            layer.BorderWidth = 10;
-            layer.BorderColor = Colors.Red.ToCGColor();
-            layer.BackgroundColor = Colors.Orange.ToCGColor();
+			if (layer != null)
+			{
+				layer.BorderWidth = 10;
+				layer.BorderColor = Colors.Red.ToCGColor();
+				layer.BackgroundColor = Colors.Orange.ToCGColor();
 
-            var width = 100;
-            var height = 25;
+				var width = 100;
+				var height = 25;
 
-            var clipPath = new CoreGraphics.CGPath();
-            clipPath.MoveToPoint(width, height);
-            clipPath.AddLineToPoint(width * 2, height);
-            clipPath.AddLineToPoint(width * 2, height * 2);
-            clipPath.AddLineToPoint(width, height * 2);
-            clipPath.CloseSubpath();
+				var clipPath = new CoreGraphics.CGPath();
+				clipPath.MoveToPoint(width, height);
+				clipPath.AddLineToPoint(width * 2, height);
+				clipPath.AddLineToPoint(width * 2, height * 2);
+				clipPath.AddLineToPoint(width, height * 2);
+				clipPath.CloseSubpath();
 
-            var clipShapeLayer = new CAShapeLayer
-            {
-                Path = clipPath
-            };
-            layer.Mask = clipShapeLayer;
-            layer.Mask.Name = null;
+				var clipShapeLayer = new CAShapeLayer
+				{
+					Path = clipPath
+				};
+				layer.Mask = clipShapeLayer;
+				layer.Mask.Name = null;
 
-            Debug.WriteLine($"Issue11132ControlHandler Layer Name {layer.Mask.Name}");
-        }
-    }
+				Debug.WriteLine($"Issue11132ControlHandler Layer Name {layer.Mask.Name}");
+			}
+		}
 
-    protected override void DisconnectHandler(UIKit.UIView platformView)
-    {
-        base.DisconnectHandler(platformView);
-        // Cleanup if necessary
-    }
-}
+		protected override void DisconnectHandler(UIKit.UIView platformView)
+		{
+			base.DisconnectHandler(platformView);
+			// Cleanup if necessary
+		}
+	}
 
 
 
