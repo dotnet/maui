@@ -29,7 +29,6 @@ schedules:
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
-  - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
   - name: VM_IMAGE_HOST
@@ -64,11 +63,6 @@ resources:
       name: xamarin/yaml-templates
       endpoint: xamarin
       ref: refs/heads/main
-    - repository: sdk-insertions
-      type: github
-      name: xamarin/sdk-insertions
-      ref: refs/heads/main
-      endpoint: xamarin
     - repository: 1ESPipelineTemplates
       type: git
       name: 1ESPipelineTemplates/1ESPipelineTemplates
