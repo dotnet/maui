@@ -297,7 +297,11 @@ namespace Microsoft.Maui.Controls
 			if (!js.Contains('\'', StringComparison.Ordinal))
 				return js;
 
+#if NET6_0_OR_GREATER
 			return EscapeJsStringRegex().Replace(js, m =>
+#else
+			return Regex.Replace(js, @"(\\*)'", m =>
+#endif
 			{
 				int count = m.Groups[1].Value.Length;
 				// Replace with doubled backslashes plus one extra backslash, then the quote.
@@ -370,7 +374,9 @@ namespace Microsoft.Maui.Controls
 			return $"Source = {Source}, {base.GetDebuggerDisplay()}";
 		}
 
+#if NET6_0_OR_GREATER
 		[GeneratedRegex(@"(\\*)'")]
 		private static partial Regex EscapeJsStringRegex();
+#endif
 	}
 }
