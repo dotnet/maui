@@ -69,8 +69,8 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - Agent.OSVersion -equals 14.5
-        - Agent.OSArchitecture -equals X64
+        - macOS.Name -equals Sonoma
+        - macOS.Architecture -equals x64
 
   - name: iosPool
     type: object
@@ -78,8 +78,7 @@ parameters:
       name: $(iosDeviceTestsVmPool)
       vmImage: $(iosDeviceTestsVmImage)
       demands:
-        - Agent.OSVersion -equals 14.5
-        - Agent.OSArchitecture -equals ARM64
+        - macOS.Name -equals Sonoma
         
   - name: catalystPool
     type: object
@@ -87,8 +86,7 @@ parameters:
       name: $(iosDeviceTestsVmPool)
       vmImage: $(iosDeviceTestsVmImage)
       demands:
-        - Agent.OSVersion -equals 14.5
-        - Agent.OSArchitecture -equals ARM64
+        - macOS.Name -equals Sonoma
 
   - name: windowsPool
     type: object
