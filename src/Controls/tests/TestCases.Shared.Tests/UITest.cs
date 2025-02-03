@@ -103,6 +103,32 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ResetApp();
 		}
 
+		/// <summary>
+		/// Verifies the screenshots and returns an exception in case of failure.
+		/// </summary>
+		/// <remarks>
+		/// This is especially useful when capturing multiple screenshots in a single UI test.
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Exception? exception = null;
+		/// VerifyScreenshotOrSetException(ref exception, "MyScreenshotName");
+		/// VerifyScreenshotOrSetException(ref exception, "MyOtherScreenshotName");
+		/// if (exception is not null) throw exception;
+		/// </code>
+		/// </example>
+		public void VerifyScreenshotOrSetException(ref Exception? exception, string? name = null, TimeSpan? retryDelay = null)
+		{
+			try
+			{
+				VerifyScreenshot(name, retryDelay);
+			}
+			catch (Exception ex)
+			{
+				exception ??= ex;
+			}
+		}
+
 		public void VerifyScreenshot(string? name = null, TimeSpan? retryDelay = null)
 		{
 			retryDelay ??= TimeSpan.FromMilliseconds(500);
