@@ -30,7 +30,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			// using Tap in place of moving mouse for now
 			App.Tap("primaryLabel");
 			App.Tap("secondaryLabel");
-			App.WaitForElement("secondaryLabel");  
+			App.WaitForElement("secondaryLabel");
 			var secondaryLabelText = App.FindElement("secondaryLabel").GetText();
 			Assert.That(secondaryLabelText, Is.Not.Null);
 		}

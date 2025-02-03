@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var content = dataTemplate.CreateContent();
 				_visualElement = content as VisualElement;
 
-				if(_visualElement is null)
+				if (_visualElement is null)
 				{
 					throw new InvalidOperationException($"{dataTemplate} could not be created from {content}");
 				}
