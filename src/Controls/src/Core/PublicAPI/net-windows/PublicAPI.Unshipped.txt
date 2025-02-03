@@ -16,6 +16,7 @@ Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.St
 override Microsoft.Maui.Controls.LinearGradientBrush.GetHashCode() -> int
 override Microsoft.Maui.Controls.RadialGradientBrush.GetHashCode() -> int
 ~Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource<T>(System.Uri value) -> void
+~Microsoft.Maui.Controls.Internals.TypedBindingBase.UpdateSourceEventName.set -> void
 ~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.RequireServiceAttribute(System.Type[] serviceTypes) -> void
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.ServiceTypes.get -> System.Type[]
