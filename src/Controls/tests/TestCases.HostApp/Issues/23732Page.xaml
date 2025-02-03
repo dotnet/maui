@@ -4,12 +4,8 @@
              x:Class="Maui.Controls.Sample.Issues._23732Page"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
 
-    <Grid RowDefinitions="Auto,*">
-        <VerticalStackLayout Grid.Row="0" Spacing="10">
-            <Label Text="{Binding Label}" AutomationId="label"/>
-        </VerticalStackLayout>
-        
-        <CollectionView
+  <Grid RowDefinitions="Auto,*">
+    <CollectionView
             Grid.Row="1"
             Margin="0,20"
             ItemsSource="{Binding Models}">
