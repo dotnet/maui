@@ -14,12 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Picker)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue2674Test()
 		{
-			App.Screenshot("I am at Issue2674");
 			App.WaitForElement("picker");
 		}
 	}

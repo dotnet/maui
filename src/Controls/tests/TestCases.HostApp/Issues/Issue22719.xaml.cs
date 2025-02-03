@@ -6,6 +6,20 @@
 		public Issue22719()
 		{
 			InitializeComponent();
+			FlyoutLayoutBehavior = FlyoutLayoutBehavior.SplitOnPortrait;
+
+		}
+
+		//  iPhone by default doesn't support split modes so we set this to validate split mode behaviors 
+		bool IFlyoutPageController.ShouldShowSplitMode
+		{
+			get
+			{
+				if (DeviceDisplay.Current.MainDisplayInfo.Orientation == DisplayOrientation.Portrait)
+					return true;
+
+				return false;
+			}
 		}
 	}
 }

@@ -1,10 +1,12 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ActivityIndicator.xml" path="Type[@FullName='Microsoft.Maui.Controls.ActivityIndicator']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class ActivityIndicator : View, IColorElement, IElementConfiguration<ActivityIndicator>, IActivityIndicator
 	{
 		/// <summary>Bindable property for <see cref="IsRunning"/>.</summary>
@@ -39,6 +41,11 @@ namespace Microsoft.Maui.Controls
 		public IPlatformElementConfiguration<T, ActivityIndicator> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"IsRunning = {IsRunning}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }
