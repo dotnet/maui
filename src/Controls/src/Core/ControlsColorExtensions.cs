@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	{
 		public static bool IsDefault(this Graphics.Color color)
 		{
-			return color.Equals(KnownColor.Default);
+			return color == KnownColor.Default;
 		}
 
 		public static bool IsNotDefault(this Graphics.Color color)
