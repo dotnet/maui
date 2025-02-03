@@ -17,7 +17,6 @@
 							AutomationId = "SecondPageButton",
 							Text = "Navigate to Second Page",
 							HorizontalOptions = LayoutOptions.Fill,
-							Command = new Command(() => Shell.Current.GoToAsync("secondPage"))
 							Command = new Command(() => Shell.Current.GoToAsync("Issue27337_SecondPage"))
 						}
 					}
