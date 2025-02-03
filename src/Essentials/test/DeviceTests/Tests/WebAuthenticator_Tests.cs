@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #if WINDOWS
 			var exception = await Assert.ThrowsAsync<PlatformNotSupportedException>(async () => await authenticationTask);
 #else
-			var r = await authenticationTask;
+			var r = await authenticationTask.ConfigureAwait(false);
 			Assert.Equal(accessToken, r?.AccessToken);
 			Assert.Equal(refreshToken, r?.RefreshToken);
 			Assert.NotNull(r?.ExpiresIn);
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #if WINDOWS
 			var exception = await Assert.ThrowsAsync<PlatformNotSupportedException>(async () => await authenticationTask);
 #else
-			var r = await authenticationTask;
+			var r = await authenticationTask.ConfigureAwait(false);
 			Assert.Equal(accessToken, r?.AccessToken);
 			Assert.Equal(refreshToken, r?.RefreshToken);
 			Assert.NotNull(r?.ExpiresIn);
