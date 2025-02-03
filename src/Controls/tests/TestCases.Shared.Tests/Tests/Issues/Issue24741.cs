@@ -37,7 +37,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.TapTab(Page2Title);
 
 			App.WaitForElement("Page2Button");
-			App.TapBackArrow();
 		}
 	}
 }
