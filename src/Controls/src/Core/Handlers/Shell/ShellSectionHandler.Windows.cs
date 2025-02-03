@@ -93,6 +93,14 @@ namespace Microsoft.Maui.Controls.Handlers
 					_lastShell = new WeakReference(shell);
 					shell.AddAppearanceObserver(this, _shellSection);
 				}
+
+				foreach (var item in _shellSection.Items)
+				{
+					if (item is ShellContent shellContent)
+					{
+						shellContent.PropertyChanged += OnShellContentPropertyChanged;
+					}
+				}
 			}
 		}
 
@@ -109,6 +117,39 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_shellSection.Parent is ShellItem shellItem && shellItem.Handler is ShellItemHandler shellItemHandler)
 			{
 				shellItemHandler.MapMenuItems();
+			}
+
+			if (e.OldItems != null)
+			{
+				foreach (var oldItem in e.OldItems)
+				{
+					if (oldItem is ShellContent oldShellContent)
+					{
+						oldShellContent.PropertyChanged -= OnShellContentPropertyChanged;
+					}
+				}
+			}
+
+			if (e.NewItems != null)
+			{
+				foreach (var newItem in e.NewItems)
+				{
+					if (newItem is ShellContent newShellContent)
+					{
+						newShellContent.PropertyChanged += OnShellContentPropertyChanged;
+					}
+				}
+			}
+		}
+
+		void OnShellContentPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(ShellContent.Title) && sender is ShellContent shellContent)
+			{
+				if (shellContent.Parent is ShellSection shellSection && shellSection.Parent is ShellItem shellItem && shellItem.Handler is ShellItemHandler shellItemHandler)
+				{
+					shellItemHandler.UpdateTitle();
+				}
 			}
 		}
 
