@@ -11,8 +11,8 @@
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
 Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.Style?
+~Microsoft.Maui.Controls.Internals.TypedBindingBase.UpdateSourceEventName.set -> void
 ~Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource<T>(System.Uri value) -> void
-
 ~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.RequireServiceAttribute(System.Type[] serviceTypes) -> void
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.ServiceTypes.get -> System.Type[]

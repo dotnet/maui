@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("AutomatedRun");
 			App.WaitForElement("Success");
 			App.Tap("AutomatedRun");
-			App.WaitForElement("Success");		
+			App.WaitForElement("Success");
 		}
 	}
 }
