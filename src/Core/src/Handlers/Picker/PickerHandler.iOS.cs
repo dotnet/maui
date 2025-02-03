@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 			pickerView.Model = new PickerSource(this);
 			pickerView?.ReloadAllComponents();
 
-			var pickerController = UIAlertController.Create(VirtualView.Title, "", UIAlertControllerStyle.ActionSheet);
+			var pickerController = UIAlertController.Create("", "", UIAlertControllerStyle.ActionSheet);
 
 			// needs translation
 			pickerController.AddAction(UIAlertAction.Create("Done",
