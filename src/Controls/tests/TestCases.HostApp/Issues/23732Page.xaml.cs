@@ -5,13 +5,24 @@ namespace Maui.Controls.Sample.Issues
 	public partial class _23732Page : ContentPage
 	{
 		public ObservableCollection<string> Models { get; } = new();
-		public _23732Page()
+		public _23732Page(bool isPage4)
 		{
 			InitializeComponent();
 			BindingContext = this;
 			for (int i = 0; i <= 6; i++)
 			{
 				Models.Add(string.Empty);
+			}
+
+			if (isPage4)
+			{
+				var label = new Label
+				{
+					Text = "page4",
+					AutomationId = "label",
+					HorizontalTextAlignment = TextAlignment.Center
+				};
+				(Content as Grid)?.Children.Insert(0, label);
 			}
 		}
 
@@ -43,7 +54,7 @@ namespace Maui.Controls.Sample.Issues
 
 		private NavigationPage CreateNavigationPage(string title, string label)
 		{
-			var mainPage = new _23732Page
+			var mainPage = new _23732Page(label == "page4")
 			{
 				Label = label
 			};
