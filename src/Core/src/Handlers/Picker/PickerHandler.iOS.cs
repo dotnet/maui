@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Handlers
 			var source = (PickerSource)pickerView.Model;
 			source.SelectedIndex = selectedIndex;
 			pickerView.Select(Math.Max(selectedIndex, 0), 0, true);
-			pickerView?.ReloadAllComponents();
+			pickerView.ReloadAllComponents();
 
 			var pickerController = UIAlertController.Create(VirtualView.Title, "", UIAlertControllerStyle.ActionSheet);
 
