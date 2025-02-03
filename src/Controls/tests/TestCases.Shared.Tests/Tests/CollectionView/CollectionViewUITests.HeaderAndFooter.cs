@@ -28,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Just a string as a header");
             App.WaitForElement("This footer is also a string");
         }
-
+#if IOS 
 		[Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterViewWorks()
@@ -94,5 +94,6 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 #endif
+    #endif
     }
 	}
