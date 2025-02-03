@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ClearCellSizeCache();
 
 			EstimatedItemSize = CGSize.Empty;
-			
+
 			_currentSize = size;
 
 			var newSize = new CGSize(Math.Floor(size.Width), Math.Floor(size.Height));

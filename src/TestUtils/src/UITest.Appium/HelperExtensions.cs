@@ -1998,7 +1998,7 @@ namespace UITest.Appium
 		/// </param>
 		public static void TapDisplayAlertButton(this IApp app, string text, int buttonIndex = 0)
 		{
-			if(app is AppiumCatalystApp)
+			if (app is AppiumCatalystApp)
 			{
 				app.WaitForElement(AppiumQuery.ById($"action-button--{999 - buttonIndex}"));
 				app.Tap(AppiumQuery.ById($"action-button--{999 - buttonIndex}"));

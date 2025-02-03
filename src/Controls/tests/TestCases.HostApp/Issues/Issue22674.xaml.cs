@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 
 		public ObservableCollection<string> ItemList { get; } = ["A", "B", "C", "D", "E", "F", "G", "H", "I",];
-		
+
 		void OnCollectionViewSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			if (sender is CollectionView view && view.SelectedItem is string item)

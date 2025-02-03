@@ -3,11 +3,11 @@ using System;
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner;
-using Microsoft.Extensions.Logging.Console;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 {

@@ -16,7 +16,7 @@ public class Bugzilla32040 : _IssuesUITest
 	[Test]
 	[Category(UITestCategories.Cells)]
 	public void TappedWorksForEntryAndSwithCellTest()
-	{ 
+	{
 		App.WaitForElement("blahblah");
 		App.Tap("blahblah");
 		App.WaitForElement("Tapped");
