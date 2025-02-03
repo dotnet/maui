@@ -60,17 +60,17 @@ namespace Microsoft.Maui.DeviceTests
 		public void EscapeJsString_MultipleLinesAndMixedQuotes()
 		{
 			const string input = """
-			function test() {
-				console.log('Test "string" with a single quote');
-				var example = 'It\\'s tricky!';
-			}
-			""";
+				function test() {
+					console.log('Test "string" with a single quote');
+					var example = 'It\\'s tricky!';
+				}
+				""";
 			const string expected = """
-			function test() {
-				console.log(\'Test "string" with a single quote\');
-				var example = \'It\\\\\'s tricky!\';
-			}
-			""";
+				function test() {
+					console.log(\'Test "string" with a single quote\');
+					var example = \'It\\\\\'s tricky!\';
+				}
+				""";
 			var result = WebView.EscapeJsString(input);
 			Assert.Equal(expected, result);
 		}
