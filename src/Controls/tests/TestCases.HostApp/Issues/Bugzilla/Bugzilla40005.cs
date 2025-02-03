@@ -14,13 +14,13 @@ namespace Maui.Controls.Sample.Issues
 
 		public Bugzilla40005() : base(new Page1())
 		{
-			
+
 		}
-		
+
 
 		public class Page1 : ContentPage
 		{
-			
+
 			bool pageInserted;
 
 			public Page1()

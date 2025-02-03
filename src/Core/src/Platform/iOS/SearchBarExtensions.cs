@@ -149,10 +149,10 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateSearchIcon(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
-			
+
 			if (textField?.LeftView is not UIImageView iconView || iconView.Image is null)
 				return;
-			
+
 			if (searchBar.SearchIconColor is not null)
 			{
 				iconView.Image = iconView.Image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
