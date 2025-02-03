@@ -1,14 +1,9 @@
 #if IOS
 using System.Drawing;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
-using OpenQA.Selenium.Appium.Interactions;
-using OpenQA.Selenium.Appium.MultiTouch;
-using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
 using System.Text;
-using OpenQA.Selenium;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Issue24977 : _IssuesUITest
@@ -45,8 +40,8 @@ public class Issue24977 : _IssuesUITest
         var cursorHeight1 = Convert.ToDouble(cursorLabel);
 
         if (keyboardLocation is Point keyboardPoint)
-        {            
-            Assert.That(cursorHeight1 < keyboardPoint.Y);            
+        {
+            Assert.That(cursorHeight1 < keyboardPoint.Y);
         }
         else
         {
