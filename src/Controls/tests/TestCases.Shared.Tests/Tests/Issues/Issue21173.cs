@@ -16,7 +16,7 @@ public class Issue21173 : _IssuesUITest
 	[Category(UITestCategories.Border)]
 	public void BorderWithRoundRectangleShouldRoundCornersOfContentWithinIt()
 	{
-		_ = App.WaitForElement("border");
+		_ = App.WaitForElement("image");
 
 		// The test passes if corners of borders' contents' have proper corner radiuses
 		VerifyScreenshot();
