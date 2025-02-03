@@ -1,5 +1,4 @@
-﻿#if ANDROID || IOS
-
+﻿#if TEST_FAILS_ON_CATALYST //DragCoordinates is not working on Catalyst
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -33,5 +32,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-
 #endif

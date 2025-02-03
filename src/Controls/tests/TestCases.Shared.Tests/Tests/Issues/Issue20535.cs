@@ -1,5 +1,4 @@
-﻿#if !WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -26,4 +25,3 @@ public class Issue20535 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
-#endif
