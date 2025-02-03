@@ -21,6 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(SwipeItem);
 			App.SwipeRightToLeft(SwipeItem);
+			App.WaitForElement(SwipeItem);
 			VerifyScreenshot();
 		}
 
@@ -30,6 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(SwipeItemView);
 			App.SwipeRightToLeft(SwipeItemView);
+			App.WaitForElement(SwipeItemView);
 			VerifyScreenshot();
 		}
 	}
