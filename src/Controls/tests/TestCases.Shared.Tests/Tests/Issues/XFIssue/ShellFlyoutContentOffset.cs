@@ -29,7 +29,7 @@ public class ShellFlyoutContentOffset : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void FlyoutContentOffsetsCorrectlyWithHeader()
 	{
-	    App.WaitForElement("ToggleHeader");
+		App.WaitForElement("ToggleHeader");
 		App.Tap("ToggleHeader");
 		GetLocationAndRotateToNextContent("Item 1");
 		var labelLoc = GetLocationAndRotateToNextContent("LabelContent");

@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 		protected override void Init()
 		{
-			
+
 		}
 
 	}

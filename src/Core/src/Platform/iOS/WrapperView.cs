@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Platform
 			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
 			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);
 		}
-		
+
 		internal ICrossPlatformLayout? CrossPlatformLayout
 		{
 			get => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout;
