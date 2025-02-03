@@ -12,7 +12,7 @@ public class Bugzilla60122 : _IssuesUITest
 
 	public override string Issue => "LongClick on image not working";
 
-	
+
 	const string ImageId = "60122Image";
 	const string Success = "Success";
 

@@ -18,10 +18,10 @@ public class ScrollToGroup : _IssuesUITest
 	{
 		App.WaitForElement("GroupIndexEntry");
 		App.ClearText("GroupIndexEntry");
-		App.EnterText("GroupIndexEntry","5");
+		App.EnterText("GroupIndexEntry", "5");
 
 		App.ClearText("ItemIndexEntry");
-		App.EnterText("ItemIndexEntry","1");
+		App.EnterText("ItemIndexEntry", "1");
 
 		App.Tap("GoButton");
 
@@ -32,13 +32,13 @@ public class ScrollToGroup : _IssuesUITest
 	[Test, Order(1)]
 	public void InvalidScrollToIndexShouldNotCrash()
 	{
-		App.WaitForElement("GroupIndexEntry");	
+		App.WaitForElement("GroupIndexEntry");
 		App.ClearText("GroupIndexEntry");
-		App.EnterText("GroupIndexEntry","55");
+		App.EnterText("GroupIndexEntry", "55");
 
 		App.ClearText("ItemIndexEntry");
-		App.EnterText("ItemIndexEntry","1");
-		
+		App.EnterText("ItemIndexEntry", "1");
+
 		App.Tap("GoButton");
 
 		// Should scroll enough to display this item
@@ -50,10 +50,10 @@ public class ScrollToGroup : _IssuesUITest
 	{
 		App.WaitForElement("GroupNameEntry");
 		App.ClearText("GroupNameEntry");
-		App.EnterText("GroupNameEntry","Heroes for Hire");
+		App.EnterText("GroupNameEntry", "Heroes for Hire");
 
 		App.ClearText("ItemNameEntry");
-		App.EnterText("ItemNameEntry","Misty Knight");
+		App.EnterText("ItemNameEntry", "Misty Knight");
 
 		App.Tap("GoItemButton");
 

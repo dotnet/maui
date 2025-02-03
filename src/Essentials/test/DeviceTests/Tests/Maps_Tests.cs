@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 		public async Task LaunchMap_CoordinatesDisplayCorrectPlace()
 		{
-			await Map.OpenAsync(testLatitude, testLongitude, new MapLaunchOptions { Name = mapName });
+			await Map.OpenAsync(testLatitude, testLongitude, new MapLaunchOptions { Name = mapName }).ConfigureAwait(false);
 		}
 
 		[Fact]
@@ -31,28 +31,28 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				Thoroughfare = "Microsoft Building 25",
 				Locality = "Redmond"
 			};
-			await Map.OpenAsync(placemark, new MapLaunchOptions { Name = mapName });
+			await Map.OpenAsync(placemark, new MapLaunchOptions { Name = mapName }).ConfigureAwait(false);
 		}
 
 		[Fact]
 		public async Task LaunchMap_NullLocation()
 		{
 			Location location = null;
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location)).ConfigureAwait(false);
 		}
 
 		[Fact]
 		public async Task LaunchMap_NullOptionsLocation()
 		{
 			var location = new Location(testLatitude, testLongitude);
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location, null));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location, null)).ConfigureAwait(false);
 		}
 
 		[Fact]
 		public async Task LaunchMap_NullPlacemark()
 		{
 			Placemark location = null;
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(location)).ConfigureAwait(false);
 		}
 
 		[Fact]
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				Thoroughfare = "Microsoft Building 25",
 				Locality = "Redmond"
 			};
-			await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(placemark, null));
+			await Assert.ThrowsAsync<ArgumentNullException>(() => Map.OpenAsync(placemark, null)).ConfigureAwait(false);
 		}
 	}
 }
