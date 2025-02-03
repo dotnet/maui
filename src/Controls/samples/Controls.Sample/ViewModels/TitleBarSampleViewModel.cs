@@ -41,5 +41,27 @@ namespace Maui.Controls.Sample.ViewModels
 				OnPropertyChanged();
 			}
 		}
+
+		private bool _canMinimize = true;
+		public bool CanMinimize
+		{
+			get { return _canMinimize; }
+			set
+			{
+				_canMinimize = value;
+				OnPropertyChanged();
+			}
+		}
+
+		private bool _canMaximize = true;
+		public bool CanMaximize
+		{
+			get { return _canMaximize; }
+			set
+			{
+				_canMaximize = value;
+				OnPropertyChanged();
+			}
+		}
 	}
 }
