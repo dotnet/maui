@@ -441,34 +441,16 @@ namespace Microsoft.Maui.Handlers
 			if (!js.Contains('\'', StringComparison.Ordinal))
 				return js;
 
-			//get every quote in the string along with all the backslashes preceding it
-			var singleQuotes = Regex.Matches(js, @"(\\*?)'");
-
-			var uniqueMatches = new List<string>();
-
-			for (var i = 0; i < singleQuotes.Count; i++)
+			return EscapeJsStringRegex().Replace(js, m =>
 			{
-				var matchedString = singleQuotes[i].Value;
-				if (!uniqueMatches.Contains(matchedString))
-				{
-					uniqueMatches.Add(matchedString);
-				}
-			}
-
-			uniqueMatches.Sort((x, y) => y.Length.CompareTo(x.Length));
-
-			//escape all quotes from the script as well as add additional escaping to all quotes that were already escaped
-			for (var i = 0; i < uniqueMatches.Count; i++)
-			{
-				var match = uniqueMatches[i];
-				var numberOfBackslashes = match.Length - 1;
-				var slashesToAdd = (numberOfBackslashes * 2) + 1;
-				var replacementStr = "'".PadLeft(slashesToAdd + 1, '\\');
-				js = Regex.Replace(js, @"(?<=[^\\])" + Regex.Escape(match), replacementStr);
-			}
-
-			return js;
+				int count = m.Groups[1].Value.Length;
+				// Replace with doubled backslashes plus one extra backslash, then the quote.
+				return new string('\\', (count * 2) + 1) + "'";
+			});
 		}
+
+		[GeneratedRegex(@"(\\*)'")]
+		private static partial Regex EscapeJsStringRegex();
 #endif
 
 		internal static async Task<string?> GetAssetContentAsync(string assetPath)
