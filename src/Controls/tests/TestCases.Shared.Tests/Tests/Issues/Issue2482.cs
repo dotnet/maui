@@ -21,8 +21,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void AnimationCancel()
 		{
 			App.WaitForElement(ButtonId);
-			App.DoubleClick(ButtonId);
-			App.WaitForElement(Success, timeout: TimeSpan.FromSeconds(25));
+			App.DoubleTap(ButtonId);
+			App.WaitForElement(Success);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-﻿// #if ANDROID
+﻿#if TEST_FAILS_ON_WINDOWS //SearchHandler Fails to Trigger Focused Event on Windows, for more information: https://github.com/dotnet/maui/issues/27551
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -32,4 +32,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-// #endif
+#endif

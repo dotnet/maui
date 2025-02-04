@@ -22,17 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ClearText("MainEntryField");
 			App.EnterText("MainEntryField", "ClearButton is set to WhileEditing");
 			App.Tap("MainEntryField");
-#if MACCATALYST
-			{
-				// On MacCatalyst, pressing the ESC key during screenshot capture clears the text.
-			// This causes the image generated in CI to differ from local runs.
-			Assert.That(App.WaitForElement("ClearButton is set to WhileEditing").GetText(), Is.EqualTo("ClearButton is set to WhileEditing"));
-			}
-#else
-			{
-				VerifyScreenshot();
-			}
-#endif
+			VerifyScreenshot();
 		}
 
 		[Test]
@@ -44,17 +34,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ClearText("MainEntryField");
 			App.EnterText("MainEntryField", "ClearButton is set to Never");
 			App.Tap("MainEntryField");
-#if MACCATALYST
-			{
-				// On MacCatalyst, pressing the ESC key during screenshot capture clears the text.
-			// This causes the image generated in CI to differ from local runs.
-			Assert.That(App.WaitForElement("ClearButton is set to Never").GetText(), Is.EqualTo("ClearButton is set to Never"));
-			}
-#else
-			{
-				VerifyScreenshot();
-			}
-#endif
+			VerifyScreenshot();
 		}
 	}
 }
