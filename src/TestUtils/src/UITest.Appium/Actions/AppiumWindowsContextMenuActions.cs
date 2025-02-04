@@ -1,5 +1,7 @@
 ﻿using System.Drawing;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.Interactions;
+using OpenQA.Selenium.Interactions;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -47,11 +49,14 @@ namespace UITest.Appium
 
 			if (appiumElement is not null)
 			{
-				_app.Driver.ExecuteScript("windows: click", new Dictionary<string, object>
-				{
-					{ "elementId", appiumElement.Id },
-					{ "button", "right" },
-				});
+				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+				var longPress = new ActionSequence(touchDevice, 0);
+
+				longPress.AddAction(touchDevice.CreatePointerMove(appiumElement, 0, 0, TimeSpan.FromMilliseconds(0)));
+				longPress.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+				longPress.AddAction(touchDevice.CreatePointerMove(appiumElement, 0, 0, TimeSpan.FromMilliseconds(2000)));
+				longPress.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+				_app.Driver.PerformActions(new List<ActionSequence> { longPress });
 
 				return CommandResponse.SuccessEmptyResponse;
 			}
