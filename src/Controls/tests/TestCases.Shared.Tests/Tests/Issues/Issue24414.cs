@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+#if TEST_FAILS_ON_MACCATALYST //https://github.com/dotnet/maui/pull/27531
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -35,3 +36,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
