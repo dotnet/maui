@@ -38,8 +38,8 @@ public class BlazorTemplateTest : BaseTemplateTests
 	// Then, some scenarios with tricky names in Debug builds only
 	// This doesn't work on Android in Release, so we skip that for now
 	// See https://github.com/dotnet/android/issues/9107
-	[TestCase(DotNetCurrent, "Debug", "", true)]
-	[TestCase(DotNetCurrent, "Debug", "-I Server --UseProgramMain", true)]
+	[TestCase(DotNetCurrent, "Debug", "", true, "")]
+	[TestCase(DotNetCurrent, "Debug", "-I Server --UseProgramMain", true, "")]
 	public void BuildMauiBlazorWebSolution(string framework, string config, string additionalDotNetNewParams, bool useTrickyProjectName, string additionalDotNetBuildParams)
 	{
 		const string templateShortName = "maui-blazor-web";
