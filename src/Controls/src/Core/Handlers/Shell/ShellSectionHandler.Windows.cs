@@ -61,6 +61,14 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					shell.RemoveAppearanceObserver(this);
 				}
+
+				foreach (var item in _shellSection.Items)
+				{
+					if (item is ShellContent shellContent)
+					{
+						shellContent.PropertyChanged -= OnShellContentPropertyChanged;
+					}
+				}
 				_lastShell = null;
 			}
 
@@ -119,7 +127,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				shellItemHandler.MapMenuItems();
 			}
 
-			if (e.OldItems != null)
+			if (e.OldItems is not null)
 			{
 				foreach (var oldItem in e.OldItems)
 				{
@@ -130,7 +138,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				}
 			}
 
-			if (e.NewItems != null)
+			if (e.NewItems is not null)
 			{
 				foreach (var newItem in e.NewItems)
 				{
