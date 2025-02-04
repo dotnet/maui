@@ -24,7 +24,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		readonly VisualRegressionTester _visualRegressionTester;
 		readonly IImageEditorFactory _imageEditorFactory;
 		readonly VisualTestContext _visualTestContext;
-		int _titleBarHeight;
 
 		protected UITest(TestDevice testDevice) : base(testDevice)
 		{
@@ -98,16 +97,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 
 			return config;
-		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-#if MACUITEST || WINTEST
-			_titleBarHeight = GetTitleBarHeight();
-#else
-			_titleBarHeight = 0;
-#endif
 		}
 
 		public override void Reset()
@@ -225,8 +214,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				int cropFromTop = _testDevice switch
 				{
 					TestDevice.Android => 60,
-					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
-					_ => _titleBarHeight,
+					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,									
+					TestDevice.Windows => 32,
+					TestDevice.Mac => 29,
+					_ => 0,
 				};
 
 #if MACUITEST || WINTEST
@@ -310,54 +301,5 @@ namespace Microsoft.Maui.TestCases.Tests
 			return surface.ToByteArray(MagickFormat.Png);
 		}
 #endif
-
-		int GetTitleBarHeight()
-		{
-			// It's hard to determine the title bar height on Mac and Windows for many reasons, including:
-			// - UITest is a console app, so no access to native APIs
-			// - Appium doesn't provide a way to get the app window bounds
-			//
-			// So we are going to find the title bar color by scanning the pixels from the top of the screen
-			// until we find the CoreNavigationPage.BarBackgroundColor title bar color (Maroon).
-			// 
-			// Unfortunately the title bar color is not always what we expect due to screen settings (i.e. TrueTone / NightShift)
-			// and the color may vary slightly. So we are going to look for a range of colors that are close to the expected color.
-
-#if MACUITEST
-			var bytes = TakeScreenshot();
-#else
-			var bytes = App.Screenshot();
-#endif
-			using var image = new MagickImage(bytes);
-			var pixels = image.GetPixels();
-			var y = 0;
-
-			const int minR = 0x73;
-			const int maxR = 0x83;
-			const int maxG = 0x20;
-			const int maxB = 0x20;
-
-			while (true)
-			{
-				if (y >= image.Height)
-				{
-					Assert.Fail("Failed to find the title bar color");
-				}
-
-				var pixelColor = pixels[3, y]!.ToColor()!;
-				var r = pixelColor.R;
-				var g = pixelColor.G;
-				var b = pixelColor.B;
-
-				++y;
-
-				if (r is >= minR and <= maxR && g <= maxG && b <= maxB)
-				{
-					break;
-				}
-			}
-
-			return y;
-		}
 	}
 }
