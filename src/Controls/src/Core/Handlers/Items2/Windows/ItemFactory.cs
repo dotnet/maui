@@ -1,16 +1,20 @@
 ﻿#nullable disable
-using System;
-using System.ComponentModel;
+using System.Collections.Generic;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media.Animation;
+using Windows.Foundation;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
 	internal class ItemFactory(ItemsView view) : IElementFactory
 	{
 		private readonly ItemsView _view = view;
+		private Dictionary<Microsoft.Maui.Controls.DataTemplate, List<ItemContainer>> _recyclePool = new();
+
+		internal static readonly BindableProperty OriginTemplateProperty =
+			BindableProperty.CreateAttached(
+				"OriginTemplate", typeof(Microsoft.Maui.Controls.DataTemplate), typeof(ItemFactory), null);
 
 		public UIElement GetElement(ElementFactoryGetArgs args)
 		{
@@ -30,13 +34,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				ItemContainer container = null;
 				ElementWrapper wrapper = null;
-				var pool = RecyclePool.GetPoolInstance(template);
-				if (pool is not null)
+
+				if (_recyclePool.TryGetValue(template, out var itemContainers))
 				{
-					container = pool.TryGetElement(string.Empty, args.Parent) as ItemContainer;
-					if (container is not null)
+					if (itemContainers.Count > 0)
 					{
-						wrapper = container.Child as ElementWrapper;
+						container = itemContainers[0];
+						if (container is not null)
+						{
+							wrapper = container.Child as ElementWrapper;
+						}
+
+						itemContainers.RemoveAt(0);
 					}
 				}
 
@@ -47,7 +56,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					//wrapper.HorizontalAlignment = HorizontalAlignment.Center;
 					wrapper.SetContent(viewContent);
 
-					((View)wrapper.VirtualView).SetValue(RecyclePool.OriginTemplateProperty, template);
+					((View)wrapper.VirtualView).SetValue(ItemFactory.OriginTemplateProperty, template);
 				}
 
 				if (wrapper.VirtualView is View view)
@@ -59,10 +68,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				container ??= new ItemContainer()
 				{
 					Child = wrapper,
-					IsEnabled = !templateContext.IsHeader && !templateContext.IsFooter,
 					HorizontalAlignment = HorizontalAlignment.Left
 					// CanUserSelect = !templateContext.IsHeader // 1.6 feature
 				};
+				container.IsEnabled = !templateContext.IsHeader && !templateContext.IsFooter;
 				return container;
 
 			}
@@ -75,16 +84,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var wrapper = item.Child as ElementWrapper;
 			var wrapperView = wrapper.VirtualView as View;
 			Microsoft.Maui.Controls.DataTemplate template =
-				wrapperView.GetValue(RecyclePool.OriginTemplateProperty) as Microsoft.Maui.Controls.DataTemplate;
+				wrapperView.GetValue(ItemFactory.OriginTemplateProperty) as Microsoft.Maui.Controls.DataTemplate;
 
-			var recyclePool = RecyclePool.GetPoolInstance(template);
-			if (recyclePool == null)
+			if (_recyclePool.TryGetValue(template, out var itemContainers))
 			{
-				// No Recycle pool in the template, create one.
-				recyclePool = new RecyclePool();
-				RecyclePool.SetPoolInstance(template, recyclePool);
+				itemContainers.Add(item);
 			}
-			recyclePool.PutElement(element: item, key: string.Empty, owner: args.Parent);
+			else
+			{
+				_recyclePool[template] = new List<ItemContainer> { item };
+			}
 			_view.RemoveLogicalChild(wrapperView);
 		}
 	}
