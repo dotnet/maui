@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,8 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(ButtonId);
 			App.DoubleClick(ButtonId);
-			App.WaitForNoElement(Success, timeout: TimeSpan.FromSeconds(25));
+			App.WaitForElement(Success, timeout: TimeSpan.FromSeconds(25));
 		}
 	}
 }
-#endif

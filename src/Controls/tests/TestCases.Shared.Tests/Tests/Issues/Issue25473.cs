@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using Microsoft.Maui.Platform;
+﻿using Microsoft.Maui.Platform;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -12,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "MAUI Entry in Windows always shows ClearButton despite ClearButtonVisibility set to 'Never'";
+		public override string Issue => "MAUI Entry in Windows always shows ClearButton despite ClearButtonVisibility set to Never";
 
 		[Test]
 		[Category(UITestCategories.Entry)]
@@ -23,7 +22,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ClearText("MainEntryField");
 			App.EnterText("MainEntryField", "ClearButton is set to WhileEditing");
 			App.Tap("MainEntryField");
-			VerifyScreenshot();
+#if MACCATALYST
+			{
+				// On MacCatalyst, pressing the ESC key during screenshot capture clears the text.
+			// This causes the image generated in CI to differ from local runs.
+			Assert.That(App.WaitForElement("ClearButton is set to WhileEditing").GetText(), Is.EqualTo("ClearButton is set to WhileEditing"));
+			}
+#else
+			{
+				VerifyScreenshot();
+			}
+#endif
 		}
 
 		[Test]
@@ -35,8 +44,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ClearText("MainEntryField");
 			App.EnterText("MainEntryField", "ClearButton is set to Never");
 			App.Tap("MainEntryField");
-			VerifyScreenshot();
+#if MACCATALYST
+			{
+				// On MacCatalyst, pressing the ESC key during screenshot capture clears the text.
+			// This causes the image generated in CI to differ from local runs.
+			Assert.That(App.WaitForElement("ClearButton is set to Never").GetText(), Is.EqualTo("ClearButton is set to Never"));
+			}
+#else
+			{
+				VerifyScreenshot();
+			}
+#endif
 		}
 	}
 }
-#endif
