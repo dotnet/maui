@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Platform
 				_navigationFrame.Navigating -= OnNavigating;
 				_navigationFrame.Navigated -= OnNavigated;
 			}
-			
+
 			FirePendingNavigationFinished();
 
 			navigationFrame.Navigating += OnNavigating;

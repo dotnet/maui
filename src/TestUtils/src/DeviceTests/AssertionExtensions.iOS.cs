@@ -833,7 +833,7 @@ namespace Microsoft.Maui.DeviceTests
 		static async Task AssertTabItemIconColor(
 			this UITabBar navigationView, string tabText, Color expectedColor, bool hasColor,
 			IMauiContext mauiContext)
-		{			
+		{
 			var logger = mauiContext.CreateLogger(nameof(AssertTabItemIconColor));
 			logger?.LogDebug("Start");
 			var tabBarItemView = GetTabItemView(navigationView, tabText).FindDescendantView<UIImageView>();

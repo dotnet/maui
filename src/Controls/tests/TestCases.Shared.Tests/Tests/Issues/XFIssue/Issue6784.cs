@@ -58,7 +58,7 @@ public class Issue6784 : _IssuesUITest
 		Assert.That(App.FindElements("Edit").Count(), Is.EqualTo(1));
 #else
 		Assert.That(App.FindElements("Edit").Count(), Is.EqualTo(0));
-#endif	
+#endif
 	}
 }
 #endif

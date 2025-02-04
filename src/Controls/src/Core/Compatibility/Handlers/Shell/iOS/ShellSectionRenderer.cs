@@ -605,7 +605,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				return tabBarController.MoreNavigationController.PopViewController(animated);
 			}
-			
+
 			return base.PopViewController(animated);
 		}
 
@@ -645,7 +645,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_completionTasks[pageViewController] = completionSource;
 
 			PushViewController(pageViewController, animated);
-			
+
 			if (completionSource != null && !showsPresentation)
 				completionSource.TrySetResult(true);
 		}

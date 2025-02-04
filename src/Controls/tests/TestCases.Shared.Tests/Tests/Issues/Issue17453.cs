@@ -82,7 +82,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Set focus
 			App.TapCoordinates(entryRect.Width, entryRect.Y);
 			await Task.Delay(500);
-			
+
 			// Tap Clear Button
 			App.TapCoordinates(entryRect.Width, entryRect.Y);
 
