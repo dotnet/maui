@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 			_proxy = new(dateSelected);
 #endif
 
-			if (OperatingSystem.IsIOSVersionAtLeast(14))
+			if (OperatingSystem.IsIOSVersionAtLeast(13, 4) || OperatingSystem.IsMacCatalyst())
 			{
 				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}

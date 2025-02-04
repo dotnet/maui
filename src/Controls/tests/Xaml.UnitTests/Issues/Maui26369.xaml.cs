@@ -15,15 +15,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 public partial class Maui26369 : ContentPage
 {
-    public static readonly BindableProperty NullableGridLengthProperty = 
-        BindableProperty.Create(nameof(NullableGridLength), typeof(GridLength?), typeof(Maui26369), null);
-        
-    [TypeConverter(typeof(GridLengthTypeConverter))]
-    public GridLength? NullableGridLength 
-    { 
-        get => (GridLength?)GetValue(NullableGridLengthProperty); 
-        set => SetValue(NullableGridLengthProperty, value);
-    }  
+	public static readonly BindableProperty NullableGridLengthProperty =
+		BindableProperty.Create(nameof(NullableGridLength), typeof(GridLength?), typeof(Maui26369), null);
+
+	[TypeConverter(typeof(GridLengthTypeConverter))]
+	public GridLength? NullableGridLength
+	{
+		get => (GridLength?)GetValue(NullableGridLengthProperty);
+		set => SetValue(NullableGridLengthProperty, value);
+	}
 
 	public Maui26369()
 	{

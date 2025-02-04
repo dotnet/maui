@@ -13,7 +13,7 @@ public class Issue5132 : _IssuesUITest
 	const string _idIconElement = "shellIcon";
 	public override string Issue => "Unable to specify automation properties on the hamburger/flyout icon";
 
-	
+
 	[Test]
 	[Category(UITestCategories.Shell)]
 	public void ShellFlyoutAndHamburgerAutomationProperties()
@@ -21,7 +21,7 @@ public class Issue5132 : _IssuesUITest
 		App.WaitForElement(AppiumQuery.ByAccessibilityId(_idIconElement));
 		App.Tap(AppiumQuery.ByAccessibilityId(_idIconElement));
 		App.WaitForElement("Connect");
-		 
+
 	}
 }
 #endif
