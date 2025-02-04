@@ -661,7 +661,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				return GetParent(node) is IElementNode parentNode
 					&& node.TryGetPropertyName(parentNode, out XmlName propertyName)
-					&& parentNode.XmlType.TryGetTypeReference(context.Cache, module, (IXmlLineInfo)node, out TypeReference parentTypeRef)
+					&& parentNode.XmlType.TryGetTypeReference(context.Cache, module, (IXmlLineInfo)node, false, out TypeReference parentTypeRef)
 					&& parentTypeRef.ResolveCached(context.Cache) is TypeDefinition parentType
 					&& parentType.GetProperty(context.Cache, pd => pd.Name == propertyName.LocalName, out var propertyDeclaringTypeRef) is PropertyDefinition propertyDef
 					&& propertyDef.CustomAttributes.Any(ca => ca.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.DoesNotInheritDataTypeAttribute");
