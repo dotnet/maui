@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,9 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void CollectionViewWithFooterShouldNotCrashOnDisplay()
 		{
-			App.WaitForNoElement(Success1);
-			App.WaitForNoElement(Success2);
+			App.WaitForElement(Success1);
+			App.WaitForElement(Success2);
 		}
 	}
 }
-#endif
