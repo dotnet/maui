@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 
 			var child0 = new TChildType();
 			var child1 = new TChildType();
-			
+
 			menuBar.Add(child0);
 			menuBar.Add(child1);
 
@@ -38,12 +38,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			if (child1 is MenuItem mi2)
 				mi2.IconImageSource = new FileImageSource { File = "coffee.png" };
 
-			foreach(var item in menuBar)
+			foreach (var item in menuBar)
 			{
 				Assert.NotNull(item);
 				if (item is IList list)
 				{
-					foreach(var child in list)
+					foreach (var child in list)
 					{
 						Assert.NotNull(child);
 					}

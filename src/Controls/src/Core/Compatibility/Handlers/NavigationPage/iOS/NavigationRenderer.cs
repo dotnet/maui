@@ -264,10 +264,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_secondaryToolbar.RemoveFromSuperview();
 				_secondaryToolbar.Dispose();
 				_secondaryToolbar = null;
-				
-				if(_currentBarBackgroundBrush is GradientBrush gb)
+
+				if (_currentBarBackgroundBrush is GradientBrush gb)
 					gb.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
-				
+
 				_currentBarBackgroundBrush = null;
 				_currentBarBackgroundColor = null;
 
@@ -727,7 +727,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateBarBackground()
 		{
-			if(_currentBarBackgroundBrush is GradientBrush oldGradientBrush)
+			if (_currentBarBackgroundBrush is GradientBrush oldGradientBrush)
 			{
 				oldGradientBrush.Parent = null;
 				oldGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
@@ -753,7 +753,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_currentBarBackgroundColor = newSolidColorBrush.Color;
 				_currentBarBackgroundBrush = null;
 			}
-			
+
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
@@ -767,7 +767,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					if(_currentBarBackgroundColor?.Alpha < 1f)
+					if (_currentBarBackgroundColor?.Alpha < 1f)
 						navigationBarAppearance.ConfigureWithTransparentBackground();
 					else
 						navigationBarAppearance.ConfigureWithOpaqueBackground();
@@ -788,7 +788,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
-				if(_currentBarBackgroundColor?.Alpha == 0f)
+				if (_currentBarBackgroundColor?.Alpha == 0f)
 				{
 					NavigationBar.SetTransparentNavigationBar();
 				}
@@ -1133,6 +1133,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
+				(navigationController.NavigationBar as MauiNavigationBar)?.RefreshIfNeeded();
+
 				if (_navigation.TryGetTarget(out NavigationRenderer r))
 				{
 					r._navigating = false;
@@ -1321,6 +1323,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void WillMoveToParentViewController(UIViewController parent)
 			{
 				base.WillMoveToParentViewController(parent);
+
+				if (_tracker is null)
+				{
+					return;
+				}
 
 				if (parent is null)
 				{
@@ -1830,7 +1837,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_viewHandlerWrapper.DisconnectHandler();
 		}
 
-		internal class MauiControlsNavigationBar : UINavigationBar
+		internal class MauiControlsNavigationBar : MauiNavigationBar
 		{
 			[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 			public MauiControlsNavigationBar() : base()

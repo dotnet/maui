@@ -29,6 +29,20 @@ namespace Maui.Controls.Sample
 			{
 				Action navigationAction = null;
 
+				if (issueAttribute.IsInternetRequired)
+				{
+					NetworkAccess accessType = Connectivity.Current.NetworkAccess;
+
+					if (accessType != NetworkAccess.Internet)
+					{
+						return () =>
+						{
+							var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
+							Application.Current.Windows[0].Page = noInternetConnectionPage;
+						};
+					}
+				}
+
 				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushAsync)
 				{
 					return async () =>
@@ -77,6 +91,7 @@ namespace Maui.Controls.Sample
 				public int IssueTestNumber { get; set; }
 				public string Name { get; set; }
 				public string Description { get; set; }
+				public bool IsInternetRequired { get; set; }
 				public Action Action { get; set; }
 
 				public bool Matches(string filter)
@@ -149,6 +164,7 @@ namespace Maui.Controls.Sample
 						 IssueTestNumber = attribute.IssueTestNumber,
 						 Name = attribute.DisplayName,
 						 Description = attribute.Description,
+						 IsInternetRequired = attribute.IsInternetRequired,
 						 Action = ActivatePageAndNavigate(attribute, type)
 					 }).ToList();
 #endif

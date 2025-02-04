@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
 // DragCoordinates not supported on Catalyst. 
 // On IOS the cells are disapper randomly https://github.com/dotnet/maui/issues/25656, 
 using NUnit.Framework;

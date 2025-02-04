@@ -31,12 +31,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// Tapping Button1 1 reordered the buttons in the grid; Button 0 should
 			// now be on top. Tapping at the Button 1 location should actually tap
 			// Button 0, and the label should indicate that
-	//TapCoordinates does not work on the MacCatalyst platform 	
-	#if MACCATALYST
+			//TapCoordinates does not work on the MacCatalyst platform 	
+#if MACCATALYST
 			App.ClickCoordinates(x, y);
-	#else
+#else
 			App.TapCoordinates(x, y);
-	#endif
+#endif
 			App.WaitForElement("Button 0 was tapped last");
 		}
 	}

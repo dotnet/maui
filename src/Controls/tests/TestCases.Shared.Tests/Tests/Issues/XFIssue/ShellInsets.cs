@@ -118,7 +118,7 @@ public class ShellInsets : _IssuesUITest
 	[Test, Order(1)]
 	public void PaddingWithoutSafeArea()
 	{
- 
+
 		App.WaitForElement(PaddingEntry);
 		App.EnterText(PaddingEntry, "0");
 		App.WaitForElement(PaddingTest);
