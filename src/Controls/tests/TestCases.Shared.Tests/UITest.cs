@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using OpenQA.Selenium;
+using OpenQA.Selenium.BiDi.Modules.Browser;
 using UITest.Appium;
 using UITest.Core;
 using VisualTestUtils;
@@ -195,13 +196,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			catch
 			{
-				if (IsSessionStillConnected)
+				if (IsSessionStillConnected && UITestContext is not null)
 				{
 					SaveDeviceDiagnosticInfo();
 					SaveUIDiagnosticInfo();
 				}
 
 				throw;
+			}
+			finally
+			{
+				// If the UITestContext is null that means the driver failed to initialize
+				// So let's just cut our losses for this entire run and fail the test run
+				if (UITestContext is null) ShutDownTestSessionAndFailTestRun();
 			}
 		}
 
