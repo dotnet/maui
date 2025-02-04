@@ -22,7 +22,7 @@ public class Bugzilla43663 : _IssuesUITest
 		App.Tap("Click to push Modal");
 		App.TapDisplayAlertButton(AlertCancelButton);
 		App.WaitForElement("Modal");
-		App.Tap("Click to dismiss modal");	
+		App.Tap("Click to dismiss modal");
 		App.TapDisplayAlertButton(AlertCancelButton);
 		App.WaitForElement("Click to push Modal");
 	}

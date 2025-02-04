@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Issues
 
 		private void OnToggleClearButtonVisibilityClicked(object sender, EventArgs e)
 		{
-			if(mainEntryField.ClearButtonVisibility == ClearButtonVisibility.Never)
+			if (mainEntryField.ClearButtonVisibility == ClearButtonVisibility.Never)
 				mainEntryField.ClearButtonVisibility = ClearButtonVisibility.WhileEditing;
 			else
 				mainEntryField.ClearButtonVisibility = ClearButtonVisibility.Never;

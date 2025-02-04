@@ -27,7 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("Back");
 			App.WaitForElement("OpenTabbedPage");
 			App.Tap("OpenTabbedPage");
-		    VerifyScreenshot();
+			VerifyScreenshot();
 		}
 	}
 }

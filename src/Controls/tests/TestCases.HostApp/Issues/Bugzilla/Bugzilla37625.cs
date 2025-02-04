@@ -9,7 +9,7 @@
 			int retry = 5;
 			while (retry-- >= 0)
 			{
-				var imageUri = new Uri("https://raw.githubusercontent.com/dotnet/maui/main/src/Compatibility/ControlGallery/src/Android/Resources/drawable/coffee.png");				
+				var imageUri = new Uri("https://raw.githubusercontent.com/dotnet/maui/main/src/Compatibility/ControlGallery/src/Android/Resources/drawable/coffee.png");
 				Content = new Image() { Source = new UriImageSource() { Uri = imageUri }, BackgroundColor = Colors.Beige, AutomationId = "success" };
 
 				await Task.Delay(50);

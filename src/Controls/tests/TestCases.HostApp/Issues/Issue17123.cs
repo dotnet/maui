@@ -11,11 +11,11 @@ namespace Maui.Controls.Sample.Issues
 		{
 			var tableRootLabel = new Label() { Text = "TableRoot Title Text", TextColor = Colors.Red, AutomationId = "TableRootLabel" };
 			var tableSectionLabel = new Label() { Text = "TableSection Title Text", TextColor = Colors.Red, AutomationId = "TableSectionLabel" };
-			
-			var tableView = new TableView() { Intent = TableIntent.Menu, AutomationId = "TableView", HorizontalOptions= LayoutOptions.Center };
-			var tableRoot = new TableRoot(tableRootLabel.Text);	
-			var tableSection = new TableSection(tableSectionLabel.Text) 
-			{ 
+
+			var tableView = new TableView() { Intent = TableIntent.Menu, AutomationId = "TableView", HorizontalOptions = LayoutOptions.Center };
+			var tableRoot = new TableRoot(tableRootLabel.Text);
+			var tableSection = new TableSection(tableSectionLabel.Text)
+			{
 				new TextCell() { Text = "TextCell Text" , Detail="TextCell Detail" },
 				new EntryCell() { Label = "EntryCell Label", Placeholder="EntryCell Placeholder" },
 			};

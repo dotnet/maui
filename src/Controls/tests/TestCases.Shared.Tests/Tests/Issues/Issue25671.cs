@@ -16,52 +16,52 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-        public async Task LayoutPassesShouldNotIncrease()
-        {
-            App.WaitForElement("RegenerateItems");
+		public async Task LayoutPassesShouldNotIncrease()
+		{
+			App.WaitForElement("RegenerateItems");
 
 			await ScrollDown();
 			await ScrollDown();
 			await ScrollDown();
 			await ScrollUp();
 			await ScrollUp();
-			
+
 			App.Tap("RegenerateItems");
 
 			await ScrollDown();
 			await ScrollDown();
 			await ScrollUp();
 			await ScrollUp();
-			
-            App.Tap("PressMe");
-            // Text will be in the format "M: 0, A: 0"
-            var text = App.WaitForElement("PressMe").GetText()!;
-            // Get measure passes and arrange passes value via regex
-            var match = System.Text.RegularExpressions.Regex.Match(text, @"M: (\d+), A: (\d+)");
-            var measurePasses = int.Parse(match.Groups[1].Value);
-            var arrangePasses = int.Parse(match.Groups[2].Value);
+
+			App.Tap("PressMe");
+			// Text will be in the format "M: 0, A: 0"
+			var text = App.WaitForElement("PressMe").GetText()!;
+			// Get measure passes and arrange passes value via regex
+			var match = System.Text.RegularExpressions.Regex.Match(text, @"M: (\d+), A: (\d+)");
+			var measurePasses = int.Parse(match.Groups[1].Value);
+			var arrangePasses = int.Parse(match.Groups[2].Value);
 
 #if IOS
             const int maxMeasurePasses = 525;
             const int maxArrangePasses = 308;
 #elif ANDROID
-	        const int maxMeasurePasses = 353;
-	        const int maxArrangePasses = 337;
+			const int maxMeasurePasses = 353;
+			const int maxArrangePasses = 337;
 #endif
 
-            var logMessage = @$"Measure passes: {measurePasses}, Arrange passes: {arrangePasses}";
-            TestContext.WriteLine(logMessage);
+			var logMessage = @$"Measure passes: {measurePasses}, Arrange passes: {arrangePasses}";
+			TestContext.WriteLine(logMessage);
 
-            // Write the log to a file and attach it to the test results for ADO
-            var logFile = Path.Combine(Path.GetTempPath(), "LayoutPasses.log");
-            File.WriteAllText(logFile, logMessage);
-            TestContext.AddTestAttachment(logFile, "LayoutPasses.log");
+			// Write the log to a file and attach it to the test results for ADO
+			var logFile = Path.Combine(Path.GetTempPath(), "LayoutPasses.log");
+			File.WriteAllText(logFile, logMessage);
+			TestContext.AddTestAttachment(logFile, "LayoutPasses.log");
 
-            // Then assert that the measure passes and arrange passes are less than the expected values.
-            // Let's give a 5% margin of error.
-            ClassicAssert.LessOrEqual(measurePasses, maxMeasurePasses * 1.05);
-            ClassicAssert.LessOrEqual(arrangePasses, maxArrangePasses * 1.05);
-        }
+			// Then assert that the measure passes and arrange passes are less than the expected values.
+			// Let's give a 5% margin of error.
+			ClassicAssert.LessOrEqual(measurePasses, maxMeasurePasses * 1.05);
+			ClassicAssert.LessOrEqual(arrangePasses, maxArrangePasses * 1.05);
+		}
 
 		async Task ScrollDown()
 		{
