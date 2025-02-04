@@ -1,4 +1,4 @@
-﻿#if !MACCATALYST
+﻿#if TEST_FAILS_ON_WINDOWS    //more information - https://github.com/dotnet/maui/issues/24923
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +25,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Editor)]
 		[Category(UITestCategories.DatePicker)]
 		[Category(UITestCategories.TimePicker)]
-		[FailsOnWindows("Currently fails on Windows; see https://github.com/dotnet/maui/issues/24923")]
 		public void VerifyBorderVisibilityOnThemeChange()
 		{
 			App.WaitForElement("Entry");
