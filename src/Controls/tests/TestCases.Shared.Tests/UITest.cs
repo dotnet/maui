@@ -71,7 +71,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		public bool IsSessionStillConnected => _uiTestContext is not null && AssemblySetupFixture.ServerContext.IsServerRunning;
+		public bool IsSessionStillConnected => !(_uiTestContext is null && !AssemblySetupFixture.ServerContext.IsServerRunning);
 
 		public void InitialSetup(IServerContext context)
 		{
