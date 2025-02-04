@@ -45,6 +45,11 @@ namespace Maui.Controls.Sample
 #if IOS || MACCATALYST
 				handlers.AddHandler(typeof(Issue11132Control), typeof(Issue11132ControlHandler));
 #endif
+#if IOS || MACCATALYST || ANDROID
+				handlers.AddHandler(typeof(UITestEditor), typeof(UITestEditorHandler));
+				handlers.AddHandler(typeof(UITestEntry), typeof(UITestEntryHandler));
+				handlers.AddHandler(typeof(UITestSearchBar), typeof(UITestSearchBarHandler));
+#endif
 			});
 
 			appBuilder.Services.AddTransient<TransientPage>();
