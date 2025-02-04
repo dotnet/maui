@@ -52,10 +52,10 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>35.99.0-ci.main.143</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdknet100_182PackageVersion>18.2.10321-net10-p2</MicrosoftMacCatalystSdknet100_182PackageVersion>
-    <MicrosoftmacOSSdknet100_152PackageVersion>15.2.10321-net10-p2</MicrosoftmacOSSdknet100_152PackageVersion>
-    <MicrosoftiOSSdknet100_182PackageVersion>18.2.10321-net10-p2</MicrosoftiOSSdknet100_182PackageVersion>
-    <MicrosofttvOSSdknet100_182PackageVersion>18.2.10321-net10-p2</MicrosofttvOSSdknet100_182PackageVersion>
+    <MicrosoftMacCatalystSdknet100_182PackageVersion>18.2.10321-net10-p1</MicrosoftMacCatalystSdknet100_182PackageVersion>
+    <MicrosoftmacOSSdknet100_152PackageVersion>15.2.10321-net10-p1</MicrosoftmacOSSdknet100_152PackageVersion>
+    <MicrosoftiOSSdknet100_182PackageVersion>18.2.10321-net10-p1</MicrosoftiOSSdknet100_182PackageVersion>
+    <MicrosofttvOSSdknet100_182PackageVersion>18.2.10321-net10-p1</MicrosofttvOSSdknet100_182PackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
@@ -178,7 +178,7 @@
     <DotNetMonoManifestVersionBand>$(DotNetVersionBand)</DotNetMonoManifestVersionBand>
     <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
-    <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
+    <DotNetMaciOSManifestVersionBand>10.0.100-preview.1</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>9.0.100</DotNetTizenManifestVersionBand>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet100_182PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet100_152PackageVersion)</MicrosoftmacOSSdkPackageVersion>
