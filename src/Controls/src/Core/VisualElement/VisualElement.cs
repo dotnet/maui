@@ -1908,7 +1908,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="bounds">The new bounds of the element.</param>
 		/// <returns>The resulting size of this element's frame by the platform.</returns>
-		/// <remarks>Subclasses will stil want to call <see cref="ArrangeOverride"/> on the base class or call <see cref="IViewHandler.PlatformArrange"/> on the <see cref="Handler"/> .</remarks>
+		/// <remarks>Subclasses will still want to call <see cref="ArrangeOverride"/> on the base class or call <see cref="IViewHandler.PlatformArrange"/> on the <see cref="Handler"/> .</remarks>
 		protected virtual Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
