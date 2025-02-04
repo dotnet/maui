@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 		Page CurrentPlatformModalPage =>
 			_platformModalPages.Count > 0 ? _platformModalPages[_platformModalPages.Count - 1] : throw new InvalidOperationException("Modal Stack is Empty");
 
-		bool _isPoppingModalStack => _window.Page is Shell shell && shell.CurrentItem.CurrentItem.IsPoppingModalStack;
+		bool _isPoppingModalStackToRoot => _window.Page is Shell shell && shell.CurrentItem.CurrentItem.IsPoppingModalStackToRoot;
 
 		Page? CurrentPage
 		{
@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// If we are popping multiple pages and animation is disabled, 
 			// remove pages from the bottom of the stack to avoid visual flickering.
-			if (_isPoppingModalStack && !animated)
+			if (_isPoppingModalStackToRoot && !animated)
 				modal = _modalPages[0].Page;
 
 			if (_window.OnModalPopping(modal))
@@ -228,9 +228,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			// With shell we want to make sure to only fire the appearing event
 			// on the final page that will be visible after the pop has completed
-			if (_window.Page is Shell)
+			if (_window.Page is Shell shell)
 			{
-				if (!_isPoppingModalStack)
+				if (!shell.CurrentItem.CurrentItem.IsPoppingModalStack)
 				{
 					CurrentPage?.SendAppearing();
 				}
