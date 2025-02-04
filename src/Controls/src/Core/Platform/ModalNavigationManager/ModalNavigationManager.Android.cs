@@ -117,14 +117,14 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			// If we are popping multiple pages and animation is disabled, 
 			// remove pages from the bottom of the stack to avoid visual flickering.
-			var poppingMultiplePagesWithoutAnimation = _isPoppingModalStack && !animated;
-			Page modal = poppingMultiplePagesWithoutAnimation ? _platformModalPages[0] : CurrentPlatformModalPage;
+			var poppingToRootWithoutAnimation = _isPoppingModalStackToRoot && !animated;
+			Page modal = poppingToRootWithoutAnimation ? _platformModalPages[0] : CurrentPlatformModalPage;
 
 			_platformModalPages.Remove(modal);
 
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
-			var dialogFragmentId = poppingMultiplePagesWithoutAnimation ? _modals[0] : _modals[^1];
-			if (poppingMultiplePagesWithoutAnimation)
+			var dialogFragmentId = poppingToRootWithoutAnimation ? _modals[0] : _modals[^1];
+			if (poppingToRootWithoutAnimation)
 				_modals.RemoveAt(0);
 			else
 				_modals.RemoveAt(_modals.Count - 1);
