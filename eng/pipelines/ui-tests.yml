@@ -79,6 +79,7 @@ parameters:
       vmImage: $(iosTestsVmImage)
       demands:
         - macOS.Name -equals Sonoma
+        - macOS.Architecture -equals x64
   
   - name: windowsBuildPool
     type: object
