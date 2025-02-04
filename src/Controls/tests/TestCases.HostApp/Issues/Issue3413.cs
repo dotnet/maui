@@ -40,9 +40,9 @@
 			};
 
 			var grid = new Grid();
-			grid.RowDefinitions.Add(new RowDefinition{ Height = GridLength.Auto,});
-			grid.RowDefinitions.Add(new RowDefinition{ Height = GridLength.Auto,});
-			grid.RowDefinitions.Add(new RowDefinition{ Height = GridLength.Auto,});
+			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto, });
+			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto, });
+			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto, });
 			grid.Children.Add(layout);
 			Grid.SetRow(layout, 0);
 			grid.Children.Add(layout1);

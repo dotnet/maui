@@ -22,7 +22,7 @@ namespace Microsoft.Maui
 
 		internal static ILogger? CreateLogger(this IServiceProvider services, string loggerName) =>
 			services.GetService<ILoggerFactory>()?.CreateLogger(loggerName);
-		
+
 		internal static ILogger CreateLogger(this IServiceProvider services, Type type) =>
 			services.GetService<ILoggerFactory>()?.CreateLogger(type) ?? NullLogger.Instance;
 	}

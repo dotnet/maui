@@ -73,7 +73,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			if (serviceType == typeof(IDispatcher))
 				return _services.GetService(serviceType) ?? TestDispatcher.Current;
 
-			if (serviceType.IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(ILogger<>) || 
+			if (serviceType.IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(ILogger<>) ||
 				serviceType == typeof(ILogger) ||
 				serviceType == typeof(ILoggerFactory))
 			{

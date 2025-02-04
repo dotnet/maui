@@ -15,16 +15,16 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-    public partial class Maui18980Style : ResourceDictionary
-    {
-        public Maui18980Style()
-        {
-            InitializeComponent();
-        }
+	public partial class Maui18980Style : ResourceDictionary
+	{
+		public Maui18980Style()
+		{
+			InitializeComponent();
+		}
 
-        public Maui18980Style(bool useCompiledXaml)
-        {
-            //this stub will be replaced at compile time
-        }
-    }
+		public Maui18980Style(bool useCompiledXaml)
+		{
+			//this stub will be replaced at compile time
+		}
+	}
 }

@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.StyleSheets
 				if (property == null)
 					continue;
 				if (string.Equals(decl.Value, "initial", StringComparison.OrdinalIgnoreCase))
-					styleable.SetValue(property, property.DefaultValue, new SetterSpecificity(SetterSpecificity.StyleImplicit, (byte)selectorSpecificity.Id, (byte)selectorSpecificity.Class, (byte)selectorSpecificity.Type));					
+					styleable.SetValue(property, property.DefaultValue, new SetterSpecificity(SetterSpecificity.StyleImplicit, (byte)selectorSpecificity.Id, (byte)selectorSpecificity.Class, (byte)selectorSpecificity.Type));
 				else
 				{
 					object value;

@@ -19,10 +19,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("Icon3");
 			App.Tap("Icon1");
 			App.Tap("ToTab2");
-			
+
 			App.WaitForElement("ToTab1");
 			App.Tap("ToTab1");
-			
+
 			App.WaitForElement("Icon1");
 			VerifyScreenshot();
 		}
