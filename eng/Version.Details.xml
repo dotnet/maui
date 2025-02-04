@@ -1,16 +1,16 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.NET.Sdk" Version="10.0.100-alpha.1.25077.3">
+    <Dependency Name="Microsoft.NET.Sdk" Version="10.0.100-preview.2.25103.14">
       <Uri>https://github.com/dotnet/sdk</Uri>
-      <Sha>1dc202bfba7845fa94e5ebde0f82a44c5b5febc6</Sha>
+      <Sha>023b75869931154f5198585c3b37506780d193a2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-alpha.1.25073.13" CoherentParentDependency="Microsoft.NET.Sdk">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-preview.2.25102.2" CoherentParentDependency="Microsoft.NET.Sdk">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>f196875c5d0441364f6538d2dd8fc4e3eb1ff108</Sha>
+      <Sha>6f3f67528f9c1e6fd3b8614aac054286f3b2e7e0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.99.0-ci.main.141">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.99.0-ci.main.143">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>dbb0b92035d4ebb40dd3fb2768e20ac7cbef43c4</Sha>
+      <Sha>70a4f9344d9fa3d33b3cbdc6f6bf57eb91425c78</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk.net10.0_18.2" Version="18.2.10321-net10-p2">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
@@ -31,9 +31,9 @@
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-10.0.100.Transport" Version="10.0.0-alpha.1.25059.1">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-10.0.100.Transport" Version="10.0.0-preview.2.25103.1">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>0de3165cb0d56323b6caaf8e9916d4d9e72da32d</Sha>
+      <Sha>191ba073d94b647f70bce142d16ec96bfd436387</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="10.0.0-alpha.2.25073.4" CoherentParentDependency="Microsoft.NET.Sdk">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
