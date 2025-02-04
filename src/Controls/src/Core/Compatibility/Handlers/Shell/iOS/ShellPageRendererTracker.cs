@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				return;
 			}
-			
+
 			var tabBarVisible =
 				(Page.FindParentOfType<ShellItem>() as IShellItemController)?.ShowTabs ?? Shell.GetTabBarIsVisible(Page);
 

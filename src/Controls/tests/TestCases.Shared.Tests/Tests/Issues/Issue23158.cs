@@ -26,7 +26,7 @@ public class Issue23158 : _IssuesUITest
 		App.Tap("Entry3");
 
 #if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
-		if(App.IsKeyboardShown())
+		if (App.IsKeyboardShown())
 			App.DismissKeyboard();
 #endif
 
