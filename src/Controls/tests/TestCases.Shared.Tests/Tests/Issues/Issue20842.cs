@@ -17,17 +17,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public async Task VerifyCollectionViewItemsAfterScrolling()
+		public void VerifyCollectionViewItemsAfterScrolling()
 		{
 			App.WaitForElement(scrollUpButton);
-
+			App.WaitForElement(scrollDownButton);
 			App.Tap(scrollDownButton);
-			await Task.Delay(200);
+			App.WaitForElement(scrollUpButton);
 			App.Tap(scrollUpButton);
-			await Task.Delay(200);
-			App.Tap(scrollDownButton);
-   			await Task.Delay(500);
-
+			App.WaitForElement(scrollDownButton);
+			App.Tap(scrollDownButton);	
 			VerifyScreenshot();
 		}
 	}
