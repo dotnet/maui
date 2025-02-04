@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("Add");
 			App.Tap("Add");
-			Assert.That(App.WaitForElement("item: 1"),Is.Not.Null);
+			Assert.That(App.WaitForElement("item: 1"), Is.Not.Null);
 		}
 	}
 }

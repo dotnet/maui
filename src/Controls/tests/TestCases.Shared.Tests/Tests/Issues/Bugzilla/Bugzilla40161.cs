@@ -24,7 +24,7 @@ public class Bugzilla40161 : _IssuesUITest
 
 		Assert.That(App.FindElement("counter").GetText(), Is.EqualTo("step=0"));
 
-		Assert.That(App.FindElement("width").GetText(), Is.EqualTo("w=50"));	
+		Assert.That(App.FindElement("width").GetText(), Is.EqualTo("w=50"));
 	}
 }
 #endif

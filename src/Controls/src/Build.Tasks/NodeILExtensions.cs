@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var typeConverter = bpRef.GetBindablePropertyTypeConverter(context.Cache, module);
 
 			//we're gonna SetValue. if the BP type is Nullable, we only need to convert/box to the non-nullable type? why, because the CSC compiler does it like that
-			if (targetTypeRef.ResolveCached(context.Cache).FullName == "System.Nullable`1")			
+			if (targetTypeRef.ResolveCached(context.Cache).FullName == "System.Nullable`1")
 				targetTypeRef = ((GenericInstanceType)targetTypeRef).GenericArguments[0];
 
 			return node.PushConvertedValue(context, targetTypeRef, typeConverter, pushServiceProvider, boxValueTypes,

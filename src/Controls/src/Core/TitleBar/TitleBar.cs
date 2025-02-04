@@ -259,6 +259,16 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		internal void Cleanup()
+		{
+			PropertyChanged -= TitleBar_PropertyChanged;
+			if (Window is not null)
+			{
+				Window.Activated -= Window_Activated;
+				Window.Deactivated -= Window_Deactivated;
+			}
+		}
+
 		private void TitleBar_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(Window) && Window is not null)

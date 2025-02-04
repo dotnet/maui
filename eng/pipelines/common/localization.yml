@@ -3,8 +3,8 @@ parameters:
   GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
 
 stages:
-  - stage: localization_handoff
-    displayName: Localization Handoff
+  - stage: localization
+    displayName: Localization
     dependsOn: []
     condition: and(succeeded(), eq(variables.isLocHandoffBranch, true))
 
@@ -20,12 +20,19 @@ stages:
           - task: OneLocBuild@2
             displayName: 'Localization Build'
             env:
-              SYSTEM_ACCESSTOKEN: $(System.AccessToken) 
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             inputs:
               locProj: 'eng/automation/LocProject.json'
               outDir: '$(Build.ArtifactStagingDirectory)'
               packageSourceAuth: patAuth
               patVariable: ${{ parameters.CeapexPat }}
+              isCreatePrSelected: true                            # Create the PR with the Localization changes if there are any
+              isShouldReusePrSelected: true                       # Make sure to not keep creating new PRs if one is already open
+              isAutoCompletePrSelected: false                     # Allow us to review the created PR instead of auto-merging it
+              repoType: gitHub
+              prSourceBranchPrefix: $(LocBranchPrefix)
+              gitHubPatVariable: "${{ parameters.GithubPat }}"
+              gitHubPrMergeMethod: merge
 
           - task: PublishBuildArtifacts@1
             inputs:
