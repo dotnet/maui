@@ -12,11 +12,11 @@ public class Issue1028 : _IssuesUITest
 
 	public override string Issue => "ViewCell in TableView raises exception - root page is ContentPage, Content is TableView";
 
-	 [Test]
-	 [Category(UITestCategories.TableView)]
-	 public void ViewCellInTableViewDoesNotCrash()
-	 {
-	 	// If we can see this element, then we didn't crash.
-	 	App.WaitForElement("Custom Slider View:");
-	 }
+	[Test]
+	[Category(UITestCategories.TableView)]
+	public void ViewCellInTableViewDoesNotCrash()
+	{
+		// If we can see this element, then we didn't crash.
+		App.WaitForElement("Custom Slider View:");
+	}
 }

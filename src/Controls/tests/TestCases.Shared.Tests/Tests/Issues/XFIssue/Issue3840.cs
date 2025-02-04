@@ -11,7 +11,7 @@ public class Issue3840 : _IssuesUITest
 	const string FirstButton = "FirstClick";
 	const string SecondButton = "SecondClick";
 	public Issue3840(TestDevice testDevice) : base(testDevice)
-	{	
+	{
 	}
 
 	public override string Issue => "[iOS] Translation change causes ScrollView to reset to initial position (0, 0)";

@@ -8,7 +8,7 @@ public class Issue11869 : _IssuesUITest
 {
 
 	// In Android the top tab title was displayed with uppercase so we need to use uppercase string to find the element
-#if ANDROID 
+#if ANDROID
 	const string TopTab2 = "TOPTAB2";
 	const string TopTab3 = "TOPTAB3";
 
@@ -16,7 +16,7 @@ public class Issue11869 : _IssuesUITest
     const string TopTab2 = "TopTab2";
 	const string TopTab3 = "TopTab3";
 #endif
-    const string HideTop2 = "HideTop2";
+	const string HideTop2 = "HideTop2";
 	const string HideTop3 = "HideTop3";
 	const string HideBottom2 = "HideBottom2";
 	const string HideBottom3 = "HideBottom3";

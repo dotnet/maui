@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ResetGroupTracking();
 
 			_groupCount = GroupsCount();
-			
+
 			_collectionView.ReloadData();
 			if (collectionWasReset)
 			{

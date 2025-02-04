@@ -38,7 +38,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue.")]
 		public void VisitAndUpdateItemsSource(string collectionTestName, string subGallery, int firstItem, int lastItem)
-		{		
+		{
 			VisitInitialGallery(collectionTestName);
 			VisitSubGallery(subGallery, !subGallery.Contains("Horizontal", StringComparison.OrdinalIgnoreCase), $"Item: {firstItem}", $"Item: {lastItem}", lastItem - 1, true, false);
 		}

@@ -10,7 +10,7 @@ public class Issue8461 : _IssuesUITest
 	const string ButtonId = "PageButtonId";
 	const string LayoutId = "LayoutId";
 	const string InstructionsLabel = "InstructionsLabel";
-	
+
 	public Issue8461(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -34,10 +34,10 @@ public class Issue8461 : _IssuesUITest
 		App.SwipeLeftToRight(LayoutId, 0.99, 500, false);
 		// Swipe in from left across full screen width
 		App.SwipeLeftToRight(LayoutId);
-        
+
 		// On Android, swiping causes flyout items to overlap with the back arrow.
 		// Touch actions may need to be performed twice to work around this issue.
-#if ANDROID 
+#if ANDROID
 		App.TapBackArrow();
 #endif
 		App.TapBackArrow();

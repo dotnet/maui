@@ -96,4 +96,4 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 #endif
     }
-	}
+}
