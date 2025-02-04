@@ -9,15 +9,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string Add1 = "Add1";
 		const string Add2 = "Add2";
 		const string Success = "Success";
-#if ANDROID
-		const string FirstPage = "7700 FIRST PAGE";
-		const string Tab2 = "TAB2";
-		const string Tab3 = "TAB3";
-#else
-		const string FirstPage = "7700 First Page";
 		const string Tab2 = "Tab2";
 		const string Tab3 = "Tab3";
-#endif
 		protected override bool ResetAfterEachTest => true;
 
 		public CollectionViewTabbedPageUITests(TestDevice device)
@@ -32,9 +25,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(Add1);
 			App.Tap(Add1);
-			App.WaitForElement(Tab2);
-			App.Tap(Tab2);
-			App.WaitForElementTillPageNavigationSettled(Success);		
+			App.TapTab(Tab2);
+			App.WaitForElementTillPageNavigationSettled(Success);
 		}
 
 		[Test]
@@ -43,9 +35,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(Add2);
 			App.Tap(Add2);
-			App.WaitForElement(Tab3);
-			App.Tap(Tab3);
+			App.TapTab(Tab3);
 			App.WaitForElementTillPageNavigationSettled(Success);
-		}		
+		}
 	}
 }

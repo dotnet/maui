@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// You've now added vc1 back because the second call to ViewControllers will still return a ViewControllers list with vc1 in it
 		UIViewController[] _pendingViewControllers;
 
-		public ShellSectionRenderer(IShellContext context) : base()
+		public ShellSectionRenderer(IShellContext context) : base(typeof(MauiNavigationBar), null)
 		{
 			Delegate = new NavDelegate(this);
 			_context = context;
@@ -588,12 +588,24 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void PushViewController(UIViewController viewController, bool animated)
 		{
 			_pendingViewControllers = null;
-			base.PushViewController(viewController, animated);
+			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
+			{
+				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
+			}
+			else
+			{
+				base.PushViewController(viewController, animated);
+			}
 		}
 
 		public override UIViewController PopViewController(bool animated)
 		{
 			_pendingViewControllers = null;
+			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
+			{
+				return tabBarController.MoreNavigationController.PopViewController(animated);
+			}
+
 			return base.PopViewController(animated);
 		}
 
@@ -633,7 +645,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_completionTasks[pageViewController] = completionSource;
 
 			PushViewController(pageViewController, animated);
-			
+
 			if (completionSource != null && !showsPresentation)
 				completionSource.TrySetResult(true);
 		}
@@ -722,6 +734,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
+				(navigationController.NavigationBar as MauiNavigationBar)?.RefreshIfNeeded();
+
 				var tasks = _self._completionTasks;
 				var popTask = _self._popCompletionTask;
 

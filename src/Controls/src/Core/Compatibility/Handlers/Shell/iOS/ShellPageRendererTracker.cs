@@ -134,6 +134,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateTabBarVisible()
 		{
+			if (ViewController is null || Page is null)
+			{
+				return;
+			}
+
 			var tabBarVisible =
 				(Page.FindParentOfType<ShellItem>() as IShellItemController)?.ShowTabs ?? Shell.GetTabBarIsVisible(Page);
 
