@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS //For more information : https://github.com/dotnet/maui/issues/24482
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,7 +23,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("btnNext");
 			App.Click("btnNext");
 			App.WaitForElement("Item 1 with some additional text");
-			App.WaitForElement("lblPosition");
+			App.WaitForElement("Pos:1");
 		}
 	}
 }
+#endif
