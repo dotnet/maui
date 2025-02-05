@@ -42,6 +42,8 @@ public class Issue11244 : TestShell
 		var page2 = AddContentPage<TabBar, Tab>(page);
 		page2.Route = "MainPage";
 		await Task.Delay(1000);
-		await GoToAsync("//MainPage");
+		// Shell's GoToAsync uses URI-based routing instead of the traditional navigation stack, which can result in an invisible navigation bar in the UI.
+		// await GoToAsync("//MainPage");
+		await Shell.Current.Navigation.PushAsync(page);
 	}
 }

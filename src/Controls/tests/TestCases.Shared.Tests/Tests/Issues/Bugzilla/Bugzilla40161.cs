@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS //Image rendering size inside AbsoluteLayout is inconsistent on Windows. Created a issue report: https://github.com/dotnet/maui/issues/26094.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,22 +13,18 @@ public class Bugzilla40161 : _IssuesUITest
 
 	public override string Issue => "Issue Bugzilla40161";
 
-	// [Test]
-	// [Category(UITestCategories.Layout)]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void Issue1Test()
-	// {
-	// 	App.Screenshot("I am at Issue 40161");
-	// 	App.WaitForElement("REFRESH");
-	// 	App.Screenshot("I see the first image");
+	[Test]
+	[Category(UITestCategories.Layout)]
+	public void Issue1Test()
+	{
+		App.WaitForElement("REFRESH");
 
-	// 	App.Tap("SWAP");
-	// 	App.Tap("REFRESH");
+		App.Tap("SWAP");
+		App.Tap("REFRESH");
 
-	// 	App.WaitForTextToBePresentInElement("counter", "step=0");
+		Assert.That(App.FindElement("counter").GetText(), Is.EqualTo("step=0"));
 
-	// 	App.Screenshot("I swap the image");
-
-	// 	App.WaitForTextToBePresentInElement("width", "w=50");
-	// }
+		Assert.That(App.FindElement("width").GetText(), Is.EqualTo("w=50"));
+	}
 }
+#endif

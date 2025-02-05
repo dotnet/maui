@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID //Issue reproduced on android and logged the issue: https://github.com/dotnet/maui/issues/26026
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,24 +13,22 @@ public class Bugzilla40173 : _IssuesUITest
 
 	public override string Issue => "Android BoxView/Frame not clickthrough in ListView";
 
-	// 	[FailsOnAndroidWhenRunningOnXamarinUITest]
-	// 	[FailsOnIOSWhenRunningOnXamarinUITest]
-	// 	[Test]
-	// 	[Category(UITestCategories.InputTransparent)]
-	// 	public void ButtonBlocked()
-	// 	{
-	// 		App.Tap("CantTouchButtonId");
+	[Test]
+	[Category(UITestCategories.InputTransparent)]
+	public void ButtonBlocked()
+	{
+		App.WaitForElement("CantTouchButtonId");
+		App.Tap("CantTouchButtonId");
 
-	// 		Assert.That(App.FindElement("outputlabel").GetText()?
-	// 			.Equals("Failed", StringComparison.OrdinalIgnoreCase),
-	// 			Is.False);
+		Assert.That(App.WaitForElement("outputlabel")?.GetText(), Is.EqualTo(("Default")));
 
-	// 		App.Tap("CanTouchButtonId");
+		App.Tap("CanTouchButtonId");
 
-	// 		App.WaitForTextToBePresentInElement("outputlabel", "ButtonTapped");
-	// #if !__MACOS__
-	// 		App.Tap("ListTapTarget");
-	// 		App.WaitForTextToBePresentInElement("outputlabel", "ItemTapped");
-	// #endif
-	// 	}
+		Assert.That(App.WaitForElement("outputlabel")?.GetText(), Is.EqualTo(("ButtonTapped")));
+
+		App.WaitForElement("Foo");
+		App.Tap("Foo");
+		Assert.That(App.WaitForElement("outputlabel")?.GetText(), Is.EqualTo(("ItemTapped")));
+	}
 }
+#endif

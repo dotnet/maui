@@ -6,11 +6,11 @@
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>Microsoft.Maui.TestCases.Tests</RootNamespace>
-    <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
+    <DefineConstants>$(DefineConstants);ANDROID;TEST_FAILS_ON_IOS;TEST_FAILS_ON_CATALYST;TEST_FAILS_ON_WINDOWS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" Version="5.0.0" />
+    <PackageReference Include="Appium.WebDriver" Version="7.0.0" />
     <PackageReference Include="NUnit" Version="4.0.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>

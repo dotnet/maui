@@ -127,36 +127,9 @@ Task("dotnet-buildtasks")
         throw exception;
     });
 
-Task("android-aar")
-    .Does(() =>
-    {
-        var root = "./src/Core/AndroidNative/";
-
-        var gradlew = root + "gradlew";
-        if (IsRunningOnWindows())
-            gradlew += ".bat";
-
-        var exitCode = StartProcess(
-            MakeAbsolute((FilePath)gradlew),
-            new ProcessSettings
-            {
-                Arguments = $"createAar --rerun-tasks",
-                WorkingDirectory = root
-            });
-
-        if (exitCode != 0)
-        {
-            if (IsCIBuild() || IsTarget("android-aar"))
-                throw new Exception("Gradle failed to build maui.aar: " + exitCode);
-            else
-                Information("This task failing locally will not break local MAUI development. Gradle failed to build maui.aar: {0}", exitCode);
-        }
-    });
-
 Task("dotnet-build")
     .IsDependentOn("dotnet")
     .IsDependentOn("dotnet-buildtasks")
-    .IsDependentOn("android-aar")
     .Description("Build the solutions")
     .Does(() =>
     {
@@ -229,25 +202,6 @@ Task("uitests-apphost")
         RunMSBuildWithDotNet("./src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj", properties, binlogPrefix: "uitests-apphost-");
     });
 
-Task("dotnet-legacy-controlgallery")
-    .IsDependentOn("dotnet-legacy-controlgallery-android")
-    .IsDependentOn("dotnet-legacy-controlgallery-ios");
-
-Task("dotnet-legacy-controlgallery-ios")
-    .Does(() =>
-    {
-        var properties = new Dictionary<string, string>();
-        properties.Add("RuntimeIdentifier","iossimulator-x64");
-        RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj", properties, binlogPrefix: "controlgallery-ios-");
-    });
-
-Task("dotnet-legacy-controlgallery-android")
-    .Does(() =>
-    {
-        var properties = new Dictionary<string, string>();
-        RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj", properties, binlogPrefix: "controlgallery-android-");
-    });
-
 Task("dotnet-integration-build")
     .Does(() =>
     {
@@ -256,6 +210,7 @@ Task("dotnet-integration-build")
     });
 
 Task("dotnet-integration-test")
+    .IsDependentOn("dotnet-integration-build")
     .Does(() =>
     {
         RunTestWithLocalDotNet(
@@ -313,7 +268,6 @@ Task("dotnet-test")
     });
 
 Task("dotnet-pack-maui")
-    .IsDependentOn("android-aar")
     .WithCriteria(RunPackTarget())
     .Does(() =>
     {
@@ -344,7 +298,7 @@ Task("dotnet-pack-maui")
 
 Task("dotnet-pack-additional")
     .WithCriteria(RunPackTarget())
-    .Does(() =>
+    .Does(async () =>
     {
         // Download some additional symbols that need to be archived along with the maui symbols:
         //  - _NativeAssets.windows
@@ -352,16 +306,14 @@ Task("dotnet-pack-additional")
         //     - libHarfBuzzSharp.pdb
         var assetsDir = $"./artifacts/additional-assets";
         var nativeAssetsVersion = XmlPeek("./eng/Versions.props", "/Project/PropertyGroup/_SkiaSharpNativeAssetsVersion");
-        NuGetInstall("_NativeAssets.windows", new NuGetInstallSettings
-        {
-            Version = nativeAssetsVersion,
-            ExcludeVersion = true,
-            OutputDirectory = assetsDir,
-            Source = new[] { "https://pkgs.dev.azure.com/xamarin/public/_packaging/SkiaSharp/nuget/v3/index.json" },
-        });
+        await DownloadNuGetPackageAsync(
+            "_NativeAssets.windows",
+            nativeAssetsVersion,
+            assetsDir,
+            "https://pkgs.dev.azure.com/xamarin/public/_packaging/SkiaSharp/nuget/v3/index.json");
+        Zip(assetsDir, $"{assetsDir}.zip");
         foreach (var nupkg in GetFiles($"{assetsDir}/**/*.nupkg"))
             DeleteFile(nupkg);
-        Zip(assetsDir, $"{assetsDir}.zip");
     });
 
 Task("dotnet-pack-library-packs")
@@ -780,6 +732,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
     string results;
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
     var logDirectory = GetLogDirectory();
+    Information("Log Directory: {0}", logDirectory);
 
     if (!string.IsNullOrWhiteSpace(pathDotnet) && localDotnet)
     {

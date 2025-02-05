@@ -23,7 +23,7 @@ public class Issue4720 : TestNavigationPage
 
 			var label = new Microsoft.Maui.Controls.Label { Text = "Test case for GitHub issue #4720." };
 
-			var button = new Button { Text = "Close Page" };
+			var button = new Button { Text = "Close Page", AutomationId = "ClosePage" };
 			button.Clicked += ClosePageClicked;
 
 
@@ -52,6 +52,7 @@ public class Issue4720 : TestNavigationPage
 				btnChangeExecutionMode,
 				_webView
 			};
+			Content = stackLayout;
 		}
 
 		async void ClosePageClicked(object sender, EventArgs e)
@@ -83,10 +84,10 @@ public class Issue4720 : TestNavigationPage
 			Interlocked.Increment(ref s_count);
 			Debug.WriteLine($">>>>> Issue4720Content Issue4720Content : Constructor, count is {s_count}");
 
-			var button = new Button { Text = "New Page" };
+			var button = new Button { Text = "New Page", AutomationId = "NewPage" };
 			button.Clicked += Button_Clicked;
 
-			var gcbutton = new Button { Text = "GC" };
+			var gcbutton = new Button { Text = "GC", AutomationId = "GC" };
 			gcbutton.Clicked += GCbutton_Clicked;
 
 			var instructions = new Microsoft.Maui.Controls.Label() { Text = "Navigate forward and back multiple times. If you don't see any out of memory exceptions the test has passed." };

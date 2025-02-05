@@ -2,9 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
@@ -16,14 +18,16 @@ namespace Microsoft.Maui.Controls
 	/// An <see cref="Element" /> that occupies an area on the screen, has a visual appearance, and can obtain touch input.
 	/// </summary>
 	/// <remarks>
-	/// The base class for most Microsoft.Maui.Controls on-screen elements. Provides most properties, events, and methods for presenting an item on screen.
+	/// The base class for most .NET MAUI on-screen elements. Provides most properties, events, and methods for presenting an item on screen.
 	/// </remarks>
+
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement
 	{
 		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
 
-		/// <inheritdoc/>
+		/// <inheritdoc cref="StyleableElement.StyleProperty" />
 		public new static readonly BindableProperty StyleProperty = NavigableElement.StyleProperty;
 
 		bool _inputTransparentExplicit = (bool)InputTransparentProperty.DefaultValue;
@@ -279,13 +283,15 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
-				if (oldvalue == null) return;
+				if (oldvalue == null)
+					return;
 
 				(bindable as VisualElement)?.StopNotifyingBackgroundChanges();
 			},
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
-				if (newvalue == null) return;
+				if (newvalue == null)
+					return;
 
 				(bindable as VisualElement)?.NotifyBackgroundChanges();
 			});
@@ -318,7 +324,7 @@ namespace Microsoft.Maui.Controls
 				_backgroundChanged ??= (sender, e) => OnPropertyChanged(nameof(Background));
 				_backgroundProxy ??= new();
 				_backgroundProxy.Subscribe(background, _backgroundChanged);
-							
+
 				OnParentResourcesChanged(this.GetMergedResources());
 				((IElementDefinition)this).AddResourcesChangedListener(background.OnParentResourcesChanged);
 			}
@@ -1369,14 +1375,19 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(trigger);
 		}
 
-		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
+		internal void InvalidateMeasureInternal(InvalidationTrigger trigger)
+		{
+			InvalidateMeasureInternal(new InvalidationEventArgs(trigger, 0));
+		}
+
+		internal virtual void InvalidateMeasureInternal(InvalidationEventArgs eventArgs)
 		{
 			_measureCache.Clear();
 
 			// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 
 			// VerticalOptionsChanged will need to call ParentView.InvalidateArrange() instead
 
-			switch (trigger)
+			switch (eventArgs.Trigger)
 			{
 				case InvalidationTrigger.MarginChanged:
 				case InvalidationTrigger.HorizontalOptionsChanged:
@@ -1388,11 +1399,28 @@ namespace Microsoft.Maui.Controls
 					break;
 			}
 
-			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
-			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+			FireMeasureChanged(eventArgs);
 		}
-		
-		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger)
+
+		private protected void FireMeasureChanged(InvalidationTrigger trigger, int depth)
+		{
+			FireMeasureChanged(new InvalidationEventArgs(trigger, depth));
+		}
+
+
+		private protected void FireMeasureChanged(InvalidationEventArgs args)
+		{
+			var depth = args.CurrentInvalidationDepth;
+			MeasureInvalidated?.Invoke(this, args);
+			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, args.Trigger, ++depth);
+		}
+
+		// We don't want to change the execution path of Page or Layout when they are calling "InvalidationMeasure"
+		// If you look at page it calls OnChildMeasureInvalidated from OnChildMeasureInvalidatedInternal
+		// Because OnChildMeasureInvalidated is public API and the user might override it, we need to keep it as is
+		//private protected int CurrentInvalidationDepth { get; set; }
+
+		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger, int depth)
 		{
 			switch (trigger)
 			{
@@ -1404,17 +1432,14 @@ namespace Microsoft.Maui.Controls
 				case InvalidationTrigger.RendererReady:
 				// Undefined happens in many cases, including when `IsVisible` changes
 				case InvalidationTrigger.Undefined:
-					MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
-					(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, trigger);
+					FireMeasureChanged(trigger, depth);
 					return;
 				default:
 					// When visibility changes `InvalidationTrigger.Undefined` is used,
 					// so here we're sure that visibility didn't change
 					if (child.IsVisible)
 					{
-						// We need to invalidate measures only if child is actually visible
-						MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(InvalidationTrigger.MeasureChanged));
-						(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, InvalidationTrigger.MeasureChanged);
+						FireMeasureChanged(InvalidationTrigger.MeasureChanged, depth);
 					}
 					return;
 			}
@@ -1884,7 +1909,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="bounds">The new bounds of the element.</param>
 		/// <returns>The resulting size of this element's frame by the platform.</returns>
-		/// <remarks>Subclasses will stil want to call <see cref="ArrangeOverride"/> on the base class or call <see cref="IViewHandler.PlatformArrange"/> on the <see cref="Handler"/> .</remarks>
+		/// <remarks>Subclasses will still want to call <see cref="ArrangeOverride"/> on the base class or call <see cref="IViewHandler.PlatformArrange"/> on the <see cref="Handler"/> .</remarks>
 		protected virtual Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
@@ -1958,22 +1983,8 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Semantics? IView.Semantics => UpdateSemantics();
 
-		private protected virtual Semantics? UpdateSemantics()
-		{
-			if (!this.IsSet(SemanticProperties.HintProperty) &&
-				!this.IsSet(SemanticProperties.DescriptionProperty) &&
-				!this.IsSet(SemanticProperties.HeadingLevelProperty))
-			{
-				_semantics = null;
-				return _semantics;
-			}
-
-			_semantics ??= new Semantics();
-			_semantics.Description = SemanticProperties.GetDescription(this);
-			_semantics.HeadingLevel = SemanticProperties.GetHeadingLevel(this);
-			_semantics.Hint = SemanticProperties.GetHint(this);
-			return _semantics;
-		}
+		private protected virtual Semantics? UpdateSemantics() =>
+			_semantics = SemanticProperties.UpdateSemantics(this, _semantics);
 
 		static double EnsurePositive(double value)
 		{
@@ -2390,6 +2401,12 @@ namespace Microsoft.Maui.Controls
 					throw new NotSupportedException();
 				return visibility.ToString();
 			}
+		}
+
+		private protected virtual string GetDebuggerDisplay()
+		{
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(BindingContext), BindingContext, nameof(Bounds), Bounds);
+			return $"{GetType().FullName}: {debugText}";
 		}
 	}
 }

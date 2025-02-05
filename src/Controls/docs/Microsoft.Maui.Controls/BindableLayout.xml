@@ -13,7 +13,6 @@
   <Interfaces />
   <Docs>
     <summary>Static class specifying the attached properties that allow a <see cref="T:Microsoft.Maui.Controls.ILayout" /> work with a data-bound <see cref="T:System.Collections.IEnumerable" />.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="EmptyViewProperty">
@@ -30,8 +29,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="EmptyViewTemplateProperty">
@@ -48,8 +45,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetEmptyView">
@@ -70,9 +65,6 @@
       </Parameters>
       <Docs>
         <param name="b">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetEmptyViewTemplate">
@@ -93,9 +85,6 @@
       </Parameters>
       <Docs>
         <param name="b">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetItemsSource">
@@ -116,9 +105,6 @@
       </Parameters>
       <Docs>
         <param name="b">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetItemTemplate">
@@ -139,9 +125,6 @@
       </Parameters>
       <Docs>
         <param name="b">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetItemTemplateSelector">
@@ -162,9 +145,6 @@
       </Parameters>
       <Docs>
         <param name="b">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ItemsSourceProperty">
@@ -181,8 +161,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ItemTemplateProperty">
@@ -199,8 +177,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ItemTemplateSelectorProperty">
@@ -217,8 +193,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetEmptyView">
@@ -241,8 +215,6 @@
       <Docs>
         <param name="b">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetEmptyViewTemplate">
@@ -265,8 +237,6 @@
       <Docs>
         <param name="b">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetItemsSource">
@@ -289,8 +259,6 @@
       <Docs>
         <param name="b">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetItemTemplate">
@@ -313,8 +281,6 @@
       <Docs>
         <param name="b">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetItemTemplateSelector">
@@ -337,8 +303,6 @@
       <Docs>
         <param name="b">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

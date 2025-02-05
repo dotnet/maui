@@ -12,13 +12,14 @@ public class Issue8186 : _IssuesUITest
 
 	public override string Issue => "[UWP] Setting IsRefreshing from OnAppearing on RefreshView crashes UWP";
 
-	//[Test]
-	//[Category(UITestCategories.RefreshView)]
-	//public void SetIsRefreshingToTrueInOnAppearingDoesntCrash()
-	//{
-	//	RunningApp.WaitForElement("Success");
-	//	RunningApp.Tap("PushPage");
-	//	RunningApp.Tap("PopPage");
-	//	RunningApp.WaitForElement("Success");
-	//}
+	[Test]
+	[Category(UITestCategories.RefreshView)]
+	public void SetIsRefreshingToTrueInOnAppearingDoesntCrash()
+	{
+		App.WaitForElement("PushPage");
+		App.Tap("PushPage");
+		App.WaitForElement("PopPage");
+		App.Tap("PopPage");
+		App.WaitForElement("Success");
+	}
 }

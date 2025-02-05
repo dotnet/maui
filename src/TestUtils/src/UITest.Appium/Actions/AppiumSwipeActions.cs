@@ -1,6 +1,5 @@
 ﻿using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
-using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Interactions;
 using UITest.Core;
 
@@ -44,7 +43,7 @@ namespace UITest.Appium
 			parameters.TryGetValue("element", out var value);
 			var element = GetAppiumElement(value);
 
-            double swipePercentage = (double)parameters["swipePercentage"];
+			double swipePercentage = (double)parameters["swipePercentage"];
 			int swipeSpeed = (int)parameters["swipeSpeed"];
 			bool withInertia = (bool)parameters["withInertia"];
 
@@ -58,7 +57,7 @@ namespace UITest.Appium
 			parameters.TryGetValue("element", out var value);
 			var element = GetAppiumElement(value);
 
-            double swipePercentage = (double)parameters["swipePercentage"];
+			double swipePercentage = (double)parameters["swipePercentage"];
 			int swipeSpeed = (int)parameters["swipeSpeed"];
 			bool withInertia = (bool)parameters["withInertia"];
 

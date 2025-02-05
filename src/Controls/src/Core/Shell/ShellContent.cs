@@ -223,17 +223,20 @@ namespace Microsoft.Maui.Controls
 
 		internal void EvaluateDisconnect()
 		{
-			if(!_createdViaService)
+			if (!_createdViaService)
 				return;
 
 			// If the user has set the IsVisible property on this shell content to false
 			bool disconnect = true;
-			
-			if(Parent is ShellSection shellSection &&
-				shellSection.Parent is ShellItem shellItem &&
-				shellItem.Parent is Shell shell)
+
+			Shell shell = null;
+
+			if (Parent is ShellSection shellSection &&
+					  shellSection.Parent is ShellItem shellItem &&
+					  shellItem.Parent is Shell shellInstance)
 			{
-				disconnect = 
+				shell = shellInstance;
+				disconnect =
 					!this.IsVisible || // user has set the IsVisible property to false
 					(_contentCache is not null && !_contentCache.IsVisible) || // user has set IsVisible on the Page to false
 					shell.CurrentItem != shellItem || // user has navigated to a different TabBar or a different FlyoutItem
@@ -243,6 +246,7 @@ namespace Microsoft.Maui.Controls
 
 			if (!disconnect)
 			{
+				shell?.NotifyFlyoutBehaviorObservers();
 				return;
 			}
 
@@ -261,7 +265,7 @@ namespace Microsoft.Maui.Controls
 
 			if (propertyName == WindowProperty.PropertyName)
 			{
-				if(_contentCache?.IsLoaded == true)
+				if (_contentCache?.IsLoaded == true)
 					return;
 
 				EvaluateDisconnect();

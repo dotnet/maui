@@ -33,19 +33,10 @@ public class AddingMultipleItemsListView : TestContentPage
 		};
 		addTwoJobsButton.SetBinding(Button.CommandProperty, new Binding("AddTwoCommand"));
 
-		var layout = new StackLayout
-		{
-			Orientation = StackOrientation.Vertical,
-#pragma warning disable CS0618 // Type or member is obsolete
-			VerticalOptions = LayoutOptions.StartAndExpand,
-#pragma warning restore CS0618 // Type or member is obsolete
-			Spacing = 15,
-			Children = {
-				listView,
-				addOneJobButton,
-				addTwoJobsButton
-			}
-		};
+		var layout = new VerticalStackLayout() { Spacing = 10 };
+		layout.Children.Add(listView);
+		layout.Children.Add(addOneJobButton);
+		layout.Children.Add(addTwoJobsButton);
 		Content = layout;
 	}
 

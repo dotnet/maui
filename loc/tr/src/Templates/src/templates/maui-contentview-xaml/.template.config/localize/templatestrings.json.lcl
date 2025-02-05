@@ -22,6 +22,9 @@
       <Item ItemId=";description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A view for displaying content using XAML. This is very suitable for creating your own custom and reusable controls.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[XAML kullanarak içeriğin görüntülendiği bir görünüm. Bu, kendi özel ve yeniden kullanılabilir denetimlerinizi oluşturmak için son derece uygundur.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

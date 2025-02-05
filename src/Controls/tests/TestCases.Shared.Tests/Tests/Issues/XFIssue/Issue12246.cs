@@ -6,25 +6,30 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue12246 : _IssuesUITest
 {
+
+	const string Entry = "Entry";
+	const string Password = "Password";
+	const string Success = "Success";
+
 	public Issue12246(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
 	public override string Issue => "[Bug] iOS 14 App freezes when password is entered after email";
 
-	// [Test]
-	// [Category(UITestCategories.Entry)]
-	// public void UnfocusingPasswordDoesNotHang()
-	// {
-	// 	RunningApp.WaitForElement(Entry);
-	// 	RunningApp.WaitForElement(Password);
+	[Test]
+	[Category(UITestCategories.Entry)]
+	public void UnfocusingPasswordDoesNotHang()
+	{
+		App.WaitForElement(Entry);
 
-	// 	RunningApp.EnterText(Entry, "test");
-	// 	RunningApp.DismissKeyboard();
-	// 	RunningApp.EnterText(Password, "test");
+		App.EnterText(Entry, "test");
+		App.DismissKeyboard();
+		App.Tap(Password);
+		App.EnterText(Password, "test");
 
-	// 	RunningApp.Tap(Entry);
-	// 	RunningApp.DismissKeyboard();
-	// 	RunningApp.WaitForElement(Success);
-	// }
+		App.Tap(Entry);
+		App.DismissKeyboard();
+		App.WaitForElement(Success);
+	}
 }

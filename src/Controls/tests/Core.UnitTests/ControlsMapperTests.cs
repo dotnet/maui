@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		class ButtonWithControlsMapper : Button
 		{
-		
+
 			public Action MapperCalled { get; private set; }
 			public ButtonWithControlsMapper(Action mapperCalled)
 			{

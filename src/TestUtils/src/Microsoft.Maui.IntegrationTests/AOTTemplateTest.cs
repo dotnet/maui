@@ -76,7 +76,7 @@ public class AOTTemplateTest : BaseTemplateTests
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 		var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
-		actualWarnings.AssertNoWarnings();
+		actualWarnings.AssertWarnings(BuildWarningsUtilities.ExpectedNativeAOTWarnings);
 	}
 
 	private List<string> PrepareNativeAotBuildProps()
@@ -87,6 +87,7 @@ public class AOTTemplateTest : BaseTemplateTests
 		extendedBuildProps.Add("_IsPublishing=true"); // This makes 'dotnet build -r iossimulator-x64' equivalent to 'dotnet publish -r iossimulator-x64'
 		extendedBuildProps.Add("IlcTreatWarningsAsErrors=false");
 		extendedBuildProps.Add("TrimmerSingleWarn=false");
+		extendedBuildProps.Add("_RequireCodeSigning=false"); // This is required to build the iOS app without a signing key
 		return extendedBuildProps;
 	}
 }

@@ -86,6 +86,10 @@ public class FlyoutPageNavigation : FlyoutPage
 	{
 		InitPages();
 
+		// Set FlyoutBehavior to Popover to ensure consistent behavior across desktop and mobile platforms.
+		// Windows and Catalyst default (FlyoutLayoutBehavior.Default) uses Split mode, which differs from mobile platforms.
+		FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
+
 		var menuList = new ListView
 		{
 			BackgroundColor = Colors.Transparent,

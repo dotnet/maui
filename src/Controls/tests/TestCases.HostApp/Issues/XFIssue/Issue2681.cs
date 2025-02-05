@@ -7,7 +7,7 @@ public class Issue2681 : TestNavigationPage
 	const string NavigateToPage = "Click Me.";
 	protected override void Init()
 	{
-		PushAsync(new ContentPage() { Title = "Freeze Test", Content = new Button() { Text = NavigateToPage, Command = new Command(() => this.PushAsync(new FreezeMe())) } });
+		PushAsync(new ContentPage() { Title = "Freeze Test", Content = new Button() { AutomationId = "NavigateToPage", Text = NavigateToPage, Command = new Command(() => this.PushAsync(new FreezeMe())) } });
 	}
 
 
@@ -27,6 +27,7 @@ public class Issue2681 : TestNavigationPage
 			{
 				var label = new Label() { Text = "sassifrass" };
 				label.SetBinding(Label.TextProperty, ".");
+				label.SetBinding(AutomationIdProperty, new Binding(".", stringFormat: "{0}"));
 				return new ViewCell() { View = label };
 			});
 

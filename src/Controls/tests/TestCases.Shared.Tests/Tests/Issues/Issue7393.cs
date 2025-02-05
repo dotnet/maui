@@ -17,9 +17,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnMac]
-		[FailsOnWindows]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
+		[Ignore("This test is very flaky and needs to be fixed. See https://github.com/dotnet/maui/issues/27272")]
 		public void AddingItemsToGroupedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Success, timeout: TimeSpan.FromSeconds(30));

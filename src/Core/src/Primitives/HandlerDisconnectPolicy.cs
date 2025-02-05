@@ -1,8 +1,8 @@
 namespace Microsoft.Maui
 {
-    public enum HandlerDisconnectPolicy
-    {
-        Automatic,
-        Manual
-    }
+	public enum HandlerDisconnectPolicy
+	{
+		Automatic,
+		Manual
+	}
 }

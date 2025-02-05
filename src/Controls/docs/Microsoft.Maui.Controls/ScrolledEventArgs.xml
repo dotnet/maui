@@ -16,7 +16,6 @@
   <Interfaces />
   <Docs>
     <summary>Arguments for the event that is raised when a window is scrolled.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -40,7 +39,6 @@
         <param name="x">The X position of the finished scroll.</param>
         <param name="y">The Y position of the finished scroll.</param>
         <summary>Constructs a new <see cref="T:Microsoft.Maui.Controls.ScrolledEventArgs" /> object for a scroll to <paramref name="x" /> and <paramref name="y" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScrollX">
@@ -61,8 +59,6 @@
       </ReturnValue>
       <Docs>
         <summary>The X position of the finished scroll.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScrollY">
@@ -83,8 +79,6 @@
       </ReturnValue>
       <Docs>
         <summary>The Y position of the finished scroll.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

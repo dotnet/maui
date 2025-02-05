@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Pages
 
 			windowNumber = Math.Min(windowNumber, windows.Count);
 			windowNumber = Math.Max(1, windowNumber);
-			
+
 			int windowIndex = windowNumber - 1;
 
 			Window windowToActivate = windows[windowIndex];

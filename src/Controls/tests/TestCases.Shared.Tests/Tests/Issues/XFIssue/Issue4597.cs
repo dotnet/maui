@@ -81,7 +81,7 @@ public class Issue4597 : _IssuesUITest
 	//	SetupTest(nameof(ListView), fileSource);
 
 	//	var imageVisible =
-	//		RunningApp.QueryUntilPresent(GetImage, 10, 2000);
+	//		App.QueryUntilPresent(GetImage, 10, 2000);
 
 	//	Assert.AreEqual(1, imageVisible.Length);
 	//	SetImageSourceToNull();
@@ -109,15 +109,15 @@ public class Issue4597 : _IssuesUITest
 
 	//void SetImageSourceToNull()
 	//{
-	//	RunningApp.Tap("ClickMe");
-	//	RunningApp.WaitForElement(_appearText);
+	//	App.Tap("ClickMe");
+	//	App.WaitForElement(_appearText);
 	//}
 
 	//Xamarin.UITest.Queries.AppResult TestForImageVisible()
 	//{
-	//	var images = RunningApp.QueryUntilPresent(() =>
+	//	var images = App.QueryUntilPresent(() =>
 	//	{
-	//		var result = RunningApp.WaitForElement(_fileNameAutomationId);
+	//		var result = App.WaitForElement(_fileNameAutomationId);
 
 	//		if (result[0].Rect.Height > 1)
 	//			return result;
@@ -135,7 +135,7 @@ public class Issue4597 : _IssuesUITest
 
 	//void TestForImageNotVisible(Xamarin.UITest.Queries.AppResult previousFinding)
 	//{
-	//	var imageVisible = RunningApp.Query(_fileNameAutomationId);
+	//	var imageVisible = App.Query(_fileNameAutomationId);
 
 	//	if (imageVisible.Length > 0)
 	//	{
@@ -145,19 +145,19 @@ public class Issue4597 : _IssuesUITest
 
 	//void SetupTest(string controlType, bool fileSource)
 	//{
-	//	RunningApp.WaitForElement(_nextTestId);
+	//	App.WaitForElement(_nextTestId);
 	//	string activeTest = null;
-	//	while (RunningApp.Query(controlType).Length == 0)
+	//	while (App.Query(controlType).Length == 0)
 	//	{
-	//		activeTest = RunningApp.WaitForElement(_activeTestId)[0].ReadText();
-	//		RunningApp.Tap(_nextTestId);
-	//		RunningApp.WaitForNoElement(activeTest);
+	//		activeTest = App.WaitForElement(_activeTestId)[0].ReadText();
+	//		App.Tap(_nextTestId);
+	//		App.WaitForNoElement(activeTest);
 	//	}
 
-	//	string sourceLabel = RunningApp.WaitForFirstElement("SourceLabel").ReadText();
+	//	string sourceLabel = App.WaitForFirstElement("SourceLabel").ReadText();
 	//	if (fileSource && sourceLabel != _imageFromFile)
-	//		RunningApp.Tap(_switchUriId);
+	//		App.Tap(_switchUriId);
 	//	else if (!fileSource && sourceLabel != _imageFromUri)
-	//		RunningApp.Tap(_switchUriId);
+	//		App.Tap(_switchUriId);
 	//}
 }

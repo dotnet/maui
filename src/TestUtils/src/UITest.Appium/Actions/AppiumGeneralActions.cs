@@ -7,11 +7,17 @@ namespace UITest.Appium
 	{
 		const string GetAttributeCommand = "getAttribute";
 		const string GetRectCommand = "getRect";
+		const string GetSelectedCommand = "getSelected";
+		const string GetDisplayedCommand = "getDisplayed";
+		const string GetEnabledCommand = "getEnabled";
 
 		readonly List<string> _commands = new()
 		{
 			GetAttributeCommand,
 			GetRectCommand,
+			GetSelectedCommand,
+			GetDisplayedCommand,
+			GetEnabledCommand,
 		};
 
 		public bool IsCommandSupported(string commandName)
@@ -25,6 +31,9 @@ namespace UITest.Appium
 			{
 				GetAttributeCommand => GetAttribute(parameters),
 				GetRectCommand => GetRect(parameters),
+				GetSelectedCommand => GetSelected(parameters),
+				GetDisplayedCommand => GetDisplayed(parameters),
+				GetEnabledCommand => GetEnabled(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -35,7 +44,7 @@ namespace UITest.Appium
 
 			if (element is AppiumElement appiumElement)
 			{
-				return new CommandResponse(appiumElement.Rect, CommandResponseResult.Success);
+				return new CommandResponse(appiumElement, CommandResponseResult.Success);
 			}
 			else if (element is AppiumDriverElement driverElement)
 			{
@@ -57,6 +66,54 @@ namespace UITest.Appium
 			{
 				return new CommandResponse(driverElement.AppiumElement.GetAttribute(attributeName), CommandResponseResult.Success);
 			}
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse GetSelected(IDictionary<string, object> parameters)
+		{
+			var element = parameters["element"];
+
+			if (element is AppiumElement appiumElement)
+			{
+				return new CommandResponse(appiumElement, CommandResponseResult.Success);
+			}
+			else if (element is AppiumDriverElement driverElement)
+			{
+				return new CommandResponse(driverElement.AppiumElement.Selected, CommandResponseResult.Success);
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse GetDisplayed(IDictionary<string, object> parameters)
+		{
+			var element = parameters["element"];
+
+			if (element is AppiumElement appiumElement)
+			{
+				return new CommandResponse(appiumElement, CommandResponseResult.Success);
+			}
+			else if (element is AppiumDriverElement driverElement)
+			{
+				return new CommandResponse(driverElement.AppiumElement.Displayed, CommandResponseResult.Success);
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse GetEnabled(IDictionary<string, object> parameters)
+		{
+			var element = parameters["element"];
+
+			if (element is AppiumElement appiumElement)
+			{
+				return new CommandResponse(appiumElement, CommandResponseResult.Success);
+			}
+			else if (element is AppiumDriverElement driverElement)
+			{
+				return new CommandResponse(driverElement.AppiumElement.Enabled, CommandResponseResult.Success);
+			}
+
 			return CommandResponse.FailedEmptyResponse;
 		}
 	}

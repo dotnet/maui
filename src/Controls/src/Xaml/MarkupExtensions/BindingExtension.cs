@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					FallbackValue = FallbackValue,
 					TargetNullValue = TargetNullValue,
 					DataType = bindingXDataType,
-				};			
+				};
 			}
 		}
 

@@ -57,7 +57,6 @@ public class Issue2964 : TestFlyoutPage
 	protected override void Init()
 	{
 		Title = "Test";
-
 		Flyout = new ContentPage
 		{
 			Title = "Flyout",
@@ -68,6 +67,7 @@ public class Issue2964 : TestFlyoutPage
 				Command = new Command(() =>
 				{
 					Detail = new Page1();
+					FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
 					IsPresented = false;
 				})
 			}

@@ -41,6 +41,7 @@
 								Margin = new Thickness(0, 100)
 							};
 							label.SetBinding(Label.TextProperty, new Binding("."));
+							label.SetBinding(Label.AutomationIdProperty, new Binding("."));
 							return label;
 						})
 					};

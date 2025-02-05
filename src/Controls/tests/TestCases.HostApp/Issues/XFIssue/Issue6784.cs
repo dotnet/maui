@@ -13,20 +13,20 @@ public class Issue6784 : TestShell
 
 		Items.Add(shellItem);
 
-		AddBottomTab("Tab 1");
-		AddBottomTab("Tab 2");
-		AddBottomTab("Tab 3");
-		AddBottomTab("Tab 4").AutomationId = "Tab 4 Content";
-		var contentPage5 = AddBottomTab("Tab 5");
-		AddBottomTab("Tab 6");
+		for (int i = 1; i <= 10; i++)
+		{
+			AddBottomTab($"Tab {i}");
+		}
+		var contentPage11 = AddBottomTab("Tab 11");
+		AddBottomTab("Tab 12");
 
 		shellItem.PropertyChanged += (sender, e) =>
 		{
 			if (e.PropertyName == CurrentItemProperty.PropertyName)
 			{
-				if (((ShellItem)sender).CurrentItem.AutomationId == "Tab 5")
+				if (((ShellItem)sender).CurrentItem.AutomationId == "Tab 11")
 				{
-					contentPage5.Content = new Label()
+					contentPage11.Content = new Label()
 					{
 						Text = "Success"
 					};

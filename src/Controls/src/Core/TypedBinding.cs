@@ -53,9 +53,9 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		internal string UpdateSourceEventName
+		public string UpdateSourceEventName
 		{
-			get { return _updateSourceEventName; }
+			internal get { return _updateSourceEventName; }
 			set
 			{
 				ThrowIfApplied();
@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Controls.Internals
 			var isTSource = sourceObject is TSource;
 			if (!isTSource && sourceObject is not null)
 			{
-				BindingDiagnostics.SendBindingFailure(this, "Binding", $"Mismatch between the specified x:DataType ({typeof(TSource)}) and the current binding context ({sourceObject.GetType()})");
+				BindingDiagnostics.SendBindingFailure(this, "Binding", $"Mismatch between the specified x:DataType ({typeof(TSource)}) and the current binding context ({sourceObject.GetType()}).");
 			}
 
 			var mode = this.GetRealizedMode(property);

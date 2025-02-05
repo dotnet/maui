@@ -48,7 +48,6 @@
       <Parameters />
       <Docs>
         <summary>Initializes a new instance of the ViewCell class.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="View">
@@ -75,7 +74,6 @@
         <summary>Gets or sets the View representing the content of the ViewCell.</summary>
         <value>
         </value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

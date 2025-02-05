@@ -4,34 +4,33 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-[Category(UITestCategories.TabbedPage)]
 public class TabbedPageWithList : _IssuesUITest
 {
+	const string TabTwo = "Tab Two";
+	const string ListPage = "List Page";
+
 	public TabbedPageWithList(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
 	public override string Issue => "TabbedPage with list";
 
-	//	[Test]
-	//[FailsOnIOS]
-	//public void TabbedPageWithListViewIssueTestsAllElementsPresent()
-	//{
-	//	RunningApp.WaitForElement(q => q.Marked("Tab Two"));
-	//	RunningApp.WaitForElement(q => q.Marked("List Page"));
-	//	RunningApp.Screenshot("All elements present");
-	//}
+	[Test]
+	[Category(UITestCategories.TabbedPage)]
+	public void TabbedPageWithListViewIssueTestsAllElementsPresent()
+	{
+		App.WaitForTabElement(TabTwo);
+		App.WaitForTabElement(ListPage);
+	}
 
-	//[Test]
-	//[FailsOnIOS]
-	//public void TabbedPageWithListViewIssueTestsNavigateToAndVerifyListView()
-	//{
-	//	RunningApp.Tap(q => q.Marked("List Page"));
+	[Test]
+	[Category(UITestCategories.TabbedPage)]
+	public void TabbedPageWithListViewIssueTestsNavigateToAndVerifyListView()
+	{
+		App.TapTab(ListPage);
 
-	//	RunningApp.WaitForElement(q => q.Marked("Jason"));
-	//	RunningApp.WaitForElement(q => q.Marked("Ermau"));
-	//	RunningApp.WaitForElement(q => q.Marked("Seth"));
-
-	//	RunningApp.Screenshot("ListView correct");
-	//}
+		App.WaitForElement("Jason");
+		App.WaitForElement("Ermau");
+		App.WaitForElement("Seth");
+	}
 }

@@ -35,7 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		public async Task  CarouselViewGoToNextCurrentItem()
+		public async Task CarouselViewGoToNextCurrentItem()
 		{
 			await Task.Delay(2000);
 			int indexToTest = 3;
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			CheckLabelValue("lblSelected", previousIndex);
 		}
 
-// Catalyst doesn't support orientation changes
+		// Catalyst doesn't support orientation changes
 #if !MACCATALYST
 		[Test]
 		[Category(UITestCategories.CarouselView)]

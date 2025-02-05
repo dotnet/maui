@@ -16,18 +16,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				yield return new object[] { Border.VerticalOptionsProperty, LayoutOptions.End };
 				yield return new object[] { Border.HorizontalOptionsProperty, LayoutOptions.End };
-				yield return new object[] { Border.BackgroundColorProperty, Colors.Red };
 				yield return new object[] { Border.StrokeProperty, Colors.Magenta };
 				yield return new object[] { Border.StrokeShapeProperty, new RoundRectangle() };
 				yield return new object[] { Border.StrokeThicknessProperty, new Thickness(1, 2, 3, 4) };
-				yield return new object[] { Border.MarginProperty, new Thickness(1, 2, 3, 4) };
-				yield return new object[] { Border.OpacityProperty, 0.67 };
-				yield return new object[] { Border.RotationProperty, 0.3 };
-				yield return new object[] { Border.ScaleProperty, 0.8 };
-				yield return new object[] { Border.ScaleXProperty, 0.9 };
-				yield return new object[] { Border.ScaleYProperty, 0.95 };
-				yield return new object[] { Border.TranslationXProperty, 123 };
-				yield return new object[] { Border.TranslationYProperty, 321 };
 			}
 
 			IEnumerator IEnumerable.GetEnumerator()
@@ -61,15 +52,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				yield return new object[] { RadioButton.VerticalOptionsProperty, LayoutOptions.End };
 				yield return new object[] { RadioButton.HorizontalOptionsProperty, LayoutOptions.End };
-				yield return new object[] { RadioButton.BackgroundColorProperty, Colors.Red };
-				yield return new object[] { RadioButton.MarginProperty, new Thickness(1, 2, 3, 4) };
-				yield return new object[] { RadioButton.OpacityProperty, 0.67 };
-				yield return new object[] { RadioButton.RotationProperty, 0.3 };
-				yield return new object[] { RadioButton.ScaleProperty, 0.8 };
-				yield return new object[] { RadioButton.ScaleXProperty, 0.9 };
-				yield return new object[] { RadioButton.ScaleYProperty, 0.95 };
-				yield return new object[] { RadioButton.TranslationXProperty, 123d };
-				yield return new object[] { RadioButton.TranslationYProperty, 321d };
 			}
 
 			IEnumerator IEnumerable.GetEnumerator()

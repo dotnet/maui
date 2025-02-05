@@ -28,8 +28,7 @@ public class Bugzilla43527 : TestFlyoutPage
 					new Label { Text = "Hello Page" },
 					new Button { Text = "Change Title", AutomationId = "Change Title", Command = new Command(() =>
 					{
-						Title = $"New Title: {DateTime.Now.Second}";
-						AutomationId = Title;
+						Title = "New Title";
 					})
 					}
 				}

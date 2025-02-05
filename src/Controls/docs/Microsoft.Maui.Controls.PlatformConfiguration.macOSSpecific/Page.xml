@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>The page instance that Microsoft.Maui.Controls created on the macOS platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetTabOrder">
@@ -38,7 +37,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <summary>Returns the tab order of the visual elements on a page as array.</summary>
         <returns>An array of VisualElement.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetTabOrder">
@@ -62,7 +60,6 @@
         <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
         <summary>Returns the tab order of the visual elements on a page as array.</summary>
         <returns>An array of VisualElement.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetTabOrder">
@@ -93,7 +90,6 @@
         <param name="element">The platform specific element on which to perform the operation.</param>
         <param name="value">An array of VisualElement.</param>
         <summary>Sets the tab order of visual elements on a page. Users can cycle through these elements with the tab key.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetTabOrder">
@@ -125,7 +121,6 @@
         <param name="value">An array of VisualElement.</param>
         <summary>Sets the tab order of visual elements on a page. Users can cycle through these elements with the tab key.</summary>
         <returns>The platform specific configuration that contains the element on which to perform the operation.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TabOrderProperty">
@@ -144,7 +139,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that holds the tab order of the visual elements.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

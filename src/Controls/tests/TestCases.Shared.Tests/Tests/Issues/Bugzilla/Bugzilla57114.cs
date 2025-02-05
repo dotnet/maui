@@ -16,20 +16,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Forms gestures are not supported on UIViews that have native gestures";
 
-		// Crash after navigation
-		/*
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void _57114BothTypesOfGesturesFire()
 		{
-			App.WaitForNoElement(Testing);
+			App.WaitForElement(Testing);
 			App.Tap(ViewAutomationId);
-			App.WaitForNoElement(Success);
+			App.WaitForElement(Success);
 		}
-		*/
 	}
 }

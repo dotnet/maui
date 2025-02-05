@@ -63,7 +63,6 @@
         <param name="size">The desired font size.</param>
         <summary>Returns a font instance that represents the default bold font, in the requested size, for the device.</summary>
         <returns>The requested bold <see cref="T:Microsoft.Maui.Font" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BoldSystemFontOfSize">
@@ -101,7 +100,6 @@
         <param name="size">The desired font <see cref="T:Microsoft.Maui.Controls.NamedSize" />.</param>
         <summary>Returns an usable font instance representing the default bold font, in the requested NamedSize, for the device.</summary>
         <returns>The requested bold <see cref="T:Microsoft.Maui.Font" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Default">
@@ -125,7 +123,6 @@
       <Docs>
         <summary>Gets the default font for the device.</summary>
         <value>The default font for the device.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Equals">
@@ -179,8 +176,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value that indicates whether the font is bold, italic, or neither.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Family">
@@ -204,7 +199,6 @@
       <Docs>
         <summary>Gets the font family to which this font belongs.</summary>
         <value>The font family to which this <see cref="T:Microsoft.Maui.Font" /> structure belongs.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Size">
@@ -228,7 +222,6 @@
       <Docs>
         <summary>Gets the size of the font.</summary>
         <value>A <see langword="double" /> that indicates the size of the font.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHashCode">
@@ -275,8 +268,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets a value that tells whether this font has no attributes, belongs to the default family, and has no attributes set.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OfSize">
@@ -371,8 +362,6 @@
         <param name="left">The first font in the comparison.</param>
         <param name="right">The second font in the comparison.</param>
         <summary>Returns <see langword="true" /> if <paramref name="left" /> represents the same font that <paramref name="right" /> represents. Otherwise, <see langword="false" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Inequality">
@@ -403,8 +392,6 @@
         <param name="left">The first font in the comparison.</param>
         <param name="right">The second font in the comparison.</param>
         <summary>Returns <see langword="true" /> if <paramref name="left" /> does not represent the same font that <paramref name="right" /> represents. Otherwise, <see langword="false" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SystemFontOfSize">
@@ -434,7 +421,6 @@
         <param name="size">The desired font size.</param>
         <summary>Returns an usable font instance representing the default font, in the requested size, for the device and platform.</summary>
         <returns>The requested <see cref="T:Microsoft.Maui.Font" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SystemFontOfSize">
@@ -464,7 +450,6 @@
         <param name="size">The desired font <see cref="T:Microsoft.Maui.Controls.NamedSize" />.</param>
         <summary>Returns an usable font instance representing the default font, in the requested size, for the device and platform.</summary>
         <returns>The requested bold <see cref="T:Microsoft.Maui.Font" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SystemFontOfSize">
@@ -494,7 +479,6 @@
         <param name="attributes">Whether the font is bold, italic, or neither.</param>
         <summary>Returns a font structure with the specified size and attributes.</summary>
         <returns>A <see cref="T:Microsoft.Maui.Font" /> structure with the specified <paramref name="attributes" /> and <paramref name="size" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SystemFontOfSize">
@@ -524,7 +508,6 @@
         <param name="attributes">Whether the font is bold, italic, or neither.</param>
         <summary>Returns a font structure with the specified size and attributes.</summary>
         <returns>A <see cref="T:Microsoft.Maui.Font" /> structure with the specified <paramref name="attributes" /> and <paramref name="size" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ToString">
@@ -577,7 +560,6 @@
         <param name="fontAttributes">Whether the font is italic, bold, or neither.</param>
         <summary>Returns a new font structure with the specified attributes.</summary>
         <returns>A new <see cref="T:Microsoft.Maui.Font" /> structure with the attributes that were specified with <paramref name="fontAttributes" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WithSize">
@@ -604,8 +586,6 @@
       <Docs>
         <param name="size">The requested font size.</param>
         <summary>Returns a new font structure with the size that was specified with <paramref name="size" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="WithSize">
@@ -632,8 +612,6 @@
       <Docs>
         <param name="size">The requested named font size.</param>
         <summary>A new <see cref="T:Microsoft.Maui.Font" /> structure with the size that was specified with <paramref name="size" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

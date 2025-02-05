@@ -16,8 +16,6 @@
     </Attribute>
   </Attributes>
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Animated">
@@ -35,7 +33,6 @@
       </ReturnValue>
       <MemberValue>2</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="Modal">
@@ -53,7 +50,6 @@
       </ReturnValue>
       <MemberValue>4</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="ModalAnimated">
@@ -71,7 +67,6 @@
       </ReturnValue>
       <MemberValue>6</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="ModalNotAnimated">
@@ -89,7 +84,6 @@
       </ReturnValue>
       <MemberValue>5</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="NotAnimated">
@@ -107,7 +101,6 @@
       </ReturnValue>
       <MemberValue>1</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
   </Members>
