@@ -2288,6 +2288,56 @@ namespace UITest.Appium
 			return app.WaitForElementTillPageNavigationSettled(tabName);
 		}
 
+		/// <summary>
+		/// Performs platform-specific context actions (e.g., long press, swipe, or touch-and-hold) on a specified element in the app.
+		/// - On Android, it performs a long press gesture on the element.
+		/// - On Windows, it simulates a right-click (touch-and-hold) on the element.
+		/// - On iOS, it performs a swipe from right to left on the element.
+		/// - On Catalyst, it performs a scroll from right to left on the element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">The element on which to perform the context action.</param>
+		public static void ActivateContextMenu(this IApp app, string element)
+		{
+			var uiElement = WaitForElement(app, element);
+
+			switch (app)
+			{
+				case AppiumAndroidApp _:
+					app.LongPress(element);
+					break;
+				case AppiumWindowsApp _:
+					app.TouchAndHold(uiElement);
+					break;
+				case AppiumIOSApp _:
+					app.SwipeRightToLeft(uiElement, swipePercentage: 5, swipeSpeed: 500, withInertia: true);
+					break;
+				case AppiumCatalystApp _:
+					app.ScrollRight(uiElement, swipePercentage: 5, swipeSpeed: 500, withInertia: true);
+					break;
+			}
+		}
+
+		/// <summary>
+		/// Dismisses the context menu in the application.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <remarks>
+		/// For Android apps, it taps the back arrow.
+		/// For other platforms, it taps at coordinates (150, 150).
+		/// </remarks>
+		public static void DismissContextMenu(this IApp app)
+		{	
+			if (app is AppiumAndroidApp)
+			{
+				app.TapBackArrow();
+			}
+			else
+			{
+				app.TapCoordinates(150, 150);
+			}	
+		}
+
 		static IUIElement Wait(Func<IUIElement?> query,
 			Func<IUIElement?, bool> satisfactory,
 			string? timeoutMessage = null,
