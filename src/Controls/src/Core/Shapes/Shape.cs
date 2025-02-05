@@ -406,12 +406,12 @@ namespace Microsoft.Maui.Controls.Shapes
 				case Stretch.Fill:
 					if (!double.IsInfinity(heightConstraint))
 					{
-						result.Height = heightConstraint;
+						result.Height = HeightRequest < 0 ? heightConstraint : HeightRequest;
 					}
 
 					if (!double.IsInfinity(widthConstraint))
 					{
-						result.Width = widthConstraint;
+						result.Width = WidthRequest < 0 ? widthConstraint : WidthRequest;
 					}
 					break;
 
