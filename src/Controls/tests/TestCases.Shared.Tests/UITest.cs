@@ -255,7 +255,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 			}
 		}
-		
+
 #if MACUITEST
 		byte[] TakeScreenshot()
 		{
@@ -265,7 +265,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// The app might not be ready to take the screenshot.
 			// Wait a little bit to complete the system animation moving the App Window to FullScreen.
-			Thread.Sleep(1000);
+			Thread.Sleep(500);
 
 			byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
 

@@ -126,35 +126,35 @@ namespace Maui.Controls.Sample.Issues
 #elif IOS || MACCATALYST
 
 	public class _57114ViewHandler : ViewHandler<_57114View, UIKit.UIView>
-    {
-        public static IPropertyMapper<_57114View, _57114ViewHandler> Mapper = new PropertyMapper<_57114View, _57114ViewHandler>(ViewHandler.ViewMapper)
-        {
-            
-        };
+	{
+		public static IPropertyMapper<_57114View, _57114ViewHandler> Mapper = new PropertyMapper<_57114View, _57114ViewHandler>(ViewHandler.ViewMapper)
+		{
 
-        public _57114ViewHandler() : base(Mapper)
-        {
-        }
+		};
 
-        protected override UIKit.UIView CreatePlatformView()
-        {
-            var view = new UIKit.UIView();
-            var rec = new CustomGestureRecognizer();
-            view.AddGestureRecognizer(rec);
-            return view;
-        }
-    }
+		public _57114ViewHandler() : base(Mapper)
+		{
+		}
 
-    public class CustomGestureRecognizer : UIKit.UIGestureRecognizer
-    {
-        public override void TouchesBegan(Foundation.NSSet touches, UIKit.UIEvent evt)
-        {
-            base.TouchesBegan(touches, evt);
+		protected override UIKit.UIView CreatePlatformView()
+		{
+			var view = new UIKit.UIView();
+			var rec = new CustomGestureRecognizer();
+			view.AddGestureRecognizer(rec);
+			return view;
+		}
+	}
+
+	public class CustomGestureRecognizer : UIKit.UIGestureRecognizer
+	{
+		public override void TouchesBegan(Foundation.NSSet touches, UIKit.UIEvent evt)
+		{
+			base.TouchesBegan(touches, evt);
 #pragma warning disable CS0618 // Type or member is obsolete
-            MessagingCenter.Instance.Send(this as object, Bugzilla57114._57114NativeGestureFiredMessage);
+			MessagingCenter.Instance.Send(this as object, Bugzilla57114._57114NativeGestureFiredMessage);
 #pragma warning restore CS0618 // Type or member is obsolete
-        }
-    }
+		}
+	}
 
 #elif WINDOWS
 	public class _57114ViewHandler : ViewHandler<_57114View, Microsoft.UI.Xaml.Controls.Grid>

@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,4 +21,3 @@ public class Issue24583 : _IssuesUITest
 		VerifyScreenshot("TextsInEditorsAfterScaling");
 	}
 }
-#endif

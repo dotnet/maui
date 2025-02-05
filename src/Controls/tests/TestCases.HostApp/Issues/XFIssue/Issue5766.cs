@@ -23,6 +23,11 @@ public class Issue5766 : TestContentPage
 			{
 				new RowDefinition { Height = GridLength.Auto},
 				new RowDefinition(),
+			},
+			ColumnDefinitions = new ColumnDefinitionCollection
+			{
+				new ColumnDefinition { Width = GridLength.Star },
+				new ColumnDefinition { Width = GridLength.Star }
 			}
 		};
 		grid.AddChild(new Label
