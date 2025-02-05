@@ -449,26 +449,6 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected virtual void OnAppearing()
 		{
-			UpdateMenuBarItemBindingContext();
-		}
-
-		/// <summary>
-		/// Resets the BindingContext for each MenuBarItem when it becomes null after page navigation.
-		/// </summary>
-		void UpdateMenuBarItemBindingContext()
-		{
-			if (MenuBarItems is null)
-			{
-				return;
-			}
-
-			foreach (var menuBarItem in MenuBarItems)
-			{
-				if (menuBarItem.BindingContext is null)
-				{
-					SetInheritedBindingContext(menuBarItem, BindingContext);
-				}
-			}
 		}
 
 		/// <summary>
