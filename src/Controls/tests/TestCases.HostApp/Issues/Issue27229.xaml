@@ -6,24 +6,24 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              x:Name="ThisMainPage"
              Title="Main Page">
-      <CollectionView>
+    <CollectionView AutomationId="ReadyToTest">
         <CollectionView.EmptyView>
             <ContentView>
-                <StackLayout HorizontalOptions="Center" VerticalOptions="Center">
+                <StackLayout HorizontalOptions="Center"
+                        VerticalOptions="Center">
                     <Label
                         Margin="10,25,10,10"
                         FontAttributes="Bold"
                         FontSize="18"
                         HorizontalOptions="Fill"
                         HorizontalTextAlignment="Center"
-                        AutomationId="ReadyToTest"
-                        Text="No results matched your filter." />
+                        Text="No results matched your filter."/>
                     <Label
                         FontAttributes="Italic"
                         FontSize="12"
                         HorizontalOptions="Fill"
                         HorizontalTextAlignment="Center"
-                        Text="Try a broader filter?" />
+                        Text="Try a broader filter?"/>
                 </StackLayout>
             </ContentView>
         </CollectionView.EmptyView>
