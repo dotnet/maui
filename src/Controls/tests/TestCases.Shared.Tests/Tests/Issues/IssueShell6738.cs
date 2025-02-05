@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID
 // Windows: The snapshot does not capture the FlyoutIcon applied to the TitleBar.
 // Android: The fix has not been implemented, so the icon defaults to white.
 using NUnit.Framework;
