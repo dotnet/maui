@@ -12,6 +12,11 @@ namespace UITest.Appium
 		protected readonly IConfig _config;
 		protected readonly AppiumCommandExecutor _commandExecutor;
 
+		// This causes the webdriver commands to wait for 55 seconds before timing out and throwing a TaskCancelException
+		// I've found that without this, the queries to the webdriver will just return with no results after 60 seconds
+		// We would rather they just timeout so we can fail fast across the whole test run
+    	protected static readonly TimeSpan DefaultCommandTimeout = TimeSpan.FromSeconds(55.0);
+
 		public AppiumApp(AppiumDriver driver, IConfig config)
 		{
 			_driver = driver ?? throw new ArgumentNullException(nameof(driver));
@@ -150,7 +155,7 @@ namespace UITest.Appium
 			if (!string.IsNullOrEmpty(platformVersion))
 				appiumOptions.PlatformVersion = platformVersion;
 
-			appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.NewCommandTimeout, 3000);
+			appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.NewCommandTimeout, 120);
 		}
 
 		public void Dispose()
