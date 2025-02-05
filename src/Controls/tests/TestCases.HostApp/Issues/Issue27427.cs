@@ -3,7 +3,7 @@
 namespace Maui.Controls.Sample.Issues
 {
 
-	[Issue(IssueTracker.Github, 27427, "[MAUI] - iOS SearchBar ignores WidthRequest and HeightRequest property values", PlatformAffected.iOS | PlatformAffected.macOS)]
+	[Issue(IssueTracker.Github, 27427, "iOS SearchBar ignores WidthRequest and HeightRequest property values", PlatformAffected.iOS | PlatformAffected.macOS)]
 	public class Issue27427 : TestContentPage
 	{
 		protected override void Init()
@@ -11,13 +11,13 @@ namespace Maui.Controls.Sample.Issues
 			StackLayout mainLayout = new StackLayout
 			{
 				AutomationId = "MainParentLayout",
-				Spacing = 20
+				Spacing = 5
 			};
 
 			VerticalStackLayout verticalLayout = new VerticalStackLayout
 			{
 				Spacing = 10,
-				Padding = new Thickness(20),
+				Padding = new Thickness(20, 0),
 				Children =
 				{
 					new SearchBar { HeightRequest = 150, BackgroundColor = Colors.LightGray, Placeholder = "Vertical Layout SearchBar" }
@@ -27,7 +27,7 @@ namespace Maui.Controls.Sample.Issues
 			HorizontalStackLayout horizontalLayout = new HorizontalStackLayout
 			{
 				Spacing = 10,
-				Padding = new Thickness(20),
+				Padding = new Thickness(20, 0),
 				Children =
 				{
 					new SearchBar
@@ -43,7 +43,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				Direction = FlexDirection.Row,
 				Wrap = FlexWrap.Wrap,
-				Padding = new Thickness(20),
+				Padding = new Thickness(20, 0),
 				Children =
 				{
 					new SearchBar
@@ -63,7 +63,7 @@ namespace Maui.Controls.Sample.Issues
 
 			AbsoluteLayout absoluteLayout = new AbsoluteLayout
 			{
-				Padding = new Thickness(20),
+				Padding = new Thickness(20, 0),
 				Children =
 				{
 					new SearchBar
@@ -77,7 +77,7 @@ namespace Maui.Controls.Sample.Issues
 
 			Grid gridLayout = new Grid
 			{
-				Padding = new Thickness(20),
+				Padding = new Thickness(20, 0),
 				RowDefinitions =
 				{
 					new RowDefinition(),
