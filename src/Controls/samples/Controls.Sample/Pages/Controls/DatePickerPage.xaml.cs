@@ -50,5 +50,24 @@ namespace Maui.Controls.Sample.Pages
 		{
 			Debug.WriteLine("Unfocused");
 		}
+
+		void OnDateSelected(System.Object sender, Microsoft.Maui.Controls.DateChangedEventArgs e)
+		{
+			Debug.WriteLine("Date Selected");
+			DateSelectedText.Text = String.Format("Selected: {0}", e.NewDate.ToShortDateString());
+		}
+
+		void OnDateChanged(System.Object sender, Microsoft.Maui.Controls.DateChangedEventArgs e)
+		{
+			Debug.WriteLine("Date Changed");
+			DateChangedText.Text = String.Format("Changed: {0}", e.NewDate.ToShortDateString());
+		}
+
+		void OnClearPickerEventText(object sender, System.EventArgs e)
+		{
+			Debug.WriteLine("Resetting Date Selected/Changed Label Text");
+			DateSelectedText.Text = "Selected: ";
+			DateChangedText.Text = "Changed: ";
+		}
 	}
 }
