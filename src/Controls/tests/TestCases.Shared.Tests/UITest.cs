@@ -59,11 +59,13 @@ namespace Microsoft.Maui.TestCases.Tests
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_SKIN") ?? "");
 					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "");
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
+					config.SetProperty("Headless", Environment.GetEnvironmentVariable("HEADLESS") ?? "");
 					break;
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
 					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.0");
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
+					config.SetProperty("Headless", Environment.GetEnvironmentVariable("HEADLESS") ?? "");
 					break;
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
