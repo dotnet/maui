@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
@@ -665,7 +666,8 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"IsChecked = {IsChecked}, Value = {Value}, {base.GetDebuggerDisplay()}";
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Value), Value, nameof(IsChecked), IsChecked);
+			return $"{base.GetDebuggerDisplay()},{debugText}";
 		}
 
 		private protected override Semantics UpdateSemantics()
