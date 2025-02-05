@@ -24,8 +24,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			var rootView = CreateRootViewFromContent(handler, window);
-			handler.PlatformView.SetContentView(rootView);
+			var rootManager = CreateRootViewFromContent(handler, window);
+			handler.PlatformView.SetContentView(rootManager.RootView);
+			rootManager.PerformPendingFragmentTransaction();
 		}
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>
@@ -88,13 +89,13 @@ namespace Microsoft.Maui.Handlers
 			navigationRootManager?.Disconnect();
 		}
 
-		internal static View? CreateRootViewFromContent(IWindowHandler handler, IWindow window)
+		internal static NavigationRootManager CreateRootViewFromContent(IWindowHandler handler, IWindow window)
 		{
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var rootManager = handler.MauiContext.GetNavigationRootManager();
 			rootManager.Connect(window.Content);
-			return rootManager.RootView;
+			return rootManager;
 		}
 
 		void UpdateVirtualViewFrame(Activity activity)
