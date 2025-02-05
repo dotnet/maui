@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -28,7 +28,6 @@ namespace Microsoft.Maui.Platform
 		DropShadow? _dropShadow;
 		Rectangle? _shadowHost;
 		WSize _shadowHostSize;
-		WSize _shadowMaskSize;
 		Path? _borderPath;
 
 		FrameworkElement? _child;
@@ -49,6 +48,7 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
+		long _visibilityDependencyPropertyCallbackToken;
 		public FrameworkElement? Child
 		{
 			get { return _child; }
@@ -56,7 +56,6 @@ namespace Microsoft.Maui.Platform
 			{
 				if (_child is not null)
 				{
-					_child.Loaded -= OnChildLoaded;
 					_child.SizeChanged -= OnChildSizeChanged;
 					_child.UnregisterPropertyChangedCallback(VisibilityProperty, _visibilityDependencyPropertyCallbackToken);
 					CachedChildren.Remove(_child);
@@ -68,7 +67,6 @@ namespace Microsoft.Maui.Platform
 				}
 
 				_child = value;
-				_child.Loaded += OnChildLoaded;
 				_child.SizeChanged += OnChildSizeChanged;
 				_visibilityDependencyPropertyCallbackToken = _child.RegisterPropertyChangedCallback(VisibilityProperty, OnChildVisibilityChanged);
 				CachedChildren.Add(_child);
@@ -173,11 +171,6 @@ namespace Microsoft.Maui.Platform
 			{
 				CreateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
 			}
-		}
-
-		void OnChildLoaded(object sender, RoutedEventArgs e)
-		{
-			UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
 		}
 
 		void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
@@ -341,7 +334,7 @@ namespace Microsoft.Maui.Platform
 			Graphics.Color? shadowColor = Colors.Black;
 			Graphics.Point offset = Graphics.Point.Zero;
 
-			if (mauiShadow is not null)
+			if (mauiShadow != null)
 			{
 				blurRadius = mauiShadow.Radius * 2;
 				opacity = mauiShadow.Opacity;
@@ -358,12 +351,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			dropShadow.Offset = new Vector3((float)offset.X, (float)offset.Y, 0);
-
-			if (_shadowHostSize != _shadowMaskSize) // Only update the Mask if the Host size changes
-			{
-				dropShadow.Mask = await Child.GetAlphaMaskAsync();
-				_shadowMaskSize = _shadowHostSize;
-			}
+			dropShadow.Mask = await Child.GetAlphaMaskAsync();
 		}
 	}
 }
