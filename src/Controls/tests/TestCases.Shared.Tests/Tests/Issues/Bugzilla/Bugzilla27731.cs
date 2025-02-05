@@ -1,4 +1,3 @@
-#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -21,4 +20,3 @@ public class Bugzilla27731 : _IssuesUITest
 		App.WaitForElement("PageTitle");
 	}
 }
-#endif
