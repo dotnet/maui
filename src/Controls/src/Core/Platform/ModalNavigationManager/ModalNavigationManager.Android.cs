@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
 		AAnimation? _dismissAnimation;
 		bool _platformActivated;
+		bool IsPoppingWithAnimation;
 
 		readonly Stack<string> _modals = [];
 
@@ -133,6 +134,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (animated && dialogFragment.View is not null)
 			{
+				IsPoppingWithAnimation = true;
 				_dismissAnimation ??= AnimationUtils.LoadAnimation(WindowMauiContext.Context, Resource.Animation.nav_modal_default_exit_anim)!;
 
 				_dismissAnimation.AnimationEnd += OnAnimationEnded;
@@ -157,6 +159,7 @@ namespace Microsoft.Maui.Controls.Platform
 				animation.AnimationEnd -= OnAnimationEnded;
 				dialogFragment.Dismiss();
 				source.TrySetResult(modal);
+				IsPoppingWithAnimation = false;
 				_dismissAnimation = null;
 			}
 		}
@@ -194,7 +197,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var parentView = GetModalParentView();
 
-			var dialogFragment = new ModalFragment(WindowMauiContext, modal)
+			var dialogFragment = new ModalFragment(WindowMauiContext, modal, this)
 			{
 				Cancelable = false,
 				IsAnimated = animated
@@ -229,6 +232,7 @@ namespace Microsoft.Maui.Controls.Platform
 		internal class ModalFragment : DialogFragment
 		{
 			Page _modal;
+			readonly ModalNavigationManager _modalNavigationManager;
 			IMauiContext _mauiWindowContext;
 			NavigationRootManager? _navigationRootManager;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
@@ -239,9 +243,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public bool IsAnimated { get; internal set; }
 
-			public ModalFragment(IMauiContext mauiContext, Page modal)
+			public ModalFragment(IMauiContext mauiContext, Page modal, ModalNavigationManager modalNavigationManager)
 			{
 				_modal = modal;
+				_modalNavigationManager = modalNavigationManager;
 				_modal.PropertyChanged += OnModalPagePropertyChanged;
 				_modal.HandlerChanged += OnPageHandlerChanged;
 				_mauiWindowContext = mauiContext;
@@ -249,7 +254,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public override global::Android.App.Dialog OnCreateDialog(Bundle? savedInstanceState)
 			{
-				var dialog = new CustomComponentDialog(RequireContext(), Theme);
+				var dialog = new CustomComponentDialog(RequireContext(), Theme, _modalNavigationManager);
 
 				if (dialog is null || dialog.Window is null)
 					throw new InvalidOperationException($"{dialog} or {dialog?.Window} is null, and it's invalid");
@@ -397,22 +402,29 @@ namespace Microsoft.Maui.Controls.Platform
 
 			sealed class CustomComponentDialog : ComponentDialog
 			{
-				public CustomComponentDialog(Context context, int themeResId) : base(context, themeResId)
+				public CustomComponentDialog(Context context, int themeResId, ModalNavigationManager modalNavigationManager) : base(context, themeResId)
 				{
-					this.OnBackPressedDispatcher.AddCallback(new CallBack(true, this));
+					this.OnBackPressedDispatcher.AddCallback(new CallBack(true, this, modalNavigationManager));
 				}
 
 				sealed class CallBack : OnBackPressedCallback
 				{
 					WeakReference<CustomComponentDialog> _customComponentDialog;
+					WeakReference<ModalNavigationManager> _modalNavigationManager;
 
-					public CallBack(bool enabled, CustomComponentDialog customComponentDialog) : base(enabled)
+					public CallBack(bool enabled, CustomComponentDialog customComponentDialog, ModalNavigationManager modalNavigationManager) : base(enabled)
 					{
 						_customComponentDialog = new(customComponentDialog);
+						_modalNavigationManager = new(modalNavigationManager);
 					}
 
 					public override void HandleOnBackPressed()
 					{
+						if (_modalNavigationManager.TryGetTarget(out var modalNavigationManager) && modalNavigationManager.IsPoppingWithAnimation)
+						{
+							return;
+						}
+
 						if (!_customComponentDialog.TryGetTarget(out var customComponentDialog) ||
 							customComponentDialog.Context.GetActivity() is not global::Android.App.Activity activity)
 						{
