@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample
@@ -9,7 +10,7 @@ namespace Maui.Controls.Sample
 	{
 		public static Button NavButton(string galleryName, Func<Page> gallery, INavigation nav)
 		{
-			var automationId = System.Text.RegularExpressions.Regex.Replace(galleryName, " |\\(|\\)", string.Empty);
+			var automationId = RegexHelper.AutomationIdRegex.Replace(galleryName, string.Empty);
 			var button = new Button
 			{
 				Text = $"{galleryName}",
@@ -23,5 +24,23 @@ namespace Maui.Controls.Sample
 			};
 			return button;
 		}
+	}
+	
+	internal static partial class RegexHelper
+	{
+		#if NET7_0_OR_GREATER
+		[GeneratedRegex (" |\\(|\\)", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		internal static partial Regex AutomationIdRegex
+		{
+			get;
+		}
+		#else
+		internal static readonly Regex AutomationIdRegex =
+										new (
+											" |\\(|\\)",
+											RegexOptions.Compiled,		
+											TimeSpan.FromMilliseconds(1000)							// against malicious input
+											);
+		#endif
 	}
 }
