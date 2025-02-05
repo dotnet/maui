@@ -17,6 +17,7 @@ using Microsoft.Maui.LifecycleEvents;
 using AAnimation = Android.Views.Animations.Animation;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
+using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -238,6 +239,29 @@ namespace Microsoft.Maui.Controls.Platform
 
 
 			public bool IsAnimated { get; internal set; }
+
+			internal bool HandleContextMode(Cell cell)
+			{
+				var contextActions = cell.ContextActions;
+				if (contextActions == null || contextActions.Count == 0)
+					return false;
+
+				var cancelText = _mauiWindowContext?.Context?.GetString(AResource.String.Cancel);
+				var actionItems = contextActions.ToDictionary(action => action.Text, action => action);
+				_modal.DisplayActionSheet(string.Empty, cancelText, null, contextActions.Where(a => a.IsEnabled).Select(a => a.Text).ToArray())
+					.ContinueWith(task =>
+					{
+						if (task.Result != null && actionItems.TryGetValue(task.Result, out var menuItem))
+						{
+							if (menuItem.Command is not null)
+								menuItem.Command.Execute(menuItem.CommandParameter);
+
+							menuItem.RaiseClickedEvent();
+						}
+					});
+
+				return true;
+			}
 
 			public ModalFragment(IMauiContext mauiContext, Page modal)
 			{
