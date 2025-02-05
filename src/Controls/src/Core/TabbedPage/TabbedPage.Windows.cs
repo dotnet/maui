@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 		WFrame? _navigationFrame;
 		bool _connectedToHandler;
 		WFrame NavigationFrame => _navigationFrame ?? throw new ArgumentNullException(nameof(NavigationFrame));
-		IMauiContext? MauiContext => this.Handler?.MauiContext;
+		IMauiContext MauiContext => this.Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
 
 		FrameworkElement CreatePlatformView()
 		{
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 				return _navigationView;
 			}
 
-			_navigationRootManager = MauiContext?.GetNavigationRootManager();
+			_navigationRootManager = MauiContext.GetNavigationRootManager();
 			return _navigationFrame;
 		}
 
@@ -127,8 +127,10 @@ namespace Microsoft.Maui.Controls
 				_navigationView.SizeChanged -= OnNavigationViewSizeChanged;
 			}
 
-			if (elementHandler?.PlatformView is WFrame wFrame)
-				wFrame.Navigated -= OnNavigated;
+			if (_navigationFrame is not null)
+			{
+				_navigationFrame.Navigated -= OnNavigated;
+			}
 
 			Appearing -= OnTabbedPageAppearing;
 			Disappearing -= OnTabbedPageDisappearing;
