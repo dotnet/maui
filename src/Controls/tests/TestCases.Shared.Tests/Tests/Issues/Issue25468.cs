@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿# if TEST_FAILS_ON_IOS //In iOS platform, the scrollbar in the CollectionView fades out when taking a screenshot, making it difficult to verify its visibility in UI tests. 
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
