@@ -66,4 +66,3 @@ static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Platform.ElementExtensions.ToContainerView(this Microsoft.Maui.IElement? view, Microsoft.Maui.IMauiContext! context) -> Tizen.NUI.BaseComponents.View!
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
-Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!

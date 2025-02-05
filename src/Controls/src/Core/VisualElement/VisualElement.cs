@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
@@ -2402,10 +2403,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-
 		private protected virtual string GetDebuggerDisplay()
 		{
-			return $"BindingContext = {BindingContext}, Bounds = {Bounds}";
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(BindingContext), BindingContext, nameof(Bounds), Bounds);
+			return $"{GetType().FullName}: {debugText}";
 		}
 	}
 }
