@@ -154,6 +154,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				AddView(view.ToPlatform());
 				UpdateIsEnabled();
 				UpdateWatchForLongPress();
+				SetClipChildren(false);
 			}
 
 			private bool ParentHasUnevenRows => (bool)_parent.GetValue(_unevenRows);
