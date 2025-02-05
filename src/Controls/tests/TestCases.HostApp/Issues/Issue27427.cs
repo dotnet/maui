@@ -10,8 +10,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			StackLayout mainLayout = new StackLayout
 			{
-				AutomationId = "MainParentLayout",
-				Spacing = 5
+				Spacing = 5,
 			};
 
 			VerticalStackLayout verticalLayout = new VerticalStackLayout
@@ -110,6 +109,7 @@ namespace Maui.Controls.Sample.Issues
 			gridLayout.Add(gridSearchBar1);
 			gridLayout.Add(gridSearchBar2);
 
+			mainLayout.Children.Add(new Label { Text = "SearchBar Explicit Size Dimensions", AutomationId = "SearchBarDimensionsHeaderLabel" });
 			mainLayout.Children.Add(verticalLayout);
 			mainLayout.Children.Add(horizontalLayout);
 			mainLayout.Children.Add(flexLayout);
