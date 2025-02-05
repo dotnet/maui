@@ -18,7 +18,6 @@ public static class MauiProgram
 #if (IncludeSampleContent)
 			.UseMauiCommunityToolkit()
 			.ConfigureSyncfusionToolkit()
-			.ConfigureMauiHandlers()
 #endif
 			.ConfigureFonts(fonts =>
 			{
