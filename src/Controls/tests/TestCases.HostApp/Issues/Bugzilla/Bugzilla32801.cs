@@ -31,7 +31,7 @@ public class Bugzilla32801 : TestTabbedPage
 				BackgroundColor = Colors.Aqua
 			};
 
-			buttonAdd.Clicked += (sender, e) => Navigation.PushAsync(new TestDemoPage(_level + 1, $"Level{_level + 1}AddButton", $"Level{_level + 1}StackButton" ));
+			buttonAdd.Clicked += (sender, e) => Navigation.PushAsync(new TestDemoPage(_level + 1, $"Level{_level + 1}AddButton", $"Level{_level + 1}StackButton"));
 
 			var buttonStack = new Button
 			{

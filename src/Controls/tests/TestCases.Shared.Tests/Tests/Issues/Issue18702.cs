@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,7 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void CollectionViewGroupFooterTemplateShouldNotCrash()
 		{
 			App.WaitForElement(element);
@@ -26,4 +24,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif

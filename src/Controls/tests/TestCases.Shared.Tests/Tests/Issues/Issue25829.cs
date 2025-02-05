@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
+﻿using System.Threading.Tasks;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
-using System.Threading.Tasks;
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue25829 : _IssuesUITest

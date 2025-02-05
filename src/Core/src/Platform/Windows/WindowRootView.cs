@@ -80,6 +80,8 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal ITitleBar? TitleBar => _titleBar;
+
 		public DataTemplate? AppTitleBarTemplate
 		{
 			get => (DataTemplate?)GetValue(AppTitleBarTemplateProperty);
@@ -445,6 +447,11 @@ namespace Microsoft.Maui.Platform
 			if (_titleBar is null || mauiContext is null)
 			{
 				UpdateBackgroundColorForButtons();
+				if (AppTitleBarContentControl is not null)
+				{
+					AppTitleBarContentControl.Content = null;
+					UpdateAppTitleBarTemplate();
+				}
 				return;
 			}
 
@@ -554,6 +561,17 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 			PassthroughTitlebarElements = passthroughElements;
+		}
+
+		void UpdateAppTitleBarTemplate()
+		{
+			// Ensure the default Window Title template is reapplied when switching from a TitleBar.
+			// The ContentTemplateSelector is reset to the default when ContentTemplate is null, restoring proper title display.
+			if (AppTitleBarContentControl is not null && AppTitleBarContentControl.ContentTemplateSelector is null)
+			{
+				AppTitleBarContentControl.ContentTemplateSelector =
+				(DataTemplateSelector)Application.Current.Resources["MauiAppTitleBarTemplateSelector"];
+			}
 		}
 
 		static void OnAppTitleBarTemplateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
