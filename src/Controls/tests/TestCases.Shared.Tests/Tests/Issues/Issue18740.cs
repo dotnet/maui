@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //This test case verifies "IsKeyboardShown method" exclusively on the Android and IOS platforms
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;

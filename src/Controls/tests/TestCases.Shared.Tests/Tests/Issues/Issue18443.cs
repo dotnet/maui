@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //This test case verifies "IsKeyboardShown method" exclusively on the Android and IOS platforms
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -15,12 +15,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void EntrySelectionLengthRuntimeUpdate()
 		{
 			App.WaitForElement("entry");
-
-			Thread.Sleep(1000); // Wait some time for the keyboard to appear
-
+			Thread.Sleep(1000);
 			if (App.IsKeyboardShown())
 				App.DismissKeyboard();
-
+			Thread.Sleep(1000); // Wait for keyboard to dismiss
 			VerifyScreenshot();
 		}
 
