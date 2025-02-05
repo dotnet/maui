@@ -68,13 +68,12 @@ namespace Maui.Controls.Sample.Issues
 				{
 					new SearchBar
 					{
+						WidthRequest = 350,
 						BackgroundColor = Colors.LightGreen,
 						Placeholder = "Absolute Layout SearchBar"
 					}
 				}
 			};
-
-			absoluteLayout.SetLayoutBounds(absoluteLayout.Children[0], new Rect(0, 0, 200, 50));
 
 			Grid gridLayout = new Grid
 			{
