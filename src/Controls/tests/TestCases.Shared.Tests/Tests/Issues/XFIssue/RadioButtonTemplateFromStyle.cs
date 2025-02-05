@@ -10,15 +10,14 @@ public class RadioButtonTemplateFromStyle : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "[iOS] Crash when creating a CollectionView inside a CollectionView";
+	public override string Issue => "RadioButton: Template From Style";
 
-	// TODO: HostApp UI pushes some ControlGallery specific page? Commented out now, fix that first!
-	//[Test]
-	//[Category(UITestCategories.RadioButton)]
-	//public void ContentRenderers()
-	//{
-	//	App.WaitForElement("A");
-	//	App.WaitForElement("B");
-	//	App.WaitForElement("C");
-	//}
+	[Test]
+	[Category(UITestCategories.RadioButton)]
+	public void ContentRenderers()
+	{
+		App.WaitForElement("A");
+		App.WaitForElement("B");
+		App.WaitForElement("C");
+	}
 }

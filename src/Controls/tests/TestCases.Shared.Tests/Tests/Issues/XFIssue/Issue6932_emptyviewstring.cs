@@ -13,23 +13,23 @@ public class Issue6932_emptyviewstring : _IssuesUITest
 	const string RemoveAutomationId = "Remove";
 	const string ClearAutomationId = "Clear";
 	const string EmptyViewStringDescription = "Nothing to see here";
- 
+
 	public Issue6932_emptyviewstring(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
 	public override string Issue => "EmptyView for BindableLayout (string)";
- 
+
 	[Test]
 	public void BEmptyViewStringBecomesVisibleWhenItemsSourceIsCleared()
 	{
 		App.WaitForElement(AddAutomationId);
-		for (var i = 0; i < Count/2; i++)
+		for (var i = 0; i < Count / 2; i++)
 			App.Tap(AddAutomationId);
 		App.Tap(ClearAutomationId);
 		App.WaitForElement(EmptyViewStringDescription);
 	}
- 
+
 	[Test]
 	public void AEmptyViewStringBecomesVisibleWhenItemsSourceIsEmptiedOneByOne()
 	{
@@ -37,10 +37,10 @@ public class Issue6932_emptyviewstring : _IssuesUITest
 
 		for (var i = 0; i < Count; i++)
 			App.Tap(RemoveAutomationId);
- 
+
 		App.WaitForElement(EmptyViewStringDescription);
 	}
- 
+
 	[Test]
 	public void CEmptyViewStringHidesWhenItemsSourceIsFilled()
 	{

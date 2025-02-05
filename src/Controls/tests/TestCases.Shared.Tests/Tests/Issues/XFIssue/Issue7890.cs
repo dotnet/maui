@@ -20,7 +20,7 @@ public class Issue7890 : _IssuesUITest
 		App.WaitForElement("RemoveBtn");
 		App.Tap("RemoveBtn");
 		var toRemove = Enumerable.Range(1, 5).ToList();
-		foreach (var c in Enumerable.Range(0,10))
+		foreach (var c in Enumerable.Range(0, 10))
 		{
 			if (toRemove.Contains(c))
 				App.WaitForNoElement(c.ToString());

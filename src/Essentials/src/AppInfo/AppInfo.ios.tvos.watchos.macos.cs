@@ -54,9 +54,9 @@ namespace Microsoft.Maui.ApplicationModel
 				if ((OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13, 0)) || (OperatingSystem.IsTvOS() && !OperatingSystem.IsTvOSVersionAtLeast(13, 0)))
 					return AppTheme.Unspecified;
 
-				var traits =
-					MainThread.InvokeOnMainThread(() => WindowStateManager.Default.GetCurrentUIViewController()?.TraitCollection) ??
-					UITraitCollection.CurrentTraitCollection;
+				// This always returns the non-overridden trais which allows restoring the
+				// application back to the system theme.
+				var traits = UIScreen.MainScreen.TraitCollection;
 
 				var uiStyle = traits.UserInterfaceStyle;
 

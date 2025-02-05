@@ -42,10 +42,10 @@ public class Issue892 : _IssuesUITest
 
 	void NavigateToEndAndBack(string BackButtonId)
 	{
-		App.WaitForElement("Push next page"); 
+		App.WaitForElement("Push next page");
 		App.Tap("Push next page");
-		App.WaitForElement("Push next next page"); 
-		App.Tap("Push next next page"); 
+		App.WaitForElement("Push next next page");
+		App.Tap("Push next next page");
 		App.WaitForElement("You are at the end of the line");
 		App.Tap("Check back one");
 		App.WaitForElement("Pop one");

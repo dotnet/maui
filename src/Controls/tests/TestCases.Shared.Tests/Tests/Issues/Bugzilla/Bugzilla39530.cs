@@ -1,6 +1,6 @@
-﻿using System.Drawing;
+﻿#if TEST_FAILS_ON_CATALYST //Pan is not working on the MacCatalyst.
+using System.Drawing;
 using NUnit.Framework;
-using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,45 +16,36 @@ public class Bugzilla39530 : _IssuesUITest
 	public override string Issue => "Frames do not handle pan or pinch gestures under AppCompat";
 
 	[Test]
-	[FailsOnIOSWhenRunningOnXamarinUITest]
-	[FailsOnMacWhenRunningOnXamarinUITest]
-	[FailsOnWindowsWhenRunningOnXamarinUITest("Fails finding the frame element. Investigate the cause.")]
 	public void Bugzilla39530PanTest()
 	{
-		if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
-		{
-			throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
-		}
-
-		// Got to wait for the element to be visible to the UI test framework, otherwise we get occasional 
-		// index out of bounds exceptions if the query for the frame and its Rect run quickly enough
-		App.WaitForElement("frame");
-		Rectangle frameBounds = App.FindElement("frame").GetRect();
+		App.WaitForElement("frameLabel");
+		Rectangle frameBounds = App.FindElement("frameLabel").GetRect();
 		App.Pan(frameBounds.CenterX(), frameBounds.Y + 10, frameBounds.X + 100, frameBounds.Y + 100);
-		var result = app2.Driver.FindElement(OpenQA.Selenium.By.XPath("//*[@text='" + "Panning: Completed" + "']"));
-		ClassicAssert.IsNotEmpty(result.Text);
+		App.WaitForElement("Panning: Completed");
 	}
 
-	/*
+
 	[Test]
-	[FailsOnIOSWhenRunningOnXamarinUITest]	
-	[FailsOnMacWhenRunningOnXamarinUITest]
 	public void Bugzilla39530PinchTest()
 	{
+		//The PinchToZoomIn gesture doesn't work on the Frame for other platforms, so it should be applied to the children of the Frame instead.
+#if ANDROID
 		App.PinchToZoomIn("frame");
-		App.WaitForElement(q => q.Marked("Pinching: Completed"));
+#else
+		App.PinchToZoomIn("frameLabel");
+#endif
+		App.WaitForElement("Pinching: Completed");
 	}
 
 	[Test]
-	[FailsOnIOSWhenRunningOnXamarinUITest]
-	[FailsOnMacWhenRunningOnXamarinUITest]
 	public void Bugzilla39530TapTest()
 	{
-		App.WaitForElement("frame");
-		App.Tap("frame");
+		App.WaitForElement("frameLabel");
+		App.Tap("frameLabel");
 		App.WaitForElement("Taps: 1");
-		App.Tap("frame");
+		App.Tap("frameLabel");
 		App.WaitForElement("Taps: 2");
 	}
-	*/
+
 }
+#endif

@@ -1,11 +1,13 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="Type[@FullName='Microsoft.Maui.Controls.Stepper']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Stepper : View, IElementConfiguration<Stepper>, IStepper
 	{
 		/// <summary>Bindable property for <see cref="Maximum"/>.</summary>
@@ -107,5 +109,10 @@ namespace Microsoft.Maui.Controls
 		public IPlatformElementConfiguration<T, Stepper> On<T>() where T : IConfigPlatform => _platformConfigurationRegistry.Value.On<T>();
 
 		double IStepper.Interval => Increment;
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"{base.GetDebuggerDisplay()}, Value = {Value}";
+		}
 	}
 }
