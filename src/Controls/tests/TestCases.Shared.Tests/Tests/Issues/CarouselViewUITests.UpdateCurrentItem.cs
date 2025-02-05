@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if TEST_FAILS_ON_WINDOWS //For more information : https://github.com/dotnet/maui/issues/24482
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,11 +19,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CarouselView)]
 		public void Issue9827Test()
 		{
-			App.WaitForNoElement("Pos:0");
+			App.WaitForElement("Pos:0");
 			App.WaitForElement("btnNext");
 			App.Click("btnNext");
-			App.WaitForNoElement("Item 1 with some additional text");
-			App.WaitForNoElement("Pos:1");
+			App.WaitForElement("Item 1 with some additional text");
+			App.WaitForElement("Pos:1");
 		}
 	}
 }
