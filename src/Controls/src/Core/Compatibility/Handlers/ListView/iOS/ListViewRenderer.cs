@@ -310,6 +310,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateVerticalScrollBarVisibility();
 			else if (e.PropertyName == ScrollView.HorizontalScrollBarVisibilityProperty.PropertyName)
 				UpdateHorizontalScrollBarVisibility();
+			else if(e.PropertyName == Microsoft.Maui.Controls.ListView.IsEnabledProperty.PropertyName)
+				SetIsEnabled();
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
@@ -539,6 +541,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_tableViewController.UpdateIsRefreshing(refreshing);
 		}
 
+		protected override void SetIsEnabled()
+		{
+			base.SetIsEnabled();
+			UpdatePullToRefreshEnabled();
+			UpdateSelectionMode();
+			UpdateCellsEnabled();
+		}
+
+		void UpdateCellsEnabled()
+		{
+			foreach (var cell in TemplatedItemsView.TemplatedItems)
+			{
+				cell.IsEnabled = ListView.IsEnabled;
+			}
+		}
+
 		void UpdateItems(NotifyCollectionChangedEventArgs e, int section, bool resetWhenGrouped)
 		{
 			var exArgs = e as NotifyCollectionChangedEventArgsEx;
@@ -701,7 +719,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (_tableViewController != null)
 			{
-				var isPullToRequestEnabled = Element.IsPullToRefreshEnabled && ListView.RefreshAllowed;
+				var isPullToRequestEnabled = Element.IsPullToRefreshEnabled && ListView.RefreshAllowed && ListView.IsEnabled;
 				_tableViewController.UpdatePullToRefreshEnabled(isPullToRequestEnabled);
 			}
 		}
@@ -743,7 +761,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateSelectionMode()
 		{
-			if (Element.SelectionMode == ListViewSelectionMode.None)
+			if (Element.SelectionMode == ListViewSelectionMode.None || !Element.IsEnabled)
 			{
 				Element.SelectedItem = null;
 				var selectedIndexPath = Control.IndexPathForSelectedRow;

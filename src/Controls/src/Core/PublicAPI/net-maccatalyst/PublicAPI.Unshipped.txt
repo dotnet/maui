@@ -9,6 +9,7 @@ override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.G
 ~Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.CarouselViewHandler2(Microsoft.Maui.PropertyMapper mapper = null) -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2.CollectionViewHandler2(Microsoft.Maui.PropertyMapper mapper = null) -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.DefaultCell2.Constraint.get -> UIKit.NSLayoutConstraint
+override Microsoft.Maui.Controls.Handlers.Compatibility.ListViewRenderer.SetIsEnabled() -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.DefaultCell2.Constraint.set -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.DefaultCell2.Label.get -> UIKit.UILabel
 ~Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>
