@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+#if TEST_FAILS_ON_MACCATALYST //https://github.com/dotnet/maui/pull/27531
+using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +18,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Visual)]
 		public void Issue24414Test()
 		{
-			App.WaitForElement("WaitForStubControl");
-			VerifyScreenshot();
+			App.WaitForElement("TheLabel");
+
+			Exception? exception = null;
+			VerifyScreenshotOrSetException(ref exception, "Issue24414Test");
+
+			for (int i = 1; i <= 5; i++)
+			{
+				App.WaitForElement("TheLabel").Tap();
+				VerifyScreenshotOrSetException(ref exception, "Issue24414Test_" + i);
+			}
+
+			if (exception != null)
+			{
+				throw exception;
+			}
 		}
 	}
 }
+#endif
