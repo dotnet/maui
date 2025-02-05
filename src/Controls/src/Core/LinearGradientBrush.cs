@@ -1,4 +1,5 @@
 #nullable disable
+using System.Linq;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -48,6 +49,22 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (Point)GetValue(EndPointProperty);
 			set => SetValue(EndPointProperty, value);
+		}
+		
+		public override bool Equals(object obj)
+		{
+			if (!(obj is LinearGradientBrush dest))
+				return false;
+
+			return 
+				StartPoint.Equals(dest.StartPoint) && 
+				EndPoint.Equals(dest.EndPoint) && 
+				GradientStops.SequenceEqual(dest.GradientStops);
+		}
+
+		public override int GetHashCode()
+		{
+			return -1234567890 + StartPoint.GetHashCode() + EndPoint.GetHashCode() + GradientStops.GetHashCode();
 		}
 	}
 }
