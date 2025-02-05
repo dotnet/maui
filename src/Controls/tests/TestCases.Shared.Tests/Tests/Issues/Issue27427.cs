@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.SearchBar)]
 		public void EnsureSearchBarExplicitSize()
 		{
-			App.WaitForElement("MainParentLayout");
+			App.WaitForElement("SearchBarDimensionsHeaderLabel");
 			VerifyScreenshot();
 		}
 	}
