@@ -45,7 +45,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			NSCollectionLayoutDimension itemHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
 			NSCollectionLayoutDimension groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 			NSCollectionLayoutDimension groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
-			nfloat itemSpacing = 0;
 
 			var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
 			{
@@ -83,7 +82,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				// Create our section layout
 				var section = NSCollectionLayoutSection.Create(group: group);
-				section.InterGroupSpacing = itemSpacing;
+				if (VirtualView.ItemsLayout is LinearItemsLayout linearItemsLayout)
+				{
+					section.InterGroupSpacing = (nfloat)linearItemsLayout.ItemSpacing;
+				}
 				section.OrthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered;
 				section.VisibleItemsInvalidationHandler = (items, offset, env) =>
 				{
