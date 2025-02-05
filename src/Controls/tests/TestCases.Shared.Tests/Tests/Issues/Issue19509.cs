@@ -23,8 +23,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			await Task.Delay(1000); // Wait for Ripple Effect animation to complete.
 
-			await Task.Delay(1000); // Wait to Ripple Effect animation to complete.
-
 			// 2. Verify that the Entry TextColor is correct (Green).
 			VerifyScreenshot();
 		}
