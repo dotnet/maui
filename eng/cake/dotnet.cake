@@ -176,7 +176,7 @@ Task("dotnet-samples")
         }
         else
         {
-            projectsToBuild = "./Microsoft.Maui.Samples.slnf";
+            projectsToBuild = "./eng/Microsoft.Maui.Samples.slnf";
         }
 
         RunMSBuildWithDotNet(projectsToBuild, properties, binlogPrefix: "sample-");
