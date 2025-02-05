@@ -51,12 +51,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			return
 				new SizeRequest(this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint),
 				MinimumSize());
 		}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		public override void SizeToFit()
 		{

@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TitleViewProperty = BindableProperty.CreateAttached("TitleView", typeof(View), typeof(NavigationPage), null,
 			propertyChanging: TitleViewPropertyChanging, propertyChanged: (bo, oldV, newV) => bo.AddRemoveLogicalChildren(oldV, newV));
 
-		static readonly BindablePropertyKey CurrentPagePropertyKey = BindableProperty.CreateReadOnly("CurrentPage", typeof(Page), typeof(NavigationPage), null, propertyChanged: OnCurrentPageChanged);
+		static readonly BindablePropertyKey CurrentPagePropertyKey = BindableProperty.CreateReadOnly(nameof(CurrentPage), typeof(Page), typeof(NavigationPage), null, propertyChanged: OnCurrentPageChanged);
 
 		/// <summary>Bindable property for <see cref="CurrentPage"/>.</summary>
 		public static readonly BindableProperty CurrentPageProperty = CurrentPagePropertyKey.BindableProperty;
@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Controls
 		public static bool GetHasBackButton(Page page)
 		{
 			if (page == null)
-				throw new ArgumentNullException("page");
+				throw new ArgumentNullException(nameof(page));
 			return (bool)page.GetValue(HasBackButtonProperty);
 		}
 
@@ -332,7 +332,7 @@ namespace Microsoft.Maui.Controls
 		public static void SetHasBackButton(Page page, bool value)
 		{
 			if (page == null)
-				throw new ArgumentNullException("page");
+				throw new ArgumentNullException(nameof(page));
 			page.SetValue(HasBackButtonProperty, value);
 		}
 
@@ -374,9 +374,9 @@ namespace Microsoft.Maui.Controls
 			return base.OnBackButtonPressed();
 		}
 
-		void SendNavigated(Page previousPage)
+		void SendNavigated(Page previousPage, NavigationType navigationType)
 		{
-			previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
 			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
 		}
 
@@ -402,6 +402,8 @@ namespace Microsoft.Maui.Controls
 		void RemoveFromInnerChildren(Element page)
 		{
 			InternalChildren.Remove(page);
+
+			// TODO For NET9 we should remove this because the DisconnectHandlers will take care of it
 			page.Handler = null;
 		}
 
@@ -440,6 +442,7 @@ namespace Microsoft.Maui.Controls
 
 		Thickness IView.Margin => Thickness.Zero;
 
+		[Obsolete("Use ArrangeOverride instead")]
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			// We don't want forcelayout to call the legacy
@@ -699,7 +702,8 @@ namespace Microsoft.Maui.Controls
 				},
 				() =>
 				{
-					SendNavigated(null);
+					// TODO this is the wrong navigation type
+					SendNavigated(null, NavigationType.Initialize);
 				})
 				.FireAndForget(Handler);
 			}
@@ -784,6 +788,10 @@ namespace Microsoft.Maui.Controls
 					{
 						Owner.RemoveFromInnerChildren(currentPage);
 						Owner.CurrentPage = newCurrentPage;
+						if (currentPage.TitleView != null)
+						{
+							currentPage.RemoveLogicalChild(currentPage.TitleView);
+						}
 					},
 					() =>
 					{
@@ -793,7 +801,7 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigated(currentPage);
+						Owner.SendNavigated(currentPage, NavigationType.Pop);
 						Owner?.Popped?.Invoke(Owner, new NavigationEventArgs(currentPage));
 					});
 
@@ -830,7 +838,7 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigated(previousPage);
+						Owner.SendNavigated(previousPage, NavigationType.PopToRoot);
 						Owner?.PoppedToRoot?.Invoke(Owner, new PoppedToRootEventArgs(newPage, pagesToRemove));
 					});
 			}
@@ -855,7 +863,7 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigated(previousPage);
+						Owner.SendNavigated(previousPage, NavigationType.Push);
 						Owner?.Pushed?.Invoke(Owner, new NavigationEventArgs(root));
 					});
 			}

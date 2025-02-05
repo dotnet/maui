@@ -2,9 +2,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
@@ -13,6 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// Base class for layouts that allow you to arrange and group UI controls in your application.
 	/// </summary>
 	[ContentProperty(nameof(Children))]
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement
 	{
 		protected ILayoutManager _layoutManager;
@@ -32,7 +35,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		// The actual backing store for the IViews in the ILayout
-		readonly List<IView> _children = new();
+		readonly private protected List<IView> _children = new();
 
 		/// <summary>
 		/// Gets the child objects contained in this layout.
@@ -135,12 +138,6 @@ namespace Microsoft.Maui.Controls
 		public IEnumerator<IView> GetEnumerator() => _children.GetEnumerator();
 
 		IEnumerator IEnumerable.GetEnumerator() => _children.GetEnumerator();
-
-		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
-		{
-			var size = (this as IView).Measure(widthConstraint, heightConstraint);
-			return new SizeRequest(size);
-		}
 
 		protected override void InvalidateMeasureOverride()
 		{
@@ -387,6 +384,11 @@ namespace Microsoft.Maui.Controls
 			{
 				layout.RefreshInputTransparentProperty();
 			}
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"{base.GetDebuggerDisplay()}, ChildCount = {Count}";
 		}
 	}
 }

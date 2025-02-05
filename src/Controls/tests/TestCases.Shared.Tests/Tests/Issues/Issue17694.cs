@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Circle view not rotating from center";
 
 		[Test]
+		[Category(UITestCategories.Animation)]
 		public void Issue17694Test()
 		{
 			App.WaitForElement("Spin");

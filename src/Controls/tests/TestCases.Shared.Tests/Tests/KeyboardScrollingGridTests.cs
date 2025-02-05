@@ -1,11 +1,10 @@
 ﻿#if IOS
-using Maui.Controls.Sample;
 using NUnit.Framework;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class KeyboardScrollingGridTests : UITest
+	public class KeyboardScrollingGridTests : CoreGalleryBasePageTest
 	{
 		const string KeyboardScrollingGallery = "Keyboard Scrolling Gallery - Grid with Star Row";
 		
@@ -14,13 +13,13 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void FixtureSetup()
+		protected override void NavigateToGallery()
 		{
-			base.FixtureSetup();
 			App.NavigateToGallery(KeyboardScrollingGallery);
 		}
 
 		[Test]
+		[Category(UITestCategories.Layout)]
 		public void GridStarRowScrollingTest()
 		{
 			KeyboardScrolling.GridStarRowScrollingTest(App);

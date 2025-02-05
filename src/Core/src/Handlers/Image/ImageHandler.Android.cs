@@ -1,13 +1,14 @@
 ﻿using System.Threading.Tasks;
 using Android.Graphics.Drawables;
+using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
-using Google.Android.Material.Button;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, ImageView>
 	{
+
 		protected override ImageView CreatePlatformView()
 		{
 			var imageView = new AppCompatImageView(Context);
@@ -21,9 +22,15 @@ namespace Microsoft.Maui.Handlers
 			return imageView;
 		}
 
+		protected override void ConnectHandler(ImageView platformView)
+		{
+			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
+		}
+
 		protected override void DisconnectHandler(ImageView platformView)
 		{
 			base.DisconnectHandler(platformView);
+			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			SourceLoader.Reset();
 		}
 
@@ -54,10 +61,17 @@ namespace Microsoft.Maui.Handlers
 				.SourceLoader
 				.UpdateImageSourceAsync();
 
+
+			// This indicates that the image has finished loading
+			// So, now if the attached event fires again then we need to see if Glide has cleared the image out
+			handler.SourceLoader.CheckForImageLoadedOnAttached = true;
+
 			// Because this resolves from a task we should validate that the
 			// handler hasn't been disconnected
 			if (handler.IsConnected())
+			{
 				handler.UpdateValue(nameof(IImage.IsAnimationPlaying));
+			}
 		}
 
 		public override void PlatformArrange(Graphics.Rect frame)
@@ -79,12 +93,44 @@ namespace Microsoft.Maui.Handlers
 			base.PlatformArrange(frame);
 		}
 
+		internal static void OnPlatformViewAttachedToWindow(IImageHandler imageHandler)
+		{
+
+			// Glide will automatically clear out the image if the Fragment or Activity is destroyed
+			// So we want to reload the image here if it's supposed to have an image
+			if (imageHandler.SourceLoader.CheckForImageLoadedOnAttached &&
+				imageHandler.PlatformView.Drawable is null &&
+				imageHandler.VirtualView.Source is not null)
+			{
+				imageHandler.SourceLoader.CheckForImageLoadedOnAttached = false;
+				imageHandler.UpdateValue(nameof(IImage.Source));
+			}
+		}
+
+		void OnPlatformViewAttachedToWindow(object? sender, View.ViewAttachedToWindowEventArgs e)
+		{
+			if (sender is not View platformView)
+			{
+				return;
+			}
+
+			if (!this.IsConnected())
+			{
+				platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
+				return;
+			}
+
+			OnPlatformViewAttachedToWindow(this);
+		}
+
 		partial class ImageImageSourcePartSetter
 		{
 			public override void SetImageSource(Drawable? platformImage)
 			{
 				if (Handler?.PlatformView is not ImageView image)
+				{
 					return;
+				}
 
 				image.SetImageDrawable(platformImage);
 			}

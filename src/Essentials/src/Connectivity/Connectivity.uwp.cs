@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Networking
 				{
 					networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
 				}
-				catch (NetworkInformationException ex) 
+				catch (NetworkInformationException ex)
 				{
 					Debug.WriteLine($"Unable to get network interfaces. Error: {ex.Message}");
 				}

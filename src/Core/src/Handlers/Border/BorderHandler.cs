@@ -11,6 +11,8 @@ using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 using PlatformView = System.Object;
 #endif
 
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Handlers
 {
 	/// <summary>
@@ -41,6 +43,8 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
+		private Size _lastSize;
+
 		public BorderHandler() : base(Mapper, CommandMapper)
 		{
 
@@ -59,6 +63,18 @@ namespace Microsoft.Maui.Handlers
 		IBorderView IBorderHandler.VirtualView => VirtualView;
 
 		PlatformView IBorderHandler.PlatformView => PlatformView;
+
+		/// <inheritdoc />
+		public override void PlatformArrange(Rect rect)
+		{
+			base.PlatformArrange(rect);
+
+			if (_lastSize != rect.Size)
+			{
+				_lastSize = rect.Size;
+				UpdateValue(nameof(IBorderStroke.Shape));
+			}
+		}
 
 		/// <summary>
 		/// Maps the abstract <see cref="IView.Background"/> property to the platform-specific implementations.

@@ -16,7 +16,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			return new RefreshContainer
 			{
-				PullDirection = RefreshPullDirection.TopToBottom
+				PullDirection = RefreshPullDirection.TopToBottom,
+				Content = new ContentPanel()
 			};
 		}
 
@@ -34,6 +35,12 @@ namespace Microsoft.Maui.Handlers
 			nativeView.RefreshRequested -= OnRefresh;
 
 			CompleteRefresh();
+
+			if (nativeView.Content is ContentPanel contentPanel)
+			{
+				contentPanel.Content = null;
+				contentPanel.CrossPlatformLayout = null;
+			}
 
 			base.DisconnectHandler(nativeView);
 		}
@@ -63,8 +70,27 @@ namespace Microsoft.Maui.Handlers
 
 		static void UpdateContent(IRefreshViewHandler handler)
 		{
-			handler.PlatformView.Content =
-				handler.VirtualView.Content?.ToPlatform(handler.MauiContext!);
+			IView? content;
+
+			if (handler.VirtualView is IContentView cv && cv.PresentedContent is IView view)
+			{
+				content = view;
+			}
+			else
+			{
+				content = handler.VirtualView.Content;
+			}
+
+			var platformContent = content?.ToPlatform(handler.MauiContext!);
+			if (handler.PlatformView.Content is ContentPanel contentPanel)
+			{
+				contentPanel.Content = platformContent;
+				contentPanel.CrossPlatformLayout = (handler.VirtualView as ICrossPlatformLayout);
+			}
+			else
+			{
+				handler.PlatformView.Content = platformContent;
+			}
 		}
 
 		static void UpdateRefreshColor(IRefreshViewHandler handler)

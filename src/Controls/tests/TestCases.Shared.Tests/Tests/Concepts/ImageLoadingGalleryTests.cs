@@ -1,10 +1,10 @@
-﻿using Maui.Controls.Sample;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
+	[Category(UITestCategories.Image)]
 	public class ImageLoadingGalleryTests : CoreGalleryBasePageTest
 	{
 		public ImageLoadingGalleryTests(TestDevice device)
@@ -35,7 +35,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			remote.GoTo(test.ToString());
 
 			App.WaitForElement($"{test}VisualElement");
-			Thread.Sleep(1000); // android has some button animations that need to finish
 
 			VerifyScreenshot();
 		}

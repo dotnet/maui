@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
@@ -8,11 +9,11 @@ namespace Microsoft.Maui.Controls
 	[AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
 	public abstract class HandlerAttribute : Attribute
 	{
-		protected HandlerAttribute(Type handler, Type target) : this(handler, target, null)
+		protected HandlerAttribute(Type handler, [DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)] Type target) : this(handler, target, null)
 		{
 		}
 
-		protected HandlerAttribute(Type handler, Type target, Type[] supportedVisuals)
+		protected HandlerAttribute(Type handler, [DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)] Type target, Type[] supportedVisuals)
 		{
 			SupportedVisuals = supportedVisuals ?? new[] { typeof(VisualMarker.DefaultVisual) };
 			TargetType = target;
@@ -26,6 +27,7 @@ namespace Microsoft.Maui.Controls
 		internal Type[] SupportedVisuals { get; private set; }
 		internal Type HandlerType { get; private set; }
 
+		[DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)]
 		internal Type TargetType { get; private set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/HandlerAttribute.xml" path="//Member[@MemberName='ShouldRegister']/Docs/*" />

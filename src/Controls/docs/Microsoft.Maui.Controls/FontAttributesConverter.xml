@@ -18,7 +18,6 @@
   </Attributes>
   <Docs>
     <summary>Converts a string into a <see cref="T:Microsoft.Maui.Controls.FontAttributes" /> object.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -32,8 +31,6 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConvertFromInvariantString">
@@ -54,9 +51,6 @@
       </Parameters>
       <Docs>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

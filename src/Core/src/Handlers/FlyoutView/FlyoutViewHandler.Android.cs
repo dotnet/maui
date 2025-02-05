@@ -278,6 +278,9 @@ namespace Microsoft.Maui.Handlers
 			if (_detailViewFragment?.DetailView?.Handler?.PlatformView == null)
 				return;
 
+			// Important to create the layout views before setting the lock mode
+			LayoutViews();
+
 			switch (behavior)
 			{
 				case FlyoutBehavior.Disabled:
@@ -289,8 +292,6 @@ namespace Microsoft.Maui.Handlers
 					DrawerLayout.SetDrawerLockMode(VirtualView.IsGestureEnabled ? DrawerLayout.LockModeUnlocked : DrawerLayout.LockModeLockedClosed);
 					break;
 			}
-
-			LayoutViews();
 		}
 
 		protected override void ConnectHandler(View platformView)
@@ -308,6 +309,11 @@ namespace Microsoft.Maui.Handlers
 			{
 				dl.DrawerStateChanged -= OnDrawerStateChanged;
 				dl.ViewAttachedToWindow -= DrawerLayoutAttached;
+			}
+
+			if (VirtualView is IToolbarElement te)
+			{
+				te.Toolbar?.Handler?.DisconnectHandler();
 			}
 		}
 

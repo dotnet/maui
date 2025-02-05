@@ -39,11 +39,7 @@ namespace Microsoft.Maui.UnitTests.Views
 			var fill = new SolidColorBrush(Colors.Red);
 			var reference = new WeakReference(new Rectangle { Fill = fill });
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.False(reference.IsAlive, "Shape should not be alive!");
+			Assert.False(await reference.WaitForCollect(), "Shape should not be alive!");
 		}
 
 		[Fact]
@@ -75,11 +71,7 @@ namespace Microsoft.Maui.UnitTests.Views
 			var stroke = new SolidColorBrush(Colors.Red);
 			var reference = new WeakReference(new Rectangle { Stroke = stroke });
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.False(reference.IsAlive, "Shape should not be alive!");
+			Assert.False(await reference.WaitForCollect(), "Shape should not be alive!");
 		}
 	}
 }

@@ -10,7 +10,9 @@ public partial class MainPage : ContentPage
 	{
 		InitializeComponent();
 
-		if (Application.Current.MainPage is not AppFlyoutPage)
+#pragma warning disable CS0618 // get_MainPage is obsolete
+		if (Application.Current?.MainPage is not AppFlyoutPage)
+#pragma warning restore CS0618
 		{
 			Start();
 			this.Loaded += OnMainPageLoaded;
@@ -24,7 +26,7 @@ public partial class MainPage : ContentPage
 		LoadFlyoutPage();
 	}
 
-	void OnMainPageLoaded(object sender, EventArgs e)
+	void OnMainPageLoaded(object? sender, EventArgs e)
 	{
 		_isLoaded = true;
 		LoadFlyoutPage();
@@ -32,14 +34,14 @@ public partial class MainPage : ContentPage
 
 	async void LoadFlyoutPage()
 	{
-		if (_isLoaded && _startCompleted)
+		if (_isLoaded && _startCompleted && Application.Current != null)
 		{
 			await Task.Delay(500);
-			Application.Current.MainPage = new AppFlyoutPage();
+			Application.Current.Windows[0].Page = new AppFlyoutPage();
 		}
 	}
 
-	private void OnCounterClicked(object sender, EventArgs e)
+	private void OnCounterClicked(object? sender, EventArgs e)
 	{
 		count++;
 

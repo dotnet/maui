@@ -488,10 +488,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			var stackPanels = Control.GetDescendantsByName<WStackPanel>(TabBarHeaderStackPanelName);
 			foreach (var stackPanel in stackPanels)
 			{
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 				int stackPanelChildCount = stackPanel.Children.Count;
+#pragma warning restore RS0030 // Do not use banned APIs
+
 				for (int i = 0; i < stackPanelChildCount; i++)
 				{
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 					var stackPanelItem = stackPanel.Children[i];
+#pragma warning restore RS0030 // Do not use banned APIs
+
 					if (stackPanelItem is WImage tabBarImage)
 					{
 						// Update icon image.

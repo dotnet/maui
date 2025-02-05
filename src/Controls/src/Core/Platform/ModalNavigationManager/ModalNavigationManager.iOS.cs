@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return modal;
 			}
 
-			// if the presnting VC is null that means the modal window was already dismissed
+			// if the presenting VC is null that means the modal window was already dismissed
 			// this will usually happen as a result of swapping out the content on the window
 			// which is what was acting as the PresentingViewController
 			return modal;
@@ -116,8 +116,10 @@ namespace Microsoft.Maui.Controls.Platform
 		async Task PresentModal(Page modal, bool animated)
 		{
 			bool failed = false;
+			TaskCompletionSource presentFinished = new TaskCompletionSource();
 			try
 			{
+				_waitForModalToFinishTask = presentFinished.Task;
 				_waitForModalToFinish = true;
 
 				var wrapper = new ControlsModalWrapper(modal.ToHandler(WindowMauiContext));
@@ -152,6 +154,7 @@ namespace Microsoft.Maui.Controls.Platform
 			finally
 			{
 				_waitForModalToFinish = false;
+				presentFinished.SetResult();
 
 				if (!failed)
 					SyncModalStackWhenPlatformIsReady();

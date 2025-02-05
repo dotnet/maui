@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 		IShape? _clip;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IShadow is a non-NSObject in MAUI.")]
 		IShadow? _shadow;
-		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IBorder is a non-NSObject in MAUI.")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IBorderStroke is a non-NSObject in MAUI.")]
 		IBorderStroke? _border;
 
 #if WINDOWS

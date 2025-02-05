@@ -20,7 +20,6 @@
   <Interfaces />
   <Docs>
     <summary>Extension methods for <see cref="T:Microsoft.Maui.Controls.Element" />  that adds a strongly-typed FindByName method.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="FindByName&lt;T&gt;">
@@ -55,8 +54,6 @@
         <param name="element">An element in the scope to search.</param>
         <param name="name">The name of the element to find.</param>
         <summary>Returns the instance of type <paramref name="T" /> that has name <paramref name="name" /> in the scope that includes <paramref name="element" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

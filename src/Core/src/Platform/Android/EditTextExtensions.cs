@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
@@ -201,8 +201,11 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateReturnType(this EditText editText, IEntry entry)
 		{
-			editText.SetInputType(entry);
 			editText.ImeOptions = entry.ReturnType.ToPlatform();
+
+			// Restart the input on the current focused EditText
+			InputMethodManager? imm = (InputMethodManager?)editText.Context?.GetSystemService(Context.InputMethodService);
+			imm?.RestartInput(editText);
 		}
 
 		// TODO: NET8 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
@@ -403,8 +406,8 @@ namespace Microsoft.Maui.Platform
 			// This assumes the button is vertically centered within the padded area of the EditText
 
 			var buttonHeight = buttonRect.Height();
-			var editAreaTop = platformView.Top + platformView.PaddingTop;
-			var editAreaHeight = (platformView.Bottom - platformView.PaddingBottom) - (editAreaTop);
+			var editAreaTop = platformView.PaddingTop;
+			var editAreaHeight = platformView.Bottom - platformView.Top - platformView.PaddingTop - platformView.PaddingBottom;
 			var editAreaVerticalCenter = editAreaTop + (editAreaHeight / 2);
 
 			var topEdge = editAreaVerticalCenter - (buttonHeight / 2);

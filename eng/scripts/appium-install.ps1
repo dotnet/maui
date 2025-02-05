@@ -40,77 +40,195 @@ Find the script for that on the DevDiv Azure DevOps instance, Engineering team, 
 
 param
 (
-    [string] $appiumVersion = '2.1.1',
-    [string] $windowsDriverVersion = '2.10.1',
-    [string] $androidDriverVersion = '2.29.4',
-    [string] $iOSDriverVersion = '5.2.0',
-    [string] $macDriverVersion = '1.7.2'
+    [string] $appiumVersion = '',
+    [string] $windowsDriverVersion = '',
+    [string] $androidDriverVersion = '',
+    [string] $iOSDriverVersion = '',
+    [string] $macDriverVersion = '',
+    [string] $logsDir = '../appium-logs'
 )
+
+# By default, versions should be read from /eng/Versions.props
+$getLocation = $PSScriptRoot
+$versionPropsPath = [IO.Path]::Combine($getLocation, '..', 'Versions.props')
+
+Write-Output "Checking $versionPropsPath for versions..."
+
+if (Test-Path $versionPropsPath)
+{
+    Write-Output "Reading versions from Version.props..."
+    [xml]$versionProps = Get-Content $versionPropsPath
+    $versionPropsAppiumVersion = $versionProps.Project.PropertyGroup.AppiumVersion | Where-Object { $_ -ne $null } | Select-Object -Last 1
+    if ($null -ne $versionPropsAppiumVersion) {
+        $appiumVersion = $versionPropsAppiumVersion
+    }
+
+    $versionPropsWindowsDriverVersion = $versionProps.Project.PropertyGroup.AppiumWindowsDriverVersion | Where-Object { $_ -ne $null } | Select-Object -Last 1
+    if ($null -ne $versionPropsWindowsDriverVersion) {
+        $windowsDriverVersion = $versionPropsWindowsDriverVersion
+    }
+
+    $versionPropsUIAutomator2DriverVersion = $versionProps.Project.PropertyGroup.AppiumUIAutomator2DriverVersion | Where-Object { $_ -ne $null } | Select-Object -Last 1
+    if ($null -ne $versionPropsUIAutomator2DriverVersion) {
+        $androidDriverVersion = $versionPropsUIAutomator2DriverVersion
+    }
+
+    $versionPropsXCUItestDriverVersion = $versionProps.Project.PropertyGroup.AppiumXCUITestDriverVersion | Where-Object { $_ -ne $null } | Select-Object -Last 1
+    if ($null -ne $versionPropsXCUItestDriverVersion) {
+        $iOSDriverVersion = $versionPropsXCUItestDriverVersion
+    }
+
+    $versionPropsMac2DriverVersion = $versionProps.Project.PropertyGroup.AppiumMac2DriverVersion | Where-Object { $_ -ne $null } | Select-Object -Last 1
+    if ($null -ne $versionPropsMac2DriverVersion) {
+        $macDriverVersion = $versionPropsMac2DriverVersion
+    }
+}
+else {
+    throw "The version.props file was not found at path: $versionPropsPath"
+}
 
 Write-Output  "Welcome to the Appium installer"
 
 Write-Output  "Node version"
 node -v
 
-Write-Output  "Installing appium $appiumVersion"
-npm install -g appium@$appiumVersion
+$npmLogLevel = 'verbose'
 
-write-Output  "Installed appium"
-appium -v
+# globally set npm loglevel
+npm config set loglevel $npmLogLevel
 
-Write-Output  "Installing appium doctor"
-npm install -g appium-doctor
+# Create logs directory for npm logs if it doesn't exist
+if (!(Test-Path $logsDir -PathType Container)) {
+    New-Item -ItemType Directory -Path $logsDir
+}
 
-Write-Output  "Installed appium doctor"
+# Get our path to APPIUM_HOME
+$AppiumHome = $env:APPIUM_HOME
+Write-Output "APPIUM_HOME: $AppiumHome"
+
+if ($AppiumHome) {
+    if (Test-Path $AppiumHome) {
+        Write-Output  "Removing existing APPIUM_HOME Cache..."
+        Remove-Item -Path $AppiumHome -Recurse -Force
+    }
+
+    # Create the directory for appium home
+    New-Item -ItemType Directory -Path $AppiumHome
+}
+
+# Check for an existing appium install version
+$appiumCurrentVersion = ""
+try { $appiumCurrentVersion = (appium -v | Out-String).Trim() -replace "`r", "" -replace "`n", "" } catch { Write-Debug "Problem retrieving current Appium version" }
+
+if ($appiumCurrentVersion) {
+    Write-Output  "Existing Appium version $appiumCurrentVersion"
+} else {
+    Write-Output  "No Appium version installed"
+}
+
+# Check if we found a version of appium at all
+$missingAppium = [string]::IsNullOrEmpty($appiumCurrentVersion)
+
+# If current version does not match the one we want, uninstall and install the new version
+if ($missingAppium -or ($appiumCurrentVersion -ne $appiumVersion)) {
+    if (-not $missingAppium) {
+        Write-Output  "Uninstalling appium $appiumCurrentVersion"
+        npm uninstall --logs-dir=$logsDir --loglevel $npmLogLevel -g appium
+        Write-Output  "Uninstalled appium $appiumCurrentVersion"
+    }
+
+    Write-Output  "Installing appium $appiumVersion"
+    npm install --logs-dir=$logsDir --loglevel $npmLogLevel -g appium@$appiumVersion
+    write-Output  "Installed appium $appiumVersion"
+}
+
+# Clean npm cache, just in case
+Write-Output  "Cleaning npm cache"
+npm cache clean --force
 
 $existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
 Write-Output "List of installed drivers $existingDrivers"
-if ($existingDrivers.windows) {
-    Write-Output  "Uninstalling appium driver windows"
-    appium driver uninstall windows
-    Write-Output  "Uninstalled appium driver windows"
+
+$exitCode = 0
+
+function Check-ExitCode {
+    param (
+        [int]$code
+    )
+    if ($code -ne 0 -and $exitCode -eq 0) {
+        $exitCode = $code
+    }
+}
+
+if ($IsWindows) {
+    if ($existingDrivers.windows) {
+        Write-Output  "Updating appium driver windows"
+        appium driver update windows
+        Check-ExitCode $LASTEXITCODE
+        Write-Output  "Updated appium driver windows"
+    } else {
+        Write-Output  "Installing appium driver windows"
+        appium driver install --source=npm appium-windows-driver@$windowsDriverVersion
+        Check-ExitCode $LASTEXITCODE
+        Write-Output  "Installed appium driver windows"
+    }
+}
+
+if ($IsMacOS) {
+
+    if ($existingDrivers.xcuitest) {
+        Write-Output  "Updating appium driver xcuitest"
+        appium driver update xcuitest
+        Check-ExitCode $LASTEXITCODE
+        Write-Output  "Updated appium driver xcuitest"
+    } else {
+        Write-Output  "Installing appium driver xcuitest"
+        appium driver install xcuitest@$iOSDriverVersion
+        Check-ExitCode $LASTEXITCODE
+        Write-Output  "Installed appium driver xcuitest"
+    }
+    if ($existingDrivers.mac2) {
+        Write-Output  "Updating appium driver mac2"
+        appium driver update mac2
+        Check-ExitCode $LASTEXITCODE
+        Write-Output  "Updated appium driver mac2"
+    } else {
+        Write-Output  "Installing appium driver mac2"
+        appium driver install mac2@$macDriverVersion
+        Check-ExitCode $LASTEXITCODE
+        Write-Output  "Installed appium driver mac2"
+    }
 }
 
 if ($existingDrivers.uiautomator2) {
-    Write-Output  "Uninstalling appium driver uiautomator2"
-    appium driver uninstall uiautomator2
-    Write-Output  "Uninstalled appium driver uiautomator2"
-}
-
-if ($existingDrivers.xcuitest) {
-    Write-Output  "Uninstalling appium driver xcuitest"
-    appium driver uninstall xcuitest
-    Write-Output  "Uninstalled appium driver xcuitest"
-}
-
-if ($existingDrivers.mac2) {
-    Write-Output  "Uninstalling appium driver mac2"
-    appium driver uninstall mac2
-    Write-Output  "Uninstalled appium driver mac2"
+    Write-Output  "Updating appium driver uiautomator2"
+    appium driver update uiautomator2
+    Check-ExitCode $LASTEXITCODE
+    Write-Output  "Updated appium driver uiautomator2"
+} else {
+    Write-Output  "Installing appium driver uiautomator2"
+    appium driver install uiautomator2@$androidDriverVersion
+    Check-ExitCode $LASTEXITCODE
+    Write-Output  "Installed appium driver uiautomator2"
 }
 
 $drivers = appium driver list --installed --json  | ConvertFrom-Json
 Write-Output "List of installed drivers after cleaup $drivers"
 
-Write-Output  "We will now install the appium drivers windows $windowsDriverVersion, uiautomator2 $androidDriverVersion, xcuitest $iOSDriverVersion and mac2 $macDriverVersion"
-
-Write-Output  "Installing appium driver windows $windowsDriverVersion"
-appium driver install --source=npm appium-windows-driver@$windowsDriverVersion
-Write-Output  "Installed appium driver windows"
-
-Write-Output  "Installing appium driver uiautomator2 $androidDriverVersion"
-appium driver install uiautomator2@$androidDriverVersion
-Write-Output  "Installed appium driver uiautomator2"
-
-Write-Output  "Installing appium driver xcuitest $iOSDriverVersion"
-appium driver install xcuitest@$iOSDriverVersion
-Write-Output  "Installed appium driver xcuitest"
-
-Write-Output  "Installing appium driver mac2 $macDriverVersion"
-appium driver install mac2@$macDriverVersion
-Write-Output  "Installed appium driver mac2"
-
 Write-Output  "Check everything is installed correctly with appium doctor"
-appium-doctor
+
+if ($IsWindows) {
+    appium driver doctor windows
+}
+if ($IsMacOS) {
+    appium driver doctor xcuitest
+    appium driver doctor mac2
+}
+
+appium driver doctor uiautomator2
+
+if ($exitCode -ne 0) {
+    throw "One or more Appium driver installations failed. Please check the logs for more information."
+}
 
 Write-Output  "Done, thanks!"

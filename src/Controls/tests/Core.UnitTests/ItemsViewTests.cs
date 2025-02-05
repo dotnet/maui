@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var itemsView = new StructuredItemsView();
 
-			var sizeRequest = itemsView.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeRequest = itemsView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 
 			var scaled = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
 			Assert.Equal(sizeRequest.Request.Height, scaled.Height);
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			itemsView.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
 
-			var sizeRequest = itemsView.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeRequest = itemsView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 
 			var scaled = DeviceDisplay.MainDisplayInfo.GetScaledScreenSize();
 			Assert.Equal(sizeRequest.Request.Height, scaled.Height);

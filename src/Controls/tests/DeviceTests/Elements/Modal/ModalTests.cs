@@ -532,6 +532,29 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Empty(rootPage.GetCurrentPage().Navigation.ModalStack);
 		}
 
+		[Fact]
+		public async Task DismissModalIfNotAnimated()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+
+			var modalPage = new ContentPage()
+			{
+				Content = new Label() { Text = "Page with no animation" }
+			};
+
+			var window = new Window(page);
+
+			await CreateHandlerAndAddToWindow(window, async () =>
+			{
+				await page.Navigation.PushModalAsync(modalPage, false);
+				await OnLoadedAsync(modalPage);
+				await modalPage.Navigation.PopModalAsync(false);
+				await OnUnloadedAsync(modalPage);
+
+			});
+		}
+
 		class PageTypes : IEnumerable<object[]>
 		{
 			public IEnumerator<object[]> GetEnumerator()

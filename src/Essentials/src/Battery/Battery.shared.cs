@@ -207,7 +207,7 @@ namespace Microsoft.Maui.Devices
 	/// </summary>
 	public enum BatteryPowerSource
 	{
-		/// <summary>Power source can not be determined.</summary>
+		/// <summary>Power source cannot be determined.</summary>
 		Unknown = 0,
 
 		/// <summary>Power source is the battery and is currently not being charged.</summary>

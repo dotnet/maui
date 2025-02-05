@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -51,11 +50,15 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty =
-			BindableProperty.Create(nameof(Title), typeof(string), typeof(BaseShellItem), null, BindingMode.OneTime, propertyChanged: OnTitlePropertyChanged);
+			BindableProperty.Create(nameof(Title), typeof(string), typeof(BaseShellItem), null, BindingMode.TwoWay, propertyChanged: OnTitlePropertyChanged);
 
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty =
 			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BaseShellItem), true);
+
+		/// <summary>Bindable property for <see cref="FlyoutItemIsVisible"/>.</summary>
+		public static readonly BindableProperty FlyoutItemIsVisibleProperty =
+			BindableProperty.Create(nameof(FlyoutItemIsVisible), typeof(bool), typeof(BaseShellItem), true, propertyChanged: OnFlyoutItemIsVisibleChanged);
 
 		public BaseShellItem()
 		{
@@ -116,10 +119,11 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(IsVisibleProperty, value);
 		}
 
+		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='FlyoutItemIsVisible']/Docs/*" />
 		public bool FlyoutItemIsVisible
 		{
-			get => (bool)GetValue(Shell.FlyoutItemIsVisibleProperty);
-			set => SetValue(Shell.FlyoutItemIsVisibleProperty, value);
+			get => (bool)GetValue(FlyoutItemIsVisibleProperty);
+			set => SetValue(FlyoutItemIsVisibleProperty, value);
 		}
 
 
@@ -223,6 +227,11 @@ namespace Microsoft.Maui.Controls
 
 			var shellItem = (BaseShellItem)bindable;
 			shellItem.FlyoutIcon = (ImageSource)newValue;
+		}
+
+		static void OnFlyoutItemIsVisibleChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			Shell.SetFlyoutItemIsVisible(bindable, (bool)newValue);
 		}
 
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -339,7 +348,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal static DataTemplate CreateDefaultFlyoutItemCell(string textBinding, string iconBinding)
+		internal static DataTemplate CreateDefaultFlyoutItemCell(BindableObject bo)
 		{
 			return new DataTemplate(() =>
 			{
@@ -348,7 +357,7 @@ namespace Microsoft.Maui.Controls
 					IgnoreSafeArea = true
 				};
 
-				if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				if (OperatingSystem.IsWindows())
 					grid.ColumnSpacing = grid.RowSpacing = 0;
 
 				grid.Resources = new ResourceDictionary();
@@ -387,7 +396,7 @@ namespace Microsoft.Maui.Controls
 				var selectedState = new VisualState();
 				selectedState.Name = "Selected";
 
-				if (DeviceInfo.Platform != DevicePlatform.WinUI)
+				if (!OperatingSystem.IsWindows())
 				{
 					selectedState.Setters.Add(new Setter
 					{
@@ -406,7 +415,7 @@ namespace Microsoft.Maui.Controls
 
 				defaultGridClass.Setters.Add(new Setter { Property = VisualStateManager.VisualStateGroupsProperty, Value = groups });
 
-				if (DeviceInfo.Platform == DevicePlatform.Android)
+				if (OperatingSystem.IsAndroid())
 					defaultGridClass.Setters.Add(new Setter { Property = Grid.HeightRequestProperty, Value = 50 });
 				else
 					defaultGridClass.Setters.Add(new Setter { Property = Grid.HeightRequestProperty, Value = 44 });
@@ -414,11 +423,11 @@ namespace Microsoft.Maui.Controls
 
 				ColumnDefinitionCollection columnDefinitions = new ColumnDefinitionCollection();
 
-				if (DeviceInfo.Platform == DevicePlatform.Android)
+				if (OperatingSystem.IsAndroid())
 					columnDefinitions.Add(new ColumnDefinition { Width = 54 });
-				else if (DeviceInfo.Platform == DevicePlatform.iOS)
+				else if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
 					columnDefinitions.Add(new ColumnDefinition { Width = 50 });
-				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				else if (OperatingSystem.IsWindows())
 					columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 				else if (DeviceInfo.Platform == DevicePlatform.Tizen)
 					columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -426,17 +435,30 @@ namespace Microsoft.Maui.Controls
 				columnDefinitions.Add(new ColumnDefinition { Width = GridLength.Star });
 				defaultGridClass.Setters.Add(new Setter { Property = Grid.ColumnDefinitionsProperty, Value = columnDefinitions });
 
-				Binding automationIdBinding = new Binding(Element.AutomationIdProperty.PropertyName);
+				BindingBase automationIdBinding = Binding.Create(static (Element element) => element.AutomationId);
 				defaultGridClass.Setters.Add(new Setter { Property = Element.AutomationIdProperty, Value = automationIdBinding });
+
+				BindingBase imageBinding = null;
+				BindingBase labelBinding = null;
+				if (bo is MenuItem)
+				{
+					imageBinding = Binding.Create(static (MenuItem item) => item.IconImageSource);
+					labelBinding = Binding.Create(static (MenuItem item) => item.Text);
+				}
+				else
+				{
+					imageBinding = Binding.Create(static (BaseShellItem item) => item.FlyoutIcon);
+					labelBinding = Binding.Create(static (BaseShellItem item) => item.Title);
+				}
 
 				var image = new Image();
 
 				double sizeRequest = -1;
-				if (DeviceInfo.Platform == DevicePlatform.Android)
+				if (OperatingSystem.IsAndroid())
 					sizeRequest = 24;
-				else if (DeviceInfo.Platform == DevicePlatform.iOS)
+				else if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
 					sizeRequest = 22;
-				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				else if (OperatingSystem.IsWindows())
 					sizeRequest = 16;
 				else if (DeviceInfo.Platform == DevicePlatform.Tizen)
 					sizeRequest = 25;
@@ -447,24 +469,22 @@ namespace Microsoft.Maui.Controls
 					defaultImageClass.Setters.Add(new Setter() { Property = Image.WidthRequestProperty, Value = sizeRequest });
 				}
 
-				if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				if (OperatingSystem.IsWindows())
 				{
 					defaultImageClass.Setters.Add(new Setter { Property = Image.HorizontalOptionsProperty, Value = LayoutOptions.Start });
 					defaultImageClass.Setters.Add(new Setter { Property = Image.MarginProperty, Value = new Thickness(12, 0, 12, 0) });
 				}
 
-				Binding imageBinding = new Binding(iconBinding);
 				defaultImageClass.Setters.Add(new Setter { Property = Image.SourceProperty, Value = imageBinding });
 
 				grid.Add(image);
 
 				var label = new Label();
-				Binding labelBinding = new Binding(textBinding);
 				defaultLabelClass.Setters.Add(new Setter { Property = Label.TextProperty, Value = labelBinding });
 
 				grid.Add(label, 1, 0);
 
-				if (DeviceInfo.Platform == DevicePlatform.Android)
+				if (OperatingSystem.IsAndroid())
 				{
 					object textColor;
 
@@ -482,12 +502,12 @@ namespace Microsoft.Maui.Controls
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontFamilyProperty, Value = "sans-serif-medium" });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.MarginProperty, Value = new Thickness(20, 0, 0, 0) });
 				}
-				else if (DeviceInfo.Platform == DevicePlatform.iOS)
+				else if (OperatingSystem.IsIOS() || OperatingSystem.IsMacCatalyst())
 				{
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontSizeProperty, Value = 14 });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.FontAttributesProperty, Value = FontAttributes.Bold });
 				}
-				else if (DeviceInfo.Platform == DevicePlatform.WinUI)
+				else if (OperatingSystem.IsWindows())
 				{
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalOptionsProperty, Value = LayoutOptions.Start });
 					defaultLabelClass.Setters.Add(new Setter { Property = Label.HorizontalTextAlignmentProperty, Value = TextAlignment.Start });
@@ -527,7 +547,7 @@ namespace Microsoft.Maui.Controls
 							// just bind the semantic description to the title
 							if (!g.IsSet(SemanticProperties.DescriptionProperty))
 							{
-								g.SetBinding(SemanticProperties.DescriptionProperty, TitleProperty.PropertyName);
+								g.SetBinding(SemanticProperties.DescriptionProperty, static (BaseShellItem item) => item.Title);
 							}
 						}
 					}
@@ -537,6 +557,16 @@ namespace Microsoft.Maui.Controls
 				return grid;
 			});
 		}
+
+#if NETSTANDARD
+		sealed class OperatingSystem
+		{
+			public static bool IsAndroid() => false;
+			public static bool IsIOS() => false;
+			public static bool IsMacCatalyst() => false;
+			public static bool IsWindows() => false;
+		}
+#endif
 	}
 
 	public interface IQueryAttributable

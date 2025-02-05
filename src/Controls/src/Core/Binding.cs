@@ -1,13 +1,14 @@
 #nullable disable
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Reflection;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="Type[@FullName='Microsoft.Maui.Controls.Binding']/Docs/*" />
+	[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 	public sealed class Binding : BindingBase
 	{
 		public const string SelfPath = ".";
@@ -91,7 +92,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='DoNothing']/Docs/*" />
-		public static readonly object DoNothing = new object();
+		public static readonly object DoNothing = MultiBinding.DoNothing; // the instance was moved to MultiBinding because the Binding class is annotated with [RequiresUnreferencedCode]
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='UpdateSourceEventName']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -104,6 +105,8 @@ namespace Microsoft.Maui.Controls
 				_updateSourceEventName = value;
 			}
 		}
+
+		internal Type DataType { get; set; }
 
 		internal override void Apply(bool fromTarget)
 		{
@@ -120,18 +123,28 @@ namespace Microsoft.Maui.Controls
 			object src = _source;
 			var isApplied = IsApplied;
 
-			base.Apply(src ?? context, bindObj, targetProperty, fromBindingContextChanged, specificity);
+			var bindingContext = src ?? Context ?? context;
+			base.Apply(bindingContext, bindObj, targetProperty, fromBindingContextChanged, specificity);
 
 			if (src != null && isApplied && fromBindingContextChanged)
 				return;
 
-			if (Source is RelativeBindingSource)
+			if (Source is RelativeBindingSource relativeBindingSource)
 			{
-				ApplyRelativeSourceBinding(bindObj, targetProperty, specificity);
+				var relativeSourceTarget = RelativeSourceTargetOverride ?? bindObj as Element;
+				if (relativeSourceTarget is not Element)
+				{
+					var message = bindObj is not null
+						? $"Cannot apply relative binding to {bindObj.GetType().FullName} because it is not a superclass of Element."
+						: "Cannot apply relative binding when the target object is null.";
+
+					throw new InvalidOperationException(message);
+				}
+
+				ApplyRelativeSourceBinding(relativeBindingSource, relativeSourceTarget, bindObj, targetProperty, specificity);
 			}
 			else
 			{
-				object bindingContext = src ?? Context ?? context;
 				if (_expression == null)
 					_expression = new BindingExpression(this, SelfPath);
 				_expression.Apply(bindingContext, bindObj, targetProperty, specificity);
@@ -139,148 +152,10 @@ namespace Microsoft.Maui.Controls
 		}
 
 #pragma warning disable RECS0165 // Asynchronous methods should return a Task instead of void
-		async void ApplyRelativeSourceBinding(
-			BindableObject targetObject,
-			BindableProperty targetProperty, SetterSpecificity specificity)
+		async void ApplyRelativeSourceBinding(RelativeBindingSource relativeSource, Element relativeSourceTarget, BindableObject targetObject, BindableProperty targetProperty, SetterSpecificity specificity)
 #pragma warning restore RECS0165 // Asynchronous methods should return a Task instead of void
 		{
-			if (!(Source is RelativeBindingSource relativeSource))
-				return;
-
-			var relativeSourceTarget = RelativeSourceTargetOverride ?? targetObject as Element;
-			if (!(relativeSourceTarget is Element))
-				throw new InvalidOperationException();
-
-			object resolvedSource = null;
-			switch (relativeSource.Mode)
-			{
-				case RelativeBindingSourceMode.Self:
-					resolvedSource = relativeSourceTarget;
-					break;
-
-				case RelativeBindingSourceMode.TemplatedParent:
-					resolvedSource = await TemplateUtilities.FindTemplatedParentAsync(relativeSourceTarget);
-					break;
-
-				case RelativeBindingSourceMode.FindAncestor:
-				case RelativeBindingSourceMode.FindAncestorBindingContext:
-					ApplyAncestorTypeBinding(targetObject, relativeSourceTarget, targetProperty, specificity);
-					return;
-
-				default:
-					throw new InvalidOperationException();
-			}
-
-			_expression.Apply(resolvedSource, targetObject, targetProperty, specificity);
-		}
-
-		void ApplyAncestorTypeBinding(
-			BindableObject actualTarget,
-			Element relativeSourceTarget,
-			BindableProperty targetProperty,
-			SetterSpecificity specificity,
-			Element currentElement = null,
-			int currentLevel = 0,
-			List<Element> chain = null,
-			object lastMatchingBctx = null)
-		{
-			currentElement = currentElement ?? relativeSourceTarget;
-			chain = chain ?? new List<Element> { relativeSourceTarget };
-
-			if (!(Source is RelativeBindingSource relativeSource))
-				return;
-
-			if (currentElement.RealParent is Application ||
-				currentElement.RealParent == null)
-			{
-				// Couldn't find the desired ancestor type in the chain, but it may be added later, 
-				// so apply with a null source for now.
-				_expression.Apply(null, actualTarget, targetProperty, specificity);
-				_expression.SubscribeToAncestryChanges(
-					chain,
-					relativeSource.Mode == RelativeBindingSourceMode.FindAncestorBindingContext,
-					rootIsSource: false);
-			}
-			else if (currentElement.RealParent != null)
-			{
-				chain.Add(currentElement.RealParent);
-				if (ElementFitsAncestorTypeAndLevel(currentElement.RealParent, ref currentLevel, ref lastMatchingBctx))
-				{
-					object resolvedSource;
-					if (relativeSource.Mode == RelativeBindingSourceMode.FindAncestor)
-						resolvedSource = currentElement.RealParent;
-					else
-						resolvedSource = currentElement.RealParent?.BindingContext;
-					_expression.Apply(resolvedSource, actualTarget, targetProperty, specificity);
-					_expression.SubscribeToAncestryChanges(
-						chain,
-						relativeSource.Mode == RelativeBindingSourceMode.FindAncestorBindingContext,
-						rootIsSource: true);
-				}
-				else
-				{
-					ApplyAncestorTypeBinding(
-						actualTarget,
-						relativeSourceTarget,
-						targetProperty,
-						specificity,
-						currentElement.RealParent,
-						currentLevel,
-						chain,
-						lastMatchingBctx);
-				}
-			}
-			else
-			{
-				EventHandler onElementParentSet = null;
-				onElementParentSet = (sender, e) =>
-				{
-					currentElement.ParentSet -= onElementParentSet;
-					ApplyAncestorTypeBinding(
-						actualTarget,
-						relativeSourceTarget,
-						targetProperty,
-						specificity,
-						currentElement,
-						currentLevel,
-						chain,
-						lastMatchingBctx);
-				};
-				currentElement.ParentSet += onElementParentSet;
-			}
-		}
-
-		bool ElementFitsAncestorTypeAndLevel(Element element, ref int level, ref object lastPotentialBctx)
-		{
-			if (!(Source is RelativeBindingSource relativeSource))
-				return false;
-
-			bool fitsElementType =
-				relativeSource.Mode == RelativeBindingSourceMode.FindAncestor &&
-				relativeSource.AncestorType.IsAssignableFrom(element.GetType());
-
-			bool fitsBindingContextType =
-				element.BindingContext != null &&
-				relativeSource.Mode == RelativeBindingSourceMode.FindAncestorBindingContext &&
-				relativeSource.AncestorType.IsAssignableFrom(element.BindingContext.GetType());
-
-			if (!fitsElementType && !fitsBindingContextType)
-				return false;
-
-			if (fitsBindingContextType)
-			{
-				if (!object.ReferenceEquals(lastPotentialBctx, element.BindingContext))
-				{
-					lastPotentialBctx = element.BindingContext;
-					level++;
-				}
-			}
-			else
-			{
-				level++;
-			}
-
-			return level >= relativeSource.AncestorLevel;
+			await relativeSource.Apply(_expression, relativeSourceTarget, targetObject, targetProperty, specificity);
 		}
 
 		internal override BindingBase Clone()
@@ -296,7 +171,7 @@ namespace Microsoft.Maui.Controls
 				FallbackValue = FallbackValue,
 			};
 
-			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+			if (VisualDiagnostics.IsEnabled && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
 
 			return clone;
@@ -326,7 +201,9 @@ namespace Microsoft.Maui.Controls
 			base.Unapply(fromBindingContextChanged: fromBindingContextChanged);
 
 			if (_expression != null)
+			{
 				_expression.Unapply();
+			}
 		}
 	}
 }

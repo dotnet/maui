@@ -13,14 +13,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Entry TextColor property not working when the Text value is bound after some time";
 
 		[Test]
+		[Category(UITestCategories.Entry)]
 		public async Task EntryTextColorStopsWorkingAfterPropertyIsUpdatedFromBinding()
 		{
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Click a button to update the text
 			App.Tap("button");
-		
-			await Task.Yield();
+
+			await Task.Delay(1000); // Wait for Ripple Effect animation to complete.
 
 			await Task.Delay(1000); // Wait to complete the Ripple Effect animation.
 

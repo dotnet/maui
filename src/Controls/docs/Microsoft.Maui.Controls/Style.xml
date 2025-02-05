@@ -22,7 +22,6 @@
   </Attributes>
   <Docs>
     <summary>Class that contains triggers, setters, and behaviors that completely or partially define the appearance and behavior of a class of visual elements.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -51,7 +50,6 @@
       <Docs>
         <param name="targetType">The type of view to which the style will be applied.</param>
         <summary>Intitializes a new <see cref="T:Microsoft.Maui.Controls.Style" /> instance.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ApplyToDerivedTypes">
@@ -70,8 +68,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a Boolean value that controls whether the style should be applied to controls that are derived from the base type.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BasedOn">
@@ -93,7 +89,6 @@
       </ReturnValue>
       <Docs>
         <summary>The <see cref="T:Microsoft.Maui.Controls.Style" /> on which this <see cref="T:Microsoft.Maui.Controls.Style" /> is based.</summary>
-        <value>To be added.</value>
         <remarks>The <see cref="T:Microsoft.Maui.Controls.Style" /> supports a mechanism in XAML that is similar to inheritance in C#.</remarks>
       </Docs>
     </Member>
@@ -116,8 +111,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the key that identifies the <see cref="T:Microsoft.Maui.Controls.Style" /> on which this <see cref="T:Microsoft.Maui.Controls.Style" /> is based.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Behaviors">
@@ -139,8 +132,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the list of <see cref="T:Microsoft.Maui.Controls.Behavior" /> objects that belong to this <see cref="T:Microsoft.Maui.Controls.Style" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CanCascade">
@@ -159,8 +150,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a Boolean value that controls whether, when applying an explicit style to a control, an implicit style that targets the same control should also be applied.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Class">
@@ -179,8 +168,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the class for the style.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Setters">
@@ -202,8 +189,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the list of <see cref="T:Microsoft.Maui.Controls.Setter" /> objects that belong to this <see cref="T:Microsoft.Maui.Controls.Style" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TargetType">
@@ -225,7 +210,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the type of object that this style can describe. See Remarks.</summary>
-        <value>To be added.</value>
         <remarks>
           <p>Developers should be aware that implicit styles are only applied to the specific type that is described by <see cref="P:Microsoft.Maui.Controls.Style.TargetType" />, and not to types that inherit from it.</p>
         </remarks>
@@ -250,8 +234,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the list of <see cref="T:Microsoft.Maui.Controls.Trigger" /> objects that belong to this <see cref="T:Microsoft.Maui.Controls.Style" />.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

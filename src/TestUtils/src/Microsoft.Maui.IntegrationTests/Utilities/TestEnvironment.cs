@@ -69,11 +69,11 @@ namespace Microsoft.Maui.IntegrationTests
 			var rootDir = Environment.GetEnvironmentVariable("AGENT_TEMPDIRECTORY");
 			if (Directory.Exists(rootDir))
 			{
-				_testOutputDirectory = Path.Combine(rootDir, $"test-intg");
+				_testOutputDirectory = Path.Combine(rootDir, $"test-dir");
 			}
 			else
 			{
-				_testOutputDirectory = Path.Combine(GetMauiDirectory(), "bin", "test-intg");
+				_testOutputDirectory = Path.Combine(GetMauiDirectory(), "bin", "test-dir");
 			}
 
 			Directory.CreateDirectory(_testOutputDirectory);
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.IntegrationTests
 			if (string.IsNullOrEmpty(sdkPath))
 				sdkPath = IsWindows
 					? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Android", "android-sdk")
-					: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Developer", "Xamarin", "android-sdk-macosx");
+					: Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Android", "sdk");
 
 			return sdkPath;
 		}

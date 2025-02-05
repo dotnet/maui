@@ -16,17 +16,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CarouselView)]
 		public void RemovingItemsShouldNotCauseCrash()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Windows });
 			_ = App.WaitForElement("addItemButton");
 			App.Tap("addItemButton");
+			App.WaitForElement("addItemButton");
 			App.Tap("addItemButton");
+			App.WaitForElement("addItemButton");
 			App.Tap("addItemButton");
+			App.WaitForElement("goToNextItemButton");
 			App.Tap("goToNextItemButton");
+			App.WaitForElement("goToNextItemButton");
 			App.Tap("goToNextItemButton");
+			App.WaitForElement("removeLastItemButton");
 			App.Tap("removeLastItemButton");
+			App.WaitForElement("removeLastItemButton");
 			App.Tap("removeLastItemButton");
+			App.WaitForElement("removeLastItemButton");
 			App.Tap("removeLastItemButton");
 		}
-
 	}
 }

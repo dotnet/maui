@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Specialized;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
@@ -37,7 +38,32 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return _defaultTemplate ?? (_defaultTemplate = new DataTemplate(() =>
 					{
 						var label = new Label();
-						label.SetBinding(Label.TextProperty, SearchHandler.DisplayMemberName ?? ".");
+
+						if (RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported)
+						{
+#pragma warning disable CS0618
+#if NET8_0
+#pragma warning disable IL2026 // FeatureGuardAttribute is not supported on .NET 8
+#endif
+							label.SetBinding(Label.TextProperty, SearchHandler.DisplayMemberName ?? ".");
+#if NET8_0
+#pragma warning restore IL2026 // FeatureGuardAttribute is not supported on .NET 8
+#endif
+#pragma warning restore CS0618
+						}
+						else
+						{
+#pragma warning disable CS0618
+							if (SearchHandler.DisplayMemberName is not null)
+							{
+								Application.Current?.FindMauiContext()?.CreateLogger<ShellSearchResultsRenderer>()?.LogError(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
+								throw new InvalidOperationException(TrimmerConstants.SearchHandlerDisplayMemberNameNotSupportedWarning);
+							}
+#pragma warning restore CS0618
+
+							label.SetBinding(Label.TextProperty, static (object o) => o);
+						}
+
 						label.HorizontalTextAlignment = TextAlignment.Center;
 						label.VerticalTextAlignment = TextAlignment.Center;
 
@@ -88,7 +114,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var template = SearchHandler.ItemTemplate;
 
 			if (template == null)
+			{
 				template = DefaultTemplate;
+			}
 
 			var cellId = ((IDataTemplateController)template.SelectDataTemplate(context, _context.Shell)).IdString;
 

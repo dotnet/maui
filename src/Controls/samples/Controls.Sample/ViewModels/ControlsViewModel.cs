@@ -39,6 +39,9 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(EntryPage), "Entry",
 				"The Entry control is used for single-line text input."),
 
+			new SectionModel(typeof(HybridWebViewPage), "HybridWebView",
+				"The HybridWebView control embeds web content locally and natively in an app."),
+
 			new SectionModel(typeof(ImagePage), "Image",
 				"Displays an image."),
 

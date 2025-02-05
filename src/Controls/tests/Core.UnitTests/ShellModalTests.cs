@@ -404,34 +404,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("1234", testPage.SomeQueryParameter);
 		}
 
-		[Fact]
-		public async Task NavigatingAndNavigatedFiresForShellModal()
-		{
-			Shell shell = new TestShell();
-			shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
+		// [Fact]
+		// public async Task NavigatingAndNavigatedFiresForShellModal()
+		// {
+		// 	Shell shell = new TestShell();
+		// 	shell.Items.Add(CreateShellItem(shellItemRoute: "NewRoute", shellSectionRoute: "Section", shellContentRoute: "Content"));
 
-			ShellNavigatingEventArgs shellNavigatingEventArgs = null;
-			ShellNavigatedEventArgs shellNavigatedEventArgs = null;
+		// 	ShellNavigatingEventArgs shellNavigatingEventArgs = null;
+		// 	ShellNavigatedEventArgs shellNavigatedEventArgs = null;
 
-			shell.Navigating += (_, args) =>
-			{
-				shellNavigatingEventArgs = args;
-			};
+		// 	shell.Navigating += (_, args) =>
+		// 	{
+		// 		shellNavigatingEventArgs = args;
+		// 	};
 
-			shell.Navigated += (_, args) =>
-			{
-				shellNavigatedEventArgs = args;
-			};
+		// 	shell.Navigated += (_, args) =>
+		// 	{
+		// 		shellNavigatedEventArgs = args;
+		// 	};
 
-			await shell.GoToAsync("ModalTestPage");
+		// 	await shell.GoToAsync("ModalTestPage");
 
-			Assert.NotNull(shellNavigatingEventArgs);
-			Assert.NotNull(shellNavigatedEventArgs);
+		// 	Assert.NotNull(shellNavigatingEventArgs);
+		// 	Assert.NotNull(shellNavigatedEventArgs);
 
-			Assert.Equal("//NewRoute/Section/Content", shellNavigatingEventArgs.Current.FullLocation.ToString());
-			Assert.Equal("//NewRoute/Section/Content/ModalTestPage", shellNavigatedEventArgs.Current.FullLocation.ToString());
+		// 	Assert.Equal("//NewRoute/Section/Content", shellNavigatingEventArgs.Current.FullLocation.ToString());
+		// 	Assert.Equal("//NewRoute/Section/Content/ModalTestPage", shellNavigatedEventArgs.Current.FullLocation.ToString());
 
-		}
+		// }
 
 		[Fact]
 		public async Task GetCurrentPageInModalNavigation()

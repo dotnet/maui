@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 		public FocusEventArgs(VisualElement visualElement, bool isFocused)
 		{
 			if (visualElement == null)
-				throw new ArgumentNullException("visualElement");
+				throw new ArgumentNullException(nameof(visualElement));
 
 			VisualElement = visualElement;
 			IsFocused = isFocused;

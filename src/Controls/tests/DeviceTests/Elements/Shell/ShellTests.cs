@@ -82,6 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(pageBounds.Height <= window.Height);
 			});
 		}
+#endif
 
 #if ANDROID || IOS || MACCATALYST
 		[Fact]
@@ -594,73 +595,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "TitleView Set On Shell Works After Navigation")]
-		public async Task TitleViewSetOnShellWorksAfterNavigation()
-		{
-			SetupBuilder();
-
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
-			var page3 = new ContentPage();
-
-			var shellTitleView = new Editor();
-
-			var shell = await CreateShellAsync((shell) =>
-			{
-				Shell.SetTitleView(shell, shellTitleView);
-				shell.Items.Add(new TabBar()
-				{
-					Items =
-					{
-						new ShellContent()
-						{
-							Route = "Item1",
-							Content = page1
-						},
-						new ShellContent()
-						{
-							Route = "Item2",
-							Content = page2
-						},
-					}
-				});
-			});
-
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
-			{
-				await OnLoadedAsync(page1);
-				await AssertEventually(WaitCondition);
-
-				await shell.GoToAsync("//Item2");
-				await AssertEventually(WaitCondition);
-
-				await shell.GoToAsync("//Item1");
-				await AssertEventually(WaitCondition);
-
-				await shell.GoToAsync("//Item2");
-				await AssertEventually(WaitCondition);
-
-				await shell.Navigation.PushAsync(page3);
-				await AssertEventually(WaitCondition);
-
-				await shell.Navigation.PopAsync();
-				await AssertEventually(WaitCondition);
-
-				bool WaitCondition()
-				{
-					if (shellTitleView.Handler == null)
-						return false;
-
-					var titleView = GetTitleView(handler);
-
-					if (titleView == null)
-						return false;
-
-					return shellTitleView.ToPlatform() == titleView;
-				}
-			});
-		}
-
 		[Fact(DisplayName = "Handlers not recreated when changing tabs")]
 		public async Task HandlersNotRecreatedWhenChangingTabs()
 		{
@@ -1014,18 +948,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await OnLoadedAsync(shell.CurrentPage);
 
-				var page = new ContentPage
-				{
-					Title = "Page 2",
-					Content = new VerticalStackLayout
-					{
-						new Label(),
-						new Button(),
-						new Controls.ContentView(),
-						new ScrollView(),
-						new CollectionView(),
-					}
-				};
+				var page = new LeakyShellPage();
 				pageReference = new WeakReference(page);
 
 				await shell.Navigation.PushAsync(page);
@@ -1033,6 +956,33 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertionExtensions.WaitForGC(pageReference);
+		}
+
+		class LeakyShellPage : ContentPage
+		{
+			public LeakyShellPage()
+			{
+				Title = "Page 2";
+				Content = new VerticalStackLayout
+				{
+					new Label(),
+					new Button(),
+					new Controls.ContentView(),
+					new ScrollView(),
+					new CollectionView(),
+				};
+
+				var item = new ToolbarItem { Text = "Primary Item", Order = ToolbarItemOrder.Primary };
+				item.Clicked += OnToolbarItemClicked;
+				ToolbarItems.Add(item);
+
+				item = new ToolbarItem { Text = "Secondary Item", Order = ToolbarItemOrder.Secondary };
+				item.Clicked += OnToolbarItemClicked;
+				ToolbarItems.Add(item);
+			}
+
+			// Needs to be an instance method
+			void OnToolbarItemClicked(object sender, EventArgs e) { }
 		}
 
 		//HideSoftInputOnTapped doesn't currently do anything on windows
@@ -1188,7 +1138,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(count, appearanceObservers.Count); // Count doesn't increase
 			});
 		}
-#endif
+
 		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>
 			{

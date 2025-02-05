@@ -12,8 +12,6 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="FormatRoute">
@@ -34,9 +32,6 @@
       </Parameters>
       <Docs>
         <param name="segments">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FormatRoute">
@@ -57,9 +52,6 @@
       </Parameters>
       <Docs>
         <param name="route">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetOrCreateContent">
@@ -80,9 +72,6 @@
       </Parameters>
       <Docs>
         <param name="route">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetRoute">
@@ -103,9 +92,6 @@
       </Parameters>
       <Docs>
         <param name="obj">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RegisterRoute">
@@ -128,8 +114,6 @@
       <Docs>
         <param name="route">To be added.</param>
         <param name="type">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RegisterRoute">
@@ -152,8 +136,6 @@
       <Docs>
         <param name="route">To be added.</param>
         <param name="factory">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RouteProperty">
@@ -170,8 +152,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetRoute">
@@ -194,8 +174,6 @@
       <Docs>
         <param name="obj">To be added.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UnRegisterRoute">
@@ -216,8 +194,6 @@
       </Parameters>
       <Docs>
         <param name="route">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

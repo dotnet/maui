@@ -1,11 +1,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Items))]
 	[AcceptEmptyServiceProvider]
+#if !NETSTANDARD
+	[RequiresDynamicCode("ArrayExtension is not AOT safe.")]
+#endif
 	public class ArrayExtension : IMarkupExtension<Array>
 	{
 		public ArrayExtension()

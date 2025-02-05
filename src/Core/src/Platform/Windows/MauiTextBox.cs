@@ -1,6 +1,6 @@
-﻿#nullable enable
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Platform
 {
@@ -9,8 +9,6 @@ namespace Microsoft.Maui.Platform
 		const string ContentElementName = "ContentElement";
 		const string PlaceholderTextContentPresenterName = "PlaceholderTextContentPresenter";
 		const string DeleteButtonElementName = "DeleteButton";
-		const string ButtonStatesName = "ButtonStates";
-		const string ButtonVisibleStateName = "ButtonVisible";
 
 		public static void InvalidateAttachedProperties(DependencyObject obj)
 		{
@@ -39,14 +37,16 @@ namespace Microsoft.Maui.Platform
 
 			var scrollViewer = element?.GetDescendantByName<ScrollViewer>(ContentElementName);
 			if (scrollViewer is not null)
+			{
 				scrollViewer.VerticalAlignment = verticalAlignment;
+			}
 
 			var placeholder = element?.GetDescendantByName<TextBlock>(PlaceholderTextContentPresenterName);
 			if (placeholder is not null)
+			{
 				placeholder.VerticalAlignment = verticalAlignment;
+			}
 		}
-
-		// IsDeleteButtonEnabled
 
 		public static bool GetIsDeleteButtonEnabled(DependencyObject obj) =>
 			(bool)obj.GetValue(IsDeleteButtonEnabledProperty);
@@ -60,56 +60,30 @@ namespace Microsoft.Maui.Platform
 
 		static void OnIsDeleteButtonEnabledPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs? e = null)
 		{
-			// TODO: cache the buttonStates and buttonVisibleState values on the textBox
-
-			var element = d as FrameworkElement;
-
-			VisualStateGroup? buttonStates = null;
-			VisualState? buttonVisibleState = null;
-			var deleteButton = element?.GetDescendantByName<Button>(DeleteButtonElementName);
-			if (deleteButton?.Parent is Grid rootGrid)
-				(buttonStates, buttonVisibleState) = InterceptDeleteButtonVisualStates(rootGrid);
-
-			var states = buttonStates?.States;
-			if (element is not null && states is not null && buttonVisibleState is not null)
+			if (d is not FrameworkElement element)
 			{
-				var isEnabled = GetIsDeleteButtonEnabled(element);
-				var contains = states.Contains(buttonVisibleState);
-				if (isEnabled && !contains)
-					states.Add(buttonVisibleState);
-				else if (!isEnabled && contains)
-					states.Remove(buttonVisibleState);
-			}
-		}
-
-		static (VisualStateGroup? Group, VisualState? State) InterceptDeleteButtonVisualStates(FrameworkElement? element)
-		{
-			// not the content we expected
-			if (element is null)
-				return (null, null);
-
-			// find "ButtonStates"
-			var visualStateGroups = VisualStateManager.GetVisualStateGroups(element);
-			VisualStateGroup? buttonStates = null;
-			foreach (var group in visualStateGroups)
-			{
-				if (group.Name == ButtonStatesName)
-					buttonStates = group;
+				return;
 			}
 
-			// no button states
-			if (buttonStates is null)
-				return (null, null);
+			Button? deleteButton = element.GetDescendantByName<Button>(DeleteButtonElementName);
 
-			// find and return the "ButtonVisible" state
-			foreach (var state in buttonStates.States)
+			// Adjust the second column's width to 'Auto' when the delete button is enabled, and set it to zero when disabled.
+			// Disables the delete button when ClearButtonVisibility is set to Never, and enables it otherwise.
+			// In WinUI, they set the opacity to '0' when the button is disabled. Here, we use IsEnabled to manage visibility.
+			if (deleteButton?.Parent is Grid rootGrid && rootGrid.ColumnDefinitions.Count > 1)
 			{
-				if (state.Name == ButtonVisibleStateName)
-					return (buttonStates, state);
+				int deleteButtonColumnIndex = Grid.GetColumn(deleteButton);
+				if (GetIsDeleteButtonEnabled(element))
+				{
+					rootGrid.ColumnDefinitions[deleteButtonColumnIndex].Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Auto);
+					deleteButton.IsEnabled = true;
+				}
+				else
+				{
+					rootGrid.ColumnDefinitions[deleteButtonColumnIndex].Width = new UI.Xaml.GridLength(0);
+					deleteButton.IsEnabled = false;
+				}
 			}
-
-			// no button visible state
-			return (null, null);
 		}
 	}
 }
