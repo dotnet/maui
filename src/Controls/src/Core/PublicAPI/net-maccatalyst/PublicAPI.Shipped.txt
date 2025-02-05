@@ -1286,11 +1286,9 @@
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellNavBarAppearanceTracker.SetAppearance(UIKit.UINavigationController controller, Microsoft.Maui.Controls.ShellAppearance appearance) -> void
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellNavBarAppearanceTracker.UpdateLayout(UIKit.UINavigationController controller) -> void
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.Page.get -> Microsoft.Maui.Controls.Page
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.Page.set -> void
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.ShellPageRendererTracker(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context) -> void
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.TitleViewContainer(Microsoft.Maui.Controls.View view) -> void
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.ViewController.get -> UIKit.UIViewController
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.ViewController.set -> void
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchResultsRenderer.ShellSearchResultsRenderer(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext context) -> void
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ShellSection.get -> Microsoft.Maui.Controls.ShellSection
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ShellSection.set -> void
