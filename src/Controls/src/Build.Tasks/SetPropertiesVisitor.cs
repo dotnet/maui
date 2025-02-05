@@ -337,7 +337,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 							yield return Create(Ldloc, vardefref.VariableDefinition);
 							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "StringFormat"));
 							yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase"), propertyName: "StringFormat"));
-							
+
 							if (bindingExtensionType.Value.Item3 == "BindingExtension")
 							{
 								// // extension.TypedBinding.Source = extension.Source;
@@ -364,7 +364,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								yield return Create(Ldloc, vardefref.VariableDefinition);
 								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TargetNullValue"));
 								yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase"), propertyName: "TargetNullValue"));
-							} else //TemplateBindingExtension
+							}
+							else //TemplateBindingExtension
 							{
 								// extension.TypedBinding.Source = RelativeBindingSource.TemplatedParent,
 								yield return Create(Ldloc, vardefref.VariableDefinition);
@@ -661,7 +662,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				return GetParent(node) is IElementNode parentNode
 					&& node.TryGetPropertyName(parentNode, out XmlName propertyName)
-					&& parentNode.XmlType.TryGetTypeReference(context.Cache, module, (IXmlLineInfo)node, out TypeReference parentTypeRef)
+					&& parentNode.XmlType.TryGetTypeReference(context.Cache, module, (IXmlLineInfo)node, false, out TypeReference parentTypeRef)
 					&& parentTypeRef.ResolveCached(context.Cache) is TypeDefinition parentType
 					&& parentType.GetProperty(context.Cache, pd => pd.Name == propertyName.LocalName, out var propertyDeclaringTypeRef) is PropertyDefinition propertyDef
 					&& propertyDef.CustomAttributes.Any(ca => ca.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.DoesNotInheritDataTypeAttribute");
