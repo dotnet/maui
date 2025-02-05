@@ -28,25 +28,12 @@ namespace Maui.Controls.Sample
 			Action ActivatePageAndNavigate(IssueAttribute issueAttribute, Type type)
 			{
 				Action navigationAction = null;
+				
 				if (issueAttribute.IsInternetRequired)
 				{
-					try
-					{
-						using (var httpClient = new HttpClient())
-						using (var httpResponse = httpClient.GetAsync(@"https://www.github.com"))
-						{
-							httpResponse.Wait();
-							if (httpResponse.Result.StatusCode != System.Net.HttpStatusCode.OK)
-							{
-								return () =>
-								{
-									var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
-									Application.Current.Windows[0].Page = noInternetConnectionPage;
-								};
-							}
-						}
-					}
-					catch
+					NetworkAccess accessType = Connectivity.Current.NetworkAccess;
+
+					if (accessType != NetworkAccess.Internet)
 					{
 						return () =>
 						{
