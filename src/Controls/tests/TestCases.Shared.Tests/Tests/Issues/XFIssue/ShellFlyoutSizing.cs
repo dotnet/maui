@@ -23,7 +23,7 @@ public class ShellFlyoutSizing : _IssuesUITest
 #endif
 
 #if ANDROID // Appium's GetRect method returns different sizes across platforms.
-    int difference = 26;
+	int difference = 26;
 #elif IOS || WINDOWS
 	int difference = 10;
 #elif MACCATALYST

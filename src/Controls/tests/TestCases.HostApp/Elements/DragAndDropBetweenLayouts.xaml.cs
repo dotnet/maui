@@ -84,7 +84,7 @@ namespace Maui.Controls.Sample
 
 			sl.Background = SolidColorBrush.LightBlue;
 
-			dragLeaveEvent.Text= "DragLeave";
+			dragLeaveEvent.Text = "DragLeave";
 		}
 
 		void OnDrop(object sender, DropEventArgs e)

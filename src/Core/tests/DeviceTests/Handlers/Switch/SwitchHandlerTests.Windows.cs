@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.UI.Xaml.Controls;
 using Xunit;
 using Color = Microsoft.Maui.Graphics.Color;
 
