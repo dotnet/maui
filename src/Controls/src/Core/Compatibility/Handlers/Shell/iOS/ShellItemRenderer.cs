@@ -311,7 +311,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateMoreCellsEnabled();
 		}
 
-		private void UpdateCellsEnabled()
+		void UpdateCellsEnabled()
 		{
 			for (int i = 0; i < TabBar.Items.Length; i++)
 			{

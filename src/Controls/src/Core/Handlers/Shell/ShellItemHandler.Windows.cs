@@ -417,14 +417,20 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		private void OnShellItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		void OnShellItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (_mainLevelTabs == null || sender is not BaseShellItem shellItem)
+			{
 				return;
+			}
+
 			for (int i = 0; i < _mainLevelTabs.Count; i++)
 			{
 				if (_mainLevelTabs[i].Data != sender)
+				{
 					continue;
+				}
+
 				switch (e.PropertyName)
 				{
 					case nameof(BaseShellItem.IsEnabled):
