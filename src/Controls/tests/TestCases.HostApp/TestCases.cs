@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample
 			Action ActivatePageAndNavigate(IssueAttribute issueAttribute, Type type)
 			{
 				Action navigationAction = null;
-
+				
 				if (issueAttribute.IsInternetRequired)
 				{
 					NetworkAccess accessType = Connectivity.Current.NetworkAccess;

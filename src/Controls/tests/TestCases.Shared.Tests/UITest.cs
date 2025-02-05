@@ -236,6 +236,39 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
+		protected void VerifyInternetConnectivity()
+		{
+			try  // First Try Block: Check the device's network connectivity by making an HTTP request to GitHub
+			{
+				using (var httpClient = new HttpClient())
+				using (var httpResponse = httpClient.GetAsync(@"https://www.github.com"))
+				{
+					httpResponse.Wait();
+					if (httpResponse.Result.StatusCode != System.Net.HttpStatusCode.OK)
+					{
+						Assert.Inconclusive("This device doesn't have internet access");
+					}
+					else
+					{
+						// Continue with the test
+					}
+				}
+			}
+			catch
+			{
+				Assert.Inconclusive("This device doesn't have internet access");
+			}
+			try  // Second Try Block: Check the emulator's Wi-Fi and internet connectivity status
+			{
+				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(1));
+				Assert.Inconclusive("This device doesn't have internet access");
+			}
+			catch (TimeoutException)
+			{
+				// Continue with the test
+			}
+		}
+
 		public override void TestSetup()
 		{
 			base.TestSetup();
