@@ -275,6 +275,8 @@ namespace Microsoft.Maui.Controls.Handlers
 						autoSuggestBox.TextChanged += OnSearchBoxTextChanged;
 						autoSuggestBox.QuerySubmitted += OnSearchBoxQuerySubmitted;
 						autoSuggestBox.SuggestionChosen += OnSearchBoxSuggestionChosen;
+						autoSuggestBox.GotFocus += OnSearchBoxGotFocus;
+						autoSuggestBox.LostFocus += OnSearchBoxLostFocus;
 						mauiNavView.AutoSuggestBox = autoSuggestBox;
 					}
 
@@ -308,6 +310,16 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.Visibility = UI.Xaml.Visibility.Collapsed;
 				}
 			}
+		}
+
+		void OnSearchBoxGotFocus(object sender, RoutedEventArgs e)
+		{
+			_currentSearchHandler?.SetIsFocused(true);
+		}
+
+		void OnSearchBoxLostFocus(object sender, RoutedEventArgs e)
+		{
+			_currentSearchHandler?.SetIsFocused(false);
 		}
 
 		void OnSearchBoxTextChanged(Microsoft.UI.Xaml.Controls.AutoSuggestBox sender, Microsoft.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)
