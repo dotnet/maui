@@ -32,6 +32,9 @@ namespace Microsoft.Maui.Handlers
 
 		public IElement? VirtualView { get; private protected set; }
 
+		/// <summary><see langword="true"/> when view's properties are being set through its mapper for the first time, <see langword="false"/> otherwise.</summary>
+		internal bool _isInitializing;
+
 		public virtual void SetMauiContext(IMauiContext mauiContext) =>
 			MauiContext = mauiContext;
 
@@ -47,10 +50,21 @@ namespace Microsoft.Maui.Handlers
 			bool setupPlatformView = oldVirtualView == null;
 
 			VirtualView = view;
-			PlatformView ??= CreatePlatformElement();
+
+			bool isNew = false;
+
+			if (PlatformView is null)
+			{
+				PlatformView = CreatePlatformElement();
+				isNew = true;
+			}
+
+			_isInitializing = isNew;
 
 			if (VirtualView.Handler != this)
+			{
 				VirtualView.Handler = this;
+			}
 
 			// We set the previous virtual view to null after setting it on the incoming virtual view.
 			// This makes it easier for the incoming virtual view to have influence
@@ -77,6 +91,8 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			_mapper.UpdateProperties(this, VirtualView);
+
+			_isInitializing = false;
 		}
 
 		public virtual void UpdateValue(string property)
