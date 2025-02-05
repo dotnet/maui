@@ -31,6 +31,9 @@ namespace Microsoft.Maui.Handlers
 			new PropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
 #endif
 			{
+				// This property is a special one and needs to be set before other properties.
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
+
 				[nameof(IView.AutomationId)] = MapAutomationId,
 				[nameof(IView.Clip)] = MapClip,
 				[nameof(IView.Shadow)] = MapShadow,
@@ -56,7 +59,6 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IView.RotationY)] = MapRotationY,
 				[nameof(IView.AnchorX)] = MapAnchorX,
 				[nameof(IView.AnchorY)] = MapAnchorY,
-				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 #pragma warning disable CS0618 // Type or member is obsolete
 				[nameof(IBorder.Border)] = MapBorderView,
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -244,6 +246,8 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapMinimumHeight(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler() && double.IsNaN(view.MinimumHeight)) return;
+
 			((PlatformView?)handler.PlatformView)?.UpdateMinimumHeight(view);
 		}
 
@@ -254,6 +258,8 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapMaximumHeight(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler() && double.IsNaN(view.MaximumHeight)) return;
+
 			((PlatformView?)handler.PlatformView)?.UpdateMaximumHeight(view);
 		}
 
@@ -264,6 +270,8 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapMinimumWidth(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler() && double.IsNaN(view.MinimumWidth)) return;
+
 			((PlatformView?)handler.PlatformView)?.UpdateMinimumWidth(view);
 		}
 
@@ -274,6 +282,8 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapMaximumWidth(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler() && double.IsNaN(view.MaximumWidth)) return;
+
 			((PlatformView?)handler.PlatformView)?.UpdateMaximumWidth(view);
 		}
 
@@ -294,6 +304,8 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapVisibility(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler() && view.Visibility == Visibility.Visible) return;
+
 			if (handler.HasContainer)
 				((PlatformView?)handler.ContainerView)?.UpdateVisibility(view);
 
@@ -330,6 +342,8 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapFlowDirection(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler() && view.FlowDirection == FlowDirection.MatchParent) return;
+
 			((PlatformView?)handler.PlatformView)?.UpdateFlowDirection(view);
 		}
 
@@ -340,6 +354,8 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapOpacity(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler() && view.Opacity == 1) return;
+
 			if (handler.HasContainer)
 			{
 				((PlatformView?)handler.ContainerView)?.UpdateOpacity(view);
@@ -357,6 +373,8 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapAutomationId(IViewHandler handler, IView view)
 		{
+			if (handler.IsConnectingHandler() && view.AutomationId is null) return;
+
 			((PlatformView?)handler.PlatformView)?.UpdateAutomationId(view);
 		}
 
@@ -367,7 +385,13 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapClip(IViewHandler handler, IView view)
 		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			if (handler.IsConnectingHandler() && view.Clip is null) return;
+
+			if (!handler.IsMappingProperties())
+			{
+				// ContainerView is already being mapped
+				handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			}
 
 			((PlatformView?)handler.ContainerView)?.UpdateClip(view);
 		}
@@ -379,7 +403,13 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="IView"/> instance.</param>
 		public static void MapShadow(IViewHandler handler, IView view)
 		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			if (handler.IsConnectingHandler() && view.Shadow is null) return;
+
+			if (!handler.IsMappingProperties())
+			{
+				// ContainerView is already being mapped
+				handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			}
 
 			((PlatformView?)handler.ContainerView)?.UpdateShadow(view);
 		}
