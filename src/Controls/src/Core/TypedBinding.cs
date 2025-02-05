@@ -53,9 +53,9 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		internal string UpdateSourceEventName
+		public string UpdateSourceEventName
 		{
-			get { return _updateSourceEventName; }
+			internal get { return _updateSourceEventName; }
 			set
 			{
 				ThrowIfApplied();

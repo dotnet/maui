@@ -31,12 +31,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(() =>
 			{
-			    var child = new Label { Text = "Content 1" };
-			    var contentView = new Microsoft.Maui.Controls.ContentView();
-			    var header = new Label { Text = "Header" };
-			    var footer = new Label { Text = "Footer" };
-			    var presenter = new ContentPresenter();
-			    var grid = new Grid();
+				var child = new Label { Text = "Content 1" };
+				var contentView = new Microsoft.Maui.Controls.ContentView();
+				var header = new Label { Text = "Header" };
+				var footer = new Label { Text = "Footer" };
+				var presenter = new ContentPresenter();
+				var grid = new Grid();
 				var contentViewHandler = CreateHandler<ContentViewHandler>(contentView);
 				contentView.Content = child;
 				Assert.True(GetChildCount(contentViewHandler) == 1);

@@ -29,7 +29,7 @@ public class SwipeBackNavCrash : _IssuesUITest
 
 #if !MACCATALYST //SwipeActions not working in Catalyst
 	[Test]
-	public void SwipeBackNavCrashTestsSwipeBackDoesNotCrash ()
+	public void SwipeBackNavCrashTestsSwipeBackDoesNotCrash()
 	{
 		App.WaitForElement("Swipe lightly left and right to crash this page");
 		App.SwipeLeftToRight();
