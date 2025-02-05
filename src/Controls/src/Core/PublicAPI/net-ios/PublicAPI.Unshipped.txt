@@ -345,3 +345,5 @@ override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWin
 ~Microsoft.Maui.Controls.SearchBar.SearchIconColor.set -> void
 ~static readonly Microsoft.Maui.Controls.SearchBar.SearchIconColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~Microsoft.Maui.Controls.Internals.TypedBindingBase.UpdateSourceEventName.set -> void
+~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.GetRippleColor(Microsoft.Maui.Controls.BindableObject element) -> Microsoft.Maui.Graphics.Color
+~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.GetRippleColor(Microsoft.Maui.Controls.BindableObject element) -> Microsoft.Maui.Graphics.Color
