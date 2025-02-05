@@ -140,8 +140,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			var tabBarVisible = Shell.GetTabBarIsVisible(Page) ? true : (Page.FindParentOfType<ShellItem>() as IShellItemController)?.ShowTabs ?? false;
-
-			ViewController.HidesBottomBarWhenPushed = !tabBarVisible;
+			// In iOS 18, the tab bar visibility is effectively managed by the TabBarHidden property in ShellItemRenderer.
+			if (!(OperatingSystemMacCatalyst18Workaround.IsMacCatalystVersionAtLeast18() || OperatingSystem.IsIOSVersionAtLeast(18)))
+			{
+				ViewController.HidesBottomBarWhenPushed = !tabBarVisible;
+			}
 		}
 
 		void OnToolbarPropertyChanged(object sender, PropertyChangedEventArgs e)
