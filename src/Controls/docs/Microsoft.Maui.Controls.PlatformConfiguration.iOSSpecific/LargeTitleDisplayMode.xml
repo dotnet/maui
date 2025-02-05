@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Enumerates preferences for displaying large titles.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Always">

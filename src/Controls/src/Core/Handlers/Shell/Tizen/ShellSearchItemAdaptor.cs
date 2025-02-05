@@ -1,5 +1,6 @@
 using System.Collections;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Internals;
 using GColor = Microsoft.Maui.Graphics.Color;
 using GColors = Microsoft.Maui.Graphics.Colors;
 
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				TextColor = GColors.Black,
 			};
-			label.SetBinding(Label.TextProperty, new Binding("."));
+			label.SetBinding(Label.TextProperty, static (object source) => source);
 
 			return new Controls.StackLayout
 			{

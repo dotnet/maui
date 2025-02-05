@@ -1,4 +1,7 @@
-﻿using System.Collections.ObjectModel;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -48,6 +51,51 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, (handler) =>
 			{
+				// Validate that no exceptions are thrown
+				var collectionViewHandler = (IElementHandler)collectionView.Handler;
+				collectionViewHandler.DisconnectHandler();
+
+				((IElementHandler)handler).DisconnectHandler();
+
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "CollectionView Disconnects Correctly with MultiSelection")]
+		public async Task CollectionViewHandlerDisconnectsWithMultiSelect()
+		{
+			SetupBuilder();
+
+			ObservableCollection<string> data = new ObservableCollection<string>()
+			{
+				"Item 1",
+				"Item 2",
+				"Item 3"
+			};
+
+			var collectionView = new CollectionView()
+			{
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					return new VerticalStackLayout()
+					{
+						new Label()
+					};
+				}),
+				SelectionMode = SelectionMode.Multiple,
+				ItemsSource = data
+			};
+
+			var layout = new VerticalStackLayout()
+			{
+				collectionView
+			};
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, (handler) =>
+			{
+				collectionView.SelectedItems.Add(data[0]);
+				collectionView.SelectedItems.Add(data[2]);
+
 				// Validate that no exceptions are thrown
 				var collectionViewHandler = (IElementHandler)collectionView.Handler;
 				collectionViewHandler.DisconnectHandler();
@@ -167,6 +215,53 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ValidateCorrectHorzScroll()
+		{
+			SetupBuilder();
+			ObservableCollection<string> data = new ObservableCollection<string>()
+			{
+				"Item 1",
+				"Item 2",
+				"Item 3"
+			};
+
+			var collectionView = new CollectionView()
+			{
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					return new VerticalStackLayout()
+					{
+						new Label()
+					};
+				}),
+				ItemsSource = data,
+				ItemsLayout = new GridItemsLayout(ItemsLayoutOrientation.Horizontal)
+				{
+					Span = 2,
+					HorizontalItemSpacing = 4,
+					VerticalItemSpacing = 4
+				}
+			};
+
+			var layout = new VerticalStackLayout()
+			{
+				collectionView
+			};
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async (handler) =>
+			{
+				await Task.Delay(100);
+
+				var cvHandler = (CollectionViewHandler)collectionView.Handler;
+				var control = cvHandler.PlatformView;
+
+				var horzScrollMode = (Microsoft.UI.Xaml.Controls.ScrollMode)control.GetValue(UI.Xaml.Controls.ScrollViewer.HorizontalScrollModeProperty);
+				var vertScrollMode = (Microsoft.UI.Xaml.Controls.ScrollMode)control.GetValue(UI.Xaml.Controls.ScrollViewer.VerticalScrollModeProperty);
+				Assert.True(horzScrollMode == UI.Xaml.Controls.ScrollMode.Enabled);
+				Assert.True(vertScrollMode == UI.Xaml.Controls.ScrollMode.Disabled);
+			});
+		}
+
+		[Fact]
 		public async Task ValidateSendRemainingItemsThresholdReached()
 		{
 			SetupBuilder();
@@ -201,6 +296,45 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(200);
 				Assert.True(data.Count == 30);
 			});
+		}
+
+		[Fact]
+		public async Task VerifyGroupCollectionDoesntLeak()
+		{
+			var groupHeaderTemplate = new Controls.DataTemplate(() =>
+			{
+				var label = new Label();
+				label.SetBinding(Label.TextProperty, new Binding("Name"));
+				return label;
+			});
+			var footerTemplate = new Controls.DataTemplate(() =>
+			{
+				var label = new Label();
+				label.SetBinding(Label.TextProperty, new Binding("Count"));
+				return label;
+			});
+			var itemTemplate = new Controls.DataTemplate(() =>
+			{
+				var label = new Label();
+				label.SetBinding(Label.TextProperty, new Binding("Name"));
+				return label;
+			});
+
+			WeakReference reference;
+			var itemSource = new ObservableCollection<string>() { "Hello", "World" };
+			{
+				var collection = new GroupedItemTemplateCollection(itemSource,
+					itemTemplate, groupHeaderTemplate, footerTemplate, null);
+
+				reference = new WeakReference(collection);
+				collection.Dispose();
+			}
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.False(reference.IsAlive, "Subscriber should not be alive!");
 		}
 
 		[Fact]
@@ -259,6 +393,35 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return cellContent.ToPlatform().GetParentOfType<ItemContentControl>().GetBoundingBox();
+		}
+
+		class Subscriber
+		{
+			public void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e) { }
+		}
+
+		private interface IItem { }
+
+		private class AnimalGroup : ObservableCollection<IItem>, IItem
+		{
+			internal string Name { get; }
+
+			internal AnimalGroup(string name, ObservableCollection<IItem> animals) : base(animals)
+			{
+				Name = name;
+			}
+		}
+
+		private class Animal : IItem
+		{
+			internal string Name { get; }
+			internal string Location { get; }
+
+			internal Animal(string name, string location)
+			{
+				Name = name;
+				Location = location;
+			}
 		}
 	}
 }

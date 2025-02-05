@@ -1,10 +1,15 @@
 #addin nuget:?package=Cake.Android.Adb&version=3.2.0
 #addin nuget:?package=Cake.Android.AvdManager&version=2.2.0
-#load "../cake/helpers.cake"
-#load "../cake/dotnet.cake"
-#load "./devices-shared.cake"
+#load "./uitests-shared.cake"
 
 const int DefaultApiLevel = 30;
+
+Information("Local Dotnet: {0}", localDotnet);
+
+if (EnvironmentVariable("JAVA_HOME") == null)
+{
+	throw new Exception("JAVA_HOME environment variable isn't set. Set it to your JDK installation (e.g. \"C:\\Program Files (x86)\\Android\\openjdk\\jdk-17.0.8.101-hotspot\\bin\").");
+}
 
 string DEFAULT_ANDROID_PROJECT = "../../src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj";
 var projectPath = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_ANDROID_PROJECT);
@@ -18,17 +23,11 @@ var testAppInstrumentation = Argument("instrumentation", EnvironmentVariable("AN
 var testResultsPath = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? GetTestResultsDirectory()?.FullPath);
 var deviceCleanupEnabled = Argument("cleanup", true);
 
-// Test where clause
-string testWhere = Argument("where", EnvironmentVariable("NUNIT_TEST_WHERE") ?? "");
-
 // Device details
 var deviceSkin = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 var androidAvd = "DEVICE_TESTS_EMULATOR";
 var androidAvdImage = "";
 var deviceArch = "";
-bool deviceBoot = Argument("boot", true);
-bool deviceBootWait = Argument("wait", true);
-
 var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? DefaultApiLevel.ToString());
 
 // Directory setup
@@ -40,6 +39,9 @@ string DEVICE_NAME = "";
 string DEVICE_OS = "";
 
 // Android SDK setup
+Information("ANDROID_SDK_ROOT: {0}", EnvironmentVariable("ANDROID_SDK_ROOT"));
+Information("ANDROID_HOME: {0}", EnvironmentVariable("ANDROID_HOME"));
+
 var androidSdkRoot = GetAndroidSDKPath();
 
 SetAndroidEnvironmentVariables(androidSdkRoot);
@@ -48,6 +50,7 @@ Information("Android SDK Root: {0}", androidSdkRoot);
 Information("Project File: {0}", projectPath);
 Information("Build Binary Log (binlog): {0}", binlogDirectory);
 Information("Build Configuration: {0}", configuration);
+Information("Build Target Framework: {0}", targetFramework);
 
 var avdSettings = new AndroidAvdManagerToolSettings { SdkRoot = androidSdkRoot };
 var adbSettings = new AdbToolSettings { SdkRoot = androidSdkRoot };
@@ -61,6 +64,7 @@ var dotnetToolPath = GetDotnetToolPath();
 Setup(context =>
 {
 	LogSetupInfo(dotnetToolPath);
+
 	PerformCleanupIfNeeded(deviceCleanupEnabled);
 
 	DetermineDeviceCharacteristics(testDevice, DefaultApiLevel);
@@ -70,7 +74,12 @@ Setup(context =>
 
 Teardown(context =>
 {
-	CleanUpVirtualDevice(emulatorProcess, avdSettings);
+	// For the uitest-prepare target, just leave the virtual device running
+	if (! string.Equals(TARGET, "uitest-prepare", StringComparison.OrdinalIgnoreCase))
+	{
+		CleanUpVirtualDevice(emulatorProcess, avdSettings);
+	}
+
 });
 
 Task("boot");
@@ -90,22 +99,23 @@ Task("test")
 	});
 
 Task("uitest-build")
+	.IsDependentOn("dotnet-buildtasks")
 	.Does(() =>
 	{
 		ExecuteBuildUITestApp(testAppProjectPath, testDevice, binlogDirectory, configuration, targetFramework, "", dotnetToolPath);
-
 	});
+
+Task("uitest-prepare")
+	.Does(() =>
+	{
+		ExecutePrepareUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
+	});
+
 Task("uitest")
-	.IsDependentOn("uitest-build")
+	.IsDependentOn("uitest-prepare")
 	.Does(() =>
 	{
 		ExecuteUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
-	});
-
-Task("cg-uitest")
-	.Does(() =>
-	{
-		ExecuteCGLegacyUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, configuration, targetFramework, dotnetToolPath, testAppInstrumentation);
 	});
 
 Task("logcat")
@@ -115,43 +125,6 @@ Task("logcat")
 });
 
 RunTarget(TARGET);
-
-void ExecuteCGLegacyUITests(string project, string appProject, string appPackageName, string device, string resultsDir, string config, string tfm, string toolPath, string instrumentation)
-{
-	CleanDirectories(resultsDir);
-
-	Information("Starting Compatibility Gallery UI Tests...");
-
-	var testApp = GetTestApplications(appProject, device, config, tfm, "").FirstOrDefault();
-
-	if (string.IsNullOrEmpty(appPackageName))
-	{
-		var appFile = new FilePath(testApp);
-		appFile = appFile.GetFilenameWithoutExtension();
-		appPackageName = appFile.FullPath.Replace("-Signed", "");
-	}
-
-	Information($"Testing Device: {device}");
-	Information($"Testing App Project: {appProject}");
-	Information($"Testing App: {testApp}");
-	Information($"Testing App Package Name: {appPackageName}");
-	Information($"Results Directory: {resultsDir}");
-
-	InstallApk(testApp, appPackageName, resultsDir, deviceSkin);
-
-	//set env var for the app path for Xamarin.UITest setup
-	SetEnvironmentVariable("ANDROID_APP", $"{testApp}");
-
-	var resultName = $"{System.IO.Path.GetFileNameWithoutExtension(project)}-{config}-{DateTime.UtcNow.ToFileTimeUtc()}";
-	Information("Run UITests project {0}", resultName);
-	RunTestWithLocalDotNet(
-		project,
-		config: config,
-		pathDotnet: toolPath,
-		noBuild: false,
-		resultsFileNameWithoutExtension: resultName,
-		filter: Argument("filter", ""));
-}
 
 void ExecuteBuild(string project, string device, string binDir, string config, string tfm, string toolPath)
 {
@@ -237,6 +210,11 @@ void ExecuteTests(string project, string device, string appPath, string appPacka
 	}
 	finally
 	{
+		if (testsFailed)
+		{
+			// uncomment if you want to copy the test app to the results directory for any reason
+			// CopyFile(testApp, new DirectoryPath(resultsDir).CombineWithFilePath(new FilePath(testApp).GetFilename()));
+		}
 
 		HandleTestResults(resultsDir, testsFailed, false);
 	}
@@ -269,10 +247,11 @@ void ExecuteBuildUITestApp(string appProject, string device, string binDir, stri
 	Information("UI Test app build completed.");
 }
 
-void ExecuteUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
+void ExecutePrepareUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
 {
 	string platform = "android";
-	Information("Starting UI Tests...");
+	Information("Preparing UI Tests...");
+
 	var testApp = GetTestApplications(app, device, config, tfm, "").FirstOrDefault();
 
 	if (string.IsNullOrEmpty(testApp))
@@ -299,13 +278,17 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 	Information($"Results Directory: {resultsDir}");
 
 	InstallApk(testApp, appPackageName, resultsDir, deviceSkin);
+}
 
+void ExecuteUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
+{
+	string platform = "android";
 	Information("Build UITests project {0}", project);
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-{platform}.binlog";
-	var appiumLog = $"{binDir}/appium_{platform}.log";
-	var resultsFileName = $"{name}-{config}-{platform}";
+	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-{platform}-{testFilter}");
+	var appiumLog = $"{binDir}/appium_{platform}_{resultsFileName}.log";
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{
@@ -358,7 +341,17 @@ void PerformCleanupIfNeeded(bool cleanupEnabled)
 void SetAndroidEnvironmentVariables(string sdkRoot)
 {
 	// Set up Android SDK environment variables and paths
-	string[] paths = { $"{sdkRoot}/tools/bin", $"{sdkRoot}/cmdline-tools/latest/bin", $"{sdkRoot}/cmdline-tools/5.0/bin", $"{sdkRoot}/cmdline-tools/7.0/bin", $"{sdkRoot}/platform-tools", $"{sdkRoot}/emulator" };
+	string[] paths = { 
+		$"{sdkRoot}/tools/bin", 
+		$"{sdkRoot}/cmdline-tools/latest/bin", 
+		$"{sdkRoot}/cmdline-tools/5.0/bin", 
+		$"{sdkRoot}/cmdline-tools/7.0/bin", 
+		$"{sdkRoot}/cmdline-tools/11.0/bin", 
+		$"{sdkRoot}/cmdline-tools/12.0/bin",
+		$"{sdkRoot}/cmdline-tools/13.0/bin",
+		$"{sdkRoot}/platform-tools", 
+		$"{sdkRoot}/emulator" };
+		
 	foreach (var path in paths)
 	{
 		SetEnvironmentVariable("PATH", path, prepend: true);
@@ -446,7 +439,7 @@ void HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidAvdMana
 		catch { }
 
 		// create the new AVD
-		Information("Creating AVD: {0}...", avdName);
+		Information("Creating AVD: {0} ({1})...", avdName, avdImage);
 		AndroidAvdCreate(avdName, avdImage, avdSkin, force: true, settings: avdSettings);
 
 		// start the emulator
@@ -464,7 +457,7 @@ void HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidAvdMana
 void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdManagerToolSettings avdSettings)
 {
 	// no virtual device was used
-	if (emulatorProcess == null || !deviceBoot || TARGET.ToLower() == "boot")
+	if (emulatorProcess == null || !deviceBoot || targetBoot)
 		return;
 
 	//stop and cleanup the emulator

@@ -12,6 +12,7 @@ using TSize = Tizen.UIExtensions.Common.Size;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+	[System.Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
 	public class FrameRenderer : ContentViewGroup, IPlatformViewHandler, IMeasurable
 	{
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper

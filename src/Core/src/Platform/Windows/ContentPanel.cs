@@ -2,8 +2,11 @@
 using System.Numerics;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Platform;
+#if MAUI_GRAPHICS_WIN2D
 using Microsoft.Maui.Graphics.Win2D;
+#else
+using Microsoft.Maui.Graphics.Platform;
+#endif
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Hosting;
@@ -18,14 +21,31 @@ namespace Microsoft.Maui.Platform
 		FrameworkElement? _content;
 
 		internal Path? BorderPath => _borderPath;
-
+		internal IBorderStroke? BorderStroke => _borderStroke;
 		internal FrameworkElement? Content
 		{
 			get => _content;
 			set
 			{
+				var children = CachedChildren;
+
+				// Remove the previous content if it exists
+				if (_content is not null && children.Contains(_content) && value != _content)
+				{
+					children.Remove(_content);
+				}
+
 				_content = value;
-				AddContent(_content);
+
+				if (_content is null)
+				{
+					return;
+				}
+
+				if (!children.Contains(_content))
+				{
+					children.Add(_content);
+				}
 			}
 		}
 
@@ -76,7 +96,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (containsCheck)
 			{
-				var children = Children;
+				var children = CachedChildren;
 
 				if (!children.Contains(_borderPath))
 				{
@@ -85,7 +105,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				Children.Add(_borderPath);
+				CachedChildren.Add(_borderPath);
 			}
 		}
 
@@ -140,21 +160,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			UpdateClip(strokeShape, width, height);
-		}
-
-		void AddContent(FrameworkElement? content)
-		{
-			if (content is null)
-			{
-				return;
-			}
-
-			var children = Children;
-
-			if (!children.Contains(_content))
-			{
-				children.Add(_content);
-			}
 		}
 
 		void UpdateClip(IShape? borderShape, double width, double height)

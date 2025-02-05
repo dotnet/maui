@@ -1,6 +1,6 @@
 //This assumes that this is always running from a mac with global workloads
 const string DotnetToolPathDefault = "/usr/local/share/dotnet/dotnet";
-const string DotnetVersion = "net8.0";
+string DotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net9.0");
 const string TestFramework = "net472";
 
 // Map project types to specific subdirectories under artifacts
@@ -11,9 +11,7 @@ var projectMappings = new Dictionary<string, string>
     ["Graphics.DeviceTests"] = "Graphics.DeviceTests",
     ["MauiBlazorWebView.DeviceTests"] = "MauiBlazorWebView.DeviceTests",
     ["Essentials.DeviceTests"] = "Essentials.DeviceTests",
-    ["Controls.TestCases.App"] = "Controls.TestCases.App",
-    ["Compatibility.ControlGallery.iOS"] = "Compatibility.ControlGallery.iOS",
-    ["Compatibility.ControlGallery.Android"] = "Compatibility.ControlGallery.Android",
+    ["Controls.TestCases.HostApp"] = "Controls.TestCases.HostApp",
 };
 
 string TARGET = Argument("target", "Test");
@@ -21,22 +19,12 @@ string TARGET = Argument("target", "Test");
 string DEFAULT_PROJECT = "";
 string DEFAULT_APP_PROJECT = "";
 
-if (string.Equals(TARGET, "uitest", StringComparison.OrdinalIgnoreCase))
+
+// "uitest", "uitest-build", and "uitest-prepare" all trigger this case
+if (TARGET.StartsWith("uitest", StringComparison.OrdinalIgnoreCase))
 {
     DEFAULT_PROJECT = "../../src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj";
-    DEFAULT_APP_PROJECT = "../../src/Controls/tests/TestCases/Controls.TestCases.App.csproj";
-}
-
-if (string.Equals(TARGET, "uitest-build", StringComparison.OrdinalIgnoreCase))
-{
-    DEFAULT_PROJECT = "../../src/Controls/tests/TestCases.Shared.Tests/Controls.TestCases.Shared.Tests.csproj";
-    DEFAULT_APP_PROJECT = "../../src/Controls/tests/TestCases/Controls.TestCases.App.csproj";
-}
-
-if (string.Equals(TARGET, "cg-uitest", StringComparison.OrdinalIgnoreCase))
-{
-    DEFAULT_PROJECT = "../../src/Compatibility/ControlGallery/test/iOS.UITests/Compatibility.ControlGallery.iOS.UITests.csproj";
-    DEFAULT_APP_PROJECT = "../../src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj";
+    DEFAULT_APP_PROJECT = "../../src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj";
 }
 
 IEnumerable<string> GetTestApplications(string project, string device, string config, string tfm, string rid)
@@ -45,7 +33,7 @@ IEnumerable<string> GetTestApplications(string project, string device, string co
     const string artifactsDir = "../../artifacts/bin/";
     bool isAndroid = tfm.Contains("android");
 
-    var binDir = new DirectoryPath(project).Combine($"{binDirBase}/{config}/{tfm}/{rid}");
+    var binDir = new DirectoryPath(project).Combine($"{config}/{tfm}/{rid}");
     IEnumerable<string> applications;
 
     if (isAndroid)
@@ -207,7 +195,18 @@ void LogSetupInfo(string toolPath)
 string GetDotnetToolPath()
 {
     var isLocalDotnet = GetBuildVariable("workloads", "local") == "local";
-    var toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet" : DotnetToolPathDefault;
+    string toolPath;
+    
+    
+    if(IsRunningOnWindows())
+    {
+        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../.dotnet/")).ToString()}/dotnet.exe" : null;
+    }
+    else
+    {
+        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../.dotnet/")).ToString()}/dotnet" : DotnetToolPathDefault;
+    }
+
     Information(isLocalDotnet ? "Using local dotnet" : "Using system dotnet");
     return toolPath;
 }
@@ -221,4 +220,11 @@ void ExecuteWithRetries(Func<int> action, int retries)
         retries--;
         System.Threading.Thread.Sleep(1000);
     }
+}
+
+string SanitizeTestResultsFilename(string input)
+{
+    string resultFilename = input.Replace("|", "_").Replace("TestCategory=", "");
+
+    return resultFilename;
 }

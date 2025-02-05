@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		TaskCompletionSource _navigationSource;
 
-		public Task NavigatingTask => (_navigationSource?.Task ?? Task.CompletedTask);
+		public Task NavigatingTask => _navigationSource?.Task ?? Task.CompletedTask;
 
 		public async void CompleteCurrentNavigation()
 		{

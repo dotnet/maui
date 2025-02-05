@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Microsoft.Maui.Controls
@@ -30,14 +29,14 @@ namespace Microsoft.Maui.Controls
 
 		static void VisualStateGroupsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (oldValue is VisualStateGroupList oldVisualStateGroupList && oldVisualStateGroupList.VisualElement is VisualElement oldElement)
+			if (oldValue is VisualStateGroupList { VisualElement: { } oldElement } oldVisualStateGroupList)
 			{
-				var vsgSpecificity = ((VisualStateGroupList)oldValue).Specificity;
-				var specificity = new SetterSpecificity(1, 0, 0, 0, vsgSpecificity.Style, vsgSpecificity.Id, vsgSpecificity.Class, vsgSpecificity.Type);
+				var vsgSpecificity = oldVisualStateGroupList.Specificity;
+				var specificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
 
 				foreach (var group in oldVisualStateGroupList)
 				{
-					if (group.CurrentState is VisualState state)
+					if (group.CurrentState is { } state)
 						foreach (var setter in state.Setters)
 							setter.UnApply(oldElement, specificity);
 				}
@@ -65,18 +64,23 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='GoToState']/Docs/*" />
 		public static bool GoToState(VisualElement visualElement, string name)
 		{
-			if (!visualElement.HasVisualStateGroups())
+			var context = visualElement.GetContext(VisualStateGroupsProperty);
+			if (context is null)
 			{
 				return false;
 			}
 
-			var groups = (VisualStateGroupList)visualElement.GetValue(VisualStateGroupsProperty);
-			var context = visualElement.GetContext(VisualStateGroupsProperty);
-			var vsgSpecificity = context.Values.GetSpecificityAndValue().Key;
-			if (vsgSpecificity == SetterSpecificity.DefaultValue)
-				vsgSpecificity = new SetterSpecificity();
+			var vsgSpecificityValue = context.Values.GetSpecificityAndValue();
+			var groups = (VisualStateGroupList)vsgSpecificityValue.Value;
+			if (groups?.IsDefault != false)
+			{
+				return false;
+			}
+
+			var vsgSpecificity = vsgSpecificityValue.Key;
 			groups.Specificity = vsgSpecificity;
-			var specificity = new SetterSpecificity(1, 0, 0, 0, vsgSpecificity.Style, vsgSpecificity.Id, vsgSpecificity.Class, vsgSpecificity.Type);
+
+			var specificity = vsgSpecificity.CopyStyle(1, 0, 0, 0);
 
 			foreach (VisualStateGroup group in groups)
 			{
@@ -320,14 +324,17 @@ namespace Microsoft.Maui.Controls
 		}
 
 		WeakReference<VisualElement> _visualElement;
-		internal VisualElement VisualElement {
-			get {
+		internal VisualElement VisualElement
+		{
+			get
+			{
 				if (_visualElement == null)
 					return null;
 				_visualElement.TryGetTarget(out var ve);
 				return ve;
-			} 
-			set {
+			}
+			set
+			{
 				_visualElement = new WeakReference<VisualElement>(value);
 			}
 		}
@@ -391,14 +398,17 @@ namespace Microsoft.Maui.Controls
 		public VisualState CurrentState { get; internal set; }
 
 		WeakReference<VisualElement> _visualElement;
-		internal VisualElement VisualElement {
-			get {
+		internal VisualElement VisualElement
+		{
+			get
+			{
 				if (_visualElement == null)
 					return null;
 				_visualElement.TryGetTarget(out var ve);
 				return ve;
-			} 
-			set {
+			}
+			set
+			{
 				_visualElement = new WeakReference<VisualElement>(value);
 			}
 		}
@@ -407,7 +417,7 @@ namespace Microsoft.Maui.Controls
 		{
 			foreach (VisualState state in States)
 			{
-				if (string.CompareOrdinal(state.Name, name) == 0)
+				if (string.Equals(state.Name, name, StringComparison.Ordinal))
 				{
 					return state;
 				}
@@ -508,7 +518,7 @@ namespace Microsoft.Maui.Controls
 				clone.States.Add(state.Clone());
 			}
 
-			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+			if (VisualDiagnostics.IsEnabled && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
 
 			return clone;
@@ -622,7 +632,7 @@ namespace Microsoft.Maui.Controls
 				clone.StateTriggers.Add(stateTrigger);
 			}
 
-			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+			if (VisualDiagnostics.IsEnabled && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
 
 			return clone;
@@ -689,7 +699,7 @@ namespace Microsoft.Maui.Controls
 				clone.Add(group.Clone());
 			}
 
-			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(groups) is SourceInfo info)
+			if (VisualDiagnostics.IsEnabled && VisualDiagnostics.GetSourceInfo(groups) is SourceInfo info)
 				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
 
 			return clone;

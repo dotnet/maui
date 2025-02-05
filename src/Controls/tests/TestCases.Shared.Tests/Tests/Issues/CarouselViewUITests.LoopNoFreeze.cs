@@ -6,6 +6,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class CarouselViewLoopNoFreeze : _IssuesUITest
 	{
+		readonly string _carouselAutomationId = "carouselView";
+		readonly string _btnRemoveAutomationId = "btnRemove";
+		readonly string _btnRemoveAllAutomationId = "btnRemoveAll";
+
+		protected override bool ResetAfterEachTest => true;
 		public CarouselViewLoopNoFreeze(TestDevice device)
 			: base(device)
 		{
@@ -13,63 +18,49 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CarouselView Loop=True default freezes iOS app";
 
-		/*	
-		readonly string _carouselAutomationId = "carouselView";
-		readonly string _btnRemoveAutomationId = "btnRemove";
-		readonly string _btnRemoveAllAutomationId = "btnRemoveAll";
-
 		// Issue12574 (src\ControlGallery\src\Issues.Shared\Issue12574.cs
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[Ignore("Currently fails")]
+		[FailsOnMacWhenRunningOnXamarinUITest("DragCoordinates methods not implemented")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("DragCoordinates methods not implemented")]
+		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void Issue12574Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS },	
-				"Currently fails on iOS; see https://github.com/dotnet/maui/issues/19488");
-
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },
-				"iOS specific Test");
-
-			App.WaitForNoElement("0 item");
+			App.WaitForElement("0 item");
 
 			var rect = App.FindElement(_carouselAutomationId).GetRect();
 			var centerX = rect.CenterX();
 			var rightX = rect.X - 5;
 			App.DragCoordinates(centerX + 40, rect.CenterY(), rightX, rect.CenterY());
 
-			App.WaitForNoElement("1 item");
+			App.WaitForElement("1 item");
 
 			App.DragCoordinates(centerX + 40, rect.CenterY(), rightX, rect.CenterY());
 
-			App.WaitForNoElement("2 item");
+			App.WaitForElement("2 item");
 
 			App.Click(_btnRemoveAutomationId);
 
-			App.WaitForNoElement("1 item");
+			App.WaitForElement("1 item");
 
 			rightX = rect.X + rect.Width - 1;
 			App.DragCoordinates(rect.X, rect.CenterY(), rightX, rect.CenterY());
 
-			App.WaitForNoElement("0 item");
+			App.WaitForElement("0 item");
 		}
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[Ignore("Currently fails")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issu")]
+		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issu")]
 		public void RemoveItemsQuickly()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS },
-				"Currently fails on iOS; see https://github.com/dotnet/maui/issues/19488");
+			App.WaitForElement("0 item");
 
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },	
-				"iOS specific Test");
-
-			App.WaitForNoElement("0 item");
 			App.Click(_btnRemoveAllAutomationId);
 
 			// If we haven't crashed, then the other button should be here
 			App.WaitForElement(_btnRemoveAutomationId);
 		}
-		*/
 	}
 }

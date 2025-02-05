@@ -13,6 +13,7 @@ import android.graphics.PathEffect;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
 import android.net.Uri;
@@ -54,6 +55,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import com.microsoft.maui.glide.MauiCustomTarget;
 import com.microsoft.maui.glide.MauiCustomViewTarget;
+import com.microsoft.maui.glide.MauiTarget;
 import com.microsoft.maui.glide.font.FontModel;
 
 import java.io.InputStream;
@@ -63,34 +65,35 @@ import java.util.Arrays;
 import java.util.List;
 
 public class PlatformInterop {
-     public static void requestLayoutIfNeeded(View view) {
+
+    public static void requestLayoutIfNeeded(View view) {
         
         // If the view isn't currently in the layout process, then we simply request
         // that layout happen next time around
         if (!view.isInLayout())	{
             view.requestLayout();
-			return;
-		}
-		
+            return;
+        }
+        
         /* 
             Something is requesting layout while the view is already in the middle of a layout pass. This is most 
             likely because a layout-affecting property has been data bound to another layout-affecting property, e.g. 
             binding the width of a child control to the ActualWidth of its parent.
             
             If we simply call `requestLayout()` again right now, it will set a flag which will be cleared at the end 
-            of the current layout pass, and the view will not be laid out with the updated values.
+            of the current layout pass, and the view will not be arranged with the updated values.
 
             Instead, we post the layout request to the UI thread's queue, ensuring that it will happen after the current
             layout pass has finished. Layout will happen again with the updated values.
         */
 
-		Runnable runnable = () -> { 
-			if (!view.isInLayout())	{
-				view.requestLayout();
-			}
-		};
-		
-		view.post(runnable);
+        Runnable runnable = () -> { 
+            if (!view.isInLayout())	{
+                view.requestLayout();
+            }
+        };
+        
+        view.post(runnable);
     }
 
     public static void removeFromParent(View view) {
@@ -293,7 +296,7 @@ public class PlatformInterop {
         }
     }
 
-    private static void prepare(RequestBuilder<Drawable> builder, Target<Drawable> target, boolean cachingEnabled, ImageLoaderCallback callback) {
+    private static void prepare(RequestBuilder<Drawable> builder, MauiTarget target, boolean cachingEnabled, ImageLoaderCallback callback) {
         // A special value to work around https://github.com/dotnet/maui/issues/6783 where targets
         // are actually re-used if all the variables are the same.
         // Adding this "error image" that will always load a null image makes each request unique,
@@ -307,17 +310,20 @@ public class PlatformInterop {
                 .skipMemoryCache(true);
         }
 
-        builder
-            .into(target);
+        target.load(builder);
     }
 
-    private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback) {
-        MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback);
+    public static String getGlyphHex(String glyph) {
+        return FontModel.getGlyphHex(glyph);
+    }
+
+    private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback, Object model) {
+        MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback, model);
         prepare(builder, target, cachingEnabled, callback);
     }
 
-    private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback) {
-        MauiCustomTarget target = new MauiCustomTarget(context, callback);
+    private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback, Object model) {
+        MauiCustomTarget target = new MauiCustomTarget(context, callback, model);
         prepare(builder, target, cachingEnabled, callback);
     }
 
@@ -325,7 +331,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(file);
-        loadInto(builder, imageView, true, callback);
+        loadInto(builder, imageView, true, callback, file);
     }
 
     public static void loadImageFromUri(ImageView imageView, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
@@ -337,14 +343,14 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(androidUri);
-        loadInto(builder, imageView, cachingEnabled, callback);
+        loadInto(builder, imageView, cachingEnabled, callback, androidUri);
     }
 
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(inputStream);
-        loadInto(builder, imageView, false, callback);
+        loadInto(builder, imageView, false, callback, inputStream);
     }
 
     public static void loadImageFromFont(ImageView imageView, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
@@ -353,14 +359,14 @@ public class PlatformInterop {
             .with(imageView)
             .load(fontModel)
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
-        loadInto(builder, imageView, true, callback);
+        loadInto(builder, imageView, true, callback, fontModel);
     }
 
     public static void loadImageFromFile(Context context, String file, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(file);
-        load(builder, context, true, callback);
+        load(builder, context, true, callback, file);
     }
 
     public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
@@ -372,14 +378,14 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(androidUri);
-        load(builder, context, cachingEnabled, callback);
+        load(builder, context, cachingEnabled, callback, androidUri);
     }
 
     public static void loadImageFromStream(Context context, InputStream inputStream, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(inputStream);
-        load(builder, context, false, callback);
+        load(builder, context, false, callback, inputStream);
     }
 
     public static void loadImageFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
@@ -388,7 +394,7 @@ public class PlatformInterop {
             .with(context)
             .load(fontModel)
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
-        load(builder, context, true, callback);
+        load(builder, context, true, callback, fontModel);
     }
 
     public static ColorStateList getColorStateListForToolbarStyleableAttribute(Context context, int resId, int index) {
@@ -672,5 +678,18 @@ public class PlatformInterop {
             }
             return buttonState;
         }
+    }
+
+    /*
+     * This method is used to get the Animatable object from a Drawable.
+     * This is useful when we need to start/stop animations on a drawable.
+     * @param drawable The drawable to get the Animatable object from.
+     * @return The Animatable object if the drawable is an instance of Animatable, otherwise null.
+     */
+    public static Animatable getAnimatable(Drawable drawable) {
+        if (drawable instanceof Animatable) {
+            return (Animatable) drawable;
+        }
+        return null;
     }
 }

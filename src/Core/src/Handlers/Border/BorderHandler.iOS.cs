@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Formats.Asn1;
-using System.Linq;
-using CoreAnimation;
-using Microsoft.Maui.Graphics;
+using UIKit;
 using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
@@ -18,11 +15,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				CrossPlatformLayout = VirtualView
 			};
-		}
-
-		protected override void ConnectHandler(ContentView platformView)
-		{
-			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(ContentView platformView)
@@ -56,20 +48,25 @@ namespace Microsoft.Maui.Handlers
 			if (handler.VirtualView.PresentedContent is IView content)
 			{
 				var platformContent = content.ToPlatform(handler.MauiContext);
-				platformContent.Tag = ContentView.ContentTag;
-				platformView.AddSubview(platformContent);
+
+				// If the content is a UIScrollView, we need a container to handle masks and clip shapes effectively.
+				if (platformContent is UIScrollView)
+				{
+					var containerView = new UIView
+					{
+						AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth
+					};
+
+					containerView.Tag = ContentView.ContentTag;
+					containerView.AddSubview(platformContent);
+					platformView.AddSubview(containerView);
+				}
+				else
+				{
+					platformContent.Tag = ContentView.ContentTag;
+					platformView.AddSubview(platformContent);
+				}
 			}
-		}
-
-		public override void PlatformArrange(Rect rect)
-		{
-			// Disable the animation during arrange for the Border; otherwise, all resizing actions
-			// will animate, and it makes the Border lag behind its content.
-
-			CATransaction.Begin();
-			CATransaction.AnimationDuration = 0;
-			base.PlatformArrange(rect);
-			CATransaction.Commit();
 		}
 	}
 }

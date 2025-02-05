@@ -15,6 +15,14 @@ namespace Microsoft.Maui.Graphics
 {
 	public class MauiDrawable : PaintDrawable
 	{
+		static Join? JoinMiter;
+		static Join? JoinBevel;
+		static Join? JoinRound;
+
+		static Cap? CapButt;
+		static Cap? CapSquare;
+		static Cap? CapRound;
+
 		readonly AContext? _context;
 		readonly float _density;
 
@@ -154,6 +162,7 @@ namespace Microsoft.Maui.Graphics
 
 			_borderColor = borderColor;
 
+			InitializeBorderIfNeeded();
 			InvalidateSelf();
 		}
 
@@ -182,6 +191,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			_invalidatePath = true;
 			_borderColor = null;
+			_borderPaint = null;
 
 			var borderColor = solidPaint.Color == null
 				? (AColor?)null
@@ -296,20 +306,13 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderLineJoin(LineJoin lineJoin)
 		{
-			Join? aLineJoin = Join.Miter;
-
-			switch (lineJoin)
+			Join? aLineJoin = lineJoin switch
 			{
-				case LineJoin.Miter:
-					aLineJoin = Join.Miter;
-					break;
-				case LineJoin.Bevel:
-					aLineJoin = Join.Bevel;
-					break;
-				case LineJoin.Round:
-					aLineJoin = Join.Round;
-					break;
-			}
+				LineJoin.Miter => JoinMiter ??= Join.Miter,
+				LineJoin.Bevel => JoinBevel ??= Join.Bevel,
+				LineJoin.Round => JoinRound ??= Join.Round,
+				_ => JoinMiter ??= Join.Miter,
+			};
 
 			if (_strokeLineJoin == aLineJoin)
 				return;
@@ -321,20 +324,13 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderLineCap(LineCap lineCap)
 		{
-			Cap? aLineCap = Cap.Butt;
-
-			switch (lineCap)
+			Cap? aLineCap = lineCap switch
 			{
-				case LineCap.Butt:
-					aLineCap = Cap.Butt;
-					break;
-				case LineCap.Square:
-					aLineCap = Cap.Square;
-					break;
-				case LineCap.Round:
-					aLineCap = Cap.Round;
-					break;
-			}
+				LineCap.Butt => CapButt ??= Cap.Butt,
+				LineCap.Square => CapSquare ??= Cap.Square,
+				LineCap.Round => CapRound ??= Cap.Round,
+				_ => CapButt ??= Cap.Butt,
+			};
 
 			if (_strokeLineCap == aLineCap)
 				return;

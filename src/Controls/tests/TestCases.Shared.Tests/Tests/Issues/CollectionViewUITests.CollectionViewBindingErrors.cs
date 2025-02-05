@@ -18,10 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void NoBindingErrors()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
-
-			App.WaitForElement("WaitForStubControl");
-			App.WaitForNoElement("Binding Errors: 0");
+			Assert.That(App.WaitForElement("WaitForStubControl").GetText(), Is.EqualTo("Binding Errors: 0"));
 		}
 	}
 }

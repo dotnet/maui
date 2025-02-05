@@ -13,13 +13,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] CarouselView NRE if item template is not specified";
 
-		// Issue12777 (src\ControlGallery\src\Issues.Shared\Issue12777.cs
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void Issue12777Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Windows });
-
 			App.WaitForElement("TestCarouselView");
 			App.Screenshot("Test passed");
 		}

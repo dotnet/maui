@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +12,8 @@ public class Issue20156 : _IssuesUITest
 		: base(device)
 	{ }
 
-    [Test]
+	[Test]
+	[Category(UITestCategories.Border)]
 	public void BorderShouldHaveNoThickness()
 	{
 		_ = App.WaitForElement("WaitForStubControl");

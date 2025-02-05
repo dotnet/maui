@@ -1,10 +1,14 @@
-﻿using System;
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Platform;
+#if MAUI_GRAPHICS_WIN2D
 using Microsoft.Maui.Graphics.Win2D;
+#else
+using Microsoft.Maui.Graphics.Platform;
+#endif
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -17,24 +21,32 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView : Grid, IDisposable
 	{
-		long _visibilityDependencyPropertyCallbackToken;
-		readonly Canvas _shadowCanvas;
+		Canvas? _shadowCanvas;
+		UIElementCollection? _shadowCanvasCachedChildren;
+
 		SpriteVisual? _shadowVisual;
 		DropShadow? _dropShadow;
-		UI.Xaml.Shapes.Rectangle? _shadowHost;
+		Rectangle? _shadowHost;
 		WSize _shadowHostSize;
 		WSize _shadowMaskSize;
 		Path? _borderPath;
 
 		FrameworkElement? _child;
 
+		UIElementCollection? _cachedChildren;
+
+		[SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Panel.Children property is banned to enforce use of this CachedChildren property.")]
+		internal UIElementCollection CachedChildren
+		{
+			get
+			{
+				_cachedChildren ??= Children;
+				return _cachedChildren;
+			}
+		}
+
 		public WrapperView()
 		{
-			_shadowCanvas = new Canvas();
-			_borderPath = new Path();
-
-			Children.Add(_shadowCanvas);
-			Children.Add(_borderPath);
 		}
 
 		public FrameworkElement? Child
@@ -42,22 +54,24 @@ namespace Microsoft.Maui.Platform
 			get { return _child; }
 			internal set
 			{
-				if (_child != null)
+				if (_child is not null)
 				{
 					_child.Loaded -= OnChildLoaded;
 					_child.SizeChanged -= OnChildSizeChanged;
 					_child.UnregisterPropertyChangedCallback(VisibilityProperty, _visibilityDependencyPropertyCallbackToken);
-					Children.Remove(_child);
+					CachedChildren.Remove(_child);
 				}
 
-				if (value == null)
+				if (value is null)
+				{
 					return;
+				}
 
 				_child = value;
 				_child.Loaded += OnChildLoaded;
 				_child.SizeChanged += OnChildSizeChanged;
 				_visibilityDependencyPropertyCallbackToken = _child.RegisterPropertyChangedCallback(VisibilityProperty, OnChildVisibilityChanged);
-				Children.Add(_child);
+				CachedChildren.Add(_child);
 			}
 		}
 
@@ -76,19 +90,25 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateClip()
 		{
-			if (Child == null)
+			if (Child is null)
+			{
 				return;
+			}
 
 			var clipGeometry = Clip;
 
-			if (clipGeometry == null)
+			if (clipGeometry is null)
+			{
 				return;
+			}
 
 			double width = Child.ActualWidth;
 			double height = Child.ActualHeight;
 
 			if (height <= 0 && width <= 0)
+			{
 				return;
+			}
 
 			var visual = ElementCompositionPreview.GetElementVisual(Child);
 			var compositor = visual.Compositor;
@@ -118,27 +138,41 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateBorder()
 		{
-			if (Border == null)
+			if (Border is null)
+			{
 				return;
+			}
+
+			if (_borderPath is null)
+			{
+				_borderPath = new();
+
+				int index = _shadowCanvas is not null ? 1 : 0;
+				CachedChildren.Insert(index, _borderPath);
+			}
 
 			IShape? borderShape = Border.Shape;
-			_borderPath?.UpdateBorderShape(borderShape, ActualWidth, ActualHeight);
+			_borderPath.UpdateBorderShape(borderShape, ActualWidth, ActualHeight);
 
-			_borderPath?.UpdateStroke(Border.Stroke);
-			_borderPath?.UpdateStrokeThickness(Border.StrokeThickness);
-			_borderPath?.UpdateStrokeDashPattern(Border.StrokeDashPattern);
-			_borderPath?.UpdateBorderDashOffset(Border.StrokeDashOffset);
-			_borderPath?.UpdateStrokeMiterLimit(Border.StrokeMiterLimit);
-			_borderPath?.UpdateStrokeLineCap(Border.StrokeLineCap);
-			_borderPath?.UpdateStrokeLineJoin(Border.StrokeLineJoin);
+			_borderPath.UpdateStroke(Border.Stroke);
+			_borderPath.UpdateStrokeThickness(Border.StrokeThickness);
+			_borderPath.UpdateStrokeDashPattern(Border.StrokeDashPattern);
+			_borderPath.UpdateBorderDashOffset(Border.StrokeDashOffset);
+			_borderPath.UpdateStrokeMiterLimit(Border.StrokeMiterLimit);
+			_borderPath.UpdateStrokeLineCap(Border.StrokeLineCap);
+			_borderPath.UpdateStrokeLineJoin(Border.StrokeLineJoin);
 		}
 
 		partial void ShadowChanged()
 		{
 			if (HasShadow)
+			{
 				UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+			}
 			else
+			{
 				CreateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+			}
 		}
 
 		void OnChildLoaded(object sender, RoutedEventArgs e)
@@ -158,23 +192,29 @@ namespace Microsoft.Maui.Platform
 		void OnChildVisibilityChanged(DependencyObject sender, DependencyProperty dp)
 		{
 			// OnChildSizeChanged does not fire for Visibility changes to child
-			if (sender is FrameworkElement child && _shadowCanvas.Children.Count > 0)
+			if (sender is FrameworkElement child && _shadowCanvasCachedChildren?.Count > 0)
 			{
-				var shadowHost = _shadowCanvas.Children[0];
+				var shadowHost = _shadowCanvasCachedChildren[0];
 				shadowHost.Visibility = child.Visibility;
 			}
 		}
 
 		void DisposeShadow()
 		{
-			if (_shadowCanvas == null)
+			if (_shadowCanvas is null || _shadowCanvasCachedChildren is null)
+			{
 				return;
+			}
 
 			if (_shadowHost is not null)
+			{
 				ElementCompositionPreview.SetElementChildVisual(_shadowHost, null);
+			}
 
-			if (_shadowCanvas.Children.Count > 0)
-				_shadowCanvas.Children.RemoveAt(0);
+			if (_shadowCanvasCachedChildren.Count > 0)
+			{
+				_shadowCanvasCachedChildren.RemoveAt(0);
+			}
 
 			if (_shadowVisual != null)
 			{
@@ -187,26 +227,39 @@ namespace Microsoft.Maui.Platform
 				_dropShadow.Dispose();
 				_dropShadow = null;
 			}
+
+			_shadowCanvasCachedChildren = null;
+			_shadowCanvas = null;
 		}
 
 		async Task CreateShadowAsync()
 		{
-			if (Child is null || !Child.IsLoaded || Shadow is null || Shadow.Paint is null)
+			if (Child == null || Shadow == null || Shadow.Paint == null)
+			{
 				return;
+			}
 
 			var visual = ElementCompositionPreview.GetElementVisual(Child);
 
 			if (Clip != null && visual.Clip == null)
+			{
 				return;
+			}
 
 			double width = _shadowHostSize.Width;
 			double height = _shadowHostSize.Height;
 
-			if (height <= 0 && width <= 0)
-				return;
+			if (_shadowCanvas is null)
+			{
+				_shadowCanvas = new();
 
-			if (Clip is not null)
-				await Task.Delay(500);
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons and it is better to cache it.
+				_shadowCanvasCachedChildren = _shadowCanvas.Children;
+#pragma warning restore RS0030 // Do not use banned APIs
+
+				// Shadow canvas must be the first child. The order of children (i.e. shadow canvas and border path) matters.
+				CachedChildren.Insert(0, _shadowCanvas);
+			}
 
 			var ttv = Child.TransformToVisual(_shadowCanvas);
 			global::Windows.Foundation.Point offset = ttv.TransformPoint(new global::Windows.Foundation.Point(0, 0));
@@ -221,7 +274,7 @@ namespace Microsoft.Maui.Platform
 			Canvas.SetLeft(_shadowHost, offset.X);
 			Canvas.SetTop(_shadowHost, offset.Y);
 
-			_shadowCanvas.Children.Insert(0, _shadowHost);
+			_shadowCanvasCachedChildren?.Insert(0, _shadowHost);
 
 			var hostVisual = ElementCompositionPreview.GetElementVisual(_shadowCanvas);
 			var compositor = hostVisual.Compositor;
@@ -239,13 +292,12 @@ namespace Microsoft.Maui.Platform
 
 		async Task UpdateShadowAsync()
 		{
-			if (_dropShadow is null)
-				await CreateShadowAsync();
-			else
+			if (_dropShadow != null)
 			{
 				await SetShadowPropertiesAsync(_dropShadow, Shadow);
-				UpdateShadowSize();
 			}
+
+			UpdateShadowSize();
 		}
 
 		void UpdateShadowSize()
@@ -255,12 +307,16 @@ namespace Microsoft.Maui.Platform
 				float width = (float)_shadowHostSize.Width;
 
 				if (width <= 0)
+				{
 					width = (float)frameworkElement.ActualWidth;
+				}
 
 				float height = (float)_shadowHostSize.Height;
 
 				if (height <= 0)
+				{
 					height = (float)frameworkElement.ActualHeight;
+				}
 
 				if (_shadowVisual is not null)
 				{
@@ -296,8 +352,10 @@ namespace Microsoft.Maui.Platform
 			dropShadow.BlurRadius = blurRadius;
 			dropShadow.Opacity = opacity;
 
-			if (shadowColor is not null)
+			if (shadowColor != null)
+			{
 				dropShadow.Color = shadowColor.ToWindowsColor();
+			}
 
 			dropShadow.Offset = new Vector3((float)offset.X, (float)offset.Y, 0);
 

@@ -271,5 +271,48 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(isFocused, $"{page} failed to focus the second entry DANG");
 			}
 		}
+
+		[Category(TestCategory.Entry)]
+		public class PlaceholderTests : ControlsHandlerTestBase
+		{
+			[Fact]
+			public async Task PlaceholderFontFamily()
+			{
+				EnsureHandlerCreated(builder =>
+				{
+					builder.ConfigureMauiHandlers(handlers =>
+					{
+						handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
+					});
+				});
+
+				var expectedFontFamily = "Times New Roman";
+
+				var entry = new Entry
+				{
+					FontFamily = expectedFontFamily,
+					Placeholder = "This is a placeholder"
+				};
+
+				ContentPage contentPage = new ContentPage()
+				{
+					Content = new VerticalStackLayout()
+					{
+						entry
+					}
+				};
+
+				await CreateHandlerAndAddToWindow(contentPage, async () =>
+				{
+					await AssertEventually(() => entry.IsVisible);
+					var handler = CreateHandler<EntryHandler>(entry);
+					var platformControl = GetPlatformControl(handler);
+
+					var placeholderLabel = handler.PlatformView.Subviews.OfType<UIKit.UILabel>().FirstOrDefault();
+
+					Assert.Equal(expectedFontFamily, placeholderLabel?.Font?.FamilyName);
+				});
+			}
+		}
 	}
 }

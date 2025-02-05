@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Platform
 {
 	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents
 	{
+		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
 		static bool? _respondsToSafeArea;
 
 		double _lastMeasureHeight = double.NaN;
@@ -33,7 +34,9 @@ namespace Microsoft.Maui.Platform
 		protected CGRect AdjustForSafeArea(CGRect bounds)
 		{
 			if (KeyboardAutoManagerScroll.ShouldIgnoreSafeAreaAdjustment)
+			{
 				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
+			}
 
 			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea || !RespondsToSafeArea())
 			{
@@ -122,12 +125,13 @@ namespace Microsoft.Maui.Platform
 			var widthConstraint = bounds.Width;
 			var heightConstraint = bounds.Height;
 
-			// If the SuperView is a MauiView (backing a cross-platform ContentView or Layout), then measurement
-			// has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews. But we
-			// _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
+			// If the SuperView is a cross-platform layout backed view (i.e. MauiView, MauiScrollView, LayoutView, ..),
+			// then measurement has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews.
+			// This is especially important to avoid overriding potentially infinite measurement constraints
+			// imposed by the parent (i.e. scroll view) with the current bounds.
+			// But we _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
 			// the window); there's no guarantee that SizeThatFits has been called in that case.
-
-			if (!IsMeasureValid(widthConstraint, heightConstraint) && Superview is not MauiView)
+			if (!IsMeasureValid(widthConstraint, heightConstraint) && !this.IsFinalMeasureHandledBySuperView())
 			{
 				CrossPlatformMeasure(widthConstraint, heightConstraint);
 				CacheMeasureConstraints(widthConstraint, heightConstraint);
@@ -140,7 +144,27 @@ namespace Microsoft.Maui.Platform
 		{
 			InvalidateConstraintsCache();
 			base.SetNeedsLayout();
-			Superview?.SetNeedsLayout();
+			TryToInvalidateSuperView(false);
+		}
+
+		private protected void TryToInvalidateSuperView(bool shouldOnlyInvalidateIfPending)
+		{
+			if (shouldOnlyInvalidateIfPending && !_fireSetNeedsLayoutOnParentWhenWindowAttached)
+			{
+				return;
+			}
+
+			// We check for Window to avoid scenarios where an invalidate might propagate up the tree
+			// To a SuperView that's been disposed which will cause a crash when trying to access it
+			if (Window is not null)
+			{
+				this.Superview?.SetNeedsLayout();
+				_fireSetNeedsLayoutOnParentWhenWindowAttached = false;
+			}
+			else
+			{
+				_fireSetNeedsLayoutOnParentWhenWindowAttached = true;
+			}
 		}
 
 		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
@@ -173,6 +197,7 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
+			TryToInvalidateSuperView(true);
 		}
 	}
 }

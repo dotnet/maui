@@ -4,12 +4,14 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+	[Category(UITestCategories.Border)]
 	public class Issue22606 : _IssuesUITest
 	{
 		public Issue22606(TestDevice device) : base(device) { }
 
 		public override string Issue => "Border does not expand on Content size changed";
 
+#if !MACCATALYST
 		[Test]
 		public void BorderBackgroundExpandsOnContentSizeChanged()
 		{
@@ -20,6 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("SetHeightTo500");
 			VerifyScreenshot("Issue22606_SetHeightTo500");
 		}
+#endif
 
 #if ANDROID || IOS
 		[Test]

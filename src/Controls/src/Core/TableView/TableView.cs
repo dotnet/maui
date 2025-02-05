@@ -131,6 +131,7 @@ namespace Microsoft.Maui.Controls
 			ModelChanged?.Invoke(this, EventArgs.Empty);
 		}
 
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			var minimumSize = new Size(40, 40);

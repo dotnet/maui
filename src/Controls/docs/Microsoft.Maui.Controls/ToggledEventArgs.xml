@@ -20,7 +20,6 @@
   <Interfaces />
   <Docs>
     <summary>Event arguments for <see cref="E:Microsoft.Maui.Controls.Switch.Toggled" /> and <see cref="E:Microsoft.Maui.Controls.SwitchCell.OnChanged" /> events.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -46,7 +45,6 @@
       <Docs>
         <param name="value">Whether the toggle is in the On position.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.ToggledEventArgs" /> that indicates that the toggle control was toggled to <paramref name="value" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Value">
@@ -71,8 +69,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the Boolean value to which the toggle control was toggled.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

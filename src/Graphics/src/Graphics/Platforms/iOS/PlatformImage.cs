@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public void Draw(ICanvas canvas, RectF dirtyRect)
 		{
-			canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, (float)Math.Round(dirtyRect.Width), (float)Math.Round(dirtyRect.Height));
+			canvas.DrawImage(this, dirtyRect.Left, dirtyRect.Top, MathF.Round(dirtyRect.Width), MathF.Round(dirtyRect.Height));
 		}
 
 		public IImage ToPlatformImage()

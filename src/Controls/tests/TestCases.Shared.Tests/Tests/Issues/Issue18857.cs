@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+#if TEST_FAILS_ON_ANDROID // Related issue: https://github.com/dotnet/maui/issues/26159
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,21 +17,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ImageButton)]
 		public async Task GradientImageButtonBackground()
 		{
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Mac,
-				TestDevice.iOS,
-				TestDevice.Windows
-			});
-
 			App.WaitForElement("TestImageButton");
 
 			App.Tap("TestRemoveBackgroundButton");
 			App.Tap("TestUpdateBackgroundButton");
 
-			await Task.Delay(500);
+			App.WaitForElement("TestImageButton");
 
-			VerifyScreenshot();
+			await Task.Yield(); // Wait for Ripple Effect animation to complete.
+
+			Thread.Sleep(1000);
+			VerifyScreenshot(retryDelay: TimeSpan.FromSeconds(2));
 		}
 	}
 }
+#endif

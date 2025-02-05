@@ -25,6 +25,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
+
+		internal override void Disconnect()
+		{
+			base.Disconnect();
+
+			if (_headerViewFormsElement is not null)
+			{
+				_headerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
+			}
+
+			if (_footerViewFormsElement is not null)
+			{
+				_footerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
+			}
+
+			_headerUIView = null;
+			_headerViewFormsElement = null;
+			_footerUIView = null;
+			_footerViewFormsElement = null;
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
@@ -36,20 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (disposing)
 			{
-				if (_headerViewFormsElement != null)
-				{
-					_headerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
-				}
-
-				if (_footerViewFormsElement != null)
-				{
-					_footerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
-				}
-
-				_headerUIView = null;
-				_headerViewFormsElement = null;
-				_footerUIView = null;
-				_footerViewFormsElement = null;
+				Disconnect();
 			}
 
 			base.Dispose(disposing);
@@ -114,6 +122,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateHeaderFooterPosition();
 		}
 
+
 		internal void UpdateSubview(object view, DataTemplate viewTemplate, nint viewTag, ref UIView uiView, ref VisualElement formsElement)
 		{
 			uiView?.RemoveFromSuperview();
@@ -156,8 +165,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				var currentInset = CollectionView.ContentInset;
 
-				nfloat headerWidth = _headerUIView?.Frame.Width ?? 0f;
-				nfloat footerWidth = _footerUIView?.Frame.Width ?? 0f;
+				nfloat headerWidth = _headerViewFormsElement?.ToPlatform()?.Frame.Width ?? 0f;
+				nfloat footerWidth = _footerViewFormsElement?.ToPlatform()?.Frame.Width ?? 0f;
 				nfloat emptyWidth = emptyView?.Frame.Width ?? 0f;
 
 				if (_headerUIView != null && _headerUIView.Frame.X != headerWidth)
@@ -186,8 +195,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else
 			{
 				var currentInset = CollectionView.ContentInset;
-				nfloat headerHeight = _headerUIView?.Frame.Height ?? 0f;
-				nfloat footerHeight = _footerUIView?.Frame.Height ?? 0f;
+				nfloat headerHeight = _headerViewFormsElement?.ToPlatform()?.Frame.Height ?? 0f;
+				nfloat footerHeight = _footerViewFormsElement?.ToPlatform()?.Frame.Height ?? 0f;
 				nfloat emptyHeight = emptyView?.Frame.Height ?? 0f;
 
 				if (CollectionView.ContentInset.Top != headerHeight || CollectionView.ContentInset.Bottom != footerHeight)

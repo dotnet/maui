@@ -19,7 +19,6 @@
   </Base>
   <Docs>
     <summary>Enumeration specifying whether a constraint is constant, relative to a view, or relative to its parent.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Constant">

@@ -8,7 +8,12 @@
     <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests</AssemblyName>
     <Nullable>enable</Nullable>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
+    <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\TestShared\xUnitSharedAttributes.cs" Link="xUnitSharedAttributes.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />

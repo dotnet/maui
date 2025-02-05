@@ -24,10 +24,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("Resize");
 			var smallSize = App.WaitForElement("Item1").GetRect();
 
-            ClassicAssert.Greater(largestSize.Width, mediumSize.Width);
+			ClassicAssert.Greater(largestSize.Width, mediumSize.Width);
 			ClassicAssert.Greater(mediumSize.Width, smallSize.Width);
 		}
-        
+
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewFirstItemCorrectlySetsTheMeasure()
@@ -35,22 +35,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var itemSize = App.WaitForElement("Item1").GetRect();
 			ClassicAssert.Greater(200, itemSize.Height);
 		}
-        
+
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void CollectionViewWorksWhenRotatingDevice()
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		public async Task CollectionViewWorksWhenRotatingDevice()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
-
 			try
 			{
 				App.WaitForElement("FullSize");
 				App.Tap("FullSize");
 				App.SetOrientationPortrait();
+				await Task.Delay(100);
 				var itemSizePortrait = App.WaitForElement("Item1").GetRect();
 				App.SetOrientationLandscape();
+				await Task.Delay(100);
 				var itemSizeLandscape = App.WaitForElement("Item1").GetRect();
 				App.SetOrientationPortrait();
+				await Task.Delay(100);
 				var itemSizePortrait2 = App.WaitForElement("Item1").GetRect();
 
 				ClassicAssert.Greater(itemSizeLandscape.Width, itemSizePortrait.Width);

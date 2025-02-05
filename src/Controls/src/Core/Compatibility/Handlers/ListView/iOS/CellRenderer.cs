@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public static CommandMapper<Cell, CellRenderer> CommandMapper =
 			new CommandMapper<Cell, CellRenderer>(ElementHandler.ElementCommandMapper);
-		UITableView? _tableView;
+		WeakReference<UITableView>? _tableView;
 
 		private protected event PropertyChangedEventHandler? CellPropertyChanged;
 
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 		{
-			_tableView = tv;
+			_tableView = new(tv);
 			Performance.Start(out string reference);
 
 			var tvc = reusableCell as CellTableViewCell ?? new CellTableViewCell(UITableViewCellStyle.Default, item.GetType().FullName);
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.UpdateValue(property);
 			var args = new PropertyChangedEventArgs(property);
 			if (VirtualView is BindableObject bindableObject &&
-				GetRealCell(bindableObject) is CellTableViewCell ctv )
+				GetRealCell(bindableObject) is CellTableViewCell ctv)
 			{
 				ctv.HandlePropertyChanged(bindableObject, args);
 			}
@@ -171,17 +171,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.Invoke(command, args);
 
-			if (command == "ForceUpdateSizeRequested" && 
+			if (command == "ForceUpdateSizeRequested" &&
 				VirtualView is BindableObject bindableObject &&
-				GetRealCell(bindableObject) is UITableViewCell ctv)
+				GetRealCell(bindableObject) is UITableViewCell ctv &&
+				_tableView is not null &&
+				_tableView.TryGetTarget(out var tableView))
 			{
-				var index = _tableView?.IndexPathForCell(ctv);
+				var index = tableView.IndexPathForCell(ctv);
 				if (index == null && VirtualView is Cell c)
 				{
 					index = Controls.Compatibility.Platform.iOS.CellExtensions.GetIndexPath(c);
 				}
 				if (index != null)
-					_tableView?.ReloadRows(new[] { index }, UITableViewRowAnimation.None);
+					tableView.ReloadRows(new[] { index }, UITableViewRowAnimation.None);
 			}
 		}
 	}

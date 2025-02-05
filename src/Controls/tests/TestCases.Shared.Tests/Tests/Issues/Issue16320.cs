@@ -17,17 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void Issue16320Test()
 		{
-			// TODO: It looks like this test has never passed on Android, failing with 
-			// "System.TimeoutException : Timed out waiting for element". We (e.g. ema) should
-			// investigate and properly fix, but we'll ignore for now.
-			this.IgnoreIfPlatforms(new[]
-			{
-				TestDevice.Android
-			});
-
+			App.WaitForElement("Add");
 			App.Tap("Add");
-
-			ClassicAssert.NotNull(App.WaitForElement("item: 1"));
+			Assert.That(App.WaitForElement("item: 1"), Is.Not.Null);
 		}
 	}
 }

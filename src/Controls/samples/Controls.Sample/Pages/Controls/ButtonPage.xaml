@@ -175,7 +175,7 @@
                     ContentLayout="Right" TextColor="White" Background="Black" 
                     ImageSource="settings.png" Text="settings" />
                 <Label
-                    Text="Click To Change Positionng"
+                    Text="Click To Change Positioning"
                     Style="{StaticResource Headline}"/>
                 <Button 
                     x:Name="positionChange" ContentLayout="Top" TextColor="White" Background="Black" 
@@ -245,6 +245,20 @@
                 <Button
                     Text="End"
                     HorizontalOptions="End" />
+                 <Label
+                    Text="Slide to change the Border Width:"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="BorderWidth Changing"
+                    ImageSource="settings.png"
+                    HorizontalOptions="Center"
+                    BackgroundColor="Green"
+                    BorderWidth="{Binding Source={x:Reference BorderWidthSlider}, Path=Value}" />
+                <Slider
+                    x:Name="BorderWidthSlider"
+                    Minimum="0"
+                    Maximum="100"
+                    Value ="0"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

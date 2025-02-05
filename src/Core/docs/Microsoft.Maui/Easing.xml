@@ -171,7 +171,6 @@
       <Docs>
         <param name="easingFunc">A function that maps animation times.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Easing" /> object with the <paramref name="easingFunc" /> function.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BounceIn">
@@ -346,7 +345,6 @@
         <param name="v">A value in the range [0,1] to which the easing function should be applied.</param>
         <summary>Applies the easing function to the specified value <paramref name="v" />.</summary>
         <returns>The value of the easing function when applied to the value <paramref name="v" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Linear">
