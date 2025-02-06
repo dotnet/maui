@@ -46,7 +46,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Item 0");
 
 			// 6. Test setting the selection directly with CollectionView.SelectedItems
-			App.WaitForElement("DirectUpdate"); 
+			App.WaitForElement("DirectUpdate");
 			App.Tap("DirectUpdate");
 			App.WaitForElement("Selected: Item 0, Item 3");
 		}

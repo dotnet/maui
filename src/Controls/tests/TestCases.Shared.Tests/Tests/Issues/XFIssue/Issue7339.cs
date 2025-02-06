@@ -12,7 +12,7 @@ public class Issue7339 : _IssuesUITest
 
 	public override string Issue => "[iOS] Material frame renderer not being cleared";
 
-	 
+
 	[Test]
 	[Category(UITestCategories.Shell)]
 	public void MaterialFrameDisposesCorrectly()
