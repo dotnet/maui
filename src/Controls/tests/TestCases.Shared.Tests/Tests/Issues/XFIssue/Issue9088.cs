@@ -26,42 +26,42 @@ public class Issue9088 : _IssuesUITest
 		App.WaitForElement(SwipeViewId);
 
 		App.SwipeRightToLeft(SwipeViewId);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("1")); 
+		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("1"));
 
 		App.SwipeRightToLeft(SwipeViewId, 0.67, 250);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("2")); 
+		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("2"));
 
 		App.SwipeRightToLeft(SwipeViewId, 0.67, 200);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("3")); 
+		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("3"));
 
 
 		App.SwipeLeftToRight(SwipeViewId, 0.67, 200);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("1")); 
+		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("1"));
 
 		App.SwipeLeftToRight(SwipeViewId, 0.67, 250);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("2")); 
+		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("2"));
 
 		App.SwipeLeftToRight(SwipeViewId, 0.67, 500);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("3")); 
+		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("3"));
 
 
 		App.SwipeRightToLeft(SwipeViewId);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("4")); 
+		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("4"));
 
 		App.SwipeLeftToRight(SwipeViewId);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("4")); 
+		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("4"));
 
 		App.SwipeRightToLeft(SwipeViewId);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("5")); 
+		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("5"));
 
 		App.SwipeLeftToRight(SwipeViewId);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("5")); 
+		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("5"));
 
 		App.SwipeLeftToRight(SwipeViewId);
-		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("6")); 
+		Assert.That(App.WaitForElement(RightCountLabelId).GetText(), Is.EqualTo("6"));
 
 		App.SwipeRightToLeft(SwipeViewId);
-		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("6")); 
+		Assert.That(App.WaitForElement(LeftCountLabelId).GetText(), Is.EqualTo("6"));
 	}
 }
 #endif

@@ -1,4 +1,4 @@
-﻿# if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
 // The DisplayActionSheet will not dismiss when tapping outside of it, which is a behavior specific to iPads on iOS. Since the host app is running on an iPhone XS, this test can be ignored.
 using NUnit.Framework;
 using UITest.Appium;

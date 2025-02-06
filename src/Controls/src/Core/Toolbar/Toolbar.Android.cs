@@ -107,15 +107,15 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateBarBackground()
 		{
-			if(_currentBarBackground is GradientBrush oldBarBackground)
+			if (_currentBarBackground is GradientBrush oldBarBackground)
 			{
 				oldBarBackground.Parent = null;
 				oldBarBackground.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
 			}
-			
+
 			_currentBarBackground = BarBackground;
 
-			if(_currentBarBackground is GradientBrush newBarBackground && Parent is Element parent)
+			if (_currentBarBackground is GradientBrush newBarBackground && Parent is Element parent)
 			{
 				newBarBackground.Parent = parent;
 				newBarBackground.InvalidateGradientBrushRequested += OnBarBackgroundChanged;

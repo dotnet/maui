@@ -1,7 +1,7 @@
 namespace Maui.Controls.Sample.Issues
 {
-[Issue(IssueTracker.None, 99, "Make sure setting ItemSource to null doesn't blow up",
-		PlatformAffected.UWP)]
+	[Issue(IssueTracker.None, 99, "Make sure setting ItemSource to null doesn't blow up",
+			PlatformAffected.UWP)]
 	public class SetListViewItemSourceToNull : TestContentPage
 	{
 		const string Success = "Success";
