@@ -410,16 +410,21 @@ namespace Microsoft.Maui.Controls
 								continue;
 						}
 
-						// This is the page that we will eventually get to once we've finished
-						// modifying the existing navigation stack
-						// So we want to fire appearing on it						
-						navPage.SendAppearing();
-
+						// We use this inside ModalNavigationManager to indicate that we're going to be popping multiple
+						// modal pages so we don't want it to fire any appearing events
 						IsPoppingModalStack = true;
 
 						while (navStack.Count > popCount && Navigation.ModalStack.Count > 0)
 						{
 							bool isAnimated = animate ?? IsNavigationAnimated(navStack[navStack.Count - 1]);
+
+							// This means the final page we are arriving at will be a modal page and it's
+							// the next page in the stack
+							if ((navStack.Count - 2) >= 0 && navStack[navStack.Count - 2] == navPage)
+							{
+								IsPoppingModalStack = false;
+							}
+
 							if (Navigation.ModalStack.Contains(navStack[navStack.Count - 1]))
 							{
 								await PopModalAsync(isAnimated);
