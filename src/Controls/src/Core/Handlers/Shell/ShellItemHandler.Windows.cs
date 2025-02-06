@@ -88,6 +88,9 @@ namespace Microsoft.Maui.Controls.Handlers
 				mnv.SelectionChanged -= OnNavigationTabChanged;
 				if (mnv.AutoSuggestBox is not null)
 				{
+					mnv.AutoSuggestBox.TextChanged -= OnSearchBoxTextChanged;
+					mnv.AutoSuggestBox.QuerySubmitted -= OnSearchBoxQuerySubmitted;
+					mnv.AutoSuggestBox.SuggestionChosen -= OnSearchBoxSuggestionChosen;
 					mnv.AutoSuggestBox.GotFocus -= OnSearchBoxGotFocus;
 					mnv.AutoSuggestBox.LostFocus -= OnSearchBoxLostFocus;
 				}
