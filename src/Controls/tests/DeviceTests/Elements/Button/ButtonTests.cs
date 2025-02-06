@@ -63,7 +63,6 @@ namespace Microsoft.Maui.DeviceTests
 			var expected = Colors.AliceBlue;
 			var button = new Button()
 			{
-				Text = "    ",
 				BackgroundColor = expected,
 				HeightRequest = 100,
 				WidthRequest = 200
