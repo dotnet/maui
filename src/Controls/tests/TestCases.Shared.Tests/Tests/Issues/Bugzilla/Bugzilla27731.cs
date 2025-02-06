@@ -17,6 +17,6 @@ public class Bugzilla27731 : _IssuesUITest
 	public void Bugzilla27731Test()
 	{
 		App.WaitForElement("Click");
-		App.WaitForElement("PageTitle");
+		App.WaitForElement("PageLabel");
 	}
 }
