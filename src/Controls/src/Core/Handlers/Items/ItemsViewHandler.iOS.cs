@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, UIView> where TItemsView : ItemsView
 	{
+		NSIndexPath[] _previousSelectedIndexPaths;
 		ItemsViewLayout _layout;
 
 		protected override void DisconnectHandler(UIView platformView)
@@ -95,6 +96,38 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			_layout = SelectLayout();
 			Controller?.UpdateLayout(_layout);
+		}
+
+		internal static void MapIsEnabled(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			if (handler.Controller?.CollectionView == null)
+        		return;
+
+			var collectionView = handler.Controller.CollectionView;
+			bool isEnabled = itemsView.IsEnabled;
+
+			collectionView.UserInteractionEnabled = isEnabled;
+			collectionView.Alpha = isEnabled ? 1.0f : 0.5f;
+
+			if (!isEnabled)
+			{
+				handler._previousSelectedIndexPaths = collectionView.GetIndexPathsForSelectedItems();
+				foreach (var indexPath in handler._previousSelectedIndexPaths)
+				{
+					collectionView.DeselectItem(indexPath, false);
+				}
+			}
+			else
+			{
+				if (handler._previousSelectedIndexPaths != null)
+				{
+					foreach (var indexPath in handler._previousSelectedIndexPaths)
+					{
+						collectionView.SelectItem(indexPath, false, UICollectionViewScrollPosition.None);
+					}
+				}
+				handler._previousSelectedIndexPaths = null;
+			}
 		}
 
 		protected virtual void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
