@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
@@ -196,17 +197,18 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[Description("The BackgroundColor of a Editor should match with native background color")]
 		public async Task EditorBackgroundColorConsistent()
 		{
 			var expected = Colors.AliceBlue;
-			var button = new Editor()
+			var editor = new Editor()
 			{
 				BackgroundColor = expected,
 				HeightRequest = 100,
 				WidthRequest = 200
 			};
 
-			await ValidateHasColor(button, Colors.AliceBlue, typeof(EditorHandler));
+			await ValidateHasColor(editor, expected, typeof(EditorHandler));
 		}
 
 		async Task ValidateEditorLayoutChangesForDisabledAutoSize(

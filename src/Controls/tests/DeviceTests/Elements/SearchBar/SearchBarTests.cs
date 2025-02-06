@@ -1,7 +1,9 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
 
@@ -30,6 +32,21 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() => control.TextTransform = transform);
 			var platformText = await GetPlatformText(handler);
 			Assert.Equal(expected, platformText);
+		}
+
+		[Fact]
+		[Description("The BackgroundColor of a SearchBar should match with native background color")]
+		public async Task SearchBarBackgroundColorConsistent()
+		{
+			var expected = Colors.AliceBlue;
+			var searchbar = new SearchBar()
+			{
+				BackgroundColor = expected,
+				HeightRequest = 100,
+				WidthRequest = 200
+			};
+
+			await ValidateHasColor(searchbar, expected, typeof(SearchBarHandler));
 		}
 
 #if MACCATALYST || IOS

@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Platform;
 using Xunit;
 
 
@@ -30,7 +30,8 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(boxView, expected, typeof(ShapeViewHandler));
 		}
 
-		[Fact(DisplayName = "BoxView BackgroundColor Consistent")]
+		[Fact]
+		[Description("The BackgroundColor of a BoxView should match with native background color")]
 		public async Task BoxViewBackgroundColorConsistent()
 		{
 			var expected = Colors.AliceBlue;
