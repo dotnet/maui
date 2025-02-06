@@ -3,7 +3,7 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 26049, "[iOS] Fix ShellContent Title Does Not Update at Runtime", PlatformAffected.iOS | PlatformAffected.macOS)]
 public partial class Issue26049 : Shell
 {
-    private ShellContent _dynamicShellContent;
+    ShellContent _dynamicShellContent;
 
     public Issue26049()
     {
@@ -15,7 +15,7 @@ public partial class Issue26049 : Shell
 		this.tab1.Title = "Updated";
 	}
 
-    private void OnAddShellContentClicked(object sender, EventArgs e)
+    void OnAddShellContentClicked(object sender, EventArgs e)
     {
         if (_dynamicShellContent == null)
         {
@@ -33,7 +33,7 @@ public partial class Issue26049 : Shell
         }
     }
 
-    private void OnUpdateNewShellContentTitleClicked(object sender, EventArgs e)
+    void OnUpdateNewShellContentTitleClicked(object sender, EventArgs e)
     {
         if (_dynamicShellContent != null)
         {
@@ -42,7 +42,7 @@ public partial class Issue26049 : Shell
         }
     }
 
-    private void OnRemoveShellContentClicked(object sender, EventArgs e)
+    void OnRemoveShellContentClicked(object sender, EventArgs e)
     {
         if (_dynamicShellContent != null)
         {
@@ -52,13 +52,13 @@ public partial class Issue26049 : Shell
         }
     }
 
-    private void OnUpdateThirdTabTitleClicked(object sender, EventArgs e)
+    void OnUpdateThirdTabTitleClicked(object sender, EventArgs e)
     {
         this.tab3.Title = "Updated Profile";
         thirdTabTitleLabel.Text = this.tab3.Title;
     }
 
-    private void UpdateNewTabTitleLabel()
+    void UpdateNewTabTitleLabel()
     {
         newTabTitleLabel.Text = _dynamicShellContent?.Title;
     }
