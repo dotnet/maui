@@ -12,7 +12,7 @@ public class Issue12126 : _IssuesUITest
 
 	public override string Issue => "[iOS] TabBarIsVisible = True/False breaking for multiple nested pages";
 
-	
+
 	[Test]
 	[Category(UITestCategories.Shell)]
 	public void NavigatingBackFromMultiplePushPagesChangesTabVisibilityCorrectly()

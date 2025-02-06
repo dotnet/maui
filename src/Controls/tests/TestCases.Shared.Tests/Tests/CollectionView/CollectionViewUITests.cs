@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public abstract class CollectionViewUITests : UITest
+	public abstract class CollectionViewUITests : CoreGalleryBasePageTest
 	{
 		const string CollectionViewGallery = "CollectionView Gallery";
 
@@ -13,9 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void FixtureSetup()
+		protected override void NavigateToGallery()
 		{
-			base.FixtureSetup();
 			App.NavigateToGallery(CollectionViewGallery);
 		}
 

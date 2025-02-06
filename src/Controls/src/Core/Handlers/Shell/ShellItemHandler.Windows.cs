@@ -141,8 +141,22 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			var selectedItem = (NavigationViewItemViewModel)args.SelectedItem;
 
-			if (selectedItem.Data is ShellSection shellSection)
+			if (selectedItem.Data is ShellSection shellSection && VirtualView.Parent is Shell shell)
 			{
+				NavigationViewItemViewModel? currentItem = null;
+				foreach (var item in _mainLevelTabs)
+				{
+					if (shell.CurrentItem?.CurrentItem is not null && item.Data == shell.CurrentItem.CurrentItem)
+					{
+						currentItem = item;
+						break;
+					}
+				}
+				if (PlatformView is NavigationView navView && navView?.SelectedItem is not null && navView.SelectedItem != currentItem)
+				{
+					((IShellItemController)shell.CurrentItem!).ProposeSection(shellSection);
+				}
+
 				((Shell)VirtualView.Parent).CurrentItem = shellSection;
 			}
 			else if (selectedItem.Data is ShellContent shellContent)
@@ -267,7 +281,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
 					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
 					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
-					autoSuggestBox.ItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["SearchHandlerItemTemplate"];
+					autoSuggestBox.ItemTemplate = _currentSearchHandler.ItemTemplate is null ? null : (UI.Xaml.DataTemplate)WApp.Current.Resources["SearchHandlerItemTemplate"];
 					autoSuggestBox.Text = _currentSearchHandler.Query;
 					autoSuggestBox.UpdateTextOnSelect = false;
 
@@ -338,11 +352,18 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_currentSearchHandler == null)
 				return null;
 
-			if (_currentSearchHandler.ItemsSource == null)
-				return _currentSearchHandler.ItemsSource;
+			var itemsSource = _currentSearchHandler.ItemsSource;
+			var itemTemplate = _currentSearchHandler.ItemTemplate;
 
-			return TemplatedItemSourceFactory.Create(_currentSearchHandler.ItemsSource, _currentSearchHandler.ItemTemplate, _currentSearchHandler,
+			if (itemTemplate is not null && itemsSource is not null)
+			{
+				return TemplatedItemSourceFactory.Create(itemsSource, itemTemplate, _currentSearchHandler,
 				null, null, null, MauiContext);
+			}
+			else
+			{
+				return itemsSource;
+			}
 		}
 
 		void OnCurrentSearchHandlerPropertyChanged(object? sender, PropertyChangedEventArgs e)

@@ -148,7 +148,7 @@ steps:
     inputs:
       testResultsFormat: VSTest
       testResultsFiles: '$(TestResultsDirectory)/*.trx'
-      testRunTitle: '$(System.PhaseName)'
+      testRunTitle: '${{ parameters.testFilter }}_$(System.PhaseName)'
       failTaskOnFailedTests: true
 
   - task: PublishBuildArtifacts@1
