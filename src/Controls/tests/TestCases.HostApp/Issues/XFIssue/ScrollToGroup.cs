@@ -5,6 +5,6 @@ public class ScrollToGroup : TestNavigationPage
 {
 	protected override void Init()
 	{
-		PushAsync(new 	CollectionViewGalleries.ScrollToGalleries.ScrollToGroup());
+		PushAsync(new CollectionViewGalleries.ScrollToGalleries.ScrollToGroup());
 	}
 }

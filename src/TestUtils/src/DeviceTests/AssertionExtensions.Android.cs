@@ -445,51 +445,57 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
-			=> Task.FromResult(bitmap.AssertContainsColor(expectedColor.ToPlatform(), tolerance: tolerance));
+			=> bitmap.AssertContainsColor(expectedColor.ToPlatform(), tolerance: tolerance);
 
 		public static Task<Bitmap> AssertDoesNotContainColor(this Bitmap bitmap, Graphics.Color unexpectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
-			=> Task.FromResult(bitmap.AssertDoesNotContainColor(unexpectedColor.ToPlatform()));
+			=> bitmap.AssertDoesNotContainColor(unexpectedColor.ToPlatform());
 
-		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
+		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
 		{
-			var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
-
-			if (withinRectModifier is not null)
-				imageRect = withinRectModifier.Invoke(imageRect);
-
-			for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
+			return Task.Run(() =>
 			{
-				for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
+				var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
+
+				if (withinRectModifier is not null)
+					imageRect = withinRectModifier.Invoke(imageRect);
+
+				for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
 				{
-					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(expectedColor))
+					for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
 					{
-						return bitmap;
+						if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(expectedColor))
+						{
+							return bitmap;
+						}
 					}
 				}
-			}
 
-			throw new XunitException(CreateColorError(bitmap, $"Color {expectedColor} not found."));
+				throw new XunitException(CreateColorError(bitmap, $"Color {expectedColor} not found."));
+			});
 		}
 
-		public static Bitmap AssertDoesNotContainColor(this Bitmap bitmap, AColor unexpectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
+		public static Task<Bitmap> AssertDoesNotContainColor(this Bitmap bitmap, AColor unexpectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
 		{
-			var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
-
-			if (withinRectModifier is not null)
-				imageRect = withinRectModifier.Invoke(imageRect);
-
-			for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
+			return Task.Run(() =>
 			{
-				for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
+				var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
+
+				if (withinRectModifier is not null)
+					imageRect = withinRectModifier.Invoke(imageRect);
+
+				for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
 				{
-					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(unexpectedColor))
+					for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
 					{
-						throw new XunitException(CreateColorError(bitmap, $"Color {unexpectedColor} was found at point {x}, {y}."));
+						if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(unexpectedColor))
+						{
+							throw new XunitException(CreateColorError(bitmap, $"Color {unexpectedColor} was found at point {x}, {y}."));
+						}
 					}
 				}
-			}
 
-			return bitmap;
+				return bitmap;
+			});
 		}
 
 		public static Task<Bitmap> AssertContainsColor(this AView view, Graphics.Color expectedColor, IMauiContext mauiContext, double? tolerance = null) =>
@@ -500,26 +506,26 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor, IMauiContext mauiContext, double? tolerance = null)
 		{
-			var bitmap = await view.ToBitmap(mauiContext);
-			return AssertContainsColor(bitmap, expectedColor, tolerance: tolerance);
+			var bitmap = await view.ToBitmap(mauiContext).ConfigureAwait(false);
+			return await AssertContainsColor(bitmap, expectedColor, tolerance: tolerance).ConfigureAwait(false);
 		}
 
 		public static async Task<Bitmap> AssertDoesNotContainColor(this AView view, AColor unexpectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap(mauiContext);
-			return AssertDoesNotContainColor(bitmap, unexpectedColor);
+			var bitmap = await view.ToBitmap(mauiContext).ConfigureAwait(false);
+			return await AssertDoesNotContainColor(bitmap, unexpectedColor).ConfigureAwait(false);
 		}
 
 		public static async Task<Bitmap> AssertColorAtPointAsync(this AView view, AColor expectedColor, int x, int y, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap(mauiContext);
+			var bitmap = await view.ToBitmap(mauiContext).ConfigureAwait(false);
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
 		public static async Task<Bitmap> AssertColorsAtPointsAsync(this AView view, Graphics.Color[] colors, Graphics.Point[] points, IMauiContext mauiContext)
 		{
 			var density = mauiContext.Context.GetDisplayDensity();
-			var bitmap = await view.ToBitmap(mauiContext);
+			var bitmap = await view.ToBitmap(mauiContext).ConfigureAwait(false);
 
 			for (int i = 0; i < points.Length; i++)
 			{
@@ -531,31 +537,31 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<Bitmap> AssertColorAtCenterAsync(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap(mauiContext);
+			var bitmap = await view.ToBitmap(mauiContext).ConfigureAwait(false);
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
 		public static async Task<Bitmap> AssertColorAtBottomLeft(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap(mauiContext);
+			var bitmap = await view.ToBitmap(mauiContext).ConfigureAwait(false);
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
 		public static async Task<Bitmap> AssertColorAtBottomRight(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap(mauiContext);
+			var bitmap = await view.ToBitmap(mauiContext).ConfigureAwait(false);
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
 		public static async Task<Bitmap> AssertColorAtTopLeft(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap(mauiContext);
+			var bitmap = await view.ToBitmap(mauiContext).ConfigureAwait(false);
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
 		public static async Task<Bitmap> AssertColorAtTopRight(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap(mauiContext);
+			var bitmap = await view.ToBitmap(mauiContext).ConfigureAwait(false);
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
@@ -605,7 +611,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task ThrowScreenshot(this AView view, IMauiContext mauiContext, string? message = null, Exception? ex = null)
 		{
-			var bitmap = await view.ToBitmap(mauiContext);
+			var bitmap = await view.ToBitmap(mauiContext).ConfigureAwait(false);
 			if (ex is null)
 				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error."));
 			else
@@ -661,9 +667,9 @@ namespace Microsoft.Maui.DeviceTests
 				throw new Exception("Unable to locate Tab Item Text Container");
 
 			if (hasColor)
-				await navItemView.AssertContainsColor(expectedColor.ToPlatform(), mauiContext);
+				await navItemView.AssertContainsColor(expectedColor.ToPlatform(), mauiContext).ConfigureAwait(false);
 			else
-				await navItemView.AssertDoesNotContainColor(expectedColor.ToPlatform(), mauiContext);
+				await navItemView.AssertDoesNotContainColor(expectedColor.ToPlatform(), mauiContext).ConfigureAwait(false);
 		}
 
 		static async Task AssertTabItemIconColor(
@@ -676,9 +682,9 @@ namespace Microsoft.Maui.DeviceTests
 				throw new Exception("Unable to locate Tab Item Icon Container");
 
 			if (hasColor)
-				await navItemView.AssertContainsColor(expectedColor.ToPlatform(), mauiContext);
+				await navItemView.AssertContainsColor(expectedColor.ToPlatform(), mauiContext).ConfigureAwait(false);
 			else
-				await navItemView.AssertDoesNotContainColor(expectedColor.ToPlatform(), mauiContext);
+				await navItemView.AssertDoesNotContainColor(expectedColor.ToPlatform(), mauiContext).ConfigureAwait(false);
 		}
 
 		static public Task AssertTabItemIconDoesNotContainColor(
