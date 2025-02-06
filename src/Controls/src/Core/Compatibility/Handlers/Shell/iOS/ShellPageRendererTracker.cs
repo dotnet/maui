@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			var tabBarVisible = Shell.GetTabBarIsVisible(Page) ? true : (Page.FindParentOfType<ShellItem>() as IShellItemController)?.ShowTabs ?? false;
+			var tabBarVisible = (Page.FindParentOfType<ShellItem>() as IShellItemController)?.ShowTabs ?? Shell.GetTabBarIsVisible(Page);
 			// In iOS 18, the tab bar visibility is effectively managed by the TabBarHidden property in ShellItemRenderer.
 			if (!(OperatingSystemMacCatalyst18Workaround.IsMacCatalystVersionAtLeast18() || OperatingSystem.IsIOSVersionAtLeast(18)))
 			{
