@@ -129,30 +129,27 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (e.OldItems is not null)
 			{
-				foreach (var oldItem in e.OldItems)
+				foreach (ShellContent item in e.OldItems)
 				{
-					if (oldItem is ShellContent oldShellContent)
-					{
-						oldShellContent.PropertyChanged -= OnShellContentPropertyChanged;
-					}
+					item.PropertyChanged -= OnShellContentPropertyChanged;
 				}
 			}
 
 			if (e.NewItems is not null)
 			{
-				foreach (var newItem in e.NewItems)
+				foreach (ShellContent item in e.NewItems)
 				{
-					if (newItem is ShellContent newShellContent)
-					{
-						newShellContent.PropertyChanged += OnShellContentPropertyChanged;
-					}
+					item.PropertyChanged += OnShellContentPropertyChanged;
 				}
 			}
 		}
 
 		void OnShellContentPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == nameof(ShellContent.Title) && sender is ShellContent shellContent)
+			if(sender is not ShellContent shellContent)
+				return;
+
+			if (e.PropertyName == nameof(ShellContent.Title))
 			{
 				if (shellContent.Parent is ShellSection shellSection && shellSection.Parent is ShellItem shellItem && shellItem.Handler is ShellItemHandler shellItemHandler)
 				{
