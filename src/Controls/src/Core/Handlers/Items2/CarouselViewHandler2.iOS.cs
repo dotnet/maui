@@ -86,8 +86,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				{
 					section.InterGroupSpacing = (nfloat)linearItemsLayout.ItemSpacing;
 				}
-				section.OrthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered;
-				section.InterGroupSpacing = itemSpacing;
 				section.OrthogonalScrollingBehavior = IsHorizontal ? UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered : UICollectionLayoutSectionOrthogonalScrollingBehavior.None;
 				section.VisibleItemsInvalidationHandler = (items, offset, env) =>
 				{
