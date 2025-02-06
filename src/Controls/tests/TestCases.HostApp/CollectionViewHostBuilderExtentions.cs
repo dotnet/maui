@@ -13,7 +13,7 @@ namespace Maui.Controls.Sample
 	class CarouselView1 : CarouselView { }
 	class CarouselView2 : CarouselView { }
 
-	public static partial class CollectionViewHostBuilderExtentions
+	public static partial class CollectionViewHostBuilderExtensions
 	{
 		/// <summary>
 		/// Configure the .NET MAUI app to listen for fold-related events

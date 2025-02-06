@@ -1,4 +1,4 @@
-﻿# if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID &&TEST_FAILS_ON_CATALYST 
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST
 // DisplayActionSheet and DisplayAlert are popped up in the constructor using BeginInvokeOnMainThread which is not working on Windows, Android, and Catalyst. Issue : https://github.com/dotnet/maui/issues/26481
 using NUnit.Framework;
 using UITest.Appium;
@@ -27,4 +27,4 @@ public class Bugzilla45743 : _IssuesUITest
 		Assert.That(App.FindElements("Page 2").Count, Is.GreaterThan(0));
 	}
 }
-# endif
+#endif

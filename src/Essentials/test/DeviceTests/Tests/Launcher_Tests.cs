@@ -72,12 +72,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #if __IOS__
 			if (DeviceInfo.DeviceType == DeviceType.Virtual && (uri.Contains("tel:", StringComparison.Ordinal) || uri.Contains("mailto:", StringComparison.Ordinal)))
 			{
-				Assert.False(await Launcher.CanOpenAsync(uri));
+				Assert.False(await Launcher.CanOpenAsync(uri).ConfigureAwait(false));
 				return;
 			}
 #endif
 
-			Assert.True(await Launcher.CanOpenAsync(uri));
+			Assert.True(await Launcher.CanOpenAsync(uri).ConfigureAwait(false));
 		}
 
 		[Theory]
@@ -109,13 +109,13 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #if __IOS__
 			if (DeviceInfo.DeviceType == DeviceType.Virtual && (uri.Contains("tel:", StringComparison.Ordinal) || uri.Contains("mailto:", StringComparison.Ordinal)))
 			{
-				Assert.False(await Launcher.CanOpenAsync(new Uri(uri)));
+				Assert.False(await Launcher.CanOpenAsync(new Uri(uri)).ConfigureAwait(false));
 				return;
 			}
 
 #endif
 
-			Assert.True(await Launcher.CanOpenAsync(new Uri(uri)));
+			Assert.True(await Launcher.CanOpenAsync(new Uri(uri)).ConfigureAwait(false));
 		}
 
 #if __IOS__
@@ -133,21 +133,21 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[InlineData("Not Valid Uri")]
 		public async Task InvalidUri(string uri)
 		{
-			await Assert.ThrowsAsync<UriFormatException>(() => Launcher.CanOpenAsync(uri));
+			await Assert.ThrowsAsync<UriFormatException>(() => Launcher.CanOpenAsync(uri)).ConfigureAwait(false);
 		}
 
 		[Theory]
 		[InlineData("ms-invalidurifortest:abc")]
 		public async Task CanNotOpenUri(string uri)
 		{
-			Assert.False(await Launcher.CanOpenAsync(new Uri(uri)));
+			Assert.False(await Launcher.CanOpenAsync(new Uri(uri)).ConfigureAwait(false));
 		}
 
 		[Theory]
 		[InlineData("ms-invalidurifortest:abc")]
 		public async Task CanNotOpen(string uri)
 		{
-			Assert.False(await Launcher.CanOpenAsync(uri));
+			Assert.False(await Launcher.CanOpenAsync(uri).ConfigureAwait(false));
 		}
 
 		[Theory]
@@ -164,12 +164,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #if __IOS__
 			if (DeviceInfo.DeviceType == DeviceType.Virtual && (uri.Contains("tel:", StringComparison.Ordinal) || uri.Contains("mailto:", StringComparison.Ordinal)))
 			{
-				Assert.False(await Launcher.TryOpenAsync(uri));
+				Assert.False(await Launcher.TryOpenAsync(uri).ConfigureAwait(false));
 				return;
 			}
 #endif
 
-			Assert.True(await Launcher.TryOpenAsync(uri));
+			Assert.True(await Launcher.TryOpenAsync(uri).ConfigureAwait(false));
 		}
 
 		[Theory]
@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 		public async Task CanNotTryOpen(string uri)
 		{
-			Assert.False(await Launcher.TryOpenAsync(new Uri(uri)));
+			Assert.False(await Launcher.TryOpenAsync(new Uri(uri)).ConfigureAwait(false));
 		}
 	}
 }

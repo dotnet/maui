@@ -25,7 +25,7 @@ public class Bugzilla33612 : _IssuesUITest
 		App.WaitForElement("This is Page 3");
 		App.WaitForElement("Return To Page 2");
 		App.Tap("Return To Page 2");
-		
+
 		App.WaitForElement("If you are seeing this, nothing crashed.");
 	}
 }

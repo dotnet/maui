@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Handlers
 {
-    public partial class HybridWebViewHandler : ViewHandler<IHybridWebView, Tizen.NUI.BaseComponents.View>
+	public partial class HybridWebViewHandler : ViewHandler<IHybridWebView, Tizen.NUI.BaseComponents.View>
 	{
 		protected override Tizen.NUI.BaseComponents.View CreatePlatformView() => throw new NotImplementedException();
 
