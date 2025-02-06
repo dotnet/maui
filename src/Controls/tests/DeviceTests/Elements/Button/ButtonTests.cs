@@ -4,7 +4,6 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
 using Xunit;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.DeviceTests
 {
