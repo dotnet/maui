@@ -81,6 +81,35 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <inheritdoc/>
+		/// TODO: make this public for .NET 10 (or a .NET 9 SR)
+		internal async Task InvokeJavaScriptAsync(
+			string methodName,
+			object?[]? paramValues = null,
+			JsonTypeInfo?[]? paramJsonTypeInfos = null)
+		{
+			if (string.IsNullOrEmpty(methodName))
+			{
+				throw new ArgumentException($"The method name cannot be null or empty.", nameof(methodName));
+			}
+			if (paramValues != null && paramJsonTypeInfos == null)
+			{
+				throw new ArgumentException($"The parameter values were provided, but the parameter JSON type infos were not.", nameof(paramJsonTypeInfos));
+			}
+			if (paramValues == null && paramJsonTypeInfos != null)
+			{
+				throw new ArgumentException($"The parameter JSON type infos were provided, but the parameter values were not.", nameof(paramValues));
+			}
+			if (paramValues != null && paramValues.Length != paramJsonTypeInfos!.Length)
+			{
+				throw new ArgumentException($"The number of parameter values does not match the number of parameter JSON type infos.", nameof(paramValues));
+			}
+
+			await Handler?.InvokeAsync(
+				nameof(IHybridWebView.InvokeJavaScriptAsync),
+				new HybridWebViewInvokeJavaScriptRequest(methodName, null, paramValues, paramJsonTypeInfos))!;
+		}
+
+		/// <inheritdoc/>
 		public async Task<TReturnType?> InvokeJavaScriptAsync<TReturnType>(
 			string methodName,
 			JsonTypeInfo<TReturnType> returnTypeJsonTypeInfo,

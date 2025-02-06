@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents
+	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, ICrossPlatformLayoutBacking
 	{
 		bool _invalidateParentWhenMovedToWindow;
 		double _lastMeasureHeight;
@@ -16,11 +16,13 @@ namespace Microsoft.Maui.Platform
 
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
-		internal ICrossPlatformLayout? CrossPlatformLayout
+		ICrossPlatformLayout? ICrossPlatformLayoutBacking.CrossPlatformLayout
 		{
 			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
 			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);
 		}
+
+		internal ICrossPlatformLayout? CrossPlatformLayout => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout;
 
 		public override void LayoutSubviews()
 		{
@@ -36,11 +38,13 @@ namespace Microsoft.Maui.Platform
 				_lastArrangeWidth = widthConstraint;
 				_lastArrangeHeight = heightConstraint;
 
-				// If the SuperView is a MauiView (backing a cross-platform ContentView or Layout), then measurement
-				// has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews. But we
-				// _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
+				// If the SuperView is a cross-platform layout backed view (i.e. MauiView, MauiScrollView, LayoutView, ..),
+				// then measurement has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews.
+				// This is especially important to avoid overriding potentially infinite measurement constraints
+				// imposed by the parent (i.e. scroll view) with the current bounds.
+				// But we _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
 				// the window); there's no guarantee that SizeThatFits has been called in that case.
-				if (!IsMeasureValid(widthConstraint, heightConstraint) && Superview is not MauiView)
+				if (!IsMeasureValid(widthConstraint, heightConstraint) && !this.IsFinalMeasureHandledBySuperView())
 				{
 					crossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
 					CacheMeasureConstraints(widthConstraint, heightConstraint);

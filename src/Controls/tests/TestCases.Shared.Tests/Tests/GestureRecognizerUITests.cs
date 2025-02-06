@@ -20,8 +20,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest("PointerGestureRecognizer doesn't work with mouse in Android")]
-		[FailsOnIOSWhenRunningOnXamarinUITest("PointerGestureRecognizer doesn't work with mouse in iOS")]
 		public void PointerGestureTest()
 		{
 			App.WaitForElement("TargetView");
@@ -32,9 +30,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			// using Tap in place of moving mouse for now
 			App.Tap("primaryLabel");
 			App.Tap("secondaryLabel");
-
+			App.WaitForElement("secondaryLabel");
 			var secondaryLabelText = App.FindElement("secondaryLabel").GetText();
-			ClassicAssert.IsNotEmpty(secondaryLabelText);
+			Assert.That(secondaryLabelText, Is.Not.Null);
 		}
 
 		[Test]

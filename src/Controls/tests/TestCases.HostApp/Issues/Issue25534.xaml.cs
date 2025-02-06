@@ -20,75 +20,75 @@ namespace Maui.Controls.Sample.Issues
 		public Issue25534HomePage()
 		{
 			Title = "HomePage";
-            var viewModel = new Issue25534PageModel();
-            this.BindingContext = viewModel;
+			var viewModel = new Issue25534PageModel();
+			this.BindingContext = viewModel;
 
-            var button = new Button
-            {
-                Text = "Go To Second Page",
-                AutomationId = "GoToSecondPage",
-                HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.Center
-            };
-            button.Clicked += async (sender, e) =>
-            {
-                var secondaryPage = new SecondaryPage(viewModel);
-                await Navigation.PushAsync(secondaryPage);
-            };
-            var stack = new StackLayout();
-            stack.Children.Add(button);
+			var button = new Button
+			{
+				Text = "Go To Second Page",
+				AutomationId = "GoToSecondPage",
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center
+			};
+			button.Clicked += async (sender, e) =>
+			{
+				var secondaryPage = new SecondaryPage(viewModel);
+				await Navigation.PushAsync(secondaryPage);
+			};
+			var stack = new StackLayout();
+			stack.Children.Add(button);
 
-            this.Content = stack;
-	}
+			this.Content = stack;
+		}
 	}
 
 	public class SecondaryPage : ContentPage
-    {
-        private readonly Issue25534PageModel ViewModel;
+	{
+		private readonly Issue25534PageModel ViewModel;
 
-        internal SecondaryPage(Issue25534PageModel vm)
-        {
-            BindingContext = ViewModel = vm;
-            Title = "Secondary Page"; 
-            var noteToolbarItem = new ToolbarItem
-            {
-                Text = "Notes",
-            };
-            noteToolbarItem.SetBinding(ToolbarItem.IconImageSourceProperty, nameof(ViewModel.NoteIcon));
-            var testToolbarItem = new ToolbarItem
-            {
-                Text = "Test"
-            };
-            ToolbarItems.Add(noteToolbarItem);
-            ToolbarItems.Add(testToolbarItem);
-            var headerLabel = new Label
-            {
-                Text = "Secondary Page",
+		internal SecondaryPage(Issue25534PageModel vm)
+		{
+			BindingContext = ViewModel = vm;
+			Title = "Secondary Page";
+			var noteToolbarItem = new ToolbarItem
+			{
+				Text = "Notes",
+			};
+			noteToolbarItem.SetBinding(ToolbarItem.IconImageSourceProperty, nameof(ViewModel.NoteIcon));
+			var testToolbarItem = new ToolbarItem
+			{
+				Text = "Test"
+			};
+			ToolbarItems.Add(noteToolbarItem);
+			ToolbarItems.Add(testToolbarItem);
+			var headerLabel = new Label
+			{
+				Text = "Secondary Page",
 				AutomationId = "SecondPageLabel",
-                HorizontalOptions = LayoutOptions.Center
-            };
-            var stackLayout = new VerticalStackLayout
-            {
-                Padding = new Thickness(30, 0),
-                Spacing = 25,
-                Children =
-                {
-                    headerLabel
-                }
-            };
-            Content = stackLayout;
-        }
+				HorizontalOptions = LayoutOptions.Center
+			};
+			var stackLayout = new VerticalStackLayout
+			{
+				Padding = new Thickness(30, 0),
+				Spacing = 25,
+				Children =
+				{
+					headerLabel
+				}
+			};
+			Content = stackLayout;
+		}
 
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-            ViewModel.SetIcon();
-        }
-    }
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+			ViewModel.SetIcon();
+		}
+	}
 	internal partial class Issue25534PageModel : INotifyPropertyChanged
 	{
 		//As per MS doc this should be a valid image path with file extension and the SVG file in .NET MAUI app project should be referenced with a .png extension. Refer https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/image?view=net-maui-8.0#load-a-font-icon
-		protected const string ButtonEmpty = "dotnet_bot_resized2.png"; 
+		protected const string ButtonEmpty = "dotnet_bot_resized2.png";
 		protected const string ButtonNote = "dotnet_bot_resized3.png";
 
 		private string? noteIcon = ButtonEmpty;

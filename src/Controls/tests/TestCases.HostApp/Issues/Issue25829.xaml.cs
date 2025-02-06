@@ -14,7 +14,7 @@ public partial class Issue25829 : ContentPage
 	{
 		base.OnAppearing();
 
-		if(this.Navigation.ModalStack.Contains(this))
+		if (this.Navigation.ModalStack.Contains(this))
 		{
 			testButton.AutomationId = "Success";
 		}
