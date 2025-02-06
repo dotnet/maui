@@ -7,8 +7,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ImageButtonExtensions
 	{
-		// TODO: NET9 should this be public?
-		internal static void UpdateBackground(this ShapeableImageView platformButton, IImageButton imageButton) =>
+		public static void UpdateBackground(this ShapeableImageView platformButton, IImageButton imageButton) =>
 			platformButton.UpdateButtonBackground(imageButton);
 
 		public static void UpdateStrokeColor(this ShapeableImageView platformButton, IButtonStroke buttonStroke) =>
