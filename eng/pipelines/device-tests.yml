@@ -66,8 +66,9 @@ parameters:
     default:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sonoma
+      - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+        demands:
+          - macOS.Name -equals Sonoma
 
   - name: iosPool
     type: object
