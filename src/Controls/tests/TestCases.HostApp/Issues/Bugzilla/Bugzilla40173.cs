@@ -18,7 +18,7 @@ public class Bugzilla40173 : TestContentPage
 
 	protected override void Init()
 	{
-		var outputLabel = new Label() { Text="Default", AutomationId = "outputlabel" };
+		var outputLabel = new Label() { Text = "Default", AutomationId = "outputlabel" };
 		var testButton = new Button
 		{
 			Text = "Can't Touch This",
@@ -105,7 +105,7 @@ public class Bugzilla40173 : TestContentPage
 			};
 
 			return result;
-		
+
 		});
 
 		testListView.ItemSelected += (sender, args) => outputLabel.Text = ListTapSuccessText;

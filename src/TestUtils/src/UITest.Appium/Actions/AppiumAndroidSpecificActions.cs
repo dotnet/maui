@@ -134,7 +134,7 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 			}
 		}
-    
+
 		CommandResponse GetSystemBars(IDictionary<string, object> parameters)
 		{
 			if (_appiumApp.Driver is AndroidDriver androidDriver)

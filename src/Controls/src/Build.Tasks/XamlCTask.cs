@@ -283,14 +283,16 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}Parsing Xaml");
 							ILRootNode rootnode = null;
-							try {
+							try
+							{
 								rootnode = ParseXaml(resource.GetResourceStream(), typeDef);
 								if (rootnode == null)
 								{
 									LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}failed.");
 									continue;
 								}
-							} catch (XamlParseException xpe)
+							}
+							catch (XamlParseException xpe)
 							{
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}failed.");
 								xamlFilePath = LoggingHelper.GetXamlFilePath(xamlFilePath);

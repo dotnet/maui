@@ -20,8 +20,8 @@ public class Issue7993 : _IssuesUITest
 		var colView = App.WaitForElement("CollectionView7993");
 
 		App.WaitForElement("VerticalOffset: 0");
-		App.DragCoordinates(colView.GetRect().Width - 10, 
-			colView.GetRect().Y + colView.GetRect().Height - 50, 
+		App.DragCoordinates(colView.GetRect().Width - 10,
+			colView.GetRect().Y + colView.GetRect().Height - 50,
 			colView.GetRect().Width - 10,
 			colView.GetRect().Y + 5);
 		App.WaitForElement("19");

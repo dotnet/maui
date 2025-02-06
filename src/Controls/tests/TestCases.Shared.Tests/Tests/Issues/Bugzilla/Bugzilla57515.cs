@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST	//The test fails on macOS Catalyst because the PinchToZoomIn does not working. 
+﻿#if TEST_FAILS_ON_CATALYST  //The test fails on macOS Catalyst because the PinchToZoomIn does not working.                                                                                  
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;

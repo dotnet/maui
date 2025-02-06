@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			if (Element == null || Control == null)
 				return _defaultAccessibilityHint;
-			
+
 			var semantics = SemanticProperties.UpdateSemantics(Element, null);
 			if (semantics is not null)
 			{
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			if (Element == null || Control == null)
 				return _defaultAccessibilityLabel;
-			
+
 			var semantics = SemanticProperties.UpdateSemantics(Element, null);
 			if (semantics is not null)
 			{

@@ -37,7 +37,7 @@ public class Issue3475 : _IssuesUITest
 
 		App.Tap(_withCompressionBtnId);
 		App.WaitForElement(DoneLabelId);
-		
+
 
 		int elapsedWithCompression = GetMs(App.WaitForElement(ElapsedLabelId).GetText()!);
 		var delta = elapsedWithCompression - elapsedWithoutCompression;
@@ -48,7 +48,7 @@ public class Issue3475 : _IssuesUITest
 	}
 
 	public int GetMs(string text)
-	{	
+	{
 		text = text.Replace($"Showing {ItemsCount} items took: ", "", StringComparison.OrdinalIgnoreCase).Replace(" ms", "", StringComparison.OrdinalIgnoreCase);
 		return int.TryParse(text, out int elapsed) ? elapsed : 0;
 	}
