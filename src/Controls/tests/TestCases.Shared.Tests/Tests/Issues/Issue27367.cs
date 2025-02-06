@@ -21,7 +21,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(SwipeItem);
 			App.SwipeRightToLeft(SwipeItem);
-			App.WaitForElement(SwipeItem);
+			// CI captures a screenshot before the swipe is fully completed, resulting in a slight visual difference.
+			// Even using Thread.Sleep or WaitForElement sometimes fails, so adding Task.Delay working fine.
+			Task.Delay(500);
 			VerifyScreenshot();
 		}
 
@@ -31,7 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(SwipeItemView);
 			App.SwipeRightToLeft(SwipeItemView);
-			App.WaitForElement(SwipeItemView);
+			Task.Delay(500);
 			VerifyScreenshot();
 		}
 	}
