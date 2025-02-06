@@ -84,7 +84,14 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.DisconnectHandler(platformView);
 
 			if (platformView is MauiNavigationView mnv)
+			{
 				mnv.SelectionChanged -= OnNavigationTabChanged;
+				if (mnv.AutoSuggestBox is not null)
+				{
+					mnv.AutoSuggestBox.GotFocus -= OnSearchBoxGotFocus;
+					mnv.AutoSuggestBox.LostFocus -= OnSearchBoxLostFocus;
+				}
+			}
 
 			platformView.Loaded -= OnNavigationViewLoaded;
 
