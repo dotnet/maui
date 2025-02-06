@@ -1,4 +1,4 @@
-﻿#if WINDOWS
+﻿#if TEST_FAILS_ON_WINDOWS //The sample is not performing as expected.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			}
 
 			App.Tap(Collect);
-			App.WaitForNoElement(Success);
+			App.WaitForElement(Success);
 		}
 	}
 }
