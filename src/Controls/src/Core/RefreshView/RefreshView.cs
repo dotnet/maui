@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -152,7 +153,8 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"Command = {Command}, IsRefreshing = {IsRefreshing}, {base.GetDebuggerDisplay()}";
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Command), Command, nameof(IsRefreshing), IsRefreshing, false);
+			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
 	}
 }

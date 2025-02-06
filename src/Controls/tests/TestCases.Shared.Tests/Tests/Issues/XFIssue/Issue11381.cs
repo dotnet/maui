@@ -25,7 +25,7 @@ public class Issue11381 : _IssuesUITest
 		App.Tap("G1I2");
 		App.Tap("G1I1");
 		App.WaitForElement("ResultId");
-		Assert.That("0 groups",Is.EqualTo( App.WaitForElement("ResultId").ReadText()));
+		Assert.That("0 groups", Is.EqualTo(App.WaitForElement("ResultId").ReadText()));
 	}
 }
 #endif

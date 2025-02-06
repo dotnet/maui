@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var typename = member.Substring(0, dotIdx);
 			var membername = member.Substring(dotIdx + 1);
 
-			var typeRef = module.ImportReference(XmlTypeExtensions.GetTypeReference(context.Cache, typename, module, node as BaseNode));
+			var typeRef = module.ImportReference(XmlTypeExtensions.GetTypeReference(context.Cache, typename, module, node as BaseNode, expandToExtension: false));
 			var fieldRef = GetFieldReference(context.Cache, typeRef, membername, module);
 			var propertyDef = GetPropertyDefinition(context.Cache, typeRef, membername, module);
 

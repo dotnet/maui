@@ -15,13 +15,13 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
-    public partial class Maui18980 : ContentPage
-    {
-        public Maui18980()
-        {
-            InitializeComponent();
-        }
-        	public Maui18980(bool useCompiledXaml)
+	public partial class Maui18980 : ContentPage
+	{
+		public Maui18980()
+		{
+			InitializeComponent();
+		}
+		public Maui18980(bool useCompiledXaml)
 		{
 			//this stub will be replaced at compile time
 		}
@@ -41,11 +41,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			[Test]
 			public void CSSnotOverridenbyImplicitStyle([Values(false, true)] bool useCompiledXaml)
-			{			
+			{
 				// var app = new MockApplication();
 				// app.Resources.Add(new Maui18980Style(useCompiledXaml));
 				// Application.SetCurrentApplication(app);
-				
+
 				var page = new Maui18980(useCompiledXaml);
 				Assert.That(page.button.BackgroundColor, Is.EqualTo(Colors.Red));
 			}

@@ -33,9 +33,9 @@ namespace Maui.Controls.Sample.Issues
 		static void LoadItems(ObservableCollection<Issue22035Model> items, string text)
 		{
 			items.Clear();
-			for (int i = 0; i < 3	; i++)
+			for (int i = 0; i < 3; i++)
 			{
-				items.Add(new Issue22035Model { Text = $"{text} - Item {i}", ImagePath = i% 2 == 0 ? "photo21314.jpg" : "oasis.jpg" });
+				items.Add(new Issue22035Model { Text = $"{text} - Item {i}", ImagePath = i % 2 == 0 ? "photo21314.jpg" : "oasis.jpg" });
 			}
 		}
 	}

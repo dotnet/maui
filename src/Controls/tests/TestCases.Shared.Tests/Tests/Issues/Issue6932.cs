@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void EmptyViewBecomesVisibleWhenItemsSourceIsCleared()
 		{
-			App.WaitForAnyElement(["0","1","2","3","4","5","6","7","8","9"]);
+			App.WaitForAnyElement(["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
 			App.WaitForElement(ClearAutomationId);
 			App.Tap(ClearAutomationId);
 			App.WaitForElement("No Results");
