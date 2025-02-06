@@ -73,7 +73,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 	[TestCase("maui", true, "MSIX")]
 	[TestCase("maui", false, "None")]
 	[TestCase("maui", false, "MSIX")]
-	public void BuildWindowsRidGraph(string id, bool useridgraph, string packageType)
+	public void BuildWindowsRidGraph(string id, bool useRidGraph, string packageType)
 	{
 		if (TestEnvironment.IsMacOS)
 			Assert.Ignore("This test is designed for testing a windows build.");
@@ -87,7 +87,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		FileUtilities.ReplaceInFile(projectFile,
 			"<WindowsPackageType>None</WindowsPackageType>",
 			$"""
-			<UseRidGraph>{useridgraph}</UseRidGraph>
+			<UseRidGraph>{useRidGraph}</UseRidGraph>
 			<WindowsPackageType>{packageType}</WindowsPackageType>
 			""");
 
