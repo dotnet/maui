@@ -81,8 +81,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <inheritdoc/>
-		/// TODO: make this public for .NET 10 (or a .NET 9 SR)
-		internal async Task InvokeJavaScriptAsync(
+		public async Task InvokeJavaScriptAsync(
 			string methodName,
 			object?[]? paramValues = null,
 			JsonTypeInfo?[]? paramJsonTypeInfos = null)
