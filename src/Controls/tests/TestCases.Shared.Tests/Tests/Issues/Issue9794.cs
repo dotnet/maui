@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #else
 		const string BackButtonIdentifier = "tab1";
 #endif
-        const string tab1 = "tab1";
+		const string tab1 = "tab1";
 		const string tab2 = "tab2";
 		const string GoForward = "GoForward";
 
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "[iOS] Tabbar Disappears with linker";
-		
+
 		[Test]
 		[Category(UITestCategories.Shell)]
 		public void EnsureTabBarStaysVisibleAfterPoppingPage()

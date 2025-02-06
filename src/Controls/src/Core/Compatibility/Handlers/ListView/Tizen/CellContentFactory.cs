@@ -1,6 +1,6 @@
 #nullable disable
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {

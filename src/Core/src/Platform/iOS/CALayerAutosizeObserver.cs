@@ -30,8 +30,8 @@ class CALayerAutosizeObserver : NSObject
 		IsDirectBinding = false;
 	}
 
-	[Preserve (Conditional = true)]
-	public override void ObserveValue (NSString keyPath, NSObject ofObject, NSDictionary change, IntPtr context)
+	[Preserve(Conditional = true)]
+	public override void ObserveValue(NSString keyPath, NSObject ofObject, NSDictionary change, IntPtr context)
 	{
 		if (!_disposed && keyPath == _boundsKey && context == Handle && _layerReference.TryGetTarget(out var layer))
 		{

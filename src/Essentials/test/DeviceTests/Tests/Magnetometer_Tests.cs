@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasMagnetometer)
 				return;
 
-			var tcs = new TaskCompletionSource<MagnetometerData>();
+			var tcs = new TaskCompletionSource<MagnetometerData>(TaskCreationOptions.RunContinuationsAsynchronously);
 			Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;
 			Magnetometer.Start(sensorSpeed);
 
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasMagnetometer)
 				return;
 
-			var tcs = new TaskCompletionSource<MagnetometerData>();
+			var tcs = new TaskCompletionSource<MagnetometerData>(TaskCreationOptions.RunContinuationsAsynchronously);
 			Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;
 			Magnetometer.Start(sensorSpeed);
 
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasMagnetometer)
 				return;
 
-			var tcs = new TaskCompletionSource<MagnetometerData>();
+			var tcs = new TaskCompletionSource<MagnetometerData>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			Magnetometer.ReadingChanged += Magnetometer_ReadingChanged;
 			Magnetometer.Start(sensorSpeed);

@@ -1,9 +1,9 @@
 ﻿using System.Net;
 using System.Text.RegularExpressions;
-using Label = Microsoft.Maui.Controls.Label;
-using WebView = Microsoft.Maui.Controls.WebView;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using Label = Microsoft.Maui.Controls.Label;
+using WebView = Microsoft.Maui.Controls.WebView;
 
 namespace Maui.Controls.Sample.Issues
 {

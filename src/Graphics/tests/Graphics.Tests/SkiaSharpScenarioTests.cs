@@ -35,7 +35,7 @@ public class SkiaSharpScenarioTests
 			Directory.CreateDirectory(Path.GetDirectoryName(newImageFilename));
 
 			bmp.WriteToFile(newImageFilename);
-			
+
 			Assert.Fail($"Image file did not exist, created: {newImageFilename}");
 		}
 
