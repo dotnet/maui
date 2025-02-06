@@ -14,8 +14,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				return;
 
 			nativeViewElement.AccessibilityIdentifier = element?.AutomationId;
+#pragma warning disable CS0618 // Type or member is obsolete
 			SetAccessibilityLabel(nativeViewElement, element);
 			SetAccessibilityHint(nativeViewElement, element);
+#pragma warning restore CS0618 // Type or member is obsolete
 			SetIsAccessibilityElement(nativeViewElement, element);
 			SetAccessibilityElementsHidden(nativeViewElement, element);
 		}
