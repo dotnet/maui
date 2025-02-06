@@ -337,7 +337,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 							yield return Create(Ldloc, vardefref.VariableDefinition);
 							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "StringFormat"));
 							yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase"), propertyName: "StringFormat"));
-							
+
 							if (bindingExtensionType.Value.Item3 == "BindingExtension")
 							{
 								// // extension.TypedBinding.Source = extension.Source;
@@ -364,7 +364,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 								yield return Create(Ldloc, vardefref.VariableDefinition);
 								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TargetNullValue"));
 								yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase"), propertyName: "TargetNullValue"));
-							} else //TemplateBindingExtension
+							}
+							else //TemplateBindingExtension
 							{
 								// extension.TypedBinding.Source = RelativeBindingSource.TemplatedParent,
 								yield return Create(Ldloc, vardefref.VariableDefinition);
