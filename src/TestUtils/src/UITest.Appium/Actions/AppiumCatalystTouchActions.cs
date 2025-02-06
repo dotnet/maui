@@ -5,11 +5,13 @@ namespace UITest.Appium
 {
 	public class AppiumCatalystTouchActions : ICommandExecutionGroup
 	{
+		const string TapCoordinatesCommand = "tapCoordinates";
 		const string DoubleTapCommand = "doubleTap";
 		const string DragAndDropCommand = "dragAndDrop";
 
 		readonly List<string> _commands = new()
 		{
+			TapCoordinatesCommand,
 			DoubleTapCommand,
 			DragAndDropCommand,
 		};
@@ -29,10 +31,28 @@ namespace UITest.Appium
 		{
 			return commandName switch
 			{
+				TapCoordinatesCommand => TapCoordinates(parameters),
 				DoubleTapCommand => DoubleTap(parameters),
 				DragAndDropCommand => DragAndDrop(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
+		}
+
+		CommandResponse TapCoordinates(IDictionary<string, object> parameters)
+		{
+			if (parameters.TryGetValue("x", out var x) &&
+				parameters.TryGetValue("y", out var y))
+			{
+				_appiumApp.Driver.ExecuteScript("macos: click", new Dictionary<string, object>
+				{
+					{ "x", Convert.ToSingle(x) },
+					{ "y", Convert.ToSingle(y) },
+				});
+
+				return CommandResponse.SuccessEmptyResponse;
+			}
+
+			return CommandResponse.FailedEmptyResponse;
 		}
 
 		CommandResponse DoubleTap(IDictionary<string, object> parameters)
