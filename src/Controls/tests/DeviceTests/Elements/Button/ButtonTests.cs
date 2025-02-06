@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Graphics;
@@ -57,6 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		[Description("The BackgroundColor of a Button should match with native background color")]
 		public async Task ButtonBackgroundColorConsistent()
 		{
 			var expected = Colors.AliceBlue;
@@ -68,9 +70,8 @@ namespace Microsoft.Maui.DeviceTests
 				WidthRequest = 200
 			};
 
-			await ValidateHasColor(button, Colors.AliceBlue, typeof(ButtonHandler));
+			await ValidateHasColor(button, expected, typeof(ButtonHandler));
 		}
-
 
 	}
 }
