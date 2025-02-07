@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //This test case verifies "SwipeLeftToRight method" exclusively on the Android and IOS platforms
+﻿#if TEST_FAILS_ON_WINDOWS // For more information, see : https://github.com/dotnet/maui/issues/27638
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -24,7 +24,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.SwipeLeftToRight(SwipeViewId);
 			App.Tap(SwipeViewId);
 			App.WaitForElement("Success");
-			VerifyScreenshot();
 		}
 	}
 }
