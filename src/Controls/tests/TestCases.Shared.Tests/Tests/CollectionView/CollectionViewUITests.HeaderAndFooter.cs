@@ -5,30 +5,30 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests
 {
 
-    public class CollectionViewHeaderAndFooterTests : CollectionViewUITests
-    {
+	public class CollectionViewHeaderAndFooterTests : CollectionViewUITests
+	{
 
-        protected override bool ResetAfterEachTest => true;
+		protected override bool ResetAfterEachTest => true;
 
-        public CollectionViewHeaderAndFooterTests(TestDevice device)
-            : base(device)
-        {
-        }
+		public CollectionViewHeaderAndFooterTests(TestDevice device)
+			: base(device)
+		{
+		}
 
 		[Test]
-        [Category(UITestCategories.CollectionView)]
-        public void HeaderFooterStringWorks()
-        {
-            // Navigate to the selection galleries
-            VisitInitialGallery("Header Footer");
+		[Category(UITestCategories.CollectionView)]
+		public void HeaderFooterStringWorks()
+		{
+			// Navigate to the selection galleries
+			VisitInitialGallery("Header Footer");
 
-            // Navigate to the specific sample inside selection galleries
-            VisitSubGallery("Header/Footer (String)");
+			// Navigate to the specific sample inside selection galleries
+			VisitSubGallery("Header/Footer (String)");
 
-            App.WaitForElement("Just a string as a header");
-            App.WaitForElement("This footer is also a string");
-        }
-#if IOS 
+			App.WaitForElement("Just a string as a header");
+			App.WaitForElement("This footer is also a string");
+		}
+#if IOS
 		[Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterViewWorks()
@@ -95,5 +95,5 @@ namespace Microsoft.Maui.TestCases.Tests
         }
 #endif
 #endif
-    }
+	}
 }
