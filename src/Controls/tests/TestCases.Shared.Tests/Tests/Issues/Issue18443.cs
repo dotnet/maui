@@ -19,7 +19,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			if (App.IsKeyboardShown())
 				App.DismissKeyboard();
 #endif
-			Thread.Sleep(1000); // Wait for keyboard to dismiss
 			VerifyScreenshot();
 		}
 
