@@ -118,11 +118,22 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// if (exception is not null) throw exception;
 		/// </code>
 		/// </example>
-		public void VerifyScreenshotOrSetException(ref Exception? exception, string? name = null, TimeSpan? retryDelay = null)
+		public void VerifyScreenshotOrSetException(
+			ref Exception? exception, 
+			string? name = null, 
+			TimeSpan? retryDelay = null
+#if MACUITEST || WINTEST
+			, bool includeTitleBar = false
+#endif
+			)
 		{
 			try
 			{
-				VerifyScreenshot(name, retryDelay);
+				VerifyScreenshot(name, retryDelay
+#if MACUITEST || WINTEST
+				, includeTitleBar
+#endif
+				);
 			}
 			catch (Exception ex)
 			{
