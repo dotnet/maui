@@ -1,5 +1,4 @@
-﻿#if ANDROID  || IOS  //This test case verifies "IsKeyboardShown method" exclusively on the Android and IOS platforms
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues
@@ -26,4 +25,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 	}
 }
-#endif
