@@ -418,9 +418,16 @@ namespace Microsoft.Maui.Controls
 						{
 							bool isAnimated = animate ?? IsNavigationAnimated(navStack[navStack.Count - 1]);
 
-							// This means the final page we are arriving at will be a modal page and it's
-							// the next page in the stack
-							if ((navStack.Count - 2) >= 0 && navStack[navStack.Count - 2] == navPage)
+							var nextModalPageToPopIndex = navStack.Count - 2;
+							// Here we are checking if we've reached the last modal page that we want to pop
+							// before we reach the modal page that's going to actually be visible.
+							// The IsPoppingModalStack bool basically tells ModalNavigationMAnager to suppress any
+							// lifecycle events for modals because we are going to be popping a bunch.
+							// The main reason we have to do it this way is that the modal APIs aren't really built for 
+							// popping multiple pages, but the Shell URI navigation does allow for it. 
+							// Ideally we'd just move this code into ModalNavigationManager and then make
+							// this type of popping available to users just via INavigation APIs
+							if (nextModalPageToPopIndex >= 0 && navStack[nextModalPageToPopIndex] == navPage)
 							{
 								IsPoppingModalStack = false;
 							}
