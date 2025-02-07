@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void UpdateButtonStroke(this ShapeableImageView platformView, IButtonStroke button)
+		public static void UpdateButtonStroke(this ShapeableImageView platformView, IButtonStroke button)
 		{
 			if (!platformView.UpdateMauiRippleDrawableStroke(button))
 			{
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void UpdateButtonBackground(this ShapeableImageView platformView, IImageButton button)
+		public static void UpdateButtonBackground(this ShapeableImageView platformView, IImageButton button)
 		{
 			platformView.UpdateMauiRippleDrawableBackground(
 				button.Background ?? new SolidPaint(Colors.Transparent), // transparent to force some background
