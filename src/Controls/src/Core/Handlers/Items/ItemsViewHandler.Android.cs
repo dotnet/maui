@@ -89,6 +89,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateEmptyView();
 		}
 
+		internal static void MapIsEnabled(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
+		{
+			handler.PlatformView.UpdateIsEnabled(itemsView);
+		}
+
 		public static void MapFlowDirection(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 			(handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateFlowDirection();
