@@ -1,9 +1,9 @@
 #if IOS || MACCATALYST
 
-using Microsoft.Maui.Platform;
 using System;
 using System.Threading.Tasks;
 using CoreAnimation;
+using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
 

@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("entry");
 			// check the current value.
 			var initialValue = App.FindElement("entry").GetText();
-		    Assert.That("0", Is.EqualTo(initialValue));
+			Assert.That("0", Is.EqualTo(initialValue));
 
 			// Increase the value.
 			App.IncreaseStepper("myStepper");

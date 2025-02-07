@@ -1998,7 +1998,7 @@ namespace UITest.Appium
 		/// </param>
 		public static void TapDisplayAlertButton(this IApp app, string text, int buttonIndex = 0)
 		{
-			if(app is AppiumCatalystApp)
+			if (app is AppiumCatalystApp)
 			{
 				app.WaitForElement(AppiumQuery.ById($"action-button--{999 - buttonIndex}"));
 				app.Tap(AppiumQuery.ById($"action-button--{999 - buttonIndex}"));
@@ -2286,6 +2286,29 @@ namespace UITest.Appium
 		{
 			tabName = app is AppiumAndroidApp ? tabName.ToUpperInvariant() : tabName;
 			return app.WaitForElementTillPageNavigationSettled(tabName);
+		}
+
+		/// <summary>
+		/// Activates the context menu for the specified element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector of the Slider element to update.</param>
+		public static void ActivateContextMenu(this IApp app, string marked)
+		{
+			var element = FindElement(app, marked);
+			app.CommandExecutor.Execute("activateContextMenu", new Dictionary<string, object>
+ 			{
+ 				{ "element", element },
+ 			});
+		}
+
+		/// <summary>
+		/// Dismisses the context menu.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void DismissContextMenu(this IApp app)
+		{
+			app.CommandExecutor.Execute("dismissContextMenu", new Dictionary<string, object>());
 		}
 
 		static IUIElement Wait(Func<IUIElement?> query,

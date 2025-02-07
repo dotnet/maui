@@ -9,7 +9,7 @@
 			Navigation.PushAsync(new Issue25912MainPage());
 		}
 	}
-	
+
 	public partial class Issue25912MainPage : TestContentPage
 	{
 
@@ -26,7 +26,7 @@
 		{
 			toolbarItem.IconImageSource = new FontImageSource
 			{
-				Glyph ="+",
+				Glyph = "+",
 				Color = Colors.Green
 			};
 		}

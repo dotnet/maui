@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			const int marginRight = 150;
 			var endOfFirstLine = location.X + location.Width - marginRight;
 			var testlabel = App.WaitForElement("TestLabel");
-			App.Click(endOfFirstLine, location.Y + middleHeight);	
+			App.Click(endOfFirstLine, location.Y + middleHeight);
 			Assert.That(testlabel.GetText(), Is.EqualTo("Label span tapped"));
 		}
 	}
