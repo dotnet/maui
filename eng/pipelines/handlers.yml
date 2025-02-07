@@ -92,13 +92,6 @@ parameters:
         demands: 
           - Agent.OS -equals Windows_NT
         artifact: nuget
-      - name: macOS
-        poolName: $(macOSXVmPool)
-        vmImage: $(macOSXVmImage)
-        demands:
-          - macOS.Name -equals Sonoma
-          - macOS.Architecture -equals arm64
-        artifact: nuget-macos
 
   - name: BuildTemplatePlatforms
     type: object

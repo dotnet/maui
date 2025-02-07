@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using ImageMagick;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Appium.NUnit;
@@ -103,7 +104,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ResetApp();
 		}
 
-		public void VerifyScreenshot(string? name = null, TimeSpan? retryDelay = null)
+		public void VerifyScreenshot(
+			string? name = null,
+			TimeSpan? retryDelay = null
+#if MACUITEST || WINTEST
+			, bool includeTitleBar = false
+#endif
+		)
 		{
 			retryDelay ??= TimeSpan.FromMilliseconds(500);
 			// Retry the verification once in case the app is in a transient state
@@ -207,10 +214,18 @@ namespace Microsoft.Maui.TestCases.Tests
 				int cropFromTop = _testDevice switch
 				{
 					TestDevice.Android => 60,
-					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
+					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,									
 					TestDevice.Windows => 32,
+					TestDevice.Mac => 29,
 					_ => 0,
 				};
+
+#if MACUITEST || WINTEST
+				if (includeTitleBar)
+				{
+					cropFromTop = 0;
+				}
+#endif
 
 				// For Android also crop the 3 button nav from the bottom, since it's not part of the
 				// app itself and the button color can vary (the buttons change clear briefly when tapped).
@@ -260,22 +275,30 @@ namespace Microsoft.Maui.TestCases.Tests
 		byte[] TakeScreenshot()
 		{
 			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
-			// we are going to maximize the App before take the screenshot.
-			App.EnterFullScreen();
+			// we are going to crop the screenshot to the app window bounds, including rounded corners.
+			var windowBounds = App.FindElement(AppiumQuery.ByXPath("//XCUIElementTypeWindow")).GetRect();
 
-			// The app might not be ready to take the screenshot.
-			// Wait a little bit to complete the system animation moving the App Window to FullScreen.
-			Thread.Sleep(500);
+			var x = windowBounds.X;
+			var y = windowBounds.Y;
+			var width = windowBounds.Width;
+			var height = windowBounds.Height;
+			const int cornerRadius = 12;
 
-			byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+			// Take the screenshot
+			var bytes = App.Screenshot();
 
-			// TODO: After take the screenshot, restore the App Window to the previous state.
-			App.ExitFullScreen();
+			// Draw a rounded rectangle with the app window bounds as mask
+			using var surface = new MagickImage(MagickColors.Transparent, width, height);
+			new Drawables()
+				.RoundRectangle(0, 0, width, height, cornerRadius, cornerRadius)
+				.FillColor(MagickColors.Black)
+				.Draw(surface);
 
-			// Wait a little bit to complete the system animation moving the App Window to previous state.
-			Thread.Sleep(500);
+			// Composite the screenshot with the mask
+			using var image = new MagickImage(bytes);
+			surface.Composite(image, -x, -y, CompositeOperator.SrcAtop);
 
-			return screenshotPngBytes;
+			return surface.ToByteArray(MagickFormat.Png);
 		}
 #endif
 	}

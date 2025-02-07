@@ -12,6 +12,7 @@ namespace UITest.Appium
 		{
 			_commandExecutor.AddCommandGroup(new AppiumWindowsStepperActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumWindowsThemeChangeAction());
+			_commandExecutor.AddCommandGroup(new AppiumWindowsVirtualKeyboardActions(this));
 		}
 
 		public override ApplicationState AppState
