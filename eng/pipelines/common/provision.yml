@@ -103,8 +103,6 @@ steps:
           INSTALL_DEFAULT_ANDROID_API: 'true'
 
   # Prepare Both
-  - template: /eng/pipelines/common/setup-jdk.yml
-
   - task: UseDotNet@2
     displayName: 'Use .NET SDK $(DOTNET_VERSION)'
     inputs:

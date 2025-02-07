@@ -1998,7 +1998,7 @@ namespace UITest.Appium
 		/// </param>
 		public static void TapDisplayAlertButton(this IApp app, string text, int buttonIndex = 0)
 		{
-			if(app is AppiumCatalystApp)
+			if (app is AppiumCatalystApp)
 			{
 				app.WaitForElement(AppiumQuery.ById($"action-button--{999 - buttonIndex}"));
 				app.Tap(AppiumQuery.ById($"action-button--{999 - buttonIndex}"));
@@ -2289,55 +2289,26 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Performs platform-specific context actions (e.g., long press, swipe, or touch-and-hold) on a specified element in the app.
-		/// - On Android, it performs a long press gesture on the element.
-		/// - On Windows, it simulates a right-click (touch-and-hold) on the element.
-		/// - On iOS, it performs a swipe from right to left on the element.
-		/// - On Catalyst, it performs a scroll from right to left on the element.
+		/// Activates the context menu for the specified element.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		/// <param name="element">The element on which to perform the context action.</param>
-		public static void ActivateContextMenu(this IApp app, string element)
+		/// <param name="marked">Marked selector of the Slider element to update.</param>
+		public static void ActivateContextMenu(this IApp app, string marked)
 		{
-			var uiElement = WaitForElement(app, element);
-
-			switch (app)
-			{
-				case AppiumAndroidApp _:
-					app.LongPress(element);
-					break;
-				case AppiumWindowsApp _:
-					app.TouchAndHold(uiElement);
-					break;
-				case AppiumIOSApp _:
-					app.SwipeRightToLeft(uiElement, swipePercentage: 5, swipeSpeed: 500, withInertia: true);
-					break;
-				case AppiumCatalystApp _:
-					app.ScrollRight(uiElement, swipePercentage: 5, swipeSpeed: 500, withInertia: true);
-					break;
-			}
+			var element = FindElement(app, marked);
+			app.CommandExecutor.Execute("activateContextMenu", new Dictionary<string, object>
+ 			{
+ 				{ "element", element },
+ 			});
 		}
 
 		/// <summary>
-		/// Dismisses the context menu in the application.
+		/// Dismisses the context menu.
 		/// </summary>
-		/// <param name="app">The IApp instance representing the application.</param>
-		/// <remarks>
-		/// For Android apps, it taps the back arrow.
-		/// For other platforms, it taps at coordinates (150, 150).
-		/// </remarks>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		public static void DismissContextMenu(this IApp app)
 		{
-
-			if (app is AppiumAndroidApp)
-			{
-				app.TapBackArrow();
-			}
-			else
-			{
-				app.TapCoordinates(150, 150);
-			}
-
+			app.CommandExecutor.Execute("dismissContextMenu", new Dictionary<string, object>());
 		}
 
 		static IUIElement Wait(Func<IUIElement?> query,

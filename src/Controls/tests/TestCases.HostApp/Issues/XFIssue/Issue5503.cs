@@ -60,14 +60,14 @@ public class Issue5503 : TestNavigationPage
 			listView
 		};
 
-		var button = new Button(){ Text = "Go To Test Page" };
+		var button = new Button() { Text = "Go To Test Page" };
 		button.Clicked += (sender, args) =>
 		{
-			Navigation.PushAsync(new ContentPage(){ Content = stack });
+			Navigation.PushAsync(new ContentPage() { Content = stack });
 		};
 
 		var content = new ContentPage() { Content = button };
-        Navigation.PushAsync(content);
-		
+		Navigation.PushAsync(content);
+
 	}
 }

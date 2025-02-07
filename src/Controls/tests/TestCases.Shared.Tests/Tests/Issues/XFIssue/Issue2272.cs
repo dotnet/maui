@@ -1,4 +1,4 @@
-﻿# if TEST_FAILS_ON_CATALYST //While invoking EnterText("1") results in the text being cleared before appending "1", leading to test fails on Catalyst.
+﻿#if TEST_FAILS_ON_CATALYST //While invoking EnterText("1") results in the text being cleared before appending "1", leading to test fails on Catalyst.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

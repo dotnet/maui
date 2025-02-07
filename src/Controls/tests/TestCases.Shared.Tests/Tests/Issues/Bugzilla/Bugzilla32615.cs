@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		public void  Bugzilla32615Test()
+		public void Bugzilla32615Test()
 		{
 			App.Tap("open");
 			App.Tap("pop");

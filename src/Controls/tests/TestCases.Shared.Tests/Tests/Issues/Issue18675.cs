@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Editor IsReadOnly property prevent from modifying the text";
 
 		[Test]
-		[Category(UITestCategories.Editor)]	
+		[Category(UITestCategories.Editor)]
 		public void EditorIsReadOnlyPreventModify()
 		{
 			App.WaitForElement("WaitForStubControl");
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// Delay for the Editor underline on Android to return from
 			// the selected state to normal state.
-			
+
 
 			// 2. The test fails if the placeholder text in the editor below is not blue.
 			VerifyScreenshot();
