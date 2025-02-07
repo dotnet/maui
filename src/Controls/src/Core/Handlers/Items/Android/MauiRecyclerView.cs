@@ -383,6 +383,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var position = DetermineTargetPosition(args);
 
+			if (position < 0)
+			{
+				return;
+			}
+
 			if (args.IsAnimated)
 			{
 				ScrollHelper.AnimateScrollToPosition(position, args.ScrollToPosition);
@@ -591,7 +596,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
-				ScrollTo(new ScrollToRequestEventArgs(0, 0, Microsoft.Maui.Controls.ScrollToPosition.Start, true));
+				if (GetLayoutManager().ItemCount > 0)
+				{
+					ScrollTo(new ScrollToRequestEventArgs(0, 0, Microsoft.Maui.Controls.ScrollToPosition.Start, true));
+				}
 			}
 		}
 
