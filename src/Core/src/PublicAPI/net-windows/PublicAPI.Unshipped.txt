@@ -79,3 +79,7 @@ static Microsoft.Maui.Platform.DatePickerExtensions.UpdateBackground(this Calend
 static Microsoft.Maui.Handlers.TimePickerHandler.MapBackground(ITimePickerHandler! handler, ITimePicker timePicker) -> void
 static Microsoft.Maui.Platform.TimePickerExtensions.MapBackground(ITimePickerHandler! handler, ITimePicker timePicker) -> void
 static Microsoft.Maui.Platform.TextBoxExtensions.GetCursorPosition(this TextBox! textBox, int cursorOffset = 0) -> int
+static Microsoft.Maui.Platform.DatePickerExtensions.UpdateBackground(this CalendarDatePicker! platformDatePicker, IDatePicker! datePicker) -> void
+static Microsoft.Maui.Handlers.TimePickerHandler.MapBackground(ITimePickerHandler! handler, ITimePicker! timePicker) -> void
+static Microsoft.Maui.Platform.TimePickerExtensions.MapBackground(ITimePickerHandler! handler, ITimePicker! timePicker) -> void
+static Microsoft.Maui.Platform.TextBoxExtensions.GetCursorPosition(this TextBox! textBox, int cursorOffset = 0) -> int
