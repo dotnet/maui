@@ -49,22 +49,11 @@ internal class InvocationParser
 			// cannot see the outputs of the other source generator and we have incomplete information about the method invocation and we can only work with
 			// the syntax tree and not the semantic model.
 			var argumentsList = invocation.ArgumentList.Arguments;
-			if (argumentsList.Count == 0)
-			{
-				return Result<InterceptedMethodType>.Failure(DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation()));
-			}
 
-			var firstArgument = argumentsList[0].Expression;
+			var firstArgument = argumentsList[0].Expression; // Guaranteed to have at least one argument (checked by the caller)
 			if (firstArgument is not LambdaExpressionSyntax)
 			{
-				var firstArgumentType = _context.SemanticModel.GetTypeInfo(firstArgument, cancellationToken: t).Type;
-				return firstArgumentType switch
-				{
-					{ Name: "Func", ContainingNamespace.Name: "System" }
-						=> Result<InterceptedMethodType>.Failure(DiagnosticsFactory.GetterIsNotLambda(firstArgument.GetLocation())),
-					_
-						=> Result<InterceptedMethodType>.Failure(DiagnosticsFactory.SuboptimalSetBindingOverload(firstArgument.GetLocation()))
-				};
+				return Result<InterceptedMethodType>.Failure(DiagnosticsFactory.GetterIsNotLambda(firstArgument.GetLocation()));
 			}
 		}
 
