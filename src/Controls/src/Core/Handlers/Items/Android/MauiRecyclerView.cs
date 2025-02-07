@@ -538,6 +538,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_scrollHelper?.AdjustScroll();
 		}
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override bool OnTouchEvent(MotionEvent e)
+		{
+			if (!Enabled)
+                return false;
+            return base.OnTouchEvent(e);
+		}
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 		protected override void Dispose(bool disposing)
 		{
 			base.Dispose(disposing);
