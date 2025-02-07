@@ -6,8 +6,11 @@
 		public Issue22719()
 		{
 			InitializeComponent();
+#if !WINDOWS
 			FlyoutLayoutBehavior = FlyoutLayoutBehavior.SplitOnPortrait;
-
+#else
+			FlyoutLayoutBehavior = FlyoutLayoutBehavior.SplitOnLandscape;
+#endif
 		}
 
 		//  iPhone by default doesn't support split modes so we set this to validate split mode behaviors 
@@ -15,10 +18,12 @@
 		{
 			get
 			{
-				if (DeviceDisplay.Current.MainDisplayInfo.Orientation == DisplayOrientation.Portrait)
-					return true;
-
-				return false;
+				var orientation = DeviceDisplay.Current.MainDisplayInfo.Orientation;
+#if !WINDOWS
+				return orientation == DisplayOrientation.Portrait;
+#else
+                return orientation == DisplayOrientation.Landscape;
+#endif
 			}
 		}
 	}
