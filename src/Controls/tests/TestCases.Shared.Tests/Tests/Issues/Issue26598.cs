@@ -33,7 +33,7 @@ public class Issue26598 : _IssuesUITest
 		App.Click("Recent");
 		App.WaitForElement("Home");
 		App.Click("Home");
-		App.WaitForElement("Home");
+		VerifyScreenshot();
 	}
 }
 
