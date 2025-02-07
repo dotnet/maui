@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("collectionView");
 			App.ScrollDown("collectionView", ScrollStrategy.Gesture);
-			
+
 			App.WaitForElement("collectionView");
 			App.ScrollDown("collectionView", ScrollStrategy.Gesture);
 

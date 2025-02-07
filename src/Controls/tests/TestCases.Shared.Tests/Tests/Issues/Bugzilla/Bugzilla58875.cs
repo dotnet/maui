@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
 //For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
 using NUnit.Framework;
 using UITest.Appium;
@@ -9,7 +9,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Bugzilla58875 : _IssuesUITest
 {
 	const string Button1Id = "Button1Id";
+	const string ContextAction = "More";
 	const string Target = "Swipe me";
+
 	public Bugzilla58875(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -24,14 +26,15 @@ public class Bugzilla58875 : _IssuesUITest
 		App.Tap(Button1Id);
 		App.WaitForElement(Target);
 		App.ActivateContextMenu(Target);
-		App.WaitForElement("More");
+		App.WaitForElement(ContextAction);
 		App.DismissContextMenu();
 		App.TapBackArrow();
+
 		App.WaitForElement(Button1Id);
 		App.Tap(Button1Id);
 		App.WaitForElement(Target);
 		App.ActivateContextMenu(Target);
-		App.WaitForElement("More");
+		App.WaitForElement(ContextAction, timeout: TimeSpan.FromSeconds(2));
 	}
 }
 #endif

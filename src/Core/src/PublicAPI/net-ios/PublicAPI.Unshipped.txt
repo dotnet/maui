@@ -87,4 +87,3 @@ override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Gr
 override Microsoft.Maui.Handlers.EditorHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.WindowHandler.DisconnectHandler(UIKit.UIWindow! platformView) -> void
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> bool
-Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!

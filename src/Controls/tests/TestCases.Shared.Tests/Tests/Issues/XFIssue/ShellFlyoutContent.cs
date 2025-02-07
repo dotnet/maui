@@ -11,8 +11,8 @@ public class ShellFlyoutContent : _IssuesUITest
 	const string FlyoutItem = "Flyout Item Top";
 	const string ResetButton = "Click to Reset";
 #else
-    const string FlyoutItem = "FlyoutItem";
- 	const string ResetButton = "Reset";
+	const string FlyoutItem = "FlyoutItem";
+	const string ResetButton = "Reset";
 #endif
 
 	public ShellFlyoutContent(TestDevice testDevice) : base(testDevice)
