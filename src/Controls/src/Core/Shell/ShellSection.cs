@@ -410,16 +410,27 @@ namespace Microsoft.Maui.Controls
 								continue;
 						}
 
-						// This is the page that we will eventually get to once we've finished
-						// modifying the existing navigation stack
-						// So we want to fire appearing on it						
-						navPage.SendAppearing();
-
+						// We use this inside ModalNavigationManager to indicate that we're going to be popping multiple
+						// modal pages so we don't want it to fire any appearing events
 						IsPoppingModalStack = true;
 
 						while (navStack.Count > popCount && Navigation.ModalStack.Count > 0)
 						{
 							bool isAnimated = animate ?? IsNavigationAnimated(navStack[navStack.Count - 1]);
+
+							var nextModalPageToPopIndex = navStack.Count - 2;
+							// Check if we've reached the last modal page to pop before revealing the target modal page.
+							// The IsPoppingModalStack flag instructs ModalNavigationManager to suppress lifecycle events
+							// during a bulk pop operation.
+							// This approach is required because the standard modal APIs do not support popping multiple
+							// pages at once, while Shell URI navigation does.
+							// Ideally, this logic would be refactored into ModalNavigationManager to expose batch popping
+							// via the INavigation APIs.
+							if (nextModalPageToPopIndex >= 0 && navStack[nextModalPageToPopIndex] == navPage)
+							{
+								IsPoppingModalStack = false;
+							}
+
 							if (Navigation.ModalStack.Contains(navStack[navStack.Count - 1]))
 							{
 								await PopModalAsync(isAnimated);
