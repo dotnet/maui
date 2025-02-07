@@ -48,7 +48,7 @@ namespace UITest.Appium
 				{ "endY" , endY },
 				{ "duration" , 0.5 },
 			};
-			
+
 			driver.ExecuteScript("macos: pressAndDrag", parameters);
 		}
 	}
