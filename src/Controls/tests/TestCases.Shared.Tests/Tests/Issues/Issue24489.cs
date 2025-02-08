@@ -1,5 +1,4 @@
-#if MACCATALYST || WINDOWS // This test verifies that "the class defines a custom TitleBar for a ContentPage" that works Desktop platforms only
-
+#if MACCATALYST || WINDOWS // This test verifies that "the class defines a custom TitleBar for a ContentPage" that works on Desktop platforms only
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
