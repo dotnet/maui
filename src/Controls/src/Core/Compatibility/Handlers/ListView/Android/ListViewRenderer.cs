@@ -239,6 +239,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateHorizontalScrollBarVisibility();
 			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
 				UpdateVerticalScrollBarVisibility();
+			else if (e.PropertyName == ListView.IsVisibleProperty.PropertyName)
+				UpdateVisibility();
 		}
 
 		/*
@@ -539,6 +541,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			Control.HorizontalScrollBarEnabled = newHorizontalScrollVisiblility == ScrollBarVisibility.Always;
+		}
+
+		private void UpdateVisibility()
+		{
+			if (Element.IsVisible)
+			{
+				if (Element.Parent is View parent)
+				{
+					parent.InvalidateMeasure();
+				}
+			}
 		}
 
 		void UpdateVerticalScrollBarVisibility()
