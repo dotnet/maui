@@ -594,7 +594,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the backdrop of the flyout, which is the appearance of the flyout overlay.
 		/// </summary>
-		/// <param name="obj">The object that sets the backdrop brush.</param>
+		/// <param name="obj">The object to which the backdrop brush is set.</param>
 		/// <returns>The brush for the backdrop of the flyout, which is the appearance of the flyout overlay.</returns>
 		public static Brush GetFlyoutBackdrop(BindableObject obj) => (Brush)obj.GetValue(FlyoutBackdropProperty);
 
