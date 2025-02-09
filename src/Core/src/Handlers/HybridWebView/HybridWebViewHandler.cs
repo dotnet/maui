@@ -432,32 +432,7 @@ namespace Microsoft.Maui.Handlers
 
 
 #if PLATFORM && !TIZEN
-		// Copied from WebView.cs
-		internal static string? EscapeJsString(string js)
-		{
-			if (js == null)
-				return null;
-
-			if (!js.Contains('\'', StringComparison.Ordinal))
-				return js;
-
-	#if NET6_0_OR_GREATER
-			return EscapeJsStringRegex().Replace(js, m =>
-	#else
-			return Regex.Replace(js, @"(\\*)'", m =>
-	#endif
-			{
-				int count = m.Groups[1].Value.Length;
-				// Replace with doubled backslashes plus one extra backslash, then the quote.
-				return new string('\\', (count * 2) + 1) + "'";
-			});
-		}
-
-	#if NET6_0_OR_GREATER
-		[GeneratedRegex(@"(\\*)'")]
-		private static partial Regex EscapeJsStringRegex();
-	#endif
-
+		internal static string? EscapeJsString(string js) => WebViewHelper.EscapeJsString(js);
 #endif
 
 		internal static async Task<string?> GetAssetContentAsync(string assetPath)
