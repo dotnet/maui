@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void EscapeJsString_NullInput_ReturnsNull()
 		{
 			const string input = null;
-			var result = WebView.EscapeJsString(input);
+			var result = WebViewHelper.EscapeJsString(input);
 			Assert.Null(result);
 		}
 
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void EscapeJsString_NoSingleQuote_ReturnsSameString()
 		{
 			const string input = """console.log("Hello, world!");""";
-			var result = WebView.EscapeJsString(input);
+			var result = WebViewHelper.EscapeJsString(input);
 			Assert.Equal(input, result);
 		}
 
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			const string input = """console.log('Hello, world!');""";
 			// Expected: each occurrence of "'" becomes "\'"
 			const string expected = """console.log(\'Hello, world!\');""";
-			var result = WebView.EscapeJsString(input);
+			var result = WebViewHelper.EscapeJsString(input);
 			Assert.Equal(expected, result);
 		}
 
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			const string input = """var str = 'Don\'t do that';""";
 			const string expected = """var str = \'Don\\\'t do that\';""";
-			var result = WebView.EscapeJsString(input);
+			var result = WebViewHelper.EscapeJsString(input);
 			Assert.Equal(expected, result);
 		}
 
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					var example = \'It\\\\\'s tricky!\';
 				}
 				""";
-			var result = WebView.EscapeJsString(input);
+			var result = WebViewHelper.EscapeJsString(input);
 			Assert.Equal(expected, result);
 		}
 	}
