@@ -31,6 +31,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		WeakReference<DataTemplate> _currentTemplate;
 
+		private FlowDirection _itemsViewFlowDirection;
+
 		public DataTemplate CurrentTemplate
 		{
 			get => _currentTemplate is not null && _currentTemplate.TryGetTarget(out var target) ? target : null;
@@ -155,7 +157,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Run this through the extension method in case it's really a DataTemplateSelector
 			var itemTemplate = template.SelectDataTemplate(bindingContext, itemsView);
 
-			if (itemTemplate != CurrentTemplate)
+			if (itemTemplate != CurrentTemplate || _itemsViewFlowDirection != itemsView.FlowDirection)
 			{
 				// Remove the old view, if it exists
 				if (oldElement != null)
@@ -173,6 +175,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (content is not View view)
 				{
 					throw new InvalidOperationException($"{itemTemplate} could not be created from {content}");
+				}
+
+				_itemsViewFlowDirection = itemsView.FlowDirection;
+				if (view.FlowDirection == FlowDirection.MatchParent)
+				{
+					view.FlowDirection = itemsView.FlowDirection;
 				}
 
 				// Set the binding context _before_ we create the renderer; that way, it's available during OnElementChanged
