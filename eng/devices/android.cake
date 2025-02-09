@@ -459,11 +459,12 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 				emulatorProcess = AndroidEmulatorStart(avdName, emuSettings);
 			}
 
-			if (IsCIBuild())
+			if (IsCIBuild() && emulatorProcess is not null)
 			{
 				Information("Setting Logcat Values");
 				AdbLogcat(new AdbLogcatOptions() { Clear = true });
 				AdbShell("logcat -G 16M");
+				Information("Finished Setting Logcat Values");
 			}
 		}).WaitAsync(TimeSpan.FromMinutes(2));
 	}
