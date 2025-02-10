@@ -29,6 +29,18 @@ namespace Microsoft.Maui.Controls
 			double constrainedWidth = Math.Min(contentWidth, widthConstraint);
 			double constrainedHeight = Math.Min(contentHeight, heightConstraint);
 
+			double widthRatio = constrainedWidth / imageSize.Width;
+			double heightRatio = constrainedHeight / imageSize.Height;
+
+			// In cases where the image must fit within its given constraints, 
+			// it should be scaled down based on the smallest dimension (scale factor) that allows it to fit.
+			if (Aspect == Aspect.AspectFit)
+			{
+				double scaleFactor = Math.Min(widthRatio, heightRatio);
+				return new Size(imageSize.Width * scaleFactor, imageSize.Height * scaleFactor);
+			}
+
+			// Cases where AspectMode is ScaleToFill or Center
 			return new Size(constrainedWidth, constrainedHeight);
 		}
 
