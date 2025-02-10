@@ -39,6 +39,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- Security SBOM targets -->
+		<PackageReference Include="Microsoft.Sbom.Targets" Version="$(MicrosoftSbomTargetsPackageVersion)">
+		<PrivateAssets>all</PrivateAssets>
+		<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+		</PackageReference>    
+	</ItemGroup>
+	
+	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Configuration" />
 	</ItemGroup>
 

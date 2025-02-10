@@ -20,6 +20,11 @@
 
   <ItemGroup>
     <PackageReference Include="Markdig" Version="0.31.0" />
+    <!-- Security SBOM targets -->
+    <PackageReference Include="Microsoft.Sbom.Targets" Version="$(MicrosoftSbomTargetsPackageVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>    
   </ItemGroup>
 
   <ItemGroup>
