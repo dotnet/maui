@@ -73,7 +73,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 	[TestCase("maui", true, "MSIX")]
 	[TestCase("maui", false, "None")]
 	[TestCase("maui", false, "MSIX")]
-	public void BuildWindowsRidGraph(string id, bool useRidGraph, string packageType)
+	public void BuildWindowsRidGraph(string id, bool useridgraph, string packageType)
 	{
 		if (TestEnvironment.IsMacOS)
 			Assert.Ignore("This test is designed for testing a windows build.");
@@ -87,7 +87,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		FileUtilities.ReplaceInFile(projectFile,
 			"<WindowsPackageType>None</WindowsPackageType>",
 			$"""
-			<UseRidGraph>{useRidGraph}</UseRidGraph>
+			<UseRidGraph>{useridgraph}</UseRidGraph>
 			<WindowsPackageType>{packageType}</WindowsPackageType>
 			""");
 
@@ -121,7 +121,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win-x64/publish");
+		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win10-x64/publish");
 
 		AssetExists("dotnet_bot.scale-100.png");
 		AssetExists("appiconLogo.scale-100.png");
@@ -162,7 +162,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win-x64/AppPackages/{name}_1.0.0.1_Test");
+		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win10-x64/AppPackages/{name}_1.0.0.1_Test");
 
 		AssetExists($"{name}_1.0.0.1_x64.msix");
 
