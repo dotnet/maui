@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Platform
 		IBorderStroke? _clip;
 		readonly Context _context;
 
+		public bool InputTransparent { get; set; }
+
 		public ContentViewGroup(Context context) : base(context)
 		{
 			_context = context;
@@ -54,6 +56,16 @@ namespace Microsoft.Maui.Platform
 		Graphics.Size CrossPlatformArrange(Graphics.Rect bounds)
 		{
 			return CrossPlatformLayout?.CrossPlatformArrange(bounds) ?? Graphics.Size.Zero;
+		}
+
+		public override bool DispatchTouchEvent(MotionEvent? e)
+		{
+			if (InputTransparent)
+			{
+				return false;
+			}
+
+			return base.DispatchTouchEvent(e);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
