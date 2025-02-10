@@ -430,7 +430,7 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 		SetEnvironmentVariable("DEVICE_UDID", deviceToRun);
 		SetEnvironmentVariable("DEVICE_NAME", DEVICE_NAME);
 		SetEnvironmentVariable("PLATFORM_VERSION", iosVersionToRun);
-        SetEnvironmentVariable("HEADLESS", "enabled");
+        SetEnvironmentVariable("HEADLESS", true);
 	}
 }
 
