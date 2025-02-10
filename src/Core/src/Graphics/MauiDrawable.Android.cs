@@ -229,8 +229,7 @@ namespace Microsoft.Maui.Graphics
 			InvalidateSelf();
 		}
 
-		// TODO: NET8 make public for net8.0
-		internal void SetEmptyBorderBrush()
+		public void SetEmptyBorderBrush()
 		{
 			_invalidatePath = true;
 
