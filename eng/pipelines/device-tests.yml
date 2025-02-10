@@ -69,6 +69,15 @@ parameters:
       demands:
         - macOS.Name -equals Sonoma
 
+  - name: androidPoolX64
+    type: object
+    default:
+      name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - macOS.Name -equals Sonoma
+        - macOS.Architecture -equals x64
+
   - name: iosPool
     type: object
     default:
@@ -109,6 +118,7 @@ stages:
   - template: common/device-tests.yml
     parameters:
       androidPool: ${{ parameters.androidPool }}
+      androidPoolX64: ${{ parameters.androidPoolX64 }}
       iosPool: ${{ parameters.iosPool }}
       catalystPool: ${{ parameters.catalystPool }}
       windowsPool: ${{ parameters.windowsPool }}
