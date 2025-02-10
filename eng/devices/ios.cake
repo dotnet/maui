@@ -20,7 +20,7 @@ var deviceCleanupEnabled = Argument("cleanup", true);
 // Device details
 var udid = Argument("udid", EnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
 var iosVersion = Argument("apiversion", EnvironmentVariable("IOS_PLATFORM_VERSION") ?? DefaultVersion);
-var headless = Argument<bool>("headless", EnvironmentVariable("HEADLESS") ?? false);
+var headless = Argument<bool>("headless", EnvironmentVariable<bool>("HEADLESS", false));
 
 // Directory setup
 var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg)?.FullPath;
@@ -431,7 +431,7 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 		SetEnvironmentVariable("DEVICE_UDID", deviceToRun);
 		SetEnvironmentVariable("DEVICE_NAME", DEVICE_NAME);
 		SetEnvironmentVariable("PLATFORM_VERSION", iosVersionToRun);
-        SetEnvironmentVariable("HEADLESS", headless);
+        SetEnvironmentVariable("HEADLESS", headless.ToString());
 	}
 }
 

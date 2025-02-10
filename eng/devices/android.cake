@@ -29,7 +29,7 @@ var androidAvd = "DEVICE_TESTS_EMULATOR";
 var androidAvdImage = "";
 var deviceArch = "";
 var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? DefaultApiLevel.ToString());
-var headless = Argument<bool>("headless", EnvironmentVariable("HEADLESS") ?? false);
+var headless = Argument<bool>("headless", EnvironmentVariable<bool>("HEADLESS", false));
 
 // Directory setup
 var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg)?.FullPath;
@@ -602,7 +602,7 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 	};
 
     Information("Use the Android emulators in a headless mode:");
-    SetEnvironmentVariable("HEADLESS", headless);
+    SetEnvironmentVariable("HEADLESS", headless.ToString());
 
 	Information("The platform version to run tests:");
 	SetEnvironmentVariable("DEVICE_SKIN", skin);
