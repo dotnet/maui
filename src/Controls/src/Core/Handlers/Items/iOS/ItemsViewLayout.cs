@@ -500,6 +500,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				ForceScrollToLastItem(CollectionView, _itemsLayout);
 			}
+			else if (ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				ForceScrollToFirstItem(CollectionView, _itemsLayout);
+			}
 		}
 
 		void TrackOffsetAdjustment()
@@ -563,6 +567,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			return false;
+		}
+
+		static void ForceScrollToFirstItem(UICollectionView collectionView, ItemsLayout itemsLayout)
+		{
+			//Fix Added for ItemsUpdatingScrollMode.KeepItemsInView
+			int sections = (int)collectionView.NumberOfSections();
+
+			if (sections == 0)
+			{
+				return;
+			}
+
+			if (collectionView.NumberOfItemsInSection(0) > 0)
+			{
+				var indexPath = NSIndexPath.FromItemSection(0, 0);
+				if (itemsLayout.Orientation == ItemsLayoutOrientation.Vertical)
+					collectionView.ScrollToItem(indexPath, UICollectionViewScrollPosition.Top, true);
+				else
+					collectionView.ScrollToItem(indexPath, UICollectionViewScrollPosition.Right, true);
+			}
 		}
 
 		static void ForceScrollToLastItem(UICollectionView collectionView, ItemsLayout itemsLayout)
