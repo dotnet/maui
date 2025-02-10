@@ -1,8 +1,11 @@
-using System.Reflection;
+﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using ImageMagick;
 using NUnit.Framework;
+using NUnit.Framework.Interfaces;
+using OpenQA.Selenium;
+using OpenQA.Selenium.BiDi.Modules.Browser;
 using UITest.Appium;
-using UITest.Appium.NUnit;
 using UITest.Core;
 using VisualTestUtils;
 using VisualTestUtils.MagickNet;
@@ -18,15 +21,20 @@ namespace Microsoft.Maui.TestCases.Tests
 #elif WINTEST
 		[TestFixture(TestDevice.Windows)]
 #endif
-	public abstract class UITest : UITestBase
+	public abstract class UITest 
 	{
-		protected const int SetupMaxRetries = 1;
 		readonly VisualRegressionTester _visualRegressionTester;
 		readonly IImageEditorFactory _imageEditorFactory;
 		readonly VisualTestContext _visualTestContext;
+		static IUIClientContext? _uiTestContext;
+		IServerContext? _context;
+		protected TestDevice _testDevice;
+		string DriverShutdownMessage =>  $">>>>> {DateTime.Now} Driver has been shutdown. Most likely because the app or appium stopped responding.";
+		
 
-		protected UITest(TestDevice testDevice) : base(testDevice)
+		protected UITest(TestDevice testDevice)
 		{
+			_testDevice = testDevice;
 			string? ciArtifactsDirectory = Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY");
 			if (ciArtifactsDirectory != null)
 				ciArtifactsDirectory = Path.Combine(ciArtifactsDirectory, "Controls.TestCases.Shared.Tests");
@@ -42,7 +50,345 @@ namespace Microsoft.Maui.TestCases.Tests
 			_visualTestContext = new VisualTestContext();
 		}
 
-		public override IConfig GetTestConfig()
+		public static IUIClientContext? UITestContext { get { return _uiTestContext; } }
+
+		public TestDevice Device
+		{
+			get
+			{
+				return UITestContext == null
+					? throw new InvalidOperationException($"Call {nameof(InitialSetup)} before accessing the {nameof(Device)} property.")
+					: UITestContext.Config.GetProperty<TestDevice>("TestDevice");
+			}
+		}
+
+		public IApp App
+		{
+			get
+			{
+				return UITestContext == null
+					? throw new InvalidOperationException($"Call {nameof(InitialSetup)} before accessing the {nameof(App)} property.")
+					: UITestContext.App;
+			}
+		}
+
+		public bool IsSessionStillConnected => !(_uiTestContext is null && !AssemblySetupFixture.ServerContext.IsServerRunning);
+
+		public void InitialSetup(IServerContext context)
+		{
+			_context = context ?? throw new ArgumentNullException(nameof(context));
+			var testConfig = GetTestConfig();
+			testConfig.SetProperty("TestDevice", _testDevice);
+
+			// Check to see if we have a context already from a previous test and re-use it as creating the driver is expensive
+
+			try
+			{
+				_uiTestContext ??= context.CreateUIClientContext(testConfig);
+			}
+			finally
+			{
+				if (_uiTestContext is null)
+				{
+					TestContext.Error.WriteLine("Failed to get the driver.");
+				}
+			}
+		}
+
+		protected virtual bool ResetAfterEachTest => false;
+
+		public void RecordTestSetup()
+		{
+			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {name} Start");
+		}
+		
+
+		[TearDown]
+		public virtual void TestTearDown()
+		{
+			if (!this.IsSessionStillConnected) return;
+
+			// At this point if the UITestContext hasn't been created just shut it down
+			if (UITestContext is null)
+			{
+				this.ShutDownTestSessionAndFailTestRun();
+				return;
+			}
+
+			RecordTestTeardown();
+			UITestBaseTearDown();
+			if (ResetAfterEachTest)
+			{
+				Reset();
+			}
+		}
+
+		public void RecordTestTeardown()
+		{
+			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {name} Stop");
+		}
+
+		void FixtureSetupCore()
+		{
+			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureSetupCore)} for {name}");
+
+			try
+			{
+				try
+				{
+
+#if ANDROID || MACCATALYST
+					App.ToggleSystemAnimations(false);
+#endif
+					FixtureSetup();
+				}
+				catch
+				{
+					TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureSetupCore)} for {name} Failed on First Try");
+					// Let's just try retrying once
+					Reset();
+					FixtureSetup();
+				}
+			}
+			catch (Exception e) when (e.InnerException is TaskCanceledException || e is TimeoutException)
+			{
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The {nameof(FixtureSetupCore)} threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+				ShutDownTestSessionAndFailTestRun();
+				throw;
+			}
+			finally
+			{
+				if (IsSessionStillConnected && UITestContext is not null)
+				{
+#if ANDROID || MACCATALYST
+					App.ToggleSystemAnimations(true);
+#endif
+					SaveDeviceDiagnosticInfo();
+					SaveUIDiagnosticInfo();
+				}
+			}
+		}
+
+		protected virtual void FixtureSetup()
+		{
+		}
+
+		public void UITestBaseTearDown()
+		{
+			if (!this.IsSessionStillConnected) return;
+
+			try
+			{
+				if (App.AppState != ApplicationState.Running)
+				{
+					SaveDeviceDiagnosticInfo();
+
+					if (!ResetAfterEachTest)
+					{
+						Reset();
+						FixtureSetupCore();
+					}
+
+					// Assert.Fail will immediately exit the test which is desirable as the app is not
+					// running anymore so we can't capture any UI structures or any screenshots
+					Assert.Fail("The app was expected to be running still, investigate as possible crash");
+				}
+			}
+			finally
+			{
+				var testOutcome = TestContext.CurrentContext.Result.Outcome;
+				if (testOutcome == ResultState.Error ||
+					testOutcome == ResultState.Failure)
+				{
+					SaveDeviceDiagnosticInfo();
+					SaveUIDiagnosticInfo();
+				}
+			}
+		}
+
+		[OneTimeSetUp]
+		public void OneTimeSetup()
+		{
+			if (!this.IsSessionStillConnected) return;
+
+			try
+			{
+				InitialSetup(AssemblySetupFixture.ServerContext);
+				if (!ResetAfterEachTest)
+				{
+					FixtureSetupCore();
+				}
+			}
+			catch (WebDriverException e)
+			{
+				if (e.InnerException is TaskCanceledException)
+				{
+					ShutDownTestSessionAndFailTestRun();
+				}
+
+				throw;
+			}
+			catch
+			{
+				if (IsSessionStillConnected && UITestContext is not null)
+				{
+					SaveDeviceDiagnosticInfo();
+					SaveUIDiagnosticInfo();
+				}
+
+				throw;
+			}
+			finally
+			{
+				// If the UITestContext is null that means the driver failed to initialize
+				// So let's just cut our losses for this entire run and fail the test run
+				if (UITestContext is null && IsSessionStillConnected) ShutDownTestSessionAndFailTestRun();
+			}
+		}
+
+		void ShutDownTestSessionAndFailTestRun([CallerMemberName] string? note = null)
+		{
+			if (IsSessionStillConnected && UITestContext is not null)
+			{
+				SaveDeviceDiagnosticInfo();
+				SaveUIDiagnosticInfo();
+			}
+
+			TestContext.Error.WriteLine($">>>>> {DateTime.Now}-{note} Failed to communicate with the test process. Most likely the app or appium stopped responding. Shutting down the test session.");
+			
+			_uiTestContext?.Dispose();
+			_uiTestContext = null;
+			AssemblySetupFixture.ServerContext?.Dispose();
+			TestContext.Error.WriteLine(DriverShutdownMessage);
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTearDown()
+		{
+			if (!this.IsSessionStillConnected) return;
+
+			var outcome = TestContext.CurrentContext.Result.Outcome;
+
+			// We only care about setup failures as regular test failures will already do logging
+			if (outcome.Status == ResultState.SetUpFailure.Status &&
+				outcome.Site == ResultState.SetUpFailure.Site)
+			{
+				SaveDeviceDiagnosticInfo();
+
+				if (App.AppState == ApplicationState.Running)
+					SaveUIDiagnosticInfo();
+			}
+			
+			if (!ResetAfterEachTest)
+			{
+				Reset();
+			}
+		}
+
+		void SaveDeviceDiagnosticInfo([CallerMemberName] string? note = null)
+		{
+			try
+			{
+				var types = App.GetLogTypes().ToArray();
+				TestContext.Progress.WriteLine($">>>>> {DateTime.Now} Log types: {string.Join(", ", types)}");
+
+				foreach (var logType in new[] { "logcat" })
+				{
+					if (!types.Contains(logType, StringComparer.InvariantCultureIgnoreCase))
+						continue;
+
+					var logsPath = GetGeneratedFilePath($"AppLogs-{logType}.log", note);
+					if (logsPath is not null)
+					{
+						var entries = App.GetLogEntries(logType);
+						File.WriteAllLines(logsPath, entries);
+
+						AddTestAttachment(logsPath, Path.GetFileName(logsPath));
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now}-{note} The {nameof(SaveDeviceDiagnosticInfo)} threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+			}
+		}
+
+		protected bool SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
+		{
+			try
+			{
+				if (App.AppState != ApplicationState.Running)
+					return false;
+
+				var screenshotPath = GetGeneratedFilePath("ScreenShot.png", note);
+				if (screenshotPath is not null)
+				{
+					_ = App.Screenshot(screenshotPath);
+
+					AddTestAttachment(screenshotPath, Path.GetFileName(screenshotPath));
+				}
+
+				var pageSourcePath = GetGeneratedFilePath("PageSource.txt", note);
+				if (pageSourcePath is not null)
+				{
+					File.WriteAllText(pageSourcePath, App.ElementTree);
+
+					AddTestAttachment(pageSourcePath, Path.GetFileName(pageSourcePath));
+				}
+
+				return true;
+			}
+			catch (Exception e)
+			{
+				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now}-{note} The {nameof(SaveUIDiagnosticInfo)} threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+			}
+
+			return false;
+		}
+
+		string? GetGeneratedFilePath(string filename, string? note = null)
+		{
+			// App could be null if UITestContext was not able to connect to the test process (e.g. port already in use etc...)
+			if (UITestContext is null)
+				return null;
+
+			if (string.IsNullOrEmpty(note))
+				note = "-";
+			else
+				note = $"-{note}-";
+
+			filename = $"{Path.GetFileNameWithoutExtension(filename)}-{Guid.NewGuid().ToString("N")}{Path.GetExtension(filename)}";
+
+			var logDir =
+				Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE") ??
+				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
+
+			var name =
+				TestContext.CurrentContext.Test.MethodName ??
+				TestContext.CurrentContext.Test.Name;
+
+			return Path.Combine(logDir, $"{name}-{_testDevice}{note}{filename}");
+		}
+
+		void AddTestAttachment(string filePath, string? description = null)
+		{
+			try
+			{
+				TestContext.AddTestAttachment(filePath, description);
+			}
+			catch (FileNotFoundException e) when (e.Message == "Test attachment file path could not be found.")
+			{
+				// Add the file path to better troubleshoot when these errors occur
+				throw new FileNotFoundException($"Test attachment file path could not be found: '{filePath}' {description}", e);
+			}
+		}
+
+		public IConfig GetTestConfig()
 		{
 			var frameworkVersion = "net9.0";
 #if DEBUG
@@ -99,8 +445,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			return config;
 		}
 
-		public override void Reset()
+		public virtual void Reset()
 		{
+			if (!this.IsSessionStillConnected)
+				return;
+
 			App.ResetApp();
 		}
 
@@ -301,9 +650,25 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		public override void TestSetup()
+		[SetUp]
+		public void TestSetupCore() 
 		{
-			base.TestSetup();
+			// Throw an exception because we want the test run to fail if the driver has been shutdown
+			if (!IsSessionStillConnected) 
+				throw new Exception(this.DriverShutdownMessage);
+
+			TestSetup();
+		}
+
+		public virtual void TestSetup()
+		{
+			
+			RecordTestSetup();
+			if (ResetAfterEachTest)
+			{
+				FixtureSetupCore();
+			}
+
 			var device = App.GetTestDevice();
 			if (device == TestDevice.Android || device == TestDevice.iOS)
 			{

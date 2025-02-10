@@ -1,7 +1,6 @@
 ﻿using System.Drawing;
 using NUnit.Framework;
 using UITest.Appium;
-using UITest.Appium.NUnit;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
@@ -10,7 +9,7 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		const string goToTestButtonId = "GoToTestButton";
 
-		public static void Back(this UITestContextBase testBase)
+		public static void Back(this UITest testBase)
 		{
 			if (testBase.Device == TestDevice.Android)
 			{

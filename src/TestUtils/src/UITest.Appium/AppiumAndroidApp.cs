@@ -8,7 +8,7 @@ namespace UITest.Appium
 	public class AppiumAndroidApp : AppiumApp, IAndroidApp
 	{
 		private AppiumAndroidApp(Uri remoteAddress, IConfig config)
-			: base(new AndroidDriver(remoteAddress, GetOptions(config)), config)
+			: base(new AndroidDriver(remoteAddress, GetOptions(config), DefaultCommandTimeout), config)
 		{
 			_commandExecutor.AddCommandGroup(new AppiumAndroidContextMenuActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumAndroidThemeChangeAction());

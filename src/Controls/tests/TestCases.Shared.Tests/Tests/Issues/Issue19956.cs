@@ -14,7 +14,8 @@ public class Issue19956: _IssuesUITest
     public Issue19956(TestDevice device) : base(device) { }
 
     public override string Issue => "Sticky headers and bottom content insets";
-
+    protected override bool ResetAfterEachTest => true;
+    
     [Test]
 	public void ContentAccountsForStickyHeaders()
     {
@@ -58,28 +59,18 @@ public class Issue19956: _IssuesUITest
         {
             return;
         }
+        App.Tap("Entry5");
+        ScrollToBottom(app);
+        CheckForBottomEntry(app);
+        KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
 
-        try
-        {
-            App.Tap("Entry5");
-            ScrollToBottom(app);
-            CheckForBottomEntry(app);
-            KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
+        App.Tap("Entry10");
+        ScrollToBottom(app);
+        CheckForBottomEntry(app);
+        KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
 
-            App.Tap("Entry10");
-            ScrollToBottom(app);
-            CheckForBottomEntry(app);
-            KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
-
-            ScrollToBottom(app);
-            CheckForBottomEntry(app);
-        }
-        finally
-        {
-            //Reset the app so other UITest is in a clean state
-            Reset();
-            FixtureSetup();
-        }
+        ScrollToBottom(app);
+        CheckForBottomEntry(app);
     }
 
     static void ScrollToBottom(AppiumApp app)

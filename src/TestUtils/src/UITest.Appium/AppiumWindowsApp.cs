@@ -8,7 +8,7 @@ namespace UITest.Appium
 	public class AppiumWindowsApp : AppiumApp, IWindowsApp
 	{
 		public AppiumWindowsApp(Uri remoteAddress, IConfig config)
-			: base(new WindowsDriver(remoteAddress, GetOptions(config)), config)
+			: base(new WindowsDriver(remoteAddress, GetOptions(config), DefaultCommandTimeout), config)
 		{
 			_commandExecutor.AddCommandGroup(new AppiumWindowsContextMenuActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumWindowsStepperActions(this));

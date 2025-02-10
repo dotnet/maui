@@ -1,6 +1,9 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
+using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Support.UI;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -122,6 +125,10 @@ namespace UITest.Appium
 			}
 
 			var queryBy = GetQueryBy(argSplit[0], argSplit[1]);
+
+			Stopwatch stopwatch = new Stopwatch();
+			stopwatch.Start();
+
 			var foundElements = appiumApp.Driver.FindElements(queryBy);
 
 			// TODO: What is the expected way to handle multiple queries when multiple elements are returned?
@@ -130,7 +137,9 @@ namespace UITest.Appium
 			//    foundElement = FindElement(foundElement, querySplit[i]);
 			//}
 
-			return foundElements.Select(e => new AppiumDriverElement(e, appiumApp)).ToList();
+			var ellapsedTime = stopwatch.Elapsed;
+
+			return foundElements.OfType<AppiumElement>().Select(e => new AppiumDriverElement(e, appiumApp)).ToList();
 		}
 #nullable enable
 
