@@ -656,26 +656,25 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							else
 								semanticLocation.Bounds = new WRect(0, viewportHeight - tHeight, 0, 0);
 
+							// Waiting for loaded doesn't seem to be enough anymore; the ScrollViewer does not appear until after Loaded.
+							// Even if the ScrollViewer is present, an invoke at low priority fails (E_FAIL) presumably because the items are
+							// still loading. An invoke at idle sometimes work, but isn't reliable enough, so we'll just have to commit
+							// treason and use a blanket catch for the E_FAIL and try again.
+							try
+							{
+								List.MakeVisible(semanticLocation);
+							}
+							catch (Exception)
+							{
+								if (previouslyFailed)
+									return;
+
+								Task.Delay(1).ContinueWith(ct => { ScrollTo(group, item, toPosition, shouldAnimate, includeGroup, true); }, TaskScheduler.FromCurrentSynchronizationContext()).WatchForError();
+							}
 							break;
 						}
 				}
 			});
-
-			// Waiting for loaded doesn't seem to be enough anymore; the ScrollViewer does not appear until after Loaded.
-			// Even if the ScrollViewer is present, an invoke at low priority fails (E_FAIL) presumably because the items are
-			// still loading. An invoke at idle sometimes work, but isn't reliable enough, so we'll just have to commit
-			// treason and use a blanket catch for the E_FAIL and try again.
-			try
-			{
-				List.MakeVisible(semanticLocation);
-			}
-			catch (Exception)
-			{
-				if (previouslyFailed)
-					return;
-
-				Task.Delay(1).ContinueWith(ct => { ScrollTo(group, item, toPosition, shouldAnimate, includeGroup, true); }, TaskScheduler.FromCurrentSynchronizationContext()).WatchForError();
-			}
 		}
 
 		void OnElementScrollToRequested(object sender, ScrollToRequestedEventArgs e)
