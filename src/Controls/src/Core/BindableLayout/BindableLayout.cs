@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Specialized;
+using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -371,6 +372,7 @@ namespace Microsoft.Maui.Controls
 			if (childrenCount == 1 && layoutChildren[0] == _currentEmptyView)
 			{
 				layout.RemoveAt(0);
+				_currentEmptyView.DisconnectHandlers();
 				childrenCount = 0;
 			}
 
@@ -394,11 +396,15 @@ namespace Microsoft.Maui.Controls
 			// Remove exceeding items
 			while (index <= --childrenCount)
 			{
-				var child = (BindableObject)layoutChildren[childrenCount]!;
+				IView child = (IView)layoutChildren[childrenCount]!;
 				layout.RemoveAt(childrenCount);
+
+				// Disconnect platform view so when we clear binding context it doesn't run mappers
+				child.DisconnectHandlers();
+
 				// It's our responsibility to clear the BindingContext for the children
 				// Given that we've set them manually in CreateItemView
-				child.BindingContext = null;
+				ClearBindingContext(child);
 			}
 		}
 
@@ -413,7 +419,7 @@ namespace Microsoft.Maui.Controls
 				// We may have a single child that is either the old empty view or a generated item
 				if (layoutChildren.Count == 1)
 				{
-					var maybeEmptyView = (View)layoutChildren[0]!;
+					var maybeEmptyView = (IView)layoutChildren[0]!;
 
 					// If the current empty view is already in place we have nothing to do
 					if (maybeEmptyView == _currentEmptyView)
@@ -425,11 +431,10 @@ namespace Microsoft.Maui.Controls
 					// So remove it to make room for the new empty view
 					layout.RemoveAt(0);
 
+					// Disconnect platform view so when we clear binding context it doesn't run mappers
+					maybeEmptyView.DisconnectHandlers();
 					// If this is a generated item, we need to clear the BindingContext
-					if (maybeEmptyView.IsSet(BindableLayoutTemplateProperty))
-					{
-						maybeEmptyView.ClearValue(BindableObject.BindingContextProperty);
-					}
+					ClearBindingContext(maybeEmptyView);
 				}
 				else if (layoutChildren.Count > 1)
 				{
@@ -452,14 +457,19 @@ namespace Microsoft.Maui.Controls
 
 		void ClearChildren(IBindableLayout layout)
 		{
-			var index = layout.Children.Count;
-			while (--index >= 0)
+			var layoutChildren = layout.Children.OfType<IView>().ToArray();
+			layout.Clear();
+
+			foreach (var child in layoutChildren)
 			{
-				var child = (View)layout.Children[index]!;
-				layout.RemoveAt(index);
+				// Disconnect platform view so when we clear binding context it doesn't run mappers
+				child.DisconnectHandlers();
 
 				// It's our responsibility to clear the manually-set BindingContext for the generated children
-				child.ClearValue(BindableObject.BindingContextProperty);
+				if (child is BindableObject bindable)
+				{
+					bindable.ClearValue(BindableObject.BindingContextProperty);
+				}
 			}
 		}
 
@@ -515,18 +525,21 @@ namespace Microsoft.Maui.Controls
 					if (layoutChildren.Count == 1 && layoutChildren[0] == _currentEmptyView)
 					{
 						layout.RemoveAt(0);
+						_currentEmptyView.DisconnectHandlers();
 					}
 
 					layout.Insert(CreateItemView(item, SelectTemplate(item, layout)), index);
 				},
 				removeAt: (item, index) =>
 				{
-					var child = (View)layout.Children[index]!;
+					var child = (IView)layout.Children[index]!;
 					layout.RemoveAt(index);
 
+					// Disconnect platform view so when we clear binding context it doesn't run mappers
+					child.DisconnectHandlers();
 					// It's our responsibility to clear the BindingContext for the children
 					// Given that we've set them manually in CreateItemView
-					child.BindingContext = null;
+					ClearBindingContext(child);
 
 					// If we removed the last item, we need to insert the empty view
 					if (layout.Children.Count == 0 && _currentEmptyView != null)
@@ -540,18 +553,18 @@ namespace Microsoft.Maui.Controls
 		void ReplaceChild(object item, IBindableLayout layout, IList layoutChildren, int index)
 		{
 			var template = SelectTemplate(item, layout);
-			var child = (BindableObject)layoutChildren[index]!;
-			var currentTemplate = GetBindableLayoutTemplate(child);
-			if (currentTemplate == template)
+			var child = (IView)layoutChildren[index]!;
+			if (child is BindableObject bindable && GetBindableLayoutTemplate(bindable) == template)
 			{
-				child.BindingContext = item;
+				bindable.BindingContext = item;
 			}
 			else
 			{
 				// It's our responsibility to clear the BindingContext for the children
 				// Given that we've set them manually in CreateItemView
-				child.BindingContext = null;
 				layout.Replace(CreateItemView(item, template), index);
+				child.DisconnectHandlers();
+				ClearBindingContext(child);
 			}
 		}
 
@@ -561,6 +574,15 @@ namespace Microsoft.Maui.Controls
 			SetBindableLayoutTemplate(view, dataTemplate);
 			view.BindingContext = item;
 			return view;
+		}
+
+		
+		static void ClearBindingContext(IView child)
+		{
+			if (child is BindableObject bindable && bindable.IsSet(BindableLayoutTemplateProperty))
+			{
+				bindable.ClearValue(BindableObject.BindingContextProperty);
+			}
 		}
 	}
 }
