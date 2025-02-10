@@ -240,7 +240,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			try
 			{
-				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(60));
+				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(45));
 				Assert.Inconclusive("This device doesn't have internet access");
 			}
 			catch (TimeoutException)
