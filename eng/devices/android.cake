@@ -39,9 +39,6 @@ string DEVICE_NAME = "";
 string DEVICE_OS = "";
 
 // Android SDK setup
-Information("ANDROID_SDK_ROOT: {0}", EnvironmentVariable("ANDROID_SDK_ROOT"));
-Information("ANDROID_HOME: {0}", EnvironmentVariable("ANDROID_HOME"));
-
 var androidSdkRoot = GetAndroidSDKPath();
 
 SetAndroidEnvironmentVariables(androidSdkRoot);
