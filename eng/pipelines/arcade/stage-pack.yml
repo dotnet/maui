@@ -45,6 +45,7 @@ stages:
           fetchDepth: 1
           clean: true
         steps:
+        - template: /eng/pipelines/common/setup-jdk.yml
 
         - script: $(_buildScript)
                   -restore -build
