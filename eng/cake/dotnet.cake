@@ -280,9 +280,11 @@ Task("dotnet-pack-maui")
             ReplaceTextInFiles(originalNuget, "LOCAL_PLACEHOLDER", nugetSource);
         }
 
-        var sln = "./Microsoft.Maui.Packages.slnf";
+        var sln = "./eng/Microsoft.Maui.Packages.slnf";
         if (!IsRunningOnWindows())
-            sln = "./Microsoft.Maui.Packages-mac.slnf";
+        {
+            sln = "./eng/Microsoft.Maui.Packages-mac.slnf";
+        }
  
         if(string.IsNullOrEmpty(officialBuildId))
         {
