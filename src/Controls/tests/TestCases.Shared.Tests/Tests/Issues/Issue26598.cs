@@ -23,17 +23,25 @@ public class Issue26598 : _IssuesUITest
 	public void TabBarShouldbeVisibleNavigatingBackFromNonTabbedPage()
 	{
 		// Is a iOS issue; see https://github.com/dotnet/maui/issues/26598
+		// Initially TabBar for Issue26598Home is hidden 
 		App.WaitForElement("NavigateToInnerTab");
 		App.Click("NavigateToInnerTab");
+
+		// Case 1 - After navigating to Inner Page ,  the TabBar should be visible
+		App.WaitForElement("RecentTab");
+
+		// Case 2 - Navigate to the InnerTabPage where the TabBar is hidden
 		App.WaitForElement("NavigateToTabBarPage");
 		App.Click("NavigateToTabBarPage");
 		App.WaitForElement("Issue26589NonTab");
+
+		// Case 3 - Navigate back to the HomeTab, the TabBar should be visible
 		App.TapBackArrow(back);
-		App.WaitForElement("Recent");
-		App.Click("Recent");
-		App.WaitForElement("Home");
-		App.Click("Home");
-		VerifyScreenshot();
+		App.WaitForElement("RecentTab");
+		App.Click("RecentTab");
+		App.WaitForElement("HomeTab");
+		App.Click("HomeTab");
+		App.WaitForElement("RecentTab");
 	}
 }
 

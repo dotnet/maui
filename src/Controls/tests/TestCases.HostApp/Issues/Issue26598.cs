@@ -10,7 +10,7 @@ public class Issue26598 : TestShell
 	ShellContent homeShellContent = new ShellContent
 	{
 		ContentTemplate = new DataTemplate(() => new Issue26598Home()),
-		Title = "Home",
+		Title = "HomeTab",
 		AutomationId = "Issue26598Home",
 		Route = nameof(Issue26598Home)
 	};
@@ -19,7 +19,7 @@ public class Issue26598 : TestShell
 	ShellContent recentShellContent = new ShellContent
 	{
 		ContentTemplate = new DataTemplate(() => new Issue26598Recent()),
-		Title = "Recent",
+		Title = "RecentTab",
 		Route = nameof(Issue26598Recent)
 	};
 
@@ -30,107 +30,106 @@ public class Issue26598 : TestShell
 		tabBar.Items.Add(homeShellContent);
 		tabBar.Items.Add(recentShellContent);
 		Items.Add(tabBar);
-		Shell.SetTabBarIsVisible(this, true);
 	}
-}
 
-public class Issue26598Home : ContentPage
-{
-	VerticalStackLayout stackLayout;
-	Button button;
-	public Issue26598Home()
+	public class Issue26598Home : ContentPage
 	{
-		Title = "Home";
-		HeightRequest = 200;
-		stackLayout = new VerticalStackLayout();
-		button = new Button()
+		VerticalStackLayout stackLayout;
+		Button button;
+		public Issue26598Home()
 		{
-			Text = "Navigate to InnerTab",
-			AutomationId = "NavigateToInnerTab",
-			VerticalOptions = LayoutOptions.Center,
-			HorizontalOptions = LayoutOptions.Center,
-		};
-		button.Clicked += Button_OnClicked;
-		stackLayout.Add(button);
-		Shell.SetTabBarIsVisible(this, true);
-		this.Content = stackLayout;
-	}
+			Title = "Home";
+			HeightRequest = 200;
+			stackLayout = new VerticalStackLayout();
+			button = new Button()
+			{
+				Text = "Navigate to InnerTab",
+				AutomationId = "NavigateToInnerTab",
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Center,
+			};
+			button.Clicked += Button_OnClicked;
+			stackLayout.Add(button);
+			Shell.SetTabBarIsVisible(this, false);
+			this.Content = stackLayout;
+		}
 
-	private void Button_OnClicked(object sender, EventArgs e)
-	{
-		Shell.Current.GoToAsync(nameof(Issue26598Inner));
-	}
-
-}
-
-public class Issue26598Inner : ContentPage
-{
-	VerticalStackLayout stackLayout;
-	Button button;
-	public Issue26598Inner()
-	{
-		Title = "InnerTab";
-		stackLayout = new VerticalStackLayout();
-		button = new Button()
+		private void Button_OnClicked(object sender, EventArgs e)
 		{
-			Text = "Navigate to TabBarPage",
-			AutomationId = "NavigateToTabBarPage",
-			VerticalOptions = LayoutOptions.Center,
-			HorizontalOptions = LayoutOptions.Center,
-		};
-		button.Clicked += Button_OnClicked;
-		stackLayout.Add(button);
-		Shell.SetTabBarIsVisible(this, true);
-		this.Content = stackLayout;
+			Shell.Current.GoToAsync(nameof(Issue26598Inner));
+		}
+
 	}
 
-	private void Button_OnClicked(object sender, EventArgs e)
+	public class Issue26598Inner : ContentPage
 	{
-		Shell.Current.GoToAsync(nameof(Issue26589NonTab));
-	}
-
-}
-
-public class Issue26598Recent : ContentPage
-{
-	VerticalStackLayout stackLayout;
-	Label label;
-	public Issue26598Recent()
-	{
-		Title = "Recent";
-		HeightRequest = 200;
-
-		stackLayout = new VerticalStackLayout();
-		label = new Label()
+		VerticalStackLayout stackLayout;
+		Button button;
+		public Issue26598Inner()
 		{
-			Text = "Page Loaded in Recent Tab",
-			VerticalOptions = LayoutOptions.Center,
-			HorizontalOptions = LayoutOptions.Center,
+			Title = "InnerTab";
+			stackLayout = new VerticalStackLayout();
+			button = new Button()
+			{
+				Text = "Navigate to TabBarPage",
+				AutomationId = "NavigateToTabBarPage",
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Center,
+			};
+			button.Clicked += Button_OnClicked;
+			stackLayout.Add(button);
+			Shell.SetTabBarIsVisible(this, true);
+			this.Content = stackLayout;
+		}
 
-		};
-		stackLayout.Add(label);
-		Shell.SetTabBarIsVisible(this, true);
-		this.Content = stackLayout;
-	}
-}
-public class Issue26589NonTab : ContentPage
-{
-	VerticalStackLayout stackLayout;
-	Label label1;
-	public Issue26589NonTab()
-	{
-		Title = "NoTabBarPage";
-		stackLayout = new VerticalStackLayout();
-		label1 = new Label()
+		private void Button_OnClicked(object sender, EventArgs e)
 		{
-			Text = "This is Non TabBarPage",
-			AutomationId = "Issue26589NonTab",
-			VerticalOptions = LayoutOptions.Center,
-			HorizontalOptions = LayoutOptions.Center,
-		};
-		stackLayout.Add(label1);
-		Shell.SetTabBarIsVisible(this, false);
-		this.Content = stackLayout;
+			Shell.Current.GoToAsync(nameof(Issue26589NonTab));
+		}
+
 	}
 
+	public class Issue26598Recent : ContentPage
+	{
+		VerticalStackLayout stackLayout;
+		Label label;
+		public Issue26598Recent()
+		{
+			Title = "Recent";
+			HeightRequest = 200;
+
+			stackLayout = new VerticalStackLayout();
+			label = new Label()
+			{
+				Text = "Page Loaded in Recent Tab",
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Center,
+
+			};
+			stackLayout.Add(label);
+			Shell.SetTabBarIsVisible(this, true);
+			this.Content = stackLayout;
+		}
+	}
+	public class Issue26589NonTab : ContentPage
+	{
+		VerticalStackLayout stackLayout;
+		Label label1;
+		public Issue26589NonTab()
+		{
+			Title = "NoTabBarPage";
+			stackLayout = new VerticalStackLayout();
+			label1 = new Label()
+			{
+				Text = "This is Non TabBarPage",
+				AutomationId = "Issue26589NonTab",
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Center,
+			};
+			stackLayout.Add(label1);
+			Shell.SetTabBarIsVisible(this, false);
+			this.Content = stackLayout;
+		}
+
+	}
 }
