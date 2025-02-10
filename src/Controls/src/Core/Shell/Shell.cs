@@ -504,7 +504,7 @@ namespace Microsoft.Maui.Controls
 		public static void SetTabBarBackgroundColor(BindableObject obj, Color value) => obj.SetValue(TabBarBackgroundColorProperty, value);
 
 		/// <summary>
-		/// Gets the color of the tab bar when its disabled. 
+		/// Gets the color of the tab bar when it's disabled. 
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
 		/// <returns>The disabled color for the tab bar.</returns>
