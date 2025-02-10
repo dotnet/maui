@@ -458,7 +458,18 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 				Information("Starting Emulator: {0}...", avdName);
 				emulatorProcess = AndroidEmulatorStart(avdName, emuSettings);
 			}
+		}).WaitAsync(TimeSpan.FromMinutes(2));
+	}
+	catch(TimeoutException)
+	{
+		Error("Failed to start the Android Emulator.");
+		throw;
+	}
 
+	try
+	{
+		await System.Threading.Tasks.Task.Run(() =>
+		{
 			if (IsCIBuild() && emulatorProcess is not null)
 			{
 				Information("Setting Logcat Values");
@@ -470,8 +481,7 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 	}
 	catch(TimeoutException)
 	{
-		Error("Failed to start the Android Emulator.");
-		throw;
+		Warning("Failed to Issues Logcat Commands to the Android Emulator.");
 	}
 }
 
