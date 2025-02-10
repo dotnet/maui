@@ -96,3 +96,11 @@ Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> boolormView) -> void
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> bool
 Microsoft.Maui.Platform.TextInputExtensions
+*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebView! webView, WebKit.WKNavigationAction! navigationAction, System.Action<WebKit.WKNavigationActionPolicy>! decisionHandler) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
+virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebView! webView, WebKit.WKNavigationAction! navigationAction, System.Action<WebKit.WKNavigationActionPolicy>! decisionHandler) -> void
+virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
+virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
+virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
