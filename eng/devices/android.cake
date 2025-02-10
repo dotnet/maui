@@ -358,6 +358,11 @@ void SetAndroidEnvironmentVariables(string sdkRoot)
 	{
 		SetEnvironmentVariable("PATH", path, prepend: true);
 	}
+
+	foreach (var folder in GetDirectories($"{sdkRoot}/cmdline-tools/*"))
+	{
+		Information("Found cmdline-tools folders: {0}", folder.FullPath);
+	}
 }
 
 AndroidEmulatorToolSettings AdjustEmulatorSettingsForCI(AndroidEmulatorToolSettings settings)
