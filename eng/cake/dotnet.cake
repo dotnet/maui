@@ -788,7 +788,9 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
                 
                 return args;
             }
-        };
+            return args;
+        }
+    };
     
     if(!string.IsNullOrEmpty(pathDotnet))
     {

@@ -426,6 +426,36 @@ Task("Test")
 	}
 });
 
+Task("uitest-build")
+	.IsDependentOn("dotnet-buildtasks")
+	.Does(() =>
+	{
+		ExecuteBuildUITestApp(TEST_APP_PROJECT.FullPath, null, BINLOG_DIR.FullPath, configuration, TARGET_FRAMEWORK, null, GetDotnetToolPath());
+	});
+
+void ExecuteBuildUITestApp(string appProject, string device, string binDir, string config, string tfm, string rid, string toolPath)
+{
+	Information($"Building UI Test app: {appProject}");
+	var projectName = System.IO.Path.GetFileNameWithoutExtension(appProject);
+	var binlog = $"{binDir}/{projectName}-{config}-winui.binlog";
+
+	DotNetBuild(appProject, new DotNetBuildSettings
+	{
+		Configuration = config,
+		Framework = tfm,
+		ToolPath = toolPath,
+		ArgumentCustomization = args =>
+		{
+			args
+			.Append("/bl:" + binlog)
+			.Append("/tl");
+
+			return args;
+		}
+	});
+
+	Information("UI Test app build completed.");
+}
 
 Task("SetupTestPaths")
 	.Does(() => {
@@ -521,8 +551,11 @@ Task("uitest")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	Information("old dotnet root: {0}", DOTNET_ROOT);
-	Information("old dotnet path: {0}", DOTNET_PATH);
+	string localToolPath;
+	if(localDotnet)
+	{
+		Information("old dotnet root: {0}", DOTNET_ROOT);
+		Information("old dotnet path: {0}", DOTNET_PATH);
 
 	var buildSettings = new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
@@ -548,6 +581,11 @@ Task("uitest")
 
 		SetDotNetEnvironmentVariables(DOTNET_ROOT);
 
+		buildSettings.ToolPath = localToolPath;
+	}
+	else
+	{
+		localToolPath = GetDotnetToolPath();
 		buildSettings.ToolPath = localToolPath;
 	}
 
