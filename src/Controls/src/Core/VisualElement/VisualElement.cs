@@ -1756,17 +1756,23 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateBoundsComponents(Rect bounds)
 		{
+			if (_frame == bounds)
+				return;
 			_frame = bounds;
 
 			BatchBegin();
 
 			X = bounds.X;
 			Y = bounds.Y;
+			var previousWidth = Width;
+			var previousHeight = Height;
 			Width = bounds.Width;
 			Height = bounds.Height;
-
-			SizeAllocated(Width, Height);
-			SizeChanged?.Invoke(this, EventArgs.Empty);
+			if (previousHeight != Height || previousWidth != Width)
+			{
+				SizeAllocated(Width, Height);
+				SizeChanged?.Invoke(this, EventArgs.Empty);
+			}
 
 			BatchCommit();
 		}
