@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Platform
 		internal float LastY { get; set; }
 
 		internal bool ShouldSkipOnTouch;
+		internal int HorizontalScrollOffset => _hScrollView?.ScrollX ?? 0;
 
 		public MauiScrollView(Context context) : base(context)
 		{

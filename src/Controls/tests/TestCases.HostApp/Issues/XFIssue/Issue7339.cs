@@ -21,6 +21,6 @@ public class Issue7339 : TestShell
 			};
 
 		CreateContentPage("Item2").Content =
-			new StackLayout() { new Frame() { Content = new Label() { Text = "FrameContent", AutomationId ="FrameContent" } } };
+			new StackLayout() { new Frame() { Content = new Label() { Text = "FrameContent", AutomationId = "FrameContent" } } };
 	}
 }
