@@ -481,7 +481,7 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 	}
 	catch(TimeoutException)
 	{
-		Warning("Failed to Issues Logcat Commands to the Android Emulator.");
+		Warning("Failed to Issue Logcat Commands to the Android Emulator.");
 	}
 }
 
