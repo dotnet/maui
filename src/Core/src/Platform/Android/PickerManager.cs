@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Platform
 		public static void Init(EditText editText)
 		{
 			editText.Focusable = true;
+			editText.FocusableInTouchMode = false;
 			editText.Clickable = true;
 			editText.InputType = InputTypes.Null;
 
@@ -30,12 +31,6 @@ namespace Microsoft.Maui.Platform
 			{
 				sender.RequestFocus();
 			}
-		}
-
-		public static void OnFocusChanged(bool gainFocus, EditText sender)
-		{
-			if (gainFocus)
-				sender.CallOnClick();
 		}
 
 		static void OnKeyPress(object? sender, AView.KeyEventArgs e)
