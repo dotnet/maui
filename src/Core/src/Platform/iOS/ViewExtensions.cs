@@ -212,21 +212,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateShadow(this UIView platformView, IView view)
 		{
 			var shadow = view.Shadow;
-			var clip = view.Clip;
 
-			// If there is a clip shape, then the shadow should be applied to the clip layer, not the view layer
-			if (clip == null)
-			{
-				if (shadow == null)
-					platformView.ClearShadow();
-				else
-					platformView.SetShadow(shadow);
-			}
+			if (shadow == null)
+				platformView.ClearShadow();
 			else
-			{
-				if (platformView is WrapperView wrapperView)
-					wrapperView.Shadow = view.Shadow;
-			}
+				platformView.SetShadow(shadow);
 		}
 
 		[Obsolete("IBorder is not used and will be removed in a future release.")]
@@ -248,9 +238,11 @@ namespace Microsoft.Maui.Platform
 		public static T? FindDescendantView<T>(this UIView view) where T : UIView =>
 			FindDescendantView<T>(view, (_) => true);
 
+		[Obsolete("MAUI background layers now automatically update their Frame when their SuperLayer Frame changes. This method will be removed in a future release.")]
 		public static void UpdateBackgroundLayerFrame(this UIView view) =>
 			view.UpdateBackgroundLayerFrame(BackgroundLayerName);
 
+		[Obsolete("MAUI background layers now automatically update their Frame when their SuperLayer Frame changes. This method will be removed in a future release.")]
 		internal static void UpdateBackgroundLayerFrame(this UIView view, string layerName)
 		{
 			if (view.Frame.IsEmpty)
@@ -646,7 +638,9 @@ namespace Microsoft.Maui.Platform
 
 				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
 				{
-					OnLoadedCheck(null);
+					//The MovedToWindow fires multiple times during navigation animations, causing repeated OnLoadedCheck calls. 
+					//BeginInvokeOnMainThread ensures OnLoadedCheck executes after all window transitions are complete.
+					uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
 				}
 			}
 			else
@@ -726,7 +720,9 @@ namespace Microsoft.Maui.Platform
 
 				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
 				{
-					UnLoadedCheck();
+					//The MovedToWindow fires multiple times during navigation animations, causing repeated UnLoadedCheck calls. 
+					//BeginInvokeOnMainThread ensures UnLoadedCheck executes after all window transitions are complete.
+					uiView.BeginInvokeOnMainThread(UnLoadedCheck);
 				}
 			}
 
@@ -939,5 +935,7 @@ namespace Microsoft.Maui.Platform
 		internal static bool ShowSoftInput(this UIView inputView) => inputView.BecomeFirstResponder();
 
 		internal static bool IsSoftInputShowing(this UIView inputView) => inputView.IsFirstResponder;
+
+		internal static bool IsFinalMeasureHandledBySuperView(this UIView? view) => view?.Superview is ICrossPlatformLayoutBacking { CrossPlatformLayout: not null };
 	}
 }

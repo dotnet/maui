@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
+			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
 			platformView.FocusChange += OnFocusedChange;
 			platformView.Touch += OnTouch;
@@ -52,6 +53,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
+			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusedChange;
 			platformView.Touch -= OnTouch;
@@ -62,6 +64,14 @@ namespace Microsoft.Maui.Handlers
 				editText.SelectionChanged -= OnSelectionChanged;
 
 			_set = false;
+		}
+
+		void OnViewAttachedToWindow(object? sender, ViewAttachedToWindowEventArgs e)
+		{
+			if (PlatformView is null || VirtualView is null)
+				return;
+
+			PlatformView.UpdateReturnType(VirtualView);
 		}
 
 		public static void MapBackground(IEntryHandler handler, IEntry entry) =>

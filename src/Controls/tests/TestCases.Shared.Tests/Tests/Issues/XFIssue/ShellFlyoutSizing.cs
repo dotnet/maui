@@ -12,37 +12,53 @@ public class ShellFlyoutSizing : _IssuesUITest
 
 	public override string Issue => "Shell Flyout Width and Height";
 
-	// TODO: IN the HostApp UI a line was commented out for the display density, need to reenable that first
-	//[Test]
-	//[Category(UITestCategories.Shell)]
-	//public void FlyoutHeightAndWidthResetsBackToOriginalSize()
-	//{
-	//	App.WaitForElement("PageLoaded");
-	//	this.ShowFlyout();
-	//	var initialWidth = App.WaitForElement("FlyoutHeader")[0].Rect.Width;
-	//	var initialHeight = App.WaitForElement("FlyoutFooter")[0].Rect.Y;
-	//	TapInFlyout("ChangeFlyoutSizes", makeSureFlyoutStaysOpen: true);
-	//	Assert.AreNotEqual(initialWidth, App.WaitForElement("FlyoutHeader")[0].Rect.Width);
-	//	Assert.AreNotEqual(initialHeight, App.WaitForElement("FlyoutFooter")[0].Rect.Y);
-	//	TapInFlyout("ResetFlyoutSizes", makeSureFlyoutStaysOpen: true);
-	//	Assert.AreEqual(initialWidth, App.WaitForElement("FlyoutHeader")[0].Rect.Width);
-	//	Assert.AreEqual(initialHeight, App.WaitForElement("FlyoutFooter")[0].Rect.Y);
-	//}
+#if WINDOWS
+    const string ChangeFlyoutSizes="Change Height and Width";
+    const string ResetFlyoutSizes="Reset Height and Width";
+    const string DecreaseFlyoutSizes="Decrease Height and Width";
+#else
+	const string ChangeFlyoutSizes = "ChangeFlyoutSizes";
+	const string ResetFlyoutSizes = "ResetFlyoutSizes";
+	const string DecreaseFlyoutSizes = "DecreaseFlyoutSizes";
+#endif
 
-	//[Test]
-	//[Category(UITestCategories.Shell)]
-	//public void FlyoutHeightAndWidthIncreaseAndDecreaseCorrectly()
-	//{
-	//	App.WaitForElement("PageLoaded");
-	//	this.ShowFlyout();
-	//	TapInFlyout("ChangeFlyoutSizes", makeSureFlyoutStaysOpen: true);
-	//	var initialWidth = App.WaitForElement("FlyoutHeader")[0].Rect.Width;
-	//	var initialHeight = App.WaitForElement("FlyoutFooter")[0].Rect.Y;
-	//	TapInFlyout("DecreaseFlyoutSizes", makeSureFlyoutStaysOpen: true);
-	//	var newWidth = App.WaitForElement("FlyoutHeader")[0].Rect.Width;
-	//	var newHeight = App.WaitForElement("FlyoutFooter")[0].Rect.Y;
+#if ANDROID // Appium's GetRect method returns different sizes across platforms.
+	int difference = 26;
+#elif IOS || WINDOWS
+	int difference = 10;
+#elif MACCATALYST
+    int difference = 8;
+#endif
 
-	//	Assert.That(initialWidth - newWidth, Is.EqualTo(10).Within(1));
-	//	Assert.That(initialHeight - newHeight, Is.EqualTo(10).Within(1));
-	//}
+	[Test, Order(1)]
+	[Category(UITestCategories.Shell)]
+	public void FlyoutHeightAndWidthResetsBackToOriginalSize()
+	{
+		App.WaitForElement("PageLoaded");
+		var initialWidth = App.WaitForElement("FlyoutHeader").GetRect().Width;
+		var initialHeight = App.WaitForElement("FlyoutFooter").GetRect().Y;
+		App.Tap(ChangeFlyoutSizes);
+		Assert.That(App.WaitForElement("FlyoutHeader").GetRect().Width, Is.Not.EqualTo(initialWidth));
+		Assert.That(App.WaitForElement("FlyoutFooter").GetRect().Y, Is.Not.EqualTo(initialHeight));
+
+		App.Tap(ResetFlyoutSizes);
+		Assert.That(App.WaitForElement("FlyoutHeader").GetRect().Width, Is.EqualTo(initialWidth));
+		Assert.That(App.WaitForElement("FlyoutFooter").GetRect().Y, Is.EqualTo(initialHeight));
+	}
+
+	[Test, Order(2)]
+	[Category(UITestCategories.Shell)]
+	public void FlyoutHeightAndWidthIncreaseAndDecreaseCorrectly()
+	{
+		App.WaitForElement(ChangeFlyoutSizes);
+		App.Tap(ChangeFlyoutSizes);
+		var initialWidth = App.WaitForElement("FlyoutHeader").GetRect().Width;
+		var initialHeight = App.WaitForElement("FlyoutFooter").GetRect().Y;
+		App.Tap(DecreaseFlyoutSizes);
+		var newWidth = App.WaitForElement("FlyoutHeader").GetRect().Width;
+		var newHeight = App.WaitForElement("FlyoutFooter").GetRect().Y;
+		Assert.That(initialWidth - newWidth, Is.EqualTo(difference).Within(1));
+		Assert.That(initialHeight - newHeight, Is.EqualTo(difference).Within(1));
+
+	}
 }

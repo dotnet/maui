@@ -13,35 +13,16 @@ public class Bugzilla45125 : TestContentPage
 	const string DisappearingLabelId = "disappearing";
 	const string TestButtonId = "TestButtonId";
 
-	static int _Appearing = 0;
-	static int _Disappearing = 0;
+	int _Appearing = 0;
+	int _Disappearing = 0;
 
-	static Label _status = new Label
-	{
-		TextColor = Colors.White,
-		//TODO: NoWrap causes the Label to be missing from the Horizontal StackLayout
-		//LineBreakMode = LineBreakMode.NoWrap
-	};
+	Label _status;
 
-	static Label _groupsAppearing = new Label
-	{
-		TextColor = Colors.Green,
-		AutomationId = AppearingLabelId
-	};
+	Label _groupsAppearing;
 
-	static Label _groupsDisappearing = new Label
-	{
-		TextColor = Colors.Blue,
-		AutomationId = DisappearingLabelId
-	};
+	Label _groupsDisappearing;
 
-	static ScrollView _scroll = new ScrollView
-	{
-		BackgroundColor = Colors.Black,
-		Content = _status,
-		MinimumWidthRequest = 200
-	};
-
+	ScrollView _scroll;
 
 	class GroupItem
 	{
@@ -78,11 +59,42 @@ public class Bugzilla45125 : TestContentPage
 
 	protected override void Init()
 	{
+		InitializeControls();
+
 		_status.Text = _groupsAppearing.Text = _groupsDisappearing.Text = "";
 		_Appearing = _Disappearing = 0;
 		_scroll.SetScrolledPosition(0, 0);
 
 		InitTest(ListViewCachingStrategy.RecycleElement, true);
+	}
+
+	void InitializeControls()
+	{
+
+		_status = new Label
+		{
+			TextColor = Colors.White
+		};
+
+		_groupsAppearing = new Label
+		{
+			TextColor = Colors.Green,
+			AutomationId = AppearingLabelId
+		};
+
+		_groupsDisappearing = new Label
+		{
+			TextColor = Colors.Blue,
+			AutomationId = DisappearingLabelId
+		};
+
+		_scroll = new ScrollView
+		{
+			BackgroundColor = Colors.Black,
+			Content = _status,
+			WidthRequest = 200,
+			HeightRequest = 500
+		};
 	}
 
 	void InitTest(ListViewCachingStrategy cachingStrategy, bool useTemplate)
@@ -94,6 +106,8 @@ public class Bugzilla45125 : TestContentPage
 			ItemsSource = groups,
 			ItemTemplate = new DataTemplate(typeof(MyCell)),
 			HasUnevenRows = true,
+			HeightRequest = 500,
+			WidthRequest = 200,
 
 			// Must be grouped to repro
 			IsGroupingEnabled = true
@@ -108,16 +122,18 @@ public class Bugzilla45125 : TestContentPage
 		listView.ItemAppearing += ListView_ItemAppearing;
 		listView.ItemDisappearing += ListView_ItemDisappearing;
 
-		var horStack = new StackLayout
+		InitializeControls();
+
+		var horStack = new HorizontalStackLayout
 		{
-			Orientation = StackOrientation.Horizontal,
-			Children = { _scroll, listView },
-			HeightRequest = 300
+			HeightRequest = 500
 		};
+		horStack.Children.Add(_scroll);
+		horStack.Children.Add(listView);
 
 		Button nextButton = new Button { Text = "Next", AutomationId = TestButtonId };
 		nextButton.Clicked += NextButton_Clicked;
-		StackLayout stack = new StackLayout
+		VerticalStackLayout stack = new VerticalStackLayout
 		{
 			Children = { new Label { Text = Instructions }, _groupsAppearing, _groupsDisappearing, horStack, nextButton }
 		};

@@ -39,6 +39,9 @@ string DEVICE_NAME = "";
 string DEVICE_OS = "";
 
 // Android SDK setup
+Information("ANDROID_SDK_ROOT: {0}", EnvironmentVariable("ANDROID_SDK_ROOT"));
+Information("ANDROID_HOME: {0}", EnvironmentVariable("ANDROID_HOME"));
+
 var androidSdkRoot = GetAndroidSDKPath();
 
 SetAndroidEnvironmentVariables(androidSdkRoot);
@@ -58,17 +61,6 @@ AndroidEmulatorProcess emulatorProcess = null;
 
 var dotnetToolPath = GetDotnetToolPath();
 
-Setup(context =>
-{
-	LogSetupInfo(dotnetToolPath);
-
-	PerformCleanupIfNeeded(deviceCleanupEnabled);
-
-	DetermineDeviceCharacteristics(testDevice, DefaultApiLevel);
-
-	HandleVirtualDevice(emuSettings, avdSettings, androidAvd, androidAvdImage, deviceSkin, deviceBoot);
-});
-
 Teardown(context =>
 {
 	// For the uitest-prepare target, just leave the virtual device running
@@ -79,9 +71,24 @@ Teardown(context =>
 
 });
 
-Task("boot");
+Task("Setup")
+	.Does(async () =>
+	{
+		LogSetupInfo(dotnetToolPath);
+
+		PerformCleanupIfNeeded(deviceCleanupEnabled);
+
+		DetermineDeviceCharacteristics(testDevice, DefaultApiLevel);
+
+		// The Emulator Start command seems to hang sometimes so let's only give it two minutes to complete
+		await HandleVirtualDevice(emuSettings, avdSettings, androidAvd, androidAvdImage, deviceSkin, deviceBoot);
+	});
+
+Task("boot")
+	.IsDependentOn("Setup");
 
 Task("build")
+	.IsDependentOn("Setup")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
@@ -96,6 +103,7 @@ Task("test")
 	});
 
 Task("uitest-build")
+	.IsDependentOn("Setup")
 	.IsDependentOn("dotnet-buildtasks")
 	.Does(() =>
 	{
@@ -103,6 +111,7 @@ Task("uitest-build")
 	});
 
 Task("uitest-prepare")
+	.IsDependentOn("Setup")
 	.Does(() =>
 	{
 		ExecutePrepareUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
@@ -115,57 +124,14 @@ Task("uitest")
 		ExecuteUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
 	});
 
-Task("cg-uitest")
-	.IsDependentOn("dotnet-buildtasks")
-	.Does(() =>
-	{
-		ExecuteCGLegacyUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, configuration, targetFramework, dotnetToolPath, testAppInstrumentation);
-	});
-
 Task("logcat")
+	.IsDependentOn("Setup")
 	.Does(() =>
 {
 	WriteLogCat();
 });
 
 RunTarget(TARGET);
-
-void ExecuteCGLegacyUITests(string project, string appProject, string appPackageName, string device, string resultsDir, string config, string tfm, string toolPath, string instrumentation)
-{
-	CleanDirectories(resultsDir);
-
-	Information("Starting Compatibility Gallery UI Tests...");
-
-	var testApp = GetTestApplications(appProject, device, config, tfm, "").FirstOrDefault();
-
-	if (string.IsNullOrEmpty(appPackageName))
-	{
-		var appFile = new FilePath(testApp);
-		appFile = appFile.GetFilenameWithoutExtension();
-		appPackageName = appFile.FullPath.Replace("-Signed", "");
-	}
-
-	Information($"Testing Device: {device}");
-	Information($"Testing App Project: {appProject}");
-	Information($"Testing App: {testApp}");
-	Information($"Testing App Package Name: {appPackageName}");
-	Information($"Results Directory: {resultsDir}");
-
-	InstallApk(testApp, appPackageName, resultsDir, deviceSkin);
-
-	//set env var for the app path for Xamarin.UITest setup
-	SetEnvironmentVariable("ANDROID_APP", $"{testApp}");
-
-	var resultName = $"{System.IO.Path.GetFileNameWithoutExtension(project)}-{config}-{DateTime.UtcNow.ToFileTimeUtc()}";
-	Information("Run UITests project {0}", resultName);
-	RunTestWithLocalDotNet(
-		project,
-		config: config,
-		pathDotnet: toolPath,
-		noBuild: false,
-		resultsFileNameWithoutExtension: resultName,
-		filter: Argument("filter", ""));
-}
 
 void ExecuteBuild(string project, string device, string binDir, string config, string tfm, string toolPath)
 {
@@ -466,32 +432,46 @@ void DetermineDeviceCharacteristics(string deviceDescriptor, int defaultApiLevel
 	}
 }
 
-void HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidAvdManagerToolSettings avdSettings, string avdName, string avdImage, string avdSkin, bool boot)
+async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidAvdManagerToolSettings avdSettings, string avdName, string avdImage, string avdSkin, bool boot)
 {
-	Information("Test Device ID: {0}", avdImage);
-
-	if (boot)
+	try
 	{
-		Information("Trying to boot the emulator...");
+		// The Emulator Start command seems to hang sometimes so let's only give it two minutes to complete
+		await System.Threading.Tasks.Task.Run(() =>
+		{
+			Information("Test Device ID: {0}", avdImage);
 
-		// delete the AVD first, if it exists
-		Information("Deleting AVD if exists: {0}...", avdName);
-		try { AndroidAvdDelete(avdName, avdSettings); }
-		catch { }
+			if (boot)
+			{
+				Information("Trying to boot the emulator...");
 
-		// create the new AVD
-		Information("Creating AVD: {0} ({1})...", avdName, avdImage);
-		AndroidAvdCreate(avdName, avdImage, avdSkin, force: true, settings: avdSettings);
+				// delete the AVD first, if it exists
+				Information("Deleting AVD if exists: {0}...", avdName);
+				try { AndroidAvdDelete(avdName, avdSettings); }
+				catch { }
 
-		// start the emulator
-		Information("Starting Emulator: {0}...", avdName);
-		emulatorProcess = AndroidEmulatorStart(avdName, emuSettings);
+				// create the new AVD
+				Information("Creating AVD: {0} ({1})...", avdName, avdImage);
+				AndroidAvdCreate(avdName, avdImage, avdSkin, force: true, settings: avdSettings);
+
+				// start the emulator
+				Information("Starting Emulator: {0}...", avdName);
+				emulatorProcess = AndroidEmulatorStart(avdName, emuSettings);
+			}
+
+			if (IsCIBuild() && emulatorProcess is not null)
+			{
+				Information("Setting Logcat Values");
+				AdbLogcat(new AdbLogcatOptions() { Clear = true });
+				AdbShell("logcat -G 16M");
+				Information("Finished Setting Logcat Values");
+			}
+		}).WaitAsync(TimeSpan.FromMinutes(2));
 	}
-
-	if (IsCIBuild())
+	catch(TimeoutException)
 	{
-		AdbLogcat(new AdbLogcatOptions() { Clear = true });
-		AdbShell("logcat -G 16M");
+		Error("Failed to start the Android Emulator.");
+		throw;
 	}
 }
 

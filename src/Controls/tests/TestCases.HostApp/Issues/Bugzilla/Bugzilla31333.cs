@@ -120,14 +120,17 @@ public class Bugzilla31333 : TestContentPage
 
 	public class ExtendedCell<T> : ViewCell where T : View, IHaveControlFocusedProperty
 	{
-		public ExtendedCell()
+		public ExtendedCell(string automationId = null)
 		{
 			var control = (T)Activator.CreateInstance(typeof(T));
 			control.SetBinding();
 #pragma warning disable CS0618 // Type or member is obsolete
 			control.HorizontalOptions = LayoutOptions.FillAndExpand;
 #pragma warning restore CS0618 // Type or member is obsolete
-
+			if (!string.IsNullOrEmpty(automationId))
+			{
+				control.AutomationId = automationId;
+			}
 			View = new StackLayout
 			{
 				Orientation = StackOrientation.Horizontal,
@@ -139,7 +142,7 @@ public class Bugzilla31333 : TestContentPage
 		}
 	}
 
-	StackLayout CreateListViewTestSection(Type controlType)
+	StackLayout CreateListViewTestSection(Type controlType, string automationId)
 	{
 		var name = controlType.GenericTypeArguments[0].Name;
 		name = name.Replace("Extended", "", StringComparison.InvariantCultureIgnoreCase);
@@ -152,7 +155,7 @@ public class Bugzilla31333 : TestContentPage
 		{
 			VerticalOptions = LayoutOptions.Start,
 			ItemsSource = data,
-			ItemTemplate = new DataTemplate(controlType)
+			ItemTemplate = new DataTemplate(() => new ExtendedCell<ExtendedEntry>(automationId))
 		};
 
 		button.Clicked += (sender, args) =>
@@ -167,7 +170,7 @@ public class Bugzilla31333 : TestContentPage
 		return new StackLayout() { Children = { button, listView } };
 	}
 
-	StackLayout CreateTableViewTestSection<T>() where T : View, IHaveControlFocusedProperty
+	StackLayout CreateTableViewTestSection<T>(string automationId) where T : View, IHaveControlFocusedProperty
 	{
 		var name = typeof(T).Name;
 		name = name.Replace("Extended", "", StringComparison.InvariantCultureIgnoreCase);
@@ -184,7 +187,7 @@ public class Bugzilla31333 : TestContentPage
 		var tableRoot = new TableRoot();
 		var tableSection = new TableSection();
 
-		var cell = new ExtendedCell<T>();
+		var cell = new ExtendedCell<T>(automationId);
 
 		cell.BindingContext = data;
 
@@ -203,11 +206,11 @@ public class Bugzilla31333 : TestContentPage
 
 	protected override void Init()
 	{
-		var entrySection = CreateListViewTestSection(typeof(ExtendedCell<ExtendedEntry>));
-		var editorSection = CreateListViewTestSection(typeof(ExtendedCell<ExtendedEditor>));
+		var entrySection = CreateListViewTestSection(typeof(ExtendedCell<ExtendedEntry>), "EntryListView");
+		var editorSection = CreateListViewTestSection(typeof(ExtendedCell<ExtendedEditor>), "EditorListView");
 
-		var entryTableSection = CreateTableViewTestSection<ExtendedEntry>();
-		var editorTableSection = CreateTableViewTestSection<ExtendedEditor>();
+		var entryTableSection = CreateTableViewTestSection<ExtendedEntry>("EntryTable");
+		var editorTableSection = CreateTableViewTestSection<ExtendedEditor>("EditorTable");
 
 		Content = new StackLayout() { Children = { entrySection, editorSection, entryTableSection, editorTableSection } };
 	}

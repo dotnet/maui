@@ -18,6 +18,8 @@ namespace Microsoft.Maui.Platform
 					layer.InsertSublayer(backgroundLayer, index);
 				else
 					layer.AddSublayer(backgroundLayer);
+
+				(backgroundLayer as IAutoSizableCALayer)?.AutoSizeToSuperLayer();
 			}
 		}
 

@@ -3,8 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using ObjCRuntime;
 using UIKit;
@@ -104,7 +106,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateVisualStates();
 		}
 
-		public override void ViewDidLayoutSubviews()
+		public override async void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
 
@@ -122,7 +124,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else
 			{
-				UpdateInitialPosition();
+				await UpdateInitialPosition();
 			}
 			_isRotating = false;
 		}
@@ -203,10 +205,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.CacheCellAttributes(NSIndexPath.FromItemSection(itemIndex, 0), size);
 		}
 
-		private protected override void AttachingToWindow()
+		private protected override async void AttachingToWindow()
 		{
 			base.AttachingToWindow();
 			Setup(ItemsView);
+			await UpdateInitialPosition();
 		}
 
 		private protected override void DetachingFromWindow()
@@ -220,7 +223,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void TearDown(CarouselView carouselView)
 		{
 			_oldViews = null;
-
+			InitialPositionSet = false;
 			carouselView.Scrolled -= CarouselViewScrolled;
 			DeviceDisplay.MainDisplayInfoChanged -= OnDisplayInfoChanged;
 
@@ -446,7 +449,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void SetPosition(int position)
 		{
-			if (position == -1 || ItemsView is not CarouselView carousel)
+			if (!InitialPositionSet || position == -1 || ItemsView is not CarouselView carousel)
 			{
 				return;
 			}
@@ -478,6 +481,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdateFromCurrentItem()
 		{
+			if (!InitialPositionSet)
+				return;
+
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -497,6 +503,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdateFromPosition()
 		{
+			if (!InitialPositionSet)
+			{
+				return;
+			}
+
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -520,8 +531,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			SetCurrentItem(carouselPosition);
 		}
 
-		void UpdateInitialPosition()
+		async Task UpdateInitialPosition()
 		{
+			if (ItemsView is not CarouselView carousel)
+			{
+				return;
+			}
 			var itemsCount = ItemsSource?.ItemCount;
 
 			if (itemsCount == 0)
@@ -531,28 +546,44 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (!InitialPositionSet)
 			{
-				if (ItemsView is not CarouselView carousel)
-				{
-					return;
-				}
-
-				InitialPositionSet = true;
-
 				int position = carousel.Position;
 				var currentItem = carousel.CurrentItem;
+
 				if (currentItem != null)
 				{
-					position = ItemsSource.GetIndexForItem(currentItem).Row;
+					// Sometimes the item could be just being removed while we navigate back to the CarouselView
+					var positionCurrentItem = ItemsSource.GetIndexForItem(currentItem).Row;
+					if (positionCurrentItem != -1)
+					{
+						position = positionCurrentItem;
+					}
 				}
-				else
+
+				await Task.Delay(100).ContinueWith((t) =>
 				{
-					SetCurrentItem(position);
-				}
+					MainThread.BeginInvokeOnMainThread(() =>
+					{
+						if (!IsViewLoaded)
+						{
+							return;
+						}
 
-				carousel.ScrollTo(position, -1, Microsoft.Maui.Controls.ScrollToPosition.Center, false);
+						InitialPositionSet = true;
+
+						if (ItemsSource is null || ItemsSource.ItemCount == 0)
+						{
+							return;
+						}
+
+
+						carousel.ScrollTo(position, -1, Microsoft.Maui.Controls.ScrollToPosition.Center, false);
+
+						SetCurrentItem(position);
+						UpdateVisualStates();
+					});
+
+				});
 			}
-
-			UpdateVisualStates();
 		}
 
 		void UpdateVisualStates()

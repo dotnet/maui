@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST //While invoking EnterText("1") results in the text being cleared before appending "1", leading to test fails on Catalyst.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -10,32 +11,18 @@ public class Issue2272 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "Setting a different Detail page from a FlyoutPage after 2nd time on MainPage";
+	public override string Issue => "Entry text updating set focus on the beginning of text not the end of it";
 
-	// [Test]
-	// [Category(UITestCategories.Navigation)]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// #if MACCATALYST // Check if this is still try for MAUI?
-	// 	[Ignore("EnterText problems in UITest Desktop")]
-	// #endif
-	// 	public void TestFocusIsOnTheEndAfterSettingText ()
-	// 	{
-	// 		App.WaitForElement("userNameEditorEmptyString");
-	// 		App.Tap (c => c.Marked ("userNameEditorEmptyString"));
-	// 		App.EnterText ("1");
-	// 		PressEnter ();
-	// 		var q = App.Query(c => c.Marked("userNameEditorEmptyString"));
-	// 		Assert.AreEqual("focused1", q[0].Text);
-	// 	}
-
-	// 	void PressEnter ()
-	// 	{
-	// 		var androidApp = RunningApp as AndroidApp;
-	// 		if (androidApp != null) {
-	// 			androidApp.PressUserAction (UserAction.Done);
-	// 		}
-	// 		else {
-	// 			App.PressEnter ();
-	// 		}
-	// 	}
+	[Test]
+	[Category(UITestCategories.Entry)]
+	public void TestFocusIsOnTheEndAfterSettingText()
+	{
+		App.WaitForElement("userNameEditorEmptyString");
+		App.Tap("userNameEditorEmptyString");
+		App.EnterText("userNameEditorEmptyString", "1");
+		App.PressEnter();
+		var q = App.FindElement("userNameEditorEmptyString");
+		Assert.That("focused1", Is.EqualTo(q.GetText()));
+	}
 }
+#endif

@@ -127,50 +127,9 @@ Task("dotnet-buildtasks")
         throw exception;
     });
 
-Task("android-aar")
-    .Does(() =>
-    {
-        var root = "./src/Core/AndroidNative/";
-
-        var gradlew = root + "gradlew";
-        if (IsRunningOnWindows())
-            gradlew += ".bat";
-
-        var javaHomeProcess = StartAndReturnProcess("dotnet", new ProcessSettings {
-            RedirectStandardOutput = true,
-            Arguments = "android jdk find",
-        });
-
-        javaHomeProcess.WaitForExit();
-        var javaHome = javaHomeProcess.GetStandardOutput()?.FirstOrDefault()?.Trim() ?? string.Empty;
-
-        Information("Java Home: " + javaHome);
-
-        var exitCode = StartProcess(
-            MakeAbsolute((FilePath)gradlew),
-            new ProcessSettings
-            {
-                Arguments = $"createAar --rerun-tasks",
-                EnvironmentVariables = new Dictionary<string, string>
-                {
-                    { "JAVA_HOME", javaHome }
-                },
-                WorkingDirectory = root
-            });
-
-        if (exitCode != 0)
-        {
-            if (IsCIBuild() || IsTarget("android-aar"))
-                throw new Exception("Gradle failed to build maui.aar: " + exitCode);
-            else
-                Information("This task failing locally will not break local MAUI development. Gradle failed to build maui.aar: {0}", exitCode);
-        }
-    });
-
 Task("dotnet-build")
     .IsDependentOn("dotnet")
     .IsDependentOn("dotnet-buildtasks")
-    .IsDependentOn("android-aar")
     .Description("Build the solutions")
     .Does(() =>
     {
@@ -243,25 +202,6 @@ Task("uitests-apphost")
         RunMSBuildWithDotNet("./src/Controls/tests/TestCases.HostApp/Controls.TestCases.HostApp.csproj", properties, binlogPrefix: "uitests-apphost-");
     });
 
-Task("dotnet-legacy-controlgallery")
-    .IsDependentOn("dotnet-legacy-controlgallery-android")
-    .IsDependentOn("dotnet-legacy-controlgallery-ios");
-
-Task("dotnet-legacy-controlgallery-ios")
-    .Does(() =>
-    {
-        var properties = new Dictionary<string, string>();
-        properties.Add("RuntimeIdentifier","iossimulator-x64");
-        RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj", properties, binlogPrefix: "controlgallery-ios-");
-    });
-
-Task("dotnet-legacy-controlgallery-android")
-    .Does(() =>
-    {
-        var properties = new Dictionary<string, string>();
-        RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj", properties, binlogPrefix: "controlgallery-android-");
-    });
-
 Task("dotnet-integration-build")
     .Does(() =>
     {
@@ -328,7 +268,6 @@ Task("dotnet-test")
     });
 
 Task("dotnet-pack-maui")
-    .IsDependentOn("android-aar")
     .WithCriteria(RunPackTarget())
     .Does(() =>
     {

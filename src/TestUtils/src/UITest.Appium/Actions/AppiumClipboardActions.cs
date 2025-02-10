@@ -49,12 +49,12 @@ namespace UITest.Appium
 
 			if (!string.IsNullOrEmpty(clipboardText))
 				return new CommandResponse(clipboardText, CommandResponseResult.Success);
-			
+
 			return CommandResponse.FailedEmptyResponse;
 		}
 
 		CommandResponse SetClipboardText(IDictionary<string, object> parameters)
-		{ 
+		{
 			var content = (string)parameters["content"];
 			var label = (string?)parameters["label"];
 

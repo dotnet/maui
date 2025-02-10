@@ -7,56 +7,46 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 [Category(UITestCategories.Layout)]
 public class Issue6932_emptyviewtemplate : _IssuesUITest
 {
+	const int Count = 10;
+	const string LayoutAutomationId = "1";
+	const string AddAutomationId = "Add";
+	const string RemoveAutomationId = "Remove";
+	const string ClearAutomationId = "Clear";
+	const string EmptyTemplateAutomationId = "No items here";
 	public Issue6932_emptyviewtemplate(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
 	public override string Issue => "EmptyView for BindableLayout (template)";
 
-	//[Test]
-	//[FailsOnMauiIOS]
-	//public void EmptyViewTemplateBecomesVisibleWhenItemsSourceIsCleared()
-	//{
-	//	App.Screenshot("Screen opens, items are shown");
+	[Test]
+	public void BEmptyViewTemplateBecomesVisibleWhenItemsSourceIsCleared()
+	{
+		App.WaitForElement(AddAutomationId);
 
-	//	App.WaitForElement(_viewModel.LayoutAutomationId);
-	//	App.Tap(_viewModel.ClearAutomationId);
-	//	App.WaitForElement(_viewModel.EmptyTemplateAutomationId);
+		for (var i = 0; i < Count / 2; i++)
+			App.Tap(AddAutomationId);
 
-	//	App.Screenshot("Empty view is visible");
-	//}
+		App.Tap(ClearAutomationId);
+		App.WaitForElement(EmptyTemplateAutomationId);
+	}
 
-	//[Test]
-	//[FailsOnMauiIOS]
-	//public void EmptyViewTemplateBecomesVisibleWhenItemsSourceIsEmptiedOneByOne()
-	//{
-	//	App.Screenshot("Screen opens, items are shown");
+	[Test]
+	public void AEmptyViewTemplateBecomesVisibleWhenItemsSourceIsEmptiedOneByOne()
+	{
+		App.WaitForElement(LayoutAutomationId);
 
-	//	App.WaitForElement(_viewModel.LayoutAutomationId);
+		for (var i = 0; i < Count; i++)
+			App.Tap(RemoveAutomationId);
 
-	//	for (var i = 0; i < _viewModel.ItemsSource.Count; i++)
-	//		App.Tap(_viewModel.RemoveAutomationId);
+		App.WaitForElement(EmptyTemplateAutomationId);
+	}
 
-	//	App.WaitForElement(_viewModel.EmptyTemplateAutomationId);
-
-	//	App.Screenshot("Empty view is visible");
-	//}
-
-	//[Test]
-	//[FailsOnMauiIOS]
-	//public void EmptyViewTemplateHidesWhenItemsSourceIsFilled()
-	//{
-	//	App.Screenshot("Screen opens, items are shown");
-
-	//	App.WaitForElement(_viewModel.LayoutAutomationId);
-	//	App.Tap(_viewModel.ClearAutomationId);
-	//	App.WaitForElement(_viewModel.EmptyTemplateAutomationId);
-
-	//	App.Screenshot("Items are cleared, empty view visible");
-
-	//	App.Tap(_viewModel.AddAutomationId);
-	//	App.WaitForNoElement(_viewModel.EmptyTemplateAutomationId);
-
-	//	App.Screenshot("Item is added, empty view is not visible");
-	//}
+	[Test]
+	public void CEmptyViewTemplateHidesWhenItemsSourceIsFilled()
+	{
+		App.WaitForElement(EmptyTemplateAutomationId);
+		App.Tap(AddAutomationId);
+		App.WaitForNoElement(EmptyTemplateAutomationId);
+	}
 }

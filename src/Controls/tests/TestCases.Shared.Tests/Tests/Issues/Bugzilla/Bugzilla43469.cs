@@ -6,6 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Bugzilla43469 : _IssuesUITest
 {
+	const string CancelBtn = "Cancel";
 
 	public Bugzilla43469(TestDevice testDevice) : base(testDevice)
 	{
@@ -13,28 +14,24 @@ public class Bugzilla43469 : _IssuesUITest
 
 	public override string Issue => "Calling DisplayAlert twice in WinRT causes a crash";
 
-	// TODO From Xamarin.UITest Migration: test fails. Maybe we need to wait on the alert?
-	// [Test]
-	// [Category(UITestCategories.DisplayAlert)]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public async Task Bugzilla43469Test()
-	// {
-	// 	App.WaitForElement("kButton");
-	// 	App.Tap("kButton");
-	// 	Assert.That(App.GetAlert()?.GetAlertText(), Is.EqualTo("First"));
-	// 	App.GetAlert()?.DismissAlert();
-	// 	Assert.That(App.GetAlert()?.GetAlertText(), Is.EqualTo("Second"));
-	// 	App.GetAlert()?.DismissAlert();
-	// 	Assert.That(App.GetAlert()?.GetAlertText(), Is.EqualTo("Three"));
-	// 	App.GetAlert()?.DismissAlert();
-
-	// 	await Task.Delay(100);
-	// 	App.GetAlert()?.DismissAlert();
-	// 	await Task.Delay(100);
-	// 	App.GetAlert()?.DismissAlert();
-	// 	await Task.Delay(100);
-	// 	App.GetAlert()?.DismissAlert();
-	// 	await Task.Delay(100);
-	// 	App.WaitForElement("kButton");
-	// }
+	[Test]
+	[Category(UITestCategories.DisplayAlert)]
+	public void Bugzilla43469Test()
+	{
+		App.WaitForElement("kButton");
+		App.Tap("kButton");
+		App.WaitForElementTillPageNavigationSettled("First");
+		App.TapDisplayAlertButton(CancelBtn);
+		App.WaitForElementTillPageNavigationSettled("Second");
+		App.TapDisplayAlertButton(CancelBtn);
+		App.WaitForElementTillPageNavigationSettled("Three");
+		App.TapDisplayAlertButton(CancelBtn);
+#if !MACCATALYST // Test fails on Catalyst platforms because the alert box cannot be opened propely 6 times when invoke this on using BeginInvokeOnMainThread Issue: https://github.com/dotnet/maui/issues/26481
+		for (int i = 0; i < 3; i++)
+		{
+			App.TapDisplayAlertButton(CancelBtn);
+		}
+#endif
+		App.WaitForElement("kButton");
+	}
 }

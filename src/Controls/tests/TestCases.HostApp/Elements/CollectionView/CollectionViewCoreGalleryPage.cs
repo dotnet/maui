@@ -1,7 +1,9 @@
 using Controls.Sample.UITests;
+using Maui.Controls.Sample.CollectionViewGalleries.EmptyViewGalleries;
 using Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries;
 using Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries;
 using Maui.Controls.Sample.CollectionViewGalleries.ItemSizeGalleries;
+using Maui.Controls.Sample.CollectionViewGalleries.PerformanceGalleries;
 using Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries
@@ -44,6 +46,8 @@ namespace Maui.Controls.Sample.CollectionViewGalleries
 						// ItemsFromViewModelShouldBeSelected (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBoundMultiSelection.cs)
 						TestBuilder.NavButton("Selection Galleries", () => new SelectionGallery(), Navigation),
 						TestBuilder.NavButton("Item Size Galleries", () => new ItemsSizeGallery(), Navigation),
+						TestBuilder.NavButton("EmptyView Galleries", () => new EmptyViewGallery(), Navigation),
+						TestBuilder.NavButton("Performance Galleries", () => new ShadowBenchmark(), Navigation),
 					}
 					}
 				};

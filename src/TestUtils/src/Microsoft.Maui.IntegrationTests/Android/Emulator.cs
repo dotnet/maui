@@ -1,4 +1,5 @@
-﻿
+﻿using System.Diagnostics;
+
 namespace Microsoft.Maui.IntegrationTests.Android
 {
 	public class Emulator
@@ -9,7 +10,7 @@ namespace Microsoft.Maui.IntegrationTests.Android
 
 		public int ApiLevel { get; set; } = 30;
 		public string Abi { get; set; } = "x86_64";
-		public string ImageType { get; set; } = "google_apis_playstore";
+		public string ImageType { get; set; } = "default";
 		public string DeviceType { get; set; } = "pixel_5";
 		public int Port { get; set; } = 5570;
 
@@ -17,9 +18,25 @@ namespace Microsoft.Maui.IntegrationTests.Android
 		public string Id => $"emulator-{Port}";
 		public string SystemImageId => $"system-images;android-{ApiLevel};{ImageType};{Abi}";
 
-		public bool InstallAvd()
+		public bool AcceptLicenses(out string acceptLicenseOutput)
 		{
-			var installOutput = ToolRunner.Run(SdkManagerTool, $"\"{SystemImageId}\"", out int exitCode, timeoutInSeconds: 120);
+			acceptLicenseOutput = ToolRunner.Run(new ProcessStartInfo(SdkManagerTool, "--licenses"), out int exitCode, timeoutInSeconds: 30, inputAction: (p) =>
+			{
+				for (int i = 0; i < 10; i++)
+				{
+					p.StandardInput.WriteLine('y');
+				}
+			});
+
+			if (exitCode != 0)
+				TestContext.WriteLine(acceptLicenseOutput);
+
+			return exitCode == 0;
+		}
+
+		public bool InstallAvd(out string installOutput)
+		{
+			installOutput = ToolRunner.Run(SdkManagerTool, $"\"{SystemImageId}\"", out int exitCode, timeoutInSeconds: 180);
 			if (exitCode != 0)
 				TestContext.WriteLine(installOutput);
 
@@ -47,7 +64,7 @@ namespace Microsoft.Maui.IntegrationTests.Android
 
 		public bool LaunchAndWaitForAvd(int timeToWaitInSeconds, string logFile)
 		{
-			if (Adb.WaitForEmulator(5, Id))
+			if (Adb.WaitForEmulator(10, Id))
 				return true;
 
 			if (!DeleteAvd())
@@ -57,7 +74,7 @@ namespace Microsoft.Maui.IntegrationTests.Android
 				return false;
 
 			var launchArgs = $"-verbose -detect-image-hang -port {Port} -avd {Name}";
-			launchArgs += TestEnvironment.IsRunningOnCI ? " -no-window -no-boot-anim" : string.Empty;
+			launchArgs += TestEnvironment.IsRunningOnCI ? " -no-window -no-boot-anim -no-audio -no-snapshot -cache-size 512" : string.Empty;
 
 			// Emulator process does not stop once the emulator is running, end it after 15 seconds and then begin polling for boot success
 			TestContext.WriteLine($"Launching AVD: {Name}...");

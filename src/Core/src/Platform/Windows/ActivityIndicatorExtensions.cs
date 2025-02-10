@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 
 			if (color.IsDefault())
 			{
-				if(foregroundDefault is Brush defaultBrush)
+				if (foregroundDefault is Brush defaultBrush)
 					brush = defaultBrush;
 			}
 			else

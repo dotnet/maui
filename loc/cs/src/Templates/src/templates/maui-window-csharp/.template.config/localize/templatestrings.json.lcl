@@ -31,12 +31,18 @@
       <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI Window (C#)]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Okno .NET MAUI (C#)]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";postActions/openInEditor/description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Opens NewWindow1.cs in the editor.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Otevře NewWindow1.cs v editoru.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

@@ -15,8 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void InvalidFontDoesntCauseAppToCrash()
 		{
 			App.WaitForElement("Success");

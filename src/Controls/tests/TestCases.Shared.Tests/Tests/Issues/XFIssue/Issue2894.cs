@@ -29,7 +29,7 @@ public class Issue2894 : _IssuesUITest
 		for (int i = 1; i < 5; i++)
 		{
 			App.Tap($"TestSpan{i}");
-			App.WaitForElement($"{kGesture1}{i-1}");
+			App.WaitForElement($"{kGesture1}{i - 1}");
 			App.WaitForElement(kLabelAutomationId);
 			PerformGestureActionForFirstSpan(target);
 			PerformGestureActionForSecondSpan(target);
@@ -59,8 +59,8 @@ public class Issue2894 : _IssuesUITest
 	void PerformGestureActionForSecondSpan(Rectangle target)
 	{
 #if ANDROID // Calculate points vary on Android and other platforms.
- 		App.TapCoordinates(target.X + target.Width /2, target.Y + 2);
-#else 
+		App.TapCoordinates(target.X + target.Width / 2, target.Y + 2);
+#else
 		PerformGestureAction(target.X + target.Width - 10, target.Y + 2);
 #endif
 

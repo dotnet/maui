@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST //ScrollDown and ScrollUp are not working on MacCatalyst
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,15 +13,15 @@ public class Issue1414 : _IssuesUITest
 
 	public override string Issue => "InvalidCastException when scrolling and refreshing TableView";
 
-	// [Test]
-	// [Category(UITestCategories.TableView)]
-	// public void InvalidCastExceptionWhenScrollingAndRefreshingTableView()
-	// {
-	// 	App.Screenshot("Start G1414");
-	// 	var tableFrame = App.WaitForElement(q => q.Marked("TableView"))[0].Rect;
-	// 	App.ScrollForElement("* marked:'Row-4-24'", new Drag(tableFrame, Drag.Direction.BottomToTop, Drag.DragLength.Long));
-	// 	App.Screenshot("Scrolled to end without crashing!");
-	// 	App.ScrollForElement("* marked:'Row-0-0'", new Drag(tableFrame, Drag.Direction.TopToBottom, Drag.DragLength.Long));
-	// 	App.Screenshot("Scrolled to top without crashing!");
-	// }
+	[Test]
+	[Category(UITestCategories.TableView)]
+	public void InvalidCastExceptionWhenScrollingAndRefreshingTableView()
+	{
+		App.WaitForElement("TableView");
+		App.ScrollDown("TableView", ScrollStrategy.Gesture, 1.0, 50);
+		App.WaitForAnyElement(["Cell 4-24", "Cell 0-24"]);
+		App.ScrollUp("TableView", ScrollStrategy.Gesture, 1.0, 30);
+		App.WaitForAnyElement(["Cell 0-0", "Cell 3-24"]);
+	}
 }
+#endif
