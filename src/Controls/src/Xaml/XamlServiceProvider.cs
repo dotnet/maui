@@ -332,8 +332,8 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			{
 				if (node.TryGetPropertyName(node.Parent, out XmlName name)
 					&& node.Parent is IElementNode parent
-					&& XamlParser.GetElementType(parent.XmlType, 
-												 new XmlLineInfo(((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition), 
+					&& XamlParser.GetElementType(parent.XmlType,
+												 new XmlLineInfo(((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition),
 												 context.RootElement.GetType().Assembly, true, out var xpe) is Type parentType
 					&& parentType.GetRuntimeProperties().FirstOrDefault(p => p.Name == name.LocalName) is PropertyInfo propertyInfo
 					&& propertyInfo.CustomAttributes.Any(ca => ca.AttributeType == typeof(DoesNotInheritDataTypeAttribute)))
