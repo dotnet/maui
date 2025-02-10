@@ -43,7 +43,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public override IConfig GetTestConfig()
 		{
-			var frameworkVersion = "net9.0";
+			var frameworkVersion = "net10.0";
 #if DEBUG
 			var configuration = "Debug";
 #else
@@ -62,14 +62,14 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.0");
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.2");
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
 					var windowsExe = "Controls.TestCases.HostApp.exe";
-					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win10-x64\\{windowsExe}");
-					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win10-x64\\{windowsExe}");
+					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win-x64\\{windowsExe}");
+					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win-x64\\{windowsExe}");
 
 					if (!File.Exists(windowsExePath) && File.Exists(windowsExePath19041))
 					{
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
 						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
 
-						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
+						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.2")
 						{
 							environmentName = "ios";
 						}

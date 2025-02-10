@@ -4,6 +4,7 @@
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
+    <MauiTestProject>true</MauiTestProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.DeviceTests</AssemblyName>
     <NoWarn>$(NoWarn),CA1416</NoWarn>
@@ -23,6 +24,7 @@
 
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
+    <MauiImage Include="Resources\Images\white.png" Link="Resources\Images\white_tab.png"  BaseSize="23,23" />
     <MauiImage Remove="Resources\Images\red-embedded.png" />
     <None Remove="Resources\Images\red-embedded.png" />
     <EmbeddedResource Include="Resources\Images\red-embedded.png" LogicalName="red-embedded.png" />

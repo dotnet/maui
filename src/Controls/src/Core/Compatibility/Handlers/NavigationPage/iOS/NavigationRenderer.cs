@@ -264,10 +264,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_secondaryToolbar.RemoveFromSuperview();
 				_secondaryToolbar.Dispose();
 				_secondaryToolbar = null;
-				
-				if(_currentBarBackgroundBrush is GradientBrush gb)
+
+				if (_currentBarBackgroundBrush is GradientBrush gb)
 					gb.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
-				
+
 				_currentBarBackgroundBrush = null;
 				_currentBarBackgroundColor = null;
 
@@ -727,7 +727,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateBarBackground()
 		{
-			if(_currentBarBackgroundBrush is GradientBrush oldGradientBrush)
+			if (_currentBarBackgroundBrush is GradientBrush oldGradientBrush)
 			{
 				oldGradientBrush.Parent = null;
 				oldGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
@@ -753,7 +753,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_currentBarBackgroundColor = newSolidColorBrush.Color;
 				_currentBarBackgroundBrush = null;
 			}
-			
+
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
@@ -767,7 +767,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					if(_currentBarBackgroundColor?.Alpha < 1f)
+					if (_currentBarBackgroundColor?.Alpha < 1f)
 						navigationBarAppearance.ConfigureWithTransparentBackground();
 					else
 						navigationBarAppearance.ConfigureWithOpaqueBackground();
@@ -788,7 +788,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
-				if(_currentBarBackgroundColor?.Alpha == 0f)
+				if (_currentBarBackgroundColor?.Alpha == 0f)
 				{
 					NavigationBar.SetTransparentNavigationBar();
 				}
@@ -984,8 +984,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (FlyoutPage != null && !string.IsNullOrEmpty(FlyoutPage.AutomationId))
 					SetAutomationId(containerController.NavigationItem.LeftBarButtonItem, $"btn_{FlyoutPage.AutomationId}");
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				containerController.NavigationItem.LeftBarButtonItem.SetAccessibilityHint(FlyoutPage);
 				containerController.NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(FlyoutPage);
+#pragma warning restore CS0618 // Type or member is obsolete
 			});
 
 			void OnItemTapped(object sender, EventArgs e)
@@ -1328,7 +1330,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					return;
 				}
-				
+
 				if (parent is null)
 				{
 					_tracker.CollectionChanged -= TrackerOnCollectionChanged;

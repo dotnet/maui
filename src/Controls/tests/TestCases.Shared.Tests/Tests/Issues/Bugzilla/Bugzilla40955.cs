@@ -8,9 +8,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Bugzilla40955 : _IssuesUITest
 {
 	const string DestructorMessage = "NavigationPageEx Destructor called";
-    const string LabelPage1 = "LabelOne";
-    const string LabelPage2 = "LabelTwo";
-    const string LabelPage3 = "LabelThree";
+	const string LabelPage1 = "LabelOne";
+	const string LabelPage2 = "LabelTwo";
+	const string LabelPage3 = "LabelThree";
 
 	const string Page1Title = "Page1";
 	const string Page2Title = "Page2";
@@ -23,6 +23,9 @@ public class Bugzilla40955 : _IssuesUITest
 	public override string Issue => "Memory leak with FormsAppCompatActivity and NavigationPage";
 
 	[Test]
+#if ANDROID
+	[Ignore("Failing on net10 https://github.com/dotnet/maui/issues/27411")]
+#endif
 	[Category(UITestCategories.Performance)]
 	public void MemoryLeakInFormsAppCompatActivity()
 	{

@@ -24,19 +24,10 @@ public class WindowsTemplateTest : BaseTemplateTests
 		if (framework != DotNetPrevious)
 			EnableTizen(projectFile);
 
-		if (framework == DotNetPrevious)
-		{
-			// .NET 8 was Packaged by default, so we don't have to do anything
-			FileUtilities.ShouldNotContainInFile(projectFile,
-				"<WindowsPackageType>");
-		}
-		else
-		{
-			// .NET 9 and later was Unpackaged, so we need to remove the line
-			FileUtilities.ReplaceInFile(projectFile,
-				"<WindowsPackageType>None</WindowsPackageType>",
-				"");
-		}
+		// .NET 9 and later was Unpackaged, so we need to remove the line
+		FileUtilities.ReplaceInFile(projectFile,
+			"<WindowsPackageType>None</WindowsPackageType>",
+			"");
 
 		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
@@ -82,7 +73,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 	[TestCase("maui", true, "MSIX")]
 	[TestCase("maui", false, "None")]
 	[TestCase("maui", false, "MSIX")]
-	public void BuildWindowsRidGraph(string id, bool useridgraph, string packageType)
+	public void BuildWindowsRidGraph(string id, bool useRidGraph, string packageType)
 	{
 		if (TestEnvironment.IsMacOS)
 			Assert.Ignore("This test is designed for testing a windows build.");
@@ -96,7 +87,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		FileUtilities.ReplaceInFile(projectFile,
 			"<WindowsPackageType>None</WindowsPackageType>",
 			$"""
-			<UseRidGraph>{useridgraph}</UseRidGraph>
+			<UseRidGraph>{useRidGraph}</UseRidGraph>
 			<WindowsPackageType>{packageType}</WindowsPackageType>
 			""");
 
@@ -123,24 +114,14 @@ public class WindowsTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		if (framework == DotNetPrevious)
-		{
-			// .NET 8 was Packaged by default, so we need to say no
-			FileUtilities.ShouldNotContainInFile(projectFile,
-				"<WindowsPackageType>");
-			BuildProps.Add("WindowsPackageType=None");
-		}
-		else
-		{
-			// .NET 9 is Unpackaged by default, so we don't have to do anything
-			FileUtilities.ShouldContainInFile(projectFile,
-				"<WindowsPackageType>None</WindowsPackageType>");
-		}
+		// .NET 9 is Unpackaged by default, so we don't have to do anything
+		FileUtilities.ShouldContainInFile(projectFile,
+			"<WindowsPackageType>None</WindowsPackageType>");
 
 		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win10-x64/publish");
+		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win-x64/publish");
 
 		AssetExists("dotnet_bot.scale-100.png");
 		AssetExists("appiconLogo.scale-100.png");
@@ -173,24 +154,15 @@ public class WindowsTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		if (framework == DotNetPrevious)
-		{
-			// .NET 8 was Packaged by default, so we don't have to do anything
-			FileUtilities.ShouldNotContainInFile(projectFile,
-				"<WindowsPackageType>");
-		}
-		else
-		{
-			// .NET 9 and later was Unpackaged, so we need to remove the line
-			FileUtilities.ReplaceInFile(projectFile,
-				"<WindowsPackageType>None</WindowsPackageType>",
-				"");
-		}
+		// .NET 9 and later was Unpackaged, so we need to remove the line
+		FileUtilities.ReplaceInFile(projectFile,
+			"<WindowsPackageType>None</WindowsPackageType>",
+			"");
 
 		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win10-x64/AppPackages/{name}_1.0.0.1_Test");
+		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win-x64/AppPackages/{name}_1.0.0.1_Test");
 
 		AssetExists($"{name}_1.0.0.1_x64.msix");
 

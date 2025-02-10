@@ -12,7 +12,7 @@
 
 		protected override void Init()
 		{
-			var image = new Image { Source = "coffee.png", HeightRequest=58, WidthRequest=46, IsEnabled = false, AutomationId = TestImage };
+			var image = new Image { Source = "coffee.png", HeightRequest = 58, WidthRequest = 46, IsEnabled = false, AutomationId = TestImage };
 			var button = new Button { Text = $"Toggle IsEnabled (now {image.IsEnabled})", AutomationId = Toggle };
 			var resultLabel = new Label { Text = "Testing..." };
 			var instructions = new Label

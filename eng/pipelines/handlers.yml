@@ -4,7 +4,7 @@ trigger:
     - main
     - release/*
     - net9.0
-    - net8.0
+    - net10.0
   tags:
     include:
     - '*'
@@ -27,8 +27,7 @@ pr:
     - main
     - release/*
     - net9.0
-    - net8.0
-    - net9.0
+    - net10.0
   paths:
     include:
     - '*'
@@ -44,7 +43,6 @@ pr:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
-  - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
 
@@ -145,14 +143,6 @@ parameters:
         - macOS.Name -equals Sonoma
         - macOS.Architecture -equals arm64
 
-  - name: TestTargetFrameworks
-    type: object
-    default:
-      - name: default
-        tfm: default
-      - name: net9
-        tfm: net9.0
-
 resources:
   repositories:
     - repository: yaml-templates
@@ -160,11 +150,6 @@ resources:
       name: xamarin/yaml-templates
       endpoint: xamarin
       ref: refs/heads/main
-    - repository: sdk-insertions
-      type: github
-      name: xamarin/sdk-insertions
-      ref: refs/heads/main
-      endpoint: xamarin
 
 stages:
 
@@ -363,5 +348,4 @@ stages:
           
         
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
-    - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
+    - template: common/localization.yml
