@@ -70,16 +70,20 @@ namespace Microsoft.Maui.Platform
 		/// <returns>The size where the image would fit depending on the aspect ratio.</returns>
 		internal static CGSize SizeThatFitsImage(this UIImageView imageView, CGSize constraints)
 		{
-			// If there's no image, we don't need to take up any space
+			// If there is no image or any of the constraints are zero, we do not need to occupy any space
 			if (imageView.Image is null)
+			{
 				return new CGSize(0, 0);
+			}
 
+			var imageSize = imageView.Image.Size;
 			var heightConstraint = constraints.Height;
 			var widthConstraint = constraints.Width;
-			var imageSize = imageView.Image.Size;
 
-			var widthRatio = Math.Min(imageSize.Width, widthConstraint) / imageSize.Width;
-			var heightRatio = Math.Min(imageSize.Height, heightConstraint) / imageSize.Height;
+			var constrainedImageWidth = Math.Min(imageSize.Width, widthConstraint);
+			var constrainedImageHeight = Math.Min(imageSize.Height, heightConstraint);
+			var widthRatio = constrainedImageWidth / imageSize.Width;
+			var heightRatio = constrainedImageHeight / imageSize.Height;
 
 			// In cases where we the image must fit its given constraints, we must shrink based on the smallest dimension (scale factor)
 			// that can fit it
@@ -89,8 +93,8 @@ namespace Microsoft.Maui.Platform
 				return new CGSize(imageSize.Width * scaleFactor, imageSize.Height * scaleFactor);
 			}
 
-			// Cases where AspectMode is ScaleToFill or Center
-			return constraints;
+			// Cases where AspectMode is ScaleToFill or Center are simple, we just return the image size limited by the constraints
+			return new CGSize(constrainedImageWidth, constrainedImageHeight);
 		}
 	}
 }
