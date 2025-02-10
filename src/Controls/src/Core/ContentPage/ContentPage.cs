@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Layouts;
@@ -152,7 +153,8 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"Content = {Content}, BindingContext = {BindingContext}";
+			var contentText = DebuggerDisplayHelpers.GetDebugText(nameof(Content), Content);
+			return $"{base.GetDebuggerDisplay()}, {contentText}";
 		}
 	}
 }

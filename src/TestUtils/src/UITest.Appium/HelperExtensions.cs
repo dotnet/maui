@@ -1830,16 +1830,16 @@ namespace UITest.Appium
 		/// <summary>
 		/// Switch the System animations state.
 		/// Optimize and accelerate tests, eliminating animations entirely when Appium is executing tests, as they serve no practical purpose in this context.
-		/// Functionality that's only available on Android.
+		/// Functionality that's only available on Android and Catalyst.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="enableSystemAnimations">Enable/disable the system animations.</param>
-		/// <exception cref="InvalidOperationException">ToggleSystemAnimations is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		/// <exception cref="InvalidOperationException">ToggleSystemAnimations is only supported on <see cref="AppiumAndroidApp"/> and <see cref="AppiumCatalystApp"/>.</exception>
 		public static void ToggleSystemAnimations(this IApp app, bool enableSystemAnimations)
 		{
-			if (app is not AppiumAndroidApp)
+			if (app is not AppiumAndroidApp && app is not AppiumCatalystApp)
 			{
-				throw new InvalidOperationException($"ToggleSystemAnimations is only supported on AppiumAndroidApp");
+				throw new InvalidOperationException($"ToggleSystemAnimations is not supported");
 			}
 
 			app.CommandExecutor.Execute("toggleSystemAnimations", new Dictionary<string, object>()
@@ -1998,7 +1998,7 @@ namespace UITest.Appium
 		/// </param>
 		public static void TapDisplayAlertButton(this IApp app, string text, int buttonIndex = 0)
 		{
-			if(app is AppiumCatalystApp)
+			if (app is AppiumCatalystApp)
 			{
 				app.WaitForElement(AppiumQuery.ById($"action-button--{999 - buttonIndex}"));
 				app.Tap(AppiumQuery.ById($"action-button--{999 - buttonIndex}"));
@@ -2300,6 +2300,26 @@ namespace UITest.Appium
 			}
 
 			app.CommandExecutor.Execute("toggleSecondaryToolbarItems", ImmutableDictionary<string, object>.Empty);
+		/// Activates the context menu for the specified element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector of the Slider element to update.</param>
+		public static void ActivateContextMenu(this IApp app, string marked)
+		{
+			var element = FindElement(app, marked);
+			app.CommandExecutor.Execute("activateContextMenu", new Dictionary<string, object>
+ 			{
+ 				{ "element", element },
+ 			});
+		}
+
+		/// <summary>
+		/// Dismisses the context menu.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void DismissContextMenu(this IApp app)
+		{
+			app.CommandExecutor.Execute("dismissContextMenu", new Dictionary<string, object>());
 		}
 
 		static IUIElement Wait(Func<IUIElement?> query,

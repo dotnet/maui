@@ -13,7 +13,7 @@ public class Issue7167 : _IssuesUITest
 
 	public override string Issue => "[Bug] improved observablecollection. a lot of collectionchanges. a reset is sent and listview scrolls to the top";
 
-	
+
 	const string ListViewId = "ListViewId";
 	const string AddRangeCommandId = "AddRangeCommandId";
 
@@ -25,10 +25,10 @@ public class Issue7167 : _IssuesUITest
 		App.WaitForElement(AddRangeCommandId);
 		App.Tap(AddRangeCommandId);
 		App.Tap(AddRangeCommandId);
-		
+
 		// No equivalent method found in Appium. Also this method is not necessary to validate the test case.
 		// App.Print.Tree();
-		
+
 		App.ScrollDown(ListViewId, ScrollStrategy.Auto, 0.65, 200);
 		App.WaitForAnyElement(["15", "20", "30", "40", "60", "80"]);
 

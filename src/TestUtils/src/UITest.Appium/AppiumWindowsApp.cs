@@ -10,9 +10,11 @@ namespace UITest.Appium
 		public AppiumWindowsApp(Uri remoteAddress, IConfig config)
 			: base(new WindowsDriver(remoteAddress, GetOptions(config)), config)
 		{
+			_commandExecutor.AddCommandGroup(new AppiumWindowsContextMenuActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumWindowsStepperActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumWindowsThemeChangeAction());
 			_commandExecutor.AddCommandGroup(new AppiumWindowsSpecificActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumWindowsVirtualKeyboardActions(this));
 		}
 
 		public override ApplicationState AppState

@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS 
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
 // Orientation nott supported in MacCatalyt and Windows. 
 // on iOS detail page elements are not accessible through appium when flyout is open. Issue: https://github.com/dotnet/maui/issues/16245
 using NUnit.Framework;
