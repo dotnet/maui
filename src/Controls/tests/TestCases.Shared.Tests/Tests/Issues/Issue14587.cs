@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS // On the Windows platform, the automationId of the icon is not working.
+#if TEST_FAILS_ON_WINDOWS // On the Windows platform, the automationId of the Glyph icon is not working.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

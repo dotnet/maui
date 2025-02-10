@@ -1,5 +1,5 @@
 ﻿#if TEST_FAILS_ON_WINDOWS
-//The sample explicitly ignores the Windows platform by displaying a message: "This Test currently doesn't work on Windows."
+//The WidthRequest property of CarouselView is not functioning correctly on Windows. Issue Link: 
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;

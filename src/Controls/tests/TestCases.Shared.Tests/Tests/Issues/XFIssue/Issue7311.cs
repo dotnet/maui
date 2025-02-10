@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //Test fails on iOS and Mac because the picker closes only when the Done button is clicked.
+﻿#if WINDOWS || ANDROID // The back hardware button behavior is only applicable for Windows and Android. On iOS and macOS, the picker closes only when the Done button is clicked.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
