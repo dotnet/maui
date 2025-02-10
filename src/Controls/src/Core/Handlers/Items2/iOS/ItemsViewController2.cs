@@ -286,8 +286,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public virtual void UpdateFlowDirection()
 		{
-			CollectionView.UpdateFlowDirection(ItemsView);
-
+			if (ItemsView.Handler.PlatformView is UIView itemsView)
+			{
+				itemsView.UpdateFlowDirection(ItemsView);
+				foreach (var child in ItemsView.LogicalChildrenInternal)
+				{
+					if (child is VisualElement ve && ve.Handler.PlatformView is UIView view)
+					{
+						view.UpdateFlowDirection(ve);
+					}
+				}
+			}
+			
 			if (_emptyViewDisplayed)
 			{
 				AlignEmptyView();
