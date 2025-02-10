@@ -5,7 +5,8 @@
              xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
              x:Class="Maui.Controls.Sample.Issues.Issue26328">
   <ContentPage.Content>
-    <CollectionView ItemsSource="{Binding ItemList}">
+    <CollectionView AutomationId="TestCollectionView" 
+                    ItemsSource="{Binding ItemList}">
       <CollectionView.ItemTemplate>
         <DataTemplate x:DataType="controls:Issue26328ItemModel">
           <SwipeView>
