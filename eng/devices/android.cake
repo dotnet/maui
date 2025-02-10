@@ -477,7 +477,7 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 				AdbShell("logcat -G 16M");
 				Information("Finished Setting Logcat Values");
 			}
-		}).WaitAsync(TimeSpan.FromMinutes(2));
+		}).WaitAsync(TimeSpan.FromMinutes(1));
 	}
 	catch(TimeoutException)
 	{
