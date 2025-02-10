@@ -106,11 +106,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
 			{
-				templatedItemViewHolder.Bind(context, ItemsView, _reportMeasure, _size);
-
-				if (templatedItemViewHolder.ItemView is ItemContentView itemContentView)
+				if(templatedItemViewHolder.ItemViewType == ItemViewType.TemplatedItem)
 				{
-					itemContentView.RetrieveStaticSize = _retrieveStaticSize;
+					templatedItemViewHolder.Bind(context, ItemsView, _reportMeasure, _size);
+
+					if (templatedItemViewHolder.ItemView is ItemContentView itemContentView)
+					{
+						itemContentView.RetrieveStaticSize = _retrieveStaticSize;
+					}
+				}
+				else
+				{
+					base.BindTemplatedItemViewHolder(templatedItemViewHolder, context);
 				}
 			}
 			else
