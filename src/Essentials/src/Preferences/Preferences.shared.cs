@@ -2,6 +2,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+#if ANDROID
+using Android.Content;
+#endif
 
 namespace Microsoft.Maui.Storage
 {
@@ -38,7 +41,17 @@ namespace Microsoft.Maui.Storage
 		/// </summary>
 		/// <param name="sharedName">Shared container name.</param>
 		void Clear(string? sharedName = null);
-
+#if ANDROID
+		/// <summary>
+		/// Sets a value for a given key.
+		/// </summary>
+		/// <typeparam name="T">Type of the object that is stored in this preference.</typeparam>
+		/// <param name="key">The key to set the value for.</param>
+		/// <param name="value">Value to set.</param>
+		/// <param name="sharedName">Shared container name.</param>
+		/// <param name="commit">Use commit instead of Apply() to complete the update</param>
+		void Set<T>(string key, T value, string? sharedName = null, bool commit = false);
+#else
 		/// <summary>
 		/// Sets a value for a given key.
 		/// </summary>
@@ -47,6 +60,8 @@ namespace Microsoft.Maui.Storage
 		/// <param name="value">Value to set.</param>
 		/// <param name="sharedName">Shared container name.</param>
 		void Set<T>(string key, T value, string? sharedName = null);
+
+#endif
 
 		/// <summary>
 		/// Gets the value for a given key, or the default specified if the key does not exist.
@@ -126,6 +141,35 @@ namespace Microsoft.Maui.Storage
 		/// <inheritdoc cref="Get(string, string?)"/>
 		public static long Get(string key, long defaultValue) =>
 			Get(key, defaultValue, null);
+#if ANDROID
+		/// <summary>
+		/// Sets a value for a given key.
+		/// </summary>
+		/// <param name="key">The key to set the value for.</param>
+		/// <param name="value">Value to set.</param>
+		public static void Set(string key, string? value, bool commit = false) =>
+			Set(key, value, null, commit);
+
+		/// <inheritdoc cref="Set(string, string?,bool)"/>
+		public static void Set(string key, bool value, bool commit = false) =>
+			Set(key, value, null, commit);
+
+		/// <inheritdoc cref="Set(string, string?,bool)"/>
+		public static void Set(string key, int value, bool commit = false) =>
+			Set(key, value, null);
+
+		/// <inheritdoc cref="Set(string, string?,bool)"/>
+		public static void Set(string key, double value, bool commit = false) =>
+			Set(key, value, null, commit);
+
+		/// <inheritdoc cref="Set(string, string?,bool)"/>
+		public static void Set(string key, float value, bool commit = false) =>
+			Set(key, value, null, commit);
+
+		/// <inheritdoc cref="Set(string, string?,bool)"/>
+		public static void Set(string key, long value, bool commit = false) =>
+			Set(key, value, null, commit);
+#else       
 
 		/// <summary>
 		/// Sets a value for a given key.
@@ -154,7 +198,7 @@ namespace Microsoft.Maui.Storage
 		/// <inheritdoc cref="Set(string, string?)"/>
 		public static void Set(string key, long value) =>
 			Set(key, value, null);
-
+#endif
 		// shared -> platform
 
 		/// <inheritdoc cref="IPreferences.ContainsKey(string, string?)"/>
@@ -195,6 +239,32 @@ namespace Microsoft.Maui.Storage
 		/// <inheritdoc cref="IPreferences.Get{T}(string, T, string?)"/>
 		public static long Get(string key, long defaultValue, string? sharedName) =>
 			Current.Get<long>(key, defaultValue, sharedName);
+#if ANDROID
+
+		/// <inheritdoc cref="IPreferences.Set{T}(string, T, string?, bool)"/>
+		public static void Set(string key, string? value, string? sharedName, bool commit = false) =>
+			Current.Set<string?>(key, value, sharedName, commit);
+
+		/// <inheritdoc cref="IPreferences.Set{T}(string, T, string?, bool)"/>
+		public static void Set(string key, bool value, string? sharedName, bool commit = false) =>
+			Current.Set<bool>(key, value, sharedName, commit);
+
+		/// <inheritdoc cref="IPreferences.Set{T}(string, T, string?, bool)"/>
+		public static void Set(string key, int value, string? sharedName, bool commit = false) =>
+			Current.Set<int>(key, value, sharedName, commit);
+
+		/// <inheritdoc cref="IPreferences.Set{T}(string, T, string?, bool)"/>
+		public static void Set(string key, double value, string? sharedName, bool commit = false) =>
+			Current.Set<double>(key, value, sharedName, commit);
+
+		/// <inheritdoc cref="IPreferences.Set{T}(string, T, string?, bool)"/>
+		public static void Set(string key, float value, string? sharedName, bool commit = false) =>
+			Current.Set<float>(key, value, sharedName, commit);
+
+		/// <inheritdoc cref="IPreferences.Set{T}(string, T, string?, bool)"/>
+		public static void Set(string key, long value, string? sharedName, bool commit = false) =>
+			Current.Set<long>(key, value, sharedName, commit);
+#else
 
 		/// <inheritdoc cref="IPreferences.Set{T}(string, T, string?)"/>
 		public static void Set(string key, string? value, string? sharedName) =>
@@ -219,40 +289,71 @@ namespace Microsoft.Maui.Storage
 		/// <inheritdoc cref="IPreferences.Set{T}(string, T, string?)"/>
 		public static void Set(string key, long value, string? sharedName) =>
 			Current.Set<long>(key, value, sharedName);
-
+#endif
 		// DateTime
 
 		/// <inheritdoc cref="Get(string, string?)"/>
 		public static DateTime Get(string key, DateTime defaultValue) =>
 			Get(key, defaultValue, null);
 
+#if ANDROID
+		/// <inheritdoc cref="Set(string, string?, bool)"/>
+		public static void Set(string key, DateTime value, bool commit = false) =>
+			Set(key, value, null, commit);
+#else
 		/// <inheritdoc cref="Set(string, string?)"/>
 		public static void Set(string key, DateTime value) =>
 			Set(key, value, null);
+#endif
+
 
 		/// <inheritdoc cref="Get(string, string?)"/>
 		public static DateTimeOffset Get(string key, DateTimeOffset defaultValue) =>
 			Get(key, defaultValue, null);
 
+#if ANDROID
+
+		/// <inheritdoc cref="Set(string, string?, bool)"/>
+		public static void Set(string key, DateTimeOffset value, bool commit = false) =>
+			Set(key, value, null);
+#else
+
 		/// <inheritdoc cref="Set(string, string?)"/>
 		public static void Set(string key, DateTimeOffset value) =>
 			Set(key, value, null);
+#endif
 
 		/// <inheritdoc cref="IPreferences.Get{T}(string, T, string?)"/>
 		public static DateTime Get(string key, DateTime defaultValue, string? sharedName) =>
 			Current.Get<DateTime>(key, defaultValue, sharedName);
 
+#if ANDROID
+
+		/// <inheritdoc cref="IPreferences.Set{T}(string, T, string?, bool)"/>
+		public static void Set(string key, DateTime value, string? sharedName, bool commit = false) =>
+			Current.Set<DateTime>(key, value, sharedName, commit);
+#else
+
 		/// <inheritdoc cref="IPreferences.Set{T}(string, T, string?)"/>
 		public static void Set(string key, DateTime value, string? sharedName) =>
 			Current.Set<DateTime>(key, value, sharedName);
+#endif
 
 		/// <inheritdoc cref="IPreferences.Get{T}(string, T, string?)"/>
 		public static DateTimeOffset Get(string key, DateTimeOffset defaultValue, string? sharedName) =>
 			Current.Get<DateTimeOffset>(key, defaultValue, sharedName);
 
+#if ANDROID
+
+		/// <inheritdoc cref="IPreferences.Set{T}(string, T, string?, bool)"/>
+		public static void Set(string key, DateTimeOffset value, string? sharedName, bool commit = false) =>
+			Current.Set<DateTimeOffset>(key, value, sharedName, commit);
+#else
+
 		/// <inheritdoc cref="IPreferences.Set{T}(string, T, string?)"/>
 		public static void Set(string key, DateTimeOffset value, string? sharedName) =>
 			Current.Set<DateTimeOffset>(key, value, sharedName);
+#endif
 
 		static IPreferences Current => Storage.Preferences.Default;
 

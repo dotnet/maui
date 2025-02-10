@@ -1,5 +1,20 @@
 #nullable enable
+Microsoft.Maui.Storage.IPreferences.Set<T>(string! key, T value, string? sharedName = null, bool commit = false) -> void
 static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue, string? sharedName) -> System.DateTimeOffset
 static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue) -> System.DateTimeOffset
-static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value, string? sharedName) -> void
-static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, bool value, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, bool value, string? sharedName, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, double value, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, double value, string? sharedName, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, float value, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, float value, string? sharedName, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, int value, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, int value, string? sharedName, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, long value, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, long value, string? sharedName, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, string? value, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, string? value, string? sharedName, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTime value, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTime value, string? sharedName, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value, string? sharedName, bool commit = false) -> void
