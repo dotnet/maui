@@ -108,5 +108,18 @@ namespace Microsoft.Maui.Controls
 		{
 			InvalidateGradientBrushRequested?.Invoke(this, EventArgs.Empty);
 		}
+
+		public override bool Equals(object obj)
+		{
+			if (!(obj is GradientBrush dest))
+				return false;
+
+			return GradientStops.Equals(dest.GradientStops);
+		}
+
+		public override int GetHashCode()
+		{
+			return -1234567890 + GradientStops.GetHashCode();
+		}
 	}
 }
