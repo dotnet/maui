@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Storage
 			}
 		}
 
-		public void Set<T>(string key, T value, string sharedName)
+		public void Set<T>(string key, T value, string sharedName, bool commit = false)
 		{
 			Preferences.CheckIsSupportedType<T>();
 
@@ -89,7 +89,10 @@ namespace Microsoft.Maui.Storage
 								break;
 						}
 					}
+					if (commit)
 					editor.Commit();
+					else
+						editor.Apply();
 				}
 			}
 		}
