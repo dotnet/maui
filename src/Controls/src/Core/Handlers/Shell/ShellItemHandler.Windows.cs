@@ -86,13 +86,13 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (platformView is MauiNavigationView mnv)
 			{
 				mnv.SelectionChanged -= OnNavigationTabChanged;
-				if (mnv.AutoSuggestBox is not null)
+				if (mnv.AutoSuggestBox is { } autoSuggestBox)
 				{
-					mnv.AutoSuggestBox.TextChanged -= OnSearchBoxTextChanged;
-					mnv.AutoSuggestBox.QuerySubmitted -= OnSearchBoxQuerySubmitted;
-					mnv.AutoSuggestBox.SuggestionChosen -= OnSearchBoxSuggestionChosen;
-					mnv.AutoSuggestBox.GotFocus -= OnSearchBoxGotFocus;
-					mnv.AutoSuggestBox.LostFocus -= OnSearchBoxLostFocus;
+					autoSuggestBox.TextChanged -= OnSearchBoxTextChanged;
+					autoSuggestBox.QuerySubmitted -= OnSearchBoxQuerySubmitted;
+					autoSuggestBox.SuggestionChosen -= OnSearchBoxSuggestionChosen;
+					autoSuggestBox.GotFocus -= OnSearchBoxGotFocus;
+					autoSuggestBox.LostFocus -= OnSearchBoxLostFocus;
 				}
 			}
 
