@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Platform
 
 		public void SetVerticalScrollBarVisibility(ScrollBarVisibility scrollBarVisibility)
 		{
-			ScrollBarVisibility _verticalScrollVisibility = scrollBarVisibility;
+			ScrollBarVisibility verticalScrollVisibility = scrollBarVisibility;
 
 			if (_defaultVerticalScrollVisibility == 0)
 				_defaultVerticalScrollVisibility = VerticalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Platform
 				scrollBarVisibility = _defaultVerticalScrollVisibility;
 
 			VerticalScrollBarEnabled = scrollBarVisibility == ScrollBarVisibility.Always;
-			ScrollbarFadingEnabled = _verticalScrollVisibility != ScrollBarVisibility.Always;
+			ScrollbarFadingEnabled = verticalScrollVisibility != ScrollBarVisibility.Always;
 			PlatformInterop.RequestLayoutIfNeeded(this);
 		}
 
