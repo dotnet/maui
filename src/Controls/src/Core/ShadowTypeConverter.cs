@@ -10,10 +10,10 @@ using Microsoft.Maui.Graphics.Converters;
 
 namespace Microsoft.Maui.Controls
 {
-    /// <summary>
-    /// Type converter for converting a properly formatted string to a Shadow.
-    /// </summary>
-    public class ShadowTypeConverter : TypeConverter
+	/// <summary>
+	/// Type converter for converting a properly formatted string to a Shadow.
+	/// </summary>
+	internal class ShadowTypeConverter : TypeConverter
     {
         readonly ColorTypeConverter _colorTypeConverter = new ColorTypeConverter();
 
