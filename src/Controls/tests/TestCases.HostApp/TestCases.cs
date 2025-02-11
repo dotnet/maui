@@ -19,18 +19,21 @@ namespace Maui.Controls.Sample
 				try
 				{
 					using (var httpClient = new HttpClient())
-					using (var httpResponse = httpClient.GetAsync(@"https://www.github.com", HttpCompletionOption.ResponseHeadersRead))
 					{
-						httpResponse.Wait();
-						if (httpResponse.Result.StatusCode != System.Net.HttpStatusCode.OK)
+						httpClient.Timeout = TimeSpan.FromSeconds(5);
+						using (var httpResponse = httpClient.GetAsync(@"https://www.github.com", HttpCompletionOption.ResponseHeadersRead))
 						{
-							var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
-							Application.Current.Windows[0].Page = noInternetConnectionPage;
-						}
-						else
-						{
-							var page = ActivatePage(type);
-							Application.Current.Windows[0].Page = page;
+							httpResponse.Wait();
+							if (httpResponse.Result.IsSuccessStatusCode)
+							{
+								var page = ActivatePage(type);
+								Application.Current.Windows[0].Page = page;
+							}
+							else
+							{
+								var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
+								Application.Current.Windows[0].Page = noInternetConnectionPage;
+							}
 						}
 					}
 				}
@@ -40,6 +43,7 @@ namespace Maui.Controls.Sample
 					Application.Current.Windows[0].Page = noInternetConnectionPage;
 				}
 			}
+
 
 			static TextCell MakeIssueCell(string text, string detail, Action tapped)
 			{
