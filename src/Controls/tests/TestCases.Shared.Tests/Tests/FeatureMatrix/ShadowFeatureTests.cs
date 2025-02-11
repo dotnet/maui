@@ -220,5 +220,30 @@ namespace Microsoft.Maui.TestCases.Tests
 				throw exception;
 			}
 		}
+
+		[Test]
+		[Category(UITestCategories.Shadow)]
+		public void Shadow_Resize_Benchmark()
+		{
+			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("BenchmarkButton");
+			App.Tap("BenchmarkButton");
+
+			const double MinimumFps = 30;
+
+			Thread.Sleep(500);
+			double fps1 = Convert.ToDouble(App.FindElement("FpsLabel").GetText());
+			Assert.That(fps1, Is.GreaterThan(MinimumFps));
+
+			Thread.Sleep(500);
+			double fps2 = Convert.ToDouble(App.FindElement("FpsLabel").GetText());
+			Assert.That(fps2, Is.GreaterThan(MinimumFps));
+
+			Thread.Sleep(500);
+			double fps3 = Convert.ToDouble(App.FindElement("FpsLabel").GetText());
+			Assert.That(fps3, Is.GreaterThan(MinimumFps));
+
+			App.Tap("BenchmarkButton");
+		}
 	}
 }

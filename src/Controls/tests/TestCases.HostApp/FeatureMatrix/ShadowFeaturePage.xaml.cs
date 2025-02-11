@@ -4,18 +4,75 @@ namespace Maui.Controls.Sample.Issues
 {
 	public partial class ShadowFeaturePage : ContentPage
 	{
+		const double Fps = 60;
+
 		bool _clip;
 		bool _shadow;
+		bool _benchmark;
+
+		DateTime _lastUpdateDateTime;
+		IDispatcherTimer _timer;
+		event Action timerUpdateEvent;
 
 		public ShadowFeaturePage()
 		{
 			InitializeComponent();
 
 			_shadow = true;
+			_lastUpdateDateTime = DateTime.Now;
+
+			_timer = Dispatcher.CreateTimer();
+			_timer.Interval = TimeSpan.FromSeconds(1 / Fps);
+			double time = 0;
+			DateTime currentTickDateTime = DateTime.Now;
+			double deltaTime = 0;
+
+			_timer.Tick += delegate
+			{
+				deltaTime = (DateTime.Now - currentTickDateTime).TotalSeconds;
+				currentTickDateTime = DateTime.Now;
+				time += deltaTime;
+				timerUpdateEvent?.Invoke();
+			};
+
+			timerUpdateEvent += delegate
+			{
+				double sinVal = (Math.Sin(time) + 1) * 0.5;
+				double height = 20 + sinVal * 50;
+				double width = 20 + sinVal * 100;
+
+				BorderShadow.HeightRequest = ImageShadow.HeightRequest = LabelShadow.HeightRequest = height;
+				BorderShadow.WidthRequest = ImageShadow.WidthRequest = LabelShadow.WidthRequest = width;
+			};
 
 			ViewModel = new ShadowViewModel();
 
 			BindingContext = ViewModel;
+		}
+
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+
+			ShadowContainer.SizeChanged += OnShadowSizeChanged;
+		}
+
+		protected override void OnDisappearing()
+		{
+			base.OnDisappearing();
+
+			ShadowContainer.SizeChanged -= OnShadowSizeChanged;
+		}
+
+		void OnShadowSizeChanged(object sender, EventArgs e)
+		{
+			if (_lastUpdateDateTime != DateTime.Now)
+			{
+				string fps = "FPS " + Math.Round(1 / (DateTime.Now - _lastUpdateDateTime).TotalSeconds, 2);
+				FpsLabel.Text = fps;
+
+				_lastUpdateDateTime = DateTime.Now;
+			}
 		}
 
 		public ShadowViewModel ViewModel { get; private set; }
@@ -73,6 +130,22 @@ namespace Maui.Controls.Sample.Issues
 		void OnIsVisibleCheckedChanged(object sender, CheckedChangedEventArgs e)
 		{
 			ViewModel.IsVisible = IsVisibleTrueRadio.IsChecked;
+		}
+
+		void OnBenchmarkClicked(object sender, EventArgs e)
+		{
+			if (_benchmark)
+			{
+				FpsLabel.IsVisible = false;
+				_timer.Stop();
+				_benchmark = false;
+			}
+			else
+			{
+				FpsLabel.IsVisible = true;
+				_timer.Start();
+				_benchmark = true;
+			}
 		}
 
 		void OnClipClicked(object sender, EventArgs e)
