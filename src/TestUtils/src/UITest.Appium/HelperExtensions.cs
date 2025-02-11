@@ -2301,6 +2301,8 @@ namespace UITest.Appium
 
 			app.CommandExecutor.Execute("toggleSecondaryToolbarItems", ImmutableDictionary<string, object>.Empty);
 		}
+
+		/// <summary>
 		/// Activates the context menu for the specified element.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
