@@ -3,9 +3,9 @@ using System.Linq;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
+using AColor = Android.Graphics.Color;
 using AOrientation = Android.Graphics.Drawables.GradientDrawable.Orientation;
 using APaint = Android.Graphics.Paint;
-using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.Graphics
 {

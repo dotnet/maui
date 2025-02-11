@@ -119,8 +119,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// </code>
 		/// </example>
 		public void VerifyScreenshotOrSetException(
-			ref Exception? exception, 
-			string? name = null, 
+			ref Exception? exception,
+			string? name = null,
 			TimeSpan? retryDelay = null
 #if MACUITEST || WINTEST
 			, bool includeTitleBar = false

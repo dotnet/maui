@@ -9,7 +9,7 @@ public class Issue26598 : _IssuesUITest
 	public override string Issue => "Tabbar disappears when navigating back from page with hidden TabBar in iOS";
 
 #if ANDROID
-    const string back = "";
+	const string back = "";
 #else
 	const string back = "InnerTab";
 #endif
