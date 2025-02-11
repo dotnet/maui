@@ -89,10 +89,15 @@ namespace Microsoft.Maui.Storage
 								break;
 						}
 					}
+
 					if (commit)
+					{
 						editor.Commit();
+					}
 					else
+					{
 						editor.Apply();
+					}
 				}
 			}
 		}
