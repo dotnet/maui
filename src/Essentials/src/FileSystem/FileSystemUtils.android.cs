@@ -344,6 +344,8 @@ namespace Microsoft.Maui.Storage
 				if (columnIndex != -1)
 					text = cursor.GetString(columnIndex);
 			}
+			if(cursor != null && !cursor.IsClosed)
+			   cursor.Close();
 
 			return text;
 		}
