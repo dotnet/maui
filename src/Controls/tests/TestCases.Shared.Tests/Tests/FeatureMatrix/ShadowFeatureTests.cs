@@ -181,7 +181,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-#if !WINDOWS
+#if !WINDOWS // Shadow not updated when Clipping a View: https://github.com/dotnet/maui/issues/27730
 		[Test]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_AddClip_VerifyShadow()
