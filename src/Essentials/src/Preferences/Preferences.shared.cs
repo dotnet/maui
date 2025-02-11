@@ -144,6 +144,8 @@ namespace Microsoft.Maui.Storage
 		/// </summary>
 		/// <param name="key">The key to set the value for.</param>
 		/// <param name="value">Value to set.</param>
+		/// <param name="commit">Commit your preferences changes back. The action will be executed synchronously on the application's main thread.
+		/// Note that when two editors are modifying preferences at the same time, the last one to call commit wins. <see href="https://developer.android.com/reference/android/content/SharedPreferences.Editor#commit">More details</see></param>
 		public static void Set(string key, string? value, bool commit = false) =>
 			Set(key, value, null, commit);
 

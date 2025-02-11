@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Storage
 						}
 					}
 					if (commit)
-					editor.Commit();
+						editor.Commit();
 					else
 						editor.Apply();
 				}
