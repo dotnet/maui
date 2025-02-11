@@ -48,17 +48,24 @@ parameters:
       os: windows
 
 stages:
+
 - template: /eng/pipelines/arcade/stage-pack.yml@self
   parameters:
-    pool: ${{ parameters.VM_IMAGE_HOST }}
-    runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
+    pool:
+      name: Azure Pipelines
+      vmImage: $(HostedWindowsImage)
+      os: windows
+    runAsPublic: true
 
 - template: /eng/pipelines/arcade/stage-unit-tests.yml@self
   parameters:
     jobMatrix:
     - name: win_unit_tests
       displayName: Windows Unit Tests
-      pool: ${{ parameters.VM_IMAGE_HOST }}
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedWindowsImage)
+        os: windows
       timeout: 90
       testOS: Windows
     - name: mac_unit_tests
