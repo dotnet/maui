@@ -35,6 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void Shadow_SetColor_UpdateValue()
 		{
 			Exception? exception = null;
+
 			App.WaitForElement("ShadowContainer");
 			App.WaitForElement("ColorEntry");
 			App.EnterText("ColorEntry", "#00FF00");
@@ -121,6 +122,103 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			Assert.That(App.FindElement("OpacityEntry").GetText(), Is.EqualTo("Opacity: 0"));
 			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Shadow)]
+		public void Shadow_SetEnabledStateToFalse_VerifyScreenshot()
+		{
+			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("IsEnabledFalseRadio");
+			App.Tap("IsEnabledFalseRadio");
+			App.WaitForElement("ShadowContainer");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Shadow)]
+		public void Shadow_ChangeFlowDirection_RTL_VerifyScreenshot()
+		{
+			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("FlowDirectionRTL");
+			App.Tap("FlowDirectionRTL");
+			App.WaitForElement("ShadowContainer");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Shadow)]
+		public void Shadow_SetVisibilityToFalse_VerifyScreenshot()
+		{
+			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("IsVisibleFalseRadio");
+			App.Tap("IsVisibleFalseRadio");
+			App.WaitForElement("ShadowContainer");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Shadow)]
+		public void Shadow_AddClip_VerifyShadow()
+		{
+			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ClipButton");
+			App.Tap("ClipButton");
+			App.WaitForElement("ShadowContainer");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Shadow)]
+		public void Shadow_AddRemoveClip_VerifyShadow()
+		{
+			Exception? exception = null;
+
+			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ClipButton");
+			App.Tap("ClipButton");
+			App.WaitForElement("ShadowContainer");
+			VerifyScreenshotOrSetException(ref exception, "ShadowAddClip");
+			
+			App.Tap("ClipButton");
+			VerifyScreenshotOrSetException(ref exception, "ShadowRemoveClip");
+
+			if (exception != null)
+			{
+				throw exception;
+			}
+		}
+
+		[Test]
+		[Category(UITestCategories.Shadow)]
+		public void Shadow_Remove_AtRuntime()
+		{
+			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ShadowButton");
+			App.Tap("ShadowButton");
+			App.WaitForElement("ShadowContainer");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Shadow)]
+		public void Shadow_RemoveAdd_AtRuntime()
+		{
+			Exception? exception = null;
+
+			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ShadowButton");
+			App.Tap("ShadowButton");
+			App.WaitForElement("ShadowContainer");
+			VerifyScreenshotOrSetException(ref exception, "RemoveShadowRuntime");
+
+			App.Tap("ShadowButton");
+			VerifyScreenshotOrSetException(ref exception, "AddShadowRuntime");
+
+			if (exception != null)
+			{
+				throw exception;
+			}
 		}
 	}
 }
