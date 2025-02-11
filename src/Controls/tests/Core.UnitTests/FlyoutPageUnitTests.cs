@@ -463,6 +463,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, disappearing);
 			Assert.Equal(1, appearing);
 		}
+
+		[Fact]
+		public void VerifyToolbarButtonVisibilityWhenFlyoutReset()
+		{
+			Button resetButton = new Button { Text = "Reset" };
+			ContentPage contentPage = new ContentPage
+			{
+				Content = new StackLayout
+				{
+					Children = { resetButton }
+				}
+			};
+			FlyoutPage flyoutPage = new FlyoutPage
+			{
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = new NavigationPage(contentPage)
+			};
+
+			_ = new TestWindow(flyoutPage);
+
+			Toolbar flyoutToolBar = flyoutPage.Toolbar;
+			Assert.True(flyoutToolBar.IsVisible);
+
+			resetButton.Clicked += (s, e) =>
+			{
+				flyoutPage.Flyout = new ContentPage { Title = "Reborn Flyout" };
+			};
+
+			resetButton.SendClicked();
+			Assert.True(flyoutToolBar.IsVisible);
+		}
 	}
 
 }
