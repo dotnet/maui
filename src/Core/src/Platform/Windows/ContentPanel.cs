@@ -15,6 +15,7 @@ using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Shapes;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Automation.Peers;
 
 namespace Microsoft.Maui.Platform
 {
@@ -67,6 +68,16 @@ namespace Microsoft.Maui.Platform
 			UpdateClip(_borderStroke?.Shape, size.Width, size.Height);
 
 			return size;
+		}
+
+		protected override AutomationPeer OnCreateAutomationPeer()
+		{
+			if (this.CrossPlatformLayout is not null && CrossPlatformLayout is IBorderView)
+			{
+				return new MauiBorderAutomationPeer(this);
+			}
+
+			return base.OnCreateAutomationPeer();
 		}
 
 		public ContentPanel()
