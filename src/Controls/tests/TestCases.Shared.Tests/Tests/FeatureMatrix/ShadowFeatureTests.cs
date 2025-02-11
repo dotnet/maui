@@ -213,7 +213,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if !WINDOWS
+#if !WINDOWS // https://github.com/dotnet/maui/issues/27732
 		[Test]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_Remove_AtRuntime()
