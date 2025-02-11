@@ -1907,6 +1907,27 @@ namespace UITest.Appium
 
 			app.CommandExecutor.Execute("toggleSecondaryToolbarItems", ImmutableDictionary<string, object>.Empty);
 		}
+		/// Activates the context menu for the specified element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector of the Slider element to update.</param>
+		public static void ActivateContextMenu(this IApp app, string marked)
+		{
+			var element = FindElement(app, marked);
+			app.CommandExecutor.Execute("activateContextMenu", new Dictionary<string, object>
+ 			{
+ 				{ "element", element },
+ 			});
+		}
+
+		/// <summary>
+		/// Dismisses the context menu.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void DismissContextMenu(this IApp app)
+		{
+			app.CommandExecutor.Execute("dismissContextMenu", new Dictionary<string, object>());
+		}
 
 		static IUIElement Wait(Func<IUIElement?> query,
 			Func<IUIElement?, bool> satisfactory,
