@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using ImageMagick;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
@@ -107,12 +107,49 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		/// <summary>
+		/// Verifies the screenshots and returns an exception in case of failure.
+		/// </summary>
+		/// <remarks>
+		/// This is especially useful when capturing multiple screenshots in a single UI test.
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Exception? exception = null;
+		/// VerifyScreenshotOrSetException(ref exception, "MyScreenshotName");
+		/// VerifyScreenshotOrSetException(ref exception, "MyOtherScreenshotName");
+		/// if (exception is not null) throw exception;
+		/// </code>
+		/// </example>
+		public void VerifyScreenshotOrSetException(
+			ref Exception? exception, 
+			string? name = null, 
+			TimeSpan? retryDelay = null
+#if MACUITEST || WINTEST
+			, bool includeTitleBar = false
+#endif
+			)
+		{
+			try
+			{
+				VerifyScreenshot(name, retryDelay
+#if MACUITEST || WINTEST
+				, includeTitleBar
+#endif
+				);
+			}
+			catch (Exception ex)
+			{
+				exception ??= ex;
+			}
+		}
+
+		/// <summary>
 		/// Verifies the Application screenshot.
 		/// </summary>
 		/// <param name="name">Optional. The name to be used for the screenshot file. If not specified, the test name will be used.</param>
 		/// <param name="retryDelay">Optional. The delay time between retries. If not specified, a default retry delay of 500 ms will be used.</param>
 		/// <param name="includeTitleBar">Optional. (Only applicable for Mac or Windows) Specifies whether the TitleBar bar should be included in the screenshot. Default is false.</param>
-
+    /// <remarks>
 		public void VerifyScreenshot(
 				 string? name = null,
 				 TimeSpan? retryDelay = null
@@ -156,7 +193,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				int cropFromTop = _testDevice switch
 				{
 					TestDevice.Android => 60,
-					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,									
+					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
 					_ => 0,
