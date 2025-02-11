@@ -4,10 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
     xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls" 
     x:Class="Maui.Controls.Sample.Pages.iOSModalPagePresentationStyle"
-    Title="Modal FormSheet Page"
+    Title="Modal Presentation Style Page"
     ios:Page.ModalPresentationStyle="OverFullScreen">
     <StackLayout Margin="20,35,20,20">
-        <Label Text="Modal popup as a form sheet." HorizontalOptions="Center" />
+        <Label Text="Modal popup as a FormSheet or as a Popover" HorizontalOptions="Center" />
+        <Button Text="Push modal with UIModalPresentationStyle.FormSheet" Clicked="OnPushFormSheetClicked" />
+        <Button x:Name="originButton" Text="Push modal with UIModalPresentationStyle.Popover" Clicked="OnPushPopoverClicked" />
+        <Button x:Name="originButton2" Text="Push modal with UIModalPresentationStyle.Popover and offset" Clicked="OnPushPopoverOffsetClicked" />
         <Button Text="Return to Platform-Specifics List" Clicked="OnReturnButtonClicked" />
     </StackLayout>
 </ContentPage>
