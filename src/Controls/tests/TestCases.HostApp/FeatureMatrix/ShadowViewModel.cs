@@ -141,7 +141,7 @@ namespace Maui.Controls.Sample.Issues
 
 		void UpdateOffset()
 		{
-			Offset = new Point(OffsetY, OffsetY);
+			Offset = new Point(OffsetX, OffsetY);
 		}
 
 		void Reset()

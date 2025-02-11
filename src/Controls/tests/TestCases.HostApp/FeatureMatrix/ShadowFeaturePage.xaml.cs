@@ -11,7 +11,8 @@ namespace Maui.Controls.Sample.Issues
 		bool _benchmark;
 
 		DateTime _lastUpdateDateTime;
-		IDispatcherTimer _timer;
+		readonly IDispatcherTimer _timer;
+
 		event Action timerUpdateEvent;
 
 		public ShadowFeaturePage()
@@ -38,8 +39,9 @@ namespace Maui.Controls.Sample.Issues
 			timerUpdateEvent += delegate
 			{
 				double sinVal = (Math.Sin(time) + 1) * 0.5;
-				double height = 20 + sinVal * 50;
-				double width = 20 + sinVal * 100;
+				const double minSize = 20;
+				double height = minSize + sinVal * 50;
+				double width = minSize + sinVal * 100;
 
 				BorderShadow.HeightRequest = ImageShadow.HeightRequest = LabelShadow.HeightRequest = height;
 				BorderShadow.WidthRequest = ImageShadow.WidthRequest = LabelShadow.WidthRequest = width;
@@ -62,13 +64,14 @@ namespace Maui.Controls.Sample.Issues
 			base.OnDisappearing();
 
 			ShadowContainer.SizeChanged -= OnShadowSizeChanged;
+			_timer.Stop();
 		}
 
 		void OnShadowSizeChanged(object sender, EventArgs e)
 		{
 			if (_lastUpdateDateTime != DateTime.Now)
 			{
-				string fps = "FPS " + Math.Round(1 / (DateTime.Now - _lastUpdateDateTime).TotalSeconds, 2);
+				string fps = Math.Round(1 / (DateTime.Now - _lastUpdateDateTime).TotalSeconds, 2).ToString();
 				FpsLabel.Text = fps;
 
 				_lastUpdateDateTime = DateTime.Now;
@@ -87,7 +90,7 @@ namespace Maui.Controls.Sample.Issues
 
 		void OnOffsetXChanged(object sender, TextChangedEventArgs e)
 		{
-			if (double.TryParse(RadiusEntry.Text, out double offsetX))
+			if (double.TryParse(OffsetXEntry.Text, out double offsetX))
 			{
 				ViewModel.OffsetX = offsetX;
 			}

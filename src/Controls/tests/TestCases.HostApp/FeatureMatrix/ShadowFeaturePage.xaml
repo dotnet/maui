@@ -11,6 +11,7 @@
         <Grid x:Name="ShadowContainer" ColumnDefinitions="*, *, *" HorizontalOptions="Center" VerticalOptions="Start" Padding="10">
           <Border 
             x:Name="BorderShadow"
+            AutomationId="BorderShadow"
             FlowDirection="{Binding FlowDirection}"
             IsEnabled="{Binding IsEnabled}"
             IsVisible="{Binding IsVisible}"
@@ -28,6 +29,7 @@
           </Border>
           <Image 
             x:Name="ImageShadow"
+            AutomationId="ImageShadow"
             FlowDirection="{Binding FlowDirection}"
             IsEnabled="{Binding IsEnabled}"
             IsVisible="{Binding IsVisible}"
@@ -46,6 +48,7 @@
           </Image>
           <Label 
             x:Name="LabelShadow"
+            AutomationId="LabelShadow"
             FlowDirection="{Binding FlowDirection}"
             IsEnabled="{Binding IsEnabled}"
             IsVisible="{Binding IsVisible}"
@@ -63,14 +66,13 @@
           </Label>
         </Grid>
         <Grid x:Name="OptionsContainer" ColumnDefinitions="*, *" RowDefinitions="*, *">
-          <!-- Left Column -->
           <StackLayout Grid.Column="0" Padding="10" Spacing="8">
             <Label AutomationId="ColorValue" Text="{Binding Color, StringFormat='Color: {0}'}" HorizontalOptions="Start" LineBreakMode="CharacterWrap" FontSize="10" WidthRequest="100" />
-            <Entry x:Name="ColorEntry" AutomationId="ColorEntry" Background="{Binding Color, Converter={StaticResource cnvStringToBrush}}" TextChanged="OnColorChanged" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Color Hex" />
+            <Entry x:Name="ColorEntry" AutomationId="ColorEntry" TextChanged="OnColorChanged" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Color Hex" />
             <Label AutomationId="OffsetXValue" Text="{Binding OffsetX, StringFormat='OffsetX: {0}'}" FontSize="15" />
-            <Entry x:Name="OffsetXEntry" AutomationId="OffsetXEntry" Text="{Binding OffsetX}" TextChanged="OnOffsetXChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Radius" />
+            <Entry x:Name="OffsetXEntry" AutomationId="OffsetXEntry" Text="{Binding OffsetX}" TextChanged="OnOffsetXChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Offset X" />
             <Label AutomationId="OffsetYValue" Text="{Binding OffsetY, StringFormat='OffsetY: {0}'}" FontSize="15" />
-            <Entry x:Name="OffsetYEntry" AutomationId="OffsetYEntry" Text="{Binding OffsetY}" TextChanged="OnOffsetYChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Radius" />
+            <Entry x:Name="OffsetYEntry" AutomationId="OffsetYEntry" Text="{Binding OffsetY}" TextChanged="OnOffsetYChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Offset Y" />
             <Label AutomationId="RadiusValue" Text="{Binding Radius, StringFormat='Radius: {0}'}" FontSize="15" />
             <Entry x:Name="RadiusEntry" AutomationId="RadiusEntry" Text="{Binding Radius}" TextChanged="OnRadiusChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Radius" />
             <Label AutomationId="OpacityValue" Text="{Binding Opacity, StringFormat='Opacity: {0}'}" FontSize="15" />
@@ -81,21 +83,17 @@
             <Button x:Name="ShadowButton" AutomationId="ShadowButton" Text="Remove Shadow" HorizontalOptions="Start" Clicked="OnShadowClicked" />
             <Button x:Name="BenchmarkButton" AutomationId="BenchmarkButton" Text="Benchmark" HorizontalOptions="Start" Clicked="OnBenchmarkClicked" />
           </StackLayout>
-          <!-- Right Column -->
           <StackLayout Grid.Column="1" Padding="10" Spacing="8">
-            <!-- Flow Direction -->
             <Label Text="FlowDirection:" FontSize="15" />
             <StackLayout Orientation="Horizontal">
               <RadioButton x:Name="FlowDirectionLTR" AutomationId="FlowDirectionLTR" GroupName="FlowDirection" Content="LTR" IsChecked="True" FontSize="12" CheckedChanged="OnFlowDirectionChanged" />
               <RadioButton x:Name="FlowDirectionRTL" AutomationId="FlowDirectionRTL" GroupName="FlowDirection" Content="RTL" FontSize="12" CheckedChanged="OnFlowDirectionChanged" />
             </StackLayout>
-            <!-- IsEnabled -->
             <Label Text="IsEnabled:" FontSize="15" />
             <StackLayout Orientation="Horizontal">
               <RadioButton x:Name="IsEnabledTrueRadio" AutomationId="IsEnabledTrueRadio" GroupName="IsEnabled" Content="True" IsChecked="True" FontSize="12" CheckedChanged="OnIsEnabledCheckedChanged" />
               <RadioButton x:Name="IsEnabledFalseRadio" AutomationId="IsEnabledFalseRadio" GroupName="IsEnabled" Content="False" FontSize="12" CheckedChanged="OnIsEnabledCheckedChanged" />
             </StackLayout>
-            <!-- Is Visible -->
             <Label Text="IsVisible:" FontSize="15" />
             <StackLayout Orientation="Horizontal">
               <RadioButton x:Name="IsVisibleTrueRadio" AutomationId="IsVisibleTrueRadio" GroupName="IsVisible" Content="True" IsChecked="True" FontSize="12" CheckedChanged="OnIsVisibleCheckedChanged" />
