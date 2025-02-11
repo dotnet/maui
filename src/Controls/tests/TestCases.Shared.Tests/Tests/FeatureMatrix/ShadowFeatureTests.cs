@@ -80,6 +80,20 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Shadow)]
+		public void Shadow_SetOffset_Zero()
+		{
+			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("OffsetXEntry");
+			App.EnterText("OffsetXEntry", "0");
+			App.EnterText("OffsetYEntry", "0");
+
+			Assert.That(App.FindElement("OffsetXEntry").GetText(), Is.EqualTo("OffsetX: 0"));
+			Assert.That(App.FindElement("OffsetYEntry").GetText(), Is.EqualTo("OffsetY: 0"));
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetRadius()
 		{
 			App.WaitForElement("ShadowContainer");
