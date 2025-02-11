@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[Controls.ItemsView.IsVisibleProperty.PropertyName] = MapIsVisible,
 			[Controls.ItemsView.ItemsUpdatingScrollModeProperty.PropertyName] = MapItemsUpdatingScrollMode,
 			#if IOS || ANDROID
-			[VisualElement.IsEnabledProperty.PropertyName] = MapIsEnabled,
+			[nameof(IView.IsEnabled)] = MapIsEnabled,
 			#endif
 		};
 	}
