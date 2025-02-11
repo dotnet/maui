@@ -87,3 +87,11 @@ override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Gr
 Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateButtonStroke(this Google.Android.Material.ImageView.ShapeableImageView! platformView, Microsoft.Maui.IButtonStroke! button) -> void
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateButtonBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformView, Microsoft.Maui.IImageButton! button) -> void
+*REMOVED*override Microsoft.Maui.Platform.WrapperView.OnDetachedFromWindow() -> void
+*REMOVED*override Microsoft.Maui.Platform.WrapperView.RequestLayout() -> void
+virtual Microsoft.Maui.PlatformContentViewGroup.SetHasClip(bool hasClip) -> void
+*REMOVED*Microsoft.Maui.PlatformContentViewGroup.SetHasClip(bool hasClip) -> void
+override Microsoft.Maui.PlatformWrapperView.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
+virtual Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! canvas, int viewWidth, int viewHeight) -> void
+*REMOVED*~override Microsoft.Maui.Platform.WrapperView.DrawShadow(Android.Graphics.Canvas canvas, int viewWidth, int viewHeight) -> void
+*REMOVED*abstract Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! p0, int p1, int p2) -> void
