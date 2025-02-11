@@ -131,8 +131,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIViewPropertyAnimator _flyoutAnimation;
 		Brush _backdropBrush;
 		bool _layoutOccured;
-		private bool _needsLayoutUpdate;
-		private NSObject _orientationObserver;
+		bool _needsLayoutUpdate;
+		NSObject _orientationObserver;
 
 		public UIViewAnimationCurve AnimationCurve { get; set; } = UIViewAnimationCurve.EaseOut;
 
@@ -253,7 +253,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateFlyoutAccessibility();
 		}
 
-		private void OnOrientationChanged(NSNotification notification)
+		void OnOrientationChanged(NSNotification notification)
 		{
 			_needsLayoutUpdate = true;
 		}
