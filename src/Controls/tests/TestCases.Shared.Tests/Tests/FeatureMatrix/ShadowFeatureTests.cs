@@ -76,5 +76,51 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(App.FindElement("OffsetXEntry").GetText(), Is.EqualTo("OffsetX: -20"));
 			Assert.That(App.FindElement("OffsetYEntry").GetText(), Is.EqualTo("OffsetY: -20"));
 		}
+
+		[Test]
+		[Category(UITestCategories.Shadow)]
+		public void Shadow_SetRadius()
+		{
+			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("RadiusEntry");
+			App.EnterText("RadiusEntry", "20");
+
+			Assert.That(App.FindElement("RadiusEntry").GetText(), Is.EqualTo("Radius: 20"));
+		}
+
+		[Test]
+		[Category(UITestCategories.Shadow)]
+		public void Shadow_SetRadius_Zero()
+		{
+			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("RadiusEntry");
+			App.EnterText("RadiusEntry", "0");
+
+			Assert.That(App.FindElement("RadiusEntry").GetText(), Is.EqualTo("Radius: 0"));
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Shadow)]
+		public void Shadow_SetOpacity()
+		{
+			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("OpacityEntry");
+			App.EnterText("OpacityEntry", "0.5");
+
+			Assert.That(App.FindElement("OpacityEntry").GetText(), Is.EqualTo("Opacity: 0.5"));
+		}
+
+		[Test]
+		[Category(UITestCategories.Shadow)]
+		public void Shadow_SetOpacity_Zero()
+		{
+			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("OpacityEntry");
+			App.EnterText("OpacityEntry", "0");
+
+			Assert.That(App.FindElement("OpacityEntry").GetText(), Is.EqualTo("Opacity: 0"));
+			VerifyScreenshot();
+		}
 	}
 }
