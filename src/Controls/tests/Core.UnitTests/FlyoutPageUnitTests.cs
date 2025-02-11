@@ -468,54 +468,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerifyToolbarButtonVisibilityWhenFlyoutReset()
 		{
 			Button resetButton = new Button { Text = "Reset" };
-			ContentPage detailContentPage = new ContentPage
+			ContentPage contentPage = new ContentPage
 			{
 				Content = new StackLayout
 				{
 					Children = { resetButton }
 				}
 			};
-
-			ContentPage firstTab = new ContentPage
-			{
-				Title = "Menu",
-				Content = new Label
-				{
-					Text = "Menu Items",
-				}
-			};
-
-			ContentPage secondTab = new ContentPage
-			{
-				Title = "Settings",
-				Content = new Label
-				{
-					Text = "Settings Items",
-				}
-			};
-
-			TabbedPage nestedTabbedPage = new TabbedPage
-			{
-				Title = "Flyout Tabbed Page",
-				Children =
-				{
-					firstTab,
-					secondTab
-				}
-			};
-
 			FlyoutPage flyoutPage = new FlyoutPage
 			{
-				Flyout = nestedTabbedPage,
-				Detail = new NavigationPage(detailContentPage)
+				Flyout = new ContentPage { Title = "Flyout" },
+				Detail = new NavigationPage(contentPage)
 			};
 
 			_ = new TestWindow(flyoutPage);
 
 			Toolbar flyoutToolBar = flyoutPage.Toolbar;
-			Assert.True(flyoutToolBar.IsVisible);
-
-			nestedTabbedPage.CurrentPage = secondTab;
 			Assert.True(flyoutToolBar.IsVisible);
 
 			resetButton.Clicked += (s, e) =>

@@ -71,8 +71,8 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			_toolbarTracker.PagePropertyChanged -= OnPagePropertyChanged;
-			var currentParent = cp.Parent;
-			if (currentParent is FlyoutPage flyoutPage && flyoutPage.Flyout == cp)
+			FlyoutPage currentFlyoutPage = cp.FindParentOfType<FlyoutPage>();
+			if (currentFlyoutPage?.Flyout == cp)
 			{
 				return;
 			}
