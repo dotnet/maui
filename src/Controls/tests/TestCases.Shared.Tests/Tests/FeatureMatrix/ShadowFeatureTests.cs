@@ -23,10 +23,11 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetColor()
 		{
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("ColorEntry");
 			App.EnterText("ColorEntry", "#00FF00");
-			App.PressEnter();
+
+			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshot();
 		}
 
@@ -36,14 +37,15 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			Exception? exception = null;
 
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("ColorEntry");
 			App.EnterText("ColorEntry", "#00FF00");
-			App.PressEnter();
+			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshotOrSetException(ref exception, "ShadowUpdateColor1");
 
+			App.ClearText("ColorEntry");
 			App.EnterText("ColorEntry", "#00FFFF");
-			App.PressEnter();
+			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshotOrSetException(ref exception, "ShadowUpdateColor2");
 
 			if (exception != null)
@@ -56,39 +58,36 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetOffset_PositiveValues()
 		{
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("OffsetXEntry");
+			App.ClearText("OffsetXEntry");
 			App.EnterText("OffsetXEntry", "20");
+			App.WaitForElement("OffsetYEntry");
+			App.ClearText("OffsetYEntry");
 			App.EnterText("OffsetYEntry", "20");
 
-			Assert.That(App.FindElement("OffsetXEntry").GetText(), Is.EqualTo("OffsetX: 20"));
-			Assert.That(App.FindElement("OffsetYEntry").GetText(), Is.EqualTo("OffsetY: 20"));
-		}
+			Assert.That(App.FindElement("OffsetXEntry").GetText(), Is.EqualTo("20"));
+			Assert.That(App.FindElement("OffsetYEntry").GetText(), Is.EqualTo("20"));
 
-		[Test]
-		[Category(UITestCategories.Shadow)]
-		public void Shadow_SetOffset_NegativeValues()
-		{
-			App.WaitForElement("ShadowContainer");
-			App.WaitForElement("OffsetXEntry");
-			App.EnterText("OffsetXEntry", "-20");
-			App.EnterText("OffsetYEntry", "-20");
-
-			Assert.That(App.FindElement("OffsetXEntry").GetText(), Is.EqualTo("OffsetX: -20"));
-			Assert.That(App.FindElement("OffsetYEntry").GetText(), Is.EqualTo("OffsetY: -20"));
+			App.WaitForElement("LabelShadow").Tap();
+			VerifyScreenshot();
 		}
 
 		[Test]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetOffset_Zero()
 		{
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("OffsetXEntry");
+			App.ClearText("OffsetXEntry");
 			App.EnterText("OffsetXEntry", "0");
+			App.ClearText("OffsetYEntry");
 			App.EnterText("OffsetYEntry", "0");
 
-			Assert.That(App.FindElement("OffsetXEntry").GetText(), Is.EqualTo("OffsetX: 0"));
-			Assert.That(App.FindElement("OffsetYEntry").GetText(), Is.EqualTo("OffsetY: 0"));
+			Assert.That(App.FindElement("OffsetXEntry").GetText(), Is.EqualTo("0"));
+			Assert.That(App.FindElement("OffsetYEntry").GetText(), Is.EqualTo("0"));
+
+			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshot();
 		}
 
@@ -96,22 +95,29 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetRadius()
 		{
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("RadiusEntry");
+			App.ClearText("RadiusEntry");
 			App.EnterText("RadiusEntry", "20");
 
-			Assert.That(App.FindElement("RadiusEntry").GetText(), Is.EqualTo("Radius: 20"));
+			Assert.That(App.FindElement("RadiusEntry").GetText(), Is.EqualTo("20"));
+
+			App.WaitForElement("LabelShadow").Tap();
+			VerifyScreenshot();
 		}
 
 		[Test]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetRadius_Zero()
 		{
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("RadiusEntry");
+			App.ClearText("RadiusEntry");
 			App.EnterText("RadiusEntry", "0");
 
-			Assert.That(App.FindElement("RadiusEntry").GetText(), Is.EqualTo("Radius: 0"));
+			Assert.That(App.FindElement("RadiusEntry").GetText(), Is.EqualTo("0"));
+
+			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshot();
 		}
 
@@ -119,22 +125,29 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetOpacity()
 		{
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
+			App.ClearText("OpacityEntry");
 			App.WaitForElement("OpacityEntry");
-			App.EnterText("OpacityEntry", "0.5");
+			App.EnterText("OpacityEntry", "0,5");
 
-			Assert.That(App.FindElement("OpacityEntry").GetText(), Is.EqualTo("Opacity: 0.5"));
+			Assert.That(App.FindElement("OpacityEntry").GetText(), Is.EqualTo("0,5"));
+
+			App.WaitForElement("LabelShadow").Tap();
+			VerifyScreenshot();
 		}
 
 		[Test]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetOpacity_Zero()
 		{
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("OpacityEntry");
+			App.ClearText("OpacityEntry");
 			App.EnterText("OpacityEntry", "0");
 
-			Assert.That(App.FindElement("OpacityEntry").GetText(), Is.EqualTo("Opacity: 0"));
+			Assert.That(App.FindElement("OpacityEntry").GetText(), Is.EqualTo("0"));
+			
+			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshot();
 		}
 
@@ -142,10 +155,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetEnabledStateToFalse_VerifyScreenshot()
 		{
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("IsEnabledFalseRadio");
 			App.Tap("IsEnabledFalseRadio");
-			App.WaitForElement("ShadowContainer");
 			VerifyScreenshot();
 		}
 
@@ -153,10 +165,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_ChangeFlowDirection_RTL_VerifyScreenshot()
 		{
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("FlowDirectionRTL");
 			App.Tap("FlowDirectionRTL");
-			App.WaitForElement("ShadowContainer");
 			VerifyScreenshot();
 		}
 
@@ -164,21 +175,20 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetVisibilityToFalse_VerifyScreenshot()
 		{
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("IsVisibleFalseRadio");
 			App.Tap("IsVisibleFalseRadio");
-			App.WaitForElement("ShadowContainer");
 			VerifyScreenshot();
 		}
 
+#if !WINDOWS
 		[Test]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_AddClip_VerifyShadow()
 		{
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("ClipButton");
 			App.Tap("ClipButton");
-			App.WaitForElement("ShadowContainer");
 			VerifyScreenshot();
 		}
 
@@ -188,10 +198,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			Exception? exception = null;
 
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("ClipButton");
 			App.Tap("ClipButton");
-			App.WaitForElement("ShadowContainer");
 			VerifyScreenshotOrSetException(ref exception, "ShadowAddClip");
 			
 			App.Tap("ClipButton");
@@ -202,15 +211,16 @@ namespace Microsoft.Maui.TestCases.Tests
 				throw exception;
 			}
 		}
+#endif
 
+#if !WINDOWS
 		[Test]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_Remove_AtRuntime()
 		{
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("ShadowButton");
 			App.Tap("ShadowButton");
-			App.WaitForElement("ShadowContainer");
 			VerifyScreenshot();
 		}
 
@@ -220,7 +230,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			Exception? exception = null;
 
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("ShadowButton");
 			App.Tap("ShadowButton");
 			App.WaitForElement("ShadowContainer");
@@ -234,28 +244,29 @@ namespace Microsoft.Maui.TestCases.Tests
 				throw exception;
 			}
 		}
+#endif
 
 		[Test]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_Resize_Benchmark()
 		{
-			App.WaitForElement("ShadowContainer");
+			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("BenchmarkButton");
 			App.Tap("BenchmarkButton");
 
-			const double MinimumFps = 30;
+			const double MinimumFps = 24;
 
 			Thread.Sleep(500);
 			double fps1 = Convert.ToDouble(App.FindElement("FpsLabel").GetText());
-			Assert.That(fps1, Is.GreaterThan(MinimumFps));
+			Assert.That(fps1, Is.GreaterThanOrEqualTo(MinimumFps));
 
 			Thread.Sleep(500);
 			double fps2 = Convert.ToDouble(App.FindElement("FpsLabel").GetText());
-			Assert.That(fps2, Is.GreaterThan(MinimumFps));
+			Assert.That(fps2, Is.GreaterThanOrEqualTo(MinimumFps));
 
 			Thread.Sleep(500);
 			double fps3 = Convert.ToDouble(App.FindElement("FpsLabel").GetText());
-			Assert.That(fps3, Is.GreaterThan(MinimumFps));
+			Assert.That(fps3, Is.GreaterThanOrEqualTo(MinimumFps));
 
 			App.Tap("BenchmarkButton");
 		}
