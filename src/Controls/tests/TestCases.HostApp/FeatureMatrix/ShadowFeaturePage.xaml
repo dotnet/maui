@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.ShadowFeature"
+             x:Class="Maui.Controls.Sample.Issues.ShadowFeaturePage"
              xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
              Title="Shadow Feature">
   <ContentPage.Content>
@@ -63,15 +63,15 @@
       <Grid x:Name="OptionsContainer" ColumnDefinitions="*, *" RowDefinitions="*, *">
         <!-- Left Column -->
         <StackLayout Grid.Column="0" Padding="10" Spacing="8">
-          <Label Text="{Binding Color, StringFormat='Color: {0}'}" HorizontalOptions="Start" LineBreakMode="CharacterWrap" FontSize="10" WidthRequest="100" />
+          <Label AutomationId="ColorValue" Text="{Binding Color, StringFormat='Color: {0}'}" HorizontalOptions="Start" LineBreakMode="CharacterWrap" FontSize="10" WidthRequest="100" />
           <Entry x:Name="ColorEntry" AutomationId="ColorEntry" Background="{Binding Color, Converter={StaticResource cnvStringToBrush}}" TextChanged="OnColorChanged" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Color Hex" />
-          <Label Text="{Binding OffsetX, StringFormat='OffsetX: {0}'}" FontSize="15" />
+          <Label AutomationId="OffsetXValue" Text="{Binding OffsetX, StringFormat='OffsetX: {0}'}" FontSize="15" />
           <Entry x:Name="OffsetXEntry" AutomationId="OffsetXEntry" Text="{Binding OffsetX}" TextChanged="OnOffsetXChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Radius" />
-          <Label Text="{Binding OffsetY, StringFormat='OffsetY: {0}'}" FontSize="15" />
+          <Label AutomationId="OffsetYValue" Text="{Binding OffsetY, StringFormat='OffsetY: {0}'}" FontSize="15" />
           <Entry x:Name="OffsetYEntry" AutomationId="OffsetYEntry" Text="{Binding OffsetY}" TextChanged="OnOffsetYChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Radius" />
-          <Label Text="{Binding Radius, StringFormat='Radius: {0}'}" FontSize="15" />
+          <Label AutomationId="RadiusValue" Text="{Binding Radius, StringFormat='Radius: {0}'}" FontSize="15" />
           <Entry x:Name="RadiusEntry" AutomationId="RadiusEntry" Text="{Binding Radius}" TextChanged="OnRadiusChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Radius" />
-          <Label Text="{Binding Opacity, StringFormat='Opacity: {0}'}" FontSize="15" />
+          <Label AutomationId="OpacityValue" Text="{Binding Opacity, StringFormat='Opacity: {0}'}" FontSize="15" />
           <Entry x:Name="OpacityEntry" AutomationId="OpacityEntry" Text="{Binding Opacity}" TextChanged="OnOpacityChanged" Keyboard="Numeric" HorizontalOptions="Start" WidthRequest="100" Placeholder="Shadow Opacity" />
         </StackLayout>
         <StackLayout Grid.Column="0" Grid.Row="1" Padding="10" Spacing="8">

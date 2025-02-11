@@ -2,12 +2,12 @@
 
 namespace Maui.Controls.Sample.Issues
 {
-	public partial class ShadowFeature : ContentPage
+	public partial class ShadowFeaturePage : ContentPage
 	{
 		bool _clip;
 		bool _shadow;
 
-		public ShadowFeature()
+		public ShadowFeaturePage()
 		{
 			InitializeComponent();
 
