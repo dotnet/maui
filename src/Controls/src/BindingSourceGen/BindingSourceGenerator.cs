@@ -239,6 +239,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		static bool IsWritable(ISymbol? symbol)
 			=> symbol switch
 			{
+				IPropertySymbol { OriginalDefinition.SetMethod.IsInitOnly: true } => false,
 				IPropertySymbol propertySymbol => propertySymbol.SetMethod != null,
 				IFieldSymbol fieldSymbol => !fieldSymbol.IsReadOnly,
 				_ => true,
