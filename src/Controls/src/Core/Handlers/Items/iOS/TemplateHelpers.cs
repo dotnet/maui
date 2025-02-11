@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// and set the view as its BindingContext
 				element.BindingContext = view;
 
-				return ((UIView)renderer.PlatformView, element);
+				return (renderer.ToPlatform(), element);
 			}
 
 			if (view is View mauiView)
