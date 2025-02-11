@@ -40,20 +40,20 @@ namespace Maui.Controls.Sample.Pages
 
 		async void OnPushFormSheetClicked(object sender, EventArgs e)
 		{
-			Microsoft.Maui.Controls.Page pushMe = new iOSModalPagePresentationStyle(UIModalPresentationStyle.FormSheet);
+			Microsoft.Maui.Controls.Page pushMe = new iOSModalPagePresentationStyle(UIModalPresentationStyle.FormSheet, true);
 			await Navigation.PushModalAsync(pushMe);
 		}
 
 		async void OnPushPopoverClicked(object sender, EventArgs e)
 		{
-			Microsoft.Maui.Controls.Page pushMe = new iOSModalPagePresentationStyle(UIModalPresentationStyle.Popover, originButton);
+			Microsoft.Maui.Controls.Page pushMe = new iOSModalPagePresentationStyle(UIModalPresentationStyle.Popover, true, originButton);
 			await Navigation.PushModalAsync(pushMe);
 		}
 
 		async void OnPushPopoverOffsetClicked(object sender, EventArgs e)
 		{
 			var offset = new System.Drawing.Rectangle(0, 0, 100, 10);
-			Microsoft.Maui.Controls.Page pushMe = new iOSModalPagePresentationStyle(UIModalPresentationStyle.Popover, originButton2, offset);
+			Microsoft.Maui.Controls.Page pushMe = new iOSModalPagePresentationStyle(UIModalPresentationStyle.Popover, true, originButton2, offset);
 			await Navigation.PushModalAsync(pushMe);
 		}
 
