@@ -131,8 +131,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIViewPropertyAnimator _flyoutAnimation;
 		Brush _backdropBrush;
 		bool _layoutOccured;
-		bool _needsLayoutUpdate;
-		NSObject _orientationObserver;
 
 		public UIViewAnimationCurve AnimationCurve { get; set; } = UIViewAnimationCurve.EaseOut;
 
@@ -217,10 +215,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.ViewDidLayoutSubviews();
 
-			if (TapoffView != null && _needsLayoutUpdate)
+			if (IsOpen && TapoffView?.Frame != View.Bounds)
 			{
 				TapoffView.Frame = View.Bounds;
-				_needsLayoutUpdate = false; 
 			}
 
 			if (_flyoutAnimation == null)
@@ -237,9 +234,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.ViewDidLoad();
 
-			_orientationObserver = NSNotificationCenter.DefaultCenter.AddObserver(
-        UIDevice.OrientationDidChangeNotification, OnOrientationChanged);
-
 			AddChildViewController(Detail);
 			View.AddSubview(Detail.View);
 
@@ -251,11 +245,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			((IShellController)Shell).AddFlyoutBehaviorObserver(this);
 			UpdateFlowDirection();
 			UpdateFlyoutAccessibility();
-		}
-
-		void OnOrientationChanged(NSNotification notification)
-		{
-			_needsLayoutUpdate = true;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -272,12 +261,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					Shell.PropertyChanged -= OnShellPropertyChanged;
 					((IShellController)Shell).RemoveFlyoutBehaviorObserver(this);
-
-					if (_orientationObserver != null)
-					{
-						NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
-						_orientationObserver = null;
-					}
 
 					Context = null;
 					Shell = null;
