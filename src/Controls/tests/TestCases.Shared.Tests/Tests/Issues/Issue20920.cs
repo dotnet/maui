@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if TEST_FAILS_ON_IOS // On iOS, the ScrollDown functionality for images is not working.
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
