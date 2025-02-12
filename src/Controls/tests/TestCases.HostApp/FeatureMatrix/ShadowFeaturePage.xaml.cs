@@ -40,10 +40,8 @@ namespace Maui.Controls.Sample.Issues
 			{
 				double sinVal = (Math.Sin(time) + 1) * 0.5;
 				const double minSize = 20;
-				double height = minSize + sinVal * 50;
 				double width = minSize + sinVal * 100;
 
-				BorderShadow.HeightRequest = ImageShadow.HeightRequest = LabelShadow.HeightRequest = height;
 				BorderShadow.WidthRequest = ImageShadow.WidthRequest = LabelShadow.WidthRequest = width;
 			};
 
@@ -194,6 +192,14 @@ namespace Maui.Controls.Sample.Issues
 				BorderShadow.Shadow = ImageShadow.Shadow = LabelShadow.Shadow = newShadow;
 				_shadow = true;
 			}
+		}
+
+		void OnResetClicked(object sender, EventArgs e)
+		{
+			FpsLabel.IsVisible = false;
+			_timer.Stop();
+			_benchmark = false;
+			BorderShadow.WidthRequest = ImageShadow.WidthRequest = LabelShadow.WidthRequest = 100;
 		}
 	}
 }

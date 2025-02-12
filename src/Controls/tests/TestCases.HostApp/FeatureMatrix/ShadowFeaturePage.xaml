@@ -55,6 +55,7 @@
             Grid.Column="2"
             Text="Label"
             FontSize="18"
+            WidthRequest="100"
             Margin="12, 0">
             <Label.Shadow>
               <Shadow 
@@ -101,7 +102,7 @@
             </StackLayout>
           </StackLayout>
           <StackLayout Grid.Column="1" Grid.Row="1" Padding="10" Spacing="8">
-            <Button x:Name="ResetButton" AutomationId="ResetButton" Text="Reset" HorizontalOptions="Start" Command="{Binding ResetCommand}" />
+            <Button x:Name="ResetButton" AutomationId="ResetButton" Text="Reset" HorizontalOptions="Start" Clicked="OnResetClicked"  Command="{Binding ResetCommand}" />
           </StackLayout>
         </Grid>
       </StackLayout>
