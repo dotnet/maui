@@ -4,7 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
-	[Obsolete("use XamlProcessingOptions instead.")]
+	// TODO: obsolete when we are ready to switch to SourceGen
+	//[Obsolete("use XamlProcessingOptions instead.")]
 	[Flags]
 	public enum XamlCompilationOptions
 	{
@@ -12,7 +13,8 @@ namespace Microsoft.Maui.Controls.Xaml
 		Compile = XamlInflator.XamlC,
 	}
 
-	[Obsolete("use XamlProcessingAttribute instead.")]
+	// TODO: obsolete when we are ready to switch to SourceGen
+	//[Obsolete("use XamlProcessingAttribute instead.")]
 	[AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Module | AttributeTargets.Class, Inherited = false)]
 	public sealed class XamlCompilationAttribute : Attribute
 	{

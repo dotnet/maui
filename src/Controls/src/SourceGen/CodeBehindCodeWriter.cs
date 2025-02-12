@@ -155,6 +155,30 @@ static class CodeBehindCodeWriter
 
 		sb.AppendLine("\t\t}");
 
+		// TODO: only for dogfooding purposes, will be removed when we just use InitializeComponent() for this
+		if (!generateInflatorSwitch)
+		{
+			if ((xamlInflators & XamlInflator.SourceGen) == XamlInflator.SourceGen)
+			{
+				if (!baseType?.InheritsFrom(compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!, null) ?? false)
+				{
+					if (namedFields is not null)
+					{
+						sb.AppendLine($"#if NET5_0_OR_GREATER");
+						foreach ((var fname, _, _) in namedFields)
+						{
+							sb.AppendLine($"\t\t[global::System.Diagnostics.CodeAnalysis.MemberNotNullAttribute(nameof({EscapeIdentifier(fname)}))]");
+						}
+
+						sb.AppendLine($"#endif");
+					}
+					
+					sb.AppendLine($"\t\t[global::System.Runtime.Versioning.RequiresPreviewFeatures(\"Using XAML with source generation is experimental right now. You are required to enable preview features to use it.\")]");
+					sb.AppendLine($"\t\tprivate partial void InitializeComponentSourceGen();");
+					sb.AppendLine();
+				}
+			}
+		}
 
 		if (generateInflatorSwitch)
 		{
