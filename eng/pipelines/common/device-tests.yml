@@ -1,5 +1,6 @@
 parameters:
   androidPool: { }
+  androidPoolX64: { }
   iosPool: { }
   catalystPool: { }
   windowsPool: { }
@@ -34,48 +35,44 @@ stages:
     ${{ else }}:
       dependsOn: []
     jobs:
-    - job: android_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
-      workspace:
-        clean: all
-      displayName: "Android"
-      pool: ${{ parameters.androidPool }}
-      timeoutInMinutes: 60
-      strategy:
-        matrix:
-          # create all the variables used for the matrix
-          ${{ each project in parameters.projects }}:
-            ${{ if ne(project.android, '') }}:
-              ${{ each api in parameters.androidApiLevels }}:
-                ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
-                  ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_API_${{ api }}:
-                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-                    PROJECT_PATH: ${{ project.android }}
-                    ANDROID_CONFIGURATION: ${{ project.androidConfiguration }}
-                    TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
-                    ${{ if eq(api, 27) }}:
-                      DEVICE: android-emulator-32_${{ api }}
-                      APIVERSION: ${{ api }}
-                    ${{ if not(eq(api, 27)) }}:
-                      DEVICE: android-emulator-64_${{ api }}
-                      APIVERSION: ${{ api }}
-      steps:
-        - template: device-tests-steps.yml
-          parameters:
-            platform: android
-            path: $(PROJECT_PATH) 
-            device: $(DEVICE)
-            apiVersion: $(APIVERSION)
-            windowsPackageId: android # Only needed for Windows, will be ignored
-            provisionatorChannel: ${{ parameters.provisionatorChannel }}
-            agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-            artifactName: ${{ parameters.artifactName }}
-            artifactItemPattern: ${{ parameters.artifactItemPattern }}
-            checkoutDirectory: ${{ parameters.checkoutDirectory }}
-            useArtifacts: ${{ parameters.useArtifacts }}
-            poolName: ${{ parameters.androidPool.name }}
-            deviceTestConfiguration: $(ANDROID_CONFIGURATION)
-            skipProvisioning: ${{ parameters.skipProvisioning }}
-
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - ${{ each api in parameters.androidApiLevels }}:
+            - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
+              - job: android_device_tests_${{ project.name }}_${{ api }}
+                timeoutInMinutes: 60
+                workspace:
+                  clean: all
+                displayName: android_${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_API_${{ api }}
+                ${{ if eq(coalesce(project.desc, project.name), 'Controls') }}:
+                  pool: ${{ parameters.androidPoolX64 }}
+                ${{ else }}:
+                  pool: ${{ parameters.androidPool }}
+                variables:
+                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  PROJECT_PATH: ${{ project.android }}
+                  ANDROID_CONFIGURATION: ${{ project.androidConfiguration }}
+                  TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
+                  DEVICE: android-emulator-64_${{ api }}
+                  APIVERSION: ${{ api }}                  
+                steps:
+                  - template: device-tests-steps.yml
+                    parameters:
+                      platform: android
+                      path: $(PROJECT_PATH) 
+                      device: $(DEVICE)
+                      apiVersion: $(APIVERSION)
+                      windowsPackageId: android # Only needed for Windows, will be ignored
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      artifactName: ${{ parameters.artifactName }}
+                      artifactItemPattern: ${{ parameters.artifactItemPattern }}
+                      checkoutDirectory: ${{ parameters.checkoutDirectory }}
+                      useArtifacts: ${{ parameters.useArtifacts }}
+                      poolName: ${{ parameters.androidPool.name }}
+                      deviceTestConfiguration: $(ANDROID_CONFIGURATION)
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+  
   - stage: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} iOS Device Tests
     ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
@@ -173,7 +170,6 @@ stages:
             poolName: 'Azure Pipelines'
             skipProvisioning: ${{ parameters.skipProvisioning }}
             deviceTestConfiguration: $(IOS_CONFIGURATION)
-
 
   - stage: windows_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} Windows Device Tests

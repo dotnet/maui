@@ -3,8 +3,6 @@ variables:
   value: $[counter('buildversion-counter', 5000)]
 - name: _BuildOfficalId
   value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
-- name: NUGET_VERSION
-  value: 6.4.0
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
@@ -13,24 +11,17 @@ variables:
   value: 16.0.0
 - name: DEVICETESTS_REQUIRED_XCODE
   value: 16.0.0
+- name: POWERSHELL_VERSION
+  value: 7.4.0
+# Localization variables
 - name: LocBranchPrefix
   value: 'loc-hb'
-- name: isMainBranch
-  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
-- name: isLocBranch
-  value: $[or(eq(variables['Build.SourceBranch'], 'refs/heads/lego'), startsWith(variables['Build.SourceBranch'], 'refs/heads/lego'))]
-- name: isTargetMainBranch
-  value: $[eq(variables['System.PullRequest.TargetBranch'], 'refs/heads/main')]
-- name: isLocPRBranch
-  value: $[startsWith(variables['System.PullRequest.SourceBranch'], 'lego')]
-- name: isPullRequest
-  value: $[eq(variables['Build.Reason'], 'PullRequest')]
 - name: isLocHandoffBranch
-  value: $[in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net8.0', 'refs/heads/net7.0', 'refs/heads/main')]
+  value: $[in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main')]
 - name: signingCondition
   value: $[or(
             eq(variables['Sign'], 'true'),
-            in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net8.0', 'refs/heads/net7.0', 'refs/heads/main'),
+            in(variables['Build.SourceBranch'], 'refs/heads/net9.0', 'refs/heads/net10.0', 'refs/heads/main'),
             startsWith(variables['Build.SourceBranch'], 'refs/tags/'),
             startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')
           )]
@@ -57,8 +48,6 @@ variables:
   value: $(System.DefaultWorkingDirectory)/.dotnet/dotnet
 - name: TeamName
   value: Maui
-- name: POWERSHELL_VERSION
-  value: 7.4.0
 - name: Codeql.Enabled
   value: false
 - name: _RunAsPublic
