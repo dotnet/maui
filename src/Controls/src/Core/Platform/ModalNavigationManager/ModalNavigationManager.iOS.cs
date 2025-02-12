@@ -128,11 +128,24 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					var topPage = _platformModalPages[_platformModalPages.Count - 2];
 					var controller = (topPage?.Handler as IPlatformViewHandler)?.ViewController;
-					if (controller is not null)
+					if (controller?.ViewIfLoaded?.Window is not null)
 					{
 						await controller.PresentViewControllerAsync(wrapper, animated);
 						await Task.Delay(5);
 						return;
+					}
+					else
+					{
+						// If the top page is not in the window, we need to present the modal from the root view controller
+						var window = UIApplication.SharedApplication.GetKeyWindow();
+						var rootViewController = window?.RootViewController;
+
+						if (rootViewController is not null)
+						{
+							await rootViewController.PresentViewControllerAsync(wrapper, animated);
+							await Task.Delay(5);
+							return;
+						}
 					}
 				}
 
