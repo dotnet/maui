@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Platform
 
 		protected override AutomationPeer OnCreateAutomationPeer()
 		{
-			if (this.CrossPlatformLayout is not null && CrossPlatformLayout is IBorderView)
+			if (CrossPlatformLayout is IBorderView)
 			{
 				return new MauiBorderAutomationPeer(this);
 			}
