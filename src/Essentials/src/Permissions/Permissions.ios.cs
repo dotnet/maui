@@ -104,6 +104,7 @@ namespace Microsoft.Maui.ApplicationModel
 				var status = global::Contacts.CNContactStore.GetAuthorizationStatus(global::Contacts.CNEntityType.Contacts);
 				return status switch
 				{
+					global::Contacts.CNAuthorizationStatus.Limited => PermissionStatus.Limited,
 					global::Contacts.CNAuthorizationStatus.Authorized => PermissionStatus.Granted,
 					global::Contacts.CNAuthorizationStatus.Denied => PermissionStatus.Denied,
 					global::Contacts.CNAuthorizationStatus.Restricted => PermissionStatus.Restricted,
@@ -119,7 +120,7 @@ namespace Microsoft.Maui.ApplicationModel
 				if (result.Item2 != null)
 					return PermissionStatus.Denied;
 
-				return result.Item1 ? PermissionStatus.Granted : PermissionStatus.Denied;
+				return GetAddressBookPermissionStatus();
 			}
 		}
 
