@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(Page), null);
 
 		/// <summary>Bindable property for <see cref="IconImageSource"/>.</summary>
-		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
+		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource), propertyChanged: (b, o, n) => OnImageSourceChanged(b, o, n));
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
 
@@ -79,6 +79,20 @@ namespace Microsoft.Maui.Controls
 		internal View TitleView;
 
 		List<Action> _pendingActions = new List<Action>();
+
+		static void OnImageSourceChanged(BindableObject bindable, object oldvalue, object newValue)
+		{
+			if (oldvalue is ImageSource oldImageSource)
+				oldImageSource.SourceChanged -= ((Page)bindable).OnImageSourceSourceChanged;
+
+			if (newValue is ImageSource newImageSource)
+				newImageSource.SourceChanged += ((Page)bindable).OnImageSourceSourceChanged;
+		}
+
+		void OnImageSourceSourceChanged(object sender, EventArgs e)
+		{
+			OnPropertyChanged(IconImageSourceProperty.PropertyName);
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Page"/> class.
