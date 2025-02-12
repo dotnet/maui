@@ -46,26 +46,34 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Window)]
 		public void TitleBarWithLargeHeightShell()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Initial");
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
 			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_StartPageWithSmallTitleBar");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_StartPageWithSmallTitleBar");
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
+			App.WaitForElement("WelcomeLabel").Tap(); // Move the cursor from the Back Button to avoid the cursor.
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
 			App.TapBackArrow("Issue24489_2");
 
 			App.WaitForElement("SetTitleBarToNull").Tap();
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Initial");
 
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
+			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
+		
+			if (exception != null)
+			{
+				throw exception;
+			}
 		}
 
 		[Test]
