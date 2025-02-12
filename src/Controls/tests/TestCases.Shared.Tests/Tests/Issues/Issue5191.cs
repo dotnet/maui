@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if TEST_FAILS_ON_CATALYST	//DragCoordinates doesn't working on the MacCatalyst platform.
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -19,8 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Drag and drop.
-			App.DragCoordinates(100, 500, 1000, 100);
-
+			App.DragCoordinates(50, 200, 500, 500);
 			// 2. Verify if PanGesture reports a completed event status when the touch is lifted.
 			var result = App.FindElement("WaitForStubControl").GetText();
 			ClassicAssert.True(result?.Contains("Completed", StringComparison.OrdinalIgnoreCase));
