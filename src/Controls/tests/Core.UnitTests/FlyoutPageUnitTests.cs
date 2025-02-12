@@ -468,7 +468,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void VerifyToolbarButtonVisibilityWhenFlyoutReset()
 		{
 			Button resetButton = new Button { Text = "Reset" };
-			ContentPage contentPage = new ContentPage
+			ContentPage detailContentPage = new ContentPage
 			{
 				Content = new StackLayout
 				{
@@ -478,7 +478,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			FlyoutPage flyoutPage = new FlyoutPage
 			{
 				Flyout = new ContentPage { Title = "Flyout" },
-				Detail = new NavigationPage(contentPage)
+				Detail = new NavigationPage(detailContentPage)
 			};
 
 			_ = new TestWindow(flyoutPage);
