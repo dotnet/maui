@@ -80,7 +80,6 @@ parameters:
         vmImage: $(macOSXVmImage)
         demands:
           - macOS.Name -equals Sonoma
-          - macOS.Architecture -equals x64
         artifact: build-macos
  
   - name: PackPlatforms
