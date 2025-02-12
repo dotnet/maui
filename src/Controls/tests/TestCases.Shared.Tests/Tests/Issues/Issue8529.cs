@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "[Bug] [Shell] iOS - BackButtonBehavior Command property binding throws InvalidCastException when using a custom command class that implements ICommand";
-		
+
 		[Test]
 		[Category(UITestCategories.Shell)]
 		public void Issue8529ShellBackButtonBehaviorCommandPropertyCanUseICommand()
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(ButtonId, "Timed out waiting for first page.");
 			App.Tap(ButtonId);
 			App.WaitForElement("LabelId", "Timed out waiting for the destination page.");
-			App.TapBackArrow("BackButtonImage");			
+			App.TapBackArrow("BackButtonImage");
 			App.WaitForElement(ButtonId, "Timed out waiting to navigate back to the first page.");
 		}
 	}

@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS //PressEnter Method not supported on Windows
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -28,4 +27,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif

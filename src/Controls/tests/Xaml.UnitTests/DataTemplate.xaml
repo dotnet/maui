@@ -7,7 +7,7 @@
 	<ContentPage.Resources>
 		<ResourceDictionary>
 			<DataTemplate x:Key="celltemplate">
-				<TextCell Text="{Binding}"/>
+				<TextCell Text="{Binding}" x:DataType="x:String"/>
 			</DataTemplate>
 			<local:ReverseConverter x:Key="reverseConverter"/>
 		</ResourceDictionary>
@@ -23,7 +23,7 @@
 		<ListView x:Name="textCell">
 			<ListView.ItemTemplate>
 				<DataTemplate>
-					<TextCell Text="{Binding}"/>
+					<TextCell Text="{Binding}" x:DataType="x:String"/>
 				</DataTemplate>
 			</ListView.ItemTemplate>
 		</ListView>
@@ -31,14 +31,14 @@
 		<ListView x:Name="textCellAccessResource">
 			<ListView.ItemTemplate>
 				<DataTemplate>
-					<TextCell Text="{Binding Path=., Converter={StaticResource reverseConverter}}"/>
+					<TextCell Text="{Binding Path=., Converter={StaticResource reverseConverter}}" x:DataType="x:String"/>
 				</DataTemplate>
 			</ListView.ItemTemplate>
 		</ListView>
 		<ListView x:Name="viewCellAccessResource">
 			<ListView.ItemTemplate>
 				<DataTemplate>
-					<ViewCell><Label Text="{Binding Path=., Converter={StaticResource reverseConverter}}"/></ViewCell>
+					<ViewCell><Label Text="{Binding Path=., Converter={StaticResource reverseConverter}}" x:DataType="x:String"/></ViewCell>
 				</DataTemplate>
 			</ListView.ItemTemplate>
 		</ListView>

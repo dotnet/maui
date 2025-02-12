@@ -19,12 +19,12 @@ public class Issue4684 : _IssuesUITest
 	{
 		App.TapInShellFlyout("Connect");
 		App.WaitForElementTillPageNavigationSettled("Connect");
-		App.TapTab(control,true);
+		App.TapTab(control, true);
 		App.WaitForElementTillPageNavigationSettled("Control");
 		App.TapInShellFlyout("Home");
 		App.WaitForElementTillPageNavigationSettled("Control");
 		App.TapInShellFlyout("Connect");
-		App.TapTab(connect,true);
+		App.TapTab(connect, true);
 		App.WaitForElement("Connect");
 		App.TapTab(control, true);
 		App.WaitForElement("Success");

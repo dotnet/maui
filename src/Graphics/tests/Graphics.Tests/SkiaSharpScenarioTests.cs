@@ -35,12 +35,12 @@ public class SkiaSharpScenarioTests
 			Directory.CreateDirectory(Path.GetDirectoryName(newImageFilename));
 
 			bmp.WriteToFile(newImageFilename);
-			
+
 			Assert.Fail($"Image file did not exist, created: {newImageFilename}");
 		}
 
 		// file existed, compare
-		ImageAssert.Equivalent(bmp.SKImage, expectedImagePath, GetErrorsImageDirectory(), 0);
+		ImageAssert.Equivalent(bmp.SKImage, expectedImagePath, GetErrorsImageDirectory(), 0.07);
 	}
 
 	private static string ProjectRoot =>

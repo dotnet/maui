@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Page)]
 		public void NavigationBarBackgroundShouldChange()
 		{
-			try 
+			try
 			{
 				App.WaitForElement("lightThemeLabel");
 				VerifyScreenshot("NavigationBarBackgroundShouldChangeLightTheme");
