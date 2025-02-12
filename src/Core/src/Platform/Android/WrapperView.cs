@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Platform
 				int[] colors;
 				float[] positions;
 				float[] bounds;
-				
+
 				switch (shadowPaint)
 				{
 					case LinearGradientPaint linearGradientPaint:

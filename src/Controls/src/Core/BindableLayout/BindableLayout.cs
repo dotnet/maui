@@ -576,7 +576,7 @@ namespace Microsoft.Maui.Controls
 			return view;
 		}
 
-		
+
 		static void ClearBindingContext(IView child)
 		{
 			if (child is BindableObject bindable && bindable.IsSet(BindableLayoutTemplateProperty))

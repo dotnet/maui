@@ -376,6 +376,7 @@ AndroidEmulatorToolSettings AdjustEmulatorSettingsForCI(AndroidEmulatorToolSetti
 
 void DetermineDeviceCharacteristics(string deviceDescriptor, int defaultApiLevel)
 {
+	var isArm64 = System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64;
 	var working = deviceDescriptor.Trim().ToLower();
 	var emulator = true;
 	var api = defaultApiLevel;
@@ -407,7 +408,7 @@ void DetermineDeviceCharacteristics(string deviceDescriptor, int defaultApiLevel
 	}
 	else if (parts[2] == "64")
 	{
-		if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
+		if (isArm64)
 			deviceArch = "arm64-v8a";
 		else if (emulator)
 			deviceArch = "x86_64";
@@ -417,6 +418,8 @@ void DetermineDeviceCharacteristics(string deviceDescriptor, int defaultApiLevel
 	var sdk = api >= 27 ? "google_apis_playstore" : "google_apis";
 	if (api == 27 && deviceArch == "x86_64")
 		sdk = "default";
+	if (api == 27 && deviceArch == "arm64-v8a")
+		sdk = "google_apis";
 
 	androidAvdImage = $"system-images;android-{api};{sdk};{deviceArch}";
 
