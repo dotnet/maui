@@ -1851,6 +1851,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the shadow effect cast by the element. This is a bindable property.
 		/// </summary>
+		[TypeConverter(typeof(ShadowTypeConverter))]
 		public Shadow Shadow
 		{
 			get { return (Shadow)GetValue(ShadowProperty); }

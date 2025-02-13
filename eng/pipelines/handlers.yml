@@ -80,6 +80,7 @@ parameters:
         vmImage: $(macOSXVmImage)
         demands:
           - macOS.Name -equals Sonoma
+          - macOS.Architecture -equals x64
         artifact: build-macos
  
   - name: PackPlatforms
@@ -164,7 +165,7 @@ stages:
             workspace:
               clean: all
             displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
-            timeoutInMinutes: 240
+            timeoutInMinutes: 120
             condition: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
