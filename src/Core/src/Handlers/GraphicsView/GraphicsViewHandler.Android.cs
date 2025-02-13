@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics.Platform;
+﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -20,6 +21,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapInvalidate(IGraphicsViewHandler handler, IGraphicsView graphicsView, object? arg)
 		{
 			handler.PlatformView?.Invalidate();
+		}
+
+		internal static void MapBackground(IGraphicsViewHandler handler, IGraphicsView graphicsView)
+		{
+			handler.PlatformView?.UpdateBackground(graphicsView);
 		}
 	}
 }
