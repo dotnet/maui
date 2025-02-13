@@ -134,19 +134,6 @@ namespace Microsoft.Maui.Controls.Platform
 						await Task.Delay(5);
 						return;
 					}
-					else
-					{
-						// If the top page is not in the window, we need to present the modal from the root view controller
-						var window = UIApplication.SharedApplication.GetKeyWindow();
-						var rootViewController = window?.RootViewController;
-
-						if (rootViewController is not null)
-						{
-							await rootViewController.PresentViewControllerAsync(wrapper, animated);
-							await Task.Delay(5);
-							return;
-						}
-					}
 				}
 
 				// One might wonder why these delays are here... well thats a great question. It turns out iOS will claim the 
