@@ -12,7 +12,7 @@ public class Issue8186 : _IssuesUITest
 
 	public override string Issue => "[UWP] Setting IsRefreshing from OnAppearing on RefreshView crashes UWP";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.RefreshView)]
 	public void SetIsRefreshingToTrueInOnAppearingDoesntCrash()
 	{

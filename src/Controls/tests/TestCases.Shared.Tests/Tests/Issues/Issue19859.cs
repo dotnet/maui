@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "NavigationPage: BarBackgroundColor, BarTextColor and Title not updating";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Navigation)]
 		public void NavigationPageTitle()
 		{

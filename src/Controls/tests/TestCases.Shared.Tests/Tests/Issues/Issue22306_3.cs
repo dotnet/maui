@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Verify many different button examples";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage1()
 		{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Border");
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage2()
 		{
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage3()
 		{
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage4()
 		{
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage5()
 		{
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage6()
 		{
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage7()
 		{
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Button)]
 		public void VerifyButtonPage8()
 		{

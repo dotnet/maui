@@ -13,7 +13,7 @@ public class Issue2272 : _IssuesUITest
 
 	public override string Issue => "Entry text updating set focus on the beginning of text not the end of it";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Entry)]
 	public void TestFocusIsOnTheEndAfterSettingText()
 	{

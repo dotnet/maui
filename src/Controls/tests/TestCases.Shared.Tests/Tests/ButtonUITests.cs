@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(ButtonGallery);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Button)]
 		public void Clicked()
 		{

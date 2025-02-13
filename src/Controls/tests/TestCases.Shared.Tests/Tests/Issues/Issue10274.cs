@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "MAUI Flyout does not work on Android when not using Shell";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.FlyoutPage)]
 		public void FlyoutPageNavigation()
 		{

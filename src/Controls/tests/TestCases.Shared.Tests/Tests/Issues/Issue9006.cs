@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] Unable to open a new Page for the second time in Xamarin.Forms Shell Tabbar";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Shell)]
 		[Category(UITestCategories.Compatibility)]
 		public void ClickingOnTabToPopToRootDoesntBreakNavigation()

@@ -12,7 +12,7 @@ public class Bugzilla30324 : _IssuesUITest
 
 	public override string Issue => "Detail view of FlyoutPage does not get appearance events on Android when whole FlyoutPage disappears/reappears";
 
-	// [Test]
+	// [Test, Retry(2)]
 	// [Category(UITestCategories.FlyoutPage)]
 	// public void Bugzilla30324Test ()
 	// {

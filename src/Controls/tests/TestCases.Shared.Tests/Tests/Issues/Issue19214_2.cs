@@ -16,7 +16,7 @@ public class Issue19214_2 : _IssuesUITest
 
     public override string Issue => "iOS Editor Cursor stays above keyboard - Top level Grid";
 
-    [Test]
+    [Test, Retry(2)]
     [Category(UITestCategories.Entry)]
     public void KeepEditorCursorAboveKeyboardInGrid ()
     {

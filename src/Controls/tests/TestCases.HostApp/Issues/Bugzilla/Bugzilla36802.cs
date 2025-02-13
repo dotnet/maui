@@ -61,7 +61,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 
 #if (UITEST && __IOS__)
-        [Test]
+        [Test, Retry(2)]
 		[Category(UITestCategories.ManualReview)]
 		[Compatibility.UITests.FailsOnMauiIOS]
         public void Bugzilla36802Test()

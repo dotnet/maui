@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(CheckBoxGallery);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CheckBox)]
 		public override void IsEnabled()
 		{

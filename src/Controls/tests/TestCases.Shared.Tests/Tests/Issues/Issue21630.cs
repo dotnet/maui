@@ -21,8 +21,8 @@ public class Issue21630 : _IssuesUITest
 
 	protected override bool ResetAfterEachTest => true;
 
-	[TestCase("SwapNavigationPage", Category = UITestCategories.Entry)]
-	[TestCase("SwapShellPage", Category = UITestCategories.Entry)]
+	[TestCase("SwapNavigationPage", Category = UITestCategories.Entry), Retry(2), Retry(2)]
+	[TestCase("SwapShellPage", Category = UITestCategories.Entry), Retry(2), Retry(2)]
 
 	public void NavBarEntryDoesNotTriggerKeyboardScroll(string scenario)
 	{

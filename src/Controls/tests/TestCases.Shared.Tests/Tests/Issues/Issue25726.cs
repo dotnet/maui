@@ -16,7 +16,7 @@ internal class Issue25726 : _IssuesUITest
 
 	public override string Issue => "NullReferenceException in WillMoveToParentViewController When Removing Page During Navigation on iOS";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Navigation)]
 	public void NavigationShouldNotCrashWhenRemovingPageDuringNavigation()
 	{

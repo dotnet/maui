@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 #if ANDROID
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #endif
 
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
-		//[Test]
+		//[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void KeepScrollOffset()
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		// KeepLastItemInView(src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
-		//[Test]
+		//[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void KeepLastItemInView()

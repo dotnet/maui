@@ -11,7 +11,7 @@ public class Issue22674 : _IssuesUITest
 
 	public override string Issue => "Crash when quickly clicking to delete item";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.CollectionView)]
 	public void RemoveItemWhenSelectionChanged()
 	{

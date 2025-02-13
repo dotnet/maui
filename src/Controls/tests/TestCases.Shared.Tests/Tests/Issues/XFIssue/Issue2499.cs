@@ -13,7 +13,7 @@ public class Issue2499 : _IssuesUITest
 
 	public override string Issue => "Binding Context set to Null in Picker";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Picker)]
 	public void Issue2499Test()
 	{

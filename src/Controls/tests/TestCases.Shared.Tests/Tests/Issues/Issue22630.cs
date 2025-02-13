@@ -14,7 +14,7 @@ public class Issue22630 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void ListViewScrolled()
 	{

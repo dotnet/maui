@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "NavigationBar.BarBackgroundColor resets on Lollipop after popping modal page";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla30166Test()

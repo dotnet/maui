@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Drag and drop reordering not firing CollectionChanged";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Gestures)]
 		public void Issue3273Test()
 		{

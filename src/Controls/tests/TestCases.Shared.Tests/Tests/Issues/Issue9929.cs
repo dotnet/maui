@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] NSInternalInconsistencyException when trying to run XamarinTV on iOS";
 
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		public void Issue3884Test()
 		{

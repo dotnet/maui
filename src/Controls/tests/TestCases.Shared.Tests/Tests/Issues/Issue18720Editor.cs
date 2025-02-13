@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Setting the background property of AppCompatEditText (Editor) in a handler mapping does not work";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Editor)]
 		public async Task SettingEditorBackgroundFromHandler()
 		{

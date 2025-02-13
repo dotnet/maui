@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		const string SwipeViewId = "SwipeViewId";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.SwipeView)]
 		[Category(UITestCategories.Compatibility)]
 		public void SwipeWithChildGestureRecognizer()

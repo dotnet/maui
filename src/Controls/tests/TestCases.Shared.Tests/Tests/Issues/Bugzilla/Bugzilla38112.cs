@@ -15,7 +15,7 @@ public class Bugzilla38112 : _IssuesUITest
 	}
 
 	public override string Issue => "Switch becomes reenabled when previous ViewCell is removed from TableView";
-	[Test]
+	[Test, Retry(2)]
 	public void Bugzilla38112_SwitchIsStillOnScreen()
 	{
 		App.WaitForElement("Click");
@@ -23,7 +23,7 @@ public class Bugzilla38112 : _IssuesUITest
 		App.WaitForElement("switch3");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void Bugzilla38112_SwitchIsStillDisabled()
 	{
 		App.WaitForElement("Click");

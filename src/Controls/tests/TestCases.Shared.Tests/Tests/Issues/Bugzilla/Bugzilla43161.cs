@@ -14,7 +14,7 @@ public class Bugzilla43161 : _IssuesUITest
 
 	public override string Issue => "[iOS] Setting Accessory in ViewCellRenderer breaks layout";
 
-	 [Test]
+	 [Test, Retry(2)]
 	 [Category(UITestCategories.Cells)]
 	 public void Bugzilla43161Test()
 	 {

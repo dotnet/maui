@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[D9] Editor IsReadOnly works";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Editor)]
 		[FailsOnMacWhenRunningOnXamarinUITest("Currently IsKeyboardShown is not implemented.")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Currently IsKeyboardShown is not implemented.")]

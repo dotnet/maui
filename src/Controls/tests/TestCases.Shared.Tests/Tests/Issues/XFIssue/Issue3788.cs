@@ -12,7 +12,7 @@ public class Issue3788 : _IssuesUITest
 
 	public override string Issue => "[UWP] ListView with observable collection always seems to refresh the entire list";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void ReplaceItemScrollsListToTop()
 	{

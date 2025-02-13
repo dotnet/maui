@@ -13,7 +13,7 @@ public class Issue3653 : _IssuesUITest
 
 	public override string Issue => "Loses the correct reference to the cell after adding and removing items to a ListView";
 
-	// [Test]
+	// [Test, Retry(2)]
 	// [Category(UITestCategories.ContextActions)]
 	// [FailsOnAndroid]
 	// [FailsOnIOSWhenRunningOnXamarinUITest]

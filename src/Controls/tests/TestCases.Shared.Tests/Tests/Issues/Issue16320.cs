@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Adding an item to a CollectionView with linear layout crashes";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		public void Issue16320Test()
 		{

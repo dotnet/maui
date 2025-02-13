@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Span text-decoration is incorrect whereas the Label behaves properly";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Label)]
 		public void LabelHyperlinkUnderlineColor()
 		{

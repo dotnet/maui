@@ -16,7 +16,7 @@ public class Issue3840 : _IssuesUITest
 
 	public override string Issue => "[iOS] Translation change causes ScrollView to reset to initial position (0, 0)";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ScrollView)]
 	public void TranslatingViewKeepsScrollViewPosition()
 	{

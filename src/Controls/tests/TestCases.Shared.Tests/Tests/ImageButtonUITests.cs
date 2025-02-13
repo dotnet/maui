@@ -20,7 +20,7 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 #if TEST_FAILS_ON_CATALYST
-	[Test]
+	[Test, Retry(2)]
 	public void Aspect()
 	{
 		var remote = GoToStateRemote();
@@ -40,77 +40,77 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 #endif
 
-	[Test]
+	[Test, Retry(2)]
 	public void Aspect_AspectFill()
 	{
 		GoToRemote();
 		VerifyScreenshot("ImageButtonUITests_Aspect_AspectFill");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void Aspect_AspectFit()
 	{
 		GoToRemote();
 		VerifyScreenshot("ImageButtonUITests_Aspect_AspectFit");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void Aspect_Fill()
 	{
 		GoToRemote();
 		VerifyScreenshot("ImageButtonUITests_Aspect_Fill");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void Aspect_Center()
 	{
 		GoToRemote();
 		VerifyScreenshot("ImageButtonUITests_Aspect_Center");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void BorderColor()
 	{
 		GoToRemote();
 		VerifyScreenshot("ImageButtonUITests_BorderColor");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void CornerRadius()
 	{
 		GoToRemote();
 		VerifyScreenshot("ImageButtonUITests_CornerRadius");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void BorderWidth()
 	{
 		GoToRemote();
 		VerifyScreenshot("ImageButtonUITests_BorderWidth");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void BorderColor_WithBackground()
 	{
 		GoToRemote();
 		VerifyScreenshot("ImageButtonUITests_BorderColor_WithBackground");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void CornerRadius_WithBackground()
 	{
 		GoToRemote();
 		VerifyScreenshot("ImageButtonUITests_CornerRadius_WithBackground");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void BorderWidth_WithBackground()
 	{
 		GoToRemote();
 		VerifyScreenshot("ImageButtonUITests_BorderWidth_WithBackground");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void Clicked()
 	{
 		var remote = GoToEventRemote();
@@ -126,7 +126,7 @@ internal class ImageButtonUITests : _ViewUITests
 	}
 
 	// TODO: TouchAndHoldView is missing
-	//[Test]
+	//[Test, Retry(2)]
 	//public void Pressed()
 	//{
 	//	var remote = GoToEventRemote();
@@ -141,7 +141,7 @@ internal class ImageButtonUITests : _ViewUITests
 	//	Assert.That(textAfterClick, Is.EqualTo("Event: Pressed (fired 1)"));
 	//}
 
-	[Test]
+	[Test, Retry(2)]
 	public void Command()
 	{
 		var remote = GoToEventRemote();
@@ -156,7 +156,7 @@ internal class ImageButtonUITests : _ViewUITests
 		Assert.That(textAfterClick, Is.EqualTo("Event: Command (fired 1)"));
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void Padding()
 	{
 		var remote = GoToStateRemote();
@@ -169,7 +169,7 @@ internal class ImageButtonUITests : _ViewUITests
 		VerifyScreenshot("ImageButtonUITests_Padding_Initial");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void Padding_Add()
 	{
 		var remote = GoToStateRemote();

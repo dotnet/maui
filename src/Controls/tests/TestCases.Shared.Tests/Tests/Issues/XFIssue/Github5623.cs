@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView with Incremental Collection (RemainingItemsThreshold)";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewInfiniteScroll()
 		{

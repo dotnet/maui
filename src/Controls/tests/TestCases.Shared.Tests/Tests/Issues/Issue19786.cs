@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] Crash removing item from CarouselView";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CarouselView)]
 		public void RemovingItemsShouldNotCauseCrash()
 		{

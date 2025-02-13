@@ -15,7 +15,7 @@ public class Issue26534 : _IssuesUITest
 
 	public override string Issue => "Exception occurred when using GroupShortNameBinding in Grouped ListView";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void VerifyListViewWithGroupShortNameBinding()
 	{

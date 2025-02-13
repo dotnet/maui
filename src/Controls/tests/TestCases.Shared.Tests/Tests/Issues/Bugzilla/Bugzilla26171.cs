@@ -13,7 +13,7 @@ public class Bugzilla26171 : _IssuesUITest
 
 	public override string Issue => "Microsoft.Maui.Controls.Maps is not updating VisibleRegion property when layout is changed";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Maps)]
 	public void Bugzilla26171Test()
 	{

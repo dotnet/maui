@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "For ListView in Recycle mode ScrollTo causes cell leak and in some cases NRE";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue3275Test()

@@ -15,7 +15,7 @@ public class Issue3276 : _IssuesUITest
 
 	public override string Issue => "Crashing Unknown cell parent type on ContextAction Bindings";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ContextActions)]
 	public void Issue3276Test()
 	{

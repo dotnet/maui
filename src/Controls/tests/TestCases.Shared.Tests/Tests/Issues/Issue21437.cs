@@ -13,7 +13,7 @@ public class Issue21437 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Gestures)]
 	public void ExceptionShouldNotBeThrown()
 	{

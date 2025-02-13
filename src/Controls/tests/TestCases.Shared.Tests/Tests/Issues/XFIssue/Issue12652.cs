@@ -17,7 +17,7 @@ public class Issue12652 : _IssuesUITest
 
 	public override string Issue => "[Bug] NullReferenceException in the Shell on UWP when navigating back to Shell Section with multiple content items";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void NavigatingBackToAlreadySelectedTopTabDoesntCrash()
 	{

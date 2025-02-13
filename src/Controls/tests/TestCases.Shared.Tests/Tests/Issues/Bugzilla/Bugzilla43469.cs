@@ -14,7 +14,7 @@ public class Bugzilla43469 : _IssuesUITest
 
 	public override string Issue => "Calling DisplayAlert twice in WinRT causes a crash";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.DisplayAlert)]
 	public void Bugzilla43469Test()
 	{

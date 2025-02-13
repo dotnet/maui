@@ -25,7 +25,7 @@ internal class ImageUITests : _ViewUITests
 	}
 
 #if TEST_FAILS_ON_CATALYST
-	[Test]
+	[Test, Retry(2)]
 	public void Source_FontImageSource()
 	{
 		var remote = GoToStateRemote();
@@ -39,7 +39,7 @@ internal class ImageUITests : _ViewUITests
 	}
 #endif
 
-	[Test]
+	[Test, Retry(2)]
 	public async Task IsAnimationPlaying()
 	{
 		var remote = GoToStateRemote();

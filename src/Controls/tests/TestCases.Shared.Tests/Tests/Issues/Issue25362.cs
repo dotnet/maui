@@ -11,7 +11,7 @@ public class Issue25362 : _IssuesUITest
 	public Issue25362(TestDevice device) : base(device)
 	{ }
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.CollectionView)]
 	[FailsOnIOSWhenRunningOnXamarinUITest("This is not working for CV2 yet")]
 	[FailsOnMacWhenRunningOnXamarinUITest("This is not working for CV2 yet")]

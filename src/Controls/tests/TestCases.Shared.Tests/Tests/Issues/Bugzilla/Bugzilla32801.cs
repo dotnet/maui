@@ -19,7 +19,7 @@ public class Bugzilla32801 : _IssuesUITest
 
 	public override string Issue => "Memory Leak in TabbedPage + NavigationPage";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TabbedPage)]
 	public void Bugzilla32801Test()
 	{

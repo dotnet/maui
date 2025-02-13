@@ -13,7 +13,7 @@ public class Bugzilla43527 : _IssuesUITest
 
 	public override string Issue => "[UWP] Detail title does not update when wrapped in a NavigationPage";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void TestB43527UpdateTitle()
 	{

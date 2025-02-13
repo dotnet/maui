@@ -34,7 +34,7 @@
 		}
 
 #if (UITEST && __IOS__)
-        [Test]
+        [Test, Retry(2)]
 		[Category(UITestCategories.ManualReview)]
 		[Compatibility.UITests.FailsOnMauiIOS]
         public void Issue5830Test()

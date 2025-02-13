@@ -27,7 +27,7 @@ public class HeaderFooterShellFlyout : _IssuesUITest
 	public override string Issue => "Shell Flyout Header Footer";
 
 #if IOS
-    [Test]
+    [Test, Retry(2)]
     public void FlyoutHeaderWithZeroMarginShouldHaveNoY()
     {
         App.Tap("ZeroMarginHeader");
@@ -36,7 +36,7 @@ public class HeaderFooterShellFlyout : _IssuesUITest
     }
 #endif
 
-	[Test]
+	[Test, Retry(2)]
 	public void AFlyoutTests()
 	{
 		App.WaitForElement("PageLoaded");

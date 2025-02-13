@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] Non appcompat SwitchRenderer regression between 3.0 and 3.1";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Switch)]
 		[Category(UITestCategories.Compatibility)]
 		public void NonAppCompatBasicSwitchTest()

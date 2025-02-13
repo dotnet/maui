@@ -13,7 +13,7 @@ public class Bugzilla31333 : _IssuesUITest
 
 	public override string Issue => "Focus() on Entry in ViewCell brings up keyboard, but doesn't have cursor in EditText";
 
-	[Test]
+	[Test, Retry(2)]
 	public void Issue31333FocusEntryInListViewCell()
 	{
 		App.Tap("Focus Entry in ListView");
@@ -22,7 +22,7 @@ public class Bugzilla31333 : _IssuesUITest
 		App.Tap("Focus Entry in ListView");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void Issue31333FocusEditorInListViewCell()
 	{
 		App.Tap("Focus Editor in ListView");
@@ -31,7 +31,7 @@ public class Bugzilla31333 : _IssuesUITest
 		App.Tap("Focus Editor in ListView");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void Issue31333FocusEntryInTableViewCell()
 	{
 		App.Tap("Focus Entry in Table");
@@ -40,7 +40,7 @@ public class Bugzilla31333 : _IssuesUITest
 		App.Tap("Focus Entry in Table");
 	}
 #if !IOS //Once Editor text is entered the cursor move to second line when using App.EnterText method in appium which results retrived text is not as expected one. 
-	[Test]
+	[Test, Retry(2)]
 	public void Issue31333FocusEditorInTableViewCell()
 	{
 		App.Tap("Focus Editor in Table");

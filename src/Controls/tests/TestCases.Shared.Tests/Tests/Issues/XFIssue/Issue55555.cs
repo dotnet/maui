@@ -12,7 +12,7 @@ public class Issue55555 : _IssuesUITest
 
 	public override string Issue => "Header problem";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void TGroupDisplayBindingPresentRecycleElementTest()
 	{

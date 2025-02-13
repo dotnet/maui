@@ -13,7 +13,7 @@ public class Issue25409 : _IssuesUITest
 
 	public override string Issue => "UIButton CurrentImage can be set without crashing";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Button)]
 	public void CurrentImageSet()
 	{

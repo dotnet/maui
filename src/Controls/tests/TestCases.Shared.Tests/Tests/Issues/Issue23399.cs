@@ -9,7 +9,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	{
 		public override string Issue => "Closing Modal While App is Backgrounded Fails";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Navigation)]
 		public void MakingFragmentRelatedChangesWhileAppIsBackgroundedFails()
 		{

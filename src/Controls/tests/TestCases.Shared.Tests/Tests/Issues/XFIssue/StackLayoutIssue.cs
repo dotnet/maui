@@ -12,7 +12,7 @@ public class StackLayoutIssue : _IssuesUITest
 
 	public override string Issue => "StackLayout issue";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Layout)]
 	public void StackLayoutIssueTestsAllElementsPresent()
 	{

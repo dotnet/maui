@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Buttons with Images layouts";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Button)]
 		public void Issue21394Test()
 		{

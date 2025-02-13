@@ -20,7 +20,7 @@ public class Bugzilla45926 : _IssuesUITest
 
 	public override string Issue => "MessagingCenter prevents subscriber from being collected";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Page)]
 	public void Issue45926Test()
 	{

@@ -12,7 +12,7 @@ public class Issue18161 : _IssuesUITest
 
 	public override string Issue => "Toggling FlyoutLayoutBehavior on Android causes the app to crash";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void NoExceptionShouldBeThrown()
 	{

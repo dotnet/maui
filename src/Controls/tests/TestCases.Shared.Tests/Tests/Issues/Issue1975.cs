@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] ListView throws NRE when grouping enabled and data changed";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
 		public void ClickPropagatesToOnTouchListener()

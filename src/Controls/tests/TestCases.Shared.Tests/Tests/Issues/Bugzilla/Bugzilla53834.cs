@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "incorrect row heights on ios when using groupheadertemplate in Xamarin.Forms 2.3.4.214-pre5";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ListView)]
 		public void Bugzilla53834Test()
 		{

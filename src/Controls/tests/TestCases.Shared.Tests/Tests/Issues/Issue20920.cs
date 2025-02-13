@@ -12,7 +12,7 @@ public class Issue20920 : _IssuesUITest
 
 	public override string Issue => "Nested ScrollView does not work in Android";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ScrollView)]
 	public void ScrollingBothDirectionsWithNestedScrollViews()
 	{

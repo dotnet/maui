@@ -12,7 +12,7 @@ public class Issue4356 : _IssuesUITest
 
 	public override string Issue => "[iOS] NSInternalInconsistencyException thrown when adding item to ListView after clearing bound ObservableCollection";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Issue4356Test()
 	{

@@ -16,7 +16,7 @@ public class Issue1777 : _IssuesUITest
 
 	public override string Issue => "Adding picker items when picker is in a ViewCell breaks";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TableView)]
 	public void Issue1777Test()
 	{

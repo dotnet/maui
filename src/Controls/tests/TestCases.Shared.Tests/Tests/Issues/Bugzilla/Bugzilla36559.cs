@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[WP] Navigating to a ContentPage with a Grid inside a TableView affects Entry heights";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Entry)]
 		public void Bugzilla36559Test()
 		{

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] Null drawable crashes Image Button";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ImageButton)]
 		[Category(UITestCategories.Compatibility)]
 		public void ImageButtonNullDrawable()

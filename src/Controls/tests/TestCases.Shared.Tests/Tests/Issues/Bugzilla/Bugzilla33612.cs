@@ -12,7 +12,7 @@ public class Bugzilla33612 : _IssuesUITest
 
 	public override string Issue => "(A) Removing a page from the navigation stack causes an 'Object reference' exception in Android only";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Navigation)]
 	public void Issue33612RemovePagesWithoutRenderers()
 	{

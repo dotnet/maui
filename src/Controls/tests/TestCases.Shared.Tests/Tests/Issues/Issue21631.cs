@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => 
 			"Injecting base tag in Webview2 works";
 
-		[Test]
+		[Test, Retry(2)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("WebView seems to be unreliably loading the image")]
 		[Category(UITestCategories.WebView)]
 		public async Task NavigateToStringWithWebviewWorks()

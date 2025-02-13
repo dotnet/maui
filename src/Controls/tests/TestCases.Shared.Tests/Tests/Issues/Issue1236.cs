@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Label binding";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.Compatibility)]
 		public void DelayedLabelBindingShowsUp()

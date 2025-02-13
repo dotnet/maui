@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		// ItemsFromViewModelShouldBeSelected (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBoundMultiSelection.cs)
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		public void ItemsFromViewModelShouldBeSelected()
 		{

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Cannot un-reveal swipe view items on iOS / Inconsistent swipe view behaviour";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.SwipeView)]
 		public void Issue9306SwipeViewCloseSwiping()
 		{

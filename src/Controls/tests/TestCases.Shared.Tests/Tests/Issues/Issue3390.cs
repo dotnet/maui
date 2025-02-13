@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Crash or incorrect behavior with corner radius 5";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Button)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue3390Test()

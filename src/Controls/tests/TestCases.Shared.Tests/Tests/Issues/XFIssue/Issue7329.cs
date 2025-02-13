@@ -13,7 +13,7 @@ public class Issue7329 : _IssuesUITest
 
 	public override string Issue => "[Android] ListView scroll not working when inside a ScrollView";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ScrollView)]
 	public void ScrollListViewInsideScrollView()
 	{

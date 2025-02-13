@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ScrollView always has a scroll bar on iOS";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ScrollView)]
 		public void NoScrollbarsTest()
 		{

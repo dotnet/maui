@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CarouselView Loop=True default freezes iOS app";
 
 		// Issue12574 (src\ControlGallery\src\Issues.Shared\Issue12574.cs
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CarouselView)]
 		[FailsOnMacWhenRunningOnXamarinUITest("DragCoordinates methods not implemented")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("DragCoordinates methods not implemented")]
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("0 item");
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CarouselView)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issu")]
 		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issu")]

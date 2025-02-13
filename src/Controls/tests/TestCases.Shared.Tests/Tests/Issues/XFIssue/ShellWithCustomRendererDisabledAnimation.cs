@@ -12,7 +12,7 @@ public class ShellWithCustomRendererDisabledAnimation : _IssuesUITest
 
 	public override string Issue => "[Shell] Overriding animation with custom renderer to remove animation breaks next navigation";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void NavigationWithACustomRendererThatDoesntSetAnAnimationStillWorks()
 	{

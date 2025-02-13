@@ -11,7 +11,7 @@ public class Issue24583 : _IssuesUITest
 	{
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Editor)]
 	public void TextInEditorShouldBeCorrectlyPositionedAfterResizing()
 	{

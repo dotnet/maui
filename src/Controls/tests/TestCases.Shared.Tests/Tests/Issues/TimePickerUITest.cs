@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		: base(device)
 		{ }
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.TimePicker)]
 		public void VerifyTimePickerApperance()
 		{

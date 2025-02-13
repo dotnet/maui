@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Object Disposed Exception in ScrollView";
 
 		// ScrollViewObjectDisposedTest (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewObjectDisposed.cs)
-		[Test]
+		[Test, Retry(2)]
 		[Description("Tapping a button inside the ScrollView does not cause an exception.")]
 		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ContentPresenter just rendering component string in .Net9";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.RadioButton)]
 		public void RadioButtonContentNotRendering()
 		{

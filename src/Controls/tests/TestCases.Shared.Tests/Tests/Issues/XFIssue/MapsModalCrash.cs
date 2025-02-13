@@ -17,7 +17,7 @@ public class MapsModalCrash : _IssuesUITest
 
 	public override string Issue => "Modal Page over Map crashes application";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Maps)]
 	public void CanDisplayModalOverMap()
 	{

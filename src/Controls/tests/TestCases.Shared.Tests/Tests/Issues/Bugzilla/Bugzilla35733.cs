@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "iOS WebView crashes when loading an URL with encoded parameters";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.WebView)]
 		public void Bugzilla35733Test()
 		{

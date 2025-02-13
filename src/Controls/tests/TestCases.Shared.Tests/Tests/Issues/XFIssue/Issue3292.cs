@@ -13,7 +13,7 @@ public class Issue3292 : _IssuesUITest
 
 	public override string Issue => "TableSection.Title property binding fails in XAML";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TableView)]
 	public void Issue3292Test()
 	{

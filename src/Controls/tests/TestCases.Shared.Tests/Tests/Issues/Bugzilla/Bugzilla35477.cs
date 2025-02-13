@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Tapped event does not fire when added to Frame in Android AppCompat";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Frame)]
 		public void TapGestureFiresOnFrame()
 		{

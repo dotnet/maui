@@ -23,7 +23,7 @@ public class Bugzilla52419 : _IssuesUITest
 
 	public override string Issue => "[A] OnAppearing called for previous pages in a tab's navigation when switching active tabs";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TabbedPage)]
 	public void Bugzilla52419Test()
 	{

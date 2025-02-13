@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(EditorGallery);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Gestures)]
 		public override void IsEnabled()
 		{

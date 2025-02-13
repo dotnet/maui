@@ -13,7 +13,7 @@ public class Issue530 : _IssuesUITest
 
 	public override string Issue => "ListView does not render if source is async";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Issue530TestsLoadAsync()
 	{

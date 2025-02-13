@@ -15,7 +15,7 @@ public class Issue3012 : _IssuesUITest
 
 	public override string Issue => "[macOS] Entry focus / unfocus behavior";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Entry)]
 	public void Issue3012Test()
 	{

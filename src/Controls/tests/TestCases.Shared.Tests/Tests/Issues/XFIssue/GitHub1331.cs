@@ -13,7 +13,7 @@ public class GitHub1331 : _IssuesUITest
 
 	public override string Issue => "[Android] ViewCell shows ContextActions on tap instead of long press";
 
-	// [Test]
+	// [Test, Retry(2)]
 	// [Category(UITestCategories.Gestures)]
 	// public void SingleTapOnCellDoesNotActivateContext()
 	// {

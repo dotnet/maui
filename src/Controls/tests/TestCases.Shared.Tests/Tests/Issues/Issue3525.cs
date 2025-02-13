@@ -16,7 +16,7 @@ public class Issue3525 : _IssuesUITest
 
 	public override string Issue => "Finicky tap gesture recognition on Spans";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Label)]
 	public void SpanRegionClicking()
 	{

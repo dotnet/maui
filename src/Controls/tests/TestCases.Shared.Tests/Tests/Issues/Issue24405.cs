@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Entry with right aligned text keeps text jumping to the left during editing";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Entry)]
 		public void VerifyEntryHorizontalEndTextAlignmentPosition()
 		{

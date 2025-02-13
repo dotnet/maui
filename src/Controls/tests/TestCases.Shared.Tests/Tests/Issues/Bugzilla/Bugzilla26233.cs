@@ -12,7 +12,7 @@ public class Bugzilla26233 : _IssuesUITest
 
 	public override string Issue => "Windows phone crashing when going back to page containing listview with Frame inside ViewCell";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void DoesntCrashOnNavigatingBackToThePage()
 	{

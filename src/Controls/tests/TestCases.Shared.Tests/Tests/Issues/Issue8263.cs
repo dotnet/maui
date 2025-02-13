@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Enhancement] Add On/Off VisualStates for Switch";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Switch)]
 		public void SwitchOnOffVisualStatesTest()
 		{

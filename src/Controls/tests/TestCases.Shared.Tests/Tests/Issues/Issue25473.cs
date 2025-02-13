@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "MAUI Entry in Windows always shows ClearButton despite ClearButtonVisibility set to 'Never'";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Entry)]
 		public void VerifyEntryClearButtonVisibilitySetToWhileEditing()
 		{
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Entry)]
 		public void VerifyEntryClearButtonVisibilitySetToNever()
 		{

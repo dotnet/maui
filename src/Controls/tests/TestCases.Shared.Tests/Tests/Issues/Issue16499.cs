@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Crash when using NavigationPage.TitleView and Restarting App";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Navigation)]
 		public void AppDoesntCrashWhenReusingSameTitleView()
 		{

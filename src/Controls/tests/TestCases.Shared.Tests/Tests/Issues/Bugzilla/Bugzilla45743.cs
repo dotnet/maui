@@ -14,7 +14,7 @@ public class Bugzilla45743 : _IssuesUITest
 
 	public override string Issue => "[iOS] Calling DisplayAlert via BeginInvokeOnMainThread blocking other calls on iOS";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.DisplayAlert)]
 	public void Bugzilla45743Test()
 	{

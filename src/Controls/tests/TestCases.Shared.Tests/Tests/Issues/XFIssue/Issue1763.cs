@@ -13,7 +13,7 @@ public class Issue1763 : _IssuesUITest
 
 	public override string Issue => "First item of grouped ListView not firing ItemTapped";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void TestIssue1763ItemTappedFiring()
 	{

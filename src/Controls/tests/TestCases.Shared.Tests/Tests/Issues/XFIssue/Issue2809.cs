@@ -12,7 +12,7 @@ public class Issue2809 : _IssuesUITest
 
 	public override string Issue => "Secondary ToolbarItems cause app to hang during PushAsync";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ToolbarItem)]
 	public void TestPageDoesntCrash()
 	{

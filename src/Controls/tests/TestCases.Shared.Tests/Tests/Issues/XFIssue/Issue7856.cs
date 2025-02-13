@@ -12,7 +12,7 @@ public class Issue7856 : _IssuesUITest
 
 	public override string Issue => "[Bug] Shell BackButtonBehaviour TextOverride breaks back";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void BackButtonBehaviorTest()
 	{

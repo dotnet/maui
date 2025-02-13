@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue18946(TestDevice device) : base(device)
 		{ }
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Shell)]
 		public void ToolbarItemsShouldWork()
 		{

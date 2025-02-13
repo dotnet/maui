@@ -10,7 +10,7 @@
 
 //		public override string Issue => "Carousel View does not behave properly in Windows";
 
-//		[Test]
+//		[Test, Retry(2)]
 //		public void WhenQueryingCarouselItemsInViewThenSingleItemIsRetrieved()
 //		{
 //			// TODO: Investigate and remove the need for this. Currently all platforms fail the "ClassicAssert.AreEqual(10, itemNumber)",

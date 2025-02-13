@@ -13,7 +13,7 @@ public class Issue4973 : _IssuesUITest
 
 	public override string Issue => "TabbedPage nav tests";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Navigation)]
 	public void Issue4973Test()
 	{

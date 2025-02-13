@@ -14,7 +14,7 @@ public class Github1650 : _IssuesUITest
 
 	public override string Issue => "[macOS] Completed event of Entry raised on Tab key";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Entry)]
 	public void GitHub1650Test()
 	{

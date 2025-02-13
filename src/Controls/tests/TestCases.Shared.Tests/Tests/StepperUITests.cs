@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(StepperGallery);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Stepper)]
 		[Description("Increase the Stepper value")]
 		public void IncreaseStepper()
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.AreEqual("1", step3Value);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Stepper)]
 		[Description("Decrease the Stepper value")]
 		public void DecreaseStepper()

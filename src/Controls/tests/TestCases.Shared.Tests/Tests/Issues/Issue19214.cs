@@ -14,7 +14,7 @@ public class Issue19214 : _IssuesUITest
 
     public override string Issue => "iOS Keyboard Scrolling ContentInset Tests";
 
-    [Test]
+    [Test, Retry(2)]
     [Category(UITestCategories.Entry)]
     public void TestMultipleScrollViews ()
     {

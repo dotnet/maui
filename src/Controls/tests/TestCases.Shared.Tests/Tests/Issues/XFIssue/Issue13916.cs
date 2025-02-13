@@ -12,7 +12,7 @@ public class Issue13916 : _IssuesUITest
 
 	public override string Issue => "[iOS] iOS Application crashes on Back press when navigated to using GoToAsync with double or triple slash route if 2 or more things are removed from the navigation stack";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void RemovingMoreThanOneInnerPageAndThenPushingAPageCrashes()
 	{

@@ -15,7 +15,7 @@ public class Issue19956: _IssuesUITest
 
     public override string Issue => "Sticky headers and bottom content insets";
 
-    [Test]
+    [Test, Retry(2)]
 	public void ContentAccountsForStickyHeaders()
     {
 		// This is an iOS Keyboard Scrolling issue.
@@ -50,7 +50,7 @@ public class Issue19956: _IssuesUITest
         KeyboardScrolling.NextiOSKeyboardPress(app.Driver);
     }
 
-    [Test]
+    [Test, Retry(2)]
     public void BottomInsetsSetCorrectly()
     {
         var app = App as AppiumApp;

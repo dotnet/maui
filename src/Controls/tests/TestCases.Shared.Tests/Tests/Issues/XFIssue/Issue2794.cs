@@ -13,7 +13,7 @@ public class Issue2794 : _IssuesUITest
 
 	public override string Issue => "TableView does not react on underlying collection change";
 
-	// [Test]
+	// [Test, Retry(2)]
 	// [Category(UITestCategories.TableView)]
 	// [FailsOnAndroidWhenRunningOnXamarinUITest]
 	// public void Issue2794Test()

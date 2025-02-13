@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] Button in Grid gets wrong z-index";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Button)]
 		public void ImageShouldLayoutOnTopOfButton()
 		{

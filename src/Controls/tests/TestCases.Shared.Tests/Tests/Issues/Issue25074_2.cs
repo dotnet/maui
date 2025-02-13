@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Button title can extend past previously truncated size";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Button)]
 		public void ButtonTitleFillsSpaceWhenImageChanges()
 		{

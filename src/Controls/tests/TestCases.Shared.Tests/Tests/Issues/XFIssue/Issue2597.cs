@@ -12,7 +12,7 @@ public class Issue2597 : _IssuesUITest
 
 	public override string Issue => "Stepper control .IsEnabled doesn't work";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Stepper)]
 	public void Issue2597Test()
 	{

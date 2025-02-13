@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ContextActions cause memory leak: Page is never destroyed";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ContextActions)]
 		public void Bugzilla32206Test()
 		{

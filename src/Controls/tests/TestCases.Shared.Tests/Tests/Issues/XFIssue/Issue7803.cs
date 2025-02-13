@@ -13,7 +13,7 @@ public class Issue7803 : _IssuesUITest
 
 	public override string Issue => "[Bug] CarouselView/RefreshView pull to refresh command firing twice on a single pull";
 
-	//[Test]
+	//[Test, Retry(2)]
 	[Category(UITestCategories.CollectionView)]
 	public void DelayedIsRefreshingAndCommandTest_SwipeDown()
 	{

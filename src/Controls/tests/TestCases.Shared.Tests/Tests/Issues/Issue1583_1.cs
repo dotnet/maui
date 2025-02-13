@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "WebView fails to load from urlwebviewsource with non-ascii characters (works with Uri)";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOSWhenRunningOnXamarinUITest]

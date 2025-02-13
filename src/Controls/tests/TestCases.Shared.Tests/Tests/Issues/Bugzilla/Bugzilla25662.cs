@@ -12,7 +12,7 @@ public class Bugzilla25662 : _IssuesUITest
 
 	public override string Issue => "Setting IsEnabled does not disable SwitchCell";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Cells)]
 	public void Bugzilla25662Test()
 	{

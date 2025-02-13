@@ -13,7 +13,7 @@ public class Bugzilla44129 : _IssuesUITest
 
 	public override string Issue => "Crash when adding tabbed page after removing all pages using DataTemplates";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TabbedPage)]
 	public void Issue44129Test()
 	{

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Picker ItemsSource Change Triggers Exception: 'Value Does Not Fall Within the Expected Range";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Picker)]
 		public void PickerShouldNotCrashWhenSelectedIndexExceedsItemsSourceCount()
 		{

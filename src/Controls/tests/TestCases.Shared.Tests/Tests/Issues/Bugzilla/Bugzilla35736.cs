@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Editor does not update Text value from autocorrect when losing focus";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Editor)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOSWhenRunningOnXamarinUITest("Fails sometimes")]

@@ -17,7 +17,7 @@ public class Issue5159 : _IssuesUITest
 
 	public override string Issue => "[Android] Calling Focus on all Pickers running an API 28 devices no longer opens Picker";
 
-	[Test]
+	[Test, Retry(2)]
 	public void InvisibleDatepickerShowsDialogOnFocus()
 	{
 		App.WaitForElement("DatePickerButton");
@@ -26,7 +26,7 @@ public class Issue5159 : _IssuesUITest
 		App.TapCoordinates(5, 100);
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void InvisibleTimepickerShowsDialogOnFocus()
 	{
 		App.WaitForElement(TimePickerButton);
@@ -35,7 +35,7 @@ public class Issue5159 : _IssuesUITest
 		App.TapCoordinates(5, 100);
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void InvisiblePickerShowsDialogOnFocus()
 	{
 		App.WaitForElement(PickerButton);

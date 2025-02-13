@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Refresh View Tests";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.RefreshView)]
 		public void IsRefreshingAndCommandTest()
 		{

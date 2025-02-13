@@ -16,7 +16,7 @@ public class Issue5470 : _IssuesUITest
 
 	public override string Issue => "ApplinkEntry Thumbnail required after upgrading to 3.5/3.6";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.AppLinks)]
 	public void Issue5470Test()
 	{

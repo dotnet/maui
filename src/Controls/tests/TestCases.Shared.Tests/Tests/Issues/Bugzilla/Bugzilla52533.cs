@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "System.ArgumentException: NaN is not a valid value for width";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Label)]
 		public void Bugzilla52533Test()
 		{

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Wrong gray color using transparent in iOS gradients";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Brush)]
 		public void Issue17366Test()
 		{

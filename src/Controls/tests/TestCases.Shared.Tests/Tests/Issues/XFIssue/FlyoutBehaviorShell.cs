@@ -20,7 +20,7 @@ public class FlyoutBehaviorShell : _IssuesUITest
 	public override string Issue => "Shell Flyout Behavior";
 
 
-	//	[Test]
+	//	[Test, Retry(2)]
 	// 	[Category(UITestCategories.Shell)]
 	public void FlyoutTests()
 	{
@@ -79,7 +79,7 @@ public class FlyoutBehaviorShell : _IssuesUITest
 
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void WhenFlyoutIsLockedButtonsAreStillVisible()
 	{

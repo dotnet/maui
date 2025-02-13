@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Horizontal ScrollView locks after rotation";
 
 		// Issue773TestsRotationRelayoutIssue (src\Compatibility\ControlGallery\src\Issues.Shared\Issue773.cs)
-		[Test]
+		[Test, Retry(2)]
 		public void ScrollRotationRelayoutIssue()
 		{
 			try

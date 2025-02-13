@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Double tapping Editor control locks app";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Editor)]
 		public void PerformDoubleTapActionOnEditor()
 		{

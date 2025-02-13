@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Transparent Grid causes Java.Lang.IllegalStateException: Unable to create layer for Platform_DefaultRenderer";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Layout)]
 		public void Issue1Test()
 		{

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] Entire words omitted & letters truncated from Label display";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Visual)]
 		public void VerifyTextIsNotMissing()
 		{

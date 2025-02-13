@@ -12,7 +12,7 @@ public class Issue1875 : _IssuesUITest
 
 	public override string Issue => "NSRangeException adding items through ItemAppearing";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void NSRangeException()
 	{

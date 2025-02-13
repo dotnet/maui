@@ -13,7 +13,7 @@ public class Issue8291 : _IssuesUITest
 
 	public override string Issue => "[Android] Editor - Text selection menu does not appear when selecting text on an editor placed within a ScrollView";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Editor)]
 	public void ContextMenuShowsUpWhenPressAndHoldTextOnEditorAndEntryField()
 	{

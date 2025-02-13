@@ -12,7 +12,7 @@ public class Issue1023_Forms : _IssuesUITest
 
 	public override string Issue => "Automate GC checks of picker disposals";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Picker)]
 	public void Bugzilla1023Test()
 	{

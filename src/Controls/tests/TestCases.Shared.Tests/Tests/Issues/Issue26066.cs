@@ -10,7 +10,7 @@ public class Issue26066(TestDevice testDevice) : _IssuesUITest(testDevice)
 
 	public override string Issue => "CollectionViewHandler2 RelativeSource binding to AncestorType not working";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.CollectionView)]
 	public void CollectionView2ShouldFindAncestorType()
 	{

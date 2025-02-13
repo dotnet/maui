@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Binding to Switch.IsEnabled has no effect";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Switch)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue1747Test()

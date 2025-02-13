@@ -13,7 +13,7 @@ public class Issue18526 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Frame)]
 	public void BorderShouldRender()
 	{

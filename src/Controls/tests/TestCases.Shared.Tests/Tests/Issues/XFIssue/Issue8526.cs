@@ -12,7 +12,7 @@ public class Issue8526 : _IssuesUITest
 
 	public override string Issue => "[Bug] DisplayPromptAsync hangs app, doesn't display when called in page load";
 
-	//[Test]
+	//[Test, Retry(2)]
 	//[Category(UITestCategories.DisplayPrompt)]
 	//[FailsOnIOS]
 	//public void DisplayPromptShouldWorkInPageLoad()

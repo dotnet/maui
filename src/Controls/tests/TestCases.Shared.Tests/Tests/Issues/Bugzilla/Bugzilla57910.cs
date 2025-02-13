@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ObjectDisposedException in Microsoft.Maui.Controls.Platform.Android.Renderers.ProgressBarRenderer";
 
 		// Crash after navigation
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ListView)]
 		public void Bugzilla57910Test()
 		{

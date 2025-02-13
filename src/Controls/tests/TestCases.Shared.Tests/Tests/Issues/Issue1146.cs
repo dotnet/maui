@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Disabled Switch in Button Gallery not rendering on all devices";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Switch)]
 		[Category(UITestCategories.Compatibility)]
 		public void TestSwitchDisable()

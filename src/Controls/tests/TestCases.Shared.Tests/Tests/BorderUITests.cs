@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		// TODO: Enable this as a test once fully working
-		//[Test]
+		//[Test, Retry(2)]
 		//[Category(UITestCategories.Border)]
 		public void BordersWithVariousShapes()
 		{

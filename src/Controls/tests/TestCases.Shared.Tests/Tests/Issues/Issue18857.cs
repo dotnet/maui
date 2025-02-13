@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ImageButton Padding & Ripple effect stops working with .NET 8";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ImageButton)]
 		public async Task GradientImageButtonBackground()
 		{

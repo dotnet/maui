@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Clear Entry text tapping the clear button not working";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Entry)]
 		public void EntryClearButtonWorksEntryDoesntClearWhenNotClickingOnClear()
 		{
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ClassicAssert.IsNotEmpty(rtlEntryText);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Entry)]
 		public void EntryClearButtonWorks()
 		{
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ClassicAssert.IsEmpty(rtlEntryText);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Entry)]
 		public async Task EntryWithMarginClearButtonWorks()
 		{

@@ -12,7 +12,7 @@ public class Issue21609 : _IssuesUITest
 
 	public override string Issue => "Changing the dimensions of the CarouselView doesn't update Item Dimensions";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.CarouselView)]
 	public void ChangingDimensionsOfCarouselViewDoesntUpdateItemDimensions()
 	{

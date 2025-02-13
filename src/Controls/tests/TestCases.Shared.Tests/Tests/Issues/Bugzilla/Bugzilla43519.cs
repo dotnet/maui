@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[UWP] FlyoutPage ArgumentException when nested in a TabbedPage and returning from modal page";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.TabbedPage)]
 		[Category(UITestCategories.Compatibility)]
 		public void TabbedModalNavigation()

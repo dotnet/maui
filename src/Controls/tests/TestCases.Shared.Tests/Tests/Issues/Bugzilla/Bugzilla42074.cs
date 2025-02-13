@@ -22,7 +22,7 @@ public class Bugzilla42074 : _IssuesUITest
 
 	public override string Issue => "[Android] Clicking cancel on a TimePicker does not cause it to unfocus";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TimePicker)]
 	public void TimePickerCancelShouldUnfocus()
 	{

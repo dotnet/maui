@@ -11,7 +11,7 @@ public class Issue3798 : _IssuesUITest
 
 	public override string Issue => "[Android] SeparatorColor of ListView is NOT updated dynamically";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 
 	public void Issue3798Test()

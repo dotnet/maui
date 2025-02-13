@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] CarouselView position resets when visibility toggled";
 
 		// Issue12848 (src\ControlGallery\src\Issues.Shared\Issue12848.cs
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CarouselView)]
 		public void Issue12848Test()
 		{

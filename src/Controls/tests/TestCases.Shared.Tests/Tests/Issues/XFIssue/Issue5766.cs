@@ -39,7 +39,7 @@ public class Issue5766 : _IssuesUITest
 	//	return true;
 	//}
 
-	//[Test]
+	//[Test, Retry(2)]
 	//[Category(UITestCategories.Layout)]
 	//[Ignore("Fails sometimes - needs a better test")]
 	//public void FrameSizeGetsCorruptedWhenListViewIsScrolled()

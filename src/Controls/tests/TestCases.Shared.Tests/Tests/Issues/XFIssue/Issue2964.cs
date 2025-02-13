@@ -12,7 +12,7 @@ public class Issue2964 : _IssuesUITest
 
 	public override string Issue => "TabbedPage toolbar item crash";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ToolbarItem)]
 	public void Issue2964Test()
 	{

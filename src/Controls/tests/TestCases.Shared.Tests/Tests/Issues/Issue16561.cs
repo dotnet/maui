@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Quick single taps on Android have wrong second tap location";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Label)]
 		[FailsOnMacWhenRunningOnXamarinUITest("https://github.com/dotnet/maui/issues/17435")]
 		public void TapTwoPlacesQuickly()

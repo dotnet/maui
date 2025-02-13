@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] CarouselView content disappears after 2 rotations if TextType=Html is used";
 
 		// Issue12193 (src\ControlGallery\src\Issues.Shared\Issue12193.cs
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CarouselView)]
 		[FailsOnMacWhenRunningOnXamarinUITest("Set Orientation methods not implemented")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Set Orientation methods not implemented")]

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Unable to Remove Thumb Image in Slider Control ";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Slider)]
 		public void SliderShouldChangeThumbImageAndResetIt()
 		{

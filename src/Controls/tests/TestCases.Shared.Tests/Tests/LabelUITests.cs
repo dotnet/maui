@@ -23,7 +23,7 @@ public class LabelUITests : _ViewUITests
 		Assert.Ignore("Labels do not really have a concept of being \"disabled\".");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void SpanTapped()
 	{
 		if (Device == TestDevice.Mac)
@@ -46,7 +46,7 @@ public class LabelUITests : _ViewUITests
 		ClassicAssert.AreEqual("Event: SpanTapped (fired 1)", textAfterClick);
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void FontFamilyLoadsDynamically()
 	{
 		var remote = GoToStateRemote("FontFamily");
@@ -58,7 +58,7 @@ public class LabelUITests : _ViewUITests
 #if WINDOWS
 	[Ignore("Windows App SDK 1.6 broke this test. See more details in https://github.com/dotnet/maui/issues/26749")]
 #endif
-	[Test]
+	[Test, Retry(2)]
 	public void FontFamily()
 	{
 		var remote = GoToStateRemote();

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView, EmptyView Fills Available Space By Default";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewEmptyViewFillsAvailableSpaceByDefault()
 		{

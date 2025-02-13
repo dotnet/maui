@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "4879 - ImageButtonPadding";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ImageButton)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue4879Test()

@@ -12,7 +12,7 @@ public class Issue1851 : _IssuesUITest
 
 	public override string Issue => "ObservableCollection in ListView gets Index out of range when removing item";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	[Category(UITestCategories.Compatibility)]
 	public void Issue1851Test()

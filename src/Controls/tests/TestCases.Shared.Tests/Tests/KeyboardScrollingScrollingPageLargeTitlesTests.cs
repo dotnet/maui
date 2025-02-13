@@ -18,19 +18,19 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		/*
-		[Test]
+		[Test, Retry(2)]
 		public void EntriesScrollingPageTest()
 		{
 			KeyboardScrolling.EntriesScrollingTest(App, KeyboardScrollingGallery);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		public void EditorsScrollingPageTest()
 		{
 			KeyboardScrolling.EditorsScrollingTest(App, KeyboardScrollingGallery);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		public void EntryNextEditorTest()
 		{
 			KeyboardScrolling.EntryNextEditorScrollingTest(App, KeyboardScrollingGallery);

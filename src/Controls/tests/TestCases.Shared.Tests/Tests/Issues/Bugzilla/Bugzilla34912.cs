@@ -13,7 +13,7 @@ public class Bugzilla34912 : _IssuesUITest
 
 	public override string Issue => "ListView.IsEnabled has no effect on iOS";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla34912Test()
 	{

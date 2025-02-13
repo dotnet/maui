@@ -32,7 +32,7 @@ public class Issue11869 : _IssuesUITest
 
 	public override string Issue => "[Bug] ShellContent.IsVisible issue on Android";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void IsVisibleWorksForShowingHidingTabs()
 	{

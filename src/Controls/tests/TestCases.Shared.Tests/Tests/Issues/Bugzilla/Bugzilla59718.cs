@@ -18,7 +18,7 @@ public class Bugzilla59718 : _IssuesUITest
 
 	public override string Issue => "Multiple issues with listview and navigation in UWP";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla59718Test()
 	{

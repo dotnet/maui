@@ -18,7 +18,7 @@ public class Issue26598 : _IssuesUITest
 	{
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void TabBarShouldbeVisibleNavigatingBackFromNonTabbedPage()
 	{

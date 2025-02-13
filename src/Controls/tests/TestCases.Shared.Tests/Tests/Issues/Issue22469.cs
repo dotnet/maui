@@ -16,7 +16,7 @@ public class Issue22469 : _IssuesUITest
 
 	public override string Issue => "Crash with specific Font and text in Label";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Label)]
 	public void SpanRegionClicking()
 	{

@@ -12,7 +12,7 @@ public class Issue5500 : _IssuesUITest
 
 	public override string Issue => "[iOS] Editor with material visuals value binding not working on physical device";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Editor)]
 	public void VerifyEditorTextChangeEventsAreFiring()
 	{

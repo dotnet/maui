@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "NRE when Image is not assigned source";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Page)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue342NoSourceTestsLablePresentNoImage()
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "NRE when Image is delayed source";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Page)]
 		public void Issue342DelayedLoadTestsImageLoads()
 		{

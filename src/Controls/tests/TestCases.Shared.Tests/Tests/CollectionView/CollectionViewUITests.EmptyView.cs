@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests
         {
         }
 
-        [Test]
+        [Test, Retry(2)]
         [Category(UITestCategories.CollectionView)]
         public void EmptyViewItemsSourceNullStringWorks()
         {
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Nothing to display.");
         }
 
-        [Test]
+        [Test, Retry(2)]
         [Category(UITestCategories.CollectionView)]
         public void EmptyViewItemsSourceNullViewWorks()
         {

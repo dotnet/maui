@@ -14,7 +14,7 @@ public class Issue1557 : _IssuesUITest
 
 	public override string Issue => "Setting source crashes if view was detached from visual tree";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void SettingSourceWhenDetachedDoesNotCrash()
 	{

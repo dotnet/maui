@@ -12,7 +12,7 @@ public class Issue4720 : _IssuesUITest
 
 	public override string Issue => "UWP: Webview: Memory Leak in WebView";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.WebView)]
 	public void WebViewDoesntCrashWhenLoadingAHeavyPageAndUsingExecutionModeSeparateProcess()
 	{

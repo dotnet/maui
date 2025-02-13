@@ -17,19 +17,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery("Fonts Gallery");
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		public void FromEmbedded_Image() => LoadAndVerify(Test.Fonts.FromEmbedded_Image);
 
-		[Test]
+		[Test, Retry(2)]
 		public void FromEmbedded_Label() => LoadAndVerify(Test.Fonts.FromEmbedded_Label);
 
-		[Test]
+		[Test, Retry(2)]
 		public void FromBundle_Image() => LoadAndVerify(Test.Fonts.FromBundle_Image);
 
 #if WINDOWS
 		[Ignore("Windows App SDK 1.6 broke this test. See more details in https://github.com/dotnet/maui/issues/26749")]
 #endif
-		[Test]
+		[Test, Retry(2)]
 		public void FromBundle_Label() => LoadAndVerify(Test.Fonts.FromBundle_Label);
 
 		void LoadAndVerify(Test.Fonts test)

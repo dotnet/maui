@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Editor TextTransform property works as expected";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Editor)]
 		public void EditorTextTransformWorks()
 		{

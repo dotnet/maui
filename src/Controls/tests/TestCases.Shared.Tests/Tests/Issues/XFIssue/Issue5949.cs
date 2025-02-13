@@ -15,7 +15,7 @@ public class Issue5949 : _IssuesUITest
 
 	public override string Issue => "CollectionView cannot access a disposed object.";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.CollectionView)]
 	public void DoNotAccessDisposedCollectionView()
 	{

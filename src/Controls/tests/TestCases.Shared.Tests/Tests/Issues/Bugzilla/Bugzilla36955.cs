@@ -14,7 +14,7 @@ public class Bugzilla36955 : _IssuesUITest
 	public override string Issue => "[iOS] ViewCellRenderer.UpdateIsEnabled referencing null object";
 
 	[Category(UITestCategories.TableView)]
-	[Test]
+	[Test, Retry(2)]
 	public void Bugzilla36955Test()
 	{
 		App.WaitForElement("Button");

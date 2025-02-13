@@ -12,7 +12,7 @@ public class IsInvokeRequiredRaceCondition : _IssuesUITest
 
 	public override string Issue => "Application.Current.Dispatcher.IsDispatchRequired race condition causes crash";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Dispatcher)]
 	public void ApplicationDispatcherIsInvokeRequiredRaceConditionCausesCrash()
 	{

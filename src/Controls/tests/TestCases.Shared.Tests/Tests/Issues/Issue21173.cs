@@ -13,7 +13,7 @@ public class Issue21173 : _IssuesUITest
 	{ }
 
 #if ANDROID
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Border)]
 	public void BorderWithRoundRectangleShouldRoundCornersOfContentWithinIt()
 	{

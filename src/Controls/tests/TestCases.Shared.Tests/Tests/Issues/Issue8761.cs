@@ -12,7 +12,7 @@ public class Issue8761 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.CollectionView)]
 	[Ignore("This test is very flaky and needs to be fixed. See https://github.com/dotnet/maui/issues/27272")]
 	public void CollectionViewHeaderTemplateAndFooterTemplateDontWork()

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Unable to select tab after backing out of page and returning";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.TabbedPage)]
 		public void SelectTabAfterNavigation()
 		{

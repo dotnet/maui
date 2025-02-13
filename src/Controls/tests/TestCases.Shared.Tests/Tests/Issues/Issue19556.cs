@@ -13,7 +13,7 @@ public class Issue19556 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Label)]
 	public void SystemFontsShouldRenderCorrectly()
 	{

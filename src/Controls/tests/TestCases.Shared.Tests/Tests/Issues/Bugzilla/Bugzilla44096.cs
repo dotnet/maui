@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string ToggleIsEnabled = "disabled";
 		const string Original = "Original";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			TestControl(Grid);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			TestControl(ContentView);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]

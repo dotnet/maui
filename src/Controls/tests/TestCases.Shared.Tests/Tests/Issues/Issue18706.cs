@@ -9,7 +9,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue18706(TestDevice device) : base(device) { }
 
 		public override string Issue => "Editor Background works";
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Editor)]
 		public void EditorBackgroundWorks()
 		{

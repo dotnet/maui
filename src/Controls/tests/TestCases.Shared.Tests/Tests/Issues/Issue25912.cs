@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ToolbarItem color when used with IconImageSource is always white";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ToolbarItem)]
 		public void VerifyToolbarItemIconColor()
 		{

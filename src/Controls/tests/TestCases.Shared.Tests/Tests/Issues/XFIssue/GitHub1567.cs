@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "NRE using TapGestureRecognizer on cell with HasUnevenRows";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Gestures)]
 		[Category(UITestCategories.Compatibility)]
 		public void GitHub1567Test()

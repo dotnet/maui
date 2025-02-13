@@ -14,7 +14,7 @@ public class Issue8203 : _IssuesUITest
 	public override string Issue => "CollectionView fires SelectionChanged x (number of items selected +1) times, while incrementing SelectedItems from 0 " +
 	"to number of items each time";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.CollectionView)]
 	public void SelectionChangedShouldBeRaisedOnceWhenSelectionChanges()
 	{

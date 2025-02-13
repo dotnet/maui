@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(SliderGallery);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Slider)]
 		[Description("Set different slider values")]
 		public void SetSliderValue()

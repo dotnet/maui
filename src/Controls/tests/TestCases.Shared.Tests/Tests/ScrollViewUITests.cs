@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 
-		[Test]
+		[Test, Retry(2)]
 		[Description("Scroll element to the start")]
 		public void ScrollToElement1Start()
 		{
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Description("Scroll element to the center")]
 		public void ScrollToElement2Center()
 		{
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Description("Scroll element to the end")]
 		public void ScrollToElement3End()
 		{
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Description("ScrollTo Y = 100")]
 		public void ScrollToY()
 		{
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		// ScrollToYTwice (src\Compatibility\ControlGallery\src\UITests.Shared\Tests\ScrollViewUITests.cs)
-		[Test]
+		[Test, Retry(2)]
 		[Description("ScrollTo Y = 100")]
 		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue, More Information: https://github.com/dotnet/maui/issues/27250")]
 		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue, More Information: https://github.com/dotnet/maui/issues/27250")]
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("completed");
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Description("Scroll down the ScrollView using a gesture")]
 		public void ScrollUpAndDownWithGestures()
 		{

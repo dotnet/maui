@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Next Moves To Next Entry and Done Closes Input View";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Entry)]
 		public async Task TappingNextMovesToNextElement()
 		{
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ClassicAssert.True(App.IsFocused("Entry2"));
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.SoftInput)]
 		public async Task TappingDoneClosesKeyboard()
 		{

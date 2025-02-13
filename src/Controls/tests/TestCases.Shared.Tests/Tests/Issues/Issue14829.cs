@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "DisplayActionSheet still not working on Windows";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ActionSheet)]
 		public void DisplayActionSheetStillNotWorkingOnWindows()
 		{

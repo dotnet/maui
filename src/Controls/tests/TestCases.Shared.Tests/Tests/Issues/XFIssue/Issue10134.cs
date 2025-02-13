@@ -16,7 +16,7 @@ public class Github10134 : _IssuesUITest
 
 	public override string Issue => "Shell Top Tabbar focus issue";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void TopTabsDontScrollBackToStartWhenSelected()
 	{

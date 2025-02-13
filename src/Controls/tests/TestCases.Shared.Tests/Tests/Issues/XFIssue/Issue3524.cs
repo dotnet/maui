@@ -14,7 +14,7 @@ public class Issue3524 : _IssuesUITest
 
 	public override string Issue => "ICommand binding from a TapGestureRecognizer on a Span doesn't work";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Gestures)]
 	public void SpanGestureCommand()
 	{

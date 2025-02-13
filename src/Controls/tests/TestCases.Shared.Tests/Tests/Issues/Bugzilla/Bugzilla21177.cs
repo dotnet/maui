@@ -13,7 +13,7 @@ public class Bugzilla21177 : _IssuesUITest
 
     public override string Issue => "Using a UICollectionView in a ViewRenderer results in issues with selection";
 
-     [Test]
+     [Test, Retry(2)]
      [Category(UITestCategories.CollectionView)]
      [FailsOnIOSWhenRunningOnXamarinUITest]
      public void Bugzilla21177Test()

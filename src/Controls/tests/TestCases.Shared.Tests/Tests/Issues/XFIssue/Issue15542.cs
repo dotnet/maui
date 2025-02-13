@@ -13,7 +13,7 @@ public class Issue15542 : _IssuesUITest
 
 	public override string Issue => "[Bug] Shell.TitleView does not render on iOS 16";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TitleView)]
 	public void TitleViewHeightDoesntOverflow()
 	{

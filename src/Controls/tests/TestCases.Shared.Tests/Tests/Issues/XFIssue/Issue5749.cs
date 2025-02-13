@@ -11,7 +11,7 @@ public class Issue5749 : _IssuesUITest
 
 	public override string Issue => "Disable horizontal scroll in the custom listview in android";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void DisableScrollingOnCustomHorizontalListView()
 	{

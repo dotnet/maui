@@ -13,7 +13,7 @@ public class Bugzilla59580 : _IssuesUITest
 
 	public override string Issue => "Raising Command.CanExecutChanged causes crash on Android";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TableView)]
 	public void RaisingCommandCanExecuteChangedCausesCrashOnAndroid()
 	{

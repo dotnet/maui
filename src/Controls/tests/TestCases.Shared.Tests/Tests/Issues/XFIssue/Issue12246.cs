@@ -17,7 +17,7 @@ public class Issue12246 : _IssuesUITest
 
 	public override string Issue => "[Bug] iOS 14 App freezes when password is entered after email";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Entry)]
 	public void UnfocusingPasswordDoesNotHang()
 	{

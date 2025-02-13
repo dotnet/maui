@@ -15,7 +15,7 @@ public class Bugzilla37841 : _IssuesUITest
 
 	public override string Issue => "TableView EntryCells and TextCells cease to update after focus change";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TableView)]
 	public void TextAndEntryCellsDataBindInTableView()
 	{

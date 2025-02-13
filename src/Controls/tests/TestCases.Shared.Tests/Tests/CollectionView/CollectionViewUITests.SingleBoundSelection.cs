@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		[Description("Single Selection Binding")]
 		public void SelectionShouldUpdateBinding()

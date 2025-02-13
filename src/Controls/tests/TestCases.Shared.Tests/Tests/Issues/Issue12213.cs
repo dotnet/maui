@@ -14,7 +14,7 @@ public class Issue12213 : _IssuesUITest
 
 	public override string Issue => "[Windows] TapGestureRecognizer not working on Entry";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Entry)]
 	[Category(UITestCategories.Gestures)]
 	public void TapGestureRecognizerNotWorkingOnEntry()

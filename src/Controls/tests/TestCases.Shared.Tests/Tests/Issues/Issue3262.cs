@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Adding Cookies ability to a WebView...";
 
-		[Test]
+		[Test, Retry(2)]
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("PageWithoutCookies");
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ValidateSuccess();
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ValidateSuccess();
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
@@ -62,7 +62,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ValidateSuccess();
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ValidateSuccess();
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]

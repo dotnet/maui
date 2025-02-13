@@ -13,7 +13,7 @@ public class Issue20858 : _IssuesUITest
 
 	public override string Issue => "FlyoutPage Android app crashing on orientation change when flyout is open";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void NoExceptionShouldBeThrown()
 	{

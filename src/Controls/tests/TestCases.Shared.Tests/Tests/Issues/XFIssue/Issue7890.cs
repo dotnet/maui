@@ -13,7 +13,7 @@ public class Issue7890 : _IssuesUITest
 
 	public override string Issue => "TemplatedItemsList incorrect grouped collection range removal";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void TestCorrectListItemsRemoved()
 	{

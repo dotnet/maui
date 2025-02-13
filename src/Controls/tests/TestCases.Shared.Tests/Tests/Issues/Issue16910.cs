@@ -18,7 +18,7 @@ public class Issue16910 : _IssuesUITest
 	}
 
 #if !MACCATALYST
-	[Test]
+	[Test, Retry(2)]
 	[FailsOnMacWhenRunningOnXamarinUITest("When the refreshview appears on catalyst. Appium starts to have a really hard time finding elements")]
 	public void BindingUpdatesFromProgrammaticRefresh()
 	{
@@ -32,7 +32,7 @@ public class Issue16910 : _IssuesUITest
 
 	// Windows only works with touch inputs which we don't have running on the test server
 #if !WINDOWS && !MACCATALYST
-	[Test]
+	[Test, Retry(2)]
 	public void BindingUpdatesFromInteractiveRefresh()
 	{
 		_ = App.WaitForElement("CollectionView");

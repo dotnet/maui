@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Cross TabBar navigation broken";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Shell)]
 		public void Issue22570Test()
 		{

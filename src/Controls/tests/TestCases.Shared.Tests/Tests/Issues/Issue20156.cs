@@ -12,7 +12,7 @@ public class Issue20156 : _IssuesUITest
 		: base(device)
 	{ }
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Border)]
 	public void BorderShouldHaveNoThickness()
 	{

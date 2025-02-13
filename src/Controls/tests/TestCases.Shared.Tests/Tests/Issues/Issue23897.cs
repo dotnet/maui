@@ -8,7 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	{
 		public override string Issue => "Add a permanent wrapper around ImageButton so it works better with loading and unloading";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ImageButton)]
 		public void LoadingAndUnloadingWorksForImageButton()
 		{

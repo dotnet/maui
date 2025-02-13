@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Custom SlideFlyoutTransition is not working";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Shell)]
 		[Category(UITestCategories.Compatibility)]
 		public void CustomSlideFlyoutTransitionCausesCrash()

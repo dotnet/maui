@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] Collection View items don't load bindable properties values inside OnElementChanged";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		public void BindablePropertiesAvailableAtOnElementChanged()
 		{

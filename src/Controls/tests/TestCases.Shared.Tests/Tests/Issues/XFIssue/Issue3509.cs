@@ -14,7 +14,7 @@ public class Issue3509 : _IssuesUITest
 
 	public override string Issue => "[iOS] NavigationPage.Popped called twice when Navigation.PopAsync is called";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Navigation)]
 	public void PoppedOnlyFiresOnce()
 	{

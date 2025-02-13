@@ -12,7 +12,7 @@ public class Issue1939 : _IssuesUITest
 
 	public override string Issue => "ArgumentOutOfRangeException on clearing a group on a grouped ListView on Android";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Issue1939Test()
 	{

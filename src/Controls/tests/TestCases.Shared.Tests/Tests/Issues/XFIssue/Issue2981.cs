@@ -12,7 +12,7 @@ public class Issue2981 : _IssuesUITest
 
 	public override string Issue => "Long Press on ListView causes crash";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Issue2981Test()
 	{

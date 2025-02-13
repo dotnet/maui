@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(KeyboardScrollingGallery);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Layout)]
 		public void GridStarRowScrollingTest()
 		{

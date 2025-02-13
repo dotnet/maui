@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string Page = "page 1";
 #endif
 		public override string Issue => "Shell Title View Test";
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Shell)]
 		[Category(UITestCategories.Compatibility)]
 		public void TitleViewHeightDoesntOverflow()

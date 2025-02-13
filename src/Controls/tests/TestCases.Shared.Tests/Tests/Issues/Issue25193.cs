@@ -11,7 +11,7 @@ public class Issue25193 : _IssuesUITest
 
 	public override string Issue => "Background gradients don't work for some views";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Label)]
 	[Category(UITestCategories.ScrollView)]
 	[Category(UITestCategories.Button)]

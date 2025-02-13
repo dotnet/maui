@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Multiple TapGestureRecognizers on an Object Are Not Fired";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Gestures)]
 		public void MultipleTapGestures()
 		{

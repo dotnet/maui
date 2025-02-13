@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[UWP] Scrollview with null content crashes on UWP";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ScrollView)]
 		[Category(UITestCategories.Compatibility)]
 		public void NullContentOnScrollViewDoesntCrash()

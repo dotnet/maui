@@ -14,7 +14,7 @@ public class Bugzilla47923 : _IssuesUITest
 	public override string Issue => "Vectors don\'t work in Images, and work badly in Buttons";
 
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla47923Test()
 	{

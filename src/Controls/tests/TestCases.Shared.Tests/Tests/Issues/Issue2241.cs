@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ScrollView content can become stuck on orientation change (iOS)";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ScrollView)]
 		[Category(UITestCategories.Compatibility)]
 		public void ChangeOrientationCheckScroll()

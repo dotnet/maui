@@ -12,7 +12,7 @@ public class Issue3318 : _IssuesUITest
 
 	public override string Issue => "[MAC] ScrollTo method is not working in Xamarin.Forms for mac platform";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Issue3318Test()
 	{

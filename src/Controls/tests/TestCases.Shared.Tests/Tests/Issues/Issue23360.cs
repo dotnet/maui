@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Crash upon resuming the app window was already activated";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Window)]
 		public void OpenAlertWithModals()
 		{

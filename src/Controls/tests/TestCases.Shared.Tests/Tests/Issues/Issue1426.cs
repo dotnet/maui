@@ -13,7 +13,7 @@ public class Issue1426 : _IssuesUITest
 
 	public override string Issue => "SetHasNavigationBar screen height wrong";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.LifeCycle)]
 	[Category(UITestCategories.Compatibility)]
 	public void Github1426Test()

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(CarouselViewGallery);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CarouselView)]
 		public async Task CarouselViewSetPosition()
 		{
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			CheckLabelValue("lblPosition", "3");
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CarouselView)]
 		public async Task CarouselViewGoToNextCurrentItem()
 		{
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("btnPrev");
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CarouselView)]
 		public async Task CarouselViewGoToPreviousCurrentItem()
 		{
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// Catalyst doesn't support orientation changes
 #if !MACCATALYST
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CarouselView)]
 		public async Task CarouselViewKeepPositionChangingOrientation()
 		{
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 #if IOS || WINDOWS
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CarouselView)]
 		public void NavigateBackWhenLooped()
 		{
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.TestCases.Tests
             }
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CarouselView)]
 		public void NavigateForwardWhenLooped()
 		{

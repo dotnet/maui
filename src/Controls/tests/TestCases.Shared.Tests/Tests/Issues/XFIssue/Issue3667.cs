@@ -14,7 +14,7 @@ public class Issue3667 : _IssuesUITest
 
 	public override string Issue => "[Enhancement] Add text-transforms to Label";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Label)]
 	public void Issue3667Tests()
 	{

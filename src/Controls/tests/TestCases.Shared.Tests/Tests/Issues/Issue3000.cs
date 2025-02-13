@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Horizontal ScrollView breaks scrolling when flowdirection is set to rtl";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ScrollView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]

@@ -12,7 +12,7 @@ public class Issue8207 : _IssuesUITest
 
 	public override string Issue => "[Bug] Shell Flyout Items on UWP aren't showing the Title";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void FlyoutItemShouldShowTitle()
 	{

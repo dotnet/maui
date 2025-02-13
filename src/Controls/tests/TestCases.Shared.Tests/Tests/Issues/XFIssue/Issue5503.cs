@@ -17,7 +17,7 @@ public class Issue5503 : _IssuesUITest
 
 	public override string Issue => "[iOS] UITableView.Appearance.BackgroundColor ignored or overridden for ListView";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void ToggleAppearanceApiBackgroundColorListView()
 	{

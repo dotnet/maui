@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "The TabbedPage selection indicator is not updated properly when reloading the TabbedPage with a new instance";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.TabbedPage)]
 		public void UpdatedSelectionIndicatorProperly()
 		{

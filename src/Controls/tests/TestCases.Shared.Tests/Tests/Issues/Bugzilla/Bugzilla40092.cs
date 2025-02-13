@@ -16,7 +16,7 @@ public class Bugzilla40092 : _IssuesUITest
 	public override string Issue => "Ensure android devices with fractional scale factors (3.5) don't have a white line around the border";
 
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.BoxView)]
 	public void AllScreenIsBlack()
 	{

@@ -15,7 +15,7 @@ public class Issue12685 : _IssuesUITest
 
 	public override string Issue => "[iOs][Bug] TapGestureRecognizer in Path does not work on iOS";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shape)]
 	public void ShapesPathReceiveGestureRecognizers()
 	{

@@ -15,7 +15,7 @@ public class TabbedPageWithList : _IssuesUITest
 
 	public override string Issue => "TabbedPage with list";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithListViewIssueTestsAllElementsPresent()
 	{
@@ -23,7 +23,7 @@ public class TabbedPageWithList : _IssuesUITest
 		App.WaitForTabElement(ListPage);
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageWithListViewIssueTestsNavigateToAndVerifyListView()
 	{

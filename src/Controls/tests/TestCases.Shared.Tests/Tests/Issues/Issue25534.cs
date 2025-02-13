@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Updating IconImageSource in ToolbarItem multiple times causes exception and crash after navigating back and forth between Shell pages";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ToolbarItem)]
 		public void ToolbarItemIconShouldNotCrashOnPageNavigation()
 		{

@@ -14,7 +14,7 @@ public class Bugzilla42832 : _IssuesUITest
 	public override string Issue => "Scrolling a ListView with active ContextAction Items causes NRE";
 
 	// TODO From Xamarin.UITest migration: test failed
-	// [Test]
+	// [Test, Retry(2)]
 	// [Category(UITestCategories.ListView)]
 	// public void ContextActionsScrollNRE()
 	// {

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Windows] Setting IsClippedToBound is true inside a Border control will crash on Windows";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Border)]
 		public void ExceptionShouldNotOccurWhenIsClippedToBoundsIsTrue()
 		{

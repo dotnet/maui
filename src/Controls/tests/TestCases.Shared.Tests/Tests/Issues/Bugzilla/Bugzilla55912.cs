@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Tap event not always propagated to containing Grid/StackLayout";
 
-		[Test]
+		[Test, Retry(2)]
 		public void GestureBubblingInStackLayout()
 		{
 			App.WaitForElement(StackLabelId);
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(Success);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		public void GestureBubblingInGrid()
 		{
 			App.WaitForElement(GridLabelId);

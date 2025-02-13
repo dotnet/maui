@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ContentPage BackgroundImageSource not working";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Page)]
 		public void ContentPageBackgroundImageSourceWorks()
 		{

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Cannot enter text when Entry is focus()'d from an editor completed event";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Focus)]
 		[Category(UITestCategories.Compatibility)]

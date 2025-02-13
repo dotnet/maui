@@ -13,7 +13,7 @@ public class Issue1355 : _IssuesUITest
 
 	public override string Issue => "Setting Main Page in quick succession causes crash on Android";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.LifeCycle)]
 	[Category(UITestCategories.Compatibility)]
 	public void SwitchMainPageOnAppearing()

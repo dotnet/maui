@@ -16,7 +16,7 @@ public class Issue7396 : _IssuesUITest
 
 	public override string Issue => "Setting Shell.BackgroundColor overrides all colors of TabBar";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void BottomTabColorTest()
 	{

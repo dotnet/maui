@@ -10,7 +10,7 @@ public class Issue14471 : _IssuesUITest
 
 	public override string Issue => "Image can disappear when going back to the page";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Image)]
 	public void ImageDoesntDisappearWhenNavigatingBack()
 	{

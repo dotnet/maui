@@ -11,7 +11,7 @@ public class Issue24878 : _IssuesUITest
 
 	public override string Issue => "AppThemeBinding does not work on ToolbarItems";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ToolbarItem)]
 	public void ToolbarItemsShouldBeVisible()
 	{

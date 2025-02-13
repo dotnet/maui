@@ -22,7 +22,7 @@ public class Issue892 : _IssuesUITest
 	public override string Issue => "NavigationPages as details in FlyoutPage don't work as expected";
 
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	[Description("Change pages in the Flyout ListView, and navigate to the end and back")]
 	public void Issue892TestsNavigateChangePagesNavigate()

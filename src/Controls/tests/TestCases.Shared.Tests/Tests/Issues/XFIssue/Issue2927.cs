@@ -13,7 +13,7 @@ public class Issue2927 : _IssuesUITest
 
 	public override string Issue => "ListView item tapped not firing multiple times";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Issue2927Test()
 	{

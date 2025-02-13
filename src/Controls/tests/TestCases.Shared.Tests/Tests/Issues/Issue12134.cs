@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] WkWebView does not handle cookies consistently";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]

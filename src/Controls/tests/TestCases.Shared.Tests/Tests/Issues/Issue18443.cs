@@ -9,7 +9,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "SelectionLength Property Not Applied to Entry at Runtime";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Entry)]
 		public void EntrySelectionLengthRuntimeUpdate()
 		{

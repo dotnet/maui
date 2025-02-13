@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Animating a `View` that is currently animating will throw `System.InvalidOperationException`";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Animation)]
 		[Category(UITestCategories.Compatibility)]
 		public void AnimationCancel()

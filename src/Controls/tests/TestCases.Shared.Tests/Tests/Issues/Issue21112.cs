@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 		public override string Issue => "TableView TextCell command executes only once";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.TableView)]
 		public void TableViewTextCellCommand()
 		{

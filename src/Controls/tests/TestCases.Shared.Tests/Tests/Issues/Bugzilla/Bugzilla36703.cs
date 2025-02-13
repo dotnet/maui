@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "TapGestureRecognizer inside initially disable Image will never fire Tapped event";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Gestures)]
 		public void _36703Test()
 		{

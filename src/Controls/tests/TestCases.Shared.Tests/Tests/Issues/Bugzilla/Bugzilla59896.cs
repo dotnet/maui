@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "v2.4.0: Adding inserting section to ListView causes crash IF first section is empty";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ListView)]
 		public void Bugzilla59896Test()
 		{

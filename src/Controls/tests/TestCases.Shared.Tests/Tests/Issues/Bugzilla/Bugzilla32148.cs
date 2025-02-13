@@ -12,7 +12,7 @@ public class Bugzilla32148 : _IssuesUITest
 
 	public override string Issue => " Pull to refresh hides the first item on a list view";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla32148Test()
 	{

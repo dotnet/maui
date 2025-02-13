@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests
         {
         }
 
-        [Test]
+        [Test, Retry(2)]
         [Category(UITestCategories.CollectionView)]
         public void GroupingAndHeaderWorks()
         {

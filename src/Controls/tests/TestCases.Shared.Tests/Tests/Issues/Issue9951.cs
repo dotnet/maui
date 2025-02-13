@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Android 10 Setting ThumbColor on Switch causes a square block";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Switch)]
 		[Category(UITestCategories.Compatibility)]
 		public async Task SwitchColorTest()

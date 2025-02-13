@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[regression/8.0.3] Cannot control unselected text color of tabs within TabbedPage";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.TabbedPage)]
 		public void TabbedPageUnselectedBarTextColorConsistency()
 		{

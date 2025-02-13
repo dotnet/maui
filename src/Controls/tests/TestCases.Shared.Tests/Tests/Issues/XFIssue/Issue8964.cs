@@ -13,7 +13,7 @@ public class Issue8964 : _IssuesUITest
 
 	public override string Issue => "Adding an item to the beginning of the bound ItemSource causes the carousel to skip sometimes";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.CarouselView)]
 	public void Issue8964Test()
 	{

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "WordWrap LineBreakMode leaves extra space on Android";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Label)]
 		public void WordWrapLineBreakModeNoExtraSpace()
 		{

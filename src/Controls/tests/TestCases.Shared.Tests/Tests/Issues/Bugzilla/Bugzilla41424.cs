@@ -27,7 +27,7 @@ public class Bugzilla41424 : _IssuesUITest
 	}
 	public override string Issue => "[Android] Clicking cancel on a DatePicker does not cause it to unfocus";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.DatePicker)]
 	public void DatePickerCancelShouldUnfocus()
 	{

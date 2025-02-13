@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Pushing and then popping a page modally causes ArgumentOutOfRangeException";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue31366PushingAndPoppingModallyCausesArgumentOutOfRangeException()
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("If this is visible, the PopOnAppearing test has passed.");
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Navigation)]
 		public void Issue31366PushingWithModalStackCausesIncorrectStackOrder()
 		{

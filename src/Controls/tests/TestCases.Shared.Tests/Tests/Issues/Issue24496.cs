@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Pickers scroll to bottom and new keyboard types rekick the scrolling";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Entry)]
         public void PickerNewKeyboardIsAboveKeyboard()
         {

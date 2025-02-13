@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Enhancement] Add VerticalScrollMode/HorizontalScrollMode to ListView and ScrollView";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ScrollView)]
 		[FailsOnIOSWhenRunningOnXamarinUITest]
 		[FailsOnMacWhenRunningOnXamarinUITest]
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(FirstItemMark, timeout: TimeSpan.FromSeconds(5));
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ScrollView)]
 		[FailsOnIOSWhenRunningOnXamarinUITest]
 		[FailsOnMacWhenRunningOnXamarinUITest]

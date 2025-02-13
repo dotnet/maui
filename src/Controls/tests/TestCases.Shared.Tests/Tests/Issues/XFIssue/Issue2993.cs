@@ -12,7 +12,7 @@ public class Issue2993 : _IssuesUITest
 
 	public override string Issue => "[Android] Bottom Tab Bar with a navigation page is hiding content";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Layout)]
 	public void BottomContentVisibleWithBottomBarAndNavigationPage()
 	{

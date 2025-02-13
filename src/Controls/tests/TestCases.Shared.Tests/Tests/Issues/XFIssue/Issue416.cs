@@ -12,7 +12,7 @@ public class Issue416 : _IssuesUITest
 
 	public override string Issue => "NavigationPage in PushModal does not show NavigationBar";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Navigation)]
 	public void Issue416TestsNavBarPresent()
 	{

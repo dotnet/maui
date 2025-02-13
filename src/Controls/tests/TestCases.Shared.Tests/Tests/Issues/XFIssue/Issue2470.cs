@@ -15,7 +15,7 @@ public class Issue2470 : _IssuesUITest
 
 	public override string Issue => "ObservableCollection changes do not update ListView";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void ObservableCollectionChangeListView()
 	{

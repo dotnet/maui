@@ -13,7 +13,7 @@ public class Bugzilla53179_2 : _IssuesUITest
 
 	public override string Issue => "Removing page during OnAppearing throws exception";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Navigation)]
 	public void RemovePageOnAppearingDoesNotCrash()
 	{

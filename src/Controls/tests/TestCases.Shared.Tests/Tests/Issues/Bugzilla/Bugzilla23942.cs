@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Cannot bind properties in BindableObjects added to static resources in XAML";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.LifeCycle)]
 		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla23942Test()

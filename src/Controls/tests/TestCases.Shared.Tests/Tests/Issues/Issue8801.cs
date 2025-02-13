@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// Crash after navigation
 		/*
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
 		public void NotAddingElementsNativelyDoesntCrashAndroid()

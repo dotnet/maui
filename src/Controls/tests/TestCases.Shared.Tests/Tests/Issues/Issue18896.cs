@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Can scroll ListView inside RefreshView";
 
-		// [Test]
+		// [Test, Retry(2)]
 		[Category(UITestCategories.ListView)]
 		[FailsOnIOSWhenRunningOnXamarinUITest("Currently fails on iOS; see https://github.com/dotnet/maui/issues/18811")]
 		[FailsOnMacWhenRunningOnXamarinUITest("Currently fails on Catalyst; see https://github.com/dotnet/maui/issues/18811")]

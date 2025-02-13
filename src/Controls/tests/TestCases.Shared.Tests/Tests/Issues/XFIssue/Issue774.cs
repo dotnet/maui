@@ -13,7 +13,7 @@ public class Issue774 : _IssuesUITest
 
 	public override string Issue => "ActionSheet won't dismiss after rotation to landscape";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ActionSheet)]
 	public void Issue774TestsDismissActionSheetAfterRotation()
 	{

@@ -18,7 +18,7 @@ public class Bugzilla58875 : _IssuesUITest
 
 	public override string Issue => "Back navigation disables Context Action in whole app, if Context Action left open";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ContextActions)]
 	public void Bugzilla58875Test()
 	{

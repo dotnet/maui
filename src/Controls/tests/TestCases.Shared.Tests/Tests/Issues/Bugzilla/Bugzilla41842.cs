@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// Crash after navigation
 		/*
-		[Test]
+		[Test, Retry(2)]
 		[Ignore("The sample is crashing.")]
 		[Category(UITestCategories.FlyoutPage)]
 		[Category(UITestCategories.Compatibility)]

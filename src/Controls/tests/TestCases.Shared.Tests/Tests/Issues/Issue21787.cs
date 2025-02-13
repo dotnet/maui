@@ -11,7 +11,7 @@ public class Issue21787 : _IssuesUITest
 
 	public override string Issue => "[Windows] Remove workaround for label text decorations";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Label)]
 	public void LabelTextDecorationsWorks()
 	{

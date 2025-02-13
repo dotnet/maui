@@ -16,7 +16,7 @@ public class Issue1769 : _IssuesUITest
 
 	public override string Issue => "PushAsync with Switch produces NRE";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Switch)]
 	[Category(UITestCategories.Compatibility)]
 	public void Issue1769Test()

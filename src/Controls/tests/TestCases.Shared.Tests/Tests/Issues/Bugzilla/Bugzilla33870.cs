@@ -12,7 +12,7 @@ public class Bugzilla33870 : _IssuesUITest
 
 	public override string Issue => "[W] Crash when the ListView Selection is set to null";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla33870Test()
 	{

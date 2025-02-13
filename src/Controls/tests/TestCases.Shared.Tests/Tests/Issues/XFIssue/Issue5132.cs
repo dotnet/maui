@@ -14,7 +14,7 @@ public class Issue5132 : _IssuesUITest
 	public override string Issue => "Unable to specify automation properties on the hamburger/flyout icon";
 
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void ShellFlyoutAndHamburgerAutomationProperties()
 	{

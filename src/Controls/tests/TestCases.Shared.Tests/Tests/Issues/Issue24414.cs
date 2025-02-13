@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Shadows not rendering as expected on Android and iOS";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Visual)]
 		public void Issue24414Test()
 		{

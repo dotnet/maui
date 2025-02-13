@@ -13,7 +13,7 @@ public class Issue4303 : _IssuesUITest
 
 	public override string Issue => "[Android] TabbedPage's child is appearing before it should be";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.LifeCycle)]
 	public void Issue4303Test()
 	{

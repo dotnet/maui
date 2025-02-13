@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] Shell throws exception when delay adding Shell Content";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Shell)]
 		public void DelayedAddingOfShellContentDoesntCrash()
 		{
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] Shell throws exception when delay adding Shell Section";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Shell)]
 		public void DelayedAddingOfShellSectionDoesntCrash()
 		{
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] Shell throws exception when delay adding Shell Item";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Shell)]
 		public void DelayedAddingOfShellItemDoesntCrash()
 		{

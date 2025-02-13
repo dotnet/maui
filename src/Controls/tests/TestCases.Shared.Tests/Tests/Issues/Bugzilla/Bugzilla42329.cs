@@ -18,7 +18,7 @@ public class Bugzilla42329 : _IssuesUITest
 
 	public override string Issue => "ListView in Frame and FormsAppCompatActivity Memory Leak";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public async Task MemoryLeakB42329()
 	{

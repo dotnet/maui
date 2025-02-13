@@ -12,7 +12,7 @@ public class RestartAppTest : _IssuesUITest
 
 	public override string Issue => "Config changes which restart the app should not crash";
 
-	//[Test]
+	//[Test, Retry(2)]
 	//[Category(UITestCategories.LifeCycle)]
 	//[FailsOnIOSWhenRunningOnXamarinUITest]
 	//public void ForcingRestartDoesNotCauseCrash()

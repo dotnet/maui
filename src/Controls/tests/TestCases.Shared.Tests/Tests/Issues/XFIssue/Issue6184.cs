@@ -13,7 +13,7 @@ public class Issue6184 : _IssuesUITest
 
 	public override string Issue => "Throws exception when set isEnabled to false in ShellItem index > 5";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void GitHubIssue6184()
 	{

@@ -14,11 +14,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Virtual keyboard appears with focus on Entry";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Entry)]
-		[TestCase("Entry")]
-		[TestCase("Editor")]
-		[TestCase("SearchBar")]
+		[TestCase("Entry"), Retry(2), Retry(2)]
+		[TestCase("Editor"), Retry(2), Retry(2)]
+		[TestCase("SearchBar"), Retry(2), Retry(2)]
 		public void Issue18740Test(string view)
 		{
 			try

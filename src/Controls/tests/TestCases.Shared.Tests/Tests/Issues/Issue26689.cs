@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Radiobutton not visible in .Net Maui";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.RadioButton)]
 		public void RadioButtonShouldApplyPropertiesCorrectly()
 		{

@@ -16,7 +16,7 @@ public class Bugzilla45027 : _IssuesUITest
 	public override string Issue => "App crashes when double tapping on ToolbarItem or MenuItem very quickly";
 
 	// #if ANDROID
-	// 	[Test]
+	// 	[Test, Retry(2)]
 	// 	public void Bugzilla45027Test()
 	// 	{
 	// 		var firstItemList = "0";
@@ -33,7 +33,7 @@ public class Bugzilla45027 : _IssuesUITest
 	// #endif
 
 	// #if IOS
-	// 	[Test]
+	// 	[Test, Retry(2)]
 	// 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	// 	public void Bugzilla45027Test()
 	// 	{

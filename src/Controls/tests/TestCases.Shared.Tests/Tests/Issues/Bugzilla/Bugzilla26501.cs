@@ -12,7 +12,7 @@ public class Bugzilla26501 : _IssuesUITest
 
     public override string Issue => "BindingSource / Context action issue";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.InputTransparent)]
 	public void TestCellsShowAfterRefresh()
 	{

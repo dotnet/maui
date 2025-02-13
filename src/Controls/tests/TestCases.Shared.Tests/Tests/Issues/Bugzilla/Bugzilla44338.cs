@@ -15,7 +15,7 @@ public class Bugzilla44338 : _IssuesUITest
 	public override string Issue => "Tapping off of a cell with an open context action causes a crash in iOS 10";
 
 	// #if IOS
-	// 	[Test]
+	// 	[Test, Retry(2)]
 	// 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	// 	public void Bugzilla44338Test()
 	// 	{
@@ -25,7 +25,7 @@ public class Bugzilla44338 : _IssuesUITest
 	// #endif
 
 	//  #if ANDROID
-	// 	[Test]
+	// 	[Test, Retry(2)]
 	// 	public void Bugzilla44338Test()
 	// 	{
 	// 		App.TouchAndHold("A");

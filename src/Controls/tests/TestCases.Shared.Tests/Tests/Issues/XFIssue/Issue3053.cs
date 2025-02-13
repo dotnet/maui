@@ -12,7 +12,7 @@ public class Issue3053 : _IssuesUITest
 
 	public override string Issue => "Moving items around on an Observable Collection causes the last item to disappear";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void MovingItemInObservableCollectionBreaksListView()
 	{

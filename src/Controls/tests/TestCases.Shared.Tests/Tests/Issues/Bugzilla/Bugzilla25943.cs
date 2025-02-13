@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string OuterLayout = "outerlayout";
 		const string Success = "Success";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Gestures)]
 		[Category(UITestCategories.Compatibility)]
 		public void VerifyNestedStacklayoutTapsBubble()

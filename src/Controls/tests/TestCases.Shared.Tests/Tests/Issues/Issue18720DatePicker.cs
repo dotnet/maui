@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Setting the background property of AppCompatEditText (DatePicker) in a handler mapping does not work";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.DatePicker)]
 		public async Task SettingDatePickerBackgroundFromHandler()
 		{

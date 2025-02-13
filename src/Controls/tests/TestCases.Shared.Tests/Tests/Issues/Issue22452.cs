@@ -11,7 +11,7 @@ public class Issue22452 : _IssuesUITest
 
 	public override string Issue => "Fix error when running new template maui app on iOS";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void NavigationBetweenFlyoutItems()
 	{

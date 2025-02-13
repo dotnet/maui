@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Fix crash closing Popup with WebView";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.WebView)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]

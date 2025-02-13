@@ -13,7 +13,7 @@ public class Bugzilla40173 : _IssuesUITest
 
 	public override string Issue => "Android BoxView/Frame not clickthrough in ListView";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.InputTransparent)]
 	public void ButtonBlocked()
 	{

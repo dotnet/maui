@@ -13,7 +13,7 @@ public class Issue1658 : _IssuesUITest
 
 	public override string Issue => "[macOS] GestureRecognizer on ListView Item not working";
 	
-	// [Test]
+	// [Test, Retry(2)]
 	// [Category(UITestCategories.ListView)]
 	// public void ContextActionsIconImageSource()
 	// {

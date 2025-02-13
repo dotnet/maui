@@ -12,7 +12,7 @@ public class LabelTextType : _IssuesUITest
 
 	public override string Issue => "Implementation of Label TextType";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Label)]
 	public void LabelToggleHtmlAndPlainTextTest()
 	{

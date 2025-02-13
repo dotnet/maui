@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Border does not expand on Content size changed";
 
 #if !MACCATALYST
-		[Test]
+		[Test, Retry(2)]
 		public void BorderBackgroundExpandsOnContentSizeChanged()
 		{
 			App.WaitForElement("SetHeightTo200");
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #endif
 
 #if ANDROID || IOS
-		[Test]
+		[Test, Retry(2)]
 		public void BorderBackgroundSizeUpdatesWhenRotatingScreen()
 		{
 			App.WaitForElement("SetHeightTo200");

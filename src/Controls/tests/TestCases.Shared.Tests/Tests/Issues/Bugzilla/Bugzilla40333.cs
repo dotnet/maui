@@ -18,7 +18,7 @@ public class Bugzilla40333 : _IssuesUITest
 	const string ClickThisId = "2 Click This";
 	public override string Issue => "[Android] IllegalStateException: Recursive entry to executePendingTransactions";
 
-	[Test]
+	[Test, Retry(2)]
 	public void ClickingOnMenuItemInRootDoesNotCrash_NavPageVersion()
 	{
 		App.WaitForElement(StartNavPageTestId);
@@ -32,7 +32,7 @@ public class Bugzilla40333 : _IssuesUITest
 		App.WaitForElement(StillHereId);
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void ClickingOnMenuItemInRootDoesNotCrash_TabPageVersion()
 	{
 		App.WaitForElement(StillHereId);

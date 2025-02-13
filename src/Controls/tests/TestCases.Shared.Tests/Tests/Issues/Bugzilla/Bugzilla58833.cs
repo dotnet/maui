@@ -12,7 +12,7 @@ public class Bugzilla58833 : _IssuesUITest
 
 	public override string Issue => "ListView SelectedItem Binding does not fire";
 
-	// 	[Test]
+	// 	[Test, Retry(2)]
 	// 	[Category(UITestCategories.ListView)]
 	// 	[Ignore("Failing without explanation on XTC, please run manually")]
 	// 	public void Bugzilla58833Test()

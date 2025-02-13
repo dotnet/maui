@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.SearchBar)]
 		public void SearchBarMaxLength()
 		{

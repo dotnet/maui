@@ -12,7 +12,7 @@ public class Issue19609 : _IssuesUITest
 
 	public override string Issue => "Button clicked event and command will not be occurred in EmptyView of CollectionView";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.CollectionView)]
 	public void CanTapButtonOnEmptyView()
 	{

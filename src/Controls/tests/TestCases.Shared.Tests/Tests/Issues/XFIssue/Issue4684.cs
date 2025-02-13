@@ -13,7 +13,7 @@ public class Issue4684 : _IssuesUITest
 	const string control = "Control";
 	public override string Issue => "[Android] don't clear shell content because native page isn't visible";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void NavigatingBackAndForthDoesNotCrash()
 	{

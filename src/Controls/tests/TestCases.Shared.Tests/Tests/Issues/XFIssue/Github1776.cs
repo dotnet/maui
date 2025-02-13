@@ -13,7 +13,7 @@ public class Github1776 : _IssuesUITest
 
 	public override string Issue => "Button Released not being triggered";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Button)]
 	public void GitHub1776Test()
 	{

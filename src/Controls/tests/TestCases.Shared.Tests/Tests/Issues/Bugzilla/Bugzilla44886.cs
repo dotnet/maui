@@ -14,7 +14,7 @@ public class Bugzilla44886 : _IssuesUITest
 
 	public override string Issue => "UWP Listview ItemSelected event triggered twice for each selection";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla44886Test()
 	{

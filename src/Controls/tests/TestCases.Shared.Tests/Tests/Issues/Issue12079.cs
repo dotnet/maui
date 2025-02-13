@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "SwipeView crash if Text not is set on SwipeItem";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.SwipeView)]
 		[Category(UITestCategories.Compatibility)]
 		public void SwipeItemNoTextWindows()

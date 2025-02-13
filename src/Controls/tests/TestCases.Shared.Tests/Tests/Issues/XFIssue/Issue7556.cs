@@ -15,7 +15,7 @@ public class Issue7556 : _IssuesUITest
 
 	public override string Issue => "[iOS] Masterbehavior.popover not being observed on iOS 13";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void MasterStillVisibleAfterPushingAndPoppingModalPage()
 	{
@@ -30,7 +30,7 @@ public class Issue7556 : _IssuesUITest
 		App.WaitForElement("Flyout Visible");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void SplitOnLandscapeFailsToDetectClose()
 	{

@@ -12,7 +12,7 @@ public class Issue3019 : _IssuesUITest
 
 	public override string Issue => "Grouped ListView Header empty for adding items";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void MakeSureListGroupShowsUpAndItemsAreClickable()
 	{

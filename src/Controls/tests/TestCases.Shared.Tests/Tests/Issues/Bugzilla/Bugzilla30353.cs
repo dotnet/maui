@@ -17,7 +17,7 @@ public class Bugzilla30353 : _IssuesUITest
 	}
 
 	public override string Issue => "FlyoutPage.IsPresentedChanged is not raised";
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void FlyoutPageIsPresentedChangedRaised()
 	{

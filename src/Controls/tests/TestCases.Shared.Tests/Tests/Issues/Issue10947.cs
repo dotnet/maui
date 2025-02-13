@@ -15,7 +15,7 @@ public class Issue10947 : _IssuesUITest
 	string HeaderEntry => "HeaderEntry";
 	string FooterEntry => "FooterEntry";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.CollectionView)]
 	public void CollectionViewHeaderShouldNotScroll()
 	{

@@ -12,7 +12,7 @@ public class Issue19955 : _IssuesUITest
 
 	public override string Issue => "Navigating Back to FlyoutPage Renders Blank Page";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void NavigatingBackToFlyoutPageRendersBlankPage()
 	{

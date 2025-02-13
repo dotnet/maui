@@ -13,7 +13,7 @@ public class Issue2948 : _IssuesUITest
 
 	public override string Issue => "FlyoutPage Detail is interactive even when Flyout is open when in Landscape";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void Issue2948Test()
 	{

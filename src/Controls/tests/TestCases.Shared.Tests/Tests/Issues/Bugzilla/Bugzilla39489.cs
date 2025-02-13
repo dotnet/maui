@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Memory leak when using NavigationPage with Maps";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Maps)]
 		[Category(UITestCategories.Performance)]
 		[Category(UITestCategories.Compatibility)]

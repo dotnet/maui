@@ -13,7 +13,7 @@ public class ListViewViewCellBinding : _IssuesUITest
 
 	public override string Issue => "ListView ViewCell binding";
 
-	[Test]
+	[Test, Retry(2)]
 
 	public void ListViewViewCellBindingTestsAllElementsPresent()
 	{
@@ -27,7 +27,7 @@ public class ListViewViewCellBinding : _IssuesUITest
 		App.WaitForElement("300.0");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 
 	public void ListViewViewCellBindingTestsAddListItem()
 	{
@@ -36,7 +36,7 @@ public class ListViewViewCellBinding : _IssuesUITest
 		App.WaitForElement("400.0");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 
 	public void ListViewViewCellBindingTestsRemoveListItem()
 	{

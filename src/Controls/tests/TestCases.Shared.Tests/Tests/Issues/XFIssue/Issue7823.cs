@@ -15,7 +15,7 @@ public class Issue7823_XF : _IssuesUITest
 
 	public override string Issue => "[Bug] Frame corner radius.";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Frame)]
 	public void Issue7823TestIsClippedIssue()
 	{

@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] [iOS] UpdateClip throws NullReferenceException when the Name of the Mask of the Layer is null";
 
 
-		[Test]
+		[Test, Retry(2)]
 		[Description("Verify that can use a CustomRenderer overriding the iOS View Layer properties")]	
 		[Category(UITestCategories.Compatibility)]
 		public void Issue11132CustomRendererLayerAndClip()

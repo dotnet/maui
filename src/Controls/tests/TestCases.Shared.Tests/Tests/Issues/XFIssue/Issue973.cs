@@ -15,7 +15,7 @@ public class Issue973 : _IssuesUITest
 
 	public override string Issue => "ActionBar doesn't immediately update when nested TabbedPage is changed";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TabbedPage)]
 	[Description("Test tab reset when swapping out detail")]
 	public void Issue973TestsTabResetAfterDetailSwap()

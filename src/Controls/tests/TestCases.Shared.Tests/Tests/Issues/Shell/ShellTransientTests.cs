@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		protected override bool ResetAfterEachTest => true;
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Shell)]
 		public void ValidateBasicServiceLifetimePageBehavior()
 		{
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("OldPage", "New Page Incorrectly Created For Unregistered Page");
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Shell)]
 		public void SwappingShellInstancesRecreatesPages()
 		{

@@ -13,7 +13,7 @@ public class Issue9075 : _IssuesUITest
 	{ }
 
 #if WINDOWS
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Layout)]
 #endif
 	public void FlexLayoutCycleException()

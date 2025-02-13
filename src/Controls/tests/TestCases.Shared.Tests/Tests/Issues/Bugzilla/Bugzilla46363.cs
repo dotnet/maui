@@ -14,7 +14,7 @@ public class Bugzilla46363 : _IssuesUITest
 
 	// [FailsOnAndroidWhenRunningOnXamarinUITest]
 	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// [Test]
+	// [Test, Retry(2)]
 	// public void _46363_Tap_Succeeds()
 	// {
 	// 	App.WaitForElement(Testing);
@@ -28,7 +28,7 @@ public class Bugzilla46363 : _IssuesUITest
 
 	// [FailsOnAndroidWhenRunningOnXamarinUITest]
 	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// [Test]
+	// [Test, Retry(2)]
 	// public void _46363_ContextAction_Succeeds()
 	// {
 	// 	App.WaitForElement(Testing);

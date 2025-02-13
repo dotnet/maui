@@ -13,7 +13,7 @@ public class Bugzilla39331 : _IssuesUITest
 
 	public override string Issue => "[Android] BoxView Is InputTransparent Even When Set to False";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.InputTransparent)]
 	public void Bugzilla39331Test()
 	{

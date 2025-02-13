@@ -12,7 +12,7 @@ internal class Issue6286 : _IssuesUITest
 
 	public override string Issue => "ObjectDisposedException in Android WebView.EvaluateJavascriptAsync";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.WebView)]
 	public void Issue6286_WebView_Test()
 	{

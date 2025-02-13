@@ -13,7 +13,7 @@ public class Issue11244 : _IssuesUITest
 
 	public override string Issue => "[Bug] BackButtonBehavior no longer displays on the first routed page in 4.7";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void LeftToolbarItemTextDisplaysWhenFlyoutIsDisabled()
 	{

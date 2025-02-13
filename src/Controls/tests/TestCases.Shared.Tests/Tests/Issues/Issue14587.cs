@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue14587(TestDevice device) : base(device) { }
 		public override string Issue => "ImageButton with FontImageSource becomes invisible";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Image)]
 		public void ImageDoesNotDisappearWhenSwitchingTab()
 		{

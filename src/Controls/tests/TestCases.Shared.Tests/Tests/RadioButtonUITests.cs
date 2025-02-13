@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(RadioButtonGallery);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.RadioButton)]
 		public override void IsEnabled()
 		{

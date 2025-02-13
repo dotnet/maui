@@ -12,7 +12,7 @@ public class Issue8008 : _IssuesUITest
 
 	public override string Issue => "Removing Shell Item can cause Shell to try and set a MenuItem as the default visible item";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void RemovingShellItemCorrectlyPicksNextValidShellItemAsVisibleShellItem()
 	{

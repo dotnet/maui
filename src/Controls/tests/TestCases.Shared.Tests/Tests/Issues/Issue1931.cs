@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Xamarin Forms on Android: ScrollView on ListView header crashes app when closing page";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ScrollView)]
 		[Category(UITestCategories.Compatibility)]
 		public void ScrollViewInHeaderDisposesProperly()

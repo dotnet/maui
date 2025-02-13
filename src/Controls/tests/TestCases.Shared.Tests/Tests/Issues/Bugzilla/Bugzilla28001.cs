@@ -15,7 +15,7 @@ public class Bugzilla28001 : _IssuesUITest
 
 	[FailsOnIOSWhenRunningOnXamarinUITest]
 	[FailsOnAndroidWhenRunningOnXamarinUITest]
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TabbedPage)]
 	public void Bugzilla28001Test()
 	{

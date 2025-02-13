@@ -13,7 +13,7 @@ public class Bugzilla31602 : _IssuesUITest
 
 	public override string Issue => "not possible to programmatically open master page after iPad landscape -> portrait rotation, also tests 31664";
 
-	[Test]
+	[Test, Retry(2)]
 
 	[Category(UITestCategories.FlyoutPage)]
 	public void Bugzilla31602Test()

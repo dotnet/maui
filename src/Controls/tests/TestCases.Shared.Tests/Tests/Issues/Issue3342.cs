@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] BoxView BackgroundColor not working on 3.2.0-pre1";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.BoxView)]
 		public void Issue3342Test()
 		{

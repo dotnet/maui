@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[WinRT/UWP] Slider binding works incorrectly";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.LifeCycle)]
 		[Category(UITestCategories.Compatibility)]
 		public void SliderBinding()

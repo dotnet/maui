@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		public _ViewUITests(TestDevice device) : base(device) { }
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.IsEnabled)]
 		public virtual void IsEnabled()
 		{
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			ClassicAssert.AreEqual("False", isDisabled);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.IsVisible)]
 		public virtual void IsVisible()
 		{

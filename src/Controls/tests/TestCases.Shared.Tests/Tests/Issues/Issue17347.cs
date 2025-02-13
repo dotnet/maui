@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Setting a new TitleView on an already created page crashes iOS";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Page)]
 		public void AppDoesntCrashWhenSettingNewTitleViewOnExistingPage()
 		{

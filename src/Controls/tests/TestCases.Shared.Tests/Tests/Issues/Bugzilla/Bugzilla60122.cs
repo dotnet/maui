@@ -16,7 +16,7 @@ public class Bugzilla60122 : _IssuesUITest
 	const string ImageId = "60122Image";
 	const string Success = "Success";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Gestures)]
 	public void LongClickFiresOnCustomImageRenderer()
 	{

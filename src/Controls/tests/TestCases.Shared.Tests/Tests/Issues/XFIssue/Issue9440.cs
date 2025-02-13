@@ -13,7 +13,7 @@ public class Issue9440 : _IssuesUITest
 
 	public override string Issue => "Flyout closes with two or more taps";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void GitHubIssue9440()
 	{

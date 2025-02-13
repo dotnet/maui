@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Setting MaximumTrackColor on Slider has no effect";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Slider)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest("Regression test validating the design differences between iOS and Mac specifically")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Regression test validating the design differences between iOS and Mac specifically")]

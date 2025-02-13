@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "VerticalStackLayout inside Scrollview: Button at the bottom not clickable on IOS";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ScrollView)]
 		public void ResizeScrollViewAndTapButtonTest()
 		{

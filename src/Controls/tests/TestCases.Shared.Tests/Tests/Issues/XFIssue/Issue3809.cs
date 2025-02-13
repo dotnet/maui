@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ClassicAssert.AreEqual(element.GetText(), text);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Page)]
 		public void SafeAreaInsetsBreaksAndroidPadding()

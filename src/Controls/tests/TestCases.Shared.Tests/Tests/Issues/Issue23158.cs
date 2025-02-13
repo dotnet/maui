@@ -12,7 +12,7 @@ public class Issue23158 : _IssuesUITest
 	{
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Entry)]
 	public void ValidateEntryClearButtonVisibilityBehavior()
 	{

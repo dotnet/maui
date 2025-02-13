@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		/*
   		There's an issue getting the mouse interactions to work with Appium.
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.WebView)]
 		public async Task CanScrollWebView()
 		{

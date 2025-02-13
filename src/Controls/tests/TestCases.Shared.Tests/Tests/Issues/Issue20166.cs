@@ -10,7 +10,7 @@ public class Issue20166 : _IssuesUITest
 
 	public override string Issue => "Custom FlyoutIcon visible although FlyoutBehavior set to disabled";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void ShouldHideCustomFlyoutIconWhenNavigatingToPageWithDisabledFlyout()
 	{

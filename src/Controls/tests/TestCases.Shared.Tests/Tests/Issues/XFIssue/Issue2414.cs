@@ -12,7 +12,7 @@ public class Issue2414 : _IssuesUITest
 
 	public override string Issue => "NullReferenceException when swiping over Context Actions";
 
-	// [Test]
+	// [Test, Retry(2)]
 	// [Category(UITestCategories.TableView)]
 	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void TestDoesntCrashShowingContextMenu()
@@ -23,7 +23,7 @@ public class Issue2414 : _IssuesUITest
 	// 	App.Tap(c => c.Marked("Text0"));
 	// }
 
-	// [Test]
+	// [Test, Retry(2)]
 	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void TestShowContextMenuItemsInTheRightOrder()
 	// {

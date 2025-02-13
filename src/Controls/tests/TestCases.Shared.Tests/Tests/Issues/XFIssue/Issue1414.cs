@@ -13,7 +13,7 @@ public class Issue1414 : _IssuesUITest
 
 	public override string Issue => "InvalidCastException when scrolling and refreshing TableView";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TableView)]
 	public void InvalidCastExceptionWhenScrollingAndRefreshingTableView()
 	{

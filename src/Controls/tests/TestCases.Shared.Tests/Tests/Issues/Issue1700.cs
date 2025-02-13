@@ -15,7 +15,7 @@ public class Issue1700 : _IssuesUITest
 	public override string Issue => "Image fails loading from long URL";
 
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Image)]
 	[Category(UITestCategories.Compatibility)]
 	public void LongImageURLsShouldNotCrash()

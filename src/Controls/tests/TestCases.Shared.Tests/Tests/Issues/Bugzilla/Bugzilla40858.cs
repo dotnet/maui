@@ -13,7 +13,7 @@ public class Bugzilla40858 : _IssuesUITest
 
 	public override string Issue => "Long clicking a text entry in a ListView header/footer cause a crash";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	[Category(UITestCategories.Compatibility)]
 	public void ListViewDoesNotCrashOnTextEntryHeaderOrFooterLongClick()

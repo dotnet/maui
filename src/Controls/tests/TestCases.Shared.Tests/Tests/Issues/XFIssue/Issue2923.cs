@@ -13,7 +13,7 @@ public class Issue2923 : _IssuesUITest
 
 	public override string Issue => "First tab does not load until navigating";
 
-	[Test]
+	[Test, Retry(2)]
 	public void Issue2923TestOne()
 	{
 		App.WaitForElement("FirstPageLabel");

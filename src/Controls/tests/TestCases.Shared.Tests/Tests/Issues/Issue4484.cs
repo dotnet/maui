@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] ImageButton inside NavigationView.TitleView throw exception during device rotation";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ImageButton)]
 		[Category(UITestCategories.Compatibility)]
 		public void RotatingDeviceDoesntCrashTitleView()

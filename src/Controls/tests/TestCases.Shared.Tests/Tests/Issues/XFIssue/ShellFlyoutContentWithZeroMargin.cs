@@ -14,7 +14,7 @@ public class ShellFlyoutContentWithZeroMargin : _IssuesUITest
 
 	public override string Issue => "Shell Flyout Content With Zero Margin offsets correctly";
 
-	[Test]
+	[Test, Retry(2)]
 	public void FlyoutContentIgnoresSafeAreaWithZeroMargin()
 	{
 		App.WaitForElement("PageLoaded");

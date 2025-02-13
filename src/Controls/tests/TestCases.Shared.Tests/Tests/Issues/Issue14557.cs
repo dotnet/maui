@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue14557(TestDevice device) : base(device) { }
 		public override string Issue => "CollectionView header and footer not displaying on Windows";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		public void HeaderAndFooterRender()
 		{

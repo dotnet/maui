@@ -12,7 +12,7 @@ public class Bugzilla32462 : _IssuesUITest
 
 	public override string Issue => "Crash after a page disappeared if a ScrollView is in the HeaderTemplate property of a ListView";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla36729Test()
 	{

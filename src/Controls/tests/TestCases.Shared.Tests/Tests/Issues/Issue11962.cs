@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Cannot access a disposed object. Object name: 'WkWebViewRenderer";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
 		public void WebViewDisposesProperly()

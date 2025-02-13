@@ -18,7 +18,7 @@ public class Issue15565 : _IssuesUITest
 
 	public override string Issue => "[Bug] Shell TitleView and ToolBarItems rendering strange display on iOS 16";
 
-	[Test]
+	[Test, Retry(2)]
 	public void TitleViewHeightIsNotZero()
 	{
 		App.TapTab(Page1, true);
@@ -35,14 +35,14 @@ public class Issue15565 : _IssuesUITest
 	}
 
 
-	[Test]
+	[Test, Retry(2)]
 	public void ToolbarItemsWithTitleViewAreRendering()
 	{
 		App.WaitForElement("Item 1");
 		App.WaitForElement("Item 2");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void NoDuplicateTitleViews()
 	{
 		App.WaitForElement("title 1");

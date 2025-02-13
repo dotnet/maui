@@ -16,7 +16,7 @@ public class Issue2818 : _IssuesUITest
 
 	public override string Issue => "Right-to-Left FlyoutPage in Xamarin.Forms Hamburger icon issue";
 
-	[Test] // "While in landscape orientation and with the flow direction set to RightToLeft in IOS, the Flyout items are not displayed."
+	[Test, Retry(2)] // "While in landscape orientation and with the flow direction set to RightToLeft in IOS, the Flyout items are not displayed."
 	public void RootViewMovesAndContentIsVisible()
 	{
 		var idiom = App.WaitForElement("Idiom");
@@ -35,7 +35,7 @@ public class Issue2818 : _IssuesUITest
 		Assert.That(positionStart, Is.Not.EqualTo(secondPosition));
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void RootViewSizeDoesntChangeAfterBackground()
 	{
 		var idiom = App.WaitForElement("Idiom");

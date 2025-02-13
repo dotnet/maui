@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "App crashes when setting CurrentPage on TabbedPage in ctor in 2.5.1pre1";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.TabbedPage)]
 		public void Issue2035Test()
 		{

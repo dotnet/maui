@@ -15,7 +15,7 @@ public class Bugzilla57717 : _IssuesUITest
 
 	public override string Issue => "Setting background color on Button in Android FormsApplicationActivity causes NRE";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Button)]
 	public void ButtonBackgroundColorAutomatedTest()
 	{

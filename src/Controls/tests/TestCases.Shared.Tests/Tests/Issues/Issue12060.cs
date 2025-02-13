@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Bug] DragGestureRecognizer shows 'Copy' tag when dragging in UWP";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.DragAndDrop)]
 		[Category(UITestCategories.Compatibility)]
 

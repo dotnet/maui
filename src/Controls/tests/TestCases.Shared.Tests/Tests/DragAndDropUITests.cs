@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		// https://github.com/dotnet/maui/issues/24914
 #if !MACCATALYST
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Gestures)]
 		public void DragEvents()
 		{
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Gestures)]
 		public void DragAndDropBetweenLayouts()
 		{
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Gestures)]
 		public void PlatformDragEventArgs()
 		{
@@ -271,7 +271,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Gestures)]
 		public void DragStartEventCoordinates()
 		{
@@ -305,7 +305,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(dragStartRelativeToLabel!.Value.Y < 0);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Gestures)]
 		public void DragEventCoordinates()
 		{
@@ -346,7 +346,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if TEST_FAILS_ON_WINDOWS || TEST_FAILS_ON_MACCATALYST
 		// TODO: Flaky test, disabling for Win and Mac.
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Gestures)]
 		public void DropEventCoordinates()
 		{

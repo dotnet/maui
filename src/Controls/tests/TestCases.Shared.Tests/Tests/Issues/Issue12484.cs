@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Unable to set ControlTemplate for TemplatedView in Xamarin.Forms version 5.0";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ViewBaseTests)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]

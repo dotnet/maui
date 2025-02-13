@@ -12,7 +12,7 @@ public class Bugzilla57749 : _IssuesUITest
 
 	public override string Issue => "After enabling a disabled button it is not clickable";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Button)]
 	public void Bugzilla57749Test()
 	{

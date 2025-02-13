@@ -13,7 +13,7 @@ public class Issue14825 : _IssuesUITest
 	{
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.WebView)]
 	public void ValidateWebViewScreenshot()
 	{

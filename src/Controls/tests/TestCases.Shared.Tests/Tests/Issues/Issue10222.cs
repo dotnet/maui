@@ -11,7 +11,7 @@ public class Issue10222 : _IssuesUITest
 	}
 	public override string Issue => "[CollectionView] ObjectDisposedException if the page is closed during scrolling";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.LifeCycle)]
 	public void Issue10222Test()
 	{

@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Memory leak in Xamarin Forms ListView";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]

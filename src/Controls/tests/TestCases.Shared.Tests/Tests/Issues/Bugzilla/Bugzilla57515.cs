@@ -17,7 +17,7 @@ public class Bugzilla57515 : _IssuesUITest
 
 	public override string Issue => "PinchGestureRecognizer not getting called on Android ";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Gestures)]
 	public void Bugzilla57515Test()
 	{

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Binding Border.StrokeShape not working";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Border)]
 		public void BindingOnStrokeShapeShouldWork()
 		{

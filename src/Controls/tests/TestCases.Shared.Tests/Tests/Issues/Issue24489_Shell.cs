@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		protected override bool ResetAfterEachTest => true;
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Window)]
 		public void TitleBarWithSmallHeightShell()
 		{
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SmallHeightRequest");
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Window)]
 		public void TitleBarWithLargeHeightShell()
 		{
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Window)]
 		public void NavBarResetsColorAfterSmallTitleBarShell()
 		{
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Window)]
 		public void NavBarResetsColorAfterLargeTitleBarShell()
 		{

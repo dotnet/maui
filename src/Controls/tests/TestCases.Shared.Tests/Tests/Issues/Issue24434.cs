@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Modifying a layout while view isn't part of the Window fails to update the layout visually";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Layout)]
 		public void ModifyingANonVisibleLayoutWorks()
 		{

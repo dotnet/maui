@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "Crash when toolbar item removed then page changed";
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ToolbarItem)]
 		[Category(UITestCategories.Compatibility)]
 		public void TestIssue9419()

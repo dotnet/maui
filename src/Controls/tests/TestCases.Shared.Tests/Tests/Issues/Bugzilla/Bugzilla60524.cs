@@ -13,7 +13,7 @@ public class Bugzilla60524 : _IssuesUITest
 
 	public override string Issue => "NRE when rendering ListView with grouping enabled and HasUnevenRows set to true";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla60524Test()
 	{

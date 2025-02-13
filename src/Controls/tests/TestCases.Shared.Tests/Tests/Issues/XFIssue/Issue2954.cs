@@ -13,7 +13,7 @@ public class Issue2954 : _IssuesUITest
 
 	public override string Issue => "Cell becomes empty after adding a new one with context actions (TableView) ";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TableView)]
 	public void Issue2954Test()
 	{

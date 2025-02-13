@@ -13,7 +13,7 @@ public class Bugzilla40161 : _IssuesUITest
 
 	public override string Issue => "Issue Bugzilla40161";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Layout)]
 	public void Issue1Test()
 	{

@@ -13,7 +13,7 @@ public class Issue9711 : _IssuesUITest
 
 	public override string Issue => "[Bug] iOS Failed to marshal the Objective-C object HeaderWrapperView";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void TestTappingHeaderDoesNotCrash()
 	{

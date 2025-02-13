@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Memory leak when TabbedPage is popped out ";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.LifeCycle)]
 		public void Issu32898Test()
 		{

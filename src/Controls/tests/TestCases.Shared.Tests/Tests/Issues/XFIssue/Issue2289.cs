@@ -12,7 +12,7 @@ public class Issue2289 : _IssuesUITest
 
 	public override string Issue => "TextCell IsEnabled property not disabling element in TableView";
 
-	//[Test]
+	//[Test, Retry(2)]
 	//[Category(UITestCategories.Cells)]
 	//[Ignore("Fails sometimes on XTC")]
 	//public void TestIsEnabledFalse()
@@ -23,7 +23,7 @@ public class Issue2289 : _IssuesUITest
 	//	Assert.IsFalse(disable2.Enabled);
 	//}
 
-	//[Test]
+	//[Test, Retry(2)]
 	//[Ignore("Fails sometimes on XTC")]
 	//public void TestIsEnabledFalseContextActions()
 	//{
@@ -39,7 +39,7 @@ public class Issue2289 : _IssuesUITest
 	//	App.TapCoordinates(screenBounds.CenterX, screenBounds.CenterY);
 	//}
 
-	//[Test]
+	//[Test, Retry(2)]
 	//[Ignore("Fails sometimes on XTC")]
 	//public void TestIsEnabledTrue()
 	//{
@@ -49,7 +49,7 @@ public class Issue2289 : _IssuesUITest
 	//	Assert.IsTrue(disable2.Enabled);
 	//}
 
-	//[Test]
+	//[Test, Retry(2)]
 	//[Ignore("Fails sometimes on XTC")]
 	//public void TestIsEnabledTrueContextActions()
 	//{

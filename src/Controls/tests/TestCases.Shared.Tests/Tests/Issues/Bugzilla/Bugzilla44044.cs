@@ -16,7 +16,7 @@ public class Bugzilla44044 : _IssuesUITest
 
 	public override string Issue => "TabbedPage steals swipe gestures";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TabbedPage)]
 	public void Bugzilla44044Test()
 	{

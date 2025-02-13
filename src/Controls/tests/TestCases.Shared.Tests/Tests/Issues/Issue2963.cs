@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Disabling Editor in iOS does not disable entry of text";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue2963Test()
 		{

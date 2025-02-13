@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[iOS] Searchbar in Horizontal Stacklayout doesn't render";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.SearchBar)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue3413Test()

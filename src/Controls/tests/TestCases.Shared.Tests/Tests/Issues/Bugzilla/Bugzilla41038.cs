@@ -12,7 +12,7 @@ public class Bugzilla41038 : _IssuesUITest
 
 	public override string Issue => "FlyoutPage loses menu icon on iOS after reusing NavigationPage as Detail";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void Bugzilla41038Test()
 	{

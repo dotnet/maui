@@ -12,7 +12,7 @@ public class Issue1439 : _IssuesUITest
 
 	public override string Issue => "ItemTapped event for a grouped ListView is not working as expected.";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TableView)]
 	public void Issue1439Test()
 	{

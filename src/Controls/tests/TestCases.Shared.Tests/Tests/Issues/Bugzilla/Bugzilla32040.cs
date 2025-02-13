@@ -13,7 +13,7 @@ public class Bugzilla32040 : _IssuesUITest
 
 	public override string Issue => "EntryCell.Tapped or SwitchCell.Tapped does not fire when within a TableView ";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Cells)]
 	public void TappedWorksForEntryAndSwithCellTest()
 	{

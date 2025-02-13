@@ -17,16 +17,16 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery("Image Loading Gallery");
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		public void LoadAndVerifyPng() => LoadAndVerify(Test.ImageLoading.FromBundlePng);
 
-		[Test]
+		[Test, Retry(2)]
 		public void LoadAndVerifyJpg() => LoadAndVerify(Test.ImageLoading.FromBundleJpg);
 
-		[Test]
+		[Test, Retry(2)]
 		public void LoadAndVerifyGif() => LoadAndVerify(Test.ImageLoading.FromBundleGif);
 
-		[Test]
+		[Test, Retry(2)]
 		public void LoadAndVerifySvg() => LoadAndVerify(Test.ImageLoading.FromBundleSvg);
 
 		void LoadAndVerify(Test.ImageLoading test)

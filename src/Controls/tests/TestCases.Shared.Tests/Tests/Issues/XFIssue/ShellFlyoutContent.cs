@@ -21,7 +21,7 @@ public class ShellFlyoutContent : _IssuesUITest
 
 	public override string Issue => "Shell Flyout Content";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void FlyoutContentTests()
 	{

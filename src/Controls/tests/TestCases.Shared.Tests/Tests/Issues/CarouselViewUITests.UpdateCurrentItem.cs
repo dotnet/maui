@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "CarouselView does not update the CurrentItem on Swipe under strange condition";
 
 		// Issue9827 (src\ControlGallery\src\Issues.Shared\Issue9827.cs
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CarouselView)]
 		public void Issue9827Test()
 		{

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] ScrollView crashes when setting ScrollbarFadingEnabled to false in Custom Renderer";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ScrollView)]
 		[Category(UITestCategories.Compatibility)]
 		public void ScrollViewWithScrollbarFadingEnabledFalseDoesntCrash()

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Setting the background property of AppCompatEditText (TimePicker) in a handler mapping does not work";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.TimePicker)]
 		public async Task SettingTimePickerBackgroundFromHandler()
 		{

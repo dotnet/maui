@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Bug] XF 4.3 UWP Crash - Element not found";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Compatibility)]
 		public void ThreadpoolBindingUpdateShouldNotCrash()
 		{

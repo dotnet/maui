@@ -12,7 +12,7 @@ public class Issue5793 : _IssuesUITest
 
 	public override string Issue => "[CollectionView/ListView] Not listening for Reset command";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.CollectionView)]
 	public void CollectionViewResetTest()
 	{

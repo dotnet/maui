@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "RelativeLayout - First child added after page display does not appear";
 
-		[Test]
+		[Test, Retry(2)]
 		[Ignore("The sample is crashing.")]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]

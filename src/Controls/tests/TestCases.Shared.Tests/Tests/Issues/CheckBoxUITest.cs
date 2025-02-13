@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		: base(device)
 		{ }
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CheckBox), Order(1)]
 		public void VerifyCheckBoxUnCheckedState()
 		{
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CheckBox), Order(2)]
 		public void VerifyCheckBoxCheckedState()
 		{

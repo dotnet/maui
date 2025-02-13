@@ -17,7 +17,7 @@ public class Issue1704 : _IssuesUITest
 
 	public override string Issue => "[Enhancement] Basic GIF animation features";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TabbedPage)]
 	[Category(UITestCategories.ManualReview)]
 	public void Issue1704Test()

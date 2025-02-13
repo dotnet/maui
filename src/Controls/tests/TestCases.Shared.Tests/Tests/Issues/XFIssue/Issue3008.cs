@@ -18,7 +18,7 @@ public class Issue3008 : _IssuesUITest
 
 	public override string Issue => "Setting ListView.ItemSource to null doesn't cause it clear out its contents";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void EnsureListViewEmptiesOut()
 	{

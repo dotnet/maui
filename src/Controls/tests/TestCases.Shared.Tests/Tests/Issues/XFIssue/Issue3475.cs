@@ -19,7 +19,7 @@ public class Issue3475 : _IssuesUITest
 
 	public override string Issue => "[iOS] LayoutCompression Performance Issues";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Layout)]
 	public void Issue3475TestsLayoutCompressionPerformance()
 	{

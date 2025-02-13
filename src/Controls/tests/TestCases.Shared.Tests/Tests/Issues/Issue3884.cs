@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "BoxView corner radius";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.BoxView)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue3884Test()

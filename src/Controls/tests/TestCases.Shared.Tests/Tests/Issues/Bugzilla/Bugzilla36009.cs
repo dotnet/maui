@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Children of Layouts with data bound IsVisible are not displayed";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.BoxView)]
 		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla36009Test()

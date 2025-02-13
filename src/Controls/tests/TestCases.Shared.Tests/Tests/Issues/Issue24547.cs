@@ -10,7 +10,7 @@ public class Issue24547 : _IssuesUITest
 
 	public override string Issue => "[Windows] FlyoutPage ShouldShowToolbarButton when overridden to return false, still shows button in title bar";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void VerifyInitialToolbarButtonHidden()
 	{

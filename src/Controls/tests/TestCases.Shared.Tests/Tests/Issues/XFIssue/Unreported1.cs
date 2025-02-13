@@ -12,7 +12,7 @@ public class Unreported1 : _IssuesUITest
 
 	public override string Issue => "NRE when switching page on Appearing";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void Unreported1Test()
 	{

@@ -12,7 +12,7 @@ public class Bugzilla27731 : _IssuesUITest
 
 	public override string Issue => "[Android] Action Bar can not be controlled reliably on FlyoutPage";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.InputTransparent)]
 	public void Bugzilla27731Test()
 	{

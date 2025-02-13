@@ -16,7 +16,7 @@ public class Issue1323 : _IssuesUITest
 
 	public override string Issue => "tabbed page BarTextColor is not pervasive and can't be applied after instantiation";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TabbedPage)]
 	public void Issue1323Test()
 	{

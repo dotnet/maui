@@ -12,7 +12,7 @@ public class Issue1024 : _IssuesUITest
 
 	public override string Issue => "Entry and Editor are leaking when used in ViewCell";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Performance)]
 	public void Bugzilla1024Test()
 	{

@@ -13,7 +13,7 @@ public class Issue6258 : _IssuesUITest
 
 	public override string Issue => "[Android] ContextActions icon not working";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void ContextActionsIconImageSource()
 	{

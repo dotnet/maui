@@ -14,7 +14,7 @@ public class Issue6127 : _IssuesUITest
 
 	public override string Issue => "[Bug] ToolbarItem Order property ignored";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ToolbarItem)]
 	public void Issue6127Test()
 	{

@@ -15,7 +15,7 @@ public class Bugzilla57317 : _IssuesUITest
 
 	public override string Issue => "Modifying Cell.ContextActions can crash on Android";
 
-	// [Test]
+	// [Test, Retry(2)]
 	// [Category(UITestCategories.TableView)]
 	// [FailsOnIOSWhenRunningOnXamarinUITest]
 	// public void Bugzilla57317Test()

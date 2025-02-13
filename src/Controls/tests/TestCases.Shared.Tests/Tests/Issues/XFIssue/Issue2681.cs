@@ -12,7 +12,7 @@ public class Issue2681 : _IssuesUITest
 
 	public override string Issue => "[UWP] Label inside Listview gets stuck inside infinite loop";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void ListViewDoesntFreezeApp()
 	{

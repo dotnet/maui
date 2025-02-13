@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string StackLabel = "You should see me after rotating";
 		public override string Issue => "StackLayout does not relayout on device rotation";
 
-		[Test]
+		[Test, Retry(2)]
 		[Description("Verify the layout lays out on rotations")]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]

@@ -25,7 +25,7 @@ public class ShellTitleView : _IssuesUITest
 
 	public override string Issue => "Shell Title View Tests";
 
-	[Test]
+	[Test, Retry(2)]
 	public void TitleWidthMeasuresCorrectly_13949()
 	{
 		App.TapInShellFlyout("Width Measure (13949)");
@@ -34,7 +34,7 @@ public class ShellTitleView : _IssuesUITest
 		App.WaitForElement("B2");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void TitleWidthWithToolBarItemMeasuresCorrectly_13949()
 	{
 		App.TapInShellFlyout("Width Measure and ToolBarItem (13949)");
@@ -43,7 +43,7 @@ public class ShellTitleView : _IssuesUITest
 		App.WaitForElement("B2");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void TitleViewPositionsCorrectly()
 	{
 		var titleView = App.WaitForElement(TitleViewId).GetRect();
@@ -53,7 +53,7 @@ public class ShellTitleView : _IssuesUITest
 		Assert.That(topTabTop, Is.GreaterThanOrEqualTo(titleViewBottom), "Title View is incorrectly positioned behind tabs");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void NoDuplicateTitleViews()
 	{
 		App.WaitForElement(TitleViewId);

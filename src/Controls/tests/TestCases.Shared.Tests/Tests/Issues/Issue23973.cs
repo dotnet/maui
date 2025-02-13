@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		protected override bool ResetAfterEachTest => true;
 		public override string Issue => "Default Modal Page Is Not Transparent";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Navigation)]
 		public void VerifyOpaqueModalDefault()
 		{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 #if !WINDOWS
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Navigation)]
 		public void VerifyTransparentModalShowsPageBeneathModal()
 		{

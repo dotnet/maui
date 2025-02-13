@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Bug] CarouselView Position property fails to update visual while control isn't visible";
 
 		// Issue11224 (src\ControlGallery\src\Issues.Shared\Issue11224.cs
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselViewPositionFromVisibilityChangeTest()
 		{

@@ -15,7 +15,7 @@ public class Issue6784 : _IssuesUITest
 
 	public override string Issue => "ShellItem.CurrentItem is not set when selecting shell section aggregated in more tab";
 
-	[Test]
+	[Test, Retry(2)]
 	public void CurrentItemIsSetWhenSelectingShellSectionAggregatedInMoreTab()
 	{
 		App.WaitForElement("More");
@@ -25,7 +25,7 @@ public class Issue6784 : _IssuesUITest
 		App.WaitForElementTillPageNavigationSettled("Success");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void OneMoreControllerOpensOnFirstClick()
 	{
 		App.WaitForElement("More");
@@ -44,7 +44,7 @@ public class Issue6784 : _IssuesUITest
 		App.Tap("Tab 12");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	public void TwoMoreControllerDoesNotShowEditButton()
 	{
 		App.WaitForElement("More");

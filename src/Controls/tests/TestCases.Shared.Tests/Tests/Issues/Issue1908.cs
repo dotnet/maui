@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Image reuse";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Image)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue1908Test()

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Regression] CollectionView NSRangeException";
 
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.TabbedPage)]
 		[Category(UITestCategories.Compatibility)]

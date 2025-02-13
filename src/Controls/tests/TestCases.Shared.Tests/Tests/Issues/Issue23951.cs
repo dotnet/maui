@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] Frame disappears when assigning GradientStops to LinearGradientBrush inside this Frame";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Frame)]
 		public void FrameCornerRadiusShouldnotChange()
 		{

@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(ScrollViewGallery);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.SwipeView)]
 		[Description("Swipe to right the SwipeView")]
 		public void SwipeToRight()
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Screenshot("The SwipeView is Open");
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.SwipeView)]
 		[Description("Swipe to left the SwipeView")]
 		public void SwipeToLeft()

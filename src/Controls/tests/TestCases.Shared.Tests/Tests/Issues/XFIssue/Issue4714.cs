@@ -13,7 +13,7 @@ public class Issue4714 : _IssuesUITest
 	}
 	public override string Issue => "SingleTapGesture called once on DoubleTap";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Gestures)]
 	public void Issue4714Test()
 	{

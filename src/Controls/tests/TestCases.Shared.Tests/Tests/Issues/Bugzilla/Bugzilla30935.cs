@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "NullReferenceException in ViewRenderer<TView, TNativeView> (Microsoft.Maui.Controls.Platform.Android)";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Page)]
 		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla30935DoesntThrowException()

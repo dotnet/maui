@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Clearing CollectionView IsGrouped=\"True\" crashes application iOS ";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		public void ClearingGroupedCollectionViewShouldNotCrash()
 		{

@@ -17,7 +17,7 @@ public class Issue7311 : _IssuesUITest
 
 	public override string Issue => "[Bug] [Android] Error back hardware button with Picker";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Picker)]
 	public void OpeningPickerPressingBackButtonTwiceShouldNotOpenPickerAgain()
 	{

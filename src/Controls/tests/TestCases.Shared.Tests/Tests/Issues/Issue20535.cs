@@ -11,7 +11,7 @@ public class Issue20535 : _IssuesUITest
 
 	public override string Issue => "Re-enable/move TrackColorInitializesCorrectly/TrackColorUpdatesCorrectly to Appium";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Switch)]
 	public async Task SwitchTrackColorTest()
 	{

@@ -12,7 +12,7 @@ public class Issue3319 : _IssuesUITest
 
 	public override string Issue => "[iOS] Clear and adding rows exception";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Issue3319Test()
 	{

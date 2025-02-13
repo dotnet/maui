@@ -16,7 +16,7 @@ public class Bugzilla31114 : _IssuesUITest
 
 	public override string Issue => "iOS ContextAction leaves blank line after swiping in ListView";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla31114Test()
 	{

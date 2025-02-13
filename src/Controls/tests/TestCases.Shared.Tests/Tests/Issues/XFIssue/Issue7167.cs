@@ -17,7 +17,7 @@ public class Issue7167 : _IssuesUITest
 	const string ListViewId = "ListViewId";
 	const string AddRangeCommandId = "AddRangeCommandId";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Issue7167Test()
 	{

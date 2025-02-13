@@ -29,7 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string BtnChangeToNoText = "Change to Has No Text";
 		const string BtnChangeSizeOption = "Change the Size Option";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Editor)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroid]

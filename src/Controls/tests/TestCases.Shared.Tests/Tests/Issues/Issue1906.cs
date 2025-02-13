@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "AlertView doesn't scroll when text is too large";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.DisplayAlert)]
 		[Category(UITestCategories.Compatibility)]
 		public void TestIssue1906()

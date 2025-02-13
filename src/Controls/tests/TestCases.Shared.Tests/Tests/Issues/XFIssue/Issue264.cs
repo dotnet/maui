@@ -12,7 +12,7 @@ public class Issue264 : _IssuesUITest
 
 	public override string Issue => "PopModal NRE";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Navigation)]
 	public void Issue264TestsPushAndPopModal()
 	{

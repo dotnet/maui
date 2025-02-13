@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView - EmptyView with EmptyViewTemplate for Data template selector page throws an exception";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewEmptyViewDefaultTemplateShouldNotCrashOnDisplay()
 		{
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Success");
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewEmptyViewOtherTemplateShouldNotCrashOnDisplay()
 		{

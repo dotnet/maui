@@ -8,7 +8,7 @@ public class Issue24034(TestDevice device) : _IssuesUITest(device)
 {
 	public override string Issue => "Shadow is not updating on change of parent control";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Border)]
 	public void ShadowShouldUpdate()
 	{

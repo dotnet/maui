@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Rendering performance";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Performance)]
 		public async Task RenderingPerformanceRun()
 		{

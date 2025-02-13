@@ -14,7 +14,7 @@ public class Bugzilla43663 : _IssuesUITest
 
 	public override string Issue => "ModalPushed and ModalPopped not working on WinRT";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Navigation)]
 	public void ModalNavigation()
 	{

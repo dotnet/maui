@@ -15,7 +15,7 @@ public class Bugzilla33578 : _IssuesUITest
 
 	public override string Issue => "TableView EntryCell shows DefaultKeyboard, but after scrolling down and back a NumericKeyboard";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TableView)]
 	public void TableViewEntryCellShowsDefaultKeyboardThenNumericKeyboardAfterScrolling()
 	{

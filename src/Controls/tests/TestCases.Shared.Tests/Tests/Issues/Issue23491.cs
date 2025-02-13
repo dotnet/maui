@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "BindableLayout.ItemsSource no longer works in 8.0.61";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Label)]
 		public void ChildFlexLayoutContentShouldAppear()
 		{

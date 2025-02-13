@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ListView, ImageCell and disabled source cache and same image url";
 
-		[Test]
+		[Test, Retry(2)]
 		[Ignore("This test is very flaky and needs to be fixed. See https://github.com/dotnet/maui/issues/27272")]
 		[Category(UITestCategories.ListView)]
 		public void TestDoesntCrashWithCachingDisable()

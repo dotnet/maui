@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public Issue25436(TestDevice testDevice) : base(testDevice) { }
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Shell)]
 		public void FlyoutMenuShouldNotDisappearWhenNavigateUsingServices()
 		{

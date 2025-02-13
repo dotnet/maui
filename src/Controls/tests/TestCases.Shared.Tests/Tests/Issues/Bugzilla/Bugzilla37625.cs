@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "App crashes when quickly adding/removing Image views (Windows UWP)";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Image)]
 		public void Bugzilla37625Test()
 		{

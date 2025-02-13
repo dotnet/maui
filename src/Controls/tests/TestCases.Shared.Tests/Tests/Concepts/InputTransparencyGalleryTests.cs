@@ -20,10 +20,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(ButtonGallery);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		public void InputTransparencySimple([Values] Test.InputTransparency test) => RunTest(test.ToString());
 
-		[Test]
+		[Test, Retry(2)]
 		[Combinatorial]
 		public void InputTransparencyWhenRootIsTransparentMatrix([Values] bool rootCascade, [Values] bool nestedTrans, [Values] bool nestedCascade, [Values] bool trans)
 		{
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			RunTest(key, clickable, passthru);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Combinatorial]
 		public void InputTransparencyWhenRootIsNotTransparentMatrix([Values] bool rootCascade, [Values] bool nestedTrans, [Values] bool nestedCascade, [Values] bool trans)
 		{

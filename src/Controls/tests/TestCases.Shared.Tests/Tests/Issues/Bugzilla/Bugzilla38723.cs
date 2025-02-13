@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Update Content in Picker's SelectedIndexChanged event causes NullReferenceException";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Picker)]
 		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla38723Test()

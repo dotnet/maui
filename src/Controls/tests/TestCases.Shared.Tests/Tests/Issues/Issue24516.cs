@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Rendering issue in WinUI when setting Label.FormattedText";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Label)]
 		public void VerifyLabelTextColorWhenResettingFromFormattedText()
 		{

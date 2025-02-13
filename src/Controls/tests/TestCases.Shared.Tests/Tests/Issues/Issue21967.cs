@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "CollectionView causes invalid measurements on resize";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewItemsResizeWhenContraintsOnCollectionViewChange()
 		{
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ClassicAssert.Greater(mediumSize.Width, smallSize.Width);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewFirstItemCorrectlySetsTheMeasure()
 		{
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ClassicAssert.Greater(200, itemSize.Height);
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]

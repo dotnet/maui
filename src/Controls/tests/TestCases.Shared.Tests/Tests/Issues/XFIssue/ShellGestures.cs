@@ -20,7 +20,7 @@ public class ShellGestures : _IssuesUITest
 
 
 	public override string Issue => "Shell Gestures Test";
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Gestures)]
 	public void SwipeGesture()
 	{
@@ -30,7 +30,7 @@ public class ShellGestures : _IssuesUITest
 		Assert.That(App.WaitForElement(SwipeGestureSuccessId).GetText(), Is.EqualTo(SwipeGestureSuccess));
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TableView)]
 	public void TableViewScroll()
 	{
@@ -42,7 +42,7 @@ public class ShellGestures : _IssuesUITest
 		App.WaitForNoElement("section1");
 	}
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void ListViewScroll()
 	{

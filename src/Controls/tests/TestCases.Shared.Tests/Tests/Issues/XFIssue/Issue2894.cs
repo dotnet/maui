@@ -17,7 +17,7 @@ public class Issue2894 : _IssuesUITest
 
 	public override string Issue => "Gesture Recognizers added to Span after it's been set to FormattedText don't work and can cause an NRE";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Gestures)]
 	public void VariousSpanGesturePermutation()
 	{

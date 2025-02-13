@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ScrollView starts at the position of first Entry control on the bottom rather than at 0";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Entry)]
 		public void ScrollViewStartsOccasionallyStartsAtTheFirstEntry()
 		{

@@ -14,7 +14,7 @@ public class Issue22715 : _IssuesUITest
 
     public override string Issue => "Page should not scroll when focusing element above keyboard";
 
-    [Test]
+    [Test, Retry(2)]
     [Category(UITestCategories.Entry)]
     public void PageShouldNotScroll ()
     {

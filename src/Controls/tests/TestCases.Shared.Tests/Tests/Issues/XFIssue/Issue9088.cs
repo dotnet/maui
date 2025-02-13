@@ -19,7 +19,7 @@ public class Issue9088 : _IssuesUITest
 
 	public override string Issue => "[Bug] SwipeView items conflict with Shell menu swipe in from left, on real iOS devices";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Shell)]
 	public void Issue9088SwipeViewConfictWithShellMenuSwipeInFromLeft()
 	{

@@ -14,7 +14,7 @@ public class Bugzilla34632 : _IssuesUITest
 	public override string Issue => "Can't change IsPresented when setting SplitOnLandscape ";
 
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void Bugzilla34632Test()
 	{

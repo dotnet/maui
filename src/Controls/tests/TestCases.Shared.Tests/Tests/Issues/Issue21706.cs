@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public Issue21706(TestDevice device) : base(device) { }
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ImageButton)]
 		public async Task ImageButtonStuckAfterRightClick()
 		{

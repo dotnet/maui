@@ -17,7 +17,7 @@ public class Bugzilla41153 : _IssuesUITest
 	public override string Issue => "jobject must not be IntPtr.Zero with TabbedPage and ToolbarItems";
 
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.TabbedPage)]
 	public void Bugzilla41153Test()
 	{

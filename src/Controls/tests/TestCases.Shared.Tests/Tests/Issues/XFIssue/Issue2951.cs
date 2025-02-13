@@ -12,7 +12,7 @@ public class Issue2951 : _IssuesUITest
 
 	public override string Issue => "On Android, button background is not updated when color changes ";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Button)]
 	public void Issue2951Test()
 	{

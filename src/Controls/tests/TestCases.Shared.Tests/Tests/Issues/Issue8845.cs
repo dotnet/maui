@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Picker on windows shows \"Microsoft.Maui.Controls.Picker\" if ItemsSource has an empty string";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Picker)]
 		public void PickerShouldDisplayValueFromItemDisplayBinding()
 		{

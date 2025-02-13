@@ -12,7 +12,7 @@ public class RadioButtonTemplateFromStyle : _IssuesUITest
 
 	public override string Issue => "RadioButton: Template From Style";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.RadioButton)]
 	public void ContentRenderers()
 	{

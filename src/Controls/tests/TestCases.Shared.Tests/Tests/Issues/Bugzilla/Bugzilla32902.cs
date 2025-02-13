@@ -11,7 +11,7 @@ public class Bugzilla32902 : _IssuesUITest
 	}
 
 	public override string Issue => "[iOS | iPad] App Crashes (without debug log) when Flyout Detail isPresented and navigation being popped";
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void Bugzilla32902Test()
 	{

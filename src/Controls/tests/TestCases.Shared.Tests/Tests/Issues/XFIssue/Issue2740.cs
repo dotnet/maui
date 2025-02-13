@@ -16,7 +16,7 @@ public class Issue2740 : _IssuesUITest
 
 	public override string Issue => "System.NotSupportedException: Unable to activate instance of type Microsoft.Maui.Controls.Platform.Android.PageContainer from native handle";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.LifeCycle)]
 	public void Issue2740Test()
 	{

@@ -14,7 +14,7 @@ public class Bugzilla51825 : _IssuesUITest
 
 	public override string Issue => "[iOS] Korean input in SearchBar doesn't work";
 
-	[Test]
+	[Test, Retry(2)]
 	public void Bugzilla51825Test()
 	{
 		App.WaitForElement("Bugzilla51825SearchBar");

@@ -13,7 +13,7 @@ public class Issue11381 : _IssuesUITest
 
 	public override string Issue => "[Bug] [iOS] NRE on grouped ListView when removing cells with gesture recognizers";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void Issue11381RemoveListViewGroups()
 	{

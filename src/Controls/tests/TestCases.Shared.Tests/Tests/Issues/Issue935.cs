@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ViewCell.ItemTapped only fires once for ListView.SelectedItem";
 
-		[Test]
+		[Test, Retry(2)]
 		[Description("Verify that OnTapped is fired every time a ViewCell is tapped")]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]

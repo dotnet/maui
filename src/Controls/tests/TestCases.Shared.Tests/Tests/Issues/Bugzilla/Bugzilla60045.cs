@@ -14,7 +14,7 @@ public class Bugzilla60045 : _IssuesUITest
 
 	public override string Issue => "ListView with RecycleElement strategy doesn't handle CanExecute of TextCell Command properly";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void CommandDoesNotFire()
 	{

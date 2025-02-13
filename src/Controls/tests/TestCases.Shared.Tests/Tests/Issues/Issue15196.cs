@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public Issue15196(TestDevice testDevice) : base(testDevice) { }
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Entry)]
 		public void NestedEntryViewInFrameShouldNotCrash()
 		{

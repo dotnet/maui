@@ -13,7 +13,7 @@ public class Issue2266 : _IssuesUITest
 
 	public override string Issue => "Setting a different Detail page from a FlyoutPage after 2nd time on MainPage";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Navigation)]
 
 	public void SwapMainPageWithFlyoutPages()

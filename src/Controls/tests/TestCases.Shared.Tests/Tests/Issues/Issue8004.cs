@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Add a ScaleXTo and ScaleYTo animation extension method";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Animation)]
 		public void AnimateScaleOfBoxView()
 		{

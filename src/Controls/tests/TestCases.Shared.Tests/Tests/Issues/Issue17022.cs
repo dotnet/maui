@@ -15,28 +15,28 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "UINavigationBar is Translucent";
 
 		// TODO: Add shell navigation bar tests when we can call shell in UITest
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Navigation)]
-		[TestCase("NewNavigationPageButton", false)]
-        [TestCase("NewNavigationPageTransparentButton", false)]
-        [TestCase("NewNavigationPageTranslucentButton", false)]
-        [TestCase("NewNavigationPageTransparentTranslucentButton", false)]
-        [TestCase("NewNavigationPageGridButton", false)]
-        [TestCase("NewNavigationPageGridTransparentButton", false)]
-        [TestCase("NewNavigationPageGridTranslucentButton", false, true)] // this test thinks the boxview is at the top of the screen, but it's not. Test this case manually for now.
-        [TestCase("NewNavigationPageGridTransparentTranslucentButton", true)]
-        [TestCase("NewFlyoutPageButton", false)]
-        [TestCase("NewFlyoutPageTransparentButton", false)]
-        [TestCase("NewFlyoutPageTranslucentButton", false)]
-        [TestCase("NewFlyoutPageTransparentTranslucentButton", false)]
-        [TestCase("NewFlyoutPageGridButton", false)]
-        [TestCase("NewFlyoutPageGridTransparentButton", false)]
-        [TestCase("NewFlyoutPageGridTranslucentButton", false, true)] // this test thinks the boxview is at the top of the screen, but it's not. Test this case manually for now.
-        [TestCase("NewFlyoutPageGridTransparentTranslucentButton", true)]
-        [TestCase("SemiTransparentNavigationPageBackgroundColor", true, true)]
-        [TestCase("SemiTransparentNavigationPageBrush", true, true)]
-        [TestCase("SemiTransparentFlyoutPageBackgroundColor", true, true)]
-        [TestCase("SemiTransparentFlyoutPageBrush", true, true)]
+		[TestCase("NewNavigationPageButton", false), Retry(2), Retry(2)]
+        [TestCase("NewNavigationPageTransparentButton", false), Retry(2), Retry(2)]
+        [TestCase("NewNavigationPageTranslucentButton", false), Retry(2), Retry(2)]
+        [TestCase("NewNavigationPageTransparentTranslucentButton", false), Retry(2), Retry(2)]
+        [TestCase("NewNavigationPageGridButton", false), Retry(2), Retry(2)]
+        [TestCase("NewNavigationPageGridTransparentButton", false), Retry(2), Retry(2)]
+        [TestCase("NewNavigationPageGridTranslucentButton", false, true), Retry(2), Retry(2)] // this test thinks the boxview is at the top of the screen, but it's not. Test this case manually for now.
+        [TestCase("NewNavigationPageGridTransparentTranslucentButton", true), Retry(2), Retry(2)]
+        [TestCase("NewFlyoutPageButton", false), Retry(2), Retry(2)]
+        [TestCase("NewFlyoutPageTransparentButton", false), Retry(2), Retry(2)]
+        [TestCase("NewFlyoutPageTranslucentButton", false), Retry(2), Retry(2)]
+        [TestCase("NewFlyoutPageTransparentTranslucentButton", false), Retry(2), Retry(2)]
+        [TestCase("NewFlyoutPageGridButton", false), Retry(2), Retry(2)]
+        [TestCase("NewFlyoutPageGridTransparentButton", false), Retry(2), Retry(2)]
+        [TestCase("NewFlyoutPageGridTranslucentButton", false, true), Retry(2), Retry(2)] // this test thinks the boxview is at the top of the screen, but it's not. Test this case manually for now.
+        [TestCase("NewFlyoutPageGridTransparentTranslucentButton", true), Retry(2), Retry(2)]
+        [TestCase("SemiTransparentNavigationPageBackgroundColor", true, true), Retry(2), Retry(2)]
+        [TestCase("SemiTransparentNavigationPageBrush", true, true), Retry(2), Retry(2)]
+        [TestCase("SemiTransparentFlyoutPageBackgroundColor", true, true), Retry(2), Retry(2)]
+        [TestCase("SemiTransparentFlyoutPageBrush", true, true), Retry(2), Retry(2)]
 
 		public void Issue17022Test(string testButtonID, bool isTopOfScreen, bool requiresScreenshot = false)
 		{

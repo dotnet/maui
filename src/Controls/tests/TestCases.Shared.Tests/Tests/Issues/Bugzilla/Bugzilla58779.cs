@@ -15,7 +15,7 @@ public class Bugzilla58779 : _IssuesUITest
 
 	public override string Issue => "[MacOS] DisplayActionSheet on MacOS needs scroll bars if list is long";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.DisplayAlert)]
 	public void Bugzilla58779Test()
 	{

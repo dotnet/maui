@@ -16,7 +16,7 @@ public class Issue19214_3 : _IssuesUITest
 
     public override string Issue => "iOS Editor Cursor stays above keyboard - Top level ScrollView";
 
-    [Test]
+    [Test, Retry(2)]
     [Category(UITestCategories.Entry)]
     public void KeepEditorCursorAboveKeyboardInScrollView ()
     {

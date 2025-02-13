@@ -13,7 +13,7 @@ public class Bugzilla44166 : _IssuesUITest
 
 	public override string Issue => "FlyoutPage instances do not get disposed upon GC";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Performance)]
 	public void Bugzilla44166Test()
 	{

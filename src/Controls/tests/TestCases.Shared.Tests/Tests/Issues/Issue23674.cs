@@ -10,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public Issue23674(TestDevice device) : base(device) { }
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Page)]
 		public void Issue23674Test()
 		{

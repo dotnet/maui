@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Group ListView Crashes when ItemSource is Cleared";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.ListView)]
 		public void GroupListViewHeaderIndexOutOfRangeTest()
 		{

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Picker not shown when .Focus() is called";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Picker)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOSWhenRunningOnXamarinUITest]

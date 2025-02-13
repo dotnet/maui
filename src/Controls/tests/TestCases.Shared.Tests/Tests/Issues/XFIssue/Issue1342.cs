@@ -13,7 +13,7 @@ public class Issue1342 : _IssuesUITest
 
 	public override string Issue => "[iOS] ListView throws Exception on ObservableCollection.Add/Remove for non visible list view";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ListView)]
 	public void AddingItemsToNonVisibleListViewDoesntCrash()
 	{

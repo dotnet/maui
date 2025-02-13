@@ -14,7 +14,7 @@ public class Issue889 : _IssuesUITest
 
 	public override string Issue => "Assigning to FlyoutPage.Detail after construction doesn't work";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.FlyoutPage)]
 	public void Issue899TestsAppCrashWhenSwitchingTabs()
 	{

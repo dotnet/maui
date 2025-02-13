@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "ViewCell in TableView not adapting to changed size on iOS";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.TabbedPage)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue2842Test()

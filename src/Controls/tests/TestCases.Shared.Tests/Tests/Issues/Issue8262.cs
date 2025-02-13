@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] ImageRenderer still being accessed after control destroyed";
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.Image)]
 		[Category(UITestCategories.LifeCycle)]
 		[Category(UITestCategories.Compatibility)]

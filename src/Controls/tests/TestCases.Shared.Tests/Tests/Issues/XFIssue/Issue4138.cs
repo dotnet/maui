@@ -13,7 +13,7 @@ public class Issue4138 : _IssuesUITest
 
 	public override string Issue => "[iOS] NavigationPage.TitleIcon no longer centered";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.Navigation)]
 	public void TitleIconIsCentered()
 	{

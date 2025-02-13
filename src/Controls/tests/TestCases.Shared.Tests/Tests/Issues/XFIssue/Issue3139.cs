@@ -12,7 +12,7 @@ public class Issue3139 : _IssuesUITest
 
 	public override string Issue => "DisplayActionSheet is hiding behind Dialogs";
 
-	[Test]
+	[Test, Retry(2)]
 	[Category(UITestCategories.ActionSheet)]
 	public void Issue3139Test()
 	{

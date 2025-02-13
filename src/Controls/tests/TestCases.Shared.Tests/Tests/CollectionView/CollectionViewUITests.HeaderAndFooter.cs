@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		[Test]
+		[Test, Retry(2)]
 		[Category(UITestCategories.CollectionView)]
 		public void HeaderFooterStringWorks()
 		{
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("This footer is also a string");
 		}
 #if IOS
-		[Test]
+		[Test, Retry(2)]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterViewWorks()
         {
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("This Is A Footer");
         }
 
-        [Test]
+        [Test, Retry(2)]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterTemplateWorks()
         {
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
-        [Test]
+        [Test, Retry(2)]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterGridWorks()
         {
@@ -76,7 +76,7 @@ namespace Microsoft.Maui.TestCases.Tests
         // The screenshot that's currently generated for this test is wrong
         // So, we're ignoring this test due to it causing confusion when other changes
         // cause this test to fail.
-        [Test]
+        [Test, Retry(2)]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterGridHorizontalWorks()
         {

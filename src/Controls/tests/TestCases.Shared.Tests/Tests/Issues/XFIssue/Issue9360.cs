@@ -12,7 +12,7 @@ public class Issue9360 : _IssuesUITest
 
 	public override string Issue => "[Bug] Android Icons no longer customizable via NavigationPageRenderer UpdateMenuItemIcon()";
 
-	//[Test]
+	//[Test, Retry(2)]
 	//[Category(UITestCategories.Navigation)]
 	//[FailsOnAndroidWhenRunningOnXamarinUITest]
 	//public void NavigationPageRendererMenuItemIconOverrideWorks()
