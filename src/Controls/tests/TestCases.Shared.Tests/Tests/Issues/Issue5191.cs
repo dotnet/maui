@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST	//DragCoordinates doesn't working on the MacCatalyst platform.
+﻿#if TEST_FAILS_ON_CATALYST	//DragCoordinates doesn't working on the MacCatalyst platform. For more information: https://github.com/dotnet/maui/pull/27339
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;

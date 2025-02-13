@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS // On iOS, the ScrollDown functionality for images is not working.
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -19,7 +18,7 @@ public class Issue20920 : _IssuesUITest
 		// TODO: Correct this test for other platforms
 		var initialPosition = App.WaitForElement("dotnet_bot").GetRect();
 
-		App.ScrollDown("dotnet_bot");
+		App.ScrollDown("dotnet_bot", swipePercentage: 0.5, swipeSpeed: 750);
 		App.ScrollRight("dotnet_bot");
 
 		var afterScrollPosition = App.WaitForElement("dotnet_bot").GetRect();
@@ -28,4 +27,3 @@ public class Issue20920 : _IssuesUITest
 		ClassicAssert.Less(afterScrollPosition.Y, initialPosition.Y);
 	}
 }
-#endif
