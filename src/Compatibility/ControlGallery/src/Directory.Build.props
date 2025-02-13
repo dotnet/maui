@@ -1,9 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <SampleProject>true</SampleProject>
-    <UseMaui Condition=" '$(UseWorkload)' == 'true' ">true</UseMaui>
-    <DefaultXamlRuntime Condition=" '$(UseWorkload)' != 'true' ">Maui</DefaultXamlRuntime>
-    <NoWarn>$(NoWarn);CS0672;CS0618</NoWarn>
-  </PropertyGroup>
-  <Import Project="../../../../Directory.Build.props" />
-</Project>

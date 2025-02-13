@@ -24,8 +24,8 @@
 					}
 				}
 			});
-			
-		}		
+
+		}
 		async Task ShowLocation(string locationString)
 		{
 			var stringUri = $"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/README.md?l=en&px_location={Uri.EscapeDataString(locationString)}";

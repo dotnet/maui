@@ -13,7 +13,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Entry TextColor property not working when the Text value is bound after some time";
 
 		[Test]
-		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented on macOS")]
 		[Category(UITestCategories.Entry)]
 		public async Task EntryTextColorStopsWorkingAfterPropertyIsUpdatedFromBinding()
 		{
