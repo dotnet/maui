@@ -84,7 +84,17 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.DisconnectHandler(platformView);
 
 			if (platformView is MauiNavigationView mnv)
+			{
 				mnv.SelectionChanged -= OnNavigationTabChanged;
+				if (mnv.AutoSuggestBox is { } autoSuggestBox)
+				{
+					autoSuggestBox.TextChanged -= OnSearchBoxTextChanged;
+					autoSuggestBox.QuerySubmitted -= OnSearchBoxQuerySubmitted;
+					autoSuggestBox.SuggestionChosen -= OnSearchBoxSuggestionChosen;
+					autoSuggestBox.GotFocus -= OnSearchBoxGotFocus;
+					autoSuggestBox.LostFocus -= OnSearchBoxLostFocus;
+				}
+			}
 
 			platformView.Loaded -= OnNavigationViewLoaded;
 
@@ -141,8 +151,22 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			var selectedItem = (NavigationViewItemViewModel)args.SelectedItem;
 
-			if (selectedItem.Data is ShellSection shellSection)
+			if (selectedItem.Data is ShellSection shellSection && VirtualView.Parent is Shell shell)
 			{
+				NavigationViewItemViewModel? currentItem = null;
+				foreach (var item in _mainLevelTabs)
+				{
+					if (shell.CurrentItem?.CurrentItem is not null && item.Data == shell.CurrentItem.CurrentItem)
+					{
+						currentItem = item;
+						break;
+					}
+				}
+				if (PlatformView is NavigationView navView && navView?.SelectedItem is not null && navView.SelectedItem != currentItem)
+				{
+					((IShellItemController)shell.CurrentItem!).ProposeSection(shellSection);
+				}
+
 				((Shell)VirtualView.Parent).CurrentItem = shellSection;
 			}
 			else if (selectedItem.Data is ShellContent shellContent)
@@ -261,6 +285,8 @@ namespace Microsoft.Maui.Controls.Handlers
 						autoSuggestBox.TextChanged += OnSearchBoxTextChanged;
 						autoSuggestBox.QuerySubmitted += OnSearchBoxQuerySubmitted;
 						autoSuggestBox.SuggestionChosen += OnSearchBoxSuggestionChosen;
+						autoSuggestBox.GotFocus += OnSearchBoxGotFocus;
+						autoSuggestBox.LostFocus += OnSearchBoxLostFocus;
 						mauiNavView.AutoSuggestBox = autoSuggestBox;
 					}
 
@@ -294,6 +320,16 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.Visibility = UI.Xaml.Visibility.Collapsed;
 				}
 			}
+		}
+
+		void OnSearchBoxGotFocus(object sender, RoutedEventArgs e)
+		{
+			_currentSearchHandler?.SetIsFocused(true);
+		}
+
+		void OnSearchBoxLostFocus(object sender, RoutedEventArgs e)
+		{
+			_currentSearchHandler?.SetIsFocused(false);
 		}
 
 		void OnSearchBoxTextChanged(Microsoft.UI.Xaml.Controls.AutoSuggestBox sender, Microsoft.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)

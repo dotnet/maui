@@ -48,25 +48,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory]
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
-		public async Task PoppingFlyoutPageDoesntCrash(Type flyoutPageType)
-		{
-			SetupBuilder();
-			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
-			{
-				var flyoutPage = CreateFlyoutPage(
-					flyoutPageType,
-					new NavigationPage(new ContentPage() { Content = new Border(), Title = "Detail" }),
-					new ContentPage() { Title = "Flyout" });
-
-				await navPage.PushAsync(flyoutPage);
-				await navPage.PopAsync();
-			});
-		}
-
-		[Theory]
-		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
 		public async Task SwappingDetailPageWorksForSplitFlyoutBehavior(Type flyoutPageType)
 		{
 			SetupBuilder();

@@ -6,9 +6,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue10222 : _IssuesUITest
 {
-    public Issue10222(TestDevice device) : base(device)
-    {
-    }
+	public Issue10222(TestDevice device) : base(device)
+	{
+	}
 	public override string Issue => "[CollectionView] ObjectDisposedException if the page is closed during scrolling";
 
 	[Test]

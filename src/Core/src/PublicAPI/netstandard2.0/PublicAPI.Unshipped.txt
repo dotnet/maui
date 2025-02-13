@@ -13,11 +13,11 @@ Microsoft.Maui.Handlers.IHybridWebViewHandler.PlatformView.get -> object!
 Microsoft.Maui.Handlers.IHybridWebViewHandler.VirtualView.get -> Microsoft.Maui.IHybridWebView!
 Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest
-Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.HybridWebViewInvokeJavaScriptRequest(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo! returnTypeJsonTypeInfo, object?[]? paramValues, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos) -> void
+Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.HybridWebViewInvokeJavaScriptRequest(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo? returnTypeJsonTypeInfo, object?[]? paramValues, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos) -> void
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.MethodName.get -> string!
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ParamJsonTypeInfos.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]?
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ParamValues.get -> object?[]?
-Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ReturnTypeJsonTypeInfo.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo!
+Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.ReturnTypeJsonTypeInfo.get -> System.Text.Json.Serialization.Metadata.JsonTypeInfo?
 Microsoft.Maui.HybridWebViewRawMessage
 Microsoft.Maui.HybridWebViewRawMessage.HybridWebViewRawMessage() -> void
 Microsoft.Maui.HybridWebViewRawMessage.Message.get -> string?

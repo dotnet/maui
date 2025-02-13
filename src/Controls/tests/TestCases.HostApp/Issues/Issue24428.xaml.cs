@@ -9,7 +9,7 @@
 			InitializeComponent();
 		}
 	}
-	
+
 	public class Issue24428ContentPage : ContentPage
 	{
 		public Issue24428ContentPage()

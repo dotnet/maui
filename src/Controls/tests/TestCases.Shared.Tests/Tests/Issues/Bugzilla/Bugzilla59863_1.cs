@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS	//BoxView automation ID isn't working on the Windows platform, causing a TimeoutException.
+﻿#if TEST_FAILS_ON_WINDOWS   //BoxView automation ID isn't working on the Windows platform, causing a TimeoutException.                                                                                             
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
