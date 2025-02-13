@@ -1,6 +1,4 @@
-﻿// Scroll actions do not work on MacCatalyst, so this test is ignored on MacCatalyst.
-
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
