@@ -1,0 +1,228 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+             xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
+             x:Class="Maui.Controls.Sample.Issues.Issue27698">
+    <Grid
+      RowDefinitions="*, Auto">
+      <ScrollView>
+        <VerticalStackLayout>
+            <Label Text="XamlPage" />
+            <Editor AutoSize="TextChanges" Text="Test001" x:Name="Test001" AutomationId="Test001" />
+            <Editor AutoSize="TextChanges" Text="Test002" x:Name="Test002" AutomationId="Test002" />
+            <Editor AutoSize="TextChanges" Text="Test003" x:Name="Test003" AutomationId="Test003" />
+            <Editor AutoSize="TextChanges" Text="Test004"/>
+            <Editor AutoSize="TextChanges" Text="Test005"/>
+            <Editor AutoSize="TextChanges" Text="Test006"/>
+            <Editor AutoSize="TextChanges" Text="Test007"/>
+            <Editor AutoSize="TextChanges" Text="Test008"/>
+            <Editor AutoSize="TextChanges" Text="Test009"/>
+            <Editor AutoSize="TextChanges" Text="Test010"/>
+            <Editor AutoSize="TextChanges" Text="Test011"/>
+            <Editor AutoSize="TextChanges" Text="Test012"/>
+            <Editor AutoSize="TextChanges" Text="Test013"/>
+            <Editor AutoSize="TextChanges" Text="Test014"/>
+            <Editor AutoSize="TextChanges" Text="Test015"/>
+            <Editor AutoSize="TextChanges" Text="Test016"/>
+            <Editor AutoSize="TextChanges" Text="Test017"/>
+            <Editor AutoSize="TextChanges" Text="Test018"/>
+            <Editor AutoSize="TextChanges" Text="Test019"/>
+            <Editor AutoSize="TextChanges" Text="Test020"/>
+            <Editor AutoSize="TextChanges" Text="Test021"/>
+            <Editor AutoSize="TextChanges" Text="Test022"/>
+            <Editor AutoSize="TextChanges" Text="Test023"/>
+            <Editor AutoSize="TextChanges" Text="Test024"/>
+            <Editor AutoSize="TextChanges" Text="Test025"/>
+            <Editor AutoSize="TextChanges" Text="Test026"/>
+            <Editor AutoSize="TextChanges" Text="Test027"/>
+            <Editor AutoSize="TextChanges" Text="Test028"/>
+            <Editor AutoSize="TextChanges" Text="Test029"/>
+            <Editor AutoSize="TextChanges" Text="Test030"/>
+            <Editor AutoSize="TextChanges" Text="Test031"/>
+            <Editor AutoSize="TextChanges" Text="Test032"/>
+            <Editor AutoSize="TextChanges" Text="Test033"/>
+            <Editor AutoSize="TextChanges" Text="Test034"/>
+            <Editor AutoSize="TextChanges" Text="Test035"/>
+            <Editor AutoSize="TextChanges" Text="Test036"/>
+            <Editor AutoSize="TextChanges" Text="Test037"/>
+            <Editor AutoSize="TextChanges" Text="Test038"/>
+            <Editor AutoSize="TextChanges" Text="Test039"/>
+            <Editor AutoSize="TextChanges" Text="Test040"/>
+            <Editor AutoSize="TextChanges" Text="Test041"/>
+            <Editor AutoSize="TextChanges" Text="Test042"/>
+            <Editor AutoSize="TextChanges" Text="Test043"/>
+            <Editor AutoSize="TextChanges" Text="Test044"/>
+            <Editor AutoSize="TextChanges" Text="Test045"/>
+            <Editor AutoSize="TextChanges" Text="Test046"/>
+            <Editor AutoSize="TextChanges" Text="Test047"/>
+            <Editor AutoSize="TextChanges" Text="Test048"/>
+            <Editor AutoSize="TextChanges" Text="Test049"/>
+            <Editor AutoSize="TextChanges" Text="Test050"/>
+            <Editor AutoSize="TextChanges" Text="Test051"/>
+            <Editor AutoSize="TextChanges" Text="Test052"/>
+            <Editor AutoSize="TextChanges" Text="Test053"/>
+            <Editor AutoSize="TextChanges" Text="Test054"/>
+            <Editor AutoSize="TextChanges" Text="Test055"/>
+            <Editor AutoSize="TextChanges" Text="Test056"/>
+            <Editor AutoSize="TextChanges" Text="Test057"/>
+            <Editor AutoSize="TextChanges" Text="Test058"/>
+            <Editor AutoSize="TextChanges" Text="Test059"/>
+            <Editor AutoSize="TextChanges" Text="Test060"/>
+            <Editor AutoSize="TextChanges" Text="Test061"/>
+            <Editor AutoSize="TextChanges" Text="Test062"/>
+            <Editor AutoSize="TextChanges" Text="Test063"/>
+            <Editor AutoSize="TextChanges" Text="Test064"/>
+            <Editor AutoSize="TextChanges" Text="Test065"/>
+            <Editor AutoSize="TextChanges" Text="Test066"/>
+            <Editor AutoSize="TextChanges" Text="Test067"/>
+            <Editor AutoSize="TextChanges" Text="Test068"/>
+            <Editor AutoSize="TextChanges" Text="Test069"/>
+            <Editor AutoSize="TextChanges" Text="Test070"/>
+            <Editor AutoSize="TextChanges" Text="Test071"/>
+            <Editor AutoSize="TextChanges" Text="Test072"/>
+            <Editor AutoSize="TextChanges" Text="Test073"/>
+            <Editor AutoSize="TextChanges" Text="Test074"/>
+            <Editor AutoSize="TextChanges" Text="Test075"/>
+            <Editor AutoSize="TextChanges" Text="Test076"/>
+            <Editor AutoSize="TextChanges" Text="Test077"/>
+            <Editor AutoSize="TextChanges" Text="Test078"/>
+            <Editor AutoSize="TextChanges" Text="Test079"/>
+            <Editor AutoSize="TextChanges" Text="Test080"/>
+            <Editor AutoSize="TextChanges" Text="Test081"/>
+            <Editor AutoSize="TextChanges" Text="Test082"/>
+            <Editor AutoSize="TextChanges" Text="Test083"/>
+            <Editor AutoSize="TextChanges" Text="Test084"/>
+            <Editor AutoSize="TextChanges" Text="Test085"/>
+            <Editor AutoSize="TextChanges" Text="Test086"/>
+            <Editor AutoSize="TextChanges" Text="Test087"/>
+            <Editor AutoSize="TextChanges" Text="Test088"/>
+            <Editor AutoSize="TextChanges" Text="Test089"/>
+            <Editor AutoSize="TextChanges" Text="Test090"/>
+            <Editor AutoSize="TextChanges" Text="Test091"/>
+            <Editor AutoSize="TextChanges" Text="Test092"/>
+            <Editor AutoSize="TextChanges" Text="Test093"/>
+            <Editor AutoSize="TextChanges" Text="Test094"/>
+            <Editor AutoSize="TextChanges" Text="Test095"/>
+            <Editor AutoSize="TextChanges" Text="Test096"/>
+            <Editor AutoSize="TextChanges" Text="Test097"/>
+            <Editor AutoSize="TextChanges" Text="Test098"/>
+            <Editor AutoSize="TextChanges" Text="Test099"/>
+            <Editor AutoSize="TextChanges" Text="Test100"/>
+            <Editor AutoSize="TextChanges" Text="Test101"/>
+            <Editor AutoSize="TextChanges" Text="Test102"/>
+            <Editor AutoSize="TextChanges" Text="Test103"/>
+            <Editor AutoSize="TextChanges" Text="Test104"/>
+            <Editor AutoSize="TextChanges" Text="Test105"/>
+            <Editor AutoSize="TextChanges" Text="Test106"/>
+            <Editor AutoSize="TextChanges" Text="Test107"/>
+            <Editor AutoSize="TextChanges" Text="Test108"/>
+            <Editor AutoSize="TextChanges" Text="Test109"/>
+            <Editor AutoSize="TextChanges" Text="Test110"/>
+            <Editor AutoSize="TextChanges" Text="Test111"/>
+            <Editor AutoSize="TextChanges" Text="Test112"/>
+            <Editor AutoSize="TextChanges" Text="Test113"/>
+            <Editor AutoSize="TextChanges" Text="Test114"/>
+            <Editor AutoSize="TextChanges" Text="Test115"/>
+            <Editor AutoSize="TextChanges" Text="Test116"/>
+            <Editor AutoSize="TextChanges" Text="Test117"/>
+            <Editor AutoSize="TextChanges" Text="Test118"/>
+            <Editor AutoSize="TextChanges" Text="Test119"/>
+            <Editor AutoSize="TextChanges" Text="Test120"/>
+            <Editor AutoSize="TextChanges" Text="Test121"/>
+            <Editor AutoSize="TextChanges" Text="Test122"/>
+            <Editor AutoSize="TextChanges" Text="Test123"/>
+            <Editor AutoSize="TextChanges" Text="Test124"/>
+            <Editor AutoSize="TextChanges" Text="Test125"/>
+            <Editor AutoSize="TextChanges" Text="Test126"/>
+            <Editor AutoSize="TextChanges" Text="Test127"/>
+            <Editor AutoSize="TextChanges" Text="Test128"/>
+            <Editor AutoSize="TextChanges" Text="Test129"/>
+            <Editor AutoSize="TextChanges" Text="Test130"/>
+            <Editor AutoSize="TextChanges" Text="Test131"/>
+            <Editor AutoSize="TextChanges" Text="Test132"/>
+            <Editor AutoSize="TextChanges" Text="Test133"/>
+            <Editor AutoSize="TextChanges" Text="Test134"/>
+            <Editor AutoSize="TextChanges" Text="Test135"/>
+            <Editor AutoSize="TextChanges" Text="Test136"/>
+            <Editor AutoSize="TextChanges" Text="Test137"/>
+            <Editor AutoSize="TextChanges" Text="Test138"/>
+            <Editor AutoSize="TextChanges" Text="Test139"/>
+            <Editor AutoSize="TextChanges" Text="Test140"/>
+            <Editor AutoSize="TextChanges" Text="Test141"/>
+            <Editor AutoSize="TextChanges" Text="Test142"/>
+            <Editor AutoSize="TextChanges" Text="Test143"/>
+            <Editor AutoSize="TextChanges" Text="Test144"/>
+            <Editor AutoSize="TextChanges" Text="Test145"/>
+            <Editor AutoSize="TextChanges" Text="Test146"/>
+            <Editor AutoSize="TextChanges" Text="Test147"/>
+            <Editor AutoSize="TextChanges" Text="Test148"/>
+            <Editor AutoSize="TextChanges" Text="Test149"/>
+            <Editor AutoSize="TextChanges" Text="Test150"/>
+            <Editor AutoSize="TextChanges" Text="Test151"/>
+            <Editor AutoSize="TextChanges" Text="Test152"/>
+            <Editor AutoSize="TextChanges" Text="Test153"/>
+            <Editor AutoSize="TextChanges" Text="Test154"/>
+            <Editor AutoSize="TextChanges" Text="Test155"/>
+            <Editor AutoSize="TextChanges" Text="Test156"/>
+            <Editor AutoSize="TextChanges" Text="Test157"/>
+            <Editor AutoSize="TextChanges" Text="Test158"/>
+            <Editor AutoSize="TextChanges" Text="Test159"/>
+            <Editor AutoSize="TextChanges" Text="Test160"/>
+            <Editor AutoSize="TextChanges" Text="Test161"/>
+            <Editor AutoSize="TextChanges" Text="Test162"/>
+            <Editor AutoSize="TextChanges" Text="Test163"/>
+            <Editor AutoSize="TextChanges" Text="Test164"/>
+            <Editor AutoSize="TextChanges" Text="Test165"/>
+            <Editor AutoSize="TextChanges" Text="Test166"/>
+            <Editor AutoSize="TextChanges" Text="Test167"/>
+            <Editor AutoSize="TextChanges" Text="Test168"/>
+            <Editor AutoSize="TextChanges" Text="Test169"/>
+            <Editor AutoSize="TextChanges" Text="Test170"/>
+            <Editor AutoSize="TextChanges" Text="Test171"/>
+            <Editor AutoSize="TextChanges" Text="Test172"/>
+            <Editor AutoSize="TextChanges" Text="Test173"/>
+            <Editor AutoSize="TextChanges" Text="Test174"/>
+            <Editor AutoSize="TextChanges" Text="Test175"/>
+            <Editor AutoSize="TextChanges" Text="Test176"/>
+            <Editor AutoSize="TextChanges" Text="Test177"/>
+            <Editor AutoSize="TextChanges" Text="Test178"/>
+            <Editor AutoSize="TextChanges" Text="Test179"/>
+            <Editor AutoSize="TextChanges" Text="Test180"/>
+            <Editor AutoSize="TextChanges" Text="Test181"/>
+            <Editor AutoSize="TextChanges" Text="Test182"/>
+            <Editor AutoSize="TextChanges" Text="Test183"/>
+            <Editor AutoSize="TextChanges" Text="Test184"/>
+            <Editor AutoSize="TextChanges" Text="Test185"/>
+            <Editor AutoSize="TextChanges" Text="Test186"/>
+            <Editor AutoSize="TextChanges" Text="Test187"/>
+            <Editor AutoSize="TextChanges" Text="Test188"/>
+            <Editor AutoSize="TextChanges" Text="Test189"/>
+            <Editor AutoSize="TextChanges" Text="Test190"/>
+            <Editor AutoSize="TextChanges" Text="Test191"/>
+            <Editor AutoSize="TextChanges" Text="Test192"/>
+            <Editor AutoSize="TextChanges" Text="Test193"/>
+            <Editor AutoSize="TextChanges" Text="Test194"/>
+            <Editor AutoSize="TextChanges" Text="Test195"/>
+            <Editor AutoSize="TextChanges" Text="Test196"/>
+            <Editor AutoSize="TextChanges" Text="Test197"/>
+            <Editor AutoSize="TextChanges" Text="Test198"/>
+            <Editor AutoSize="TextChanges" Text="Test199"/>
+            <Editor AutoSize="TextChanges" Text="Test200"/>
+        </VerticalStackLayout>
+      </ScrollView>
+      <StackLayout
+        Grid.Row="1">
+        <Button
+          x:Name="UpdateFontSizeButton"
+          AutomationId="UpdateFontSizeButton"
+          Text="Update FontSize"
+          Clicked="OnUpdateFontSizeButtonClicked"/>
+        <Button
+          x:Name="UpdateCharacterSpacingButton"
+          AutomationId="UpdateCharacterSpacingButton"
+          Text="Update CharacterSpacing"
+          Clicked="OnUpdateCharacterSpacingButtonClicked"/>
+      </StackLayout>
+    </Grid>
+</controls:TestContentPage>
