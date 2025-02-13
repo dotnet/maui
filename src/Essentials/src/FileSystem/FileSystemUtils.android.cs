@@ -345,6 +345,9 @@ namespace Microsoft.Maui.Storage
 					text = cursor.GetString(columnIndex);
 			}
 
+			if (cursor is not null && !cursor.IsClosed)
+			   cursor.Close();
+
 			return text;
 		}
 

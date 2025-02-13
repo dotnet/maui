@@ -201,17 +201,6 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
-		CommandResponse TapCoordinates(IDictionary<string, object> parameters)
-		{
-			if (parameters.TryGetValue("x", out var x) &&
-				parameters.TryGetValue("y", out var y))
-			{
-				return ClickCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
-			}
-
-			return CommandResponse.FailedEmptyResponse;
-		}
-
 		static AppiumElement? GetAppiumElement(object element)
 		{
 			if (element is AppiumElement appiumElement)
