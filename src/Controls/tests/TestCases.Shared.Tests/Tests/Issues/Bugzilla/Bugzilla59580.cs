@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,17 +13,12 @@ public class Bugzilla59580 : _IssuesUITest
 
 	public override string Issue => "Raising Command.CanExecutChanged causes crash on Android";
 
-	// [Test]
-	// [Category(UITestCategories.TableView)]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void RaisingCommandCanExecuteChangedCausesCrashOnAndroid()
-	// {
-	// 	App.WaitForElement(c => c.Marked("Cell"));
-
-	// 	App.ActivateContextMenu("Cell");
-
-	// 	App.WaitForElement(c => c.Marked("Fire CanExecuteChanged"));
-	// 	App.Tap(c => c.Marked("Fire CanExecuteChanged"));
-	// 	App.WaitForElement("Cell");
-	// }
+	[Test]
+	[Category(UITestCategories.TableView)]
+	public void RaisingCommandCanExecuteChangedCausesCrashOnAndroid()
+	{
+		App.ActivateContextMenu("Cell");
+		App.Tap("Fire CanExecuteChanged");
+	}
 }
+#endif

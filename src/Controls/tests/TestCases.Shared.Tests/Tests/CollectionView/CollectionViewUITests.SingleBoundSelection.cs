@@ -18,10 +18,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			// Navigate to the selection galleries
 			VisitInitialGallery("Selection");
-			
+
 			// Navigate to the specific sample inside selection galleries
 			VisitSubGallery("SingleSelection,Bound");
-			
+
 			// 1. Initially Item 2 should be selected (from the view model)
 			App.WaitForElement("Selected: Item: 2");
 

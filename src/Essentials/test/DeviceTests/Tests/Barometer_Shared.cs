@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasBarometer)
 				return;
 
-			var tcs = new TaskCompletionSource<BarometerData>();
+			var tcs = new TaskCompletionSource<BarometerData>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			Barometer.ReadingChanged += Barometer_ReadingChanged;
 			void Barometer_ReadingChanged(object sender, BarometerChangedEventArgs e)
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasBarometer)
 				return;
 
-			var tcs = new TaskCompletionSource<BarometerData>();
+			var tcs = new TaskCompletionSource<BarometerData>(TaskCreationOptions.RunContinuationsAsynchronously);
 			Barometer.ReadingChanged += Barometer_ReadingChanged;
 			void Barometer_ReadingChanged(object sender, BarometerChangedEventArgs e)
 			{
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasBarometer)
 				return;
 
-			var tcs = new TaskCompletionSource<BarometerData>();
+			var tcs = new TaskCompletionSource<BarometerData>(TaskCreationOptions.RunContinuationsAsynchronously);
 			Barometer.ReadingChanged += Barometer_ReadingChanged;
 			void Barometer_ReadingChanged(object sender, BarometerChangedEventArgs e)
 			{
