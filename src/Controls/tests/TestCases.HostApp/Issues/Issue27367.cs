@@ -65,6 +65,7 @@ public class Issue27367 : ContentPage
             {
                 Placeholder = "Right Side Entry",
                 HorizontalOptions = LayoutOptions.Center,
+                AutomationId="Entry"
             },
             new Label
             {
