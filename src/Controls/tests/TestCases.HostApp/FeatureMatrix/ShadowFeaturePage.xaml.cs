@@ -200,9 +200,15 @@ namespace Maui.Controls.Sample.Issues
 			_timer.Stop();
 			_benchmark = false;
 
+			IsEnabledTrueRadio.IsChecked = true;
 			BorderShadow.IsEnabled = ImageShadow.IsEnabled = LabelShadow.IsEnabled = true;
+
+			IsVisibleTrueRadio.IsChecked = true;
 			BorderShadow.IsVisible = ImageShadow.IsVisible = LabelShadow.IsVisible = true;
+
+			FlowDirectionLTR.IsChecked = true;
 			BorderShadow.FlowDirection = ImageShadow.FlowDirection = LabelShadow.FlowDirection = FlowDirection.LeftToRight;
+			
 			BorderShadow.Clip = ImageShadow.Clip = LabelShadow.Clip = null;
 			BorderShadow.WidthRequest = ImageShadow.WidthRequest = LabelShadow.WidthRequest = 80;
 		}
