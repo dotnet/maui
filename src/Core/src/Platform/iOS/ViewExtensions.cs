@@ -212,21 +212,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateShadow(this UIView platformView, IView view)
 		{
 			var shadow = view.Shadow;
-			var clip = view.Clip;
 
-			// If there is a clip shape, then the shadow should be applied to the clip layer, not the view layer
-			if (clip == null)
-			{
-				if (shadow == null)
-					platformView.ClearShadow();
-				else
-					platformView.SetShadow(shadow);
-			}
+			if (shadow == null)
+				platformView.ClearShadow();
 			else
-			{
-				if (platformView is WrapperView wrapperView)
-					wrapperView.Shadow = view.Shadow;
-			}
+				platformView.SetShadow(shadow);
 		}
 
 		[Obsolete("IBorder is not used and will be removed in a future release.")]

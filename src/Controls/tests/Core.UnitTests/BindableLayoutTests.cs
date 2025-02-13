@@ -7,6 +7,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -650,6 +654,86 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			list.Add("Baz");
 			Assert.Equal(3, layout.Children.Count);
+		}
+
+		[Fact("BindableLayout disconnects handlers when removing views")]
+		public void DisconnectsHandlersWhenRemovingViews()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ContentPage, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<VerticalStackLayout, BindableLayoutHandlerStub>())
+				.Build();
+
+			MauiContext mauiContext = new MauiContext(mauiApp.Services);
+
+			var bindableLayout = new VerticalStackLayout();
+			var items = new ObservableCollection<int>(Enumerable.Range(0, 10));
+			BindableLayout.SetItemsSource(bindableLayout, items);
+			BindableLayout.SetItemTemplate(bindableLayout, new DataTemplate(() => new Button()));
+			BindableLayout.SetEmptyView(bindableLayout, new Button());
+
+			bindableLayout.ToHandler(mauiContext);
+
+			// Ensure we have the handlers on all elements
+			Assert.All(bindableLayout.Children, c => Assert.NotNull(c.Handler));
+
+			// Test removal of an item
+			var lastChildIndex = items.Count - 1;
+			var lastChild = bindableLayout[lastChildIndex];
+			items.RemoveAt(lastChildIndex);
+			Assert.Null(lastChild.Handler);
+
+			// Test removal of all items
+			var children = bindableLayout.Children.ToList();
+			items.Clear();
+			Assert.All(children, c => Assert.Null(c.Handler));
+
+			// Test removal of empty view
+			var emptyView = bindableLayout.FirstOrDefault() as Button;
+			Assert.NotNull(emptyView);
+			Assert.NotNull(emptyView.Handler);
+			items.Add(1000);
+			Assert.Null(emptyView.Handler);
+
+			// Test replacing the items source with an empty enumerable
+			lastChildIndex = 0;
+			lastChild = bindableLayout[lastChildIndex];
+			BindableLayout.SetItemsSource(bindableLayout, Enumerable.Empty<int>());
+			Assert.Null(lastChild.Handler);
+			Assert.NotNull(emptyView.Handler);
+		}
+
+		class BindableLayoutHandlerStub : HandlerStub
+		{
+			public static CommandMapper<IView, IViewHandler> CommandMapper = new()
+			{
+				[nameof(ILayoutHandler.Add)] = MapCreatePlatformHandler,
+				[nameof(ILayoutHandler.Insert)] = MapCreatePlatformHandler,
+			};
+
+			static void MapCreatePlatformHandler(IViewHandler handler, IView view, object arg)
+			{
+				if (arg is LayoutHandlerUpdate args)
+				{
+					args.View.ToHandler(handler.MauiContext!);
+				}
+			}
+
+			public BindableLayoutHandlerStub() : base(new PropertyMapper<IView>(), CommandMapper)
+			{
+			}
+
+			public override void SetVirtualView(IView view)
+			{
+				base.SetVirtualView(view);
+				var bindableLayout = (IBindableLayout)view;
+				foreach (var child in bindableLayout.Children.OfType<IView>())
+				{
+					child.ToHandler(MauiContext!);
+				}
+			}
 		}
 
 		// Checks if for every item in the items source there's a corresponding view
