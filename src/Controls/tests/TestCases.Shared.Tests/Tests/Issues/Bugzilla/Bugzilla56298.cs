@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST 
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
 // ListView.HasUnevenRows Property Changes Not Reflected in UI on Android and Windows Platforms. Issue Link: https://github.com/dotnet/maui/issues/26780
 // The CI-generated image on Catalyst doesn't match expectations, seems to be uneven rows aren't working correctly.
 // However, the locally generated image appears to function as expected.

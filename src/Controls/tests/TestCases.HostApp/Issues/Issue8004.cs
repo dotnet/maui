@@ -26,7 +26,7 @@
 				// TextColor = Colors.White,
 				// VerticalOptions = LayoutOptions.EndAndExpand
 			};
-			
+
 			button.Clicked += AnimateButton_Clicked;
 
 			_boxView = new BoxView

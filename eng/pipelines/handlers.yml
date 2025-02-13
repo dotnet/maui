@@ -44,7 +44,6 @@ pr:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
-  - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
 
@@ -93,13 +92,6 @@ parameters:
         demands: 
           - Agent.OS -equals Windows_NT
         artifact: nuget
-      - name: macOS
-        poolName: $(macOSXVmPool)
-        vmImage: $(macOSXVmImage)
-        demands:
-          - macOS.Name -equals Sonoma
-          - macOS.Architecture -equals arm64
-        artifact: nuget-macos
 
   - name: BuildTemplatePlatforms
     type: object
@@ -160,11 +152,6 @@ resources:
       name: xamarin/yaml-templates
       endpoint: xamarin
       ref: refs/heads/main
-    - repository: sdk-insertions
-      type: github
-      name: xamarin/sdk-insertions
-      ref: refs/heads/main
-      endpoint: xamarin
 
 stages:
 
@@ -178,7 +165,7 @@ stages:
             workspace:
               clean: all
             displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
-            timeoutInMinutes: 240
+            timeoutInMinutes: 120
             condition: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
@@ -363,5 +350,4 @@ stages:
           
         
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
-    - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
+    - template: common/localization.yml
