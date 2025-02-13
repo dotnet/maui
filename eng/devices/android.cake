@@ -349,19 +349,19 @@ void SetAndroidEnvironmentVariables(string sdkRoot)
 {
 	// Set up Android SDK environment variables and paths
 	string[] paths = { 
-		$"{sdkRoot}/tools/bin", 
-		$"{sdkRoot}/cmdline-tools/latest/bin", 
-		$"{sdkRoot}/cmdline-tools/5.0/bin", 
-		$"{sdkRoot}/cmdline-tools/7.0/bin", 
-		$"{sdkRoot}/cmdline-tools/11.0/bin", 
-		$"{sdkRoot}/cmdline-tools/12.0/bin",
-		$"{sdkRoot}/cmdline-tools/13.0/bin",
-		$"{sdkRoot}/platform-tools", 
+		$"{sdkRoot}/cmdline-tools/latest/bin",
+		$"{sdkRoot}/cmdline-tools/17.0/bin",
+        $"{sdkRoot}/platform-tools", 
 		$"{sdkRoot}/emulator" };
 		
 	foreach (var path in paths)
 	{
 		SetEnvironmentVariable("PATH", path, prepend: true);
+	}
+
+	foreach (var folder in GetDirectories($"{sdkRoot}/cmdline-tools/*"))
+	{
+		Information("Found cmdline-tools folders: {0}", folder.FullPath);
 	}
 }
 
@@ -376,6 +376,7 @@ AndroidEmulatorToolSettings AdjustEmulatorSettingsForCI(AndroidEmulatorToolSetti
 
 void DetermineDeviceCharacteristics(string deviceDescriptor, int defaultApiLevel)
 {
+	var isArm64 = System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64;
 	var working = deviceDescriptor.Trim().ToLower();
 	var emulator = true;
 	var api = defaultApiLevel;
@@ -407,7 +408,7 @@ void DetermineDeviceCharacteristics(string deviceDescriptor, int defaultApiLevel
 	}
 	else if (parts[2] == "64")
 	{
-		if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
+		if (isArm64)
 			deviceArch = "arm64-v8a";
 		else if (emulator)
 			deviceArch = "x86_64";
@@ -417,6 +418,8 @@ void DetermineDeviceCharacteristics(string deviceDescriptor, int defaultApiLevel
 	var sdk = api >= 27 ? "google_apis_playstore" : "google_apis";
 	if (api == 27 && deviceArch == "x86_64")
 		sdk = "default";
+	if (api == 27 && deviceArch == "arm64-v8a")
+		sdk = "google_apis";
 
 	androidAvdImage = $"system-images;android-{api};{sdk};{deviceArch}";
 
@@ -458,7 +461,18 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 				Information("Starting Emulator: {0}...", avdName);
 				emulatorProcess = AndroidEmulatorStart(avdName, emuSettings);
 			}
+		}).WaitAsync(TimeSpan.FromMinutes(2));
+	}
+	catch(TimeoutException)
+	{
+		Error("Failed to start the Android Emulator.");
+		throw;
+	}
 
+	try
+	{
+		await System.Threading.Tasks.Task.Run(() =>
+		{
 			if (IsCIBuild() && emulatorProcess is not null)
 			{
 				Information("Setting Logcat Values");
@@ -466,12 +480,11 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 				AdbShell("logcat -G 16M");
 				Information("Finished Setting Logcat Values");
 			}
-		}).WaitAsync(TimeSpan.FromMinutes(2));
+		}).WaitAsync(TimeSpan.FromMinutes(1));
 	}
 	catch(TimeoutException)
 	{
-		Error("Failed to start the Android Emulator.");
-		throw;
+		Warning("Failed to Issue Logcat Commands to the Android Emulator.");
 	}
 }
 
