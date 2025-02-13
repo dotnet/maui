@@ -21,10 +21,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(SwipeItem);
 			App.SwipeRightToLeft(SwipeItem);
+#if ANDROID
+			//Random VisualTestFailedException failures occurred on CI for Android when taking a screenshot, even after adding a delay. 
+			//To ensure the element is visible, WaitForElement has been added.
+			App.WaitForElement("Right");
+#else
 			// CI captures a screenshot before the swipe is fully completed, resulting in a slight visual difference.
 			// Even using Thread.Sleep or WaitForElement sometimes fails, so adding Task.Delay working fine.
 			Task.Delay(500);
 			VerifyScreenshot();
+#endif
 		}
 
 		[Test, Order(2)]
@@ -33,8 +39,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement(SwipeItemView);
 			App.SwipeRightToLeft(SwipeItemView);
+#if ANDROID
+			App.WaitForElement("Entry");
+#else
 			Task.Delay(500);
 			VerifyScreenshot();
+#endif
 		}
 	}
 }
