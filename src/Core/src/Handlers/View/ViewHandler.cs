@@ -370,6 +370,10 @@ namespace Microsoft.Maui.Handlers
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			((PlatformView?)handler.ContainerView)?.UpdateClip(view);
+			if(view.Shadow is not null)
+			{
+				((PlatformView?)handler.ContainerView)?.UpdateShadow(view);
+			}
 		}
 
 		/// <summary>
