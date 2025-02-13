@@ -26,7 +26,7 @@ public class Issue16910 : _IssuesUITest
 		App.Tap("StopRefreshing");
 		App.WaitForElement("IsNotRefreshing");
 	}
-#if TEST_FAILS_ON_CATALYST //wipe actions cannot be performed on the macOS test server
+#if TEST_FAILS_ON_CATALYST //Swipe actions cannot be performed on the macOS test server
 	[Test]
 	public void BindingUpdatesFromInteractiveRefresh()
 	{
