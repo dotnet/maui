@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST //TapCoordinates is not working on Catalyst
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -25,4 +24,3 @@ public class Issue22674 : _IssuesUITest
 		// Without crashes, the test has passed.
 	}
 }
-#endif
