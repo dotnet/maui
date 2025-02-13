@@ -162,9 +162,9 @@ namespace Maui.Controls.Sample.Issues
 				ClipButton.Text = "Remove Clip";
 				BorderShadow.Clip = ImageShadow.Clip = LabelShadow.Clip = new EllipseGeometry
 				{
-					Center = new Point(50, 50),
-					RadiusX = 25,
-					RadiusY = 25
+					Center = new Point(40, 40),
+					RadiusX = 20,
+					RadiusY = 20
 				};
 				_clip = true;
 			}
@@ -199,7 +199,12 @@ namespace Maui.Controls.Sample.Issues
 			FpsLabel.IsVisible = false;
 			_timer.Stop();
 			_benchmark = false;
-			BorderShadow.WidthRequest = ImageShadow.WidthRequest = LabelShadow.WidthRequest = 100;
+
+			BorderShadow.IsEnabled = ImageShadow.IsEnabled = LabelShadow.IsEnabled = true;
+			BorderShadow.IsVisible = ImageShadow.IsVisible = LabelShadow.IsVisible = true;
+			BorderShadow.FlowDirection = ImageShadow.FlowDirection = LabelShadow.FlowDirection = FlowDirection.LeftToRight;
+			BorderShadow.Clip = ImageShadow.Clip = LabelShadow.Clip = null;
+			BorderShadow.WidthRequest = ImageShadow.WidthRequest = LabelShadow.WidthRequest = 80;
 		}
 	}
 }

@@ -17,7 +17,7 @@
             IsVisible="{Binding IsVisible}"
             StrokeShape="RoundRectangle 24"
             Background="Red"
-            WidthRequest="100" 
+            WidthRequest="80" 
             Margin="12, 0">
             <Border.Shadow>
               <Shadow
@@ -36,7 +36,7 @@
             Grid.Column="1"
             Aspect="AspectFit"
             Source="oasis.jpg"
-            WidthRequest="100"
+            WidthRequest="80"
             Margin="12, 0">
             <Image.Shadow>
               <Shadow 
@@ -55,7 +55,7 @@
             Grid.Column="2"
             Text="Label"
             FontSize="18"
-            WidthRequest="100"
+            WidthRequest="80"
             Margin="12, 0">
             <Label.Shadow>
               <Shadow 
