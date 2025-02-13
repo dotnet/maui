@@ -17,8 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void EnsureSupportForCustomWebViewClients()
 		{
+			VerifyInternetConnectivity();
 			App.WaitForElement("Success");
-		}
+		}	 
 	}
 }
 #endif
