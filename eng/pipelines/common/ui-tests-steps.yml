@@ -130,8 +130,7 @@ steps:
 
       Invoke-Expression $command  
     displayName: $(Agent.JobName)
-    ${{ if ne(parameters.platform, 'android')}}:
-      retryCountOnTaskFailure: 1
+    retryCountOnTaskFailure: 1
     env:
       APPIUM_HOME: $(APPIUM_HOME)
 
