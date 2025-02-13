@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(ShadowFeatureMatrix);
 		}
 
-		[Test]
+		[Test, Order(1)]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetColor()
 		{
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(2)]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetColor_UpdateValue()
 		{
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-		[Test]
+		[Test, Order(3)]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetOffset_PositiveValues()
 		{
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(4)]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetOffset_Zero()
 		{
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(5)]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetRadius()
 		{
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(6)]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetRadius_Zero()
 		{
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(7)]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetOpacity_Zero()
 		{
@@ -151,7 +151,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(7)]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetEnabledStateToFalse_VerifyScreenshot()
 		{
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(8)]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_ChangeFlowDirection_RTL_VerifyScreenshot()
 		{
@@ -171,7 +171,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(9)]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_SetVisibilityToFalse_VerifyScreenshot()
 		{
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 #if !WINDOWS // Shadow not updated when Clipping a View: https://github.com/dotnet/maui/issues/27730
-		[Test]
+		[Test, Order(10)]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_AddClip_VerifyShadow()
 		{
@@ -192,7 +192,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test]
+		[Test, Order(11)]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_AddRemoveClip_VerifyShadow()
 		{

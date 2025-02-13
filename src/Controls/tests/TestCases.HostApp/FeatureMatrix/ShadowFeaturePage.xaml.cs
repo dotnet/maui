@@ -200,6 +200,8 @@ namespace Maui.Controls.Sample.Issues
 			_timer.Stop();
 			_benchmark = false;
 
+			ColorEntry.Text = "#000000";
+
 			IsEnabledTrueRadio.IsChecked = true;
 			BorderShadow.IsEnabled = ImageShadow.IsEnabled = LabelShadow.IsEnabled = true;
 
