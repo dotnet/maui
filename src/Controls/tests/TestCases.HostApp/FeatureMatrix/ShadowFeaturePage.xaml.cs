@@ -203,14 +203,9 @@ namespace Maui.Controls.Sample.Issues
 			ColorEntry.Text = "#000000";
 
 			IsEnabledTrueRadio.IsChecked = true;
-			BorderShadow.IsEnabled = ImageShadow.IsEnabled = LabelShadow.IsEnabled = true;
-
 			IsVisibleTrueRadio.IsChecked = true;
-			BorderShadow.IsVisible = ImageShadow.IsVisible = LabelShadow.IsVisible = true;
-
 			FlowDirectionLTR.IsChecked = true;
-			BorderShadow.FlowDirection = ImageShadow.FlowDirection = LabelShadow.FlowDirection = FlowDirection.LeftToRight;
-			
+
 			BorderShadow.Clip = ImageShadow.Clip = LabelShadow.Clip = null;
 			BorderShadow.WidthRequest = ImageShadow.WidthRequest = LabelShadow.WidthRequest = 80;
 		}
