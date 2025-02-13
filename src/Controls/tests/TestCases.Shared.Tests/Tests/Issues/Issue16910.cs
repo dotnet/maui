@@ -18,7 +18,7 @@ public class Issue16910 : _IssuesUITest
 	}
 
 	[Test]
-public void BindingUpdatesFromProgrammaticRefresh()
+	public void BindingUpdatesFromProgrammaticRefresh()
 	{
 		_ = App.WaitForElement("StartRefreshing");
 		App.Tap("StartRefreshing");
@@ -26,16 +26,16 @@ public void BindingUpdatesFromProgrammaticRefresh()
 		App.Tap("StopRefreshing");
 		App.WaitForElement("IsNotRefreshing");
 	}
-
-	// Windows only works with touch inputs which we don't have running on the test server
-[Test]
+#if TEST_FAILS_ON_CATALYST //wipe actions cannot be performed on the macOS test server
+	[Test]
 	public void BindingUpdatesFromInteractiveRefresh()
 	{
 		_ = App.WaitForElement("CollectionView");
-		App.ScrollUp("CollectionView", ScrollStrategy.Gesture, swipeSpeed: 7000);
+		App.ScrollUp("CollectionView", ScrollStrategy.Gesture, 0.7, 10000) ;
 		App.WaitForElement("IsRefreshing");
 		App.Tap("StopRefreshing");
 		App.WaitForElement("IsNotRefreshing");
 	}
+	#endif
 
 }
