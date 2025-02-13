@@ -24,7 +24,7 @@ public class Issue11107 : _IssuesUITest
 		App.Tap("RunTestTwoTabs");
 		RunTests();
 
-		RunningApp.Back();
+		App.Back();
 
 		void RunTests()
 		{

@@ -9,7 +9,7 @@ namespace UITest.Appium
 	public class AppiumIOSApp : AppiumApp, IIOSApp
 	{
 		public AppiumIOSApp(Uri remoteAddress, IConfig config)
-			: base(new IOSDriver(remoteAddress, GetOptions(config)), config)
+			: base(new IOSDriver(remoteAddress, GetOptions(config), DefaultCommandTimeout), config)
 		{
 			_commandExecutor.AddCommandGroup(new AppiumAppleContextMenuActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSMouseActions(this));
