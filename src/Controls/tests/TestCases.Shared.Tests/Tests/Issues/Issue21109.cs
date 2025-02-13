@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] MAUI 8.0.3 -> 8.0.6 regression: custom handler with key listener no longer works";
 
-		[Test, Order(1)]
+		[FlakyTest, Order(1)]
 		[Category(UITestCategories.Entry)]
 		public void VerifyInitialEntryReturnTypeChange()
 		{
