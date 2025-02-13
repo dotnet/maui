@@ -12,12 +12,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Hide Soft Input On Tapped Page";
 
-		[TestCase("Entry", false), Retry(2), Retry(2)]
-		[TestCase("Editor", false), Retry(2), Retry(2)]
-		[TestCase("SearchBar", false), Retry(2), Retry(2)]
-		[TestCase("Entry", true), Retry(2), Retry(2)]
-		[TestCase("Editor", true), Retry(2), Retry(2)]
-		[TestCase("SearchBar", true), Retry(2), Retry(2)]
+		[TestCase("Entry", false), Retry(2)]
+		[TestCase("Editor", false)]
+		[TestCase("SearchBar", false)]
+		[TestCase("Entry", true)]
+		[TestCase("Editor", true)]
+		[TestCase("SearchBar", true)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Test ignored on Windows")]
 		public void HideSoftInputOnTappedPageTest(string control, bool hideOnTapped)
 		{

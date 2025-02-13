@@ -12,10 +12,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Alerts Open on top of current presented view";
 
 		[Test, Retry(2)]
-		[TestCase("OpenAlertWithModals"), Retry(2), Retry(2)]
-		[TestCase("OpenAlertWithNewUIWindow"), Retry(2), Retry(2)]
-		[TestCase("OpenActionSheetWithNewUIWindow"), Retry(2), Retry(2)]
-		[TestCase("OpenActionSheetWithModals"), Retry(2), Retry(2)]
+		[TestCase("OpenAlertWithModals")]
+		[TestCase("OpenAlertWithNewUIWindow")]
+		[TestCase("OpenActionSheetWithNewUIWindow")]
+		[TestCase("OpenActionSheetWithModals")]
 		[Category(UITestCategories.DisplayAlert)]
 		public void OpenAlertWithModals(string testCase)
 		{

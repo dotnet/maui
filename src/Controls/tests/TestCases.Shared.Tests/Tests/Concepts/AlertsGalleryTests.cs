@@ -57,8 +57,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test, Retry(2)]
 		[Category(UITestCategories.DisplayAlert)]
-		[TestCase(Test.Alerts.AlertAcceptCancelClickAccept, "ACCEPT"), Retry(2), Retry(2)]
-		[TestCase(Test.Alerts.AlertAcceptCancelClickCancel, "CANCEL"), Retry(2), Retry(2)]
+		[TestCase(Test.Alerts.AlertAcceptCancelClickAccept, "ACCEPT")]
+		[TestCase(Test.Alerts.AlertAcceptCancelClickCancel, "CANCEL")]
 		public void AlertAcceptCancel(Test.Alerts test, string buttonText)
 		{
 			var remote = new EventViewContainerRemote(UITestContext, test);
@@ -95,9 +95,9 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test, Retry(2)]
 		[Category(UITestCategories.ActionSheet)]
-		[TestCase(Test.Alerts.ActionSheetClickItem, "ITEM 2"), Retry(2), Retry(2)]
-		[TestCase(Test.Alerts.ActionSheetClickCancel, "CANCEL"), Retry(2), Retry(2)]
-		[TestCase(Test.Alerts.ActionSheetClickDestroy, "DESTROY"), Retry(2), Retry(2)]
+		[TestCase(Test.Alerts.ActionSheetClickItem, "ITEM 2")]
+		[TestCase(Test.Alerts.ActionSheetClickCancel, "CANCEL")]
+		[TestCase(Test.Alerts.ActionSheetClickDestroy, "DESTROY")]
 		public void ActionSheetClickItem(Test.Alerts test, string itemText)
 		{
 			var remote = new EventViewContainerRemote(UITestContext, test);
