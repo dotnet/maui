@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected const int MoreTabId = 99;
 		BottomNavigationView _bottomView;
 		FrameLayout _navigationArea;
-		LinearLayout _outerLayout;
+		RelativeLayout _outerLayout;
 		IShellBottomNavViewAppearanceTracker _appearanceTracker;
 		BottomNavigationViewTracker _bottomNavigationTracker;
 		BottomSheetDialog _bottomSheetDialog;
@@ -75,6 +75,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_outerLayout = PlatformInterop.CreateNavigationBarOuterLayout(context);
 			_navigationArea = PlatformInterop.CreateNavigationBarArea(context, _outerLayout);
 			_bottomView = PlatformInterop.CreateNavigationBar(context, Resource.Attribute.bottomNavigationViewStyle, _outerLayout, this);
+
+			//This layout chage happens when fragment manager has completed a transaction
+			_navigationArea.LayoutChange += OnNavigationAreaLayoutChange;
 
 			if (ShellItem is null)
 				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
@@ -107,6 +110,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_bottomSheetDialog = null;
 			}
 
+			_navigationArea.LayoutChange -= OnNavigationAreaLayoutChange;
 			_navigationArea?.Dispose();
 			_appearanceTracker?.Dispose();
 			_outerLayout?.Dispose();
@@ -288,8 +292,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				SetupMenu();
 			}
-
-			UpdateTabBarVisibility();
 		}
 
 		protected virtual bool OnItemSelected(IMenuItem item)
@@ -355,6 +357,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_bottomSheetDialog.Dispose();
 				_bottomSheetDialog = null;
 			}
+		}
+		
+		private void OnNavigationAreaLayoutChange(object sender, AView.LayoutChangeEventArgs e)
+		{
+			UpdateTabBarVisibility();
 		}
 
 		protected override void OnShellItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
