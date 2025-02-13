@@ -56,7 +56,7 @@
 				From = "Lorem ipsum"
 			};
 
-			for(int i = 0; i < 1000; i++)
+			for (int i = 0; i < 1000; i++)
 			{
 				posts.Add(new Post { Title = $"Lorem ipsum {i + 1} dolor sit amet, consectetur adipiscing elit", Image = "photo21314.jpg", Likes = "1k", User = user });
 			}
