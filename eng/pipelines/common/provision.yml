@@ -4,6 +4,7 @@ parameters:
   skipXcode: false
   skipProvisioning: true
   skipJdk: false
+  skipAgentCleanser: false
   skipAndroidCommonSdks: false
   onlyAndroidPlatformDefaultApis: false
   skipAndroidPlatformApis: false
@@ -22,14 +23,15 @@ parameters:
   base64Encode: false
 
 steps:
-  # Prepare macOS
-  - template: agent-cleanser/v1.yml@yaml-templates
-    parameters:
-      UninstallMono: false
-      UninstallXamarinMac: true
-      CleanseAgentToolsDotNet: true
-      SelfHealPowerShell: false
-        
+  - ${{ if ne(parameters.skipAgentCleanser, 'true') }}:
+    # Prepare macOS
+    - template: agent-cleanser/v1.yml@yaml-templates
+      parameters:
+        UninstallMono: false
+        UninstallXamarinMac: true
+        CleanseAgentToolsDotNet: true
+        SelfHealPowerShell: false
+          
   # Provision Xcode
   - ${{ if ne(parameters.skipXcode, 'true') }}:
     - ${{ if ne(parameters.skipProvisionator, true) }}:

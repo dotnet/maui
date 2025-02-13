@@ -26,12 +26,9 @@ steps:
       timeoutInMinutes: 60
   - template: provision.yml
     parameters:
-      ${{ if eq(parameters.platform, 'windows') }}:
-        platform: windows
-      ${{ if or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst'), eq(parameters.platform, 'android')) }}:
-        platform: macos
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       skipJdk: ${{ ne(parameters.platform, 'android') }}
+      skipAgentCleanser: ${{ eq(parameters.platform, 'android') }}
       skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
       skipAndroidPlatformApis: ${{ ne(parameters.platform, 'android') }}
       skipAndroidEmulatorImages: ${{ ne(parameters.platform, 'android') }}
