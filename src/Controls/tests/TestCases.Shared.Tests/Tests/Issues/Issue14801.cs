@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Shell)]
-		public void  PopShellPageBeforeBackImageIsReady()
+		public void PopShellPageBeforeBackImageIsReady()
 		{
 			App.WaitForElement("goToChildPage");
 			App.Tap("goToChildPage");
