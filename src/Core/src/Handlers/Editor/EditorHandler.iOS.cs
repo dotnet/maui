@@ -77,17 +77,35 @@ namespace Microsoft.Maui.Handlers
 				// If we drop an infinite value into base.GetDesiredSize for the Editor, we'll
 				// get an exception; it doesn't know what do to with it. So instead we'll size
 				// it to fit its current contents and use those values to replace infinite constraints
+				var contentHeight = PlatformView.ContentSize.Height;
+				var contentWidth = PlatformView.ContentSize.Width;
 
-				var sizeThatFits = PlatformView.SizeThatFits(new CGSize(widthConstraint, heightConstraint));
+				var textHeight = PlatformView.Frame.Size.Height;
+				var textWidth = PlatformView.Frame.Size.Width;
 
-				if (double.IsInfinity(widthConstraint))
+				// If the content size exceeds the frame size,
+				// calculate the size that fits the given constraints.
+				if (contentHeight > textHeight || contentWidth > textWidth)
 				{
-					widthConstraint = sizeThatFits.Width;
+					var sizeThatFits = PlatformView.SizeThatFits(new CGSize(widthConstraint, heightConstraint));
+
+					if (double.IsInfinity(widthConstraint))
+					{
+						widthConstraint = sizeThatFits.Width;
+					}
+
+					if (double.IsInfinity(heightConstraint))
+					{
+						heightConstraint = sizeThatFits.Height;
+					}
 				}
-
-				if (double.IsInfinity(heightConstraint))
+				else
 				{
-					heightConstraint = sizeThatFits.Height;
+					// If the content size does not exceed the frame size,
+					// use the current frame size to replace infinite constraints but
+					// without invoke the SizeThatFits method.
+					heightConstraint = textHeight;
+					widthConstraint = textWidth;
 				}
 			}
 
