@@ -46,7 +46,7 @@ namespace UITest.Appium
 				return CommandResponse.FailedEmptyResponse;
 
 			var target = element as IUIElement;
-	
+
 			if (target is not null)
 			{
 				var rect = target.GetRect();
