@@ -1,4 +1,5 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID //The Position property now functions correctly on Android and Windows, issue: https://github.com/dotnet/maui/issues/15443. Note that on Catalyst, swipe and drag options are not supported in Appium.
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS //The Position property now functions correctly on Android and Windows, issue: https://github.com/dotnet/maui/issues/15443. Note that on Catalyst, swipe and drag options are not supported in Appium.
+// This scenario fails on iOS with KeepItemsInView , However carouselview flickers with KeepScrollOffset , issue:https://github.com/dotnet/maui/issues/27773
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
