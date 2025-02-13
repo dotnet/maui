@@ -5,9 +5,16 @@ using NUnit.Framework.Internal.Commands;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	// Custom NUnit attribute to mark a test as flaky, allowing retries (by default 2).
-	// If after the retries the test fails, can ignore it.
-	// Note: This attribute should be used temporarily until the test is changed.
+	/// <summary>
+	/// Custom NUnit attribute to mark a test as flaky, allowing retries (by default 2).
+	/// If after the retries the test fails, can ignore it.
+	/// Note: This attribute should be used temporarily until the test is changed.
+	/// </summary>  
+	/// <example>
+	/// <code>
+	/// [FlakyTest("Description with details of the test that sometimes fails.", retryCount: 2, ignore: true)]
+	/// </code>
+	/// </example>
 	internal class FlakyTestAttribute : Attribute, IWrapTestMethod, IWrapSetUpTearDown
 	{
 		readonly string _ignoreMessage;

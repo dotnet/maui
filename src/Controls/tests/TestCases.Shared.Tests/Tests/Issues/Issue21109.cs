@@ -14,13 +14,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test, Order(1)]
 		[Category(UITestCategories.Entry)]
-		[FlakyTest("Randomly failing with differences in the snapshots.", retryCount: 2, ignore: false)]
 		public void VerifyInitialEntryReturnTypeChange()
 		{
 			App.WaitForElement("WaitForStubControl");
-			// On InitialLoading returnType should work.
+			//On InitialLoading returnType should work.
 			App.Tap("SearchEntry");
-			Thread.Sleep(500); // Add some wait for popping up the keyboard to resolve flakiness in CI.
+			Thread.Sleep(500); // Add some wait for poping up the keyboard to resolve flakiness in CI.
 
 			VerifyScreenshot();
 		}
