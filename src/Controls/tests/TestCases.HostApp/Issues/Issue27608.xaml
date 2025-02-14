@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
+    x:Class="Maui.Controls.Sample.Issues.Issue27608">
+
+    <VerticalStackLayout Padding="16"
+                         Spacing="16">
+        <local:CollectionView2 ItemsSource="{Binding Items}"
+                               AutomationId="CollectionView"
+                               MaximumHeightRequest="300">
+            <local:CollectionView2.ItemsLayout>
+                <GridItemsLayout HorizontalItemSpacing="50"
+                                 Orientation="Horizontal"/>
+            </local:CollectionView2.ItemsLayout>
+
+            <local:CollectionView2.ItemTemplate>
+                <DataTemplate>
+                    <Border Background="Blue"
+                            WidthRequest="200"
+                            StrokeShape="RoundRectangle, 12">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <Label
+                                Text="{Binding .}"
+                                TextColor="Black"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"
+                                FontSize="24"/>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </local:CollectionView2.ItemTemplate>
+        </local:CollectionView2>
+    </VerticalStackLayout>
+
+</ContentPage>
