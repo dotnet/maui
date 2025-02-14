@@ -86,24 +86,58 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
+			// This updates the positions of the header view and footer view as their sizes change dynamically
+			UpdatePositions();
+		}
 
-			// This update is only relevant if you have a footer view because it's used to place the footer view
-			// based on the ContentSize so we just update the positions if the ContentSize has changed
-			if (_footerUIView != null)
+		bool NeedsHorizontalUpdate(UIView view, UIView emptyView, nfloat contentWidth)
+		{
+			if (view is null)
+				return false;
+
+			// Check if the view is out of position horizontally
+			// For the footer, we also compare view.Frame.X against view.Frame.Width.
+			bool needsUpdate =
+				view.Frame.X != contentWidth ||
+				view.Frame.X < (emptyView?.Frame.X ?? float.MaxValue) ||
+				(view.Frame.X != view.Frame.Width);
+
+			return needsUpdate;
+		}
+
+		bool NeedsVerticalUpdate(UIView view, UIView emptyView, nfloat contentHeight)
+		{
+			if (view is null)
+				return false;
+
+			// Check if the view is out of position vertically
+			// For the footer, we also compare view.Frame.Y against view.Frame.Height.
+			bool needsUpdate =
+				view.Frame.Y != contentHeight ||
+				view.Frame.Y < ((emptyView?.Frame.Y + emptyView?.Frame.Height) ?? float.MaxValue) ||
+				(view.Frame.Y != view.Frame.Height);
+
+			return needsUpdate;
+		}
+
+		void UpdatePositions()
+		{
+			var emptyView = CollectionView.ViewWithTag(EmptyTag);
+
+			if (IsHorizontal)
 			{
-				var emptyView = CollectionView.ViewWithTag(EmptyTag);
-
-				if (IsHorizontal)
+				if (NeedsHorizontalUpdate(_headerUIView, emptyView, ItemsViewLayout.CollectionViewContentSize.Width)
+					|| NeedsHorizontalUpdate(_footerUIView, emptyView, ItemsViewLayout.CollectionViewContentSize.Width))
 				{
-					if (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width ||
-						_footerUIView.Frame.X < emptyView?.Frame.X)
-						UpdateHeaderFooterPosition();
+					UpdateHeaderFooterPosition();
 				}
-				else
+			}
+			else
+			{
+				if (NeedsVerticalUpdate(_headerUIView, emptyView, ItemsViewLayout.CollectionViewContentSize.Height)
+					|| NeedsVerticalUpdate(_footerUIView, emptyView, ItemsViewLayout.CollectionViewContentSize.Height))
 				{
-					if (_footerUIView.Frame.Y != ItemsViewLayout.CollectionViewContentSize.Height ||
-						_footerUIView.Frame.Y < (emptyView?.Frame.Y + emptyView?.Frame.Height))
-						UpdateHeaderFooterPosition();
+					UpdateHeaderFooterPosition();
 				}
 			}
 		}
@@ -174,7 +208,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					_headerUIView.Frame = new CoreGraphics.CGRect(-headerWidth, 0, headerWidth, CollectionView.Frame.Height);
 				}
 
-				if (_footerUIView != null && (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width || emptyWidth > 0))
+				// The FooterView frame is updated when the CollectionView does not contain any items.
+				// Previously, the FooterView frame was updated only for a CollectionView with an ItemSource.
+				if (_footerUIView != null && (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width || _footerUIView.Frame.X != footerWidth || emptyWidth > 0))
 					_footerUIView.Frame = new CoreGraphics.CGRect(ItemsViewLayout.CollectionViewContentSize.Width + emptyWidth, 0, footerWidth, CollectionView.Frame.Height);
 
 				if (CollectionView.ContentInset.Left != headerWidth || CollectionView.ContentInset.Right != footerWidth)
@@ -227,7 +263,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					height = ItemsViewLayout.CollectionViewContentSize.Height;
 				}
 
-				if (_footerUIView != null && (_footerUIView.Frame.Y != height || emptyHeight > 0))
+				// The FooterView frame is updated when the CollectionView does not contain any items.
+				// Previously, the FooterView frame was updated only for a CollectionView with an ItemSource.
+				if (_footerUIView != null && (_footerUIView.Frame.Y != height || _footerUIView.Frame.Y != footerHeight || emptyHeight > 0))
 				{
 					_footerUIView.Frame = new CoreGraphics.CGRect(0, height + emptyHeight, CollectionView.Frame.Width, footerHeight);
 				}
