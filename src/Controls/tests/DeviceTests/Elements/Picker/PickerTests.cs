@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
@@ -53,6 +54,21 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal("2", await GetPlatformControlText(handler.PlatformView));
 			await InvokeOnMainThreadAsync(() => picker.ItemsSource = newItems);
 			Assert.NotEqual("2", await GetPlatformControlText(handler.PlatformView));
+		}
+
+		[Fact]
+		[Description("The BackgroundColor of a Picker should match with native background color")]
+		public async Task PickerBackgroundColorConsistent()
+		{
+			var expected = Colors.AliceBlue;
+			var picker = new Picker()
+			{
+				BackgroundColor = expected,
+				HeightRequest = 100,
+				WidthRequest = 200
+			};
+
+			await ValidateHasColor(picker, expected, typeof(PickerHandler));
 		}
 	}
 }
