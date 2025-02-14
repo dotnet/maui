@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using Microsoft.Maui.DeviceTests.Stubs;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests;
 
@@ -139,5 +140,43 @@ public partial class GraphicsTests : TestBase
 
 		Assert.Equal(point.X, aPoint.X);
 		Assert.Equal(point.Y, aPoint.Y);
+	}
+
+	[Theory]
+	[InlineData("#FF0000")]
+	[InlineData("#00FF00")]
+	[InlineData("#0000FF")]
+	public void SolidPaintTest(string hexColor)
+	{
+		var color = Color.FromArgb(hexColor);
+		var solidPaint = new SolidPaint(color);
+
+		Assert.True(solidPaint.IsSolid());
+	}
+
+	[Theory]
+	[InlineData("#FF0000", "#00FF00")]
+	[InlineData("#00FF00", "#0000FF")]
+	[InlineData("#0000FF", "#FF0000")]
+	public void LinearGradientPaintTest(string startHexColor, string endHexColor)
+	{
+		var startColor = Color.FromArgb(startHexColor);
+		var endColor = Color.FromArgb(endHexColor);
+		var linearGradientPaint = new LinearGradientPaintStub(startColor, endColor);
+
+		Assert.True(linearGradientPaint.IsSolid());
+	}
+
+	[Theory]
+	[InlineData("#FF0000", "#00FF00")]
+	[InlineData("#00FF00", "#0000FF")]
+	[InlineData("#0000FF", "#FF0000")]
+	public void RadialGradientPaintTest(string startHexColor, string endHexColor)
+	{
+		var startColor = Color.FromArgb(startHexColor);
+		var endColor = Color.FromArgb(endHexColor);
+		var radialGradientPaint = new RadialGradientPaintStub(startColor, endColor);
+
+		Assert.True(radialGradientPaint.IsSolid());
 	}
 }
