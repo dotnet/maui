@@ -475,15 +475,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					Children = { resetButton }
 				}
 			};
+
+			ContentPage firstTab = new ContentPage
+			{
+				Title = "Menu",
+				Content = new Label
+				{
+					Text = "Menu Items",
+				}
+			};
+
+			ContentPage secondTab = new ContentPage
+			{
+				Title = "Settings",
+				Content = new Label
+				{
+					Text = "Settings Items",
+				}
+			};
+
+			TabbedPage nestedTabbedPage = new TabbedPage
+			{
+				Title = "Flyout Tabbed Page",
+				Children =
+				{
+					firstTab,
+					secondTab
+				}
+			};
+
 			FlyoutPage flyoutPage = new FlyoutPage
 			{
-				Flyout = new ContentPage { Title = "Flyout" },
+				Flyout = nestedTabbedPage,
 				Detail = new NavigationPage(detailContentPage)
 			};
 
 			_ = new TestWindow(flyoutPage);
 
 			Toolbar flyoutToolBar = flyoutPage.Toolbar;
+			Assert.True(flyoutToolBar.IsVisible);
+
+			nestedTabbedPage.CurrentPage = secondTab;
 			Assert.True(flyoutToolBar.IsVisible);
 
 			resetButton.Clicked += (s, e) =>
