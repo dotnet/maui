@@ -23,6 +23,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ClearText("MainEntryField");
 			App.EnterText("MainEntryField", "ClearButton is set to WhileEditing");
 			App.Tap("MainEntryField");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			VerifyScreenshot();
 		}
 
@@ -35,6 +41,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ClearText("MainEntryField");
 			App.EnterText("MainEntryField", "ClearButton is set to Never");
 			App.Tap("MainEntryField");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			VerifyScreenshot();
 		}
 	}
