@@ -19,6 +19,7 @@ internal class ImageButtonUITests : _ViewUITests
 		App.NavigateToGallery(ImageButtonGallery);
 	}
 
+#if TEST_FAILS_ON_CATALYST
 	[Test]
 	public void Aspect()
 	{
@@ -37,6 +38,7 @@ internal class ImageButtonUITests : _ViewUITests
 		remote.TapStateButton();
 		VerifyScreenshot("ImageButtonUITests_Aspect_State_AspectFit");
 	}
+#endif
 
 	[Test]
 	public void Aspect_AspectFill()

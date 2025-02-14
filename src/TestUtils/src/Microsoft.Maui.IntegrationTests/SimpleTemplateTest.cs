@@ -1,4 +1,4 @@
-﻿using System.Xml.Linq;
+using System.Xml.Linq;
 
 namespace Microsoft.Maui.IntegrationTests;
 
@@ -7,7 +7,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 {
 	[Test]
 	// Parameters: short name, target framework, build config, use pack target, additionalDotNetNewParams, additionalDotNetBuildParams
-	[TestCase("maui", DotNetPrevious, "Debug", false, "","")]
+	[TestCase("maui", DotNetPrevious, "Debug", false, "", "")]
 	[TestCase("maui", DotNetPrevious, "Release", false, "", "")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "", "")]
 	[TestCase("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
@@ -17,13 +17,13 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[TestCase("maui-blazor", DotNetPrevious, "Release", false, "", "")]
 	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
 	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
-	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "--Empty","")]
-	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "--Empty","TrimMode=partial")]
+	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "--Empty", "")]
+	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "--Empty", "TrimMode=partial")]
 	[TestCase("mauilib", DotNetPrevious, "Debug", true, "", "")]
-	[TestCase("mauilib", DotNetPrevious, "Release", true, "","")]
+	[TestCase("mauilib", DotNetPrevious, "Release", true, "", "")]
 	[TestCase("mauilib", DotNetCurrent, "Debug", true, "", "")]
 	[TestCase("mauilib", DotNetCurrent, "Release", true, "", "TrimMode=partial")]
-	public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams, string additionalDotNetBuildParams)	
+	public void Build(string id, string framework, string config, bool shouldPack, string additionalDotNetNewParams, string additionalDotNetBuildParams)
 	{
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -49,7 +49,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 				"XC0103", // https://github.com/CommunityToolkit/Maui/issues/2205
 			};
 		}
-		
+
 		var buildProps = BuildProps;
 
 		if (additionalDotNetBuildParams is not "" and not null)
@@ -60,6 +60,24 @@ public class SimpleTemplateTest : BaseTemplateTests
 		string target = shouldPack ? "Pack" : "";
 		Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: buildProps, msbuildWarningsAsErrors: true, warningsToIgnore: warningsToIgnore),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+	}
+
+	[Test]
+	[TestCase("maui", DotNetPrevious, "Debug")]
+	public void InstallPackagesIntoUnsupportedTfmFails(string id, string framework, string config)
+	{
+		var projectDir = TestDirectory;
+		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			$"Unable to create template {id}. Check test output for errors.");
+
+		FileUtilities.ReplaceInFile(projectFile,
+			"$(MauiVersion)",
+			MauiPackageVersion);
+
+		Assert.False(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+			$"Project {Path.GetFileName(projectFile)} built, but should not have. Check test output/attachments for why.");
 	}
 
 	[Test]
@@ -113,9 +131,9 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[TestCase("maui", DotNetPrevious, "Release", false, "")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "")]
 	[TestCase("maui", DotNetCurrent, "Release", false, "TrimMode=partial")]
-	[TestCase("maui-blazor", DotNetPrevious, "Debug", false,	"")]
-	[TestCase("maui-blazor", DotNetPrevious, "Release", false,	"")]
-	[TestCase("maui-blazor", DotNetCurrent, "Debug", false,	"")]
+	[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "")]
+	[TestCase("maui-blazor", DotNetPrevious, "Release", false, "")]
+	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "")]
 	[TestCase("maui-blazor", DotNetCurrent, "Release", false, "TrimMode=partial")]
 	[TestCase("mauilib", DotNetPrevious, "Debug", true, "")]
 	[TestCase("mauilib", DotNetPrevious, "Release", true, "")]
@@ -283,7 +301,7 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[TestCase("maui", "Release", "2.0", "2", "TrimMode=partial")]
 	[TestCase("maui", "Release", "0.3", "3", "TrimMode=partial")]
 	[TestCase("maui-blazor", "Debug", "2.0", "2", "")]
-	[TestCase("maui-blazor", "Release", "2.0", "2",	"TrimMode=partial")]
+	[TestCase("maui-blazor", "Release", "2.0", "2", "TrimMode=partial")]
 	[TestCase("maui-blazor", "Release", "0.3", "3", "TrimMode=partial")]
 	public void BuildWithDifferentVersionNumber(string id, string config, string display, string version, string additionalDotNetBuildParams)
 	{
@@ -307,8 +325,36 @@ public class SimpleTemplateTest : BaseTemplateTests
 		{
 			additionalDotNetBuildParams.Split(" ").ToList().ForEach(p => buildProps.Add(p));
 		}
-		
+
 		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+	}
+
+	// This test is super temporary and is just for the interim
+	// while we productize the CollectionViewHandler2. Once we
+	// ship it as the default, this test will fail and can be deleted.
+	[Test]
+	[TestCase("maui", DotNetCurrent, "", false)]
+	[TestCase("maui", DotNetCurrent, "--sample-content", true)]
+	public void SampleShouldHaveHandler2Registered(string id, string framework, string additionalDotNetNewParams, bool shouldHaveHandler2)
+	{
+		var projectDir = TestDirectory;
+		var programFile = Path.Combine(projectDir, "MauiProgram.cs");
+
+		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams),
+			$"Unable to create template {id}. Check test output for errors.");
+
+		var programContents = File.ReadAllText(programFile);
+
+		if (shouldHaveHandler2)
+		{
+			AssertContains("#if IOS || MACCATALYST", programContents);
+			AssertContains("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
+		}
+		else
+		{
+			AssertDoesNotContain("#if IOS || MACCATALYST", programContents);
+			AssertDoesNotContain("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
+		}
 	}
 }

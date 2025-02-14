@@ -1,3 +1,5 @@
+using Microsoft.Maui.Layouts;
+
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 3840, "[iOS] Translation change causes ScrollView to reset to initial position (0, 0)",
@@ -50,9 +52,10 @@ public class Issue3840 : TestContentPage
 			}
 		};
 
-		// TODO: Uncomment
-		//var mainLayout = new AbsoluteLayout();
-		//mainLayout.Children.Add(scroll, new Rect(0, 0, 1, 1), AbsoluteLayoutFlags.All);
-		//Content = mainLayout;
+		var mainLayout = new AbsoluteLayout();
+		mainLayout.Children.Add(scroll);
+		AbsoluteLayout.SetLayoutBounds(scroll, new Rect(0, 0, 1, 1));
+		AbsoluteLayout.SetLayoutFlags(scroll, AbsoluteLayoutFlags.All);
+		Content = mainLayout;
 	}
 }

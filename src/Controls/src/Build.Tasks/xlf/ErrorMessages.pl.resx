@@ -135,6 +135,18 @@
     <value>Powiązanie: nieobsługiwany typ indeksu indeksatora: „{0}”.</value>
     <comment>0 is indexer type name</comment>
   </data>
+  <data name="BindingWithoutDataType" xml:space="preserve">
+    <value>Powiązanie można skompilować w celu zwiększenia wydajności środowiska uruchomieniowego, jeśli adnotacja x:DataType jest określona. Aby uzyskać więcej informacji, zobacz https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithNullDataType" xml:space="preserve">
+    <value>Powiązanie można skompilować w celu zwiększenia wydajności środowiska uruchomieniowego, jeśli adnotacja x:DataType nie ma wyraźnie wartości null. Aby uzyskać więcej informacji, zobacz https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>Powiązanie może być niepoprawnie skompilowane, ponieważ adnotacja x:DataType pochodzi z zakresu zewnętrznego. Upewnij się, że adnotujesz wszystkie elementy XAML DataTemplate z poprawną adnotacją x:DataType. Aby uzyskać więcej informacji, zobacz https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithSourceCompilationSkipped" xml:space="preserve">
+    <value>Powiązanie nie zostało skompilowane, ponieważ ma wyraźnie ustawioną właściwość na wartość Source, a kompilacja powiązania z elementem Source nie jest włączona. Rozważ włączenie tej optymalizacji przez ustawienie na wartość &lt;MauiEnableXamlCBindingWithSourceCompilation&gt;true&lt;/MauiEnableXamlCBindingWithSourceCompilation&gt; w pliku projektu i upewnij się, że dla tego powiązania określono poprawną adnotację x:DataType. Aby uzyskać więcej informacji, zobacz https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>Powiązanie: nie znaleziono właściwości „{0}” w typie „{1}”.</value>
     <comment>0 is property name, 1 is type name</comment>
@@ -193,6 +205,9 @@
     <value>Element o nazwie „{0}” już istnieje w tym zakresie NameScope.</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="ObsoleteProperty" xml:space="preserve">
+    <value>Właściwość, metoda ustawiająca właściwości lub element BindableProperty „{0}” są przestarzałe.</value>
+  </data>
   <data name="PropertyMissing" xml:space="preserve">
     <value>Brak obowiązkowej właściwości „{0}” w typie „{1}”.</value>
     <comment>0 is a property name, 1 is a type</comment>
@@ -222,7 +237,7 @@
     <value>Właściwość źródłowa nie jest literałem ciągu.</value>
   </data>
   <data name="StyleSheetSourceOrContent" xml:space="preserve">
-    <value>Arkusz stylów nie może mieć zarówno źródła, jak i zawartości.</value>
+    <value>Arkusz stylów nie może mieć zarówno elementu Source, jak i zawartości.</value>
   </data>
   <data name="StyleSheetStyleNotALiteral" xml:space="preserve">
     <value>Zawartość lub właściwość stylu nie jest literałem ciągu.</value>
@@ -232,7 +247,11 @@
     <comment>0 is a type name</comment>
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
-    <value>Argument x:DataType oczekuje literału ciągu, znacznika {{x:Type}} lub {{x:Null}}.</value>
+    <value>Adnotacja x:DataType oczekuje literału ciągu, znacznika {{x:Type}} lub {{x:Null}}.</value>
+  </data>
+  <data name="UnattributedMarkupType" xml:space="preserve">
+    <value>Rozważ przypisanie rozszerzenia znaczników „{0}” z [RequireService] lub [AcceptEmptyServiceProvider], jeśli nie wymaga żadnego rozszerzenia.</value>
+    <comment>0 is type name</comment>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>Niezadeklarowany prefiks xmlns „{0}”.</value>
@@ -247,5 +266,8 @@
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x: Klawisz oczekuje dosłownego ciągu.</value>
+  </data>
+  <data name="StaticResourceSyntax" xml:space="preserve">
+    <value>Klucz jest wymagany w {StaticResource}.</value>
   </data>
 </root>

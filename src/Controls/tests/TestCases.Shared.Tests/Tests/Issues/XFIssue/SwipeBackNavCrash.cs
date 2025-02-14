@@ -13,39 +13,28 @@ public class SwipeBackNavCrash : _IssuesUITest
 
 	public override string Issue => "Swipe back nav crash";
 
-	//	[Test]
-	//	[FailsOnIOSWhenRunningOnXamarinUITest]
-	//	public void SwipeBackNavCrashTestsAllElementsPresent()
-	//	{
-	//		App.WaitForElement(q => q.Marked("Page One"));
-	//		App.WaitForElement(q => q.Button("Go to second page"));
-	//	}
+	[Test]
+	public void SwipeBackNavCrashTestsAllElementsPresent()
+	{
+		App.WaitForElement("Page One");
+		App.WaitForElement("Go to second page");
+	}
 
-	//	[Test]
-	//	[FailsOnIOSWhenRunningOnXamarinUITest]
-	//	public void SwipeBackNavCrashTestsGoToSecondPage()
-	//	{
-	//		App.WaitForElement(q => q.Marked("Page One"));
-	//		App.Tap(q => q.Button("Go to second page"));
-	//		App.Screenshot("At Second Page");
-	//	}
+	[Test]
+	public void SwipeBackNavCrashTestsGoToSecondPage()
+	{
+		App.WaitForElement("Page One");
+		App.Tap("Go to second page");
+	}
 
-	//#if IOS
-	//	[Test]
-	//	[Compatibility.UITests.FailsOnIOSWhenRunningOnXamarinUITest]
-	//	public void SwipeBackNavCrashTestsSwipeBackDoesNotCrash ()
-	//	{
-	//		App.WaitForElement (q => q.Marked ("Page One"));
-	//		App.Tap (q => q.Button ("Go to second page"));
-	//		App.WaitForElement (q => q.Marked ("Swipe lightly left and right to crash this page"));
-	//		System.Threading.Thread.Sleep (3);
+#if !MACCATALYST //SwipeActions not working in Catalyst
+	[Test]
+	public void SwipeBackNavCrashTestsSwipeBackDoesNotCrash()
+	{
+		App.WaitForElement("Swipe lightly left and right to crash this page");
+		App.SwipeLeftToRight();
+		App.WaitForElement("Swipe lightly left and right to crash this page");
+	}
+#endif
 
-	//		var mainBounds = App.RootViewRect();
-
-	//		Gestures.Pan (RunningApp, new Drag (mainBounds, 0, 125, 75, 125, Drag.Direction.LeftToRight));
-	//		System.Threading.Thread.Sleep (3);
-	//		App.Screenshot ("Crash?");
-	//		App.WaitForElement (q => q.Marked ("Swipe lightly left and right to crash this page"));
-	//	}
-	//#endif
 }

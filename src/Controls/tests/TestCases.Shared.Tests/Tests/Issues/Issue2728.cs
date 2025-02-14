@@ -1,9 +1,8 @@
-﻿#if MACCATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-namespace Microsoft.Maui.TestCases.Tests.Issues 
+namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue2728 : _IssuesUITest
 	{
@@ -18,12 +17,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue2728TestsItalicLabel()
 		{
-			App.WaitForNoElement(LabelHome);
-			App.Screenshot("Label rendered with italic font");
+			App.WaitForElement(LabelHome);
+			VerifyScreenshot();
 		}
 	}
 }
-#endif

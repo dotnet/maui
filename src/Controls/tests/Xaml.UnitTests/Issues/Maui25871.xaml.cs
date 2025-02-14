@@ -43,7 +43,7 @@ public partial class Maui25871 : ContentPage
 		public void CompilationDoesNotFail()
 		{
 			MockCompiler.Compile(typeof(Maui25871));
-			
+
 		}
 	}
 }

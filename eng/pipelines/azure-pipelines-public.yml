@@ -35,58 +35,11 @@ pr:
       - THIRD-PARTY-NOTICES.TXT
 
 variables:
+  - template: /eng/common/templates/variables/pool-providers.yml@self 
   - template: /eng/pipelines/common/variables.yml@self
-  - template: /eng/common/templates/variables/pool-providers.yml
-
-  - name: _BuildConfig
-    value: Release
-  - name: Build.Arcade.ArtifactsPath
-    value: $(Build.SourcesDirectory)/artifacts/
-  - name: Build.Arcade.LogsPath
-    value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
-  - name: Build.Arcade.TestResultsPath
-    value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
-
- # Produce test-signed build for PR and Public builds
-  - ${{ if or(eq(variables['_RunAsPublic'], 'true'), eq(variables['Build.Reason'], 'PullRequest')) }}:
-    # needed for darc (dependency flow) publishing
-    - name: _PublishArgs
-      value: ''
-    - name: _OfficialBuildIdArgs
-      value: ''
-    # needed for signing
-    - name: _SignType
-      value: test
-    - name: _SignArgs
-      value: ''
-    - name: _Sign
-      value: false
-
-  # Set up non-PR build from internal project
-  - ${{ if and(ne(variables['_RunAsPublic'], 'true'), ne(variables['Build.Reason'], 'PullRequest')) }}:
-    # needed for darc (dependency flow) publishing
-    - name: _PublishArgs
-      value: >-
-            /p:DotNetPublishUsingPipelines=true
-    # - name: _OfficialBuildIdArgs
-    #   value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-    # needed for signing
-    - name: _SignType
-      value: real
-    - name: _SignArgs
-      value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(TeamName) /p:Sign=$(_Sign) /p:DotNetPublishUsingPipelines=true
-    - name: _Sign
-      value: true
+  - template: /eng/pipelines/arcade/variables.yml@self
 
 parameters:
-  - name: pushMauiPackagesToMaestro
-    default: true
-
-  - name: provisionatorChannel
-    displayName: 'Provisionator channel'
-    type: string
-    default: 'latest'           
-
   - name: VM_IMAGE_HOST
     type: object
     default:
@@ -94,76 +47,109 @@ parameters:
       image: 1es-windows-2022
       os: windows
 
-  - name: PackPlatform
-    type: object
-    default:
-      name: Windows
-      artifact: nuget
-      binariesArtifact: pack-binaries
-      metadataArtifact: metadata
-      logsArtifact: logs
-      docsArtifact: xml-docs
-      artifactsPath: '$(Build.ArtifactStagingDirectory)'
-
-  - name: Skip1ESComplianceTasks
-    default: true
-
 stages:
+- template: /eng/pipelines/arcade/stage-pack.yml@self
+  parameters:
+    pool: ${{ parameters.VM_IMAGE_HOST }}
+    runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
 
-# ----------------------------------------------------------------
-# This stage performs build, test, packaging
-# ----------------------------------------------------------------
-- stage: Pack
-  displayName: Pack .NET MAUI
-  dependsOn: []
-  jobs:
-    - template: /eng/common/templates-official/jobs/jobs.yml@self
-      parameters:
-        enableMicrobuild: true
-        helixRepo: dotnet/maui
-        pool: ${{ parameters.VM_IMAGE_HOST }}
-        enablePublishUsingPipelines: true
-        enablePublishBuildAssets: true
-        enableTelemetry: true
-        enableSourceBuild: false
-        enableSourceIndex: false
-        publishAssetsImmediately: true
-        # Publish build logs
-        enablePublishBuildArtifacts: true
-        # Publish test logs
-        enablePublishTestResults: true
-        workspace:
-          clean: all
-        jobs:
-        - job: pack_net_${{ parameters.PackPlatform.name }}
-          displayName: ${{ parameters.PackPlatform.name }}
-            
-          timeoutInMinutes: 240
-           
-          variables:
-            - name: _buildScript
-              value: $(Build.SourcesDirectory)/build.cmd -ci
-            - name: _BuildOfficalId
-              value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
-            - name: TreatWarningsAsErrors
-              value: false
-            - name: _OfficialBuildIdArgs
-              value: /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
-            
-          preSteps:
-            - checkout: self
-              fetchDepth: 1
-              clean: true
+- template: /eng/pipelines/arcade/stage-unit-tests.yml@self
+  parameters:
+    jobMatrix:
+    - name: win_unit_tests
+      displayName: Windows Unit Tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+      timeout: 90
+      testOS: Windows
+    - name: mac_unit_tests
+      displayName: macOS Unit Tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 90
+      testOS: macOS
+    publishTaskPrefix: ''
 
-          steps:
-            - template: /eng/pipelines/common/build-test-pack.yml@self
-              parameters:
-                dotnetScript: $(Build.SourcesDirectory)/dotnet.cmd
-                buildScript: $(_buildScript)
-                buildConfig: $(_BuildConfig)
-                repoArtifactsPath: $(Build.Arcade.ArtifactsPath)
-                repoLogPath: $(Build.Arcade.LogsPath)
-                repoTestResultsPath: $(Build.Arcade.TestResultsPath)
-                isWindows: true
-                runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
-                # runHelixTests: ${{ contains(testVariant, 'helix') }}
+- template: /eng/pipelines/arcade/stage-integration-tests.yml@self
+  parameters:
+    stageDependsOn: Pack
+    publishTaskPrefix: ''
+    jobMatrix:
+    - name: win_sample_tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+      timeout: 120
+      testCategory: Samples
+    - name: mac_sample_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 120
+      testCategory: Samples
+
+    - name: win_wintemplate_tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+      timeout: 120
+      testCategory: WindowsTemplates
+    - name: mac_wintemplate_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 120
+      testCategory: WindowsTemplates
+
+    - name: win_buildtemplate_tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+      timeout: 120
+      testCategory: Build
+    - name: mac_buildtemplate_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 120
+      testCategory: Build
+
+    - name: win_blazortemplate_tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+      timeout: 120
+      testCategory: Blazor
+    - name: mac_blazortemplate_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 120
+      testCategory: Blazor
+
+    - name: win_multitemplate_tests
+      pool: ${{ parameters.VM_IMAGE_HOST }}
+      timeout: 120
+      testCategory: MultiProject
+    - name: mac_multitemplate_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 120
+      testCategory: MultiProject
+
+    # TODO: macOSTemplates and AOT template categories
+
+    - name: mac_runandroid_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 180
+      testCategory: RunOnAndroid
+
+    - name: mac_runios_tests
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      timeout: 180
+      testCategory: RunOniOS

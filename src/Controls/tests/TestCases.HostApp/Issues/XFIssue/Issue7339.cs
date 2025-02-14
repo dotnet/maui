@@ -14,12 +14,13 @@ public class Issue7339 : TestShell
 				{
 					Content = new Label()
 					{
-						Text = "Navigate between flyout items a few times. If app doesn't crash then test has passed"
+						Text = "Navigate between flyout items a few times. If app doesn't crash then test has passed",
+						AutomationId = "InstructionLabel"
 					}
 				}
 			};
 
 		CreateContentPage("Item2").Content =
-			new StackLayout() { new Frame() };
+			new StackLayout() { new Frame() { Content = new Label() { Text = "FrameContent", AutomationId = "FrameContent" } } };
 	}
 }

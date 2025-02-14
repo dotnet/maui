@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
+﻿#if TEST_FAILS_ON_WINDOWS   //BoxView automation ID isn't working on the Windows platform, causing a TimeoutException.                                                                                             
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,8 +19,7 @@ public class Bugzilla59863_2 : _IssuesUITest
 
 	public override string Issue => "TapGestureRecognizer extremely finicky2";
 
-	[Test]
-	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[Test, Order(2)]
 	public void DoubleTapWithMixedRecognizersShouldRegisterDoubleTap()
 	{
 		App.WaitForElement(MixedTapBoxId);
@@ -28,8 +27,7 @@ public class Bugzilla59863_2 : _IssuesUITest
 		App.WaitForElement($"1 {Doubles} on {MixedTapBoxId}");
 	}
 
-	[Test]
-	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[Test, Order(1)]
 	public void SingleTapWithMixedRecognizersShouldRegisterSingleTap()
 	{
 		App.WaitForElement(MixedTapBoxId);

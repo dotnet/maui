@@ -12,14 +12,20 @@ public class Issue7339 : _IssuesUITest
 
 	public override string Issue => "[iOS] Material frame renderer not being cleared";
 
-	// TODO: TapInFlyout was some helper method in ControlGallery? Do we have that here?
-	//[Test]
-	//[Category(UITestCategories.Shell)]
-	//public void MaterialFrameDisposesCorrectly()
-	//{
-	//	TapInFlyout("Item1");
-	//	TapInFlyout("Item2");
-	//	TapInFlyout("Item1");
-	//	TapInFlyout("Item2");
-	//}
+
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void MaterialFrameDisposesCorrectly()
+	{
+		App.WaitForElement("InstructionLabel");
+		App.TapInShellFlyout("Item1");
+		App.WaitForElementTillPageNavigationSettled("InstructionLabel");
+		App.TapInShellFlyout("Item2");
+		App.WaitForElementTillPageNavigationSettled("FrameContent");
+		App.TapInShellFlyout("Item1");
+		App.WaitForElementTillPageNavigationSettled("InstructionLabel");
+		App.TapInShellFlyout("Item2");
+		App.WaitForElementTillPageNavigationSettled("FrameContent");
+
+	}
 }

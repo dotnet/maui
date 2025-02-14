@@ -17,7 +17,7 @@ public class Issue8291 : _IssuesUITest
 	[Category(UITestCategories.Editor)]
 	public void ContextMenuShowsUpWhenPressAndHoldTextOnEditorAndEntryField()
 	{
-		App.WaitForElement("PressEditor");	
+		App.WaitForElement("PressEditor");
 		App.TouchAndHold("PressEditor");
 
 		TestForPopup();

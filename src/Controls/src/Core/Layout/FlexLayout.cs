@@ -495,16 +495,16 @@ namespace Microsoft.Maui.Controls
 			InitItemProperties(child, item);
 			if (child is not FlexLayout)
 			{
-				item.SelfSizing = (Flex.Item it, ref float w, ref float h) =>
+				item.SelfSizing = (Flex.Item it, ref float w, ref float h, bool inMeasureMode) =>
 				{
 					Size request;
 
-					if (InMeasureMode)
+					if (inMeasureMode)
 					{
 						var sizeConstraints = item.GetConstraints();
 
-						sizeConstraints.Width = (InMeasureMode && sizeConstraints.Width == 0) ? double.PositiveInfinity : sizeConstraints.Width;
-						sizeConstraints.Height = (InMeasureMode && sizeConstraints.Height == 0) ? double.PositiveInfinity : sizeConstraints.Height;
+						sizeConstraints.Width = (inMeasureMode && sizeConstraints.Width == 0) ? double.PositiveInfinity : sizeConstraints.Width;
+						sizeConstraints.Height = (inMeasureMode && sizeConstraints.Height == 0) ? double.PositiveInfinity : sizeConstraints.Height;
 
 						if (child is Image)
 						{
@@ -585,7 +585,7 @@ namespace Microsoft.Maui.Controls
 
 			_root.Width = !double.IsPositiveInfinity((width)) ? (float)width : 0;
 			_root.Height = !double.IsPositiveInfinity((height)) ? (float)height : 0;
-			_root.Layout();
+			_root.Layout(InMeasureMode);
 
 			if (useMeasureHack)
 			{

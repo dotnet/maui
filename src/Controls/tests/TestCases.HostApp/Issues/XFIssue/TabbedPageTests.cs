@@ -5,7 +5,7 @@ public class TabbedPageTests : ContentPage
 {
 	public TabbedPageTests()
 	{
-		var navigate = new Button() { Text = "HomePage", AutomationId="HomePage"};
+		var navigate = new Button() { Text = "HomePage", AutomationId = "HomePage" };
 
 		navigate.Clicked += async (s, a) =>
 		{
@@ -17,10 +17,10 @@ public class TabbedPageTests : ContentPage
 			popButton2.Clicked += (s, a) => Navigation.PopModalAsync();
 
 			tabbedPage.Children.Add(new ContentPage() { Title = "Page 1", Content = popButton1 });
-		    tabbedPage.Children.Add(new ContentPage() { Title = "Page 2", Content = popButton2 });
-			
+			tabbedPage.Children.Add(new ContentPage() { Title = "Page 2", Content = popButton2 });
+
 			await Navigation.PushModalAsync(tabbedPage);
-			
+
 		};
 
 		this.Content = new StackLayout
@@ -30,7 +30,7 @@ public class TabbedPageTests : ContentPage
 			}
 		};
 
-		
+
 
 	}
 
