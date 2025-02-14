@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.CurrentItemProperty.PropertyName)
-				SwitchFragment(FragmentManager, _frameLayout, Element.CurrentItem);
+				SwitchFragment(FragmentManager, _frameLayout, Element.CurrentItem, Element._iaAnimate);
 
 			_elementPropertyChanged?.Invoke(sender, e);
 		}
@@ -226,7 +226,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			FragmentTransaction transaction = manager.BeginTransactionEx();
 
 			if (animate)
-				transaction.SetTransitionEx((int)global::Android.App.FragmentTransit.FragmentOpen);
+			{
+				transaction.SetCustomAnimations(global::Android.Resource.Animation.FadeIn, global::Android.Resource.Animation.FadeOut);
+			}
 
 			transaction.ReplaceEx(_frameLayout.Id, fragment);
 
