@@ -384,7 +384,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (currentItemPosition < 0 || currentItemPosition >= ItemCount)
 				return;
 
-			ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
+			if (ItemsView.Position != currentItemPosition)
+			{
+				ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
+			}
 		}
 
 		void UpdatePosition()
@@ -396,6 +399,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (carouselPosition < 0 || carouselPosition >= ItemCount)
 				return;
+
+			if (!ItemsView.IsDragging && !ItemsView.IsScrolling)
+			{
+				ItemsView.ScrollTo(carouselPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
+			}
 
 			SetCarouselViewCurrentItem(carouselPosition);
 		}
