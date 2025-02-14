@@ -1,4 +1,3 @@
-#if !MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -22,4 +21,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif
