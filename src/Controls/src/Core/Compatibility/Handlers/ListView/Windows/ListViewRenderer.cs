@@ -807,6 +807,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		private protected override void DisconnectHandlerCore()
 		{
+			if (Element is ITemplatedItemsView<Cell> templatedItemsView)
+				templatedItemsView.TemplatedItems.CollectionChanged -= OnCollectionChanged;
+
 			CleanUpResources();
 			base.DisconnectHandlerCore();
 		}
