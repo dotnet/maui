@@ -1,4 +1,4 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- Enable Razor files to be visible in Solution Explorer because they are not Content files in .NET MAUI projects -->
   <ItemGroup>
@@ -118,6 +118,31 @@
   <Target Name="RestoreHiddenAndroidContent" AfterTargets="_CheckForContent">
     <ItemGroup>
       <Content Include="@(_TemporaryAndroidHiddenContent)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- 
+    Workaround the issue where the empty json file is not included. 
+    Remove for preview 2 as it is fixed in https://github.com/dotnet/aspnetcore/pull/60368
+    See: https://github.com/dotnet/maui/issues/27806
+  -->
+  <Target Name="_Maui_Before_AddBlazorWebViewAssets"
+    BeforeTargets="_AddBlazorWebViewAssets"
+    DependsOnTargets="_MauiAddEmptyBlazorModulesJson"
+    Condition="'$(_MauiSkipAddEmptyBlazorModulesJson)' != 'true'" />
+
+  <Target Name="_MauiAddEmptyBlazorModulesJson" Condition="'@(_ExistingBuildJSModules)' == ''">
+    <PropertyGroup>
+      <_MauiBlazorWebViewModulesJsonPath>$(IntermediateOutputPath)blazor.modules.json</_MauiBlazorWebViewModulesJsonPath>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(_MauiBlazorWebViewModulesJsonPath)" Lines="[]" Overwrite="true" WriteOnlyWhenDifferent="True" />
+    <ItemGroup>
+      <FileWrites Include="$(_MauiBlazorWebViewModulesJsonPath)" />
+    </ItemGroup>
+    <ItemGroup>
+      <_WebViewAssetCandidates Include="$(_MauiBlazorWebViewModulesJsonPath)">
+        <RelativePath>_framework/blazor.modules.json</RelativePath>
+      </_WebViewAssetCandidates>
     </ItemGroup>
   </Target>
 
