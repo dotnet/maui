@@ -158,9 +158,12 @@ extends:
                       parameters:
                         checkoutDirectory: '$(System.DefaultWorkingDirectory)'
                         # gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-                        skipAndroidImages: true
-                        skipAndroidSdks: true
-                        installDefaultAndroidApi: true
+                        skipJdk: false
+                        skipAndroidCommonSdks: false
+                        skipAndroidPlatformApis: false
+                        onlyAndroidPlatformDefaultApis: true
+                        skipAndroidEmulatorImages: true
+                        skipAndroidCreateAvds: true
                         skipProvisioning: true
                         skipXcode: true
 
