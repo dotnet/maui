@@ -46,8 +46,6 @@ namespace Microsoft.Maui.Platform
 				platformDatePicker.TextColor = textColor.ToPlatform();
 			}
 
-			// HACK This forces the color to update; there's probably a more elegant way to make this happen
-			platformDatePicker.UpdateDate(datePicker);
 		}
 
 		public static void UpdateDate(this UIDatePicker picker, IDatePicker datePicker)
