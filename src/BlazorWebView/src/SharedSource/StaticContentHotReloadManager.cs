@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 			{ (ApplicationAssemblyName, "_framework/static-content-hot-reload.js"), ("text/javascript", Encoding.UTF8.GetBytes(@"
 	export function notifyCssUpdated() {
 		const allLinkElems = Array.from(document.querySelectorAll('link[rel=stylesheet]'));
-		allLinkElems.forEach(elem => elem.href += '');
+		allLinkElems.forEach(elem => elem.href = elem.href.split('?')[0] + '?reload_version=' + Date.now());
 	}
 ")) }
 		};
