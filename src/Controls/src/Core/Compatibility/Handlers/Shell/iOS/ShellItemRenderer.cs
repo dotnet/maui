@@ -112,9 +112,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			ShouldSelectViewController = (tabController, viewController) =>
 			{
-				bool accept = false;
+				bool accept = true;
 				var r = RendererForViewController(viewController);
-				if (r is not null && r != SelectedViewController)
+				if (r != null)
 					accept = ((IShellItemController)ShellItem).ProposeSection(r.ShellSection, false);
 
 				return accept;
