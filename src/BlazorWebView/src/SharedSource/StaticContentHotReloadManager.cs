@@ -90,7 +90,8 @@ namespace Microsoft.AspNetCore.Components.WebView
 				var relativePath = match.Groups["RelativePath"].Value;
 
 				// Remove the fingerprint from scoped CSS bundles, since CSS hot reload will send new content without the fingerprint.
-				// LibraryName.<fingerprint>.bundle.scp.css -> LibraryName.bundle.scp.css
+				// The relative path for *.bundle.scp.css is just the file name, since they are always directly in the assembly's content directory.
+				// Example: LibraryName.<fingerprint>.bundle.scp.css -> LibraryName.bundle.scp.css
 				if (relativePath.StartsWith($"{assemblyName}.", StringComparison.Ordinal) && relativePath.EndsWith(".bundle.scp.css", StringComparison.Ordinal))
 				{
 					relativePath = $"{assemblyName}.bundle.scp.css";
