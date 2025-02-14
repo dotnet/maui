@@ -52,10 +52,10 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>35.99.0-ci.main.159</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdknet100_182PackageVersion>18.2.10322-net10-p2</MicrosoftMacCatalystSdknet100_182PackageVersion>
-    <MicrosoftmacOSSdknet100_152PackageVersion>15.2.10322-net10-p2</MicrosoftmacOSSdknet100_152PackageVersion>
-    <MicrosoftiOSSdknet100_182PackageVersion>18.2.10322-net10-p2</MicrosoftiOSSdknet100_182PackageVersion>
-    <MicrosofttvOSSdknet100_182PackageVersion>18.2.10322-net10-p2</MicrosofttvOSSdknet100_182PackageVersion>
+    <MicrosoftMacCatalystSdknet100_182PackageVersion>18.2.10323-net10-p2</MicrosoftMacCatalystSdknet100_182PackageVersion>
+    <MicrosoftmacOSSdknet100_152PackageVersion>15.2.10323-net10-p2</MicrosoftmacOSSdknet100_152PackageVersion>
+    <MicrosoftiOSSdknet100_182PackageVersion>18.2.10323-net10-p2</MicrosoftiOSSdknet100_182PackageVersion>
+    <MicrosofttvOSSdknet100_182PackageVersion>18.2.10323-net10-p2</MicrosofttvOSSdknet100_182PackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>8.0.148</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
