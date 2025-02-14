@@ -72,10 +72,8 @@ namespace Microsoft.Maui.Controls
 
 			_toolbarTracker.PagePropertyChanged -= OnPagePropertyChanged;
 			FlyoutPage currentFlyoutPage = cp.FindParentOfType<FlyoutPage>();
-			if (currentFlyoutPage?.Flyout == cp)
-			{
+			if (currentFlyoutPage?.Flyout == cp || currentFlyoutPage?.Flyout?.InternalChildren.Contains(cp) is true)
 				return;
-			}
 
 			_currentPage = cp;
 			_currentNavigationPage = _currentPage.FindParentOfType<NavigationPage>();
