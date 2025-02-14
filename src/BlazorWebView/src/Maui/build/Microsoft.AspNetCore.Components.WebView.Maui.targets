@@ -1,4 +1,4 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- Enable Razor files to be visible in Solution Explorer because they are not Content files in .NET MAUI projects -->
   <ItemGroup>
@@ -129,7 +129,8 @@
   <Target Name="_Maui_Before_AddBlazorWebViewAssets"
     BeforeTargets="_AddBlazorWebViewAssets"
     DependsOnTargets="_MauiAddEmptyBlazorModulesJson"
-    Condition="'$(_MauiSkipAddEmptyBlazorModulesJson)' == 'true'" />
+    Condition="'$(_MauiSkipAddEmptyBlazorModulesJson)' != 'true'" />
+
   <Target Name="_MauiAddEmptyBlazorModulesJson" Condition="'@(_ExistingBuildJSModules)' == ''">
     <PropertyGroup>
       <_MauiBlazorWebViewModulesJsonPath>$(IntermediateOutputPath)blazor.modules.json</_MauiBlazorWebViewModulesJsonPath>
