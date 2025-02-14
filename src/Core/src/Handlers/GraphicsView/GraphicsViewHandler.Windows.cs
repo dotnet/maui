@@ -25,6 +25,15 @@ namespace Microsoft.Maui.Handlers
 			platformView.Loaded -= OnLoaded;
 		}
 
+		// TODO : The modifier needs to be changed to public in the future.
+		internal static void MapBackground(IGraphicsViewHandler handler, IGraphicsView graphicsView)
+		{
+			if (graphicsView.Background is not null)
+            {
+                handler.PlatformView?.Invalidate();
+            }
+		}
+
 		public static void MapDrawable(IGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
 			handler.PlatformView?.UpdateDrawable(graphicsView);
