@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Gray Line Appears on the Right Side of GraphicsView with Decimal WidthRequest on iOS Platform";
 
-		[Test]
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27798")]
 		[Category(UITestCategories.GraphicsView)]
 		public void VerifyGraphicsViewWithoutGrayLine()
 		{
