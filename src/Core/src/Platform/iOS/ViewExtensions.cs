@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using CoreAnimation;
@@ -402,6 +403,7 @@ namespace Microsoft.Maui.Platform
 			if (imageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(imageSource);
+			    var layerName = "BackgroundLayer";
 
 				var scale = platformView.GetDisplayDensity();
 				var result = await service.GetImageAsync(imageSource, scale);
@@ -410,7 +412,15 @@ namespace Microsoft.Maui.Platform
 				if (backgroundImage == null)
 					return;
 
-				platformView.BackgroundColor = UIColor.FromPatternImage(backgroundImage);
+				var existingLayer = platformView.Layer.Sublayers?.FirstOrDefault(layer => layer.Name == layerName);
+				existingLayer?.RemoveFromSuperLayer();
+				var backgroundLayer = new CALayer
+				{
+					Name = layerName,
+					Contents = backgroundImage.CGImage,
+					Frame = platformView.Bounds,	
+				};
+				platformView.Layer.InsertSublayer(backgroundLayer,0);
 			}
 		}
 
