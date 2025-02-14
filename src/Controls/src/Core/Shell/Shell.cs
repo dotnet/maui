@@ -1013,6 +1013,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs/*" />
 		public Task GoToAsync(ShellNavigationState state, bool animate)
 		{
+			_iaAnimate = animate;
 			return _navigationManager.GoToAsync(state, animate, false);
 		}
 
@@ -1153,6 +1154,7 @@ namespace Microsoft.Maui.Controls
 		ShellNavigationManager _navigationManager;
 		ShellFlyoutItemsManager _flyoutManager;
 		Page _previousPage;
+		internal bool _iaAnimate = true;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Shell()
