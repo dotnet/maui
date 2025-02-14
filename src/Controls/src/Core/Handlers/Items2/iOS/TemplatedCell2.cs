@@ -101,6 +101,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return preferredAttributes;
 		}
 
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			if (PlatformHandler?.VirtualView is not null)
+			{
+				PlatformHandler.VirtualView.Arrange(Bounds.ToRectangle());
+			}
+		}
+
 		public override void PrepareForReuse()
 		{
 			//Unbind();
