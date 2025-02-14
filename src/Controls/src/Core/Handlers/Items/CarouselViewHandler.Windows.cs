@@ -360,14 +360,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (ListViewBase.Items.Count > 0)
 			{
-				if (Element.Loop)
-				{
-					var item = ItemsView.CurrentItem ?? ListViewBase.Items.FirstOrDefault();
-					_loopableCollectionView.CenterMode = true;
-					ListViewBase.ScrollIntoView(item);
-					_loopableCollectionView.CenterMode = false;
-				}
-
 				if (ItemsView.CurrentItem != null)
 					UpdateCurrentItem();
 				else
