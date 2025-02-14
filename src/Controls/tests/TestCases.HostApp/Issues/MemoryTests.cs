@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.None, 24147, "Test Handlers for Memory Leaks", PlatformAffected.All)]
+	[Issue(IssueTracker.None, 24147, "Test Handlers for Memory Leaks", PlatformAffected.All, isInternetRequired: true)]
 	public class MemoryTests : NavigationPage
 	{
 		public class MemoryTestPage : ContentPage

@@ -28,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			{
 				App.WaitForElement("NewPage");
 				App.Tap("NewPage");
-				App.WaitForElement("NewPage");
+				App.WaitForElement("StubLabel");
 				App.TapBackArrow();
 			}
 		}

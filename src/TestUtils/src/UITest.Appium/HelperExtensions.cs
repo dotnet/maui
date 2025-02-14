@@ -1872,7 +1872,7 @@ namespace UITest.Appium
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="performanceDataType">The available performance data types(cpuinfo | batteryinfo | networkinfo | memoryinfo).</param>
-		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		/// <exception cref="InvalidOperationException">GetPerformanceData is only supported on <see cref="AppiumAndroidApp"/>.</exception>
 		/// <returns>The information of the system related to the performance.</returns>
 		public static IList<object> GetPerformanceData(this IApp app, string performanceDataType)
 		{
@@ -1892,6 +1892,24 @@ namespace UITest.Appium
 			}
 
 			throw new InvalidOperationException($"Could not get the performance data");
+		}
+
+		/// <summary>
+		/// Gets the information of the system state regarding memory.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns>The information of the system related to the memory performance.</returns>
+		/// <exception cref="InvalidOperationException">GetPerformanceData is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static IReadOnlyDictionary<string, int> GetPerformanceMemoryInfo(this IApp app)
+		{
+			var performanceData = GetPerformanceData(app, "memoryinfo");
+			var countersTitles = (object?[])performanceData[0];
+			var countersStrings = (object?[])performanceData[1];
+			var data = countersTitles.Zip(countersStrings)
+				.Where(x => x is { First: string, Second: string })
+				.ToDictionary(x => (string)x.First!, x => int.TryParse((string)x.Second!, out var value) ? value : 0);
+			return data;
 		}
 
 		/// <summary>
@@ -2274,18 +2292,41 @@ namespace UITest.Appium
 			app.Tap(tabName);
 		}
 
-		/// <summary>
-		/// Waits for a tab element with the specified name to appear and for page navigation to settle.
-		/// </summary>
-		/// <param name="app">The IApp instance.</param>
-		/// <param name="tabName">The name of the tab to wait for.</param>
-		/// <remarks>
-		/// For Android apps, the tab name is converted to uppercase before searching.
-		/// </remarks>
+		/// <summary>
+		/// Waits for a tab element with the specified name to appear and for page navigation to settle.
+		/// </summary>
+		/// <param name="app">The IApp instance.</param>
+		/// <param name="tabName">The name of the tab to wait for.</param>
+		/// <remarks>
+		/// For Android apps, the tab name is converted to uppercase before searching.
+		/// </remarks>
 		public static IUIElement WaitForTabElement(this IApp app, string tabName)
 		{
 			tabName = app is AppiumAndroidApp ? tabName.ToUpperInvariant() : tabName;
 			return app.WaitForElementTillPageNavigationSettled(tabName);
+		}
+
+		/// <summary>
+		/// Activates the context menu for the specified element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector of the Slider element to update.</param>
+		public static void ActivateContextMenu(this IApp app, string marked)
+		{
+			var element = FindElement(app, marked);
+			app.CommandExecutor.Execute("activateContextMenu", new Dictionary<string, object>
+ 			{
+ 				{ "element", element },
+ 			});
+		}
+
+		/// <summary>
+		/// Dismisses the context menu.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void DismissContextMenu(this IApp app)
+		{
+			app.CommandExecutor.Execute("dismissContextMenu", new Dictionary<string, object>());
 		}
 
 		static IUIElement Wait(Func<IUIElement?> query,
