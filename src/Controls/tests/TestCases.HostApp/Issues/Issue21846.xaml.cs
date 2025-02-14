@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 21846, "Fix crash closing Popup with WebView", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Github, 21846, "Fix crash closing Popup with WebView", PlatformAffected.iOS, isInternetRequired: true)]
 	public partial class Issue21846 : ContentPage
 	{
 		public Issue21846()

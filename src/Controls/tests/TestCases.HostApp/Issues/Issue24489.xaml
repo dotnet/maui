@@ -5,6 +5,7 @@
              Title="Issue24489">
     <VerticalStackLayout>
         <Label
+            AutomationId="WelcomeLabel"
             Text="Welcome to .NET MAUI!" />
         <Button Text="Toggle the titlebar" Clicked="ToggleTitleBarButtonClicked" AutomationId="ToggleButton" />
         <Button Text="Toggle the text change and height" Clicked="ToggleButtonClicked2" AutomationId="ToggleButton2" />
