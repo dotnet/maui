@@ -424,6 +424,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Disable animation during collection changes to prevent cascading scroll events
 			var animate = ItemsView.AnimateCurrentItemChanges && !_isInternalPositionUpdate;
 			ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: animate);
+			if (ItemsView.Position != currentItemPosition)
+			{
+				ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
+			}
 		}
 
 		void UpdatePosition()
@@ -435,6 +439,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (carouselPosition < 0 || carouselPosition >= ItemCount)
 				return;
+
+			if (!ItemsView.IsDragging && !ItemsView.IsScrolling)
+			{
+				ItemsView.ScrollTo(carouselPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
+			}
 
 			SetCarouselViewCurrentItem(carouselPosition);
 		}
@@ -573,7 +582,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			// Set flag to disable animation during collection changes
 			_isInternalPositionUpdate = true;
-			
+
 			try
 			{
 				var carouselPosition = ItemsView.Position;
