@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue18831">
+    <Grid RowDefinitions="*,*"
+          BackgroundColor="Aquamarine">
+        <ListView Grid.Row="0"
+                  BackgroundColor="AntiqueWhite"
+                  SeparatorVisibility="None"
+                  HasUnevenRows="True">
+            <ListView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Item1</x:String>
+                    <x:String>Item2</x:String>
+                    <x:String>Item3</x:String>
+                    <x:String>Item4</x:String>
+                </x:Array>
+            </ListView.ItemsSource>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Border BackgroundColor="AliceBlue"
+                                StrokeThickness="0"
+                                Margin="20">
+                            <Border.Shadow>
+                                <Shadow Brush="Black"
+                                        Offset="20,20"
+                                        Radius="40"
+                                        Opacity="0.8"/>
+                            </Border.Shadow>
+                            <Label AutomationId="{Binding .}"
+                                   Text="{Binding .}"/>
+
+                        </Border>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <ListView Grid.Row="1"
+                  BackgroundColor="LightCoral"
+                  SeparatorVisibility="None"
+                  HasUnevenRows="True">
+            <ListView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>Item5</x:String>
+                    <x:String>Item6</x:String>
+                    <x:String>Item7</x:String>
+                    <x:String>Item8</x:String>
+                </x:Array>
+            </ListView.ItemsSource>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <VerticalStackLayout>
+                            <Border BackgroundColor="AliceBlue"
+                                    StrokeThickness="0"
+                                    Margin="20">
+                                <Border.Shadow>
+                                    <Shadow Brush="Black"
+                                            Offset="20,20"
+                                            Radius="40"
+                                            Opacity="0.8"/>
+                                </Border.Shadow>
+                                <Label Text="{Binding .}"/>
+                            </Border>
+                        </VerticalStackLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</ContentPage>
