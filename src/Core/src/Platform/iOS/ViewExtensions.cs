@@ -402,8 +402,7 @@ namespace Microsoft.Maui.Platform
 
 			if (imageSource != null)
 			{
-				var service = provider.GetRequiredImageSourceService(imageSource);
-			    var layerName = "BackgroundLayer";
+				var service = provider.GetRequiredImageSourceService(imageSource);			    
 
 				var scale = platformView.GetDisplayDensity();
 				var result = await service.GetImageAsync(imageSource, scale);
@@ -412,15 +411,14 @@ namespace Microsoft.Maui.Platform
 				if (backgroundImage == null)
 					return;
 
-				var existingLayer = platformView.Layer.Sublayers?.FirstOrDefault(layer => layer.Name == layerName);
-				existingLayer?.RemoveFromSuperLayer();
+				platformView.RemoveBackgroundLayer();
 				var backgroundLayer = new CALayer
 				{
-					Name = layerName,
+					Name = BackgroundLayerName,
 					Contents = backgroundImage.CGImage,
 					Frame = platformView.Bounds,	
 				};
-				platformView.Layer.InsertSublayer(backgroundLayer,0);
+				platformView.InsertBackgroundLayer(backgroundLayer,0);
 			}
 		}
 
