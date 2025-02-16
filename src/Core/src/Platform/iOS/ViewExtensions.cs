@@ -415,7 +415,7 @@ namespace Microsoft.Maui.Platform
 				{
 					Name = BackgroundLayerName,
 					Contents = backgroundImage.CGImage,
-					Frame = platformView.Bounds,	
+					Frame = platformView.Frame,	
 				};
 				platformView.InsertBackgroundLayer(backgroundLayer,0);
 			}
