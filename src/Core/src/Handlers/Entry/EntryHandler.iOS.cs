@@ -11,12 +11,17 @@ namespace Microsoft.Maui.Handlers
 	{
 		readonly MauiTextFieldProxy _proxy = new();
 
-		protected override MauiTextField CreatePlatformView() =>
-			new MauiTextField
+		protected override MauiTextField CreatePlatformView()
+		{
+			var platformEntry = new MauiTextField
 			{
 				BorderStyle = UITextBorderStyle.RoundedRect,
 				ClipsToBounds = true
 			};
+
+			platformEntry.AddMauiDoneAccessoryView(this);
+			return platformEntry;
+		}
 
 		public override void SetVirtualView(IView view)
 		{
