@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using CoreAnimation;
@@ -338,7 +337,7 @@ namespace Microsoft.Maui.Platform
 
 			if (imageSource != null)
 			{
-				var service = provider.GetRequiredImageSourceService(imageSource);			    
+				var service = provider.GetRequiredImageSourceService(imageSource);
 
 				var scale = platformView.GetDisplayDensity();
 				var result = await service.GetImageAsync(imageSource, scale);
