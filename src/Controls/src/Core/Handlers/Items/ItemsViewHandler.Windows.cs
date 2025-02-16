@@ -137,19 +137,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (itemsCount == 0)
 				return;
 
-			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			ListViewBase.DispatcherQueue.TryEnqueue(() =>
 			{
-				var firstItem = items[0];
-				// Keeps the first item in the list displayed when new items are added.
-				ListViewBase.ScrollIntoView(firstItem);
-			}
+				if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+				{
+					var firstItem = items[0];
+					// Keeps the first item in the list displayed when new items are added.
+					ListViewBase.ScrollIntoView(firstItem);
+				}
 
-			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
-			{
-				var lastItem = items[itemsCount - 1];
-				// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
-				ListViewBase.ScrollIntoView(lastItem);
-			}
+				if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+				{
+					var lastItem = items[itemsCount - 1];
+					// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
+					ListViewBase.ScrollIntoView(lastItem);
+				}
+			});
 		}
 
 		protected abstract ListViewBase SelectListViewBase();
