@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Linq;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -192,6 +194,21 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(10, frame.Width, 0.5d);
 					Assert.Equal(10, desiredSize.Width, 0.5d);
 				});
+		}
+
+		[Fact]
+		[Description("The BackgroundColor of a Editor should match with native background color")]
+		public async Task EditorBackgroundColorConsistent()
+		{
+			var expected = Colors.AliceBlue;
+			var editor = new Editor()
+			{
+				BackgroundColor = expected,
+				HeightRequest = 100,
+				WidthRequest = 200
+			};
+
+			await ValidateHasColor(editor, expected, typeof(EditorHandler));
 		}
 
 		async Task ValidateEditorLayoutChangesForDisabledAutoSize(

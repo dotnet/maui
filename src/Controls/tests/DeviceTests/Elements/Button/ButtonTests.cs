@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -53,5 +55,21 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, GetPlatformLineBreakMode(handler));
 			});
 		}
+
+		[Fact]
+		[Description("The BackgroundColor of a Button should match with native background color")]
+		public async Task ButtonBackgroundColorConsistent()
+		{
+			var expected = Colors.AliceBlue;
+			var button = new Button()
+			{
+				BackgroundColor = expected,
+				HeightRequest = 100,
+				WidthRequest = 200
+			};
+
+			await ValidateHasColor(button, expected, typeof(ButtonHandler));
+		}
+
 	}
 }
