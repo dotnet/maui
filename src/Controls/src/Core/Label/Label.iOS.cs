@@ -26,6 +26,14 @@ namespace Microsoft.Maui.Controls
 			MapFormatting(handler, label);
 		}
 
+		internal static void MapHtmlText(ILabelHandler handler, Label label)
+		{
+			if (handler.PlatformView?.AttributedText != null)
+			{
+				handler.PlatformView?.UpdateTextHtml(label);
+			}
+		}
+
 		public static void MapLineBreakMode(ILabelHandler handler, Label label)
 		{
 			handler.PlatformView?.UpdateLineBreakMode(label);
