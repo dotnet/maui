@@ -92,9 +92,6 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			_wrapGrid.SizeChanged -= WrapGridSizeChanged;
-			_wrapGrid.SizeChanged += WrapGridSizeChanged;
-
 			UpdateItemSize();
 		}
 
@@ -103,23 +100,18 @@ namespace Microsoft.Maui.Controls.Platform
 			FindItemsWrapGrid();
 		}
 
-		void WrapGridSizeChanged(object sender, SizeChangedEventArgs e)
-		{
-			UpdateItemSize();
-		}
-
-		void UpdateItemSize()
+		internal void UpdateItemSize()
 		{
 			// Avoid the ItemWrapGrid grow beyond what this grid view is configured to
 			_wrapGrid.MaximumRowsOrColumns = Span;
 
 			if (_orientation == Orientation.Horizontal)
 			{
-				_wrapGrid.ItemHeight = Math.Floor(_wrapGrid.ActualHeight / Span);
+				_wrapGrid.ItemHeight = Math.Floor(ActualHeight / Span);
 			}
 			else
 			{
-				_wrapGrid.ItemWidth = Math.Floor(_wrapGrid.ActualWidth / Span);
+				_wrapGrid.ItemWidth = Math.Floor(ActualWidth / Span);
 			}
 		}
 
