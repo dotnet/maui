@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override CGSize Measure()
 		{
+			IntrinsicCellSize = new CGSize(Label.IntrinsicContentSize.Width, Label.IntrinsicContentSize.Height);
 			return new CGSize(Constraint.Constant, Label.IntrinsicContentSize.Height);
 		}
 	}
