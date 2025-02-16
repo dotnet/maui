@@ -1,6 +1,4 @@
-using Android.Graphics.Drawables;
-using Android.Nfc.CardEmulators;
-using Android.Widget;
+﻿using Android.Widget;
 using Microsoft.Maui.Graphics;
 using ASwitch = AndroidX.AppCompat.Widget.SwitchCompat;
 
@@ -55,14 +53,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapTrackColor(ISwitchHandler handler, ISwitch view)
 		{
-			if (handler is SwitchHandler platformHandler)
-				handler.PlatformView?.UpdateTrackColor(view);
+			handler.PlatformView?.UpdateTrackColor(view);
 		}
 
 		public static void MapThumbColor(ISwitchHandler handler, ISwitch view)
 		{
-			if (handler is SwitchHandler platformHandler)
-				handler.PlatformView?.UpdateThumbColor(view);
+			handler.PlatformView?.UpdateThumbColor(view);
 		}
 
 		void OnCheckedChanged(bool isOn)
