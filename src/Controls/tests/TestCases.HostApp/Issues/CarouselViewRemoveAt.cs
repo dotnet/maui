@@ -65,6 +65,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 			_carousel.CurrentItemChanged += Carousel_CurrentItemChanged;
 			_carousel.PositionChanged += Carousel_PositionChanged;
+			_carousel.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
 
 			Grid.SetColumnSpan(_carousel, 2);
 
