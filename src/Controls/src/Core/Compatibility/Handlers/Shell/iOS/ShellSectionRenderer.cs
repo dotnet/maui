@@ -605,7 +605,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 			{
 				base.PushViewController(viewController, animated);
-			}			
+			}
 		}
 
 		public override UIViewController PopViewController(bool animated)
