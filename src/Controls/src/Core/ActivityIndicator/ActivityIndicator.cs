@@ -1,7 +1,6 @@
 #nullable disable
 using System;
 using System.Diagnostics;
-
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -46,8 +45,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(IsRunning), IsRunning);
-			return $"{base.GetDebuggerDisplay()}, {debugText}";
+			return $"IsRunning = {IsRunning}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }

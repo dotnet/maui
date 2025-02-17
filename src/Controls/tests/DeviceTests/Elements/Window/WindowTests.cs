@@ -53,8 +53,6 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
 #endif
 
-					handlers.AddHandler<IContentView, ContentViewHandler>();
-
 					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<Entry, EntryHandler>();
 					handlers.AddHandler<Editor, EditorHandler>();

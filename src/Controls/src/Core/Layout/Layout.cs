@@ -388,7 +388,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"{base.GetDebuggerDisplay()}, ChildCount = {Count}";
+			return $"ChildCount = {Count},  {base.GetDebuggerDisplay()}";
 		}
 	}
 }

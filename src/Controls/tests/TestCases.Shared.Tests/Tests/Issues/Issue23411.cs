@@ -1,4 +1,4 @@
-﻿#if IOS //This sample is working in IOS platform only due to the use ofiOS-specific modal presentation style.
+﻿#if IOS
 using NUnit.Framework.Legacy;
 using NUnit.Framework;
 using UITest.Appium;

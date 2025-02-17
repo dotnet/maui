@@ -4,7 +4,6 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
@@ -448,7 +447,16 @@ namespace Microsoft.Maui.Controls
 				Padding = 6
 			};
 
+			border.SetBinding(BackgroundColorProperty, static (RadioButton rb) => rb.BackgroundColor, source: RelativeBindingSource.TemplatedParent);
 			border.SetBinding(HorizontalOptionsProperty, static (RadioButton rb) => rb.HorizontalOptions, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(MarginProperty, static (RadioButton rb) => rb.Margin, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(OpacityProperty, static (RadioButton rb) => rb.Opacity, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(RotationProperty, static (RadioButton rb) => rb.Rotation, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(ScaleProperty, static (RadioButton rb) => rb.Scale, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(ScaleXProperty, static (RadioButton rb) => rb.ScaleX, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(ScaleYProperty, static (RadioButton rb) => rb.ScaleY, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(TranslationYProperty, static (RadioButton rb) => rb.TranslationY, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(TranslationXProperty, static (RadioButton rb) => rb.TranslationX, source: RelativeBindingSource.TemplatedParent);
 			border.SetBinding(VerticalOptionsProperty, static (RadioButton rb) => rb.VerticalOptions, source: RelativeBindingSource.TemplatedParent);
 
 			border.SetBinding(Border.StrokeProperty, static (RadioButton rb) => rb.BorderColor, source: RelativeBindingSource.TemplatedParent);
@@ -666,8 +674,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Value), Value, nameof(IsChecked), IsChecked);
-			return $"{base.GetDebuggerDisplay()},{debugText}";
+			return $"IsChecked = {IsChecked}, Value = {Value}, {base.GetDebuggerDisplay()}";
 		}
 
 		private protected override Semantics UpdateSemantics()

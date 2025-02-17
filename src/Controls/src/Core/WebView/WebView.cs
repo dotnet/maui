@@ -7,7 +7,6 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
-
 using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls
@@ -389,8 +388,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Source), Source);
-			return $"{base.GetDebuggerDisplay()}, {debugText}";
+			return $"Source = {Source}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }

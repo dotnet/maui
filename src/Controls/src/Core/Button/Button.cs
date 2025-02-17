@@ -6,7 +6,6 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
-
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -612,9 +611,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			var textString = DebuggerDisplayHelpers.GetDebugText(nameof(Text), Text);
-			var commandText = DebuggerDisplayHelpers.GetDebugText(nameof(Command), Command, false);
-			return $"{base.GetDebuggerDisplay()}, {textString}, {commandText}";
+			return $"Text = {Text}, Command = {Command}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }

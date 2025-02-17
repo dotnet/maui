@@ -187,7 +187,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"{base.GetDebuggerDisplay()}, Value = {Value}, Min-Max = {Minimum} - {Maximum}";
+			return $"Value = {Value}, Min-Max = {Minimum} - {Maximum}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }

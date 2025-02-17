@@ -9,7 +9,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
-
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -466,8 +465,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			var selectedItemText = DebuggerDisplayHelpers.GetDebugText(nameof(SelectedItem), SelectedItem);
-			return $"{base.GetDebuggerDisplay()}, Items = {ItemsSource?.Count ?? 0}, {selectedItemText}";
+			return $"Items = {ItemsSource?.Count ?? 0}, SelectedItem = {SelectedItem}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }

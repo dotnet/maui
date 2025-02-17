@@ -127,10 +127,8 @@ namespace Microsoft.Maui.Controls
 				_navigationView.SizeChanged -= OnNavigationViewSizeChanged;
 			}
 
-			if (_navigationFrame is not null)
-			{
-				_navigationFrame.Navigated -= OnNavigated;
-			}
+			if (elementHandler?.PlatformView is WFrame wFrame)
+				wFrame.Navigated -= OnNavigated;
 
 			Appearing -= OnTabbedPageAppearing;
 			Disappearing -= OnTabbedPageDisappearing;

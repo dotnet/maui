@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			await AppActions.SetAsync(actions);
 
-			var get = await AppActions.GetAsync().ConfigureAwait(false);
+			var get = await AppActions.GetAsync();
 
 			Assert.Contains(get, a => a.Id == "TEST1");
 		}

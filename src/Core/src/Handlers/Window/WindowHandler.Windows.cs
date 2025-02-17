@@ -52,7 +52,6 @@ namespace Microsoft.Maui.Handlers
 			if (windowRootContentManager is not null)
 			{
 				windowRootContentManager.OnApplyTemplateFinished -= WindowRootContentManagerOnApplyTemplateFinished;
-				windowRootContentManager.SetTitleBar(null, null);
 				windowRootContentManager.Disconnect();
 			}
 
@@ -79,7 +78,18 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var windowManager = handler.MauiContext.GetNavigationRootManager();
-			windowManager.Connect(handler);
+			var previousRootView = windowManager.RootView;
+
+			windowManager.Disconnect();
+			windowManager.Connect(handler.VirtualView.Content?.ToPlatform(handler.MauiContext));
+
+			if (handler.PlatformView.Content is WindowRootViewContainer container)
+			{
+				if (previousRootView != null && previousRootView != windowManager.RootView)
+					container.RemovePage(previousRootView);
+
+				container.AddPage(windowManager.RootView);
+			}
 
 			window.VisualDiagnosticsOverlay?.Initialize();
 		}

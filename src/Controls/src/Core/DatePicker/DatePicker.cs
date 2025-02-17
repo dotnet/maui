@@ -244,7 +244,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"{base.GetDebuggerDisplay()}, Date = {Date}";
+			return $"Date = {Date}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }

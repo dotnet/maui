@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"{base.GetDebuggerDisplay()}, Time = {Time}";
+			return $"Time = {Time}, {base.GetDebuggerDisplay()}";
 		}
 	}
 }

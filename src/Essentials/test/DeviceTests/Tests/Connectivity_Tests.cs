@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			var current = Connectivity.Current.NetworkAccess;
 
-			var thread = await Task.Run(() => Connectivity.Current.NetworkAccess).ConfigureAwait(false);
+			var thread = await Task.Run(() => Connectivity.Current.NetworkAccess);
 
 			Assert.Equal(current, thread);
 		}

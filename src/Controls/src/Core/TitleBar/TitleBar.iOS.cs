@@ -1,6 +1,6 @@
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using UIKit;
+using Microsoft.Maui.Platform;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {

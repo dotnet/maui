@@ -1,4 +1,4 @@
-#if IOS //This test case verifies "UIButton CurrentImage can be set without crashing" in iOS platform only.
+#if IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

@@ -176,7 +176,7 @@ Task("dotnet-samples")
         }
         else
         {
-            projectsToBuild = "./eng/Microsoft.Maui.Samples.slnf";
+            projectsToBuild = "./Microsoft.Maui.Samples.slnf";
         }
 
         RunMSBuildWithDotNet(projectsToBuild, properties, binlogPrefix: "sample-");
@@ -280,11 +280,9 @@ Task("dotnet-pack-maui")
             ReplaceTextInFiles(originalNuget, "LOCAL_PLACEHOLDER", nugetSource);
         }
 
-        var sln = "./eng/Microsoft.Maui.Packages.slnf";
+        var sln = "./Microsoft.Maui.Packages.slnf";
         if (!IsRunningOnWindows())
-        {
-            sln = "./eng/Microsoft.Maui.Packages-mac.slnf";
-        }
+            sln = "./Microsoft.Maui.Packages-mac.slnf";
  
         if(string.IsNullOrEmpty(officialBuildId))
         {

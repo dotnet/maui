@@ -1,5 +1,4 @@
-using System.Reflection;
-using ImageMagick;
+﻿using System.Reflection;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Appium.NUnit;
@@ -104,50 +103,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ResetApp();
 		}
 
-		/// <summary>
-		/// Verifies the screenshots and returns an exception in case of failure.
-		/// </summary>
-		/// <remarks>
-		/// This is especially useful when capturing multiple screenshots in a single UI test.
-		/// </remarks>
-		/// <example>
-		/// <code>
-		/// Exception? exception = null;
-		/// VerifyScreenshotOrSetException(ref exception, "MyScreenshotName");
-		/// VerifyScreenshotOrSetException(ref exception, "MyOtherScreenshotName");
-		/// if (exception is not null) throw exception;
-		/// </code>
-		/// </example>
-		public void VerifyScreenshotOrSetException(
-			ref Exception? exception,
-			string? name = null,
-			TimeSpan? retryDelay = null
-#if MACUITEST || WINTEST
-			, bool includeTitleBar = false
-#endif
-			)
-		{
-			try
-			{
-				VerifyScreenshot(name, retryDelay
-#if MACUITEST || WINTEST
-				, includeTitleBar
-#endif
-				);
-			}
-			catch (Exception ex)
-			{
-				exception ??= ex;
-			}
-		}
-
-		public void VerifyScreenshot(
-			string? name = null,
-			TimeSpan? retryDelay = null
-#if MACUITEST || WINTEST
-			, bool includeTitleBar = false
-#endif
-		)
+		public void VerifyScreenshot(string? name = null, TimeSpan? retryDelay = null)
 		{
 			retryDelay ??= TimeSpan.FromMilliseconds(500);
 			// Retry the verification once in case the app is in a transient state
@@ -253,16 +209,8 @@ namespace Microsoft.Maui.TestCases.Tests
 					TestDevice.Android => 60,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
-					TestDevice.Mac => 29,
 					_ => 0,
 				};
-
-#if MACUITEST || WINTEST
-				if (includeTitleBar)
-				{
-					cropFromTop = 0;
-				}
-#endif
 
 				// For Android also crop the 3 button nav from the bottom, since it's not part of the
 				// app itself and the button color can vary (the buttons change clear briefly when tapped).
@@ -307,35 +255,27 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 			}
 		}
-
+		
 #if MACUITEST
 		byte[] TakeScreenshot()
 		{
 			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
-			// we are going to crop the screenshot to the app window bounds, including rounded corners.
-			var windowBounds = App.FindElement(AppiumQuery.ByXPath("//XCUIElementTypeWindow")).GetRect();
+			// we are going to maximize the App before take the screenshot.
+			App.EnterFullScreen();
 
-			var x = windowBounds.X;
-			var y = windowBounds.Y;
-			var width = windowBounds.Width;
-			var height = windowBounds.Height;
-			const int cornerRadius = 12;
+			// The app might not be ready to take the screenshot.
+			// Wait a little bit to complete the system animation moving the App Window to FullScreen.
+			Thread.Sleep(1000);
 
-			// Take the screenshot
-			var bytes = App.Screenshot();
+			byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
 
-			// Draw a rounded rectangle with the app window bounds as mask
-			using var surface = new MagickImage(MagickColors.Transparent, width, height);
-			new Drawables()
-				.RoundRectangle(0, 0, width, height, cornerRadius, cornerRadius)
-				.FillColor(MagickColors.Black)
-				.Draw(surface);
+			// TODO: After take the screenshot, restore the App Window to the previous state.
+			App.ExitFullScreen();
 
-			// Composite the screenshot with the mask
-			using var image = new MagickImage(bytes);
-			surface.Composite(image, -x, -y, CompositeOperator.SrcAtop);
+			// Wait a little bit to complete the system animation moving the App Window to previous state.
+			Thread.Sleep(500);
 
-			return surface.ToByteArray(MagickFormat.Png);
+			return screenshotPngBytes;
 		}
 #endif
 	}

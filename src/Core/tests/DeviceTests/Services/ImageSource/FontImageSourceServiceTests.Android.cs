@@ -53,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var bitmap = bitmapDrawable.Bitmap;
 
-			await bitmap.AssertContainsColor(expectedColor.ToPlatform()).ConfigureAwait(false);
+			bitmap.AssertContainsColor(expectedColor.ToPlatform());
 		}
 
 		[Theory]
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var bitmap = bitmapDrawable.Bitmap;
 
-			await bitmap.AssertContainsColor(Colors.Red.ToPlatform()).ConfigureAwait(false);
+			bitmap.AssertContainsColor(Colors.Red.ToPlatform());
 		}
 	}
 }

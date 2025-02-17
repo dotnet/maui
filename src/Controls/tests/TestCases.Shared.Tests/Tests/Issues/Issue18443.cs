@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues
@@ -14,13 +15,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void EntrySelectionLengthRuntimeUpdate()
 		{
 			App.WaitForElement("entry");
-			Thread.Sleep(1000);
-#if ANDROID
-			if (App.IsKeyboardShown())
+
+			Thread.Sleep(1000); // Wait some time for the keyboard to appear
+			
+			if(App.IsKeyboardShown())
 				App.DismissKeyboard();
-#endif
+
 			VerifyScreenshot();
 		}
 
 	}
 }
+#endif

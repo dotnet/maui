@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -944,8 +943,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(BindingContext), BindingContext, nameof(Title), Title);
-			return $"{this.GetType().FullName}: {debugText}";
+			return $"BindingContext = {BindingContext}, Title = {Title}";
 		}
 	}
 }

@@ -93,7 +93,7 @@ internal class WindowViewController : UIViewController
 			_contentWrapperView.Subviews[0].Frame = frame;
 		}
 	}
-
+	
 	/// <summary>
 	/// Sets up the TitleBar in the ViewController.
 	/// </summary>
@@ -108,9 +108,8 @@ internal class WindowViewController : UIViewController
 			return;
 		}
 
-		var newTitleBar = window.TitleBar;
-		var newPlatTitleBar = newTitleBar?.ToPlatform(mauiContext);
-		HasCustomTitleBar = newPlatTitleBar is not null;
+		var newTitleBar = window.TitleBar?.ToPlatform(mauiContext);
+		HasCustomTitleBar = newTitleBar is not null;
 
 		IView? iTitleBar = null;
 		_iTitleBarRef?.TryGetTarget(out iTitleBar);
@@ -121,13 +120,13 @@ internal class WindowViewController : UIViewController
 			iTitleBar?.DisconnectHandlers();
 			iTitleBar = null;
 
-			if (newPlatTitleBar is not null)
+			if (newTitleBar is not null)
 			{
-				iTitleBar = newTitleBar;
-				View.AddSubview(newPlatTitleBar);
+				iTitleBar = window.TitleBar;
+				View.AddSubview(newTitleBar);
 			}
 
-			_titleBar = newPlatTitleBar;
+			_titleBar = newTitleBar;
 			_iTitleBarRef = new WeakReference<IView?>(iTitleBar);
 		}
 		
