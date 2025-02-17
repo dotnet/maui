@@ -16,32 +16,14 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>This method is used to override the SizeThatFitsImage() on wrapper view.</remarks>
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			if (Handler?.PlatformView is not UIButton platformButton)
+			if (Handler?.PlatformView is not UIButton platformButton || platformButton.ImageView is null)
 				return Size.Zero;
 
-			Thickness padding = Padding.IsNaN ? default(Thickness) : Padding;
+			CGSize boundsSize = platformButton.ImageView.SizeThatFitsImage(
+				new CGSize(widthConstraint, heightConstraint),
+				Padding.IsNaN ? null : Padding);
 
-			CGSize imageSize = platformButton.CurrentImage?.Size ?? CGSize.Empty;
-
-			double contentWidth = imageSize.Width + padding.HorizontalThickness;
-			double contentHeight = imageSize.Height + padding.VerticalThickness;
-
-			double constrainedWidth = Math.Min(contentWidth, widthConstraint);
-			double constrainedHeight = Math.Min(contentHeight, heightConstraint);
-
-			double widthRatio = constrainedWidth / imageSize.Width;
-			double heightRatio = constrainedHeight / imageSize.Height;
-
-			// In cases where the image must fit within its given constraints, 
-			// it should be scaled down based on the smallest dimension (scale factor) that allows it to fit.
-			if (Aspect == Aspect.AspectFit)
-			{
-				double scaleFactor = Math.Min(widthRatio, heightRatio);
-				return new Size(imageSize.Width * scaleFactor, imageSize.Height * scaleFactor);
-			}
-
-			// Cases where AspectMode is ScaleToFill or Center
-			return new Size(constrainedWidth, constrainedHeight);
+			return new Size(boundsSize.Width, boundsSize.Height);
 		}
 
 		/// <summary>
