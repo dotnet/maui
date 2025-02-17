@@ -19,8 +19,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("editor");
 			App.ScrollDown("editor", ScrollStrategy.Programmatically, 0.6, 100);
-#if ANDROID || MACCATALYST
 			App.ScrollDown("editor", ScrollStrategy.Programmatically, 0.6, 100);
+#if ANDROID
+			if(App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
 #endif
 			VerifyScreenshot();
 		}
