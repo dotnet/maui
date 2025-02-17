@@ -16,6 +16,7 @@
                 ReturnType="Search"
                 IsSpellCheckEnabled="false"
                 IsTextPredictionEnabled="false"
+                IsCursorVisible="False"
                 HorizontalOptions="Fill"
                 VerticalOptions="Center"
                 MinimumWidthRequest="300"
