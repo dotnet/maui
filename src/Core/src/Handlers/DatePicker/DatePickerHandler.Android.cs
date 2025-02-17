@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Handlers
 			var date = VirtualView?.Date;
 
 			if (date != null)
-				_dialog = CreateDatePickerDialog(date.Value.Year, date.Value.Month, date.Value.Day);
+				_dialog = CreateDatePickerDialog(date.Value.Year, date.Value.Month - 1, date.Value.Day);
 
 			return mauiDatePicker;
 		}
