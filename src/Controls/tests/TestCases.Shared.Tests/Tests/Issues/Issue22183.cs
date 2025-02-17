@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue22183: _IssuesUITest
+	public class Issue22183 : _IssuesUITest
 	{
 		public Issue22183(TestDevice device) : base(device)
 		{

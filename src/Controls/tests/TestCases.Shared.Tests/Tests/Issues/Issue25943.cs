@@ -2,30 +2,30 @@
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
- 
+
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue25943 : _IssuesUITest
-    {
-        public Issue25943(TestDevice device) : base(device)
-        {
-        }
- 
-        public override string Issue => "[Android] DatePicker Graphical Bug";
- 
-        [Test]
-        [Category(UITestCategories.DatePicker)]
-        public void DatePickerShouldDisplayProperSelectedDate()
-        {
-            App.WaitForElement("DatePicker");
-            App.Tap("DatePicker");
+	public class Issue25943 : _IssuesUITest
+	{
+		public Issue25943(TestDevice device) : base(device)
+		{
+		}
+
+		public override string Issue => "[Android] DatePicker Graphical Bug";
+
+		[Test]
+		[Category(UITestCategories.DatePicker)]
+		public void DatePickerShouldDisplayProperSelectedDate()
+		{
+			App.WaitForElement("DatePicker");
+			App.Tap("DatePicker");
 #if ANDROID
-            App.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Next month']"));
+			App.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Next month']"));
 #elif WINDOWS
             App.Tap("NextButton");
 #endif
-            VerifyScreenshot();
-        }
-    }
+			VerifyScreenshot();
+		}
+	}
 }
 #endif

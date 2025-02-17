@@ -363,15 +363,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Tabbed is not TabbedPage tabbed || TabBar == null)
 				return;
 
-			if(_currentBarBackground is GradientBrush oldGradientBrush)
+			if (_currentBarBackground is GradientBrush oldGradientBrush)
 			{
 				oldGradientBrush.Parent = null;
 				oldGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
 			}
-			
+
 			_currentBarBackground = tabbed.BarBackground;
 
-			if(_currentBarBackground is GradientBrush newGradientBrush)
+			if (_currentBarBackground is GradientBrush newGradientBrush)
 			{
 				newGradientBrush.Parent = tabbed;
 				newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
