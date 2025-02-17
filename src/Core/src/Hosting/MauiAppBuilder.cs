@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Hosting
 		private readonly Lazy<ConfigurationManager> _configuration;
 		private readonly Lazy<MauiHostEnvironment> _hostEnvironment;
 		private ILoggingBuilder? _logging;
+		private IDictionary<object, object> _properties;
 
 		internal MauiAppBuilder(bool useDefaults)
 		{
@@ -34,6 +35,8 @@ namespace Microsoft.Maui.Hosting
 
 			_configuration = configuration;
 			_hostEnvironment = hostEnvironment;
+
+			_properties = new Dictionary<object, object>();
 
 			if (useDefaults)
 			{
@@ -113,9 +116,19 @@ namespace Microsoft.Maui.Hosting
 			}
 		}
 
-		IDictionary<object, object> IHostApplicationBuilder.Properties => throw new NotImplementedException();
+		/// <summary>
+		/// Gets a central location for sharing state between components during the host building process.
+		/// </summary>
+		public IDictionary<object, object> Properties => _properties;
 
-		IHostEnvironment IHostApplicationBuilder.Environment => _hostEnvironment.Value;
+		IDictionary<object, object> IHostApplicationBuilder.Properties => Properties;
+
+		/// <summary>
+		/// Information about the environment an application is running in.
+		/// </summary>
+		public MauiHostEnvironment Environment => _hostEnvironment.Value;
+
+		IHostEnvironment IHostApplicationBuilder.Environment => Environment;
 
 		IMetricsBuilder IHostApplicationBuilder.Metrics => throw new NotImplementedException();
 

@@ -12,6 +12,8 @@ Microsoft.Maui.Handlers.IHybridWebViewHandler
 Microsoft.Maui.Handlers.IHybridWebViewHandler.PlatformView.get -> Microsoft.UI.Xaml.Controls.WebView2!
 Microsoft.Maui.Handlers.IHybridWebViewHandler.VirtualView.get -> Microsoft.Maui.IHybridWebView!
 Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions
+Microsoft.Maui.Hosting.MauiAppBuilder.Environment.get -> Microsoft.Maui.Hosting.MauiHostEnvironment!
+Microsoft.Maui.Hosting.MauiAppBuilder.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
 Microsoft.Maui.Hosting.MauiHostEnvironment
 Microsoft.Maui.Hosting.MauiHostEnvironment.ApplicationName.get -> string!
 Microsoft.Maui.Hosting.MauiHostEnvironment.ApplicationName.set -> void
