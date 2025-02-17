@@ -20,16 +20,20 @@ namespace Microsoft.Maui.Hosting
 		private readonly ServiceCollection _services = new();
 		private Func<IServiceProvider>? _createServiceProvider;
 		private readonly Lazy<ConfigurationManager> _configuration;
+		private readonly Lazy<MauiHostEnvironment> _hostEnvironment;
 		private ILoggingBuilder? _logging;
 
 		internal MauiAppBuilder(bool useDefaults)
 		{
-			// Lazy-load the ConfigurationManager, so it isn't created if it is never used.
+			// Lazy-load these classes, so they aren't created if they are never used.
 			// Don't capture the 'this' variable in AddSingleton, so MauiAppBuilder can be GC'd.
 			var configuration = new Lazy<ConfigurationManager>(() => new ConfigurationManager());
+			var hostEnvironment = new Lazy<MauiHostEnvironment>(() => new MauiHostEnvironment());
 			Services.AddSingleton<IConfiguration>(sp => configuration.Value);
+			Services.AddSingleton<IHostEnvironment>(sp => hostEnvironment.Value);
 
 			_configuration = configuration;
+			_hostEnvironment = hostEnvironment;
 
 			if (useDefaults)
 			{
@@ -111,7 +115,7 @@ namespace Microsoft.Maui.Hosting
 
 		IDictionary<object, object> IHostApplicationBuilder.Properties => throw new NotImplementedException();
 
-		IHostEnvironment IHostApplicationBuilder.Environment => throw new NotImplementedException();
+		IHostEnvironment IHostApplicationBuilder.Environment => _hostEnvironment.Value;
 
 		IMetricsBuilder IHostApplicationBuilder.Metrics => throw new NotImplementedException();
 
