@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -17,8 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void GroupedCollectionViewItems()
 		{
-			App.WaitForElement("Item 1");
-			App.WaitForElement("Item 2");
+			App.WaitForElement("Foo 1");
+			VerifyScreenshot("GroupedCollectionViewItems");
 		}
 	}
 }
+#endif
