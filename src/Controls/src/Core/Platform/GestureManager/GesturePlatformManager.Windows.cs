@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Controls.Platform
 		VisualElement? _element;
 		TappedEventHandler? _tappedEventHandler;
 		DoubleTappedEventHandler? _doubleTappedEventHandler;
-
+		DragGestureRecognizer? dragGesture;
+		DropGestureRecognizer? dropGesture;
 		SubscriptionFlags _subscriptionFlags = SubscriptionFlags.None;
 
 		bool _isDisposed;
@@ -425,6 +426,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			ClearContainerEventHandlers();
 
+			if (dragGesture is not null)
+				dragGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+
+			if (dropGesture is not null)
+				dropGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+
 			if (_element is View && ElementGestureRecognizers is { } gestureRecognizers)
 			{
 				gestureRecognizers.CollectionChanged -= _collectionChangedHandler;
@@ -822,10 +829,16 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			bool canDrag = gestures.FirstGestureOrDefault<DragGestureRecognizer>()?.CanDrag ?? false;
-			bool allowDrop = gestures.FirstGestureOrDefault<DropGestureRecognizer>()?.AllowDrop ?? false;
+			dragGesture = gestures.FirstGestureOrDefault<DragGestureRecognizer>();
+			dropGesture = gestures.FirstGestureOrDefault<DropGestureRecognizer>();
 
-			if (canDrag)
+			if (dragGesture is not null)
+				dragGesture.PropertyChanged += HandleDragAndDropGesturePropertyChanged;
+
+			if (dropGesture is not null)
+				dropGesture.PropertyChanged += HandleDragAndDropGesturePropertyChanged;
+
+			if (dragGesture is not null && dragGesture.CanDrag && ((_subscriptionFlags & SubscriptionFlags.ContainerDragEventsSubscribed) == 0))
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerDragEventsSubscribed;
 
@@ -834,7 +847,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_container.DropCompleted += HandleDropCompleted;
 			}
 
-			if (allowDrop)
+			if (dropGesture is not null && dropGesture.AllowDrop && ((_subscriptionFlags & SubscriptionFlags.ContainerDropEventsSubscribed) == 0))
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerDropEventsSubscribed;
 
@@ -981,6 +994,15 @@ namespace Microsoft.Maui.Controls.Platform
 		void HandleDoubleTapped(object sender, DoubleTappedRoutedEventArgs doubleTappedRoutedEventArgs)
 		{
 			doubleTappedRoutedEventArgs.Handled = true;
+		}
+
+		void HandleDragAndDropGesturePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == DragGestureRecognizer.CanDragProperty.PropertyName ||
+				e.PropertyName == DropGestureRecognizer.AllowDropProperty.PropertyName)
+			{
+				UpdateDragAndDropGestureRecognizers();
+			}
 		}
 
 		DragEventArgs ToDragEventArgs(UI.Xaml.DragEventArgs e, PlatformDragEventArgs platformArgs)
