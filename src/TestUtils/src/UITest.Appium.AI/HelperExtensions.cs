@@ -127,6 +127,150 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		public static async Task PinchToZoomInWithAI(this IApp app, string prompt, TimeSpan? duration = null)
+		{
+			var elementToPinchToZoomIn = await FindElementWithAI(app, prompt);
+
+			if (elementToPinchToZoomIn is not null)
+			{
+				app.CommandExecutor.Execute("pinchToZoomIn", new Dictionary<string, object>
+				{
+					{ "element", elementToPinchToZoomIn },
+					{ "duration", duration ?? TimeSpan.FromSeconds(1) }
+				});
+			}
+		}
+
+		public static async Task PinchToZoomOutWithAI(this IApp app, string prompt, TimeSpan? duration = null)
+		{
+			var elementToPinchToZoomOut = await FindElementWithAI(app, prompt);
+
+			if (elementToPinchToZoomOut is not null)
+			{
+				app.CommandExecutor.Execute("pinchToZoomOut", new Dictionary<string, object>
+				{
+					{ "element", elementToPinchToZoomOut },
+					{ "duration", duration ?? TimeSpan.FromSeconds(1) }
+				});
+			}
+		}
+
+		public static async Task SwipeLeftToRightWithAI(this IApp app, string prompt, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = await FindElementWithAI(app, prompt);
+
+			if (elementToSwipe is not null)
+			{
+				app.CommandExecutor.Execute("swipeLeftToRight", new Dictionary<string, object>
+				{
+					{ "element", elementToSwipe },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
+		}
+
+		public static async Task SwipeRightToLeftWithAI(this IApp app, string prompt, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = await FindElementWithAI(app, prompt);
+
+			if (elementToSwipe is not null)
+			{
+				app.CommandExecutor.Execute("swipeRightToLeft", new Dictionary<string, object>
+				{
+					{ "element", elementToSwipe },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
+		}
+
+		public static async Task ScrollLeftWithAI(this IApp app, string prompt, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToScroll = await FindElementWithAI(app, prompt);
+
+			if (elementToScroll is not null)
+			{
+				app.CommandExecutor.Execute("scrollLeft", new Dictionary<string, object>
+				{
+					{ "element", elementToScroll },
+					{ "strategy", strategy },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
+		}
+
+		public static async Task ScrollDownWithAI(this IApp app, string prompt, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToScroll = await FindElementWithAI(app, prompt);
+
+			if (elementToScroll is not null)
+			{
+				app.CommandExecutor.Execute("scrollDown", new Dictionary<string, object>
+				{
+					{ "element", elementToScroll },
+					{ "strategy", strategy },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
+		}
+
+		public static async Task ScrollRightWithAI(this IApp app, string prompt, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToScroll = await FindElementWithAI(app, prompt);
+
+			if (elementToScroll is not null)
+			{
+				app.CommandExecutor.Execute("scrollRight", new Dictionary<string, object>
+				{
+					{ "element", elementToScroll },
+					{ "strategy", strategy },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
+		}
+
+		public static async Task ScrollUpWithAI(this IApp app, string prompt, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToScroll = await FindElementWithAI(app, prompt);
+
+			if (elementToScroll is not null)
+			{
+				app.CommandExecutor.Execute("scrollUp", new Dictionary<string, object>
+				{
+					{ "element", elementToScroll },
+					{ "strategy", strategy },
+					{ "swipePercentage", swipePercentage },
+					{ "swipeSpeed", swipeSpeed },
+					{ "withInertia", withInertia }
+				});
+			}
+		}
+
+		public static async Task SetSliderValueWithAI(this IApp app, string prompt, double value, double minimum = 0d, double maximum = 1d)
+		{
+			var element = await FindElementWithAI(app, prompt);
+
+			if (element is not null)
+			{
+				app.CommandExecutor.Execute("setSliderValue", new Dictionary<string, object>
+				{
+					{ "element", element },
+					{ "value", value },
+					{ "minimum", minimum },
+					{ "maximum", maximum },
+				});
+			}
+		}
+
 		public static async Task<IUIElement> WaitForElementWithAI(this IApp app, string prompt, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			Task<IUIElement?> result() => app.FindElementWithAI(prompt);
