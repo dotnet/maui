@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.ApplicationModel;
-using UIKit;
+﻿using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
@@ -15,9 +14,9 @@ namespace Microsoft.Maui.Platform
 
 		protected override UIView CreatePlatformView(IElement view)
 		{
-			return new ContentView
+			return new PageView
 			{
-				CrossPlatformLayout = ((IContentView)view)
+				CrossPlatformLayout = (IContentView)view
 			};
 		}
 

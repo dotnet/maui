@@ -87,15 +87,15 @@ namespace Microsoft.Maui.Platform
 			double constrainedWidth = Math.Min(contentWidth, constraints.Width);
 			double constrainedHeight = Math.Min(contentHeight, constraints.Height);
 
-			double widthRatio = constrainedWidth / imageSize.Width;
-			double heightRatio = constrainedHeight / imageSize.Height;
+			double widthRatio = constrainedWidth / contentWidth;
+			double heightRatio = constrainedHeight / contentHeight;
 
 			// In cases where we the image must fit its given constraints, we must shrink based on the smallest dimension (scale factor)
 			// that can fit it
 			if (imageView.ContentMode == UIViewContentMode.ScaleAspectFit)
 			{
 				var scaleFactor = Math.Min(widthRatio, heightRatio);
-				return new CGSize(imageSize.Width * scaleFactor, imageSize.Height * scaleFactor);
+				return new CGSize(contentWidth * scaleFactor, contentHeight * scaleFactor);
 			}
 
 			// Cases where AspectMode is ScaleToFill or Center
