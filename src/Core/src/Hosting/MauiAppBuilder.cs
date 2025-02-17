@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.LifecycleEvents;
 using System.Collections.Generic;
 using Microsoft.Extensions.Diagnostics.Metrics;
@@ -21,6 +20,7 @@ namespace Microsoft.Maui.Hosting
 		private Func<IServiceProvider>? _createServiceProvider;
 		private readonly Lazy<ConfigurationManager> _configuration;
 		private readonly Lazy<MauiHostEnvironment> _hostEnvironment;
+		private readonly Lazy<MauiMetricsBuilder> _metricsBuilder;
 		private ILoggingBuilder? _logging;
 		private IDictionary<object, object> _properties;
 
@@ -30,11 +30,14 @@ namespace Microsoft.Maui.Hosting
 			// Don't capture the 'this' variable in AddSingleton, so MauiAppBuilder can be GC'd.
 			var configuration = new Lazy<ConfigurationManager>(() => new ConfigurationManager());
 			var hostEnvironment = new Lazy<MauiHostEnvironment>(() => new MauiHostEnvironment());
+			var metricsBuilder = new Lazy<MauiMetricsBuilder>(() => new MauiMetricsBuilder(Services));
 			Services.AddSingleton<IConfiguration>(sp => configuration.Value);
 			Services.AddSingleton<IHostEnvironment>(sp => hostEnvironment.Value);
+			Services.AddSingleton<IMetricsBuilder>(sp => metricsBuilder.Value);
 
 			_configuration = configuration;
 			_hostEnvironment = hostEnvironment;
+			_metricsBuilder = metricsBuilder;
 
 			_properties = new Dictionary<object, object>();
 
@@ -130,7 +133,12 @@ namespace Microsoft.Maui.Hosting
 
 		IHostEnvironment IHostApplicationBuilder.Environment => Environment;
 
-		IMetricsBuilder IHostApplicationBuilder.Metrics => throw new NotImplementedException();
+		/// <summary>
+		/// Gets a builder for configuring metrics services.
+		/// </summary>
+		public MauiMetricsBuilder Metrics => _metricsBuilder.Value;
+
+		IMetricsBuilder IHostApplicationBuilder.Metrics => Metrics;
 
 		/// <summary>
 		/// Registers a <see cref="IServiceProviderFactory{TBuilder}" /> instance to be used to create the <see cref="IServiceProvider" />.
