@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue27715">
+
+    <ContentPage.Resources>
+        <Style TargetType="Border"
+               x:Key="CardStyle">
+            <Setter Property="StrokeShape"
+                    Value="RoundRectangle 20"/>
+            <Setter Property="Background"
+                    Value="#E0E0E0"/>
+            <Setter Property="StrokeThickness"
+                    Value="0"/>
+            <Setter Property="Padding"
+                    Value="15"/>
+        </Style>
+    </ContentPage.Resources>
+
+
+
+    <Grid BackgroundColor="red"
+            Margin="20">
+        <ScrollView Orientation="Vertical">
+            <VerticalStackLayout Spacing="5"
+                                 Padding="15">
+                <Border Style="{StaticResource CardStyle}">
+                    <Label Text="Border"/>
+                </Border>
+                <ScrollView Orientation="Horizontal"
+                            Margin="-30,0">
+                    <HorizontalStackLayout Spacing="15"
+                                           Padding="30,0"
+                                           BindableLayout.ItemsSource="{Binding Projects}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource CardStyle}">
+                                    <VerticalStackLayout Spacing="15">
+                                        <Image HorizontalOptions="Start"
+                                               Source="dotnet_bot.png"
+                                               Aspect="Center">
+                                        </Image>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+                <Label Text="Tasks"
+                       AutomationId="label"/>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
