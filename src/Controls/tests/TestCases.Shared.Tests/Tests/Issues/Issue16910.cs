@@ -31,7 +31,7 @@ public class Issue16910 : _IssuesUITest
 	public void BindingUpdatesFromInteractiveRefresh()
 	{
 		_ = App.WaitForElement("CollectionView");
-		App.ScrollUp("CollectionView", ScrollStrategy.Gesture, 0.7, 10000) ;
+		App.ScrollUp("CollectionView", ScrollStrategy.Gesture, 0.7, 250) ;
 		App.WaitForElement("IsRefreshing");
 		App.Tap("StopRefreshing");
 		App.WaitForElement("IsNotRefreshing");
