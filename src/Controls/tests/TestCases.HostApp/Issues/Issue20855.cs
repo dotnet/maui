@@ -163,8 +163,7 @@ public class ItemMock
         ItemGroups = new List<ItemGroup>
         {
             new ItemGroup("Today", todaysItems.ToList()),
-            new ItemGroup("Next Week", nextWeeksItems.ToList()),
-            new ItemGroup("The Rest", remainingItems.ToList())
+            new ItemGroup("Next Week", remainingItems.ToList())
         };
     }
 }
