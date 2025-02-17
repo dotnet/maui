@@ -43,18 +43,15 @@ parameters:
   - name: VM_IMAGE_HOST
     type: object
     default:
-      name: NetCore-Public
-      image: 1es-windows-2022
+      name: Azure Pipelines
+      vmImage: $(HostedWindowsImage)
       os: windows
 
 stages:
 
 - template: /eng/pipelines/arcade/stage-pack.yml@self
   parameters:
-    pool:
-      name: Azure Pipelines
-      vmImage: $(HostedWindowsImage)
-      os: windows
+    pool: ${{ parameters.VM_IMAGE_HOST }}
     runAsPublic: true
 
 - template: /eng/pipelines/arcade/stage-unit-tests.yml@self
@@ -62,10 +59,7 @@ stages:
     jobMatrix:
     - name: win_unit_tests
       displayName: Windows Unit Tests
-      pool:
-        name: Azure Pipelines
-        vmImage: $(HostedWindowsImage)
-        os: windows
+      pool: ${{ parameters.VM_IMAGE_HOST }}
       timeout: 90
       testOS: Windows
     - name: mac_unit_tests
