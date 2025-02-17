@@ -60,7 +60,15 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task CollectionViewItemsArrangeCorrectly()
 		{
-			SetupBuilder();
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Border, BorderHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
 
 			var items = Enumerable.Range(1, 50).Select(i => $"Item {i}").ToArray();
 
