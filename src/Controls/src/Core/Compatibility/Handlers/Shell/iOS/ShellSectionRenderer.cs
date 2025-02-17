@@ -601,6 +601,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
+
+				var tasks = _completionTasks;
+				var popTask = _popCompletionTask;
+
+				if (tasks.TryGetValue(viewController, out var source))
+				{
+					source.TrySetResult(true);
+					tasks.Remove(viewController);
+				}
+				else if (popTask != null)
+				{
+					popTask.TrySetResult(true);
+				}
 			}
 			else
 			{
