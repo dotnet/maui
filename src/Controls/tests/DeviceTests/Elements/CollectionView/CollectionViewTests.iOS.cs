@@ -9,6 +9,8 @@ using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Handlers.Items2;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
@@ -58,7 +60,15 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task CollectionViewItemsArrangeCorrectly()
 		{
-			SetupBuilder();
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<CollectionView, CollectionViewHandler2>();
+					handlers.AddHandler<Border, BorderHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
 
 			var items = Enumerable.Range(1, 50).Select(i => $"Item {i}").ToArray();
 
