@@ -3,6 +3,7 @@ using ImageMagick;
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using UITest.Appium;
+using UITest.Appium.AI;
 using UITest.Appium.NUnit;
 using UITest.Core;
 using VisualTestUtils;
@@ -143,13 +144,36 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
+		public async Task<bool> VerifyScreenshotWithAI(string? name = null, string? prompt = null)
+		{
+			byte[] snapshotBytes = TakeScreenshot();
+			BinaryData snapshot = new BinaryData(snapshotBytes);
+			
+			name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+			
+			string imageFileName = $"{name}.png";
+			string environmentName = GetEnvironmentName();
+
+			string projectRootDirectory = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory)!;
+			string snapshotsDirectory = Path.Combine(projectRootDirectory, "snapshots");
+			string snapshotsEnvironmentDirectory = VisualRegressionTester.GetEnvironmentDirectory(snapshotsDirectory, environmentName);
+		
+			string referenceImagePath = Path.Combine(snapshotsEnvironmentDirectory, imageFileName);
+			byte[] referenceSnapshotBytes = File.ReadAllBytes(referenceImagePath);
+			BinaryData referenceSnapshot = new BinaryData(referenceSnapshotBytes);
+
+			var result = await App.VerifyScreenshotWithAI(snapshot, referenceSnapshot, prompt);
+
+			return result;
+		}
+
 		/// <summary>
 		/// Verifies the Application screenshot.
 		/// </summary>
 		/// <param name="name">Optional. The name to be used for the screenshot file. If not specified, the test name will be used.</param>
 		/// <param name="retryDelay">Optional. The delay time between retries. If not specified, a default retry delay of 500 ms will be used.</param>
 		/// <param name="includeTitleBar">Optional. (Only applicable for Mac or Windows) Specifies whether the TitleBar bar should be included in the screenshot. Default is false.</param>
-    /// <remarks>
+		/// <remarks>
 		public void VerifyScreenshot(
 				 string? name = null,
 				 TimeSpan? retryDelay = null

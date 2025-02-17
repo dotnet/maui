@@ -1,6 +1,7 @@
 ﻿#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
+using UITest.Appium.AI;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
@@ -24,6 +25,18 @@ public class Issue19926 : _IssuesUITest
 		// A small delay to wait for the button ripple effect animation to complete.
 		await Task.Delay(500);
 		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.BoxView)]
+	public async Task PropertiesShouldBeCorrectlyAppliedWithAI()
+	{
+		App.WaitForElement("boxView");
+		await App.TapWithAI("The Button to show a BoxView");
+		App.WaitForElement("boxView2");
+
+		bool areEquals = await VerifyScreenshotWithAI("PropertiesShouldBeCorrectlyApplied");
+		Assert.That(areEquals, Is.True);
 	}
 }
 #endif
