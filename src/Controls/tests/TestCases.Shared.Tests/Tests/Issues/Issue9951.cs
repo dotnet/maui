@@ -16,16 +16,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Switch)]
-		[Category(UITestCategories.Compatibility)]
-		public void SwitchColorTest()
+		public void SwitchColorTestBeforeToggling()
 		{
 			App.WaitForElement(SwitchId);
 
-			VerifyScreenshot("SwitchColorTest_before_toggling");
+			VerifyScreenshot();
+		}
 
+		[Test]
+		[Category(UITestCategories.Switch)]
+		public void SwitchColorTestAfterToggling()
+		{
+			App.WaitForElement(SwitchId);
 			App.Tap(SwitchId);
+			App.WaitForElement(SwitchId);
 
-			VerifyScreenshot("SwitchColorTest_after_toggling");
+			VerifyScreenshot();
+
 		}
 	}
 }

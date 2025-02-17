@@ -15,6 +15,9 @@
 
 			stackLayout.Children.Add(new Switch()
 			{
+				HorizontalOptions = LayoutOptions.Center,
+				HeightRequest = 200,
+				VerticalOptions = LayoutOptions.Center,
 				ThumbColor = Colors.Red,
 				OnColor = Colors.Yellow,
 				AutomationId = switchId
