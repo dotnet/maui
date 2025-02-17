@@ -11,6 +11,9 @@ namespace Microsoft.Maui.Handlers
 	{
 		const nint ContentTag = 0x845fed;
 
+		//Scroll view not resizing correctly when orientation changes
+		public override bool NeedsContainer => true;
+
 		readonly ScrollEventProxy _eventProxy = new();
 
 		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
