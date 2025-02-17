@@ -33,8 +33,14 @@ public class Issue19926 : _IssuesUITest
 	{
 		App.WaitForElement("boxView");
 		await App.TapWithAI("The Button to show a BoxView");
+
+		// Find the element using a natural language prompt describing the Button.
+		var button = await App.WaitForElementWithAI("The Button to show a BoxView");
+		button?.Tap(); // Alternative: await App.TapWithAI("The Button to show a BoxView");
+
 		App.WaitForElement("boxView2");
 
+		// Use AI to compare the App screenshot and determinate if the image is equal to a reference one.
 		bool areEquals = await VerifyScreenshotWithAI("PropertiesShouldBeCorrectlyApplied");
 		Assert.That(areEquals, Is.True);
 	}
