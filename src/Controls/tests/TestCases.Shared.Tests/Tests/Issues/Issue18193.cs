@@ -16,18 +16,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void ShellNavigationShouldWorkInMoreTab()
 		{
-			App.WaitForElement("NavigationToPage6Button");
-			App.Click("NavigationToPage6Button");
-			App.WaitForElement("NavigateToDetailButton");
-			App.Click("NavigateToDetailButton");
-			App.WaitForElement("NavigateBackButton");
-			App.Click("NavigateBackButton");
-			App.WaitForElement("NavigateToPage2Button");
-			App.Click("NavigateToPage2Button");
-			App.WaitForElement("NavigateToPage5Button");
-			App.Click("NavigateToPage5Button");
-			App.WaitForElement("More");
-			App.Click("More");
+			App.WaitForElementTillPageNavigationSettled("NavigationToPage6Button");
+			App.Tap("NavigationToPage6Button");
+			App.WaitForElementTillPageNavigationSettled("NavigateToDetailButton");
+			App.Tap("NavigateToDetailButton");
+			App.WaitForElementTillPageNavigationSettled("NavigateBackButton");
+			App.Tap("NavigateBackButton");
+			App.WaitForElementTillPageNavigationSettled("NavigateToPage2Button");
+			App.Tap("NavigateToPage2Button");
+			App.WaitForElementTillPageNavigationSettled("NavigateToPage5Button");
+			App.Tap("NavigateToPage5Button");
+			App.WaitForElementTillPageNavigationSettled("More");
+			App.Tap("More");
 		}
 	}
 }

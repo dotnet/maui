@@ -36,7 +36,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ScrollDown("Item10", ScrollStrategy.Gesture);
 
 			// 3. If the ScrollView scrolled, the test passed.
-			App.WaitForElement(Success); // If the ScrollView scrolled, the success label should be displayed
+			var success = App.WaitForElement(Success).GetText();
+			Assert.That("Success",Is.EqualTo(success)); // If the ScrollView scrolled, the success label should be displayed
 
 			App.TapBackArrow();
 
@@ -61,15 +62,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(ScrollView);
 			App.ScrollDown("Item10", ScrollStrategy.Gesture);
 
-			// 4. Shouldn't have scrolled.
-			App.WaitForNoElement(Success);// Shouldn't have scrolled, so no success label should be displayed
+
+			var success = App.WaitForElement(Success).GetText();
+			Assert.That("Initial Text",Is.EqualTo(success));
 
 			App.TapBackArrow();
 		}
 
 		// ScrollViewInitiallyNotEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
-			public void ScrollViewInitiallyNotEnabled()
+		public void ScrollViewInitiallyNotEnabled()
 		{
 			// 1. Disable the ScrollView.
 			App.WaitForElement(InitiallyNotEnabled);
@@ -79,7 +81,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ScrollDown("Item10", ScrollStrategy.Gesture);
 
 			// 2. Shouldn't have scrolled.
-			App.WaitForNoElement(Success);// Shouldn't have scrolled, so no success label should be displayed
+			// Shouldn't have scrolled, so no success label should be displayed
+			var success = App.WaitForElement(Success).GetText();
+			Assert.That("Initial Text",Is.EqualTo(success));
 
 			App.TapBackArrow();
 		}
@@ -105,7 +109,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ScrollDown("Item10", ScrollStrategy.Gesture);
 
 			// 4. If the ScrollView scrolled, the test passed.
-			App.WaitForElement(Success); // If the ScrollView scrolled, the success label should be displayed
+			var success = App.WaitForElement(Success).GetText();
+			Assert.That("Success",Is.EqualTo(success)); // If the ScrollView scrolled, the success label should be displayed
 
 			App.TapBackArrow();
 		}
