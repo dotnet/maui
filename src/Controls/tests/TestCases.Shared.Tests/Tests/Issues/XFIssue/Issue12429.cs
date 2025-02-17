@@ -20,12 +20,12 @@ public class Issue12429 : _IssuesUITest
 
 #if ANDROID || IOS // Rect value measurements from Appium vary across platforms; these values ensure consistent behavior
 	double SmallFlyoutItemValue = 35d;
-    double SizeToModifyBy=20d;
+	double SizeToModifyBy = 20d;
 #elif MACCATALYST
     double SmallFlyoutItemValue=28d;
     double SizeToModifyBy=15d;
 #endif
-    const string ResizeMe = "Default Flyout Item. Height is 44 on iOS and UWP. Height is 50 on Android)";
+	const string ResizeMe = "Default Flyout Item. Height is 44 on iOS and UWP. Height is 50 on Android)";
 
 
 
@@ -41,25 +41,25 @@ public class Issue12429 : _IssuesUITest
 		Assert.That(height.Height, Is.EqualTo(SmallFlyoutItemValue).Within(1));
 	}
 
-    [Test, Order(2)]
-    [Category(UITestCategories.Shell)]
-    public void FlyoutItemHeightAndWidthIncreaseAndDecreaseCorrectly()
-    {
-        App.WaitForElement(ResizeMe);
-        var initialHeight = App.WaitForElement(ResizeMe).GetRect().Y;
- 
-        App.Tap("ResizeFlyoutItem");
-        var newHeight = App.WaitForElement(ResizeMe).GetRect().Y;
-        Assert.That(newHeight - initialHeight, Is.EqualTo(SizeToModifyBy).Within(1));
- 
-        App.Tap("ResizeFlyoutItemDown");
-        newHeight = App.WaitForElement(ResizeMe).GetRect().Y;
-        Assert.That(initialHeight, Is.EqualTo(newHeight).Within(1));
-      
-        App.Tap("ResizeFlyoutItemDown");
-        newHeight = App.WaitForElement(ResizeMe).GetRect().Y;
-        Assert.That(initialHeight - newHeight, Is.EqualTo(SizeToModifyBy).Within(1));
- 
-    }
+	[Test, Order(2)]
+	[Category(UITestCategories.Shell)]
+	public void FlyoutItemHeightAndWidthIncreaseAndDecreaseCorrectly()
+	{
+		App.WaitForElement(ResizeMe);
+		var initialHeight = App.WaitForElement(ResizeMe).GetRect().Y;
+
+		App.Tap("ResizeFlyoutItem");
+		var newHeight = App.WaitForElement(ResizeMe).GetRect().Y;
+		Assert.That(newHeight - initialHeight, Is.EqualTo(SizeToModifyBy).Within(1));
+
+		App.Tap("ResizeFlyoutItemDown");
+		newHeight = App.WaitForElement(ResizeMe).GetRect().Y;
+		Assert.That(initialHeight, Is.EqualTo(newHeight).Within(1));
+
+		App.Tap("ResizeFlyoutItemDown");
+		newHeight = App.WaitForElement(ResizeMe).GetRect().Y;
+		Assert.That(initialHeight - newHeight, Is.EqualTo(SizeToModifyBy).Within(1));
+
+	}
 }
 #endif

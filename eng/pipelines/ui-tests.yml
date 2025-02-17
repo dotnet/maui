@@ -54,7 +54,7 @@ parameters:
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
     type: string
-    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
+    default: 'latest'
 
   - name: BuildEverything
     type: boolean

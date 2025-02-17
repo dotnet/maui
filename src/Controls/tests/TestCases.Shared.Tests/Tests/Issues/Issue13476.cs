@@ -10,8 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue13476(TestDevice testDevice) : base(testDevice)
 		{
 		}
-#if  ANDROID
-		 const string Page = "PAGE 1";
+#if ANDROID
+		const string Page = "PAGE 1";
 #else
 		const string Page = "page 1";
 #endif

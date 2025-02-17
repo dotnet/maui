@@ -21,17 +21,17 @@ public sealed partial class CompareConverter : CompareConverter<IComparable, obj
 /// </summary>
 public abstract class CompareConverter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TValue, TReturnObject> : IValueConverter where TValue : IComparable
 {
-    object? IValueConverter.Convert(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo culture) =>
+	object? IValueConverter.Convert(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo culture) =>
 		true;
 
 	/// <inheritdoc />
 	object? IValueConverter.ConvertBack(object? value, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type targetType, object? parameter, CultureInfo culture) =>
 		false;
 
-    public object ProvideValue(IServiceProvider serviceProvider) => this;
+	public object ProvideValue(IServiceProvider serviceProvider) => this;
 
 
-    /// <summary>
+	/// <summary>
 	/// The comparing value.
 	/// </summary>
 	public TValue? ComparingValue { get; set; }
@@ -51,7 +51,7 @@ public abstract class CompareConverter<[DynamicallyAccessedMembers(DynamicallyAc
 	/// </summary>
 	public TReturnObject? FalseObject { get; set; }
 
-    /// <summary>
+	/// <summary>
 	/// Math operator type
 	/// </summary>
 	[Flags]

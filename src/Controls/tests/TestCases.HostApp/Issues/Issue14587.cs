@@ -17,7 +17,7 @@ public class Issue14587 : Shell
 		var tabBar = new TabBar { Route = "issue14587" };
 		tabBar.Items.Add(t1);
 		tabBar.Items.Add(t2);
-		
+
 		Items.Add(tabBar);
 	}
 }
@@ -71,7 +71,7 @@ file class Issue14587Main : ContentPage
 
 		private void OnIconColorChanged()
 		{
-			if (IconColor == null) 
+			if (IconColor == null)
 			{
 				return;
 			}
@@ -137,7 +137,7 @@ file class Issue14587Main : ContentPage
 
 		grid.Add(button);
 		grid.Add(cv, 0, 1);
-		
+
 		Content = grid;
 	}
 

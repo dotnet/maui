@@ -157,6 +157,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(true);
 		}
 
+		[Fact]
+		public async Task PoppingModalStackFiresAppearingOnRevealedNonModalPage()
+		{
+			Shell shell = new TestShell();
+			shell.Items.Add(CreateShellItem(shellContentRoute: "MainContent"));
+
+			await shell.GoToAsync($"LifeCyclePage/ContentPage/ModalTestPage2/ModalTestPage");
+			var lifeCyclePage = shell.Descendants().OfType<ShellLifeCycleTests.LifeCyclePage>().First();
+			Assert.False(lifeCyclePage.Appearing);
+			await shell.GoToAsync($"../../..");
+			Assert.True(lifeCyclePage.Appearing);
+		}
 
 		[Fact]
 		public async Task ModalPopsWhenSwitchingShellContent()

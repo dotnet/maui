@@ -47,13 +47,13 @@
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <AndroidGradleProject Include="../AndroidNative/build.gradle" ModuleName="maui" />
     <PackageReference Include="Xamarin.Android.Glide" Version="$(_XamarinAndroidGlideVersion)" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.5.1" />
-    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.11.0.3" />
-    <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.1.0.24" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.UI" Version="2.8.0.1" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" Version="2.8.0.1" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" Version="2.8.0.1" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" Version="2.8.0.1" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.7.2" />
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.12.0.2" />
+    <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.1.0.26" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.UI" Version="2.8.5.1" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" Version="2.8.5.1" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" Version="2.8.5.1" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" Version="2.8.5.1" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="Tizen.UIExtensions.NUI" />

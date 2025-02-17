@@ -4,7 +4,7 @@ namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 25792, "Picker ItemsSource Change Triggers Exception: 'Value Does Not Fall Within the Expected Range", PlatformAffected.UWP)]
-	public partial class Issue25792: ContentPage
+	public partial class Issue25792 : ContentPage
 	{
 		private Picker _picker;
 		public Issue25792()

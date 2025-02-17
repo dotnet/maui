@@ -12,20 +12,20 @@ public class ContactsPage : ContentPage
 		{
 			ItemTemplate = new DataTemplate(() =>
 			{
-				var stackLayout = new VerticalStackLayout(){ Spacing = 4 };
+				var stackLayout = new VerticalStackLayout() { Spacing = 4 };
 
-				var nameLabel = new Label() { FontSize = 14};
+				var nameLabel = new Label() { FontSize = 14 };
 				nameLabel.SetBinding(Label.TextProperty, "Name");
 				nameLabel.SetBinding(Label.AutomationIdProperty, "Name");
 
-				var numberLabel = new Label() { FontSize = 10};
+				var numberLabel = new Label() { FontSize = 10 };
 				numberLabel.SetBinding(Label.TextProperty, "Number");
 				numberLabel.SetBinding(Label.AutomationIdProperty, "Number");
 
 				stackLayout.Children.Add(nameLabel);
 				stackLayout.Children.Add(numberLabel);
 
-				return  new ViewCell(){ View = stackLayout };
+				return new ViewCell() { View = stackLayout };
 			}),
 			IsGroupingEnabled = true,
 			GroupDisplayBinding = new Binding("Name")
