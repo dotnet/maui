@@ -6,14 +6,13 @@
     <VerticalStackLayout VerticalOptions="Center"
                          HorizontalOptions="Center"
                          Spacing="20">
-        <DatePicker 
+        <DatePicker HeightRequest="50"
             x:Name="datePicker"
             TextColor="{Binding DatePickerTextColor}"
             Date="{Binding WorkDate, Mode=TwoWay}" 
             MaximumDate="12/31/2029" MinimumDate="01/01/2022" 
             />
-        <Label AutomationId="MauiLabel"
-               x:Name="colorLabel" />
+       
         <Button AutomationId="MauiButton"
                 Text="Change Color"
                 Clicked="Button_Clicked" />

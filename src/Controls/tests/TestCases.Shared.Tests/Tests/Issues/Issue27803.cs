@@ -21,8 +21,6 @@ public class Issue27803 : _IssuesUITest
 
         App.Tap("MauiButton");
 
-        var labelText = App.WaitForElement("MauiLabel").GetText();
-        
-        Assert.That(labelText,Is.EqualTo("#FF0000"));
+        VerifyScreenshot();
     }
 }

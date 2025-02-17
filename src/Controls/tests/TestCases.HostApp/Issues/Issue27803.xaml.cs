@@ -28,13 +28,12 @@ public partial class Issue27803 : ContentPage
 	{
 		InitializeComponent();
 		BindingContext = this;
-		colorLabel.Text = DatePickerTextColor.ToArgbHex();
-		AutomationProperties.SetHelpText(datePicker,datePicker.TextColor.ToArgbHex());
+		
 	}
 
 	private void Button_Clicked(object sender, EventArgs e)
 	{
 		DatePickerTextColor = Color.FromArgb("#FF0000");
-		colorLabel.Text = datePicker.TextColor.ToArgbHex();
+		
 	}
 }
