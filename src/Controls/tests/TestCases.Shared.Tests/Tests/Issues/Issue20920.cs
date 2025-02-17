@@ -18,7 +18,7 @@ public class Issue20920 : _IssuesUITest
 		// TODO: Correct this test for other platforms
 		var initialPosition = App.WaitForElement("dotnet_bot").GetRect();
 
-		App.ScrollDown("dotnet_bot", swipePercentage: 0.5, swipeSpeed: 750);
+		App.ScrollDown("dotnet_bot",ScrollStrategy.Gesture, swipePercentage: 0.5, swipeSpeed: 750);
 		App.ScrollRight("dotnet_bot");
 
 		var afterScrollPosition = App.WaitForElement("dotnet_bot").GetRect();
