@@ -1,6 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST
-//In MacCatalyst platform, the Clear Button in the Entry control is not visible during screenshots, but this issue is fixed after enabling the test for verifyScreenshot (https://github.com/dotnet/maui/pull/27531).
-using Microsoft.Maui.Platform;
+﻿using Microsoft.Maui.Platform;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -51,4 +49,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif
