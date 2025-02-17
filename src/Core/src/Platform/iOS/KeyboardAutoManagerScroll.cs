@@ -817,7 +817,7 @@ public static class KeyboardAutoManagerScroll
 		var movedInsets = scrolledView.ContentInset;
 		// When the superview is a MauiCollectionView and the scrollView is a MauiTextView, we do not want to change the bottom inset.
 		bool shouldAdjustBottom = !(scrolledView is UITextView && LastScrollView is UICollectionView);
-		if (shouldAdjustBottom)
+		if (shouldAdjustBottom && !isInnerEditor)
 		{
 			movedInsets.Bottom = bottomInset;
 		}
