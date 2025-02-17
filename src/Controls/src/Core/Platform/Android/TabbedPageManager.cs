@@ -574,18 +574,18 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_currentBarBackground == Element.BarBackground)
 				return;
 
-			if(_currentBarBackground is GradientBrush oldGradientBrush)
+			if (_currentBarBackground is GradientBrush oldGradientBrush)
 			{
 				oldGradientBrush.Parent = null;
-				oldGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged; 
+				oldGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
 			}
 
 			_currentBarBackground = Element.BarBackground;
 
-			if(_currentBarBackground is GradientBrush newGradientBrush)
+			if (_currentBarBackground is GradientBrush newGradientBrush)
 			{
 				newGradientBrush.Parent = Element;
-				newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged; 
+				newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
 			}
 
 			RefreshBarBackground();

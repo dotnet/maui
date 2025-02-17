@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Xml;
 using System.Globalization;
-using System.Resources;
-using Xunit;
-using System.Text.Json;
-using System.Text;
+using System.IO;
 using System.Linq;
+using System.Resources;
+using System.Text;
+using System.Text.Json;
+using System.Xml;
+using Xunit;
 
 namespace Microsoft.Maui.UnitTests
 {
