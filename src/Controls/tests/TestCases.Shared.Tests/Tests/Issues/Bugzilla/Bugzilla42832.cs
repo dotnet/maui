@@ -22,7 +22,7 @@ public class Bugzilla42832 : _IssuesUITest
 		App.WaitForElement("Test Item");
 
 		int counter = 0;
-		while(counter < 5)
+		while (counter < 5)
 		{
 			App.ScrollDown("Item #10", ScrollStrategy.Gesture);
 			App.ScrollUp("Item #0", ScrollStrategy.Gesture);
