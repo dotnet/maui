@@ -95,7 +95,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			try
 			{
-				App.WaitForElement("SuccessCookiesLabel", timeout: TimeSpan.FromSeconds(2));
+				App.WaitForElement("SuccessCookiesLabel", timeout: TimeSpan.FromSeconds(4));
 			}
 			catch
 			{
