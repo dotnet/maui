@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 
@@ -238,6 +239,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.HandleFormsElementMeasureInvalidated(formsElement);
 			UpdateHeaderFooterPosition();
+		}
+
+		internal override Size? GetSize()
+		{
+			var size = base.GetSize();
+			return new Size(size.Value.Width, size.Value.Height + (_headerUIView?.Frame.Height ?? 0) + (_footerUIView?.Frame.Height ?? 0));
 		}
 
 		internal void UpdateLayoutMeasurements()

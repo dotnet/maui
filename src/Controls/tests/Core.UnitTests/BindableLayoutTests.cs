@@ -665,15 +665,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button, HandlerStub>())
 				.ConfigureMauiHandlers(handlers => handlers.AddHandler<VerticalStackLayout, BindableLayoutHandlerStub>())
 				.Build();
-			
+
 			MauiContext mauiContext = new MauiContext(mauiApp.Services);
-			
+
 			var bindableLayout = new VerticalStackLayout();
 			var items = new ObservableCollection<int>(Enumerable.Range(0, 10));
 			BindableLayout.SetItemsSource(bindableLayout, items);
 			BindableLayout.SetItemTemplate(bindableLayout, new DataTemplate(() => new Button()));
 			BindableLayout.SetEmptyView(bindableLayout, new Button());
-			
+
 			bindableLayout.ToHandler(mauiContext);
 
 			// Ensure we have the handlers on all elements

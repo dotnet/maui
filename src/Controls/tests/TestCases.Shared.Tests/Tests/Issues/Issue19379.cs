@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,10 +20,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// 1. Update the CollectionView Header.
 			App.Tap("UpdateButton");
+			App.WaitForElement("WaitForStubControl");
 
 			// 2. Verify the result.
-			VerifyScreenshot();
+			Assert.That(App.WaitForElement("HeaderLabel").GetText(), Is.EqualTo("This is a CollectionViewHeader #1"));
 		}
 	}
 }
-#endif
