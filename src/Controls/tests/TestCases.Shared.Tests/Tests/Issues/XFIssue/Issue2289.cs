@@ -8,26 +8,26 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue2289 : _IssuesUITest
 {
-    public Issue2289(TestDevice testDevice) : base(testDevice)
-    {
-    }
+	public Issue2289(TestDevice testDevice) : base(testDevice)
+	{
+	}
 
-    public override string Issue => "TextCell IsEnabled property not disabling element in TableView";
+	public override string Issue => "TextCell IsEnabled property not disabling element in TableView";
 
-    [Test]
-    [Category(UITestCategories.Cells)]
-    public void TestIsEnabledFalseContextActions()
-    {
-        App.ActivateContextMenu("txtCellDisableContextActions1");
-        App.WaitForNoElement("More");
-    }
+	[Test]
+	[Category(UITestCategories.Cells)]
+	public void TestIsEnabledFalseContextActions()
+	{
+		App.ActivateContextMenu("txtCellDisableContextActions1");
+		App.WaitForNoElement("More");
+	}
 
-    [Test]
-    [Category(UITestCategories.Cells)]
-    public void TestIsEnabledTrueContextActions()
-    {
-        App.ActivateContextMenu("txtCellEnabledContextActions1");
-        App.WaitForElement("More");
-    }
+	[Test]
+	[Category(UITestCategories.Cells)]
+	public void TestIsEnabledTrueContextActions()
+	{
+		App.ActivateContextMenu("txtCellEnabledContextActions1");
+		App.WaitForElement("More");
+	}
 }
 #endif

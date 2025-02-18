@@ -29,7 +29,7 @@ public class Bugzilla46363_2 : _IssuesUITest
 	}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST//ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
-//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
+	//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
 	[Test]
 	[Category(UITestCategories.ListView)]
 	public void _46363_2_ContextAction_Succeeds()
