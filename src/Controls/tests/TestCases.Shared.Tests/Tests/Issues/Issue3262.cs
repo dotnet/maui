@@ -27,6 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27854")]
 		public void ChangeDuringNavigating()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
