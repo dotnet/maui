@@ -121,6 +121,8 @@ namespace Microsoft.Maui.Platform
 			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
 
 			visual.Clip = geometricClip;
+			//When the clip is updated, the shadow must be updated as well
+			UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
 		}
 
 		void DisposeClip()
