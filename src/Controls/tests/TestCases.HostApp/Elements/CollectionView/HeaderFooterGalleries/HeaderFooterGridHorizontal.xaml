@@ -4,8 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries.HeaderFooterGridHorizontal"
-             xmlns:local="clr-namespace:Maui.Controls.Sample">
+             x:Class="Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries.HeaderFooterGridHorizontal">
     <ContentPage.Content>
         <Grid>
             <Grid.RowDefinitions>
@@ -18,15 +17,15 @@
                 <Button Text="Toggle Footer"
                         Clicked="ToggleFooter"></Button>
             </StackLayout>
-            <local:CollectionView2 Grid.Row="1" x:Name="CollectionView">
-                <local:CollectionView2.ItemsLayout>
+            <CollectionView Grid.Row="1" x:Name="CollectionView" AutomationId="CollectionViewAutomation">
+                <CollectionView.ItemsLayout>
                     <GridItemsLayout Span="3"
                                      Orientation="Horizontal"
                                      HorizontalItemSpacing="4"
                                      VerticalItemSpacing="2"></GridItemsLayout>
-                </local:CollectionView2.ItemsLayout>
+                </CollectionView.ItemsLayout>
 
-                <local:CollectionView2.Header>
+                <CollectionView.Header>
 
                     <StackLayout>
                         <Image Source="oasis.jpg"
@@ -43,9 +42,9 @@
                         </StackLayout>
                     </StackLayout>
 
-                </local:CollectionView2.Header>
+                </CollectionView.Header>
 
-                <local:CollectionView2.Footer>
+                <CollectionView.Footer>
 
                     <StackLayout>
                         <Image Source="cover1.jpg"
@@ -63,9 +62,9 @@
                         </StackLayout>
                     </StackLayout>
 
-                </local:CollectionView2.Footer>
+                </CollectionView.Footer>
 
-            </local:CollectionView2>
+            </CollectionView>
         </Grid>
     </ContentPage.Content>
 </ContentPage>

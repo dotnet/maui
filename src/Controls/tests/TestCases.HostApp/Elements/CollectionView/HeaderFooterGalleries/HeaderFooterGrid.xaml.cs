@@ -2,7 +2,7 @@
 {
 	public partial class HeaderFooterGrid : ContentPage
 	{
-		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(10);
+		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(6);
 
 		object header;
 		object footer;
