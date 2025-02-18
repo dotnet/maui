@@ -127,8 +127,11 @@ static class NodeSGExtensions
         if (converter is not null && stringValue is not null)
             return true;
         
-        if (toType.NullableAnnotation == NullableAnnotation.Annotated)
+        if (toType.NullableAnnotation == NullableAnnotation.Annotated
+            && toType.SpecialType == SpecialType.None)
+        {
             toType = ((INamedTypeSymbol)toType).TypeArguments[0];
+        }
 
         if (toType.TypeKind == TypeKind.Enum)
             return true;
@@ -228,8 +231,11 @@ static class NodeSGExtensions
             => context.ReportDiagnostic(Diagnostic.Create(Descriptors.InvalidFormat, LocationHelpers.LocationCreate(context.FilePath!, lineInfo, valueString), valueString, toType.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 
-		if (toType.NullableAnnotation == NullableAnnotation.Annotated)
+		if (toType.NullableAnnotation == NullableAnnotation.Annotated
+			&& toType.SpecialType == SpecialType.None)
+        {
             toType = ((INamedTypeSymbol)toType).TypeArguments[0];
+        }
 
         if (toType.SpecialType == SpecialType.System_SByte)
         {
