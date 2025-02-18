@@ -52,6 +52,7 @@ namespace Microsoft.Maui.Hosting
 				this.ConfigureCrossPlatformLifecycleEvents();
 				this.ConfigureWindowEvents();
 				this.ConfigureDispatching();
+				this.ConfigureEnvironmentVariables();
 
 				this.UseEssentials();
 
