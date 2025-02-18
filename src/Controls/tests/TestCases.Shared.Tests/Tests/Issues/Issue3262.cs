@@ -14,8 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Adding Cookies ability to a WebView...";
 
 		[Test]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27854")]
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -24,11 +23,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
-		[FailsOnAndroidWhenRunningOnXamarinUITest] //For more information see https://github.com/dotnet/maui/issues/27854
-		[FailsOnIOSWhenRunningOnXamarinUITest] //For more information see https://github.com/dotnet/maui/issues/27854
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27854")]
+		[Category(UITestCategories.Compatibility)]	
 		public void ChangeDuringNavigating()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -40,9 +36,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27854")]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void AddAdditionalCookieToWebView()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -54,9 +49,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27854")]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void SetToOneCookie()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -65,9 +59,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27854")]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -79,9 +72,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27854")]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void RemoveAllTheCookiesIAdded()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
