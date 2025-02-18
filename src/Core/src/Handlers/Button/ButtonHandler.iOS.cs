@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Handlers
 		// Life cycle events and things like monitoring focus changed
 		public override bool NeedsContainer => true;
 
+		Proxy _proxy;
+
 		protected override UIButton CreatePlatformView()
 		{
 			var button = new UIButton(UIButtonType.System);
@@ -42,20 +44,23 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UIButton platformView)
 		{
-			platformView.TouchUpInside += OnButtonTouchUpInside;
-			platformView.TouchUpOutside += OnButtonTouchUpOutside;
-			platformView.TouchDown += OnButtonTouchDown;
-			platformView.TouchCancel += OnButtonTouchCancel;
+			_proxy = new Proxy(this);
+			platformView.TouchUpInside += _proxy.OnButtonTouchUpInside;
+			platformView.TouchUpOutside += _proxy.OnButtonTouchUpOutside;
+			platformView.TouchDown += _proxy.OnButtonTouchDown;
+			platformView.TouchCancel += _proxy.OnButtonTouchCancel;
 
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(UIButton platformView)
 		{
-			platformView.TouchUpInside -= OnButtonTouchUpInside;
-			platformView.TouchUpOutside -= OnButtonTouchUpOutside;
-			platformView.TouchDown -= OnButtonTouchDown;
-			platformView.TouchCancel -= OnButtonTouchCancel;
+			platformView.TouchUpInside -= _proxy.OnButtonTouchUpInside;
+			platformView.TouchUpOutside -= _proxy.OnButtonTouchUpOutside;
+			platformView.TouchDown -= _proxy.OnButtonTouchDown;
+			platformView.TouchCancel -= _proxy.OnButtonTouchCancel;
+
+			_proxy = null;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -172,25 +177,37 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void OnButtonTouchCancel(object? sender, EventArgs e)
+		class Proxy
 		{
-			VirtualView?.Released();
-		}
+			WeakReference<ButtonHandler> _handler;
 
-		void OnButtonTouchUpInside(object? sender, EventArgs e)
-		{
-			VirtualView?.Released();
-			VirtualView?.Clicked();
-		}
+			public Proxy(ButtonHandler handler)
+			{
+				_handler = new WeakReference<ButtonHandler>(handler);
+			}
 
-		void OnButtonTouchUpOutside(object? sender, EventArgs e)
-		{
-			VirtualView?.Released();
-		}
+			ButtonHandler? Handler => _handler.TryGetTarget(out var handler) ? handler : null;
 
-		void OnButtonTouchDown(object? sender, EventArgs e)
-		{
-			VirtualView?.Pressed();
+			public void OnButtonTouchCancel(object? sender, EventArgs e)
+			{
+				Handler?.VirtualView?.Released();
+			}
+
+			public void OnButtonTouchUpInside(object? sender, EventArgs e)
+			{
+				Handler?.VirtualView?.Released();
+				Handler?.VirtualView?.Clicked();
+			}
+
+			public void OnButtonTouchUpOutside(object? sender, EventArgs e)
+			{
+				Handler?.VirtualView?.Released();
+			}
+
+			public void OnButtonTouchDown(object? sender, EventArgs e)
+			{
+				Handler?.VirtualView?.Pressed();
+			}
 		}
 
 		partial class ButtonImageSourcePartSetter
