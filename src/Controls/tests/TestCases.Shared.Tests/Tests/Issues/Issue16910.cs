@@ -26,16 +26,15 @@ public class Issue16910 : _IssuesUITest
 		App.Tap("StopRefreshing");
 		App.WaitForElement("IsNotRefreshing");
 	}
-#if TEST_FAILS_ON_CATALYST //Swipe actions cannot be performed on the macOS test server
+// #if TEST_FAILS_ON_CATALYST //Scroll actions cannot be performed on the macOS test server
 	[Test]
 	public void BindingUpdatesFromInteractiveRefresh()
 	{
 		_ = App.WaitForElement("CollectionView");
-		App.ScrollUp("CollectionView", ScrollStrategy.Gesture, 0.7, 250) ;
+		App.ScrollUp("CollectionView", ScrollStrategy.Gesture, 0.7, 500);
 		App.WaitForElement("IsRefreshing");
 		App.Tap("StopRefreshing");
 		App.WaitForElement("IsNotRefreshing");
 	}
-	#endif
-
+// #endif
 }
