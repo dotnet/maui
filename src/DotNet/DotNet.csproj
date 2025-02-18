@@ -211,6 +211,7 @@
         Command="&quot;$(DotNetToolPath)&quot; workload install ios --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
         EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+        Condition="!$([MSBuild]::IsOSPlatform('linux'))"
     />
 		<ItemGroup>
 			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
@@ -226,6 +227,7 @@
         Command="&quot;$(DotNetToolPath)&quot; workload install maccatalyst --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
         EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+        Condition="!$([MSBuild]::IsOSPlatform('linux'))"
     />
 		<ItemGroup>
 			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
@@ -241,6 +243,7 @@
         Command="&quot;$(DotNetToolPath)&quot; workload install macos --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
         EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+        Condition="!$([MSBuild]::IsOSPlatform('linux'))"
     />
 		<ItemGroup>
 			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
@@ -256,6 +259,7 @@
         Command="&quot;$(DotNetToolPath)&quot; workload install tvos --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
         EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+        Condition="!$([MSBuild]::IsOSPlatform('linux'))"
     />
 		<ItemGroup>
 			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
