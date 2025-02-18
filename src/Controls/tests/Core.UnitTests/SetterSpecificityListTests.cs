@@ -46,11 +46,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			list.Remove(SetterSpecificity.FromBinding);
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.False(weakReference.TryGetTarget(out _));
+			Assert.False(await weakReference.WaitForCollect());
 		}
 
 		[Fact]

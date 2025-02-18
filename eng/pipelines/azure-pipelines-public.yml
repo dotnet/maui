@@ -43,15 +43,16 @@ parameters:
   - name: VM_IMAGE_HOST
     type: object
     default:
-      name: NetCore-Public
-      image: 1es-windows-2022
+      name: Azure Pipelines
+      vmImage: $(HostedWindowsImage)
       os: windows
 
 stages:
+
 - template: /eng/pipelines/arcade/stage-pack.yml@self
   parameters:
     pool: ${{ parameters.VM_IMAGE_HOST }}
-    runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
+    runAsPublic: true
 
 - template: /eng/pipelines/arcade/stage-unit-tests.yml@self
   parameters:

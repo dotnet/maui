@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Devices.Sensors
 				Latitude = latitude;
 
 			// check if longitude is in (-180, 180]
-			if (Math.Abs(latitude) > 180)
+			if (Math.Abs(longitude) > 180)
 				throw new ArgumentOutOfRangeException(nameof(longitude));
 			else
 				Longitude = longitude;

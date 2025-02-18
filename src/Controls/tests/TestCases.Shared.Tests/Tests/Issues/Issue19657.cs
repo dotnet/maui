@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			_ = App.WaitForElement("WaitHere");
 
 			var element = App.WaitForElement("First");
-		
+
 			VerifyScreenshot();
 		}
 	}

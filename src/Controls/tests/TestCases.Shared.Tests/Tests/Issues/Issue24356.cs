@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.TabbedPage)]
 		public void GradientInTabBarShouldChange()
 		{
-			try 
+			try
 			{
 				App.WaitForElement("lightThemeLabel");
 				App.SetDarkTheme();
