@@ -53,7 +53,8 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP
 		.VirtualDevice("Android_x64_API31",   (AndroidApiLevel)31, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice("Android_x64_API32",   (AndroidApiLevel)32, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice("Android_x64_API33",   (AndroidApiLevel)33, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
-		.VirtualDevice("Android_x64_API34",   (AndroidApiLevel)34, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X);
+		.VirtualDevice("Android_x64_API34",   (AndroidApiLevel)34, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice("Android_x64_API35",   (AndroidApiLevel)35, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X);
 	
 		if (IsArm64)
 		{
@@ -69,7 +70,9 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP
 				.VirtualDevice("Android_arm64_API31", (AndroidApiLevel)31, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X)
 				.VirtualDevice("Android_arm64_API32", (AndroidApiLevel)32, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X)
 				.VirtualDevice("Android_arm64_API33", (AndroidApiLevel)33, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X)
-				.VirtualDevice("Android_arm64_API34", (AndroidApiLevel)34, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X);
+				.VirtualDevice("Android_arm64_API34", (AndroidApiLevel)34, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X)
+				.VirtualDevice("Android_arm64_API35", (AndroidApiLevel)35, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X);
+
 		}
 	}
 
