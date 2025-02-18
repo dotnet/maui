@@ -33,7 +33,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.SetOrientationLandscape();
 
 				WaitForAllElements();
-				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape");
+				VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape");
 				changeBoundsButton.Click();
 				WaitForAllElements();
 
