@@ -136,7 +136,7 @@ RunTarget(TARGET);
 void ExecuteBuild(string project, string device, string binDir, string config, string tfm, string toolPath)
 {
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(project);
-	var binlog = $"{binDir}/{projectName}-{config}-ios.binlog";
+	var binlog = $"{binDir}/{projectName}-{config}-android.binlog";
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{
@@ -233,7 +233,7 @@ void ExecuteBuildUITestApp(string appProject, string device, string binDir, stri
 {
 	Information($"Building UI Test app: {appProject}");
 	var projectName = System.IO.Path.GetFileNameWithoutExtension(appProject);
-	var binlog = $"{binDir}/{projectName}-{config}-ios.binlog";
+	var binlog = $"{binDir}/{projectName}-{config}-android.binlog";
 
 	DotNetBuild(appProject, new DotNetBuildSettings
 	{
@@ -369,7 +369,16 @@ AndroidEmulatorToolSettings AdjustEmulatorSettingsForCI(AndroidEmulatorToolSetti
 {
 	if (IsCIBuild())
 	{
-		settings.ArgumentCustomization = args => args.Append("-no-window");
+		var gpu = 
+			IsRunningOnLinux() ? "-gpu swiftshader_indirect" :
+		 	IsRunningOnWindows() ? "" :
+			"-gpu guest";
+		settings.ArgumentCustomization = args => args
+			.Append(gpu)
+			.Append("-no-window")
+			.Append("-no-snapshot")
+			.Append("-no-audio")
+			.Append("-no-boot-anim");
 	}
 	return settings;
 }
