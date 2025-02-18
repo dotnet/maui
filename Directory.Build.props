@@ -118,10 +118,10 @@
     <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">true</IncludeWindowsTargetFrameworks>
     <!-- Disabled until net9.0-tizen is available -->
     <IncludeTizenTargetFrameworks>true</IncludeTizenTargetFrameworks>
-    <IncludeMacOSTargetFrameworks>true</IncludeMacOSTargetFrameworks>
+    <IncludeMacOSTargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">true</IncludeMacOSTargetFrameworks>
     <IncludeAndroidTargetFrameworks>true</IncludeAndroidTargetFrameworks>
-    <IncludeMacCatalystTargetFrameworks>true</IncludeMacCatalystTargetFrameworks>
-    <IncludeIosTargetFrameworks>true</IncludeIosTargetFrameworks>
+    <IncludeMacCatalystTargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">true</IncludeMacCatalystTargetFrameworks>
+    <IncludeIosTargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">true</IncludeIosTargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>
