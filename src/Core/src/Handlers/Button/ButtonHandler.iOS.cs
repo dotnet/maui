@@ -7,7 +7,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ButtonHandler : ViewHandler<IButton, UIButton>
 	{
-		static readonly UIControlState[] ControlStates = { UIControlState.Normal, UIControlState.Highlighted, UIControlState.Disabled };
+		static readonly UIControlState[] ControlStates = {
+			UIControlState.Normal, UIControlState.Highlighted, UIControlState.Disabled };
 
 		// This appears to be the padding that Xcode has when "Default" content insets are used
 		public readonly static Thickness DefaultPadding = new Thickness(12, 7);
@@ -19,11 +20,16 @@ namespace Microsoft.Maui.Handlers
 		protected override UIButton CreatePlatformView()
 		{
 			var button = new UIButton(UIButtonType.System);
-			SetControlPropertiesFromProxy(button);
+			
+			foreach (UIControlState uiControlState in ControlStates)
+			{
+				button.SetTitleColor(UIButton.Appearance.TitleColor(uiControlState), uiControlState); // If new values are null, old values are preserved.
+				button.SetTitleShadowColor(UIButton.Appearance.TitleShadowColor(uiControlState), uiControlState);
+				button.SetBackgroundImage(UIButton.Appearance.BackgroundImageForState(uiControlState), uiControlState);
+			}
+
 			return button;
 		}
-
-		readonly ButtonEventProxy _proxy = new ButtonEventProxy();
 
 		protected override void SetupContainer()
 		{
@@ -36,14 +42,20 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UIButton platformView)
 		{
-			_proxy.Connect(VirtualView, platformView);
+			platformView.TouchUpInside += OnButtonTouchUpInside;
+			platformView.TouchUpOutside += OnButtonTouchUpOutside;
+			platformView.TouchDown += OnButtonTouchDown;
+			platformView.TouchCancel += OnButtonTouchCancel;
 
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(UIButton platformView)
 		{
-			_proxy.Disconnect(platformView);
+			platformView.TouchUpInside -= OnButtonTouchUpInside;
+			platformView.TouchUpOutside -= OnButtonTouchUpOutside;
+			platformView.TouchDown -= OnButtonTouchDown;
+			platformView.TouchCancel -= OnButtonTouchCancel;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -160,52 +172,25 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		class ButtonEventProxy
+		void OnButtonTouchCancel(object? sender, EventArgs e)
 		{
-			WeakReference<IButton>? _virtualView;
+			VirtualView?.Released();
+		}
 
-			IButton? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+		void OnButtonTouchUpInside(object? sender, EventArgs e)
+		{
+			VirtualView?.Released();
+			VirtualView?.Clicked();
+		}
 
-			public void Connect(IButton virtualView, UIButton platformView)
-			{
-				_virtualView = new(virtualView);
+		void OnButtonTouchUpOutside(object? sender, EventArgs e)
+		{
+			VirtualView?.Released();
+		}
 
-				platformView.TouchUpInside += OnButtonTouchUpInside;
-				platformView.TouchUpOutside += OnButtonTouchUpOutside;
-				platformView.TouchDown += OnButtonTouchDown;
-				platformView.TouchCancel += OnButtonTouchCancel;
-			}
-
-			public void Disconnect(UIButton platformView)
-			{
-				_virtualView = null;
-
-				platformView.TouchUpInside -= OnButtonTouchUpInside;
-				platformView.TouchUpOutside -= OnButtonTouchUpOutside;
-				platformView.TouchDown -= OnButtonTouchDown;
-				platformView.TouchCancel -= OnButtonTouchCancel;
-			}
-
-			void OnButtonTouchCancel(object? sender, EventArgs e)
-			{
-				VirtualView?.Released();
-			}
-
-			void OnButtonTouchUpInside(object? sender, EventArgs e)
-			{
-				VirtualView?.Released();
-				VirtualView?.Clicked();
-			}
-
-			void OnButtonTouchUpOutside(object? sender, EventArgs e)
-			{
-				VirtualView?.Released();
-			}
-
-			void OnButtonTouchDown(object? sender, EventArgs e)
-			{
-				VirtualView?.Pressed();
-			}
+		void OnButtonTouchDown(object? sender, EventArgs e)
+		{
+			VirtualView?.Pressed();
 		}
 
 		partial class ButtonImageSourcePartSetter
