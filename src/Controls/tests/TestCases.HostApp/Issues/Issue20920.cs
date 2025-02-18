@@ -17,8 +17,8 @@ namespace Maui.Controls.Sample.Issues
 						Margin = 100,
 						AutomationId = "dotnet_bot",
 						Source = "dotnet_bot.png",
-						HeightRequest = 1000,
-						WidthRequest = 1000
+						HeightRequest = 2000,
+						WidthRequest = 2000
 					}
 				}
 			};
