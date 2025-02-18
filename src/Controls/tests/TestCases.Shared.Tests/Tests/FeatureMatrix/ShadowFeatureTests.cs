@@ -214,7 +214,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if !WINDOWS // https://github.com/dotnet/maui/issues/27732
+#if !IOS && !WINDOWS // Fails iOS: https://github.com/dotnet/maui/issues/27879 and Windows: https://github.com/dotnet/maui/issues/27732
 		[Test]
 		[Category(UITestCategories.Shadow)]
 		public void Shadow_Remove_AtRuntime()
