@@ -333,7 +333,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				CollectionView.CollectionViewLayout.InvalidateLayout();
 			}
 		}
-		
+
 		void ReloadData()
 		{
 			if (_isDisposed)
