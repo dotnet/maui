@@ -31,6 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
 			// add a couple cookies
+			App.WaitForElement("ChangeDuringNavigating");
 			App.Tap("ChangeDuringNavigating");
 			ValidateSuccess();
 			App.Tap("ChangeDuringNavigating");
