@@ -2,7 +2,7 @@
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 18452, "NullReferenceException throws on Windows when setting Cookies on .NET MAUI WebView", PlatformAffected.UWP)]
+	[Issue(IssueTracker.Github, 18452, "NullReferenceException throws on Windows when setting Cookies on .NET MAUI WebView", PlatformAffected.UWP, isInternetRequired: true)]
 	public class Issue18452 : TestContentPage
 	{
 		protected override void Init()

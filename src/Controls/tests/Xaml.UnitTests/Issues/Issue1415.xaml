@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Issue1415"
-			 xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests">
+			 xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"
+			 x:DataType="x:String">
 	<Label x:Name="label" Text="{Binding Converter={x:Static local:ReverseConverter.Instance}, Mode=TwoWay}"/>
 </ContentPage>
