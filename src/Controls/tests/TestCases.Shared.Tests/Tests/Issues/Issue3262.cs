@@ -27,6 +27,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnMacWhenRunningOnXamarinUITest]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
+		[FailsOnAndroidWhenRunningOnXamarinUITest] //For more information see https://github.com/dotnet/maui/issues/27854
+		[FailsOnIOSWhenRunningOnXamarinUITest] //For more information see https://github.com/dotnet/maui/issues/27854
 		public void ChangeDuringNavigating()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
