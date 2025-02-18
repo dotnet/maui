@@ -17,6 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ShadowShouldUpdateWhenClipping()
 		{
 			App.WaitForElement("ApplyClipBtn");
+			App.Tap("ApplyClipBtn");
 			VerifyScreenshot();
 		}
 	}

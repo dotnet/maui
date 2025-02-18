@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 			Button button = new Button()
 			{
-				AutomationId = "ApplyClipBtn"
+				AutomationId = "ApplyClipBtn",
 				Text = "Apply Clip",
 			};
 
