@@ -163,10 +163,10 @@
     <_PacksToRemove Include="microsoft.net.workload.mono.toolchain" />
     <!-- Ids for 'dotnet workload install' -->
     <_WorkloadIds Include="android" />
-    <_WorkloadIds Include="maccatalyst" />
-    <_WorkloadIds Include="macos" />
-    <_WorkloadIds Include="ios" />
-    <_WorkloadIds Include="tvos" />
+    <_WorkloadIds Include="maccatalyst" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
+    <_WorkloadIds Include="macos" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
+    <_WorkloadIds Include="ios" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
+    <_WorkloadIds Include="tvos" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
     <_WorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
   </ItemGroup>
 
