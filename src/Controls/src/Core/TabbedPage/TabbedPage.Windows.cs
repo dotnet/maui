@@ -127,8 +127,10 @@ namespace Microsoft.Maui.Controls
 				_navigationView.SizeChanged -= OnNavigationViewSizeChanged;
 			}
 
-			if (elementHandler?.PlatformView is WFrame wFrame)
-				wFrame.Navigated -= OnNavigated;
+			if (_navigationFrame is not null)
+			{
+				_navigationFrame.Navigated -= OnNavigated;
+			}
 
 			Appearing -= OnTabbedPageAppearing;
 			Disappearing -= OnTabbedPageDisappearing;
@@ -333,6 +335,7 @@ namespace Microsoft.Maui.Controls
 						vm.UnselectedTitleColor = view.BarTextColor?.AsPaint()?.ToPlatform();
 						vm.SelectedForeground = view.SelectedTabColor?.AsPaint()?.ToPlatform();
 						vm.UnselectedForeground = view.UnselectedTabColor?.AsPaint()?.ToPlatform();
+						vm.IsSelected = page == view.CurrentPage;
 					});
 
 				handler.UpdateValue(nameof(TabbedPage.CurrentPage));

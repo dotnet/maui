@@ -18,12 +18,12 @@ public class Issue1614 : _IssuesUITest
 	}
 
 	public override string Issue => "iOS 11 prevents InputAccessoryView from showing in landscape mode";
-	
+
 	[Test]
 	[Category(UITestCategories.Picker)]
 	public void Issue1614Test()
 	{
-		TapPicker("Picker");	
+		TapPicker("Picker");
 		TapPicker("DatePicker");
 		TapPicker("TimePicker");
 	}

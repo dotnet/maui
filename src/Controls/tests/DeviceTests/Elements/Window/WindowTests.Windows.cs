@@ -9,9 +9,10 @@ using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Windowing;
+using Windows.UI;
 using Xunit;
-using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -230,6 +231,45 @@ namespace Microsoft.Maui.DeviceTests
 							Assert.True(appTitleBarHeight > 0);
 							Assert.True(Math.Abs(position.Value.Y - appTitleBarHeight) < 1);
 						}
+					}
+					catch (Exception exc)
+					{
+						throw new Exception($"Failed to swap to {nextRootPage}", exc);
+					}
+				}
+			});
+		}
+
+		[Theory]
+		[ClassData(typeof(WindowPageSwapTestCases))]
+		public async Task TitlebarWorksWhenSwitchingPage(WindowPageSwapTestCase swapOrder)
+		{
+			SetupBuilder();
+
+			var firstRootPage = swapOrder.GetNextPageType();
+			var window = new Window(firstRootPage)
+			{
+				TitleBar = new TitleBar()
+				{
+					Title = "Hello World",
+					BackgroundColor = Colors.CornflowerBlue
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
+			{
+				await OnLoadedAsync(swapOrder.Page);
+				while (!swapOrder.IsFinished())
+				{
+					var nextRootPage = swapOrder.GetNextPageType();
+					window.Page = nextRootPage;
+
+					try
+					{
+						await OnLoadedAsync(swapOrder.Page);
+
+						var navView = GetWindowRootView(handler);
+						Assert.NotNull(navView.TitleBar);
 					}
 					catch (Exception exc)
 					{

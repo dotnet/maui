@@ -8,14 +8,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Issue7290 : _IssuesUITest
 {
 
-#if MACCATALYST
-	const string Cancel = "action-button--999";
-	const string Close = "action-button--998";
-#else
-	const string Cancel = "Cancel";
-	const string Close = "Close Action Sheet";
-#endif
-
 	public Issue7290(TestDevice testDevice) : base(testDevice)
 	{
 	}
@@ -26,10 +18,8 @@ public class Issue7290 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void DisplayActionSheetAndDisplayAlertFromOnAppearing()
 	{
-		App.WaitForElementTillPageNavigationSettled(Cancel);
-		App.Tap(Cancel);
-		App.WaitForElementTillPageNavigationSettled(Close);
-		App.Tap(Close);
+		App.TapDisplayAlertButton("Cancel");
+		App.TapDisplayAlertButton("Close Action Sheet", buttonIndex: 1);
 	}
 }
 #endif

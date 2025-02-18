@@ -2,7 +2,6 @@
 using NUnit.Framework.Legacy;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
-using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
