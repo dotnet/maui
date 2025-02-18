@@ -8,7 +8,6 @@ public partial class Issue27563 : ContentPage
 	public Issue27563()
 	{
 		var verticalStackLayout = new VerticalStackLayout();
-		verticalStackLayout.Padding = new Thickness(0,20,0,0);
 
 		var carouselItems = new ObservableCollection<string>
 		{
@@ -20,6 +19,7 @@ public partial class Issue27563 : ContentPage
 		CarouselView carousel = new CarouselView
 		{
 			ItemsSource = carouselItems,
+			HeightRequest = 200,
 			ItemTemplate = new DataTemplate(() =>
 			{
 				var grid = new Grid
@@ -39,7 +39,6 @@ public partial class Issue27563 : ContentPage
 				return grid;
 			}),
 			HorizontalOptions = LayoutOptions.Fill,
-			VerticalOptions = LayoutOptions.Fill
 		};
 
 		var indicatorView = new IndicatorView
@@ -54,12 +53,11 @@ public partial class Issue27563 : ContentPage
 			Text = "Change IndicatorView Position",
 			AutomationId = "PositionButton",
 			Margin = new Thickness(20),
-			BackgroundColor = Colors.LightBlue
 		};
 
 		button.Clicked += (sender, e) =>
 		{
-			carousel.CurrentItem = carouselItems[2];
+			indicatorView.Position = 2;
 		};
 
 
