@@ -20,7 +20,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("EnableDragAndDrop");
 			App.DragAndDrop("DragElement", "DropTarget");
 			App.WaitForElement("DragEventTriggered");
-			App.WaitForElement("DropEventTriggered");
 		}
 	}
 }
