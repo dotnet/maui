@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var platformWindow = mauiContext.GetPlatformWindow();
 
-			return new AlertRequestHelper(platformWindow, mauiContext);
+			return new AlertRequestHelper(Window, platformWindow);
 		}
 
 		internal sealed partial class AlertRequestHelper
