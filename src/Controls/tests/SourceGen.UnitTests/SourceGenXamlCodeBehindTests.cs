@@ -96,6 +96,80 @@ public class TestControl : ContentView
 	}
 
 	[Test]
+	public void TestCodeBehindGenerator_XamlCustomControlCodeBehindNoBaseClass()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	xmlns:local="clr-namespace:Test"
+	x:DataType="local:TestPage"
+	x:Class="Test.TestPage">
+		<local:TestControl x:Name="MyTestControl" Command="{Binding FooCommand}" />
+</ContentPage>
+""";
+
+		var customControl =
+"""
+<?xml version="1.0" encoding="utf-8" ?>
+<Button xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Test.TestControl"
+    CornerRadius="30" 
+    HeightRequest="60" 
+    WidthRequest="60" 
+    VerticalOptions="End" 
+    HorizontalOptions="End"
+    Margin="30" />
+""";
+
+		var code =
+"""
+using System;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
+
+namespace Test;
+
+[XamlProcessing(XamlInflator.SourceGen)]
+public partial class TestPage : ContentPage
+{
+    public Command FooCommand { get; } = new Command(() => Console.WriteLine("Foo"));
+
+	public TestPage()
+	{
+		InitializeComponent();
+		BindingContext = this;
+	}
+}
+
+// Note the lack of a base class here, this is intentional
+public partial class TestControl
+{
+	public TestControl()
+	{
+		InitializeComponent();
+	}
+}
+""";
+
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation()
+			.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+
+		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml),
+			new AdditionalXamlFile("TestControl.xaml", customControl));
+
+		Assert.IsFalse(result.Diagnostics.Any());
+
+		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith("Test.xaml.sg.cs")).SourceText.ToString();
+		
+		// TODO: What do we assert? I guess we should check for the Command?
+		Assert.IsTrue(generated.Contains("Test.TestControl MyTestControl", StringComparison.Ordinal));
+	}
+
+	[Test]
 	public void TestCodeBehindGenerator_CompilationClone()
 	{
 		var xaml =
