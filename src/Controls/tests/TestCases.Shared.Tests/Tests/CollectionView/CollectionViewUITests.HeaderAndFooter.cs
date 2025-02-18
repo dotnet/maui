@@ -28,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Just a string as a header");
 			App.WaitForElement("This footer is also a string");
 		}
-#if IOS
+
 		[Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterViewWorks()
@@ -53,6 +53,9 @@ namespace Microsoft.Maui.TestCases.Tests
             // Navigate to the specific sample inside selection galleries
             VisitSubGallery("Header/Footer (Template)");
 
+            App.WaitForElement("This Is A Header");
+            App.WaitForElement("This Is A Footer");
+
             VerifyScreenshot();
         }
 
@@ -72,10 +75,6 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
-#if TEST_FAILS_ON_IOS
-        // The screenshot that's currently generated for this test is wrong
-        // So, we're ignoring this test due to it causing confusion when other changes
-        // cause this test to fail.
         [Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterGridHorizontalWorks()
@@ -88,12 +87,13 @@ namespace Microsoft.Maui.TestCases.Tests
 
             App.WaitForElement("This Is A Header");
             
-            // This is a bug in the test, the footer is not being found
-            //App.WaitForElement("This Is A Footer");
+ #if ANDROID || IOS
+            App.ScrollRight("CollectionViewAutomation",ScrollStrategy.Gesture, 0.99,500);
+            App.ScrollRight("CollectionViewAutomation",ScrollStrategy.Gesture, 0.99,500);
+#endif 
+            App.WaitForElement("This Is A Footer");
 
             VerifyScreenshot();
         }
-#endif
-#endif
 	}
 }
