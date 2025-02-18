@@ -13,7 +13,6 @@ using Xunit.Sdk;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 
-	[Collection("TestsAccessingStaticHandlers")]
 	public class HandlerLifeCycleTests : BaseTestFixture
 	{
 		[Fact]
