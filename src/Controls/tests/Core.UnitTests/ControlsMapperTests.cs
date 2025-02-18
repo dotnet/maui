@@ -14,13 +14,12 @@ using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[Collection("ControlsMapperTests")]
+	[Collection("TestsAccessingStaticHandlers")]
 	public class ControlsMapperTests : BaseTestFixture
 	{
 		MauiContext SetupMauiContext()
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()
-				.UseMauiApp<ApplicationStub>()
 				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ButtonWithControlsMapper, ButtonWithControlsMapperHandler>())
 				.Build();
 
