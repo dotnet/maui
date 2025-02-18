@@ -8,6 +8,7 @@
 		protected override void Init()
 		{
 			Label dragResult = new Label();
+			Label dropResult = new Label();
 
 			DragGestureRecognizer dragGestureRecognizer = new DragGestureRecognizer { CanDrag = false };
 			Label dragBox = new Label
@@ -20,13 +21,16 @@
 			};
 			dragGestureRecognizer.DragStarting += (_, __) => dragResult.Text = "DragEventTriggered";
 
+			DropGestureRecognizer dropGestureRecognizer = new DropGestureRecognizer { AllowDrop = false };
 			Label dropBox = new Label
 			{
 				HeightRequest = 200,
 				WidthRequest = 200,
 				BackgroundColor = Colors.Pink,
+				GestureRecognizers = { dropGestureRecognizer },
 				AutomationId = "DropTarget"
 			};
+			dropGestureRecognizer.Drop += (_, __) => dropResult.Text = "DropEventTriggered";
 
 			Button button = new Button
 			{
@@ -37,6 +41,7 @@
 			button.Clicked += (_, __) =>
 			{
 				dragGestureRecognizer.CanDrag = true;
+				dropGestureRecognizer.AllowDrop = true;
 			};
 
 			Content = new StackLayout
@@ -48,6 +53,7 @@
 					dropBox,
 					button,
 					dragResult,
+					dropResult
 				}
 			};
 		}
