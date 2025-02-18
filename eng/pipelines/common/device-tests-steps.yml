@@ -34,6 +34,7 @@ steps:
       skipAndroidEmulatorImages: ${{ ne(parameters.platform, 'android') }}
       skipAndroidCreateAvds: ${{ ne(parameters.platform, 'android') }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      apiversion: ${{ parameters.apiversion }}
       ${{ if eq(parameters.skipProvisioning, false) }}:
         skipProvisionator : false
         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)

@@ -73,17 +73,28 @@
 		<!-- Assemble the emulator image package names to install in the sdk -->
 		<ItemGroup>
 			<!-- Emulator images -->
-			<AndroidSdkEmulatorImagePackages Include="system-images%3Bandroid-%(AndroidSdkApiLevels.Identity)%3B%(AndroidSdkApiLevels.SystemImageType)%3B$(AndroidSdkHostAbi)" />
+			<AndroidSdkEmulatorImagePackages
+				Include="system-images%3Bandroid-%(AndroidSdkApiLevels.Identity)%3B%(AndroidSdkApiLevels.SystemImageType)%3B$(AndroidSdkHostAbi)"
+				ApiLevel="%(AndroidSdkApiLevels.Identity)" />
 		</ItemGroup>
 
 		<!-- Install SDK Packages -->
-		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkEmulatorImagePackages.Identity)&quot;" />
+		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkEmulatorImagePackages.Identity)&quot;" 
+		 	  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkEmulatorImagePackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
 	</Target>
 
 	<Target Name="ProvisionAndroidSdkAvdCreateAvds">
 
+		<ItemGroup>
+			<AndroidSdkAvdPackages
+				Include="system-images%3Bandroid-%(AndroidSdkApiLevels.Identity)%3B%(AndroidSdkApiLevels.SystemImageType)%3B$(AndroidSdkHostAbi)"
+				DeviceType="%(AndroidSdkApiLevels.DeviceType)"
+				ApiLevel="%(AndroidSdkApiLevels.Identity)" />
+		</ItemGroup>
+
 		<!-- Create all the AVD's we need based on the api levels specified -->
-		<Exec Command="dotnet android avd create --name &quot;Emulator_%(AndroidSdkApiLevels.Identity)&quot; --sdk &quot;system-images%3Bandroid-%(AndroidSdkApiLevels.Identity)%3B%(AndroidSdkApiLevels.SystemImageType)%3B$(AndroidSdkHostAbi)&quot; --device &quot;%(AndroidSdkApiLevels.DeviceType)&quot; --force" />
+		<Exec Command="dotnet android avd create --name &quot;Emulator_%(AndroidSdkAvdPackages.ApiLevel)&quot; --sdk &quot;%(AndroidSdkAvdPackages.Identity)&quot; --device &quot;%(AndroidSdkAvdPackages.DeviceType)&quot; --force" 
+			  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkAvdPackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
 	</Target>
 
 	<Target Name="ProvisionAndroidSdk" DependsOnTargets="ProvisionAndroidSdkCommonPackages;ProvisionAndroidSdkPlatformApiPackages;ProvisionAndroidSdkEmulatorImagePackages;ProvisionAndroidSdkAvdCreateAvds">

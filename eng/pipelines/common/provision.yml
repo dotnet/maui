@@ -10,6 +10,7 @@ parameters:
   skipAndroidPlatformApis: false
   skipAndroidEmulatorImages: true # For most builds we won't need these
   skipAndroidCreateAvds: true # For most builds we won't need these
+  apiversion: ''
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   provisionatorPath: $(provisionator.path)
   provisionatorXCodePath: $(provisionator.xcode)
@@ -146,16 +147,20 @@ steps:
   # Provision Android SDK Emulator Images (eg: system-images;android-34;google_apis;aarch64)
   - ${{ if ne(parameters.skipAndroidEmulatorImages, 'true') }}:
     - pwsh: |
-        dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
+        dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
       displayName: 'Provision Android SDK - Emulator Images'
       condition: succeeded()
+      env:
+        AndroidSdkProvisionApiLevel: ${{ parameters.apiversion }}
 
   # Create Android AVDs (Create actual Emulator Virtual Devices)
   - ${{ if ne(parameters.skipAndroidCreateAvds, 'true') }}:
     - pwsh: |
-        dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
+        dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
       displayName: 'Provision Android SDK - Create AVDs'
       condition: succeeded()
+      env:
+        AndroidSdkProvisionApiLevel: ${{ parameters.apiversion }}
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: ../../common/templates-official/steps/enable-internal-sources.yml
