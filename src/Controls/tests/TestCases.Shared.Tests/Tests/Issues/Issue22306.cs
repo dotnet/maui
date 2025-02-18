@@ -33,14 +33,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.SetOrientationLandscape();
 
 				WaitForAllElements();
-				VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape");
+				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownLandscape");
 				changeBoundsButton.Click();
 				WaitForAllElements();
 
 				App.SetOrientationPortrait();
 				WaitForAllElements();
 				// Cannot use the original screenshot as the black bar on bottom is not as dark after rotation
-				VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "Original2");
+				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original2");
 
 				if (exception != null)
 				{
