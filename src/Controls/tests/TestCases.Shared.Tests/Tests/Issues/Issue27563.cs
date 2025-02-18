@@ -13,8 +13,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{ }
 
 		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyCollectionViewScrolling()
+		[Category(UITestCategories.CarouselView)]
+		public void VerifyCarouselViewScrolling()
 		{
 			App.WaitForElement("PositionButton");
 			App.Tap("PositionButton");
