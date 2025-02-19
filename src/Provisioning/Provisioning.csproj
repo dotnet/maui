@@ -235,10 +235,10 @@
 		</PropertyGroup>
 		<ItemGroup>
 			<_ProvisionJdkLinuxCommands Include="wget https://packages.microsoft.com/config/ubuntu/`lsb_release -rs`/packages-microsoft-prod.deb -O packages-microsoft-prod.deb" />
-			<_ProvisionJdkLinuxCommands Include="dpkg -i packages-microsoft-prod.deb" />
+			<_ProvisionJdkLinuxCommands Include="sudo dpkg -i packages-microsoft-prod.deb" />
 			<_ProvisionJdkLinuxCommands Include="rm packages-microsoft-prod.deb" />
-			<_ProvisionJdkLinuxCommands Include="apt-get update" />
-			<_ProvisionJdkLinuxCommands Include="apt-get install -y msopenjdk-$(_AndroidJdkMajorVersion)" />
+			<_ProvisionJdkLinuxCommands Include="sudo apt-get update" />
+			<_ProvisionJdkLinuxCommands Include="sudo apt-get install -y msopenjdk-$(_AndroidJdkMajorVersion)" />
 		</ItemGroup>
 		<Exec Command="%(_ProvisionJdkLinuxCommands.Identity)" />
 		<PropertyGroup>
