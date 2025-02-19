@@ -131,10 +131,14 @@ namespace Microsoft.Maui.Controls
 
 		void RefreshBarBackground()
 		{
+<<<<<<< HEAD
 			if(Handler?.PlatformView is MaterialToolbar materialToolbar)
 			{
 				materialToolbar.UpdateBarBackground(this);
 			}
+=======
+			PlatformView.UpdateBarBackground(this);
+>>>>>>> parent of 4e167edec1 (Revert "Merge branch 'fix-21645' of https://github.com/NirmalKumarYuvaraj/maui into fix-21645")
 		}
 
 		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2) =>
