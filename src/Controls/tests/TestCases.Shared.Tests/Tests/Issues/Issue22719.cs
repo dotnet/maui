@@ -1,3 +1,4 @@
+#if MACCATALYST || WINDOWS // Maximizing the FlyoutPage window is applicable only on the MacCatalyst and Windows platforms.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -15,11 +16,10 @@ public class Issue22719 : _IssuesUITest
 	public void ShouldFlyoutBeVisibleAfterMaximizingWindow()
 	{
 		App.WaitForElement("Label");
-#if MACCATALYST
+#if MACCATALYST // The EnterFullScreen script is applicable only for MacCatalyst
 		App.EnterFullScreen();
-#elif ANDROID || IOS
-		App.SetOrientationLandscape();
 #endif
 		VerifyScreenshot();
 	}
 }
+#endif
