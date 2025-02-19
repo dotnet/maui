@@ -74,7 +74,9 @@ namespace Microsoft.Maui.DeviceTests
 				};
 
 				// Assert that the image is in the expected position
+#pragma warning disable CS0618 // Type or member is obsolete
 				var drawables = TextViewCompat.GetCompoundDrawablesRelative(platformButton);
+#pragma warning restore CS0618 // Type or member is obsolete
 				Assert.NotNull(drawables[matchingDrawableIndex]);
 			});
 		}

@@ -122,8 +122,8 @@ public class FlyoutPageNavigation : FlyoutPage
 			var page = e.SelectedItem as NavigationPage;
 			if (page != null)
 			{
-					Detail = page;
-					IsPresented = false;		
+				Detail = page;
+				IsPresented = false;
 			}
 		};
 	}

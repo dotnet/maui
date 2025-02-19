@@ -189,6 +189,12 @@ public static partial class AppHostBuilderExtensions
 			handlers.AddControlsHandlers();
 		});
 
+		// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
+		if (RuntimeFeature.IsHybridWebViewSupported)
+		{
+			builder.Services.AddScoped<IHybridWebViewTaskManager>(_ => new HybridWebViewTaskManager());
+		}
+
 #if WINDOWS
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiControlsInitializer>());
 #endif
@@ -251,6 +257,7 @@ public static partial class AppHostBuilderExtensions
 		SwipeView.RemapForControls();
 		Picker.RemapForControls();
 		SearchBar.RemapForControls();
+		Stepper.RemapForControls();
 		TabbedPage.RemapForControls();
 		TimePicker.RemapForControls();
 		Layout.RemapForControls();
