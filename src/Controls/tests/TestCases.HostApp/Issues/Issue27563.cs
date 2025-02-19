@@ -19,6 +19,7 @@ public partial class Issue27563 : ContentPage
 		CarouselView carousel = new CarouselView
 		{
 			ItemsSource = carouselItems,
+			AutomationId = "carouselview",
 			HeightRequest = 200,
 			ItemTemplate = new DataTemplate(() =>
 			{
@@ -34,6 +35,7 @@ public partial class Issue27563 : ContentPage
 					FontSize = 18,
 				};
 				label.SetBinding(Label.TextProperty, ".");
+				label.SetBinding(Label.AutomationIdProperty, ".");
 
 				grid.Children.Add(label);
 				return grid;
@@ -55,15 +57,23 @@ public partial class Issue27563 : ContentPage
 			Margin = new Thickness(20),
 		};
 
+		var label = new Label
+		{
+			Text = $"CarouselView Position - {carousel.Position}",
+			AutomationId = "positionLabel",
+			HorizontalOptions = LayoutOptions.Center,
+		};
+
 		button.Clicked += (sender, e) =>
 		{
 			indicatorView.Position = 2;
+			label.Text = $"CarouselView Position - {carousel.Position}";
 		};
-
 
 		verticalStackLayout.Children.Add(carousel);
 		verticalStackLayout.Children.Add(indicatorView);
 		verticalStackLayout.Children.Add(button);
+		verticalStackLayout.Children.Add(label);
 
 		Content = verticalStackLayout;
 	}
