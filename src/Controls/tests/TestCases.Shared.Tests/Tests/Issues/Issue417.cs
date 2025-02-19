@@ -20,25 +20,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("First Page");
 			App.WaitForElement("Next Page");
-			App.Screenshot("All elements present");
 
 			App.Tap("Next Page");
 
 			App.WaitForElement("Second Page");
 			App.WaitForElement("Next Page 2");
-			App.Screenshot("At second page");
 			App.Tap("Next Page 2");
 
 			App.WaitForElement("Third Page");
 			App.WaitForElement("Pop to root");
-			App.Screenshot("At third page");
 			App.Tap("Pop to root");
 
 			App.WaitForElement("First Page");
 			App.WaitForElement("Next Page");
-			App.Screenshot("All elements present");
-
-			App.Screenshot("Popped to root");
 		}
 	}
 }
