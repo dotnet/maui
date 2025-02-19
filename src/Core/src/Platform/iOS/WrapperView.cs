@@ -9,15 +9,21 @@ using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents
+	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents, ICrossPlatformLayoutBacking
 	{
 		bool _fireSetNeedsLayoutOnParentWhenWindowAttached;
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
-		internal ICrossPlatformLayout? CrossPlatformLayout
+		ICrossPlatformLayout? ICrossPlatformLayoutBacking.CrossPlatformLayout
 		{
 			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
 			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);
+		}
+
+		internal ICrossPlatformLayout? CrossPlatformLayout
+		{
+			get => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout;
+			set => ((ICrossPlatformLayoutBacking)this).CrossPlatformLayout = value;
 		}
 
 		double _lastMeasureHeight = double.NaN;
@@ -25,7 +31,6 @@ namespace Microsoft.Maui.Platform
 
 		CAShapeLayer? _maskLayer;
 		CAShapeLayer? _backgroundMaskLayer;
-		CAShapeLayer? _shadowLayer;
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "_borderView is a SubView")]
 		UIView? _borderView;
 
@@ -56,7 +61,7 @@ namespace Microsoft.Maui.Platform
 			get => _maskLayer;
 			set
 			{
-				var layer = GetLayer();
+				var layer = GetContentLayer();
 
 				if (layer is not null && _maskLayer is not null)
 					layer.Mask = null;
@@ -85,19 +90,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		CAShapeLayer? ShadowLayer
-		{
-			get => _shadowLayer;
-			set
-			{
-				_shadowLayer?.RemoveFromSuperLayer();
-				_shadowLayer = value;
-
-				if (_shadowLayer != null)
-					Layer.InsertSublayer(_shadowLayer, 0);
-			}
-		}
-
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
@@ -119,14 +111,10 @@ namespace Microsoft.Maui.Platform
 			if (BackgroundMaskLayer is not null)
 				BackgroundMaskLayer.Frame = Bounds;
 
-			if (ShadowLayer is not null)
-				ShadowLayer.Frame = Bounds;
-
 			if (_borderView is not null)
 				_borderView.Frame = Bounds;
 
 			SetClip();
-			SetShadow();
 			SetBorder();
 
 			var boundWidth = Bounds.Width;
@@ -145,7 +133,6 @@ namespace Microsoft.Maui.Platform
 		{
 			MaskLayer = null;
 			BackgroundMaskLayer = null;
-			ShadowLayer = null;
 			_borderView?.RemoveFromSuperview();
 		}
 
@@ -268,25 +255,30 @@ namespace Microsoft.Maui.Platform
 			SetClip();
 		}
 
-		partial void ShadowChanged()
-		{
-			SetShadow();
-		}
-
 		partial void BorderChanged() => SetBorder();
 
 		void SetClip()
 		{
+			var clip = Clip;
 			var mask = MaskLayer;
 			var backgroundMask = BackgroundMaskLayer;
 
-			if (mask is null && Clip is null)
+			if (mask is null && clip is null)
+			{
 				return;
+			}
+
+			if (clip is null)
+			{
+				MaskLayer = null;
+				BackgroundMaskLayer = null;
+				return;
+			}
 
 			var frame = Frame;
 			var bounds = new RectF(0, 0, (float)frame.Width, (float)frame.Height);
-			var path = _clip?.PathForBounds(bounds);
-			var nativePath = path?.AsCGPath();
+			var path = clip.PathForBounds(bounds);
+			var nativePath = path.AsCGPath();
 
 			mask ??= MaskLayer = new StaticCAShapeLayer();
 			mask.Path = nativePath;
@@ -296,34 +288,12 @@ namespace Microsoft.Maui.Platform
 			// We wrap some controls for certain visual effects like applying background gradient etc.
 			// For this reason, we have to clip the background layer as well if it exists.
 			if (backgroundLayer is null)
+			{
 				return;
+			}
 
 			backgroundMask ??= BackgroundMaskLayer = new StaticCAShapeLayer();
 			backgroundMask.Path = nativePath;
-		}
-
-		void SetShadow()
-		{
-			var shadowLayer = ShadowLayer;
-
-			if (shadowLayer == null && Shadow == null)
-				return;
-
-			shadowLayer ??= ShadowLayer = new StaticCAShapeLayer();
-
-			var frame = Frame;
-			var bounds = new RectF(0, 0, (float)frame.Width, (float)frame.Height);
-
-			shadowLayer.FillColor = new CGColor(0, 0, 0, 1);
-
-			var path = _clip?.PathForBounds(bounds);
-			var nativePath = path?.AsCGPath();
-			shadowLayer.Path = nativePath;
-
-			if (Shadow == null)
-				shadowLayer.ClearShadow();
-			else
-				shadowLayer.SetShadow(Shadow);
 		}
 
 		void SetBorder()
@@ -342,17 +312,13 @@ namespace Microsoft.Maui.Platform
 			_borderView.UpdateMauiCALayer(Border);
 		}
 
-		CALayer? GetLayer()
+		CALayer? GetContentLayer()
 		{
-			var sublayers = Layer?.Sublayers;
-			if (sublayers is null)
+			var subviews = Subviews;
+			if (subviews.Length == 0)
 				return null;
 
-			foreach (var subLayer in sublayers)
-				if (subLayer.Delegate is not null)
-					return subLayer;
-
-			return Layer;
+			return subviews[0].Layer;
 		}
 
 		CALayer? GetBackgroundLayer()
@@ -365,15 +331,15 @@ namespace Microsoft.Maui.Platform
 				if (subLayer.Name == ViewExtensions.BackgroundLayerName)
 					return subLayer;
 
-			return Layer;
+			return null;
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
 		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
 		{
-			add => _movedToWindow += value;
 			remove => _movedToWindow -= value;
+			add => _movedToWindow += value;
 		}
 
 		public override void MovedToWindow()

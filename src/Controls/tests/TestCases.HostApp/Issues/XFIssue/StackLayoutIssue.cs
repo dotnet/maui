@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.None, 0, "StackLayout issue", PlatformAffected.All, NavigationBehavior.PushModalAsync)]
+[Issue(IssueTracker.None, 0, "StackLayout issue", PlatformAffected.All)]
 public class StackLayoutIssue : TestContentPage
 {
 	protected override void Init()
@@ -10,10 +10,11 @@ public class StackLayoutIssue : TestContentPage
 #pragma warning disable CS0618 // Type or member is obsolete
 		var logo = new Image
 		{
-			Source = "cover1.jpg",
+			Source = "test.jpg",
 			WidthRequest = 20,
 			HeightRequest = 20,
 			VerticalOptions = LayoutOptions.FillAndExpand,
+			AutomationId = "FirstImage"
 		};
 #pragma warning restore CS0618 // Type or member is obsolete
 
@@ -21,6 +22,7 @@ public class StackLayoutIssue : TestContentPage
 		var winPrizeLabel = new Label
 		{
 			Text = "Win a Xamarin Prize",
+			AutomationId = "Prize",
 			HorizontalTextAlignment = TextAlignment.Center,
 			VerticalTextAlignment = TextAlignment.Center,
 			VerticalOptions = LayoutOptions.FillAndExpand
@@ -53,7 +55,8 @@ public class StackLayoutIssue : TestContentPage
 
 		var spinButton = new Button
 		{
-			Text = "Spin"
+			Text = "Spin",
+			AutomationId = "Spin"
 		};
 
 		var mainLayout = new StackLayout
@@ -72,16 +75,19 @@ public class StackLayoutIssue : TestContentPage
 	{
 		var nameEntry = new Entry
 		{
-			Placeholder = "Full Name"
+			Placeholder = "Full Name",
+			AutomationId = "FullName",
 		};
 		var emailEntry = new Entry
 		{
-			Placeholder = "Email"
+			Placeholder = "Email",
+			AutomationId = "Email",
 		};
 
 		var companyEntry = new Entry
 		{
-			Placeholder = "Company"
+			Placeholder = "Company",
+			AutomationId = "Company",
 		};
 
 		var switchContainer = new StackLayout
@@ -91,9 +97,11 @@ public class StackLayoutIssue : TestContentPage
 
 		var switchLabel = new Label
 		{
-			Text = "Completed Azure Mobile Services Challenge?"
+			Text = "Completed Azure Mobile Services Challenge?",
+			AutomationId = "Challenge"
 		};
 		var switchElement = new Microsoft.Maui.Controls.Switch();
+		switchElement.AutomationId = "Switch";
 
 		switchContainer.Add(switchLabel);
 		switchContainer.Add(switchElement);
@@ -112,9 +120,10 @@ public class StackLayoutIssue : TestContentPage
 
 		var qrButton = new Image
 		{
-			Source = "cover1.jpg",
+			Source = "test.jpg",
 			WidthRequest = 100,
-			HeightRequest = 100
+			HeightRequest = 100,
+			AutomationId = "SecondImage"
 		};
 
 		var result = new StackLayout

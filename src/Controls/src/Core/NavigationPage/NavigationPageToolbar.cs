@@ -83,12 +83,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_toolbarTracker.PagePropertyChanged -= OnPagePropertyChanged;
-			FlyoutPage currentFlyoutPage = cp.FindParentOfType<FlyoutPage>();
-			if (currentFlyoutPage?.Flyout == cp || currentFlyoutPage?.Flyout?.InternalChildren.Contains(cp) is true)
-				return;
-		}
-
-		_toolbarTracker.PagePropertyChanged -= OnPagePropertyChanged;
 			_currentPage = cp;
 			_currentNavigationPage = _currentPage.FindParentOfType<NavigationPage>();
 
@@ -98,167 +92,167 @@ namespace Microsoft.Maui.Controls
 				navPage.ChildRemoved -= NavigationPageChildrenChanged;
 			}
 
-	_navigationPagesStack.Clear();
+			_navigationPagesStack.Clear();
 			if (_currentNavigationPage == null)
 			{
 				IsVisible = false;
 				return;
 			}
 
-_navigationPagesStack.Add(_currentNavigationPage);
+			_navigationPagesStack.Add(_currentNavigationPage);
 
-// we collect all the parent navigation pages because we need to know what
-// all the nav stacks look like for things like BackButton Visibility
-var parentNavigationPage = _currentNavigationPage.FindParentOfType<NavigationPage>();
-if (parentNavigationPage != null)
-	_navigationPagesStack.Insert(0, parentNavigationPage);
+			// we collect all the parent navigation pages because we need to know what
+			// all the nav stacks look like for things like BackButton Visibility
+			var parentNavigationPage = _currentNavigationPage.FindParentOfType<NavigationPage>();
+			if (parentNavigationPage != null)
+				_navigationPagesStack.Insert(0, parentNavigationPage);
 
-while (parentNavigationPage != null)
-{
-	parentNavigationPage = parentNavigationPage.FindParentOfType<NavigationPage>();
+			while (parentNavigationPage != null)
+			{
+				parentNavigationPage = parentNavigationPage.FindParentOfType<NavigationPage>();
 
-	if (parentNavigationPage != null)
-		_navigationPagesStack.Insert(0, parentNavigationPage);
-}
+				if (parentNavigationPage != null)
+					_navigationPagesStack.Insert(0, parentNavigationPage);
+			}
 
-foreach (var navPage in _navigationPagesStack)
-{
-	navPage.ChildAdded += NavigationPageChildrenChanged;
-	navPage.ChildRemoved += NavigationPageChildrenChanged;
-}
+			foreach (var navPage in _navigationPagesStack)
+			{
+				navPage.ChildAdded += NavigationPageChildrenChanged;
+				navPage.ChildRemoved += NavigationPageChildrenChanged;
+			}
 
-_hasAppeared = true;
+			_hasAppeared = true;
 
-ApplyChanges(_currentNavigationPage);
-_toolbarTracker.PagePropertyChanged += OnPagePropertyChanged;
+			ApplyChanges(_currentNavigationPage);
+			_toolbarTracker.PagePropertyChanged += OnPagePropertyChanged;
 		}
 
 		// This is to catch scenarios where the user
 		// inserts or removes the root page.
 		// Which will cause the back button visibility to change.
 		void NavigationPageChildrenChanged(object s, ElementEventArgs a)
-{
-	ApplyChanges(_currentNavigationPage);
-}
-
-bool GetBackButtonVisible()
-{
-	if (_currentPage == null)
-		return false;
-
-	return NavigationPage.GetHasBackButton(_currentPage) && GetBackButtonVisibleCalculated(false).Value;
-}
-
-public override bool BackButtonVisible
-{
-	get => GetBackButtonVisible();
-	set => _backButtonVisible = value;
-}
-
-bool? GetBackButtonVisibleCalculated(bool? defaultValue = null)
-{
-	if (_currentPage == null || _currentNavigationPage == null)
-		return defaultValue;
-
-	foreach (var navPage in _navigationPagesStack)
-	{
-		if (navPage.Navigation.NavigationStack.Count == 0)
-			return defaultValue;
-
-		if (navPage.Navigation.NavigationStack.Count > 1)
 		{
-			return true;
+			ApplyChanges(_currentNavigationPage);
 		}
-	}
 
-	return false;
-}
-
-void UpdateBackButton()
-{
-	if (_currentPage == null || _currentNavigationPage == null)
-		return;
-
-	var anyPagesPushed = GetBackButtonVisibleCalculated();
-
-	if (anyPagesPushed == null)
-		return;
-
-	// Set this before BackButtonVisible triggers an update to the handler
-	// This way all useful information is present
-	if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
-		_drawerToggleVisible = true;
-	else
-		_drawerToggleVisible = false;
-
-	// Once we have better logic inside core to handle backbutton visiblity this
-	// code should all go away.
-	// Windows currently doesn't have logic in core to handle back button visibility
-	// Android just handles it as part of core which means you get cool animations
-	// that we don't want to interrupt here.
-	// Once it's all built into core we can remove this code and simplify visibility logic
-	if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
-	{
-		SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
-		_userChanged = true;
-	}
-	else
-	{
-		if (_userChanged)
+		bool GetBackButtonVisible()
 		{
-			SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
+			if (_currentPage == null)
+				return false;
+
+			return NavigationPage.GetHasBackButton(_currentPage) && GetBackButtonVisibleCalculated(false).Value;
 		}
-		else
+
+		public override bool BackButtonVisible
 		{
+			get => GetBackButtonVisible();
+			set => _backButtonVisible = value;
+		}
+
+		bool? GetBackButtonVisibleCalculated(bool? defaultValue = null)
+		{
+			if (_currentPage == null || _currentNavigationPage == null)
+				return defaultValue;
+
+			foreach (var navPage in _navigationPagesStack)
+			{
+				if (navPage.Navigation.NavigationStack.Count == 0)
+					return defaultValue;
+
+				if (navPage.Navigation.NavigationStack.Count > 1)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		void UpdateBackButton()
+		{
+			if (_currentPage == null || _currentNavigationPage == null)
+				return;
+
+			var anyPagesPushed = GetBackButtonVisibleCalculated();
+
+			if (anyPagesPushed == null)
+				return;
+
+			// Set this before BackButtonVisible triggers an update to the handler
+			// This way all useful information is present
+			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton() && !anyPagesPushed.Value)
+				_drawerToggleVisible = true;
+			else
+				_drawerToggleVisible = false;
+
+			// Once we have better logic inside core to handle backbutton visiblity this
+			// code should all go away.
+			// Windows currently doesn't have logic in core to handle back button visibility
+			// Android just handles it as part of core which means you get cool animations
+			// that we don't want to interrupt here.
+			// Once it's all built into core we can remove this code and simplify visibility logic
+			if (_currentPage.IsSet(NavigationPage.HasBackButtonProperty))
+			{
+				SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
+				_userChanged = true;
+			}
+			else
+			{
+				if (_userChanged)
+				{
+					SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
+				}
+				else
+				{
 #if ANDROID
 					_backButtonVisible = GetBackButtonVisible();
 #else
-			SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
+					SetProperty(ref _backButtonVisible, GetBackButtonVisible(), nameof(BackButtonVisible));
 #endif
+				}
+
+				_userChanged = false;
+			}
 		}
 
-		_userChanged = false;
-	}
-}
+		void ApplyChanges(NavigationPage navigationPage)
+		{
+			if (_currentPage == null)
+				return;
 
-void ApplyChanges(NavigationPage navigationPage)
-{
-	if (_currentPage == null)
-		return;
+			var stack = navigationPage.Navigation.NavigationStack;
+			if (stack.Count == 0)
+				return;
 
-	var stack = navigationPage.Navigation.NavigationStack;
-	if (stack.Count == 0)
-		return;
+			var currentPage = _currentPage;
 
-	var currentPage = _currentPage;
+			Page previousPage = null;
+			if (stack.Count > 1)
+				previousPage = stack[stack.Count - 1];
 
-	Page previousPage = null;
-	if (stack.Count > 1)
-		previousPage = stack[stack.Count - 1];
+			ToolbarItems = _toolbarTracker.ToolbarItems;
+			IsVisible = NavigationPage.GetHasNavigationBar(currentPage) && _hasAppeared;
 
-	ToolbarItems = _toolbarTracker.ToolbarItems;
-	IsVisible = NavigationPage.GetHasNavigationBar(currentPage) && _hasAppeared;
+			UpdateBackButton();
 
-	UpdateBackButton();
+			if (navigationPage.IsSet(PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty))
+				BarHeight = PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.GetBarHeight(navigationPage);
+			else
+				BarHeight = null;
 
-	if (navigationPage.IsSet(PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.BarHeightProperty))
-		BarHeight = PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage.GetBarHeight(navigationPage);
-	else
-		BarHeight = null;
+			if (previousPage != null)
+				BackButtonTitle = NavigationPage.GetBackButtonTitle(previousPage);
+			else
+				BackButtonTitle = null;
 
-	if (previousPage != null)
-		BackButtonTitle = NavigationPage.GetBackButtonTitle(previousPage);
-	else
-		BackButtonTitle = null;
+			TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
 
-	TitleIcon = NavigationPage.GetTitleIconImageSource(currentPage);
-
-	BarBackground = navigationPage.BarBackground;
-	if (Brush.IsNullOrEmpty(BarBackground) &&
-		navigationPage.BarBackgroundColor != null)
-	{
-		BarBackground = new SolidColorBrush(navigationPage.BarBackgroundColor);
-	}
+			BarBackground = navigationPage.BarBackground;
+			if (Brush.IsNullOrEmpty(BarBackground) &&
+				navigationPage.BarBackgroundColor != null)
+			{
+				BarBackground = new SolidColorBrush(navigationPage.BarBackgroundColor);
+			}
 
 #if WINDOWS
 			if (Brush.IsNullOrEmpty(BarBackground))
@@ -275,61 +269,61 @@ void ApplyChanges(NavigationPage navigationPage)
 				}
 			}
 #endif
-	BarTextColor = GetBarTextColor();
-	IconColor = GetIconColor();
-	Title = GetTitle();
-	TitleView = GetTitleView();
-	DynamicOverflowEnabled = PlatformConfiguration.WindowsSpecific.Page.GetToolbarDynamicOverflowEnabled(_currentPage);
-}
-
-Color GetBarTextColor() => _currentNavigationPage?.BarTextColor;
-Color GetIconColor() => (_currentPage != null) ? NavigationPage.GetIconColor(_currentPage) : null;
-
-string GetTitle()
-{
-	if (GetTitleView() != null)
-	{
-		return string.Empty;
-	}
-
-	return _currentNavigationPage?.CurrentPage?.Title ?? _currentNavigationPage?.Title;
-}
-
-VisualElement GetTitleView()
-{
-	if (_currentNavigationPage == null)
-	{
-		return null;
-	}
-
-	Page target = _currentNavigationPage;
-
-	if (_currentNavigationPage.CurrentPage is Page currentPage)
-	{
-		target = currentPage;
-	}
-
-	return NavigationPage.GetTitleView(target);
-}
-
-internal void Disconnect()
-{
-	if (_toolbarTracker is not null)
-	{
-		_toolbarTracker.PageAppearing -= OnPageAppearing;
-		_toolbarTracker.PagePropertyChanged -= OnPagePropertyChanged;
-		_toolbarTracker.CollectionChanged -= OnToolbarItemsChanged;
-		_toolbarTracker.Target = null;
-	}
-
-	if (_navigationPagesStack is not null)
-	{
-		foreach (var navPage in _navigationPagesStack)
-		{
-			navPage.ChildAdded -= NavigationPageChildrenChanged;
-			navPage.ChildRemoved -= NavigationPageChildrenChanged;
+			BarTextColor = GetBarTextColor();
+			IconColor = GetIconColor();
+			Title = GetTitle();
+			TitleView = GetTitleView();
+			DynamicOverflowEnabled = PlatformConfiguration.WindowsSpecific.Page.GetToolbarDynamicOverflowEnabled(_currentPage);
 		}
-	}
-}
+
+		Color GetBarTextColor() => _currentNavigationPage?.BarTextColor;
+		Color GetIconColor() => (_currentPage != null) ? NavigationPage.GetIconColor(_currentPage) : null;
+
+		string GetTitle()
+		{
+			if (GetTitleView() != null)
+			{
+				return string.Empty;
+			}
+
+			return _currentNavigationPage?.CurrentPage?.Title ?? _currentNavigationPage?.Title;
+		}
+
+		VisualElement GetTitleView()
+		{
+			if (_currentNavigationPage == null)
+			{
+				return null;
+			}
+
+			Page target = _currentNavigationPage;
+
+			if (_currentNavigationPage.CurrentPage is Page currentPage)
+			{
+				target = currentPage;
+			}
+
+			return NavigationPage.GetTitleView(target);
+		}
+
+		internal void Disconnect()
+		{
+			if (_toolbarTracker is not null)
+			{
+				_toolbarTracker.PageAppearing -= OnPageAppearing;
+				_toolbarTracker.PagePropertyChanged -= OnPagePropertyChanged;
+				_toolbarTracker.CollectionChanged -= OnToolbarItemsChanged;
+				_toolbarTracker.Target = null;
+			}
+
+			if (_navigationPagesStack is not null)
+			{
+				foreach (var navPage in _navigationPagesStack)
+				{
+					navPage.ChildAdded -= NavigationPageChildrenChanged;
+					navPage.ChildRemoved -= NavigationPageChildrenChanged;
+				}
+			}
+		}
 	}
 }

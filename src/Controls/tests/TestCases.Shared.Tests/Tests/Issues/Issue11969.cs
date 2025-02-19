@@ -1,4 +1,4 @@
-﻿#if IOS
+﻿
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -9,6 +9,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	{
 		const string SwipeViewId = "SwipeViewId";
 		const string SwipeButtonId = "SwipeButtonId";
+		const string TestPassId = "TestPassId";
+		const string SwipeViewCheckBoxId = "SwipeViewCheckBoxId";
+		const string SwipeViewContentCheckBoxId = "SwipeViewContentCheckBoxId";
 
 		const string Failed = "SwipeView Button not tapped";
 		const string Success = "SUCCESS";
@@ -22,16 +25,22 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.SwipeView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void SwipeDisableChildButtonTest()
 		{
-			App.WaitForNoElement(Failed);
-			App.WaitForElement(SwipeViewId);
-			App.Tap("SwipeViewCheckBoxId");
-			App.Tap("SwipeViewContentCheckBoxId");
+			App.WaitForElement(TestPassId);
+			App.WaitForElement("Item 1");
+			App.WaitForElement(SwipeViewCheckBoxId);
+			App.Tap(SwipeViewCheckBoxId);
+
+			App.WaitForElement(SwipeViewContentCheckBoxId);
+			App.Tap(SwipeViewContentCheckBoxId);
+
+			App.WaitForElement(SwipeButtonId);
 			App.Tap(SwipeButtonId);
-			App.WaitForNoElement(Success);
+
+			App.WaitForElement("Ok");
+			App.Tap("Ok");
+			App.WaitForElement(TestPassId);
 		}
 	}
 }
-#endif

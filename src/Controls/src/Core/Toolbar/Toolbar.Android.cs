@@ -19,6 +19,8 @@ namespace Microsoft.Maui.Controls
 		List<IMenuItem> _currentMenuItems = new List<IMenuItem>();
 		List<ToolbarItem> _currentToolbarItems = new List<ToolbarItem>();
 
+		Brush _currentBarBackground;
+
 		NavigationRootManager? NavigationRootManager =>
 			Handler?.MauiContext?.GetNavigationRootManager();
 
@@ -175,7 +177,7 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapBarBackground(IToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.PlatformView.UpdateBarBackground(arg2);
+			arg2.UpdateBarBackground();
 		}
 
 		public static void MapBackButtonTitle(IToolbarHandler arg1, Toolbar arg2)

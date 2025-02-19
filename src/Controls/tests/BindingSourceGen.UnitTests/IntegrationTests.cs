@@ -40,19 +40,15 @@ public class IntegrationTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -67,7 +63,7 @@ public class IntegrationTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 3, 7)]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -142,19 +138,15 @@ public class IntegrationTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -169,7 +161,7 @@ public class IntegrationTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 2, 27)]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
                     public static BindingBase Create{{id}}(
                         Func<string, int> getter,
                         BindingMode mode = BindingMode.Default,
@@ -317,19 +309,15 @@ public class IntegrationTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -344,7 +332,7 @@ public class IntegrationTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 6, 7)]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -442,19 +430,15 @@ public class IntegrationTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -469,7 +453,7 @@ public class IntegrationTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 7, 7)]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -673,19 +657,15 @@ public class IntegrationTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -700,7 +680,7 @@ public class IntegrationTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 7, 7)]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -812,19 +792,15 @@ public class IntegrationTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -839,7 +815,7 @@ public class IntegrationTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 7, 7)]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -952,19 +928,15 @@ public class IntegrationTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -979,7 +951,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 4, 7)]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1097,19 +1069,15 @@ public class IntegrationTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -1124,7 +1092,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 4, 7)]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1229,19 +1197,15 @@ public class IntegrationTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -1255,7 +1219,7 @@ public class IntegrationTests
                 internal static partial class GeneratedBindingInterceptors
                 {
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 3, 7)]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1357,19 +1321,15 @@ public class IntegrationTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -1384,7 +1344,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 6, 7)]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1491,19 +1451,15 @@ public class IntegrationTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -1518,7 +1474,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 17, 23)]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1616,19 +1572,15 @@ public class IntegrationTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -1643,7 +1595,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 17, 23)]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1744,19 +1696,15 @@ public class IntegrationTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -1771,7 +1719,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 17, 23)]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1871,19 +1819,15 @@ public class IntegrationTests
                 using System.CodeDom.Compiler;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
+                [global::System.Diagnostics.Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
-                    public InterceptsLocationAttribute(string filePath, int line, int column)
+                    public InterceptsLocationAttribute(int version, string data)
                     {
-                        FilePath = filePath;
-                        Line = line;
-                        Column = column;
+                        _ = version;
+                        _ = data;
                     }
-
-                    public string FilePath { get; }
-                    public int Line { get; }
-                    public int Column { get; }
                 }
             }
 
@@ -1898,7 +1842,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(@"Path\To\Program.cs", 17, 23)]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,

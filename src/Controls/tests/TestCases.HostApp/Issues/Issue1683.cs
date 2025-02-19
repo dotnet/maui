@@ -151,6 +151,8 @@
 			StackLayout content = new StackLayout();
 			content.Children.Add(new ScrollView()
 			{
+				//Set the ScrollView height to adjust its layout to ensure the Rotate button remains visible on Android.
+				HeightRequest = 600,
 				Content = layout
 			});
 

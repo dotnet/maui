@@ -4,7 +4,6 @@ trigger:
     - main
     - release/*
     - net9.0
-    - net8.0
   tags:
     include:
     - '*'
@@ -20,7 +19,6 @@ trigger:
     - LICENSE.TXT
     - PATENTS.TXT
     - README.md
-    - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
 
 pr:
@@ -29,7 +27,6 @@ pr:
     - main
     - release/*
     - net9.0
-    - net8.0
   paths:
     include:
     - '*'
@@ -42,7 +39,6 @@ pr:
     - LICENSE.TXT
     - PATENTS.TXT
     - README.md
-    - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
 
 variables:
@@ -63,7 +59,7 @@ parameters:
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
     type: string
-    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
+    default: 'latest'
 
     - name: androidPool
       type: object
@@ -80,8 +76,16 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - Agent.OSVersion -equals 14.5
-        - Agent.OSArchitecture -equals X64
+        - macOS.Name -equals Sonoma
+
+  - name: androidPoolX64
+    type: object
+    default:
+      name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - macOS.Name -equals Sonoma
+        - macOS.Architecture -equals x64
 
   - name: iosPool
     type: object
@@ -89,8 +93,7 @@ parameters:
       name: $(iosDeviceTestsVmPool)
       vmImage: $(iosDeviceTestsVmImage)
       demands:
-        - Agent.OSVersion -equals 14.5
-        - Agent.OSArchitecture -equals ARM64
+        - macOS.Name -equals Sonoma
         
   - name: catalystPool
     type: object
@@ -98,8 +101,7 @@ parameters:
       name: $(iosDeviceTestsVmPool)
       vmImage: $(iosDeviceTestsVmImage)
       demands:
-        - Agent.OSVersion -equals 14.5
-        - Agent.OSArchitecture -equals ARM64
+        - macOS.Name -equals Sonoma
 
     - name: windowsPool
       type: object
@@ -125,6 +127,7 @@ stages:
   - template: common/device-tests.yml
     parameters:
       androidPool: ${{ parameters.androidPool }}
+      androidPoolX64: ${{ parameters.androidPoolX64 }}
       iosPool: ${{ parameters.iosPool }}
       catalystPool: ${{ parameters.catalystPool }}
       windowsPool: ${{ parameters.windowsPool }}

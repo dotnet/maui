@@ -92,13 +92,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			try
 			{
-				App.WaitForElement("SuccessCookiesLabel");
+				App.WaitForElement("SuccessCookiesLabel", timeout: TimeSpan.FromSeconds(2));
 			}
 			catch
 			{
 				App.Tap("DisplayAllCookies");
+				// Tapping "DisplayAllCookies" opens a display alert. Leaving this popup open can cause subsequent test failures.
+				// To prevent this, we take a screenshot of the cookies and then tap the "Cancel" button to close the popup before proceeding with further test cases.
+				App.Screenshot("Cookies");
+				App.Tap("Cancel");
 				throw;
 			}
+		}
+
+		protected override void FixtureSetup()
+		{
+			base.FixtureSetup();
+			VerifyInternetConnectivity();
 		}
 	}
 }

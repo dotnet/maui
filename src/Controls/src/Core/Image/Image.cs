@@ -1,10 +1,13 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
+
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="Type[@FullName='Microsoft.Maui.Controls.Image']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Image : View, IImageController, IElementConfiguration<Image>, IViewController, IImageElement, IImage
 	{
 		/// <summary>Bindable property for <see cref="Source"/>.</summary>
@@ -103,5 +106,11 @@ namespace Microsoft.Maui.Controls
 
 		void IImageSourcePart.UpdateIsLoading(bool isLoading) =>
 			IsLoading = isLoading;
+
+		private protected override string GetDebuggerDisplay()
+		{
+			var sourceText = DebuggerDisplayHelpers.GetDebugText(nameof(Source), Source);
+			return $"{base.GetDebuggerDisplay()}, {sourceText}";
+		}
 	}
 }

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Storage.Streams;
@@ -40,18 +41,26 @@ namespace Microsoft.Maui.Controls.Platform
 			_collectionChangedHandler = ModelGestureRecognizersOnCollectionChanged;
 
 			if (_handler.VirtualView == null)
+			{
 				throw new ArgumentNullException(nameof(handler.VirtualView));
+			}
 
 			if (_handler.PlatformView == null)
+			{
 				throw new ArgumentNullException(nameof(handler.PlatformView));
+			}
 
 			Element = (VisualElement)_handler.VirtualView;
 			Control = _handler.PlatformView;
 
 			if (_handler.ContainerView != null)
+			{
 				Container = _handler.ContainerView;
+			}
 			else
+			{
 				Container = _handler.PlatformView;
+			}
 		}
 
 		public FrameworkElement? Container
@@ -60,7 +69,9 @@ namespace Microsoft.Maui.Controls.Platform
 			set
 			{
 				if (_container == value)
+				{
 					return;
+				}
 
 				ClearContainerEventHandlers();
 
@@ -103,7 +114,9 @@ namespace Microsoft.Maui.Controls.Platform
 			set
 			{
 				if (_control == value)
+				{
 					return;
+				}
 
 				if (_control is not null)
 				{
@@ -129,19 +142,25 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void SendEventArgs<TRecognizer>(Action<TRecognizer> func)
 		{
-			if (_container == null && _control == null)
+			if (_container is null && _control is null)
+			{
 				return;
+			}
 
 			var view = Element as View;
 			var gestures = view?.GestureRecognizers;
 
-			if (gestures == null)
+			if (gestures is null)
+			{
 				return;
+			}
 
 			foreach (var gesture in gestures)
 			{
 				if (gesture is TRecognizer recognizer)
+				{
 					func(recognizer);
+				}
 			}
 		}
 
@@ -216,7 +235,9 @@ namespace Microsoft.Maui.Controls.Platform
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)
+				{
 					return;
+				}
 
 				try
 				{
@@ -261,9 +282,13 @@ namespace Microsoft.Maui.Controls.Platform
 						if (Uri.TryCreate(args.Data.Text, UriKind.Absolute, out uri))
 						{
 							if (args.Data.Text.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+							{
 								e.Data.SetWebLink(uri);
+							}
 							else
+							{
 								e.Data.SetApplicationLink(uri);
+							}
 						}
 						else
 						{
@@ -286,14 +311,14 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_element == value)
 					return;
 
-				if (_element is View && ElementGestureRecognizers is {} gestureRecognizersBefore)
+				if (_element is View && ElementGestureRecognizers is { } gestureRecognizersBefore)
 				{
 					gestureRecognizersBefore.CollectionChanged -= _collectionChangedHandler;
 				}
 
 				_element = value;
 
-				if (_element is View && ElementGestureRecognizers is {} gestureRecognizersAfter)
+				if (_element is View && ElementGestureRecognizers is { } gestureRecognizersAfter)
 				{
 					gestureRecognizersAfter.CollectionChanged += _collectionChangedHandler;
 				}
@@ -333,8 +358,16 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
 
-					_container.RemoveHandler(FrameworkElement.TappedEvent, _tappedEventHandler);
-					_tappedEventHandler = null;
+					if (_control is TextBox)
+					{
+						_container.RemoveHandler(FrameworkElement.TappedEvent, _tappedEventHandler);
+						_tappedEventHandler = null;
+					}
+					else
+					{
+						_container.Tapped -= OnTap;
+					}
+
 					_container.RightTapped -= OnTap;
 				}
 
@@ -342,8 +375,15 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_subscriptionFlags &= ~SubscriptionFlags.ContainerDoubleTapEventSubscribed;
 
-					_container.RemoveHandler(FrameworkElement.DoubleTappedEvent, _doubleTappedEventHandler);
-					_doubleTappedEventHandler = null;
+					if (_control is TextBox)
+					{
+						_container.RemoveHandler(FrameworkElement.DoubleTappedEvent, _doubleTappedEventHandler);
+						_doubleTappedEventHandler = null;
+					}
+					else
+					{
+						_container.DoubleTapped -= OnTap;
+					}
 				}
 
 				if ((_subscriptionFlags & SubscriptionFlags.ContainerPgrPointerEventsSubscribed) != 0)
@@ -385,7 +425,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			ClearContainerEventHandlers();
 
-			if (_element is View && ElementGestureRecognizers is {} gestureRecognizers)
+			if (_element is View && ElementGestureRecognizers is { } gestureRecognizers)
 			{
 				gestureRecognizers.CollectionChanged -= _collectionChangedHandler;
 			}
@@ -411,7 +451,9 @@ namespace Microsoft.Maui.Controls.Platform
 		void HandleSwipe(ManipulationDeltaRoutedEventArgs e, View view)
 		{
 			if (_fingers.Count > 1 || view == null)
+			{
 				return;
+			}
 
 			_isSwiping = true;
 
@@ -424,8 +466,10 @@ namespace Microsoft.Maui.Controls.Platform
 		void HandlePan(ManipulationDeltaRoutedEventArgs e, View view)
 		{
 			if (view == null)
+			{
 				return;
-			
+			}
+
 			_isPanning = true;
 
 			foreach (IPanGestureController recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
@@ -442,7 +486,9 @@ namespace Microsoft.Maui.Controls.Platform
 		void HandlePinch(ManipulationDeltaRoutedEventArgs e, View view)
 		{
 			if (_fingers.Count < 2 || view == null)
+			{
 				return;
+			}
 
 			_isPinching = true;
 
@@ -483,7 +529,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var view = Element as View;
 
 			if (view == null)
+			{
 				return;
+			}
 
 			HandleSwipe(e, view);
 			HandlePinch(e, view);
@@ -494,7 +542,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var view = Element as View;
 			if (view == null)
+			{
 				return;
+			}
+
 			_wasPinchGestureStartedSent = false;
 			_wasPanGestureStartedSent = false;
 		}
@@ -503,7 +554,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			uint id = e.Pointer.PointerId;
 			if (_fingers.Contains(id))
+			{
 				_fingers.Remove(id);
+			}
+
 			SwipeComplete(false);
 			PinchComplete(false);
 			PanComplete(false);
@@ -517,7 +571,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_fingers.Contains(id))
 					_fingers.Remove(id);
 			}
-			
+
 			SwipeComplete(true);
 			PinchComplete(true);
 		}
@@ -526,14 +580,19 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			uint id = e.Pointer.PointerId;
 			if (!_fingers.Contains(id))
+			{
 				_fingers.Add(id);
+			}
 		}
 
 		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
 			uint id = e.Pointer.PointerId;
 			if (_fingers.Contains(id))
+			{
 				_fingers.Remove(id);
+			}
+
 			SwipeComplete(true);
 			PinchComplete(true);
 			PanComplete(true);
@@ -589,7 +648,9 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var view = Element as View;
 			if (view == null)
+			{
 				return;
+			}
 
 			var pointerGestures = ElementGestureRecognizers.GetGesturesFor<PointerGestureRecognizer>();
 			foreach (var recognizer in pointerGestures)
@@ -603,7 +664,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var result = e.GetPositionRelativeToElement(relativeTo);
 
 			if (result is null)
+			{
 				return null;
+			}
 
 			return result.Value.ToPoint();
 		}
@@ -612,7 +675,9 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var view = Element as View;
 			if (view == null)
+			{
 				return;
+			}
 
 			if (!view.IsEnabled)
 			{
@@ -622,14 +687,18 @@ namespace Microsoft.Maui.Controls.Platform
 			var tapPosition = e.GetPositionRelativeToPlatformElement(Control);
 
 			if (tapPosition == null)
+			{
 				return;
+			}
 
 			var children =
 				(view as IGestureController)?.GetChildElements(new Point(tapPosition.Value.X, tapPosition.Value.Y))?.
 				GetChildGesturesFor<TapGestureRecognizer>(ValidateGesture);
 
 			if (ProcessGestureRecognizers(children))
+			{
 				return;
+			}
 
 			IEnumerable<TapGestureRecognizer> tapGestures = view.GestureRecognizers.GetGesturesFor<TapGestureRecognizer>(ValidateGesture);
 			ProcessGestureRecognizers(tapGestures);
@@ -638,7 +707,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				bool handled = false;
 				if (tapGestures == null)
+				{
 					return handled;
+				}
 
 				foreach (var recognizer in tapGestures)
 				{
@@ -657,9 +728,13 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					// Currently we only support single right clicks
 					if ((g.Buttons & ButtonsMask.Secondary) == ButtonsMask.Secondary)
+					{
 						return g.NumberOfTapsRequired == 1;
+					}
 					else
+					{
 						return false;
+					}
 				}
 
 				if ((g.Buttons & ButtonsMask.Primary) != ButtonsMask.Primary)
@@ -677,7 +752,9 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var view = Element as View;
 			if (view == null || !_isSwiping)
+			{
 				return;
+			}
 
 			if (success)
 			{
@@ -694,7 +771,9 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var view = Element as View;
 			if (view == null || !_isPanning)
+			{
 				return;
+			}
 
 			foreach (IPanGestureController recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
 			{
@@ -715,8 +794,10 @@ namespace Microsoft.Maui.Controls.Platform
 		void PinchComplete(bool success)
 		{
 			var view = Element as View;
-			if (view == null || !_isPinching)
+			if (view is null || !_isPinching)
+			{
 				return;
+			}
 
 			IEnumerable<PinchGestureRecognizer> pinchGestures = view.GestureRecognizers.GetGesturesFor<PinchGestureRecognizer>();
 			foreach (IPinchGestureController recognizer in pinchGestures)
@@ -756,7 +837,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (allowDrop)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerDropEventsSubscribed;
-				
+
 				_container.AllowDrop = true;
 				_container.DragOver += HandleDragOver;
 				_container.Drop += HandleDrop;
@@ -783,8 +864,17 @@ namespace Microsoft.Maui.Controls.Platform
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerTapAndRightTabEventSubscribed;
-				_tappedEventHandler = new TappedEventHandler(OnTap);
-				_container.AddHandler(FrameworkElement.TappedEvent,_tappedEventHandler, true);
+
+				if (_control is TextBox)
+				{
+					_tappedEventHandler = new TappedEventHandler(OnTap);
+					_container.AddHandler(FrameworkElement.TappedEvent, _tappedEventHandler, true);
+				}
+				else
+				{
+					_container.Tapped += OnTap;
+				}
+
 				_container.RightTapped += OnTap;
 			}
 			else
@@ -800,8 +890,16 @@ namespace Microsoft.Maui.Controls.Platform
 				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any() == true)
 			{
 				_subscriptionFlags |= SubscriptionFlags.ContainerDoubleTapEventSubscribed;
-				_doubleTappedEventHandler = new DoubleTappedEventHandler(OnTap);
-				_container.AddHandler(FrameworkElement.DoubleTappedEvent, _doubleTappedEventHandler, true);
+
+				if (_control is TextBox)
+				{
+					_doubleTappedEventHandler = new DoubleTappedEventHandler(OnTap);
+					_container.AddHandler(FrameworkElement.DoubleTappedEvent, _doubleTappedEventHandler, true);
+				}
+				else
+				{
+					_container.DoubleTapped += OnTap;
+				}
 			}
 			else
 			{
@@ -828,16 +926,25 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			//We can't handle ManipulationMode.Scale and System , so we don't support pinch/pan on a scrollview 
+			// We can't handle ManipulationMode.Scale and System, so we don't support pinch/pan on a scroll view
 			if (Element is ScrollView)
 			{
 				var logger = Application.Current?.FindMauiContext()?.CreateLogger<GesturePlatformManager>();
 				if (hasPinchGesture)
+				{
 					logger?.LogWarning("PinchGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+				}
+
 				if (hasPanGesture)
+				{
 					logger?.LogWarning("PanGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+				}
+
 				if (hasSwipeGesture)
+				{
 					logger?.LogWarning("SwipeGestureRecognizer is not supported on a ScrollView in Windows Platforms");
+				}
+
 				return;
 			}
 

@@ -1,13 +1,16 @@
 #nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.SearchBar']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class SearchBar : InputView, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>, ICommandElement, ISearchBar
 	{
 		/// <summary>Bindable property for <see cref="SearchCommand"/>.</summary>
@@ -150,6 +153,12 @@ namespace Microsoft.Maui.Controls
 		void ISearchBar.SearchButtonPressed()
 		{
 			(this as ISearchBarController).OnSearchButtonPressed();
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(SearchCommand), SearchCommand);
+			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
 	}
 }
