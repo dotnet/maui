@@ -22,6 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			: base(device)
 		{
 		}
+		protected override bool ResetAfterEachTest => true;
 
 		// VisitAndUpdateItemsSource (src\Compatibility\ControlGallery\src\UITests.Shared\Tests\CollectionViewUITests.cs)
 		[TestCase("Observable Collection", "Add/RemoveItemsList", 19, 6)]
@@ -38,15 +39,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue.")]
 		public void VisitAndUpdateItemsSource(string collectionTestName, string subGallery, int firstItem, int lastItem)
 		{
-			try
-			{
-				VisitInitialGallery(collectionTestName);
-				VisitSubGallery(subGallery, !subGallery.Contains("Horizontal", StringComparison.OrdinalIgnoreCase), $"Item: {firstItem}", $"Item: {lastItem}", lastItem - 1, true, false);
-			}
-			finally
-			{
-				this.Back();
-			}
+			VisitInitialGallery(collectionTestName);
+			VisitSubGallery(subGallery, !subGallery.Contains("Horizontal", StringComparison.OrdinalIgnoreCase), $"Item: {firstItem}", $"Item: {lastItem}", lastItem - 1, true, false);
 		}
 
 		void VisitSubGallery(string galleryName, bool scrollDown, string lastItem, string firstPageItem, int updateItemsCount, bool testItemSource, bool testAddRemove)
@@ -72,19 +66,22 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ClearText(_entryRemove);
 			App.EnterText(_entryRemove, "1");
 			App.DismissKeyboard();
-			App.Click(_btnRemove);
+			App.WaitForElement(_btnRemove);
+			App.Tap(_btnRemove);
 			App.WaitForNoElement(lastItem);
 			App.ClearText(_entryInsert);
 			App.EnterText(_entryInsert, "1");
 			App.DismissKeyboard();
-			App.Click(_btnInsert);
-			App.WaitForNoElement(_inserted);
+			App.WaitForElement(_btnInsert);
+			App.Tap(_btnInsert);
+			App.WaitForElement(_inserted);
 			//TODO: enable replace
 			App.ClearText(_entryReplace);
 			App.EnterText(_entryReplace, "1");
 			App.DismissKeyboard();
-			App.Click(_btnReplace);
-			App.WaitForNoElement(_replaced);
+			App.WaitForElement(_btnReplace);
+			App.Tap(_btnReplace);
+			App.WaitForElement(_replaced);
 		}
 
 		void TestUpdateItemsWorks(bool scrollDown, string itemMarked, string updateItemsCount, System.Drawing.Rectangle collectionViewFrame)
@@ -97,7 +94,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ClearText(_entryUpdate);
 			App.EnterText(_entryUpdate, updateItemsCount);
 			App.DismissKeyboard();
-			App.Click(_btnUpdate);
+			App.WaitForElement(_btnUpdate);
+			App.Tap(_btnUpdate);
 			App.WaitForNoElement(itemMarked);
 		}
 

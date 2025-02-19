@@ -70,6 +70,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		ShellSection _shellSection;
 		bool _ignorePopCall;
 
+		bool _popRequested;
+
 		// When setting base.ViewControllers iOS doesn't modify the property right away. 
 		// if you set base.ViewControllers to a new array and then retrieve base.ViewControllers
 		// iOS will return the previous array until the new array has been processed
@@ -80,7 +82,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// You've now added vc1 back because the second call to ViewControllers will still return a ViewControllers list with vc1 in it
 		UIViewController[] _pendingViewControllers;
 
-		public ShellSectionRenderer(IShellContext context) : base()
+		public ShellSectionRenderer(IShellContext context) : base(typeof(MauiNavigationBar), null)
 		{
 			Delegate = new NavDelegate(this);
 			_context = context;
@@ -101,8 +103,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		[Export("navigationBar:shouldPopItem:")]
 		[Internals.Preserve(Conditional = true)]
-		public bool ShouldPopItem(UINavigationBar _, UINavigationItem __) =>
-			SendPop();
+		public bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
+			=> SendPop();
+
+		[Export("navigationBar:didPopItem:")]
+		[Internals.Preserve(Conditional = true)]
+		bool DidPopItem(UINavigationBar _, UINavigationItem __)
+			=> _popRequested || SendPop();
 
 		internal bool SendPop()
 		{
@@ -387,6 +394,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void OnPopRequested(NavigationRequestedEventArgs e)
 		{
+			_popRequested = true;
 			var page = e.Page;
 			var animated = e.Animated;
 
@@ -427,6 +435,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void OnPopToRootRequested(NavigationRequestedEventArgs e)
 		{
+			_popRequested = true;
 			var animated = e.Animated;
 			var task = new TaskCompletionSource<bool>();
 			var pages = _shellSection.Stack.ToList();
@@ -588,12 +597,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void PushViewController(UIViewController viewController, bool animated)
 		{
 			_pendingViewControllers = null;
-			base.PushViewController(viewController, animated);
+			_popRequested = false;
+			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
+			{
+				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
+			}
+			else
+			{
+				base.PushViewController(viewController, animated);
+			}
 		}
 
 		public override UIViewController PopViewController(bool animated)
 		{
 			_pendingViewControllers = null;
+			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
+			{
+				return tabBarController.MoreNavigationController.PopViewController(animated);
+			}
+
 			return base.PopViewController(animated);
 		}
 
@@ -633,7 +655,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_completionTasks[pageViewController] = completionSource;
 
 			PushViewController(pageViewController, animated);
-			
+
 			if (completionSource != null && !showsPresentation)
 				completionSource.TrySetResult(true);
 		}
@@ -722,6 +744,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
+				(navigationController.NavigationBar as MauiNavigationBar)?.RefreshIfNeeded();
+
 				var tasks = _self._completionTasks;
 				var popTask = _self._popCompletionTask;
 

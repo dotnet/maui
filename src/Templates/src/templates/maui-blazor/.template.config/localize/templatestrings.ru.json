@@ -1,6 +1,6 @@
 {
   "author": "Майкрософт",
-  "name": "Гибридное приложение Blazor .NET MAUI",
+  "name": ".NET MAUI Blazor Hybrid App",
   "description": "Проект по созданию приложения .NET MAUI для iOS, Android, Mac Catalyst, WinUI и Tizen с помощью Blazor Hybrid",
   "postActions/openInEditor/description": "Открывает Components/Pages/Home.razor в редакторе.",
   "symbols/applicationId/description": "Переопределяет $(ApplicationId) в проекте",

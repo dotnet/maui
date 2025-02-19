@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID 
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID
 // DragCoordinates is not supported on MacCatalyst
 // On Windows this test case is not valid due to the tob tabs are visbile in drop-down.
 // On Android FindElements are not working as expected in Appium. It always returns 0 elements.

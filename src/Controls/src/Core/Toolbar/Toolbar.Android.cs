@@ -103,6 +103,35 @@ namespace Microsoft.Maui.Controls
 			_platformTitleView.Child = (IPlatformViewHandler?)_platformTitleViewHandler;
 		}
 
+		void UpdateBarBackground()
+		{
+			if (_currentBarBackground is GradientBrush oldBarBackground)
+			{
+				oldBarBackground.Parent = null;
+				oldBarBackground.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
+			}
+
+			_currentBarBackground = BarBackground;
+
+			if (_currentBarBackground is GradientBrush newBarBackground && Parent is Element parent)
+			{
+				newBarBackground.Parent = parent;
+				newBarBackground.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
+			}
+
+			RefreshBarBackground();
+		}
+
+		void OnBarBackgroundChanged(object? sender, EventArgs e)
+		{
+			RefreshBarBackground();
+		}
+
+		void RefreshBarBackground()
+		{
+			PlatformView.UpdateBarBackground(this);
+		}
+
 		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2) =>
 			MapBarTextColor((IToolbarHandler)arg1, arg2);
 

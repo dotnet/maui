@@ -6,7 +6,7 @@ using Entry = Microsoft.Maui.Controls.Entry;
 namespace Maui.Controls.Sample.Issues
 {
 
-	[Issue(IssueTracker.Github, 1685, "Entry clears when upadting text from native with one-way binding", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]
+	[Issue(IssueTracker.Github, 1685, "Entry clears when updating text from native with one-way binding", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone)]
 	public class Issue1685 : TestContentPage
 	{
 		const string ButtonId = "Button1685";
@@ -46,7 +46,8 @@ namespace Maui.Controls.Sample.Issues
 
 			var entry = new Entry()
 			{
-				Placeholder = "Entry"
+				Placeholder = "Entry",
+				AutomationId = "TestEntry",
 			};
 			entry.SetBinding(Entry.TextProperty, "EntryValue", BindingMode.OneWay);
 

@@ -109,10 +109,10 @@ public class MacTemplateTest : BaseTemplateTests
 
 		List<string> buildWithCodeSignProps = new List<string>(BuildProps);
 
-		if(!sign && config == "Release")
+		if (!sign && config == "Release")
 		{
 			// Skipping Release build without code signing."
-			buildWithCodeSignProps.Add("EnableCodeSigning=false");		
+			buildWithCodeSignProps.Add("EnableCodeSigning=false");
 			buildWithCodeSignProps.Add("_RequireCodeSigning=false");
 		}
 		else if (sign)

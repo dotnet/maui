@@ -41,9 +41,10 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 		context.RegisterImplementationSourceOutput(bindings, (spc, binding) =>
 		{
-			var fileName = $"{binding.Location.FilePath}-GeneratedBindingInterceptors-{binding.Location.Line}-{binding.Location.Column}.g.cs";
+			var location = binding.SimpleLocation;
+			var fileName = $"{location.FilePath}-GeneratedBindingInterceptors-{location.Line}-{location.Column}.g.cs";
 			var sanitizedFileName = fileName.Replace('/', '-').Replace('\\', '-').Replace(':', '-');
-			var code = BindingCodeWriter.GenerateBinding(binding, (uint)Math.Abs(binding.Location.GetHashCode()));
+			var code = BindingCodeWriter.GenerateBinding(binding, (uint)Math.Abs(location.GetHashCode()));
 			spc.AddSource(sanitizedFileName, code);
 		});
 	}
@@ -83,8 +84,14 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			return Result<BindingInvocationDescription>.Failure(interceptedMethodTypeResult.Diagnostics);
 		}
 
+#pragma warning disable RSEXPERIMENTAL002
+		var interceptableLocation = context.SemanticModel.GetInterceptableLocation(invocation, t);
+#pragma warning restore RSEXPERIMENTAL002
+
 		var sourceCodeLocation = SourceCodeLocation.CreateFrom(method.Name.GetLocation());
-		if (sourceCodeLocation == null)
+
+
+		if (interceptableLocation == null || sourceCodeLocation == null)
 		{
 			return Result<BindingInvocationDescription>.Failure(DiagnosticsFactory.UnableToResolvePath(invocation.GetLocation()));
 		}
@@ -115,7 +122,8 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		}
 
 		var binding = new BindingInvocationDescription(
-			Location: sourceCodeLocation.ToInterceptorLocation(),
+			InterceptableLocation: new InterceptableLocationRecord(interceptableLocation.Version, interceptableLocation.Data),
+			SimpleLocation: sourceCodeLocation.ToSimpleLocation(),
 			SourceType: lambdaParamTypeResult.Value.CreateTypeDescription(enabledNullable),
 			PropertyType: lambdaReturnTypeResult.Value.CreateTypeDescription(enabledNullable),
 			Path: new EquatableArray<IPathPart>([.. pathParseResult.Value]),
@@ -231,6 +239,7 @@ public class BindingSourceGenerator : IIncrementalGenerator
 		static bool IsWritable(ISymbol? symbol)
 			=> symbol switch
 			{
+				IPropertySymbol { OriginalDefinition.SetMethod.IsInitOnly: true } => false,
 				IPropertySymbol propertySymbol => propertySymbol.SetMethod != null,
 				IFieldSymbol fieldSymbol => !fieldSymbol.IsReadOnly,
 				_ => true,

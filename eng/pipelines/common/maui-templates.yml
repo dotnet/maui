@@ -114,14 +114,23 @@ jobs:
                       - ${{ each pair in step }}:
                             ${{ pair.key }}: ${{ pair.value }}
 
-                # - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
-                #   - bash: |
-                #       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-                #       chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
-                #       $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
-                #     displayName: 'Clean bot'
-                #     continueOnError: true
-                #     timeoutInMinutes: 60
+- ${{ each RunPlatform in parameters.RunPlatforms }}:
+  - job: run_${{ RunPlatform.testName }}
+    workspace:
+      clean: all
+    displayName: ${{ RunPlatform.testName }}
+    timeoutInMinutes: 240
+    condition: ${{ parameters.condition}}
+    pool:
+      name: ${{ RunPlatform.name }}
+      vmImage: ${{ RunPlatform.vmImage }}
+      ${{ if ne(variables['System.TeamProject'], 'devdiv') }}:
+        demands: ${{ RunPlatform.demands }}
+      ${{ else }}:
+        demands:
+          - macOS.Name -equals Sonoma
+          - macOS.Architecture -equals x64
+    steps:
 
                 - task: DownloadBuildArtifacts@0
                   displayName: "Download Packages"
@@ -181,9 +190,27 @@ jobs:
                       testResultsFiles: "$(build.artifactstagingdirectory)/**/*.trx"
                       testRunTitle: ${{ RunPlatform.testName }} templates run tests
 
-                - pwsh: |
-                      Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
-                      if ($env:AGENT_JOBSTATUS -eq "SucceededWithIssues") {
-                          Write-Host "##vso[task.complete result=Failed;]DONE"
-                      }
-                  displayName: Fail if any issues occurred
+    - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=${{ RunPlatform.testName }}" --resultsfilename="integration-run-${{ RunPlatform.testName }}" --verbosity=diagnostic
+      displayName: Run ${{ RunPlatform.testName }} templates run tests
+      continueOnError: true
+      # TODO: pass properly device type/version from top-level yml
+      ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
+        env:
+            IOS_TEST_DEVICE: ios-simulator-64_17.2
+
+    - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
+      - pwsh: ./build.ps1 --target=Cleanup -Script eng/devices/ios.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
+        displayName: Cleanup and Create Simulator Logs if Test Run Failed To
+        condition: always()
+        continueOnError: true
+
+    - task: PublishTestResults@2
+      displayName: Publish the ${{ RunPlatform.testName }} templates run tests
+      condition: always()
+      inputs:
+        testRunner: VSTest
+        testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
+        testRunTitle: ${{ RunPlatform.testName }} templates run tests
+
+    - template: /eng/pipelines/common/fail-on-issue.yml
+

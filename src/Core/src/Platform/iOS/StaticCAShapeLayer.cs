@@ -27,7 +27,7 @@ class StaticCAShapeLayer : CAShapeLayer, IAutoSizableCALayer
 		_boundsObserver?.Dispose();
 		_boundsObserver = CALayerAutosizeObserver.Attach(this);
 	}
-	
+
 	public override void AddAnimation(CAAnimation animation, string? key)
 	{
 		// Do nothing, we don't want animations here
