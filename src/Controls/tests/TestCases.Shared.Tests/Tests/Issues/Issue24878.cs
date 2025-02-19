@@ -15,6 +15,8 @@ public class Issue24878 : _IssuesUITest
 	[Category(UITestCategories.ToolbarItem)]
 	public void ToolbarItemsShouldBeVisible()
 	{
+		App.WaitForElement("button");
+		App.Click("button");
 		App.WaitForElement("label");
 
 		VerifyScreenshot();
