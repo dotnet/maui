@@ -34,7 +34,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
-		[Fact]
+		[Fact
+#if ANDROID
+			(Skip = "https://github.com/dotnet/maui/issues/24701")
+#endif
+		]
 		public async Task ChangingTemplateTypeDoesNotCrash()
 		{
 			SetupBuilder();

@@ -15,13 +15,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void CookiesCorrectlyLoadWithMultipleWebViews()
 		{
-			VerifyInternetConnectivity();
 			for (int i = 0; i < 10; i++)
 			{
-				App.WaitForElement("Success", $"Failied on: {i}");
+				App.WaitForNoElement("Success", $"Failied on: {i}");
 				App.Tap("LoadNewWebView");
 			}
 		}

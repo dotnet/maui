@@ -279,7 +279,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal object ElementAt(int index)
 		{
 			if (_itemsSource is IList list)
-				return (index >= 0 && index < list.Count) ? list[index] : null;
+				return list[index];
 
 			int count = 0;
 			foreach (var item in _itemsSource)
@@ -289,7 +289,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				count++;
 			}
 
-			return null;
+			return -1;
 		}
 
 		internal int IndexOf(object item)

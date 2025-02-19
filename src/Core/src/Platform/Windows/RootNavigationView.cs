@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
@@ -345,7 +344,7 @@ namespace Microsoft.Maui.Platform
 
 		void ReplacePaneMenuItemsWithCustomContent(UIElement? customContent)
 		{
-			_flyoutPanel.CachedChildren.Clear();
+			_flyoutPanel.Children.Clear();
 
 			if (customContent == null)
 			{
@@ -353,7 +352,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				_flyoutPanel.CachedChildren.Add(customContent);
+				_flyoutPanel.Children.Add(customContent);
 				PaneCustomContent = _flyoutPanel;
 			}
 		}
@@ -371,18 +370,6 @@ namespace Microsoft.Maui.Platform
 		{
 			public Maui.IView? FlyoutView { get; set; }
 
-			UIElementCollection? _cachedChildren;
-
-			[SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Panel.Children property is banned to enforce use of this CachedChildren property.")]
-			internal UIElementCollection CachedChildren
-			{
-				get
-				{
-					_cachedChildren ??= Children;
-					return _cachedChildren;
-				}
-			}
-
 			public FlyoutPanel()
 			{
 			}
@@ -390,7 +377,7 @@ namespace Microsoft.Maui.Platform
 			public double ContentWidth { get; set; }
 
 			FrameworkElement? FlyoutContent =>
-				CachedChildren.Count > 0 ? (FrameworkElement?)CachedChildren[0] : null;
+				Children.Count > 0 ? (FrameworkElement?)Children[0] : null;
 
 			protected override Size MeasureOverride(Size availableSize)
 			{

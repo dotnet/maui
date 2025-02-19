@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Platform
 			get => _content;
 			set
 			{
-				var children = CachedChildren;
+				var children = Children;
 
 				// Remove the previous content if it exists
 				if (_content is not null && children.Contains(_content) && value != _content)
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (containsCheck)
 			{
-				var children = CachedChildren;
+				var children = Children;
 
 				if (!children.Contains(_borderPath))
 				{
@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				CachedChildren.Add(_borderPath);
+				Children.Add(_borderPath);
 			}
 		}
 

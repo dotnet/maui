@@ -7,7 +7,9 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/DataTrigger.xml" path="Type[@FullName='Microsoft.Maui.Controls.DataTrigger']/Docs/*" />
 	[ContentProperty("Setters")]
-	public sealed class DataTrigger : TriggerBase
+	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.PassthroughValueProvider")]
+	[AcceptEmptyServiceProvider]
+	public sealed class DataTrigger : TriggerBase, IValueProvider
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DataTrigger.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public DataTrigger([System.ComponentModel.TypeConverter(typeof(TypeTypeConverter))][Parameter("TargetType")] Type targetType) : base(new BindingCondition(), targetType)
@@ -50,6 +52,12 @@ namespace Microsoft.Maui.Controls
 				((BindingCondition)Condition).Value = value;
 				OnPropertyChanged();
 			}
+		}
+
+		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
+		{
+			//This is no longer required
+			return this;
 		}
 	}
 }

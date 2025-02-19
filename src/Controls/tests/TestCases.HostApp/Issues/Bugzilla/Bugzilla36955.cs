@@ -12,14 +12,10 @@ public class Bugzilla36955 : TestContentPage
 
 		var sc = new SwitchCell
 		{
-			Text = "Toggle switch; nothing should crash",
-			AutomationId = "Switch"
+			Text = "Toggle switch; nothing should crash"
 		};
 
-		var button = new Button
-		{
-			AutomationId = "Button"
-		};
+		var button = new Button();
 		button.SetBinding(Button.TextProperty, new Binding("On", source: sc));
 
 		var vc = new ViewCell

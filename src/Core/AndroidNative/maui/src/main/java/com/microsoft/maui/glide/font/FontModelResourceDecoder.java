@@ -15,10 +15,7 @@ import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPoolAdapter;
 import com.bumptech.glide.load.resource.bitmap.BitmapResource;
 
-import com.microsoft.maui.PlatformLogger;
-
 public class FontModelResourceDecoder implements ResourceDecoder<FontModel, Bitmap> {
-    private static final PlatformLogger logger = new PlatformLogger("FontModelResDecoder");
 
     private final BitmapPool bitmapPool;
 
@@ -56,8 +53,6 @@ public class FontModelResourceDecoder implements ResourceDecoder<FontModel, Bitm
 
         Canvas canvas = new Canvas(bmp);
         canvas.drawText(model.getGlyph(), 0, baseline, paint);
-
-        if (logger.isVerboseLoggable) logger.v(model.toString());
 
         return new BitmapResource(bmp, bitmapPool);
     }

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,11 +15,13 @@ public class Bugzilla57749 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Button)]
-	public void Bugzilla57749Test()
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	public async Task Bugzilla57749Test()
 	{
-		App.WaitForElement("btnClick");
+		await Task.Delay(500);
 		App.Tap("btnClick");
 		App.WaitForElement("Button was clicked");
 		App.Tap("Ok");
 	}
 }
+#endif

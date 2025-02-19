@@ -10,9 +10,15 @@ public class ShellItemIsVisible : _IssuesUITest
 	public ShellItemIsVisible(TestDevice testDevice) : base(testDevice)
 	{
 	}
-	const string TitlePage = "Item Title Page";
-	const string TopTab1 = "Top Tab 1";
-	const string TopTab2 = "Top Tab 2";
+#if ANDROID
+	const string TitlePage = "ITEM TITLE PAGE";
+	const string TopTab1 = "TOP TAB 1";
+	const string TopTab2 = "TOP TAB 2";
+#else
+    const string TitlePage="Item Title Page";
+    const string TopTab1="Top Tab 1";
+    const string TopTab2="Top Tab 2";
+#endif
 
 	public override string Issue => "Shell Items IsVisible Test";
 
@@ -33,7 +39,7 @@ public class ShellItemIsVisible : _IssuesUITest
 		App.WaitForElement("Item1 Flyout");
 		App.Tap("Item1 Flyout");
 		App.WaitForElementTillPageNavigationSettled(TitlePage);
-		App.TapTab(TitlePage, true);
+		TapTobTab(TitlePage);
 		App.WaitForElementTillPageNavigationSettled("ToggleItem1");
 		App.Tap("ToggleItem1");
 		App.WaitForElement("Welcome to Tab 1");
@@ -53,7 +59,7 @@ public class ShellItemIsVisible : _IssuesUITest
 		App.Tap("AllVisible");
 		App.WaitForElementTillPageNavigationSettled("ToggleItem2");
 		App.Tap("ToggleItem2");
-		App.TapTab(TitlePage);
+		App.WaitForElementTillPageNavigationSettled(TitlePage);
 		App.ShowFlyout();
 		App.WaitForElement("Item1 Flyout");
 		App.WaitForNoElement("Item2 Flyout");
@@ -84,8 +90,10 @@ public class ShellItemIsVisible : _IssuesUITest
 		App.Tap("ToggleItem1");
 		App.WaitForElementTillPageNavigationSettled("ClearAndRecreate");
 		App.Tap("ClearAndRecreate");
-		App.TapTab(TopTab2);
-		App.TapTab(TopTab1);
+		App.WaitForElementTillPageNavigationSettled(TopTab2);
+		App.Tap(TopTab2);
+		App.WaitForElementTillPageNavigationSettled(TopTab1);
+		App.Tap(TopTab1);
 	}
 #endif
 	[Test, Order(3)]
@@ -99,5 +107,12 @@ public class ShellItemIsVisible : _IssuesUITest
 		App.Tap("ClearAndRecreateShellContent");
 		App.WaitForElement("ClearAndRecreate");
 		App.Tap("ClearAndRecreate");
+	}
+	void TapTobTab(string tab)
+	{
+#if WINDOWS
+        App.Tap("navViewItem");
+#endif
+		App.Tap(tab);
 	}
 }

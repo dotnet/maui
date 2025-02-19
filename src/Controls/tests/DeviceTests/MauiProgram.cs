@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Hosting;
@@ -10,11 +9,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static class MauiProgram
 	{
-		static MauiProgram()
-		{
-			AppContext.SetSwitch("HybridWebView.InvokeJavaScriptThrowsExceptions", isEnabled: true);
-		}
-
 #if ANDROID
 		public static Android.Content.Context CurrentContext => MauiProgramDefaults.DefaultContext;
 #elif WINDOWS

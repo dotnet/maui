@@ -57,8 +57,8 @@ namespace Microsoft.Maui.Platform
 				Visibility = UI.Xaml.Visibility.Collapsed,
 			};
 
-			CachedChildren.Add(_image);
-			CachedChildren.Add(_textBlock);
+			Children.Add(_image);
+			Children.Add(_textBlock);
 
 			LayoutImageLeft(0);
 		}

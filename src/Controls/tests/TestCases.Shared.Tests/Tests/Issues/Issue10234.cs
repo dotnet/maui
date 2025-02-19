@@ -15,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
+		[FailsOnMacWhenRunningOnXamarinUITest("ScrollRight is not implemented on Mac")]
 		public void ScrollCarouselViewAfterDispose()
 		{
 			App.WaitForElement("goToShow");

@@ -43,24 +43,28 @@
 						HorizontalOptions = LayoutOptions.Center
 					};
 
-
+#pragma warning disable CS0618 // Type or member is obsolete
 					var switcher = new Switch
 					{
 						AutomationId = SwitchAutomatedId,
 						HorizontalOptions = LayoutOptions.Center,
-						VerticalOptions = LayoutOptions.Center
+						VerticalOptions = LayoutOptions.CenterAndExpand
 					};
-
+#pragma warning restore CS0618 // Type or member is obsolete
 					switcher.Toggled += switcher_Toggled;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0612 // Type or member is obsolete
 					_label = new Label
 					{
-						AutomationId = "SwitchLabel",
+						AutomationId = string.Format(SwitchIsNowLabelTextFormat, switcher.IsToggled),
 						Text = string.Format(SwitchIsNowLabelTextFormat, switcher.IsToggled),
-						FontSize = 20,
+						FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)),
 						HorizontalOptions = LayoutOptions.Center,
-						VerticalOptions = LayoutOptions.Center
+						VerticalOptions = LayoutOptions.CenterAndExpand
 					};
+#pragma warning restore CS0612 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 
 					// Accomodate iPhone status bar.
 					Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(10, 20, 10, 5) : new Thickness(10, 0, 10, 5);

@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public abstract class CollectionViewUITests : CoreGalleryBasePageTest
+	public abstract class CollectionViewUITests : UITest
 	{
 		const string CollectionViewGallery = "CollectionView Gallery";
 
@@ -13,8 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void NavigateToGallery()
+		protected override void FixtureSetup()
 		{
+			base.FixtureSetup();
 			App.NavigateToGallery(CollectionViewGallery);
 		}
 
@@ -30,14 +31,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			var galleryName = $"{collectionTestName} Galleries";
 			var regexGalleryName = System.Text.RegularExpressions.Regex.Replace(galleryName, " |\\(|\\)", string.Empty);
 
-			App.WaitForElementTillPageNavigationSettled(regexGalleryName);
-			App.Tap(regexGalleryName);
+			App.WaitForElement(regexGalleryName);
+			App.Click(regexGalleryName);
 		}
 
 		internal void VisitSubGallery(string galleryName)
 		{
-			App.WaitForElementTillPageNavigationSettled(galleryName);
-			App.Tap(galleryName);
+			App.WaitForElement(galleryName);
+			App.Click(galleryName);
 		}
 	}
 }

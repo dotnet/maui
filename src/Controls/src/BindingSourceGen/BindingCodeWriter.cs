@@ -92,15 +92,19 @@ public static class BindingCodeWriter
 			using System.CodeDom.Compiler;
 		
 			{{GeneratedCodeAttribute}}
-			[global::System.Diagnostics.Conditional("DEBUG")]
 			[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 			file sealed class InterceptsLocationAttribute : Attribute
 			{
-				public InterceptsLocationAttribute(int version, string data)
+				public InterceptsLocationAttribute(string filePath, int line, int column)
 				{
-					_ = version;
-					_ = data;
+					FilePath = filePath;
+					Line = line;
+					Column = column;
 				}
+		
+				public string FilePath { get; }
+				public int Line { get; }
+				public int Column { get; }
 			}
 		}
 
@@ -173,7 +177,7 @@ public static class BindingCodeWriter
 		public void AppendSetBindingInterceptor(uint id, BindingInvocationDescription binding)
 		{
 			AppendLine(GeneratedCodeAttribute);
-			AppendInterceptorAttribute(binding.InterceptableLocation);
+			AppendInterceptorAttribute(binding.Location);
 			AppendMethodName(binding, id);
 			if (binding.SourceType.IsGenericParameter && binding.PropertyType.IsGenericParameter)
 			{
@@ -306,9 +310,9 @@ public static class BindingCodeWriter
 			});
 		}
 
-		private void AppendInterceptorAttribute(InterceptableLocationRecord location)
+		private void AppendInterceptorAttribute(InterceptorLocation location)
 		{
-			AppendLine($"[InterceptsLocationAttribute({location.Version}, @\"{location.Data}\")]");
+			AppendLine($"[InterceptsLocationAttribute(@\"{location.FilePath}\", {location.Line}, {location.Column})]");
 		}
 
 		private void AppendSetterAction(BindingInvocationDescription binding, uint id, string sourceVariableName = "source", string valueVariableName = "value")

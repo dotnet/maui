@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,13 +13,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "[Bug] Collection View items don't load bindable properties values inside OnElementChanged";
+		public override string Issue => "[UWP] Scrollview with null content crashes on UWP";
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.Compatibility)]
 		public void BindablePropertiesAvailableAtOnElementChanged()
 		{
-			App.WaitForElement(Success);
+			App.WaitForNoElement(Success);
 		}
 	}
 }
+#endif

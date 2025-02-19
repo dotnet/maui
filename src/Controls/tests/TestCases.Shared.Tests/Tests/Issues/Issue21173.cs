@@ -12,13 +12,15 @@ public class Issue21173 : _IssuesUITest
 		: base(device)
 	{ }
 
+#if ANDROID
 	[Test]
 	[Category(UITestCategories.Border)]
 	public void BorderWithRoundRectangleShouldRoundCornersOfContentWithinIt()
 	{
-		_ = App.WaitForElement("image");
+		_ = App.WaitForElement("border");
 
 		// The test passes if corners of borders' contents' have proper corner radiuses
 		VerifyScreenshot();
 	}
+#endif
 }

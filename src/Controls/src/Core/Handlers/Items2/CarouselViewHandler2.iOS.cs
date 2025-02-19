@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// Create our section layout
 				var section = NSCollectionLayoutSection.Create(group: group);
 				section.InterGroupSpacing = itemSpacing;
-				section.OrthogonalScrollingBehavior = IsHorizontal ? UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered : UICollectionLayoutSectionOrthogonalScrollingBehavior.None;
+				section.OrthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered;
 				section.VisibleItemsInvalidationHandler = (items, offset, env) =>
 				{
 					//This will allow us to SetPosition when we are scrolling the items

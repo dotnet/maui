@@ -55,7 +55,6 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import com.microsoft.maui.glide.MauiCustomTarget;
 import com.microsoft.maui.glide.MauiCustomViewTarget;
-import com.microsoft.maui.glide.MauiTarget;
 import com.microsoft.maui.glide.font.FontModel;
 
 import java.io.InputStream;
@@ -296,7 +295,7 @@ public class PlatformInterop {
         }
     }
 
-    private static void prepare(RequestBuilder<Drawable> builder, MauiTarget target, boolean cachingEnabled, ImageLoaderCallback callback) {
+    private static void prepare(RequestBuilder<Drawable> builder, Target<Drawable> target, boolean cachingEnabled, ImageLoaderCallback callback) {
         // A special value to work around https://github.com/dotnet/maui/issues/6783 where targets
         // are actually re-used if all the variables are the same.
         // Adding this "error image" that will always load a null image makes each request unique,
@@ -310,20 +309,17 @@ public class PlatformInterop {
                 .skipMemoryCache(true);
         }
 
-        target.load(builder);
+        builder
+            .into(target);
     }
 
-    public static String getGlyphHex(String glyph) {
-        return FontModel.getGlyphHex(glyph);
-    }
-
-    private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback, Object model) {
-        MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback, model);
+    private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback) {
+        MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback);
         prepare(builder, target, cachingEnabled, callback);
     }
 
-    private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback, Object model) {
-        MauiCustomTarget target = new MauiCustomTarget(context, callback, model);
+    private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback) {
+        MauiCustomTarget target = new MauiCustomTarget(context, callback);
         prepare(builder, target, cachingEnabled, callback);
     }
 
@@ -331,7 +327,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(file);
-        loadInto(builder, imageView, true, callback, file);
+        loadInto(builder, imageView, true, callback);
     }
 
     public static void loadImageFromUri(ImageView imageView, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
@@ -343,14 +339,14 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(androidUri);
-        loadInto(builder, imageView, cachingEnabled, callback, androidUri);
+        loadInto(builder, imageView, cachingEnabled, callback);
     }
 
     public static void loadImageFromStream(ImageView imageView, InputStream inputStream, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(inputStream);
-        loadInto(builder, imageView, false, callback, inputStream);
+        loadInto(builder, imageView, false, callback);
     }
 
     public static void loadImageFromFont(ImageView imageView, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
@@ -359,14 +355,14 @@ public class PlatformInterop {
             .with(imageView)
             .load(fontModel)
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
-        loadInto(builder, imageView, true, callback, fontModel);
+        loadInto(builder, imageView, true, callback);
     }
 
     public static void loadImageFromFile(Context context, String file, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(file);
-        load(builder, context, true, callback, file);
+        load(builder, context, true, callback);
     }
 
     public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
@@ -378,14 +374,14 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(androidUri);
-        load(builder, context, cachingEnabled, callback, androidUri);
+        load(builder, context, cachingEnabled, callback);
     }
 
     public static void loadImageFromStream(Context context, InputStream inputStream, ImageLoaderCallback callback) {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(inputStream);
-        load(builder, context, false, callback, inputStream);
+        load(builder, context, false, callback);
     }
 
     public static void loadImageFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
@@ -394,7 +390,7 @@ public class PlatformInterop {
             .with(context)
             .load(fontModel)
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
-        load(builder, context, true, callback, fontModel);
+        load(builder, context, true, callback);
     }
 
     public static ColorStateList getColorStateListForToolbarStyleableAttribute(Context context, int resId, int index) {
@@ -482,7 +478,7 @@ public class PlatformInterop {
     }
 
     /**
-     * Draws the background and the border (if any).
+     * Calls canvas.saveLayer(), draws paths for clipPath & borderPaint, then canvas.restoreToCount()
      * @param drawable
      * @param canvas
      * @param width
@@ -492,6 +488,8 @@ public class PlatformInterop {
      */
     public static void drawMauiDrawablePath(PaintDrawable drawable, Canvas canvas, int width, int height, @NonNull Path clipPath, Paint borderPaint)
     {
+        int saveCount = canvas.saveLayer(0, 0, width, height, null);
+
         Paint paint = drawable.getPaint();
         if (paint != null) {
             canvas.drawPath(clipPath, paint);
@@ -499,6 +497,8 @@ public class PlatformInterop {
         if (borderPaint != null) {
             canvas.drawPath(clipPath, borderPaint);
         }
+
+        canvas.restoreToCount(saveCount);
     }
 
     /**

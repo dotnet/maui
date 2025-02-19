@@ -69,11 +69,12 @@ namespace Microsoft.Maui.Devices.Sensors
 			else
 				Latitude = latitude;
 
-			// check if longitude is in (-180, 180]
-			if (Math.Abs(longitude) > 180)
-				throw new ArgumentOutOfRangeException(nameof(longitude));
-			else
-				Longitude = longitude;
+			// make sure that longitude is in (-180, 180]
+			Longitude = longitude;
+			while (Longitude > 180)
+				Longitude -= 360;
+			while (Longitude <= -180)
+				Longitude += 360;
 
 			Timestamp = timestamp;
 		}

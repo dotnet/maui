@@ -177,17 +177,10 @@ namespace Microsoft.Maui.Platform
 
 		UIImage CreateCheckBox(UIImage? check)
 		{
-			var renderer = new UIGraphicsImageRenderer(new CGSize(DefaultSize, DefaultSize));
-			var image = renderer.CreateImage((UIGraphicsImageRendererContext ctx) =>
-			{
-				var context = ctx.CGContext;
-				RenderCheckMark(context, check);
-			});
-			return image;
-		}
+			UIGraphics.BeginImageContextWithOptions(new CGSize(DefaultSize, DefaultSize), false, 0);
+			var context = UIGraphics.GetCurrentContext();
+			context.SaveState();
 
-		void RenderCheckMark(CGContext context, UIImage? check)
-		{
 			var checkedColor = CheckBoxTintUIColor;
 
 			if (checkedColor != null)
@@ -210,21 +203,18 @@ namespace Microsoft.Maui.Platform
 				boxPath.Fill();
 				check.Draw(new CGPoint(0, 0), CGBlendMode.DestinationOut, 1);
 			}
+
+			context.RestoreState();
+			var img = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+
+			return img;
 		}
 
 		static UIImage CreateCheckMark()
 		{
-			using var renderer = new UIGraphicsImageRenderer(new CGSize(DefaultSize, DefaultSize));
-			var image = renderer.CreateImage((UIGraphicsImageRendererContext ctx) =>
-			{
-				var context = ctx.CGContext;
-				RenderCheckMark(context);
-			});
-			return image;
-		}
-
-		static void RenderCheckMark(CGContext context)
-		{
+			UIGraphics.BeginImageContextWithOptions(new CGSize(DefaultSize, DefaultSize), false, 0);
+			var context = UIGraphics.GetCurrentContext();
 			context.SaveState();
 
 			var vPadding = LineWidth / 2;
@@ -240,6 +230,10 @@ namespace Microsoft.Maui.Platform
 			checkPath.Stroke();
 
 			context.RestoreState();
+			var img = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+
+			return img;
 		}
 
 		public override CGSize SizeThatFits(CGSize size)

@@ -35,16 +35,11 @@ namespace Microsoft.Maui.Platform
 		{
 			_connected = true;
 			if (_navigationFrame != null)
-			{
-				_navigationFrame.Navigating -= OnNavigating;
 				_navigationFrame.Navigated -= OnNavigated;
-			}
 
 			FirePendingNavigationFinished();
 
-			navigationFrame.Navigating += OnNavigating;
 			navigationFrame.Navigated += OnNavigated;
-
 			_navigationFrame = navigationFrame;
 			NavigationView = (IStackNavigation)navigationView;
 
@@ -56,10 +51,7 @@ namespace Microsoft.Maui.Platform
 		{
 			_connected = false;
 			if (_navigationFrame != null)
-			{
-				_navigationFrame.Navigating -= OnNavigating;
 				_navigationFrame.Navigated -= OnNavigated;
-			}
 
 			FirePendingNavigationFinished();
 			_navigationFrame = null;
@@ -151,28 +143,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		private void OnNavigating(object sender, NavigatingCancelEventArgs e)
-		{
-			// We can navigate to pages that do not exist in the shell as sections, so we 
-			// end up keeping the previous page loaded and in the (MAUI) visual tree.
-			// This means we need to manually clear the WinUI content from the presenter so we don't
-			// get a crash when the page is navigated to again due to the content already being the
-			// child of another parent
-			if (NavigationFrame.Content is Page p)
-			{
-				p.Unloaded += PageUnloaded;
-				void PageUnloaded(object s, RoutedEventArgs e)
-				{
-					p.Unloaded -= PageUnloaded;
-					if (p.Content is ContentPresenter presenter)
-					{
-						presenter.Content = null;
-						_previousContent = null;
-					}
-				}
-			}
-		}
-
 		// This is used to fire NavigationFinished back to the xplat view
 		// Firing NavigationFinished from Loaded is the latest reliable point
 		// in time that I know of for firing `NavigationFinished`
@@ -200,7 +170,8 @@ namespace Microsoft.Maui.Platform
 					VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch
 				};
 
-				// Clear the content just in case the previous page didn't unload
+				// There's some bug in our code, or the lifecycle of ContentControl, that is causing the content to
+				// never be removed from the parent...
 				if (_previousContent is not null)
 				{
 					_previousContent.Content = null;

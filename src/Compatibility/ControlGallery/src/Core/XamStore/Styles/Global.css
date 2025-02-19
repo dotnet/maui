@@ -1,0 +1,8 @@
+﻿.shell {
+    background-color: #11313F;
+    -maui-FlyoutBackgroundColor: #CC0000;
+}
+
+^Shell {
+    -maui-flyout-background-color: #CC0000;
+}

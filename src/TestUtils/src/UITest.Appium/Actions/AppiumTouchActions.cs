@@ -19,7 +19,6 @@ namespace UITest.Appium
 		const string DragAndDropCommand = "dragAndDrop";
 		const string ScrollToCommand = "scrollTo";
 		const string DragCoordinatesCommand = "dragCoordinates";
-		const string PressDownCommand = "pressDown";
 
 		readonly AppiumApp _appiumApp;
 
@@ -33,8 +32,7 @@ namespace UITest.Appium
 			TouchAndHoldCoordinatesCommand,
 			DragAndDropCommand,
 			ScrollToCommand,
-			DragCoordinatesCommand,
-			PressDownCommand
+			DragCoordinatesCommand
 		};
 
 		public AppiumTouchActions(AppiumApp appiumApp)
@@ -60,8 +58,6 @@ namespace UITest.Appium
 				DragAndDropCommand => DragAndDrop(parameters),
 				ScrollToCommand => ScrollTo(parameters),
 				DragCoordinatesCommand => DragCoordinates(parameters),
-
-				PressDownCommand => PressDown(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -136,21 +132,6 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
-		CommandResponse PressDown(IDictionary<string, object> parameters)
-		{
-			var element = GetAppiumElement(parameters["element"]);
-
-			// Currently only pen and touch pointer input source types are supported, but this works fine
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
-
-			var sequence = new ActionSequence(touchDevice, 0);
-			sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
-			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(250)));
-			_appiumApp.Driver.PerformActions(new List<ActionSequence> { sequence });
-
-			return CommandResponse.SuccessEmptyResponse;
-		}
 
 		CommandResponse RightClick(string elementId)
 		{

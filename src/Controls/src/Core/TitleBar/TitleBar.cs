@@ -81,7 +81,6 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				titlebar.ApplyVisibleState(LeadingVisibleState);
-				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
@@ -135,7 +134,6 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				titlebar.ApplyVisibleState(ContentVisibleState);
-				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
@@ -149,7 +147,6 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				titlebar.ApplyVisibleState(TrailingVisibleState);
-				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
@@ -259,16 +256,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal void Cleanup()
-		{
-			PropertyChanged -= TitleBar_PropertyChanged;
-			if (Window is not null)
-			{
-				Window.Activated -= Window_Activated;
-				Window.Deactivated -= Window_Deactivated;
-			}
-		}
-
 		private void TitleBar_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(Window) && Window is not null)
@@ -362,8 +349,7 @@ namespace Microsoft.Maui.Controls
 #if !MACCATALYST
 					new ColumnDefinition(150),             // Min drag region + padding for system buttons
 #endif
-				},
-				IgnoreSafeArea = true,
+				}
 			};
 
 			contentGrid.SetBinding(

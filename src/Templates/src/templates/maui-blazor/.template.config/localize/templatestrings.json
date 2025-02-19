@@ -1,7 +1,6 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI Blazor Hybrid App",
-  "_name.comment": "{Locked='.NET MAUI Blazor Hybrid'}",
   "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor Hybrid",
   "postActions/openInEditor/description": "Opens Components/Pages/Home.razor in the editor.",
   "symbols/applicationId/description": "Overrides the $(ApplicationId) in the project",

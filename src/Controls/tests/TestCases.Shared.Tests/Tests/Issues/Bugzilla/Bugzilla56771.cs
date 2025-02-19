@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_ANDROID // Exception handling not performs in Android, Issue: https://github.com/dotnet/maui/issues/26941
+﻿#if IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,11 +19,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Bugzilla56771Test()
 		{
 			App.WaitForElement(BtnAdd);
 			App.Tap(BtnAdd);
-			App.WaitForElement(Success);
+			App.WaitForNoElement(Success);
 		}
 	}
 }

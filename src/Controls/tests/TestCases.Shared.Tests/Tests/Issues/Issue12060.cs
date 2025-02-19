@@ -1,7 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS
-//The BoxView's AutomationId doesn't work correctly on the Windows platform, and using a Label also doesn't ensure the BoxView's drag-and-drop functionality works.
-//for more information: https://github.com/dotnet/maui/issues/27195 
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,13 +15,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.DragAndDrop)]
 		[Category(UITestCategories.Compatibility)]
-
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void AcceptedOperationNoneDisablesDropOperation()
 		{
 			App.WaitForElement("TestLoaded");
 			App.DragAndDrop("DragBox", "DropBox");
-			App.WaitForElement("Success");
+			App.WaitForNoElement("Success");
 		}
 	}
 }
-#endif

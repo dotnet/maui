@@ -33,13 +33,17 @@ public class Issue9088 : TestShell
 			HorizontalTextAlignment = TextAlignment.End
 		};
 
-		var stackLayout = new HorizontalStackLayout
+		var stackLayout = new StackLayout
 		{
 			_rightSwipeCountLabel,
 			_leftSwipeCountLabel
 		};
 
-		stackLayout.HorizontalOptions = LayoutOptions.Fill;
+		stackLayout.Orientation = StackOrientation.Horizontal;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+		stackLayout.HorizontalOptions = LayoutOptions.FillAndExpand;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		CreateContentPage(ContentPageTitle).Content =
 			new StackLayout

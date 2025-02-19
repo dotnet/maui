@@ -17,8 +17,9 @@ public class Bugzilla57717 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Button)]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void ButtonBackgroundColorAutomatedTest()
 	{
-		App.WaitForElement(ButtonText);
+		RunningApp.WaitForElement(ButtonText);
 	}
 }

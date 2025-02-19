@@ -18,9 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("button");
 			App.Click("button");
-			App.WaitForElementTillPageNavigationSettled("openFragmentTwoButton");
+			App.WaitForElement("openFragmentTwoButton");
 			App.Click("openFragmentTwoButton");
-			App.WaitForElementTillPageNavigationSettled("fragmentTwoLabel");
+			App.WaitForElement("fragmentTwoLabel");
 		}
 	}
 }

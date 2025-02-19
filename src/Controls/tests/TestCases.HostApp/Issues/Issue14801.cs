@@ -26,6 +26,7 @@
 			{
 				Text = "Go to child page",
 				AutomationId = "goToChildPage",
+				VerticalOptions = LayoutOptions.Start,
 				Command = new Command(() => Shell.Current.GoToAsync("Issue14801_child"))
 			};
 		}
@@ -62,6 +63,7 @@
 			{
 				Text = "Go back",
 				AutomationId = "goBack",
+				VerticalOptions = LayoutOptions.Start,
 				Command = new Command(() => Shell.Current.GoToAsync(".."))
 			};
 		}

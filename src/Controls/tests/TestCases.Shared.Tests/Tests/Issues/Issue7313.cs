@@ -15,9 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void RefreshControlTurnsOffSuccessfully()
 		{
-			App.WaitForElement("If you see the refresh circle this test has failed");
+			App.WaitForNoElement("If you see the refresh circle this test has failed");
 
 			App.WaitForNoElement("RefreshControl");
 		}

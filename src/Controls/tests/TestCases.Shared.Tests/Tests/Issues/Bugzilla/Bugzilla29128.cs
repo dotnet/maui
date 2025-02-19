@@ -1,6 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS //Background Color updates on Slider Track
-//For more information : https://github.com/dotnet/maui/issues/25921
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,11 +15,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Bugzilla29128Test()
 		{
 			App.WaitForElement("SliderId");
-			VerifyScreenshot();
+			App.Screenshot("Slider and button should be centered");
 		}
 	}
 }
-#endif

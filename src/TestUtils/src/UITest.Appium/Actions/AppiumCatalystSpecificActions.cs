@@ -6,15 +6,13 @@ public class AppiumCatalystSpecificActions : ICommandExecutionGroup
 {
 	const string EnterFullScreenCommand = "enterFullScreen";
 	const string ExitFullScreenCommand = "exitFullScreen";
-	const string ToggleSystemAnimationsCommand = "toggleSystemAnimations";
-
+	
 	readonly AppiumApp _appiumApp;
 
 	readonly List<string> _commands = new()
 	{
 		EnterFullScreenCommand,
 		ExitFullScreenCommand,
-		ToggleSystemAnimationsCommand,
 	};
 
 	public AppiumCatalystSpecificActions(AppiumApp appiumApp)
@@ -33,11 +31,10 @@ public class AppiumCatalystSpecificActions : ICommandExecutionGroup
 		{
 			EnterFullScreenCommand => EnterFullScreen(parameters),
 			ExitFullScreenCommand => ExitFullScreen(parameters),
-			ToggleSystemAnimationsCommand => ToggleSystemAnimations(parameters),
 			_ => CommandResponse.FailedEmptyResponse,
 		};
 	}
-
+	
 	CommandResponse EnterFullScreen(IDictionary<string, object> parameters)
 	{
 		try
@@ -51,7 +48,7 @@ public class AppiumCatalystSpecificActions : ICommandExecutionGroup
 			return CommandResponse.FailedEmptyResponse;
 		}
 	}
-
+	
 	CommandResponse ExitFullScreen(IDictionary<string, object> parameters)
 	{
 		try
@@ -63,36 +60,6 @@ public class AppiumCatalystSpecificActions : ICommandExecutionGroup
 			});
 
 			return CommandResponse.SuccessEmptyResponse;
-		}
-		catch
-		{
-			return CommandResponse.FailedEmptyResponse;
-		}
-	}
-
-	CommandResponse ToggleSystemAnimations(IDictionary<string, object> parameters)
-	{
-		try
-		{
-			bool enableSystemAnimations = (bool)parameters["enableSystemAnimations"];
-
-			if (enableSystemAnimations)
-			{
-				// Disable Window Animations.
-				ShellHelper.ExecuteShellCommand($"defaults write NSGlobalDomain NSAutomaticWindowAnimationsEnabled -bool false");
-
-				// Increase the speed of OSX dialogs boxes.
-				ShellHelper.ExecuteShellCommand($"defaults write NSGlobalDomain NSWindowResizeTime .1");
-
-				return CommandResponse.SuccessEmptyResponse;
-			}
-			else
-			{
-				ShellHelper.ExecuteShellCommand($"defaults write NSGlobalDomain NSAutomaticWindowAnimationsEnabled -bool true");
-				ShellHelper.ExecuteShellCommand($"defaults write NSGlobalDomain NSWindowResizeTime .5");
-
-				return CommandResponse.SuccessEmptyResponse;
-			}
 		}
 		catch
 		{

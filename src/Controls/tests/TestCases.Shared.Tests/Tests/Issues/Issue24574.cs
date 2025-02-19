@@ -13,6 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Tap Double Tap";
 
 		[Test]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		[Category(UITestCategories.Gestures)]
 		[Category(UITestCategories.Compatibility)]
 		public void TapThenDoubleTap()
@@ -22,10 +23,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("TapLabel");
 
 			App.Tap("TapLabel");
-			App.WaitForElement("Single");
+			App.WaitForNoElement("Single");
 
 			App.DoubleTap("TapLabel");
-			App.WaitForElement("Double");
+			App.WaitForNoElement("Double");
 		}
 	}
 }

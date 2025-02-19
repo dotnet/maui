@@ -13,8 +13,7 @@
       WidthRequest="100">
       <Image 
         Aspect="AspectFill"
-        Source="oasis.jpg" 
-        AutomationId = "OasisImage"/>
+        Source="oasis.jpg" />
     </Border>
   </Grid>
 </ContentPage>

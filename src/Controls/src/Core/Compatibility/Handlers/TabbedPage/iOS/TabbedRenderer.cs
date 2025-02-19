@@ -29,8 +29,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		UITabBarAppearance _tabBarAppearance;
 		WeakReference<VisualElement> _element;
 
-		Brush _currentBarBackground;
-
 		IMauiContext MauiContext => _mauiContext;
 		public static IPropertyMapper<TabbedPage, TabbedRenderer> Mapper = new PropertyMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewMapper);
 		public static CommandMapper<TabbedPage, TabbedRenderer> CommandMapper = new CommandMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewCommandMapper);
@@ -363,26 +361,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Tabbed is not TabbedPage tabbed || TabBar == null)
 				return;
 
-			if (_currentBarBackground is GradientBrush oldGradientBrush)
-			{
-				oldGradientBrush.Parent = null;
-				oldGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
-			}
+			var barBackground = tabbed.BarBackground;
 
-			_currentBarBackground = tabbed.BarBackground;
-
-			if (_currentBarBackground is GradientBrush newGradientBrush)
-			{
-				newGradientBrush.Parent = tabbed;
-				newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
-			}
-
-			TabBar.UpdateBackground(_currentBarBackground);
-		}
-
-		void OnBarBackgroundChanged(object sender, EventArgs e)
-		{
-			TabBar.UpdateBackground(_currentBarBackground);
+			TabBar.UpdateBackground(barBackground);
 		}
 
 		void UpdateBarTextColor()

@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
@@ -24,7 +23,6 @@ namespace Microsoft.Maui.TestCases.Tests
 					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
 					if (retries++ < SetupMaxRetries)
 					{
-						App.Back();
 						Reset();
 					}
 					else

@@ -91,8 +91,7 @@ namespace UITest.Appium
 #nullable disable
 		public virtual IUIElement FindElementByText(string text)
 		{
-			// Android (text), iOS (label), Windows (Name)
-			return AppiumQuery.ByXPath("//*[@text='" + text + "' or @label='" + text + "' or @Name='" + text + "']").FindElement(this);
+			return AppiumQuery.ByXPath("//*[@text='" + text + "' or @Name='" + text + "']").FindElement(this);
 		}
 #nullable enable
 
@@ -103,8 +102,7 @@ namespace UITest.Appium
 
 		public virtual IReadOnlyCollection<IUIElement> FindElementsByText(string text)
 		{
-			// Android (text), iOS (label), Windows (Name)
-			return AppiumQuery.ByXPath("//*[@text='" + text + "' or @label='" + text + "' or @Name='" + text + "']").FindElements(this);
+			return AppiumQuery.ByXPath("//*[@text='" + text + "' or @Name='" + text + "']").FindElements(this);
 		}
 
 		public virtual IReadOnlyCollection<IUIElement> FindElements(IQuery query)

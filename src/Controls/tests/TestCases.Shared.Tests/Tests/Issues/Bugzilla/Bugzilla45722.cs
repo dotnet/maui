@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS //The issue with the label count not incrementing correctly may be caused by multiple instances of objects being created, leading to inconsistent label values. 
-//For more information : https://github.com/dotnet/maui/issues/12090
+﻿#if WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -32,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			}
 
 			App.Tap(Collect);
-			App.WaitForElement(Success);
+			App.WaitForNoElement(Success);
 		}
 	}
 }

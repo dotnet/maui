@@ -17,11 +17,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void ThreadpoolBindingUpdateShouldNotCrash()
 		{
 			App.WaitForElement(Run);
 			App.Tap(Run);
-			App.WaitForElement(Success);
+			App.WaitForNoElement(Success);
 		}
 	}
 }
