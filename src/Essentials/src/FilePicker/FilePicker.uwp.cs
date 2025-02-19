@@ -30,8 +30,10 @@ namespace Microsoft.Maui.Storage
 			if (allowMultiple)
 			{
 				var fileList = await picker.PickMultipleFilesAsync();
-				if (fileList != null)
+				if (fileList != null && fileList.Count > 0)
 					resultList.AddRange(fileList);
+				else
+					return null;
 			}
 			else
 			{
