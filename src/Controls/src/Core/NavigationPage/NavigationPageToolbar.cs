@@ -70,6 +70,12 @@ namespace Microsoft.Maui.Controls
 			if (sender is not ContentPage cp)
 				return;
 
+			if (cp.FindParentOfType<FlyoutPage>()?.Flyout is { } flyout &&
+				(cp == flyout || cp.FindParent(x => x == flyout) is not null))
+			{
+				return;
+			}
+
 			_toolbarTracker.PagePropertyChanged -= OnPagePropertyChanged;
 			_currentPage = cp;
 			_currentNavigationPage = _currentPage.FindParentOfType<NavigationPage>();
