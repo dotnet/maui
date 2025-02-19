@@ -93,6 +93,7 @@ steps:
         dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
         # Setup JAVA_HOME
         # Execute the command and capture the JSON output
+        dotnet android jdk list
         $jsonOutput = & dotnet android jdk list --format=Json | ConvertFrom-Json
         # Find the first item with DotNetPreferred set to True
         $preferredJdk = $jsonOutput | Where-Object { $_.DotNetPreferred -eq $true } | Select-Object -First 1
