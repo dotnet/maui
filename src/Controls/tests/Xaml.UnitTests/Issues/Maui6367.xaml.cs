@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void NestedTriggers([Values(false, true)] bool useCompiledXaml)
 			{
 				Maui6367 view = new Maui6367(useCompiledXaml);
+				//Assert.DoesNotThrow(() => view = new Maui6367(useCompiledXaml));
 			}
 		}
 	}

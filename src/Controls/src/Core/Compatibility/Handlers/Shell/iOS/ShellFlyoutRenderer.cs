@@ -94,14 +94,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool IsSwipeView(UIView view)
 		{
 			if (view == null)
-			{
 				return false;
-			}
 
-			if (view is MauiSwipeView)
-			{
-				return true;
-			}
+			// TODO MAUI
+			//if (view is SwipeView)
+			//return true;
 
 			return IsSwipeView(view.Superview);
 		}

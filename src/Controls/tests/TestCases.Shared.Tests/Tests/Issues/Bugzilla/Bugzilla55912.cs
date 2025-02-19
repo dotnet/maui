@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-	[Category(UITestCategories.Gestures)]
 	public class Bugzilla55912 : _IssuesUITest
 	{
 		const string Success = "Success";
@@ -18,6 +17,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Tap event not always propagated to containing Grid/StackLayout";
 
 		[Test]
+		[Category(UITestCategories.Gestures)]
+		[Category(UITestCategories.Layout)]
+		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void GestureBubblingInStackLayout()
 		{
 			App.WaitForElement(StackLabelId);
@@ -26,6 +30,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[Category(UITestCategories.Gestures)]
+		[Category(UITestCategories.Layout)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void GestureBubblingInGrid()
 		{
 			App.WaitForElement(GridLabelId);

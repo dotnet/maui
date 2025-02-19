@@ -18,8 +18,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("string"),
 				new TypeDescription("int", IsValueType: true),
 				new EquatableArray<IPathPart>([
@@ -43,8 +42,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Microsoft.Maui.Controls.Button"),
 				new TypeDescription("int", IsValueType: true, IsNullable: true),
 				new EquatableArray<IPathPart>([
@@ -74,8 +72,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Foo"),
 				new TypeDescription("int", IsValueType: true, IsNullable: true),
 				new EquatableArray<IPathPart>([
@@ -102,8 +99,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Microsoft.Maui.Controls.Button", IsNullable: true),
 				new TypeDescription("int", IsValueType: true, IsNullable: true),
 				new EquatableArray<IPathPart>([
@@ -133,8 +129,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Foo"),
 				new TypeDescription("int", IsValueType: true, IsNullable: true),
 				new EquatableArray<IPathPart>([
@@ -158,8 +153,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Microsoft.Maui.Controls.Button", IsNullable: true),
 				new TypeDescription("int", IsValueType: true, IsNullable: true),
 				new EquatableArray<IPathPart>([
@@ -189,8 +183,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Foo"),
 				new TypeDescription("string", IsNullable: true),
 				new EquatableArray<IPathPart>([
@@ -220,8 +213,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 4, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
 				new TypeDescription("global::Foo", IsNullable: true),
 				new TypeDescription("int", IsValueType: true, IsNullable: true),
 				new EquatableArray<IPathPart>([
@@ -257,8 +249,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 4, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
 				new TypeDescription("global::Foo", IsNullable: true),
 				new TypeDescription("int", IsValueType: true),
 				new EquatableArray<IPathPart>([
@@ -294,8 +285,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 4, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
 				new TypeDescription("global::Foo", IsNullable: true),
 				new TypeDescription("int", IsNullable: true, IsValueType: true),
 				new EquatableArray<IPathPart>([
@@ -336,8 +326,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 4, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
 				new TypeDescription("global::Foo", IsNullable: true),
 				new TypeDescription("global::CustomLength", IsNullable: true),
 				new EquatableArray<IPathPart>([
@@ -367,8 +356,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Foo"),
 				new TypeDescription("int", IsValueType: true),
 				new EquatableArray<IPathPart>([
@@ -399,8 +387,7 @@ public class BindingRepresentationGenTests
         """;
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 4, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
 				new TypeDescription("global::Foo"),
 				new TypeDescription("int", IsValueType: true),
 				new EquatableArray<IPathPart>([
@@ -434,8 +421,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-			new SimpleLocation(@"Path\To\Program.cs", 6, 7),
+			new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
 			new TypeDescription("global::Foo"),
 			new TypeDescription("int", IsValueType: true),
 			new EquatableArray<IPathPart>([
@@ -465,8 +451,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-			new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+			new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 			new TypeDescription("global::Foo"),
 			new TypeDescription("int", IsValueType: true, IsNullable: true),
 				new EquatableArray<IPathPart>([
@@ -501,8 +486,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-			new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+			new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 			new TypeDescription("global::Foo"),
 			new TypeDescription("int", IsValueType: true, IsNullable: true),
 			new EquatableArray<IPathPart>([
@@ -551,8 +535,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-			new SimpleLocation(@"Path\To\Program.cs", 6, 7),
+			new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
 			new TypeDescription("global::MyNamespace.MySourceClass"),
 			new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: true),
 				new EquatableArray<IPathPart>([
@@ -586,8 +569,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-			new SimpleLocation(@"Path\To\Program.cs", 6, 7),
+			new InterceptorLocation(@"Path\To\Program.cs", 6, 7),
 			new TypeDescription("global::Foo"),
 			new TypeDescription("char", IsValueType: true),
 				new EquatableArray<IPathPart>([
@@ -618,8 +600,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-			new SimpleLocation(@"Path\To\Program.cs", 4, 7),
+			new InterceptorLocation(@"Path\To\Program.cs", 4, 7),
 			new TypeDescription("global::Foo"),
 			new TypeDescription("int", IsValueType: true),
 			new EquatableArray<IPathPart>([
@@ -649,8 +630,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Foo"),
 				new TypeDescription("string", IsNullable: true),
 				new EquatableArray<IPathPart>([
@@ -680,8 +660,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Foo"),
 				new TypeDescription("string"),
 				new EquatableArray<IPathPart>([
@@ -716,8 +695,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Foo"),
 				new TypeDescription("int", IsValueType: true, IsNullable: true),
 				new EquatableArray<IPathPart>([
@@ -753,8 +731,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Foo"),
 				new TypeDescription("int", IsValueType: true),
 				new EquatableArray<IPathPart>([
@@ -793,8 +770,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Foo"),
 				new TypeDescription("int", IsNullable: true, IsValueType: true),
 				new EquatableArray<IPathPart>([
@@ -827,8 +803,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Foo"),
 				new TypeDescription("int", IsNullable: true, IsValueType: true),
 				new EquatableArray<IPathPart>([
@@ -859,8 +834,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Foo"),
 				new TypeDescription("int", IsValueType: true),
 				new EquatableArray<IPathPart>([
@@ -898,8 +872,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-				new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+				new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 				new TypeDescription("global::Foo"),
 				new TypeDescription("int", IsNullable: true, IsValueType: true),
 				new EquatableArray<IPathPart>([
@@ -930,8 +903,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-			new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+			new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 			new TypeDescription("global::Foo"),
 			new TypeDescription("char", IsValueType: true),
 			new EquatableArray<IPathPart>([
@@ -961,8 +933,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-			new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+			new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 			new TypeDescription("global::Foo"),
 			new TypeDescription("char", IsValueType: true),
 			new EquatableArray<IPathPart>([
@@ -992,8 +963,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-			new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+			new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 			new TypeDescription("global::Foo"),
 			new TypeDescription("string"),
 			new EquatableArray<IPathPart>([
@@ -1022,8 +992,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-			new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+			new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 			new TypeDescription("global::Foo"),
 			new TypeDescription("string"),
 			new EquatableArray<IPathPart>([
@@ -1052,8 +1021,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-			new SimpleLocation(@"Path\To\Program.cs", 3, 7),
+			new InterceptorLocation(@"Path\To\Program.cs", 3, 7),
 			new TypeDescription("global::Foo", IsNullable: true),
 			new TypeDescription("int", IsValueType: true, IsNullable: true),
 			new EquatableArray<IPathPart>([
@@ -1088,8 +1056,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-			new SimpleLocation(@"Path\To\Program.cs", 12, 15),
+			new InterceptorLocation(@"Path\To\Program.cs", 12, 15),
 			new TypeDescription("global::Foo"),
 			new TypeDescription("int", IsValueType: true),
 			new EquatableArray<IPathPart>([
@@ -1130,8 +1097,7 @@ public class BindingRepresentationGenTests
 
 		var codeGeneratorResult = SourceGenHelpers.Run(source);
 		var expectedBinding = new BindingInvocationDescription(
-				new InterceptableLocationRecord(1, "serializedData"),
-			new SimpleLocation(@"Path\To\Program.cs", 12, 15),
+			new InterceptorLocation(@"Path\To\Program.cs", 12, 15),
 			new TypeDescription("global::Foo"),
 			new TypeDescription("int", IsValueType: true),
 			new EquatableArray<IPathPart>([

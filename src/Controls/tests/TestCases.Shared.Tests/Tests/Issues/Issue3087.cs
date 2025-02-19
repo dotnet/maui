@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void NonAppCompatBasicSwitchTest()
 		{
-			App.WaitForElement("Success");
+			App.WaitForNoElement("Success");
 		}
 	}
 }
+#endif

@@ -14,7 +14,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Editor)]
-		public void EditorIsReadOnlyPreventModify()
+		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented on macOS")]
+		public async Task EditorIsReadOnlyPreventModify()
 		{
 			App.WaitForElement("WaitForStubControl");
 
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// Delay for the Editor underline on Android to return from
 			// the selected state to normal state.
-
+			await Task.Delay(500);
 
 			// 2. The test fails if the placeholder text in the editor below is not blue.
 			VerifyScreenshot();

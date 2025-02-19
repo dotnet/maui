@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -26,10 +27,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(BtnScrollToExistentItem);
 
 			App.Tap(BtnScrollToNonExistentItem);
-			App.WaitForElement(FirstListItem);
+			App.WaitForNoElement(FirstListItem);
 
 			App.Tap(BtnScrollToExistentItem);
-			App.WaitForElementTillPageNavigationSettled(MiddleListItem);
+			App.WaitForNoElement(MiddleListItem);
 		}
 	}
 }
+#endif

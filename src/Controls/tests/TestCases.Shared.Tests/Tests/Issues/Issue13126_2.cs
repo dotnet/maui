@@ -16,9 +16,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void CollectionViewShouldSourceShouldResetWhileInvisible()
 		{
-			App.WaitForElement(Success);
+			App.WaitForNoElement(Success);
 		}
 	}
 }

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,6 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// Crash after navigation
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[Category(UITestCategories.Navigation)]
+		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla57910Test()
 		{
 			for (int i = 0; i < 10; i++)
@@ -30,3 +33,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

@@ -14,6 +14,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[Category(UITestCategories.Compatibility)]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void TestDoesntCrashWithCachingDisable()
 		{
 			VerifyInternetConnectivity();

@@ -1,4 +1,4 @@
-﻿#if IOS || MACCATALYST
+﻿#if IOS
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -20,6 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.SwipeView)]
+		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void Issue9306SwipeViewCloseSwiping()
 		{
 			App.WaitForElement(SwipeViewId);
@@ -32,7 +34,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			var result = App.FindElement(LeftCountLabelId).GetText();
 
-			Assert.That(result, Is.EqualTo("1"));
+			ClassicAssert.AreEqual("1", result);
 		}
 	}
 }

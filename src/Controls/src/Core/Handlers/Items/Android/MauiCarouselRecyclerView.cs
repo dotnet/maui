@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 using System;
 using System.Collections.Generic;
 using Android.Content;
@@ -603,16 +603,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					var viewHolder = (ViewHolder)ItemsViewAdapter.CreateViewHolder(this, viewType);
 					ItemsViewAdapter.BindViewHolder(viewHolder, 0);
 					viewHolder.ItemView.Measure(widthMeasureSpec, heightMeasureSpec);
-
-					if (widthMeasureSpec.GetMode() == MeasureSpecMode.Unspecified)
-					{
-						widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredWidth);
-					}
-
-					if (heightMeasureSpec.GetMode() == MeasureSpecMode.Unspecified)
-					{
-						heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredHeight);
-					}
+					widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredWidth);
+					heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredHeight);
 				}
 			}
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);

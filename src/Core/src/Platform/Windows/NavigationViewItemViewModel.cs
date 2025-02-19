@@ -214,7 +214,6 @@ namespace Microsoft.Maui.Platform
 			{
 				_isSelected = value;
 				OnPropertyChanged(nameof(Background));
-				OnPropertyChanged(nameof(TitleColor));
 				UpdateForeground();
 			}
 		}

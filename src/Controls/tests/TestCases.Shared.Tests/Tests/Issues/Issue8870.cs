@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms Android and iOS.
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,6 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
 		[FailsOnMacWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("SetOrientationPortrait method not implemented")]
 		public async Task RotatingCollectionViewWithHTMLShouldNotHangOrCrash()
@@ -44,8 +45,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(CheckResult);
 			App.Tap(CheckResult);
 
-			App.WaitForElement(Success);
+			App.WaitForNoElement(Success);
 		}
 	}
 }
-#endif

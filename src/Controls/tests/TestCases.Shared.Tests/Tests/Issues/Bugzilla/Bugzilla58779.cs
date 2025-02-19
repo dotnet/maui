@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if MACCATALYST
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,13 +17,15 @@ public class Bugzilla58779 : _IssuesUITest
 	public override string Issue => "[MacOS] DisplayActionSheet on MacOS needs scroll bars if list is long";
 
 	[Test]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
 	[Category(UITestCategories.DisplayAlert)]
 	public void Bugzilla58779Test()
 	{
 		App.WaitForElement(ButtonId);
 		App.Tap(ButtonId);
-		App.WaitForElement("1");
+		App.Screenshot("Check list fits on screen");
 		App.WaitForElement(CancelId);
 		App.Tap(CancelId);
 	}
 }
+#endif

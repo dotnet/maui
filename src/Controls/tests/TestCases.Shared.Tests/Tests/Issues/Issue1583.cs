@@ -15,6 +15,9 @@ public class Issue1583 : _IssuesUITest
 	[Test]
 	[Category(UITestCategories.Navigation)]
 	[Category(UITestCategories.Compatibility)]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnMacWhenRunningOnXamarinUITest]
+	[FailsOnWindowsWhenRunningOnXamarinUITest]
 	public void Issue1583TitleIconTest()
 	{
 		App.WaitForElement("lblHello");

@@ -12,6 +12,7 @@ public class Issue23158 : _IssuesUITest
 	{
 	}
 
+#if !MACCATALYST
 	[Test]
 	[Category(UITestCategories.Entry)]
 	public void ValidateEntryClearButtonVisibilityBehavior()
@@ -25,11 +26,7 @@ public class Issue23158 : _IssuesUITest
 		App.WaitForElement("Entry3");
 		App.Tap("Entry3");
 
-#if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
-		if (App.IsKeyboardShown())
-			App.DismissKeyboard();
-#endif
-
 		VerifyScreenshot();
 	}
+#endif
 }

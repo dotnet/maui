@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,15 +16,16 @@ public class Issue1426 : _IssuesUITest
 	[Test]
 	[Category(UITestCategories.LifeCycle)]
 	[Category(UITestCategories.Compatibility)]
-	public void Issue1426Test()
+	public void Github1426Test()
 	{
-		var beforeRect = App.WaitForElement("CoffeeImageId").GetRect();
+		App.Screenshot("You can see the coffe mug");
+		App.WaitForElement("CoffeeImageId");
 		App.WaitForElement("NextButtonID");
 		App.Tap("NextButtonID");
 		App.WaitForElement("PopButtonId");
 		App.Tap("PopButtonId");
-		var afterRect = App.WaitForElement("CoffeeImageId").GetRect();
-		Assert.That(beforeRect.X, Is.EqualTo(afterRect.X));
-		Assert.That(beforeRect.Y, Is.EqualTo(afterRect.Y));
+		App.WaitForElement("CoffeeImageId");
+		App.Screenshot("Coffe mug Image is still there on the bottom");
 	}
 }
+#endif

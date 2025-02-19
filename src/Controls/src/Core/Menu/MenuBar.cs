@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls
 			_menus.RemoveAt(index);
 			NotifyHandler(nameof(IMenuBarHandler.Remove), index, item);
 
-			if (item is Element e && e.Parent == this)
+			if (item is Element e)
 				e.Parent = null;
 		}
 

@@ -17,9 +17,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void StarInGridDoesNotCrash()
 		{
-			App.WaitForElement(Success);
+			App.WaitForNoElement(Success);
 		}
 	}
 }

@@ -6,37 +6,45 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class CollectionViewTabbedPageUITests : _IssuesUITest
 	{
+		public CollectionViewTabbedPageUITests(TestDevice device)
+			: base(device)
+		{
+		}
+
+		public override string Issue => "If CollectionView in other Tab gets changed before it's displayed, it stays invisible";
+
+		/*
 		const string Add1 = "Add1";
 		const string Add2 = "Add2";
 		const string Success = "Success";
 		const string Tab2 = "Tab2";
 		const string Tab3 = "Tab3";
-		protected override bool ResetAfterEachTest => true;
 
-		public CollectionViewTabbedPageUITests(TestDevice device)
-			: base(device)
-		{
-		}
-		public override string Issue => "If CollectionView in other Tab gets changed before it's displayed, it stays invisible";
-
+		// AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue7700.cs)
 		[Test]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("Click does not find Tab elements")]
 		[Category(UITestCategories.CollectionView)]
 		public void AddingItemToUnviewedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Add1);
-			App.Tap(Add1);
-			App.TapTab(Tab2);
-			App.WaitForElementTillPageNavigationSettled(Success);
+			App.Click(Add1);
+			App.Click(Tab2);
+
+			App.WaitForElement(Success);
 		}
 
+		// AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue7700.cs)
 		[Test]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("Click does not find Tab elements")]
 		[Category(UITestCategories.CollectionView)]
 		public void AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Add2);
-			App.Tap(Add2);
-			App.TapTab(Tab3);
-			App.WaitForElementTillPageNavigationSettled(Success);
+			App.Click(Add2);
+			App.Click(Tab3);
+
+			App.WaitForElement(Success);
 		}
+		*/
 	}
 }

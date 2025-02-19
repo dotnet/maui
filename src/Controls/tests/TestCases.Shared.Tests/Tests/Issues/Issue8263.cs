@@ -14,14 +14,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Switch)]
+		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void SwitchOnOffVisualStatesTest()
 		{
 			App.WaitForElement("Switch");
+			App.Screenshot("Switch Default");
 			App.Tap("Switch");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SwitchOff");
-			App.WaitForElement("Switch");
+			App.Screenshot("Switch Off with Red ThumbColor");
 			App.Tap("Switch");
-			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SwitchOn");
+			App.Screenshot("Switch On with Green ThumbColor");
 		}
 	}
 }

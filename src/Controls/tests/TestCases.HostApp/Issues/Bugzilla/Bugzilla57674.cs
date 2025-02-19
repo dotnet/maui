@@ -56,7 +56,7 @@ namespace Maui.Controls.Sample.Issues
 		public void AddNewItem()
 		{
 			int index = _internalList.Count;
-			string item = "Hello World!";
+			string item = Guid.NewGuid().ToString();
 			_internalList.Add(item);
 			OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item, index));
 		}

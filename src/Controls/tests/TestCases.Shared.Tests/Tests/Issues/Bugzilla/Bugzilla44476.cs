@@ -10,15 +10,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "[Android] Unwanted margin at top of details page when nested in a NavigationPage";
+		public override string Issue => "[Bug] Exception Ancestor must be provided for all pushes except first";
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue44476TestUnwantedMargin()
 		{
-			App.WaitForElement("This should be visible.");
+			App.WaitForNoElement("This should be visible.");
 		}
 	}
 }

@@ -12,8 +12,7 @@
                 StrokeThickness="9"
                 StrokeShape="RoundRectangle 16"
                 AutomationId="border">
-                <Image BackgroundColor="Green"
-                        AutomationId="image"/>
+                <Image BackgroundColor="Green"/>
         </Border>
 
          <Border WidthRequest="100"

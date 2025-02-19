@@ -12,6 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Border)]
+		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented")]
 		public void BindingOnStrokeShapeShouldWork()
 		{
 			App.WaitForElement("button");

@@ -44,6 +44,7 @@ public partial class Maui18123 : ContentPage
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
+
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
@@ -62,33 +63,34 @@ public partial class Maui18123 : ContentPage
 			Assert.That(page.deleteBtn.Text, Is.EqualTo("Delete"));
 		}
 	}
-}
 
-public partial class Maui18123VM : BindableObject
-{
-	string _mode = "";
-	public string Mode
+	public partial class Maui18123VM : BindableObject
 	{
-		get { return _mode; }
-		set
+		string _mode = "";
+		public string Mode
 		{
-			_mode = value;
-			OnPropertyChanged();
+			get { return _mode; }
+			set
+			{
+				_mode = value;
+				OnPropertyChanged();
+			}
 		}
-	}
 
-	Command testCommand;
-	public Command TestCommand => testCommand ??= new Command(Test);
+		Command testCommand;
+		public Command TestCommand => testCommand ??= new Command(Test);
 
-	void Test(object parameter)
-	{
-		var value = string.Empty;
+		void Test(object parameter)
+		{
+			var value = string.Empty;
 
-		if (parameter is object[] parameters)
-			value = parameters.LastOrDefault()?.ToString();
-		else
-			value = parameter.ToString();
+			if (parameter is object[] parameters)
+				value = parameters.LastOrDefault()?.ToString();
+			else
+				value = parameter.ToString();
 
-		Mode = value;
+			Mode = value;
+		}
+
 	}
 }

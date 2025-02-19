@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+    /* Always set the map height explicitly to define the size of the div
+    * element that contains the map. */
+    #map {
+        height: 100%;
+    }
+    /* Optional: Makes the sample page fill the window. */
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    </style>
+    <title>Google Maps</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&sensor=false"></script>
+    <script>
+		var urlParams = new URLSearchParams(window.location.search);
+		lat = urlParams.get('lat');
+		lng = urlParams.get('lng');
+
+        var center = new google.maps.LatLng(lat, lng);
+        var map;
+
+		function initialize() {
+            var mapOptions = {
+                zoom: 12,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                center: center,
+                disableDefaultUI: true
+            };
+            map = new google.maps.Map(document.getElementById('map'),
+                    mapOptions);
+            var marker = new google.maps.Marker({
+                position: center,
+                map: map
+          });
+        }
+
+    </script>
+</head>
+<body onload="initialize()">
+<div id="map">map</div>
+</body>
+</html>

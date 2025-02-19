@@ -1,5 +1,6 @@
 ﻿using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
+using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Interactions;
 using UITest.Core;
 
@@ -80,7 +81,7 @@ namespace UITest.Appium
 			return null;
 		}
 
-		virtual protected void SwipeToRight(AppiumDriver driver, AppiumElement? element, double swipePercentage, int swipeSpeed, bool withInertia = true)
+		static void SwipeToRight(AppiumDriver driver, AppiumElement? element, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
 			var position = element is not null ? element.Location : System.Drawing.Point.Empty;
 			var size = element is not null ? element.Size : driver.Manage().Window.Size;
@@ -100,7 +101,7 @@ namespace UITest.Appium
 			driver.PerformActions([swipeSequence]);
 		}
 
-		virtual protected void SwipeToLeft(AppiumDriver driver, AppiumElement? element, double swipePercentage, int swipeSpeed, bool withInertia = true)
+		static void SwipeToLeft(AppiumDriver driver, AppiumElement? element, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
 			var position = element is not null ? element.Location : System.Drawing.Point.Empty;
 			var size = element is not null ? element.Size : driver.Manage().Window.Size;

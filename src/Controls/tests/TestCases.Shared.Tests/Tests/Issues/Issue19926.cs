@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,11 +17,13 @@ public class Issue19926 : _IssuesUITest
 	[Category(UITestCategories.BoxView)]
 	public async Task PropertiesShouldBeCorrectlyApplied()
 	{
-		App.WaitForElement("button");
+		_ = App.WaitForElement("boxView");
 		App.Click("button");
+		_ = App.WaitForElement("boxView2");
 
 		// A small delay to wait for the button ripple effect animation to complete.
 		await Task.Delay(500);
 		VerifyScreenshot();
 	}
 }
+#endif

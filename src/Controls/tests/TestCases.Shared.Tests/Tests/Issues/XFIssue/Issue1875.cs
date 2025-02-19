@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,6 +15,7 @@ public class Issue1875 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.ListView)]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void NSRangeException()
 	{
 		App.WaitForElement("Load");
@@ -21,3 +23,4 @@ public class Issue1875 : _IssuesUITest
 		App.WaitForElement("5");
 	}
 }
+#endif

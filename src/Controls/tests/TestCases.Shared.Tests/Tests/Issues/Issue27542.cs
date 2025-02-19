@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("GotoPage2");
 			App.Tap("GotoPage2");
-			App.WaitForElement("Welcome to Page 2");
+			VerifyScreenshot();
 		}
 	}
 }

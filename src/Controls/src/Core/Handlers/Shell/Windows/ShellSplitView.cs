@@ -70,11 +70,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var contentRoot = _splitView.GetDescendantByName<WGrid>("ContentRoot");
 				if (contentRoot != null)
 				{
-#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. Here we cannot avoid accessing it.
-					var children = contentRoot.Children;
-#pragma warning restore RS0030 // Do not use banned APIs
-
-					foreach (var child in children)
+					foreach (var child in contentRoot.Children)
 					{
 						if (child is WRectangle maybe &&
 							$"{child.GetValue(FrameworkElement.NameProperty)}" == "LightDismissLayer")

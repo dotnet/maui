@@ -15,6 +15,7 @@ public class Bugzilla53179_2 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Navigation)]
+	[FailsOnAndroidWhenRunningOnXamarinUITest]
 	public void RemovePageOnAppearingDoesNotCrash()
 	{
 		App.WaitForElement(Success);

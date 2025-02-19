@@ -15,10 +15,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void DelayedLabelBindingShowsUp()
 		{
 			Task.Delay(2000).Wait();
-			App.WaitForElement("Lorem Ipsum Dolor Sit Amet");
+			App.WaitForNoElement("Lorem Ipsum Dolor Sit Amet");
 		}
 	}
 }

@@ -1,3 +1,4 @@
+#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// Click the entry below to trigger the unfocused event
 			App.Click("entry");
-
+			
 			var focusedLabelText = App.WaitForElement("focusedLabel").GetText();
 			var unfocusedLabelText = App.WaitForElement("unfocusedLabel").GetText();
 
@@ -31,3 +32,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

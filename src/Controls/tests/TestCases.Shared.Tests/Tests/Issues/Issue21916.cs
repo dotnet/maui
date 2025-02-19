@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_ANDROID //more information: https://github.com/dotnet/maui/issues/26050
+#if !ANDROID && !MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

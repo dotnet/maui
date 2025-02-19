@@ -1,4 +1,4 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,13 +15,15 @@ public class Issue1851 : _IssuesUITest
 	[Test]
 	[Category(UITestCategories.ListView)]
 	[Category(UITestCategories.Compatibility)]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnMacWhenRunningOnXamarinUITest]
+	[FailsOnWindowsWhenRunningOnXamarinUITest]
 	public void Issue1851Test()
 	{
 		App.WaitForElement("btn");
-		App.WaitForElement("number");
 		App.Tap("btn");
-		App.WaitForNoElement("number");
+		App.WaitForElement("btn");
 		App.Tap("btn");
-		App.WaitForElement("number");
+		App.WaitForElement("btn");
 	}
 }

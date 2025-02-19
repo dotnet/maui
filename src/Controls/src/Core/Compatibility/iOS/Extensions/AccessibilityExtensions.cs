@@ -1,10 +1,15 @@
 #nullable disable
-using System;
+#if __MOBILE__
 using ObjCRuntime;
 using UIKit;
 using NativeView = UIKit.UIView;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
+#else
+using NativeView = AppKit.NSView;
+
+namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
+#endif
 {
 	public static class AccessibilityExtensions
 	{
@@ -20,42 +25,32 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			SetAccessibilityElementsHidden(nativeViewElement, element);
 		}
 
-		// TODO OBSOLETE FOR NET10
 		public static string SetAccessibilityHint(this NativeView Control, Element Element, string _defaultAccessibilityHint = null)
 		{
 			if (Element == null || Control == null)
 				return _defaultAccessibilityHint;
-
-			var semantics = SemanticProperties.UpdateSemantics(Element, null);
-			if (semantics is not null)
-			{
-				Microsoft.Maui.Platform.SemanticExtensions.UpdateSemantics(Control, semantics);
-				return String.Empty;
-			}
-
+#if __MOBILE__
 			if (_defaultAccessibilityHint == null)
 				_defaultAccessibilityHint = Control.AccessibilityHint;
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			Control.AccessibilityHint = (string)Element.GetValue(AutomationProperties.HelpTextProperty) ?? _defaultAccessibilityHint;
 #pragma warning restore CS0618 // Type or member is obsolete
+#else
+			if (_defaultAccessibilityHint == null)
+				_defaultAccessibilityHint = Control.AccessibilityTitle;
+
+			Control.AccessibilityTitle = (string)Element.GetValue(AutomationProperties.HelpTextProperty) ?? _defaultAccessibilityHint;
+#endif
 
 			return _defaultAccessibilityHint;
 		}
 
-		// TODO OBSOLETE FOR NET10
 		public static string SetAccessibilityLabel(this NativeView Control, Element Element, string _defaultAccessibilityLabel = null)
 		{
 			if (Element == null || Control == null)
 				return _defaultAccessibilityLabel;
 
-			var semantics = SemanticProperties.UpdateSemantics(Element, null);
-			if (semantics is not null)
-			{
-				Microsoft.Maui.Platform.SemanticExtensions.UpdateSemantics(Control, semantics);
-				return String.Empty;
-			}
-
 			if (_defaultAccessibilityLabel == null)
 				_defaultAccessibilityLabel = Control.AccessibilityLabel;
 
@@ -66,18 +61,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return _defaultAccessibilityLabel;
 		}
 
-		// TODO OBSOLETE FOR NET10
+#if __MOBILE__
 		public static string SetAccessibilityHint(this UIBarItem Control, Element Element, string _defaultAccessibilityHint = null)
 		{
 			if (Element == null || Control == null)
 				return _defaultAccessibilityHint;
-
-			var semantics = SemanticProperties.UpdateSemantics(Element, null);
-			if (semantics is not null)
-			{
-				Microsoft.Maui.Platform.SemanticExtensions.UpdateSemantics(Control, semantics);
-				return String.Empty;
-			}
 
 			if (_defaultAccessibilityHint == null)
 				_defaultAccessibilityHint = Control.AccessibilityHint;
@@ -90,29 +78,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		}
 
-		// TODO OBSOLETE FOR NET10
 		public static string SetAccessibilityLabel(this UIBarItem Control, Element Element, string _defaultAccessibilityLabel = null)
 		{
 			if (Element == null || Control == null)
 				return _defaultAccessibilityLabel;
-
-			var semantics = SemanticProperties.UpdateSemantics(Element, null);
-			if (semantics is not null)
-			{
-				semantics.Description = semantics.Description ?? (Element as ToolbarItem)?.Text;
-				Microsoft.Maui.Platform.SemanticExtensions.UpdateSemantics(Control, semantics);
-				return String.Empty;
-			}
-			else if (!string.IsNullOrEmpty((Element as ToolbarItem)?.Text))
-			{
-				// If there is an icon and text on the UIBarItem, the platforms will behave as follows:
-				//     On Windows both will be displayed and the text will be read by screenreaders.
-				//     On Android only the icon will be displayed but the text will be read by screenreaders.
-				//     On MacCatalyst and iOS only the icon will be displayed but the text will NOT be read by screenreaders.
-				// As a result, we will add the text value to the Accessibility Label to ensure that the text is read by screenreaders on all the platforms.
-				Microsoft.Maui.Platform.SemanticExtensions.UpdateSemantics(Control, new Semantics() { Description = (Element as ToolbarItem)?.Text });
-				return String.Empty;
-			}
 
 			if (_defaultAccessibilityLabel == null)
 				_defaultAccessibilityLabel = Control.AccessibilityLabel;
@@ -123,6 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			return _defaultAccessibilityLabel;
 		}
+#endif
 
 		public static bool? SetIsAccessibilityElement(this NativeView Control, Element Element, bool? _defaultIsAccessibilityElement = null)
 		{
@@ -133,6 +103,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (!Element.IsSet(AutomationProperties.IsInAccessibleTreeProperty))
 				return null;
 
+#if __MOBILE__
 			if (!_defaultIsAccessibilityElement.HasValue)
 			{
 				// iOS sets the default value for IsAccessibilityElement late in the layout cycle
@@ -148,6 +119,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 
 			Control.IsAccessibilityElement = (bool)((bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) ?? _defaultIsAccessibilityElement);
+#else
+			if (!_defaultIsAccessibilityElement.HasValue)
+				_defaultIsAccessibilityElement = Control.AccessibilityElement;
+
+			Control.AccessibilityElement = (bool)((bool?)Element.GetValue(AutomationProperties.IsInAccessibleTreeProperty) ?? _defaultIsAccessibilityElement);
+#endif
 
 			return _defaultIsAccessibilityElement;
 		}
@@ -160,12 +137,19 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			if (!Element.IsSet(AutomationProperties.ExcludedWithChildrenProperty))
 				return null;
 
+#if __MOBILE__
 			if (!_defaultAccessibilityElementsHidden.HasValue)
 			{
 				_defaultAccessibilityElementsHidden = Control.AccessibilityElementsHidden || Control is UIControl;
 			}
 
 			Control.AccessibilityElementsHidden = (bool)((bool?)Element.GetValue(AutomationProperties.ExcludedWithChildrenProperty) ?? _defaultAccessibilityElementsHidden);
+#else
+			if (!_defaultAccessibilityElementsHidden.HasValue)
+				_defaultAccessibilityElementsHidden = Control.AccessibilityElementsHidden;
+
+			Control.AccessibilityElementsHidden = (bool)((bool?)Element.GetValue(AutomationProperties.ExcludedWithChildrenProperty) ?? _defaultAccessibilityElementsHidden);
+#endif
 
 			return _defaultAccessibilityElementsHidden;
 		}

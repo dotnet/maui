@@ -392,7 +392,6 @@ namespace Microsoft.Maui.Controls
 			{
 				if (oldValue is TitleBar prevTitleBar)
 				{
-					prevTitleBar.Cleanup();
 					self.RemoveLogicalChild(prevTitleBar);
 				}
 

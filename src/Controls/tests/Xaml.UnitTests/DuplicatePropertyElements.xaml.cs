@@ -13,11 +13,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		public static class Tests
 		{
-			[Test]
-			public static void ThrowXamlParseException([Values] bool useCompiledXaml)
+			[Test] public static void ThrowXamlParseException([Values]bool useCompiledXaml)
 			{
-				if (useCompiledXaml)
-				{
+				if (useCompiledXaml){
 					MockCompiler.Compile(typeof(DuplicatePropertyElements), out var md, out var hasLoggedErrors);
 					Assert.That(hasLoggedErrors);
 				}

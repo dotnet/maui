@@ -105,84 +105,77 @@ namespace Microsoft.Maui.Handlers
 			// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
 			using var deferral = eventArgs.GetDeferral();
 
-			var (stream, contentType, statusCode, reason) = await GetResponseStreamAsync(eventArgs.Request.Uri);
-			var contentLength = stream?.Size ?? 0;
-			var headers =
-				$"""
-				Content-Type: {contentType}
-				Content-Length: {contentLength}
-				""";
-
-			eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
-				Content: stream,
-				StatusCode: statusCode,
-				ReasonPhrase: reason,
-				Headers: headers);
-
-			// Notify WebView2 that the deferred (async) operation is complete and we set a response.
-			deferral.Complete();
-		}
-
-		private async Task<(IRandomAccessStream Stream, string ContentType, int StatusCode, string Reason)> GetResponseStreamAsync(string url)
-		{
-			var requestUri = HybridWebViewQueryStringHelper.RemovePossibleQueryString(url);
+			var requestUri = HybridWebViewQueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
 
 			if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
 			{
 				var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
 
+				string? contentType = null;
+				Stream? contentStream = null;
+
 				// 1. Try special InvokeDotNet path
 				if (relativePath == InvokeDotNetPath)
 				{
-					var fullUri = new Uri(url);
+					var fullUri = new Uri(eventArgs.Request.Uri);
 					var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
-					var contentBytes = await InvokeDotNetAsync(invokeQueryString);
+					(var contentBytes, contentType) = InvokeDotNet(invokeQueryString);
 					if (contentBytes is not null)
 					{
-						var bytesStream = new MemoryStream(contentBytes);
-						var ras = await CopyContentToRandomAccessStreamAsync(bytesStream);
-						return (Stream: ras, ContentType: "application/json", StatusCode: 200, Reason: "OK");
+						contentStream = new MemoryStream(contentBytes);
 					}
 				}
 
-				string contentType;
-
 				// 2. If nothing found yet, try to get static content from the asset path
-				if (string.IsNullOrEmpty(relativePath))
+				if (contentStream is null)
 				{
-					relativePath = VirtualView.DefaultFile;
-					contentType = "text/html";
+					if (string.IsNullOrEmpty(relativePath))
+					{
+						relativePath = VirtualView.DefaultFile;
+						contentType = "text/html";
+					}
+					else
+					{
+						if (!ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
+						{
+							// TODO: Log this
+							contentType = "text/plain";
+						}
+					}
+
+					var assetPath = Path.Combine(VirtualView.HybridRoot!, relativePath!);
+					contentStream = await GetAssetStreamAsync(assetPath);
+				}
+
+				if (contentStream is null)
+				{
+					// 3.a. If still nothing is found, return a 404
+					var notFoundContent = "Resource not found (404)";
+					eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
+						Content: null,
+						StatusCode: 404,
+						ReasonPhrase: "Not Found",
+						Headers: GetHeaderString("text/plain", notFoundContent.Length)
+					);
 				}
 				else
 				{
-					if (!ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
-					{
-						// TODO: Log this
-						contentType = "text/plain";
-					}
+					// 3.b. Otherwise, return the content
+					eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
+						Content: await CopyContentToRandomAccessStreamAsync(contentStream),
+						StatusCode: 200,
+						ReasonPhrase: "OK",
+						Headers: GetHeaderString(contentType ?? "text/plain", (int)contentStream.Length)
+					);
 				}
 
-				var assetPath = Path.Combine(VirtualView.HybridRoot!, relativePath!);
-				using var contentStream = await GetAssetStreamAsync(assetPath);
-
-				if (contentStream is not null)
-				{
-					// 3.a. If something was found, return the content
-					var ras = await CopyContentToRandomAccessStreamAsync(contentStream);
-					return (Stream: ras, ContentType: contentType, StatusCode: 200, Reason: "OK");
-				}
+				contentStream?.Dispose();
 			}
 
-			// 3.b. Otherwise, return a 404
-			var ras404 = new InMemoryRandomAccessStream();
-			using (var writer = new StreamWriter(ras404.AsStreamForWrite()))
-			{
-				writer.WriteLine("Resource not found (404)");
-			}
+			// Notify WebView2 that the deferred (async) operation is complete and we set a response.
+			deferral.Complete();
 
-			return (Stream: ras404, ContentType: "text/plain", StatusCode: 404, Reason: "Not Found");
-
-			static async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
+			async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
 			{
 				using var memStream = new MemoryStream();
 				await content.CopyToAsync(memStream);
@@ -192,6 +185,9 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		private protected static string GetHeaderString(string contentType, int contentLength) =>
+$@"Content-Type: {contentType}
+Content-Length: {contentLength}";
 
 		[RequiresUnreferencedCode(DynamicFeatures)]
 #if !NETSTANDARD
