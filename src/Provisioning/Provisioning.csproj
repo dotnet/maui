@@ -38,6 +38,7 @@
 		<!-- Android SDK - construct package names to install -->
 		<AndroidSdkPackages Include="build-tools%3B$(AndroidSdkBuildToolsVersion)" />
 		<AndroidSdkPackages Include="cmdline-tools%3B$(AndroidSdkCmdLineToolsVersion)" />
+		<AndroidSdkPackages Include="cmdline-tools%3Blatest" />
 		<AndroidSdkPackages Include="emulator" />
 	</ItemGroup>
 
