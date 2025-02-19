@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": "Hybrydowe i internetowe aplikacje platformy .NET MAUI Blazor",
+  "name": ".NET MAUI Blazor Hybrid and Web App",
   "description": "Aplikacja obsługująca wiele projektów do tworzenia aplikacji .NET MAUI Blazor Hybrid z projektem Blazor Web ze współdzielonym interfejsem użytkownika.",
   "postActions/openInEditor/description": "Otwiera plik Shared Pages/Home.razor w edytorze.",
   "symbols/applicationId/description": "Zastępuje $(ApplicationId) w projekcie",

@@ -13,7 +13,6 @@ using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[Collection("TestsAccessingStaticHandlers")]
 	public class VisualElementTests
 	{
 		[Fact("If WidthRequest has been set and is reset to -1, the Core Width should return to being Unset")]
