@@ -91,11 +91,70 @@ namespace Microsoft.Maui.Platform
 #pragma warning disable CS8601
 			platformLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
 #pragma warning restore CS8601
+  			platformLabel.UserInteractionEnabled = true;
+			platformLabel.DetectAndOpenLink();
+        }
+		internal static void RemoveCurrentGesture(this UILabel platformLabel)
+		{
+			if(platformLabel.GestureRecognizers is null)
+				return;
+			foreach(var gesture in platformLabel.GestureRecognizers)
+			{
+				if(gesture is HtmlTextGestureRecognizer htmlTextGesture)
+				{
+					platformLabel.RemoveGestureRecognizer(htmlTextGesture);
+					break;
+				}
+			}
+		}
+
+		internal static void DetectAndOpenLink(this UILabel platformLabel)
+		{
+			platformLabel.RemoveCurrentGesture();
+			 var tapGesture = new HtmlTextGestureRecognizer((UITapGestureRecognizer recognizer) =>
+			 {
+			 	if (recognizer.State != UIGestureRecognizerState.Recognized) return;
+			    if (platformLabel.AttributedText is null) return;
+
+				var layoutManager = new NSLayoutManager();
+				var textStorage = new NSTextStorage();
+				var textContainer = new NSTextContainer();
+
+				textStorage.SetString(platformLabel.AttributedText);
+				layoutManager.AddTextContainer(textContainer);
+				textStorage.AddLayoutManager(layoutManager);
+				
+				textContainer.LineFragmentPadding = 0;
+				textContainer.LineBreakMode = platformLabel.LineBreakMode;
+				textContainer.Size = platformLabel.Bounds.Size;
+
+				var location = recognizer.LocationInView(platformLabel);
+				var index = (nint)layoutManager.GetCharacterIndex(location, textContainer);
+				
+				if (index < platformLabel.AttributedText.Length)
+				{
+					var url = platformLabel.AttributedText.GetAttribute(UIStringAttributeKey.Link, index, out _);
+					if (url is NSUrl nsUrl)
+					{
+						UIApplication.SharedApplication.OpenUrl(nsUrl,new UIApplicationOpenUrlOptions(),null);
+					}
+				}
+			 });
+			 platformLabel.AddGestureRecognizer(tapGesture);	
 		}
 
 		internal static void UpdateTextPlainText(this UILabel platformLabel, IText label)
 		{
 			platformLabel.Text = label.Text;
 		}
+	}
+
+	internal class HtmlTextGestureRecognizer:  UITapGestureRecognizer
+	{
+		public HtmlTextGestureRecognizer(System.Action<UITapGestureRecognizer> action):base(action)
+		{
+
+		}
+
 	}
 }

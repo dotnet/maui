@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using Android.Graphics;
 using Android.Text;
+using Android.Text.Method;
 using Android.Widget;
 using static Android.Widget.TextView;
 using ALayoutDirection = Android.Views.LayoutDirection;
@@ -18,6 +19,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextHtml(this TextView textView, ILabel label)
 		{
+			if(textView.MovementMethod is null)
+			textView.MovementMethod = LinkMovementMethod.Instance ?? new LinkMovementMethod();
+			
 			var text = label.Text ?? string.Empty;
 			var htmlText = WebUtility.HtmlDecode(text);
 
