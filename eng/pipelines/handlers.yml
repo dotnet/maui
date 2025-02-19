@@ -79,7 +79,7 @@ parameters:
         poolName: $(macOSXVmPool)
         vmImage: $(macOSXVmImage)
         demands:
-          - macOS.Name -equals Sonoma
+          - macOS.Name -equals Sequoia
           - macOS.Architecture -equals x64
         artifact: build-macos
  
@@ -106,7 +106,7 @@ parameters:
         poolName: $(macOSXVmPool)
         vmImage: $(macOSXVmImage)
         demands:
-          - macOS.Name -equals Sonoma
+          - macOS.Name -equals Sequoia
           - macOS.Architecture -equals x64
         artifact: build-macos
 
@@ -116,14 +116,14 @@ parameters:
     - name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
     - name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
       testName: RunOniOS
       artifact: templates-run-ios
@@ -173,7 +173,12 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              demands: ${{ BuildPlatform.demands }}
+              ${{ if ne(variables['System.TeamProject'], 'devdiv') }}:
+                demands: ${{ BuildPlatform.demands }}
+              ${{ else }}:
+                demands:
+                  - macOS.Name -equals Sonoma
+                  - macOS.Architecture -equals x64
             steps:
               - template: common/provision.yml
                 parameters:
@@ -182,7 +187,7 @@ stages:
                   skipAndroidImages: true
                   installDefaultAndroidApi: false
                   skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                  ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
+                  ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'true') ) }}:
                     skipProvisionator: false
                     gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                   ${{ else }}:
@@ -275,7 +280,12 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
-            demands: ${{ BuildPlatform.demands }}
+            ${{ if ne(variables['System.TeamProject'], 'devdiv') }}:
+              demands: ${{ BuildPlatform.demands }}
+            ${{ else }}:
+              demands:
+                - macOS.Name -equals Sonoma
+                - macOS.Architecture -equals x64          
           steps:
             - template: common/provision.yml
               parameters:

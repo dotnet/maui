@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI Blazor 하이브리드 앱",
+  "name": ".NET MAUI Blazor Hybrid App",
   "description": "Blazor 하이브리드를 사용하여 iOS, Android, Mac Catalyst, WinUI 및 Tizen용 .NET MAUI 애플리케이션을 만들기 위한 프로젝트",
   "postActions/openInEditor/description": "편집기에서 구성 요소/페이지/Home.razor를 엽니다.",
   "symbols/applicationId/description": "프로젝트에서 $(ApplicationId) 재정의",
