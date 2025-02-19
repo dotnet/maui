@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS //Scroll actions cannot be performed
+﻿#if TEST_FAILS_ON_WINDOWS //related issue: https://github.com/dotnet/maui/issues/27843
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
