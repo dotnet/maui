@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class AlertManagerTests : BaseTestFixture
 	{
-		private static (Window, AlertManager.IAlertManagerSubscription) CreateSubbedWindow(Action<IServiceProvider> builder = null)
+		private static (Window, AlertManager.IAlertManagerSubscription) CreateStubbedWindow(Action<IServiceProvider> builder = null)
 		{
 			var stub = Substitute.For<AlertManager.IAlertManagerSubscription>();
 
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void SettingPageWithoutHandlerDoesNotSubscribe()
 		{
-			var (window, sub) = CreateSubbedWindow();
+			var (window, sub) = CreateStubbedWindow();
 
 			window.Page = new ContentPage();
 
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void SettingPageWithHandlerSubscribes()
 		{
-			var (window, sub) = CreateSubbedWindow();
+			var (window, sub) = CreateStubbedWindow();
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>() };
 			window.Page = page;
 
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void BusyNotSentWhenNotVisible()
 		{
-			var (window, sub) = CreateSubbedWindow();
+			var (window, sub) = CreateStubbedWindow();
 
 			var page = new ContentPage { IsBusy = true };
 			window.Page = page;
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void BusySentWhenBusyPageAppears()
 		{
-			var (window, sub) = CreateSubbedWindow();
+			var (window, sub) = CreateStubbedWindow();
 
 			var page = new ContentPage { IsBusy = true };
 			window.Page = page;
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void BusySentWhenBusyPageDisappears()
 		{
-			var (window, sub) = CreateSubbedWindow();
+			var (window, sub) = CreateStubbedWindow();
 			var page = new ContentPage { IsBusy = true, Handler = Substitute.For<IViewHandler>() };
 			window.Page = page;
 
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void BusySentWhenBusyPageIsNoLongerBusy()
 		{
-			var (window, sub) = CreateSubbedWindow();
+			var (window, sub) = CreateStubbedWindow();
 			var page = new ContentPage { IsBusy = true, Handler = Substitute.For<IViewHandler>() };
 			window.Page = page;
 
@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void BusySentWhenVisiblePageSetToBusy()
 		{
-			var (window, sub) = CreateSubbedWindow();
+			var (window, sub) = CreateStubbedWindow();
 			var page = new ContentPage { Handler = Substitute.For<IViewHandler>() };
 			window.Page = page;
 
@@ -155,10 +155,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void DisplayAlert()
 		{
-			var page = new ContentPage() { IsPlatformEnabled = true };
+			var (window, sub) = CreateStubbedWindow();
+			var page = new ContentPage() { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
 
 			AlertArguments args = null;
-			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments e) => args = e);
+			sub.When(x => x.OnAlertRequested(Arg.Any<Page>(), Arg.Any<AlertArguments>())).Do(x => args = x.Arg<AlertArguments>());
 
 			var task = page.DisplayAlert("Title", "Message", "Accept", "Cancel");
 
@@ -172,16 +174,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			args.SetResult(true);
 			continueTask.Wait();
+			sub.Received().OnAlertRequested(Arg.Is(page), Arg.Is(args));
 			Assert.True(completed);
 		}
 
 		[Fact]
 		public void DisplayActionSheet()
 		{
-			var page = new ContentPage() { IsPlatformEnabled = true };
+			var (window, sub) = CreateStubbedWindow();
+			var page = new ContentPage() { Handler = Substitute.For<IViewHandler>(), IsPlatformEnabled = true };
+			window.Page = page;
 
 			ActionSheetArguments args = null;
-			MessagingCenter.Subscribe(this, Page.ActionSheetSignalName, (Page sender, ActionSheetArguments e) => args = e);
+			sub.When(sub => sub.OnActionSheetRequested(Arg.Any<Page>(), Arg.Any<ActionSheetArguments>())).Do(x => args = x.Arg<ActionSheetArguments>());
 
 			var task = page.DisplayActionSheet("Title", "Cancel", "Destruction", "Other 1", "Other 2");
 
@@ -196,6 +201,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			args.SetResult("Cancel");
 			continueTask.Wait();
+			sub.Received().OnActionSheetRequested(Arg.Is(page), Arg.Is(args));
 			Assert.True(completed);
 		}
 	}
