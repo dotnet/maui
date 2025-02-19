@@ -14,7 +14,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[Collection("TestsAccessingStaticHandlers")]
+	[Collection("ControlsMapperTests")]
 	public class ControlsMapperTests : BaseTestFixture
 	{
 		MauiContext SetupMauiContext()
