@@ -114,6 +114,7 @@ steps:
         dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
         # Set ANDROID_SDK_ROOT and ANDROID_HOME paths
         # Execute the command and capture the JSON output
+        dotnet android sdk info
         $jsonOutput = & dotnet android sdk info --format=Json | ConvertFrom-Json
         # Get the SDK Path
         $preferredSdk = $jsonOutput.SdkInfo.Path
@@ -145,6 +146,7 @@ steps:
   # Provision Android SDK Platform APIs (eg: platforms;android-29, platforms;android-30)
   - ${{ if ne(parameters.skipAndroidPlatformApis, 'true') }}:
     - pwsh: |
+        dotnet android sdk info
         dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
       displayName: 'Provision Android SDK - Platform APIs'
       condition: succeeded()
@@ -154,6 +156,7 @@ steps:
   # Provision Android SDK Emulator Images (eg: system-images;android-34;google_apis;aarch64)
   - ${{ if ne(parameters.skipAndroidEmulatorImages, 'true') }}:
     - pwsh: |
+        dotnet android sdk info
         dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
       displayName: 'Provision Android SDK - Emulator Images'
       condition: succeeded()
@@ -163,6 +166,7 @@ steps:
   # Create Android AVDs (Create actual Emulator Virtual Devices)
   - ${{ if ne(parameters.skipAndroidCreateAvds, 'true') }}:
     - pwsh: |
+        dotnet android sdk info
         dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
       displayName: 'Provision Android SDK - Create AVDs'
       condition: succeeded()
