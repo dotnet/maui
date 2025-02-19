@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": "Hybridní aplikace .NET MAUI Blazor",
+  "name": ".NET MAUI Blazor Hybrid App",
   "description": "Projekt pro vytvoření .NET MAUI aplikace pro iOS, Android, Mac Catalyst, WinUI a Tizen pomocí Blazor Hybrid",
   "postActions/openInEditor/description": "Otevře v editoru Components/Pages/Home.razor.",
   "symbols/applicationId/description": "Přepíše v projektu $(ApplicationId).",

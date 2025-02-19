@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
@@ -1755,17 +1756,23 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateBoundsComponents(Rect bounds)
 		{
+			if (_frame == bounds)
+				return;
 			_frame = bounds;
 
 			BatchBegin();
 
 			X = bounds.X;
 			Y = bounds.Y;
+			var previousWidth = Width;
+			var previousHeight = Height;
 			Width = bounds.Width;
 			Height = bounds.Height;
-
-			SizeAllocated(Width, Height);
-			SizeChanged?.Invoke(this, EventArgs.Empty);
+			if (previousHeight != Height || previousWidth != Width)
+			{
+				SizeAllocated(Width, Height);
+				SizeChanged?.Invoke(this, EventArgs.Empty);
+			}
 
 			BatchCommit();
 		}
@@ -1850,6 +1857,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the shadow effect cast by the element. This is a bindable property.
 		/// </summary>
+		[TypeConverter(typeof(ShadowTypeConverter))]
 		public Shadow Shadow
 		{
 			get { return (Shadow)GetValue(ShadowProperty); }
@@ -1908,7 +1916,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="bounds">The new bounds of the element.</param>
 		/// <returns>The resulting size of this element's frame by the platform.</returns>
-		/// <remarks>Subclasses will stil want to call <see cref="ArrangeOverride"/> on the base class or call <see cref="IViewHandler.PlatformArrange"/> on the <see cref="Handler"/> .</remarks>
+		/// <remarks>Subclasses will still want to call <see cref="ArrangeOverride"/> on the base class or call <see cref="IViewHandler.PlatformArrange"/> on the <see cref="Handler"/> .</remarks>
 		protected virtual Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
@@ -2402,10 +2410,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-
 		private protected virtual string GetDebuggerDisplay()
 		{
-			return $"BindingContext = {BindingContext}, Bounds = {Bounds}";
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(BindingContext), BindingContext, nameof(Bounds), Bounds);
+			return $"{GetType().FullName}: {debugText}";
 		}
 	}
 }
