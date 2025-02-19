@@ -313,9 +313,9 @@ namespace Microsoft.Maui.Controls
 				var mergedData = MergeData(element, filteredQuery, isPopping);
 
 				//if we are pop or navigating back, we need to apply the query attributes to the ShellContent
-				if(isPopping)
+				if (isPopping)
 				{
-			       element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
+					element.SetValue(ShellContent.QueryAttributesProperty, mergedData);
 				}
 				baseShellItem.ApplyQueryAttributes(mergedData);
 			}
