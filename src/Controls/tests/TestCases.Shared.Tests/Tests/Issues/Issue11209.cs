@@ -1,5 +1,4 @@
-﻿#if ANDROID || IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -7,7 +6,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue11209 : _IssuesUITest
 	{
-		const string SwipeViewContent = "SwipeViewContent";
 		const string Success = "Success";
 
 		public Issue11209(TestDevice testDevice) : base(testDevice)
@@ -21,10 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void TapSwipeViewAndNavigateTest()
 		{
-			App.WaitForElement(SwipeViewContent);
-			App.Tap(SwipeViewContent);
+			App.WaitForElement("short");
+			App.Tap("short");
 			App.WaitForElement(Success);
 		}
 	}
 }
-#endif
