@@ -73,15 +73,6 @@ namespace Microsoft.Maui.Controls
 			if (cp.FindParentOfType<FlyoutPage>()?.Flyout is { } flyout &&
 				(cp == flyout || cp.FindParent(x => x == flyout) is not null))
 			{
-<<<<<<< HEAD
-=======
-				return;
-			}
-
-			_toolbarTracker.PagePropertyChanged -= OnPagePropertyChanged;
-			FlyoutPage currentFlyoutPage = cp.FindParentOfType<FlyoutPage>();
-			if (currentFlyoutPage?.Flyout == cp || currentFlyoutPage?.Flyout?.InternalChildren.Contains(cp) is true)
->>>>>>> parent of 4e167edec1 (Revert "Merge branch 'fix-21645' of https://github.com/NirmalKumarYuvaraj/maui into fix-21645")
 				return;
 			}
 
