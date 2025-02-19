@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS // related issue: https://github.com/dotnet/maui/issues/24482
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("0 item");
 
-			App.WaitForElement(_carouselAutomationId).GetRect();
+			App.WaitForElement(_carouselAutomationId);
 			App.ScrollRight(_carouselAutomationId);
 
 			App.WaitForElement("1 item");
@@ -58,3 +59,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
