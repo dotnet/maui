@@ -145,17 +145,18 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 					FixtureSetup();
 				}
-				catch
+				catch (Exception e)
 				{
-					TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureSetupCore)} for {name} Failed on First Try");
+					TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureSetupCore)} for {name} Failed on First Try.{Environment.NewLine}Exception details: {e}");
 					// Let's just try retrying once
 					Reset();
+					TestContext.Progress.WriteLine($">>>>> {DateTime.Now} Finished Resetting");
 					FixtureSetup();
 				}
 			}
-			catch (Exception e) when (e.InnerException is TaskCanceledException || e is TimeoutException)
+			catch (Exception e2) when (e2.InnerException is TaskCanceledException || e2 is TimeoutException)
 			{
-				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The {nameof(FixtureSetupCore)} threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The {nameof(FixtureSetupCore)} threw an exception during {name}.{Environment.NewLine}Exception details: {e2}");
 				ShutDownTestSessionAndFailTestRun();
 				throw;
 			}
