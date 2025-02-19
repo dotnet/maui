@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI Blazor ハイブリッド アプリと Web アプリ",
+  "name": ".NET MAUI Blazor Hybrid and Web App",
   "description": "共有ユーザー インターフェイスを持つ Blazor Web プロジェクトで、.NET MAUI Blazor ハイブリッド アプリケーションを作成するためのマルチプロジェクト アプリです。",
   "postActions/openInEditor/description": "エディターで Shared Pages/Home.razor を開きます。",
   "symbols/applicationId/description": "プロジェクト内の $(ApplicationId) をオーバーライドします",

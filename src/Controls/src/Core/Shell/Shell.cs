@@ -504,10 +504,10 @@ namespace Microsoft.Maui.Controls
 		public static void SetTabBarBackgroundColor(BindableObject obj, Color value) => obj.SetValue(TabBarBackgroundColorProperty, value);
 
 		/// <summary>
-		/// Gets the background color for the tab bar. 
+		/// Gets the color of the tab bar when it's disabled. 
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
-		/// <returns>The background color for the tab bar.</returns>
+		/// <returns>The disabled color for the tab bar.</returns>
 		public static Color GetTabBarDisabledColor(BindableObject obj) => (Color)obj.GetValue(TabBarDisabledColorProperty);
 
 		/// <summary>
@@ -519,10 +519,10 @@ namespace Microsoft.Maui.Controls
 		public static void SetTabBarDisabledColor(BindableObject obj, Color value) => obj.SetValue(TabBarDisabledColorProperty, value);
 
 		/// <summary>
-		/// Gets the color of the tab bar when its disabled. 
+		/// Gets the foreground color for the tab bar. 
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
-		/// <returns>The disabled color for the tab bar.</returns>
+		/// <returns>The foreground color for the tab bar.</returns>
 		public static Color GetTabBarForegroundColor(BindableObject obj) => (Color)obj.GetValue(TabBarForegroundColorProperty);
 
 		/// <summary>
@@ -534,10 +534,10 @@ namespace Microsoft.Maui.Controls
 		public static void SetTabBarForegroundColor(BindableObject obj, Color value) => obj.SetValue(TabBarForegroundColorProperty, value);
 
 		/// <summary>
-		/// Gets the foreground color for the tab bar. 
+		/// Gets the title color for the tab bar. 
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
-		/// <returns>The foreground color for the tab bar.</returns>
+		/// <returns>The title color for the tab bar.</returns>
 		public static Color GetTabBarTitleColor(BindableObject obj) => (Color)obj.GetValue(TabBarTitleColorProperty);
 
 		/// <summary>
@@ -549,10 +549,10 @@ namespace Microsoft.Maui.Controls
 		public static void SetTabBarTitleColor(BindableObject obj, Color value) => obj.SetValue(TabBarTitleColorProperty, value);
 
 		/// <summary>
-		/// Gets the title color for the tab bar. 
+		/// Gets the unselected color for the tab bar. 
+		/// If the property is unset, the UnselectedColor property value is used.
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
-		/// <returns>The title color for the tab bar.</returns>
 		public static Color GetTabBarUnselectedColor(BindableObject obj) => (Color)obj.GetValue(TabBarUnselectedColorProperty);
 
 		/// <summary>
@@ -592,10 +592,10 @@ namespace Microsoft.Maui.Controls
 		public static void SetUnselectedColor(BindableObject obj, Color value) => obj.SetValue(UnselectedColorProperty, value);
 
 		/// <summary>
-		/// Gets the color for unselected text and icons in the Shell chrome.
+		/// Gets the backdrop of the flyout, which is the appearance of the flyout overlay.
 		/// </summary>
-		/// <param name="obj">The object to which the color is set.</param>
-		/// <returns>The color for unselected text and icons in the Shell chrome.</returns>
+		/// <param name="obj">The object to which the backdrop brush is set.</param>
+		/// <returns>The brush for the backdrop of the flyout, which is the appearance of the flyout overlay.</returns>
 		public static Brush GetFlyoutBackdrop(BindableObject obj) => (Brush)obj.GetValue(FlyoutBackdropProperty);
 
 		/// <summary>

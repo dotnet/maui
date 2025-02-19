@@ -8,13 +8,9 @@ public class Issue4684 : _IssuesUITest
 	public Issue4684(TestDevice testDevice) : base(testDevice)
 	{
 	}
-#if ANDROID
-    const string connect="CONNECT";
-    const string control="CONTROL";
-#else
+
 	const string connect = "Connect";
 	const string control = "Control";
-#endif
 	public override string Issue => "[Android] don't clear shell content because native page isn't visible";
 
 	[Test]
@@ -23,22 +19,14 @@ public class Issue4684 : _IssuesUITest
 	{
 		App.TapInShellFlyout("Connect");
 		App.WaitForElementTillPageNavigationSettled("Connect");
-		TapTobTab(control);
+		App.TapTab(control, true);
 		App.WaitForElementTillPageNavigationSettled("Control");
 		App.TapInShellFlyout("Home");
 		App.WaitForElementTillPageNavigationSettled("Control");
 		App.TapInShellFlyout("Connect");
-		TapTobTab(connect);
+		App.TapTab(connect, true);
 		App.WaitForElement("Connect");
-		TapTobTab(control);
+		App.TapTab(control, true);
 		App.WaitForElement("Success");
-	}
-
-	void TapTobTab(string tab)
-	{
-#if WINDOWS
-        App.Tap("navViewItem");
-#endif
-		App.Tap(tab);
 	}
 }

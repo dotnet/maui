@@ -1,6 +1,6 @@
 {
   "author": "Майкрософт",
-  "name": "Гибридное и веб-приложение .NET MAUI Blazor",
+  "name": ".NET MAUI Blazor Hybrid and Web App",
   "description": "Многопроектное приложение для создания гибридного приложения .NET MAUI Blazor с проектом Blazor Web с общим пользовательским интерфейсом.",
   "postActions/openInEditor/description": "Открывает Shared Pages/Home.razor в редакторе.",
   "symbols/applicationId/description": "Переопределяет $(ApplicationId) в проекте",

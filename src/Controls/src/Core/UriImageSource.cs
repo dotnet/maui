@@ -56,18 +56,18 @@ namespace Microsoft.Maui.Controls
 			if (IsEmpty)
 				return null;
 
-			OnLoadingStarted();
+			await OnLoadingStarted();
 			userToken.Register(CancellationTokenSource.Cancel);
 			Stream stream;
 
 			try
 			{
 				stream = await GetStreamAsync(Uri, CancellationTokenSource.Token);
-				OnLoadingCompleted(false);
+				await OnLoadingCompleted(false);
 			}
 			catch (OperationCanceledException)
 			{
-				OnLoadingCompleted(true);
+				await OnLoadingCompleted(true);
 				throw;
 			}
 			catch (Exception ex)

@@ -12,25 +12,19 @@ public class Issue5412 : _IssuesUITest
 
 	public override string Issue => "5412 - (NavigationBar disappears on FlyoutPage)";
 
-	// TODO: Check corresponding AppHost UI page, that needs updating. Things are commented out there.
-	//[Test]
-	//[Category(UITestCategories.FlyoutPage)]
-	//public void Issue5412Test()
-	//{
-	//	var hamburgerText = "\uE700";
-	//	var settings = "Settings";
-	//	var back = "Back";
+	[Test]
+	[Category(UITestCategories.FlyoutPage)]
+	public void Issue5412Test()
+	{
+		App.WaitForElementTillPageNavigationSettled("Index Page");
+		App.TapFlyoutPageIcon("Menu title");
+		App.WaitForElementTillPageNavigationSettled("Settings");
+		App.Tap("Settings");
+		App.WaitForElementTillPageNavigationSettled("Settings Page");
+		App.TapBackArrow();
 
-	//	App.WaitForElement(hamburgerText);
-	//	App.Tap(hamburgerText);
-
-	//	App.WaitForElement(settings);
-	//	App.Tap(settings);
-
-	//	App.WaitForElement(back);
-	//	App.Tap(back);
-
-	//	// This fails if the menu isn't displayed (original error behavior)
-	//	App.WaitForElement(hamburgerText);
-	//}
+		// This fails if the menu isn't displayed (original error behavior)
+		App.WaitForElementTillPageNavigationSettled("Index Page");
+		App.WaitForFlyoutIcon("Menu title", isShell: false);
+	}
 }

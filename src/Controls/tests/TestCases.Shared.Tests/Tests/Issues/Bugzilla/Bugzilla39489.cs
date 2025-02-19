@@ -1,4 +1,4 @@
-﻿#if IOS
+﻿#if TEST_FAILS_ON_WINDOWS // Maps Control not supported in Windows
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -17,10 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Maps)]
 		[Category(UITestCategories.Performance)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		public async Task Bugzilla39489Test()
+		public void Bugzilla39489Test()
 		{
 			// Original bug report (https://bugzilla.xamarin.com/show_bug.cgi?id=39489) had a crash (OOM) after 25-30
 			// page loads. Obviously it's going to depend heavily on the device and amount of available memory, but
@@ -31,9 +28,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			{
 				App.WaitForElement("NewPage");
 				App.Tap("NewPage");
-				App.WaitForElement("NewPage");
-				await Task.Delay(1000);
-				App.Back();
+				App.WaitForElement("StubLabel");
+				App.TapBackArrow();
 			}
 		}
 	}

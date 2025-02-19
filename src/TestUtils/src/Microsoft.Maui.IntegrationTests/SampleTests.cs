@@ -12,7 +12,7 @@ namespace Microsoft.Maui.IntegrationTests
 			get
 			{
 				// Parse individual project files from `Microsoft.Maui.Samples.slnf` to generate a set of test cases
-				var sampleSln = Path.Combine(TestEnvironment.GetMauiDirectory(), "Microsoft.Maui.Samples.slnf");
+				var sampleSln = Path.Combine(TestEnvironment.GetMauiDirectory(), "eng", "Microsoft.Maui.Samples.slnf");
 				var slnFile = JsonConvert.DeserializeObject<SolutionFile>(File.ReadAllText(sampleSln));
 				foreach (var projectFile in slnFile?.solution.projects ?? new List<string> { sampleSln })
 				{
