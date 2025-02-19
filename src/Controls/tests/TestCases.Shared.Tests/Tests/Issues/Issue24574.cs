@@ -28,15 +28,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 #if ANDROID
    // In CI Double tap does not effective sometimes so retry once before failing to resolve the flakiness.
-                       try
-                       {
-                           App.WaitForElement("Double");
-                       }
-                       catch(TimeoutException)
-                       {
-                           App.WaitForElement("Single");
-                           App.DoubleTap("TapLabel");
-                       }
+            try
+            {
+                App.WaitForElement("Double");
+            }
+            catch(TimeoutException)
+            {
+                App.WaitForElement("Single");
+                App.DoubleTap("TapLabel");
+            }
 #endif
 			App.WaitForElement("Double");
 		}
