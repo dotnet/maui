@@ -111,6 +111,7 @@ steps:
   # Provision Android SDK Common Packages (eg: cmdline-tools, emulator, platform-tools, build-tools)
   - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
     - pwsh: |
+        dotnet android sdk list --installed
         # Run provisioning step
         dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
         # Set ANDROID_SDK_ROOT and ANDROID_HOME paths
