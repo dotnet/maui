@@ -5,8 +5,8 @@ namespace Maui.Controls.Sample.Issues
 	[Issue(IssueTracker.Github, 27730, "Shadow not updated when Clipping a View with a shadow", PlatformAffected.UWP)]
 	public class Issue27730 : TestContentPage
 	{
-		 Border _borderWithShadow;
-		 Border _normalBorder;
+		Border _borderWithShadow;
+		Border _normalBorder;
 
 		protected override void Init()
 		{
@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Issues
 			Content = rootLayout;
 		}
 
-		private Border CreateBorder(bool withShadow)
+		Border CreateBorder(bool withShadow)
 		{
 			return new Border
 			{
@@ -56,7 +56,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 		}
 
-		private void ApplyClip()
+		void ApplyClip()
 		{
 			EllipseGeometry clipGeometry = new EllipseGeometry
 			{
@@ -69,7 +69,7 @@ namespace Maui.Controls.Sample.Issues
 			_normalBorder.Clip = clipGeometry;
 		}
 
-		private void ApplyShadow()
+		void ApplyShadow()
 		{
 			_normalBorder.Shadow = new Shadow
 			{
