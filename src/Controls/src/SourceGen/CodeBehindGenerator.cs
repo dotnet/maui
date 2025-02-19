@@ -314,13 +314,13 @@ public class CodeBehindGenerator : IIncrementalGenerator
 			sb.AppendLine($"\t[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]");
 		}
 
+		sb.AppendLine($"\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
 		sb.AppendLine($"\t{accessModifier} partial class {rootType} : {baseType}");
 		sb.AppendLine("\t{");
 
 		//optional default ctor
 		if (generateDefaultCtor)
 		{
-			sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
 			sb.AppendLine($"\t\tpublic {rootType}()");
 			sb.AppendLine("\t\t{");
 			sb.AppendLine("\t\t\tInitializeComponent();");
@@ -333,15 +333,12 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		{
 			foreach ((var fname, var ftype, var faccess) in namedFields)
 			{
-				sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
-
 				sb.AppendLine($"\t\t{faccess} {ftype} {EscapeIdentifier(fname)};");
 				sb.AppendLine();
 			}
 		}
 
 		//initializeComponent
-		sb.AppendLine($"\t\t[global::System.CodeDom.Compiler.GeneratedCode(\"Microsoft.Maui.Controls.SourceGen\", \"1.0.0.0\")]");
 
 		// add MemberNotNull attributes
 		if (namedFields != null)
