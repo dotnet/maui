@@ -1,7 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI ContentView (C#)",
-  "description": "Zobrazení pro obsah s využitím kódu C#. Je velmi vhodné pro vytváření vlastních a opakovaně použitelných ovládacích prvků.",
-  "postActions/openInEditor/description": "Otevře soubor NewContent1.cs v editoru.",
-  "symbols/namespace/description": "Obor názvů pro vygenerovaný kód."
-}
