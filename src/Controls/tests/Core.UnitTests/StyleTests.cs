@@ -9,7 +9,6 @@ using Xunit;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 
-	[Collection("TestsAccessingStaticHandlers")]
 	public class StyleTests : BaseTestFixture
 	{
 
