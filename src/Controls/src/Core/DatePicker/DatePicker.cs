@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty FormatProperty = BindableProperty.Create(nameof(Format), typeof(string), typeof(DatePicker), "d");
 
 		/// <summary>Bindable property for <see cref="Date"/>.</summary>
-		public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime), typeof(DatePicker), default(DateTime), BindingMode.TwoWay,
+		public static readonly BindableProperty DateProperty = BindableProperty.Create(nameof(Date), typeof(DateTime?), typeof(DatePicker), null, BindingMode.TwoWay,
 			coerceValue: CoerceDate,
 			propertyChanged: DatePropertyChanged,
 			defaultValueCreator: (bindable) => DateTime.Today);
@@ -54,9 +54,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='Date']/Docs/*" />
-		public DateTime Date
+		public DateTime? Date
 		{
-			get { return (DateTime)GetValue(DateProperty); }
+			get { return (DateTime?)GetValue(DateProperty); }
 			set { SetValue(DateProperty, value); }
 		}
 
@@ -123,6 +123,10 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets whether the font size is automatically scaled based on the operating system's accessibility settings.
+		/// This is a bindable property.
+		/// </summary>
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
@@ -163,33 +167,43 @@ namespace Microsoft.Maui.Controls
 		static object CoerceDate(BindableObject bindable, object value)
 		{
 			var picker = (DatePicker)bindable;
-			DateTime dateValue = ((DateTime)value).Date;
+			DateTime? dateValue = ((DateTime?)value)?.Date;
 
 			if (dateValue > picker.MaximumDate)
+			{
 				dateValue = picker.MaximumDate;
+			}
 
 			if (dateValue < picker.MinimumDate)
+			{
 				dateValue = picker.MinimumDate;
+			}
 
 			return dateValue;
 		}
 
 		static object CoerceMaximumDate(BindableObject bindable, object value)
 		{
-			DateTime dateValue = ((DateTime)value).Date;
+			DateTime? dateValue = ((DateTime?)value)?.Date;
 			var picker = (DatePicker)bindable;
+
 			if (picker.Date > dateValue)
+			{
 				picker.Date = dateValue;
+			}
 
 			return dateValue;
 		}
 
 		static object CoerceMinimumDate(BindableObject bindable, object value)
 		{
-			DateTime dateValue = ((DateTime)value).Date;
+			DateTime? dateValue = ((DateTime?)value)?.Date;
 			var picker = (DatePicker)bindable;
+
 			if (picker.Date < dateValue)
+			{
 				picker.Date = dateValue;
+			}
 
 			return dateValue;
 		}
@@ -199,8 +213,10 @@ namespace Microsoft.Maui.Controls
 			var datePicker = (DatePicker)bindable;
 			EventHandler<DateChangedEventArgs> selected = datePicker.DateSelected;
 
-			if (selected != null)
-				selected(datePicker, new DateChangedEventArgs((DateTime)oldValue, (DateTime)newValue));
+			if (selected is not null)
+			{
+				selected(datePicker, new DateChangedEventArgs((DateTime?)oldValue, (DateTime?)newValue));
+			}
 		}
 
 		static bool ValidateMaximumDate(BindableObject bindable, object value)
@@ -230,7 +246,7 @@ namespace Microsoft.Maui.Controls
 
 		Font ITextStyle.Font => this.ToFont();
 
-		DateTime IDatePicker.Date
+		DateTime? IDatePicker.Date
 		{
 			get => Date;
 			set => SetValue(DateProperty, value, SetterSpecificity.FromHandler);

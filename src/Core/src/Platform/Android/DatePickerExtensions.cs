@@ -20,10 +20,12 @@ namespace Microsoft.Maui.Platform
 		{
 			var textColor = datePicker.TextColor;
 
-			if (textColor != null)
+			if (textColor is not null)
 			{
 				if (PlatformInterop.CreateEditTextColorStateList(platformDatePicker.TextColors, textColor.ToPlatform()) is ColorStateList c)
+				{
 					platformDatePicker.SetTextColor(c);
+				}
 			}
 		}
 
@@ -55,7 +57,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void SetText(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.Text = datePicker.Date.ToString(datePicker.Format);
+			platformDatePicker.Text = datePicker.Date?.ToString(datePicker.Format) ?? string.Empty;
 		}
 	}
 }

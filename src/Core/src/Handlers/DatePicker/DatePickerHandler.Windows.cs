@@ -1,6 +1,5 @@
-﻿#nullable enable
+﻿using System;
 using Microsoft.UI.Xaml.Controls;
-using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -57,28 +56,21 @@ namespace Microsoft.Maui.Handlers
 
 		private void DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
 		{
-			if (VirtualView == null)
-				return;
-
-			if (!args.NewDate.HasValue)
+			if (VirtualView is null)
 			{
 				return;
 			}
 
-			// TODO ezhart 2021-06-21 For the moment, IDatePicker requires a date to be selected; once that's fixed, we can uncomment these next lines
+			if (!args.NewDate.HasValue)
+			{
+				VirtualView.Date = null;
+				return;
+			}
 
-			//if (!args.NewDate.HasValue)
-			//{
-			//	VirtualView.Date = null;
-			//	return;
-			//}
-
-			//if (VirtualView.Date == null)
-			//{
-			//	VirtualView.Date = args.NewDate.Value.Date;
-			//}
-
-			VirtualView.Date = args.NewDate.Value.Date;
+			if (VirtualView.Date is null)
+			{
+				VirtualView.Date = args.NewDate.Value.DateTime;
+			}
 		}
 
 		public static partial void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)

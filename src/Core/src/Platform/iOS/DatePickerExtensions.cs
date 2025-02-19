@@ -52,14 +52,18 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateDate(this UIDatePicker picker, IDatePicker datePicker)
 		{
-			if (picker != null && picker.Date.ToDateTime().Date != datePicker.Date.Date)
-				picker.SetDate(datePicker.Date.ToNSDate(), false);
+			if (picker is not null && picker.Date.ToDateTime() != datePicker.Date)
+			{
+				picker.SetDate(datePicker.Date?.ToNSDate() ?? NSDate.DistantPast, false);
+			}
 		}
 
 		public static void UpdateDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIDatePicker? picker)
 		{
-			if (picker != null && picker.Date.ToDateTime().Date != datePicker.Date.Date)
-				picker.SetDate(datePicker.Date.ToNSDate(), false);
+			if (picker != null && picker.Date.ToDateTime() != datePicker.Date)
+			{
+				picker.SetDate(datePicker.Date?.ToNSDate() ?? NSDate.DistantPast, false);
+			}
 
 			string format = datePicker.Format ?? string.Empty;
 
@@ -86,11 +90,11 @@ namespace Microsoft.Maui.Platform
 			}
 			else if (format.Contains('/', StringComparison.Ordinal))
 			{
-				platformDatePicker.Text = datePicker.Date.ToString(format, CultureInfo.InvariantCulture);
+				platformDatePicker.Text = datePicker.Date?.ToString(format, CultureInfo.InvariantCulture) ?? string.Empty;
 			}
 			else
 			{
-				platformDatePicker.Text = datePicker.Date.ToString(format);
+				platformDatePicker.Text = datePicker.Date?.ToString(format) ?? string.Empty;
 			}
 
 			platformDatePicker.UpdateCharacterSpacing(datePicker);
