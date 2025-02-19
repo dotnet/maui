@@ -14,12 +14,12 @@ namespace Maui.Controls.Sample.Pages
 			UpdateDatePickerBackground();
 		}
 
-		void OnUpdateBackgroundButtonClicked(object sender, System.EventArgs e)
+		void OnUpdateBackgroundButtonClicked(object sender, EventArgs e)
 		{
 			UpdateDatePickerBackground();
 		}
 
-		void OnClearBackgroundButtonClicked(object sender, System.EventArgs e)
+		void OnClearBackgroundButtonClicked(object sender, EventArgs e)
 		{
 			BackgroundDatePicker.Background = null;
 		}
@@ -41,14 +41,24 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-		void OnFocusDatePickerFocused(object sender, Microsoft.Maui.Controls.FocusEventArgs e)
+		void OnFocusDatePickerFocused(object sender, FocusEventArgs e)
 		{
 			Debug.WriteLine("Focused");
 		}
 
-		void OnFocusDatePickerUnfocused(object sender, Microsoft.Maui.Controls.FocusEventArgs e)
+		void OnFocusDatePickerUnfocused(object sender, FocusEventArgs e)
 		{
 			Debug.WriteLine("Unfocused");
 		}
-	}
+
+		private void SetDatePickerToNull(object sender, EventArgs e)
+		{
+			NullDatePicker.Date = null;
+		}
+
+		private void SetDatePickerToToday(object sender, EventArgs e)
+		{
+			NullDatePicker.Date = DateTime.Now;
+		}
+    }
 }
