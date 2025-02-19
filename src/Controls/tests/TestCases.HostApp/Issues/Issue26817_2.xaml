@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.Issues.Issue26817_2">
+    <VerticalStackLayout>
+      <CollectionView SelectionMode="Single" x:Name="collectionView">
+         <CollectionView.ItemsSource>
+               <x:Array Type="{x:Type x:String}">
+                  <x:String>Item 1</x:String>
+                  <x:String>Item 2</x:String>
+                  <x:String>Item 3</x:String>
+                  <x:String>Item 4</x:String>
+                  <x:String>Item 5</x:String>
+               </x:Array>
+         </CollectionView.ItemsSource>
+         <CollectionView.ItemTemplate>
+               <DataTemplate>
+                  <Border BackgroundColor="LightGray" Padding="10" Margin="5" SemanticProperties.Description="{Binding}">
+                     <VerticalStackLayout>
+                        <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                     </VerticalStackLayout>
+                  </Border>
+               </DataTemplate>
+         </CollectionView.ItemTemplate>
+      </CollectionView>
+
+      <Button Text="Toggle SelectionMode" Clicked="Button_Clicked" AutomationId="ToggleSelectionModeButton" />
+      <Label Text="Is Button?" x:Name="Label1" />
+    </VerticalStackLayout>
+</ContentPage>
