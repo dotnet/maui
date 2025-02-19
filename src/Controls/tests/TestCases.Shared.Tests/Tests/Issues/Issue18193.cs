@@ -1,4 +1,4 @@
-﻿#if IOS
+﻿#if IOS || MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Click("NavigateToPage2Button");
 			App.WaitForElement("NavigateToPage5Button");
 			App.Click("NavigateToPage5Button");
-			App.WaitForElement("More");
+			App.WaitForElementTillPageNavigationSettled("More");
 			App.Click("More");
 		}
 	}
