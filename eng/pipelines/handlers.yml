@@ -173,12 +173,7 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if ne(variables['System.TeamProject'], 'devdiv') }}:
-                demands: ${{ BuildPlatform.demands }}
-              ${{ else }}:
-                demands:
-                  - macOS.Name -equals Sonoma
-                  - macOS.Architecture -equals x64
+              demands: ${{ BuildPlatform.demands }}
             steps:
               - template: common/provision.yml
                 parameters:
@@ -280,12 +275,7 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
-            ${{ if ne(variables['System.TeamProject'], 'devdiv') }}:
-              demands: ${{ BuildPlatform.demands }}
-            ${{ else }}:
-              demands:
-                - macOS.Name -equals Sonoma
-                - macOS.Architecture -equals x64          
+            demands: ${{ BuildPlatform.demands }}     
           steps:
             - template: common/provision.yml
               parameters:
