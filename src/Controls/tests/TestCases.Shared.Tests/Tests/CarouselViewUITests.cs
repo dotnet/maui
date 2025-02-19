@@ -10,8 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		const string CarouselViewGallery = "CarouselView Gallery";
 
-		public CarouselViewUITests(TestDevice device)
-		 : base(device)
+		public CarouselViewUITests(TestDevice device): base(device)
 		{
 		}
 

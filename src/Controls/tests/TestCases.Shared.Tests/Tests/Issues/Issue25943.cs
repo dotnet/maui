@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("DatePicker");
 			App.Tap("DatePicker");
 #if ANDROID
-                        App.WaitForElement("OK");
+            App.WaitForElement("OK");
 			App.Tap(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc='Next month']"));
 #elif WINDOWS
             App.Tap("NextButton");
