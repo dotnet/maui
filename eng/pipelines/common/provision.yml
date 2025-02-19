@@ -132,6 +132,13 @@ steps:
         } else {
           echo "Unable to set ANDROID_HOME"
         }
+        $env:AndroidSdkDirectory = $preferredSdk
+        if ($env:AndroidSdkDirectory) {
+          echo "##vso[task.setvariable variable=AndroidSdkDirectory]$env:AndroidSdkDirectory"
+          echo "AndroidSdkDirectory set to '$env:AndroidSdkDirectory'"
+        } else {
+          echo "Unable to set AndroidSdkDirectory"
+        }
       displayName: 'Provision Android SDK - Common Packages'
       condition: succeeded()
 
