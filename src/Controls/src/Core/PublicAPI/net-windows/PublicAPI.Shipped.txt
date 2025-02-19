@@ -4510,9 +4510,6 @@ Microsoft.Maui.Controls.DataTemplateSelector
 Microsoft.Maui.Controls.DataTemplateSelector.DataTemplateSelector() -> void
 Microsoft.Maui.Controls.DataTrigger
 Microsoft.Maui.Controls.DateChangedEventArgs
-Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime oldDate, System.DateTime newDate) -> void
-Microsoft.Maui.Controls.DateChangedEventArgs.NewDate.get -> System.DateTime
-Microsoft.Maui.Controls.DateChangedEventArgs.OldDate.get -> System.DateTime
 Microsoft.Maui.Controls.DatePicker
 Microsoft.Maui.Controls.DatePicker.CharacterSpacing.get -> double
 Microsoft.Maui.Controls.DatePicker.CharacterSpacing.set -> void

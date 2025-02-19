@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Handlers
 			var date = VirtualView?.Date;
 
 			if (date != null)
+			{
 				_dialog = CreateDatePickerDialog(date.Value.Year, date.Value.Month - 1, date.Value.Day);
+			}
 
 			return mauiDatePicker;
 		}
@@ -34,12 +36,14 @@ namespace Microsoft.Maui.Handlers
 			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
 
 			if (platformView.IsAttachedToWindow)
+			{
 				OnViewAttachedToWindow();
+			}
 		}
 
 		void OnViewDetachedFromWindow(object? sender = null, View.ViewDetachedFromWindowEventArgs? e = null)
 		{
-			// I tested and this is called when an activity is destroyed
+			// This is called when an activity is destroyed
 			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 		}
 
@@ -68,7 +72,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var dialog = new DatePickerDialog(Context!, (o, e) =>
 			{
-				if (VirtualView != null)
+				if (VirtualView is not null)
 				{
 					VirtualView.Date = e.Date;
 				}
@@ -124,20 +128,30 @@ namespace Microsoft.Maui.Handlers
 
 		void ShowPickerDialog()
 		{
-			if (VirtualView == null)
+			if (VirtualView is null)
+			{
 				return;
+			}
 
-			if (_dialog != null && _dialog.IsShowing)
+			if (_dialog is not null && _dialog.IsShowing)
+			{
 				return;
+			}
 
 			var date = VirtualView.Date;
-			ShowPickerDialog(date.Year, date.Month - 1, date.Day);
+			ShowPickerDialog(date);
 		}
 
-		void ShowPickerDialog(int year, int month, int day)
+		void ShowPickerDialog(DateTime? date)
 		{
-			if (_dialog == null)
+			var year = date?.Year ?? DateTime.Today.Year;
+			var month = date?.Month ?? DateTime.Today.Month - 1;
+			var day = date?.Day ?? DateTime.Today.Day;
+
+			if (_dialog is null)
+			{
 				_dialog = CreateDatePickerDialog(year, month, day);
+			}
 			else
 			{
 				EventHandler? setDateLater = null;
@@ -157,11 +171,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			DatePickerDialog? currentDialog = _dialog;
 
-			if (currentDialog != null && currentDialog.IsShowing)
+			if (currentDialog is not null && currentDialog.IsShowing)
 			{
 				currentDialog.Dismiss();
 
-				ShowPickerDialog(currentDialog.DatePicker.Year, currentDialog.DatePicker.Month, currentDialog.DatePicker.DayOfMonth);
+				ShowPickerDialog(currentDialog.DatePicker.DateTime);
 			}
 		}
 	}

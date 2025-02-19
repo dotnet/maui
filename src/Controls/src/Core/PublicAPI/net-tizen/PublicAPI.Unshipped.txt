@@ -9,6 +9,13 @@
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.Style.set -> void
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.get -> System.Collections.Generic.IList<string>
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void
+*REMOVED*Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime
+*REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime oldDate, System.DateTime newDate) -> void
+Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime? oldDate, System.DateTime? newDate) -> void
+Microsoft.Maui.Controls.DateChangedEventArgs.NewDate.get -> System.DateTime?
+*REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.OldDate.get -> System.DateTime
+Microsoft.Maui.Controls.DateChangedEventArgs.OldDate.get -> System.DateTime?
+Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime?
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
 Microsoft.Maui.Controls.Internals.TextTransformUtilities
