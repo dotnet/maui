@@ -1,4 +1,4 @@
-﻿#if WINDOWS
+﻿#if WINDOWS //This test case verifies that the sample is working exclusively on windows platforms "due to appiconLogo.scale-100.png".
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

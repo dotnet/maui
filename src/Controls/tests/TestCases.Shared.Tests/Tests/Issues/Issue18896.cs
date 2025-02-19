@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //Related issues : https://github.com/dotnet/maui/issues/18811
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -14,11 +15,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Can scroll ListView inside RefreshView";
 
-		// [Test]
+		[Test]
 		[Category(UITestCategories.ListView)]
 		[FailsOnIOSWhenRunningOnXamarinUITest("Currently fails on iOS; see https://github.com/dotnet/maui/issues/18811")]
 		[FailsOnMacWhenRunningOnXamarinUITest("Currently fails on Catalyst; see https://github.com/dotnet/maui/issues/18811")]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("Currently fails on Windows; see https://github.com/dotnet/maui/issues/15994")]
 		public void Issue18896Test()
 		{
 			App.WaitForElement("WaitForStubControl");
@@ -35,3 +35,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
