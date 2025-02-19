@@ -18,14 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void EditorScrollingWhenEnclosedInBorder()
 		{
 			App.WaitForElement("editor");
-			App.ScrollDown("editor", ScrollStrategy.Programmatically, 0.6, 100);
-			App.ScrollDown("editor", ScrollStrategy.Programmatically, 0.6, 100);
-#if ANDROID
-			if(App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
+			App.ScrollDown("editor", ScrollStrategy.Programmatically, 0.6, 500);
 			VerifyScreenshot();
 		}
 	}
