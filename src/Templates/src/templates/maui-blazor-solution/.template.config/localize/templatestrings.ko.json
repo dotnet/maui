@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI Blazor 하이브리드 및 웹앱",
+  "name": ".NET MAUI Blazor Hybrid and Web App",
   "description": "공유 사용자 인터페이스가 있는 Blazor 웹 프로젝트를 사용하여 .NET MAUI Blazor 하이브리드 응용 프로그램을 만드는 다중 프로젝트 앱입니다.",
   "postActions/openInEditor/description": "편집기에서 공유 페이지/Home.razor를 엽니다.",
   "symbols/applicationId/description": "프로젝트에서 $(ApplicationId) 재정의",
