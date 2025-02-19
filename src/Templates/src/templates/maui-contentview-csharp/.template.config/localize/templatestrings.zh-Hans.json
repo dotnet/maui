@@ -1,7 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI ContentView (C#)",
-  "description": "使用 C# 显示内容的视图。这非常适合创建你自己的自定义和可重用控件。",
-  "postActions/openInEditor/description": "在编辑器中打开 NewContent1.cs。",
-  "symbols/namespace/description": "生成的代码的命名空间。"
-}
