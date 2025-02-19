@@ -176,15 +176,14 @@
 	<!-- ******************************************** -->
 	<!-- * Java JDK Provisioning                   -->
 	<!-- ******************************************** -->
-	<Target Name="ProvisionJdk" DependsOnTargets="DetectJdkVersion;ProvisionJdkMacOS;ProvisionJdkWindows">
+	<Target Name="ProvisionJdk" DependsOnTargets="DetectJdkVersion;ProvisionJdkMacOS;ProvisionJdkWindows;ProvisionJdkLinux">
 		<!-- Call Detect again if we provisioned so we can get the installed path -->
 		<CallTarget Targets="DetectJdkVersion" Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' " />
 		
 		<!-- Set the preferred JDK path -->
 		<Exec Command="dotnet android jdk dotnet-prefer --home &quot;$(_AndroidJdkPath)&quot;" />
 
-		<Exec Command="dotnet android jdk list" ConsoleToMSBuild="True" IgnoreExitCode="True">
-		</Exec>
+		<Exec Command="dotnet android jdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 
 	<Target Name="DetectJdkVersion">
@@ -198,8 +197,7 @@
 			<_AndroidJdkVersionNextMajor>$([MSBuild]::Add($(_AndroidJdkMajorVersion), 1))</_AndroidJdkVersionNextMajor>
 		</PropertyGroup>
 
-		<Exec Command="dotnet android jdk list" ConsoleToMSBuild="True" IgnoreExitCode="True">
-		</Exec>
+		<Exec Command="dotnet android jdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 
 		<!-- Find a JDK installed that is >= the JavaJdkVersion but not > the major version specified (eg: [17.0,18.0]) -->
 		<Exec Command="dotnet android jdk list --version &quot;[$(_AndroidJdkVersion),$(_AndroidJdkVersionNextMajor)]&quot; --format=json" ConsoleToMSBuild="True" IgnoreExitCode="True">
@@ -228,6 +226,24 @@
 
 	<Target Name="ProvisionJdkMacOS" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsMacOS)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
 		<Exec Command="brew install --cask microsoft-openjdk@$(_AndroidJdkVersion)" />
+	</Target>
+
+	<Target Name="ProvisionJdkLinux" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsLinux)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
+		<PropertyGroup>
+			<_JdkHostArchitecture Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">amd64</_JdkHostArchitecture>
+			<_JdkHostArchitecture Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'X64' ">arm64</_JdkHostArchitecture>
+		</PropertyGroup>
+		<ItemGroup>
+			<_ProvisionJdkLinuxCommands Include="wget https://packages.microsoft.com/config/ubuntu/`lsb_release -rs`/packages-microsoft-prod.deb -O packages-microsoft-prod.deb" />
+			<_ProvisionJdkLinuxCommands Include="dpkg -i packages-microsoft-prod.deb" />
+			<_ProvisionJdkLinuxCommands Include="rm packages-microsoft-prod.deb" />
+			<_ProvisionJdkLinuxCommands Include="apt-get update" />
+			<_ProvisionJdkLinuxCommands Include="apt-get install -y msopenjdk-$(_AndroidJdkMajorVersion)" />
+		</ItemGroup>
+		<Exec Command="%(_ProvisionJdkLinuxCommands.Identity)" />
+		<PropertyGroup>
+			<_AndroidJdkPath>/usr/lib/jvm/msopenjdk-$(_AndroidJdkMajorVersion)-$(_JdkHostArchitecture)</_AndroidJdkPath>
+		</PropertyGroup>
 	</Target>
 
 	<Target Name="ProvisionJdkWindows" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsWindows)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
