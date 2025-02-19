@@ -21,7 +21,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("AppearButton");
 			App.Click("AppearButton");
 			App.WaitForElement("Item 4");
-			App.Screenshot("Success");
 		}
 	}
 }
