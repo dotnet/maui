@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !MACCATALYST
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,11 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("entry");
 			App.Tap("button");
-#if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
-			if (App.IsKeyboardShown())
-				App.DismissKeyboard();
-#endif
 			VerifyScreenshot();
 		}
 	}
 }
+#endif
+

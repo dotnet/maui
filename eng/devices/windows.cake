@@ -156,10 +156,7 @@ Task("Build")
 	s.ToolPath = dotnetToolPath;
 	s.Configuration = CONFIGURATION;
 	s.Framework = TARGET_FRAMEWORK;
-	s.MSBuildSettings = new DotNetMSBuildSettings()
-	{
-		ArgumentCustomization = args => args.Append("/bl:" + binlog),
-	};
+	s.MSBuildSettings = new DotNetMSBuildSettings();
 	s.MSBuildSettings.Properties.Add("RuntimeIdentifierOverride", new List<string> { "win10-x64" });
 	
 	var launchSettingsNeedle = "Project";

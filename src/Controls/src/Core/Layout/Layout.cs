@@ -2,7 +2,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
@@ -15,7 +14,6 @@ namespace Microsoft.Maui.Controls
 	/// Base class for layouts that allow you to arrange and group UI controls in your application.
 	/// </summary>
 	[ContentProperty(nameof(Children))]
-	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement
 	{
 		protected ILayoutManager _layoutManager;
@@ -384,11 +382,6 @@ namespace Microsoft.Maui.Controls
 			{
 				layout.RefreshInputTransparentProperty();
 			}
-		}
-
-		private protected override string GetDebuggerDisplay()
-		{
-			return $"{base.GetDebuggerDisplay()}, ChildCount = {Count}";
 		}
 	}
 }

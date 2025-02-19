@@ -14,21 +14,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
+		[Category(UITestCategories.Compatibility)]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void Bugzilla53179Test()
 		{
 			App.WaitForElement("Next Page");
 			App.Tap("Next Page");
 
-			App.WaitForElementTillPageNavigationSettled("Next Page");
+			App.WaitForElement("Next Page");
 			App.Tap("Next Page");
 
-			App.WaitForElementTillPageNavigationSettled("Next Page");
+			App.WaitForElement("Next Page");
 			App.Tap("Next Page");
 
-			App.WaitForElementTillPageNavigationSettled("Remove previous pages");
+			App.WaitForElement("Remove previous pages");
 			App.Tap("Remove previous pages");
 
-			App.WaitForElementTillPageNavigationSettled("Back");
+			App.WaitForElement("Back");
 			App.Tap("Back");
 		}
 	}

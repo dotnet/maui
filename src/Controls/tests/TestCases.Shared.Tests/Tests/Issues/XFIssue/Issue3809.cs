@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -38,32 +39,33 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			if (element.ReadText() != "25, 25, 25, 25")
 				usesSafeAreaInsets = true;
 
-			Assert.That(element.ReadText(), Is.Not.EqualTo("0, 0, 0, 0"));
+			ClassicAssert.AreNotEqual(element.ReadText(), "0, 0, 0, 0");
 			if (!usesSafeAreaInsets)
-				Assert.That(element.ReadText(), Is.EqualTo("25, 25, 25, 25"));
+				ClassicAssert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
 			// Disable Safe Area Insets
 			App.Tap(SafeAreaAutomationId);
 			AssertSafeAreaText($"{SafeAreaText}{false}");
 			element = App.WaitForFirstElement(PaddingLabel);
 
-			Assert.That(element.ReadText(), Is.EqualTo("25, 25, 25, 25"));
+			ClassicAssert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
 			// Enable Safe Area insets
 			App.Tap(SafeAreaAutomationId);
 			AssertSafeAreaText($"{SafeAreaText}{true}");
 			element = App.WaitForFirstElement(PaddingLabel);
-			Assert.That(element.ReadText(), Is.Not.EqualTo("0, 0, 0, 0"));
+			ClassicAssert.AreNotEqual(element.ReadText(), "0, 0, 0, 0");
 
 			if (!usesSafeAreaInsets)
-				Assert.That(element.ReadText(), Is.EqualTo("25, 25, 25, 25"));
+				ClassicAssert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 
 			// Set Padding and then disable safe area insets
 			App.Tap(SetPagePadding);
 			App.Tap(SafeAreaAutomationId);
 			AssertSafeAreaText($"{SafeAreaText}{false}");
 			element = App.WaitForFirstElement(PaddingLabel);
-			Assert.That(element.ReadText(), Is.EqualTo("25, 25, 25, 25"));
+			ClassicAssert.AreEqual(element.ReadText(), "25, 25, 25, 25");
 		}
 	}
 }
+#endif

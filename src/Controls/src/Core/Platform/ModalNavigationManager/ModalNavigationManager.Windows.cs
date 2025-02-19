@@ -116,21 +116,10 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					var windowManager = modalContext.GetNavigationRootManager();
-					if (windowManager is not null)
-					{
-						// Set the titlebar on the new navigation root
-						if (previousPage is not null &&
-							previousPage.GetParentWindow() is Window window &&
-							window.TitleBar is TitleBar titlebar)
-						{
-							windowManager.SetTitleBar(titlebar, modalContext);
-						}
-
-						var platform = newPage.ToPlatform(modalContext);
-						_waitingForIncomingPage = platform.OnLoaded(() => completedCallback?.Invoke());
-						windowManager.Connect(platform);
-						Container.AddPage(windowManager.RootView);
-					}
+					var platform = newPage.ToPlatform(modalContext);
+					_waitingForIncomingPage = platform.OnLoaded(() => completedCallback?.Invoke());
+					windowManager.Connect(platform);
+					Container.AddPage(windowManager.RootView);
 				}
 				// popping modal
 				else
@@ -144,14 +133,6 @@ namespace Microsoft.Maui.Controls.Platform
 					if (navRoot.RootView is WindowRootView wrv && wrv.AppTitleBarContainer is not null)
 					{
 						wrv.SetTitleBarVisibility(UI.Xaml.Visibility.Visible);
-					}
-
-					// Restore the titlebar
-					if (previousPage is not null &&
-						previousPage.GetParentWindow() is Window window &&
-						window.TitleBar is TitleBar titlebar)
-					{
-						windowManager.SetTitleBar(titlebar, context);
 					}
 
 					var platform = newPage.ToPlatform();

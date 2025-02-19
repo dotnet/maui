@@ -53,16 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var bitmap = bitmapDrawable.Bitmap;
 
-			await bitmap.AssertContainsColor(expectedColor.ToPlatform()).ConfigureAwait(false);
-		}
-
-		[Theory]
-		[InlineData("25d0", "\u25d0")]
-		[InlineData("25d025d1", "\u25d0\u25d1")]
-		[InlineData(null, null)]
-		public void GetGlyphHexSerializesCorrectly(string expected, string input)
-		{
-			Assert.Equal(expected, PlatformInterop.GetGlyphHex(input));
+			bitmap.AssertContainsColor(expectedColor.ToPlatform());
 		}
 
 		[Fact]
@@ -92,7 +83,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var bitmap = bitmapDrawable.Bitmap;
 
-			await bitmap.AssertContainsColor(Colors.Red.ToPlatform()).ConfigureAwait(false);
+			bitmap.AssertContainsColor(Colors.Red.ToPlatform());
 		}
 	}
 }

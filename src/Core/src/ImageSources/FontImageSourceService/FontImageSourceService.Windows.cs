@@ -124,22 +124,20 @@ namespace Microsoft.Maui
 				}
 			}
 
-			// Win2D in unpackaged apps can't load files using packaged schemes, such as `ms-appx://`
-			// so we have to first convert it to a `file://` scheme will the full file path.
+			// unpackaged apps can't load files using packaged schemes
 			if (!AppInfoUtils.IsPackagedApp)
 			{
-				// At this part of the load operation, the font URI contains the font family name fragment
-				// component, so we first have to remove it.
+				// the Uri type encodes the fragment, so let's remove first
 				var fragment = "";
 				if (fontSource.IndexOf('#', StringComparison.OrdinalIgnoreCase) is int index && index >= 0)
 				{
-					fragment = fontSource[index..];
-					fontSource = fontSource[..index];
+					fragment = fontSource.Substring(index);
+					fontSource = fontSource.Substring(0, index);
 				}
 
-				// Now we can convert the URI to a `file://` scheme with the full file path.
 				var fontUri = new Uri(fontSource, UriKind.RelativeOrAbsolute);
-				var path = fontUri.LocalPath.TrimStart('/');
+			
+				var path = fontUri.AbsolutePath.TrimStart('/');
 				if (FileSystemUtils.TryGetAppPackageFileUri(path, out var uri))
 				{
 					fontSource = uri + fragment;

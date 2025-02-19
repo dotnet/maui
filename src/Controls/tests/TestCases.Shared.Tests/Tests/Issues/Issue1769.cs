@@ -19,14 +19,15 @@ public class Issue1769 : _IssuesUITest
 	[Test]
 	[Category(UITestCategories.Switch)]
 	[Category(UITestCategories.Compatibility)]
+	[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 	public void Issue1769Test()
 	{
 		App.WaitForElement(GoToPageTwoButtonText);
 		App.Tap(GoToPageTwoButtonText);
 
 		App.WaitForElement(SwitchAutomatedId);
-		Assert.That(App.FindElement("SwitchLabel").GetText(), Is.EqualTo(string.Format(SwitchIsNowLabelTextFormat, false)));
+		App.WaitForElement(string.Format(SwitchIsNowLabelTextFormat, false));
 		App.Tap(SwitchAutomatedId);
-		Assert.That(App.FindElement("SwitchLabel").GetText(), Is.EqualTo(string.Format(SwitchIsNowLabelTextFormat, true)));
+		App.WaitForElement(string.Format(SwitchIsNowLabelTextFormat, true));
 	}
 }

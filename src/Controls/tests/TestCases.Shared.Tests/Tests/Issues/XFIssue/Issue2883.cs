@@ -22,6 +22,7 @@ public class Issue2883 : _IssuesUITest
 
 		App.Tap("btnCustomCellListView");
 		App.WaitForNoElement("Clicked");
+
 	}
 
 
@@ -31,10 +32,18 @@ public class Issue2883 : _IssuesUITest
 		App.WaitForElement("btnCustomCellTableEnabled");
 		App.Tap("btnCustomCellTableEnabled");
 		App.WaitForElement("Clicked");
-		App.TapDisplayAlertButton("ok");
+#if MACCATALYST // Unable to tap the ok button on the display alert using text. so here using the identifier for Mac.
+		App.Tap(AppiumQuery.ById("action-button--999"));
+#else
+		App.Tap("ok");
+#endif
 		App.WaitForElement("btnCustomCellListViewEnabled");
 		App.Tap("btnCustomCellListViewEnabled");
 		App.WaitForElement("Clicked");
-		App.TapDisplayAlertButton("ok");
+#if MACCATALYST
+		App.Tap(AppiumQuery.ById("action-button--999"));
+#else
+		App.Tap("ok");
+#endif
 	}
 }

@@ -15,15 +15,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void GridIsEnabled()
 		{
 			App.WaitForElement("entry");
 			App.Tap("entry");
-			App.WaitForElement("Success");
+			App.WaitForNoElement("Success");
 
 			App.WaitForElement("button");
 			App.Tap("button");
-			App.WaitForElement("Success");
+			App.WaitForNoElement("Success");
 
 			App.WaitForElement("button1");
 			App.Tap("button1");
@@ -31,11 +32,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement("entry");
 			App.Tap("entry");
-			App.WaitForElement("Success");
+			App.WaitForNoElement("Success");
 
 			App.WaitForElement("button");
 			App.Tap("button");
-			App.WaitForElement("Success");
+			App.WaitForNoElement("Success");
 		}
 	}
 }

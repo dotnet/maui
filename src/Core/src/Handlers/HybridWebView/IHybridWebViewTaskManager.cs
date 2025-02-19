@@ -1,12 +1,11 @@
-﻿using System;
+﻿using System.Collections.Concurrent;
+using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Handlers;
-
-internal interface IHybridWebViewTaskManager
+namespace Microsoft.Maui.Handlers
 {
-	HybridWebViewTask CreateTask();
-
-	void SetTaskCompleted(string taskId, string result);
-
-	void SetTaskFailed(string taskId, Exception exception);
+	internal interface IHybridWebViewTaskManager
+	{
+		int GetNextInvokeTaskId();
+		ConcurrentDictionary<string, TaskCompletionSource<string>> AsyncTaskCallbacks { get; }
+	}
 }

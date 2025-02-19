@@ -34,7 +34,7 @@
 				SelectedItem="{Binding SelectedItem}">
                 <CollectionView.Resources>
                     <ResourceDictionary>
-                        <Style TargetType="Border">
+                        <Style TargetType="Frame">
                             <Setter Property="VisualStateManager.VisualStateGroups">
                                 <VisualStateGroupList>
                                     <VisualStateGroup x:Name="CommonStates">
@@ -57,10 +57,11 @@
                 </CollectionView.Resources>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Border
-							StrokeShape ="RoundRectangle 20,20,20,20"
+                        <Frame
+							HasShadow="False"
 							Margin="10"
-							BackgroundColor="LightBlue" >
+							BackgroundColor="LightBlue"
+							CornerRadius="20">
                             <StackLayout>
                                 <Image
 									Source="{Binding Image}"
@@ -69,7 +70,7 @@
                                     AutomationId="{Binding Caption}"
 									Text="{Binding Caption}" />
                             </StackLayout>
-                        </Border>
+                        </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>

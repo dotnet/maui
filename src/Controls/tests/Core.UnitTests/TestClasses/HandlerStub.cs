@@ -15,10 +15,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 		}
 
-		public HandlerStub(PropertyMapper mapper, CommandMapper commandMapper) : base(mapper, commandMapper)
-		{
-		}
-
 		protected override object CreatePlatformView()
 		{
 			return new object();

@@ -1,5 +1,4 @@
-﻿#if ANDROID // This code is specifically for Android. It sets the background color of the refresh indicator 
-// (MauiSwipeRefreshLayout) to red, ensuring enough contrast for screenshot comparison during testing. This is not applicable to other platforms.
+﻿#if ANDROID
 using NUnit.Framework;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Interactions;

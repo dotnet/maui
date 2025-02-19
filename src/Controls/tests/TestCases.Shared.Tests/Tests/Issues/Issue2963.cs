@@ -18,11 +18,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue2963Test()
 		{
-			App.WaitForElement(EditorId);
+			App.Screenshot("I am at Issue 2963");
 			App.Tap(EditorId);
-			Assert.That(App.FindElement(FocusedLabelId).GetText(), Is.EqualTo("False"));
+			ClassicAssert.AreEqual("False", App.FindElement(FocusedLabelId).GetText());
+			App.Screenshot("Label should still be false");
 		}
 	}
 }

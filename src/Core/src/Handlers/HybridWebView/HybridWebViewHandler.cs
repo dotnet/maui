@@ -25,14 +25,11 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
-using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using System.Collections.Specialized;
 using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -40,7 +37,7 @@ namespace Microsoft.Maui.Handlers
 #if !NETSTANDARD
 	[RequiresDynamicCode(DynamicFeatures)]
 #endif
-	public partial class HybridWebViewHandler : IHybridWebViewHandler
+	public partial class HybridWebViewHandler : IHybridWebViewHandler, IHybridWebViewTaskManager
 	{
 		internal const string DynamicFeatures = "HybridWebView uses dynamic System.Text.Json serialization features.";
 		internal const string NotSupportedMessage = DynamicFeatures + " Enable the $(MauiHybridWebViewSupported) property in your .csproj file to use in a trimming unsafe manner.";
@@ -93,11 +90,22 @@ namespace Microsoft.Maui.Handlers
 
 		internal HybridWebViewDeveloperTools DeveloperTools => MauiContext?.Services.GetService<HybridWebViewDeveloperTools>() ?? new HybridWebViewDeveloperTools();
 
-		private const string InvokeJavaScriptThrowsExceptionsSwitch = "HybridWebView.InvokeJavaScriptThrowsExceptions";
 
-		// TODO: .NET 10 flip the default to true for .NET 10
-		private static bool IsInvokeJavaScriptThrowsExceptionsEnabled =>
-			AppContext.TryGetSwitch(InvokeJavaScriptThrowsExceptionsSwitch, out var enabled) && enabled;
+		/// <summary>
+		/// Handler for when the an Async JavaScript task has completed and needs to notify .NET.
+		/// </summary>
+		private void AsyncTaskCompleted(string taskId, string result)
+		{
+			// Look for the callback in the list of pending callbacks
+			if (!string.IsNullOrEmpty(taskId) && _asyncTaskCallbacks.TryGetValue(taskId, out var callback))
+			{
+				// Get the callback and remove it from the list
+				callback.SetResult(result);
+
+				// Remove the callback
+				_asyncTaskCallbacks.TryRemove(taskId, out var _);
+			}
+		}
 
 		void MessageReceived(string rawMessage)
 		{
@@ -120,7 +128,6 @@ namespace Microsoft.Maui.Handlers
 
 			switch (messageType)
 			{
-				case "__InvokeJavaScriptFailed":
 				case "__InvokeJavaScriptCompleted":
 					{
 #if !NETSTANDARD2_0
@@ -135,29 +142,7 @@ namespace Microsoft.Maui.Handlers
 
 						var taskId = messageContent.Substring(0, indexOfPipeInContent);
 						var result = messageContent.Substring(indexOfPipeInContent + 1);
-
-						var taskManager = this.GetRequiredService<IHybridWebViewTaskManager>();
-						if (messageType == "__InvokeJavaScriptFailed")
-						{
-							if (IsInvokeJavaScriptThrowsExceptionsEnabled)
-							{
-								if (string.IsNullOrWhiteSpace(result))
-								{
-									taskManager.SetTaskFailed(taskId, new HybridWebViewInvokeJavaScriptException());
-								}
-								else
-								{
-									var jsError = JsonSerializer.Deserialize(result, HybridWebViewHandlerJsonContext.Default.JSInvokeError);
-									var jsException = new HybridWebViewInvokeJavaScriptException(jsError?.Message, jsError?.Name, jsError?.StackTrace);
-									var ex = new HybridWebViewInvokeJavaScriptException($"InvokeJavaScript threw an exception: {jsException.Message}", jsException);
-									taskManager.SetTaskFailed(taskId, ex);
-								}
-							}
-						}
-						else
-						{
-							taskManager.SetTaskCompleted(taskId, result);
-						}
+						AsyncTaskCompleted(taskId, result);
 					}
 					break;
 				case "__RawMessage":
@@ -168,137 +153,94 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		internal async Task<byte[]?> InvokeDotNetAsync(NameValueCollection invokeQueryString)
+		internal (byte[]? ContentBytes, string? ContentType) InvokeDotNet(NameValueCollection invokeQueryString)
 		{
 			try
 			{
-				var invokeTarget = VirtualView.InvokeJavaScriptTarget ?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
-				var invokeTargetType = VirtualView.InvokeJavaScriptType ?? throw new InvalidOperationException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptType)} property must have a value in order to invoke a .NET method from JavaScript.");
-
+				var invokeTarget = VirtualView.InvokeJavaScriptTarget ?? throw new NotImplementedException($"The {nameof(IHybridWebView)}.{nameof(IHybridWebView.InvokeJavaScriptTarget)} property must have a value in order to invoke a .NET method from JavaScript.");
 				var invokeDataString = invokeQueryString["data"];
 				if (string.IsNullOrEmpty(invokeDataString))
 				{
 					throw new ArgumentException("The 'data' query string parameter is required.", nameof(invokeQueryString));
 				}
 
+				byte[]? contentBytes = null;
+				string? contentType = null;
+
 				var invokeData = JsonSerializer.Deserialize<JSInvokeMethodData>(invokeDataString, HybridWebViewHandlerJsonContext.Default.JSInvokeMethodData);
-				if (invokeData?.MethodName is null)
+
+				if (invokeData != null && invokeData.MethodName != null)
 				{
-					throw new ArgumentException("The invoke data did not provide a method name.", nameof(invokeQueryString));
+					var t = ((IHybridWebView)VirtualView).InvokeJavaScriptType;
+					var result = InvokeDotNetMethod(t!, invokeTarget, invokeData);
+
+					contentType = "application/json";
+
+					DotNetInvokeResult dotNetInvokeResult;
+
+					if (result is not null)
+					{
+						var resultType = result.GetType();
+						if (resultType.IsArray || resultType.IsClass)
+						{
+							dotNetInvokeResult = new DotNetInvokeResult()
+							{
+								Result = JsonSerializer.Serialize(result),
+								IsJson = true,
+							};
+						}
+						else
+						{
+							dotNetInvokeResult = new DotNetInvokeResult()
+							{
+								Result = result,
+							};
+						}
+					}
+					else
+					{
+						dotNetInvokeResult = new();
+					}
+
+					contentBytes = System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(dotNetInvokeResult));
 				}
 
-				var invokeResultRaw = await InvokeDotNetMethodAsync(invokeTargetType, invokeTarget, invokeData);
-				var invokeResult = CreateInvokeResult(invokeResultRaw);
-				var json = JsonSerializer.Serialize(invokeResult);
-				var contentBytes = Encoding.UTF8.GetBytes(json);
-
-				return contentBytes;
+				return (contentBytes, contentType);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "An error occurred while invoking a .NET method from JavaScript: {ErrorMessage}", ex.Message);
+				// TODO: Log this
 			}
 
-			return default;
+			return (null, null);
 		}
 
-		private static DotNetInvokeResult CreateInvokeResult(object? result)
+		private static object? InvokeDotNetMethod([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type t, object jsInvokeTarget, JSInvokeMethodData invokeData)
 		{
-			// null invoke result means an empty result
-			if (result is null)
+			var invokeMethod = t.GetMethod(invokeData.MethodName!, System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.InvokeMethod);
+			if (invokeMethod == null)
 			{
-				return new();
+				throw new InvalidOperationException($"The method {invokeData.MethodName} couldn't be found on the {nameof(jsInvokeTarget)} of type {jsInvokeTarget.GetType().FullName}.");
 			}
 
-			// a reference type or an array should be serialized to JSON
-			var resultType = result.GetType();
-			if (resultType.IsArray || resultType.IsClass)
+			if (invokeData.ParamValues != null && invokeMethod.GetParameters().Length != invokeData.ParamValues.Length)
 			{
-				return new DotNetInvokeResult()
-				{
-					Result = JsonSerializer.Serialize(result),
-					IsJson = true,
-				};
+				throw new InvalidOperationException($"The number of parameters on {nameof(jsInvokeTarget)}'s method {invokeData.MethodName} ({invokeMethod.GetParameters().Length}) doesn't match the number of values passed from JavaScript code ({invokeData.ParamValues.Length}).");
 			}
 
-			// a value type should be returned as is
-			return new DotNetInvokeResult()
-			{
-				Result = result,
-			};
+			var paramObjectValues =
+				invokeData.ParamValues?
+					.Zip(invokeMethod.GetParameters(), (s, p) => s == null ? null : JsonSerializer.Deserialize(s, p.ParameterType))
+					.ToArray();
+
+			return invokeMethod.Invoke(jsInvokeTarget, paramObjectValues);
 		}
 
-		private static async Task<object?> InvokeDotNetMethodAsync(
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type targetType,
-			object jsInvokeTarget,
-			JSInvokeMethodData invokeData)
-		{
-			var requestMethodName = invokeData.MethodName!;
-			var requestParams = invokeData.ParamValues;
-
-			// get the method and its parameters from the .NET object instance
-			var dotnetMethod = targetType.GetMethod(requestMethodName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod);
-			if (dotnetMethod is null)
-			{
-				throw new InvalidOperationException($"The method {requestMethodName} couldn't be found on the {nameof(jsInvokeTarget)} of type {jsInvokeTarget.GetType().FullName}.");
-			}
-			var dotnetParams = dotnetMethod.GetParameters();
-			if (requestParams is not null && dotnetParams.Length != requestParams.Length)
-			{
-				throw new InvalidOperationException($"The number of parameters on {nameof(jsInvokeTarget)}'s method {requestMethodName} ({dotnetParams.Length}) doesn't match the number of values passed from JavaScript code ({requestParams.Length}).");
-			}
-
-			// deserialize the parameters from JSON to .NET types
-			object?[]? invokeParamValues = null;
-			if (requestParams is not null)
-			{
-				invokeParamValues = new object?[requestParams.Length];
-				for (var i = 0; i < requestParams.Length; i++)
-				{
-					var reqValue = requestParams[i];
-					var paramType = dotnetParams[i].ParameterType;
-					var deserialized = JsonSerializer.Deserialize(reqValue, paramType);
-					invokeParamValues[i] = deserialized;
-				}
-			}
-
-			// invoke the .NET method
-			var dotnetReturnValue = dotnetMethod.Invoke(jsInvokeTarget, invokeParamValues);
-
-			if (dotnetReturnValue is null) // null result
-			{
-				return null;
-			}
-
-			if (dotnetReturnValue is Task task) // Task or Task<T> result
-			{
-				await task;
-
-				// Task<T>
-				if (dotnetMethod.ReturnType.IsGenericType)
-				{
-					var resultProperty = dotnetMethod.ReturnType.GetProperty(nameof(Task<object>.Result));
-					return resultProperty?.GetValue(task);
-				}
-
-				// Task
-				return null;
-			}
-
-			return dotnetReturnValue; // regular result
-		}
 
 		private sealed class JSInvokeMethodData
 		{
 			public string? MethodName { get; set; }
 			public string[]? ParamValues { get; set; }
-		}
-
-		private sealed class JSInvokeError
-		{
-			public string? Name { get; set; }
-			public string? Message { get; set; }
-			public string? StackTrace { get; set; }
 		}
 
 		private sealed class DotNetInvokeResult
@@ -309,7 +251,6 @@ namespace Microsoft.Maui.Handlers
 
 		[JsonSourceGenerationOptions()]
 		[JsonSerializable(typeof(JSInvokeMethodData))]
-		[JsonSerializable(typeof(JSInvokeError))]
 		private partial class HybridWebViewHandlerJsonContext : JsonSerializerContext
 		{
 		}
@@ -374,31 +315,17 @@ namespace Microsoft.Maui.Handlers
 		public static async void MapInvokeJavaScriptAsync(IHybridWebViewHandler handler, IHybridWebView hybridWebView, object? arg)
 		{
 #if PLATFORM && !TIZEN
-			if (arg is not HybridWebViewInvokeJavaScriptRequest invokeJavaScriptRequest)
+			if (arg is not HybridWebViewInvokeJavaScriptRequest invokeJavaScriptRequest ||
+				handler.PlatformView is not MauiHybridWebView hybridPlatformWebView ||
+				handler is not IHybridWebViewTaskManager taskManager)
 			{
 				return;
 			}
 
-			try
-			{
-				var result = await MapInvokeJavaScriptAsyncImpl(handler, hybridWebView, invokeJavaScriptRequest);
-
-				invokeJavaScriptRequest.SetResult(result);
-			}
-			catch (Exception ex)
-			{
-				invokeJavaScriptRequest.SetException(ex);
-			}
-#else
-			await Task.CompletedTask;
-#endif
-		}
-
-		static async Task<object?> MapInvokeJavaScriptAsyncImpl(IHybridWebViewHandler handler, IHybridWebView hybridWebView, HybridWebViewInvokeJavaScriptRequest invokeJavaScriptRequest)
-		{
 			// Create a callback for async JavaScript methods to invoke when they are done
-			var taskManager = handler.GetRequiredService<IHybridWebViewTaskManager>();
-			var (currentInvokeTaskId, callback) = taskManager.CreateTask();
+			var callback = new TaskCompletionSource<string>();
+			var currentInvokeTaskId = $"{taskManager.GetNextInvokeTaskId()}";
+			taskManager.AsyncTaskCallbacks.TryAdd(currentInvokeTaskId, callback);
 
 			var paramsValuesStringArray =
 				invokeJavaScriptRequest.ParamValues == null
@@ -412,24 +339,19 @@ namespace Microsoft.Maui.Handlers
 
 			var stringResult = await callback.Task;
 
-			// if there is no result or if the result was null/undefined, then treat it as null
-			if (stringResult is null || stringResult == "null" || stringResult == "undefined")
+			if (stringResult is null)
 			{
-				return null;
+				invokeJavaScriptRequest.SetResult(null);
 			}
-			// if we are not looking for a return object, then return null
-			else if (invokeJavaScriptRequest.ReturnTypeJsonTypeInfo is null)
-			{
-				return null;
-			}
-			// if we are expecting a result, then deserialize what we have
 			else
 			{
 				var typedResult = JsonSerializer.Deserialize(stringResult, invokeJavaScriptRequest.ReturnTypeJsonTypeInfo);
-				return typedResult;
+				invokeJavaScriptRequest.SetResult(typedResult);
 			}
+#else
+			await Task.CompletedTask;
+#endif
 		}
-
 
 #if PLATFORM && !TIZEN
 		// Copied from WebView.cs
@@ -497,5 +419,15 @@ namespace Microsoft.Maui.Handlers
 #if !NETSTANDARD
 		internal static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
 #endif
+
+		// IHybridWebViewTaskManager implementation
+		ConcurrentDictionary<string, TaskCompletionSource<string>> _asyncTaskCallbacks = new ConcurrentDictionary<string, TaskCompletionSource<string>>();
+		int _asyncInvokeTaskId;
+
+		int IHybridWebViewTaskManager.GetNextInvokeTaskId()
+		{
+			return Interlocked.Increment(ref _asyncInvokeTaskId);
+		}
+		ConcurrentDictionary<string, TaskCompletionSource<string>> IHybridWebViewTaskManager.AsyncTaskCallbacks => _asyncTaskCallbacks;
 	}
 }

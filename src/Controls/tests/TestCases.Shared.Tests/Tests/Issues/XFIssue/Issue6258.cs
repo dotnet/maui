@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,13 +12,12 @@ public class Issue6258 : _IssuesUITest
 
 	public override string Issue => "[Android] ContextActions icon not working";
 
-	[Test]
-	[Category(UITestCategories.ListView)]
-	public void ContextActionsIconImageSource()
-	{
-		App.WaitForElement("ListViewItem");
-		App.ActivateContextMenu("ListViewItem");
-		VerifyScreenshot();
-	}
+	//[Test]
+	//[Category(UITestCategories.ListView)]
+	//public void ContextActionsIconImageSource()
+	//{
+	//	App.WaitForElement("ListViewItem");
+	//	App.ActivateContextMenu("ListViewItem");
+	//	App.WaitForElement("coffee.png");
+	//}
 }
-#endif

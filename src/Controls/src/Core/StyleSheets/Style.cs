@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.StyleSheets
 			return style;
 		}
 
-		public void Apply(VisualElement styleable, Selector.SelectorSpecificity selectorSpecificity = default, bool inheriting = false)
+		public void Apply(VisualElement styleable, bool inheriting = false)
 		{
 			if (styleable == null)
 				throw new ArgumentNullException(nameof(styleable));
@@ -71,14 +71,15 @@ namespace Microsoft.Maui.Controls.StyleSheets
 				if (property == null)
 					continue;
 				if (string.Equals(decl.Value, "initial", StringComparison.OrdinalIgnoreCase))
-					styleable.SetValue(property, property.DefaultValue, new SetterSpecificity(SetterSpecificity.StyleImplicit, (byte)selectorSpecificity.Id, (byte)selectorSpecificity.Class, (byte)selectorSpecificity.Type));
+					//FIXME
+					styleable.ClearValue(property, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
 				else
 				{
 					object value;
 					if (!convertedValues.TryGetValue(decl, out value))
 						convertedValues[decl] = (value = Convert(styleable, decl.Value, property));
 					//FIXME: compute distance
-					styleable.SetValue(property, value, new SetterSpecificity(SetterSpecificity.StyleImplicit, (byte)selectorSpecificity.Id, (byte)selectorSpecificity.Class, (byte)selectorSpecificity.Type));
+					styleable.SetValue(property, value, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
 				}
 			}
 

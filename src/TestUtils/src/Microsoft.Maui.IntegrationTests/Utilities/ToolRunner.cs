@@ -18,7 +18,7 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		public static string Run(ProcessStartInfo info, out int exitCode,
-			int timeoutInSeconds = 600, Action<Process>? inputAction = null)
+			int timeoutInSeconds = 600)
 		{
 			var procOutput = new StringBuilder();
 			using (var p = new Process())
@@ -29,10 +29,6 @@ namespace Microsoft.Maui.IntegrationTests
 				p.StartInfo.UseShellExecute = false;
 				p.StartInfo.RedirectStandardOutput = true;
 				p.StartInfo.RedirectStandardError = true;
-				if (inputAction != null)
-				{
-					p.StartInfo.RedirectStandardInput = true;
-				}
 				p.OutputDataReceived += (sender, o) =>
 				{
 					if (!string.IsNullOrEmpty(o?.Data))
@@ -53,11 +49,6 @@ namespace Microsoft.Maui.IntegrationTests
 				p.Start();
 				p.BeginOutputReadLine();
 				p.BeginErrorReadLine();
-
-				if (inputAction != null)
-				{
-					inputAction(p);
-				}
 
 				if (p.WaitForExit(timeoutInSeconds * 1000))
 				{

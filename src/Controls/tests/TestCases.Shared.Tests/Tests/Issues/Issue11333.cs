@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // For more information, see : https://github.com/dotnet/maui/issues/27638
+﻿#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

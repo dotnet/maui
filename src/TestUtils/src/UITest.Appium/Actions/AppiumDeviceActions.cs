@@ -69,10 +69,7 @@ namespace UITest.Appium
 		{
 			if (_appiumApp.Driver is AndroidDriver androidDriver)
 			{
-				string unlockType = (string)parameters["unlockType"];
-				string unlockKey = (string)parameters["unlockKey"];
-
-				androidDriver.Unlock(unlockType, unlockKey);
+				androidDriver.Unlock();
 
 				return CommandResponse.SuccessEmptyResponse;
 			}

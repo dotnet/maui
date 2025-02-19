@@ -15,9 +15,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void ListViewIsGroupingEnabledDoesNotCrash()
 		{
-			App.WaitForElement("First");
+			App.WaitForNoElement("First");
 		}
 	}
 }

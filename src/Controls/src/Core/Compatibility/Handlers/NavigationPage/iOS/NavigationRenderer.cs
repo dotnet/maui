@@ -36,8 +36,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _hasNavigationBar;
 		UIImage _defaultNavBarShadowImage;
 		UIImage _defaultNavBarBackImage;
-		Brush _currentBarBackgroundBrush;
-		Color _currentBarBackgroundColor;
 		bool _disposed;
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext;
@@ -264,12 +262,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_secondaryToolbar.RemoveFromSuperview();
 				_secondaryToolbar.Dispose();
 				_secondaryToolbar = null;
-
-				if (_currentBarBackgroundBrush is GradientBrush gb)
-					gb.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
-
-				_currentBarBackgroundBrush = null;
-				_currentBarBackgroundColor = null;
 
 				_parentFlyoutPage = null;
 				Current = null; // unhooks events
@@ -720,44 +712,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			View.BackgroundColor = color;
 		}
 
-		void OnBarBackgroundChanged(object sender, EventArgs e)
-		{
-			RefreshBarBackground();
-		}
-
 		void UpdateBarBackground()
 		{
-			if (_currentBarBackgroundBrush is GradientBrush oldGradientBrush)
-			{
-				oldGradientBrush.Parent = null;
-				oldGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
-			}
+			var barBackgroundColor = NavPage.BarBackgroundColor;
+			var barBackgroundBrush = NavPage.BarBackground;
 
-			_currentBarBackgroundColor = NavPage.BarBackgroundColor;
-			_currentBarBackgroundBrush = NavPage.BarBackground;
-
-			if (_currentBarBackgroundBrush is GradientBrush newGradientBrush)
-			{
-				newGradientBrush.Parent = NavPage;
-				newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
-			}
-
-			RefreshBarBackground();
-		}
-
-		void RefreshBarBackground()
-		{
 			// if the brush has a solid color, treat it as a Color so we can compute the alpha value
-			if (_currentBarBackgroundBrush is SolidColorBrush newSolidColorBrush)
+			if (NavPage.BarBackground is SolidColorBrush scb)
 			{
-				_currentBarBackgroundColor = newSolidColorBrush.Color;
-				_currentBarBackgroundBrush = null;
+				barBackgroundColor = scb.Color;
+				barBackgroundBrush = null;
 			}
 
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
-				if (_currentBarBackgroundColor is null)
+				if (barBackgroundColor is null)
 				{
 					navigationBarAppearance.ConfigureWithOpaqueBackground();
 					navigationBarAppearance.BackgroundColor = Maui.Platform.ColorExtensions.BackgroundColor;
@@ -767,17 +737,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 				else
 				{
-					if (_currentBarBackgroundColor?.Alpha < 1f)
+					if (barBackgroundColor?.Alpha < 1f)
 						navigationBarAppearance.ConfigureWithTransparentBackground();
 					else
 						navigationBarAppearance.ConfigureWithOpaqueBackground();
 
-					navigationBarAppearance.BackgroundColor = _currentBarBackgroundColor.ToPlatform();
+					navigationBarAppearance.BackgroundColor = barBackgroundColor.ToPlatform();
 				}
 
-				if (_currentBarBackgroundBrush is not null)
+				if (barBackgroundBrush is not null)
 				{
-					var backgroundImage = NavigationBar.GetBackgroundImage(_currentBarBackgroundBrush);
+					var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
 
 					navigationBarAppearance.BackgroundImage = backgroundImage;
 				}
@@ -788,18 +758,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
-				if (_currentBarBackgroundColor?.Alpha == 0f)
+				if (barBackgroundColor?.Alpha == 0f)
 				{
 					NavigationBar.SetTransparentNavigationBar();
 				}
 				else
 				{
 					// Set navigation bar background color
-					NavigationBar.BarTintColor = _currentBarBackgroundColor == null
+					NavigationBar.BarTintColor = barBackgroundColor == null
 						? UINavigationBar.Appearance.BarTintColor
-						: _currentBarBackgroundColor.ToPlatform();
+						: barBackgroundColor.ToPlatform();
 
-					var backgroundImage = NavigationBar.GetBackgroundImage(_currentBarBackgroundBrush);
+					var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
 					NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
 				}
 			}
@@ -1133,8 +1103,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
-				(navigationController.NavigationBar as MauiNavigationBar)?.RefreshIfNeeded();
-
 				if (_navigation.TryGetTarget(out NavigationRenderer r))
 				{
 					r._navigating = false;
@@ -1323,11 +1291,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void WillMoveToParentViewController(UIViewController parent)
 			{
 				base.WillMoveToParentViewController(parent);
-
-				if (_tracker is null)
-				{
-					return;
-				}
 
 				if (parent is null)
 				{
@@ -1837,7 +1800,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_viewHandlerWrapper.DisconnectHandler();
 		}
 
-		internal class MauiControlsNavigationBar : MauiNavigationBar
+		internal class MauiControlsNavigationBar : UINavigationBar
 		{
 			[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 			public MauiControlsNavigationBar() : base()

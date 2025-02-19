@@ -4,17 +4,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
-
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="Type[@FullName='Microsoft.Maui.Controls.Label']/Docs/*" />
 	[ContentProperty(nameof(Text))]
-	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>, IDecorableTextElement, IPaddingElement, ILabel
 	{
 		/// <summary>Bindable property for <see cref="HorizontalTextAlignment"/>.</summary>
@@ -479,12 +476,6 @@ namespace Microsoft.Maui.Controls
 
 			// The label may grow/shrink based on the constraints, so we need to invalidate.
 			return true;
-		}
-
-		private protected override string GetDebuggerDisplay()
-		{
-			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Text), Text);
-			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
 	}
 }

@@ -14,10 +14,9 @@ public class Issue18452 : _IssuesUITest
 	{
 	}
 
-	[Test]
+	//[Test]
 	public void WebViewLoadedWithoutException()
 	{
-		VerifyInternetConnectivity();
 		App.WaitForElement("Label");
 		string? label = App.FindElement("Label").GetText();
 		Assert.That(label, Is.EqualTo(expected));

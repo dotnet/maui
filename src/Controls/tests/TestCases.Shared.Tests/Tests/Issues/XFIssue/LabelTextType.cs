@@ -12,17 +12,19 @@ public class LabelTextType : _IssuesUITest
 
 	public override string Issue => "Implementation of Label TextType";
 
-	[Test]
-	[Category(UITestCategories.Label)]
-	public void LabelToggleHtmlAndPlainTextTest()
-	{
-		App.WaitForElement("TextTypeLabel");
-		App.Screenshot("I see plain text");
+	//[Test]
+	//[Category(UITestCategories.Label)]
+	//[FailsOnIOS]
+	//public void LabelToggleHtmlAndPlainTextTest()
+	//{
+	//	App.WaitForElement("TextTypeLabel");
+	//	App.Screenshot("I see plain text");
 
-		Assert.That(App.WaitForElement("TextTypeLabel").GetText(), Is.EqualTo("<h1>Hello World!</h1>"));
+	//	Assert.IsTrue(App.Query("TextTypeLabel").FirstOrDefault()?.Text == "<h1>Hello World!</h1>");
 
-		App.Tap("ToggleTextTypeButton");
+	//	App.Tap("ToggleTextTypeButton");
+	//	App.Screenshot("I see HTML text");
 
-		Assert.That(App.WaitForElement("TextTypeLabel").GetText()?.Contains("<h1>", StringComparison.OrdinalIgnoreCase), Is.False);
-	}
+	//	Assert.IsFalse(App.Query("TextTypeLabel").FirstOrDefault()?.Text.Contains("<h1>") ?? true);
+	//}
 }

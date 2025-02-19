@@ -66,7 +66,8 @@ namespace Microsoft.Maui.Controls
 
 		partial void OnHandlerChangingPartial(HandlerChangingEventArgs args)
 		{
-			OnHandlerDisconnected((ElementHandler?)(args?.OldHandler));
+			if (args?.OldHandler?.PlatformView is FrameworkElement fe)
+				OnHandlerDisconnected(fe);
 		}
 
 		void OnHandlerConnected()
@@ -115,7 +116,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void OnHandlerDisconnected(ElementHandler? elementHandler)
+		void OnHandlerDisconnected(FrameworkElement? platformView)
 		{
 			if (!_connectedToHandler)
 				return;
@@ -127,18 +128,13 @@ namespace Microsoft.Maui.Controls
 				_navigationView.SizeChanged -= OnNavigationViewSizeChanged;
 			}
 
-			if (_navigationFrame is not null)
-			{
-				_navigationFrame.Navigated -= OnNavigated;
-			}
+			if (platformView is WFrame wFrame)
+				wFrame.Navigated -= OnNavigated;
 
 			Appearing -= OnTabbedPageAppearing;
 			Disappearing -= OnTabbedPageDisappearing;
 			if (_navigationView != null)
-			{
-				_navigationView.SelectedItem = null;
 				_navigationView.SelectionChanged -= OnSelectedMenuItemChanged;
-			}
 
 			OnTabbedPageDisappearing(this, EventArgs.Empty);
 
@@ -335,7 +331,6 @@ namespace Microsoft.Maui.Controls
 						vm.UnselectedTitleColor = view.BarTextColor?.AsPaint()?.ToPlatform();
 						vm.SelectedForeground = view.SelectedTabColor?.AsPaint()?.ToPlatform();
 						vm.UnselectedForeground = view.UnselectedTabColor?.AsPaint()?.ToPlatform();
-						vm.IsSelected = page == view.CurrentPage;
 					});
 
 				handler.UpdateValue(nameof(TabbedPage.CurrentPage));

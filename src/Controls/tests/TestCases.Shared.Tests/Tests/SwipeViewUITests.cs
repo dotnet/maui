@@ -6,7 +6,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class SwipeViewUITests : CoreGalleryBasePageTest
+	public class SwipeViewUITests : UITest
 	{
 		const string ScrollViewGallery = "SwipeView Gallery";
 
@@ -20,8 +20,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void NavigateToGallery()
+		protected override void FixtureSetup()
 		{
+			base.FixtureSetup();
 			App.NavigateToGallery(ScrollViewGallery);
 		}
 

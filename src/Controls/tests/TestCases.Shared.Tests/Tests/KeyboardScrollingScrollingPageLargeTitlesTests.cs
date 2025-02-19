@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class KeyboardScrollingScrollingPageLargeTitlesTests : CoreGalleryBasePageTest
+	public class KeyboardScrollingScrollingPageLargeTitlesTests : UITest
 	{
 		const string KeyboardScrollingGallery = "Keyboard Scrolling Gallery - Scrolling Page / Large Titles";
 		public KeyboardScrollingScrollingPageLargeTitlesTests(TestDevice device)
@@ -12,8 +12,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void NavigateToGallery()
+		protected override void FixtureSetup()
 		{
+			base.FixtureSetup();
 			App.NavigateToGallery(KeyboardScrollingGallery);
 		}
 

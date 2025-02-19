@@ -19,12 +19,7 @@
 
 			picker.SelectedIndexChanged += (sender, args) =>
 			{
-				//Android and Windows crashes when adding a View to a Layout that is already in another Layout
-				//For more information : https://github.com/dotnet/maui/issues/15920
-				var label = new Label
-				{
-					Text = "Selected"
-				};
+				label.Text = "Selected";
 				Content = label;
 			};
 

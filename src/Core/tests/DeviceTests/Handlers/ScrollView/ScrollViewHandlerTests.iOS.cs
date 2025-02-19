@@ -30,7 +30,23 @@ namespace Microsoft.Maui.DeviceTests
 				};
 
 				var scrollViewHandler = CreateHandler(scrollView);
-				return scrollViewHandler.PlatformView.FindDescendantView<MauiTextField>() is not null;
+
+				foreach (var platformView in scrollViewHandler.PlatformView.Subviews)
+				{
+					// ScrollView on iOS uses an intermediate ContentView to handle content measurement/arrangement
+					if (platformView is Microsoft.Maui.Platform.ContentView contentView)
+					{
+						foreach (var content in contentView.Subviews)
+						{
+							if (content is MauiTextField)
+							{
+								return true;
+							}
+						}
+					}
+				}
+
+				return false; // No MauiTextField
 			});
 
 			Assert.True(result, $"Expected (but did not find) a {nameof(MauiTextField)} in the Subviews array");

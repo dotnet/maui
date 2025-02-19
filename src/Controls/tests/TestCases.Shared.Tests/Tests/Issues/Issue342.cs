@@ -15,9 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Page)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void Issue342NoSourceTestsLablePresentNoImage()
 		{
-			App.WaitForElement("Uninitialized image");
+			App.WaitForNoElement("Uninitialized image", "Cannot see label");
+			App.Screenshot("All elements present");
 		}
 	}
 
@@ -32,9 +34,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Page)]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void Issue342DelayedLoadTestsImageLoads()
 		{
-			App.WaitForElement("Delayed image");
+			App.WaitForElement("TestReady");
+			App.Screenshot("Should not crash");
 		}
 	}
 }

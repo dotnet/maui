@@ -16,7 +16,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void Issue7338Test()
+		[Category(UITestCategories.Compatibility)]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
+		public void Issue3273Test()
 		{
 			// If the instructions are visible at all, then this has succeeded
 			App.WaitForElement(Success);

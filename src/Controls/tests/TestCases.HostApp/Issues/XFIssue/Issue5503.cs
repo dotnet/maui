@@ -4,7 +4,7 @@ namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 5503, "[iOS] UITableView.Appearance.BackgroundColor ignored or overridden for ListView",
 	PlatformAffected.iOS)]
-public class Issue5503 : TestNavigationPage
+public class Issue5503 : TestContentPage
 {
 	const string ChangeBackgroundButtonAutomationId = "ChangeBackgroundButton";
 	const string ListViewAutomationId = "TheListView";
@@ -60,14 +60,6 @@ public class Issue5503 : TestNavigationPage
 			listView
 		};
 
-		var button = new Button() { Text = "Go To Test Page" };
-		button.Clicked += (sender, args) =>
-		{
-			Navigation.PushAsync(new ContentPage() { Content = stack });
-		};
-
-		var content = new ContentPage() { Content = button };
-		Navigation.PushAsync(content);
-
+		Content = stack;
 	}
 }

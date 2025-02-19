@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
@@ -465,35 +464,49 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, appearing);
 		}
 
-		[Theory]
-		[InlineData(0)]
-		[InlineData(1)]
-		[InlineData(2)]
-		[InlineData(3)]
-		public async Task VerifyToolbarButtonVisibilityWhenFlyoutReset(int depth)
+		[Fact]
+		public void VerifyToolbarButtonVisibilityWhenFlyoutReset()
 		{
-			ContentPage detailContentPage = new ContentPage();
-
-			Page flyout = new ContentPage()
+			Button resetButton = new Button { Text = "Reset" };
+			ContentPage detailContentPage = new ContentPage
 			{
-				Title = "Initial Flyout"
+				Content = new StackLayout
+				{
+					Children = { resetButton }
+				}
 			};
 
-			NavigationPage.SetHasNavigationBar(flyout, false);
-
-			var flyoutContentPage = flyout;
-
-			for (int i = 0; i < depth; i++)
+			ContentPage firstTab = new ContentPage
 			{
-				flyout = new NavigationPage(flyout)
+				Title = "Menu",
+				Content = new Label
 				{
-					Title = "Flyout " + i
-				};
-			}
+					Text = "Menu Items",
+				}
+			};
+
+			ContentPage secondTab = new ContentPage
+			{
+				Title = "Settings",
+				Content = new Label
+				{
+					Text = "Settings Items",
+				}
+			};
+
+			TabbedPage nestedTabbedPage = new TabbedPage
+			{
+				Title = "Flyout Tabbed Page",
+				Children =
+				{
+					firstTab,
+					secondTab
+				}
+			};
 
 			FlyoutPage flyoutPage = new FlyoutPage
 			{
-				Flyout = flyout,
+				Flyout = nestedTabbedPage,
 				Detail = new NavigationPage(detailContentPage)
 			};
 
@@ -502,19 +515,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Toolbar flyoutToolBar = flyoutPage.Toolbar;
 			Assert.True(flyoutToolBar.IsVisible);
 
-			if (depth >= 1)
-			{
-				var page = new ContentPage();
-				NavigationPage.SetHasNavigationBar(page, false);
-				await flyoutContentPage.Navigation.PushAsync(page);
-			}
-			else
-			{
-				var page = new ContentPage { Title = "Reborn Flyout" };
-				NavigationPage.SetHasNavigationBar(page, false);
-				flyoutPage.Flyout = new ContentPage { Title = "Reborn Flyout" };
-			}
+			nestedTabbedPage.CurrentPage = secondTab;
+			Assert.True(flyoutToolBar.IsVisible);
 
+			resetButton.Clicked += (s, e) =>
+			{
+				flyoutPage.Flyout = new ContentPage { Title = "Reborn Flyout" };
+			};
+
+			resetButton.SendClicked();
 			Assert.True(flyoutToolBar.IsVisible);
 		}
 	}

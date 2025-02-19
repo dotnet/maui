@@ -1,0 +1,2 @@
+﻿MONO_GC_PARAMS=bridge-implementation=new
+MONO_THREADS_SUSPEND=preemptive

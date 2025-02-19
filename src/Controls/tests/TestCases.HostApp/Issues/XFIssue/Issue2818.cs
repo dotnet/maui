@@ -12,7 +12,7 @@ public class Issue2818 : TestFlyoutPage
 		{
 			Title = "Flyout",
 			BackgroundColor = Colors.SkyBlue,
-			IconImageSource = "menu_icon",
+			IconImageSource = "menuIcon",
 			Content = new StackLayout()
 			{
 				Children =

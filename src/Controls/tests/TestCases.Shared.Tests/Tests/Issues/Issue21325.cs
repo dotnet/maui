@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !MACCATALYST
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,3 +28,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

@@ -1,6 +1,5 @@
 ﻿using Android.Graphics.Drawables;
 using Android.Widget;
-using Google.Android.Material.ImageView;
 
 namespace Microsoft.Maui.Platform
 {
@@ -18,15 +17,6 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateAspect(this ImageView imageView, IImage image)
 		{
-			// Apply bounds adjustment only for the Image control, not for the ImageButton control. ShapeableImageView serves as the platform view for ImageButton
-			if (imageView is not ShapeableImageView)
-			{
-				if (image.Aspect == Aspect.AspectFill)
-					imageView.SetAdjustViewBounds(false);
-				else
-					imageView.SetAdjustViewBounds(true);
-			}
-
 			imageView.SetScaleType(image.Aspect.ToScaleType());
 		}
 

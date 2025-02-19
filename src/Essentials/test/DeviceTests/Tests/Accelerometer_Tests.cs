@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasAccelerometer)
 				return;
 
-			var tcs = new TaskCompletionSource<AccelerometerData>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var tcs = new TaskCompletionSource<AccelerometerData>();
 			Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;
 			Accelerometer.Start(sensorSpeed);
 
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasAccelerometer)
 				return;
 
-			var tcs = new TaskCompletionSource<AccelerometerData>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var tcs = new TaskCompletionSource<AccelerometerData>();
 			Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;
 			Accelerometer.Start(sensorSpeed);
 
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasAccelerometer)
 				return;
 
-			var tcs = new TaskCompletionSource<AccelerometerData>(TaskCreationOptions.RunContinuationsAsynchronously);
+			var tcs = new TaskCompletionSource<AccelerometerData>();
 
 			Accelerometer.ReadingChanged += Accelerometer_ReadingChanged;
 			Accelerometer.Start(sensorSpeed);

@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI Class Library",
+  "name": ".NET MAUI-Klassenbibliothek",
   "description": "Ein Projekt zum Erstellen einer .NET MAUI Klassenbibliothek",
   "postActions/openInEditor/description": "Öffnet \"Class1.cs\" im Editor.",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",

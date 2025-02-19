@@ -56,11 +56,8 @@ public sealed partial class PromptDialog : ContentDialog
 		TextBlockMessage = new TextBlock { Text = "Message", TextWrapping = UI.Xaml.TextWrapping.Wrap };
 		TextBoxInput = new MauiPasswordTextBox();
 
-#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. Here we allow it as a part of initialization.
-		var children = layout.Children;
-#pragma warning restore RS0030 // Do not use banned APIs
-		children.Add(TextBlockMessage);
-		children.Add(TextBoxInput);
+		layout.Children.Add(TextBlockMessage);
+		layout.Children.Add(TextBoxInput);
 
 		Content = layout;
 	}

@@ -1,4 +1,4 @@
-﻿#if IOS //This test case verifies that the sample is working exclusively on IOS platforms "due to use of UIKit APIs".
+﻿#if IOS
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;

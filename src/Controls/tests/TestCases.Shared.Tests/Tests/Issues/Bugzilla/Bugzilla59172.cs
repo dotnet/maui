@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,33 +18,35 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
-		public void Issue59172Test()
+		[Category(UITestCategories.Compatibility)]
+		public async Task Issue59172Test()
 		{
-			App.WaitForElement("GoForward");
 			App.Tap("GoForward");
-			App.WaitForElementTillPageNavigationSettled("GoBackDelayed");
 			App.Tap("GoBackDelayed");
-			App.TapBackArrow();
+			App.Back();
+
+			await Task.Delay(1000);
 
 			// App should not have crashed
-			App.WaitForElementTillPageNavigationSettled("GoForward");
+			App.WaitForElement("GoForward");
 		}
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
-		public void Issue59172RecoveryTest()
+		[Category(UITestCategories.Compatibility)]
+		public async Task Issue59172RecoveryTest()
 		{
-			App.WaitForElement("GoForward");
 			App.Tap("GoForward");
-			App.WaitForElementTillPageNavigationSettled("GoBackDelayedSafe");
 			App.Tap("GoBackDelayedSafe");
-			App.TapBackArrow();
+			App.Back();
 
-			App.WaitForElementTillPageNavigationSettled("GoForward");
+			await Task.Delay(1000);
+
 			App.Tap("GoForward");
 
 			// App should navigate
-			App.WaitForElementTillPageNavigationSettled("GoBackDelayedSafe");
+			App.WaitForElement("GoBackDelayedSafe");
 		}
 	}
 }
+#endif

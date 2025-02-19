@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,9 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Image)]
+		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla37625Test()
 		{
 			App.WaitForElement("success");
 		}
 	}
 }
+#endif

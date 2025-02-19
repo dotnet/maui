@@ -15,17 +15,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnAndroidWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue51503Test()
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				App.WaitForElementTillPageNavigationSettled("Button");
+				App.WaitForElement("Button");
 
 				App.Tap("Button");
 
-				App.WaitForElementTillPageNavigationSettled("VisualElement");
+				App.WaitForElement("VisualElement");
 
-				App.TapBackArrow();
+				App.Back();
 			}
 		}
 	}

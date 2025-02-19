@@ -17,8 +17,7 @@
                         HeightRequest="44" 
                         StrokeThickness="0"
                         Background="{AppThemeBinding Light={StaticResource LightSecondaryBackground},Dark={StaticResource DarkSecondaryBackground}}" 
-                        Padding="{OnPlatform '18,0,18,8',Android='18,0,18,0'}"
-                        SemanticProperties.Description="{Binding Title}">
+                        Padding="{OnPlatform '18,0,18,8',Android='18,0,18,0'}">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding ToggleTagCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectDetailPageModel}}, x:DataType=pageModels:ProjectDetailPageModel}" CommandParameter="{Binding .}"/>
                         </Border.GestureRecognizers>
@@ -35,8 +34,7 @@
                         HeightRequest="44" 
                         StrokeThickness="0"
                         Background="{Binding DisplayColor}" 
-                        Padding="{OnPlatform '18,0,18,8',Android='18,0,18,0'}"
-                        SemanticProperties.Description="{Binding Title}">
+                        Padding="{OnPlatform '18,0,18,8',Android='18,0,18,0'}">
                 <Border.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding ToggleTagCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProjectDetailPageModel}}, x:DataType=pageModels:ProjectDetailPageModel}" CommandParameter="{Binding .}"/>
                 </Border.GestureRecognizers>

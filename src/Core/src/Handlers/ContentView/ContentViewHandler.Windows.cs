@@ -20,12 +20,10 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			handler.PlatformView.CachedChildren.Clear();
+			handler.PlatformView.Children.Clear();
 
 			if (handler.VirtualView.PresentedContent is IView view)
-			{
-				handler.PlatformView.CachedChildren.Add(view.ToPlatform(handler.MauiContext));
-			}
+				handler.PlatformView.Children.Add(view.ToPlatform(handler.MauiContext));
 		}
 
 		protected override ContentPanel CreatePlatformView()
@@ -51,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(ContentPanel platformView)
 		{
 			platformView.CrossPlatformLayout = null;
-			platformView.CachedChildren?.Clear();
+			platformView.Children?.Clear();
 
 			base.DisconnectHandler(platformView);
 		}

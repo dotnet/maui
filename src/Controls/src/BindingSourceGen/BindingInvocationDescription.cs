@@ -4,17 +4,13 @@ using Microsoft.CodeAnalysis.Text;
 namespace Microsoft.Maui.Controls.BindingSourceGen;
 
 public sealed record BindingInvocationDescription(
-	InterceptableLocationRecord InterceptableLocation,
-	SimpleLocation SimpleLocation,
+	InterceptorLocation Location,
 	TypeDescription SourceType,
 	TypeDescription PropertyType,
 	EquatableArray<IPathPart> Path,
 	SetterOptions SetterOptions,
 	bool NullableContextEnabled,
 	InterceptedMethodType MethodType);
-
-
-public sealed record InterceptableLocationRecord(int Version, string Data);
 
 public sealed record SourceCodeLocation(string FilePath, TextSpan TextSpan, LinePositionSpan LineSpan)
 {
@@ -28,13 +24,13 @@ public sealed record SourceCodeLocation(string FilePath, TextSpan TextSpan, Line
 		return Location.Create(FilePath, TextSpan, LineSpan);
 	}
 
-	public SimpleLocation ToSimpleLocation()
+	public InterceptorLocation ToInterceptorLocation()
 	{
-		return new SimpleLocation(FilePath, LineSpan.Start.Line + 1, LineSpan.Start.Character + 1);
+		return new InterceptorLocation(FilePath, LineSpan.Start.Line + 1, LineSpan.Start.Character + 1);
 	}
 }
 
-public sealed record SimpleLocation(string FilePath, int Line, int Column);
+public sealed record InterceptorLocation(string FilePath, int Line, int Column);
 
 public sealed record TypeDescription(
 	string GlobalName,

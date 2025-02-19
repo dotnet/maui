@@ -1,4 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
+using System;
+using Microsoft.Maui.Graphics.Platform;
+using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
@@ -8,18 +10,6 @@ namespace Microsoft.Maui.Platform
 	internal class WindowRootViewContainer : Panel
 	{
 		FrameworkElement? _topPage;
-		UIElementCollection? _cachedChildren;
-
-		[SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Panel.Children property is banned to enforce use of this CachedChildren property.")]
-		internal UIElementCollection CachedChildren
-		{
-			get
-			{
-				_cachedChildren ??= Children;
-				return _cachedChildren;
-			}
-		}
-
 		protected override Size MeasureOverride(Size availableSize)
 		{
 			var width = availableSize.Width;
@@ -34,7 +24,7 @@ namespace Microsoft.Maui.Platform
 			var size = new Size(width, height);
 
 			// measure the children to fit the container exactly
-			foreach (var child in CachedChildren)
+			foreach (var child in Children)
 			{
 				child.Measure(size);
 			}
@@ -44,7 +34,7 @@ namespace Microsoft.Maui.Platform
 
 		protected override Size ArrangeOverride(Size finalSize)
 		{
-			foreach (var child in CachedChildren)
+			foreach (var child in Children)
 			{
 				child.Arrange(new Rect(new Point(0, 0), finalSize));
 			}
@@ -54,13 +44,13 @@ namespace Microsoft.Maui.Platform
 
 		internal void AddPage(FrameworkElement pageView)
 		{
-			if (!CachedChildren.Contains(pageView))
+			if (!Children.Contains(pageView))
 			{
 				int indexOFTopPage = 0;
 				if (_topPage != null)
-					indexOFTopPage = CachedChildren.IndexOf(_topPage) + 1;
+					indexOFTopPage = Children.IndexOf(_topPage) + 1;
 
-				CachedChildren.Insert(indexOFTopPage, pageView);
+				Children.Insert(indexOFTopPage, pageView);
 				_topPage = pageView;
 			}
 		}
@@ -69,25 +59,25 @@ namespace Microsoft.Maui.Platform
 		{
 			int indexOFTopPage = -1;
 			if (_topPage != null)
-				indexOFTopPage = CachedChildren.IndexOf(_topPage) - 1;
+				indexOFTopPage = Children.IndexOf(_topPage) - 1;
 
-			CachedChildren.Remove(pageView);
+			Children.Remove(pageView);
 
 			if (indexOFTopPage >= 0)
-				_topPage = (FrameworkElement)CachedChildren[indexOFTopPage];
+				_topPage = (FrameworkElement)Children[indexOFTopPage];
 			else
 				_topPage = null;
 		}
 
 		internal void AddOverlay(FrameworkElement overlayView)
 		{
-			if (!CachedChildren.Contains(overlayView))
-				CachedChildren.Add(overlayView);
+			if (!Children.Contains(overlayView))
+				Children.Add(overlayView);
 		}
 
 		internal void RemoveOverlay(FrameworkElement overlayView)
 		{
-			CachedChildren.Remove(overlayView);
+			Children.Remove(overlayView);
 		}
 	}
 }

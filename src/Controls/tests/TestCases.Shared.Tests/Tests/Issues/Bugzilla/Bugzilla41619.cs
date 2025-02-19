@@ -17,9 +17,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void SliderBinding()
 		{
-			App.WaitForElement(Success.ToString());
+			App.WaitForNoElement(Success.ToString());
 		}
 	}
 }

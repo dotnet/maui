@@ -72,6 +72,5 @@ namespace Microsoft.Maui.TestCases.Tests
 		public const string Brush = "Brush";
 		public const string Compatibility = "MovedFromCompatibility";
 		public const string GraphicsView = "GraphicsView";
-		public const string Fonts = "Fonts";
 	}
 }

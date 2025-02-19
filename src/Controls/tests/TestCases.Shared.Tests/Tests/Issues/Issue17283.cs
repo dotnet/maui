@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,6 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Currently fails on Windows; see https://github.com/dotnet/maui/issues/24482")]
+		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot is not implemented on Mac")]
 		public void CarouselViewShouldScrollToRightPosition()
 		{
 			App.WaitForElement("goToLastItemButton");
@@ -25,4 +25,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,21 +21,23 @@ public class Bugzilla59718 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.ListView)]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void Bugzilla59718Test()
 	{
 		App.WaitForElement(Target1);
 		App.Tap(Target1);
 
-		App.WaitForElementTillPageNavigationSettled(Target1b);
+		App.WaitForElement(Target1b);
 
-		App.WaitForElementTillPageNavigationSettled(Target2);
+		App.WaitForElement(Target2);
 		App.Tap(Target2);
 
-		App.WaitForElementTillPageNavigationSettled(Target3);
+		App.WaitForElement(Target3);
 
-		App.WaitForElementTillPageNavigationSettled(GoBackButtonId);
+		App.WaitForElement(GoBackButtonId);
 		App.Tap(GoBackButtonId);
 
-		App.WaitForElementTillPageNavigationSettled(Target1);
+		App.WaitForElement(Target1);
 	}
 }
+#endif

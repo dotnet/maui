@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			PlatformView.CachedChildren.Insert(targetIndex, child.ToPlatform(MauiContext));
+			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
 		}
 
 		public override void SetVirtualView(IView view)
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 
 			PlatformView.CrossPlatformLayout = VirtualView;
 
-			var children = PlatformView.CachedChildren;
+			var children = PlatformView.Children;
 			children.Clear();
 
 			foreach (var child in VirtualView.OrderByZIndex())
@@ -42,13 +42,13 @@ namespace Microsoft.Maui.Handlers
 
 			if (child?.ToPlatform() is UIElement view)
 			{
-				PlatformView.CachedChildren.Remove(view);
+				PlatformView.Children.Remove(view);
 			}
 		}
 
 		public void Clear()
 		{
-			PlatformView?.CachedChildren.Clear();
+			PlatformView?.Children.Clear();
 		}
 
 		public void Insert(int index, IView child)
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			var targetIndex = VirtualView.GetLayoutHandlerIndex(child);
-			PlatformView.CachedChildren.Insert(targetIndex, child.ToPlatform(MauiContext));
+			PlatformView.Children.Insert(targetIndex, child.ToPlatform(MauiContext));
 		}
 
 		public void Update(int index, IView child)
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-			PlatformView.CachedChildren[index] = child.ToPlatform(MauiContext);
+			PlatformView.Children[index] = child.ToPlatform(MauiContext);
 			EnsureZIndexOrder(child);
 		}
 
@@ -98,18 +98,18 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(LayoutPanel platformView)
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its children
-			platformView.CachedChildren.Clear();
+			platformView.Children.Clear();
 			base.DisconnectHandler(platformView);
 		}
 
 		void EnsureZIndexOrder(IView child)
 		{
-			if (PlatformView.CachedChildren.Count == 0)
+			if (PlatformView.Children.Count == 0)
 			{
 				return;
 			}
 
-			var children = PlatformView.CachedChildren;
+			var children = PlatformView.Children;
 			var currentIndex = children.IndexOf(child.ToPlatform(MauiContext!));
 
 			if (currentIndex == -1)

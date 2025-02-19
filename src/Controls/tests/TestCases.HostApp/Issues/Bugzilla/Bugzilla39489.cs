@@ -8,7 +8,7 @@ namespace Maui.Controls.Sample.Issues
 	{
 		protected override void Init()
 		{
-			PushAsync(new Bz39489Root());
+			PushAsync(new Bz39489Content());
 		}
 	}
 
@@ -29,30 +29,6 @@ namespace Maui.Controls.Sample.Issues
 		}
 	}
 
-	public class Bz39489Root : ContentPage
-	{
-		public Bz39489Root()
-		{
-			var button = new Button { AutomationId = "NewPage", Text = "New Page" };
-			var gcbutton = new Button { AutomationId = "GC", Text = "GC" };
-			button.Clicked += Button_Clicked;
-			gcbutton.Clicked += GCbutton_Clicked;
-			Content = new VerticalStackLayout { button, gcbutton };
-		}
-
-		void GCbutton_Clicked(object sender, EventArgs e)
-		{
-			Debug.WriteLine(">>>>>>>> Running Garbage Collection");
-			GarbageCollectionHelper.Collect();
-			Debug.WriteLine($">>>>>>>> GC.GetTotalMemory = {GC.GetTotalMemory(true):n0}");
-		}
-
-		void Button_Clicked(object sender, EventArgs e)
-		{
-			Navigation.PushAsync(new Bz39489Content());
-		}
-	}
-
 
 	public class Bz39489Content : ContentPage
 	{
@@ -61,19 +37,36 @@ namespace Maui.Controls.Sample.Issues
 		public Bz39489Content()
 		{
 			Interlocked.Increment(ref s_count);
-			Debug.WriteLine($">>>>> Bz39489Content: Constructor, count is {s_count}");
+			Debug.WriteLine($">>>>> Bz39489Content Bz39489Content 54: Constructor, count is {s_count}");
 
-			var label = new Label { AutomationId = "StubLabel", Text = "Now press the back button." };
+			var button = new Button { AutomationId = "NewPage", Text = "New Page" };
+
+			var gcbutton = new Button { AutomationId = "GC", Text = "GC" };
 
 			var map = new Bz39489Map();
 
-			Content = new StackLayout { Children = { label, map } };
+			button.Clicked += Button_Clicked;
+			gcbutton.Clicked += GCbutton_Clicked;
+
+			Content = new StackLayout { Children = { button, gcbutton, map } };
+		}
+
+		void GCbutton_Clicked(object sender, EventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine(">>>>>>>> Running Garbage Collection");
+			GarbageCollectionHelper.Collect();
+			System.Diagnostics.Debug.WriteLine($">>>>>>>> GC.GetTotalMemory = {GC.GetTotalMemory(true):n0}");
+		}
+
+		void Button_Clicked(object sender, EventArgs e)
+		{
+			Navigation.PushAsync(new Bz39489Content());
 		}
 
 		~Bz39489Content()
 		{
 			Interlocked.Decrement(ref s_count);
-			Debug.WriteLine($">>>>> Bz39489Content: Destructor, count is {s_count}");
+			Debug.WriteLine($">>>>> Bz39489Content ~Bz39489Content 82: Destructor, count is {s_count}");
 		}
 	}
 }

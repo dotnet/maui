@@ -272,8 +272,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_backgroundDrawable = new GradientDrawable();
 					_backgroundDrawable.SetShape(ShapeType.Rectangle);
 					this.SetBackground(_backgroundDrawable);
-					UpdateBorderColor();
-					UpdateCornerRadius();
 				}
 
 				UpdateBackgroundColor();

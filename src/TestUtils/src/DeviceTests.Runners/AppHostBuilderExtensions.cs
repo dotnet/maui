@@ -1,9 +1,6 @@
 ﻿#nullable enable
-using System;
-using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner;
@@ -16,8 +13,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 		public static MauiAppBuilder ConfigureTests(this MauiAppBuilder appHostBuilder, TestOptions options)
 		{
 			appHostBuilder.Services.AddSingleton(options);
-			appHostBuilder.Logging.AddConsole();
-			// appHostBuilder.Logging.SetMinimumLevel(LogLevel.Debug);
+
 			return appHostBuilder;
 		}
 
@@ -39,8 +35,6 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 					svc.GetRequiredService<HeadlessRunnerOptions>(),
 					svc.GetRequiredService<TestOptions>()));
 #endif
-
-			appHostBuilder.Logging.AddConsole();
 
 			return appHostBuilder;
 		}

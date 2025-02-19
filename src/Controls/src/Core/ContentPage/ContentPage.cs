@@ -1,8 +1,6 @@
 #nullable disable
 
 using System;
-using System.Diagnostics;
-
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Layouts;
@@ -11,7 +9,6 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ContentPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.ContentPage']/Docs/*" />
 	[ContentProperty("Content")]
-	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class ContentPage : TemplatedPage, IContentView, HotReload.IHotReloadableView
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
@@ -149,12 +146,6 @@ namespace Microsoft.Maui.Controls
 		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			return (this as ICrossPlatformLayout).CrossPlatformMeasure(widthConstraint, heightConstraint);
-		}
-
-		private protected override string GetDebuggerDisplay()
-		{
-			var contentText = DebuggerDisplayHelpers.GetDebugText(nameof(Content), Content);
-			return $"{base.GetDebuggerDisplay()}, {contentText}";
 		}
 	}
 }

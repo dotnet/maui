@@ -37,8 +37,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			this XmlType xmlType,
 			IEnumerable<XmlnsDefinitionAttribute> xmlnsDefinitions,
 			string defaultAssemblyName,
-			Func<(string typeName, string clrNamespace, string assemblyName), T> refFromTypeInfo,
-			bool expandToExtension = true)
+			Func<(string typeName, string clrNamespace, string assemblyName), T> refFromTypeInfo)
 			where T : class
 		{
 			var lookupAssemblies = new List<XmlnsDefinitionAttribute>();
@@ -62,7 +61,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			var lookupNames = new List<string>(capacity: 2);
-			if (expandToExtension && elementName != "DataTemplate" && !elementName.EndsWith("Extension", StringComparison.Ordinal))
+			if (elementName != "DataTemplate" && !elementName.EndsWith("Extension", StringComparison.Ordinal))
 				lookupNames.Add(elementName + "Extension");
 			lookupNames.Add(elementName);
 

@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // The ViewCell in TableView does not resize on iOS and MacCatalyst.More Information:https://github.com/dotnet/maui/issues/23319
+﻿#if IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -16,11 +16,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.TabbedPage)]
 		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void Issue2842Test()
 		{
 			App.WaitForElement("btnClick");
 			App.Tap("btnClick");
-			VerifyScreenshot();
+			App.Screenshot("Verify that the text is not on top of the image");
 		}
 	}
 }

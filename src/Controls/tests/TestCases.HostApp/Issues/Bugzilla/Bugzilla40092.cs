@@ -1,4 +1,3 @@
-using Microsoft.Maui.Layouts;
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -32,10 +31,7 @@ public class Bugzilla40092 : TestContentPage
 			AutomationId = Black
 		};
 
-		mainLayout.Children.Add(view);
-		AbsoluteLayout.SetLayoutBounds(view, new Rect(0, 0, 1, 1));
-		AbsoluteLayout.SetLayoutFlags(view, AbsoluteLayoutFlags.All);
-
+		mainLayout.Add(view);
 		Content = thePage;
 
 	}

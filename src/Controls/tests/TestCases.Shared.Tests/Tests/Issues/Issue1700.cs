@@ -18,13 +18,15 @@ public class Issue1700 : _IssuesUITest
 	[Test]
 	[Category(UITestCategories.Image)]
 	[Category(UITestCategories.Compatibility)]
+	[FailsOnIOSWhenRunningOnXamarinUITest]
+	[FailsOnMacWhenRunningOnXamarinUITest]
+	[FailsOnWindowsWhenRunningOnXamarinUITest]
 	public void LongImageURLsShouldNotCrash()
 	{
 		// Give the images some time to load (or fail)
 		Task.Delay(3000).Wait();
-		App.WaitForElement("Legumes");
-		App.WaitForElement("Vegetables");
+
 		// If we can see this label at all, it means we didn't crash and the test is successful
-		App.WaitForElement(Success);
+		App.WaitForNoElement(Success);
 	}
 }

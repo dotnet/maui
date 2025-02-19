@@ -16,11 +16,10 @@ namespace Microsoft.Maui.IntegrationTests.Android
 			{
 				TestContext.WriteLine($"Waiting {currentWaitTime}/{timeout} seconds for the emulator to boot up...");
 				var adbOutput = RunForOutput(GetArgs("shell getprop sys.boot_completed", deviceId), out _);
-				TestContext.WriteLine($"sys.boot_completed: {adbOutput}");
 				int.TryParse(adbOutput, out int bootCompletedPropValue);
 				bootCompleted = bootCompletedPropValue == 1;
-				Thread.Sleep(10000);
-				currentWaitTime += 10;
+				Thread.Sleep(3000);
+				currentWaitTime += 3;
 			}
 			return bootCompleted;
 		}

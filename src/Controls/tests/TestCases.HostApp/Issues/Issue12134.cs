@@ -4,7 +4,7 @@ namespace Maui.Controls.Sample.Issues
 {
 
 	[Issue(IssueTracker.Github, 12134, "[iOS] WkWebView does not handle cookies consistently",
-		PlatformAffected.iOS, isInternetRequired: true)]
+		PlatformAffected.iOS)]
 	public class Issue12134 : TestContentPage
 	{
 		Button button;

@@ -25,15 +25,9 @@ internal static class AssertExtensions
 		AssertNoDiagnostics(codeGeneratorResult);
 		Assert.NotNull(codeGeneratorResult.Binding);
 
-		// Skip interceptable location
-		Assert.Equal(expectedBinding.SimpleLocation, codeGeneratorResult.Binding.SimpleLocation);
-		Assert.Equal(expectedBinding.SourceType, codeGeneratorResult.Binding.SourceType);
-		Assert.Equal(expectedBinding.PropertyType, codeGeneratorResult.Binding.PropertyType);
+		//TODO: Change arrays to custom collections implementing IEquatable
 		Assert.Equal(expectedBinding.Path, codeGeneratorResult.Binding.Path);
-		Assert.Equal(expectedBinding.SetterOptions, codeGeneratorResult.Binding.SetterOptions);
-		Assert.Equal(expectedBinding.NullableContextEnabled, codeGeneratorResult.Binding.NullableContextEnabled);
-		Assert.Equal(expectedBinding.MethodType, codeGeneratorResult.Binding.MethodType);
-
+		Assert.Equal(expectedBinding, codeGeneratorResult.Binding);
 	}
 
 	private static IEnumerable<string> SplitCode(string code)

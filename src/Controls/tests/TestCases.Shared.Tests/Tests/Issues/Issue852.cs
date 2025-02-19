@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,19 +17,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
+		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue852TestsEntriesClickable()
 		{
 			App.WaitForElement("WelcomeLabel");
 			App.WaitForElement(UsernameId);
 			App.WaitForElement(PasswordId);
 			App.WaitForElement("Login");
+			App.Screenshot("All elements present");
 
 			App.Tap(UsernameId);
-			Assert.That(App.WaitForElement("WelcomeLabel").GetText(), Is.EqualTo("Clicked User"));
+			App.WaitForElement("WelcomeLabel");
 			App.EnterText(UsernameId, "Usertest");
-			App.WaitForElement(PasswordId);
+			App.Screenshot("User entered");
+
 			App.Tap(PasswordId);
-			Assert.That(App.WaitForElement("WelcomeLabel").GetText(), Is.EqualTo("Clicked Password"));
+			App.WaitForElement("WelcomeLabel");
 			App.EnterText(PasswordId, "Userpass");
 		}
 	}

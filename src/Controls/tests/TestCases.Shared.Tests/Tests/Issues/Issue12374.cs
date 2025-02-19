@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // EmptyView is not accessible through the test framework on Windows.
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,17 +14,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
+		[Category(UITestCategories.Compatibility)]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue12374Test()
 		{
 			App.WaitForElement("TestReady");
-			App.WaitForElement("RemoveItems");
 			App.Tap("RemoveItems");
-			App.WaitForElement("AddItems");
 			App.Tap("AddItems");
-			App.WaitForElement("RemoveItems");
 			App.Tap("RemoveItems");
-			App.WaitForElement("Empty View");
+			App.Screenshot("CollectionViewWithEmptyView");
 		}
 	}
 }
-#endif

@@ -1,4 +1,4 @@
-﻿#if ANDROID //This test case verifies "The background property of AppCompatEditText (Editor) works" exclusively on the Android platform.
+﻿#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

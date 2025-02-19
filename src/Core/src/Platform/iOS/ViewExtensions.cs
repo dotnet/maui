@@ -212,11 +212,21 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateShadow(this UIView platformView, IView view)
 		{
 			var shadow = view.Shadow;
+			var clip = view.Clip;
 
-			if (shadow == null)
-				platformView.ClearShadow();
+			// If there is a clip shape, then the shadow should be applied to the clip layer, not the view layer
+			if (clip == null)
+			{
+				if (shadow == null)
+					platformView.ClearShadow();
+				else
+					platformView.SetShadow(shadow);
+			}
 			else
-				platformView.SetShadow(shadow);
+			{
+				if (platformView is WrapperView wrapperView)
+					wrapperView.Shadow = view.Shadow;
+			}
 		}
 
 		[Obsolete("IBorder is not used and will be removed in a future release.")]
@@ -935,7 +945,5 @@ namespace Microsoft.Maui.Platform
 		internal static bool ShowSoftInput(this UIView inputView) => inputView.BecomeFirstResponder();
 
 		internal static bool IsSoftInputShowing(this UIView inputView) => inputView.IsFirstResponder;
-
-		internal static bool IsFinalMeasureHandledBySuperView(this UIView? view) => view?.Superview is ICrossPlatformLayoutBacking { CrossPlatformLayout: not null };
 	}
 }

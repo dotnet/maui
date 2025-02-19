@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,10 +17,10 @@ public class Issue21437 : _IssuesUITest
 	[Category(UITestCategories.Gestures)]
 	public void ExceptionShouldNotBeThrown()
 	{
-		App.WaitForElement("Item2");
-		App.DoubleTap("Item2");
-		App.WaitForNoElement("Item2");
+		_ = App.WaitForElement("Item2");
+		App.DoubleClick("Item2");
 
 		//The test passes if no exception is thrown
 	}
 }
+#endif

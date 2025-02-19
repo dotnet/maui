@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS
-//The WidthRequest property of CarouselView is not functioning correctly on Windows. Issue Link: https://github.com/dotnet/maui/issues/27680
+﻿#if !WINDOWS
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;

@@ -16,71 +16,46 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void SetupContainer()
 		{
-			if (PlatformView is null || ContainerView is not null)
-			{
+			if (PlatformView == null || ContainerView != null)
 				return;
-			}
 
-#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. MauiPanel might not be used everywhere though.
-			var oldParentChildren = PlatformView.Parent is MauiPanel mauiPanel
-				? mauiPanel.CachedChildren
-				: (PlatformView.Parent as Panel)?.Children;
-#pragma warning restore RS0030 // Do not use banned APIs
-
-			var oldIndex = oldParentChildren?.IndexOf(PlatformView);
-
+			var oldParent = (Panel?)PlatformView.Parent;
+			var oldIndex = oldParent?.Children.IndexOf(PlatformView);
 			if (oldIndex is int oldIdx && oldIdx >= 0)
-			{
-				oldParentChildren?.RemoveAt(oldIdx);
-			}
+				oldParent?.Children.RemoveAt(oldIdx);
 
 			ContainerView ??= new WrapperView();
 			((WrapperView)ContainerView).Child = PlatformView;
 
 			if (oldIndex is int idx && idx >= 0)
-			{
-				oldParentChildren?.Insert(idx, ContainerView);
-			}
+				oldParent?.Children.Insert(idx, ContainerView);
 			else
-			{
-				oldParentChildren?.Add(ContainerView);
-			}
+				oldParent?.Children.Add(ContainerView);
 		}
 
 		protected override void RemoveContainer()
 		{
-			if (PlatformView is null || ContainerView is null || PlatformView.Parent != ContainerView)
+			if (PlatformView == null || ContainerView == null || PlatformView.Parent != ContainerView)
 			{
 				CleanupContainerView(ContainerView);
 				ContainerView = null;
 				return;
 			}
 
-#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. MauiPanel might not be used everywhere though.
-			var oldParentChildren = PlatformView.Parent is MauiPanel mauiPanel
-				? mauiPanel.CachedChildren
-				: (PlatformView.Parent as Panel)?.Children;
-#pragma warning restore RS0030 // Do not use banned APIs
-
-			var oldIndex = oldParentChildren?.IndexOf(ContainerView);
+			var oldParent = (Panel?)ContainerView.Parent;
+			var oldIndex = oldParent?.Children.IndexOf(ContainerView);
 			if (oldIndex is int oldIdx && oldIdx >= 0)
-			{
-				oldParentChildren?.RemoveAt(oldIdx);
-			}
+				oldParent?.Children.RemoveAt(oldIdx);
 
 			CleanupContainerView(ContainerView);
 			ContainerView = null;
 
 			if (oldIndex is int idx && idx >= 0)
-			{
-				oldParentChildren?.Insert(idx, PlatformView);
-			}
+				oldParent?.Children.Insert(idx, PlatformView);
 			else
-			{
-				oldParentChildren?.Add(PlatformView);
-			}
+				oldParent?.Children.Add(PlatformView);
 
-			static void CleanupContainerView(FrameworkElement? containerView)
+			void CleanupContainerView(FrameworkElement? containerView)
 			{
 				if (containerView is WrapperView wrapperView)
 				{

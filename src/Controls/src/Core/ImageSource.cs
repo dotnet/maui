@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 	[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 	public abstract partial class ImageSource : Element
 	{
-		readonly SemaphoreSlim _cancellationTokenSourceLock = new(1, 1);
+		readonly object _synchandle = new object();
 		CancellationTokenSource _cancellationTokenSource;
 
 		TaskCompletionSource<bool> _completionSource;
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls
 			return FromUri(uri);
 		}
 
-		private protected async Task OnLoadingCompleted(bool cancelled)
+		private protected void OnLoadingCompleted(bool cancelled)
 		{
 			if (!IsLoading || _completionSource == null)
 				return;
@@ -130,27 +130,17 @@ namespace Microsoft.Maui.Controls
 			if (tcs != null)
 				tcs.SetResult(cancelled);
 
-			await _cancellationTokenSourceLock.WaitAsync();
-			try
+			lock (_synchandle)
 			{
 				CancellationTokenSource = null;
 			}
-			finally
-			{
-				_cancellationTokenSourceLock.Release();
-			}
 		}
 
-		private protected async Task OnLoadingStarted()
+		private protected void OnLoadingStarted()
 		{
-			await _cancellationTokenSourceLock.WaitAsync();
-			try
+			lock (_synchandle)
 			{
 				CancellationTokenSource = new CancellationTokenSource();
-			}
-			finally
-			{
-				_cancellationTokenSourceLock.Release();
 			}
 		}
 

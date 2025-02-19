@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class KeyboardScrollingGridTests : CoreGalleryBasePageTest
+	public class KeyboardScrollingGridTests : UITest
 	{
 		const string KeyboardScrollingGallery = "Keyboard Scrolling Gallery - Grid with Star Row";
 		
@@ -13,8 +13,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void NavigateToGallery()
+		protected override void FixtureSetup()
 		{
+			base.FixtureSetup();
 			App.NavigateToGallery(KeyboardScrollingGallery);
 		}
 
