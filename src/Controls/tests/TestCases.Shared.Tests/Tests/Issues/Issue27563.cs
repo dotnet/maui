@@ -16,7 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CarouselView)]
 		public void VerifyCarouselViewScrolling()
 		{
-			App.WaitForElement("PositionButton");
+			App.WaitForElement("carouselview");
+			App.SwipeRightToLeft("carouselview");
+			App.WaitForElement("Actual View");
+
 			App.Tap("PositionButton");
 
 			VerifyScreenshot();
