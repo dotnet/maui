@@ -20,19 +20,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static ALayoutDirection ToLayoutDirection(this FlowDirection direction)
-		{
-			switch (direction)
-			{
-				case FlowDirection.LeftToRight:
-					return ALayoutDirection.Ltr;
-				case FlowDirection.RightToLeft:
-					return ALayoutDirection.Rtl;
-				default:
-					return ALayoutDirection.Inherit;
-			}
-		}
-
 		internal static ATextDirection ToTextDirection(this ALayoutDirection direction)
 		{
 			switch (direction)
