@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using ImageMagick;
 using NUnit.Framework;
 using UITest.Appium;
@@ -102,6 +102,43 @@ namespace Microsoft.Maui.TestCases.Tests
 		public override void Reset()
 		{
 			App.ResetApp();
+		}
+
+		/// <summary>
+		/// Verifies the screenshots and returns an exception in case of failure.
+		/// </summary>
+		/// <remarks>
+		/// This is especially useful when capturing multiple screenshots in a single UI test.
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Exception? exception = null;
+		/// VerifyScreenshotOrSetException(ref exception, "MyScreenshotName");
+		/// VerifyScreenshotOrSetException(ref exception, "MyOtherScreenshotName");
+		/// if (exception is not null) throw exception;
+		/// </code>
+		/// </example>
+		public void VerifyScreenshotOrSetException(
+			ref Exception? exception,
+			string? name = null,
+			TimeSpan? retryDelay = null
+#if MACUITEST || WINTEST
+			, bool includeTitleBar = false
+#endif
+			)
+		{
+			try
+			{
+				VerifyScreenshot(name, retryDelay
+#if MACUITEST || WINTEST
+				, includeTitleBar
+#endif
+				);
+			}
+			catch (Exception ex)
+			{
+				exception ??= ex;
+			}
 		}
 
 		public void VerifyScreenshot(
@@ -248,6 +285,19 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 
 				_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+			}
+		}
+
+		protected void VerifyInternetConnectivity()
+		{
+			try
+			{
+				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(30));
+				Assert.Inconclusive("This device doesn't have internet access");
+			}
+			catch (TimeoutException)
+			{
+				// Continue with the test
 			}
 		}
 
