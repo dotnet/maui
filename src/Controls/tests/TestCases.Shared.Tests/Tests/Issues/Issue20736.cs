@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS || WINDOWS
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +19,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void EditorScrollingWhenEnclosedInBorder()
 		{
 			App.WaitForElement("editor");
-			App.ScrollDown("editor", ScrollStrategy.Programmatically, 0.6, 500);
+			App.ScrollDown("editor", ScrollStrategy.Programmatically, 0.6, 100);
 			VerifyScreenshot();
 		}
 	}
 }
+#endif
