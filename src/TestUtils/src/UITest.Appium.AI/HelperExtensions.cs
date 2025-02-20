@@ -162,6 +162,11 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		/// <summary>
+		/// Performs a continuous touch gesture on the matched element using AI.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
 		public static async Task TouchAndHoldWithAI(this IApp app, string prompt)
 		{
 			var elementToTouchAndHold = await FindElementWithAI(app, prompt);
@@ -175,6 +180,13 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		/// <summary>
+		/// Performs a pinch gestures on the matched element using AI to zoom the view in. 
+		/// If multiple elements are matched, the first one will be used.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
+		/// <param name="duration">The TimeSpan duration of the pinch gesture.</param>
 		public static async Task PinchToZoomInWithAI(this IApp app, string prompt, TimeSpan? duration = null)
 		{
 			var elementToPinchToZoomIn = await FindElementWithAI(app, prompt);
@@ -189,6 +201,13 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		/// <summary>
+		/// Performs a pinch gestures on the matched element using AI to zoom the view out. 
+		/// If multiple elements are matched, the first one will be used.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
+		/// <param name="duration">The TimeSpan duration of the pinch gesture.</param>
 		public static async Task PinchToZoomOutWithAI(this IApp app, string prompt, TimeSpan? duration = null)
 		{
 			var elementToPinchToZoomOut = await FindElementWithAI(app, prompt);
@@ -203,6 +222,15 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		/// <summary>
+		/// Performs a left to right swipe gesture on the matching element using AI. 
+		/// If multiple elements are matched, the first one will be used.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static async Task SwipeLeftToRightWithAI(this IApp app, string prompt, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			var elementToSwipe = await FindElementWithAI(app, prompt);
@@ -219,6 +247,14 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		/// <summary>
+		///  Performs a right to left swipe gesture on the matching element using AI. 
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static async Task SwipeRightToLeftWithAI(this IApp app, string prompt, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			var elementToSwipe = await FindElementWithAI(app, prompt);
@@ -235,6 +271,15 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		/// <summary>
+		/// Scrolls left on the first matching element using AI. 
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static async Task ScrollLeftWithAI(this IApp app, string prompt, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			var elementToScroll = await FindElementWithAI(app, prompt);
@@ -252,6 +297,15 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		/// <summary>
+		/// Scrolls down on the first matching element using AI. 
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static async Task ScrollDownWithAI(this IApp app, string prompt, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			var elementToScroll = await FindElementWithAI(app, prompt);
@@ -269,6 +323,15 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		/// <summary>
+		/// Scrolls right on the first matching element using AI. 
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static async Task ScrollRightWithAI(this IApp app, string prompt, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			var elementToScroll = await FindElementWithAI(app, prompt);
@@ -286,6 +349,15 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		/// <summary>
+		/// Scrolls up on the first matching element using AI. 
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
 		public static async Task ScrollUpWithAI(this IApp app, string prompt, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			var elementToScroll = await FindElementWithAI(app, prompt);
@@ -303,6 +375,14 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		/// <summary>
+		/// Sets the value of a Slider element that matches prompt using AI.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
+		/// <param name="value">The value to set the Slider to.</param>
+		/// <param name="minimum">Te minimum selectable value for the Slider.</param>
+		/// <param name="maximum">Te maximum selectable value for the Slider.</param>
 		public static async Task SetSliderValueWithAI(this IApp app, string prompt, double value, double minimum = 0d, double maximum = 1d)
 		{
 			var element = await FindElementWithAI(app, prompt);
@@ -319,6 +399,16 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		/// <summary>
+		/// Wait function that will repeatedly query the app until a matching element using AI is found. 
+		/// Throws a TimeoutException if no element is found within the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
+		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
 		public static async Task<IUIElement> WaitForElementWithAI(this IApp app, string prompt, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			Task<IUIElement?> result() => app.FindElementWithAI(prompt);
@@ -328,12 +418,31 @@ namespace UITest.Appium.AI
 			return results;
 		}
 
+		/// <summary>
+		/// Wait function that will repeatedly query the app until a matching element using AI is no longer found. 
+		/// Throws a TimeoutException if the element is visible at the end of the time limit.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
+		/// <param name="timeoutMessage">The message used in the TimeoutException.</param>
+		/// <param name="timeout">The TimeSpan to wait before failing.</param>
+		/// <param name="retryFrequency">The TimeSpan to wait between each query call to the app.</param>
+		/// <param name="postTimeout">The final TimeSpan to wait after the element has been found.</param>
 		public static async Task WaitForNoElementWithAI(this IApp app, string prompt, string timeoutMessage = "Timed out waiting for no element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
 			Task<IUIElement?> result() => app.FindElementWithAI(prompt);
 			await WaitForNone(result, timeoutMessage, timeout, retryFrequency);
 		}
 
+		/// <summary>
+		/// Verifies that the provided screenshot matches the reference screenshot using AI.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="app">The application instance where the screenshots are taken.</param>
+		/// <param name="snapshot">The current screenshot to be verified.</param>
+		/// <param name="referenceSnapshot">The reference screenshot to compare against.</param>
+		/// <param name="prompt">An optional AI prompt to assist in the verification process.</param>
+		/// <returns>Returns true if the snapshots are equals.</returns>
 		public static async Task<bool> VerifyScreenshotWithAI(this IApp app, BinaryData snapshot, BinaryData referenceSnapshot, string? prompt = null)
 		{
 			var chatClient = app.GetChatClient();
