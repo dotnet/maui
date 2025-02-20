@@ -346,7 +346,7 @@ namespace Microsoft.Maui.Storage
 			}
 
 			if (cursor is not null && !cursor.IsClosed)
-			   cursor.Close();
+				cursor.Close();
 
 			return text;
 		}

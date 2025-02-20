@@ -1,6 +1,6 @@
 {
   "author": "Майкрософт",
-  "name": "Библиотека классов .NET MAUI",
+  "name": ".NET MAUI Class Library",
   "description": "Проект по созданию библиотеки классов .NET MAUI",
   "postActions/openInEditor/description": "Открывает файл Class1.cs в редакторе.",
   "symbols/Framework/description": "Целевая платформа для проекта.",
