@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": "Hybridní a webová aplikace .NET MAUI Blazor",
+  "name": ".NET MAUI Blazor Hybrid and Web App",
   "description": "Víceprojektová aplikace pro vytvoření hybridní aplikace .NET MAUI Blazor s webovým projektem Blazor se sdíleným uživatelským rozhraním",
   "postActions/openInEditor/description": "Otevře SharedPages/Home.razor v editoru.",
   "symbols/applicationId/description": "Přepíše v projektu $(ApplicationId).",
