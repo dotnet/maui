@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿// On iOS, this test fails because the Picker's focus behavior differs from other platforms.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 

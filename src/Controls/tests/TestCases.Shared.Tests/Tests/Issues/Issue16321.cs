@@ -1,4 +1,4 @@
-#if IOS
+#if IOS // This test case is specifically written for iOS and will only be executed on iOS platforms.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
