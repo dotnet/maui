@@ -398,7 +398,7 @@ public class PlatformInterop {
     }
 
     public static ColorStateList getColorStateListForToolbarStyleableAttribute(Context context, int resId, int index) {
-        TintTypedArray styledAttributes = TintTypedArray.obtainStyledAttributes(context, null, R.styleable.Toolbar, resId, 0);
+        TintTypedArray styledAttributes = TintTypedArray.obtainStyledAttributes(context, null, androidx.appcompat.R.styleable.Toolbar, resId, 0);
         try {
             return styledAttributes.getColorStateList(index);
         } finally {
