@@ -24,8 +24,6 @@ namespace Microsoft.Maui.Controls.Platform
 		VisualElement? _element;
 		TappedEventHandler? _tappedEventHandler;
 		DoubleTappedEventHandler? _doubleTappedEventHandler;
-		DragGestureRecognizer? dragGesture;
-		DropGestureRecognizer? dropGesture;
 		SubscriptionFlags _subscriptionFlags = SubscriptionFlags.None;
 
 		bool _isDisposed;
@@ -407,6 +405,14 @@ namespace Microsoft.Maui.Controls.Platform
 					_container.ManipulationCompleted -= OnManipulationCompleted;
 					_container.PointerCanceled -= OnPointerCanceled;
 				}
+
+				if (Element is View && ElementGestureRecognizers is { } gestureRecognizers)
+				{
+					if (gestureRecognizers.FirstGestureOrDefault<DragGestureRecognizer>() is { } dragGesture)
+						dragGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+					if (gestureRecognizers.FirstGestureOrDefault<DropGestureRecognizer>() is { } dropGesture)
+						dropGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+				}
 			}
 		}
 
@@ -426,13 +432,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			ClearContainerEventHandlers();
 
-			if (dragGesture is not null)
-				dragGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
 
-			if (dropGesture is not null)
-				dropGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
-
-			if (_element is View && ElementGestureRecognizers is { } gestureRecognizers)
+			if (_element is View && ElementGestureRecognizers is {} gestureRecognizers)
 			{
 				gestureRecognizers.CollectionChanged -= _collectionChangedHandler;
 			}
@@ -829,32 +830,36 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			dragGesture = gestures.FirstGestureOrDefault<DragGestureRecognizer>();
-			dropGesture = gestures.FirstGestureOrDefault<DropGestureRecognizer>();
+			DragGestureRecognizer? dragGesture = gestures.FirstGestureOrDefault<DragGestureRecognizer>();
+			DropGestureRecognizer? dropGesture = gestures.FirstGestureOrDefault<DropGestureRecognizer>();
 
 			if (dragGesture is not null)
+			{
+				dragGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
 				dragGesture.PropertyChanged += HandleDragAndDropGesturePropertyChanged;
 
-			if (dropGesture is not null)
-				dropGesture.PropertyChanged += HandleDragAndDropGesturePropertyChanged;
-
-			if (dragGesture is not null && dragGesture.CanDrag && ((_subscriptionFlags & SubscriptionFlags.ContainerDragEventsSubscribed) == 0))
-			{
-				_subscriptionFlags |= SubscriptionFlags.ContainerDragEventsSubscribed;
-
-				_container.CanDrag = true;
-				_container.DragStarting += HandleDragStarting;
-				_container.DropCompleted += HandleDropCompleted;
+				if (dragGesture.CanDrag && ((_subscriptionFlags & SubscriptionFlags.ContainerDragEventsSubscribed) == 0))
+				{
+					_subscriptionFlags |= SubscriptionFlags.ContainerDragEventsSubscribed;
+					_container.CanDrag = true;
+					_container.DragStarting += HandleDragStarting;
+					_container.DropCompleted += HandleDropCompleted;
+				}
 			}
 
-			if (dropGesture is not null && dropGesture.AllowDrop && ((_subscriptionFlags & SubscriptionFlags.ContainerDropEventsSubscribed) == 0))
+			if (dropGesture is not null)
 			{
-				_subscriptionFlags |= SubscriptionFlags.ContainerDropEventsSubscribed;
+				dropGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+				dropGesture.PropertyChanged += HandleDragAndDropGesturePropertyChanged;
 
-				_container.AllowDrop = true;
-				_container.DragOver += HandleDragOver;
-				_container.Drop += HandleDrop;
-				_container.DragLeave += HandleDragLeave;
+				if (dropGesture.AllowDrop && ((_subscriptionFlags & SubscriptionFlags.ContainerDropEventsSubscribed) == 0))
+				{
+					_subscriptionFlags |= SubscriptionFlags.ContainerDropEventsSubscribed;
+					_container.AllowDrop = true;
+					_container.DragOver += HandleDragOver;
+					_container.Drop += HandleDrop;
+					_container.DragLeave += HandleDragLeave;
+				}
 			}
 		}
 
