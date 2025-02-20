@@ -1,5 +1,4 @@
-﻿// This test fails on iOS, Android, and Mac because ListView.ItemsSource behaves differently across platforms.
-// On iOS and Android and Mac, ItemsSource updates may not trigger an immediate UI refresh
+﻿// This test fails on Android because the app crashes on the Android platform.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -20,12 +19,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public async Task BindingToValuesTypesAndScrollingNoCrash()
 		{
-			await Task.Delay(4000);
-			App.WaitForNoElement(Success);
+			await Task.Delay(5000);
+			App.WaitForElement(Success);
 		}
 	}
 }

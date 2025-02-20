@@ -1,4 +1,4 @@
-﻿// On iOS, this test fails because the Picker's focus behavior differs from other platforms.
+﻿// On Mac, this test fails because the Picker's focus behavior differs from other platforms.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -16,17 +16,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Picker)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnMacWhenRunningOnXamarinUITest("Focus Behavior is different")]
 		public void FocusAndUnFocusMultipleTimes()
 		{
 			App.WaitForElement("btnFocusThenUnFocus");
 			App.Tap("btnFocusThenUnFocus");
-			App.WaitForNoElement("Picker Focused: 1");
-			App.WaitForNoElement("Picker UnFocused: 1");
-			App.Back();
+			App.WaitForElement("Picker Focused: 1");
+			App.WaitForElement("Picker UnFocused: 1");
 			App.Tap("btnFocusThenUnFocus");
-			App.WaitForNoElement("Picker Focused: 2");
-			App.WaitForNoElement("Picker UnFocused: 2");
+			App.WaitForElement("Picker Focused: 2");
+			App.WaitForElement("Picker UnFocused: 2");
 		}
 	}
 }
