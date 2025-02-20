@@ -28,12 +28,22 @@ namespace UITest.Appium.AI
 		- Do not include any explanations of your choices.
 		- Reply simply with the boolean in JSON format with the following keys: equals.";
 
+		/// <summary>
+		/// Performs a mouse click on the matched element using AI.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
 		public static async Task ClickWithAI(this IApp app, string prompt)
 		{
 			var element = await FindElementWithAI(app, prompt);
 			element?.Click();
 		}
 
+		/// <summary>
+		/// Performs a mouse double click on the matched element using AI.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
 		public static async Task DoubleClickWithAI(this IApp app, string prompt)
 		{
 			var elementToDoubleClick = await FindElementWithAI(app, prompt);
