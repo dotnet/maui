@@ -40,12 +40,12 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-		void SetTImePickerToNull(object sender, EventArgs e)
+		void SetTimePickerToNull(object sender, EventArgs e)
 		{
 			NullTimePicker.Time = null;
 		}
 
-		void SetTimePickerToToday(object sender, EventArgs e)
+		void SetTimePickerToNow(object sender, EventArgs e)
 		{
 			NullTimePicker.Time = DateTime.Now.TimeOfDay;
 		}

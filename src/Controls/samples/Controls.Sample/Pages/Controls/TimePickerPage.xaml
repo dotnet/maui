@@ -94,7 +94,7 @@
                 x:Name="NullTimePicker"
                 Time="{x:Null}"/>
             <Button Text="Set to null" Clicked="SetTimePickerToNull" />
-            <Button Text="Set to now" Clicked="SetTImePickerToNow" />
+            <Button Text="Set to now" Clicked="SetTimePickerToNow" />
     </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
