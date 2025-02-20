@@ -1706,7 +1706,6 @@ Microsoft.Maui.Platform.MauiTimePicker
 Microsoft.Maui.Platform.MauiTimePicker.Date.get -> Foundation.NSDate!
 Microsoft.Maui.Platform.MauiTimePicker.MauiTimePicker() -> void
 Microsoft.Maui.Platform.MauiTimePicker.Picker.get -> UIKit.UIDatePicker!
-Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan time) -> void
 Microsoft.Maui.Platform.MauiView
 Microsoft.Maui.Platform.MauiView.AdjustForSafeArea(CoreGraphics.CGRect bounds) -> CoreGraphics.CGRect
 Microsoft.Maui.Platform.MauiView.CacheMeasureConstraints(double widthConstraint, double heightConstraint) -> void
