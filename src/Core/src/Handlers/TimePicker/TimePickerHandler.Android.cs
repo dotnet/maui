@@ -87,25 +87,29 @@ namespace Microsoft.Maui.Handlers
 
 		void ShowPickerDialog()
 		{
-			if (VirtualView == null)
+			if (VirtualView is null)
+			{
 				return;
+			}
 
-			var time = VirtualView.Time;
-			ShowPickerDialog(time.Hours, time.Minutes);
+			ShowPickerDialog(VirtualView.Time);
 		}
 
 		// This overload is here so we can pass in the current values from the dialog 
 		// on an orientation change (so that orientation changes don't cause the user's date selection progress
 		// to be lost). Not useful until we have orientation changed events.
-		void ShowPickerDialog(int hour, int minute)
+		void ShowPickerDialog(TimeSpan? time)
 		{
+			var hour = time?.Hours ?? 0;
+			var minute = time?.Minutes ?? 0;
+
 			_dialog = CreateTimePickerDialog(hour, minute);
 			_dialog.Show();
 		}
 
 		void HidePickerDialog()
 		{
-			if (_dialog != null)
+			if (_dialog is not null)
 			{
 				_dialog.Hide();
 			}

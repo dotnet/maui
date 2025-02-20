@@ -101,3 +101,5 @@ virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKi
 virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
 virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
 virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
+*REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
+Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
