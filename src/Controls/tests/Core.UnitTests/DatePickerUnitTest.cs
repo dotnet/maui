@@ -21,6 +21,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void TestMinimumDateNull()
+		{
+			DatePicker picker = new DatePicker();
+
+			picker.MinimumDate = null;
+
+			Assert.Null(picker.MinimumDate);
+		}
+
+		[Fact]
 		public void TestMaximumDate()
 		{
 			DatePicker picker = new DatePicker();
@@ -31,6 +41,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			picker.MaximumDate = new DateTime(1800, 1, 1);
 			Assert.Equal(new DateTime(2050, 1, 1), picker.MaximumDate);
+		}
+
+		[Fact]
+		public void TestMaximumDateNull()
+		{
+			DatePicker picker = new DatePicker();
+
+			picker.MaximumDate = null;
+
+			Assert.Null(picker.MaximumDate);
 		}
 
 		[Fact]
@@ -154,8 +174,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			datePicker.Date = initialDate;
 
 			DatePicker pickerFromSender = null;
-			DateTime oldDate = new DateTime();
-			DateTime newDate = new DateTime();
+			DateTime? oldDate = new DateTime();
+			DateTime? newDate = new DateTime();
 
 			datePicker.DateSelected += (s, e) =>
 			{
@@ -177,7 +197,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var datePicker = new DatePicker();
 			datePicker.SetValue(DatePicker.DateProperty, null);
-			Assert.Equal(DateTime.Today, datePicker.Date);
+			Assert.Null(datePicker.Date);
 		}
 
 		[Fact]
@@ -191,7 +211,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/5784
+		//https://github.com/xamarin/Xamarin.Forms/issues/5784
 		public void SetMaxAndMinDateTimeToNow()
 		{
 			var datePicker = new DatePicker();
