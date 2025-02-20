@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls
 
 		void RefreshBarBackground()
 		{
-			if(Handler?.PlatformView is MaterialToolbar materialToolbar)
+			if (Handler?.PlatformView is MaterialToolbar materialToolbar)
 			{
 				materialToolbar.UpdateBarBackground(this);
 			}
