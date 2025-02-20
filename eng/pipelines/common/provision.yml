@@ -117,8 +117,7 @@ steps:
         # Set ANDROID_SDK_ROOT and ANDROID_HOME paths
         # Execute the command and capture the JSON output
         dotnet android sdk info
-        ls /usr/local/lib/android/sdk/cmdline-tools
-        cat /usr/local/lib/android/sdk/cmdline-tools/latest/source.properties
+        rm -rf /usr/local/lib/android/sdk/cmdline-tools/latest
         $jsonOutput = & dotnet android sdk info --format=Json | ConvertFrom-Json
         # Get the SDK Path
         $preferredSdk = $jsonOutput.SdkInfo.Path
