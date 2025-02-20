@@ -51,12 +51,12 @@ namespace Maui.Controls.Sample.Pages
 			Debug.WriteLine("Unfocused");
 		}
 
-		private void SetDatePickerToNull(object sender, EventArgs e)
+		void SetDatePickerToNull(object sender, EventArgs e)
 		{
 			NullDatePicker.Date = null;
 		}
 
-		private void SetDatePickerToToday(object sender, EventArgs e)
+		void SetDatePickerToToday(object sender, EventArgs e)
 		{
 			NullDatePicker.Date = DateTime.Now;
 		}
