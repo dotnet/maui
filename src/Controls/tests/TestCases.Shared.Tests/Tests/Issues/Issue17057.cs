@@ -10,13 +10,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue17057(TestDevice testDevice) : base(testDevice)
 		{
 		}
-		public override string Issue => "Shell FlowDirection Updated";
+		public override string Issue => "Shell FlowDirection not updating properly";
 
 		[Test]
 		[Category(UITestCategories.Shell)]
-		public void ShellFlowDirectionUpdated()
+		public void ShellFlowDirectionUpdate()
 		{
-			App.WaitForElement("MainPageLabel");
+			App.WaitForElement("label");
 			VerifyScreenshot();
 		}
 	}
