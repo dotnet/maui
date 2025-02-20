@@ -119,15 +119,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return SendPop();
 		}
 
-		internal bool SendPop()
+		internal bool SendPop(UIViewController topViewController = null)
 		{
 			// this means the pop is already done, nothing we can do
 			if (ActiveViewControllers().Length < NavigationBar.Items.Length)
 				return true;
 
+			topViewController ??= TopViewController;
 			foreach (var tracker in _trackers)
 			{
-				if (tracker.Value.ViewController == TopViewController)
+				if (tracker.Value.ViewController == topViewController)
 				{
 					var behavior = Shell.GetBackButtonBehavior(tracker.Value.Page);
 					var command = behavior.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
@@ -611,6 +612,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
 				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
+				viewController.NavigationItem.BackAction = UIAction.Create((e) => SendPop(tabBarController.MoreNavigationController.TopViewController));
+				HandleMoreNavigationCompletionTasks(viewController);
 			}
 			else
 			{
@@ -623,10 +626,28 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_pendingViewControllers = null;
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{
-				return tabBarController.MoreNavigationController.PopViewController(animated);
+				var viewController = tabBarController.MoreNavigationController.PopViewController(animated);
+				HandleMoreNavigationCompletionTasks(viewController);
+				return viewController;
 			}
 
 			return base.PopViewController(animated);
+		}
+
+		private void HandleMoreNavigationCompletionTasks(UIViewController viewController)
+		{
+			var tasks = _completionTasks;
+			var popTask = _popCompletionTask;
+
+			if (tasks.TryGetValue(viewController, out var source))
+			{
+				source.TrySetResult(true);
+				tasks.Remove(viewController);
+			}
+			else if (popTask != null)
+			{
+				popTask.TrySetResult(true);
+			}
 		}
 
 		UIViewController[] ActiveViewControllers() =>
