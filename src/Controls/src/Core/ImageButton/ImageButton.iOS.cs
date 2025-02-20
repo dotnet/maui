@@ -17,13 +17,18 @@ namespace Microsoft.Maui.Controls
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (Handler?.PlatformView is not UIButton platformButton || platformButton.ImageView is null)
+			{
 				return Size.Zero;
+			}
 
-			CGSize boundsSize = platformButton.ImageView.SizeThatFitsImage(
-				new CGSize(widthConstraint, heightConstraint),
-				Padding.IsNaN ? null : Padding);
+			CGSize constraintSize = new CGSize(widthConstraint, heightConstraint);
+			if (platformButton.ImageView.Image is not null)
+			{
+				return platformButton.ImageView
+					.SizeThatFitsImage(constraintSize, Padding.IsNaN ? null : Padding).ToSize();
+			}
 
-			return new Size(boundsSize.Width, boundsSize.Height);
+			return platformButton.SizeThatFits(constraintSize).ToSize();
 		}
 
 		/// <summary>
