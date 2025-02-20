@@ -1,4 +1,4 @@
-﻿#if IOS
+﻿#if IOS //This test case is only applicable to iOS because the sample uses the iOS-specific keyboard scrolling method.
 using System.Drawing;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
