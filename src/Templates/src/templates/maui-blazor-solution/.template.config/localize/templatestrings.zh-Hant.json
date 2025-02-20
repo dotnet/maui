@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI Blazor 混合式和 Web 應用程式",
+  "name": ".NET MAUI Blazor Hybrid and Web App",
   "description": "用於使用共用使用者介面的 Blazor Web 專案建立 .NET MAUI Blazor 混合式應用程式的多專案應用程式。",
   "postActions/openInEditor/description": "在編輯器中開啟共用頁面/Home.razor。",
   "symbols/applicationId/description": "覆寫專案中的 $(ApplicationId)",
