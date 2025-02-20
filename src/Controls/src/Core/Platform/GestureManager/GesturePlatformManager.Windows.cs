@@ -24,6 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 		VisualElement? _element;
 		TappedEventHandler? _tappedEventHandler;
 		DoubleTappedEventHandler? _doubleTappedEventHandler;
+
 		SubscriptionFlags _subscriptionFlags = SubscriptionFlags.None;
 
 		bool _isDisposed;
@@ -433,7 +434,7 @@ namespace Microsoft.Maui.Controls.Platform
 			ClearContainerEventHandlers();
 
 
-			if (_element is View && ElementGestureRecognizers is {} gestureRecognizers)
+			if (_element is View && ElementGestureRecognizers is { } gestureRecognizers)
 			{
 				gestureRecognizers.CollectionChanged -= _collectionChangedHandler;
 			}
