@@ -70,7 +70,8 @@ namespace UITest.Appium
 				// Currently the appium-windows-driver reports the following commands as compatible:
 				//   startRecordingScreen,stopRecordingScreen,launchApp,closeApp,deleteFile,deleteFolder,
 				//   click,scroll,clickAndDrag,hover,keys,setClipboard,getClipboard
-				windowsDriver.ExecuteScript("windows: launchApp", [_app.GetAppId()]);
+				//windowsDriver.ExecuteScript("windows: launchApp", [_app.GetAppId()]);
+				windowsDriver.LaunchApp();
 			}
 			else if (_app.Driver is IOSDriver iOSDriver)
 			{
