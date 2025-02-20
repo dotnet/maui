@@ -1,4 +1,6 @@
 #nullable enable
+Microsoft.Maui.Devices.Sensors.IGeolocation.IsSupported.get -> bool
+static Microsoft.Maui.Devices.Sensors.Geolocation.IsSupported.get -> bool
 static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue, string? sharedName) -> System.DateTimeOffset
 static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue) -> System.DateTimeOffset
 static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value, string? sharedName) -> void
