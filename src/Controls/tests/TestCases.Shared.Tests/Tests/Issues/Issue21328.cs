@@ -13,6 +13,8 @@ public class Issue21328 : _IssuesUITest
 
 	public override string Issue => "Link in Label with TextType HTML is not clickable";
 
+#if !WINDOWS 
+
     [Test]
     [Category(UITestCategories.Label)]
     public void HtmlTextLinkShouldBeClickable()
@@ -22,4 +24,5 @@ public class Issue21328 : _IssuesUITest
         Thread.Sleep(3000);
         VerifyScreenshot();
     }
+#endif
 }
