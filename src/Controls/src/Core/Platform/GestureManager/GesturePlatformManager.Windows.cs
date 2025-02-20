@@ -410,9 +410,13 @@ namespace Microsoft.Maui.Controls.Platform
 				if (Element is View && ElementGestureRecognizers is { } gestureRecognizers)
 				{
 					if (gestureRecognizers.FirstGestureOrDefault<DragGestureRecognizer>() is { } dragGesture)
+					{
 						dragGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+					}
 					if (gestureRecognizers.FirstGestureOrDefault<DropGestureRecognizer>() is { } dropGesture)
+					{
 						dropGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+					}
 				}
 			}
 		}
@@ -432,7 +436,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			ClearContainerEventHandlers();
-
 
 			if (_element is View && ElementGestureRecognizers is { } gestureRecognizers)
 			{
