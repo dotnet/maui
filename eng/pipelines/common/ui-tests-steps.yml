@@ -256,5 +256,5 @@ steps:
       condition: eq(dependencies.CheckMacFolderExists.outputs['macFolderExists'], 'true')
       displayName: publish Mac screenshots artifacts
       inputs:
-        PathToPublish: ${{ parameters.checkoutDirectory }}/src/Controls/tests/TestCases.WinUI.Tests/snapshots-diff
+        PathToPublish: ${{ parameters.checkoutDirectory }}/src/Controls/tests/TestCases.Mac.Tests/snapshots-diff
         ArtifactName: uitest-snapshot-results-mac
