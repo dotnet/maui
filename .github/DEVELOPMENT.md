@@ -44,7 +44,7 @@ As a general rule:
 
 Use ‘main’ for bug fixes that don’t require API changes. For new features and changes to public APIs, you must use the branch of the next .NET version.
 
-- [net9.0](https://github.com/dotnet/maui/tree/net9.0)
+At the time of writing that is: [net10.0](https://github.com/dotnet/maui/tree/net10.0). When .NET 10 is released as GA, it will be .NET 11, etc. Make sure to check this when you start working on something. When in doubt, please ask!
 
 ## Sample projects
 
