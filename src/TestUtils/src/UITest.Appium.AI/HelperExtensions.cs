@@ -57,12 +57,23 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		/// <summary>
+		/// For desktop, this will perform a mouse click on the target element using AI.
+		/// For mobile, this will tap the element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
 		public static async Task TapWithAI(this IApp app, string prompt)
 		{
 			var element = await FindElementWithAI(app, prompt);
 			element?.Tap();
 		}
 
+		/// <summary>
+		/// Performs two quick tap / touch gestures on the matched element using AI.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
 		public static async Task DoubleTapWithAI(this IApp app, string prompt)
 		{
 			var elementToDoubleTap = await FindElementWithAI(app, prompt);
@@ -76,6 +87,11 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		/// <summary>
+		/// Performs a right-click action on the matched element using AI.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
 		public static async Task RightClickWithAI(this IApp app, string prompt)
 		{
 			var element = await FindElementWithAI(app, prompt);
@@ -86,6 +102,11 @@ namespace UITest.Appium.AI
 			});
 		}
 
+		/// <summary>
+		/// Performs a down/press on the matched element using AI, without a matching release.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
 		public static async Task PressDownWithAI(this IApp app, string prompt)
 		{
 			var element = await FindElementWithAI(app, prompt);
@@ -95,6 +116,12 @@ namespace UITest.Appium.AI
 			});
 		}
 
+		/// <summary>
+		/// Enters text into the matched element using AI.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
+		/// <param name="text"></param>
 		public static async Task EnterTextWithAI(this IApp app, string prompt, string text)
 		{
 			var element = await FindElementWithAI(app, prompt);
@@ -106,11 +133,22 @@ namespace UITest.Appium.AI
 			}
 		}
 
+		/// <summary>
+		/// Clears text from the currently matched element using AI.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
 		public static async Task ClearTextWithAI(this IApp app, string prompt)
 		{
 			var element = await FindElementWithAI(app, prompt);
 			element?.Clear();
 		}
+
+		/// <summary>
+		/// Performs a long mouse click on the matched element using AI.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
 		public static async Task LongPressWithAI(this IApp app, string prompt)
 		{
 			var elementToLongPress = await FindElementWithAI(app, prompt);
