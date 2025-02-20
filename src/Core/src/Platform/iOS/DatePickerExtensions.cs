@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (platformDatePicker != null)
 			{
-				platformDatePicker.MinimumDate = datePicker.MinimumDate.ToNSDate();
+				platformDatePicker.MinimumDate = datePicker.MinimumDate?.ToNSDate();
 			}
 		}
 
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (platformDatePicker != null)
 			{
-				platformDatePicker.MaximumDate = datePicker.MaximumDate.ToNSDate();
+				platformDatePicker.MaximumDate = datePicker.MaximumDate?.ToNSDate();
 			}
 		}
 
