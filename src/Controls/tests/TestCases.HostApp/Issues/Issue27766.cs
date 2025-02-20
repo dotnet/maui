@@ -20,9 +20,10 @@ public class Issue27766 : ContentPage
 			ItemsSource = Items,
 			ItemTemplate = new DataTemplate(() =>
 			{
-				var editor = new Editor
+				var editor = new UITestEditor
 				{
 					TextColor = Colors.Black,
+					IsCursorVisible = false
 				};
 				editor.SetBinding(Editor.TextProperty, ".");
 				editor.SetBinding(AutomationIdProperty, ".");
