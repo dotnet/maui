@@ -288,13 +288,7 @@ namespace UITest.Appium.AI
 
 		public static async Task<bool> VerifyScreenshotWithAI(this IApp app, BinaryData snapshot, BinaryData referenceSnapshot, string? prompt = null)
 		{
-			string endpoint = "AZURE_OPENAI_ENDPOINT";
-			string key = "AZURE_OPENAI_API_KEY";
-			string modelName = "AZURE_OPENAI_MODEL_NAME";
-
-			AzureKeyCredential credential = new AzureKeyCredential(key);
-			AzureOpenAIClient azureClient = new(new Uri(endpoint), credential);
-			ChatClient chatClient = azureClient.GetChatClient(modelName);
+			var chatClient = app.GetChatClient();
 
 			var messages = new List<ChatMessage>
 			{
@@ -312,7 +306,6 @@ namespace UITest.Appium.AI
 				FrequencyPenalty = 0,
 				PresencePenalty = 0,
 			};
-
 
 			ChatCompletion completion = await chatClient.CompleteChatAsync(messages, options);
 
@@ -390,13 +383,7 @@ namespace UITest.Appium.AI
 
 		static async Task<IUIElement?> FindElementWithAI(this IApp app, BinaryData data, string prompt)
 		{
-			string endpoint = "AZURE_OPENAI_ENDPOINT";
-			string key = "AZURE_OPENAI_API_KEY";
-			string modelName = "AZURE_OPENAI_MODEL_NAME";
-
-			AzureKeyCredential credential = new AzureKeyCredential(key);
-			AzureOpenAIClient azureClient = new(new Uri(endpoint), credential);
-			ChatClient chatClient = azureClient.GetChatClient(modelName);
+			var chatClient = app.GetChatClient();
 
 			var messages = new List<ChatMessage>
 			{
@@ -414,10 +401,9 @@ namespace UITest.Appium.AI
 				PresencePenalty = 0,
 			};
 
-
 			ChatCompletion completion = await chatClient.CompleteChatAsync(messages, options);
 
-			if (completion.Content != null && completion.Content.Count > 0)
+			if (completion is not null && completion.Content is not null && completion.Content.Count > 0)
 			{
 				string result = completion.Content[0].Text;
 				IUElementData? elementData = JsonSerializer.Deserialize<IUElementData>(SanitizeResponse(result));
@@ -427,6 +413,44 @@ namespace UITest.Appium.AI
 			}
 
 			return null;
+		}
+
+		static ChatClient GetChatClient(this IApp app)
+		{
+			if (app is not AppiumApp appiumApp)
+				throw new InvalidOperationException($"AI functionality is only supported on AppiumApp");
+
+			var config = appiumApp.Config;
+			var aiEndPoint = config.GetProperty<string>("AIEndPoint");
+
+			if (string.IsNullOrEmpty(aiEndPoint))
+			{
+				throw new InvalidDataException("The AI EndPoint property is not set or is empty. Please ensure the Appium options contains a valid AIEndPoint value.");
+			}
+
+			var aIApiKey = config.GetProperty<string>("AIApiKey");
+
+			if (string.IsNullOrEmpty(aIApiKey))
+			{
+				throw new InvalidDataException("The AI ApiKey property is not set or is empty. Please ensure the Appium options contains a valid AIApiKey value.");
+			}
+
+			var aIModelName = config.GetProperty<string>("AIModelName");
+
+			if (string.IsNullOrEmpty(aIModelName))
+			{
+				throw new InvalidDataException("The AI ModelName property is not set or is empty. Please ensure the Appium options contains a valid AIModelName value.");
+			}
+
+			string endpoint = aiEndPoint;
+			string key = aIApiKey;
+			string modelName = endpoint;
+
+			AzureKeyCredential credential = new AzureKeyCredential(key);
+			AzureOpenAIClient azureClient = new(new Uri(endpoint), credential);
+			ChatClient chatClient = azureClient.GetChatClient(modelName);
+
+			return chatClient;
 		}
 
 		internal static IUIElement? FindElement(this IApp app, IUElementData elementData)
