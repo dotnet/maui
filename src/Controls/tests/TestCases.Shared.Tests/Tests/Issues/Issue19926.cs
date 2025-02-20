@@ -29,6 +29,7 @@ public class Issue19926 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.BoxView)]
+	[Ignore("The necessary Azure OpenAI parameters are still to be added on CI")]
 	public async Task PropertiesShouldBeCorrectlyAppliedWithAI()
 	{
 		App.WaitForElement("boxView");
