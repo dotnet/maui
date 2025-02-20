@@ -217,3 +217,5 @@ override Microsoft.Maui.Controls.ListStringTypeConverter.CanConvertFrom(System.C
 override Microsoft.Maui.Controls.ListStringTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+*REMOVED*Microsoft.Maui.Controls.TimePicker.Time.get -> System.TimeSpan
+Microsoft.Maui.Controls.TimePicker.Time.get -> System.TimeSpan?

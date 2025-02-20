@@ -13,12 +13,12 @@ namespace Maui.Controls.Sample.Pages
 			UpdateTimePickerBackground();
 		}
 
-		void OnUpdateBackgroundButtonClicked(object sender, System.EventArgs e)
+		void OnUpdateBackgroundButtonClicked(object sender, EventArgs e)
 		{
 			UpdateTimePickerBackground();
 		}
 
-		void OnClearBackgroundButtonClicked(object sender, System.EventArgs e)
+		void OnClearBackgroundButtonClicked(object sender, EventArgs e)
 		{
 			BackgroundTimePicker.Background = null;
 		}
@@ -38,6 +38,16 @@ namespace Maui.Controls.Sample.Pages
 					new GradientStop { Color = endColor, Offset = 1 }
 				}
 			};
+		}
+
+		void SetTImePickerToNull(object sender, EventArgs e)
+		{
+			NullTimePicker.Time = null;
+		}
+
+		void SetTimePickerToToday(object sender, EventArgs e)
+		{
+			NullTimePicker.Time = DateTime.Now.TimeOfDay;
 		}
 	}
 }

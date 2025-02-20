@@ -6866,7 +6866,6 @@ Microsoft.Maui.Controls.TimePicker.FontAutoScalingEnabled.get -> bool
 Microsoft.Maui.Controls.TimePicker.FontAutoScalingEnabled.set -> void
 Microsoft.Maui.Controls.TimePicker.FontSize.get -> double
 Microsoft.Maui.Controls.TimePicker.FontSize.set -> void
-Microsoft.Maui.Controls.TimePicker.Time.get -> System.TimeSpan
 Microsoft.Maui.Controls.TimePicker.Time.set -> void
 Microsoft.Maui.Controls.TimePicker.TimePicker() -> void
 Microsoft.Maui.Controls.ToggledEventArgs

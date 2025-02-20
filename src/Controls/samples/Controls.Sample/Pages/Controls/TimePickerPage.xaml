@@ -87,6 +87,14 @@
                     Margin="6, 0"
                     Style="{StaticResource IsFocusedTextStyle}"/>
             </HorizontalStackLayout>
-        </VerticalStackLayout>
+            <Label      
+                Text="Set to null"
+                Style="{StaticResource Headline}"/>
+            <TimePicker
+                x:Name="NullTimePicker"
+                Time="{x:Null}"/>
+            <Button Text="Set to null" Clicked="SetTimePickerToNull" />
+            <Button Text="Set to now" Clicked="SetTImePickerToNow" />
+    </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

@@ -1,7 +1,7 @@
 ﻿using System;
 using UIKit;
 
-namespace Microsoft.Maui.Handlers
+namespace Microsoft.Maui.Handlers;
 {
 #if !MACCATALYST
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
