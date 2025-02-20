@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST //related issue: https://github.com/dotnet/maui/issues/27206
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -31,3 +32,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
