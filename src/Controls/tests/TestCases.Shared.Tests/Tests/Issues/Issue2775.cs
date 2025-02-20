@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿// This test fails on Windows due to a System.TimeoutException in App.WaitForElement("TestReady") AutomationId Not Set Properly on Windows
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,8 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue2775Test()
 		{

@@ -1,4 +1,4 @@
-#if ANDROID
+#if ANDROID // This test case is only for Android because the fix is implemented only on the Android platform. Other platforms still have this issue.
 using Microsoft.Maui.TestCases.Tests;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;

@@ -1,4 +1,4 @@
-﻿#if IOS || MACCATALYST
+﻿#if TEST_FAILS_ON_WINDOWS // This test fails on Windows due to a COMException (0x800F1000) caused by missing or unsupported WinUI components.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

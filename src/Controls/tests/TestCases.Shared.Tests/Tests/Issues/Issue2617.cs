@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿// This test fails on iOS, Android, and Mac because ListView.ItemsSource behaves differently across platforms.
+// On iOS and Android and Mac, ItemsSource updates may not trigger an immediate UI refresh
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
