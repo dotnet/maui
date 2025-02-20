@@ -20,11 +20,11 @@ namespace Microsoft.Maui.Controls
 			defaultValueCreator: (bindable) => DateTime.Today);
 
 		/// <summary>Bindable property for <see cref="MinimumDate"/>.</summary>
-		public static readonly BindableProperty MinimumDateProperty = BindableProperty.Create(nameof(MinimumDate), typeof(DateTime), typeof(DatePicker), new DateTime(1900, 1, 1),
+		public static readonly BindableProperty MinimumDateProperty = BindableProperty.Create(nameof(MinimumDate), typeof(DateTime?), typeof(DatePicker), new DateTime(1900, 1, 1),
 			validateValue: ValidateMinimumDate, coerceValue: CoerceMinimumDate);
 
 		/// <summary>Bindable property for <see cref="MaximumDate"/>.</summary>
-		public static readonly BindableProperty MaximumDateProperty = BindableProperty.Create(nameof(MaximumDate), typeof(DateTime), typeof(DatePicker), new DateTime(2100, 12, 31),
+		public static readonly BindableProperty MaximumDateProperty = BindableProperty.Create(nameof(MaximumDate), typeof(DateTime?), typeof(DatePicker), new DateTime(2100, 12, 31),
 			validateValue: ValidateMaximumDate, coerceValue: CoerceMaximumDate);
 
 		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
@@ -74,16 +74,16 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='MaximumDate']/Docs/*" />
-		public DateTime MaximumDate
+		public DateTime? MaximumDate
 		{
-			get { return (DateTime)GetValue(MaximumDateProperty); }
+			get { return (DateTime?)GetValue(MaximumDateProperty); }
 			set { SetValue(MaximumDateProperty, value); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='MinimumDate']/Docs/*" />
-		public DateTime MinimumDate
+		public DateTime? MinimumDate
 		{
-			get { return (DateTime)GetValue(MinimumDateProperty); }
+			get { return (DateTime?)GetValue(MinimumDateProperty); }
 			set { SetValue(MinimumDateProperty, value); }
 		}
 
@@ -221,12 +221,28 @@ namespace Microsoft.Maui.Controls
 
 		static bool ValidateMaximumDate(BindableObject bindable, object value)
 		{
-			return ((DateTime)value).Date >= ((DatePicker)bindable).MinimumDate.Date;
+			var newDate = (DateTime?)value;
+			var minimumDate = ((DatePicker)bindable).MinimumDate?.Date;
+
+			if (newDate is null || minimumDate is null)
+			{
+				return true;
+			}
+
+			return newDate.Value.Date >= minimumDate;
 		}
 
 		static bool ValidateMinimumDate(BindableObject bindable, object value)
 		{
-			return ((DateTime)value).Date <= ((DatePicker)bindable).MaximumDate.Date;
+			var newDate = (DateTime?)value;
+			var maximumDate = ((DatePicker)bindable).MaximumDate?.Date;
+
+			if (newDate is null || maximumDate is null)
+			{
+				return true;
+			}
+
+			return newDate.Value.Date <= maximumDate;
 		}
 
 		/// <inheritdoc/>

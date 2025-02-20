@@ -3,7 +3,7 @@
 namespace Microsoft.Maui;
 
 /// <summary>
-/// Represents a View that allows the user to select a date.
+/// Represents a <see cref="IView"/> that allows the user to select a date.
 /// </summary>
 public interface IDatePicker : IView, ITextStyle
 {
@@ -18,12 +18,12 @@ public interface IDatePicker : IView, ITextStyle
 	DateTime? Date { get; set; }
 
 	/// <summary>
-	/// Gets the minimum DateTime selectable.
+	/// Gets the minimum selectable <see cref="DateTime"/>.
 	/// </summary>
-	DateTime MinimumDate { get; }
+	DateTime? MinimumDate { get; }
 
 	/// <summary>
-	/// Gets the maximum DateTime selectable.
+	/// Gets the maximum selectable <see cref="DateTime"/>.
 	/// </summary>
-	DateTime MaximumDate { get; }
+	DateTime? MaximumDate { get; }
 }

@@ -2,6 +2,10 @@
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
 *REMOVED*Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime
+*REMOVED*Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime
+*REMOVED*Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime
+Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime?
+Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime oldDate, System.DateTime newDate) -> void
 Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime? oldDate, System.DateTime? newDate) -> void
 Microsoft.Maui.Controls.DateChangedEventArgs.NewDate.get -> System.DateTime?

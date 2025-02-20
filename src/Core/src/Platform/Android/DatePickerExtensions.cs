@@ -36,9 +36,18 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimumDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, DatePickerDialog? datePickerDialog)
 		{
-			if (datePickerDialog != null)
+			if (datePickerDialog is not null)
 			{
-				datePickerDialog.DatePicker.MinDate = (long)datePicker.MinimumDate.ToUniversalTime().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
+				if (datePicker.MinimumDate is null)
+				{
+					datePickerDialog.DatePicker.MinDate = (long)DateTime.MinValue.ToUniversalTime()
+						.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
+
+					return;
+				}
+
+				datePickerDialog.DatePicker.MinDate = (long)datePicker.MinimumDate.Value
+					.ToUniversalTime().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
 			}
 		}
 
@@ -49,9 +58,18 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaximumDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, DatePickerDialog? datePickerDialog)
 		{
-			if (datePickerDialog != null)
+			if (datePickerDialog is not null)
 			{
-				datePickerDialog.DatePicker.MaxDate = (long)datePicker.MaximumDate.ToUniversalTime().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
+				if (datePicker.MaximumDate is null)
+				{
+					datePickerDialog.DatePicker.MaxDate = (long)DateTime.MaxValue.ToUniversalTime()
+						.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
+
+					return;
+				}
+
+				datePickerDialog.DatePicker.MaxDate = (long)datePicker.MaximumDate.Value
+					.ToUniversalTime().Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds;
 			}
 		}
 

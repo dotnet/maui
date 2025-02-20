@@ -4799,9 +4799,7 @@ Microsoft.Maui.Controls.DatePicker.FontAutoScalingEnabled.get -> bool
 Microsoft.Maui.Controls.DatePicker.FontAutoScalingEnabled.set -> void
 Microsoft.Maui.Controls.DatePicker.FontSize.get -> double
 Microsoft.Maui.Controls.DatePicker.FontSize.set -> void
-Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime
 Microsoft.Maui.Controls.DatePicker.MaximumDate.set -> void
-Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.Controls.DatePicker.MinimumDate.set -> void
 Microsoft.Maui.Controls.DefinitionCollection<T>.Add(T item) -> void
 Microsoft.Maui.Controls.DefinitionCollection<T>.Clear() -> void
