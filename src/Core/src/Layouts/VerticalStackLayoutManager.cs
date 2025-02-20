@@ -62,10 +62,10 @@ namespace Microsoft.Maui.Layouts
 
 				var destination = new Rect(left, stackHeight, width, child.DesiredSize.Height);
 				child.Arrange(destination);
-				stackHeight += destination.Height + Stack.Spacing;
+				stackHeight += destination.Height + padding.Bottom + Stack.Spacing;
 			}
 
-			var actual = new Size(width, stackHeight);
+			var actual = new Size(bounds.Width, stackHeight);
 
 			return actual.AdjustForFill(bounds, Stack);
 		}
