@@ -18,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("ChangeShellContentTitle");
 			App.Click("ChangeShellContentTitle");
+			TabNavigationViewItemIfWindows();
 			VerifyScreenshot();
 		}
 
@@ -25,9 +26,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void VerifyNewlyAddedShellContentTitle()
 		{
+			TabNavigationViewItemIfWindows();
 			App.WaitForElement("AddShellContent");
 			App.Click("AddShellContent");
 			App.Click("UpdateNewShellContentTitle");
+			TabNavigationViewItemIfWindows();
 			VerifyScreenshot();
 		}
 
@@ -35,10 +38,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void VerifyExistingTabTitle()
 		{
+			TabNavigationViewItemIfWindows();
 			App.WaitForElement("RemoveShellContent");
 			App.Click("RemoveShellContent");
 			App.Click("UpdateThirdTabTitle");
+			TabNavigationViewItemIfWindows();
 			VerifyScreenshot();
+		}
+
+		void TabNavigationViewItemIfWindows()
+		{
+#if WINDOWS
+			App.Tap("navViewItem");
+#endif
 		}
 	}
 }
