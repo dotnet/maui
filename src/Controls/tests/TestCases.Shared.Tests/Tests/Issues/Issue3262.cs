@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS 
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 //Some tests occasionally fail because cookies are not updated. This issue is difficult to replicate locally and occurs very rarely, even in CI. 
 //It causes flakiness, so now ignore this test. Issue Link: https://github.com/dotnet/maui/issues/27854
 using NUnit.Framework;
