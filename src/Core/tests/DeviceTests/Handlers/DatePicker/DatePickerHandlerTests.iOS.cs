@@ -88,7 +88,7 @@ namespace Microsoft.Maui.DeviceTests
 		MauiDatePicker GetNativeDatePicker(DatePickerHandler datePickerHandler) =>
 			datePickerHandler.PlatformView;
 
-		DateTime GetNativeDate(DatePickerHandler datePickerHandler)
+		DateTime? GetNativeDate(DatePickerHandler datePickerHandler)
 		{
 			var dateString = GetNativeDatePicker(datePickerHandler).Text;
 			DateTime.TryParse(dateString, out DateTime result);
