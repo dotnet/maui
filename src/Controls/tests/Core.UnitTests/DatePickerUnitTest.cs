@@ -156,7 +156,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public static object[] DateTimes = {
 			new object[] { new DateTime (2006, 12, 20), new DateTime (2011, 11, 30) },
 			new object[] { new DateTime (1900, 1, 1), new DateTime (1999, 01, 15) }, // Minimum Date
-			new object[] { new DateTime (2006, 12, 20), new DateTime (2100, 12, 31) } // Maximum Date
+			new object[] { new DateTime (2006, 12, 20), new DateTime (2100, 12, 31) }, // Maximum Date
+			new object[] { new DateTime (2006, 12, 20), null },
+			new object[] { null, new DateTime (2006, 12, 20) },
+			new object[] { null, null },
 		};
 
 		public static IEnumerable<object[]> DateTimesData()
