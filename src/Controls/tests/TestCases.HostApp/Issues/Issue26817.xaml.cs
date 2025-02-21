@@ -8,16 +8,31 @@ namespace Maui.Controls.Sample.Issues
 			InitializeComponent();
 		}
 
-		bool toggle;
+		int toggleCount;
 
 		private void Button_Clicked(object sender, EventArgs e)
 		{
-			toggle = !toggle;
-			collectionView.SelectionMode = toggle ? SelectionMode.None : SelectionMode.Single;
-			CheckAccessibilityTraits();
+			var selectionMode = toggleCount switch
+			{
+				0 => SelectionMode.None,
+				1 => SelectionMode.Single,
+				2 => SelectionMode.Multiple,
+				_ => throw new NotImplementedException(),
+			};
+
+			border.SelectionMode = selectionMode;
+			vsl.SelectionMode = selectionMode;
+			grid.SelectionMode = selectionMode;
+			CheckAccessibilityTraits(border, Label1, "Border:");
+			CheckAccessibilityTraits(vsl, Label2, "VSL:");
+			CheckAccessibilityTraits(grid, Label3, "Grid:");
+
+			selectionLabel.Text = "selectionMode: " + selectionMode;
+
+			toggleCount = (toggleCount + 1) % 3;
 		}
 
-		public void CheckAccessibilityTraits()
+		public void CheckAccessibilityTraits(CollectionView collectionView, Label label, string prefix)
 		{
 #if IOS || MACCATALYST
 			if (collectionView.Handler?.PlatformView is UIKit.UIView collectionViewWrapper)
@@ -30,7 +45,7 @@ namespace Maui.Controls.Sample.Issues
 					if (child is UIKit.UICollectionViewCell cell && cell.ContentView.Subviews.FirstOrDefault() is UIKit.UIView firstChild)
 					{
 						bool isButton = (firstChild.AccessibilityTraits & UIKit.UIAccessibilityTrait.Button) == UIKit.UIAccessibilityTrait.Button;
-						Label1.Text = $"Is Button - {isButton}";
+						label.Text = $"{prefix} Item is Button - {isButton}";
 						break;
 					}
 				}
