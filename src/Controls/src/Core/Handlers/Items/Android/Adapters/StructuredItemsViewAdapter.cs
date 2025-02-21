@@ -104,22 +104,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void BindTemplatedItemViewHolder(TemplatedItemViewHolder templatedItemViewHolder, object context)
 		{
-			if (ItemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
-			{
-				if(templatedItemViewHolder.ItemViewType == ItemViewType.TemplatedItem)
-				{
-					templatedItemViewHolder.Bind(context, ItemsView, _reportMeasure, _size);
+			if (ItemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem && templatedItemViewHolder.ItemViewType == ItemViewType.TemplatedItem)
+ 			{
+ 				templatedItemViewHolder.Bind(context, ItemsView, _reportMeasure, _size);
 
-					if (templatedItemViewHolder.ItemView is ItemContentView itemContentView)
-					{
-						itemContentView.RetrieveStaticSize = _retrieveStaticSize;
-					}
+ 				if (templatedItemViewHolder.ItemView is ItemContentView itemContentView)
+ 				{
+ 					itemContentView.RetrieveStaticSize = _retrieveStaticSize;
 				}
-				else
-				{
-					base.BindTemplatedItemViewHolder(templatedItemViewHolder, context);
-				}
-			}
+ 			}
 			else
 			{
 				base.BindTemplatedItemViewHolder(templatedItemViewHolder, context);
