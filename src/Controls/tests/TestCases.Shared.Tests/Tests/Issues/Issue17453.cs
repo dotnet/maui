@@ -1,5 +1,4 @@
-﻿// #if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -11,7 +10,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public Issue17453(TestDevice device) : base(device) { }
 
 		public override string Issue => "Clear Entry text tapping the clear button not working";
-
+		protected override bool ResetAfterEachTest => true;
+		
 		[Test]
 		[Category(UITestCategories.Entry)]
 		public void EntryClearButtonWorksEntryDoesntClearWhenNotClickingOnClear()
@@ -54,11 +54,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var rtlEntryRect = App.WaitForElement("RtlEntry").GetRect();
 
 			// Set focus
-			App.TapCoordinates(rtlEntryRect.X, rtlEntryRect.Y);
+			App.TapCoordinates(rtlEntryRect.CenterX(), rtlEntryRect.CenterY());
 
+			App.WaitForElement("RtlEntry");
 			// Tap Clear Button
-			var margin = 30;
-			App.TapCoordinates(rtlEntryRect.X + margin, rtlEntryRect.Y + margin);
+			var margin = 10;
+			App.TapCoordinates(rtlEntryRect.X + margin, rtlEntryRect.CenterY());
 
 			rtlEntryText = App.WaitForElement("RtlEntry").GetText();
 
@@ -67,7 +68,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		public async Task EntryWithMarginClearButtonWorks()
+		public void EntryWithMarginClearButtonWorks()
 		{
 			// https://github.com/dotnet/maui/issues/25225
 
@@ -80,12 +81,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var entryRect = App.WaitForElement("EntryWithMargin").GetRect();
 
 			// Set focus
-			App.TapCoordinates(entryRect.Width-2, entryRect.Y);
-			await Task.Delay(500);
+			App.TapCoordinates(entryRect.CenterX(), entryRect.CenterY());
+
+			App.WaitForElement("EntryWithMargin");
+
 
 			// Tap Clear Button
-			App.TapCoordinates(725, entryRect.Y);
-			App.TapCoordinates(entryRect.Width-2, entryRect.Y);
+			App.TapCoordinates(entryRect.X + entryRect.Width - 10, entryRect.CenterY());
 
 			entryText = App.WaitForElement("EntryWithMargin").GetText();
 
@@ -93,4 +95,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-// #endif

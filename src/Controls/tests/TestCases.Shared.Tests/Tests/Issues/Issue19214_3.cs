@@ -1,4 +1,4 @@
-#if IOS //This test case is only applicable to iOS because the sample uses the iOS-specific keyboard scrolling method.
+#if IOS //This sample is specific to the iOS platform and handles text input behavior by accessing the native UITextView.
 using System.Drawing;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;

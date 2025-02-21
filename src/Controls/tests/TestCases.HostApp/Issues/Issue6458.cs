@@ -1,7 +1,7 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 6458, "[Android] Fix load TitleIcon on non app compact", PlatformAffected.Android)]
-	public class Issue6458 : TestNavigationPage // Change to inherit from TestNavigationPage
+	public class Issue6458 : TestNavigationPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
 		{
@@ -21,7 +21,6 @@
 					AutomationId = "banktitleicon"
 				});
 
-			// Assign the ContentPage as the root of the TestNavigationPage
 			this.PushAsync(contentPage);
 		}
 	}
