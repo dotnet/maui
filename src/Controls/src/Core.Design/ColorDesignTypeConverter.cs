@@ -210,7 +210,7 @@ namespace Microsoft.Maui.Controls.Design
 
 	internal static partial class RegexHelper
 	{
-		static readonly ReadOnlySpan<char> pattern = @"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$";
+		static readonly string pattern = @"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$";
 
 #if NET7_0_OR_GREATER
 		// #rgb, #rrggbb, #aarrggbb are all valid 
