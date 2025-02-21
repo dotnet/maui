@@ -150,6 +150,7 @@ namespace Microsoft.Maui.Platform
 											brPattern,
 											RegexOptions.Compiled | RegexOptions.IgnoreCase,
 											TimeSpan.FromMilliseconds(1000) 		// against malicious input
-											);		
+											);
+#endif
 	}
 }
