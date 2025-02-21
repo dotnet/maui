@@ -213,7 +213,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					if (CollectionView.ContentSize.Height + headerHeight <= CollectionView.Bounds.Height)
 						yOffset = -headerHeight;
 
-					CollectionView.ContentOffset = new CoreGraphics.CGPoint(CollectionView.ContentOffset.X, yOffset);
+					if (currentOffset.Y.Value < headerHeight)
+					{
+						CollectionView.ContentOffset = new CoreGraphics.CGPoint(CollectionView.ContentOffset.X, yOffset);
+					}
 				}
 
 				if (_headerUIView != null && _headerUIView.Frame.Y != headerHeight)
