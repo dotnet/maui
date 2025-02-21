@@ -1,4 +1,5 @@
-﻿#if IOS //This test case is only applicable to iOS because the sample uses the iOS-specific keyboard scrolling method.
+﻿#if IOS || ANDROID && TEST_FAILS_ON_ANDROID //android related issue: https://github.com/dotnet/maui/issues/27951
+//The test fails on Windows and MacCatalyst because the Keyboard Shown feature, designed to interact with the device keyboard, is only supported on mobile platforms like iOS and Android.
 using System.Drawing;
 using NUnit.Framework;
 using UITest.Appium;
