@@ -149,7 +149,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// <param name="name">Optional. The name to be used for the screenshot file. If not specified, the test name will be used.</param>
 		/// <param name="retryDelay">Optional. The delay time between retries. If not specified, a default retry delay of 500 ms will be used.</param>
 		/// <param name="includeTitleBar">Optional. (Only applicable for Mac or Windows) Specifies whether the TitleBar bar should be included in the screenshot. Default is false.</param>
-    /// <remarks>
 		public void VerifyScreenshot(
 				 string? name = null,
 				 TimeSpan? retryDelay = null
