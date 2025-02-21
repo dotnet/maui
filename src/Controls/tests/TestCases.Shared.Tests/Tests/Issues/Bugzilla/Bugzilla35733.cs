@@ -16,6 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.WebView)]
 		public void Bugzilla35733Test()
 		{
+			VerifyInternetConnectivity();
 			App.WaitForElement("btnGo");
 			App.Tap("btnGo");
 			App.WaitForElement("WebViewTest");

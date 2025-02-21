@@ -121,8 +121,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		/// </code>
 		/// </example>
 		public void VerifyScreenshotOrSetException(
-			ref Exception? exception, 
-			string? name = null, 
+			ref Exception? exception,
+			string? name = null,
 			TimeSpan? retryDelay = null
 #if MACUITEST || WINTEST
 			, bool includeTitleBar = false
@@ -294,6 +294,19 @@ namespace Microsoft.Maui.TestCases.Tests
 				actualImage = CropImage(actualImage, elementRect);
 
 				_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+			}
+		}
+    
+		protected void VerifyInternetConnectivity()
+		{
+			try
+			{
+				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(30));
+				Assert.Inconclusive("This device doesn't have internet access");
+			}
+			catch (TimeoutException)
+			{
+				// Continue with the test
 			}
 		}
 
