@@ -13,6 +13,9 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class ScrollHelpers
 	{
+
+		static bool hasGroups;
+
 		static UWPPoint Zero = new UWPPoint(0, 0);
 
 		static bool IsVertical(ScrollViewer scrollViewer)
@@ -29,6 +32,29 @@ namespace Microsoft.Maui.Controls.Platform
 
 			return AdjustToMakeVisibleHorizontal(point, itemSize, scrollViewer);
 		}
+
+		static UWPPoint AdjustToStart(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer, double height)
+		{
+			if (IsVertical(scrollViewer))
+			{
+				return AdjustToStartVertical(point, itemSize, scrollViewer, height);
+			}
+
+			return AdjustToStartHorizontal(point, itemSize, scrollViewer, height);
+		}
+
+
+		static UWPPoint AdjustToStartVertical(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer, double headerHeight)
+		{
+			return new UWPPoint(point.X, point.Y - headerHeight);
+		}
+
+		static UWPPoint AdjustToStartHorizontal(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer, double headerHeight)
+		{
+			return new UWPPoint(point.X - headerHeight, point.Y);
+		}
+
+
 
 		static UWPPoint AdjustToMakeVisibleVertical(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer)
 		{
@@ -282,15 +308,28 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static async Task<bool> ScrollToItemAsync(ListViewBase list, object targetItem, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition)
 		{
+			double height = 0;
+
 			var targetContainer = list.ContainerFromItem(targetItem) as UIElement;
+
+			if (hasGroups)
+			{
+				var height = GetTopAreaHeight(list, targetContainer);
+			}
 
 			if (targetContainer != null)
 			{
-				await ScrollToTargetContainerAsync(targetContainer, scrollViewer, scrollToPosition);
+				await ScrollToTargetContainerAsync(targetContainer, scrollViewer, scrollToPosition, height);
 				return true;
 			}
 
 			return false;
+		}
+
+		private static double GetTopAreaHeight(ListViewBase list, UIElement targetContainer)
+		{
+			var groupHeader = list.GroupHeaderContainerFromItemContainer(targetContainer);
+			return hasGroupHeader ? (groupHeader as ListViewHeaderItem).ActualHeight : 0;
 		}
 
 		public static async Task AnimateToItemAsync(ListViewBase list, object targetItem, ScrollToPosition scrollToPosition)
@@ -313,6 +352,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// If ScrollViewer is not found, do nothing.
 				return;
 			}
+			hasGroups = list.IsGrouping;
 
 			// ScrollToItemAsync will only scroll to the item if it actually exists in the list (that is, it has been
 			// been realized and isn't just a virtual item)
@@ -381,7 +421,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		static async Task ScrollToTargetContainerAsync(UIElement targetContainer, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition)
+		static async Task ScrollToTargetContainerAsync(UIElement targetContainer, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition, double height)
 		{
 			var transform = targetContainer.TransformToVisual(scrollViewer.Content as UIElement);
 			var position = transform?.TransformPoint(Zero);
@@ -402,6 +442,8 @@ namespace Microsoft.Maui.Controls.Platform
 				case ScrollToPosition.Start:
 					// The transform will put the container at the top of the ScrollViewer; we'll need to adjust for
 					// other scroll positions
+					if (hasGroupHeader)
+						offset = AdjustToStart(offset, itemSize, scrollViewer, height);
 					break;
 				case ScrollToPosition.MakeVisible:
 					offset = AdjustToMakeVisible(offset, itemSize, scrollViewer);
