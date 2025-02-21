@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": "Widok zawartości platformy .NET MAUI (C#)",
+  "name": ".NET MAUI ContentView (C#)",
   "description": "Widok do wyświetlania zawartości przy użyciu języka C#. Jest to bardzo odpowiednie do tworzenia własnych niestandardowych kontrolek wielokrotnego użytku.",
   "postActions/openInEditor/description": "Otwiera plik NewContent1.cs w edytorze.",
   "symbols/namespace/description": "Przestrzeń nazw wygenerowanego kodu."
