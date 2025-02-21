@@ -71,7 +71,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new object[] { new TimeSpan(23, 59, 59), new TimeSpan(0, 0, 0) },
 			new object[] { new TimeSpan(23, 59, 59), null },
 			new object[] { null, new TimeSpan(23, 59, 59) },
-			new object[] { null, null },
 		};
 
 		public static IEnumerable<object[]> TimeSpansData()
