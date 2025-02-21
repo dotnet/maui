@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_CATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -30,6 +29,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "SizeButtonsDownPortrait");
 
 #if IOS || ANDROID
+				Exception? exception = null;
 				App.SetOrientationLandscape();
 
 				WaitForAllElements();
@@ -41,6 +41,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				WaitForAllElements();
 				// Cannot use the original screenshot as the black bar on bottom is not as dark after rotation
 				VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Original2");
+
+				if (exception != null)
+				{
+					throw exception;
+				}
 			}
 			finally
 			{
@@ -59,4 +64,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif
