@@ -4,7 +4,7 @@ namespace UITest.Appium
 {
 	public static class ShellHelper
 	{
-		public static void ExecuteAdbCommand(string command)
+		public static void ExecuteShellCommand(string command)
 		{
 			var shell = GetShell();
 			var shellArgument = GetShellArgument(shell, command);

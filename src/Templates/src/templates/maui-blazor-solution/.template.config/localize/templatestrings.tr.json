@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI Blazor Hibrit ve Web Uygulaması",
+  "name": ".NET MAUI Blazor Hybrid and Web App",
   "description": "Paylaşımlı kullanıcı arabirimi bulunan bir Blazor Web projesiyle .NET MAUI Blazor Hybrid uygulaması oluşturmaya yönelik çoklu proje uygulaması.",
   "postActions/openInEditor/description": "Düzenleyicide Paylaşılan Sayfaları/Home.razor'ı açar.",
   "symbols/applicationId/description": "Projedeki $(ApplicationId) uygulamasın geçersiz kılar",

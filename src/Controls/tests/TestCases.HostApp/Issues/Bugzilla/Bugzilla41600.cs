@@ -20,28 +20,28 @@
 				ItemsSource = items
 			};
 			var firstbutton = new Button
-					{
-						AutomationId = _btnScrollToNonExistentItem,
-						Text = "Click for ScrollTo (should do nothing)",
-						Command = new Command(() =>
-						{
-							listView.ScrollTo("Hello", ScrollToPosition.Start, true);
-						})
-					};
+			{
+				AutomationId = _btnScrollToNonExistentItem,
+				Text = "Click for ScrollTo (should do nothing)",
+				Command = new Command(() =>
+				{
+					listView.ScrollTo("Hello", ScrollToPosition.Start, true);
+				})
+			};
 			var secondbutton = new Button
-					{
-						AutomationId = _btnScrollToExistentItem,
-						Text = "Click for ScrollTo (should go to 15)",
-						Command = new Command(() =>
-						{
-							listView.ScrollTo(_middleListItem, ScrollToPosition.Start, false);
-						})
-					};
-			
+			{
+				AutomationId = _btnScrollToExistentItem,
+				Text = "Click for ScrollTo (should go to 15)",
+				Command = new Command(() =>
+				{
+					listView.ScrollTo(_middleListItem, ScrollToPosition.Start, false);
+				})
+			};
+
 			Grid.SetRow(listView, 2);
 			Grid.SetRow(firstbutton, 0);
 			Grid.SetRow(secondbutton, 1);
-			
+
 			Content = new Grid
 			{
 				RowDefinitions = new RowDefinitionCollection

@@ -11,8 +11,6 @@ steps:
   fetchDepth: 1
   clean: true
 
-- template: /eng/pipelines/common/setup-jdk.yml
-
 - script: |
     sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
     xcrun xcode-select --print-path

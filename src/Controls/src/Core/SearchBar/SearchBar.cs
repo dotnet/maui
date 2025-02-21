@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -27,9 +28,6 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="CancelButtonColor"/>.</summary>
 		public static readonly BindableProperty CancelButtonColorProperty = BindableProperty.Create(nameof(CancelButtonColor), typeof(Color), typeof(SearchBar), default(Color));
-
-		/// <summary>Bindable property for <see cref="SearchIconColor"/>.</summary>
-		public static readonly BindableProperty SearchIconColorProperty = BindableProperty.Create(nameof(SearchIconColor), typeof(Color), typeof(SearchBar), default(Color));
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='PlaceholderProperty']/Docs/*" />
 		public new static readonly BindableProperty PlaceholderProperty = InputView.PlaceholderProperty;
@@ -79,14 +77,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (Color)GetValue(CancelButtonColorProperty); }
 			set { SetValue(CancelButtonColorProperty, value); }
-		}
-		/// <summary>
-		/// Gets or sets the color of the search icon in the <see cref="SearchBar"/>.
-		/// </summary>
-		public Color SearchIconColor
-		{
-			get { return (Color)GetValue(SearchIconColorProperty); }
-			set { SetValue(SearchIconColorProperty, value); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='HorizontalTextAlignment']/Docs/*" />
@@ -167,7 +157,8 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"SearchCommand = {SearchCommand}, {base.GetDebuggerDisplay()}";
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(SearchCommand), SearchCommand);
+			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
 	}
 }

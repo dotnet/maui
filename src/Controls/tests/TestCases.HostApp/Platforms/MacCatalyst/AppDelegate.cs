@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Platform
 
 		public override bool FinishedLaunching(UIApplication uiApplication, NSDictionary launchOptions)
 		{
-		
+
 #pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<Issue5503>(this, Issue5503.ChangeUITableViewAppearanceBgColor, (s) =>
 			{

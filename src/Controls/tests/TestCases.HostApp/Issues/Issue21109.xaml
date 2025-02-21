@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue21109"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
              xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues">
   <VerticalStackLayout
      Padding="30,0"
@@ -9,14 +10,16 @@
     <Label
       AutomationId="WaitForStubControl"
       Text="ReturnType (Search)" />
-    <Entry
+    <local:UITestEntry
       AutomationId="SearchEntry"
+      IsCursorVisible="False"
       ReturnType="Search" />
     <Label
       Text="Update the ReturnType just typing" />
-    <Entry 
+    <local:UITestEntry 
       x:Name="ReturnTypeEntry"
       AutomationId="ReturnTypeEntry"
+      IsCursorVisible="False"
       TextChanged="OnReturnTypeEntryTextChanged"/>
     <Label
       x:Name="ReturnTypeResult"

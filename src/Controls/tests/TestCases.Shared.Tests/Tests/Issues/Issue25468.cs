@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if ANDROID //This sample includes Android-specific customization for the CollectionView handler using conditional compilation. 
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

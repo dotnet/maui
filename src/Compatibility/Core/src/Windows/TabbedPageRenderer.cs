@@ -497,7 +497,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 #pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 					var stackPanelItem = stackPanel.Children[i];
 #pragma warning restore RS0030 // Do not use banned APIs
-					
+
 					if (stackPanelItem is WImage tabBarImage)
 					{
 						// Update icon image.

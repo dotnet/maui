@@ -1,7 +1,7 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
 
-	[Issue(IssueTracker.Bugzilla, 35733, "iOS WebView crashes when loading an URL with encoded parameters", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Bugzilla, 35733, "iOS WebView crashes when loading an URL with encoded parameters", PlatformAffected.iOS, isInternetRequired: true)]
 	public class Bugzilla35733 : TestNavigationPage // or TestFlyoutPage, etc ...
 	{
 		protected override void Init()
@@ -24,8 +24,7 @@
 					}
 				}
 			});
-			
-		}		
+		}
 		async Task ShowLocation(string locationString)
 		{
 			var stringUri = $"https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/README.md?l=en&px_location={Uri.EscapeDataString(locationString)}";

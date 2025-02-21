@@ -106,7 +106,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void ToggleTitleBarOnWindow_Clicked(object sender, EventArgs e)
 		{
-			if (Window.TitleBar  is not null)
+			if (Window.TitleBar is not null)
 				Window.TitleBar = null;
 			else
 				Window.TitleBar = _customTitleBar;
@@ -169,7 +169,7 @@ namespace Maui.Controls.Sample.Pages
 				_customTitleBar.HeightRequest = 36;
 #else
 				_customTitleBar.HeightRequest = 32;
-#endif			
+#endif
 			}
 		}
 	}
