@@ -9,14 +9,16 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			var date = datePicker.Date;
+			var date = datePicker.Date ?? DateTime.MinValue;
 			platformDatePicker.UpdateDate(date);
 
 			var format = datePicker.Format;
 			var dateFormat = format.ToDateFormat();
 
 			if (!string.IsNullOrEmpty(dateFormat))
+			{
 				platformDatePicker.DateFormat = dateFormat;
+			}
 
 			platformDatePicker.UpdateTextColor(datePicker);
 		}
@@ -28,12 +30,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.MinDate = datePicker.MinimumDate;
+			platformDatePicker.MinDate = datePicker?.MinimumDate ?? DateTime.MinValue;
 		}
 
 		public static void UpdateMaximumDate(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-			platformDatePicker.MaxDate = datePicker.MaximumDate;
+			platformDatePicker.MaxDate = datePicker?.MaximumDate ?? DateTime.MaxValue;
 		}
 
 		public static void UpdateCharacterSpacing(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
