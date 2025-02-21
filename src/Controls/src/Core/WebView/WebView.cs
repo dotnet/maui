@@ -397,11 +397,16 @@ namespace Microsoft.Maui.Controls
 
 		internal partial class RegexHelper
 		{
-			static readonly ReadOnlySpan<char> pattern = @"(\\*?)'";
+			/*
+				when used: 
+
+				The GeneratedRegexAttribute is malformed 
+			static readonly string pattern = @"(\\*?)'";
+			*/
 
 #if NET7_0_OR_GREATER
 			// get every quote in the string along with all the backslashes preceding it
-			[GeneratedRegex (pattern, RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+			[GeneratedRegex (@"(\\*?)'", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
 			public static partial Regex AllQuotesWithPrecedingBackslashsRegex
 				{
 				get;
@@ -410,7 +415,7 @@ namespace Microsoft.Maui.Controls
 			public static readonly Regex AllQuotesWithPrecedingBackslashsRegex =
 											new (
 												// get every quote in the string along with all the backslashes preceding it
-												pattern,
+												@"(\\*?)'",
 												RegexOptions.Compiled,
 												TimeSpan.FromMilliseconds(1000) 		// against malicious input
 												);		
