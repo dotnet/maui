@@ -6,6 +6,7 @@ using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using UIKit;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -202,28 +203,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			CurrentTemplate = itemTemplate;
-			UpdateAccessibilityTraits(itemsView);
-		}
-
-		void UpdateAccessibilityTraits(ItemsView itemsView)
-		{
-			var selectionMode = (itemsView as CollectionView)?.SelectionMode;
-			if (this is UICollectionViewCell cell
-				&& cell.ContentView is not null
-				&& cell.ContentView.Subviews.Length > 0
-				&& selectionMode is not null)
-			{
-				var firstChild = cell.ContentView.Subviews[0];
-
-				if (selectionMode != SelectionMode.None)
-				{
-					firstChild.AccessibilityTraits |= UIAccessibilityTrait.Button;
-				}
-				else
-				{
-					firstChild.AccessibilityTraits &= ~UIAccessibilityTrait.Button;
-				}
-			}
+			this.UpdateAccessibilityTraits(itemsView);
 		}
 
 		void SetRenderer(IPlatformViewHandler renderer)

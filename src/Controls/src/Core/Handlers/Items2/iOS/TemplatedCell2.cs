@@ -146,28 +146,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				view.SetValueFromRenderer(BindableObject.BindingContextProperty, bindingContext);
 			}
 
-			UpdateAccessibilityTraits(itemsView);
-		}
-
-		void UpdateAccessibilityTraits(ItemsView itemsView)
-		{
-			var selectionMode = (itemsView as CollectionView)?.SelectionMode;
-			if (this is UICollectionViewCell cell
-				&& cell.ContentView is not null
-				&& cell.ContentView.Subviews.Length > 0
-				&& selectionMode is not null)
-			{
-				var firstChild = cell.ContentView.Subviews[0];
-
-				if (selectionMode != SelectionMode.None)
-				{
-					firstChild.AccessibilityTraits |= UIAccessibilityTrait.Button;
-				}
-				else
-				{
-					firstChild.AccessibilityTraits &= ~UIAccessibilityTrait.Button;
-				}
-			}
+			this.UpdateAccessibilityTraits(itemsView);
 		}
 
 		bool IsUsingVSMForSelectionColor(View view)
