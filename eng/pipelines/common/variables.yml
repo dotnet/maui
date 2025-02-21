@@ -68,9 +68,9 @@ variables:
     - name: PrivateBuild
       value: false
     - name: _RunAsPublic
-      value: False
+      value: false
     - name: _RunAsInternal
-      value: True
+      value: true
     - name: _SignType
       value: real
     # - name: PostBuildSign
