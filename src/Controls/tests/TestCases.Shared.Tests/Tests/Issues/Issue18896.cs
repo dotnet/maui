@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //Related issues : https://github.com/dotnet/maui/issues/18811
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS//Related issues : https://github.com/dotnet/maui/issues/18811, https://github.com/dotnet/maui/issues/15994
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,6 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ListView)]
 		[FailsOnIOSWhenRunningOnXamarinUITest("Currently fails on iOS; see https://github.com/dotnet/maui/issues/18811")]
 		[FailsOnMacWhenRunningOnXamarinUITest("Currently fails on Catalyst; see https://github.com/dotnet/maui/issues/18811")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("Currently fails on Windows; see https://github.com/dotnet/maui/issues/15994")]
 		public void Issue18896Test()
 		{
 			App.WaitForElement("WaitForStubControl");
