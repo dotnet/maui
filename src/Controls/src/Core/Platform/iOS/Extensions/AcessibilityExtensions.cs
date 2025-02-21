@@ -1,4 +1,3 @@
-using System;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform;
@@ -9,27 +8,17 @@ internal static class AcessibilityExtensions
 	{
 		foreach (var subview in collectionView.Subviews)
 		{
-			if (subview is UICollectionViewCell cell && cell.ContentView is not null && cell.ContentView.Subviews.Length > 0)
+			if (subview is UICollectionViewCell cell)
 			{
-				var firstChild = cell.ContentView.Subviews[0];
-
-				if (itemsView.SelectionMode != SelectionMode.None)
-				{
-					firstChild.AccessibilityTraits |= UIAccessibilityTrait.Button;
-				}
-				else
-				{
-					firstChild.AccessibilityTraits &= ~UIAccessibilityTrait.Button;
-				}
+				cell.UpdateAccessibilityTraits(itemsView);
 			}
 		}
 	}
 
-	internal static void UpdateAccessibilityTraits(this UICollectionViewCell cvCell, ItemsView itemsView)
+	internal static void UpdateAccessibilityTraits(this UICollectionViewCell cell, ItemsView itemsView)
 	{
 		var selectionMode = (itemsView as CollectionView)?.SelectionMode;
-		if (cvCell is UICollectionViewCell cell
-			&& cell.ContentView is not null
+		if (cell.ContentView is not null
 			&& cell.ContentView.Subviews.Length > 0
 			&& selectionMode is not null)
 		{
