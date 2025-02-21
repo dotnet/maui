@@ -16,8 +16,9 @@ namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 
 	internal static partial class RegexHelper
 	{
+		static readonly string AutomationIdRegexPattern = " |\\(|\\)";
 		#if NET7_0_OR_GREATER
-		[GeneratedRegex (" |\\(|\\)", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+		[GeneratedRegex (AutomationIdRegexPattern, RegexOptions.None, matchTimeoutMilliseconds: 1000)]
 		internal static partial Regex AutomationIdRegex
 		{
 			get;
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 		#else
 		internal static readonly Regex AutomationIdRegex =
 										new (
-											" |\\(|\\)",
+											AutomationIdRegexPattern,
 											RegexOptions.Compiled,		
 											TimeSpan.FromMilliseconds(1000)							// against malicious input
 											);
