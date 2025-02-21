@@ -13,9 +13,6 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	internal static class ScrollHelpers
 	{
-
-		static bool hasGroups;
-
 		static UWPPoint Zero = new UWPPoint(0, 0);
 
 		static bool IsVertical(ScrollViewer scrollViewer)
@@ -329,7 +326,7 @@ namespace Microsoft.Maui.Controls.Platform
 		private static double GetTopAreaHeight(ListViewBase list, UIElement targetContainer)
 		{
 			var groupHeader = list.GroupHeaderContainerFromItemContainer(targetContainer);
-			return hasGroupHeader ? (groupHeader as ListViewHeaderItem).ActualHeight : 0;
+			return list.IsGrouping ? (groupHeader as ListViewHeaderItem).ActualHeight : 0;
 		}
 
 		public static async Task AnimateToItemAsync(ListViewBase list, object targetItem, ScrollToPosition scrollToPosition)
@@ -442,8 +439,7 @@ namespace Microsoft.Maui.Controls.Platform
 				case ScrollToPosition.Start:
 					// The transform will put the container at the top of the ScrollViewer; we'll need to adjust for
 					// other scroll positions
-					if (hasGroupHeader)
-						offset = AdjustToStart(offset, itemSize, scrollViewer, height);
+					offset = AdjustToStart(offset, itemSize, scrollViewer, height);
 					break;
 				case ScrollToPosition.MakeVisible:
 					offset = AdjustToMakeVisible(offset, itemSize, scrollViewer);
