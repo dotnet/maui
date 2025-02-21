@@ -9,7 +9,6 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	[Collection("TestsAccessingStaticHandlers")]
 	public abstract class BindingBaseUnitTests : BaseTestFixture
 	{
 		protected abstract BindingBase CreateBinding(BindingMode mode = BindingMode.Default, string stringFormat = null);

@@ -52,6 +52,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Initial");
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
+			App.WaitForElement("WelcomeLabel").Tap(); // Move the cursor from the Back Button to avoid the cursor.
 			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
 			App.TapBackArrow("Issue24489_2");
 
@@ -68,6 +69,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
+			App.WaitForElement("WelcomeLabel").Tap(); // Move the cursor from the Back Button to avoid the cursor.
 			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
 		
 			if (exception != null)
