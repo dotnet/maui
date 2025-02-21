@@ -11,8 +11,7 @@ namespace Microsoft.Maui.Controls.Design
 		{ }
 
 		private static readonly string[] knownValues =
-			new[]
-			{
+			[
 				"AliceBlue",
 				"AntiqueWhite",
 				"Aqua",
@@ -161,7 +160,7 @@ namespace Microsoft.Maui.Controls.Design
 				"WhiteSmoke",
 				"Yellow",
 				"YellowGreen"
-			};
+			];
 
 		private static readonly HashSet<string> knowValuesSet;
 
