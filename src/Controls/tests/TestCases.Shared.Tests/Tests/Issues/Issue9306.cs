@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // This test fails on Windows because SwipeView is designed for touch interfaces, and on Windows, it does not function with a mouse or pointer device.
+﻿#if IOS || MACCATALYST
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
