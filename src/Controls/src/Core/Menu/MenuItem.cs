@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls
 			propertyChanged: (bindable, oldValue, newValue) =>
 			{
 				((MenuItem)bindable).AddRemoveLogicalChildren(oldValue, newValue);
+				OnImageSourceChanged(bindable, oldValue, newValue);
 			}
 		);
 
@@ -182,6 +183,20 @@ namespace Microsoft.Maui.Controls
 			}
 
 			ppc.PropagatePropertyChanged(IsEnabledProperty.PropertyName);
+		}
+
+		static void OnImageSourceChanged(BindableObject bindable, object oldvalue, object newValue)
+		{
+			if (oldvalue is ImageSource oldImageSource)
+				oldImageSource.SourceChanged -= ((MenuItem)bindable).OnImageSourceSourceChanged;
+
+			if (newValue is ImageSource newImageSource)
+				newImageSource.SourceChanged += ((MenuItem)bindable).OnImageSourceSourceChanged;
+		}
+
+		void OnImageSourceSourceChanged(object sender, EventArgs e)
+		{
+			OnPropertyChanged(IconImageSourceProperty.PropertyName);
 		}
 	}
 }
