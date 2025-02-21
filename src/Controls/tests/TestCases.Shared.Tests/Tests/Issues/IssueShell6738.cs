@@ -15,11 +15,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		[Test]
+		[Test, Order(1)]
 		[Category(UITestCategories.Shell)]
 		public void EnsureCustomFlyoutIconColor()
 		{
-			App.WaitForElement("Label");
+			App.WaitForElement("IconColorChangeButton");
+			VerifyScreenshot();
+		}
+
+		[Test, Order(2)]
+		[Category(UITestCategories.Shell)]
+		public void EnsureFlyoutIconWithForegroundColor()
+		{
+			App.WaitForElement("IconColorChangeButton");
+			App.Tap("IconColorChangeButton");
 			VerifyScreenshot();
 		}
 	}

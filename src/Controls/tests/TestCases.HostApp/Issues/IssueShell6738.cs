@@ -16,11 +16,13 @@
 					HorizontalOptions = LayoutOptions.Center,
 					Children =
 					{
-						new Label
+						new Button
 						{
-							AutomationId = "Label",
-							Text = "ContentPage Label"
+							AutomationId = "IconColorChangeButton",
+							Text = "Change Icon Color",
+							Command = new Command(() => UpdateFlyoutIconColor(this))
 						}
+
 					}
 				}
 			};
@@ -30,6 +32,11 @@
 				Title = "Home",
 				Content = contentPage
 			});
+		}
+
+		private void UpdateFlyoutIconColor(Shell shell)
+		{
+			SetForegroundColor(shell, Colors.Green);
 		}
 	}
 }
