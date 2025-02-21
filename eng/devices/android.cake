@@ -458,14 +458,17 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 			{
 				Information("Trying to boot the emulator...");
 
-				// delete the AVD first, if it exists
-				Information("Deleting AVD if exists: {0}...", avdName);
-				try { AndroidAvdDelete(avdName, avdSettings); }
-				catch { }
+				if (deviceCreate)
+				{
+					// delete the AVD first, if it exists
+					Information("Deleting AVD if exists: {0}...", avdName);
+					try { AndroidAvdDelete(avdName, avdSettings); }
+					catch { }
 
-				// create the new AVD
-				Information("Creating AVD: {0} ({1})...", avdName, avdImage);
-				AndroidAvdCreate(avdName, avdImage, avdSkin, force: true, settings: avdSettings);
+					// create the new AVD
+					Information("Creating AVD: {0} ({1})...", avdName, avdImage);
+					AndroidAvdCreate(avdName, avdImage, avdSkin, force: true, settings: avdSettings);
+				}
 
 				// start the emulator
 				Information("Starting Emulator: {0}...", avdName);
@@ -515,10 +518,13 @@ void CleanUpVirtualDevice(AndroidEmulatorProcess emulatorProcess, AndroidAvdMana
 	try { emulatorProcess.Kill(); }
 	catch { }
 
-	Information("AndroidAvdDelete");
-	// delete the AVD
-	try { AndroidAvdDelete(androidAvd, avdSettings); }
-	catch { }
+	if (deviceCreate)
+	{
+		Information("AndroidAvdDelete");
+		// delete the AVD
+		try { AndroidAvdDelete(androidAvd, avdSettings); }
+		catch { }
+	}
 }
 
 void WriteLogCat(string filename = null)

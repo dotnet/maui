@@ -72,6 +72,7 @@ stages:
                       poolName: ${{ parameters.androidPool.name }}
                       deviceTestConfiguration: $(ANDROID_CONFIGURATION)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
+                      cakeArgs: --create=false
   
   # - stage: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
   #   displayName: ${{ parameters.targetFrameworkVersion.tfm }} iOS Device Tests

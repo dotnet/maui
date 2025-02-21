@@ -175,6 +175,7 @@ steps:
     - pwsh: |
         dotnet android sdk info
         dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
+        dotnet android avd list
       displayName: 'Provision Android SDK - Create AVDs'
       condition: succeeded()
       env:
