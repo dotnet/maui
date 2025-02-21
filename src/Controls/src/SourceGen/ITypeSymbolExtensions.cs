@@ -195,7 +195,9 @@ static partial class ITypeSymbolExtensions
 			return true;
 
 		// only return internal types if they are visible to us
-		if (type.DeclaredAccessibility == Accessibility.Internal && internalsVisible.Contains(type.ContainingAssembly, SymbolEqualityComparer.Default))
+        // We can't compare assemblies directly, as we add some partial types to the compilaiton (for cross xaml references), so we compare the names
+		if (   type.DeclaredAccessibility == Accessibility.Internal 
+            && internalsVisible.Any(asm => asm.Name == type.ContainingAssembly.Name))
 			return true;
 
 		return false;

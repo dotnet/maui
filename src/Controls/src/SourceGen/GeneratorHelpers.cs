@@ -272,9 +272,17 @@ static class GeneratorHelpers
 			}
 		}
 	}
-	
-	public static IDictionary<XmlType, ITypeSymbol> GetTypeCache(Compilation compilation, CancellationToken cancellationToken)
+
+	public static IDictionary<XmlType, ITypeSymbol> GetTypeCache(Compilation compilation, CancellationToken cancellationToken) => new Dictionary<XmlType, ITypeSymbol>();
+
+	public static SyntaxTree? GetSyntaxTree(((XamlProjectItemForCB? xamlItem, AssemblyCaches xmlnsCache) Left, IDictionary<XmlType, ITypeSymbol> typeCache, Compilation compilation) tuple, CancellationToken cancellationToken)
 	{
-		return new Dictionary<XmlType, ITypeSymbol>();
+		var options = tuple.compilation.SyntaxTrees.FirstOrDefault()?.Options as CSharpParseOptions;
+		try {
+			var code = CodeBehindCodeWriter.GenerateXamlCodeBehind(tuple.Left.xamlItem, tuple.compilation, null, cancellationToken, tuple.Left.xmlnsCache, tuple.typeCache);
+			return CSharpSyntaxTree.ParseText(code, options: options, cancellationToken: cancellationToken);
+		} catch (Exception) {
+		}
+		return null;
 	}
 }

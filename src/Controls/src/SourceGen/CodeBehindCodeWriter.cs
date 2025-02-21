@@ -30,29 +30,29 @@ static class CodeBehindCodeWriter
 ";
 	internal static readonly string[] accessModifiers = ["private", "public", "internal", "protected"];
 
-	public static void GenerateXamlCodeBehind(XamlProjectItemForCB? xamlItem, Compilation compilation, SourceProductionContext context, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
+	public static string GenerateXamlCodeBehind(XamlProjectItemForCB? xamlItem, Compilation compilation, Action<Diagnostic>? reportDiagnostic, CancellationToken ct,  AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache)
 	{
 		var projItem = xamlItem?.ProjectItem;
 
 		// Get a unique string for this xaml project item
 		var itemName = projItem?.ManifestResourceName ?? projItem?.RelativePath;
 		if (itemName == null)		
-			return;
+			return "";
 
 		if (xamlItem!.Root == null)
 		{
 			if (xamlItem.Exception != null)
 			{
 				var location = projItem!.RelativePath is not null ? Location.Create(projItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, xamlItem.Exception.Message));
+				reportDiagnostic?.Invoke(Diagnostic.Create(Descriptors.XamlParserError, location, xamlItem.Exception.Message));
 			}
-			return;
+			return "";
 		}
 
 		var uid = Crc64.ComputeHashString($"{compilation.AssemblyName}.{itemName}");
-		if (!TryParseXaml(xamlItem, uid, compilation, xmlnsCache, typeCache, context.CancellationToken, context, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields))
+		if (!TryParseXaml(xamlItem, uid, compilation, xmlnsCache, typeCache, ct, reportDiagnostic, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields))
 		{
-			return;
+			return "";
 		}
 
 		var sb = new StringBuilder();
@@ -67,8 +67,7 @@ static class CodeBehindCodeWriter
 
 		if (XamlResourceIdOnly)
 		{
-			context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
-			return;
+			return sb.ToString();
 		}
 
 		if (rootType == null)
@@ -249,10 +248,10 @@ static class CodeBehindCodeWriter
 		sb.AppendLine("\t}");
 		sb.AppendLine("}");
 		
-		context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
+		return sb.ToString();
 	}
 
-	public static bool TryParseXaml(XamlProjectItemForCB parseResult, string uid, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, CancellationToken cancellationToken, SourceProductionContext context, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out ITypeSymbol? baseType, out IEnumerable<(string, string, string)>? namedFields)
+	public static bool TryParseXaml(XamlProjectItemForCB parseResult, string uid, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, CancellationToken cancellationToken, Action<Diagnostic>? reportDiagnostic, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out ITypeSymbol? baseType, out IEnumerable<(string, string, string)>? namedFields)
 	{
 		accessModifier = null;
 		rootType = null;
@@ -302,9 +301,9 @@ static class CodeBehindCodeWriter
 			return true;
 		}
 
-		namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsCache, typeCache, cancellationToken, context);
+		namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsCache, typeCache, cancellationToken, reportDiagnostic);
 		var typeArguments = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
-		baseType = new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null).GetTypeSymbol(context.ReportDiagnostic, compilation, xmlnsCache);
+		baseType = new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null).GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache);
 
 		// x:ClassModifier attribute
 		var classModifier = GetAttributeValue(root, "ClassModifier", XamlParser.X2006Uri, XamlParser.X2009Uri);
@@ -327,7 +326,7 @@ static class CodeBehindCodeWriter
 		return true;
 	}
 
-	static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, CancellationToken cancellationToken, SourceProductionContext context)
+	static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, ITypeSymbol> typeCache, CancellationToken cancellationToken, Action<Diagnostic>? reportDiagnostic)
 	{
 		var xPrefix = nsmgr.LookupPrefix(XamlParser.X2006Uri) ?? nsmgr.LookupPrefix(XamlParser.X2009Uri);
 		if (xPrefix == null)
@@ -356,7 +355,7 @@ static class CodeBehindCodeWriter
 			if (!accessModifiers.Contains(accessModifier)) //quick validation
 				accessModifier = "private";
 
-			yield return (name ?? "", xmlType.GetTypeSymbol(context.ReportDiagnostic, compilation, xmlnsCache)?.ToFQDisplayString() ?? "", accessModifier);
+			yield return (name ?? "", xmlType.GetTypeSymbol(reportDiagnostic, compilation, xmlnsCache)?.ToFQDisplayString() ?? "", accessModifier);
 		}
 	}
 
