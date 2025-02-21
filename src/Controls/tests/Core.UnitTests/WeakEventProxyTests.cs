@@ -22,7 +22,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				reference = new WeakReference(subscriber);
 			}
 
-			Assert.False(await reference.WaitForCollect(), "Subscriber should not be alive!");
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.False(reference.IsAlive, "Subscriber should not be alive!");
 		}
 
 		[Fact]
