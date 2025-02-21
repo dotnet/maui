@@ -33,9 +33,9 @@
 		{
 			base.OnAppearing();
 			_listView.IsRefreshing = true;
-			await Task.Delay(1);
+			await Task.Delay(4000);
 			_listView.IsRefreshing = false;
-			await Task.Delay(1);
+			await Task.Delay(4000);
 			_testLoaded.Text = _testReady;
 
 		}

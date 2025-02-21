@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // This test fails on Windows due to a COMException (0x800F1000) caused by missing or unsupported WinUI components.
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Related Issue : https://github.com/dotnet/maui/issues/27959
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
