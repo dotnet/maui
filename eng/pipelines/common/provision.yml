@@ -116,7 +116,7 @@ steps:
         dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
         # Set ANDROID_SDK_ROOT and ANDROID_HOME paths
         # Execute the command and capture the JSON output
-        rm -rf /usr/local/lib/android/sdk/cmdline-tools/latest
+        # rm -rf /usr/local/lib/android/sdk/cmdline-tools/latest
         dotnet android sdk info
         $jsonOutput = & dotnet android sdk info --format=Json | ConvertFrom-Json
         # Get the SDK Path
