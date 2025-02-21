@@ -62,6 +62,7 @@ override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.G
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.Style.set -> void
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.get -> System.Collections.Generic.IList<string>
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void
+Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
 ~Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource<T>(System.Uri value) -> void
 ~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
@@ -341,4 +342,41 @@ virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>
 virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.GetVisibleItemsIndex() -> (bool VisibleItems, int First, int Center, int Last)
 virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.UpdateLayout() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWindow() -> void
+~static readonly Microsoft.Maui.Controls.Switch.OffColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~Microsoft.Maui.Controls.Switch.OffColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.Switch.OffColor.set -> void
+~Microsoft.Maui.Controls.SearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.SearchBar.SearchIconColor.set -> void
+~static readonly Microsoft.Maui.Controls.SearchBar.SearchIconColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~Microsoft.Maui.Controls.Internals.TypedBindingBase.UpdateSourceEventName.set -> void
+Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle.Popover = 5 -> Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetPopoverRect(Microsoft.Maui.Controls.BindableObject element) -> System.Drawing.Rectangle
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.GetPopoverSourceView(Microsoft.Maui.Controls.BindableObject element) -> Microsoft.Maui.Controls.View
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverRect(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config) -> System.Drawing.Rectangle
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverSourceView(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config) -> Microsoft.Maui.Controls.View
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetModalPopoverRect(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config, System.Drawing.Rectangle value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page>
+~static Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.SetModalPopoverView(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page> config, Microsoft.Maui.Controls.View value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.iOS, Microsoft.Maui.Controls.Page>
+~static readonly Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverRectProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page.ModalPopoverSourceViewProperty -> Microsoft.Maui.Controls.BindableProperty
+*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
+*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender>(TSender sender, string message) -> void
+*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Subscribe<TSender, TArgs>(object subscriber, string message, System.Action<TSender, TArgs> callback, TSender source = null) -> void
+*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Subscribe<TSender>(object subscriber, string message, System.Action<TSender> callback, TSender source = null) -> void
+*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
+*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Instance.get -> Microsoft.Maui.Controls.IMessagingCenter
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender>(TSender sender, string message) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Subscribe<TSender, TArgs>(object subscriber, string message, System.Action<TSender, TArgs> callback, TSender source = null) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Subscribe<TSender>(object subscriber, string message, System.Action<TSender> callback, TSender source = null) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
+*REMOVED*Microsoft.Maui.Controls.IMessagingCenter
+*REMOVED*Microsoft.Maui.Controls.MessagingCenter
+*REMOVED*Microsoft.Maui.Controls.MessagingCenter.MessagingCenter() -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender>(TSender sender, string message) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Subscribe<TSender, TArgs>(object subscriber, string message, System.Action<TSender, TArgs> callback, TSender source = null) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Subscribe<TSender>(object subscriber, string message, System.Action<TSender> callback, TSender source = null) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
+*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void

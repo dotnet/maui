@@ -74,3 +74,8 @@ static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IVie
 *REMOVED*virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement! platformView) -> void
 virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement? platformView) -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
+Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
+static Microsoft.Maui.Platform.DatePickerExtensions.UpdateBackground(this Microsoft.UI.Xaml.Controls.CalendarDatePicker! platformDatePicker, Microsoft.Maui.IDatePicker! datePicker) -> void
+static Microsoft.Maui.Platform.TimePickerExtensions.UpdateBackground(this Microsoft.UI.Xaml.Controls.TimePicker! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
+static Microsoft.Maui.Handlers.TimePickerHandler.MapBackground(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
+static Microsoft.Maui.Platform.TextBoxExtensions.GetCursorPosition(this Microsoft.UI.Xaml.Controls.TextBox! textBox, int cursorOffset = 0) -> int

@@ -7,8 +7,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ImageButtonExtensions
 	{
-		// TODO: NET9 should this be public?
-		internal static void UpdateBackground(this ShapeableImageView platformButton, IImageButton imageButton) =>
+		public static void UpdateBackground(this ShapeableImageView platformButton, IImageButton imageButton) =>
 			platformButton.UpdateButtonBackground(imageButton);
 
 		public static void UpdateStrokeColor(this ShapeableImageView platformButton, IButtonStroke buttonStroke) =>
@@ -57,7 +56,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void UpdateButtonStroke(this ShapeableImageView platformView, IButtonStroke button)
+		public static void UpdateButtonStroke(this ShapeableImageView platformView, IButtonStroke button)
 		{
 			if (!platformView.UpdateMauiRippleDrawableStroke(button))
 			{
@@ -81,7 +80,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void UpdateButtonBackground(this ShapeableImageView platformView, IImageButton button)
+		public static void UpdateButtonBackground(this ShapeableImageView platformView, IImageButton button)
 		{
 			platformView.UpdateMauiRippleDrawableBackground(
 				button.Background ?? new SolidPaint(Colors.Transparent), // transparent to force some background
