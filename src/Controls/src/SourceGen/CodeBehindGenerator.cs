@@ -85,8 +85,13 @@ public class CodeBehindGenerator : IIncrementalGenerator
 			})
 			.WithTrackingName(TrackingNames.CompilationWithCodeBehindProvider);
 
+		//this xmlnsDefinitionProvider is computed AFTER feeding the codebehind into the compilation, and allows correct assemblySymbol comparisons
+		var xmlnsDefinitionsProviderForIC = compilationWithCodeBehindProvider
+			.Select(GetAssemblyAttributes)
+			.WithTrackingName(TrackingNames.XmlnsDefinitionsProviderForIC);
+
 		var xamlSourceProviderForIC = xamlProjectItemProviderForIC
-			.Combine(xmlnsDefinitionsProvider)
+			.Combine(xmlnsDefinitionsProviderForIC)
 			.Combine(referenceTypeCacheProvider)
 			.Combine(compilationWithCodeBehindProvider)
 			.Select(static (t, _) => (t.Left.Left, t.Left.Right, t.Right))
