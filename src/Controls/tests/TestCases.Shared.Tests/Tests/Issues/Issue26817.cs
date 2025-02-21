@@ -18,10 +18,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void AccessibilityTraitsSetCorrectly()
 		{
 			App.WaitForElement("ToggleSelectionModeButton").Click();
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "None");
-            App.WaitForElement("ToggleSelectionModeButton").Click();
-            VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Button");
-        }
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "None");
+			App.WaitForElement("ToggleSelectionModeButton").Click();
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Single");
+			App.WaitForElement("ToggleSelectionModeButton").Click();
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "Multiple");
+			App.WaitForElement("ToggleSelectionModeButton").Click();
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "None");
+		}
 	}
 }
 #endif

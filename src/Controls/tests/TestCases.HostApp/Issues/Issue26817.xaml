@@ -4,14 +4,12 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.Issues.Issue26817">
     <VerticalStackLayout>
-      <local:CollectionView2 SelectionMode="Single" x:Name="collectionView">
+      <Label Text="Border" Padding="0,10,10,10"/>
+      <local:CollectionView2 SelectionMode="Single" x:Name="border">
          <CollectionView.ItemsSource>
                <x:Array Type="{x:Type x:String}">
                   <x:String>Item 1</x:String>
                   <x:String>Item 2</x:String>
-                  <x:String>Item 3</x:String>
-                  <x:String>Item 4</x:String>
-                  <x:String>Item 5</x:String>
                </x:Array>
          </CollectionView.ItemsSource>
          <CollectionView.ItemTemplate>
@@ -27,7 +25,48 @@
          </CollectionView.ItemTemplate>
       </local:CollectionView2>
 
+      <Label Text="VerticalStackLayout" Padding="0,10,10,10"/>
+      <local:CollectionView2 SelectionMode="Single" x:Name="vsl">
+         <CollectionView.ItemsSource>
+               <x:Array Type="{x:Type x:String}">
+                  <x:String>Item 1</x:String>
+                  <x:String>Item 2</x:String>
+               </x:Array>
+         </CollectionView.ItemsSource>
+         <CollectionView.ItemTemplate>
+               <DataTemplate>
+                  <VerticalStackLayout BackgroundColor="LightBlue" Padding="10" Margin="5"  SemanticProperties.Description="{Binding}">
+                     <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                     <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center" />
+                     <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                  </VerticalStackLayout>
+               </DataTemplate>
+         </CollectionView.ItemTemplate>
+      </local:CollectionView2>
+
+      <Label Text="Grid" Padding="0,10,10,10"/>
+      <local:CollectionView2 SelectionMode="Single" x:Name="grid">
+         <CollectionView.ItemsSource>
+               <x:Array Type="{x:Type x:String}">
+                  <x:String>Item 1</x:String>
+                  <x:String>Item 2</x:String>
+               </x:Array>
+         </CollectionView.ItemsSource>
+         <CollectionView.ItemTemplate>
+               <DataTemplate>
+                  <Grid BackgroundColor="LightGreen" Padding="10" Margin="5"  SemanticProperties.Description="{Binding}" RowDefinitions="*,*,*">
+                     <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="0"/>
+                     <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="1"/>
+                     <Label Text="{Binding}" HorizontalOptions="Center" VerticalOptions="Center" Grid.Row="2"/>
+                  </Grid>
+               </DataTemplate>
+         </CollectionView.ItemTemplate>
+      </local:CollectionView2>
+
       <Button Text="Toggle SelectionMode" Clicked="Button_Clicked" AutomationId="ToggleSelectionModeButton" />
-      <Label Text="Is Button?" x:Name="Label1" />
+      <Label x:Name="selectionLabel" />
+      <Label Text="Border Item is Button?" x:Name="Label1" />
+      <Label Text="VerticalStackLayout Item is Button?" x:Name="Label2" />
+      <Label Text="Grid Item is Button?" x:Name="Label3" />
     </VerticalStackLayout>
 </ContentPage>
