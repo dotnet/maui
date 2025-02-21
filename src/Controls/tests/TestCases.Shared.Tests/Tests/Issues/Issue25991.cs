@@ -22,30 +22,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("WaitForStubControl");
 
-			App.WaitForElement(InfoLabel);
-			var result1 = App.FindElement(InfoLabel).GetText();
-			ClassicAssert.AreEqual("0", result1);
+			App.WaitForElement("0");
 
 			App.Click("ScrollToPerson2Button");
 			App.Click(AddItemButton);
 
-			App.WaitForElement(InfoLabel);
-			var result2 = App.FindElement(InfoLabel).GetText();
-			ClassicAssert.AreEqual("1", result2);
+			App.WaitForElement("1");
 
 			App.Click("KeepItemsInViewButton");
 			App.Click(AddItemButton);
 
-			App.WaitForElement(InfoLabel);
-			var result3 = App.FindElement(InfoLabel).GetText();
-			ClassicAssert.AreEqual("0", result3);
+
+			App.WaitForElement("0");
 
 			App.Click("KeepLastItemInViewButton");
 			App.Click(AddItemButton);
 
-			App.WaitForElement(InfoLabel);
-			var result4 = App.FindElement(InfoLabel).GetText();
-			ClassicAssert.AreEqual("4", result4);
+			App.WaitForElement("4");
 
 		}
 	}
