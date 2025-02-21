@@ -25,7 +25,7 @@ var deviceCleanupEnabled = Argument("cleanup", true);
 
 // Device details
 var deviceSkin = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
-var androidAvd = "DEVICE_TESTS_EMULATOR";
+var androidAvd = "";
 var androidAvdImage = "";
 var deviceArch = "";
 var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? DefaultApiLevel.ToString());
@@ -430,6 +430,7 @@ void DetermineDeviceCharacteristics(string deviceDescriptor, int defaultApiLevel
 	if (api == 27 && deviceArch == "arm64-v8a")
 		sdk = "google_apis";
 
+	androidAvd = $"Emulator_{api}";
 	androidAvdImage = $"system-images;android-{api};{sdk};{deviceArch}";
 
 	Information("Going to run image: {0}", androidAvdImage);
