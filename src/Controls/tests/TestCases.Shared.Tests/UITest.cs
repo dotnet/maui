@@ -152,7 +152,25 @@ namespace Microsoft.Maui.TestCases.Tests
 			name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 			
 			string imageFileName = $"{name}.png";
-			string environmentName = GetEnvironmentName();
+			string environmentName = string.Empty;
+
+			switch (_testDevice)
+			{
+				case TestDevice.Android:
+					environmentName = "android";
+					break;
+				case TestDevice.iOS:
+					environmentName = "ios";
+					break;
+				case TestDevice.Windows:
+					environmentName = "windows";
+					break;
+				case TestDevice.Mac:
+					environmentName = "mac";
+					break;
+				default:
+					throw new NotImplementedException($"Unknown device type {_testDevice}");
+			}
 
 			string projectRootDirectory = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory)!;
 			string snapshotsDirectory = Path.Combine(projectRootDirectory, "snapshots");
