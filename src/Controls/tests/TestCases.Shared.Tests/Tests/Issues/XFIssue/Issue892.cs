@@ -31,7 +31,7 @@ public class Issue892 : _IssuesUITest
 		App.Tap("Present Flyout");
 		App.Tap(Page5);
 
-#if WINDOWS // IsPresented value not reflected when changing on ItemTapped in FlyoutPage.
+#if ANDROID || WINDOWS // IsPresented value not reflected when changing on ItemTapped in FlyoutPage More Information: https://github.com/dotnet/maui/issues/26324.
 		App.WaitForElementTillPageNavigationSettled(Page5);
 		App.TapInFlyoutPageFlyout("Close Flyout");
 #else

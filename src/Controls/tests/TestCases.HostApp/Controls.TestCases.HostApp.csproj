@@ -5,7 +5,6 @@
     <TargetFrameworks Condition=" '$(UseMaui)' != 'true' and '$(IncludePreviousTfms)' == 'true' ">$(TargetFrameworks);$(MauiSamplePreviousPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
-    <MauiTestProject>true</MauiTestProject>
     <IsPackable>false</IsPackable>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->

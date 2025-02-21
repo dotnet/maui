@@ -12,8 +12,11 @@ namespace Microsoft.Maui.Platform
 		{
 			var trackColor = view.TrackColor;
 
-			if (trackColor is not null)
-				aSwitch.TrackDrawable?.SetColorFilter(trackColor, FilterMode.SrcAtop);
+			if (aSwitch.Checked)
+			{
+				if (trackColor != null)
+					aSwitch.TrackDrawable?.SetColorFilter(trackColor, FilterMode.SrcAtop);
+			}
 			else
 				aSwitch.TrackDrawable?.ClearColorFilter();
 		}

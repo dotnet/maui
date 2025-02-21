@@ -22,17 +22,16 @@ namespace Microsoft.Maui.Platform
 			if (uIView is null)
 				return;
 
-			if (view.TrackColor is not null)
-			{
-				uiSwitch.OnTintColor = view.TrackColor.ToPlatform();
-				uIView.BackgroundColor = uiSwitch.OnTintColor;
-			}
-
-			else
+			if (!view.IsOn)
 			{
 				// iOS 13+ uses the UIColor.SecondarySystemFill to support Light and Dark mode
 				// else, use the RGBA equivalent of UIColor.SecondarySystemFill in Light mode
-				uiSwitch.OnTintColor = OperatingSystem.IsIOSVersionAtLeast(13) ? UIColor.SecondarySystemFill : DefaultBackgroundColor;
+				uIView.BackgroundColor = OperatingSystem.IsIOSVersionAtLeast(13) ? UIColor.SecondarySystemFill : DefaultBackgroundColor;
+			}
+
+			else if (view.TrackColor is not null)
+			{
+				uiSwitch.OnTintColor = view.TrackColor.ToPlatform();
 				uIView.BackgroundColor = uiSwitch.OnTintColor;
 			}
 		}

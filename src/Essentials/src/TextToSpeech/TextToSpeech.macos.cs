@@ -32,9 +32,6 @@ namespace Microsoft.Maui.Media
 
 					if (options.Locale != null)
 						ss.Voice = options.Locale.Id;
-
-					if (options.Rate.HasValue)
-						ss.Rate = options.Rate.Value;
 				}
 
 				ssd.FinishedSpeaking += OnFinishedSpeaking;

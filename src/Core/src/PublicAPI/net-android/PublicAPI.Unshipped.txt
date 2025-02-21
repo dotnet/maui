@@ -1,6 +1,5 @@
 #nullable enable
 Microsoft.Maui.ElementHandlerExtensions
-Microsoft.Maui.Graphics.MauiDrawable.SetEmptyBorderBrush() -> void
 Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.HandlerDisconnectPolicy.Automatic = 0 -> Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.HandlerDisconnectPolicy.Manual = 1 -> Microsoft.Maui.HandlerDisconnectPolicy
@@ -81,12 +80,8 @@ static Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions.AddHybrid
 static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
-static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformButton, Microsoft.Maui.IImageButton! imageButton) -> void
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
-Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
-static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateButtonStroke(this Google.Android.Material.ImageView.ShapeableImageView! platformView, Microsoft.Maui.IButtonStroke! button) -> void
-static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateButtonBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformView, Microsoft.Maui.IImageButton! button) -> void
 *REMOVED*override Microsoft.Maui.Platform.WrapperView.OnDetachedFromWindow() -> void
 *REMOVED*override Microsoft.Maui.Platform.WrapperView.RequestLayout() -> void
 virtual Microsoft.Maui.PlatformContentViewGroup.SetHasClip(bool hasClip) -> void

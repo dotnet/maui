@@ -1,29 +1,17 @@
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
-	/// <summary>
-	/// Enumerates valid modal presentation styles for iOS.
-	/// </summary>
+	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIModalPresentationStyle.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle']/Docs/*" />
 	public enum UIModalPresentationStyle
 	{
-		/// <summary>The content is displayed in a manner that covers the screen.</summary>
-		/// <remarks>The views belonging to the presenting view controller are removed after the presentation completes.</remarks>
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIModalPresentationStyle.xml" path="//Member[@MemberName='FullScreen']/Docs/*" />
 		FullScreen,
-		
-		/// <summary>The content is displayed in the center of the screen.</summary>
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIModalPresentationStyle.xml" path="//Member[@MemberName='FormSheet']/Docs/*" />
 		FormSheet,
-
-		/// <summary>The system selects an appropriate presentation style for the view controller.</summary>
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIModalPresentationStyle.xml" path="//Member[@MemberName='Automatic']/Docs/*" />
 		Automatic,
-
-		/// <summary>The content is displayed in a manner that covers the screen.</summary>
-		/// <remarks>The views belonging to the presenting view controller are not removed after the presentation completes.</remarks>
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIModalPresentationStyle.xml" path="//Member[@MemberName='OverFullScreen']/Docs/*" />
 		OverFullScreen,
-
-		/// <summary>The content is displayed in a popover view.</summary>
-		PageSheet,
-
-		/// <summary>The content is displayed in a popover view.</summary>
-		Popover,
-		
+		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/UIModalPresentationStyle.xml" path="//Member[@MemberName='PageSheet']/Docs/*" />
+		PageSheet
 	}
 }

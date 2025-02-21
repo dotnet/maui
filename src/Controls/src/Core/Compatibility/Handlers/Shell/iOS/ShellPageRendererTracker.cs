@@ -388,10 +388,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					if (image != null)
 					{
-#pragma warning disable CS0618 // Type or member is obsolete
 						NavigationItem.LeftBarButtonItem.SetAccessibilityHint(image);
 						NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(image);
-#pragma warning restore CS0618 // Type or member is obsolete
 					}
 				}
 			});

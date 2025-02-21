@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Devices.Sensors
 				case GeolocationAccuracy.High:
 					return CLLocation.AccuracyNearestTenMeters;
 				case GeolocationAccuracy.Best:
-					return CLLocation.AccuracyBestForNavigation;
+					return CLLocation.AccurracyBestForNavigation;
 				default:
 					return CLLocation.AccuracyHundredMeters;
 			}

@@ -86,10 +86,9 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[TestCase("maui-blazor", "Project Space", "projectspace")]
 	[TestCase("mauilib", "Project Space", "projectspace")]
 	// with invalid characters
-	// @ character issue in MSBuild, to be fixed in: https://github.com/dotnet/msbuild/issues/11237
-	//[TestCase("maui", "Project@Symbol", "projectsymbol")]
-	//[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
-	//[TestCase("mauilib", "Project@Symbol", "projectsymbol")]
+	[TestCase("maui", "Project@Symbol", "projectsymbol")]
+	[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
+	[TestCase("mauilib", "Project@Symbol", "projectsymbol")]
 	public void BuildsWithSpecialCharacters(string id, string projectName, string expectedId)
 	{
 		var projectDir = Path.Combine(TestDirectory, projectName);
@@ -159,12 +158,9 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		// set <MauiVersion> in the csproj as that is the reccommended place
 		var mv = framework == DotNetPrevious ? MauiVersionPrevious : MauiVersionCurrent;
-		if (mv is not null or "")
-		{
-			FileUtilities.ReplaceInFile(projectFile,
-				"</Project>",
-				$"<PropertyGroup><MauiVersion>{mv}</MauiVersion></PropertyGroup></Project>");
-		}
+		FileUtilities.ReplaceInFile(projectFile,
+			"</Project>",
+			$"<PropertyGroup><MauiVersion>{mv}</MauiVersion></PropertyGroup></Project>");
 
 		string binlogDir = Path.Combine(TestEnvironment.GetMauiDirectory(), $"artifacts\\log\\{Path.GetFileName(projectDir)}.binlog");
 
@@ -332,5 +328,33 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+	}
+
+	// This test is super temporary and is just for the interim
+	// while we productize the CollectionViewHandler2. Once we
+	// ship it as the default, this test will fail and can be deleted.
+	[Test]
+	[TestCase("maui", DotNetCurrent, "", false)]
+	[TestCase("maui", DotNetCurrent, "--sample-content", true)]
+	public void SampleShouldHaveHandler2Registered(string id, string framework, string additionalDotNetNewParams, bool shouldHaveHandler2)
+	{
+		var projectDir = TestDirectory;
+		var programFile = Path.Combine(projectDir, "MauiProgram.cs");
+
+		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams),
+			$"Unable to create template {id}. Check test output for errors.");
+
+		var programContents = File.ReadAllText(programFile);
+
+		if (shouldHaveHandler2)
+		{
+			AssertContains("#if IOS || MACCATALYST", programContents);
+			AssertContains("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
+		}
+		else
+		{
+			AssertDoesNotContain("#if IOS || MACCATALYST", programContents);
+			AssertDoesNotContain("handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();", programContents);
+		}
 	}
 }

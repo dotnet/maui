@@ -45,7 +45,8 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdateTextColor(timePicker);
 		}
 
-		public static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
+		// TODO NET8 make public
+		internal static void MapBackground(ITimePickerHandler handler, ITimePicker timePicker)
 		{
 			handler.PlatformView?.UpdateBackground(timePicker);
 		}

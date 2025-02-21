@@ -864,7 +864,6 @@ public static class KeyboardAutoManagerScroll
 		}
 
 		var window = ContainerView.Window;
-		ArgumentNullException.ThrowIfNull (window);
 		var intersectRect = CGRect.Intersect(KeyboardFrame, window.Frame);
 		var kbSize = intersectRect == CGRect.Empty ? new CGSize(KeyboardFrame.Width, 0) : intersectRect.Size;
 

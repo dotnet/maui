@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 					if (myTab == null)
 						continue;
 
-					Assert.That(myTab.Icon, Is.InstanceOf<FontImageSource>());
+					Assert.That(myTab.Icon, Is.TypeOf<FontImageSource>());
 
 					var fontImage = (FontImageSource)myTab.Icon;
 					Assert.AreEqual(FontFamily, fontImage.FontFamily);

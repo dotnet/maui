@@ -984,10 +984,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (FlyoutPage != null && !string.IsNullOrEmpty(FlyoutPage.AutomationId))
 					SetAutomationId(containerController.NavigationItem.LeftBarButtonItem, $"btn_{FlyoutPage.AutomationId}");
 
-#pragma warning disable CS0618 // Type or member is obsolete
 				containerController.NavigationItem.LeftBarButtonItem.SetAccessibilityHint(FlyoutPage);
 				containerController.NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(FlyoutPage);
-#pragma warning restore CS0618 // Type or member is obsolete
 			});
 
 			void OnItemTapped(object sender, EventArgs e)

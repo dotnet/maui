@@ -36,8 +36,6 @@ namespace Microsoft.Maui.IntegrationTests
 				$"RestoreConfigFile={TestNuGetConfig}",
 				// Surface warnings as build errors
 				"TreatWarningsAsErrors=true",
-				// Detailed trimmer warnings, if present
-				"TrimmerSingleWarn=false",
 			};
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: sampleProps, binlogPath: binlog),

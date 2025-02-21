@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		[Export("webView:didFinishNavigation:")]
-		public virtual void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
+		public void DidFinishNavigation(WKWebView webView, WKNavigation navigation)
 		{
 			var handler = Handler;
 
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		[Export("webView:didFailNavigation:withError:")]
-		public virtual void DidFailNavigation(WKWebView webView, WKNavigation navigation, NSError error)
+		public void DidFailNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 		{
 			var handler = Handler;
 
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		[Export("webView:didFailProvisionalNavigation:withError:")]
-		public virtual void DidFailProvisionalNavigation(WKWebView webView, WKNavigation navigation, NSError error)
+		public void DidFailProvisionalNavigation(WKWebView webView, WKNavigation navigation, NSError error)
 		{
 			var handler = Handler;
 
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Platform
 
 		// https://stackoverflow.com/questions/37509990/migrating-from-uiwebview-to-wkwebview
 		[Export("webView:decidePolicyForNavigationAction:decisionHandler:")]
-		public virtual void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
+		public void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 		{
 			var handler = Handler;
 

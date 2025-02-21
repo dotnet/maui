@@ -51,8 +51,7 @@ namespace Microsoft.Maui.Media
 
 		public Task<IScreenshotResult?> CaptureAsync(UIView view)
 		{
-			ArgumentNullException.ThrowIfNull (view);
-			ArgumentNullException.ThrowIfNull (view.Window);
+			_ = view ?? throw new ArgumentNullException(nameof(view));
 
 			// NOTE: We rely on the view frame having been set to the correct size when this method is invoked.
 			UIGraphics.BeginImageContextWithOptions(view.Bounds.Size, false, view.Window.Screen.Scale);

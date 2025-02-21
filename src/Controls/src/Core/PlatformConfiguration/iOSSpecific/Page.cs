@@ -259,19 +259,6 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			BindableProperty.Create(nameof(ModalPresentationStyle), typeof(UIModalPresentationStyle), typeof(Page), UIModalPresentationStyle.FullScreen);
 
 		/// <summary>
-		/// Defines the popover source of the modal <see cref="Page"/>.
-		/// </summary>
-		public static readonly BindableProperty ModalPopoverSourceViewProperty =
-			BindableProperty.Create(nameof(ModalPopoverSourceView), typeof(View), typeof(Page), null);
-
-		/// <summary>
-		/// Defines the rect within the popover source of the modal <see cref="Page"/>.
-		/// </summary>
-		public static readonly BindableProperty ModalPopoverRectProperty =
-			BindableProperty.Create(nameof(ModalPopoverRect), typeof(System.Drawing.Rectangle), typeof(Page), System.Drawing.Rectangle.Empty);
-
-
-		/// <summary>
 		/// Gets the modal presentation style of the <see cref="Page"/>.
 		/// </summary>
 		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
@@ -282,25 +269,6 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <summary>
-		/// Gets the source view of the popover, if the ModalPresentationStyle is set to <see cref="UIModalPresentationStyle.Popover"/><see cref="Page"/>.
-		/// </summary>
-		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
-		/// <returns>The source view for the modal, if it's a popover.</returns>
-		public static View ModalPopoverSourceView(this IPlatformElementConfiguration<iOS, FormsElement> config)
-		{
-			return GetPopoverSourceView(config.Element);
-		}
-
-		/// <summary>
-		/// Gets the source view of the popover, if the ModalPresentationStyle is set to <see cref="UIModalPresentationStyle.Popover"/><see cref="Page"/>.
-		/// </summary>
-		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
-		/// <returns>The rectangle within the source view of the modal</returns>
-		public static System.Drawing.Rectangle ModalPopoverRect(this IPlatformElementConfiguration<iOS, FormsElement> config)
-		{
-			return GetPopoverRect(config.Element);
-		}
-		/// <summary>
 		/// Sets the modal presentation style of the <see cref="Page"/>.
 		/// </summary>
 		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
@@ -309,30 +277,6 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetModalPresentationStyle(this IPlatformElementConfiguration<iOS, FormsElement> config, UIModalPresentationStyle value)
 		{
 			SetModalPresentationStyle(config.Element, value);
-			return config;
-		}
-
-		/// <summary>
-		/// Sets the source view of the popover, if the ModalPresentationStyle is set to <see cref="UIModalPresentationStyle.Popover"/><see cref="Page"/>.
-		/// </summary>
-		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
-		/// <param name="value">The Microsoft.Maui.Controls.View from which the modal will originate</param>
-		/// <returns>The modal presentation style.</returns>
-		public static IPlatformElementConfiguration<iOS, FormsElement> SetModalPopoverView(this IPlatformElementConfiguration<iOS, FormsElement> config, View value )
-		{
-			SetModalPopoverView(config.Element, value);
-			return config;
-		}
-
-		/// <summary>
-		/// Sets the rectangle within the popoverview from which the popover will originate, if the ModalPresentationStyle is set to <see cref="UIModalPresentationStyle.Popover"/><see cref="Page"/>.
-		/// </summary>
-		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
-		/// <param name="value">The Rectangle within the view from which the modal will originate</param>
-		/// <returns>The modal presentation style.</returns>
-		public static IPlatformElementConfiguration<iOS, FormsElement> SetModalPopoverRect(this IPlatformElementConfiguration<iOS, FormsElement> config, System.Drawing.Rectangle value)
-		{
-			SetModalPopoverRect(config.Element, value);
 			return config;
 		}
 
@@ -347,26 +291,6 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		}
 
 		/// <summary>
-		/// Gets the current value of the <see cref="UIModalPresentationStyle"/> enumeration that's applied to the <see cref="Page"/>.
-		/// </summary>
-		/// <param name="element">The <see cref="BindableObject" /> whose modal presentation style is being retrieved.</param>
-		/// <returns>The current value of the <see cref="UIModalPresentationStyle" /> enumeration that's applied to the <paramref name="element" />.</returns>
-		public static View GetPopoverSourceView(BindableObject element)
-		{
-			return (View)element.GetValue(ModalPopoverSourceViewProperty);
-		}
-
-		/// <summary>
-		/// Gets the current value of the <see cref="UIModalPresentationStyle"/> enumeration that's applied to the <see cref="Page"/>.
-		/// </summary>
-		/// <param name="element">The <see cref="BindableObject" /> whose modal presentation style is being retrieved.</param>
-		/// <returns>The current value of the <see cref="UIModalPresentationStyle" /> enumeration that's applied to the <paramref name="element" />.</returns>
-		public static System.Drawing.Rectangle GetPopoverRect(BindableObject element)
-		{
-			return (System.Drawing.Rectangle)element.GetValue(ModalPopoverRectProperty);
-		}
-
-		/// <summary>
 		/// Sets the modal presentation style on a <see cref="Page"/>.
 		/// </summary>
 		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
@@ -374,26 +298,6 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		static void SetModalPresentationStyle(BindableObject element, UIModalPresentationStyle value)
 		{
 			element.SetValue(ModalPresentationStyleProperty, value);
-		}
-
-		/// <summary>
-		/// Sets the popover source view for a modal <see cref="Page"/>.
-		/// </summary>
-		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
-		/// <param name="value">The view from which the popover originates.</param>
-		static void SetModalPopoverView(BindableObject element, View value)
-		{
-			element.SetValue(ModalPopoverSourceViewProperty, value);
-		}
-
-		/// <summary>
-		/// Sets the rectangle within the popover source view for a modal <see cref="Page"/>.
-		/// </summary>
-		/// <param name="element">A page, the VisualElement that occupies the entire screen.</param>
-		/// <param name="value">The rectangle within the view from which the popover originates.</param>
-		static void SetModalPopoverRect(BindableObject element, System.Drawing.Rectangle value)
-		{
-			element.SetValue(ModalPopoverRectProperty, value);
 		}
 
 		/// <summary>Bindable property for <see cref="PrefersHomeIndicatorAutoHidden"/>.</summary>

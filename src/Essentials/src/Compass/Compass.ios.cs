@@ -26,11 +26,11 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				case SensorSpeed.Fastest:
 					locationManager.HeadingFilter = FastestFilter;
-					locationManager.DesiredAccuracy = CLLocation.AccuracyBestForNavigation;
+					locationManager.DesiredAccuracy = CLLocation.AccurracyBestForNavigation;
 					break;
 				case SensorSpeed.Game:
 					locationManager.HeadingFilter = GameFilter;
-					locationManager.DesiredAccuracy = CLLocation.AccuracyBestForNavigation;
+					locationManager.DesiredAccuracy = CLLocation.AccurracyBestForNavigation;
 					break;
 				case SensorSpeed.Default:
 					locationManager.HeadingFilter = NormalFilter;

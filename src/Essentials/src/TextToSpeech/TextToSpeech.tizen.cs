@@ -41,11 +41,11 @@ namespace Microsoft.Maui.Media
 				}
 			}
 
-			var rate = 0;
-			if (options?.Rate.HasValue ?? false)
-				rate = (int)Math.Round(options.Rate.Value / RateMax * tts.GetSpeedRange().Max, MidpointRounding.AwayFromZero);
+			var pitch = 0;
+			if (options?.Pitch.HasValue ?? false)
+				pitch = (int)Math.Round(options.Pitch.Value / PitchMax * tts.GetSpeedRange().Max, MidpointRounding.AwayFromZero);
 
-			tts.AddText(text, language, (int)voiceType, rate);
+			tts.AddText(text, language, (int)voiceType, pitch);
 			tts.Play();
 
 			await tcsUtterances.Task;

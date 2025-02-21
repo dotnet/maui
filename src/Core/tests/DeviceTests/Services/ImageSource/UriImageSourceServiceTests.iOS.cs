@@ -20,32 +20,30 @@ namespace Microsoft.Maui.DeviceTests
 			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetImageAsync(imageSource));
 		}
 
-		// Disabled due to https://github.com/dotnet/runtime/issues/111506
-		
-		// [Theory]
-		// [InlineData("https://test.com/file", "{hash}")]
-		// [InlineData("https://test.com/file#test", "{hash}")]
-		// [InlineData("https://test.com/file#test=123", "{hash}")]
-		// [InlineData("https://test.com/file?test", "{hash}")]
-		// [InlineData("https://test.com/file?test=123", "{hash}")]
-		// [InlineData("https://test.com/file.png", "{hash}.png")]
-		// [InlineData("https://test.com/file.jpg", "{hash}.jpg")]
-		// [InlineData("https://test.com/file.gif", "{hash}.gif")]
-		// [InlineData("https://test.com/file.jpg?ids", "{hash}.jpg")]
-		// [InlineData("https://test.com/file.jpg?id=123", "{hash}.jpg")]
-		// [InlineData("https://test.com/file.gif#id=123", "{hash}.gif")]
-		// [InlineData("https://test.com/file.gif#ids", "{hash}.gif")]
-		// public void CachedFilenameIsCorrectAndValid(string uri, string expected)
-		// {
-		// 	using var algorithm = new Crc64HashAlgorithm();
-		// 	var hashed = algorithm.ComputeHashString(uri);
-		// 	expected = expected.Replace("{hash}", hashed, StringComparison.OrdinalIgnoreCase);
+		[Theory]
+		[InlineData("https://test.com/file", "{hash}")]
+		[InlineData("https://test.com/file#test", "{hash}")]
+		[InlineData("https://test.com/file#test=123", "{hash}")]
+		[InlineData("https://test.com/file?test", "{hash}")]
+		[InlineData("https://test.com/file?test=123", "{hash}")]
+		[InlineData("https://test.com/file.png", "{hash}.png")]
+		[InlineData("https://test.com/file.jpg", "{hash}.jpg")]
+		[InlineData("https://test.com/file.gif", "{hash}.gif")]
+		[InlineData("https://test.com/file.jpg?ids", "{hash}.jpg")]
+		[InlineData("https://test.com/file.jpg?id=123", "{hash}.jpg")]
+		[InlineData("https://test.com/file.gif#id=123", "{hash}.gif")]
+		[InlineData("https://test.com/file.gif#ids", "{hash}.gif")]
+		public void CachedFilenameIsCorrectAndValid(string uri, string expected)
+		{
+			using var algorithm = new Crc64HashAlgorithm();
+			var hashed = algorithm.ComputeHashString(uri);
+			expected = expected.Replace("{hash}", hashed, StringComparison.OrdinalIgnoreCase);
 
-		// 	var service = new UriImageSourceService();
+			var service = new UriImageSourceService();
 
-		// 	var filename = service.GetCachedFileName(new UriImageSourceStub { Uri = new Uri(uri) });
+			var filename = service.GetCachedFileName(new UriImageSourceStub { Uri = new Uri(uri) });
 
-		// 	Assert.Equal(expected, filename);
-		// }
+			Assert.Equal(expected, filename);
+		}
 	}
 }

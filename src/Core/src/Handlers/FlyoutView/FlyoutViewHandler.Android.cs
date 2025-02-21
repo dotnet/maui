@@ -255,6 +255,8 @@ namespace Microsoft.Maui.Handlers
 				DrawerLayout.AddView(flyoutView, layoutParameters);
 			}
 
+			DrawerLayout.CloseDrawer(flyoutView);
+
 			if (VirtualView is IToolbarElement te && te.Toolbar?.Handler is ToolbarHandler th)
 				th.SetupWithDrawerLayout(DrawerLayout);
 		}

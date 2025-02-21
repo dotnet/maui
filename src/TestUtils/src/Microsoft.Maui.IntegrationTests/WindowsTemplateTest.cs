@@ -24,10 +24,19 @@ public class WindowsTemplateTest : BaseTemplateTests
 		if (framework != DotNetPrevious)
 			EnableTizen(projectFile);
 
-		// .NET 9 and later was Unpackaged, so we need to remove the line
-		FileUtilities.ReplaceInFile(projectFile,
-			"<WindowsPackageType>None</WindowsPackageType>",
-			"");
+		if (framework == DotNetPrevious)
+		{
+			// .NET 8 was Packaged by default, so we don't have to do anything
+			FileUtilities.ShouldNotContainInFile(projectFile,
+				"<WindowsPackageType>");
+		}
+		else
+		{
+			// .NET 9 and later was Unpackaged, so we need to remove the line
+			FileUtilities.ReplaceInFile(projectFile,
+				"<WindowsPackageType>None</WindowsPackageType>",
+				"");
+		}
 
 		Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
@@ -114,9 +123,19 @@ public class WindowsTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		// .NET 9 is Unpackaged by default, so we don't have to do anything
-		FileUtilities.ShouldContainInFile(projectFile,
-			"<WindowsPackageType>None</WindowsPackageType>");
+		if (framework == DotNetPrevious)
+		{
+			// .NET 8 was Packaged by default, so we need to say no
+			FileUtilities.ShouldNotContainInFile(projectFile,
+				"<WindowsPackageType>");
+			BuildProps.Add("WindowsPackageType=None");
+		}
+		else
+		{
+			// .NET 9 is Unpackaged by default, so we don't have to do anything
+			FileUtilities.ShouldContainInFile(projectFile,
+				"<WindowsPackageType>None</WindowsPackageType>");
+		}
 
 		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
@@ -154,10 +173,19 @@ public class WindowsTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		// .NET 9 and later was Unpackaged, so we need to remove the line
-		FileUtilities.ReplaceInFile(projectFile,
-			"<WindowsPackageType>None</WindowsPackageType>",
-			"");
+		if (framework == DotNetPrevious)
+		{
+			// .NET 8 was Packaged by default, so we don't have to do anything
+			FileUtilities.ShouldNotContainInFile(projectFile,
+				"<WindowsPackageType>");
+		}
+		else
+		{
+			// .NET 9 and later was Unpackaged, so we need to remove the line
+			FileUtilities.ReplaceInFile(projectFile,
+				"<WindowsPackageType>None</WindowsPackageType>",
+				"");
+		}
 
 		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");

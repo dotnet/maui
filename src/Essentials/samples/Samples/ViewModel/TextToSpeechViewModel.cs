@@ -16,7 +16,6 @@ namespace Samples.ViewModel
 		bool advancedOptions;
 		float volume;
 		float pitch;
-		float rate;
 		string locale = "Default";
 		Locale selectedLocale;
 
@@ -31,7 +30,6 @@ namespace Samples.ViewModel
 			AdvancedOptions = false;
 			Volume = 1.0f;
 			Pitch = 1.0f;
-			Rate = 1.0f;
 		}
 
 		public override void OnDisappearing()
@@ -57,8 +55,7 @@ namespace Samples.ViewModel
 				{
 					Volume = Volume,
 					Pitch = Pitch,
-					Locale = selectedLocale,
-					Rate=Rate
+					Locale = selectedLocale
 				};
 			}
 
@@ -142,12 +139,6 @@ namespace Samples.ViewModel
 		{
 			get => pitch;
 			set => SetProperty(ref pitch, value);
-		}
-
-		public float Rate
-		{
-			get => rate;
-			set => SetProperty(ref rate, value);
 		}
 
 		public string Locale

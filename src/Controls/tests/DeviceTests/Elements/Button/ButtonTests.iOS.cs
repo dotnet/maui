@@ -14,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 		UIButton GetPlatformButton(ButtonHandler buttonHandler) =>
 			(UIButton)buttonHandler.PlatformView;
 
-		Task<string?> GetPlatformText(ButtonHandler buttonHandler)
+		Task<string> GetPlatformText(ButtonHandler buttonHandler)
 		{
 			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).CurrentTitle);
 		}

@@ -604,7 +604,14 @@ function InitializeBuildTool() {
     }
     $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
 
-    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = 'net' }
+    # Use override if it exists - commonly set by source-build
+    if ($null -eq $env:_OverrideArcadeInitializeBuildToolFramework) {
+      $initializeBuildToolFramework="net9.0"
+    } else {
+      $initializeBuildToolFramework=$env:_OverrideArcadeInitializeBuildToolFramework
+    }
+    
+    $buildTool = @{ Path = $dotnetPath; Command = 'msbuild'; Tool = 'dotnet'; Framework = $initializeBuildToolFramework }
   } elseif ($msbuildEngine -eq "vs") {
     try {
       $msbuildPath = InitializeVisualStudioMSBuild -install:$restore
@@ -613,7 +620,7 @@ function InitializeBuildTool() {
       ExitWithExitCode 1
     }
 
-    $buildTool = @{ Path = $msbuildPath; Command = ""; Tool = "vs"; Framework = "netframework"; ExcludePrereleaseVS = $excludePrereleaseVS }
+    $buildTool = @{ Path = $msbuildPath; Command = ""; Tool = "vs"; Framework = "net472"; ExcludePrereleaseVS = $excludePrereleaseVS }
   } else {
     Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Unexpected value of -msbuildEngine: '$msbuildEngine'."
     ExitWithExitCode 1
@@ -772,10 +779,8 @@ function MSBuild() {
       # new scripts need to work with old packages, so we need to look for the old names/versions
       (Join-Path $basePath (Join-Path $buildTool.Framework 'Microsoft.DotNet.ArcadeLogging.dll')),
       (Join-Path $basePath (Join-Path $buildTool.Framework 'Microsoft.DotNet.Arcade.Sdk.dll')),
-
-      # This list doesn't need to be updated anymore and can eventually be removed.
-      (Join-Path $basePath (Join-Path net9.0 'Microsoft.DotNet.ArcadeLogging.dll')),
-      (Join-Path $basePath (Join-Path net9.0 'Microsoft.DotNet.Arcade.Sdk.dll')),
+      (Join-Path $basePath (Join-Path net7.0 'Microsoft.DotNet.ArcadeLogging.dll')),
+      (Join-Path $basePath (Join-Path net7.0 'Microsoft.DotNet.Arcade.Sdk.dll')),
       (Join-Path $basePath (Join-Path net8.0 'Microsoft.DotNet.ArcadeLogging.dll')),
       (Join-Path $basePath (Join-Path net8.0 'Microsoft.DotNet.Arcade.Sdk.dll'))
     )

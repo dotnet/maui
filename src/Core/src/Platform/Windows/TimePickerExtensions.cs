@@ -58,7 +58,8 @@ namespace Microsoft.Maui.Platform
 			"TimePickerButtonForegroundDisabled"
 		};
 
-		public static void UpdateBackground(this TimePicker platformTimePicker, ITimePicker timePicker)
+		// TODO NET8 add to public API
+		internal static void UpdateBackground(this TimePicker platformTimePicker, ITimePicker timePicker)
 		{
 			var brush = timePicker?.Background?.ToPlatform();
 

@@ -3,9 +3,10 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class TextInputExtensions
+	// TODO: NET8 issoto - Revisit this, marking this class as `internal` to avoid breaking public API changes
+	internal static class TextInputExtensions
 	{
-		public static int GetCursorPosition(this IUITextInput platformView, int cursorOffset = 0)
+		internal static int GetCursorPosition(this IUITextInput platformView, int cursorOffset = 0)
 		{
 			var zeroPosition = platformView.GetPosition(platformView.BeginningOfDocument, 0);
 			var currentCursorPosition = platformView.SelectedTextRange?.Start ?? zeroPosition;
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.Platform
 			return Math.Max(0, newCursorPosition);
 		}
 
-		public static void SetTextRange(this IUITextInput platformView, int start, int selectedTextLength)
+		internal static void SetTextRange(this IUITextInput platformView, int start, int selectedTextLength)
 		{
 			int end = start + selectedTextLength;
 
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Platform
 			platformView.SelectedTextRange = platformView.GetTextRange(startPosition, endPosition);
 		}
 
-		public static int GetSelectedTextLength(this IUITextInput platformView)
+		internal static int GetSelectedTextLength(this IUITextInput platformView)
 		{
 			var selectedTextRange = platformView.SelectedTextRange;
 
