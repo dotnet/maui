@@ -116,8 +116,8 @@ steps:
         dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
         # Set ANDROID_SDK_ROOT and ANDROID_HOME paths
         # Execute the command and capture the JSON output
-        dotnet android sdk info
         rm -rf /usr/local/lib/android/sdk/cmdline-tools/latest
+        dotnet android sdk info
         $jsonOutput = & dotnet android sdk info --format=Json | ConvertFrom-Json
         # Get the SDK Path
         $preferredSdk = $jsonOutput.SdkInfo.Path
@@ -143,6 +143,11 @@ steps:
         } else {
           echo "Unable to set AndroidSdkDirectory"
         }
+
+        sudo apt-get install tree
+        cd $preferredSdk
+        tree -a
+
       displayName: 'Provision Android SDK - Common Packages'
       condition: succeeded()
 
