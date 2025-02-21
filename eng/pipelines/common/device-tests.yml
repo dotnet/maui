@@ -73,143 +73,143 @@ stages:
                       deviceTestConfiguration: $(ANDROID_CONFIGURATION)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
   
-  - stage: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
-    displayName: ${{ parameters.targetFrameworkVersion.tfm }} iOS Device Tests
-    ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
-      dependsOn:
-        - ios_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
-    ${{ else }}:
-      dependsOn: []
-    jobs:
-    - job: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
-      workspace:
-        clean: all
-      displayName: "iOS"
-      pool: ${{ parameters.iosPool }}
-      timeoutInMinutes: 120
-      strategy:
-        matrix:
-          # create all the variables used for the matrix
-          ${{ each project in parameters.projects }}:
-            ${{ if ne(project.ios, '') }}:
-              ${{ each version in parameters.iosVersions }}:
-                ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
-                  ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
-                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-                    PROJECT_PATH: ${{ project.ios }}
-                    IOS_CONFIGURATION: ${{ project.iOSConfiguration }}
-                    TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
-                    ${{ if contains(version, 'device') }}:
-                      DEVICE: ios-device
-                      APIVERSION: ${{ replace(version, 'device-', '') }}
-                    ${{ else }}:
-                      DEVICE: ios-simulator-64_${{ replace(version, 'simulator-', '') }}
-                      APIVERSION: ${{ replace(version, 'simulator-', '') }}
-      steps:
-        - template: device-tests-steps.yml
-          parameters:
-            platform: ios
-            path: $(PROJECT_PATH)
-            device: $(DEVICE)
-            apiVersion: $(APIVERSION)
-            windowsPackageId: ios # Only needed for Windows, will be ignored
-            provisionatorChannel: ${{ parameters.provisionatorChannel }}
-            agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-            artifactName: ${{ parameters.artifactName }}
-            artifactItemPattern: ${{ parameters.artifactItemPattern }}
-            checkoutDirectory: ${{ parameters.checkoutDirectory }}
-            useArtifacts: ${{ parameters.useArtifacts }}
-            poolName: 'Azure Pipelines'
-            skipProvisioning: ${{ parameters.skipProvisioning }}
-            deviceTestConfiguration: $(IOS_CONFIGURATION)
+  # - stage: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+  #   displayName: ${{ parameters.targetFrameworkVersion.tfm }} iOS Device Tests
+  #   ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
+  #     dependsOn:
+  #       - ios_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
+  #   ${{ else }}:
+  #     dependsOn: []
+  #   jobs:
+  #   - job: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+  #     workspace:
+  #       clean: all
+  #     displayName: "iOS"
+  #     pool: ${{ parameters.iosPool }}
+  #     timeoutInMinutes: 120
+  #     strategy:
+  #       matrix:
+  #         # create all the variables used for the matrix
+  #         ${{ each project in parameters.projects }}:
+  #           ${{ if ne(project.ios, '') }}:
+  #             ${{ each version in parameters.iosVersions }}:
+  #               ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
+  #                 ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
+  #                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+  #                   PROJECT_PATH: ${{ project.ios }}
+  #                   IOS_CONFIGURATION: ${{ project.iOSConfiguration }}
+  #                   TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
+  #                   ${{ if contains(version, 'device') }}:
+  #                     DEVICE: ios-device
+  #                     APIVERSION: ${{ replace(version, 'device-', '') }}
+  #                   ${{ else }}:
+  #                     DEVICE: ios-simulator-64_${{ replace(version, 'simulator-', '') }}
+  #                     APIVERSION: ${{ replace(version, 'simulator-', '') }}
+  #     steps:
+  #       - template: device-tests-steps.yml
+  #         parameters:
+  #           platform: ios
+  #           path: $(PROJECT_PATH)
+  #           device: $(DEVICE)
+  #           apiVersion: $(APIVERSION)
+  #           windowsPackageId: ios # Only needed for Windows, will be ignored
+  #           provisionatorChannel: ${{ parameters.provisionatorChannel }}
+  #           agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+  #           artifactName: ${{ parameters.artifactName }}
+  #           artifactItemPattern: ${{ parameters.artifactItemPattern }}
+  #           checkoutDirectory: ${{ parameters.checkoutDirectory }}
+  #           useArtifacts: ${{ parameters.useArtifacts }}
+  #           poolName: 'Azure Pipelines'
+  #           skipProvisioning: ${{ parameters.skipProvisioning }}
+  #           deviceTestConfiguration: $(IOS_CONFIGURATION)
 
-  - stage: catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
-    displayName: ${{ parameters.targetFrameworkVersion.tfm }} macOS Device Tests
-    ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
-      dependsOn:
-        - catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
-    ${{ else }}:
-      dependsOn: []
-    jobs:
-    - job: catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
-      workspace:
-        clean: all
-      displayName: "macOS"
-      pool: ${{ parameters.catalystPool }}
-      timeoutInMinutes: 240
-      strategy:
-        matrix:
-          # create all the variables used for the matrix
-          ${{ each project in parameters.projects }}:
-            ${{ if ne(project.catalyst, '') }}:
-              ${{ each version in parameters.catalystVersions }}:
-                ${{ if not(containsValue(project.catalystVersionsExclude, version)) }}:
-                  ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
-                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-                    PROJECT_PATH: ${{ project.catalyst }}
-                    IOS_CONFIGURATION: ${{ project.iOSConfiguration }}
-                    TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
-                    ${{ if eq(version, 'latest') }}:
-                      DEVICE: maccatalyst
-                    ${{ else }}:
-                      DEVICE: maccatalyst_${{ version }}
-      steps:
-        - template: device-tests-steps.yml
-          parameters:
-            platform: catalyst
-            path: $(PROJECT_PATH)
-            device: $(DEVICE)
-            apiVersion: macos # Only needed for iOS, will be ignored
-            windowsPackageId: catalyst # Only needed for Windows, will be ignored
-            provisionatorChannel: ${{ parameters.provisionatorChannel }}
-            agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-            artifactName: ${{ parameters.artifactName }}
-            artifactItemPattern: ${{ parameters.artifactItemPattern }}
-            checkoutDirectory: ${{ parameters.checkoutDirectory }}
-            useArtifacts: ${{ parameters.useArtifacts }}
-            poolName: 'Azure Pipelines'
-            skipProvisioning: ${{ parameters.skipProvisioning }}
-            deviceTestConfiguration: $(IOS_CONFIGURATION)
+  # - stage: catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+  #   displayName: ${{ parameters.targetFrameworkVersion.tfm }} macOS Device Tests
+  #   ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
+  #     dependsOn:
+  #       - catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
+  #   ${{ else }}:
+  #     dependsOn: []
+  #   jobs:
+  #   - job: catalyst_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+  #     workspace:
+  #       clean: all
+  #     displayName: "macOS"
+  #     pool: ${{ parameters.catalystPool }}
+  #     timeoutInMinutes: 240
+  #     strategy:
+  #       matrix:
+  #         # create all the variables used for the matrix
+  #         ${{ each project in parameters.projects }}:
+  #           ${{ if ne(project.catalyst, '') }}:
+  #             ${{ each version in parameters.catalystVersions }}:
+  #               ${{ if not(containsValue(project.catalystVersionsExclude, version)) }}:
+  #                 ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
+  #                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+  #                   PROJECT_PATH: ${{ project.catalyst }}
+  #                   IOS_CONFIGURATION: ${{ project.iOSConfiguration }}
+  #                   TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
+  #                   ${{ if eq(version, 'latest') }}:
+  #                     DEVICE: maccatalyst
+  #                   ${{ else }}:
+  #                     DEVICE: maccatalyst_${{ version }}
+  #     steps:
+  #       - template: device-tests-steps.yml
+  #         parameters:
+  #           platform: catalyst
+  #           path: $(PROJECT_PATH)
+  #           device: $(DEVICE)
+  #           apiVersion: macos # Only needed for iOS, will be ignored
+  #           windowsPackageId: catalyst # Only needed for Windows, will be ignored
+  #           provisionatorChannel: ${{ parameters.provisionatorChannel }}
+  #           agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+  #           artifactName: ${{ parameters.artifactName }}
+  #           artifactItemPattern: ${{ parameters.artifactItemPattern }}
+  #           checkoutDirectory: ${{ parameters.checkoutDirectory }}
+  #           useArtifacts: ${{ parameters.useArtifacts }}
+  #           poolName: 'Azure Pipelines'
+  #           skipProvisioning: ${{ parameters.skipProvisioning }}
+  #           deviceTestConfiguration: $(IOS_CONFIGURATION)
 
-  - stage: windows_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
-    displayName: ${{ parameters.targetFrameworkVersion.tfm }} Windows Device Tests
-    ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
-      dependsOn:
-        - windows_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
-    ${{ else }}:
-      dependsOn: []
-    jobs:
-    - job: windows_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
-      workspace:
-        clean: all
-      displayName: "Windows"
-      pool: ${{ parameters.windowsPool }}
-      timeoutInMinutes: 240 # how long to run the job before automatically cancelling
-      strategy:
-        matrix:
-          # create all the variables used for the matrix
-          ${{ each project in parameters.projects }}:
-            ${{ if ne(project.windows, '') }}:
-              ${{ each version in parameters.windowsVersions }}:
-                ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_${{ version }}:
-                  PROJECT_PATH: ${{ project.windows }}
-                  PACKAGE_ID: ${{ project.windowsPackageId }}
-                  DEVICE: ${{ version }}
-                  TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
-                  WINDOWS_CONFIGURATION: ${{ project.windowsConfiguration }}
-      steps:
-        - template: device-tests-steps.yml
-          parameters:
-            platform: windows
-            path: $(PROJECT_PATH)
-            apiVersion: 10.0.19041.0
-            windowsPackageId: $(PACKAGE_ID)
-            device: $(DEVICE) # For Windows this switches between packaged and unpackaged
-            provisionatorChannel: ${{ parameters.provisionatorChannel }}
-            agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-            artifactName: ${{ parameters.artifactName }}
-            artifactItemPattern: ${{ parameters.artifactItemPattern }}
-            checkoutDirectory: ${{ parameters.checkoutDirectory }}
-            useArtifacts: ${{ parameters.useArtifacts }}
-            skipProvisioning: ${{ parameters.skipProvisioning }}
-            deviceTestConfiguration: $(WINDOWS_CONFIGURATION)
+  # - stage: windows_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+  #   displayName: ${{ parameters.targetFrameworkVersion.tfm }} Windows Device Tests
+  #   ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
+  #     dependsOn:
+  #       - windows_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
+  #   ${{ else }}:
+  #     dependsOn: []
+  #   jobs:
+  #   - job: windows_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+  #     workspace:
+  #       clean: all
+  #     displayName: "Windows"
+  #     pool: ${{ parameters.windowsPool }}
+  #     timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+  #     strategy:
+  #       matrix:
+  #         # create all the variables used for the matrix
+  #         ${{ each project in parameters.projects }}:
+  #           ${{ if ne(project.windows, '') }}:
+  #             ${{ each version in parameters.windowsVersions }}:
+  #               ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_${{ version }}:
+  #                 PROJECT_PATH: ${{ project.windows }}
+  #                 PACKAGE_ID: ${{ project.windowsPackageId }}
+  #                 DEVICE: ${{ version }}
+  #                 TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
+  #                 WINDOWS_CONFIGURATION: ${{ project.windowsConfiguration }}
+  #     steps:
+  #       - template: device-tests-steps.yml
+  #         parameters:
+  #           platform: windows
+  #           path: $(PROJECT_PATH)
+  #           apiVersion: 10.0.19041.0
+  #           windowsPackageId: $(PACKAGE_ID)
+  #           device: $(DEVICE) # For Windows this switches between packaged and unpackaged
+  #           provisionatorChannel: ${{ parameters.provisionatorChannel }}
+  #           agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+  #           artifactName: ${{ parameters.artifactName }}
+  #           artifactItemPattern: ${{ parameters.artifactItemPattern }}
+  #           checkoutDirectory: ${{ parameters.checkoutDirectory }}
+  #           useArtifacts: ${{ parameters.useArtifacts }}
+  #           skipProvisioning: ${{ parameters.skipProvisioning }}
+  #           deviceTestConfiguration: $(WINDOWS_CONFIGURATION)
