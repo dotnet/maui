@@ -30,7 +30,8 @@ public class Issue19926 : _IssuesUITest
 	[Ignore("The necessary Azure OpenAI parameters are still to be added on CI")]
 	public async Task PropertiesShouldBeCorrectlyAppliedWithAI()
 	{
-		App.WaitForElement("boxView");
+		App.WaitForElement("button");
+
 		await App.TapWithAI("The Button to show a BoxView");
 
 		// Find the element using a natural language prompt describing the Button.
@@ -38,6 +39,13 @@ public class Issue19926 : _IssuesUITest
 		button?.Tap(); // Alternative: await App.TapWithAI("The Button to show a BoxView");
 
 		App.WaitForElement("boxView2");
+
+		// Use a prompt to verify something in the UI.
+		bool correctColors = await App.VerifyWithAI("The colors used in the gradients are red and blue.");
+		Assert.That(correctColors, Is.True);
+
+		bool wrongColors = await App.VerifyWithAI("The colors used in the gradients are green and yellow.");
+		Assert.That(wrongColors, Is.False);
 
 		// Use AI to compare the App screenshot and determinate if the image is equal to a reference one.
 		bool areEquals = await VerifyScreenshotWithAI("PropertiesShouldBeCorrectlyApplied");

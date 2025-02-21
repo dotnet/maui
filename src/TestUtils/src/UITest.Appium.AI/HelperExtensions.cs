@@ -12,6 +12,9 @@ namespace UITest.Appium.AI
 	{
 		static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
+		const float Temperature = 0.7f;
+		const int MaxOutputTokenCount = 800;
+
 		const string FindElementImagePrompt = @"
 		You are a software tool designed to analyze mobile application screenshots. The user will provide you with a screenshot and then ask for the coordinates of an element in the screenshot. Your job is to interpret the user's description of an element, find the bounding box of the element in the screenshot, and return that bounding box. You should return responses in JSON object format. More specific instructions:
 		- Use computer vision techniques including OCR to look for text or visual elements specified by the user.
@@ -20,13 +23,21 @@ namespace UITest.Appium.AI
 		- Reply simply with the bounding box in JSON format with the following keys: x, y, width, and height.
 		- Uses pixels as the average unit.
 		- Include also the content text, if the element contains it. Use the following key in JSON: text.";
-		
+
+		const string VerifyPrompt = @"
+		You are a software tool designed to analyze mobile application screenshot. The user will provide you with A screenshot and then ask to verify something. Your job is to analyze the screenshot, and return a boolean indicating whether the asked question is true or not. You should return responses in JSON object format. More specific instructions:
+		- Use computer vision techniques including OCR to look details.
+		- Don't include any text or conversation.
+		- Do not include any explanations of your choices.
+		- Reply simply with the boolean in JSON format with the following key: answer.";
+
 		const string VerifyScreenshotPrompt = @"
 		You are a software tool designed to analyze mobile application screenshots. The user will provide you with two screenshots and then ask to compare them. Your job is to analyze the screenshots, and return a boolean indicating whether they are equal or not. You should return responses in JSON object format. More specific instructions:
 		- Use computer vision techniques including OCR to look for differences, even if they are small.
+		- Two images are equal if the content is exactly the same even if the resolution is different.
 		- Don't include any text or conversation.
 		- Do not include any explanations of your choices.
-		- Reply simply with the boolean in JSON format with the following keys: equals.";
+		- Reply simply with the boolean in JSON format with the following key: equals.";
 
 		/// <summary>
 		/// Performs a mouse click on the matched element using AI.
@@ -170,7 +181,7 @@ namespace UITest.Appium.AI
 		public static async Task TouchAndHoldWithAI(this IApp app, string prompt)
 		{
 			var elementToTouchAndHold = await FindElementWithAI(app, prompt);
-		
+
 			if (elementToTouchAndHold is not null)
 			{
 				app.CommandExecutor.Execute("touchAndHold", new Dictionary<string, object>
@@ -435,6 +446,48 @@ namespace UITest.Appium.AI
 		}
 
 		/// <summary>
+		/// Verifies a condition in the application using AI.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="prompt">instructions on what the AI should look for.</param>
+		public static async Task<bool> VerifyWithAI(this IApp app, string prompt)
+		{
+			var chatClient = app.GetChatClient();
+
+			var screenshot = app.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+			var screenshotBytes = BinaryData.FromBytes(screenshot);
+
+			var messages = new List<ChatMessage>
+			{
+				new SystemChatMessage(VerifyPrompt),
+				new UserChatMessage(
+					ChatMessageContentPart.CreateTextPart(prompt),
+					ChatMessageContentPart.CreateImagePart(screenshotBytes, "image/png"))
+			};
+
+			var options = new ChatCompletionOptions
+			{
+				Temperature = Temperature,
+				MaxOutputTokenCount = MaxOutputTokenCount,
+				FrequencyPenalty = 0,
+				PresencePenalty = 0,
+			};
+
+			ChatCompletion completion = await chatClient.CompleteChatAsync(messages, options);
+
+			if (completion.Content != null && completion.Content.Count > 0)
+			{
+				string result = completion.Content[0].Text;
+				VerifyData? verifyData = JsonSerializer.Deserialize<VerifyData>(SanitizeResponse(result));
+
+				if (verifyData is not null)
+					return verifyData.Answer;
+			}
+
+			return false;
+		}
+
+		/// <summary>
 		/// Verifies that the provided screenshot matches the reference screenshot using AI.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -458,8 +511,8 @@ namespace UITest.Appium.AI
 
 			var options = new ChatCompletionOptions
 			{
-				Temperature = (float)0.7,
-				MaxOutputTokenCount = 800,
+				Temperature = Temperature,
+				MaxOutputTokenCount = MaxOutputTokenCount,
 				FrequencyPenalty = 0,
 				PresencePenalty = 0,
 			};
@@ -477,7 +530,7 @@ namespace UITest.Appium.AI
 
 			return false;
 		}
-		
+
 		static Task<IUIElement> WaitForAtLeastOne(Func<Task<IUIElement?>> query,
 			string? timeoutMessage = null,
 			TimeSpan? timeout = null,
@@ -521,7 +574,7 @@ namespace UITest.Appium.AI
 				}
 
 				Task.Delay(retryFrequency.Value.Milliseconds).Wait();
-			
+
 				task = query();
 				result = await task;
 			}
@@ -552,8 +605,8 @@ namespace UITest.Appium.AI
 
 			var options = new ChatCompletionOptions
 			{
-				Temperature = (float)0.7,
-				MaxOutputTokenCount = 800,
+				Temperature = Temperature,
+				MaxOutputTokenCount = MaxOutputTokenCount,
 				FrequencyPenalty = 0,
 				PresencePenalty = 0,
 			};
@@ -658,6 +711,12 @@ class IUElementData
 	public int Height { get; set; }
 	[JsonPropertyName("text")]
 	public string? Text { get; set; }
+}
+
+class VerifyData
+{
+	[JsonPropertyName("answer")]
+	public bool Answer { get; set; }
 }
 
 class VerifyScreenshotData
