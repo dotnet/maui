@@ -1,3 +1,5 @@
+using System.IO;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Dispatching;
@@ -7,9 +9,10 @@ using NUnit.Framework;
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
 [XamlProcessing(XamlInflator.Default, true)]
-public partial class Maui27121
+public partial class RefToXamlControl : ContentPage
 {
-	public Maui27121() => InitializeComponent();
+	public RefToXamlControl() => InitializeComponent();
+
 
 	[TestFixture]
 	class Test
@@ -24,10 +27,13 @@ public partial class Maui27121
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void XNameAreTrimmed([Values] XamlInflator inflator)
+		public void CanRefToXamlControlsWithoutBaseClass([Values] XamlInflator inflator)
 		{
-			var page = new Maui27121(inflator);
-			Assert.That(page.label0, Is.Not.Null);
+			var page = new RefToXamlControl(inflator);
+			Assert.That(page.Content, Is.TypeOf<CustomButtonNoBaseClass>());
+                
 		}
+        static string GetThisFilePath([System.Runtime.CompilerServices.CallerFilePath] string path = null) => path ?? string.Empty;
+
 	}
 }

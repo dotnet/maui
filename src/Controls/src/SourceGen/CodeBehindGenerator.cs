@@ -67,10 +67,28 @@ public class CodeBehindGenerator : IIncrementalGenerator
 			.Select(static (t, _) => (t.Left.Left, t.Left.Right, t.Right))
 			.WithTrackingName(TrackingNames.XamlSourceProviderForCB);
 
+		var compilationWithCodeBehindProvider = xamlSourceProviderForCB
+			.Select(GetSyntaxTree)
+			.Collect()
+			.Combine(referenceCompilationProvider)
+			.Select(static (t, ct) =>
+			{
+				var compilation = t.Right;
+				foreach (var tree in t.Left)
+				{
+					ct.ThrowIfCancellationRequested();
+
+					if (tree is not null)
+						compilation = compilation.AddSyntaxTrees(tree);
+				}
+				return compilation;
+			})
+			.WithTrackingName(TrackingNames.CompilationWithCodeBehindProvider);
+
 		var xamlSourceProviderForIC = xamlProjectItemProviderForIC
 			.Combine(xmlnsDefinitionsProvider)
 			.Combine(referenceTypeCacheProvider)
-			.Combine(referenceCompilationProvider)
+			.Combine(compilationWithCodeBehindProvider)
 			.Select(static (t, _) => (t.Left.Left, t.Left.Right, t.Right))
 			.WithTrackingName(TrackingNames.XamlSourceProviderForIC);
 
@@ -78,8 +96,11 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		initContext.RegisterSourceOutput(xamlSourceProviderForCB, static (sourceProductionContext, provider) =>
 		{
 			var ((xamlItem, xmlnsCache), typeCache, compilation) = provider;
+			var fileName = $"{(string.IsNullOrEmpty(Path.GetDirectoryName(xamlItem!.ProjectItem!.TargetPath)) ? "" : Path.GetDirectoryName(xamlItem.ProjectItem.TargetPath) + Path.DirectorySeparatorChar)}{Path.GetFileNameWithoutExtension(xamlItem.ProjectItem.TargetPath)}.{xamlItem.ProjectItem.Kind.ToLowerInvariant()}.sg.cs".Replace(Path.DirectorySeparatorChar, '_');
+
 			try {
-				CodeBehindCodeWriter.GenerateXamlCodeBehind(xamlItem, compilation, sourceProductionContext, xmlnsCache, typeCache);
+				var code = CodeBehindCodeWriter.GenerateXamlCodeBehind(xamlItem, compilation, sourceProductionContext.ReportDiagnostic, sourceProductionContext.CancellationToken, xmlnsCache, typeCache);
+				sourceProductionContext.AddSource(fileName, code);
 			} catch (Exception e) {
 				var location = xamlItem?.ProjectItem?.RelativePath is not null ? Location.Create(xamlItem.ProjectItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
 				sourceProductionContext.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, e.Message));
@@ -105,7 +126,6 @@ public class CodeBehindGenerator : IIncrementalGenerator
 				}
 				return; 
 			}
-				
 			
 			try {
 				if (!ShouldGenerateSourceGenInitializeComponent(xamlItem, compilation))
