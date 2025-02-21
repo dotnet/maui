@@ -309,9 +309,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var targetContainer = list.ContainerFromItem(targetItem) as UIElement;
 
-			if (hasGroups)
+			if (list.IsGrouping)
 			{
-				var height = GetTopAreaHeight(list, targetContainer);
+				height = GetTopAreaHeight(list, targetContainer);
 			}
 
 			if (targetContainer != null)
@@ -349,7 +349,6 @@ namespace Microsoft.Maui.Controls.Platform
 				// If ScrollViewer is not found, do nothing.
 				return;
 			}
-			hasGroups = list.IsGrouping;
 
 			// ScrollToItemAsync will only scroll to the item if it actually exists in the list (that is, it has been
 			// been realized and isn't just a virtual item)
