@@ -1,4 +1,4 @@
-﻿// On Mac, this test fails because the Picker's focus behavior differs from other platforms.
+﻿#if TEST_FAILS_ON_CATALYST //Related Issue : https://github.com/dotnet/maui/issues/27957
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -29,3 +29,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
