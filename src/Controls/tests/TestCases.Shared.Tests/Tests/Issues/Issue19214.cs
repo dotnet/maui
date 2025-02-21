@@ -1,5 +1,5 @@
-﻿#if IOS ||ANDROID && TEST_FAILS_ON_ANDROID //android related issue: https://github.com/dotnet/maui/issues/27951
-//The test fails on Windows and MacCatalyst because the Keyboard Shown feature, designed to interact with the device keyboard, is only supported on mobile platforms like iOS and Android.
+﻿#if IOS || (ANDROID && TEST_FAILS_ON_ANDROID )//android related issue: https://github.com/dotnet/maui/issues/27951
+//The test is applicable only to mobile platforms like iOS and Android.
 using System.Drawing;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
