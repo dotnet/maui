@@ -20,14 +20,6 @@ trigger:
     - PATENTS.TXT
     - README.md
     - THIRD-PARTY-NOTICES.TXT
-
-pr:
-  branches:
-    include:
-    - main
-    - release/*
-    - net9.0
-  paths:
     include:
     - '*'
     exclude:
