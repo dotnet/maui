@@ -436,6 +436,7 @@ Microsoft.Maui.Authentication.IAppleSignInAuthenticator.AuthenticateAsync(Micros
 Microsoft.Maui.Authentication.IPlatformWebAuthenticatorCallback
 Microsoft.Maui.Authentication.IWebAuthenticator
 Microsoft.Maui.Authentication.IWebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+Microsoft.Maui.Authentication.IWebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder
 Microsoft.Maui.Authentication.IWebAuthenticatorResponseDecoder.DecodeResponse(System.Uri! uri) -> System.Collections.Generic.IDictionary<string!, string!>?
 Microsoft.Maui.Authentication.WebAuthenticator
@@ -1020,9 +1021,12 @@ static Microsoft.Maui.ApplicationModel.VersionTracking.VersionHistory.get -> Sys
 static Microsoft.Maui.Authentication.AppleSignInAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.AppleSignInAuthenticator.Options? options = null) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.AppleSignInAuthenticator.Default.get -> Microsoft.Maui.Authentication.IAppleSignInAuthenticator!
 static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(Microsoft.Maui.Authentication.WebAuthenticatorOptions! webAuthenticatorOptions, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(System.Uri! url, System.Uri! callbackUrl) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+static Microsoft.Maui.Authentication.WebAuthenticator.AuthenticateAsync(System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Authentication.WebAuthenticator.Default.get -> Microsoft.Maui.Authentication.IWebAuthenticator!
 static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.AuthenticateAsync(this Microsoft.Maui.Authentication.IWebAuthenticator! webAuthenticator, System.Uri! url, System.Uri! callbackUrl) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
+static Microsoft.Maui.Authentication.WebAuthenticatorExtensions.AuthenticateAsync(this Microsoft.Maui.Authentication.IWebAuthenticator! webAuthenticator, System.Uri! url, System.Uri! callbackUrl, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<Microsoft.Maui.Authentication.WebAuthenticatorResult!>!
 static Microsoft.Maui.Devices.Battery.BatteryInfoChanged -> System.EventHandler<Microsoft.Maui.Devices.BatteryInfoChangedEventArgs!>!
 static Microsoft.Maui.Devices.Battery.ChargeLevel.get -> double
 static Microsoft.Maui.Devices.Battery.Default.get -> Microsoft.Maui.Devices.IBattery!
