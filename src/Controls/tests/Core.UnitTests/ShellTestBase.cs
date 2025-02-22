@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
@@ -309,6 +310,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public class TestShell : Shell
 		{
+			public bool CreateTemplatedContentWhenNavigatedTo {get; set;} = true;
 			public int OnNavigatedCount;
 			public int OnNavigatingCount;
 			public int NavigatedCount;
@@ -380,6 +382,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			public Action<ShellNavigatedEventArgs> OnNavigatedHandler { get; set; }
+
+			protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+			{
+				base.OnPropertyChanged(propertyName);
+
+				if (propertyName == CurrentStateProperty.PropertyName && CreateTemplatedContentWhenNavigatedTo)
+				{
+					if (Navigation.NavigationStack.Count == 1 && CurrentItem?.CurrentItem?.CurrentItem is IShellContentController shellContentController)
+					{
+						// Create the templated content
+						// Usually this is done by the platform but we're not hooked into a platform
+						_= shellContentController.GetOrCreateContent();
+					}
+				}
+			}
+
 			protected override void OnNavigated(ShellNavigatedEventArgs args)
 			{
 				LastShellNavigatedEventArgs = args;
