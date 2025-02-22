@@ -19,6 +19,39 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		const int GCCollectRetries = 100;
 
+		[Theory]
+		// smaller (not clamped)
+		[InlineData(0.1, 0.1)]
+		[InlineData(0.5, 0.5)]
+		// exact (not clamped)
+		[InlineData(1.0, 1.0)]
+		// larger (clamped)
+		[InlineData(1.1, 1.0)]
+		[InlineData(1.5, 1.0)]
+		[InlineData(2.0, 1.0)]
+		public async Task ImagesAreClampedToDisplayMetricsIfTheyAreLarger(double sourceScale, double expectedScale)
+		{
+			var displayMetrics = MauiProgram.DefaultContext.Resources.DisplayMetrics;
+			var displayWidth = displayMetrics.WidthPixels;
+			var displayHeight = displayMetrics.HeightPixels;
+
+			var service = new FileImageSourceService();
+
+			// create a massive (2x) image
+			var bitmapFile = CreateBitmapFile((int)(displayWidth * sourceScale), (int)(displayHeight * sourceScale), Colors.Red);
+			var imageSource = new FileImageSourceStub(bitmapFile);
+
+			// get the image
+			var result = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
+			var drawable = result.Value;
+			var bitmapDrawable = Assert.IsType<BitmapDrawable>(drawable);
+			var bitmap = bitmapDrawable.Bitmap;
+
+			// make sure it was clamped to the display metrics
+			Assert.Equal((int)(displayWidth * expectedScale), bitmap.Width);
+			Assert.Equal((int)(displayHeight * expectedScale), bitmap.Height);
+		}
+
 		[Fact]
 		public async Task TheSameImageSourceReturnsTheSameBitmap()
 		{
