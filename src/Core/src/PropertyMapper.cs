@@ -112,15 +112,20 @@ namespace Microsoft.Maui
 
 		public virtual IEnumerable<string> GetKeys()
 		{
-			foreach (var key in _mapper.Keys)
-				yield return key;
-
+			// We want to retain the initial order of the keys to avoid race conditions
+			// when a property mapping is overridden by a new instance of property mapper.
+			// As an example, the container view mapper should always run first.
+			// Siblings mapper should not have keys intersection.
 			if (Chained is not null)
 			{
 				foreach (var chain in Chained)
 					foreach (var key in chain.GetKeys())
 						yield return key;
 			}
+
+			// Enqueue any additional keys
+			foreach (var key in _mapper.Keys)
+				yield return key;
 		}
 	}
 
