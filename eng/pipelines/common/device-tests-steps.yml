@@ -17,6 +17,17 @@ parameters:
 
 steps:
 
+  - pwsh: |
+      $platformName = 'Windows'
+      if ($IsMacOS) {
+        $platformName = 'Mac'
+      } elseif ($IsLinux) {
+        $platformName = 'Linux'
+      }
+      Write-Host "Platform.Name: ${platformName}"
+      Write-Host "##vso[task.setvariable variable=Platform.Name]${platformName}"
+    displayName: 'Set Platform.Name'
+
   - bash: |
 
       grep -E 'vmx|svm' /proc/cpuinfo
@@ -84,17 +95,6 @@ steps:
   - ${{ else }}:
     - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
       displayName: 'Build the MSBuild Tasks'
-
-  - pwsh: |
-      $platformName = 'Windows'
-      if ($IsMacOS) {
-        $platformName = 'Mac'
-      } elseif ($IsLinux) {
-        $platformName = 'Linux'
-      }
-      Write-Host "Platform.Name: ${platformName}"
-      Write-Host "##vso[task.setvariable variable=Platform.Name]${platformName}"
-    displayName: 'Set Platform.Name'
 
   - ${{ if eq(parameters.platform, 'windows')}}:
     - pwsh: |
