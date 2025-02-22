@@ -1,25 +1,4 @@
-trigger:
-  branches:
-    include:
-    - main
-    - release/*
-    - loc
-  tags:
-    include:
-    - '*'
-  paths:
-    include:
-    - '*'
-    exclude:
-    - .github/*
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
+trigger: none
 
 pr: none
 
