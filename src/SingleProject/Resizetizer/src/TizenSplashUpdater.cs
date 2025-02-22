@@ -75,35 +75,38 @@ namespace Microsoft.Maui.Resizetizer
 				Log.LogWarning($"Unable to parse color for '{splashInfo.Filename}'.");
 				color = SKColors.White;
 			}
-			using (SKBitmap bmp = SKBitmap.Decode(sourceFilePath))
-			{
-				SKImageInfo info = new SKImageInfo(screenSize.Width, screenSize.Height);
-				using (SKSurface surface = SKSurface.Create(info))
-				{
-					SKCanvas canvas = surface.Canvas;
-					canvas.Clear(color.Value);
-					using SKPaint paint = new SKPaint
-					{
-						IsAntialias = true,
-						FilterQuality = SKFilterQuality.High
-					};
+			
+			using var img = SKImage.FromEncodedData(sourceFilePath);
+			
+			var info = new SKImageInfo(screenSize.Width, screenSize.Height);
+			using var surface = SKSurface.Create(info);
+			
+			var canvas = surface.Canvas;
+			canvas.Clear(color.Value);
 
-					var left = screenSize.Width <= bmp.Width ? 0 : (screenSize.Width - bmp.Width) / 2;
-					var top = screenSize.Height <= bmp.Height ? 0 : (screenSize.Height - bmp.Height) / 2;
-					var right = screenSize.Width <= bmp.Width ? left + screenSize.Width : left + bmp.Width;
-					var bottom = screenSize.Height <= bmp.Height ? top + screenSize.Height : top + bmp.Height;
-					canvas.DrawBitmap(bmp, new SKRect(left, top, right, bottom), paint);
-					canvas.Flush();
-					var updatedsplash = surface.Snapshot();
-					using (var data = updatedsplash.Encode(SKEncodedImageFormat.Png, 100))
-					{
-						using (var stream = File.Create(destFilePath))
-						{
-							data.SaveTo(stream);
-						}
-					}
-				}
-			}
+			using SKPaint paint = new SKPaint
+			{
+				IsAntialias = true,
+#pragma warning disable CS0618 // Type or member is obsolete
+				FilterQuality = SKFilterQuality.High
+#pragma warning restore CS0618 // Type or member is obsolete
+			};
+			var sampling = new SKSamplingOptions(SKCubicResampler.Mitchell);
+
+			var left = screenSize.Width <= img.Width ? 0 : (screenSize.Width - img.Width) / 2;
+			var top = screenSize.Height <= img.Height ? 0 : (screenSize.Height - img.Height) / 2;
+			var right = screenSize.Width <= img.Width ? left + screenSize.Width : left + img.Width;
+			var bottom = screenSize.Height <= img.Height ? top + screenSize.Height : top + img.Height;
+			var dest = new SKRect(left, top, right, bottom);
+
+			canvas.DrawImage(img, dest, sampling, paint);
+			canvas.Flush();
+			
+			using var updatedsplash = surface.Snapshot();
+			
+			using var data = updatedsplash.Encode(SKEncodedImageFormat.Png, 100);
+			using var stream = File.Create(destFilePath);
+			data.SaveTo(stream);
 		}
 	}
 }
