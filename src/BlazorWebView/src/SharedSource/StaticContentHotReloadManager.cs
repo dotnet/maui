@@ -86,10 +86,21 @@ namespace Microsoft.AspNetCore.Components.WebView
 			var requestPath = new Uri(requestAbsoluteUri).AbsolutePath.Substring(1);
 			if (ContentUrlRegex.Match(requestPath) is { Success: true } match)
 			{
+				var assemblyName = match.Groups["AssemblyName"].Value;
+				var relativePath = match.Groups["RelativePath"].Value;
+
+				// Remove the fingerprint from scoped CSS bundles, since CSS hot reload will send new content without the fingerprint.
+				// The relative path for *.bundle.scp.css is just the file name, since they are always directly in the assembly's content directory.
+				// Example: LibraryName.<fingerprint>.bundle.scp.css -> LibraryName.bundle.scp.css
+				if (relativePath.StartsWith($"{assemblyName}.", StringComparison.Ordinal) && relativePath.EndsWith(".bundle.scp.css", StringComparison.Ordinal))
+				{
+					relativePath = $"{assemblyName}.bundle.scp.css";
+				}
+
 				// For RCLs (i.e., URLs of the form _content/assembly/path), we assume the content root within the
 				// RCL to be "wwwroot" since we have no other information. If this is not the case, content within
 				// that RCL will not be hot-reloadable.
-				return (match.Groups["AssemblyName"].Value, $"wwwroot/{match.Groups["RelativePath"].Value}");
+				return (assemblyName, $"wwwroot/{relativePath}");
 			}
 			else if (requestPath.StartsWith("_framework/", StringComparison.Ordinal))
 			{
