@@ -32,7 +32,7 @@ var dotnetToolPath = GetDotnetToolPath();
 
 // other
 string PLATFORM = "windows";
-string DOTNET_PLATFORM = $"win10-x64";
+string DOTNET_PLATFORM = $"win-x64";
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 string certificateThumbprint = "";
 bool isPackagedTestRun = TEST_DEVICE.ToLower().Equals("packaged");
@@ -160,7 +160,7 @@ Task("Build")
 	{
 		ArgumentCustomization = args => args.Append("/bl:" + binlog),
 	};
-	s.MSBuildSettings.Properties.Add("RuntimeIdentifierOverride", new List<string> { "win10-x64" });
+	s.MSBuildSettings.Properties.Add("RuntimeIdentifierOverride", new List<string> { "win-x64" });
 	
 	var launchSettingsNeedle = "Project";
 	var launchSettingsReplacement = "MsixPackage";

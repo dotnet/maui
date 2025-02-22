@@ -73,7 +73,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 	[TestCase("maui", true, "MSIX")]
 	[TestCase("maui", false, "None")]
 	[TestCase("maui", false, "MSIX")]
-	public void BuildWindowsRidGraph(string id, bool useridgraph, string packageType)
+	public void BuildWindowsRidGraph(string id, bool useRidGraph, string packageType)
 	{
 		if (TestEnvironment.IsMacOS)
 			Assert.Ignore("This test is designed for testing a windows build.");
@@ -87,7 +87,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		FileUtilities.ReplaceInFile(projectFile,
 			"<WindowsPackageType>None</WindowsPackageType>",
 			$"""
-			<UseRidGraph>{useridgraph}</UseRidGraph>
+			<UseRidGraph>{useRidGraph}</UseRidGraph>
 			<WindowsPackageType>{packageType}</WindowsPackageType>
 			""");
 
@@ -99,11 +99,11 @@ public class WindowsTemplateTest : BaseTemplateTests
 	}
 
 	[Test]
-	[TestCase("maui", DotNetCurrent, "Release")]
-	[TestCase("maui", DotNetPrevious, "Release")]
-	[TestCase("maui-blazor", DotNetCurrent, "Release")]
-	[TestCase("maui-blazor", DotNetPrevious, "Release")]
-	public void PublishUnpackaged(string id, string framework, string config)
+	[TestCase("maui", DotNetCurrent, "Release", false)]
+	[TestCase("maui", DotNetPrevious, "Release", true)]
+	[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
+	[TestCase("maui-blazor", DotNetPrevious, "Release", true)]
+	public void PublishUnpackaged(string id, string framework, string config, bool usesRidGraph)
 	{
 		if (!TestEnvironment.IsWindows)
 			Assert.Ignore("Running Windows templates is only supported on Windows.");
@@ -121,7 +121,8 @@ public class WindowsTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win10-x64/publish");
+		var rid = usesRidGraph ? "win10-x64" : "win-x64";
+		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/{rid}/publish");
 
 		AssetExists("dotnet_bot.scale-100.png");
 		AssetExists("appiconLogo.scale-100.png");
@@ -138,11 +139,11 @@ public class WindowsTemplateTest : BaseTemplateTests
 	}
 
 	[Test]
-	[TestCase("maui", DotNetCurrent, "Release")]
-	[TestCase("maui", DotNetPrevious, "Release")]
-	[TestCase("maui-blazor", DotNetCurrent, "Release")]
-	[TestCase("maui-blazor", DotNetPrevious, "Release")]
-	public void PublishPackaged(string id, string framework, string config)
+	[TestCase("maui", DotNetCurrent, "Release", false)]
+	[TestCase("maui", DotNetPrevious, "Release", true)]
+	[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
+	[TestCase("maui-blazor", DotNetPrevious, "Release", true)]
+	public void PublishPackaged(string id, string framework, string config, bool usesRidGraph)
 	{
 		if (!TestEnvironment.IsWindows)
 			Assert.Ignore("Running Windows templates is only supported on Windows.");
@@ -162,7 +163,8 @@ public class WindowsTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win10-x64/AppPackages/{name}_1.0.0.1_Test");
+		var rid = usesRidGraph ? "win10-x64" : "win-x64";
+		var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/{rid}/AppPackages/{name}_1.0.0.1_Test");
 
 		AssetExists($"{name}_1.0.0.1_x64.msix");
 
