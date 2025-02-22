@@ -21,6 +21,8 @@ trigger:
     - README.md
     - THIRD-PARTY-NOTICES.TXT
 
+pr: none
+
 variables:
   - template: /eng/pipelines/common/variables.yml
   - name: AgentPoolAccessToken

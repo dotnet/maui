@@ -20,18 +20,8 @@ trigger:
     - PATENTS.TXT
     - README.md
     - THIRD-PARTY-NOTICES.TXT
-    include:
-    - '*'
-    exclude:
-    - .github/*
-    - docs/*
-    - src/Templates/*
-    - CODE-OF-CONDUCT.md
-    - CONTRIBUTING.md
-    - LICENSE.TXT
-    - PATENTS.TXT
-    - README.md
-    - THIRD-PARTY-NOTICES.TXT
+
+pr: none
 
 variables:
   - template: /eng/pipelines/common/variables.yml
