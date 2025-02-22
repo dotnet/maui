@@ -208,8 +208,6 @@ namespace Microsoft.Maui.Controls
 			{
 				Handler?.UpdateValue(nameof(TabbedPage.CurrentPage));
 			}
-			else
-				NavigateToPage(CurrentPage);
 		}
 
 		void OnSelectedMenuItemChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
