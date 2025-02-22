@@ -1573,6 +1573,13 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected internal virtual void ChangeVisualState()
 		{
+			if (!IsLoaded)
+			{
+				// We don't want to change the visual state if the element is not loaded because
+				// the Handler or the PlatformView could be null or the PlatformView is not loaded yet.
+				return;
+			}
+
 			if (!IsEnabled)
 			{
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
