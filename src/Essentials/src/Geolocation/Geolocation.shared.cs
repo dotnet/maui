@@ -36,6 +36,11 @@ namespace Microsoft.Maui.Devices.Sensors
 		bool IsListeningForeground { get; }
 
 		/// <summary>
+		/// Returns true when the device's GPS is enabled
+		/// </summary>
+		bool IsLocationEnabled { get; }
+
+		/// <summary>
 		/// Occurs while listening to location updates.
 		/// </summary>
 		event EventHandler<GeolocationLocationChangedEventArgs>? LocationChanged;
@@ -113,6 +118,11 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Indicates if currently listening to location updates while the app is in foreground.
 		/// </summary>
 		public static bool IsListeningForeground { get => Current.IsListeningForeground; }
+
+		/// <summary>
+		/// Returns true when the device's GPS is enabled
+		/// </summary>
+		public static bool IsLocationEnabled { get => Current.IsLocationEnabled; }
 
 		/// <summary>
 		/// Occurs while listening to location updates.
