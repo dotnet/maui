@@ -33,9 +33,7 @@ namespace Microsoft.Maui.Storage
 					// The uri returned is only temporary and only lives as long as the Activity that requested it,
 					// so this means that it will always be cleaned up by the time we need it because we are using
 					// an intermediate activity.
-					#pragma warning disable CA1416 // Validate platform compatibility
-					 bool requireExtendedAccess = !(Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.R && Android.OS.Environment.IsExternalStorageManager);
-					 #pragma warning restore CA1416 // Validate platform compatibility
+				    bool requireExtendedAccess = !(OperatingSystem.IsAndroidVersionAtLeast(30) && Android.OS.Environment.IsExternalStorageManager);
 
 					if (intent.ClipData == null)
 					{
