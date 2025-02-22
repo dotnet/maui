@@ -29,6 +29,42 @@ steps:
     displayName: 'Set Platform.Name'
 
   - bash: |
+      grep -E 'vmx|svm' /proc/cpuinfo
+      cat /proc/cpuinfo
+      sudo apt update
+      sudo apt install qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils virt-manager
+      sudo kvm-ok
+      
+      # id
+      # groups
+
+      sudo usermod -aG kvm,libvirt $USER
+
+      sudo service libvirtd restart
+      service libvirtd status
+      
+      sudo -E bash -c "exec su -l $USER -c 'id ; exit'"
+
+      # id
+      # groups
+
+      # sudo useradd test1
+      # sudo usermod -a -G libvirt,kvm test1
+      # sudo -E bash -c 'exec su -l test1 -c exit'
+
+      # echo "Setting rules..."
+      echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+      # echo "Running udevadm control..."
+      sudo udevadm control --reload-rules
+      sudo kvm-ok
+      # echo "Running udevadm trigger..."
+      sudo -E bash -c "exec su -l $USER -c 'ls -la /dev ; exit'"
+      sudo -E bash -c "exec su -l $USER -c 'udevadm trigger --name-match=kvm ; exit'"
+      # echo "Done."
+    displayName: Enable KVM
+    condition: and(succeeded(), eq(variables['Platform.Name'], 'Linux'))      
+
+  - bash: |
 
       grep -E 'vmx|svm' /proc/cpuinfo
       cat /proc/cpuinfo
