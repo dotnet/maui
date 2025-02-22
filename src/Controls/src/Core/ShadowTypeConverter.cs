@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Type converter for converting a properly formatted string to a Shadow.
 	/// </summary>
-	internal class ShadowTypeConverter : TypeConverter
+	public class ShadowTypeConverter : TypeConverter
 	{
 		readonly ColorTypeConverter _colorTypeConverter = new ColorTypeConverter();
 
