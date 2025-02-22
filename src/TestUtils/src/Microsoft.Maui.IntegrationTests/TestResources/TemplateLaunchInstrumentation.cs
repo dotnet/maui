@@ -34,7 +34,16 @@ namespace mauitemplate
             StartActivitySync(intent);
             var currentActivity = WaitForMonitor(monitor);
             var resultCode = currentActivity is not null ? Result.Ok : Result.Canceled;
-            results.PutString("return-code", resultCode.ToString("D"));
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(21))
+			{
+				results.PutCharSequence("return-code", resultCode.ToString("D"));
+			}
+			else
+			{
+				results.PutString("return-code", resultCode.ToString("D"));		
+			}
+			
             Finish(resultCode, results);
         }
     }
