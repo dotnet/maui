@@ -155,11 +155,11 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Appium -->
-    <AppiumVersion>2.12.2</AppiumVersion>
-    <AppiumWindowsDriverVersion>3.1.1</AppiumWindowsDriverVersion>
-    <AppiumXCUITestDriverVersion>7.32.0</AppiumXCUITestDriverVersion>
-    <AppiumMac2DriverVersion>1.20.3</AppiumMac2DriverVersion>
-    <AppiumUIAutomator2DriverVersion>3.8.0</AppiumUIAutomator2DriverVersion>
+    <AppiumVersion>2.16.1</AppiumVersion>
+    <AppiumWindowsDriverVersion>4.1.1</AppiumWindowsDriverVersion>
+    <AppiumXCUITestDriverVersion>8.3.1</AppiumXCUITestDriverVersion>
+    <AppiumMac2DriverVersion>2.2.0</AppiumMac2DriverVersion>
+    <AppiumUIAutomator2DriverVersion>4.0.1</AppiumUIAutomator2DriverVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- arcade -->
