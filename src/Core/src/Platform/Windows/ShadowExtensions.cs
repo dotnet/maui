@@ -13,7 +13,6 @@ using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 
-
 namespace Microsoft.Maui.Platform
 {
 	internal static class ShadowExtensions
@@ -24,19 +23,25 @@ namespace Microsoft.Maui.Platform
 
 			try
 			{
-				//For some reason, using  TextBlock and getting the AlphaMask
-				//generates a shadow with a size more smaller than the control size. 
-				if (element is TextBlock textElement)
+				var visual = ElementCompositionPreview.GetElementVisual(element);
+				bool isClipped = visual.Clip is not null;
+
+				if (!isClipped && element is TextBlock textElement)
 				{
 					return textElement.GetAlphaMask();
 				}
-				if (element is Image image)
+				if (!isClipped && element is Image image)
 				{
 					return image.GetAlphaMask();
 				}
-				if (element is Shape shape)
+				if (!isClipped && element is Shape shape)
 				{
 					return shape.GetAlphaMask();
+				}
+				if (!isClipped && element is ContentPanel contentPanel)
+				{
+					var borderPath = contentPanel.BorderPath;
+					return borderPath?.GetAlphaMask();
 				}
 				else if (element is FrameworkElement frameworkElement)
 				{
@@ -45,7 +50,6 @@ namespace Microsoft.Maui.Platform
 
 					if (height > 0 && width > 0)
 					{
-						var visual = ElementCompositionPreview.GetElementVisual(element);
 						var elementVisual = visual.Compositor.CreateSpriteVisual();
 						elementVisual.Size = element.RenderSize.ToVector2();
 						var bitmap = new RenderTargetBitmap();
