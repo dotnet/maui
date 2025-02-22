@@ -838,6 +838,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 					icon.Mutate();
 					icon.SetState(_stateSet);
+					_tabLayout.TabIconTint = colors;
 					ADrawableCompat.SetTintList(icon, colors);
 				}
 			}
