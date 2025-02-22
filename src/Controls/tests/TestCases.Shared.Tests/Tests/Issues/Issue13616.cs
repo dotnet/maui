@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,4 +22,3 @@ public class Issue13616 : _IssuesUITest
 		App.WaitForElement("CarouselViewId");
 	}
 }
-#endif

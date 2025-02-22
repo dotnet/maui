@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 4720, "UWP: Webview: Memory Leak in WebView", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 4720, "UWP: Webview: Memory Leak in WebView", PlatformAffected.UWP, isInternetRequired: true)]
 public class Issue4720 : TestNavigationPage
 {
 	protected override void Init()

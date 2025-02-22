@@ -78,7 +78,7 @@ parameters:
         poolName: $(macOSXVmPool)
         vmImage: $(macOSXVmImage)
         demands:
-          - macOS.Name -equals Sonoma
+          - macOS.Name -equals Sequoia
           - macOS.Architecture -equals x64
         artifact: build-macos
  
@@ -105,7 +105,7 @@ parameters:
         poolName: $(macOSXVmPool)
         vmImage: $(macOSXVmImage)
         demands:
-          - macOS.Name -equals Sonoma
+          - macOS.Name -equals Sequoia
           - macOS.Architecture -equals x64
         artifact: build-macos
 
@@ -115,14 +115,14 @@ parameters:
     - name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
     - name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
       testName: RunOniOS
       artifact: templates-run-ios
@@ -133,7 +133,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals arm64
 
 resources:
@@ -156,7 +156,7 @@ stages:
             workspace:
               clean: all
             displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
-            timeoutInMinutes: 240
+            timeoutInMinutes: 120
             condition: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
@@ -173,7 +173,7 @@ stages:
                   skipAndroidImages: true
                   installDefaultAndroidApi: false
                   skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                  ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
+                  ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
                     skipProvisionator: false
                     gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                   ${{ else }}:
@@ -247,7 +247,7 @@ stages:
                       skipAndroidImages: true
                       installDefaultAndroidApi: true
                       skipXcode: ${{ ne(PackPlatform.name , 'macOS') }}
-                      ${{ if or(eq(parameters.UseProvisionator, 'True'), eq(variables['internalProvisioning'],'True') )}}:
+                      ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
                         skipProvisionator: false
                         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                       ${{ else }}:  
@@ -266,7 +266,7 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
-            demands: ${{ BuildPlatform.demands }}
+            demands: ${{ BuildPlatform.demands }}     
           steps:
             - template: common/provision.yml
               parameters:
@@ -275,7 +275,7 @@ stages:
                 skipAndroidImages: true
                 installDefaultAndroidApi: true
                 skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
+                ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
                   skipProvisionator: false
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                 ${{ else }}:  
@@ -333,7 +333,7 @@ stages:
               skipAndroidImages: true
               installDefaultAndroidApi: true
               skipXcode: false
-              ${{ if or(eq(parameters.UseProvisionator, 'True'), eq(variables['internalProvisioning'],'True') )}}:
+              ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') )}}:
                 skipProvisionator: false
                 gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
               ${{ else }}:  

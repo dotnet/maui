@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": "Knihovna tříd .NET MAUI",
+  "name": ".NET MAUI Class Library",
   "description": "Projekt pro vytvoření knihovny tříd .NET MAUI",
   "postActions/openInEditor/description": "Otevře soubor Class1.cs v editoru.",
   "symbols/Framework/description": "Cílová architektura pro projekt",
