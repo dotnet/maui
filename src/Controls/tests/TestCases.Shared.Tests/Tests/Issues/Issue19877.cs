@@ -14,8 +14,8 @@ public class Issue19877 : _IssuesUITest
 	[Category(UITestCategories.Border)]
 	public void BorderRoundRectangleWithImage()
 	{
-		App.WaitForElement("OasisImage");
+		var borderElement = App.WaitForElement("TestBorder");
 
-		VerifyScreenshot();
+		VerifyScreenshot(borderElement);
 	}
 }
