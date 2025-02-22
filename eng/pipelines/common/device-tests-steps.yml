@@ -16,6 +16,18 @@ parameters:
   skipProvisioning: true
 
 steps:
+
+  - bash: |
+
+      grep -E 'vmx|svm' /proc/cpuinfo
+      cat /proc/cpuinfo
+
+      echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+      sudo udevadm control --reload-rules
+      sudo udevadm trigger --name-match=kvm
+    displayName: Enable KVM
+    condition: and(succeeded(), eq(variables['Platform.Name'], 'Linux'))      
+
   - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines')) }}:
     - bash: |
         chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
@@ -92,13 +104,6 @@ steps:
       displayName: 'Set dump file location'
       continueOnError: true
       timeoutInMinutes: 5
-
-  # - bash: |
-  #     echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-  #     sudo udevadm control --reload-rules
-  #     sudo udevadm trigger --name-match=kvm
-  #   displayName: Enable KVM
-  #   condition: and(succeeded(), eq(variables['Platform.Name'], 'Linux'))      
 
   - pwsh: |
       Get-Content $PSCommandPath
