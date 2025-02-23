@@ -528,11 +528,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			_emptyViewFormsElement = null;
 		}
 
-		void LayoutEmptyView()
+		virtual internal CGRect LayoutEmptyView()
 		{
 			if (!_initialized || _emptyUIView == null || _emptyUIView.Superview == null)
 			{
-				return;
+				return CGRect.Empty;
 			}
 
 			var frame = DetermineEmptyViewFrame();
@@ -541,6 +541,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (_emptyViewFormsElement != null && ((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) != -1)
 				_emptyViewFormsElement.Layout(frame.ToRectangle());
+
+			return frame;
 		}
 
 		internal protected virtual void UpdateVisibility()
