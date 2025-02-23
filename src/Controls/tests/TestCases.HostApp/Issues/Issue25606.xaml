@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue25606">
+    <VerticalStackLayout>
+        <CollectionView VerticalOptions="Fill">
+
+            <CollectionView.Header>
+                <ContentView HeightRequest="200"
+                             BackgroundColor="Red">
+                    <Label AutomationId="Header"
+                           Text="Header"/>
+                </ContentView>
+            </CollectionView.Header>
+
+            <CollectionView.EmptyView>
+                <ContentView
+                    BackgroundColor="Blue">
+                    <Label Text="EmptyView"/>
+                </ContentView>
+            </CollectionView.EmptyView>
+
+            <CollectionView.Footer>
+                <ContentView HeightRequest="200"
+                             BackgroundColor="Green">
+                    <Label Text="Footer"/>
+                </ContentView>
+            </CollectionView.Footer>
+        </CollectionView>
+    </VerticalStackLayout>
+</ContentPage>
