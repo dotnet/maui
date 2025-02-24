@@ -6,7 +6,8 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
-
+using System.ComponentModel;
+using Microsoft.Maui.Controls.Handlers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -32,19 +33,18 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The BackgroundColor of a BoxView should match with native background color")]
-		public async Task BoxViewBackgroundColorConsistent()
+		[Description("The Background of a Button should match with native Background")]
+		public async Task BoxViewBackground()
 		{
-			var expected = Colors.AliceBlue;
-
-			var boxView = new BoxView()
+			var boxView = new BoxView
 			{
-				BackgroundColor = expected,
-				HeightRequest = 100,
-				WidthRequest = 200
+				HeightRequest = 100,	
+				WidthRequest = 200,
+				Background = Brush.Red
 			};
-
-			await ValidateHasColor(boxView, expected, typeof(ShapeViewHandler));
+			var expected = (boxView.Background as SolidColorBrush)?.Color;
+			
+			await ValidateHasColor(boxView, expected, typeof(BoxViewHandler));
 		}
 
 		[Fact]
