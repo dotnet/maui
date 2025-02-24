@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAIlS_ON_IOS && TEST_FAIlS_ON_CATALYST //For more information, see : https://github.com/dotnet/maui/issues/27897
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,32 +16,24 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue417TestsNavigateAndPopToRoot()
 		{
-			App.WaitForElement("FirstPage");
-			App.WaitForElement("NextPage");
-			App.Screenshot("All elements present");
+			App.WaitForElement("First Page");
+			App.WaitForElement("Next Page");
 
-			App.Tap("NextPage");
+			App.Tap("Next Page");
 
-			App.WaitForElement("SecondPage");
-			App.WaitForElement("NextPage2");
-			App.Screenshot("At second page");
-			App.Tap("NextPage2");
+			App.WaitForElement("Second Page");
+			App.WaitForElement("Next Page 2");
+			App.Tap("Next Page 2");
 
-			App.WaitForElement("ThirdPage");
-			App.WaitForElement("PopToRoot");
-			App.Screenshot("At third page");
-			App.Tap("PopToRoot");
+			App.WaitForElement("Third Page");
+			App.WaitForElement("Pop to root");
+			App.Tap("Pop to root");
 
-			App.WaitForElement("FirstPage");
-			App.WaitForElement("NextPage");
-			App.Screenshot("All elements present");
-
-			App.Screenshot("Popped to root");
+			App.WaitForElement("First Page");
+			App.WaitForElement("Next Page");
 		}
 	}
 }
+#endif

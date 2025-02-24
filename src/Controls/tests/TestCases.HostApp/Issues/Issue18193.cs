@@ -13,7 +13,15 @@
 			tabBar.Items.Add(CreateShellContent("Page 4", typeof(Issue18193Page4), nameof(Issue18193Page4)));
 			tabBar.Items.Add(CreateShellContent("Page 5", typeof(Issue18193Page5), nameof(Issue18193Page5)));
 			tabBar.Items.Add(CreateShellContent("Page 6", typeof(Issue18193Page6), nameof(Issue18193Page6)));
-
+			//Added the TabBar Items ,this will show overflow menu in Windows
+			//to access the extra pages, keeping the interface clean and easy to navigate.
+			tabBar.Items.Add(CreateShellContent("Page 7", typeof(Issue18193Page2), nameof(Issue18193Page7)));
+			tabBar.Items.Add(CreateShellContent("Page 8", typeof(Issue18193Page3), nameof(Issue18193Page8)));
+			tabBar.Items.Add(CreateShellContent("Page 9", typeof(Issue18193Page4), nameof(Issue18193Page9)));
+			tabBar.Items.Add(CreateShellContent("Page 10", typeof(Issue18193Page5), nameof(Issue18193Page10)));
+			tabBar.Items.Add(CreateShellContent("Page 11", typeof(Issue18193Page6), nameof(Issue18193Page11)));
+			tabBar.Items.Add(CreateShellContent("Page 12", typeof(Issue18193Page2), nameof(Issue18193Page12)));
+			tabBar.Items.Add(CreateShellContent("Page 13", typeof(Issue18193Page3), nameof(Issue18193Page13)));
 			Items.Add(tabBar);
 			Routing.RegisterRoute(nameof(Issue18193DetailPage), typeof(Issue18193DetailPage));
 		}
@@ -65,6 +73,19 @@
 	public class Issue18193Page4 : ContentPage { }
 
 	public class Issue18193Page5 : ContentPage { }
+	public class Issue18193Page7 : ContentPage { }
+
+	public class Issue18193Page8 : ContentPage { }
+
+	public class Issue18193Page9 : ContentPage { }
+
+	public class Issue18193Page10 : ContentPage { }
+
+	public class Issue18193Page11 : ContentPage { }
+
+	public class Issue18193Page12 : ContentPage { }
+
+	public class Issue18193Page13 : ContentPage { }
 
 	public class Issue18193Page6 : ContentPage
 	{
