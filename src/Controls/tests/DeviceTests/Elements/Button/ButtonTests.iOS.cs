@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using UIKit;
 using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -22,6 +23,11 @@ namespace Microsoft.Maui.DeviceTests
 		UILineBreakMode GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
 			GetPlatformButton(buttonHandler).TitleLabel.LineBreakMode;
 
+        Task<int> GetPlatformCornerRadius(ButtonHandler buttonHandler)
+		{
+			return InvokeOnMainThreadAsync(() => (int)GetPlatformButton(buttonHandler).Layer.CornerRadius);
+		}
+			
 		[Fact("Clicked works after GC")]
 		public async Task ClickedWorksAfterGC()
 		{
@@ -77,6 +83,25 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(button.Width < gridWidth, $"Button shouldn't occupy entire layout width. Expected: {gridWidth}<, was {button.Width}");
 			Assert.True(button.Height < gridHeight, $"Button shouldn't occupy entire layout height. Expected: {gridHeight}<, was {button.Height}");
+		}
+
+		[Fact]
+		[Description("The Cornerradius of a Button should match with native CornerRadius")]
+		public async Task ButtonCornerRadius()
+		{
+			var button = new Button
+			{
+				CornerRadius = 15,
+			};
+			var expectedValue = button.CornerRadius;
+
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+
+			await InvokeOnMainThreadAsync( async () =>
+			{
+				var platformCornerRadius = await GetPlatformCornerRadius(handler);
+        		Assert.Equal(expectedValue,   platformCornerRadius);
+			});
 		}
 	}
 }
