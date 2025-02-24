@@ -72,7 +72,7 @@ stages:
           parameters:
             platform: ${{ parameters.platform }}
             path: ${{ parameters.project.path }}
-            appArtifactName: ${{ parameters.project.platform }}_device_tests_${{ parameters.project.name }}_build
+            appArtifactName: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
             ${{ if eq(parameters.platform, 'android') }}:
               device:  android-emulator-64_${{ version }}
               apiVersion: ${{ version }}
