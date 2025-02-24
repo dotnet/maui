@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -52,6 +53,23 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Assert.Equal(expectedValue, GetPlatformLineBreakMode(handler));
 			});
+		}
+
+		[Fact]
+		[Description("The IsEnabled property of a Button should match with native IsEnabled")]		
+		public async Task ButtonIsEnabled()
+		{
+			var button = new Button();
+			button.IsEnabled = true;
+			var expectedValue = button.IsEnabled;
+
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+			var nativeView = GetPlatformButton(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+				Assert.Equal(expectedValue, isEnabled);
+			});		
 		}
 	}
 }

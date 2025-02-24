@@ -2,11 +2,13 @@
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -44,6 +46,26 @@ namespace Microsoft.Maui.DeviceTests
 				var flags = BindingFlags.NonPublic | BindingFlags.Instance;
 				var graphicsView = renderer.GetType().GetField("_graphicsView", flags)?.GetValue(renderer) as PlatformGraphicsView;
 				Assert.NotNull(graphicsView);
+			});
+		}
+
+		[Fact]
+		[Description("The Cornerradius of a Button should match with native CornerRadius")]
+		public async Task BoxViewCornerRadius()
+		{
+			var boxView = new BoxView
+			{
+				HeightRequest = 100,
+				WidthRequest = 200,
+				CornerRadius = new CornerRadius(15)
+			};
+			var expected = boxView.CornerRadius;
+			var handler = await CreateHandlerAsync<BoxViewHandler>(boxView);
+			var nativeView = GetNativeBoxView(handler);
+			var cornerRadius =  (float)nativeView.Layer.CornerRadius;
+			await InvokeOnMainThreadAsync(  () =>
+            {
+ 				Assert.Equal(expected, cornerRadius);
 			});
 		}
 	}
