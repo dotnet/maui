@@ -49,8 +49,6 @@ stages:
                 parameters:
                   platform: android
                   path: ${{ project.android }}
-                  device: android-emulator-64_${{ api }}
-                  apiVersion: ${{ api }}
                   targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
                   windowsPackageId: android # Only needed for Windows, will be ignored
                   provisionatorChannel: ${{ parameters.provisionatorChannel }}
