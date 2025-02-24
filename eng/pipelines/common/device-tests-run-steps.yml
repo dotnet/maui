@@ -1,0 +1,144 @@
+parameters:
+  platform: '' # [ android, ios, catalyst, windows ]
+  path: '' # path to csproj
+  device: '' # the xharness device to use
+  apiversion: '' # the iOS device api version to use
+  cakeArgs: '' # additional cake args
+  deviceTestConfiguration: '' # Indicates the configuration to use for Android. We're slowly enabling this for all projects
+  provisionatorChannel: 'latest'
+  agentPoolAccessToken: ''
+  artifactName: 'nuget'
+  artifactItemPattern: '**/*.nupkg'
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
+  useArtifacts: false
+  rebootAgent: true
+  poolName: 'Azure Pipelines'
+  skipProvisioning: true
+  targetFrameworkVersion: ''
+  appArtifactName: ''
+
+steps:
+
+  ##################################################
+  #               Provision Machine                #
+  ##################################################
+
+  - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines')) }}:
+    - bash: |
+        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+        chmod +x $(System.DefaultWorkingDirectory)/eng/scripts/clean-simulator-runtime.sh
+        $(System.DefaultWorkingDirectory)/eng/scripts/clean-bot.sh
+      displayName: 'Clean bot'
+      continueOnError: true
+      timeoutInMinutes: 60
+
+  - ${{ if eq(parameters.platform, 'android') }}:
+    - bash: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+      displayName: Enable KVM
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))      
+
+  - template: provision.yml
+    parameters:
+      skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+      skipJdk: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidPlatformApis: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidEmulatorImages: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidCreateAvds: ${{ ne(parameters.platform, 'android') }}
+      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      apiversion: ${{ parameters.apiversion }}
+      ${{ if eq(parameters.skipProvisioning, false) }}:
+        skipProvisionator : false
+        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+
+  ##################################################
+  #                Provision .NET                  #
+  ##################################################
+
+  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+    displayName: 'Install .NET'
+    retryCountOnTaskFailure: 3
+    env:
+      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+      PRIVATE_BUILD: $(PrivateBuild)
+
+  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+    displayName: 'Add .NET to PATH'
+
+
+  ##################################################
+  #                  Prepare Run                   #
+  ##################################################
+
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download Build'
+    inputs:
+      artifactName: ${{ parameters.appArtifactName }}
+      downloadPath: ${{ parameters.checkoutDirectory }}/artifacts
+
+
+  ##################################################
+  #                      Run                       #
+  ##################################################
+
+  - script: >
+      pwsh ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake
+        --target=test
+        --project="${{ parameters.path }}"
+        --device=${{ parameters.device }}
+        --apiversion=${{ parameters.apiversion }}
+        --packageid=${{ parameters.windowsPackageId }}
+        --results="$(TestResultsDirectory)"
+        --binlog="$(LogDirectory)"
+        --configuration=${{ parameters.deviceTestConfiguration }}
+        --targetFrameworkVersion=${{ parameters.targetFrameworkVersion }}
+        ${{ parameters.cakeArgs }}
+    displayName: Run
+    workingDirectory: ${{ parameters.checkoutDirectory }}
+    condition: and(succeeded(), ne(variables['Platform.Name'], 'Mac'))      
+    retryCountOnTaskFailure: 1
+
+
+  ##################################################
+  #                    Cleanup                     #
+  ##################################################
+
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - bash: |
+        pwsh ./build.ps1 --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
+      displayName: Cleanup and Create Simulator Logs if Test Run Failed To
+      condition: always()
+      continueOnError: true
+
+
+  ##################################################
+  #                    Publish                     #
+  ##################################################
+
+  - task: PublishTestResults@2
+    displayName: Publish the $(Agent.JobName) test results
+    condition: always()
+    inputs:
+      testResultsFormat: xUnit
+      testResultsFiles: '$(TestResultsDirectory)/**/TestResults*(-*).xml'
+      testRunTitle: '$(Agent.JobName) (attempt $(System.JobAttempt))'
+
+  - task: PublishBuildArtifacts@1
+    displayName: Publish Artifacts
+    condition: always()
+    inputs:
+      artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
+
+
+  ##################################################
+  #                    Reboot                      #
+  ##################################################
+
+  - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines'), eq(variables['System.TeamProject'], 'devdiv') ) }}:
+    # This must always be placed as the last step in the job
+    - template: agent-rebooter/mac.v1.yml@yaml-templates
+      parameters:
+        AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}

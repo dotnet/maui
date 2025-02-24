@@ -27,6 +27,7 @@ parameters:
       catalyst: /optional/path/to/catalyst.csproj
 
 stages:
+
   - stage: android_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} Android Device Tests
     ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
@@ -37,31 +38,50 @@ stages:
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
+          - job: android_device_tests_${{ project.name }}_build
+            timeoutInMinutes: 60
+            workspace:
+              clean: all
+            displayName: Build ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}
+            pool: ${{ parameters.androidPool }}
+            steps:
+              - template: device-tests-build-steps.yml
+                parameters:
+                  platform: android
+                  path: ${{ project.android }}
+                  device: android-emulator-64_${{ api }}
+                  apiVersion: ${{ api }}
+                  targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
+                  windowsPackageId: android # Only needed for Windows, will be ignored
+                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                  agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                  artifactName: ${{ parameters.artifactName }}
+                  artifactItemPattern: ${{ parameters.artifactItemPattern }}
+                  checkoutDirectory: ${{ parameters.checkoutDirectory }}
+                  useArtifacts: ${{ parameters.useArtifacts }}
+                  poolName: ${{ parameters.androidPool.name }}
+                  deviceTestConfiguration: ${{ project.androidConfiguration }}
+                  skipProvisioning: ${{ parameters.skipProvisioning }}
           - ${{ each api in parameters.androidApiLevels }}:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_device_tests_${{ project.name }}_${{ api }}
+                dependsOn: android_device_tests_${{ project.name }}_build
                 timeoutInMinutes: 60
                 workspace:
                   clean: all
-                displayName: android_${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_API_${{ api }}
+                displayName: Run ${{ replace(coalesce(project.desc, project.name), ' ', '_') }} API ${{ api }}
                 ${{ if eq(coalesce(project.desc, project.name), 'Controls') }}:
                   pool: ${{ parameters.androidPoolX64 }}
                 ${{ else }}:
                   pool: ${{ parameters.androidPool }}
-                variables:
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-                  PROJECT_PATH: ${{ project.android }}
-                  ANDROID_CONFIGURATION: ${{ project.androidConfiguration }}
-                  TARGET_FRAMEWORK_VERSION: ${{ parameters.targetFrameworkVersion.tfm }}
-                  DEVICE: android-emulator-64_${{ api }}
-                  APIVERSION: ${{ api }}                  
                 steps:
                   - template: device-tests-steps.yml
                     parameters:
                       platform: android
-                      path: $(PROJECT_PATH) 
-                      device: $(DEVICE)
-                      apiVersion: $(APIVERSION)
+                      path: ${{ project.android }}
+                      device: android-emulator-64_${{ api }}
+                      apiVersion: ${{ api }}
+                      targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
                       windowsPackageId: android # Only needed for Windows, will be ignored
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
@@ -70,10 +90,11 @@ stages:
                       checkoutDirectory: ${{ parameters.checkoutDirectory }}
                       useArtifacts: ${{ parameters.useArtifacts }}
                       poolName: ${{ parameters.androidPool.name }}
-                      deviceTestConfiguration: $(ANDROID_CONFIGURATION)
+                      deviceTestConfiguration: ${{ project.androidConfiguration }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
                       cakeArgs: --create=false
-  
+                      appArtifactName: android_device_tests_${{ project.name }}_build
+
   # - stage: ios_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
   #   displayName: ${{ parameters.targetFrameworkVersion.tfm }} iOS Device Tests
   #   ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:

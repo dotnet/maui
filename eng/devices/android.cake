@@ -12,7 +12,7 @@ if (EnvironmentVariable("JAVA_HOME") == null)
 }
 
 string DEFAULT_ANDROID_PROJECT = "../../src/Controls/tests/TestCases.Android.Tests/Controls.TestCases.Android.Tests.csproj";
-var projectPath = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_ANDROID_PROJECT);
+var projectPath = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? "");
 var testDevice = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-64_{DefaultApiLevel}");
 var targetFramework = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{DotnetVersion}-android");
 var binlogArg = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
@@ -64,11 +64,10 @@ var dotnetToolPath = GetDotnetToolPath();
 Teardown(context =>
 {
 	// For the uitest-prepare target, just leave the virtual device running
-	if (! string.Equals(TARGET, "uitest-prepare", StringComparison.OrdinalIgnoreCase))
+	if (!string.Equals(TARGET, "uitest-prepare", StringComparison.OrdinalIgnoreCase))
 	{
 		CleanUpVirtualDevice(emulatorProcess, avdSettings);
 	}
-
 });
 
 Task("Setup")
@@ -80,8 +79,12 @@ Task("Setup")
 
 		DetermineDeviceCharacteristics(testDevice, DefaultApiLevel);
 
-		// The Emulator Start command seems to hang sometimes so let's only give it two minutes to complete
-		await HandleVirtualDevice(emuSettings, avdSettings, androidAvd, androidAvdImage, deviceSkin, deviceBoot);
+		// Don't start or connect to devices if we are just building
+		if (!string.Equals(TARGET, "build", StringComparison.OrdinalIgnoreCase))
+		{
+			// The Emulator Start command seems to hang sometimes so let's only give it two minutes to complete
+			await HandleVirtualDevice(emuSettings, avdSettings, androidAvd, androidAvdImage, deviceSkin, deviceBoot);
+		}
 	});
 
 Task("boot")
@@ -95,20 +98,17 @@ Task("build")
 		ExecuteBuild(projectPath, testDevice, binlogDirectory, configuration, targetFramework, dotnetToolPath);
 	});
 
-Task("test")
-	.IsDependentOn("Build")
+Task("test-only")
+	.IsDependentOn("Setup")
+	.WithCriteria(!string.IsNullOrEmpty(testApp))
 	.Does(() =>
 	{
 		ExecuteTests(projectPath, testDevice, testApp, testAppPackageName, testResultsPath, configuration, targetFramework, adbSettings, dotnetToolPath, deviceBootWait, testAppInstrumentation);
 	});
 
-Task("uitest-build")
-	.IsDependentOn("Setup")
-	.IsDependentOn("dotnet-buildtasks")
-	.Does(() =>
-	{
-		ExecuteBuildUITestApp(testAppProjectPath, testDevice, binlogDirectory, configuration, targetFramework, "", dotnetToolPath);
-	});
+Task("test")
+	.IsDependentOn("build")
+	.IsDependentOn("test-only");
 
 Task("uitest-prepare")
 	.IsDependentOn("Setup")
@@ -227,31 +227,6 @@ void ExecuteTests(string project, string device, string appPath, string appPacka
 	}
 	
 	Information("Testing completed.");
-}
-
-void ExecuteBuildUITestApp(string appProject, string device, string binDir, string config, string tfm, string rid, string toolPath)
-{
-	Information($"Building UI Test app: {appProject}");
-	var projectName = System.IO.Path.GetFileNameWithoutExtension(appProject);
-	var binlog = $"{binDir}/{projectName}-{config}-android.binlog";
-
-	DotNetBuild(appProject, new DotNetBuildSettings
-	{
-		Configuration = config,
-		Framework = tfm,
-		ToolPath = toolPath,
-		ArgumentCustomization = args =>
-		{
-			args
-			.Append("/p:EmbedAssembliesIntoApk=true")
-			.Append("/bl:" + binlog)
-			.Append("/tl");
-
-			return args;
-		}
-	});
-
-	Information("UI Test app build completed.");
 }
 
 void ExecutePrepareUITests(string project, string app, string appPackageName, string device, string resultsDir, string binDir, string config, string tfm, string rid, string ver, string toolPath, string instrumentation)
