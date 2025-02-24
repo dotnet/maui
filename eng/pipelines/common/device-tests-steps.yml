@@ -59,7 +59,7 @@ stages:
           appArtifactName: ${{ parameters.platform }}_device_tests_${{ project.name }}_build
     - ${{ each version in parameters.versions }}:
       - ${{ if not(containsValue(project.versionsExclude, version)) }}:
-        - job: ${{ parameters.platform }}_device_tests_${{ project.name }}_${{ version }}
+        - job: ${{ parameters.platform }}_device_tests_${{ project.name }}_${{ replace(version, '-', '') }}
           dependsOn: ${{ parameters.platform }}_device_tests_${{ project.name }}_build
           ${{ if eq(parameters.platform, 'android') }}:
             timeoutInMinutes: 60
