@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // Automation Id for StackLayout is not working on Windows
+﻿#if TEST_FAILS_ON_WINDOWS // On Windows AutomationId is not working for Stacklayout, Hence we used to swipe the layout here so we can't use the inner elements AutomationId. More Information:https://github.com/dotnet/maui/issues/4715
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
