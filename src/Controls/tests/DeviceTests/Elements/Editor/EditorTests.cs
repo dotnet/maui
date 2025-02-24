@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Linq;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests

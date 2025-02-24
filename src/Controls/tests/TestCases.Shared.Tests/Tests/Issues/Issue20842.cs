@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(scrollUpButton);
 			App.Tap(scrollUpButton);
 			App.WaitForElement(scrollDownButton);
-			App.Tap(scrollDownButton);	
+			App.Tap(scrollDownButton);
 			VerifyScreenshot();
 		}
 	}
