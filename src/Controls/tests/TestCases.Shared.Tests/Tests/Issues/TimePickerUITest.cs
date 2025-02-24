@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.TimePicker)]
-		public void VerifyTimePickerApperance()
+		public void VerifyTimePickerAppearance()
 		{
 			App.WaitForElement("TimePicker");
 			App.Tap("TimePicker");
