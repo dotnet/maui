@@ -765,6 +765,13 @@ namespace Microsoft.Maui.Platform
 			var nextResponder = view as UIResponder;
 			while (nextResponder is not null)
 			{
+				// We check for Window to avoid scenarios where an invalidate might propagate up the tree
+				// To a SuperView that's been disposed which will cause a crash when trying to access it
+				if (view.Window is null)
+				{
+					return null;
+				}
+
 				nextResponder = nextResponder.NextResponder;
 
 				if (nextResponder is T responder)
@@ -778,6 +785,13 @@ namespace Microsoft.Maui.Platform
 			var nextResponder = controller.View as UIResponder;
 			while (nextResponder is not null)
 			{
+				// We check for Window to avoid scenarios where an invalidate might propagate up the tree
+				// To a SuperView that's been disposed which will cause a crash when trying to access it
+				if (controller.View?.Window is null)
+				{
+					return null;
+				}
+
 				nextResponder = nextResponder.NextResponder;
 
 				if (nextResponder is T responder && responder != controller)
