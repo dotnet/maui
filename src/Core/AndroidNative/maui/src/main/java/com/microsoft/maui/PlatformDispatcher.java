@@ -19,6 +19,6 @@ public class PlatformDispatcher extends Handler {
     }
 
     public boolean isDispatchRequired() {
-        return Looper.getMainLooper() != getLooper();
+        return Looper.myLooper() != getLooper();
     }
 }
