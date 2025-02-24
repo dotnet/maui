@@ -357,12 +357,12 @@ Task("dotnet-pack-docs")
                 if (filename.StartsWith("Microsoft.AspNetCore.Components.WebView.Wpf")
                     || filename.StartsWith("Microsoft.AspNetCore.Components.WebView.WindowsForms"))
                 {
-                    CopyFiles($"{d}/lib/**/net?.?-windows?.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
+                    CopyFiles($"{d}/lib/**/net??.?-windows?.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
 
                     continue;
                 }
 
-                CopyFiles($"{d}/lib/**/net?.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
+                CopyFiles($"{d}/lib/**/net??.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
             }
         }
 
