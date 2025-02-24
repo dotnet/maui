@@ -28,15 +28,15 @@ parameters:
 
 stages:
 
-  - stage: android_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
-    displayName: ${{ parameters.targetFrameworkVersion.tfm }} Android Device Tests
-    ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
-      dependsOn:
-        - android_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
-    ${{ else }}:
-      dependsOn: []
-    jobs:
-      - ${{ each project in parameters.projects }}:
+  - ${{ each project in parameters.projects }}:
+    - stage: android_device_tests_${{ project.name }}_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+      displayName: ${{ parameters.targetFrameworkVersion.tfm }} Android ${{ project.name }}
+      ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
+        dependsOn:
+          - android_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
+      ${{ else }}:
+        dependsOn: []
+      jobs:
         - ${{ if ne(project.android, '') }}:
           - job: android_device_tests_${{ project.name }}_build
             timeoutInMinutes: 60
