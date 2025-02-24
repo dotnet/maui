@@ -121,7 +121,7 @@ steps:
 
   # Provision Android SDK Emulator Images (eg: system-images;android-34;google_apis;aarch64)
   - ${{ if ne(parameters.skipAndroidEmulatorImages, 'true') }}:
-    - pwsh: echo "Running provisioning step..."
+    - pwsh: dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" ./src/Provisioning/Provisioning.csproj
       displayName: 'Provision Android SDK - Emulator Images'
       condition: succeeded()
       env:
