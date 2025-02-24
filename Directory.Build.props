@@ -114,7 +114,7 @@
   </PropertyGroup>
 
   <!-- this is CI, so everything should be there -->
-  <PropertyGroup Condition="'$(CI)' == 'true' or '$(TF_BUILD)' == 'true'">
+  <PropertyGroup Condition="('$(CI)' == 'true' or '$(TF_BUILD)' == 'true') and ('$(BuildTaskOnlyBuild)' != 'true')">
     <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">true</IncludeWindowsTargetFrameworks>
     <!-- Disabled until net9.0-tizen is available -->
     <IncludeTizenTargetFrameworks>true</IncludeTizenTargetFrameworks>
