@@ -15,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.TimePicker)]
+		[FlakyTest("More details here: https://github.com/dotnet/maui/issues/27999")]
 		public void VerifyTimePickerAppearance()
 		{
 			App.WaitForElement("TimePicker");
