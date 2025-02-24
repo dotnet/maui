@@ -223,13 +223,25 @@ namespace Microsoft.Maui.DeviceTests
 				}));
 			}
 
-			UIGraphics.BeginImageContext(imageRect.Size);
+			UIImage image;
 
-			var context = UIGraphics.GetCurrentContext();
-			view.Layer.RenderInContext(context);
-			var image = UIGraphics.GetImageFromCurrentImageContext();
+			if (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
+			{
+				var renderer = new UIGraphicsImageRenderer(imageRect.Size);
+				image = renderer.CreateImage(c =>
+				{
+					view.Layer.RenderInContext(c.CGContext);
+				});
+			}
+			else
+			{
+				UIGraphics.BeginImageContext(imageRect.Size);
+				var context = UIGraphics.GetCurrentContext();
+				view.Layer.RenderInContext(context);
+				image = UIGraphics.GetImageFromCurrentImageContext();
+				UIGraphics.EndImageContext();
+			}
 
-			UIGraphics.EndImageContext();
 			logger?.LogDebug($"Finish: {image.Size}");
 
 			return Task.FromResult(image);
