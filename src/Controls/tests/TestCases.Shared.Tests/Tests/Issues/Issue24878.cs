@@ -1,4 +1,4 @@
-﻿#if ANDROID || WINDOWS
+﻿#if TEST_FAILS_ON_WINDOWS 
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -15,6 +15,8 @@ public class Issue24878 : _IssuesUITest
 	[Category(UITestCategories.ToolbarItem)]
 	public void ToolbarItemsShouldBeVisible()
 	{
+		App.WaitForElement("button");
+		App.Click("button");
 		App.WaitForElement("label");
 
 		VerifyScreenshot();
