@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Shell.CurrentItemProperty.PropertyName)
-				SwitchFragment(FragmentManager, _frameLayout, Element.CurrentItem, Element._isAnimate);
+				SwitchFragment(FragmentManager, _frameLayout, Element.CurrentItem, Element.IsAnimateOnNavigation);
 
 			_elementPropertyChanged?.Invoke(sender, e);
 		}
