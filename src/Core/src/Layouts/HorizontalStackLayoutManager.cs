@@ -71,12 +71,9 @@ namespace Microsoft.Maui.Layouts
 					// If we have more than one child and we're not on the last one, add spacing
 					xPosition += spacing;
 				}
-				xPosition += padding.Right;
 			}
 
-			var actual = new Size(xPosition, bounds.Height);
-
-			return actual.AdjustForFill(bounds, Stack);
+			return new Size(bounds.Width, bounds.Height);
 		}
 
 		static double ArrangeChild(IView child, double height, double top, double x)

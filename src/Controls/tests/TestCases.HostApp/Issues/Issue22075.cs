@@ -8,7 +8,6 @@ namespace Maui.Controls.Sample.Issues
 		{
 			StackLayout stackLayout = new StackLayout
 			{
-				AutomationId = "Stack",
 				Padding = 15,
 				BackgroundColor = Colors.Green,
 				HorizontalOptions = LayoutOptions.Center,
@@ -18,6 +17,7 @@ namespace Maui.Controls.Sample.Issues
 			Button button = new Button
 			{
 				Text = "Click me",
+				AutomationId = "Button",
 				BackgroundColor = Colors.Violet
 			};
 

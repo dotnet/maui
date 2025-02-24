@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issue
 		[Category(UITestCategories.Layout)]
 		public void CreateStackWithPadding()
 		{
-			App.WaitForElement("Stack");
+			App.WaitForElement("Button");
 			VerifyScreenshot();
 		}
 	}
