@@ -36,7 +36,7 @@ stages:
       timeoutInMinutes: 60
       workspace:
         clean: all
-      displayName: Build ${{ project.desc }}
+      displayName: Build ${{ parameters.platform }} ${{ project.desc }}
       pool: ${{ parameters.pool }}
       variables:
         REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
@@ -71,7 +71,7 @@ stages:
             timeoutInMinutes: 240
           workspace:
             clean: all
-          displayName: Run ${{ project.desc }} v${{ version }}
+          displayName: Run ${{ parameters.platform }} ${{ project.desc }} ${{ version }}
           pool: ${{ parameters.pool }}
           variables:
             REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
