@@ -36,6 +36,7 @@ steps:
       skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
       skipAndroidPlatformApis: ${{ ne(parameters.platform, 'android') }}
       skipAndroidEmulatorImages: true
+      onlyAndroidPlatformDefaultApis: true
       skipAndroidCreateAvds: true
       androidEmulatorApiLevel: ${{ parameters.apiversion }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
