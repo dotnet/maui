@@ -323,7 +323,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return false;
 		}
 
-		private static double GetTopAreaHeight(ListViewBase list, UIElement targetContainer)
+		static double GetTopAreaHeight(ListViewBase list, UIElement targetContainer)
 		{
 			var groupHeader = list.GroupHeaderContainerFromItemContainer(targetContainer);
 			return list.IsGrouping ? (groupHeader as ListViewHeaderItem).ActualHeight : 0;
