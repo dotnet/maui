@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,12 +17,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CarouselView)]
 		public void Issue10300Test()
 		{
-			App.Click("Add");
-			App.Click("Delete");
-			App.WaitForElement("Close");
-			App.Click("Close");
+			App.Click("AddMe");
+			App.Click("DeleteMe");
+			App.WaitForElement("CloseMe");
+			App.Click("CloseMe");
 			App.WaitForElement("2");
 		}
 	}
 }
-#endif

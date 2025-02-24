@@ -112,12 +112,7 @@ jobs:
     pool:
       name: ${{ RunPlatform.name }}
       vmImage: ${{ RunPlatform.vmImage }}
-      ${{ if ne(variables['System.TeamProject'], 'devdiv') }}:
-        demands: ${{ RunPlatform.demands }}
-      ${{ else }}:
-        demands:
-          - macOS.Name -equals Sonoma
-          - macOS.Architecture -equals x64
+      demands: ${{ RunPlatform.demands }}
     steps:
 
     - ${{ each step in parameters.prepareSteps }}:
