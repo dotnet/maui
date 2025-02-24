@@ -135,6 +135,12 @@ steps:
       env:
         AndroidSdkProvisionApiLevel: ${{ parameters.apiversion }}
 
+  - ${{ if ne(parameters.skipAndroidCreateAvds, 'true') }}:
+    - pwsh: |
+        dotnet android avd start -p 5554 -n Emulator_33 --no-window --gpu swiftshader_indirect --no-snapshot --no-audio --no-boot-anim --wait
+        dotnet android device list
+        dotnet android device info
+
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: ../../common/templates-official/steps/enable-internal-sources.yml
 
