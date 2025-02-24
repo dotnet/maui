@@ -34,7 +34,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 #endif
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // The test fails on iOS and macOS because Appium is unable to locate the Picker control elements resulting in a TimeoutException.
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
