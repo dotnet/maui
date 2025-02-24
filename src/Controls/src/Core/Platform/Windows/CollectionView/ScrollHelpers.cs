@@ -30,23 +30,23 @@ namespace Microsoft.Maui.Controls.Platform
 			return AdjustToMakeVisibleHorizontal(point, itemSize, scrollViewer);
 		}
 
-		static UWPPoint AdjustToStart(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer, double height)
+		static UWPPoint AdjustToStart(UWPPoint point, ScrollViewer scrollViewer, double height)
 		{
 			if (IsVertical(scrollViewer))
 			{
-				return AdjustToStartVertical(point, itemSize, scrollViewer, height);
+				return AdjustToStartVertical(point, height);
 			}
 
-			return AdjustToStartHorizontal(point, itemSize, scrollViewer, height);
+			return AdjustToStartHorizontal(point, height);
 		}
 
 
-		static UWPPoint AdjustToStartVertical(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer, double headerHeight)
+		static UWPPoint AdjustToStartVertical(UWPPoint point, double headerHeight)
 		{
 			return new UWPPoint(point.X, point.Y - headerHeight);
 		}
 
-		static UWPPoint AdjustToStartHorizontal(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer, double headerHeight)
+		static UWPPoint AdjustToStartHorizontal(UWPPoint point, double headerHeight)
 		{
 			return new UWPPoint(point.X - headerHeight, point.Y);
 		}
