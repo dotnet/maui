@@ -15,6 +15,26 @@ namespace UITest.Appium.AI
 		const float Temperature = 0.7f;
 		const int MaxOutputTokenCount = 800;
 
+		const string Execute = @"
+		You are a software tool designed to determine the list of actions for the task given to you. The set of actions that you are able to take are tap, type or wait.
+		- Select tap as the action when you believe you need to tap something on the screen to best proceed with the given task.
+		- Select type as the action when you believe you need to type something to best proceed with the given task.
+		- Select wait as the action when you believe you need to wait - for example if the page is loading.
+
+		You will be given a screenshot of the current page you are on.
+
+		Please note:
+		- Use computer vision techniques including OCR to look for text or visual elements specified by the user.
+		- Use the following JSON format: [{ ""action"": ""ACTION_GOES_HERE"", ""content"": ""VALUE_HERE"", ""text"": ""TYPE_VALUE_HERE"", ""explanation"": ""EXPLANATION_GOES_HERE"" }]. Do not return the JSON inside a code block.
+		- Determine the string inside the control where the action is performed and includes it in the content property.
+		- Includes in the text property the text to write in an type action.
+		- Includes in the property explanation why you have selected this action.
+		- If you have a bulleted list or a numbered list, try to turn each item in the list into at least one action.
+
+		Remember that in order to type something into an input, you must first select the input by tapping it if not indicated.
+
+		As a reminder, never ever return anything except JSON.";
+
 		const string FindElementImagePrompt = @"
 		You are a software tool designed to analyze mobile application screenshots. The user will provide you with a screenshot and then ask for the coordinates of an element in the screenshot. Your job is to interpret the user's description of an element, find the bounding box of the element in the screenshot, and return that bounding box. You should return responses in JSON object format. More specific instructions:
 		- Use computer vision techniques including OCR to look for text or visual elements specified by the user.
@@ -531,6 +551,71 @@ namespace UITest.Appium.AI
 			return false;
 		}
 
+		public static async Task ExecuteWithAI(this IApp app, string prompt)
+		{
+			var chatClient = app.GetChatClient();
+
+			var screenshot = app.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+			var screenshotBytes = BinaryData.FromBytes(screenshot);
+
+			var messages = new List<ChatMessage>
+			{
+				new SystemChatMessage(Execute),
+				new UserChatMessage(
+					ChatMessageContentPart.CreateTextPart(prompt),
+					ChatMessageContentPart.CreateImagePart(screenshotBytes, "image/png"))
+			};
+
+			var options = new ChatCompletionOptions
+			{
+				Temperature = Temperature,
+				MaxOutputTokenCount = MaxOutputTokenCount,
+				FrequencyPenalty = 0,
+				PresencePenalty = 0,
+			};
+
+			ChatCompletion completion = await chatClient.CompleteChatAsync(messages, options);
+
+			if (completion.Content != null && completion.Content.Count > 0)
+			{
+				string result = completion.Content[0].Text;
+
+				List<ExecuteData>? steps = JsonSerializer.Deserialize<List<ExecuteData>>(result);
+
+				if (steps is not null && steps?.Count > 0)
+				{
+					foreach(var step in steps)
+					{
+						if(string.IsNullOrEmpty(step.Content))
+							continue;
+
+						switch (step.Action)
+						{
+							case "clear":
+								var clearElement = app.FindElementByText(step.Content);
+								clearElement.Clear();
+								break;
+							case "tap":
+								var tapElement = app.FindElementByText(step.Content);
+								tapElement.Tap();
+								break;
+							case "type":
+								if(string.IsNullOrEmpty(step.Text))
+									continue;
+
+								var typeElement = app.FindElementByText(step.Content);
+								typeElement.SendKeys(step.Text);
+								break;
+							default:
+								break;
+						}
+
+						Console.WriteLine(step.Explanation);
+					}
+				}
+			}
+		}
+
 		static Task<IUIElement> WaitForAtLeastOne(Func<Task<IUIElement?>> query,
 			string? timeoutMessage = null,
 			TimeSpan? timeout = null,
@@ -697,6 +782,20 @@ namespace UITest.Appium.AI
 			return output;
 		}
 	}
+}
+
+class ExecuteData
+{
+	[JsonPropertyName("action")]
+	public required string Action { get; set; }
+	[JsonPropertyName("content")]
+	public required string Content { get; set; }
+
+	[JsonPropertyName("text")]
+	public string? Text { get; set; }
+
+	[JsonPropertyName("explanation")]
+	public string? Explanation { get; set; }
 }
 
 class IUElementData
