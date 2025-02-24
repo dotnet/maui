@@ -88,8 +88,8 @@ steps:
       $errorPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
       New-ItemProperty -Path $errorPath -Name DumpFolder -PropertyType String -Value "$(Build.ArtifactStagingDirectory)/crash-dumps"
       New-ItemProperty -Path $errorPath -Name DumpType -PropertyType DWORD -Value 2
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
     displayName: 'Set dump file location'
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
     continueOnError: true
     timeoutInMinutes: 5
 
