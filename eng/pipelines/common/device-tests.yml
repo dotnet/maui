@@ -69,10 +69,7 @@ stages:
                 workspace:
                   clean: all
                 displayName: Run ${{ project.desc }} API ${{ api }}
-                ${{ if eq(project.name, 'controls') }}:
-                  pool: ${{ parameters.androidPoolX64 }}
-                ${{ else }}:
-                  pool: ${{ parameters.androidPool }}
+                pool: ${{ parameters.androidPool }}
                 steps:
                   - template: device-tests-run-steps.yml
                     parameters:
