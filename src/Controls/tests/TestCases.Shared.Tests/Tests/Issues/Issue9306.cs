@@ -1,4 +1,4 @@
-﻿#if IOS || MACCATALYST
+﻿#if TEST_FAILS_ON_WINDOWS // Automation Id for StackLayout is not working on Windows
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -36,4 +36,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif
