@@ -92,18 +92,16 @@ steps:
         echo "Running provisioning step..."
         dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ./src/Provisioning/Provisioning.csproj
         echo ""
-        echo "Listing installed JDKs..."
-        dotnet android jdk list
-        echo ""
         echo "Setting JAVA_HOME..."
         $jsonOutput = & dotnet android jdk list --format=Json | ConvertFrom-Json
         $preferredJdk = $jsonOutput | Where-Object { $_.DotNetPreferred -eq $true } | Select-Object -First 1
-        if (-not $preferredJdk) {
+        $preferredJdkHome = $preferredJdk.Home
+        if (-not $preferredJdkHome) {
           Write-Error "No JDK found."
           exit 1
         }
-        echo "##vso[task.setvariable variable=JAVA_HOME]$preferredJdk"
-        echo "JAVA_HOME set to '$preferredJdk'"
+        echo "##vso[task.setvariable variable=JAVA_HOME]$preferredJdkHome"
+        echo "JAVA_HOME set to '$preferredJdkHome'"
       displayName: 'Provision JDK'
       condition: succeeded()
 
