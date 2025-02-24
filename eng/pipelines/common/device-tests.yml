@@ -73,7 +73,7 @@ stages:
                 ${{ else }}:
                   pool: ${{ parameters.androidPool }}
                 steps:
-                  - template: device-tests-steps.yml
+                  - template: device-tests-run-steps.yml
                     parameters:
                       platform: android
                       path: ${{ project.android }}
