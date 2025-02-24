@@ -97,8 +97,18 @@ namespace Microsoft.Maui.Handlers
 			var platformWindow = MauiContext?.GetPlatformWindow();
 			platformWindow?.BeginInvokeOnMainThread(() =>
 			{
-				_ = platformWindow?.RootViewController?.PresentViewControllerAsync(pickerController, true);
+				GetTopViewController(platformWindow?.RootViewController)?.PresentViewControllerAsync(pickerController, true);
 			});
+		}
+
+		static UIViewController? GetTopViewController(UIViewController? viewController)
+		{
+			while (viewController?.PresentedViewController != null)
+			{
+				viewController = viewController.PresentedViewController;
+			}
+ 
+			return viewController;
 		}
 #endif
 
