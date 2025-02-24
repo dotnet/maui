@@ -1013,7 +1013,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs/*" />
 		public Task GoToAsync(ShellNavigationState state, bool animate)
 		{
-			_iaAnimate = animate;
+			_isAnimate = animate;
 			return _navigationManager.GoToAsync(state, animate, false);
 		}
 
@@ -1030,6 +1030,7 @@ namespace Microsoft.Maui.Controls
 		public Task GoToAsync(ShellNavigationState state, bool animate, IDictionary<string, object> parameters)
 #pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
+			_isAnimate = animate;
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}
 
@@ -1053,6 +1054,7 @@ namespace Microsoft.Maui.Controls
 		/// <returns></returns>
 		public Task GoToAsync(ShellNavigationState state, bool animate, ShellNavigationQueryParameters shellNavigationQueryParameters)
 		{
+			_isAnimate = animate;
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(shellNavigationQueryParameters));
 		}
 
@@ -1154,7 +1156,7 @@ namespace Microsoft.Maui.Controls
 		ShellNavigationManager _navigationManager;
 		ShellFlyoutItemsManager _flyoutManager;
 		Page _previousPage;
-		internal bool _iaAnimate = true;
+		internal bool _isAnimate = true;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Shell()
