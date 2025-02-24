@@ -70,18 +70,7 @@ steps:
   #                      Run                       #
   ##################################################
 
-  - script: >
-      pwsh ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake
-        --target=test
-        --project="${{ parameters.path }}"
-        --device=${{ parameters.device }}
-        --apiversion=${{ parameters.apiversion }}
-        --packageid=${{ parameters.windowsPackageId }}
-        --results="$(TestResultsDirectory)"
-        --binlog="$(LogDirectory)"
-        --configuration=${{ parameters.deviceTestConfiguration }}
-        --targetFrameworkVersion=${{ parameters.targetFrameworkVersion }}
-        ${{ parameters.cakeArgs }}
+  - script: pwsh ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=test --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" --configuration=${{ parameters.deviceTestConfiguration }} --targetFrameworkVersion=${{ parameters.targetFrameworkVersion }} ${{ parameters.cakeArgs }}
     displayName: Run
     workingDirectory: ${{ parameters.checkoutDirectory }}
     condition: and(succeeded(), ne(variables['Platform.Name'], 'Mac'))      

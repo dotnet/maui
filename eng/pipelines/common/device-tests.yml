@@ -30,7 +30,7 @@ stages:
 
   - ${{ each project in parameters.projects }}:
     - stage: android_device_tests_${{ project.name }}_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
-      displayName: ${{ parameters.targetFrameworkVersion.tfm }} Android ${{ project.name }}
+      displayName: ${{ parameters.targetFrameworkVersion.tfm }} Android ${{ project.desc }}
       ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
         dependsOn:
           - android_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
@@ -42,7 +42,7 @@ stages:
             timeoutInMinutes: 60
             workspace:
               clean: all
-            displayName: Build ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}
+            displayName: Build ${{ project.desc }}
             pool: ${{ parameters.androidPool }}
             steps:
               - template: device-tests-build-steps.yml
@@ -67,8 +67,8 @@ stages:
                 timeoutInMinutes: 60
                 workspace:
                   clean: all
-                displayName: Run ${{ replace(coalesce(project.desc, project.name), ' ', '_') }} API ${{ api }}
-                ${{ if eq(coalesce(project.desc, project.name), 'Controls') }}:
+                displayName: Run ${{ project.desc }} API ${{ api }}
+                ${{ if eq(project.name, 'controls') }}:
                   pool: ${{ parameters.androidPoolX64 }}
                 ${{ else }}:
                   pool: ${{ parameters.androidPool }}
