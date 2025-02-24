@@ -17,8 +17,8 @@ parameters:
   androidConfiguration: 'debug' # Indicates the configuration to use for Android. We're slowly enabling this for all projects
   useArtifacts: false
   targetFrameworkVersion:
-    - tfm: ''
-      dependsOn: ''
+    tfm: ''
+    dependsOn: ''
   projects:
     - name: name
       desc: Human Description
@@ -33,16 +33,17 @@ stages:
     - template: device-tests-steps.yml
       parameters:
         platform: android
+        timeoutInMinutes: 60
         pool: ${{ parameters.androidPool }}
         versions: ${{ parameters.androidApiLevels }}
         targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
         checkoutDirectory: ${{ parameters.checkoutDirectory }}
         project:
-          - name: ${{ project.name }}
-            desc: ${{ project.desc }}
-            path: ${{ project.android }}
-            versionsExclude: ${{ project.androidApiLevelsExclude }}
-            configuration: ${{ project.androidConfiguration }}
+          name: ${{ project.name }}
+          desc: ${{ project.desc }}
+          path: ${{ project.android }}
+          versionsExclude: ${{ project.androidApiLevelsExclude }}
+          configuration: ${{ project.androidConfiguration }}
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
         skipProvisioning: ${{ parameters.skipProvisioning }}
         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
@@ -54,16 +55,17 @@ stages:
     - template: device-tests-steps.yml
       parameters:
         platform: ios
+        timeoutInMinutes: 120
         pool: ${{ parameters.iOSPool }}
         versions: ${{ parameters.iosVersions }}
         targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
         checkoutDirectory: ${{ parameters.checkoutDirectory }}
         project:
-          - name: ${{ project.name }}
-            desc: ${{ project.desc }}
-            path: ${{ project.ios }}
-            versionsExclude: ${{ project.iosVersionsExclude }}
-            configuration: ${{ project.iOSConfiguration }}
+          name: ${{ project.name }}
+          desc: ${{ project.desc }}
+          path: ${{ project.ios }}
+          versionsExclude: ${{ project.iosVersionsExclude }}
+          configuration: ${{ project.iOSConfiguration }}
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
         skipProvisioning: ${{ parameters.skipProvisioning }}
         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
@@ -75,16 +77,17 @@ stages:
     - template: device-tests-steps.yml
       parameters:
         platform: catalyst
+        timeoutInMinutes: 240
         pool: ${{ parameters.catalystPool }}
         versions: ${{ parameters.catalystVersions }}
         targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
         checkoutDirectory: ${{ parameters.checkoutDirectory }}
         project:
-          - name: ${{ project.name }}
-            desc: ${{ project.desc }}
-            path: ${{ project.catalyst }}
-            versionsExclude: ${{ project.catalystVersionsExclude }}
-            configuration: ${{ project.iOSConfiguration }}
+          name: ${{ project.name }}
+          desc: ${{ project.desc }}
+          path: ${{ project.catalyst }}
+          versionsExclude: ${{ project.catalystVersionsExclude }}
+          configuration: ${{ project.iOSConfiguration }}
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
         skipProvisioning: ${{ parameters.skipProvisioning }}
         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
@@ -96,17 +99,18 @@ stages:
     - template: device-tests-steps.yml
       parameters:
         platform: windows
+        timeoutInMinutes: 240
         pool: ${{ parameters.windowsPool }}
         versions: ${{ parameters.windowsVersions }}
         cakeArgs: ''
         targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
         checkoutDirectory: ${{ parameters.checkoutDirectory }}
         project:
-          - name: ${{ project.name }}
-            desc: ${{ project.desc }}
-            path: ${{ project.windows }}
-            packageid: ${{ project.windowsPackageId }}
-            configuration: ${{ project.windowsConfiguration }}
+          name: ${{ project.name }}
+          desc: ${{ project.desc }}
+          path: ${{ project.windows }}
+          packageid: ${{ project.windowsPackageId }}
+          configuration: ${{ project.windowsConfiguration }}
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
         skipProvisioning: ${{ parameters.skipProvisioning }}
         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
