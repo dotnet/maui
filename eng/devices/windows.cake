@@ -135,7 +135,6 @@ Task("GenerateMsixCert")
 Task("Build")
 	.IsDependentOn("GenerateMsixCert")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
-	.WithCriteria(!string.IsNullOrEmpty(PACKAGEID))
 	.Does(() =>
 {
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
