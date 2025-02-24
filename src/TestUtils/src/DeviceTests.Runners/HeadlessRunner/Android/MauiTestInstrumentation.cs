@@ -120,11 +120,11 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(21))
 			{
-				bundle.PutCharSequence("return-code", finalPath);
+				bundle.PutCharSequence("test-results-path", finalPath);
 			}
 			else
 			{
-				bundle.PutString("return-code", finalPath);
+				bundle.PutString("test-results-path", finalPath);
 			}
 		}
 
