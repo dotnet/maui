@@ -60,6 +60,7 @@ stages:
                   poolName: ${{ parameters.androidPool.name }}
                   deviceTestConfiguration: ${{ project.androidConfiguration }}
                   skipProvisioning: ${{ parameters.skipProvisioning }}
+                  appArtifactName: android_device_tests_${{ project.name }}_build
           - ${{ each api in parameters.androidApiLevels }}:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_device_tests_${{ project.name }}_${{ api }}

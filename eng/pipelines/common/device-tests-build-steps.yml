@@ -13,6 +13,7 @@ parameters:
   useArtifacts: false
   skipProvisioning: true
   targetFrameworkVersion: ''
+  appArtifactName: ''
 
 steps:
 
@@ -96,7 +97,7 @@ steps:
 
   - script: pwsh ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=build --project="${{ parameters.path }}" --binlog="$(LogDirectory)" --configuration=${{ parameters.deviceTestConfiguration }} --targetFrameworkVersion=${{ parameters.targetFrameworkVersion }} ${{ parameters.cakeArgs }}
     displayName: Build
-    workingDirectory: ${{ parameters.checkoutDirectory }}
+    workingDirectory: ${{ parameters.appArtifactName }}
     retryCountOnTaskFailure: 1
 
 
@@ -107,4 +108,4 @@ steps:
   - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
     displayName: Publish Artifacts
     condition: always()
-    artifact: '$(Agent.JobName)'
+    artifact: ${{ parameters.appArtifactName }}
