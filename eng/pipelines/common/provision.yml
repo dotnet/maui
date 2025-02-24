@@ -89,72 +89,51 @@ steps:
   # Provision JDK
   - ${{ if ne(parameters.skipJdk, 'true') }}:
     - pwsh: |
-        # Run provisioning step
-        dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
-        # Setup JAVA_HOME
-        # Execute the command and capture the JSON output
+        echo "Running provisioning step..."
+        dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ./src/Provisioning/Provisioning.csproj
+        echo ""
+        echo "Listing installed JDKs..."
         dotnet android jdk list
+        echo ""
+        echo "Setting JAVA_HOME..."
         $jsonOutput = & dotnet android jdk list --format=Json | ConvertFrom-Json
-        # Find the first item with DotNetPreferred set to True
         $preferredJdk = $jsonOutput | Where-Object { $_.DotNetPreferred -eq $true } | Select-Object -First 1
-        # Get the value of the Home property
-        $env:JAVA_HOME = $preferredJdk.Home
-        if ($env:JAVA_HOME) {
-          echo "##vso[task.setvariable variable=JAVA_HOME]$env:JAVA_HOME"
-          echo "JAVA_HOME set to '$env:JAVA_HOME'"
-        } else {
-          echo "Unable to set JAVA_HOME"
+        if (-not $preferredJdk) {
+          Write-Error "No JDK found."
+          exit 1
         }
+        echo "##vso[task.setvariable variable=JAVA_HOME]$preferredJdk"
+        echo "JAVA_HOME set to '$preferredJdk'"
       displayName: 'Provision JDK'
       condition: succeeded()
 
   # Provision Android SDK Common Packages (eg: cmdline-tools, emulator, platform-tools, build-tools)
   - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
     - pwsh: |
+        echo "Running provisioning step..."
+        dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ./src/Provisioning/Provisioning.csproj
+        echo ""
+        echo "Listing installed packages..."
         dotnet android sdk list --installed
-        # Run provisioning step
-        dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
-        # Set ANDROID_SDK_ROOT and ANDROID_HOME paths
-        # Execute the command and capture the JSON output
-        dotnet android sdk info
+        echo ""
+        echo "Setting ANDROID_SDK_ROOT and ANDROID_HOME..."
         $jsonOutput = & dotnet android sdk info --format=Json | ConvertFrom-Json
-        # Get the SDK Path
         $preferredSdk = $jsonOutput.SdkInfo.Path
-        # Set Environment variables
-        $env:ANDROID_SDK_ROOT = $preferredSdk
-        if ($env:ANDROID_SDK_ROOT) {
-          echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$env:ANDROID_SDK_ROOT"
-          echo "ANDROID_SDK_ROOT set to '$env:ANDROID_SDK_ROOT'"
-        } else {
-          echo "Unable to set ANDROID_SDK_ROOT"
-        }
-        $env:ANDROID_HOME = $preferredSdk
-        if ($env:ANDROID_HOME) {
-          echo "##vso[task.setvariable variable=ANDROID_HOME]$env:ANDROID_HOME"
-          echo "ANDROID_HOME set to '$env:ANDROID_HOME'"
-        } else {
-          echo "Unable to set ANDROID_HOME"
-        }
-        $env:AndroidSdkDirectory = $preferredSdk
-        if ($env:AndroidSdkDirectory) {
-          echo "##vso[task.setvariable variable=AndroidSdkDirectory]$env:AndroidSdkDirectory"
-          echo "AndroidSdkDirectory set to '$env:AndroidSdkDirectory'"
-        } else {
-          echo "Unable to set AndroidSdkDirectory"
-        }
-
-        sudo apt-get install tree
-        cd $preferredSdk
-        tree -a
-
+        echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$preferredSdk"
+        echo "ANDROID_SDK_ROOT set to '$preferredSdk'"
+        echo "##vso[task.setvariable variable=ANDROID_HOME]$preferredSdk"
+        echo "ANDROID_HOME set to '$preferredSdk'"
       displayName: 'Provision Android SDK - Common Packages'
       condition: succeeded()
 
   # Provision Android SDK Platform APIs (eg: platforms;android-29, platforms;android-30)
   - ${{ if ne(parameters.skipAndroidPlatformApis, 'true') }}:
     - pwsh: |
-        dotnet android sdk info
-        dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
+        echo "Running provisioning step..."
+        dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" ./src/Provisioning/Provisioning.csproj
+        echo ""
+        echo "Listing installed packages..."
+        dotnet android sdk list --installed
       displayName: 'Provision Android SDK - Platform APIs'
       condition: succeeded()
       env:
@@ -163,8 +142,11 @@ steps:
   # Provision Android SDK Emulator Images (eg: system-images;android-34;google_apis;aarch64)
   - ${{ if ne(parameters.skipAndroidEmulatorImages, 'true') }}:
     - pwsh: |
-        dotnet android sdk info
-        dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
+        echo "Running provisioning step..."
+        dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" ./src/Provisioning/Provisioning.csproj
+        echo ""
+        echo "Listing installed packages..."
+        dotnet android sdk list --installed
       displayName: 'Provision Android SDK - Emulator Images'
       condition: succeeded()
       env:
@@ -173,8 +155,10 @@ steps:
   # Create Android AVDs (Create actual Emulator Virtual Devices)
   - ${{ if ne(parameters.skipAndroidCreateAvds, 'true') }}:
     - pwsh: |
-        dotnet android sdk info
-        dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" -v:detailed ./src/Provisioning/Provisioning.csproj
+        echo "Running provisioning step..."
+        dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" ./src/Provisioning/Provisioning.csproj
+        echo ""
+        echo "Listing available AVDs..."
         dotnet android avd list
       displayName: 'Provision Android SDK - Create AVDs'
       condition: succeeded()
