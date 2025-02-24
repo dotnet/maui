@@ -139,17 +139,17 @@ stages:
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
         skipProvisioning: ${{ not(parameters.UseProvisionator) }}
       projects:
-        # - name: essentials
-        #   desc: Essentials
-        #   androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
-        #   androidConfiguration: 'Release'
-        #   iOSConfiguration: 'Debug'
-        #   windowsConfiguration: 'Debug'
-        #   windowsPackageId: 'com.microsoft.maui.essentials.devicetests'
-        #   android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
-        #   ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
-        #   catalyst: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
-        #   windows: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+        - name: essentials
+          desc: Essentials
+          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          androidConfiguration: 'Release'
+          iOSConfiguration: 'Debug'
+          windowsConfiguration: 'Debug'
+          windowsPackageId: 'com.microsoft.maui.essentials.devicetests'
+          android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+          catalyst: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+          windows: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
         - name: graphics
           desc: Graphics
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
