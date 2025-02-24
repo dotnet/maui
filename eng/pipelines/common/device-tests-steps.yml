@@ -1,0 +1,115 @@
+parameters:
+  platform: ''
+  pool: { }
+  versions: [ ]
+  provisionatorChannel: 'latest'
+  skipProvisioning: true
+  agentPoolAccessToken: ''
+  artifactName: 'nuget'
+  artifactItemPattern: '**/*.nupkg'
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
+  useArtifacts: false
+  cakeArgs: ''
+  targetFrameworkVersion:
+    - tfm: ''
+      dependsOn: ''
+  project:
+    - name: name
+      desc: Human Description
+      path: /optional/path/to/project.csproj
+      versionsExclude: [ ]
+      packageid: ''
+      configuration: ''
+
+stages:
+
+- ${{ each project in parameters.project }}:
+  - stage: ${{ parameters.platform }}_device_tests_${{ project.name }}_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
+    displayName: ${{ parameters.targetFrameworkVersion.tfm }} ${{ parameters.platform }} ${{ project.desc }}
+    ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
+      dependsOn:
+        - ${{ parameters.platform }}_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
+    ${{ else }}:
+      dependsOn: []
+    jobs:
+    - job: ${{ parameters.platform }}_device_tests_${{ project.name }}_build
+      timeoutInMinutes: 60
+      workspace:
+        clean: all
+      displayName: Build ${{ project.desc }}
+      pool: ${{ parameters.pool }}
+      variables:
+        REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+      steps:
+      - template: device-tests-build-steps.yml
+        parameters:
+          platform: ${{ parameters.platform }}
+          path: ${{ project.path }}
+          targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
+          packageid: ${{ project.packageid }}
+          provisionatorChannel: ${{ parameters.provisionatorChannel }}
+          agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+          artifactName: ${{ parameters.artifactName }}
+          artifactItemPattern: ${{ parameters.artifactItemPattern }}
+          checkoutDirectory: ${{ parameters.checkoutDirectory }}
+          useArtifacts: ${{ parameters.useArtifacts }}
+          poolName: ${{ parameters.pool.name }}
+          deviceTestConfiguration: ${{ project.configuration }}
+          skipProvisioning: ${{ parameters.skipProvisioning }}
+          appArtifactName: ${{ parameters.platform }}_device_tests_${{ project.name }}_build
+    - ${{ each version in parameters.versions }}:
+      - ${{ if not(containsValue(project.versionsExclude, version)) }}:
+        - job: ${{ parameters.platform }}_device_tests_${{ project.name }}_${{ version }}
+          dependsOn: ${{ parameters.platform }}_device_tests_${{ project.name }}_build
+          ${{ if eq(parameters.platform, 'android') }}:
+            timeoutInMinutes: 60
+          ${{ if eq(parameters.platform, 'ios') }}:
+            timeoutInMinutes: 120
+          ${{ if eq(parameters.platform, 'catalyst') }}:
+            timeoutInMinutes: 240
+          ${{ if eq(parameters.platform, 'windows') }}:
+            timeoutInMinutes: 240
+          workspace:
+            clean: all
+          displayName: Run ${{ project.desc }} v${{ version }}
+          pool: ${{ parameters.pool }}
+          variables:
+            REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+          steps:
+          - template: device-tests-run-steps.yml
+            parameters:
+              platform: ${{ parameters.platform }}
+              path: ${{ project.path }}
+              appArtifactName: ${{ project.platform }}_device_tests_${{ project.name }}_build
+              ${{ if eq(parameters.platform, 'android') }}:
+                device:  android-emulator-64_${{ version }}
+                apiVersion: ${{ version }}
+              ${{ if eq(parameters.platform, 'ios') }}:
+                ${{ if contains(version, 'device') }}:
+                  device: ios-device
+                  apiVersion: ${{ replace(version, 'device-', '') }}
+                ${{ else }}:
+                  device: ios-simulator-64_${{ replace(version, 'simulator-', '') }}
+                  apiVersion: ${{ replace(version, 'simulator-', '') }}
+              ${{ if eq(parameters.platform, 'catalyst') }}:
+                ${{ if eq(version, 'latest') }}:
+                  device: maccatalyst
+                  apiVersion: macos # Only needed for iOS, will be ignored
+                ${{ else }}:
+                  device: maccatalyst_${{ version }}
+                  apiVersion: macos # Only needed for iOS, will be ignored
+              ${{ if eq(parameters.platform, 'windows') }}:
+                device: ${{ version }}
+                apiVersion: 10.0.19041.0
+              targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
+              packageid: ${{ project.packageid }}
+              provisionatorChannel: ${{ parameters.provisionatorChannel }}
+              agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+              artifactName: ${{ parameters.artifactName }}
+              artifactItemPattern: ${{ parameters.artifactItemPattern }}
+              checkoutDirectory: ${{ parameters.checkoutDirectory }}
+              useArtifacts: ${{ parameters.useArtifacts }}
+              poolName: ${{ parameters.pool.name }}
+              deviceTestConfiguration: ${{ project.configuration }}
+              skipProvisioning: ${{ parameters.skipProvisioning }}
+              cakeArgs: --create=false
