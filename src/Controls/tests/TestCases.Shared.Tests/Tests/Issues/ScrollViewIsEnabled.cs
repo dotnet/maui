@@ -37,7 +37,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// 3. If the ScrollView scrolled, the test passed.
 			var success = App.WaitForElement(Success).GetText();
-			Assert.That("Success",Is.EqualTo(success)); // If the ScrollView scrolled, the success label should be displayed
+			Assert.That("Success", Is.EqualTo(success)); // If the ScrollView scrolled, the success label should be displayed
 
 			App.TapBackArrow();
 
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 
 			var success = App.WaitForElement(Success).GetText();
-			Assert.That("Initial Text",Is.EqualTo(success));
+			Assert.That("Initial Text", Is.EqualTo(success));
 
 			App.TapBackArrow();
 		}
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// 2. Shouldn't have scrolled.
 			// Shouldn't have scrolled, so no success label should be displayed
 			var success = App.WaitForElement(Success).GetText();
-			Assert.That("Initial Text",Is.EqualTo(success));
+			Assert.That("Initial Text", Is.EqualTo(success));
 
 			App.TapBackArrow();
 		}
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// 4. If the ScrollView scrolled, the test passed.
 			var success = App.WaitForElement(Success).GetText();
-			Assert.That("Success",Is.EqualTo(success)); // If the ScrollView scrolled, the success label should be displayed
+			Assert.That("Success", Is.EqualTo(success)); // If the ScrollView scrolled, the success label should be displayed
 
 			App.TapBackArrow();
 		}

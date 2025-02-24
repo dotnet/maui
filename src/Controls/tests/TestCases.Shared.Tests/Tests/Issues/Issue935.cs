@@ -21,10 +21,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("TestLabel");
 			App.Tap("TestLabel");
-			var label=App.WaitForElement("TestLabel").GetText();
+			var label = App.WaitForElement("TestLabel").GetText();
 			Assert.That("I have been selected:1", Is.EqualTo(label));
 			App.Tap("TestLabel");
-			var label1=App.WaitForElement("TestLabel").GetText();
+			var label1 = App.WaitForElement("TestLabel").GetText();
 			Assert.That("I have been selected:2", Is.EqualTo(label1));
 		}
 	}
