@@ -109,7 +109,15 @@ jobs:
     displayName: ${{ RunPlatform.testName }}
     timeoutInMinutes: 240
     condition: ${{ parameters.condition}}
-    pool: ${{ RunPlatform }}
+    pool:
+      name: ${{ RunPlatform.name }}
+      vmImage: ${{ RunPlatform.vmImage }}
+      ${{ if ne(variables['System.TeamProject'], 'devdiv') }}:
+        demands: ${{ RunPlatform.demands }}
+      ${{ else }}:
+        demands:
+          - macOS.Name -equals Sonoma
+          - macOS.Architecture -equals x64
     steps:
 
     - ${{ each step in parameters.prepareSteps }}:

@@ -1,7 +1,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui.BuildTasks.slnf" />
-    <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui.Packages-mac.slnf" Condition="'$(OS)' != 'Windows_NT'" />
-    <ProjectToBuild Include="$(RepoRoot)Microsoft.Maui.Packages.slnf" Condition="'$(OS)' == 'Windows_NT'" />  
+    <ProjectToBuild Include="$(RepoRoot)eng/Microsoft.Maui.Packages-mac.slnf" Condition="'$(OS)' != 'Windows_NT'" />
+    <ProjectToBuild Include="$(RepoRoot)eng/Microsoft.Maui.Packages.slnf" Condition="'$(OS)' == 'Windows_NT'" />  
   </ItemGroup>
 </Project>
