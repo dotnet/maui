@@ -438,7 +438,7 @@ namespace Microsoft.Maui.Controls.Platform
 				case ScrollToPosition.Start:
 					// The transform will put the container at the top of the ScrollViewer; we'll need to adjust for
 					// other scroll positions
-					offset = AdjustToStart(offset, itemSize, scrollViewer, height);
+					offset = AdjustToStart(offset, scrollViewer, height);
 					break;
 				case ScrollToPosition.MakeVisible:
 					offset = AdjustToMakeVisible(offset, itemSize, scrollViewer);
