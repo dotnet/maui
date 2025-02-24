@@ -29,30 +29,18 @@
     <NoWarn>$(NoWarn);MSB4011;NETSDK1206</NoWarn>
   </PropertyGroup>
 
-  <!-- FIXME: various test projects have trimmer warnings, which are enabled by default on iOS/Catalyst -->
-  <PropertyGroup Condition=" '$(MauiTestProject)' == 'true' or '$(SampleProject)' == 'true' ">
-    <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
-    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
-  </PropertyGroup>
-
   <!-- platform version number information -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
     <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>13.0</TargetPlatformMinVersion>
-    <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIstvOS)' == 'True'">
     <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
-    <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsMacCatalyst)' == 'True'">
     <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>15.0</TargetPlatformMinVersion>
-    <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsmacOS)' == 'True'">
     <SupportedOSPlatformVersion>12.0</SupportedOSPlatformVersion>
