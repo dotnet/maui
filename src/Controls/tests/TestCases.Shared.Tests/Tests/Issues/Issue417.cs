@@ -1,5 +1,4 @@
-﻿#if TEST_FAIlS_ON_IOS && TEST_FAIlS_ON_CATALYST //For more information, see : https://github.com/dotnet/maui/issues/27897
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -36,4 +35,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif
