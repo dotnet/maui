@@ -53,6 +53,8 @@
 
 		<!-- Install SDK Common Packages -->
 		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkCommonPackages.Identity)&quot;" />
+
+		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 
 	<Target Name="ProvisionAndroidSdkPlatformApiPackages">
@@ -66,6 +68,8 @@
 
 		<!-- Install SDK Platform API Packages -->
 		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkPlatformApiPackages.Identity)&quot;" />
+
+		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 
 	<Target Name="ProvisionAndroidSdkEmulatorImagePackages">
@@ -82,10 +86,11 @@
 		<!-- Install SDK Packages -->
 		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkEmulatorImagePackages.Identity)&quot;" 
 		 	  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkEmulatorImagePackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
+
+		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 
 	<Target Name="ProvisionAndroidSdkAvdCreateAvds">
-
 		<ItemGroup>
 			<AndroidSdkAvdPackages
 				Include="system-images%3Bandroid-%(AndroidSdkApiLevels.Identity)%3B%(AndroidSdkApiLevels.SystemImageType)%3B$(AndroidSdkHostAbi)"
@@ -96,6 +101,8 @@
 		<!-- Create all the AVD's we need based on the api levels specified -->
 		<Exec Command="dotnet android avd create --name &quot;Emulator_%(AndroidSdkAvdPackages.ApiLevel)&quot; --sdk &quot;%(AndroidSdkAvdPackages.Identity)&quot; --device &quot;%(AndroidSdkAvdPackages.DeviceType)&quot; --force" 
 			  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkAvdPackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
+
+		<Exec Command="dotnet android avd list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 
 	<Target Name="ProvisionAndroidSdk" DependsOnTargets="ProvisionAndroidSdkCommonPackages;ProvisionAndroidSdkPlatformApiPackages;ProvisionAndroidSdkEmulatorImagePackages;ProvisionAndroidSdkAvdCreateAvds">
@@ -183,6 +190,8 @@
 		<!-- Set the preferred JDK path -->
 		<Exec Command="dotnet android jdk dotnet-prefer --home &quot;$(_AndroidJdkPath)&quot;" />
 
+		<Message Text="##vso[task.setvariable variable=JAVA_HOME]$(_AndroidJdkPath)" Importance="High" />
+
 		<Exec Command="dotnet android jdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 
@@ -265,7 +274,6 @@
 		<Exec Command="winget install Microsoft.OpenJDK.$(JavaJdkVersion)" /> -->
 	</Target>
 
-
 	<Target Name="ProvisionAll" DependsOnTargets="ProvisionAndroidSdk;ProvisionAppium;ProvisionJdk">
 		<Error
 			Condition=" '$(MSBuildRuntimeType)' != 'Core' "
@@ -275,4 +283,5 @@
 	<ItemGroup>
 		<PackageReference Include="JsonPeek" Version="1.2.0" />
 	</ItemGroup>
+
 </Project>

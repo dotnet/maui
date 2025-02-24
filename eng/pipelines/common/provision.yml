@@ -88,32 +88,19 @@ steps:
 
   # Provision JDK
   - ${{ if ne(parameters.skipJdk, 'true') }}:
-    - pwsh: |
-        echo "Running provisioning step..."
-        dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ./src/Provisioning/Provisioning.csproj
-        echo ""
-        echo "Setting JAVA_HOME..."
-        $jsonOutput = & dotnet android jdk list --format=Json | ConvertFrom-Json
-        $preferredJdk = $jsonOutput | Where-Object { $_.DotNetPreferred -eq $true } | Select-Object -First 1
-        $preferredJdkHome = $preferredJdk.Home
-        if (-not $preferredJdkHome) {
-          Write-Error "No JDK found."
-          exit 1
-        }
-        echo "##vso[task.setvariable variable=JAVA_HOME]$preferredJdkHome"
-        echo "JAVA_HOME set to '$preferredJdkHome'"
+    - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ./src/Provisioning/Provisioning.csproj
       displayName: 'Provision JDK'
       condition: succeeded()
 
   # Provision Android SDK Common Packages (eg: cmdline-tools, emulator, platform-tools, build-tools)
   - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
+    - pwsh: dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ./src/Provisioning/Provisioning.csproj
+      displayName: 'Provision Android SDK - Common Packages'
+      condition: succeeded()
+
+  # Setting Android environment variables
+  - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
     - pwsh: |
-        echo "Running provisioning step..."
-        dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ./src/Provisioning/Provisioning.csproj
-        echo ""
-        echo "Listing installed packages..."
-        dotnet android sdk list --installed
-        echo ""
         echo "Setting ANDROID_SDK_ROOT and ANDROID_HOME..."
         $jsonOutput = & dotnet android sdk info --format=Json | ConvertFrom-Json
         $preferredSdk = $jsonOutput.SdkInfo.Path
@@ -121,17 +108,12 @@ steps:
         echo "ANDROID_SDK_ROOT set to '$preferredSdk'"
         echo "##vso[task.setvariable variable=ANDROID_HOME]$preferredSdk"
         echo "ANDROID_HOME set to '$preferredSdk'"
-      displayName: 'Provision Android SDK - Common Packages'
+      displayName: 'Provision Android SDK - Environment variables'
       condition: succeeded()
 
   # Provision Android SDK Platform APIs (eg: platforms;android-29, platforms;android-30)
   - ${{ if ne(parameters.skipAndroidPlatformApis, 'true') }}:
-    - pwsh: |
-        echo "Running provisioning step..."
-        dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" ./src/Provisioning/Provisioning.csproj
-        echo ""
-        echo "Listing installed packages..."
-        dotnet android sdk list --installed
+    - pwsh: dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" ./src/Provisioning/Provisioning.csproj
       displayName: 'Provision Android SDK - Platform APIs'
       condition: succeeded()
       env:
@@ -139,12 +121,7 @@ steps:
 
   # Provision Android SDK Emulator Images (eg: system-images;android-34;google_apis;aarch64)
   - ${{ if ne(parameters.skipAndroidEmulatorImages, 'true') }}:
-    - pwsh: |
-        echo "Running provisioning step..."
-        dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" ./src/Provisioning/Provisioning.csproj
-        echo ""
-        echo "Listing installed packages..."
-        dotnet android sdk list --installed
+    - pwsh: echo "Running provisioning step..."
       displayName: 'Provision Android SDK - Emulator Images'
       condition: succeeded()
       env:
@@ -152,12 +129,7 @@ steps:
 
   # Create Android AVDs (Create actual Emulator Virtual Devices)
   - ${{ if ne(parameters.skipAndroidCreateAvds, 'true') }}:
-    - pwsh: |
-        echo "Running provisioning step..."
-        dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" ./src/Provisioning/Provisioning.csproj
-        echo ""
-        echo "Listing available AVDs..."
-        dotnet android avd list
+    - pwsh: dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" ./src/Provisioning/Provisioning.csproj
       displayName: 'Provision Android SDK - Create AVDs'
       condition: succeeded()
       env:
