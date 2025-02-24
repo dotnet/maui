@@ -118,14 +118,15 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 				finalPath = Path.Combine(root, relative, name);
 			}
 
-			if (OperatingSystem.IsAndroidVersionAtLeast(21))
-			{
-				bundle.PutCharSequence("return-code", finalPath);
-			}
-			else
-			{
+			// TODO: reinstate this when .NET for Android have a fix on their side (https://github.com/dotnet/maui/issues/28007)
+			//if (OperatingSystem.IsAndroidVersionAtLeast(21))
+			//{
+			//	bundle.PutCharSequence("return-code", finalPath);
+			//}
+			//else
+			//{
 				bundle.PutString("return-code", finalPath);
-			}
+			//}
 		}
 
 		Task<Bundle> RunTestsAsync()

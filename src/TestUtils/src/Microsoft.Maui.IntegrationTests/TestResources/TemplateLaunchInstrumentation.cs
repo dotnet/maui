@@ -35,14 +35,15 @@ namespace mauitemplate
             var currentActivity = WaitForMonitor(monitor);
             var resultCode = currentActivity is not null ? Result.Ok : Result.Canceled;
 
-			if (OperatingSystem.IsAndroidVersionAtLeast(21))
-			{
-				results.PutCharSequence("return-code", resultCode.ToString("D"));
-			}
-			else
-			{
+            // TODO: reinstate this when .NET for Android have a fix on their side (https://github.com/dotnet/maui/issues/28007)
+			//if (OperatingSystem.IsAndroidVersionAtLeast(21))
+			//{
+			//	results.PutCharSequence("return-code", resultCode.ToString("D"));
+			//}
+			//else
+			//{
 				results.PutString("return-code", resultCode.ToString("D"));		
-			}
+			//}
 			
             Finish(resultCode, results);
         }
