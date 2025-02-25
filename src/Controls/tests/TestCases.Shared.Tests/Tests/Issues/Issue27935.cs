@@ -10,9 +10,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "iOS: Rectangle that is invisible when page loads can never be made visible";
 
-		[Test]
+		[Test, Order(1)]
 		[Category(UITestCategories.Shape)]
-		public void ShapesShouldAppearCorrectlyWhenIsVisibleChanges()
+		public void ShapesShouldAppearCorrectlyWhenIsVisibleChangesToTrue()
+		{
+			App.WaitForElement("Button");
+			App.Tap("Button");
+			VerifyScreenshot();
+		}
+
+		[Test, Order(2)]
+		[Category(UITestCategories.Shape)]
+		public void ShapesShouldHideCorrectlyWhenIsVisibleChangesToFalse()
 		{
 			App.WaitForElement("Button");
 			App.Tap("Button");

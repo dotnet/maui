@@ -12,6 +12,7 @@
 		{
 			rectangle.IsVisible = !rectangle.IsVisible;
 			roundRectangle.IsVisible = !roundRectangle.IsVisible;
+			polygon.IsVisible = !polygon.IsVisible;
 		}
 	}
 }

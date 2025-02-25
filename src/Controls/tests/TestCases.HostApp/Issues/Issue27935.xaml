@@ -34,5 +34,14 @@
                         WidthRequest="100"
                         BackgroundColor="Green"
                         IsVisible="false"/>
+
+        <Label Text="Polygon"
+               FontAttributes="Bold"
+               TextColor="Blue"/>
+
+        <Polygon x:Name="polygon"
+                 Points="40,10 70,80 10,50"
+                 BackgroundColor="red"
+                 IsVisible="false"/>
     </VerticalStackLayout>
 </ContentPage>
