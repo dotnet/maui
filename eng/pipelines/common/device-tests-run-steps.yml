@@ -63,13 +63,13 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
-    condition: and(succeeded(), eq(parameters.skipDotNet, 'true'))
+    condition: ${{ and(succeeded(), eq(parameters.skipDotNet, 'true')) }}
     env:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
 
   - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
-    condition: and(succeeded(), eq(parameters.skipDotNet, 'true'))
+    condition: ${{ and(succeeded(), eq(parameters.skipDotNet, 'true')) }}
     displayName: 'Add .NET to PATH'
 
 
