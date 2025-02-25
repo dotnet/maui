@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public static void UpdateScrollBarVisibility(this ScrollViewer scrollViewer, ScrollOrientation orientation,
-			ScrollBarVisibility scrollBarVisibility)
+			ScrollBarVisibility horizontalScrollBarVisibility)
 		{
 			if (orientation == ScrollOrientation.Neither)
 			{

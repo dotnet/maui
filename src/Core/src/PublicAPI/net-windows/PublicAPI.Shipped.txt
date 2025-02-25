@@ -2838,7 +2838,7 @@ static Microsoft.Maui.Platform.RadioButtonExtensions.UpdateStrokeThickness(this 
 static Microsoft.Maui.Platform.RadioButtonExtensions.UpdateTextColor(this Microsoft.UI.Xaml.Controls.RadioButton! platformRadioButton, Microsoft.Maui.ITextStyle! button) -> void
 static Microsoft.Maui.Platform.ScrollViewerExtensions.ToWindowsScrollBarVisibility(this Microsoft.Maui.ScrollBarVisibility visibility) -> Microsoft.UI.Xaml.Controls.ScrollBarVisibility
 static Microsoft.Maui.Platform.ScrollViewerExtensions.UpdateContent(this Microsoft.UI.Xaml.Controls.ScrollViewer! scrollViewer, Microsoft.Maui.IView? content, Microsoft.Maui.IMauiContext! context) -> void
-static Microsoft.Maui.Platform.ScrollViewerExtensions.UpdateScrollBarVisibility(this Microsoft.UI.Xaml.Controls.ScrollViewer! scrollViewer, Microsoft.Maui.ScrollOrientation orientation, Microsoft.Maui.ScrollBarVisibility scrollBarVisibility) -> void
+static Microsoft.Maui.Platform.ScrollViewerExtensions.UpdateScrollBarVisibility(this Microsoft.UI.Xaml.Controls.ScrollViewer! scrollViewer, Microsoft.Maui.ScrollOrientation orientation, Microsoft.Maui.ScrollBarVisibility horizontalScrollBarVisibility) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateBackground(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateCharacterSpacing(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateFont(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar, Microsoft.Maui.IFontManager! fontManager) -> void
