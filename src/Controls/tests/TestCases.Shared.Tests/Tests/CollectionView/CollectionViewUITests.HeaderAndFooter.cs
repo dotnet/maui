@@ -75,7 +75,7 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Layout Misalignment in GridItemsLayout with Horizontal Orientation on iOS and Catalyst Issue Link: https://github.com/dotnet/maui/issues/28030
         [Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterGridHorizontalWorks()
