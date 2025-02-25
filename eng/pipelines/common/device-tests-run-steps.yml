@@ -44,11 +44,12 @@ steps:
   - template: provision.yml
     parameters:
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
-      skipJdk: true
-      skipAndroidCommonSdks: true
+      skipJdk: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
       skipAndroidPlatformApis: true
-      skipAndroidEmulatorImages: true
-      skipAndroidCreateAvds: true
+      skipAndroidEmulatorImages: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidCreateAvds: ${{ ne(parameters.platform, 'android') }}
+      androidEmulatorApiLevel: ${{ parameters.apiversion }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
       apiversion: ${{ parameters.apiversion }}
       ${{ if eq(parameters.skipProvisioning, false) }}:
