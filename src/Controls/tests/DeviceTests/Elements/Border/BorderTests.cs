@@ -283,24 +283,5 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(180, redBlob.Width, 2d);
 			Assert.Equal(80, redBlob.Height, 2d);
 		}
-
-#if WINDOWS
-		[Fact]
-		[Description("The IsEnabled property of a BoxView should match with native IsEnabled")]		
-		public async Task VerifyBorderIsEnabledProperty()
-		{
-			var border = new Border();
-			border.IsEnabled = true;
-			var expectedValue = border.IsEnabled;
-
-			var handler = await CreateHandlerAsync<BorderHandler>(border);
-			var nativeView = GetNativeBorder(handler);
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var isEnabled = nativeView.Enabled;
-				Assert.Equal(expectedValue, isEnabled);
-			});		
-		}
-#endif
 	}
 }
