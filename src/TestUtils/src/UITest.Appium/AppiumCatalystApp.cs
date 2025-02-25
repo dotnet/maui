@@ -8,7 +8,7 @@ namespace UITest.Appium
 	public class AppiumCatalystApp : AppiumApp, ICatalystApp
 	{
 		public AppiumCatalystApp(Uri remoteAddress, IConfig config)
-			: base(new MacDriver(remoteAddress, GetOptions(config)), config)
+			: base(new MacDriver(remoteAddress, GetOptions(config), DefaultCommandTimeout), config)
 		{
 			_commandExecutor.AddCommandGroup(new AppiumAppleContextMenuActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystMouseActions(this));
