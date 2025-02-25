@@ -42,6 +42,7 @@ body:
       label: Version with bug
       description: In what version do you see this issue? Run `dotnet workload list` to find your version.
       options:
+        - 9.0.40 SR4
         - 9.0.30 SR3
         - 9.0.22 SR2.2
         - 9.0.21 SR2.1
@@ -160,6 +161,7 @@ body:
         - 9.0.21 SR2.1
         - 9.0.22 SR2.2
         - 9.0.30 SR3
+        - 9.0.40 SR4
     validations:
       required: true
   - type: dropdown

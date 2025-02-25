@@ -137,14 +137,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 			if (typeof(TChildType) == typeof(MenuBarItem))
 			{
 				(child0.Parent as ContentPage)!.MenuBarItems.Clear();
+
+				Assert.NotNull(child0.Parent);
+				Assert.NotNull(child1.Parent);
 			}
 			else
 			{
 				menuBar.Clear();
-			}
 
-			Assert.Null(child0.Parent);
-			Assert.Null(child1.Parent);
+				Assert.Null(child0.Parent);
+				Assert.Null(child1.Parent);
+			}
 		}
 
 		[Fact]
