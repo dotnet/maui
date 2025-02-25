@@ -152,12 +152,11 @@ steps:
   #                    Publish                     #
   ##################################################
 
-  # Publish the build job artifacts so they can be downloaded by the test job
-  - ${{ if eq(parameters.buildType, 'build-only') }}:
-    - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
-      displayName: Publish Build Artifacts
-      condition: always()
-      artifact: ${{ parameters.appArtifactName }}
+  # Publish the artifacts directory
+  - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+    displayName: Publish Artifacts Directory
+    condition: always()
+    artifact: ${{ parameters.appArtifactName }}
 
   # Publish the test results
   - ${{ if ne(parameters.buildType, 'build-only') }}:
@@ -171,7 +170,7 @@ steps:
 
   # Publish the job artifacts
   - task: PublishBuildArtifacts@1
-    displayName: Publish Job Artifacts
+    displayName: Publish Logs
     condition: always()
     inputs:
       artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
