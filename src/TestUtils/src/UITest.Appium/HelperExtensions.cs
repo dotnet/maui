@@ -58,6 +58,11 @@ namespace UITest.Appium
 			app.FindElement(query).Click();
 		}
 
+		/// <summary>
+		/// Performs a right-click action on the matched element. 
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element.</param>
 		public static void RightClick(this IApp app, string element)
 		{
 			var uiElement = FindElement(app, element);
