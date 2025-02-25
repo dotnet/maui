@@ -11,50 +11,50 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility;
 /// </summary>
 internal class MauiNavigationBar : UINavigationBar
 {
-    internal bool TitleBarNeedsRefresh { get; set; }
-    nfloat? _originalSafeAreaConstant = null;
+	internal bool TitleBarNeedsRefresh { get; set; }
+	nfloat? _originalSafeAreaConstant = null;
 
-    [Internals.Preserve(Conditional = true)]
-    public MauiNavigationBar() : base()
-    {
-    }
+	[Internals.Preserve(Conditional = true)]
+	public MauiNavigationBar() : base()
+	{
+	}
 
-    [Internals.Preserve(Conditional = true)]
-    public MauiNavigationBar(Foundation.NSCoder coder) : base(coder)
-    {
-    }
+	[Internals.Preserve(Conditional = true)]
+	public MauiNavigationBar(Foundation.NSCoder coder) : base(coder)
+	{
+	}
 
-    [Internals.Preserve(Conditional = true)]
-    protected MauiNavigationBar(Foundation.NSObjectFlag t) : base(t)
-    {
-    }
+	[Internals.Preserve(Conditional = true)]
+	protected MauiNavigationBar(Foundation.NSObjectFlag t) : base(t)
+	{
+	}
 
-    [Internals.Preserve(Conditional = true)]
-    protected internal MauiNavigationBar(IntPtr handle) : base(handle)
-    {
-    }
+	[Internals.Preserve(Conditional = true)]
+	protected internal MauiNavigationBar(IntPtr handle) : base(handle)
+	{
+	}
 
-    [Internals.Preserve(Conditional = true)]
-    public MauiNavigationBar(RectangleF frame) : base(frame)
-    {
-    }
+	[Internals.Preserve(Conditional = true)]
+	public MauiNavigationBar(RectangleF frame) : base(frame)
+	{
+	}
 
-    protected internal MauiNavigationBar(NativeHandle handle) : base(handle)
-    {
-    }
+	protected internal MauiNavigationBar(NativeHandle handle) : base(handle)
+	{
+	}
 
-    public override void SafeAreaInsetsDidChange()
-    {
-        if (_originalSafeAreaConstant is null)
-        {
-            _originalSafeAreaConstant = SafeAreaInsets.Top;
-        }
+	public override void SafeAreaInsetsDidChange()
+	{
+		if (_originalSafeAreaConstant is null)
+		{
+			_originalSafeAreaConstant = SafeAreaInsets.Top;
+		}
 
-        base.SafeAreaInsetsDidChange();
+		base.SafeAreaInsetsDidChange();
 #if MACCATALYST
         AdjustForTitleBar();
 #endif
-    }
+	}
 
 #if MACCATALYST
     void AdjustForTitleBar()
@@ -82,12 +82,12 @@ internal class MauiNavigationBar : UINavigationBar
     }
 #endif
 
-    internal void RefreshIfNeeded()
-    {
-        if (TitleBarNeedsRefresh)
+	internal void RefreshIfNeeded()
+	{
+		if (TitleBarNeedsRefresh)
 		{
 			Superview?.SetNeedsLayout();
 			TitleBarNeedsRefresh = false;
 		}
-    }
+	}
 }

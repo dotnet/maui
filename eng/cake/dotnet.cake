@@ -176,7 +176,7 @@ Task("dotnet-samples")
         }
         else
         {
-            projectsToBuild = "./Microsoft.Maui.Samples.slnf";
+            projectsToBuild = "./eng/Microsoft.Maui.Samples.slnf";
         }
 
         RunMSBuildWithDotNet(projectsToBuild, properties, binlogPrefix: "sample-");
@@ -280,9 +280,11 @@ Task("dotnet-pack-maui")
             ReplaceTextInFiles(originalNuget, "LOCAL_PLACEHOLDER", nugetSource);
         }
 
-        var sln = "./Microsoft.Maui.Packages.slnf";
+        var sln = "./eng/Microsoft.Maui.Packages.slnf";
         if (!IsRunningOnWindows())
-            sln = "./Microsoft.Maui.Packages-mac.slnf";
+        {
+            sln = "./eng/Microsoft.Maui.Packages-mac.slnf";
+        }
  
         if(string.IsNullOrEmpty(officialBuildId))
         {
@@ -586,7 +588,6 @@ void UseLocalNuGetCacheFolder(bool reset = false)
 
 void StartVisualStudioCodeForDotNet()
 {
-    string workspace = "./maui.code-workspace";
     if (IsCIBuild())
     {
         Error("This target should not run on CI.");
@@ -598,7 +599,7 @@ void StartVisualStudioCodeForDotNet()
         SetDotNetEnvironmentVariables();
     }
 
-    StartProcess("code", new ProcessSettings{ Arguments = workspace, EnvironmentVariables = GetDotNetEnvironmentVariables() });
+    StartProcess("code", new ProcessSettings{ EnvironmentVariables = GetDotNetEnvironmentVariables() });
 }
 
 void StartVisualStudioForDotNet()

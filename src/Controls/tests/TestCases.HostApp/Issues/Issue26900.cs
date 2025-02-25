@@ -29,7 +29,8 @@
 						HeightRequest = 200,
 						BackgroundColor = Colors.Green
 					}
-				}}
+				}
+				}
 			};
 		}
 	}

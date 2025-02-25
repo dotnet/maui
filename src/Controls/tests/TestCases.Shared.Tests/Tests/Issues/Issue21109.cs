@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if ANDROID //This test case verifies "that the KeyListener is being set to handle numeric keyboard" exclusively on Android platform
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "[Android] MAUI 8.0.3 -> 8.0.6 regression: custom handler with key listener no longer works";
 
-		[Test,Order(1)]
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27778"), Order(1)]
 		[Category(UITestCategories.Entry)]
 		public void VerifyInitialEntryReturnTypeChange()
 		{
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-		[Test,Order(2)]
+		[Test, Order(2)]
 		[Category(UITestCategories.Entry)]
 		public void VerifyDynamicEntryReturnTypeChange()
 		{
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			// Verify that ReturnType works as expected.
 			if (App.IsKeyboardShown())
-			 	App.DismissKeyboard();
+				App.DismissKeyboard();
 
 			var returnType1 = App.FindElement("ReturnTypeResult").GetText();
 			App.Tap("ReturnTypeEntry");

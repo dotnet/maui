@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="//Member[@MemberName='XmlInfo']/Docs/*" />
 		public IXmlLineInfo XmlInfo { get; private set; }
 		internal string UnformattedMessage => _unformattedMessage ?? Message;
-		
+
 		static string FormatMessage(string message, IXmlLineInfo xmlinfo)
 		{
 			if (xmlinfo == null || !xmlinfo.HasLineInfo())

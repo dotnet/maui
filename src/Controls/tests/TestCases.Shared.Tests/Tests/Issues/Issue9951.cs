@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,20 +16,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Switch)]
-		[Category(UITestCategories.Compatibility)]
-		public async Task SwitchColorTest()
+		public void SwitchColorTestBeforeToggling()
 		{
 			App.WaitForElement(SwitchId);
 
-			App.Screenshot("Initial switch state");
+			VerifyScreenshot();
+		}
 
+		[Test]
+		[Category(UITestCategories.Switch)]
+		public void SwitchColorTestAfterToggling()
+		{
+			App.WaitForElement(SwitchId);
 			App.Tap(SwitchId);
+			App.WaitForElement(SwitchId);
 
-			//Delay so that the switch toggling is finished
-			await Task.Delay(200);
+			VerifyScreenshot();
 
-			App.Screenshot("Toggled switch state");
 		}
 	}
 }
-#endif

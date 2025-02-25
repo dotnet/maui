@@ -123,6 +123,12 @@ namespace Microsoft.Maui.Controls.Shapes
 
 					return new RoundRectangle { CornerRadius = cornerRadius };
 				}
+
+				// Support for providing a double. This handles Border CSS support.
+				if (double.TryParse(strValue, out double radius))
+				{
+					return new RoundRectangle { CornerRadius = new CornerRadius(radius) };
+				}
 			}
 
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Shape)}");
