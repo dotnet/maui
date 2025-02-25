@@ -219,6 +219,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					case NotifyCollectionChangedAction.Remove:
 						for (int i = e.OldItems.Count - 1; i >= 0; i--)
 							_collection.RemoveAt(e.OldStartingIndex);
+
+						ResetSelectedItem();
 						break;
 					case NotifyCollectionChangedAction.Move:
 						{
@@ -247,19 +249,59 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 								newi += i;
 								collection[newi] = (e.NewItems[i] as BindableObject).BindingContext;
 							}
+							ResetSelectedItem();
 						}
 						break;
 					case NotifyCollectionChangedAction.Reset:
 					default:
 						ClearSizeEstimate();
 						ReloadData();
+						if (Element?.SelectedItem is not null)
+						{
+							Element.SelectedItem = null;
+						}
 						break;
 				}
 			}
-			else if (e.Action == NotifyCollectionChangedAction.Reset)
+			else
 			{
-				ClearSizeEstimate();
-				ReloadData();
+				switch (e.Action)
+				{
+					case NotifyCollectionChangedAction.Reset:
+						ClearSizeEstimate();
+						ReloadData();
+
+						if (Element?.SelectedItem is not null)
+						{
+							Element.SelectedItem = null;
+						}
+						break;
+					case NotifyCollectionChangedAction.Remove:
+					case NotifyCollectionChangedAction.Replace:
+						ResetSelectedItem();
+						break;
+				}
+			}
+		}
+
+		void ResetSelectedItem()
+		{
+			var itemSource = Element.TemplatedItems.ItemsSource;
+			if (itemSource is not null)
+			{
+				bool isSelectedItemInList = false;
+				foreach (var item in itemSource)
+				{
+					if (item.Equals(Element.SelectedItem))
+					{
+						isSelectedItemInList = true;
+						break;
+					}
+				}
+				if (!isSelectedItemInList)
+				{
+					Element.SelectedItem = null;
+				}
 			}
 		}
 
