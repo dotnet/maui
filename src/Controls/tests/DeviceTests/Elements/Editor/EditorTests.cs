@@ -309,6 +309,23 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		[Description("The IsVisible property of a Editor should match with native IsVisible")]		
+		public async Task VerifyEditorIsVisibleProperty()
+		{
+			var editor = new Editor();
+			editor.IsVisible = false;
+			var expectedValue = editor.IsVisible;
+
+			var handler = await CreateHandlerAsync<EditorHandler>(editor);
+			var nativeView = GetPlatformControl(handler);
+			 await InvokeOnMainThreadAsync( async () =>
+   			 {
+				var nativeView = await GetPlatformIsVisible(handler);
+		        Assert.Equal(expectedValue, nativeView);
+    		});	
+		}
+
 		[Category(TestCategory.Editor)]
 		[Category(TestCategory.TextInput)]
 		[Collection(RunInNewWindowCollection)]

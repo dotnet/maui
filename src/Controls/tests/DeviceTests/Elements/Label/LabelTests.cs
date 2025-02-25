@@ -11,6 +11,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using System.Diagnostics;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -795,6 +796,23 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(targetFontStyle, platformFontStyle);
 			Assert.Equal(targetFontWeight, platformFontWeight);
 #endif
+		}
+
+		[Fact]
+		[Description("The IsVisible property of a Label should match with native IsVisible")]		
+		public async Task VerifyLabelIsVisibleProperty()
+		{
+			var label = new Label();
+			label.IsVisible = false;
+			var expectedValue = label.IsVisible;
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var nativeView = GetPlatformLabel(handler);
+			 await InvokeOnMainThreadAsync( async () =>
+   			 {
+				var nativeView = await GetPlatformIsVisible(handler);
+		        Assert.Equal(expectedValue, nativeView);
+    		});	
 		}
 	}
 }
