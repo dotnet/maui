@@ -55,7 +55,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellBottomNavViewAppearanceTracker _appearanceTracker;
 		BottomNavigationViewTracker _bottomNavigationTracker;
 		BottomSheetDialog _bottomSheetDialog;
-		bool _disposed;
 		bool _menuSetup;
 		ShellAppearance _shellAppearance;
 		bool _appearanceSet;
@@ -139,18 +138,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_appearanceTracker = null;
 			_outerLayout = null;
 
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			if (_disposed)
-				return;
-
-			_disposed = true;
-			if (disposing)
-				Destroy();
-
-			base.Dispose(disposing);
 		}
 
 		// Use OnDestory become OnDestroyView may fire before events are completed.
