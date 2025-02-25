@@ -32,5 +32,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		static int GetPlatformSelectionLength(EntryHandler entryHandler) =>
 			GetPlatformControl(entryHandler).SelectionLength;
+
+		Task<bool> GetPlatformIsVisible(EntryHandler entryHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(entryHandler);
+				return nativeView.Visibility == Windows.UI.Xaml.Visibility.Visible;
+			});
+		}
 	}
 }

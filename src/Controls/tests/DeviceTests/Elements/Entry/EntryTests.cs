@@ -222,6 +222,23 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		[Description("The IsVisible property of a Entry should match with native IsVisible")]		
+		public async Task VerifyEntryIsVisibleProperty()
+		{
+			var entry = new Entry();
+			entry.IsVisible = false;
+			var expectedValue = entry.IsVisible;
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var nativeView = GetPlatformControl(handler);
+			 await InvokeOnMainThreadAsync( async () =>
+   			 {
+				var nativeView = await GetPlatformIsVisible(handler);
+		        Assert.Equal(expectedValue, nativeView);
+    		});	
+		}
+
 		[Category(TestCategory.Entry)]
 		[Category(TestCategory.TextInput)]
 		[Collection(RunInNewWindowCollection)]

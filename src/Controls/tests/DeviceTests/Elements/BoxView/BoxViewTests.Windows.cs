@@ -19,5 +19,14 @@ namespace Microsoft.Maui.DeviceTests
 				return (float)nativeView.Opacity;
 			});
 		}
+		
+		Task<bool> GetPlatformIsVisible(ShapeViewHandler boxViewHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformButton(boxViewHandler);
+				return nativeView.Visibility == Windows.UI.Xaml.Visibility.Visible;
+			});
+		}
 	}
 }

@@ -62,5 +62,22 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
+
+		[Fact]
+		[Description("The IsVisible property of a CheckBox should match with native IsVisible")]		
+		public async Task VerifyCheckBoxIsVisibleProperty()
+		{
+			var checkBox = new CheckBox();
+			checkBox.IsVisible = false;
+			var expectedValue = checkBox.IsVisible;
+
+			var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
+			var nativeView = GetNativeCheckBox(handler);
+			 await InvokeOnMainThreadAsync( async () =>
+   			 {
+				var nativeView = await GetPlatformIsVisible(handler);
+		        Assert.Equal(expectedValue, nativeView);
+    		});	
+		}
 	}
 }
