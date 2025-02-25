@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Platform
 
 		public override SizeF SizeThatFits(SizeF size)
 		{
-			var requestedSize = base.SizeThatFits(size);
+			var requestedSize = base.SizeThatFits(new SizeF(size.Width - TextInsets.Left - TextInsets.Right, size.Height - TextInsets.Top - TextInsets.Bottom));
 
 			// Let's be sure the label is not larger than the container
 			return AddInsets(new Size()
