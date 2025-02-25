@@ -1,4 +1,7 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -25,6 +28,66 @@ namespace Microsoft.Maui.Hosting
 			builder.Services.TryAddScoped<IDispatcher>((svc) => GetDispatcher(svc, true));
 			// register the initializer so we can init the dispatcher in the window thread for that window
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Scoped<IMauiInitializeScopedService, DispatcherInitializer>());
+
+			return builder;
+		}
+
+		public static MauiAppBuilder ConfigureEnvironmentVariables(this MauiAppBuilder builder)
+		{
+			IDictionary environmentVariables = Environment.GetEnvironmentVariables();
+
+			var variablesToInclude = new HashSet<string>
+			{
+				"ASPNETCORE_ENVIRONMENT",
+				"ASPNETCORE_URLS",
+				"DOTNET_ENVIRONMENT",
+				"DOTNET_LAUNCH_PROFILE",
+				"DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION"
+			};
+
+			var prefixesToRemove = new List<string>
+			{
+				"ASPNETCORE_",
+				"DOTNET_",
+			};
+
+			List<KeyValuePair<string, string?>> settings = [];
+			foreach (object variableNameObject in environmentVariables.Keys)
+			{
+				string variableName = (string)variableNameObject;
+				if (variablesToInclude.Contains(variableName) || variableName.StartsWith("OTEL_")
+					|| variableName.StartsWith("LOGGING__CONSOLE") || variableName.StartsWith("services__"))
+				{
+					string value = (string)environmentVariables[variableName]!;
+
+					// Normalize the key, matching the logic here:
+					// https://github.dev/dotnet/runtime/blob/main/src/libraries/Microsoft.Extensions.Configuration.EnvironmentVariables/src/EnvironmentVariablesConfigurationProvider.cs
+#if NETSTANDARD2_0
+					variableName = variableName.Replace("__", ":");
+#else
+					variableName = variableName.Replace("__", ":", StringComparison.OrdinalIgnoreCase);
+#endif
+
+					// For defined prefixes, add the variable with the prefix removed, matching the logic
+					// in EnvironmentVariablesConfigurationProvider.cs. Also add the variable with the
+					// prefix intact, which matches the normal HostApplicationBuilder behavior, where
+					// there's an EnvironmentVariablesConfigurationProvider added with and another one
+					// without the prefix set.
+					foreach (var prefix in prefixesToRemove)
+					{
+						if (variableName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+						{
+							settings.Add(new KeyValuePair<string, string?>(variableName, value));
+							variableName = variableName.Substring(prefix.Length);
+							break;
+						}
+					}
+
+					settings.Add(new KeyValuePair<string, string?>(variableName, value));
+				}
+			}
+
+			builder.Configuration.AddInMemoryCollection(settings);
 
 			return builder;
 		}
