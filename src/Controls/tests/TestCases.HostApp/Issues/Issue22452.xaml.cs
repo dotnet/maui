@@ -1,6 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 22452, "Fix error when running new template maui app on iOS", PlatformAffected.iOS)]
 	public partial class Issue22452 : Shell
 	{

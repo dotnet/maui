@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
+﻿using System.Reflection;
 
 namespace Maui.Controls.Sample
 {
@@ -19,6 +14,37 @@ namespace Maui.Controls.Sample
 			bool _filterManual;
 			string _filter;
 
+			void CheckInternetAndLoadPage(Type type)
+			{
+				try
+				{
+					using (var httpClient = new HttpClient())
+					{
+						httpClient.Timeout = TimeSpan.FromSeconds(5);
+						using (var httpResponse = httpClient.GetAsync(@"https://www.github.com", HttpCompletionOption.ResponseHeadersRead))
+						{
+							httpResponse.Wait();
+							if (httpResponse.Result.IsSuccessStatusCode)
+							{
+								var page = ActivatePage(type);
+								Application.Current.Windows[0].Page = page;
+							}
+							else
+							{
+								var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
+								Application.Current.Windows[0].Page = noInternetConnectionPage;
+							}
+						}
+					}
+				}
+				catch
+				{
+					var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
+					Application.Current.Windows[0].Page = noInternetConnectionPage;
+				}
+			}
+
+
 			static TextCell MakeIssueCell(string text, string detail, Action tapped)
 			{
 				PageToAction[text] = tapped;
@@ -33,6 +59,14 @@ namespace Maui.Controls.Sample
 			Action ActivatePageAndNavigate(IssueAttribute issueAttribute, Type type)
 			{
 				Action navigationAction = null;
+
+				if (issueAttribute.IsInternetRequired)
+				{
+					return () =>
+					{
+						CheckInternetAndLoadPage(type);
+					};
+				}
 
 				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushAsync)
 				{
@@ -58,7 +92,7 @@ namespace Maui.Controls.Sample
 					return () =>
 					{
 						var page = ActivatePage(type);
-						Application.Current.MainPage = page;
+						Application.Current.Windows[0].Page = page;
 					};
 				}
 
@@ -82,6 +116,7 @@ namespace Maui.Controls.Sample
 				public int IssueTestNumber { get; set; }
 				public string Name { get; set; }
 				public string Description { get; set; }
+				public bool IsInternetRequired { get; set; }
 				public Action Action { get; set; }
 
 				public bool Matches(string filter)
@@ -139,6 +174,10 @@ namespace Maui.Controls.Sample
 
 				var assembly = typeof(TestCases).Assembly;
 
+#if NATIVE_AOT
+				// Issues tests are disabled with NativeAOT (see https://github.com/dotnet/maui/issues/20553)
+				_issues = new();
+#else
 				_issues =
 					(from type in assembly.GetTypes()
 					 let attribute = type.GetCustomAttribute<IssueAttribute>()
@@ -150,8 +189,10 @@ namespace Maui.Controls.Sample
 						 IssueTestNumber = attribute.IssueTestNumber,
 						 Name = attribute.DisplayName,
 						 Description = attribute.Description,
+						 IsInternetRequired = attribute.IsInternetRequired,
 						 Action = ActivatePageAndNavigate(attribute, type)
 					 }).ToList();
+#endif
 
 				VerifyNoDuplicates();
 				FilterIssues();

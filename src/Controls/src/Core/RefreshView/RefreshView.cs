@@ -1,14 +1,17 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
+
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="Type[@FullName='Microsoft.Maui.Controls.RefreshView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class RefreshView : ContentView, IElementConfiguration<RefreshView>, IRefreshView, ICommandElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<RefreshView>> _platformConfigurationRegistry;
@@ -68,7 +71,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty =
-			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(RefreshView), 
+			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(RefreshView),
 			propertyChanging: CommandElement.OnCommandChanging,
 			propertyChanged: CommandElement.OnCommandChanged);
 
@@ -117,7 +120,7 @@ namespace Microsoft.Maui.Controls
 		object ICommandElement.CommandParameter => CommandParameter;
 
 		protected override bool IsEnabledCore => base.IsEnabledCore && CommandElement.GetCanExecute(this);
-		
+
 		void ICommandElement.CanExecuteChanged(object sender, EventArgs e)
 		{
 			if (IsRefreshing)
@@ -146,6 +149,12 @@ namespace Microsoft.Maui.Controls
 		{
 			get => IsRefreshing;
 			set { SetValue(IsRefreshingProperty, value, SetterSpecificity.FromHandler); }
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Command), Command, nameof(IsRefreshing), IsRefreshing, false);
+			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
 	}
 }

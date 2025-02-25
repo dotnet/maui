@@ -1,10 +1,6 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 1426, "SetHasNavigationBar screen height wrong", PlatformAffected.iOS)]
 	public class Issue1426 : NavigationPage
 	{
@@ -52,7 +48,7 @@ namespace Maui.Controls.Sample.Issues
 					};
 
 					grd.Add(btn, 0, 1);
-					var image = new Image() { Source = "coffee.png", AutomationId = "CoffeeImageId", BackgroundColor = Colors.Yellow };
+					var image = new Image() { Source = "coffee.png", AutomationId = "CoffeeImageId", BackgroundColor = Colors.Yellow, HeightRequest = 56, WidthRequest = 56 };
 					image.VerticalOptions = LayoutOptions.End;
 					grd.Add(image, 0, 2);
 					Content = grd;

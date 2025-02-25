@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Platform
 	// items over and over again for a very long time; it's the best version of "looping" 
 	// we can manage until we replace the ListViewBase with something more flexible.
 
-	internal class LoopableCollectionView : ICollectionView
+	internal partial class LoopableCollectionView : ICollectionView
 	{
 		const int FakeCount = 655360; // 640k ought to be enough for anybody
 		readonly ICollectionView _internal;
@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return ((IEnumerable)_internal).GetEnumerator();
 		}
 
-		void OnItemsVectorChanged(global::Windows.Foundation.Collections.IObservableVector<object> sender, 
+		void OnItemsVectorChanged(global::Windows.Foundation.Collections.IObservableVector<object> sender,
 			global::Windows.Foundation.Collections.IVectorChangedEventArgs @event)
 		{
 			_vectorChanged.Invoke(sender, @event);

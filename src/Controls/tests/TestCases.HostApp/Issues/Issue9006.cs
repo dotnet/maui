@@ -1,17 +1,13 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 9006, "[Bug] Unable to open a new Page for the second time in Xamarin.Forms Shell Tabbar",
 		PlatformAffected.iOS)]
 	public class Issue9006 : TestShell
 	{
 		protected override void Init()
 		{
-			Routing.RegisterRoute("Issue9006_ContentPage", typeof(ContentPage));
+			Routing.RegisterRoute("Issue9006_ContentPage", typeof(IntermediatePage));
 			Routing.RegisterRoute("Issue9006_FinalPage", typeof(ContentPage));
 
 			var contentPage = AddBottomTab("Tab 1");
@@ -29,7 +25,7 @@ namespace Maui.Controls.Sample.Issues
 			button = new Button()
 			{
 				Text = "Click Me",
-				AutomationId = "Click Me",
+				AutomationId = "ClickMe",
 				Command = new Command(async () =>
 				{
 					await GoToAsync("Issue9006_ContentPage");
@@ -57,6 +53,23 @@ namespace Maui.Controls.Sample.Issues
 					button
 				}
 			};
+		}
+
+		public class IntermediatePage : ContentPage
+		{
+			public IntermediatePage()
+			{
+				Content = new StackLayout()
+				{
+					Children =
+					{
+						new Label()
+						{
+							Text = "This is the intermediate page"
+						}
+					}
+				};
+			}
 		}
 	}
 }

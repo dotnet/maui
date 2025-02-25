@@ -1,7 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -88,10 +85,9 @@ namespace Maui.Controls.Sample.Issues
 				layout.Children.Add(nameLabel);
 				layout.Children.Add(numberLabel);
 
-				return new Frame
+				return new Border
 				{
-					Content = layout,
-					HasShadow = false
+					Content = layout
 				};
 			});
 		}

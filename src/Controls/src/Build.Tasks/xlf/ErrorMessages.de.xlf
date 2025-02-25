@@ -143,7 +143,7 @@
         <note />
       </trans-unit>
       <trans-unit id="StyleSheetSourceOrContent">
-        <source>StyleSheet can not have both a Source and a content.</source>
+        <source>StyleSheet cannot have both a Source and a content.</source>
         <target state="translated">Das StyleSheet kann nicht gleichzeitig eine Source-Eigenschaft und einen Inhalt aufweisen.</target>
         <note />
       </trans-unit>
@@ -158,8 +158,8 @@
         <note>0 is a type name</note>
       </trans-unit>
       <trans-unit id="XDataTypeSyntax">
-        <source>x:DataType expects a string literal, an {{x:Type}} markup or {{x:Nul}l}.</source>
-        <target state="translated">x:DataType erwartet ein Zeichenfolgenliteral, ein {{x:Type}}-Markup oder {{x:Nul}l}.</target>
+        <source>x:DataType expects a string literal, an {{x:Type}} markup or {{x:Null}}.</source>
+        <target state="translated">x:DataType erwartet ein Zeichenfolgenliteral, ein {{x:Type}}-Markup oder {{x:Null}}.</target>
         <note />
       </trans-unit>
       <trans-unit id="XKeyNotLiteral">

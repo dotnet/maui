@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Handlers
 #pragma warning disable CA1416 // TODO: should we propagate SupportedOSPlatform("ios13.0") here
 			[nameof(IApplication.OpenWindow)] = MapOpenWindow,
 			[nameof(IApplication.CloseWindow)] = MapCloseWindow,
+			[nameof(IApplication.ActivateWindow)] = MapActivateWindow,
 #pragma warning restore CA1416
 		};
 
@@ -86,6 +87,14 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="application">The associated <see cref="IApplication"/> instance.</param>
 		/// <param name="args">The associated command arguments.</param>
 		public static partial void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args);
+
+		/// <summary>
+		/// Maps the abstract <see cref="IApplication.ActivateWindow"/> command to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="application">The associated <see cref="IApplication"/> instance.</param>
+		/// <param name="args">The associated command arguments.</param>
+		public static partial void MapActivateWindow(ApplicationHandler handler, IApplication application, object? args);
 
 #if ANDROID || IOS
 		internal static partial void MapAppTheme(ApplicationHandler handler, IApplication application);

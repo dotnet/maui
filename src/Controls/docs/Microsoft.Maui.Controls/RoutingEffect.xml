@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Platform-independent effect that wraps an inner effect, which is usually platform-specific.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -34,7 +33,6 @@
       <Docs>
         <param name="effectId">The ID for the effect.</param>
         <summary>Creates a new routing effect with the specified <paramref name="effectId" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnAttached">
@@ -54,7 +52,6 @@
       <Parameters />
       <Docs>
         <summary>Method that is called after the effect is attached and made valid.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnDetached">
@@ -74,7 +71,6 @@
       <Parameters />
       <Docs>
         <summary>Method that is called after the effect is detached and invalidated.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

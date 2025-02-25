@@ -1,12 +1,6 @@
-﻿using System.Collections.Generic;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Devices;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 1683, "Auto Capitalization Implementation")]
 	public class Issue1683 : TestContentPage
 	{
@@ -157,6 +151,8 @@ namespace Maui.Controls.Sample.Issues
 			StackLayout content = new StackLayout();
 			content.Children.Add(new ScrollView()
 			{
+				//Set the ScrollView height to adjust its layout to ensure the Rotate button remains visible on Android.
+				HeightRequest = 600,
 				Content = layout
 			});
 

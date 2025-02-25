@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 #endif
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class RectangleRenderer : ShapeRenderer<FormsRectangle, WRectangle>
+	public partial class RectangleRenderer : ShapeRenderer<FormsRectangle, WRectangle>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<FormsRectangle> args)
 		{

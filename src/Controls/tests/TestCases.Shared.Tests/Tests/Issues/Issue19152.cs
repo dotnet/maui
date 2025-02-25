@@ -1,13 +1,12 @@
-﻿#if !MACCATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue19152 : _IssuesUITest
-    {
-		public Issue19152(TestDevice device): base(device)
+	public class Issue19152 : _IssuesUITest
+	{
+		public Issue19152(TestDevice device) : base(device)
 		{
 		}
 
@@ -19,9 +18,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("entry");
 			App.Tap("button");
+#if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
+            Thread.Sleep(500); // Wait for the keyboard to appear
+			if (App.IsKeyboardShown())
+				App.DismissKeyboard();
+#endif
 			VerifyScreenshot();
 		}
 	}
 }
-#endif
-

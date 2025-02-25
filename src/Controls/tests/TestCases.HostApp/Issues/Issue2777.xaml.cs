@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 2777, "When add GroupHeaderTemplate in XAML the group header does not show up")]
 	public partial class Issue2777 : TestContentPage
 	{
@@ -55,7 +49,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 
 		// Represents a group of items in our list.
-		[Preserve(AllMembers = true)]
+
 		public class ListItemCollection : ObservableCollection<ListItemValue>
 		{
 			public string Title { get; private set; }
@@ -91,7 +85,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 
 		// Represents one item in our list.
-		[Preserve(AllMembers = true)]
+
 		public class ListItemValue : IComparable<ListItemValue>
 		{
 			public string Name { get; private set; }

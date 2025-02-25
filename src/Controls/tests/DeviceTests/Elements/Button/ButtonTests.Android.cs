@@ -1,13 +1,13 @@
 ﻿#nullable enable
+using System;
+using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
-using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using System.Threading.Tasks;
 using Xunit;
-using System;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -74,7 +74,9 @@ namespace Microsoft.Maui.DeviceTests
 				};
 
 				// Assert that the image is in the expected position
+#pragma warning disable CS0618 // Type or member is obsolete
 				var drawables = TextViewCompat.GetCompoundDrawablesRelative(platformButton);
+#pragma warning restore CS0618 // Type or member is obsolete
 				Assert.NotNull(drawables[matchingDrawableIndex]);
 			});
 		}

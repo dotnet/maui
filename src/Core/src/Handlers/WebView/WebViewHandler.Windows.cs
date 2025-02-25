@@ -140,6 +140,12 @@ namespace Microsoft.Maui.Handlers
 				SendNavigated(uri, CurrentNavigationEvent, WebNavigationResult.Failure);
 		}
 
+		// ProcessFailed is raised when a WebView process ends unexpectedly or becomes unresponsive.
+		void ProcessFailed(CoreWebView2 sender, CoreWebView2ProcessFailedEventArgs args)
+		{
+			SendProcessFailed(args);
+		}
+
 		async void SendNavigated(string url, WebNavigationEvent evnt, WebNavigationResult result)
 		{
 			if (VirtualView is not null)
@@ -151,6 +157,11 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			CurrentNavigationEvent = WebNavigationEvent.NewPage;
+		}
+
+		void SendProcessFailed(CoreWebView2ProcessFailedEventArgs args)
+		{
+			VirtualView?.ProcessTerminated(new WebProcessTerminatedEventArgs(PlatformView.CoreWebView2, args));
 		}
 
 		async Task SyncPlatformCookiesToVirtualView(string url)
@@ -195,6 +206,11 @@ namespace Microsoft.Maui.Handlers
 
 			if (myCookieJar is null)
 				return;
+
+			if (PlatformView.CoreWebView2 is null)
+			{
+				return;
+			}
 
 			await InitialCookiePreloadIfNecessary(url);
 			var cookies = myCookieJar.GetCookies(uri);
@@ -324,6 +340,7 @@ namespace Microsoft.Maui.Handlers
 					webView2.HistoryChanged -= OnHistoryChanged;
 					webView2.NavigationStarting -= OnNavigationStarting;
 					webView2.NavigationCompleted -= OnNavigationCompleted;
+					webView2.ProcessFailed -= OnProcessFailed;
 					webView2.Stop();
 				}
 
@@ -349,10 +366,15 @@ namespace Microsoft.Maui.Handlers
 				sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
 				sender.CoreWebView2.NavigationStarting += OnNavigationStarting;
 				sender.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
+				sender.CoreWebView2.ProcessFailed += OnProcessFailed;
 
 				if (Handler is WebViewHandler handler)
 				{
 					sender.UpdateUserAgent(handler.VirtualView);
+					if (sender.Source is not null)
+					{
+						handler.SyncPlatformCookies(sender.Source.ToString()).FireAndForget();
+					}
 				}
 			}
 
@@ -380,6 +402,14 @@ namespace Microsoft.Maui.Handlers
 				if (Handler is WebViewHandler handler)
 				{
 					handler.OnNavigationStarting(sender, args);
+				}
+			}
+
+			void OnProcessFailed(CoreWebView2 sender, CoreWebView2ProcessFailedEventArgs args)
+			{
+				if (Handler is WebViewHandler handler)
+				{
+					handler.ProcessFailed(sender, args);
 				}
 			}
 		}

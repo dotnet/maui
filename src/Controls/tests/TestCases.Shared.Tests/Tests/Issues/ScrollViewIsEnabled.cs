@@ -1,5 +1,4 @@
-﻿#if !IOS && !MACCATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -25,8 +24,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// ScrollViewInitiallyEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
-		[FailsOnIOS("This test is failing, likely due to product issue")]
-		[FailsOnMac("This test is failing, likely due to product issue")]
 		public void ScrollViewInitiallyEnabled()
 		{
 			// 1. Enable the ScrollView.
@@ -36,19 +33,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(ScrollView);
 
 			// 2. Scroll a litlle bit.
-			App.ScrollTo("Item10", true);
+			App.ScrollDown("Item10", ScrollStrategy.Gesture);
 
 			// 3. If the ScrollView scrolled, the test passed.
-			App.WaitForElement(Success); // If the ScrollView scrolled, the success label should be displayed
+			var success = App.WaitForElement(Success).GetText();
+			Assert.That("Success", Is.EqualTo(success)); // If the ScrollView scrolled, the success label should be displayed
 
-			this.Back();
+			App.TapBackArrow();
 
 		}
 
 		// ScrollViewInitiallyEnabledThenDisabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
-		[FailsOnIOS("This test is failing, likely due to product issue")]
-		[FailsOnMac("This test is failing, likely due to product issue")]
 		public void ScrollViewInitiallyEnabledThenDisabled()
 		{
 			// 1. Enable the ScrollView.
@@ -64,19 +60,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// 3. Try to scroll.
 			App.WaitForElement(FirstItem);
 			App.WaitForElement(ScrollView);
-			App.ScrollTo("Item10", true);
+			App.ScrollDown("Item10", ScrollStrategy.Gesture);
 
-			// 4. Shouldn't have scrolled.
-			var success = App.FindElement(Success).GetText(); // Shouldn't have scrolled, so no success label should be displayed
-			ClassicAssert.IsEmpty(success);
 
-			this.Back();
+			var success = App.WaitForElement(Success).GetText();
+			Assert.That("Initial Text", Is.EqualTo(success));
+
+			App.TapBackArrow();
 		}
 
 		// ScrollViewInitiallyNotEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
-		[FailsOnIOS("This test is failing, likely due to product issue")]
-		[FailsOnMac("This test is failing, likely due to product issue")]
 		public void ScrollViewInitiallyNotEnabled()
 		{
 			// 1. Disable the ScrollView.
@@ -84,19 +78,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap(InitiallyNotEnabled);
 			App.WaitForElement(FirstItem);
 			App.WaitForElement(ScrollView);
-			App.ScrollTo("Item10", true);
+			App.ScrollDown("Item10", ScrollStrategy.Gesture);
 
 			// 2. Shouldn't have scrolled.
-			var success = App.FindElement(Success).GetText(); // Shouldn't have scrolled, so no success label should be displayed
-			ClassicAssert.IsEmpty(success);
+			// Shouldn't have scrolled, so no success label should be displayed
+			var success = App.WaitForElement(Success).GetText();
+			Assert.That("Initial Text", Is.EqualTo(success));
 
-			this.Back();
+			App.TapBackArrow();
 		}
 
 		// ScrollViewInitiallyNotEnabledThenEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
-		[FailsOnIOS("This test is failing, likely due to product issue")]
-		[FailsOnMac("This test is failing, likely due to product issue")]
 		public void ScrollViewInitiallyNotEnabledThenEnabled()
 		{
 			// 1. Disable the ScrollView.
@@ -113,13 +106,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(ScrollView);
 
 			// 3. Try to scroll.
-			App.ScrollTo("Item10", true);
+			App.ScrollDown("Item10", ScrollStrategy.Gesture);
 
 			// 4. If the ScrollView scrolled, the test passed.
-			App.WaitForElement(Success); // If the ScrollView scrolled, the success label should be displayed
+			var success = App.WaitForElement(Success).GetText();
+			Assert.That("Success", Is.EqualTo(success)); // If the ScrollView scrolled, the success label should be displayed
 
-			this.Back();
+			App.TapBackArrow();
 		}
 	}
 }
-#endif

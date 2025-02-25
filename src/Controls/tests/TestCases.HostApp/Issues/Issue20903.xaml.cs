@@ -1,8 +1,5 @@
 ﻿#nullable enable
 
-using System;
-using Microsoft.Maui.Controls;
-
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 20903, "Double-tap behavior should work correctly when adding a new double-tap handler", PlatformAffected.UWP)]

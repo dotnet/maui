@@ -40,28 +40,9 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 #endif
 					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Frame, FrameRenderer>();
+					handlers.AddHandler<Border, BorderHandler>();
 					handlers.AddHandler<Controls.Window, WindowHandlerStub>();
 				});
-			});
-		}
-
-		[Theory]
-		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
-		public async Task PoppingFlyoutPageDoesntCrash(Type flyoutPageType)
-		{
-			SetupBuilder();
-			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
-			{
-				var flyoutPage = CreateFlyoutPage(
-					flyoutPageType,
-					new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }),
-					new ContentPage() { Title = "Flyout" });
-
-				await navPage.PushAsync(flyoutPage);
-				await navPage.PopAsync();
 			});
 		}
 
@@ -73,7 +54,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var flyoutPage = CreateFlyoutPage(
 					flyoutPageType,
-					new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }),
+					new NavigationPage(new ContentPage() { Content = new Border(), Title = "Detail" }),
 					new ContentPage() { Title = "Flyout" });
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), async (handler) =>

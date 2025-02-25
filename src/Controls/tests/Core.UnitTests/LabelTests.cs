@@ -80,21 +80,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void LabelResizesWhenFontChanges()
 		{
-			MockPlatformSizeService.Current.GetPlatformSizeFunc = (ve, w, h) =>
+			var label = MockPlatformSizeService.Sub<Label>((ve, w, h) =>
 			{
 				var l = (Label)ve;
 				return new SizeRequest(new Size(l.FontSize, l.FontSize));
-			};
+			});
 
-			var label = new Label { IsPlatformEnabled = true };
-
-			Assert.Equal(label.FontSize, label.Measure(double.PositiveInfinity, double.PositiveInfinity).Request.Width);
+			Assert.Equal(label.FontSize, label.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None).Request.Width);
 
 			bool fired = false;
 
 			label.MeasureInvalidated += (sender, args) =>
 			{
-				Assert.Equal(25, label.Measure(double.PositiveInfinity, double.PositiveInfinity).Request.Width);
+				Assert.Equal(25, label.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None).Request.Width);
 				fired = true;
 			};
 

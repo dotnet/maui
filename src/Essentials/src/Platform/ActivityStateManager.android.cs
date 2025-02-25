@@ -127,7 +127,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			var activity = manager.GetCurrentActivity();
 			if (throwOnNull && activity == null)
-				throw new NullReferenceException("The current Activity can not be detected. Ensure that you have called Init in your Activity or Application class.");
+				throw new NullReferenceException("The current Activity cannot be detected. Ensure that you have called Init in your Activity or Application class.");
 
 			return activity;
 		}

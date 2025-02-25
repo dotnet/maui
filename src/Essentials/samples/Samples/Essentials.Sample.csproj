@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(MauiSamplePlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(UseMaui)' != 'true' and '$(IncludePreviousTfms)' == 'true' ">$(TargetFrameworks);$(MauiSamplePreviousPlatforms)</TargetFrameworks>
     <RootNamespace>Maui.Essentials.Sample</RootNamespace>
     <AssemblyName>Microsoft.Maui.Essentials.Sample</AssemblyName>
     <OutputType>Exe</OutputType>

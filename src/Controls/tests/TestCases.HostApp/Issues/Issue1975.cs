@@ -1,10 +1,8 @@
 ﻿using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 1975, "[iOS] ListView throws NRE when grouping enabled and data changed",
 		PlatformAffected.iOS)]
 	public class Issue1975 : NavigationPage
@@ -34,8 +32,11 @@ namespace Maui.Controls.Sample.Issues
 				lv.SetBinding(ListView.ItemsSourceProperty, new Binding("Items"));
 				lv.IsGroupingEnabled = true;
 				lv.GroupDisplayBinding = new Binding("Description");
+#if !WINDOWS
+				//It appears that the ListView is not detectable in the CI environment
+				//For more information : https://github.com/dotnet/maui/issues/27336
 				lv.GroupShortNameBinding = new Binding("ShortName");
-
+#endif
 				lv.ItemTemplate = new DataTemplate(() =>
 				{
 					var textCell = new TextCell();
@@ -60,7 +61,7 @@ namespace Maui.Controls.Sample.Issues
 				return contentPage;
 			}
 
-			[Preserve(AllMembers = true)]
+
 			class DataSample
 			{
 				static readonly object _lockObject = new object();
@@ -108,7 +109,7 @@ namespace Maui.Controls.Sample.Issues
 				public ObservableCollection<Item> Items { get; }
 			}
 
-			[Preserve(AllMembers = true)]
+
 			class Item : ObservableCollection<SubItem>
 			{
 				public string ShortName { get; set; }
@@ -121,7 +122,7 @@ namespace Maui.Controls.Sample.Issues
 				}
 			}
 
-			[Preserve(AllMembers = true)]
+
 			class SubItem
 			{
 				public string Text { get; set; }

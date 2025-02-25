@@ -6,11 +6,11 @@
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>Microsoft.Maui.TestCases.Tests</RootNamespace>
-    <DefineConstants>$(DefineConstants);IOS;IOSUITEST</DefineConstants>
+    <DefineConstants>$(DefineConstants);IOS;IOSUITEST;TEST_FAILS_ON_ANDROID;TEST_FAILS_ON_WINDOWS;TEST_FAILS_ON_CATALYST</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" Version="5.0.0" />
+    <PackageReference Include="Appium.WebDriver" Version="7.0.0" />
     <PackageReference Include="NUnit" Version="4.0.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>
@@ -49,6 +49,11 @@
   
   <ItemGroup>
     <Compile Include="..\TestCases.Shared.Tests\**\*.cs" Exclude="..\TestCases.Shared.Tests\obj\**;..\TestCases.Shared.Tests\bin\**" LinkBase="Shared" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Issues tests are disabled with NativeAOT (see https://github.com/dotnet/maui/issues/20553) -->
+    <Compile Condition=" '$(_UseNativeAot)' == 'true' " Remove="../TestCases.Shared.Tests/Tests/Issues/**/*.*" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "Using radiobuttons in a group, pressing one button works fine, but pressing the second does not reset the first hence";
-		
+
 		[Test]
 		[Category(UITestCategories.RadioButton)]
 		public void RadioButtonUpdateValueInsideBorder()
@@ -29,4 +28,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif

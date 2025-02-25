@@ -1,20 +1,18 @@
 ﻿using System.ComponentModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Entry = Microsoft.Maui.Controls.Entry;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 1685, "Entry clears when upadting text from native with one-way binding", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]
+
+	[Issue(IssueTracker.Github, 1685, "Entry clears when updating text from native with one-way binding", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone)]
 	public class Issue1685 : TestContentPage
 	{
 		const string ButtonId = "Button1685";
 		const string Success = "Success";
 
-		[Preserve(AllMembers = true)]
+
 		class Test : INotifyPropertyChanged
 		{
 			public event PropertyChangedEventHandler PropertyChanged;
@@ -48,7 +46,8 @@ namespace Maui.Controls.Sample.Issues
 
 			var entry = new Entry()
 			{
-				Placeholder = "Entry"
+				Placeholder = "Entry",
+				AutomationId = "TestEntry",
 			};
 			entry.SetBinding(Entry.TextProperty, "EntryValue", BindingMode.OneWay);
 

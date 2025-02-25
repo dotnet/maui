@@ -1,12 +1,6 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 8004, "Add a ScaleXTo and ScaleYTo animation extension method", PlatformAffected.All)]
 	public class Issue8004 : TestContentPage
 	{
@@ -23,16 +17,15 @@ namespace Maui.Controls.Sample.Issues
 				AutomationId = "TestReady"
 			};
 
-#pragma warning disable CS0618 // Type or member is obsolete
 			var button = new Button
 			{
 				AutomationId = AnimateBoxViewButton,
 				Text = "Animate BoxView",
-				BackgroundColor = Colors.Black,
-				TextColor = Colors.White,
-				VerticalOptions = LayoutOptions.EndAndExpand
+				//Commented out due to tap does not perform while automation on the Mac platform when setting VerticalOptions.				
+				// BackgroundColor = Colors.Black,
+				// TextColor = Colors.White,
+				// VerticalOptions = LayoutOptions.EndAndExpand
 			};
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			button.Clicked += AnimateButton_Clicked;
 

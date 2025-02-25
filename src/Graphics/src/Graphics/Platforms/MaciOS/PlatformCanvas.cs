@@ -405,6 +405,13 @@ namespace Microsoft.Maui.Graphics.Platform
 				_context.SetShouldAntialias(true);
 		}
 
+		// Normalize the angle to be between 0 and 2PI
+		float NormalizeAngle(float angle)
+		{
+			var twoPi = MathF.PI * 2;
+			return (angle % twoPi + twoPi) % twoPi;
+		}
+
 		protected override void PlatformDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool close)
 		{
 			_rect.X = x;
@@ -414,14 +421,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			if (!_antialias)
 				_context.SetShouldAntialias(false);
-			var startAngleInRadians = GeometryUtil.DegreesToRadians(-startAngle);
-			var endAngleInRadians = GeometryUtil.DegreesToRadians(-endAngle);
 
-			while (startAngleInRadians < 0)
-				startAngleInRadians += MathF.PI * 2;
-
-			while (endAngleInRadians < 0)
-				endAngleInRadians += MathF.PI * 2;
+			var startAngleInRadians = NormalizeAngle(GeometryUtil.DegreesToRadians(-startAngle));
+			var endAngleInRadians = NormalizeAngle(GeometryUtil.DegreesToRadians(-endAngle));
 
 			if (width == height)
 			{

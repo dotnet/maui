@@ -52,7 +52,6 @@
       <Docs>
         <param name="item">The modified item.</param>
         <summary>Initializes a new instance of the ItemVisibilityEventArgs class with the item whose visibility has changed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -72,8 +71,6 @@
       <Docs>
         <param name="item">To be added.</param>
         <param name="itemIndex">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Item">
@@ -99,7 +96,6 @@
       <Docs>
         <summary>The item from the <see cref="P:Microsoft.Maui.Controls.ItemsView`1.ItemsSource" /> whose visibility has changed.</summary>
         <value>An object.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ItemIndex">
@@ -116,9 +112,6 @@
         <ReturnType>System.Int32</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

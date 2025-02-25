@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		Func<UICollectionViewCell> _getPrototype;
-		
+
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		Func<NSIndexPath, UICollectionViewCell> _getPrototypeForIndexPath;
 		CGSize _previousContentSize = CGSize.Empty;
@@ -68,9 +68,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_initialized)
 			{
-				// Reload the data so the currently visible cells get laid out according to the new layout
+				// Reload the data so the currently visible cells get arranged according to the new layout
 				CollectionView.ReloadData();
 			}
+		}
+
+		internal virtual void Disconnect()
+		{
+			DisposeItemsSource();
 		}
 
 		protected override void Dispose(bool disposing)
@@ -263,9 +268,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_previousContentSize = contentSize.Value;
 		}
-		
 
-		internal Size? GetSize()
+
+		internal virtual Size? GetSize()
 		{
 			if (_emptyViewDisplayed)
 			{
@@ -541,13 +546,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (IsHorizontal)
 			{
-				var request = formsElement.Measure(double.PositiveInfinity, CollectionView.Frame.Height, MeasureFlags.IncludeMargins);
-				Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rect(0, 0, request.Request.Width, CollectionView.Frame.Height));
+				var request = formsElement.Measure(double.PositiveInfinity, CollectionView.Frame.Height);
+				formsElement.Arrange(new Rect(0, 0, request.Width, CollectionView.Frame.Height));
 			}
 			else
 			{
-				var request = formsElement.Measure(CollectionView.Frame.Width, double.PositiveInfinity, MeasureFlags.IncludeMargins);
-				Controls.Compatibility.Layout.LayoutChildIntoBoundingRegion(formsElement, new Rect(0, 0, CollectionView.Frame.Width, request.Request.Height));
+				var request = formsElement.Measure(CollectionView.Frame.Width, double.PositiveInfinity);
+				formsElement.Arrange(new Rect(0, 0, CollectionView.Frame.Width, request.Height));
 			}
 		}
 
@@ -567,17 +572,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void UpdateView(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
 		{
 			// Is view set on the ItemsView?
-			if (view == null)
+			if (view is null && (viewTemplate is null || viewTemplate is DataTemplateSelector))
 			{
 				if (formsElement != null)
 				{
 					//Platform.GetRenderer(formsElement)?.DisposeRendererAndChildren();
 				}
 
-
 				uiView?.Dispose();
 				uiView = null;
-
+				formsElement?.Handler?.DisconnectHandler();
 				formsElement = null;
 			}
 			else

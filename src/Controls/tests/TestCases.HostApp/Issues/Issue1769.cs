@@ -1,11 +1,6 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Devices;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 1769, "PushAsync with Switch produces NRE", PlatformAffected.Android)]
 	public class Issue1769 : NavigationPage
 	{
@@ -48,28 +43,24 @@ namespace Maui.Controls.Sample.Issues
 						HorizontalOptions = LayoutOptions.Center
 					};
 
-#pragma warning disable CS0618 // Type or member is obsolete
+
 					var switcher = new Switch
 					{
 						AutomationId = SwitchAutomatedId,
 						HorizontalOptions = LayoutOptions.Center,
-						VerticalOptions = LayoutOptions.CenterAndExpand
+						VerticalOptions = LayoutOptions.Center
 					};
-#pragma warning restore CS0618 // Type or member is obsolete
+
 					switcher.Toggled += switcher_Toggled;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0612 // Type or member is obsolete
 					_label = new Label
 					{
-						AutomationId = string.Format(SwitchIsNowLabelTextFormat, switcher.IsToggled),
+						AutomationId = "SwitchLabel",
 						Text = string.Format(SwitchIsNowLabelTextFormat, switcher.IsToggled),
-						FontSize = Device.GetNamedSize(NamedSize.Large, typeof(Label)),
+						FontSize = 20,
 						HorizontalOptions = LayoutOptions.Center,
-						VerticalOptions = LayoutOptions.CenterAndExpand
+						VerticalOptions = LayoutOptions.Center
 					};
-#pragma warning restore CS0612 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
 
 					// Accomodate iPhone status bar.
 					Padding = DeviceInfo.Platform == DevicePlatform.iOS ? new Thickness(10, 20, 10, 5) : new Thickness(10, 0, 10, 5);

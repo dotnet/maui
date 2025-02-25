@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 11209, "[Bug] [iOS][SwipeView] Swipe view not handling tap gesture events until swiped", PlatformAffected.Android)]
 	public class Issue11209NavigationPage : NavigationPage
 	{
@@ -44,7 +36,7 @@ namespace Maui.Controls.Sample.Issues
 			await Navigation.PushAsync(new Issue11209SecondPage());
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class Issue11209SecondPage : ContentPage
 		{
 			public Issue11209SecondPage()

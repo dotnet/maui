@@ -24,17 +24,16 @@ public abstract class PlatformContentViewGroup extends ViewGroup {
         super(context, attrs, defStyle, defStyleRes);
     }
 
-    private boolean hasClip;
+    private boolean hasClip = false;
 
     /**
      * Set by C#, determining if we need to call getClipPath()
+     * Intentionally invalidates the view in case clip changed
      * @param hasClip
      */
-    protected final void setHasClip(boolean hasClip) {
-        if (this.hasClip != hasClip) {
-            this.hasClip = hasClip;
-            postInvalidate();
-        }
+    protected void setHasClip(boolean hasClip) {
+        this.hasClip = hasClip;
+        invalidate();
     }
 
     @Override

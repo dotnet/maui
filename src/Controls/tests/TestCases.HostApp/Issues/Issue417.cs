@@ -1,10 +1,6 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 417, "Navigation.PopToRootAsync does nothing", PlatformAffected.Android)]
 	public class Issue417 : NavigationPage
 	{
@@ -14,11 +10,13 @@ namespace Maui.Controls.Sample.Issues
 
 		public class MainPage : ContentPage
 		{
-			protected override void OnAppearing()
+			protected override async void OnAppearing()
 			{
 				base.OnAppearing();
 
-				Navigation.PushAsync(new FirstPage());
+				//Allow the OnAppearing method to return control to the UI thread before continuing with navigation.
+				await Task.Yield();
+				await Navigation.PushAsync(new FirstPage());
 			}
 
 			public class FirstPage : ContentPage

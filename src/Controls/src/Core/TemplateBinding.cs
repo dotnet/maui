@@ -1,11 +1,13 @@
 #nullable disable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TemplateBinding.xml" path="Type[@FullName='Microsoft.Maui.Controls.TemplateBinding']/Docs/*" />
 	[Obsolete("Use Binding.Source=RelativeBindingSource.TemplatedParent")]
+	[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 	public sealed class TemplateBinding : BindingBase
 	{
 		internal const string SelfPath = ".";

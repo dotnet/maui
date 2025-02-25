@@ -15,13 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Switch)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnIOS]
-		[FailsOnMac]
 		public void TestSwitchDisable()
 		{
 			App.WaitForElement("switch");
-			App.Screenshot();
 		}
 	}
 }

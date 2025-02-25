@@ -20,7 +20,6 @@
   </Attributes>
   <Docs>
     <summary>Flagging enumeration defining text decorations.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="None">

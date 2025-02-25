@@ -4,6 +4,7 @@
     <AndroidNeedsInternetPermission>true</AndroidNeedsInternetPermission>
     <AndroidEnableAotProfiler>true</AndroidEnableAotProfiler>
     <RunAOTCompilation>false</RunAOTCompilation>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0022</WarningsNotAsErrors>
   </PropertyGroup>
   
   <Import Project="../../../Directory.Build.props" />

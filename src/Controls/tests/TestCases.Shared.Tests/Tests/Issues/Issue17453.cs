@@ -64,6 +64,32 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			ClassicAssert.IsEmpty(rtlEntryText);
 		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public async Task EntryWithMarginClearButtonWorks()
+		{
+			// https://github.com/dotnet/maui/issues/25225
+
+			App.WaitForElement("WaitForStubControl");
+
+			string? entryText = App.FindElement("EntryWithMargin").GetText();
+			if (String.IsNullOrWhiteSpace(entryText))
+				App.EnterText("EntryWithMargin", "Simple Text");
+
+			var entryRect = App.FindElement("EntryWithMargin").GetRect();
+
+			// Set focus
+			App.TapCoordinates(entryRect.Width, entryRect.Y);
+			await Task.Delay(500);
+
+			// Tap Clear Button
+			App.TapCoordinates(entryRect.Width, entryRect.Y);
+
+			entryText = App.FindElement("EntryWithMargin").GetText();
+
+			ClassicAssert.IsEmpty(entryText);
+		}
 	}
 }
 #endif

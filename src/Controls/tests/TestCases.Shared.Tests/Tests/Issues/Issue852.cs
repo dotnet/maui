@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Threading.Tasks;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,29 +14,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "Async loading of Content causes UI element to be unclickable"; 
+		public override string Issue => "Async loading of Content causes UI element to be unclickable";
 
 		[Test]
 		[Category(UITestCategories.Entry)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
-		[FailsOnMac]
-		[FailsOnWindows]
 		public void Issue852TestsEntriesClickable()
 		{
 			App.WaitForElement("WelcomeLabel");
 			App.WaitForElement(UsernameId);
 			App.WaitForElement(PasswordId);
 			App.WaitForElement("Login");
-			App.Screenshot("All elements present");
 
 			App.Tap(UsernameId);
-			App.WaitForElement("WelcomeLabel");
+			Assert.That(App.WaitForElement("WelcomeLabel").GetText(), Is.EqualTo("Clicked User"));
 			App.EnterText(UsernameId, "Usertest");
-			App.Screenshot("User entered");
-
+			App.WaitForElement(PasswordId);
 			App.Tap(PasswordId);
-			App.WaitForElement("WelcomeLabel");
+			Assert.That(App.WaitForElement("WelcomeLabel").GetText(), Is.EqualTo("Clicked Password"));
 			App.EnterText(PasswordId, "Userpass");
 		}
 	}

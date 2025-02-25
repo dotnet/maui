@@ -1,6 +1,6 @@
-﻿using System.Reflection;
+using System.Reflection;
+using ImageMagick;
 using NUnit.Framework;
-using OpenQA.Selenium.Appium.iOS;
 using UITest.Appium;
 using UITest.Appium.NUnit;
 using UITest.Core;
@@ -10,7 +10,7 @@ using VisualTestUtils.MagickNet;
 namespace Microsoft.Maui.TestCases.Tests
 {
 #if ANDROID
-		[TestFixture(TestDevice.Android)]
+	[TestFixture(TestDevice.Android)]
 #elif IOSUITEST
 		[TestFixture(TestDevice.iOS)]
 #elif MACUITEST
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public override IConfig GetTestConfig()
 		{
-			var frameworkVersion = "net8.0";
+			var frameworkVersion = "net9.0";
 #if DEBUG
 			var configuration = "Debug";
 #else
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "17.2");
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.0");
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
@@ -84,6 +84,18 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 			}
 
+			// This currently doesn't work
+			if (!String.IsNullOrEmpty(TestContext.CurrentContext.Test.ClassName))
+			{
+				config.SetTestConfigurationArg("StartingTestClass", TestContext.CurrentContext.Test.ClassName);
+			}
+
+			var commandLineArgs = Environment.GetEnvironmentVariable("TEST_CONFIGURATION_ARGS") ?? "";
+			if (!String.IsNullOrEmpty(commandLineArgs))
+			{
+				config.SetTestConfigurationArg("TEST_CONFIGURATION_ARGS", commandLineArgs);
+			}
+
 			return config;
 		}
 
@@ -92,8 +104,52 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ResetApp();
 		}
 
-		public void VerifyScreenshot(string? name = null)
+		/// <summary>
+		/// Verifies the screenshots and returns an exception in case of failure.
+		/// </summary>
+		/// <remarks>
+		/// This is especially useful when capturing multiple screenshots in a single UI test.
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Exception? exception = null;
+		/// VerifyScreenshotOrSetException(ref exception, "MyScreenshotName");
+		/// VerifyScreenshotOrSetException(ref exception, "MyOtherScreenshotName");
+		/// if (exception is not null) throw exception;
+		/// </code>
+		/// </example>
+		public void VerifyScreenshotOrSetException(
+			ref Exception? exception,
+			string? name = null,
+			TimeSpan? retryDelay = null
+#if MACUITEST || WINTEST
+			, bool includeTitleBar = false
+#endif
+			)
 		{
+			try
+			{
+				VerifyScreenshot(name, retryDelay
+#if MACUITEST || WINTEST
+				, includeTitleBar
+#endif
+				);
+			}
+			catch (Exception ex)
+			{
+				exception ??= ex;
+			}
+		}
+
+		public void VerifyScreenshot(
+			string? name = null,
+			TimeSpan? retryDelay = null
+#if MACUITEST || WINTEST
+			, bool includeTitleBar = false
+#endif
+		)
+		{
+			retryDelay ??= TimeSpan.FromMilliseconds(500);
 			// Retry the verification once in case the app is in a transient state
 			try
 			{
@@ -101,14 +157,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 			catch
 			{
-				Thread.Sleep(500);
+				Thread.Sleep(retryDelay.Value);
 				Verify(name);
 			}
 
 			void Verify(string? name)
 			{
 				string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
-				
+
 				// Remove the XHarness suffix if present
 				deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
 
@@ -132,7 +188,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						var deviceScreenSize = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize");
 						var deviceScreenDensity = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity");
 
-						if (! (deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
+						if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
 						{
 							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
 						}
@@ -142,7 +198,11 @@ namespace Microsoft.Maui.TestCases.Tests
 						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
 						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
 
-						if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
+						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
+						{
+							environmentName = "ios";
+						}
+						else if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
 						{
 							environmentName = "ios";
 						}
@@ -161,11 +221,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						break;
 
 					case TestDevice.Mac:
-						// For now, ignore visual tests on Mac Catalyst since the Appium screenshot on Mac (unlike Windows)
-						// is of the entire screen, not just the app. Later when xharness relay support is in place to
-						// send a message to the MAUI app to get the screenshot, we can use that to just screenshot
-						// the app.
-						Assert.Ignore("MacCatalyst isn't supported yet for visual tests");
+						environmentName = "mac";
 						break;
 
 					default:
@@ -181,7 +237,11 @@ namespace Microsoft.Maui.TestCases.Tests
 					Thread.Sleep(350);
 				}
 
+#if MACUITEST
+				byte[] screenshotPngBytes = TakeScreenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+#else
 				byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+#endif
 
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
@@ -193,14 +253,24 @@ namespace Microsoft.Maui.TestCases.Tests
 					TestDevice.Android => 60,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
+					TestDevice.Mac => 29,
 					_ => 0,
 				};
 
+#if MACUITEST || WINTEST
+				if (includeTitleBar)
+				{
+					cropFromTop = 0;
+				}
+#endif
+
 				// For Android also crop the 3 button nav from the bottom, since it's not part of the
-				// app itself and the button color can vary (the buttons change clear briefly when tapped)
+				// app itself and the button color can vary (the buttons change clear briefly when tapped).
+				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
 					TestDevice.Android => 125,
+					TestDevice.iOS => 40,
 					_ => 0,
 				};
 
@@ -218,14 +288,68 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
+		protected void VerifyInternetConnectivity()
+		{
+			try
+			{
+				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(30));
+				Assert.Inconclusive("This device doesn't have internet access");
+			}
+			catch (TimeoutException)
+			{
+				// Continue with the test
+			}
+		}
+
 		public override void TestSetup()
 		{
 			base.TestSetup();
 			var device = App.GetTestDevice();
-			if(device == TestDevice.Android || device == TestDevice.iOS)
+			if (device == TestDevice.Android || device == TestDevice.iOS)
 			{
-				App.SetOrientationPortrait();
+				try
+				{
+					App.SetOrientationPortrait();
+				}
+				catch
+				{
+					// The app might not be ready
+					// Probably reduce this value if this works
+					Thread.Sleep(1000);
+					App.SetOrientationPortrait();
+				}
 			}
 		}
+
+#if MACUITEST
+		byte[] TakeScreenshot()
+		{
+			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
+			// we are going to crop the screenshot to the app window bounds, including rounded corners.
+			var windowBounds = App.FindElement(AppiumQuery.ByXPath("//XCUIElementTypeWindow")).GetRect();
+
+			var x = windowBounds.X;
+			var y = windowBounds.Y;
+			var width = windowBounds.Width;
+			var height = windowBounds.Height;
+			const int cornerRadius = 12;
+
+			// Take the screenshot
+			var bytes = App.Screenshot();
+
+			// Draw a rounded rectangle with the app window bounds as mask
+			using var surface = new MagickImage(MagickColors.Transparent, width, height);
+			new Drawables()
+				.RoundRectangle(0, 0, width, height, cornerRadius, cornerRadius)
+				.FillColor(MagickColors.Black)
+				.Draw(surface);
+
+			// Composite the screenshot with the mask
+			using var image = new MagickImage(bytes);
+			surface.Composite(image, -x, -y, CompositeOperator.SrcAtop);
+
+			return surface.ToByteArray(MagickFormat.Png);
+		}
+#endif
 	}
 }

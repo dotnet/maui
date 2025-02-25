@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			button.GetType().GetProperty(propertyName).SetValue(button, value, null);
 
 			Assert.Equal(2, handler.Updates.Count);
-			Assert.Equal(new[] { propertyName, nameof(ITextStyle.Font) }, handler.Updates);
+			Assert.Equal(new[] { nameof(ITextStyle.Font), propertyName }, handler.Updates);
 		}
 	}
 

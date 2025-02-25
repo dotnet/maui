@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Controls.Sample.UITests;
+﻿using Controls.Sample.UITests;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries
 {

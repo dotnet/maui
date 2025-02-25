@@ -22,7 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot("Issue22606_SetHeightTo500");
 		}
 
-#if ANDROID || IOS
+#if ANDROID || IOS  //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android.
 		[Test]
 		public void BorderBackgroundSizeUpdatesWhenRotatingScreen()
 		{

@@ -47,9 +47,22 @@ public class LabelUITests : _ViewUITests
 	}
 
 	[Test]
+	public void FontFamilyLoadsDynamically()
+	{
+		var remote = GoToStateRemote("FontFamily");
+
+		remote.TapStateButton();
+		VerifyScreenshot("LabelUITests_FontFamily_Ionicons");
+	}
+
+#if WINDOWS
+	[Ignore("Windows App SDK 1.6 broke this test. See more details in https://github.com/dotnet/maui/issues/26749")]
+#endif
+	[Test]
 	public void FontFamily()
 	{
 		var remote = GoToStateRemote();
+
 		VerifyScreenshot("LabelUITests_FontFamily_FontAwesome");
 
 		remote.TapStateButton();

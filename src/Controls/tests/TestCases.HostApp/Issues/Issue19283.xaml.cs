@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 19283, "PointerOver VSM Breaks Button", PlatformAffected.iOS)]
 	public partial class Issue19283 : ContentPage
