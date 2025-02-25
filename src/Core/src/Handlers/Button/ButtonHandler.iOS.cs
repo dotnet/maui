@@ -218,6 +218,7 @@ namespace Microsoft.Maui.Handlers
 				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
 				button.SetImage(platformImage, UIControlState.Normal);
+				button.BringSubviewToFront(button.ImageView);
 			}
 		}
 	}
