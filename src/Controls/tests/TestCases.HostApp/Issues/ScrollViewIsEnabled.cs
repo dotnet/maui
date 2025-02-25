@@ -69,6 +69,7 @@ Use the toggle button to check both values of 'IsEnabled'."
 
 				var success = new Label
 				{
+					Text = "Initial Text",
 					AutomationId = Success
 				};
 
