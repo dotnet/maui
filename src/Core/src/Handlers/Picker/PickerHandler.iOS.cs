@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.UpdatePicker(handler.VirtualView);
 		}
 
-		[Obsolete]
+		[Obsolete("Use Microsoft.Maui.Handlers.PickerHandler.MapItems instead")]
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
 
 		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);

@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		[Obsolete]
+		[Obsolete("Use Microsoft.Maui.Handlers.PickerHandler.MapItems instead")]
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
 
 		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);
