@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
+using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {

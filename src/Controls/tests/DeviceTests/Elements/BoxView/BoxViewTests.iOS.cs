@@ -2,13 +2,11 @@
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
