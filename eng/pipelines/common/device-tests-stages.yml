@@ -47,6 +47,7 @@ stages:
           buildType: 'buildOnly'
           platform: ${{ parameters.platform }}
           path: ${{ parameters.project.path }}
+          device: ${{ parameters.platform }}
           targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
           packageid: ${{ parameters.project.packageid }}
           provisionatorChannel: ${{ parameters.provisionatorChannel }}
@@ -79,7 +80,7 @@ stages:
             path: ${{ parameters.project.path }}
             appArtifactName: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
             ${{ if eq(parameters.platform, 'android') }}:
-              device:  android-emulator-64_${{ version }}
+              device: android-emulator-64_${{ version }}
               apiVersion: ${{ version }}
             ${{ if eq(parameters.platform, 'ios') }}:
               ${{ if contains(version, 'device') }}:
