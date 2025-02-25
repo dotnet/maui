@@ -104,5 +104,5 @@ stages:
             poolName: ${{ parameters.pool.name }}
             deviceTestConfiguration: ${{ parameters.project.configuration }}
             skipProvisioning: ${{ parameters.skipProvisioning }}
-            skipDotNet: true
+            # skipDotNet: true
             cakeArgs: --create=false
