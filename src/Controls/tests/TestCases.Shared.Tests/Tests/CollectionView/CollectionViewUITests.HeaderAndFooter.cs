@@ -28,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Just a string as a header");
 			App.WaitForElement("This footer is also a string");
 		}
-#if IOS
+
 		[Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterViewWorks()
@@ -53,6 +53,9 @@ namespace Microsoft.Maui.TestCases.Tests
             // Navigate to the specific sample inside selection galleries
             VisitSubGallery("Header/Footer (Template)");
 
+            App.WaitForElement("This Is A Header");
+            App.WaitForElement("This Is A Footer");
+
             VerifyScreenshot();
         }
 
@@ -72,10 +75,7 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
-#if TEST_FAILS_ON_IOS
-        // The screenshot that's currently generated for this test is wrong
-        // So, we're ignoring this test due to it causing confusion when other changes
-        // cause this test to fail.
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Layout Misalignment in GridItemsLayout with Horizontal Orientation on iOS and Catalyst Issue Link: https://github.com/dotnet/maui/issues/28030
         [Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterGridHorizontalWorks()
@@ -88,12 +88,14 @@ namespace Microsoft.Maui.TestCases.Tests
 
             App.WaitForElement("This Is A Header");
             
-            // This is a bug in the test, the footer is not being found
-            //App.WaitForElement("This Is A Footer");
+ #if ANDROID
+            App.ScrollRight("CollectionViewAutomation",ScrollStrategy.Gesture, 0.99,500);
+            App.ScrollRight("CollectionViewAutomation",ScrollStrategy.Gesture, 0.99,500);
+#endif 
+            App.WaitForElement("This Is A Footer");
 
             VerifyScreenshot();
         }
-#endif
 #endif
 	}
 }

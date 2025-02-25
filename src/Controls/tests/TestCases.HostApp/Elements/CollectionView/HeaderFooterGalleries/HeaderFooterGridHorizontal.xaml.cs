@@ -2,7 +2,7 @@
 {
 	public partial class HeaderFooterGridHorizontal : ContentPage
 	{
-		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(10);
+		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(3); // Reduced the items count to ensure that the footer is displayed consistently across all platforms, minimizing the need for excessive scrolling.
 		object header;
 		object footer;
 
