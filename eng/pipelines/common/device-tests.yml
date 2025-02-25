@@ -96,24 +96,25 @@ stages:
         useArtifacts: ${{ parameters.useArtifacts }}
 
   - ${{ if ne(project.windows, '') }}:
-    - template: device-tests-steps.yml
-      parameters:
-        platform: windows
-        timeoutInMinutes: 240
-        pool: ${{ parameters.windowsPool }}
-        versions: ${{ parameters.windowsVersions }}
-        cakeArgs: ''
-        targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
-        checkoutDirectory: ${{ parameters.checkoutDirectory }}
-        project:
-          name: ${{ project.name }}
-          desc: ${{ project.desc }}
-          path: ${{ project.windows }}
-          packageid: ${{ project.windowsPackageId }}
-          configuration: ${{ project.windowsConfiguration }}
-        provisionatorChannel: ${{ parameters.provisionatorChannel }}
-        skipProvisioning: ${{ parameters.skipProvisioning }}
-        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-        artifactName: ${{ parameters.artifactName }}
-        artifactItemPattern: ${{ parameters.artifactItemPattern }}
-        useArtifacts: ${{ parameters.useArtifacts }}
+    - ${{ each windowsVersion in parameters.windowsVersions }}:
+      - template: device-tests-steps.yml
+        parameters:
+          platform: windows
+          timeoutInMinutes: 240
+          pool: ${{ parameters.windowsPool }}
+          versions: ${{ parameters.windowsVersion }}
+          cakeArgs: ''
+          targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
+          checkoutDirectory: ${{ parameters.checkoutDirectory }}
+          project:
+            name: ${{ project.name }}_${{ windowsVersion }}
+            desc: ${{ project.desc }} ${{ windowsVersion }}
+            path: ${{ project.windows }}
+            packageid: ${{ project.windowsPackageId }}
+            configuration: ${{ project.windowsConfiguration }}
+          provisionatorChannel: ${{ parameters.provisionatorChannel }}
+          skipProvisioning: ${{ parameters.skipProvisioning }}
+          agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+          artifactName: ${{ parameters.artifactName }}
+          artifactItemPattern: ${{ parameters.artifactItemPattern }}
+          useArtifacts: ${{ parameters.useArtifacts }}
