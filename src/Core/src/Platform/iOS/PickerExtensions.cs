@@ -36,6 +36,10 @@ namespace Microsoft.Maui.Platform
 			{
 				platformPicker.Text = picker.GetItem(selectedIndex);
 			}
+			else 
+			{
+				platformPicker.UpdatePickerTitle(picker);
+			}
 
 			var pickerView = platformPicker.UIPickerView;
 			pickerView?.ReloadAllComponents();
