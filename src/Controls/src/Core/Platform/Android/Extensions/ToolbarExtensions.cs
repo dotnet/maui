@@ -77,13 +77,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBackButton(this AToolbar nativeToolbar, Toolbar toolbar)
 		{
-			if (toolbar.BackButtonVisible)
-			{
-				var context =
+			var context =
 					nativeToolbar.Context?.GetThemedContext() ??
 					nativeToolbar.Context ??
 					toolbar.Handler?.MauiContext?.Context;
 
+			if (toolbar.BackButtonVisible)
+			{
 				nativeToolbar.NavigationIcon ??= new DrawerArrowDrawable(context!);
 				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
 					iconDrawable.Progress = 1;
@@ -103,17 +103,11 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				if (!toolbar.DrawerToggleVisible)
-				{
-					nativeToolbar.NavigationIcon = null;
-				}
-				else
-				{
-					if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
-						iconDrawable.Progress = 0;
+				nativeToolbar.NavigationIcon = new DrawerArrowDrawable(context!);
+				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
+					iconDrawable.Progress = 0;
 
-					nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
-				}
+				nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
 			}
 
 			nativeToolbar.UpdateIconColor(toolbar);
