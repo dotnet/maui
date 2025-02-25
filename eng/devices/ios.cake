@@ -86,12 +86,15 @@ Task("Build")
 		ExecuteBuild(projectPath, testDevice, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath);
 	});
 
-Task("Test")
-	.IsDependentOn("Build")
+Task("Test-Only")
 	.Does(() =>
 	{
 		ExecuteTests(projectPath, testDevice, testResultsPath, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
 	});
+
+Task("test")
+	.IsDependentOn("build")
+	.IsDependentOn("test-only");
 
 Task("uitest-build")
 	.IsDependentOn("dotnet-buildtasks")

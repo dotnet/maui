@@ -198,8 +198,7 @@ Task("Build")
 	DotNetPublish(PROJECT.FullPath, s);
 });
 
-Task("Test")
-	.IsDependentOn("Build")
+Task("Test-Only")
 	.IsDependentOn("SetupTestPaths")
 	.Does(() =>
 {
@@ -425,6 +424,9 @@ Task("Test")
 	}
 });
 
+Task("test")
+	.IsDependentOn("build")
+	.IsDependentOn("test-only");
 
 Task("SetupTestPaths")
 	.Does(() => {
