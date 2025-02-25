@@ -161,6 +161,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				: VerticalSupplementaryView2.ReuseId;
 		}
 
+		internal override CGRect LayoutEmptyView()
+		{
+			var emptyViewFrame = base.LayoutEmptyView();
+			var footerView = CollectionView.ViewWithTag(FooterTag);
+
+			if (footerView is not null)
+			{
+				footerView.Frame = new CGRect(footerView.Frame.X, emptyViewFrame.Bottom, footerView.Frame.Width, footerView.Frame.Height);
+			}
+
+			return emptyViewFrame;
+		}
+
 		protected override CGRect DetermineEmptyViewFrame()
 		{
 			nfloat headerHeight = 0;
@@ -175,7 +188,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (footerView != null)
 				footerHeight = footerView.Frame.Height;
 
-			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y, CollectionView.Frame.Width,
+			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y + headerHeight, CollectionView.Frame.Width,
 				Math.Abs(CollectionView.Frame.Height - (headerHeight + footerHeight)));
 		}
 
