@@ -82,10 +82,7 @@ steps:
     displayName: 'Download Build'
     inputs:
       artifactName: ${{ parameters.appArtifactName }}
-      targetPath: ${{ parameters.checkoutDirectory }}/artifacts
-
-  - script: |
-      ls -la ${{ parameters.checkoutDirectory }}/artifacts
+      targetPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
 
 
   ##################################################
