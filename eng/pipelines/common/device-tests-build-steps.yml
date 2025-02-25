@@ -49,7 +49,7 @@ steps:
   #                Provision .NET                  #
   ##################################################
 
-  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+  - script: pwsh ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
     env:
@@ -76,7 +76,7 @@ steps:
     - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
       displayName: Move the downloaded artifacts
 
-    - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
+    - script: pwsh ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
       displayName: 'Install .NET (Local Workloads)'
       retryCountOnTaskFailure: 2
       workingDirectory: ${{ parameters.checkoutDirectory }}
@@ -86,7 +86,7 @@ steps:
 
   - ${{ else }}:
 
-    - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
+    - script: pwsh ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
       displayName: 'Build the MSBuild Tasks'
 
 
@@ -94,7 +94,7 @@ steps:
   #                     Build                      #
   ##################################################
 
-  - script: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=build --project="${{ parameters.path }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ parameters.cakeArgs }}
+  - script: pwsh ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=build --project="${{ parameters.path }}" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ parameters.cakeArgs }}
     displayName: Build
     workingDirectory: ${{ parameters.checkoutDirectory }}
     retryCountOnTaskFailure: 1
