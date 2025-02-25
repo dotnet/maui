@@ -18,7 +18,7 @@ namespace Maui.Controls.Sample.Issues
 						AutomationId = "dotnet_bot",
 						Source = "dotnet_bot.png",
 						HeightRequest = DeviceInfo.Platform == DevicePlatform.MacCatalyst ? 2000 : 1000,
-                        WidthRequest = DeviceInfo.Platform == DevicePlatform.MacCatalyst ? 4000 : 1000
+						WidthRequest = DeviceInfo.Platform == DevicePlatform.MacCatalyst ? 4000 : 1000
 					}
 				}
 			};
