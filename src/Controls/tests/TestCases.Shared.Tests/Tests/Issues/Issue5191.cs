@@ -18,10 +18,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("WaitForStubControl");
 			var gridLabel = App.FindElement("WaitForStubControl").GetRect();
 			var startX = gridLabel.X + (gridLabel.Width / 2);
-            var startY = gridLabel.Y + (gridLabel.Height / 2);
+			var startY = gridLabel.Y + (gridLabel.Height / 2);
 
 			// 1. Drag and drop.
-			App.DragCoordinates(startX , startY, startX + 250, startY + 100);
+			App.DragCoordinates(startX, startY, startX + 250, startY + 100);
 			// 2. Verify if PanGesture reports a completed event status when the touch is lifted.
 			var result = App.FindElement("WaitForStubControl").GetText();
 			ClassicAssert.True(result?.Contains("Completed", StringComparison.OrdinalIgnoreCase));
