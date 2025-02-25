@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimumTrackColor(this SeekBar seekBar, ISlider slider)
 		{
-			if (slider.MinimumTrackColor != null)
+			if (slider.MinimumTrackColor is not null)
 			{
 				seekBar.ProgressTintList = ColorStateList.ValueOf(slider.MinimumTrackColor.ToPlatform());
 				seekBar.ProgressTintMode = PorterDuff.Mode.SrcIn;
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaximumTrackColor(this SeekBar seekBar, ISlider slider)
 		{
-			if (slider.MaximumTrackColor != null)
+			if (slider.MaximumTrackColor is not null)
 			{
 				seekBar.ProgressBackgroundTintList = ColorStateList.ValueOf(slider.MaximumTrackColor.ToPlatform());
 				seekBar.ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
@@ -50,17 +50,17 @@ namespace Microsoft.Maui.Platform
 		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var context = seekBar.Context;
-			if (context == null)
+			if (context is null || !seekBar.IsAlive())
 				return;
 
 			var thumbImageSource = slider.ThumbImageSource;
-			if (thumbImageSource != null)
+			if (thumbImageSource is not null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var result = await service.GetDrawableAsync(thumbImageSource, context);
 				var thumbDrawable = result?.Value;
 
-				if (seekBar.IsAlive() && thumbDrawable != null)
+				if (thumbDrawable is not null)
 				{
 					using var value = new TypedValue();
 					context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true);
@@ -71,6 +71,10 @@ namespace Microsoft.Maui.Platform
 				{
 					seekBar.UpdateThumbColor(slider);
 				}
+			}
+			else
+			{
+				seekBar.UpdateThumbColor(slider);
 			}
 		}
 	}
