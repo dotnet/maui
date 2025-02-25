@@ -22,6 +22,7 @@ stages:
           buildConfig: ${{ parameters.buildConfig }}
           repoLogPath: ${{ parameters.repoLogPath }}
           installPackageArtifacts: false
+          buildMSBuildTasks: true
 
       - template: /eng/pipelines/common/run-dotnet-preview.yml
         parameters:
@@ -29,7 +30,7 @@ stages:
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
           command: test
           project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.Core.UnitTests'
+          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.Core.UnitTests /p:_SkipUpdateBuildNumber=true'
           useExitCodeForErrors: true
 
       - task: PublishTestResults@2
@@ -44,7 +45,7 @@ stages:
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
           command: test
           project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.Xaml.UnitTests'
+          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.Xaml.UnitTests /p:_SkipUpdateBuildNumber=true'
           useExitCodeForErrors: true
 
       - task: PublishTestResults@2
@@ -59,7 +60,7 @@ stages:
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
           command: test
           project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/SourceGen.UnitTests'
+          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/SourceGen.UnitTests /p:_SkipUpdateBuildNumber=true'
           useExitCodeForErrors: true
 
       - task: PublishTestResults@2
@@ -74,7 +75,7 @@ stages:
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
           command: test
           project: ${{ parameters.mauiSourcePath }}/src/Controls/tests/BindingSourceGen.UnitTests/Controls.BindingSourceGen.UnitTests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.BindingSourceGen.UnitTests'
+          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Controls.BindingSourceGen.UnitTests /p:_SkipUpdateBuildNumber=true'
           useExitCodeForErrors: true
 
       - task: PublishTestResults@2
@@ -89,7 +90,7 @@ stages:
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
           command: test
           project: ${{ parameters.mauiSourcePath }}/src/Core/tests/UnitTests/Core.UnitTests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Core.UnitTests'
+          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Core.UnitTests /p:_SkipUpdateBuildNumber=true'
           useExitCodeForErrors: true
 
       - task: PublishTestResults@2
@@ -104,7 +105,7 @@ stages:
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
           command: test
           project: ${{ parameters.mauiSourcePath }}/src/Essentials/test/UnitTests/Essentials.UnitTests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Essentials.UnitTests'
+          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Essentials.UnitTests /p:_SkipUpdateBuildNumber=true'
           useExitCodeForErrors: true
 
       - task: PublishTestResults@2
@@ -119,7 +120,7 @@ stages:
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
           command: test
           project: ${{ parameters.mauiSourcePath }}/src/SingleProject/Resizetizer/test/UnitTests/Resizetizer.UnitTests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Resizetizer.UnitTests'
+          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Resizetizer.UnitTests /p:_SkipUpdateBuildNumber=true'
           useExitCodeForErrors: true
 
       - task: PublishTestResults@2
@@ -134,7 +135,7 @@ stages:
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
           command: test
           project: ${{ parameters.mauiSourcePath }}/src/Graphics/tests/Graphics.Tests/Graphics.Tests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Graphics.Tests'
+          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Graphics.Tests /p:_SkipUpdateBuildNumber=true'
           useExitCodeForErrors: true
 
       - task: PublishTestResults@2
@@ -149,7 +150,7 @@ stages:
           mauiSourcePath: ${{ parameters.mauiSourcePath }}
           command: test
           project: ${{ parameters.mauiSourcePath }}/src/Compatibility/Core/tests/Compatibility.UnitTests/Compatibility.Core.UnitTests.csproj
-          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Compatibility.Core.UnitTests'
+          arguments: '-c ${{ parameters.buildConfig }} --logger trx --results-directory $(Agent.TempDirectory)/Compatibility.Core.UnitTests /p:_SkipUpdateBuildNumber=true'
           useExitCodeForErrors: true
 
       - task: PublishTestResults@2
@@ -164,7 +165,7 @@ stages:
         displayName: Publish Logs
         inputs:
           targetPath: ${{ parameters.repoLogPath }}
-          artifact: Run Unit Tests - ${{ job.testOS }} Logs
+          artifact: Logs - Unit Tests ${{ job.testOS }} $(System.JobAttempt)
         condition: always()
 
       - template: /eng/pipelines/common/fail-on-issue.yml

@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if ANDROID || IOS //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

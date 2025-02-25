@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using Microsoft.Maui.Platform;
+﻿using Microsoft.Maui.Platform;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -12,8 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "MAUI Entry in Windows always shows ClearButton despite ClearButtonVisibility set to 'Never'";
-
+		public override string Issue => "MAUI Entry in Windows always shows ClearButton despite ClearButtonVisibility set to Never";
 		[Test]
 		[Category(UITestCategories.Entry)]
 		public void VerifyEntryClearButtonVisibilitySetToWhileEditing()
@@ -23,6 +21,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ClearText("MainEntryField");
 			App.EnterText("MainEntryField", "ClearButton is set to WhileEditing");
 			App.Tap("MainEntryField");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			VerifyScreenshot();
 		}
 
@@ -35,8 +39,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ClearText("MainEntryField");
 			App.EnterText("MainEntryField", "ClearButton is set to Never");
 			App.Tap("MainEntryField");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			VerifyScreenshot();
 		}
 	}
 }
-#endif

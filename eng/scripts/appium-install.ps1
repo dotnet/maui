@@ -149,14 +149,27 @@ npm cache clean --force
 $existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
 Write-Output "List of installed drivers $existingDrivers"
 
+$exitCode = 0
+
+function Check-ExitCode {
+    param (
+        [int]$code
+    )
+    if ($code -ne 0 -and $exitCode -eq 0) {
+        $exitCode = $code
+    }
+}
+
 if ($IsWindows) {
     if ($existingDrivers.windows) {
         Write-Output  "Updating appium driver windows"
         appium driver update windows
+        Check-ExitCode $LASTEXITCODE
         Write-Output  "Updated appium driver windows"
     } else {
         Write-Output  "Installing appium driver windows"
         appium driver install --source=npm appium-windows-driver@$windowsDriverVersion
+        Check-ExitCode $LASTEXITCODE
         Write-Output  "Installed appium driver windows"
     }
 }
@@ -166,19 +179,23 @@ if ($IsMacOS) {
     if ($existingDrivers.xcuitest) {
         Write-Output  "Updating appium driver xcuitest"
         appium driver update xcuitest
+        Check-ExitCode $LASTEXITCODE
         Write-Output  "Updated appium driver xcuitest"
     } else {
         Write-Output  "Installing appium driver xcuitest"
         appium driver install xcuitest@$iOSDriverVersion
+        Check-ExitCode $LASTEXITCODE
         Write-Output  "Installed appium driver xcuitest"
     }
     if ($existingDrivers.mac2) {
         Write-Output  "Updating appium driver mac2"
         appium driver update mac2
+        Check-ExitCode $LASTEXITCODE
         Write-Output  "Updated appium driver mac2"
     } else {
         Write-Output  "Installing appium driver mac2"
         appium driver install mac2@$macDriverVersion
+        Check-ExitCode $LASTEXITCODE
         Write-Output  "Installed appium driver mac2"
     }
 }
@@ -186,10 +203,12 @@ if ($IsMacOS) {
 if ($existingDrivers.uiautomator2) {
     Write-Output  "Updating appium driver uiautomator2"
     appium driver update uiautomator2
+    Check-ExitCode $LASTEXITCODE
     Write-Output  "Updated appium driver uiautomator2"
 } else {
     Write-Output  "Installing appium driver uiautomator2"
     appium driver install uiautomator2@$androidDriverVersion
+    Check-ExitCode $LASTEXITCODE
     Write-Output  "Installed appium driver uiautomator2"
 }
 
@@ -207,5 +226,9 @@ if ($IsMacOS) {
 }
 
 appium driver doctor uiautomator2
+
+if ($exitCode -ne 0) {
+    throw "One or more Appium driver installations failed. Please check the logs for more information."
+}
 
 Write-Output  "Done, thanks!"

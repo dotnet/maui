@@ -29,7 +29,8 @@ namespace Microsoft.Maui
 			MenuBuilder = builder;
 
 			UIWindow? window = null;
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(14))
+
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(14) || OperatingSystem.IsIOSVersionAtLeast(14))
 			{
 				// for iOS 14+ where active apperance is supported
 				var activeWindowScenes = new List<UIWindowScene>();
@@ -48,7 +49,7 @@ namespace Microsoft.Maui
 					// we need to pick the newly created window in this case
 					// the order of window scene returned is not trustable, do not use last
 					// after some manual testing, windowing behaviour that is not ready yet is the newly created window
-					if (activeWindowScenes.Count > 1)
+					if ((OperatingSystem.IsMacCatalystVersionAtLeast(16) || OperatingSystem.IsIOSVersionAtLeast(16)) && activeWindowScenes.Count > 1)
 					{
 						foreach (var ws in activeWindowScenes)
 						{
@@ -59,8 +60,18 @@ namespace Microsoft.Maui
 							}
 						}
 					}
-					else
+					else if (OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsIOSVersionAtLeast(15))
+					{
 						window = activeWindowScenes[0].KeyWindow;
+					}
+					else if (activeWindowScenes[0].Windows.Length > 0)
+					{
+						window = activeWindowScenes[0].Windows[0];
+					}
+					else
+					{
+						window = Window ?? this.GetWindow() ?? UIApplication.SharedApplication.GetWindow()?.Handler?.PlatformView as UIWindow;
+					}
 				}
 			}
 			else
@@ -69,6 +80,7 @@ namespace Microsoft.Maui
 				window = Window ?? this.GetWindow() ??
 					UIApplication.SharedApplication.GetWindow()?.Handler?.PlatformView as UIWindow;
 			}
+
 			window?.GetWindow()?.Handler?.UpdateValue(nameof(IMenuBarElement.MenuBar));
 
 			MenuBuilder = null;

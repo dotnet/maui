@@ -492,7 +492,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (!InitialPositionSet)
 				return;
-			
+
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -516,7 +516,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				return;
 			}
-			
+
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
@@ -566,7 +566,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					{
 						position = positionCurrentItem;
 					}
-				}				
+				}
 
 				await Task.Delay(100).ContinueWith((t) =>
 				{
@@ -576,17 +576,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						{
 							return;
 						}
-						
+
 						InitialPositionSet = true;
 
 						if (ItemsSource is null || ItemsSource.ItemCount == 0)
 						{
 							return;
 						}
-						
+
 
 						carousel.ScrollTo(position, -1, Microsoft.Maui.Controls.ScrollToPosition.Center, false);
-				
+
 						SetCurrentItem(position);
 						UpdateVisualStates();
 					});

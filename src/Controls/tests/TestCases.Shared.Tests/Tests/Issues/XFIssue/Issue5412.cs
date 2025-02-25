@@ -14,9 +14,9 @@ public class Issue5412 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.FlyoutPage)]
-	public void Issue5412Test() 
+	public void Issue5412Test()
 	{
-	    App.WaitForElementTillPageNavigationSettled("Index Page");
+		App.WaitForElementTillPageNavigationSettled("Index Page");
 		App.TapFlyoutPageIcon("Menu title");
 		App.WaitForElementTillPageNavigationSettled("Settings");
 		App.Tap("Settings");
