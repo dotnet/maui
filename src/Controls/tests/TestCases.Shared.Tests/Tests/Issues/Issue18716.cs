@@ -17,14 +17,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
   		 
 		[Test]
 		[Category(UITestCategories.WebView)]
-		public async Task CanScrollWebView()
+		public void CanScrollWebView()
 		{
 			VerifyInternetConnectivity();
-			await Task.Delay(1000); // Wait WebView to load.
-
 			App.WaitForElement("WaitForStubControl");
 			App.ScrollDown("WaitForStubControl", ScrollStrategy.Gesture, 0.75);
-			Thread.Sleep(1000);
+			App.WaitForElement("WaitForStubControl",timeout:TimeSpan.FromSeconds(3));
 			VerifyScreenshot();
 		}
 	}
