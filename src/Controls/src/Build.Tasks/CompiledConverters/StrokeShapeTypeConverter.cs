@@ -190,6 +190,26 @@ class StrokeShapeTypeConverter : ICompiledTypeConverter
 				yield return Instruction.Create(OpCodes.Call, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "RoundRectangle"), "CornerRadius"));
 				yield break;
 			}
+
+			if (double.TryParse(value, out double radius))
+			{
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "Rectangle"), parameterTypes: null));
+				yield return Instruction.Create(OpCodes.Dup);
+
+				yield return Instruction.Create(OpCodes.Ldc_R8, radius);
+				yield return Instruction.Create(OpCodes.Ldc_R8, radius);
+				yield return Instruction.Create(OpCodes.Ldc_R8, radius);
+				yield return Instruction.Create(OpCodes.Ldc_R8, radius);
+
+				yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui", "Microsoft.Maui", "CornerRadius"), parameterTypes: new[] {
+					("mscorlib", "System", "Double"),
+					("mscorlib", "System", "Double"),
+					("mscorlib", "System", "Double"),
+					("mscorlib", "System", "Double")}));
+
+				yield return Instruction.Create(OpCodes.Call, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Shapes", "RoundRectangle"), "CornerRadius"));
+				yield break;
+			}
 		}
 		throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(IShape));
 	}

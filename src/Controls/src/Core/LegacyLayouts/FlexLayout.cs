@@ -10,6 +10,7 @@ using Flex = Microsoft.Maui.Layouts.Flex;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[ContentProperty(nameof(Children))]
+	[Obsolete("Use Microsoft.Maui.Controls.FlexLayout instead. For more information, see https://learn.microsoft.com/dotnet/maui/migration/layouts")]
 	public class FlexLayout : Layout<View>
 	{
 		/// <summary>Bindable property for <see cref="Direction"/>.</summary>
@@ -305,12 +306,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			InitItemProperties(view, item);
 			if (!(view is FlexLayout))
 			{ //inner layouts don't get measured
-				item.SelfSizing = (Flex.Item it, ref float w, ref float h) =>
+				item.SelfSizing = (Flex.Item it, ref float w, ref float h, bool inMeasureMode) =>
 				{
 					var sizeConstrains = item.GetConstraints();
-					sizeConstrains.Width = (_measuring && sizeConstrains.Width == 0) ? double.PositiveInfinity : sizeConstrains.Width;
-					sizeConstrains.Height = (_measuring && sizeConstrains.Height == 0) ? double.PositiveInfinity : sizeConstrains.Height;
-					var request = view.Measure(sizeConstrains.Width, sizeConstrains.Height).Request;
+					sizeConstrains.Width = (inMeasureMode && sizeConstrains.Width == 0) ? double.PositiveInfinity : sizeConstrains.Width;
+					sizeConstrains.Height = (inMeasureMode && sizeConstrains.Height == 0) ? double.PositiveInfinity : sizeConstrains.Height;
+					var request = view.Measure(sizeConstrains.Width, sizeConstrains.Height, MeasureFlags.None).Request;
 					w = (float)request.Width;
 					h = (float)request.Height;
 				};
@@ -409,7 +410,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
+#pragma warning disable CS0672 // Member overrides obsolete member
 		protected override void LayoutChildren(double x, double y, double width, double height)
+#pragma warning restore CS0672 // Member overrides obsolete member
 		{
 			if (_root == null)
 				return;
@@ -429,8 +432,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 
 		bool _measuring;
+#pragma warning disable CS0672 // Member overrides obsolete member
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
+#pragma warning restore CS0672 // Member overrides obsolete member
 			if (_root == null)
 				return new SizeRequest(new Size(widthConstraint, heightConstraint));
 
@@ -484,7 +489,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return;
 			_root.Width = !double.IsPositiveInfinity((width)) ? (float)width : 0;
 			_root.Height = !double.IsPositiveInfinity((height)) ? (float)height : 0;
-			_root.Layout();
+			_root.Layout(_measuring);
 		}
 	}
 }

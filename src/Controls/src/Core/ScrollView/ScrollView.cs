@@ -1,8 +1,10 @@
 ﻿#nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -10,12 +12,16 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
+#pragma warning disable CS0618 // Type or member is obsolete
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		#region IScrollViewController
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='LayoutAreaOverride']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete]
 		public Rect LayoutAreaOverride
 		{
 			get => _layoutAreaOverride;
@@ -271,10 +277,12 @@ namespace Microsoft.Maui.Controls
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => false;
 
+		[Obsolete("Use ArrangeOverride instead")]
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 		}
 
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (Content == null)
@@ -359,26 +367,6 @@ namespace Microsoft.Maui.Controls
 			coordinate += (double)typeof(VisualElement).GetProperty(coordinateName).GetValue(item, null);
 			var visualParentElement = item.RealParent as VisualElement;
 			return visualParentElement != null ? GetCoordinate(visualParentElement, coordinateName, coordinate) : coordinate;
-		}
-
-		double GetMaxHeight(double height)
-		{
-			return Math.Max(height, _content.Bounds.Top + Padding.Top + _content.Bounds.Bottom + Padding.Bottom);
-		}
-
-		static double GetMaxHeight(double height, SizeRequest size)
-		{
-			return Math.Max(size.Request.Height, height);
-		}
-
-		double GetMaxWidth(double width)
-		{
-			return Math.Max(width, _content.Bounds.Left + Padding.Left + _content.Bounds.Right + Padding.Right);
-		}
-
-		static double GetMaxWidth(double width, SizeRequest size)
-		{
-			return Math.Max(size.Request.Width, width);
 		}
 
 		void OnScrollToRequested(ScrollToRequestedEventArgs e)
@@ -488,6 +476,17 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return bounds.Size;
+		}
+
+		private protected override void InvalidateMeasureLegacy(InvalidationTrigger trigger, int depth, int depthLeveltoInvalidate)
+		{
+			base.InvalidateMeasureLegacy(trigger, depth, 1);
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Content), Content);
+			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
 	}
 }

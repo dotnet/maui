@@ -61,9 +61,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 		private const string AndroidFireAndForgetAsyncSwitch = "BlazorWebView.AndroidFireAndForgetAsync";
 
-		private static bool IsAndroidFireAndForgetAsyncEnabled =>
-			AppContext.TryGetSwitch(AndroidFireAndForgetAsyncSwitch, out var enabled) && enabled;
-
 		protected override void DisconnectHandler(AWebView platformView)
 		{
 			platformView.StopLoading();
@@ -77,18 +74,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					.DisposeAsync()
 					.AsTask()!;
 
-				if (IsAndroidFireAndForgetAsyncEnabled)
+				// When determining whether to block on disposal, we respect the more specific AndroidFireAndForgetAsync switch
+				// if specified. If not, we fall back to the general UseBlockingDisposal switch, defaulting to false.
+				var shouldBlockOnDispose = AppContext.TryGetSwitch(AndroidFireAndForgetAsyncSwitch, out var enableFireAndForget)
+					? !enableFireAndForget
+					: IsBlockingDisposalEnabled;
+
+				if (shouldBlockOnDispose)
 				{
-					// If the app is configured to fire-and-forget via an AppContext Switch, we'll do that.
-					disposalTask.FireAndForget();
-				}
-				else
-				{
-					// Otherwise by default, we'll synchronously wait for the disposal to complete. This can cause
-					// a deadlock, but is the original behavior.
+					// If the app is configured to block on dispose via an AppContext switch,
+					// we'll synchronously wait for the disposal to complete. This can cause a deadlock.
 					disposalTask
 						.GetAwaiter()
 						.GetResult();
+				}
+				else
+				{
+					// Otherwise, by default, we'll fire-and-forget the disposal task.
+					disposalTask.FireAndForget(_logger);
 				}
 
 				_webviewManager = null;

@@ -1,5 +1,4 @@
-﻿#if !MACCATALYST // VerifyScreenshot() is not supported on MacCatalyst
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -7,7 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue14471 : _IssuesUITest
 {
-	public Issue14471(TestDevice device) : base(device){ }
+	public Issue14471(TestDevice device) : base(device) { }
 
 	public override string Issue => "Image can disappear when going back to the page";
 
@@ -25,4 +24,3 @@ public class Issue14471 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
-#endif

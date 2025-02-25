@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 
@@ -11,7 +12,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the current Page displayed in the Window.
 		/// </summary>
-		IView Content { get; }
+		IView? Content { get; }
 
 		/// <summary>
 		/// Gets the current visual diagnostics overlay for the Window.
@@ -128,6 +129,10 @@ namespace Microsoft.Maui
 		void FrameChanged(Rect frame);
 
 		float RequestDisplayDensity();
+
+#if WINDOWS || MACCATALYST
+		ITitleBar? TitleBar => null;
+#endif
 
 #if WINDOWS
 		Rect[]? TitleBarDragRectangles => null;

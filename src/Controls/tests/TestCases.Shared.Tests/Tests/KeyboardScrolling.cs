@@ -2,7 +2,6 @@
 using NUnit.Framework.Legacy;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Interactions;
-using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;
@@ -152,7 +151,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			keyboard?.SendKeys("\n");
 		}
 
-		internal static void GridStarRowScrollingTest (IApp app)
+		internal static void GridStarRowScrollingTest(IApp app)
 		{
 			for (int i = 1; i <= 7; i++)
 			{

@@ -1,10 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 using Microsoft.Maui.Controls.Xaml.Internals;
 
 namespace Microsoft.Maui.Controls.Xaml
 {
+	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#if !NETSTANDARD
+	[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 	class ExpandMarkupsVisitor : IXamlNodeVisitor
 	{
 		public ExpandMarkupsVisitor(HydrationContext context) => Context = context;
@@ -40,7 +45,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		{
 			var parentElement = parentNode as IElementNode;
 			XmlName propertyName;
-			if (!ApplyPropertiesVisitor.TryGetPropertyName(markupnode, parentNode, out propertyName))
+			if (!markupnode.TryGetPropertyName(parentNode, out propertyName))
 				return;
 			if (Skips.Contains(propertyName))
 				return;
@@ -106,6 +111,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			return new MarkupExpansionParser { ExceptionHandler = Context.ExceptionHandler }.Parse(match, ref expression, serviceProvider);
 		}
 
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 		public class MarkupExpansionParser : MarkupExpressionParser, IExpressionParser<INode>
 		{
 			IElementNode _node;

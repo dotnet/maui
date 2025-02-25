@@ -123,7 +123,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void SelectableClicked(object sender, int adapterPosition)
 		{
-			UpdateMauiSelection(adapterPosition);
+			if (adapterPosition >= 0 && adapterPosition < ItemsSource?.Count)
+			{
+				UpdateMauiSelection(adapterPosition);
+			}
 		}
 
 		void UpdateMauiSelection(int adapterPosition)

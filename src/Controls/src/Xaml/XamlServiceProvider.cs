@@ -13,6 +13,12 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 	{
 		readonly Dictionary<Type, object> services = new Dictionary<Type, object>();
 
+		static IValueConverterProvider defaultValueConverterProvider = new ValueConverterProvider();
+
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 		internal XamlServiceProvider(INode node, HydrationContext context)
 		{
 			if (context != null && node != null && node.Parent != null && context.Values.TryGetValue(node.Parent, out object targetObject))
@@ -28,13 +34,13 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			if (node is IXmlLineInfo xmlLineInfo)
 				IXmlLineInfoProvider = new XmlLineInfoProvider(xmlLineInfo);
 
-			IValueConverterProvider = new ValueConverterProvider();
+			IValueConverterProvider = defaultValueConverterProvider;
 
 			if (node is IElementNode elementNode)
 				Add(typeof(IXamlDataTypeProvider), new XamlDataTypeProvider(elementNode, context));
 		}
 
-		public XamlServiceProvider() => IValueConverterProvider = new ValueConverterProvider();
+		public XamlServiceProvider() => IValueConverterProvider = defaultValueConverterProvider;
 
 		internal IProvideValueTarget IProvideValueTarget
 		{
@@ -113,6 +119,22 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		}
 	}
 
+#nullable enable
+	public class ValueTargetProvider : IProvideValueTarget
+	{
+		private object targetObject;
+		private object targetProperty;
+
+		public ValueTargetProvider(object targetObject, object targetProperty)
+		{
+			this.targetObject = targetObject;
+			this.targetProperty = targetProperty;
+		}
+		object IProvideValueTarget.TargetObject => targetObject;
+		object IProvideValueTarget.TargetProperty => targetProperty;
+	}
+#nullable restore
+
 	public class SimpleValueTargetProvider : IProvideParentValues, IProvideValueTarget, IReferenceProvider
 	{
 		readonly object[] objectAndParents;
@@ -168,6 +190,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		readonly GetTypeFromXmlName getTypeFromXmlName;
 		readonly IXmlNamespaceResolver namespaceResolver;
 
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+#endif
 		public XamlTypeResolver(IXmlNamespaceResolver namespaceResolver, Assembly currentAssembly)
 			: this(namespaceResolver, XamlParser.GetElementType, currentAssembly)
 		{
@@ -181,9 +207,13 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			this.getTypeFromXmlName = getTypeFromXmlName ?? throw new ArgumentNullException();
 		}
 
-		Type IXamlTypeResolver.Resolve(string qualifiedTypeName, IServiceProvider serviceProvider)
+#if NETSTANDARD2_0
+		Type IXamlTypeResolver.Resolve(string qualifiedTypeName, IServiceProvider serviceProvider) => ((IXamlTypeResolver)this).Resolve(qualifiedTypeName, serviceProvider, true);
+#endif
+
+		Type IXamlTypeResolver.Resolve(string qualifiedTypeName, IServiceProvider serviceProvider, bool expandToExtension)
 		{
-			var type = Resolve(qualifiedTypeName, serviceProvider, out XamlParseException e);
+			var type = Resolve(qualifiedTypeName, serviceProvider, expandToExtension: expandToExtension, out XamlParseException e);
 			if (e != null)
 				throw e;
 			return type;
@@ -191,18 +221,18 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 		bool IXamlTypeResolver.TryResolve(string qualifiedTypeName, out Type type)
 		{
-			type = Resolve(qualifiedTypeName, null, out XamlParseException exception);
+			type = Resolve(qualifiedTypeName, null, true, out XamlParseException exception);
 			return exception == null;
 		}
 
 		internal bool TryResolve(XmlType xmlType, out Type type)
 		{
 			XamlParseException exception;
-			type = getTypeFromXmlName(xmlType, null, currentAssembly, out exception);
+			type = getTypeFromXmlName(xmlType, null, currentAssembly, true, out exception);
 			return exception == null;
 		}
 
-		Type Resolve(string qualifiedTypeName, IServiceProvider serviceProvider, out XamlParseException exception)
+		Type Resolve(string qualifiedTypeName, IServiceProvider serviceProvider, bool expandToExtension, out XamlParseException exception)
 		{
 			IXmlLineInfo xmlLineInfo = null;
 			if (serviceProvider != null)
@@ -212,10 +242,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			}
 
 			var xmlType = TypeArgumentsParser.ParseSingle(qualifiedTypeName, namespaceResolver, xmlLineInfo);
-			return getTypeFromXmlName(xmlType, xmlLineInfo, currentAssembly, out exception);
+			return getTypeFromXmlName(xmlType, xmlLineInfo, currentAssembly, expandToExtension, out exception);
 		}
 
-		internal delegate Type GetTypeFromXmlName(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly, out XamlParseException exception);
+		internal delegate Type GetTypeFromXmlName(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly, bool expandToExtension, out XamlParseException exception);
 	}
 
 	class XamlRootObjectProvider : IRootObjectProvider
@@ -270,14 +300,14 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 	class XamlDataTypeProvider : IXamlDataTypeProvider
 	{
-		[RequiresUnreferencedCode("XamlDataTypeProvider is not trim and AOT-compatible.")]
+		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #if !NETSTANDARD
-		[RequiresDynamicCode("XamlDataTypeProvider is not trim and AOT-compatible.")]
+		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #endif
 		public XamlDataTypeProvider(IElementNode node, HydrationContext context)
 		{
 			Context = context;
-			
+
 
 			static IElementNode GetParent(IElementNode node)
 			{
@@ -291,24 +321,24 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 			static bool IsBindingContextBinding(IElementNode node)
 			{
-				if (   ApplyPropertiesVisitor.TryGetPropertyName(node, node.Parent, out XmlName name)
+				if (node.TryGetPropertyName(node.Parent, out XmlName name)
 					&& name.NamespaceURI == ""
 					&& name.LocalName == nameof(BindableObject.BindingContext))
 					return true;
 				return false;
 			}
 
-			static bool IsBindingBaseProperty(IElementNode node, HydrationContext context)
+			static bool DoesNotInheritDataType(IElementNode node, HydrationContext context)
 			{
-				if (   ApplyPropertiesVisitor.TryGetPropertyName(node, node.Parent, out XmlName name)
+				if (node.TryGetPropertyName(node.Parent, out XmlName name)
 					&& node.Parent is IElementNode parent
-					&& XamlParser.GetElementType(parent.XmlType, 
-												 new XmlLineInfo(((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition), 
-												 context.RootElement.GetType().Assembly, out var xpe) is Type parentType
+					&& XamlParser.GetElementType(parent.XmlType,
+												 new XmlLineInfo(((IXmlLineInfo)node).LineNumber, ((IXmlLineInfo)node).LinePosition),
+												 context.RootElement.GetType().Assembly, true, out var xpe) is Type parentType
 					&& parentType.GetRuntimeProperties().FirstOrDefault(p => p.Name == name.LocalName) is PropertyInfo propertyInfo
-					&& propertyInfo.PropertyType == typeof(BindingBase))
-				{								
-						return true;
+					&& propertyInfo.CustomAttributes.Any(ca => ca.AttributeType == typeof(DoesNotInheritDataTypeAttribute)))
+				{
+					return true;
 				}
 				return false;
 			}
@@ -329,13 +359,13 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 			while (n != null)
 			{
-				
+
 				if (n != skipNode && n.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
 				{
 					break;
 				}
-				if (IsBindingBaseProperty(n, context))
-				{					
+				if (DoesNotInheritDataType(n, context))
+				{
 					break;
 				}
 				n = GetParent(n);

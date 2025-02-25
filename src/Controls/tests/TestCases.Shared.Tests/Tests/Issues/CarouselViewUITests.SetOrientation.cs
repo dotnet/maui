@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if IOS || ANDROID //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,8 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// Issue12193 (src\ControlGallery\src\Issues.Shared\Issue12193.cs
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnMac("Set Orientation methods not implemented")]
-		[FailsOnWindows("Set Orientation methods not implemented")]
+		[FailsOnMacWhenRunningOnXamarinUITest("Set Orientation methods not implemented")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("Set Orientation methods not implemented")]
 		public async Task RotatingCarouselViewHTMLShouldNotDisappear()
 		{
 			int delay = 3000;
@@ -43,3 +44,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

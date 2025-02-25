@@ -32,7 +32,7 @@ public partial class Issue21630_navPage : ContentPage
 
 	async void RestoreMainPage(object sender, EventArgs e)
 	{
-		Application.Current.MainPage = _page;
+		this.Window.Page = _page;
 		await Task.Yield();
 
 		foreach (var page in _modalStack)

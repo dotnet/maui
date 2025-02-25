@@ -49,7 +49,6 @@
         <param name="visualElement">The <see cref="T:Microsoft.Maui.Controls.VisualElement" /> whose focused was changed.</param>
         <param name="isFocused">Whether or not the <paramref name="visualElement" /> was focused.</param>
         <summary>Constructs and initializes a new instance of the <see cref="T:Microsoft.Maui.Controls.FocusEventArgs" /> class.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsFocused">
@@ -76,7 +75,6 @@
         <summary>Gets whether or not the <see cref="P:Microsoft.Maui.Controls.FocusEventArgs.VisualElement" /> was focused.</summary>
         <value>
           <see langword="true" /> if the view was focused, <see langword="false" /> otherwise.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="VisualElement">
@@ -102,7 +100,6 @@
       <Docs>
         <summary>Gets the <see cref="T:Microsoft.Maui.Controls.VisualElement" /> who's focused was changed.</summary>
         <value>The <see cref="T:Microsoft.Maui.Controls.VisualElement" /> who's focused was changed.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

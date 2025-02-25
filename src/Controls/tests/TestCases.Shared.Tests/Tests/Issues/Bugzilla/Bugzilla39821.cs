@@ -15,11 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Animation)]
 		[Category(UITestCategories.Compatibility)]
-		[Ignore("Fails intermittently")]
 		public void DoesNotCrash()
 		{
+			App.WaitForElement("Animate");
 			App.Tap("Animate");
-			App.WaitForNoElement("Success", timeout: TimeSpan.FromSeconds(25));
+			App.WaitForElement("Success");
 		}
 	}
 }

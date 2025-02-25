@@ -6,17 +6,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Bugzilla27731 : _IssuesUITest
 {
-    public Bugzilla27731(TestDevice testDevice) : base(testDevice)
-    {
-    }
+	public Bugzilla27731(TestDevice testDevice) : base(testDevice)
+	{
+	}
 
-    public override string Issue => "[Android] Action Bar can not be controlled reliably on FlyoutPage";
+	public override string Issue => "[Android] Action Bar can not be controlled reliably on FlyoutPage";
 
-	// [Test]
-	// [Category(UITestCategories.InputTransparent)]
-	// public void Bugzilla27731Test()
-	// {
-	// 	App.WaitForElement("Click");
-	// 	App.WaitForNoElement("PageTitle");
-	// }
+	[Test]
+	[Category(UITestCategories.InputTransparent)]
+	public void Bugzilla27731Test()
+	{
+		App.WaitForElement("Click");
+		App.WaitForElement("PageLabel");
+	}
 }

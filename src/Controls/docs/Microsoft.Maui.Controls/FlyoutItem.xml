@@ -18,7 +18,6 @@
   </Attributes>
   <Docs>
     <summary>A <see cref="T:Microsoft.Maui.Controls.ShellItem" /> that has a collection of <see cref="T:Microsoft.Maui.Controls.Tab" /> objects.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -32,8 +31,6 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetIsVisible">
@@ -54,9 +51,6 @@
       </Parameters>
       <Docs>
         <param name="obj">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ImageStyle">
@@ -74,7 +68,6 @@
       </ReturnValue>
       <Docs>
         <summary>StyleClass set on the Image of each Flyout Item. This const is set to "FlyoutItemImageStyle".</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsVisibleProperty">
@@ -91,8 +84,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LabelStyle">
@@ -110,7 +101,6 @@
       </ReturnValue>
       <Docs>
         <summary>StyleClass set on the Label of each Flyout Item. This const is set to "FlyoutItemLabelStyle".</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LayoutStyle">
@@ -128,7 +118,6 @@
       </ReturnValue>
       <Docs>
         <summary>StyleClass set on the Label of every Flyout Item. This const is set to "FlyoutItemLayoutStyle".</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsVisible">
@@ -151,8 +140,6 @@
       <Docs>
         <param name="obj">To be added.</param>
         <param name="isVisible">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -1,8 +1,7 @@
 #nullable disable
 using System;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
-using ObjCRuntime;
+using Microsoft.Maui.Controls.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -46,19 +45,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// and set the view as its BindingContext
 				element.BindingContext = view;
 
-				return ((UIView)renderer.PlatformView, element);
+				return (renderer.ToPlatform(), element);
 			}
 
-			if (view is View formsView)
+			if (view is View mauiView)
 			{
 				// Make sure the Visual property is available when the renderer is created
-				PropertyPropagationExtensions.PropagatePropertyChanged(null, formsView, itemsView);
+				PropertyPropagationExtensions.PropagatePropertyChanged(null, mauiView, itemsView);
 
-				// No template, and the EmptyView is a Forms view; use that
-				var renderer = GetHandler(formsView, itemsView.FindMauiContext());
-				var element = renderer.VirtualView as VisualElement;
-
-				return ((UIView)renderer.PlatformView, element);
+				// No template, and the EmptyView is a Maui view; use that
+				// But we need to wrap it in a GeneralWrapperView so it can be measured and arranged
+				var wrapperView = new GeneralWrapperView(mauiView, itemsView.FindMauiContext());
+				wrapperView.Frame = mauiView.Bounds.ToCGRect();
+				return (wrapperView, mauiView);
 			}
 
 			return (new UILabel { TextAlignment = UITextAlignment.Center, Text = $"{view}" }, null);

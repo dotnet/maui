@@ -6,11 +6,11 @@
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
     <RootNamespace>Microsoft.Maui.TestCases.Tests</RootNamespace>
-    <DefineConstants>$(DefineConstants);MACCATALYST;MACUITEST</DefineConstants>
+    <DefineConstants>$(DefineConstants);MACCATALYST;MACUITEST;TEST_FAILS_ON_ANDROID;TEST_FAILS_ON_WINDOWS;TEST_FAILS_ON_IOS</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Appium.WebDriver" Version="5.0.0" />
+    <PackageReference Include="Appium.WebDriver" Version="7.0.0" />
     <PackageReference Include="NUnit" Version="4.0.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>
@@ -40,7 +40,13 @@
     <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils.MagickNet\VisualTestUtils.MagickNet.csproj" />
     <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils\VisualTestUtils.csproj" />
   </ItemGroup>
-
+  
+  <ItemGroup>
+    <Content Include="snapshots\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
   <ItemGroup>
     <Compile Include="..\TestCases.Shared.Tests\**\*.cs" Exclude="..\TestCases.Shared.Tests\obj\**;..\TestCases.Shared.Tests\bin\**" LinkBase="Shared" Visible="false" />
   </ItemGroup>

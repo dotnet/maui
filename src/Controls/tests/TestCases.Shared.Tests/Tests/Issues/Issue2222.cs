@@ -14,13 +14,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
-		[FailsOnMac]
 		public void TestItDoesntCrashWithWrongIconName()
 		{
 			App.WaitForElement("TestLabel");
-			App.Screenshot("Was label on page shown");
 		}
 	}
 }

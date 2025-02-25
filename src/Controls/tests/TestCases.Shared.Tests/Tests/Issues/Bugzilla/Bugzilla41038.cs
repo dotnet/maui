@@ -12,16 +12,21 @@ public class Bugzilla41038 : _IssuesUITest
 
 	public override string Issue => "FlyoutPage loses menu icon on iOS after reusing NavigationPage as Detail";
 
-	// TODO Xamarin.UITest migration how do we open flyout menu?!
-	// [Test]
-	// [Category(UITestCategories.FlyoutPage)]
-	// public void Bugzilla41038Test()
-	// {
-	// 	App.WaitForElement("ViewA");
-	// 	App.Tap("Flyout");
-	// 	App.WaitForElement("ViewB");
-	// 	App.Tap("ViewB");
-	// 	App.WaitForElement("Flyout");
-	// 	App.Screenshot("I see the flyout toggle");
-	// }
+	[Test]
+	[Category(UITestCategories.FlyoutPage)]
+	public void Bugzilla41038Test()
+	{
+		App.WaitForElement("ViewA");
+
+		App.TapFlyoutPageIcon("Flyout");
+
+		App.WaitForElement("ViewB");
+		App.Tap("ViewB");
+
+#if ANDROID || WINDOWS // On Android and Windows, the hamburger icon was displayed, while on iOS and Catalyst, the title text was shown.
+		App.TapFlyoutPageIcon("Flyout");
+#else
+		App.WaitForElementTillPageNavigationSettled("Flyout");
+#endif
+	}
 }

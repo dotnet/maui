@@ -431,7 +431,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 
-			var sizeRequest = listView.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeRequest = listView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 			Assert.Equal(40, sizeRequest.Minimum.Width);
 			Assert.Equal(40, sizeRequest.Minimum.Height);
 			Assert.Equal(50, sizeRequest.Request.Width);
@@ -450,7 +450,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 
-			var sizeRequest = listView.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var sizeRequest = listView.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 			Assert.Equal(40, sizeRequest.Minimum.Width);
 			Assert.Equal(40, sizeRequest.Minimum.Height);
 			Assert.Equal(50, sizeRequest.Request.Width);
@@ -1653,13 +1653,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ForceUpdateSizeCalledOnViewCellDoesntCrash()
 		{
-			var list = new ListView(){
+			var list = new ListView()
+			{
 				HasUnevenRows = true
 			};
 
-			list.ItemTemplate = new DataTemplate(() => 
+			list.ItemTemplate = new DataTemplate(() =>
 				{
-					return  new ViewCell { View = new Label() };
+					return new ViewCell { View = new Label() };
 				}
 			);
 

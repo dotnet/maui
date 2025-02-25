@@ -10,21 +10,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "Exception thrown when `Removing Content Using LayoutCompression"; 
-		
+		public override string Issue => "Exception thrown when `Removing Content Using LayoutCompression";
+
 		[Test]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
-		[FailsOnMac]
-		[FailsOnWindows]
 		public void Issue1601Test()
 		{
-			App.Screenshot("Start G1601");
 			App.WaitForElement("CrashButton");
-			App.Screenshot("I see the button");
 			App.Tap("CrashButton");
-			App.Screenshot("Didn't crash!");
+			App.WaitForNoElement("CrashButton");
 		}
 	}
 }

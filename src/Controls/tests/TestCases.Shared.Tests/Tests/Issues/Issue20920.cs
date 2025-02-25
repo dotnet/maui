@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -16,11 +15,11 @@ public class Issue20920 : _IssuesUITest
 	[Category(UITestCategories.ScrollView)]
 	public void ScrollingBothDirectionsWithNestedScrollViews()
 	{
- 		// TODO: Correct this test for other platforms
+		// TODO: Correct this test for other platforms
 		var initialPosition = App.WaitForElement("dotnet_bot").GetRect();
 
-		App.ScrollDown("dotnet_bot");
-		App.ScrollRight("dotnet_bot");
+		App.ScrollDown("dotnet_bot", ScrollStrategy.Gesture, swipePercentage: 0.5, swipeSpeed: 750);
+		App.ScrollRight("dotnet_bot", ScrollStrategy.Gesture, swipePercentage: 0.5, swipeSpeed: 750);
 
 		var afterScrollPosition = App.WaitForElement("dotnet_bot").GetRect();
 
@@ -28,4 +27,3 @@ public class Issue20920 : _IssuesUITest
 		ClassicAssert.Less(afterScrollPosition.Y, initialPosition.Y);
 	}
 }
-#endif

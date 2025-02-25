@@ -10,6 +10,7 @@ namespace UITest.Appium
 		private AppiumAndroidApp(Uri remoteAddress, IConfig config)
 			: base(new AndroidDriver(remoteAddress, GetOptions(config)), config)
 		{
+			_commandExecutor.AddCommandGroup(new AppiumAndroidContextMenuActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumAndroidThemeChangeAction());
 			_commandExecutor.AddCommandGroup(new AppiumAndroidSpecificActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumAndroidVirtualKeyboardActions(this));
@@ -94,6 +95,20 @@ namespace UITest.Appium
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, appId);
 				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, $"{appId}.MainActivity");
 			}
+
+			// Maximum amount of milliseconds to wait until the application under test is installed.
+			// 90000 ms by default
+			options.AddAdditionalAppiumOption("appium:androidInstallTimeout", 60000);
+
+			// Timeout used for waiting for the user interface to go into an idle state.
+			// By default, all core uiautomator objects except UiDevice will perform this wait before starting to search for the widget specified by the object's locator.
+			// Once the idle state is detected or the timeout elapses (whichever occurs first), the object will start to wait for the selector to find a match. 
+			// 10000 ms by default.
+			options.AddAdditionalAppiumOption("appium:waitForIdleTimeout", 5000);
+
+			// Whether to disable window animations when starting the instrumentation process.
+			// The animation scale will be restored automatically after the instrumentation process ends.
+			options.AddAdditionalAppiumOption("appium:disableWindowAnimation", true);
 
 			return options;
 		}

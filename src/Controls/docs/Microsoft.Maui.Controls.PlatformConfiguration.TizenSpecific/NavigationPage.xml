@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Provides access to the bread crumb bar for navigation pages on the Tizen platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetHasBreadCrumbsBar">
@@ -39,7 +38,6 @@
         <summary>Returns a Boolean value that tells whether the navigation page has a bread crumb bar.</summary>
         <returns>
           <see langword="true" /> if the navigation page has a bread crumb bar. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HasBreadCrumbsBar">
@@ -64,7 +62,6 @@
         <summary>Returns a Boolean value that tells whether the navigation page has a bread crumb bar.</summary>
         <returns>
           <see langword="true" /> if the navigation page has a bread crumb bar. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HasBreadCrumbsBarProperty">
@@ -83,7 +80,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that represents whether the navigation page has a bread crumb bar.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHasBreadCrumbsBar">
@@ -108,7 +104,6 @@
         <param name="element">The navigation page on the Tizen platform whose font weight icon to set.</param>
         <param name="value">The new bread crumb bar presence value.</param>
         <summary>Sets a Boolean value that tells whether the navigation page has a bread crumb bar.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHasBreadCrumbsBar">
@@ -134,7 +129,6 @@
         <param name="value">The new bread crumb bar presence value.</param>
         <summary>Sets a Boolean value that tells whether the navigation page has a bread crumb bar.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

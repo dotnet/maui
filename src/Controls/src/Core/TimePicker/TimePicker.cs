@@ -1,11 +1,13 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="Type[@FullName='Microsoft.Maui.Controls.TimePicker']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class TimePicker : View, IFontElement, ITextElement, IElementConfiguration<TimePicker>, ITimePicker
 	{
 		/// <summary>Bindable property for <see cref="Format"/>.</summary>
@@ -20,10 +22,11 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Time"/>.</summary>
 		public static readonly BindableProperty TimeProperty = BindableProperty.Create(nameof(Time), typeof(TimeSpan), typeof(TimePicker), new TimeSpan(0), BindingMode.TwoWay,
 			validateValue: (bindable, value) =>
-		{
-			var time = (TimeSpan)value;
-			return time.TotalHours < 24 && time.TotalMilliseconds >= 0;
-		});
+			{
+				var time = (TimeSpan)value;
+				return time.TotalHours < 24 && time.TotalMilliseconds >= 0;
+			},
+			propertyChanged: TimePropertyChanged);
 
 		/// <summary>Bindable property for <see cref="FontFamily"/>.</summary>
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
@@ -107,6 +110,8 @@ namespace Microsoft.Maui.Controls
 			set { }
 		}
 
+		public event EventHandler<TimeChangedEventArgs> TimeSelected;
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
@@ -156,6 +161,17 @@ namespace Microsoft.Maui.Controls
 		{
 			get => Time;
 			set => SetValue(TimeProperty, value, SetterSpecificity.FromHandler);
+		}
+
+		static void TimePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is TimePicker timePicker)
+				timePicker.TimeSelected?.Invoke(timePicker, new TimeChangedEventArgs((TimeSpan)oldValue, (TimeSpan)newValue));
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"{base.GetDebuggerDisplay()}, Time = {Time}";
 		}
 	}
 }

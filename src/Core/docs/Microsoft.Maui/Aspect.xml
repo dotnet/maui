@@ -19,7 +19,6 @@
   </Base>
   <Docs>
     <summary>Defines how an image is displayed.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="AspectFill">
@@ -45,7 +44,6 @@
       <MemberValue>1</MemberValue>
       <Docs>
         <summary>Scale the image to fill the view. Some parts may be clipped in order to fill the view.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AspectFit">
@@ -96,7 +94,6 @@
       <MemberValue>2</MemberValue>
       <Docs>
         <summary>Scale the image so it exactly fills the view. Scaling may not be uniform in X and Y.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

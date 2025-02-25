@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -38,7 +39,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestChildFillBehavior()
 		{
-			var child = new Label();
+			var child = MockPlatformSizeService.Sub<Label>();
 			Page root = new ContentPage { Content = child };
 			root.IsPlatformEnabled = child.IsPlatformEnabled = true;
 
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestSizedChildBehavior()
 		{
-			var child = new Label { IsPlatformEnabled = true, WidthRequest = 100, HorizontalOptions = LayoutOptions.Center };
+			var child = MockPlatformSizeService.Sub<Label>(width: 100, horizOpts: LayoutOptions.Center);
 			var root = new ContentPage { IsPlatformEnabled = true, Content = child };
 
 			root.Layout(new Rect(0, 0, 200, 500));
@@ -61,12 +62,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(100, child.Width);
 			Assert.Equal(500, child.Height);
 
-			child = new Label()
-			{
-				IsPlatformEnabled = true,
-				HeightRequest = 100,
-				VerticalOptions = LayoutOptions.Center
-			};
+			child = child = MockPlatformSizeService.Sub<Label>(height: 100, vertOpts: LayoutOptions.Center);
 
 			root = new ContentPage
 			{
@@ -81,9 +77,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(200, child.Width);
 			Assert.Equal(100, child.Height);
 
-			child = new Label();
-			child.IsPlatformEnabled = true;
-			child.HeightRequest = 100;
+			child = MockPlatformSizeService.Sub<Label>(height: 100);
 
 			root = new ContentPage
 			{
@@ -102,7 +96,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void NativeSizedChildBehavior()
 		{
-			var child = new Label { IsPlatformEnabled = true, HorizontalOptions = LayoutOptions.Center };
+			var child = MockPlatformSizeService.Sub<Label>(horizOpts: LayoutOptions.Center);
 			var root = new ContentPage { IsPlatformEnabled = true, Content = child };
 
 			root.Layout(new Rect(0, 0, 200, 500));
@@ -111,11 +105,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(100, child.Width);
 			Assert.Equal(500, child.Height);
 
-			child = new Label()
-			{
-				IsPlatformEnabled = true,
-				VerticalOptions = LayoutOptions.Center
-			};
+			child = MockPlatformSizeService.Sub<Label>(vertOpts: LayoutOptions.Center);
 
 			root = new ContentPage
 			{
@@ -162,12 +152,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			View child;
 			var page = new ContentPage
 			{
-				Content = child = new View
-				{
-					WidthRequest = 100,
-					HeightRequest = 200,
-					IsPlatformEnabled = true
-				},
+				Content = child = MockPlatformSizeService.Sub<View>(width: 100, height: 200),
 				IsPlatformEnabled = true,
 			};
 
@@ -186,14 +171,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			View child;
 			var page = new ContentPage
 			{
-				Content = child = new View
-				{
-					WidthRequest = 100,
-					HeightRequest = 200,
-					HorizontalOptions = LayoutOptions.Start,
-					VerticalOptions = LayoutOptions.Start,
-					IsPlatformEnabled = true
-				},
+				Content = child = MockPlatformSizeService.Sub<View>(
+					width: 100,
+					height: 200,
+					vertOpts: LayoutOptions.Start,
+					horizOpts: LayoutOptions.Start),
 				IsPlatformEnabled = true,
 			};
 
@@ -212,14 +194,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			View child;
 			var page = new ContentPage
 			{
-				Content = child = new View
-				{
-					WidthRequest = 100,
-					HeightRequest = 200,
-					HorizontalOptions = LayoutOptions.End,
-					VerticalOptions = LayoutOptions.End,
-					IsPlatformEnabled = true
-				},
+				Content = child = MockPlatformSizeService.Sub<View>(
+					width: 100,
+					height: 200,
+					vertOpts: LayoutOptions.End,
+					horizOpts: LayoutOptions.End),
 				IsPlatformEnabled = true,
 			};
 
@@ -238,14 +217,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			View child;
 			var page = new ContentPage
 			{
-				Content = child = new View
-				{
-					WidthRequest = 100,
-					HeightRequest = 200,
-					HorizontalOptions = LayoutOptions.Center,
-					VerticalOptions = LayoutOptions.Center,
-					IsPlatformEnabled = true
-				},
+				Content = child = MockPlatformSizeService.Sub<View>(
+					width: 100,
+					height: 200,
+					vertOpts: LayoutOptions.Center,
+					horizOpts: LayoutOptions.Center),
 				IsPlatformEnabled = true,
 			};
 
@@ -264,12 +240,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			View child;
 			var page = new ContentPage
 			{
-				Content = child = new View
-				{
-					WidthRequest = 100,
-					HeightRequest = 200,
-					IsPlatformEnabled = true
-				},
+				Content = child = MockPlatformSizeService.Sub<View>(width: 100, height: 200),
 				IsPlatformEnabled = true,
 			};
 
@@ -325,13 +296,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void BusySentWhenBusyPageAppears()
+		public async Task BusySentWhenBusyPageAppears()
 		{
+			TaskCompletionSource tcs = new TaskCompletionSource();
 			var sent = false;
 			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) =>
 			{
 				Assert.True(b);
 				sent = true;
+				tcs.SetResult();
 			});
 
 			var page = new ContentPage { IsBusy = true, IsPlatformEnabled = true };
@@ -340,12 +313,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			_ = new TestWindow(page);
 
+			await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
 			Assert.True(sent, "Busy message not sent when visible");
 		}
 
 		[Fact]
-		public void BusySentWhenBusyPageDisappears()
+		public async Task BusySentWhenBusyPageDisappears()
 		{
+			TaskCompletionSource tcs = new TaskCompletionSource();
 			var page = new ContentPage { IsBusy = true };
 			_ = new TestWindow(page);
 			((IPageController)page).SendAppearing();
@@ -355,18 +331,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Assert.False(b);
 				sent = true;
+				tcs.SetResult();
 			});
 
 			((IPageController)page).SendDisappearing();
+
+			await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
 			Assert.True(sent, "Busy message not sent when visible");
 		}
 
 		[Fact]
-		public void BusySentWhenVisiblePageSetToBusy()
+		public async Task BusySentWhenVisiblePageSetToBusy()
 		{
 			var sent = false;
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) => sent = true);
+			TaskCompletionSource tcs = new TaskCompletionSource();
+			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) =>
+			{
+				sent = true;
+				tcs.SetResult();
+			});
 
 			var page = new ContentPage();
 			_ = new TestWindow(page);
@@ -375,6 +359,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(sent, "Busy message sent appearing while not busy");
 
 			page.IsBusy = true;
+
+			await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
 			Assert.True(sent, "Busy message not sent when visible");
 		}
@@ -578,6 +564,95 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Single(page.InternalChildren);
 			Assert.Contains(customControl, page.LogicalChildrenInternal);
 			Assert.Contains(customControl, ((IVisualTreeElement)page).GetVisualChildren());
+		}
+
+		[Fact]
+		public void MeasureInvalidatedPropagatesUpTree()
+		{
+			var label = new Label()
+			{
+				IsPlatformEnabled = true
+			};
+
+			var scrollView = new ScrollViewInvalidationMeasureCheck()
+			{
+				Content = new VerticalStackLayout()
+				{
+					Children = { new ContentView { Content = label, IsPlatformEnabled = true } },
+					IsPlatformEnabled = true
+				},
+				IsPlatformEnabled = true
+			};
+
+			var page = new InvalidatePageInvalidateMeasureCheck()
+			{
+				Content = scrollView
+			};
+
+			var window = new TestWindow(page);
+
+			int fired = 0;
+			page.MeasureInvalidated += (sender, args) =>
+			{
+				fired++;
+			};
+
+			page.InvalidateMeasureCount = 0;
+			scrollView.InvalidateMeasureCount = 0;
+			label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			Assert.Equal(1, fired);
+			Assert.Equal(0, page.InvalidateMeasureCount);
+			Assert.Equal(0, scrollView.InvalidateMeasureCount);
+			page.Content.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			Assert.Equal(1, page.InvalidateMeasureCount);
+		}
+
+		class LabelInvalidateMeasureCheck : Label
+		{
+			public int InvalidateMeasureCount { get; set; }
+
+			public LabelInvalidateMeasureCheck()
+			{
+
+			}
+
+			internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
+			{
+				base.InvalidateMeasureInternal(trigger);
+				InvalidateMeasureCount++;
+			}
+		}
+
+		class ScrollViewInvalidationMeasureCheck : ScrollView
+		{
+			public int InvalidateMeasureCount { get; set; }
+
+			public ScrollViewInvalidationMeasureCheck()
+			{
+
+			}
+
+			internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
+			{
+				base.InvalidateMeasureInternal(trigger);
+				InvalidateMeasureCount++;
+			}
+		}
+
+		class InvalidatePageInvalidateMeasureCheck : ContentPage
+		{
+			public int InvalidateMeasureCount { get; set; }
+
+			public InvalidatePageInvalidateMeasureCheck()
+			{
+
+			}
+
+			internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
+			{
+				base.InvalidateMeasureInternal(trigger);
+				InvalidateMeasureCount++;
+			}
 		}
 	}
 }

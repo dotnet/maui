@@ -4,7 +4,7 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class CollapseWhenEmptyConverter : Microsoft.UI.Xaml.Data.IValueConverter
+	public partial class CollapseWhenEmptyConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{

@@ -206,6 +206,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		protected override void UpdateItemsLayout()
+		{
+			_ignorePlatformSelectionChange = true;
+
+			base.UpdateItemsLayout();
+			_ignorePlatformSelectionChange = false;
+		}
+
 		protected override void UpdateItemsSource()
 		{
 			_ignorePlatformSelectionChange = true;
@@ -216,7 +224,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_ignorePlatformSelectionChange = false;
 		}
 
-		class SelectionModeConvert : Microsoft.UI.Xaml.Data.IValueConverter
+		partial class SelectionModeConvert : Microsoft.UI.Xaml.Data.IValueConverter
 		{
 			public object Convert(object value, Type targetType, object parameter, string language)
 			{

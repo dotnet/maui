@@ -19,7 +19,10 @@ namespace Microsoft.Maui.Platform
 		{
 			var actual = base.ArrangeOverride(finalSize);
 
-			Clip = ClipsToBounds ? new RectangleGeometry { Rect = new WRect(0, 0, finalSize.Width, finalSize.Height) } : null;
+			if (!(Parent is ContentPanel contentPanel && contentPanel.BorderStroke?.Shape is not null))
+			{
+				Clip = ClipsToBounds ? new RectangleGeometry { Rect = new WRect(0, 0, finalSize.Width, finalSize.Height) } : null;
+			}
 
 			return actual;
 		}
@@ -86,7 +89,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_backgroundLayer = new Canvas { IsHitTestVisible = false };
-			Children.Insert(0, _backgroundLayer);
+			CachedChildren.Insert(0, _backgroundLayer);
 		}
 
 		void RemoveBackgroundLayer()
@@ -96,7 +99,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			Children.Remove(_backgroundLayer);
+			CachedChildren.Remove(_backgroundLayer);
 			_backgroundLayer = null;
 		}
 	}

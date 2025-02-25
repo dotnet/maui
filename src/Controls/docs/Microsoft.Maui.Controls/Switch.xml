@@ -112,7 +112,6 @@ namespace FormsGallery
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.Switch" /> element with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ChangeVisualState">
@@ -130,8 +129,6 @@ namespace FormsGallery
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsToggled">
@@ -156,8 +153,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a Boolean value that indicates whether this <see cref="T:Microsoft.Maui.Controls.Switch" /> element is toggled.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsToggledProperty">
@@ -182,7 +177,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Switch.IsToggled" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="On&lt;T&gt;">
@@ -213,8 +207,6 @@ namespace FormsGallery
       <Docs>
         <typeparam name="T">To be added.</typeparam>
         <summary>Returns the platform-specific instance of this <see cref="T:Microsoft.Maui.Controls.Switch" />, on which a platform-specific method may be called.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnColor">
@@ -234,7 +226,6 @@ namespace FormsGallery
       <Docs>
         <summary>Gets or sets the color of the switch when it is in the "On" position.</summary>
         <value>The color of the switch when it is in the "On" position.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnColorProperty">
@@ -253,7 +244,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Switch.OnColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SwitchOffVisualState">
@@ -270,8 +260,6 @@ namespace FormsGallery
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SwitchOnVisualState">
@@ -288,8 +276,6 @@ namespace FormsGallery
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ThumbColor">
@@ -306,9 +292,6 @@ namespace FormsGallery
         <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ThumbColorProperty">
@@ -325,8 +308,6 @@ namespace FormsGallery
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Toggled">
@@ -351,7 +332,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when this <see cref="T:Microsoft.Maui.Controls.Switch" /> is toggled.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

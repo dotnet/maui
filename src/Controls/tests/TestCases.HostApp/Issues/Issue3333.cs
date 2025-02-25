@@ -11,7 +11,7 @@
 
 		public class MainPage : ContentPage
 		{
-			const string kSuccess = "If you're reading this the test has passed";
+			const string kSuccess = "If you are reading this the test has passed";
 
 			public MainPage()
 			{
@@ -20,7 +20,7 @@
 			}
 
 
-			public partial class TestPage : ContentPage
+			public class TestPage : ContentPage
 			{
 				Label content = new Label();
 				public TestPage()
