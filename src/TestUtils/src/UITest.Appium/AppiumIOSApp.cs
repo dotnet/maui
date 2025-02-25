@@ -19,7 +19,7 @@ namespace UITest.Appium
 			_commandExecutor.AddCommandGroup(new AppiumIOSThemeChangeAction(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSAlertActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSThemeChangeAction(this));
-			_commandExecutor.AddCommandGroup(new AppiumIOSStepperActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumAppleStepperActions(this));
 		}
 
 		public override ApplicationState AppState
