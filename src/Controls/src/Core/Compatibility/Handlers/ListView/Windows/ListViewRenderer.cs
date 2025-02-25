@@ -578,7 +578,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			ScrollTo(listProxy.ProxiedEnumerable, listProxy[0], ScrollToPosition.Start, true, true);
 		}
 
-		bool ScrollToItemWithAnimation(ScrollViewer viewer, object item)
+		bool ScrollToItemWithAnimation(ScrollViewer viewer, object item, ScrollToPosition toPosition)
 		{
 			var selectorItem = List.ContainerFromItem(item) as Microsoft.UI.Xaml.Controls.Primitives.SelectorItem;
 			var transform = selectorItem?.TransformToVisual(viewer.Content as UIElement);
@@ -586,7 +586,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!position.HasValue)
 				return false;
 			// scroll with animation
-			viewer.ChangeView(position.Value.X, position.Value.Y, null);
+			switch (toPosition)
+			{
+				case ScrollToPosition.Center:
+				case ScrollToPosition.End:
+					{
+						double offset = viewer.ViewportHeight - selectorItem.DesiredSize.Height;
+						if (toPosition == ScrollToPosition.Center)
+							viewer.ChangeView(position.Value.X, position.Value.Y - (offset / 2), null);
+						else
+							viewer.ChangeView(position.Value.X, position.Value.Y - offset, null);
+						break;
+					}
+				default:
+					viewer.ChangeView(position.Value.X, position.Value.Y, null);
+					break;
+			}
+
 			return true;
 		}
 
@@ -617,7 +633,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			object c = t[location.Item2];
 
 			// scroll to desired item with animation
-			if (shouldAnimate && ScrollToItemWithAnimation(viewer, c))
+			if (shouldAnimate && ScrollToItemWithAnimation(viewer, c, toPosition))
 				return;
 
 			double viewportHeight = viewer.ViewportHeight;
