@@ -17,7 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Slider)]
 		public void SliderThumbImageShouldBeScaled()
 		{
-			App.WaitForElement("slider");
+			App.WaitForElement("ToggleImageBtn");
+			App.Tap("ToggleImageBtn");
 			VerifyScreenshot();
 		}
 	}
