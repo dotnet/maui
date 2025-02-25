@@ -100,10 +100,10 @@ Task("build-only")
 
 Task("test-only")
 	.IsDependentOn("Setup")
-	.WithCriteria(!string.IsNullOrEmpty(testApp))
+	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
-		ExecuteTests(projectPath, testDevice, testApp, testAppPackageName, testResultsPath, configuration, targetFramework, adbSettings, dotnetToolPath, deviceBootWait, testAppInstrumentation);
+		ExecuteTests(projectPath, testDevice, testAppPackageName, testResultsPath, configuration, targetFramework, adbSettings, dotnetToolPath, deviceBootWait, testAppInstrumentation);
 	});
 
 Task("build")
@@ -160,7 +160,7 @@ void ExecuteBuild(string project, string device, string binDir, string config, s
 	});
 }
 
-void ExecuteTests(string project, string device, string appPath, string appPackageName, string resultsDir, string config, string tfm, AdbToolSettings adbSettings, string toolPath, bool waitDevice, string instrumentation)
+void ExecuteTests(string project, string device, string appPackageName, string resultsDir, string config, string tfm, AdbToolSettings adbSettings, string toolPath, bool waitDevice, string instrumentation)
 {
 	CleanResults(resultsDir);
 
