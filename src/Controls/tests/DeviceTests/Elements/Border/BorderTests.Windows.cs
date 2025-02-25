@@ -60,6 +60,23 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertColorAtPoint(border, expected, typeof(BorderHandler), cornerRadius, cornerRadius);
 		}
 
+		[Fact]
+		[Description("The IsEnabled property of a BoxView should match with native IsEnabled")]		
+		public async Task VerifyBorderIsEnabledProperty()
+		{
+			var border = new Border();
+			border.IsEnabled = true;
+			var expectedValue = border.IsEnabled;
+
+			var handler = await CreateHandlerAsync<BorderHandler>(border);
+			var nativeView = GetNativeBorder(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+				Assert.Equal(expectedValue, isEnabled);
+			});		
+		}
+
 		ContentPanel GetNativeBorder(BorderHandler borderHandler) =>
 			borderHandler.PlatformView;
 

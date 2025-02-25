@@ -7,8 +7,6 @@ using Microsoft.Maui.Platform;
 using System.ComponentModel;
 using Xunit;
 using Microsoft.Maui.Controls;
-using System.Diagnostics;
-using Android.Graphics.Drawables;
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class BoxViewTests
