@@ -83,37 +83,7 @@ namespace Microsoft.Maui.Controls
 		protected internal override void ChangeVisualState()
 		{
 			if (IsEnabled && IsChecked)
-			{
-				bool isCheckedStateAvailable = false;
-				var visualStates = VisualStateManager.GetVisualStateGroups(this);
-				foreach (var group in visualStates)
-				{
-					if (group.Name is not "CommonStates")
-					{
-						continue;
-					}
-
-					foreach (var state in group.States)
-					{
-						if (state.Name is IsCheckedVisualState)
-						{
-							isCheckedStateAvailable = true;
-							break;
-						}
-					}
-
-					break;
-				}
-
-				if (isCheckedStateAvailable)
-				{
-					VisualStateManager.GoToState(this, IsCheckedVisualState);
-				}
-				else
-				{
-					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
-				}
-			}
+				VisualStateManager.GoToState(this, IsCheckedVisualState);
 			else
 				base.ChangeVisualState();
 		}
