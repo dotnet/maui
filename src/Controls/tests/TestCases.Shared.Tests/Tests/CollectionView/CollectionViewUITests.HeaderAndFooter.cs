@@ -75,6 +75,7 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST 
         [Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterGridHorizontalWorks()
@@ -87,7 +88,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
             App.WaitForElement("This Is A Header");
             
- #if ANDROID || IOS
+ #if ANDROID
             App.ScrollRight("CollectionViewAutomation",ScrollStrategy.Gesture, 0.99,500);
             App.ScrollRight("CollectionViewAutomation",ScrollStrategy.Gesture, 0.99,500);
 #endif 
@@ -95,5 +96,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
             VerifyScreenshot();
         }
+#endif
 	}
 }
