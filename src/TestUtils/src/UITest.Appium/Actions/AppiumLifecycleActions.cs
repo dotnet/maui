@@ -1,4 +1,5 @@
-﻿using OpenQA.Selenium.Appium.iOS;
+using System.Diagnostics;
+using OpenQA.Selenium.Appium.iOS;
 using OpenQA.Selenium.Appium.Windows;
 using UITest.Core;
 
@@ -66,11 +67,18 @@ namespace UITest.Appium
 			}
 			else if (_app.Driver is WindowsDriver windowsDriver)
 			{
-				// Appium driver removed the LaunchApp method in 5.0.0, so we need to use the executeScript method instead
-				// Currently the appium-windows-driver reports the following commands as compatible:
-				//   startRecordingScreen,stopRecordingScreen,launchApp,closeApp,deleteFile,deleteFolder,
-				//   click,scroll,clickAndDrag,hover,keys,setClipboard,getClipboard
-				windowsDriver.ExecuteScript("windows: launchApp", [_app.GetAppId()]);
+				try
+				{
+					// Appium driver removed the LaunchApp method in 5.0.0, so we need to use the executeScript method instead
+					// Currently the appium-windows-driver reports the following commands as compatible:
+					//   startRecordingScreen,stopRecordingScreen,launchApp,closeApp,deleteFile,deleteFolder,
+					//   click,scroll,clickAndDrag,hover,keys,setClipboard,getClipboard
+					windowsDriver.LaunchApp();
+				}
+				catch
+				{
+					LaunchWindowsApp();
+				}
 			}
 			else if (_app.Driver is IOSDriver iOSDriver)
 			{
@@ -208,6 +216,30 @@ namespace UITest.Appium
 			_app.Driver.Navigate().Refresh();
 
 			return CommandResponse.SuccessEmptyResponse;
+		}
+
+		void LaunchWindowsApp()
+		{
+			_app.Driver.SessionDetails.TryGetValue("app", out var app);
+			string appPath = app?.ToString() ?? string.Empty;
+			
+			if (string.IsNullOrEmpty(appPath))
+				return;
+
+			ProcessStartInfo startInfo = new ProcessStartInfo
+			{
+				FileName = appPath,
+				UseShellExecute = true,
+			};
+
+			try
+			{
+				Process.Start(startInfo);
+			}
+			catch (Exception ex)
+			{
+				Debug.WriteLine($"Failed to start the App: {ex.Message}");
+			}
 		}
 	}
 }
