@@ -4,7 +4,6 @@ trigger:
     - main
     - release/*
     - net9.0
-    - net8.0
   tags:
     include:
     - '*'
@@ -28,7 +27,6 @@ pr:
     - main
     - release/*
     - net9.0
-    - net8.0
   paths:
     include:
     - '*'
@@ -57,7 +55,7 @@ parameters:
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
     type: string
-    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
+    default: 'latest'
 
   - name: BuildEverything
     type: boolean
@@ -69,8 +67,16 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - Agent.OSVersion -equals 14.5
-        - Agent.OSArchitecture -equals X64
+        - macOS.Name -equals Sequoia
+
+  - name: androidPoolX64
+    type: object
+    default:
+      name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - macOS.Name -equals Sequoia
+        - macOS.Architecture -equals x64
 
   - name: iosPool
     type: object
@@ -78,8 +84,7 @@ parameters:
       name: $(iosDeviceTestsVmPool)
       vmImage: $(iosDeviceTestsVmImage)
       demands:
-        - Agent.OSVersion -equals 14.5
-        - Agent.OSArchitecture -equals ARM64
+        - macOS.Name -equals Sequoia
         
   - name: catalystPool
     type: object
@@ -87,8 +92,7 @@ parameters:
       name: $(iosDeviceTestsVmPool)
       vmImage: $(iosDeviceTestsVmImage)
       demands:
-        - Agent.OSVersion -equals 14.5
-        - Agent.OSArchitecture -equals ARM64
+        - macOS.Name -equals Sequoia
 
   - name: windowsPool
     type: object
@@ -114,6 +118,7 @@ stages:
   - template: common/device-tests.yml
     parameters:
       androidPool: ${{ parameters.androidPool }}
+      androidPoolX64: ${{ parameters.androidPoolX64 }}
       iosPool: ${{ parameters.iosPool }}
       catalystPool: ${{ parameters.catalystPool }}
       windowsPool: ${{ parameters.windowsPool }}

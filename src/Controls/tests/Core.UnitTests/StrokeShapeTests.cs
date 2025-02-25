@@ -127,5 +127,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.NotNull(ellipse);
 		}
+
+		[Theory]
+		[InlineData("20")]
+		public void TestRoundRectangleSingleValue(string value)
+		{
+			RoundRectangle roundRectangle = _strokeShapeTypeConverter.ConvertFromInvariantString(value) as RoundRectangle;
+
+			Assert.NotNull(roundRectangle);
+			Assert.NotEqual(0, roundRectangle.CornerRadius.TopLeft);
+			Assert.NotEqual(0, roundRectangle.CornerRadius.TopRight);
+			Assert.NotEqual(0, roundRectangle.CornerRadius.BottomLeft);
+			Assert.NotEqual(0, roundRectangle.CornerRadius.BottomRight);
+		}
 	}
 }

@@ -1,4 +1,3 @@
-#if ANDROID || IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,8 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("GotoPage2");
 			App.Tap("GotoPage2");
-			VerifyScreenshot();	
+			App.WaitForElement("Welcome to Page 2");
 		}
 	}
 }
-#endif

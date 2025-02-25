@@ -44,7 +44,6 @@ pr:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
-  - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
 
@@ -80,7 +79,7 @@ parameters:
         poolName: $(macOSXVmPool)
         vmImage: $(macOSXVmImage)
         demands:
-          - macOS.Name -equals Sonoma
+          - macOS.Name -equals Sequoia
           - macOS.Architecture -equals x64
         artifact: build-macos
  
@@ -93,13 +92,6 @@ parameters:
         demands: 
           - Agent.OS -equals Windows_NT
         artifact: nuget
-      - name: macOS
-        poolName: $(macOSXVmPool)
-        vmImage: $(macOSXVmImage)
-        demands:
-          - macOS.Name -equals Sonoma
-          - macOS.Architecture -equals arm64
-        artifact: nuget-macos
 
   - name: BuildTemplatePlatforms
     type: object
@@ -114,7 +106,7 @@ parameters:
         poolName: $(macOSXVmPool)
         vmImage: $(macOSXVmImage)
         demands:
-          - macOS.Name -equals Sonoma
+          - macOS.Name -equals Sequoia
           - macOS.Architecture -equals x64
         artifact: build-macos
 
@@ -124,14 +116,14 @@ parameters:
     - name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
     - name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
       testName: RunOniOS
       artifact: templates-run-ios
@@ -142,7 +134,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals arm64
 
   - name: TestTargetFrameworks
@@ -160,11 +152,6 @@ resources:
       name: xamarin/yaml-templates
       endpoint: xamarin
       ref: refs/heads/main
-    - repository: sdk-insertions
-      type: github
-      name: xamarin/sdk-insertions
-      ref: refs/heads/main
-      endpoint: xamarin
 
 stages:
 
@@ -178,7 +165,7 @@ stages:
             workspace:
               clean: all
             displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
-            timeoutInMinutes: 240
+            timeoutInMinutes: 120
             condition: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
@@ -195,7 +182,7 @@ stages:
                   skipAndroidImages: true
                   installDefaultAndroidApi: false
                   skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                  ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
+                  ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
                     skipProvisionator: false
                     gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                   ${{ else }}:
@@ -269,7 +256,7 @@ stages:
                       skipAndroidImages: true
                       installDefaultAndroidApi: true
                       skipXcode: ${{ ne(PackPlatform.name , 'macOS') }}
-                      ${{ if or(eq(parameters.UseProvisionator, 'True'), eq(variables['internalProvisioning'],'True') )}}:
+                      ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
                         skipProvisionator: false
                         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                       ${{ else }}:  
@@ -288,7 +275,7 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
-            demands: ${{ BuildPlatform.demands }}
+            demands: ${{ BuildPlatform.demands }}     
           steps:
             - template: common/provision.yml
               parameters:
@@ -297,7 +284,7 @@ stages:
                 skipAndroidImages: true
                 installDefaultAndroidApi: true
                 skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
+                ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
                   skipProvisionator: false
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                 ${{ else }}:  
@@ -355,7 +342,7 @@ stages:
               skipAndroidImages: true
               installDefaultAndroidApi: true
               skipXcode: false
-              ${{ if or(eq(parameters.UseProvisionator, 'True'), eq(variables['internalProvisioning'],'True') )}}:
+              ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') )}}:
                 skipProvisionator: false
                 gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
               ${{ else }}:  
@@ -363,5 +350,4 @@ stages:
           
         
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
-    - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
+    - template: common/localization.yml

@@ -127,36 +127,9 @@ Task("dotnet-buildtasks")
         throw exception;
     });
 
-Task("android-aar")
-    .Does(() =>
-    {
-        var root = "./src/Core/AndroidNative/";
-
-        var gradlew = root + "gradlew";
-        if (IsRunningOnWindows())
-            gradlew += ".bat";
-
-        var exitCode = StartProcess(
-            MakeAbsolute((FilePath)gradlew),
-            new ProcessSettings
-            {
-                Arguments = $"createAar --rerun-tasks",
-                WorkingDirectory = root
-            });
-
-        if (exitCode != 0)
-        {
-            if (IsCIBuild() || IsTarget("android-aar"))
-                throw new Exception("Gradle failed to build maui.aar: " + exitCode);
-            else
-                Information("This task failing locally will not break local MAUI development. Gradle failed to build maui.aar: {0}", exitCode);
-        }
-    });
-
 Task("dotnet-build")
     .IsDependentOn("dotnet")
     .IsDependentOn("dotnet-buildtasks")
-    .IsDependentOn("android-aar")
     .Description("Build the solutions")
     .Does(() =>
     {
@@ -203,7 +176,7 @@ Task("dotnet-samples")
         }
         else
         {
-            projectsToBuild = "./Microsoft.Maui.Samples.slnf";
+            projectsToBuild = "./eng/Microsoft.Maui.Samples.slnf";
         }
 
         RunMSBuildWithDotNet(projectsToBuild, properties, binlogPrefix: "sample-");
@@ -295,7 +268,6 @@ Task("dotnet-test")
     });
 
 Task("dotnet-pack-maui")
-    .IsDependentOn("android-aar")
     .WithCriteria(RunPackTarget())
     .Does(() =>
     {
@@ -308,9 +280,11 @@ Task("dotnet-pack-maui")
             ReplaceTextInFiles(originalNuget, "LOCAL_PLACEHOLDER", nugetSource);
         }
 
-        var sln = "./Microsoft.Maui.Packages.slnf";
+        var sln = "./eng/Microsoft.Maui.Packages.slnf";
         if (!IsRunningOnWindows())
-            sln = "./Microsoft.Maui.Packages-mac.slnf";
+        {
+            sln = "./eng/Microsoft.Maui.Packages-mac.slnf";
+        }
  
         if(string.IsNullOrEmpty(officialBuildId))
         {
@@ -614,7 +588,6 @@ void UseLocalNuGetCacheFolder(bool reset = false)
 
 void StartVisualStudioCodeForDotNet()
 {
-    string workspace = "./maui.code-workspace";
     if (IsCIBuild())
     {
         Error("This target should not run on CI.");
@@ -626,7 +599,7 @@ void StartVisualStudioCodeForDotNet()
         SetDotNetEnvironmentVariables();
     }
 
-    StartProcess("code", new ProcessSettings{ Arguments = workspace, EnvironmentVariables = GetDotNetEnvironmentVariables() });
+    StartProcess("code", new ProcessSettings{ EnvironmentVariables = GetDotNetEnvironmentVariables() });
 }
 
 void StartVisualStudioForDotNet()

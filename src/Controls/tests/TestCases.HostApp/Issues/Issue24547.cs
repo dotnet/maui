@@ -25,7 +25,7 @@
 				Title = "Detail",
 				Content = new StackLayout
 				{
-					Children = 
+					Children =
 					{
 						CreateDetailButton()
 					}

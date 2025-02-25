@@ -39,7 +39,7 @@ public class Issue5831 : TestShell
 		var collectionViewPage = new ContentPage { Content = stackLayout, BindingContext = this };
 		mainFlyoutItem.Items.Add(collectionViewPage);
 
-		otherFlyoutItem.Items.Add(new ContentPage { Content = new Label { Text = "Go back to main page via the flyout",AutomationId = "Label" } });
+		otherFlyoutItem.Items.Add(new ContentPage { Content = new Label { Text = "Go back to main page via the flyout", AutomationId = "Label" } });
 
 		Items.Add(new FlyoutItem
 		{

@@ -11,6 +11,7 @@ namespace UITest.Appium
 		public AppiumIOSApp(Uri remoteAddress, IConfig config)
 			: base(new IOSDriver(remoteAddress, GetOptions(config)), config)
 		{
+			_commandExecutor.AddCommandGroup(new AppiumAppleContextMenuActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSMouseActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSTouchActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSSpecificActions(this));
@@ -75,6 +76,19 @@ namespace UITest.Appium
 			{
 				{ "env", args! }
 			});
+
+			// Allows to change the default timeout for Simulator startup.
+			// By default this value is set to 120000ms (2 minutes).
+			options.AddAdditionalAppiumOption("appium:simulatorStartupTimeout", 90000);
+
+			// Time, in ms, to wait for WebDriverAgent to be pingable.
+			// Defaults to 60000ms.
+			options.AddAdditionalAppiumOption("appium:wdaLaunchTimeout", 50000);
+
+			// The amount of time in float seconds to wait until the application under test is idling.
+			// XCTest requires the app's main thread to be idling in order to execute any action on it, so WDA might not even start/freeze if the app under test is constantly hogging the main thread.
+			// The default value is 10 (seconds).
+			options.AddAdditionalAppiumOption("appium:waitForIdleTimeout", 5);
 
 			return options;
 		}

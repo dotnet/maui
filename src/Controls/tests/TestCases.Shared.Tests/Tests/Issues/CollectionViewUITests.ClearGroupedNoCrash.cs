@@ -1,4 +1,3 @@
-#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -26,8 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(Go);
 			App.Click(Go);
 
-			App.WaitForNoElement(Success);
+			App.WaitForElement(Success);
 		}
 	}
 }
-#endif

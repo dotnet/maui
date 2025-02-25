@@ -20,19 +20,17 @@ parameters:
 
 steps:
   # Prepare macOS
-  - ${{ if or(eq(variables['System.TeamProject'], 'devdiv'), ne(parameters.poolName, 'Azure Pipelines')) }}:
-    - template: agent-cleanser/v1.yml@yaml-templates
-      parameters:
-        condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-        UninstallMono: false
-        UninstallXamarinMac: false
-        CleanseAgentToolsDotNet: true
-        SelfHealPowerShell: false
-        AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
+  - template: agent-cleanser/v1.yml@yaml-templates
+    parameters:
+      UninstallMono: false
+      UninstallXamarinMac: true
+      CleanseAgentToolsDotNet: true
+      SelfHealPowerShell: false
+        
   # Provision Xcode
   - ${{ if ne(parameters.skipXcode, 'true') }}:
-    - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-      - task: xamops.azdevex.provisionator-task.provisionator@2
+    - ${{ if ne(parameters.skipProvisionator, true) }}:
+      - task: xamops.azdevex.provisionator-task.provisionator@3
         condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
         displayName: 'Provision Xcode'
         inputs:
@@ -69,7 +67,7 @@ steps:
   # Provision Additional Software
   - ${{ if ne(parameters.skipProvisionator, true) }}:
     # Prepare macOS
-    - task: xamops.azdevex.provisionator-task.provisionator@2
+    - task: xamops.azdevex.provisionator-task.provisionator@3
       displayName: 'Provision Additional Software'
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       continueOnError: true
@@ -88,7 +86,7 @@ steps:
           INSTALL_DEFAULT_ANDROID_API: 'true'
  
     # Prepare Windows
-    - task: xamops.azdevex.provisionator-task.provisionator@2
+    - task: xamops.azdevex.provisionator-task.provisionator@3
       displayName: 'Provision Additional Software'
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
       inputs:
@@ -105,8 +103,6 @@ steps:
           INSTALL_DEFAULT_ANDROID_API: 'true'
 
   # Prepare Both
-  - template: /eng/pipelines/common/setup-jdk.yml
-
   - task: UseDotNet@2
     displayName: 'Use .NET SDK $(DOTNET_VERSION)'
     inputs:

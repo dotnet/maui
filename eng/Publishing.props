@@ -2,6 +2,7 @@
    <PropertyGroup>
       <PublishingVersion>3</PublishingVersion>
       <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
+      <PublishDependsOnTargets>$(PublishDependsOnTargets);_PublishBlobItems</PublishDependsOnTargets>
    </PropertyGroup>
 
    <ItemGroup>

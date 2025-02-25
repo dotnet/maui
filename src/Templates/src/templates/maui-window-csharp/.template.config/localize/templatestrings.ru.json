@@ -1,6 +1,6 @@
 {
   "author": "Майкрософт",
-  "name": "Окно .NET MAUI (C#)",
+  "name": ".NET MAUI Window (C#)",
   "description": "Окно для отображения страницы с помощью C#.",
   "postActions/openInEditor/description": "Открывает NewWindow1.cs в редакторе.",
   "symbols/namespace/description": "Пространство имен для созданного кода."

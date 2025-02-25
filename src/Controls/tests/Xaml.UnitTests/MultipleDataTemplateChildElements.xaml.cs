@@ -14,13 +14,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public static class Tests
 		{
 			[Test]
-			public static void ThrowXamlParseException([Values]bool useCompiledXaml)
+			public static void ThrowXamlParseException([Values] bool useCompiledXaml)
 			{
 				if (useCompiledXaml)
 				{
 					MockCompiler.Compile(typeof(MultipleDataTemplateChildElements), out var md, out var hasLoggedErrors);
 					Assert.That(hasLoggedErrors);
-				}					
+				}
 				else
 					Assert.Throws<XamlParseException>(() => new MultipleDataTemplateChildElements(useCompiledXaml));
 			}
