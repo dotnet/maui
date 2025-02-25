@@ -44,7 +44,7 @@ stages:
       steps:
       - template: device-tests-stage-steps.yml
         parameters:
-          buildType: 'build-only'
+          buildType: 'buildOnly'
           platform: ${{ parameters.platform }}
           path: ${{ parameters.project.path }}
           targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
@@ -74,7 +74,7 @@ stages:
         steps:
         - template: device-tests-stage-steps.yml
           parameters:
-            buildType: ${{ iif(parameters.buildAndTest, 'buildAndTest', 'test-only') }}
+            buildType: ${{ iif(parameters.buildAndTest, 'buildAndTest', 'testOnly') }}
             platform: ${{ parameters.platform }}
             path: ${{ parameters.project.path }}
             appArtifactName: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build

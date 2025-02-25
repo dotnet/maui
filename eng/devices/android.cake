@@ -90,7 +90,7 @@ Task("Setup")
 Task("boot")
 	.IsDependentOn("Setup");
 
-Task("build-only")
+Task("buildOnly")
 	.IsDependentOn("Setup")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
@@ -98,7 +98,7 @@ Task("build-only")
 		ExecuteBuild(projectPath, testDevice, binlogDirectory, configuration, targetFramework, dotnetToolPath);
 	});
 
-Task("test-only")
+Task("testOnly")
 	.IsDependentOn("Setup")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
@@ -107,15 +107,15 @@ Task("test-only")
 	});
 
 Task("build")
-	.IsDependentOn("build-only");
+	.IsDependentOn("buildOnly");
 
 Task("test")
-	.IsDependentOn("build-only")
-	.IsDependentOn("test-only");
+	.IsDependentOn("buildOnly")
+	.IsDependentOn("testOnly");
 
 Task("buildAndTest")
-	.IsDependentOn("build-only")
-	.IsDependentOn("test-only");
+	.IsDependentOn("buildOnly")
+	.IsDependentOn("testOnly");
 
 Task("uitest-prepare")
 	.IsDependentOn("Setup")
