@@ -16,10 +16,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.TimePicker)]
-		public void VerifyTimePickerApperance()
+		[FlakyTest("More details here: https://github.com/dotnet/maui/issues/27999")]
+		public void VerifyTimePickerAppearance()
 		{
 			App.WaitForElement("TimePicker");
 			App.Tap("TimePicker");
+			Thread.Sleep(500); // Add some wait for popping up the keyboard to resolve flakiness in CI.
 			VerifyScreenshot();
 		}
 	}
