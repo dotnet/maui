@@ -11,12 +11,12 @@ namespace UITest.Appium
 			: base(new MacDriver(remoteAddress, GetOptions(config)), config)
 		{
 			_commandExecutor.AddCommandGroup(new AppiumAppleContextMenuActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumAppleStepperActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystMouseActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystTouchActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystAlertActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystSpecificActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystSwipeActions(this));
-			_commandExecutor.AddCommandGroup(new AppiumAppleStepperActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystVirtualKeyboardActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumCatalystScrollActions(this));
 		}
