@@ -10,7 +10,7 @@ public class Issue8526 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "[Bug] DisplayPromptAsync hangs app, doesn't display when called in page load";
+	public override string Issue => "[Bug] DisplayPrompt hangs app, doesn't display when called in page load";
 
 	//[Test]
 	//[Category(UITestCategories.DisplayPrompt)]
