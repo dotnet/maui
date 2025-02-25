@@ -10,6 +10,7 @@ parameters:
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   useArtifacts: false
   cakeArgs: ''
+  buildAndTest: true
   targetFrameworkVersion:
     tfm: ''
     dependsOn: ''
@@ -31,35 +32,38 @@ stages:
   ${{ else }}:
     dependsOn: []
   jobs:
-  - job: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
-    timeoutInMinutes: 60
-    workspace:
-      clean: all
-    displayName: Build ${{ parameters.platform }} ${{ parameters.project.desc }}
-    pool: ${{ parameters.pool }}
-    variables:
-      REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-    steps:
-    - template: device-tests-build-steps.yml
-      parameters:
-        platform: ${{ parameters.platform }}
-        path: ${{ parameters.project.path }}
-        targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
-        packageid: ${{ parameters.project.packageid }}
-        provisionatorChannel: ${{ parameters.provisionatorChannel }}
-        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-        artifactName: ${{ parameters.artifactName }}
-        artifactItemPattern: ${{ parameters.artifactItemPattern }}
-        checkoutDirectory: ${{ parameters.checkoutDirectory }}
-        useArtifacts: ${{ parameters.useArtifacts }}
-        poolName: ${{ parameters.pool.name }}
-        deviceTestConfiguration: ${{ parameters.project.configuration }}
-        skipProvisioning: ${{ parameters.skipProvisioning }}
-        appArtifactName: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
+  - ${{ if ne(parameters.buildAndTest, 'true') }}:
+    - job: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
+      timeoutInMinutes: 60
+      workspace:
+        clean: all
+      displayName: Build ${{ parameters.platform }} ${{ parameters.project.desc }}
+      pool: ${{ parameters.pool }}
+      variables:
+        REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+      steps:
+      - template: device-tests-stage-steps.yml
+        parameters:
+          buildType: 'build-only'
+          platform: ${{ parameters.platform }}
+          path: ${{ parameters.project.path }}
+          targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
+          packageid: ${{ parameters.project.packageid }}
+          provisionatorChannel: ${{ parameters.provisionatorChannel }}
+          agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+          artifactName: ${{ parameters.artifactName }}
+          artifactItemPattern: ${{ parameters.artifactItemPattern }}
+          checkoutDirectory: ${{ parameters.checkoutDirectory }}
+          useArtifacts: ${{ parameters.useArtifacts }}
+          poolName: ${{ parameters.pool.name }}
+          deviceTestConfiguration: ${{ parameters.project.configuration }}
+          skipProvisioning: ${{ parameters.skipProvisioning }}
+          appArtifactName: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
   - ${{ each version in parameters.versions }}:
     - ${{ if not(containsValue(parameters.project.versionsExclude, version)) }}:
       - job: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_${{ replace(replace(version, '.', ''), '-', '') }}
-        dependsOn: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
+        ${{ if ne(parameters.buildAndTest, 'true') }}:
+          dependsOn: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
         timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
         workspace:
           clean: all
@@ -68,8 +72,9 @@ stages:
         variables:
           REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
         steps:
-        - template: device-tests-run-steps.yml
+        - template: device-tests-stage-steps.yml
           parameters:
+            buildType: ${{ iif(parameters.buildAndTest, 'buildAndTest', 'test-only') }}
             platform: ${{ parameters.platform }}
             path: ${{ parameters.project.path }}
             appArtifactName: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build

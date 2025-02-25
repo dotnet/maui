@@ -132,7 +132,7 @@ Task("GenerateMsixCert")
 	currentUserMyStore.Close();
 });
 
-Task("Build")
+Task("Build-Only")
 	.IsDependentOn("GenerateMsixCert")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
 	.Does(() =>
@@ -424,8 +424,15 @@ Task("Test-Only")
 	}
 });
 
+Task("build")
+	.IsDependentOn("build-only");
+
 Task("test")
-	.IsDependentOn("build")
+	.IsDependentOn("build-only")
+	.IsDependentOn("test-only");
+
+Task("buildAndTest")
+	.IsDependentOn("build-only")
 	.IsDependentOn("test-only");
 
 Task("SetupTestPaths")

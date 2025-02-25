@@ -79,7 +79,7 @@ Task("Cleanup");
 // Todo this doesn't work for iOS currently
 // Task("boot");
 
-Task("Build")
+Task("Build-Only")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
@@ -92,8 +92,15 @@ Task("Test-Only")
 		ExecuteTests(projectPath, testDevice, testResultsPath, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
 	});
 
+Task("build")
+	.IsDependentOn("build-only");
+
 Task("test")
-	.IsDependentOn("build")
+	.IsDependentOn("build-only")
+	.IsDependentOn("test-only");
+
+Task("buildAndTest")
+	.IsDependentOn("build-only")
 	.IsDependentOn("test-only");
 
 Task("uitest-build")

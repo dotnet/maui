@@ -30,8 +30,9 @@ stages:
 
 - ${{ each project in parameters.projects }}:
   - ${{ if ne(project.android, '') }}:
-    - template: device-tests-steps.yml
+    - template: device-tests-stages.yml
       parameters:
+        buildAndTest: false
         platform: android
         timeoutInMinutes: 60
         pool: ${{ parameters.androidPool }}
@@ -52,7 +53,7 @@ stages:
         useArtifacts: ${{ parameters.useArtifacts }}
 
   - ${{ if ne(project.ios, '') }}:
-    - template: device-tests-steps.yml
+    - template: device-tests-stages.yml
       parameters:
         platform: ios
         timeoutInMinutes: 120
@@ -74,7 +75,7 @@ stages:
         useArtifacts: ${{ parameters.useArtifacts }}
 
   - ${{ if ne(project.catalyst, '') }}:
-    - template: device-tests-steps.yml
+    - template: device-tests-stages.yml
       parameters:
         platform: catalyst
         timeoutInMinutes: 240
@@ -97,7 +98,7 @@ stages:
 
   - ${{ if ne(project.windows, '') }}:
     - ${{ each windowsVersion in parameters.windowsVersions }}:
-      - template: device-tests-steps.yml
+      - template: device-tests-stages.yml
         parameters:
           platform: windows
           timeoutInMinutes: 240

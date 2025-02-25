@@ -80,7 +80,7 @@ Task("Setup")
 		DetermineDeviceCharacteristics(testDevice, DefaultApiLevel);
 
 		// Don't start or connect to devices if we are just building
-		if (!string.Equals(TARGET, "build", StringComparison.OrdinalIgnoreCase))
+		if (!TARGET.StartsWith("build", StringComparison.OrdinalIgnoreCase))
 		{
 			// The Emulator Start command seems to hang sometimes so let's only give it two minutes to complete
 			await HandleVirtualDevice(emuSettings, avdSettings, androidAvd, androidAvdImage, deviceSkin, deviceBoot);
@@ -90,7 +90,7 @@ Task("Setup")
 Task("boot")
 	.IsDependentOn("Setup");
 
-Task("build")
+Task("build-only")
 	.IsDependentOn("Setup")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
@@ -106,8 +106,15 @@ Task("test-only")
 		ExecuteTests(projectPath, testDevice, testApp, testAppPackageName, testResultsPath, configuration, targetFramework, adbSettings, dotnetToolPath, deviceBootWait, testAppInstrumentation);
 	});
 
+Task("build")
+	.IsDependentOn("build-only");
+
 Task("test")
-	.IsDependentOn("build")
+	.IsDependentOn("build-only")
+	.IsDependentOn("test-only");
+
+Task("buildAndTest")
+	.IsDependentOn("build-only")
 	.IsDependentOn("test-only");
 
 Task("uitest-prepare")
