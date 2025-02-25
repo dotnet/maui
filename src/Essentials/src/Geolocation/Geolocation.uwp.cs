@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		public bool IsListeningForeground { get => listeningGeolocator != null; }
 
-		public bool IsLocationEnabled
+		public bool IsSupported
 		{
 			get
 			{

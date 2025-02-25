@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		public bool IsListeningForeground { get => continuousListener is not null; }
 
-		public bool IsLocationEnabled
+		public bool IsSupported
 		{
 			get
 			{
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Devices.Sensors
 					return false;
 
 				return OperatingSystem.IsAndroidVersionAtLeast(28)
-					? LocationManager.IsLocationEnabled
+					? LocationManager.IsSupported
 					: LocationManager.IsProviderEnabled(LocationManager.GpsProvider) || LocationManager.IsProviderEnabled(LocationManager.NetworkProvider);
 			}
 		}

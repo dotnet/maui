@@ -36,9 +36,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		bool IsListeningForeground { get; }
 
 		/// <summary>
-		/// Returns true when the device's GPS is enabled
+		/// Returns true when the device's location services are supported
 		/// </summary>
-		bool IsLocationEnabled { get; }
+		bool IsSupported { get; }
 
 		/// <summary>
 		/// Occurs while listening to location updates.
@@ -120,9 +120,9 @@ namespace Microsoft.Maui.Devices.Sensors
 		public static bool IsListeningForeground { get => Current.IsListeningForeground; }
 
 		/// <summary>
-		/// Returns true when the device's GPS is enabled
+		/// Returns true when the device's location services are supported
 		/// </summary>
-		public static bool IsLocationEnabled { get => Current.IsLocationEnabled; }
+		public static bool IsSupported { get => Current.IsSupported; }
 
 		/// <summary>
 		/// Occurs while listening to location updates.
