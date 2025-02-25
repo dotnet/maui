@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, 16386, "Process the hardware enter key as \"Done\"", PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 16386, "Process the hardware enter key as Done", PlatformAffected.Android)]
 	public class Issue16386 : TestContentPage
 	{
 		protected override void Init()

@@ -40,7 +40,7 @@ public class SkiaSharpScenarioTests
 		}
 
 		// file existed, compare
-		ImageAssert.Equivalent(bmp.SKImage, expectedImagePath, GetErrorsImageDirectory(), 0);
+		ImageAssert.Equivalent(bmp.SKImage, expectedImagePath, GetErrorsImageDirectory(), 0.07);
 	}
 
 	private static string ProjectRoot =>

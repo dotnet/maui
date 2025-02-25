@@ -2,7 +2,7 @@
 {
 
 	[Issue(IssueTracker.Github, 10744, "[Android] WebView.Eval crashes on Android with long string",
-		PlatformAffected.Android)]
+		PlatformAffected.Android, isInternetRequired: true)]
 	public class Issue10744 : TestContentPage
 	{
 		Label _navigatedLabel;
