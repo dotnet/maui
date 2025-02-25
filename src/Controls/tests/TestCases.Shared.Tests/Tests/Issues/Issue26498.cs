@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		public void Issue26498TestNullExeption()
+		public void Issue26498TestNullException()
 		{
 			const string OpenListViewPage = "OpenListViewPage";
 			const string ClearButton = "ClearButton";
