@@ -2,7 +2,7 @@
 {
 	public partial class HeaderFooterGrid : ContentPage
 	{
-		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(6);
+		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(6); // by decreasing the number of items, footer is fully visibile
 
 		object header;
 		object footer;

@@ -2,7 +2,7 @@
 {
 	public partial class HeaderFooterGridHorizontal : ContentPage
 	{
-		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(3);
+		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(3); // by decreasing the number of items can reduce the Scrolling times to take screenshot of the footer
 		object header;
 		object footer;
 
