@@ -57,10 +57,12 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact]
 		[Description("The IsEnabled property of a Button should match with native IsEnabled")]		
-		public async Task ButtonIsEnabled()
+		public async Task VerifyButtonIsEnabledProperty()
 		{
-			var button = new Button();
-			button.IsEnabled = true;
+			var button = new Button
+			{
+				IsEnabled = false
+			};
 			var expectedValue = button.IsEnabled;
 
 			var handler = await CreateHandlerAsync<ButtonHandler>(button);

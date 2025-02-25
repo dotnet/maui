@@ -6,6 +6,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -186,6 +187,25 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		[Fact]
+		[Description("The IsEnabled property of a Entry should match with native IsEnabled")]		
+		public async Task VerifyEntryIsEnabledProperty()
+		{
+			var entry = new Entry
+			{
+				IsEnabled = false
+			};
+			var expectedValue = entry.IsEnabled;
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+				Assert.Equal(expectedValue, isEnabled);
+			});		
+		}
 
 		[Category(TestCategory.Entry)]
 		[Category(TestCategory.TextInput)]
