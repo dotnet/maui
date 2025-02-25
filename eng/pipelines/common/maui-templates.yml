@@ -90,7 +90,7 @@ jobs:
       name: $(POOL_NAME)
       vmImage: $(POOL_VIMAGE)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals arm64
     steps:
       - template: maui-templates-steps.yml
