@@ -767,10 +767,10 @@ namespace Microsoft.Maui.Platform
 			{
 				// We check for Window to avoid scenarios where an invalidate might propagate up the tree
 				// To a SuperView that's been disposed which will cause a crash when trying to access it
-				if (nextResponder is UIView uiview && uiview.Window is null)
-				{
-					return null;
-				}
+				// if (nextResponder is UIView uiview && uiview.Window is null)
+				// {
+				// 	return null;
+				// }
 
 				nextResponder = nextResponder.NextResponder;
 
@@ -787,10 +787,10 @@ namespace Microsoft.Maui.Platform
 			{
 				// We check for Window to avoid scenarios where an invalidate might propagate up the tree
 				// To a SuperView that's been disposed which will cause a crash when trying to access it
-				if (nextResponder is UIView uiview && uiview.Window is null)
-				{
-					return null;
-				}
+				// if (nextResponder is UIView uiview && uiview.Window is null)
+				// {
+				// 	return null;
+				// }
 
 				nextResponder = nextResponder.NextResponder;
 

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue21648">
+    <ScrollView>
+        <VerticalStackLayout>
+            <Button Text="Remove Window" AutomationId="RemoveWindowButton" Pressed="Button_Pressed" />
+            <Entry Text="Hello, World!" ReturnType="Done" AutomationId="Entry1"
+                Unfocused="Entry_Unfocused" Focused="Entry_Focused" Unloaded="entry1_Unloaded" x:Name="entry1" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

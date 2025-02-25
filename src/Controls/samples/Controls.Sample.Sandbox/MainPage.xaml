@@ -2,4 +2,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+    <ScrollView>
+        <VerticalStackLayout>
+            <BoxView Color="Red" HeightRequest="550" WidthRequest="200" />
+            <Entry Text="Hello, World!" ReturnType="Done" AutomationId="Entry1" />
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
