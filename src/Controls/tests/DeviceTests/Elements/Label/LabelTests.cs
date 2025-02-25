@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 #if __IOS__
 using Foundation;
@@ -724,6 +725,21 @@ namespace Microsoft.Maui.DeviceTests
 				label.FontSize = 64;
 				AssertEquivalentFont(handler, label.ToFont());
 			});
+		}
+
+		[Fact]
+		[Description("The BackgroundColor of a Label should match with native background color")]
+		public async Task LabelBackgroundColorConsistent()
+		{
+			var expected = Colors.AliceBlue;
+			var label = new Label()
+			{
+				BackgroundColor = expected,
+				HeightRequest = 100,
+				WidthRequest = 200
+			};
+
+			await ValidateHasColor(label, expected, typeof(LabelHandler));
 		}
 
 		Color TextColor(LabelHandler handler)

@@ -11,16 +11,18 @@
 
 		protected override void Init()
 		{
-			var stackLayout = new StackLayout();
+			var grid = new Grid();
 
-			stackLayout.Children.Add(new Switch()
+			grid.Children.Add(new Switch()
 			{
 				ThumbColor = Colors.Red,
 				OnColor = Colors.Yellow,
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
 				AutomationId = switchId
 			});
 
-			Content = stackLayout;
+			Content = grid;
 		}
 	}
 }
