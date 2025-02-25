@@ -78,17 +78,15 @@ steps:
   #                  Prepare Run                   #
   ##################################################
 
-
-  - task: DownloadBuildArtifacts@0
+  - task: DownloadPipelineArtifact@2
     displayName: 'Download Build'
     inputs:
       artifactName: ${{ parameters.appArtifactName }}
-      downloadPath: ${{ parameters.checkoutDirectory }}/artifacts/bin
+      targetPath: ${{ parameters.checkoutDirectory }}/artifacts
 
   - script: |
-      ls -la ${{ parameters.checkoutDirectory }}
-      ls -la ${{ parameters.checkoutDirectory }}/artifacts
       ls -la ${{ parameters.checkoutDirectory }}/artifacts/bin
+
 
   ##################################################
   #                      Run                       #
