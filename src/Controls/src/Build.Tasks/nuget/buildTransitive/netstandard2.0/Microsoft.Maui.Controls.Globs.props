@@ -7,7 +7,7 @@
     </MauiXaml>
   </ItemDefinitionGroup>
 
-  <ItemGroup Condition=" ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') and '$(TargetFrameworkVersion)' != '' ">
+  <ItemGroup Condition=" ('$(MauiEnablePlatformUsings)' != 'true') and ('$(ImplicitUsings)' == 'true' or '$(ImplicitUsings)' == 'enable') and '$(TargetFrameworkVersion)' != '' ">
     <!-- %(Sdk) is only here if something later needs to identify these -->
     <Using Include="Microsoft.Extensions.DependencyInjection" Sdk="Maui" />
     <Using Include="Microsoft.Maui" Sdk="Maui" />
