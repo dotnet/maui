@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMinimumTrackColor(this SeekBar seekBar, ISlider slider)
 		{
-			if (slider.MinimumTrackColor != null)
+			if (slider.MinimumTrackColor is not null)
 			{
 				seekBar.ProgressTintList = ColorStateList.ValueOf(slider.MinimumTrackColor.ToPlatform());
 				seekBar.ProgressTintMode = PorterDuff.Mode.SrcIn;
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaximumTrackColor(this SeekBar seekBar, ISlider slider)
 		{
-			if (slider.MaximumTrackColor != null)
+			if (slider.MaximumTrackColor is not null)
 			{
 				seekBar.ProgressBackgroundTintList = ColorStateList.ValueOf(slider.MaximumTrackColor.ToPlatform());
 				seekBar.ProgressBackgroundTintMode = PorterDuff.Mode.SrcIn;
@@ -50,50 +50,61 @@ namespace Microsoft.Maui.Platform
 		public static async Task UpdateThumbImageSourceAsync(this SeekBar seekBar, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var context = seekBar.Context;
-			if (context == null)
+			if (context is null || !seekBar.IsAlive())
 				return;
 
 			var thumbImageSource = slider.ThumbImageSource;
-			if (thumbImageSource != null)
+			if (thumbImageSource is not null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var result = await service.GetDrawableAsync(thumbImageSource, context);
 				var thumbDrawable = result?.Value;
 
-				if (seekBar.IsAlive() && thumbDrawable != null)
+				if (thumbDrawable is not null)
 				{
-					if (thumbDrawable is BitmapDrawable bitmapDrawable && bitmapDrawable.Bitmap is { } bitmap)
-					{
-						// Define the target size for the thumb image
-						const int TARGET_SIZE = 48; // 48dp - default size of the thumb in Android
-
-						// Resize the bitmap to the target size
-						var thumbImage = bitmap.Downsize(TARGET_SIZE);
-
-						// Set the resized thumb image
-						seekBar.SetThumb(new BitmapDrawable(context.Resources, thumbImage));
-					}
-					else
-					{
-						// Set the original drawable if it's not a BitmapDrawable or the bitmap is null
-						seekBar.SetThumb(thumbDrawable);
-					}
+					SetThumbDrawable(seekBar, context, thumbDrawable);
+				}
+				else
+				{
+					SetDefaultThumb(seekBar, slider, context);
 				}
 			}
 			else
 			{
-				seekBar.SetThumb(context.GetDrawable(Resource.Drawable.abc_seekbar_thumb_material));
-				if (slider.ThumbColor is null && context.Theme is not null)
+				SetDefaultThumb(seekBar, slider, context);
+			}
+		}
+
+		static void SetThumbDrawable(SeekBar seekBar, Android.Content.Context context, Drawable thumbDrawable)
+		{
+			//Material 2 design spec - https://m2.material.io/components/sliders/android#discrete-slider
+			const int TARGET_SIZE = 20; // 10 radius * 2
+			int thumbSize = (int)context.ToPixels(TARGET_SIZE);
+
+			Bitmap bitmap = Bitmap.CreateBitmap(thumbSize, thumbSize, Bitmap.Config.Argb8888!);
+			Canvas canvas = new Canvas(bitmap);
+			thumbDrawable.SetBounds(0, 0, thumbSize, thumbSize);
+			thumbDrawable.Draw(canvas);
+
+			BitmapDrawable finalDrawable = new BitmapDrawable(context.Resources, bitmap);
+			seekBar.SetThumb(finalDrawable);
+		}
+
+		static void SetDefaultThumb(SeekBar seekBar, ISlider slider, Android.Content.Context context)
+		{
+			seekBar.SetThumb(context.GetDrawable(Resource.Drawable.abc_seekbar_thumb_material));
+
+			if (slider.ThumbColor == null && context.Theme != null)
+			{
+				using var value = new TypedValue();
+				if (context.Theme.ResolveAttribute(Android.Resource.Attribute.ColorAccent, value, true))
 				{
-					using var value = new TypedValue();
-					context.Theme.ResolveAttribute(Android.Resource.Attribute.ColorAccent, value, true);
-					var color = new Color(value.Data);
-					seekBar.Thumb?.SetColorFilter(color, FilterMode.SrcIn);
+					seekBar.Thumb?.SetColorFilter(new Color(value.Data), FilterMode.SrcIn);
 				}
-				else
-				{
-					seekBar.UpdateThumbColor(slider);
-				}
+			}
+			else
+			{
+				seekBar.UpdateThumbColor(slider);
 			}
 		}
 	}
