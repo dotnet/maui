@@ -47,7 +47,6 @@ stages:
           buildType: 'buildOnly'
           platform: ${{ parameters.platform }}
           path: ${{ parameters.project.path }}
-          device: ${{ parameters.platform }}
           targetFrameworkVersion: ${{ parameters.targetFrameworkVersion.tfm }}
           packageid: ${{ parameters.project.packageid }}
           provisionatorChannel: ${{ parameters.provisionatorChannel }}
