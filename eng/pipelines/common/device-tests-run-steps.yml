@@ -16,6 +16,7 @@ parameters:
   skipProvisioning: true
   targetFrameworkVersion: ''
   appArtifactName: ''
+  skipDotNet: false
 
 steps:
 
@@ -56,6 +57,23 @@ steps:
 
 
   ##################################################
+  #                Provision .NET                  #
+  ##################################################
+
+  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+    displayName: 'Install .NET'
+    retryCountOnTaskFailure: 3
+    condition: and(succeeded(), eq(parameters.skipDotNet, 'true'))
+    env:
+      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+      PRIVATE_BUILD: $(PrivateBuild)
+
+  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+    condition: and(succeeded(), eq(parameters.skipDotNet, 'true'))
+    displayName: 'Add .NET to PATH'
+
+
+  ##################################################
   #                  Prepare Run                   #
   ##################################################
 
@@ -70,7 +88,7 @@ steps:
   #                      Run                       #
   ##################################################
 
-  - script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target=test --project="${{ parameters.path }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.apiversion }}" --packageid="${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" ${{ parameters.cakeArgs }}
+  - script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target=test --project="${{ parameters.path }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.apiversion }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" ${{ parameters.cakeArgs }}
     displayName: Run
     workingDirectory: ${{ parameters.checkoutDirectory }}
     condition: and(succeeded(), ne(variables['Platform.Name'], 'Mac'))      
