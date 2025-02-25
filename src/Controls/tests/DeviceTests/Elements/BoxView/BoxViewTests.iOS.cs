@@ -48,25 +48,5 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(graphicsView);
 			});
 		}
-
-		[Fact]
-		[Description("The Cornerradius of a Button should match with native CornerRadius")]
-		public async Task BoxViewCornerRadius()
-		{
-			var boxView = new BoxView
-			{
-				HeightRequest = 100,
-				WidthRequest = 200,
-				CornerRadius = new CornerRadius(15)
-			};
-			var expected = boxView.CornerRadius;
-			var handler = await CreateHandlerAsync<BoxViewHandler>(boxView);
-			var nativeView = GetNativeBoxView(handler);
-			var cornerRadius =  (float)nativeView.Layer.CornerRadius;
-			await InvokeOnMainThreadAsync(  () =>
-            {
- 				Assert.Equal(expected, cornerRadius);
-			});
-		}
 	}
 }

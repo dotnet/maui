@@ -6,6 +6,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -77,6 +78,25 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(()
 				=> GetPlatformControl(handler).ChildCount != 0);
+		}
+
+		[Fact]
+		[Description("The IsEnabled of a SwipeView should match with native IsEnabled")]		
+		public async Task VerifySwipeViewIsEnabledProperty()
+		{
+			var swipeView = new SwipeView
+			{
+				IsEnabled = false
+			};
+			var expectedValue = swipeView.IsEnabled;
+
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+				Assert.Equal(expectedValue, isEnabled);
+			});		
 		}
 	}
 }
