@@ -11,6 +11,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -86,6 +87,25 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(2, GetPlatformMaxLines(handler));
 				Assert.Equal(LineBreakMode.TailTruncation.ToPlatform(), GetPlatformLineBreakMode(handler));
 			}));
+		}
+
+	    [Fact]
+		[Description("The IsEnabled property of a Label should match with native IsEnabled")]		
+		public async Task VerifyLabelIsEnabledProperty()
+		{
+			var label = new Label
+			{
+				IsEnabled = false
+			};
+			var expectedValue = label.IsEnabled;
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var nativeView = GetPlatformLabel(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+				Assert.Equal(expectedValue, isEnabled);
+			});		
 		}
 
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
