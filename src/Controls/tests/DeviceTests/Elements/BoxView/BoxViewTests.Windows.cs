@@ -19,5 +19,24 @@ namespace Microsoft.Maui.DeviceTests
 				return (float)nativeView.Opacity;
 			});
 		}
+		
+		[Fact]
+		[Description("The IsEnabled property of a BoxView should match with native IsEnabled")]		
+		public async Task BoxViewIsEnabled()
+		{
+			var boxView = new BoxView
+			{
+				IsEnabled = false
+			};
+			var expectedValue = boxView.IsEnabled;
+
+			var handler = await CreateHandlerAsync<BoxViewHandler>(boxView);
+			var nativeView = GetNativeBoxView(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+				Assert.Equal(expectedValue, isEnabled);
+			});		
+		}
 	}
 }

@@ -4,6 +4,7 @@ using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -141,5 +142,25 @@ namespace Microsoft.Maui.DeviceTests
 			var platformRotation = await InvokeOnMainThreadAsync(() => PlatformEditor.Rotation);
 			Assert.Equal(expected, platformRotation);
 		}
+
+		[Fact]
+		[Description("The IsEnabled property of a Editor should match with native IsEnabled")]		
+		public async Task VerifyEditorIsEnabledProperty()
+		{
+			var editor = new Editor
+			{
+				IsEnabled = false
+			};
+			var expectedValue = editor.IsEnabled;
+
+			var handler = await CreateHandlerAsync<EditorHandler>(editor);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+
+				Assert.Equal(expectedValue, isEnabled);
+			});		
+		}		
 	}
 }
