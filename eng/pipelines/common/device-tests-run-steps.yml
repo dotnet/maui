@@ -61,7 +61,7 @@ steps:
   #                Provision .NET                  #
   ##################################################
 
-  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+  - script: dotnet cake --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
     condition: and(succeeded(), ne('${{ parameters.skipDotNet }}', 'true'))
@@ -89,7 +89,7 @@ steps:
   #                      Run                       #
   ##################################################
 
-  - script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target=test --project="${{ parameters.path }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.apiversion }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" ${{ parameters.cakeArgs }}
+  - script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target=test --project="${{ parameters.path }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.apiversion }}" --packageid "${{ parameters.packageid }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" --configuration="${{ parameters.deviceTestConfiguration }}" --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" --workloads="${{ iif(eq(parameters.skipDotNet, 'true'), 'global', 'local') }}" ${{ parameters.cakeArgs }} --verbosity=diagnostic
     displayName: Run
     workingDirectory: ${{ parameters.checkoutDirectory }}
     condition: and(succeeded(), ne(variables['Platform.Name'], 'Mac'))      
