@@ -130,15 +130,15 @@ steps:
   ##################################################
 
   # Run the builds and/or tests for the project
-  - script: >
+  - script: >-
       dotnet cake eng/devices/${{ parameters.platform }}.cake 
         --target="${{ parameters.buildType }}" 
         --project="${{ parameters.path }}" 
         --binlog="$(LogDirectory)" 
         --configuration="${{ parameters.deviceTestConfiguration }}" 
         --targetFrameworkVersion="${{ parameters.targetFrameworkVersion }}" 
-        ${{ iif(eq(parameters.device, ''), '', '--device="${{ parameters.device }}"') }} 
-        ${{ iif(eq(parameters.apiversion, ''), '', '--apiversion="${{ parameters.apiversion }}"') }} 
+        ${{ iif(eq(parameters.device, ''), '', format('--device="{0}"', parameters.device) }} 
+        ${{ iif(eq(parameters.apiversion, ''), '', format('--apiversion="{0}"', parameters.apiversion) }} 
         --create="${{ ne(parameters.buildType, 'buildOnly') }}" 
         --packageid "${{ parameters.packageid }}" 
         --results="$(TestResultsDirectory)" 
