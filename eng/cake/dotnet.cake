@@ -634,6 +634,7 @@ void UseLocalNuGetCacheFolder(bool reset = false)
 
 void StartVisualStudioCodeForDotNet()
 {
+    string workspace = "./maui.code-workspace";
     if (IsCIBuild())
     {
         Error("This target should not run on CI.");
@@ -645,7 +646,7 @@ void StartVisualStudioCodeForDotNet()
         SetDotNetEnvironmentVariables();
     }
 
-    StartProcess("code", new ProcessSettings{ EnvironmentVariables = GetDotNetEnvironmentVariables() });
+    StartProcess("code", new ProcessSettings{ Arguments = workspace, EnvironmentVariables = GetDotNetEnvironmentVariables() });
 }
 
 void StartVisualStudioForDotNet()

@@ -3,7 +3,6 @@
 This page contains steps to build and run the .NET MAUI repository from source. If you are looking to build apps with .NET MAUI please head over to the links in the [README](https://github.com/dotnet/maui/blob/main/README.md) to get started.
 
 ## Initial setup
-
    ### Windows
    - Install VS 17.12 or newer
       - Follow [these steps](https://learn.microsoft.com/dotnet/maui/get-started/installation?tabs=vswin) to include MAUI
@@ -17,8 +16,6 @@ This page contains steps to build and run the .NET MAUI repository from source. 
       
 ## Building the Build Tasks
 Before opening the solution in Visual Studio / VS Code you **MUST** build the build tasks.
-
-Note: the main branch is always [pinned to the latest stable release](https://github.com/dotnet/maui/blob/main/global.json) of the .NET SDK. This is regardless of said release being a long-term support (LTS) release or not. This means that you will need to have that version of the .NET SDK installed and configured on your machine in order to be able to execute the commands below and build the .NET MAUI codebase.
 
 1. Open a command prompt/terminal/shell window
 1. Navigate to the location of your cloned `dotnet/maui` repo, for example:
