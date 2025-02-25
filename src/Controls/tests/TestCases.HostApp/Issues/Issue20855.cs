@@ -12,12 +12,12 @@ using System.Collections.ObjectModel;
  		{
  		ObservableCollection<ItemGroup>	ItemGroups = new ObservableCollection<ItemGroup>();
  		var group1 = new ItemGroup { Name = "Group 1"};
- 		group1.Add(new Item { Name = "Item 1", CreateDate = DateTime.Now.AddDays(-1) });
- 		group1.Add(new Item { Name = "Item 2", CreateDate = DateTime.Now.AddDays(-2) });
+ 		group1.Add(new Item { Name = "Item 1", CreateDate = new DateTime(2025, 2, 20) });
+ 		group1.Add(new Item { Name = "Item 2", CreateDate = new DateTime(2025, 2, 19) });
  		ItemGroups.Add(group1);
  		var group2 = new ItemGroup { Name = "Group 2"};
- 		group2.Add(new Item { Name = "Item 3", CreateDate = DateTime.Now.AddDays(-3) });
- 		group2.Add(new Item { Name = "Item 4", CreateDate = DateTime.Now.AddDays(-4) });
+ 		group2.Add(new Item { Name = "Item 3", CreateDate = new DateTime(2025, 2, 18) });
+ 		group2.Add(new Item { Name = "Item 4", CreateDate = new DateTime(2025, 2, 17) });
  		ItemGroups.Add(group2);
 
  		var collectionView = new CollectionView
