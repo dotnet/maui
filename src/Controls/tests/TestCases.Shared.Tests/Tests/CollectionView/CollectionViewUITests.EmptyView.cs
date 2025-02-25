@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS // EmptyView Text is not recognized on Windows
+#if TEST_FAILS_ON_WINDOWS // EmptyView Elements not accessible via Automation on Windows, Issue Link: https://github.com/dotnet/maui/issues/28022
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
