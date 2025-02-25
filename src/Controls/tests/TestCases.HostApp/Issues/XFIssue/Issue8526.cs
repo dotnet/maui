@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 8526, "[Bug] DisplayPromptAsync hangs app, doesn't display when called in page load",
+[Issue(IssueTracker.Github, 8526, "[Bug] DisplayPrompt hangs app, doesn't display when called in page load",
 	PlatformAffected.All)]
 public class Issue8526 : TestContentPage
 {
@@ -8,6 +8,6 @@ public class Issue8526 : TestContentPage
 
 	protected override async void Init()
 	{
-		await DisplayPromptAsync(Success, "This prompt should display when the page loads.");
+		await DisplayPrompt(Success, "This prompt should display when the page loads.");
 	}
 }

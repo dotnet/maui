@@ -351,6 +351,10 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
+		[Obsolete("Use DisplayPrompt instead")]
+		public Task<string> DisplayPrompt(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
+			=> DisplayPrompt(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
+
 		/// <summary>
 		/// Displays a prompt dialog to the application user with the intent to capture a single string value.
 		/// </summary>
@@ -363,7 +367,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="keyboard">The keyboard type to use for the user response.</param>
 		/// <param name="initialValue">A pre-defined response that will be displayed, and which can be edited by the user.</param>
 		/// <returns>A <see cref="Task"/> that displays a prompt display and returns the string value as entered by the user.</returns>
-		public Task<string> DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
+		public Task<string> DisplayPrompt(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
 		{
 			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
 

@@ -42,7 +42,7 @@ namespace Maui.Controls.Sample.Pages
 
 		async void OnQuestion1ButtonClicked(object sender, EventArgs e)
 		{
-			string result = await DisplayPromptAsync("Question 1", "What's your name?", initialValue: string.Empty);
+			string result = await DisplayPrompt("Question 1", "What's your name?", initialValue: string.Empty);
 
 			if (!string.IsNullOrWhiteSpace(result))
 			{
@@ -52,7 +52,7 @@ namespace Maui.Controls.Sample.Pages
 
 		async void OnQuestion2ButtonClicked(object sender, EventArgs e)
 		{
-			string result = await DisplayPromptAsync("Question 2", "What's 5 + 5?", initialValue: "10", maxLength: 2, keyboard: Keyboard.Numeric);
+			string result = await DisplayPrompt("Question 2", "What's 5 + 5?", initialValue: "10", maxLength: 2, keyboard: Keyboard.Numeric);
 
 			if (!string.IsNullOrWhiteSpace(result))
 			{
