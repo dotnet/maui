@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Controls.TestCases.HostApp.Issues.Issues21328"
+             Title="Issues21328">
+      <VerticalStackLayout VerticalOptions="Center"
+                HorizontalOptions="Fill"
+                Spacing="20">
+                <Label x:Name="label"  HorizontalOptions="Center"
+                    AutomationId="HtmlLinkLabel"
+                    TextType="Html" >
+                 </Label>   
+                <Label x:Name="label2" HorizontalOptions="Center"
+                    TextType="Html" />
+
+                <Button Text="Change 2nd lable text" Clicked="Button_Clicked" />
+             </VerticalStackLayout>
+</ContentPage>
