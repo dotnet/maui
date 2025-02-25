@@ -103,7 +103,7 @@ stages:
           platform: windows
           timeoutInMinutes: 240
           pool: ${{ parameters.windowsPool }}
-          versions: [ '${{ parameters.windowsVersion }}' ]
+          versions: [ '${{ windowsVersion }}' ]
           cakeArgs: ''
           targetFrameworkVersion: ${{ parameters.targetFrameworkVersion }}
           checkoutDirectory: ${{ parameters.checkoutDirectory }}

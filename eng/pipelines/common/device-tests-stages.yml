@@ -110,4 +110,3 @@ stages:
             deviceTestConfiguration: ${{ parameters.project.configuration }}
             skipProvisioning: ${{ parameters.skipProvisioning }}
             # skipDotNet: true
-            cakeArgs: --create=false
