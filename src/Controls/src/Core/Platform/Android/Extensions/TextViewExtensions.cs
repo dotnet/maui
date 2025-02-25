@@ -62,6 +62,10 @@ namespace Microsoft.Maui.Controls.Platform
 					break;
 				case LineBreakMode.CharacterWrap:
 					textView.Ellipsize = null;
+					if (OperatingSystem.IsAndroidVersionAtLeast(23))
+					{
+						textView.BreakStrategy = BreakStrategy.Simple;
+					}
 					break;
 				case LineBreakMode.HeadTruncation:
 					maxLines = 1; // If maxLines is anything greater than 1, the truncation will be ignored: https://developer.android.com/reference/android/widget/TextView#setEllipsize(android.text.TextUtils.TruncateAt)
