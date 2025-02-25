@@ -95,13 +95,14 @@ namespace Microsoft.Maui.Handlers
 			uITextField.EditingDidEnd += editingDidEndHandler;
 
 			var platformWindow = MauiContext?.GetPlatformWindow();
+			var currentViewController = GetCurrentViewController(platformWindow?.RootViewController);
 			platformWindow?.BeginInvokeOnMainThread(() =>
 			{
-				GetTopViewController(platformWindow?.RootViewController)?.PresentViewControllerAsync(pickerController, true);
+				currentViewController?.PresentViewControllerAsync(pickerController, true);
 			});
 		}
 
-		static UIViewController? GetTopViewController(UIViewController? viewController)
+		static UIViewController? GetCurrentViewController(UIViewController? viewController)
 		{
 			while (viewController?.PresentedViewController != null)
 			{
