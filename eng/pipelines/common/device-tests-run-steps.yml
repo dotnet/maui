@@ -85,7 +85,7 @@ steps:
       targetPath: ${{ parameters.checkoutDirectory }}/artifacts
 
   - script: |
-      ls -la ${{ parameters.checkoutDirectory }}/artifacts/bin
+      ls -la ${{ parameters.checkoutDirectory }}/artifacts
 
 
   ##################################################
