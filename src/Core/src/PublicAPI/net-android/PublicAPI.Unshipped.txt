@@ -95,3 +95,5 @@ override Microsoft.Maui.PlatformWrapperView.OnLayout(bool changed, int left, int
 virtual Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! canvas, int viewWidth, int viewHeight) -> void
 *REMOVED*~override Microsoft.Maui.Platform.WrapperView.DrawShadow(Android.Graphics.Canvas canvas, int viewWidth, int viewHeight) -> void
 *REMOVED*abstract Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! p0, int p1, int p2) -> void
+*REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
+Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?

@@ -1,23 +1,22 @@
-﻿namespace Microsoft.Maui.Platform
+﻿namespace Microsoft.Maui.Platform;
+
+public static class TimePickerExtensions
 {
-	public static class TimePickerExtensions
+	public static void UpdateFormat(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
 	{
-		public static void UpdateFormat(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
-		{
-			mauiTimePicker.SetTime(timePicker);
-		}
+		mauiTimePicker.SetTime(timePicker);
+	}
 
-		public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
-		{
-			mauiTimePicker.SetTime(timePicker);
-		}
+	public static void UpdateTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
+	{
+		mauiTimePicker.SetTime(timePicker);
+	}
 
-		internal static void SetTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
-		{
-			var time = timePicker.Time;
-			var format = timePicker.Format;
+	internal static void SetTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
+	{
+		var time = timePicker.Time;
+		var format = timePicker.Format;
 
-			mauiTimePicker.Text = time.ToFormattedString(format);
-		}
+		mauiTimePicker.Text = time?.ToFormattedString(format);
 	}
 }
