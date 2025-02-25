@@ -13,10 +13,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "ListView, ImageCell and disabled source cache and same image url";
 
 		[Test]
-		[Ignore("This test is very flaky and needs to be fixed. See https://github.com/dotnet/maui/issues/27272")]
 		[Category(UITestCategories.ListView)]
 		public void TestDoesntCrashWithCachingDisable()
 		{
+			VerifyInternetConnectivity();
+			//Wait for the image URLs to load before proceeding with the test
+			Thread.Sleep(TimeSpan.FromSeconds(2));
 			App.WaitForElement("ImageLoaded");
 			App.ScrollDown("TestListView", ScrollStrategy.Programmatically);
 			App.ScrollDown("TestListView", ScrollStrategy.Programmatically);
