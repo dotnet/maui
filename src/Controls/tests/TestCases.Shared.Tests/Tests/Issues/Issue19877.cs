@@ -14,8 +14,14 @@ public class Issue19877 : _IssuesUITest
 	[Category(UITestCategories.Border)]
 	public void BorderRoundRectangleWithImage()
 	{
+#if ANDROID
 		var borderElement = App.WaitForElement("TestBorder");
 
 		VerifyScreenshot(borderElement);
+#else
+		App.WaitForElement("OasisImage");
+
+		VerifyScreenshot();
+#endif
 	}
 }
