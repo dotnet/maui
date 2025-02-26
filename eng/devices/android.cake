@@ -4,6 +4,9 @@
 
 const int DefaultApiLevel = 30;
 
+const int EmulatorStartProcessTimeoutSeconds = 3 * 60;
+const int EmulatorBootTimeoutSeconds = 3 * 60;
+
 Information("Local Dotnet: {0}", localDotnet);
 
 if (EnvironmentVariable("JAVA_HOME") == null)
@@ -418,30 +421,12 @@ async Task HandleVirtualDevice(AndroidEmulatorToolSettings emuSettings, AndroidA
 				Information("Starting Emulator: {0}...", avdName);
 				emulatorProcess = AndroidEmulatorStart(avdName, emuSettings);
 			}
-		}).WaitAsync(TimeSpan.FromMinutes(2));
+		}).WaitAsync(TimeSpan.FromSeconds(EmulatorStartProcessTimeoutSeconds));
 	}
-	catch(TimeoutException)
+	catch (TimeoutException)
 	{
 		Error("Failed to start the Android Emulator.");
 		throw;
-	}
-
-	try
-	{
-		await System.Threading.Tasks.Task.Run(() =>
-		{
-			if (IsCIBuild() && emulatorProcess is not null)
-			{
-				Information("Setting Logcat Values");
-				AdbLogcat(new AdbLogcatOptions() { Clear = true });
-				AdbShell("logcat -G 16M");
-				Information("Finished Setting Logcat Values");
-			}
-		}).WaitAsync(TimeSpan.FromMinutes(1));
-	}
-	catch(TimeoutException)
-	{
-		Warning("Failed to Issue Logcat Commands to the Android Emulator.");
 	}
 }
 
@@ -615,9 +600,9 @@ void PrepareDevice(bool waitForBoot)
 	{
 		Information("Waiting for the emulator to finish booting...");
 
-		// wait for it to finish booting (10 mins)
+		// wait for it to finish booting
 		var waited = 0;
-		var total = 60 * 10;
+		var total = EmulatorBootTimeoutSeconds;
 		while (AdbShell("getprop sys.boot_completed", settings).FirstOrDefault() != "1")
 		{
 			System.Threading.Thread.Sleep(1000);
@@ -625,16 +610,30 @@ void PrepareDevice(bool waitForBoot)
 			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
 
 			if (waited++ > total)
-				break;
+			{
+				throw new Exception("The emulator did not finish booting in time.");
+			}
 
 			// something may be wrong with ADB, so restart every minute just in case
 			if (waited % 60 == 0 && IsCIBuild())
 			{
+				Information("Trying to restart ADB just in case...");
 				AdbKillServer(adbSettings);
 			}
 		}
 
 		Information("Waited {0} seconds for the emulator to boot up.", waited);
+	}
+
+	if (IsCIBuild())
+	{
+		Information("Setting Logcat properties...");
+
+		AdbLogcat(new AdbLogcatOptions() { Clear = true });
+		
+		AdbShell("logcat -G 16M", settings);
+		
+		Information("Finished setting Logcat properties.");
 	}
 
 	Information("Setting the ADB properties...");
@@ -644,4 +643,6 @@ void PrepareDevice(bool waitForBoot)
 
 	lines = AdbShell("getprop debug.mono.log", settings);
 	Information("{0}", string.Join("\n", lines));
+
+	Information("Finished setting ADB properties.");
 }
