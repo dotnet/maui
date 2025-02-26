@@ -36,11 +36,11 @@ stages:
 - ${{ each platform in parameters.platforms }}:
   - stage: ${{ platform }}_device_tests_${{ replace(parameters.targetFrameworkVersion.tfm, '.', '') }}
     displayName: ${{ parameters.targetFrameworkVersion.tfm }} ${{ platform }}
-    ${{ if ne(parameters.targetFrameworkVersion.dependsOn, '') }}:
+    ${{ if eq(parameters.targetFrameworkVersion.dependsOn, '') }}:
+      dependsOn: []
+    ${{ else }}:
       dependsOn:
         - ${{ platform }}_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
-    ${{ else }}:
-      dependsOn: []
     jobs:
 
     - ${{ if eq('${{ platform }}', 'android') }}:
