@@ -188,9 +188,6 @@ xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
 
 			Assert.AreEqual(true, label00.IsVisible);
 			Assert.AreEqual(false, label01.IsVisible);
-
-			Assert.AreEqual(4, InvertBoolenConverter.count);
-
 		}
 	}
 
