@@ -61,7 +61,7 @@
                                 <Entry.Behaviors>
                                     <toolkit:TextValidationBehavior 
                                         InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                        Flags="ValidateOnUnfocusing"
+                                        Flags="ValidateOnUnfocused"
                                         RegexPattern="^#(?:[0-9a-fA-F]{3}){1,2}$" />
                                 </Entry.Behaviors>
                             </Entry>
