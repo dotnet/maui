@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 
-		// TODO obsolete or delete this for NET9
+		[Obsolete("Use Microsoft.Maui.Platform.WrapperView.Disconnect instead.")]
 		public new void Dispose()
 		{
 			Disconnect();
