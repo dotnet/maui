@@ -47,7 +47,7 @@
 			// Test action sheet with items and Cancel, Item 2 is the correct option
 			Add(Test.Alerts.ActionSheetClickItem, async t =>
 			{
-				var result = await DisplayActionSheet(
+				var result = await DisplayActionSheetAsync(
 					"Action Sheet Title Here",
 					"CANCEL", "DESTROY",
 					"ITEM 1", "ITEM 2", "ITEM 3");
@@ -60,7 +60,7 @@
 			// Test action sheet with items and Cancel, Cancel is the correct option
 			Add(Test.Alerts.ActionSheetClickCancel, async t =>
 			{
-				var result = await DisplayActionSheet(
+				var result = await DisplayActionSheetAsync(
 					"Action Sheet Title Here",
 					"CANCEL", "DESTROY",
 					"ITEM 1", "ITEM 2", "ITEM 3");
@@ -73,7 +73,7 @@
 			// Test action sheet with items and Cancel, Destroy is the correct option
 			Add(Test.Alerts.ActionSheetClickDestroy, async t =>
 			{
-				var result = await DisplayActionSheet(
+				var result = await DisplayActionSheetAsync(
 					"Action Sheet Title Here",
 					"CANCEL", "DESTROY",
 					"ITEM 1", "ITEM 2", "ITEM 3");

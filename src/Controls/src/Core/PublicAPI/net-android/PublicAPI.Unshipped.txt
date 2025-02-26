@@ -19,6 +19,7 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.Compone
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string accept, string cancel) -> System.Threading.Tasks.Task<bool>
+~Microsoft.Maui.Controls.Page.DisplayActionSheetAsync(string title, string cancel, string destruction, params string[] buttons) -> System.Threading.Tasks.Task<string>
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string accept, string cancel, Microsoft.Maui.FlowDirection flowDirection) -> System.Threading.Tasks.Task<bool>
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string cancel) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string cancel, Microsoft.Maui.FlowDirection flowDirection) -> System.Threading.Tasks.Task

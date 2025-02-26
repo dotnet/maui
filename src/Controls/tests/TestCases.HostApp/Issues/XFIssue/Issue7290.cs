@@ -33,7 +33,7 @@ public class Issue7290 : TestShell
 
 		actionSheetPage.Appearing += async (_, __) =>
 		{
-			await actionSheetPage.DisplayActionSheet("Title", "Cancel", "Close Action Sheet", "Button");
+			await actionSheetPage.DisplayActionSheetAsync("Title", "Cancel", "Close Action Sheet", "Button");
 		};
 
 		AddContentPage(displayAlertPage);

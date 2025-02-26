@@ -274,11 +274,19 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public event EventHandler Disappearing;
 
-		/// <inheritdoc cref="DisplayActionSheet(string, string, string, FlowDirection, string[])"/>
+		/// <inheritdoc cref="DisplayActionSheetAsync(string, string, string, FlowDirection, string[])"/>
+		[Obsolete("Use DisplayActionSheetAsync instead")]
 		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, params string[] buttons)
-		{
-			return DisplayActionSheet(title, cancel, destruction, FlowDirection.MatchParent, buttons);
-		}
+			=> DisplayActionSheetAsync(title, cancel, destruction, FlowDirection.MatchParent, buttons);
+
+		/// <inheritdoc cref="DisplayActionSheetAsync(string, string, string, FlowDirection, string[])"/>
+		[Obsolete("Use DisplayActionSheetAsync instead")]
+		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, FlowDirection flowDirection, params string[] buttons)
+			=> DisplayActionSheetAsync(title, cancel, destruction, flowDirection, buttons);
+
+		/// <inheritdoc cref="DisplayActionSheetAsync(string, string, string, FlowDirection, string[])"/>
+		public Task<string> DisplayActionSheetAsync(string title, string cancel, string destruction, params string[] buttons)
+			=> DisplayActionSheetAsync(title, cancel, destruction, FlowDirection.MatchParent, buttons);
 
 		/// <summary>
 		/// Displays a platform action sheet, allowing the application user to choose from several buttons.
@@ -290,7 +298,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="buttons">Text labels for additional buttons.</param>
 		/// <returns>A <see cref="Task"/> that displays an action sheet and returns the string caption of the button pressed by the user.</returns>
 		/// <remarks>Developers should be aware that Windows line endings, CR-LF, only work on Windows systems, and are incompatible with iOS and Android. A particular consequence of this is that characters that appear after a CR-LF, (For example, in the title) may not be displayed on non-Windows platforms. Developers must use the correct line endings for each of the targeted systems.</remarks>
-		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, FlowDirection flowDirection, params string[] buttons)
+		public Task<string> DisplayActionSheetAsync(string title, string cancel, string destruction, FlowDirection flowDirection, params string[] buttons)
 		{
 			var args = new ActionSheetArguments(title, cancel, destruction, buttons);
 
