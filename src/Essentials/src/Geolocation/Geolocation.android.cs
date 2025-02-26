@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Devices.Sensors
 					return false;
 
 				return OperatingSystem.IsAndroidVersionAtLeast(28)
-					? LocationManager.IsSupported
+					? LocationManager.IsLocationEnabled
 					: LocationManager.IsProviderEnabled(LocationManager.GpsProvider) || LocationManager.IsProviderEnabled(LocationManager.NetworkProvider);
 			}
 		}
