@@ -40,29 +40,7 @@ Information($"Test Results Path: {testResultsPath}");
 Information("Runtime Variant: {0}", RUNTIME_VARIANT);
 
 var dotnetToolPath = GetDotnetToolPath();
-
-Setup(context =>
-{
-	LogSetupInfo(dotnetToolPath);
-
-	if (!deviceBoot)
-	{
-		return;
-	}
-	bool createLogs = targetCleanup && IsCIBuild();
-	PerformCleanupIfNeeded(deviceCleanupEnabled, createLogs);
-
-	// Device or simulator setup
-	if (testDevice.Contains("device"))
-	{
-		GetDevices(iosVersion, dotnetToolPath);
-	}
-	else if (testDevice.IndexOf("_") != -1)
-	{
-		GetSimulators(testDevice, dotnetToolPath);
-		ResetSimulators(testDevice, dotnetToolPath);
-	}
-});
+LogSetupInfo(dotnetToolPath);
 
 Teardown(context => 
 {
@@ -74,10 +52,28 @@ Teardown(context =>
 	PerformCleanupIfNeeded(deviceCleanupEnabled, true);
 });
 
-Task("Cleanup");
+Task("connectToDevice")
+	.Does(() =>
+	{
+		if (!deviceBoot)
+		{
+			return;
+		}
 
-// Todo this doesn't work for iOS currently
-// Task("boot");
+		bool createLogs = targetCleanup && IsCIBuild();
+		PerformCleanupIfNeeded(deviceCleanupEnabled, createLogs);
+
+		// Device or simulator setup
+		if (testDevice.Contains("device"))
+		{
+			GetDevices(iosVersion, dotnetToolPath);
+		}
+		else if (testDevice.IndexOf("_") != -1)
+		{
+			GetSimulators(testDevice, dotnetToolPath);
+			ResetSimulators(testDevice, dotnetToolPath);
+		}
+	});
 
 Task("buildOnly")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
@@ -87,6 +83,7 @@ Task("buildOnly")
 	});
 
 Task("testOnly")
+	.IsDependentOn("connectToDevice")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
@@ -112,6 +109,7 @@ Task("uitest-build")
 	});
 
 Task("uitest-prepare")
+	.IsDependentOn("connectToDevice")
 	.Does(() =>
 	{
 		ExecutePrepareUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath);

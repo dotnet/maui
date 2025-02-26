@@ -16,6 +16,7 @@ var deviceCleanupEnabled = Argument("cleanup", true);
 // Directory setup
 var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg).FullPath;
 var dotnetToolPath = GetDotnetToolPath();
+LogSetupInfo(dotnetToolPath);
 
 Information($"Project File: {projectPath}");
 Information($"Build Binary Log (binlog): {binlogDirectory}");
@@ -24,16 +25,6 @@ Information($"Build Runtime Identifier: {runtimeIdentifier}");
 Information($"Build Target Framework: {targetFramework}");
 Information($"Test Device: {testDevice}");
 Information($"Test Results Path: {testResultsPath}");
-
-Setup(context =>
-{
-	LogSetupInfo(dotnetToolPath);
-	PerformCleanupIfNeeded(deviceCleanupEnabled);
-});
-
-Teardown(context => PerformCleanupIfNeeded(deviceCleanupEnabled));
-
-Task("Cleanup");
 
 Task("buildOnly")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
@@ -189,15 +180,6 @@ void ExecuteBuildUITestApp(string appProject, string binDir, string config, stri
 }
 
 // Helper methods
-
-void PerformCleanupIfNeeded(bool cleanupEnabled)
-{
-	if (cleanupEnabled)
-	{
-		// Add cleanup logic, possibly deleting temporary files, directories, etc.
-		Information("Cleaning up...");
-	}
-}
 
 string GetDefaultRuntimeIdentifier()
 {

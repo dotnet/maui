@@ -60,6 +60,7 @@ emuSettings = AdjustEmulatorSettingsForCI(emuSettings);
 AndroidEmulatorProcess emulatorProcess = null;
 
 var dotnetToolPath = GetDotnetToolPath();
+LogSetupInfo(dotnetToolPath);
 
 Teardown(context =>
 {
@@ -70,28 +71,19 @@ Teardown(context =>
 	}
 });
 
-Task("Setup")
+Task("connectToDevice")
 	.Does(async () =>
 	{
-		LogSetupInfo(dotnetToolPath);
-
-		PerformCleanupIfNeeded(deviceCleanupEnabled);
-
 		DetermineDeviceCharacteristics(testDevice, DefaultApiLevel);
 
-		// Don't start or connect to devices if we are just building
-		if (!TARGET.StartsWith("build", StringComparison.OrdinalIgnoreCase))
-		{
-			// The Emulator Start command seems to hang sometimes so let's only give it two minutes to complete
-			await HandleVirtualDevice(emuSettings, avdSettings, androidAvd, androidAvdImage, deviceSkin, deviceBoot);
-		}
+		// The Emulator Start command seems to hang sometimes so let's only give it two minutes to complete
+		await HandleVirtualDevice(emuSettings, avdSettings, androidAvd, androidAvdImage, deviceSkin, deviceBoot);
 	});
 
 Task("boot")
-	.IsDependentOn("Setup");
+	.IsDependentOn("connectToDevice");
 
 Task("buildOnly")
-	.IsDependentOn("Setup")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
@@ -99,7 +91,7 @@ Task("buildOnly")
 	});
 
 Task("testOnly")
-	.IsDependentOn("Setup")
+	.IsDependentOn("connectToDevice")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
@@ -118,7 +110,7 @@ Task("buildAndTest")
 	.IsDependentOn("testOnly");
 
 Task("uitest-prepare")
-	.IsDependentOn("Setup")
+	.IsDependentOn("connectToDevice")
 	.Does(() =>
 	{
 		ExecutePrepareUITests(projectPath, testAppProjectPath, testAppPackageName, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, "", androidVersion, dotnetToolPath, testAppInstrumentation);
@@ -132,7 +124,7 @@ Task("uitest")
 	});
 
 Task("logcat")
-	.IsDependentOn("Setup")
+	.IsDependentOn("connectToDevice")
 	.Does(() =>
 {
 	WriteLogCat();
@@ -317,15 +309,6 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 }
 
 // Helper methods
-
-void PerformCleanupIfNeeded(bool cleanupEnabled)
-{
-	if (cleanupEnabled)
-	{
-
-
-	}
-}
 
 void SetAndroidEnvironmentVariables(string sdkRoot)
 {

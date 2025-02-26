@@ -29,6 +29,7 @@ string CONFIGURATION = Argument("configuration", "Debug");
 var windowsVersion = Argument("apiversion", EnvironmentVariable("WINDOWS_PLATFORM_VERSION") ?? defaultVersion);
 
 var dotnetToolPath = GetDotnetToolPath();
+LogSetupInfo(dotnetToolPath);
 
 // other
 string PLATFORM = "windows";
@@ -58,24 +59,6 @@ Information("Build Configuration: {0}", CONFIGURATION);
 
 Information("Target Framework: {0}", TARGET_FRAMEWORK);
 Information("Windows version: {0}", windowsVersion);
-
-Setup(context =>
-{
-	Cleanup();
-});
-
-Teardown(context =>
-{
-	Cleanup();
-});
-
-void Cleanup()
-{
-	if (!DEVICE_CLEANUP)
-		return;
-}
-
-Task("Cleanup");
 
 Task("GenerateMsixCert")
 	.WithCriteria(isPackagedTestRun)
