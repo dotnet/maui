@@ -37,7 +37,7 @@ stages:
       timeoutInMinutes: 60
       workspace:
         clean: all
-      displayName: Build ${{ parameters.platform }} ${{ parameters.project.desc }} ${{ parameters.buildAndTest }}
+      displayName: Build ${{ parameters.platform }} ${{ parameters.project.desc }}
       pool: ${{ parameters.pool }}
       variables:
         REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
@@ -67,14 +67,14 @@ stages:
         timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
         workspace:
           clean: all
-        displayName: Run ${{ parameters.platform }} ${{ parameters.project.desc }} ${{ version }} ${{ parameters.buildAndTest }}
+        displayName: Run ${{ parameters.platform }} ${{ parameters.project.desc }} ${{ version }}
         pool: ${{ parameters.pool }}
         variables:
           REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
         steps:
         - template: device-tests-stage-steps.yml
           parameters:
-            buildType: ${{ iif(parameters.buildAndTest, 'buildAndTest', 'testOnly') }}
+            buildType: ${{ iif(eq(parameters.buildAndTest, 'true'), 'buildAndTest', 'testOnly') }}
             platform: ${{ parameters.platform }}
             path: ${{ parameters.project.path }}
             appArtifactName: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
