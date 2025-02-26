@@ -318,12 +318,11 @@ namespace Microsoft.Maui.DeviceTests
 			var expectedValue = editor.IsVisible;
 
 			var handler = await CreateHandlerAsync<EditorHandler>(editor);
-			var nativeView = GetPlatformControl(handler);
-			 await InvokeOnMainThreadAsync( async () =>
-   			 {
+			await InvokeOnMainThreadAsync(async () =>
+			{
 				var nativeView = await GetPlatformIsVisible(handler);
-		        Assert.Equal(expectedValue, nativeView);
-    		});	
+				Assert.Equal(expectedValue, nativeView);
+			});
 		}
 
 		[Category(TestCategory.Editor)]

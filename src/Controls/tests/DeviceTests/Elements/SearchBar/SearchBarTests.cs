@@ -106,12 +106,11 @@ namespace Microsoft.Maui.DeviceTests
 			var expectedValue = searchBar.IsVisible;
 
 			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
-			var nativeView = GetPlatformControl(handler);
-			 await InvokeOnMainThreadAsync( async () =>
-   			 {
+			await InvokeOnMainThreadAsync(async () =>
+   			{
 				var nativeView = await GetPlatformIsVisible(handler);
-		        Assert.Equal(expectedValue, nativeView);
-    		});	
+				Assert.Equal(expectedValue, nativeView);
+			});
 		}
 
 #if false

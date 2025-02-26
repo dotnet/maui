@@ -111,11 +111,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
 			var nativeView = GetPlatformControl(handler);
-			 await InvokeOnMainThreadAsync(() =>
-   			 {
-				var platformView = nativeView.Visibility == Android.Views.ViewStates.Visible;
-		        Assert.Equal(expectedValue, platformView);
-    		});	
+			await InvokeOnMainThreadAsync(() =>
+   			{
+				var isSwipeViewVisible = nativeView.Visibility == Android.Views.ViewStates.Visible;
+				Assert.Equal(expectedValue, isSwipeViewVisible);
+			});	
 		}
 	}
 }
