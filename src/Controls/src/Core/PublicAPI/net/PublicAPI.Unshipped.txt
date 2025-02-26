@@ -149,3 +149,4 @@ virtual Microsoft.Maui.Controls.Element.GetHandlerType() -> System.Type?
 virtual Microsoft.Maui.Controls.Element.RemapForControlsIfNeeded() -> void
 override Microsoft.Maui.Controls.Label.GetHandler(Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler?
 override Microsoft.Maui.Controls.Label.GetHandlerType() -> System.Type?
+override Microsoft.Maui.Controls.Label.RemapForControlsIfNeeded() -> void
