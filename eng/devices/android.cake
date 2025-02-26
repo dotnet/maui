@@ -607,8 +607,7 @@ void PrepareDevice(bool waitForBoot)
 		{
 			System.Threading.Thread.Sleep(1000);
 
-			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
-
+			Information("Waiting {0}/{1} seconds for the emulator to boot up.", waited, total);
 			if (waited++ > total)
 			{
 				throw new Exception("The emulator did not finish booting in time.");
