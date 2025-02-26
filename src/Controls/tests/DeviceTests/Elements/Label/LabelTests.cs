@@ -799,7 +799,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The IsVisible property of a Label should match with native IsVisible")]		
+		[Description("The IsVisible property of a Label should match with native IsVisible")]
 		public async Task VerifyLabelIsVisibleProperty()
 		{
 			var label = new Label();
@@ -807,12 +807,11 @@ namespace Microsoft.Maui.DeviceTests
 			var expectedValue = label.IsVisible;
 
 			var handler = await CreateHandlerAsync<LabelHandler>(label);
-			var nativeView = GetPlatformLabel(handler);
-			 await InvokeOnMainThreadAsync( async () =>
-   			 {
+			await InvokeOnMainThreadAsync(async () =>
+			{
 				var nativeView = await GetPlatformIsVisible(handler);
-		        Assert.Equal(expectedValue, nativeView);
-    		});	
+				Assert.Equal(expectedValue, nativeView);
+			});
 		}
 	}
 }

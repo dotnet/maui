@@ -72,12 +72,11 @@ namespace Microsoft.Maui.DeviceTests
 			var expectedValue = checkBox.IsVisible;
 
 			var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
-			var nativeView = GetNativeCheckBox(handler);
-			 await InvokeOnMainThreadAsync( async () =>
-   			 {
+			await InvokeOnMainThreadAsync(async () =>
+   			{
 				var nativeView = await GetPlatformIsVisible(handler);
-		        Assert.Equal(expectedValue, nativeView);
-    		});	
+				Assert.Equal(expectedValue, nativeView);
+			});
 		}
 	}
 }

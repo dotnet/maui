@@ -52,11 +52,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
 			var nativeView = GetPlatformControl(handler);
-			 await InvokeOnMainThreadAsync(() =>
-   			 {
-				var platformView = !nativeView.Hidden;
-		        Assert.Equal(expectedValue, platformView);
-    		});	
+			await InvokeOnMainThreadAsync(() =>
+   			{
+				var isSwipeViewVisible = !nativeView.Hidden;
+				Assert.Equal(expectedValue, isSwipeViewVisible);
+			});	
 		}
 	}
 }

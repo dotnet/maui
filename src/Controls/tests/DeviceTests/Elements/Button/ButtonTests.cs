@@ -72,7 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The IsVisible property of a Button should match with native IsVisible")]		
+		[Description("The IsVisible property of a Button should match with native IsVisible")]
 		public async Task VerifyButtonIsVisibleProperty()
 		{
 			var button = new Button();
@@ -80,12 +80,11 @@ namespace Microsoft.Maui.DeviceTests
 			var expectedValue = button.IsVisible;
 
 			var handler = await CreateHandlerAsync<ButtonHandler>(button);
-			var nativeView = GetPlatformButton(handler);
-			 await InvokeOnMainThreadAsync( async () =>
-   			 {
+			await InvokeOnMainThreadAsync(async () =>
+			{
 				var nativeView = await GetPlatformIsVisible(handler);
-		        Assert.Equal(expectedValue, nativeView);
-    		});	
+				Assert.Equal(expectedValue, nativeView);
+			});
 		}
 	}
 }

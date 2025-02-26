@@ -74,12 +74,11 @@ namespace Microsoft.Maui.DeviceTests
 			var expectedValue = boxView.IsVisible;
 
 			var handler = await CreateHandlerAsync<BoxViewHandler>(boxView);
-			var nativeView = GetNativeBoxView(handler);
-			 await InvokeOnMainThreadAsync( async () =>
-   			 {
+			await InvokeOnMainThreadAsync( async () =>
+   			{
 				var nativeView = await GetPlatformIsVisible(handler);
-		        Assert.Equal(expectedValue, nativeView);
-    		});	
+				Assert.Equal(expectedValue, nativeView);
+			});	
 		}
 	}
 }

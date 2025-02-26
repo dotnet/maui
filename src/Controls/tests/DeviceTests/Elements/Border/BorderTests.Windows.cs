@@ -70,12 +70,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync<BorderHandler>(border);
 			var nativeView = GetNativeBorder(handler);
-			 await InvokeOnMainThreadAsync( async () =>
-   			 {
-		        var platformView = nativeView.Visibility == Windows.UI.Xaml.Visibility.Visible;
-				Assert.Equal(expectedValue, platformView);
-
-    		});	
+			await InvokeOnMainThreadAsync( async () =>
+   			{
+				var isBorderVisible = nativeView.Visibility == Windows.UI.Xaml.Visibility.Visible;
+				Assert.Equal(expectedValue, isBorderVisible);
+			});	
 		}
 
 		ContentPanel GetNativeBorder(BorderHandler borderHandler) =>
