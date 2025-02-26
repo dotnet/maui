@@ -1,9 +1,6 @@
-﻿#nullable disable
-
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Converters;
@@ -11,9 +8,9 @@ using Microsoft.Maui.Graphics.Converters;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
-	/// Type converter for converting a properly formatted string to a Shadow.
+	/// Type converter for converting a properly formatted string to a <see cref="Shadow"/>.
 	/// </summary>
-	internal class ShadowTypeConverter : TypeConverter
+	public class ShadowTypeConverter : TypeConverter
 	{
 		readonly ColorTypeConverter _colorTypeConverter = new ColorTypeConverter();
 
@@ -23,7 +20,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="context">The context to use for conversion.</param>
 		/// <param name="sourceType">The type to convert from.</param>
 		/// <returns></returns>
-		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? sourceType)
 			=> sourceType == typeof(string);
 
 		/// <summary>
@@ -32,7 +29,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="context">The context to use for conversion.</param>
 		/// <param name="destinationType">The type to convert to.</param>
 		/// <returns></returns>
-		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
+		public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
 			=> destinationType == typeof(Shadow);
 
 		/// <summary>
@@ -44,11 +41,11 @@ namespace Microsoft.Maui.Controls
 		/// <returns></returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="value" /> is null.</exception>
 		/// <exception cref="InvalidOperationException">Thrown when <paramref name="value" /> is not a valid Shadow.</exception>
-		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+		public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
 			var strValue = value?.ToString();
 
-			if (strValue == null)
+			if (strValue is null)
 			{
 				throw new ArgumentNullException(nameof(strValue));
 			}
@@ -140,7 +137,7 @@ namespace Microsoft.Maui.Controls
 		/// <returns>A string representation of the Shadow.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="value" /> is null.</exception>
 		/// <exception cref="InvalidOperationException">Thrown when <paramref name="value" /> is not a Shadow or the Brush is not a SolidColorBrush.</exception>
-		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+		public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type? destinationType)
 		{
 			if (value is null)
 			{
@@ -155,7 +152,7 @@ namespace Microsoft.Maui.Controls
 				var color = (shadow.Brush as SolidColorBrush)?.Color.ToHex();
 				var opacity = shadow.Opacity.ToString(CultureInfo.InvariantCulture);
 
-				if (color == null)
+				if (color is null)
 				{
 					throw new InvalidOperationException("Cannot convert Shadow to string: Brush is not a valid SolidColorBrush or has no Color.");
 				}
