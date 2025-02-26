@@ -614,8 +614,8 @@ void PrepareDevice(bool waitForBoot)
 				throw new Exception("The emulator did not finish booting in time.");
 			}
 
-			// something may be wrong with ADB, so restart every minute just in case
-			if (waited % 60 == 0 && IsCIBuild())
+			// something may be wrong with ADB, so restart every 30 seconds just in case
+			if (waited % 30 == 0 && IsCIBuild())
 			{
 				Information("Trying to restart ADB just in case...");
 				AdbKillServer(adbSettings);
