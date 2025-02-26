@@ -32,12 +32,12 @@ stages:
   ${{ else }}:
     dependsOn: []
   jobs:
-  - ${{ if ne(parameters.buildAndTest, 'true') }}:
+  - ${{ if eq(parameters.buildAndTest, 'false') }}:
     - job: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
       timeoutInMinutes: 60
       workspace:
         clean: all
-      displayName: Build ${{ parameters.platform }} ${{ parameters.project.desc }}
+      displayName: Build ${{ parameters.platform }} ${{ parameters.project.desc }} ${{ parameters.buildAndTest }}
       pool: ${{ parameters.pool }}
       variables:
         REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
@@ -62,12 +62,12 @@ stages:
   - ${{ each version in parameters.versions }}:
     - ${{ if not(containsValue(parameters.project.versionsExclude, version)) }}:
       - job: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_${{ replace(replace(version, '.', ''), '-', '') }}
-        ${{ if ne(parameters.buildAndTest, 'true') }}:
+        ${{ if eq(parameters.buildAndTest, 'false') }}:
           dependsOn: ${{ parameters.platform }}_device_tests_${{ parameters.project.name }}_build
         timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
         workspace:
           clean: all
-        displayName: Run ${{ parameters.platform }} ${{ parameters.project.desc }} ${{ version }}
+        displayName: Run ${{ parameters.platform }} ${{ parameters.project.desc }} ${{ version }} ${{ parameters.buildAndTest }}
         pool: ${{ parameters.pool }}
         variables:
           REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)

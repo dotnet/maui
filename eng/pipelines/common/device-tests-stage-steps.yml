@@ -25,6 +25,9 @@ steps:
   #               Provision Machine                #
   ##################################################
 
+  - script: echo ${{ parameters.buildType }}
+    displayName: ${{ parameters.buildType }}
+
   # Clean the machine for iOS builds that are running on physical machines
   - ${{ if and(eq(parameters.platform, 'ios'), ne(parameters.poolName, 'Azure Pipelines')) }}:
     - bash: |
