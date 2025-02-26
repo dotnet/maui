@@ -2,7 +2,7 @@
 {
 	public partial class HeaderFooterGrid : ContentPage
 	{
-		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(6); // Reduced the items count to ensure that the footer is displayed on all platforms.
+		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(10);
 
 		object header;
 		object footer;
