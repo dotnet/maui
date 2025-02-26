@@ -76,6 +76,9 @@ static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 *REMOVED*static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement! view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
 static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement? view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
+static Microsoft.Maui.Platform.TextInputExtensions.GetCursorPosition(this UIKit.IUITextInput! platformView, int cursorOffset = 0) -> int
+static Microsoft.Maui.Platform.TextInputExtensions.GetSelectedTextLength(this UIKit.IUITextInput! platformView) -> int
+static Microsoft.Maui.Platform.TextInputExtensions.SetTextRange(this UIKit.IUITextInput! platformView, int start, int selectedTextLength) -> void
 static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindow? platformWindow) -> Microsoft.Maui.IWindow?
 static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindowScene? windowScene) -> Microsoft.Maui.IWindow?
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
@@ -87,3 +90,17 @@ override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Gr
 override Microsoft.Maui.Handlers.EditorHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.WindowHandler.DisconnectHandler(UIKit.UIWindow! platformView) -> void
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> bool
+Microsoft.Maui.ISearchBar.SearchIconColor.get -> Microsoft.Maui.Graphics.Color!
+*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> boolormView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> boolormView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> boolormView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> bool
+Microsoft.Maui.Platform.TextInputExtensions
+*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebView! webView, WebKit.WKNavigationAction! navigationAction, System.Action<WebKit.WKNavigationActionPolicy>! decisionHandler) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
+virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebView! webView, WebKit.WKNavigationAction! navigationAction, System.Action<WebKit.WKNavigationActionPolicy>! decisionHandler) -> void
+virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
+virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
+virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void

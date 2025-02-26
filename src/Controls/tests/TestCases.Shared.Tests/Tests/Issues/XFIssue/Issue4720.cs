@@ -16,6 +16,7 @@ public class Issue4720 : _IssuesUITest
 	[Category(UITestCategories.WebView)]
 	public void WebViewDoesntCrashWhenLoadingAHeavyPageAndUsingExecutionModeSeparateProcess()
 	{
+		VerifyInternetConnectivity();
 		//4 iterations were enough to run out of memory before the fix.
 		int iterations = 10;
 

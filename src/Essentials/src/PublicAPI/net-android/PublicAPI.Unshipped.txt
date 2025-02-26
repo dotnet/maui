@@ -18,3 +18,6 @@ static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTime value
 static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTime value, string? sharedName, bool commit = false) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value, bool commit = false) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value, string? sharedName, bool commit = false) -> void
+static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value) -> void
+Microsoft.Maui.Media.SpeechOptions.Rate.get -> float?
+Microsoft.Maui.Media.SpeechOptions.Rate.set -> void

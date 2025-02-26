@@ -21,7 +21,7 @@ namespace UITest.Appium
 				// Virtual-Key Codes: https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes			
 				_appiumApp.Driver.ExecuteScript("windows: keys", new Dictionary<string, object>
 				{
-					["actions"] = new[] 
+					["actions"] = new[]
 					{
 						new Dictionary<string, object> { ["virtualKeyCode"] = 0x0D, ["down"]=false }, // Enter
 					}

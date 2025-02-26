@@ -12,7 +12,7 @@ using WebResourceResponse = Android.Webkit.WebResourceResponse;
 namespace Maui.Controls.Sample.Issues
 {
 	
-	[Issue(IssueTracker.Github, 16032, "Improve the customization of WebView on Android", PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 16032, "Improve the customization of WebView on Android", PlatformAffected.Android, isInternetRequired: true)]
 	public class Issue16032 : ContentPage
 	{
 		public Issue16032()

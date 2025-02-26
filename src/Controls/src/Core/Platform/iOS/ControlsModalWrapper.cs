@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Foundation;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
@@ -19,25 +18,40 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			_modal = modal;
 
-			if (_modal.VirtualView is IElementConfiguration<Page> elementConfiguration &&
-				elementConfiguration.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() is PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style)
+			if (_modal.VirtualView is IElementConfiguration<Page> elementConfiguration)
 			{
-				var result = style.ToPlatformModalPresentationStyle();
-
-				if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)) && result == UIKit.UIModalPresentationStyle.Automatic)
+				if (elementConfiguration.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() is PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style)
 				{
-					result = UIKit.UIModalPresentationStyle.FullScreen;
-				}
+					var result = style.ToPlatformModalPresentationStyle();
 
-				if (result == UIKit.UIModalPresentationStyle.FullScreen)
+					if (!(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)) && result == UIKit.UIModalPresentationStyle.Automatic)
+					{
+						result = UIKit.UIModalPresentationStyle.FullScreen;
+					}
+
+					if (result == UIKit.UIModalPresentationStyle.FullScreen)
+					{
+						Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
+
+						if (modalBkgndColor?.Alpha < 1)
+							result = UIKit.UIModalPresentationStyle.OverFullScreen;
+					}
+					ModalPresentationStyle = result;
+				}
+				if (PopoverPresentationController != null)
 				{
-					Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
-
-					if (modalBkgndColor?.Alpha < 1)
-						result = UIKit.UIModalPresentationStyle.OverFullScreen;
+					if (elementConfiguration.On<PlatformConfiguration.iOS>()?.ModalPopoverSourceView() is View popoverSourceView)
+					{
+						PopoverPresentationController.SourceView = popoverSourceView.ToPlatform();
+					}
+					if (elementConfiguration.On<PlatformConfiguration.iOS>()?.ModalPopoverRect() is System.Drawing.Rectangle rect)
+					{
+						if (!rect.IsEmpty)
+						{
+							PopoverPresentationController.SourceRect = new CoreGraphics.CGRect(rect.X, rect.Y, rect.Width, rect.Height);
+						}
+					}
 				}
-
-				ModalPresentationStyle = result;
 			}
 
 			UpdateBackgroundColor();

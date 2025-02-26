@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using ImageMagick;
 using NUnit.Framework;
 using UITest.Appium;
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public override IConfig GetTestConfig()
 		{
-			var frameworkVersion = "net9.0";
+			var frameworkVersion = "net10.0";
 #if DEBUG
 			var configuration = "Debug";
 #else
@@ -63,14 +63,14 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.0");
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.2");
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
 					var windowsExe = "Controls.TestCases.HostApp.exe";
-					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win10-x64\\{windowsExe}");
-					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win10-x64\\{windowsExe}");
+					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win-x64\\{windowsExe}");
+					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win-x64\\{windowsExe}");
 
 					if (!File.Exists(windowsExePath) && File.Exists(windowsExePath19041))
 					{
@@ -102,6 +102,43 @@ namespace Microsoft.Maui.TestCases.Tests
 		public override void Reset()
 		{
 			App.ResetApp();
+		}
+
+		/// <summary>
+		/// Verifies the screenshots and returns an exception in case of failure.
+		/// </summary>
+		/// <remarks>
+		/// This is especially useful when capturing multiple screenshots in a single UI test.
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Exception? exception = null;
+		/// VerifyScreenshotOrSetException(ref exception, "MyScreenshotName");
+		/// VerifyScreenshotOrSetException(ref exception, "MyOtherScreenshotName");
+		/// if (exception is not null) throw exception;
+		/// </code>
+		/// </example>
+		public void VerifyScreenshotOrSetException(
+			ref Exception? exception,
+			string? name = null,
+			TimeSpan? retryDelay = null
+#if MACUITEST || WINTEST
+			, bool includeTitleBar = false
+#endif
+			)
+		{
+			try
+			{
+				VerifyScreenshot(name, retryDelay
+#if MACUITEST || WINTEST
+				, includeTitleBar
+#endif
+				);
+			}
+			catch (Exception ex)
+			{
+				exception ??= ex;
+			}
 		}
 
 		public void VerifyScreenshot(
@@ -161,7 +198,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
 						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
 
-						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
+						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.2")
 						{
 							environmentName = "ios";
 						}
@@ -214,7 +251,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				int cropFromTop = _testDevice switch
 				{
 					TestDevice.Android => 60,
-					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,									
+					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
 					_ => 0,
@@ -248,6 +285,19 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 
 				_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+			}
+		}
+
+		protected void VerifyInternetConnectivity()
+		{
+			try
+			{
+				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(30));
+				Assert.Inconclusive("This device doesn't have internet access");
+			}
+			catch (TimeoutException)
+			{
+				// Continue with the test
 			}
 		}
 

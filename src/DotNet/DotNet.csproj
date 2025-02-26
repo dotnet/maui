@@ -5,11 +5,10 @@
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
     <InstallDotNet Condition=" '$(InstallDotNet)' == '' ">true</InstallDotNet>
     <InternalAzureFeed>https://dotnetbuilds.blob.core.windows.net/internal</InternalAzureFeed>
-    <DotNetFeedUrl>https://builds.dotnet.microsoft.com/dotnet</DotNetFeedUrl>
+    <DotNetFeedUrl>https://dotnetbuilds.blob.core.windows.net/public</DotNetFeedUrl>
     <NugetArtifactsPath>$(MauiRootDirectory)/artifacts</NugetArtifactsPath>
-    <PublicSdk Condition=" '$(PublicSdk)' == ''">true</PublicSdk>
     <PrivateSdk>$(PRIVATE_BUILD)</PrivateSdk>
-    <PrivateSdk Condition=" '$(PrivateSdk)' == ''">false</PrivateSdk>
+    <PrivateSdk  Condition=" '$(PrivateSdk)' == ''">false</PrivateSdk>
     <_SkipUpgradeNetAnalyzersNuGetWarning>true</_SkipUpgradeNetAnalyzersNuGetWarning>
     <_SkipUpdateBuildNumber>true</_SkipUpdateBuildNumber>
   </PropertyGroup>
@@ -18,8 +17,7 @@
     <DotNetInstallScriptName>dotnet-install.ps1</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetTempDirectory)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' == 'true'">$(DotNetInstallCommand)</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' != 'true'">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' ">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PrivateSdk)' == 'true' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredential $env:DOTNET_TOKEN</DotNetInstallCommand> 
     <DotNetInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
   </PropertyGroup>
@@ -28,8 +26,7 @@
     <DotNetInstallScriptName>dotnet-install.sh</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetTempDirectory)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(MicrosoftDotnetSdkInternalPackageVersion) --install-dir '$(DotNetDirectory)' --verbose</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' == 'true'">$(DotNetInstallCommand)</DotNetInstallCommand>
-    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' AND '$(PublicSdk)' != 'true'">$(DotNetInstallCommand) --azure-feed $(DotNetFeedUrl)</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PrivateSdk)' != 'true' ">$(DotNetInstallCommand) --azure-feed $(DotNetFeedUrl)</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PrivateSdk)' == 'true' ">$(DotNetInstallCommand) --azure-feed $(InternalAzureFeed) --feed-credential $DOTNET_TOKEN</DotNetInstallCommand>
   </PropertyGroup>
 
@@ -81,10 +78,14 @@
     <!-- Run 'dotnet workload install' for the current running 'dotnet' install -->
     <ItemGroup>
       <_WorkloadSource Include="$(NugetArtifactsPath)" />
+      <_LocalWorkloadIds Include="maui" />
+      <!-- NOTE: temporary for .NET 9 targeting https://github.com/xamarin/xamarin-macios/pull/21848/commits/cb1340221774ba9af226ac71a5aef551d765ee21 -->
+      <_LocalWorkloadIds Include="mobile-librarybuilder-net9" />
+      <_LocalWorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
     </ItemGroup>
     <Copy SourceFiles="$(MauiRootDirectory)NuGet.config" DestinationFolder="$(DotNetTempDirectory)" />
     <Exec Command="dotnet nuget add source &quot;$(NugetArtifactsPath)&quot; --name artifacts --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" />
-    <Exec Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install tizen maui --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
+    <Exec Command="&quot;$(MSBuildExtensionsPath)../../dotnet&quot; workload install %(_LocalWorkloadIds.Identity) --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(DotNetTempDirectory)NuGet.config&quot;" WorkingDirectory="$(MauiRootDirectory)" />
 
   </Target>
 
@@ -167,6 +168,8 @@
     <_WorkloadIds Include="macos" />
     <_WorkloadIds Include="ios" />
     <_WorkloadIds Include="tvos" />
+    <!-- NOTE: temporary for .NET 9 targeting https://github.com/xamarin/xamarin-macios/pull/21848/commits/cb1340221774ba9af226ac71a5aef551d765ee21 -->
+    <_WorkloadIds Include="mobile-librarybuilder-net9" />
     <_WorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
   </ItemGroup>
 

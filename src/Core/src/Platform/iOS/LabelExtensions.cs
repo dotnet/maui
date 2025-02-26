@@ -87,10 +87,8 @@ namespace Microsoft.Maui.Platform
 #endif
 			};
 
-			NSError nsError = new();
-#pragma warning disable CS8601
-			platformLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
-#pragma warning restore CS8601
+			NSError? nsError = new();
+			platformLabel.AttributedText = NSAttributedString.Create(text, attr, out nsError);
 		}
 
 		internal static void UpdateTextPlainText(this UILabel platformLabel, IText label)

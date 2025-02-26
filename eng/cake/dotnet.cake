@@ -176,7 +176,7 @@ Task("dotnet-samples")
         }
         else
         {
-            projectsToBuild = "./Microsoft.Maui.Samples.slnf";
+            projectsToBuild = "./eng/Microsoft.Maui.Samples.slnf";
         }
 
         RunMSBuildWithDotNet(projectsToBuild, properties, binlogPrefix: "sample-");
@@ -280,9 +280,11 @@ Task("dotnet-pack-maui")
             ReplaceTextInFiles(originalNuget, "LOCAL_PLACEHOLDER", nugetSource);
         }
 
-        var sln = "./Microsoft.Maui.Packages.slnf";
+        var sln = "./eng/Microsoft.Maui.Packages.slnf";
         if (!IsRunningOnWindows())
-            sln = "./Microsoft.Maui.Packages-mac.slnf";
+        {
+            sln = "./eng/Microsoft.Maui.Packages-mac.slnf";
+        }
  
         if(string.IsNullOrEmpty(officialBuildId))
         {
@@ -355,12 +357,12 @@ Task("dotnet-pack-docs")
                 if (filename.StartsWith("Microsoft.AspNetCore.Components.WebView.Wpf")
                     || filename.StartsWith("Microsoft.AspNetCore.Components.WebView.WindowsForms"))
                 {
-                    CopyFiles($"{d}/lib/**/net?.?-windows?.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
+                    CopyFiles($"{d}/lib/**/net??.?-windows?.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
 
                     continue;
                 }
 
-                CopyFiles($"{d}/lib/**/net?.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
+                CopyFiles($"{d}/lib/**/net??.?/**/*.{{dll,xml,pdb}}", $"{destDir}");
             }
         }
 
