@@ -9,7 +9,7 @@
 			// Test with a single button alert that can be dismissed by tapping the button
 			Add(Test.Alerts.AlertCancel, async t =>
 			{
-				await DisplayAlert(
+				await DisplayAlertAsync(
 					"Alert Title Here",
 					"Alert Message Here",
 					"CANCEL");
@@ -19,7 +19,7 @@
 			// Test alert with options to Accept or Cancel, Accept is the correct option
 			Add(Test.Alerts.AlertAcceptCancelClickAccept, async t =>
 			{
-				var result = await DisplayAlert(
+				var result = await DisplayAlertAsync(
 					"Alert Title Here",
 					"Alert Message Here",
 					"ACCEPT", "CANCEL");
@@ -32,7 +32,7 @@
 			// Test alert with options to Accept or Cancel, Cancel is the correct option
 			Add(Test.Alerts.AlertAcceptCancelClickCancel, async t =>
 			{
-				var result = await DisplayAlert(
+				var result = await DisplayAlertAsync(
 					"Alert Title Here",
 					"Alert Message Here",
 					"ACCEPT", "CANCEL");
