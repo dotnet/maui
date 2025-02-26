@@ -145,18 +145,6 @@ steps:
 
 
   ##################################################
-  #                    Cleanup                     #
-  ##################################################
-
-  # Clean up the machine after the iOS builds
-  - ${{ if and(ne(parameters.buildType, 'buildOnly'), eq(parameters.platform, 'ios')) }}:
-    - script: dotnet cake eng/devices/${{ parameters.platform }}.cake --target=Cleanup ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
-      displayName: Cleanup and Create Simulator Logs if Test Run Failed To
-      condition: always()
-      continueOnError: true
-
-
-  ##################################################
   #                    Publish                     #
   ##################################################
 
