@@ -35,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformLabel(labelHandler);
-				return nativeView.Visibility == Windows.UI.Xaml.Visibility.Visible;
+				return nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
 			});
 		}
 	}

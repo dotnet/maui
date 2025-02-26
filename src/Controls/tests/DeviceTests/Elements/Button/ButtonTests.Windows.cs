@@ -31,12 +31,12 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		Task<bool> GetPlatformIsVisible(ShapeViewHandler boxViewHandler)
+		Task<bool> GetPlatformIsVisible(ButtonHandler buttonHandler)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var nativeView = GetPlatformButton(boxViewHandler);
-				return nativeView.Visibility == Windows.UI.Xaml.Visibility.Visible;
+				var nativeView = GetPlatformButton(buttonHandler);
+				return nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
 			});
 		}
 

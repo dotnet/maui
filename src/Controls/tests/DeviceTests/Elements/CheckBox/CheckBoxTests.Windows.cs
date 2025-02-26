@@ -25,7 +25,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetNativeCheckBox(checkBoxHandler);
-				return nativeView.Visibility == Windows.UI.Xaml.Visibility.Visible;
+				return nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
 			});
 		}
 	}

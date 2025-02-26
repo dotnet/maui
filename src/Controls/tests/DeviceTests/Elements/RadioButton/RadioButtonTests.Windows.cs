@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = GetNativeRadioButton(handler);
 			await InvokeOnMainThreadAsync(() =>
    			{
-				var isVisible = nativeView.Visibility == Windows.UI.Xaml.Visibility.Visible;
+				var isVisible = nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
 				Assert.Equal(expectedValue, isVisible);
 			});	
 		}
