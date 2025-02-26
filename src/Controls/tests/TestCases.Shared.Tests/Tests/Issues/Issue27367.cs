@@ -1,5 +1,4 @@
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
-// On Catalyst, Swipe actions not supported in Appium.
+#if TEST_FAILS_ON_WINDOWS
 // [Windows] Swiping does not work with SwipeItemView in SwipeView , see https://github.com/dotnet/maui/issues/27436
 using NUnit.Framework;
 using UITest.Appium;
