@@ -90,3 +90,7 @@ override Microsoft.Maui.PlatformWrapperView.OnLayout(bool changed, int left, int
 virtual Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! canvas, int viewWidth, int viewHeight) -> void
 *REMOVED*~override Microsoft.Maui.Platform.WrapperView.DrawShadow(Android.Graphics.Canvas canvas, int viewWidth, int viewHeight) -> void
 *REMOVED*abstract Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! p0, int p1, int p2) -> void
+Microsoft.Maui.IElement.GetElementHandler(Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler?
+Microsoft.Maui.IElement.GetElementHandlerType() -> System.Type?
+Microsoft.Maui.IMauiHandlersFactory.GetHandler(Microsoft.Maui.IElement! element, Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler?
+Microsoft.Maui.IMauiHandlersFactory.GetHandlerType(Microsoft.Maui.IElement! element) -> System.Type?

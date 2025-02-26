@@ -88,3 +88,7 @@ override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Gr
 override Microsoft.Maui.Handlers.EditorHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.WindowHandler.DisconnectHandler(UIKit.UIWindow! platformView) -> void
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> bool
+Microsoft.Maui.IElement.GetElementHandler(Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler?
+Microsoft.Maui.IElement.GetElementHandlerType() -> System.Type?
+Microsoft.Maui.IMauiHandlersFactory.GetHandler(Microsoft.Maui.IElement! element, Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler?
+Microsoft.Maui.IMauiHandlersFactory.GetHandlerType(Microsoft.Maui.IElement! element) -> System.Type?

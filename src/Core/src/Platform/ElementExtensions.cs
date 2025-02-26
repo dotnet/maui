@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Platform
 					if (handlersWithConstructors.Contains(viewType))
 						handler = viewType.CreateTypeWithInjection(context);
 					else
-						handler = context.Handlers.GetHandler(viewType);
+						handler = context.Handlers.GetHandler(view, context);
 				}
 				catch (MissingMethodException)
 				{
@@ -146,7 +146,7 @@ namespace Microsoft.Maui.Platform
 				handler = null;
 
 			if (handler == null)
-				handler = context.Handlers.GetHandler(element.GetType());
+				handler = context.Handlers.GetHandler(element, context);
 
 			if (handler == null)
 				throw new Exception($"Handler not found for window {element}.");
