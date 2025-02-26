@@ -8,11 +8,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class LabelHandler : ViewHandler<ILabel, AppCompatTextView>
 	{
 		protected override AppCompatTextView CreatePlatformView()
-			=> new MauiTextView(Context)
-			{
-				TextAlignment = Android.Views.TextAlignment.ViewStart,
-				Gravity = GravityFlags.Top,
-			};
+			=> new MauiTextView(Context);
 
 		public override void PlatformArrange(Rect frame)
 		{
