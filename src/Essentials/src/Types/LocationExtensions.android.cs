@@ -24,11 +24,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			{
 				Latitude = location.Latitude,
 				Longitude = location.Longitude,
-#if ANDROID34_0_OR_GREATER
-				Altitude = location.HasMslAltitude ? location.MslAltitudeMeters : location.HasAltitude ? location.Altitude : default(double?),
-#else
-				Altitude = location.HasAltitude ? location.Altitude : default(double?),
-#endif
+				Altitude = location.Altitude,
+				EllipsoidalAltitude = location.Altitude,
+				MeanSeaLevelAltitude = OperatingSystem.IsAndroidVersionAtLeast(34) && location.HasAltitude ? location.MslAltitudeMeters : default(double?),
 				Timestamp = location.GetTimestamp().ToUniversalTime(),
 				Accuracy = location.HasAccuracy ? location.Accuracy : default(float?),
 				VerticalAccuracy =
