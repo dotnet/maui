@@ -233,8 +233,8 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = await CreateHandlerAsync<EntryHandler>(entry);
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				var nativeView = await GetPlatformIsVisible(handler);
-				Assert.Equal(expectedValue, nativeView);
+				var isVisible = await GetPlatformIsVisible(handler);
+				Assert.Equal(expectedValue, isVisible);
 			});
 		}
 

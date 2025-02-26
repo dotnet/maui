@@ -72,8 +72,8 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = GetNativeBorder(handler);
 			await InvokeOnMainThreadAsync( async () =>
    			{
-				var isBorderVisible = nativeView.Visibility == Windows.UI.Xaml.Visibility.Visible;
-				Assert.Equal(expectedValue, isBorderVisible);
+				var isVisible = nativeView.Visibility == Windows.UI.Xaml.Visibility.Visible;
+				Assert.Equal(expectedValue, isVisible);
 			});	
 		}
 
