@@ -74,13 +74,6 @@ Teardown(context =>
 Task("connectToDevice")
 	.Does(async () =>
 	{
-		if (IsCIBuild())
-		{
-			// Kill the ADB server to ensure a clean start on CI
-			// TODO: this should probably move into the yaml
-			AdbKillServer(adbSettings);
-		}
-
 		DetermineDeviceCharacteristics(testDevice, DefaultApiLevel);
 
 		// The Emulator Start command seems to hang sometimes so let's only give it two minutes to complete
@@ -180,28 +173,7 @@ void ExecuteTests(string project, string device, string appPackageName, string r
 	Information("Test App Package Name: {0}", appPackageName);
 	Information("Test Results Directory: {0}", resultsDir);
 
-	if (waitDevice)
-	{
-		Information("Waiting for the emulator to finish booting...");
-
-		// wait for it to finish booting (10 mins)
-		var waited = 0;
-		var total = 60 * 10;
-		while (AdbShell("getprop sys.boot_completed", adbSettings).FirstOrDefault() != "1")
-		{
-			System.Threading.Thread.Sleep(1000);
-			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
-			if (waited++ > total)
-				break;
-		}
-		Information("Waited {0} seconds for the emulator to boot up.", waited);
-	}
-
-	Information("Setting the ADB properties...");
-	var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", adbSettings);
-	Information("{0}", string.Join("\n", lines));
-	lines = AdbShell("getprop debug.mono.log", adbSettings);
-	Information("{0}", string.Join("\n", lines));
+	PrepareDevice(waitDevice);
 
 	var settings = new DotNetToolSettings
 	{
@@ -231,7 +203,7 @@ void ExecuteTests(string project, string device, string appPackageName, string r
 
 		HandleTestResults(resultsDir, testsFailed, false);
 	}
-	
+
 	Information("Testing completed.");
 }
 
@@ -320,12 +292,12 @@ void ExecuteUITests(string project, string app, string appPackageName, string de
 void SetAndroidEnvironmentVariables(string sdkRoot)
 {
 	// Set up Android SDK environment variables and paths
-	string[] paths = { 
+	string[] paths = {
 		$"{sdkRoot}/cmdline-tools/latest/bin",
 		$"{sdkRoot}/cmdline-tools/17.0/bin",
-        $"{sdkRoot}/platform-tools", 
+        $"{sdkRoot}/platform-tools",
 		$"{sdkRoot}/emulator" };
-		
+
 	foreach (var path in paths)
 	{
 		SetEnvironmentVariable("PATH", path, prepend: true);
@@ -341,7 +313,7 @@ AndroidEmulatorToolSettings AdjustEmulatorSettingsForCI(AndroidEmulatorToolSetti
 {
 	if (IsCIBuild())
 	{
-		var gpu = 
+		var gpu =
 			IsRunningOnLinux() ? "-gpu swiftshader_indirect" :
 		 	IsRunningOnWindows() ? "" :
 			"-gpu guest";
@@ -537,33 +509,7 @@ void WriteLogCat(string filename = null)
 
 void InstallApk(string testApp, string testAppPackageName, string testResultsDirectory, string skin)
 {
-	var installadbSettings = new AdbToolSettings { SdkRoot = androidSdkRoot };
-	if (!string.IsNullOrEmpty(DEVICE_UDID))
-	{
-		installadbSettings.Serial = DEVICE_UDID;
-	}
-	if (deviceBootWait)
-	{
-		Information("Waiting for the emulator to finish booting...");
-
-		// wait for it to finish booting (10 mins)
-		var waited = 0;
-		var total = 60 * 10;
-		while (AdbShell("getprop sys.boot_completed", installadbSettings).FirstOrDefault() != "1")
-		{
-			System.Threading.Thread.Sleep(1000);
-			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
-			if (waited++ > total)
-				break;
-		}
-		Information("Waited {0} seconds for the emulator to boot up.", waited);
-	}
-
-	Information("Setting the ADB properties...");
-	var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", installadbSettings);
-	Information("{0}", string.Join("\n", lines));
-	lines = AdbShell("getprop debug.mono.log", installadbSettings);
-	Information("{0}", string.Join("\n", lines));
+	PrepareDevice(deviceBootWait);
 
 	//install apk on the emulator or device
 	Information("Install with xharness: {0}", testApp);
@@ -571,21 +517,21 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 	{
 		DiagnosticOutput = true,
 		ArgumentCustomization = args =>
-						{
-							args.Append("run xharness android install " +
-										$"--app=\"{testApp}\" " +
-										$"--package-name=\"{testAppPackageName}\" " +
-										$"--output-directory=\"{testResultsDirectory}\" " +
-										$"--verbosity=\"Debug\" ");
+		{
+			args.Append("run xharness android install " +
+						$"--app=\"{testApp}\" " +
+						$"--package-name=\"{testAppPackageName}\" " +
+						$"--output-directory=\"{testResultsDirectory}\" " +
+						$"--verbosity=\"Debug\" ");
 
-							//if we specify a device we need to pass it to xharness
-							if (!string.IsNullOrEmpty(DEVICE_UDID))
-							{
-								args.Append($"--device-id=\"{DEVICE_UDID}\" ");
-							}
+			//if we specify a device we need to pass it to xharness
+			if (!string.IsNullOrEmpty(DEVICE_UDID))
+			{
+				args.Append($"--device-id=\"{DEVICE_UDID}\" ");
+			}
 
-							return args;
-						}
+			return args;
+		}
 	};
 
 	Information("The platform version to run tests:");
@@ -655,4 +601,47 @@ void GetDevices(string version, string toolPath)
 		$"--api-version=\"{version}\" ")
 	};
 	DotNetTool("tool", settings);
+}
+
+void PrepareDevice(bool waitForBoot)
+{
+	var settings = new AdbToolSettings { SdkRoot = androidSdkRoot };
+	if (!string.IsNullOrEmpty(DEVICE_UDID))
+	{
+		settings.Serial = DEVICE_UDID;
+	}
+
+	if (waitForBoot)
+	{
+		Information("Waiting for the emulator to finish booting...");
+
+		// wait for it to finish booting (10 mins)
+		var waited = 0;
+		var total = 60 * 10;
+		while (AdbShell("getprop sys.boot_completed", settings).FirstOrDefault() != "1")
+		{
+			System.Threading.Thread.Sleep(1000);
+
+			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
+
+			if (waited++ > total)
+				break;
+
+			// something may be wrong with ADB, so restart every minute just in case
+			if (waited % 60 == 0 && IsCIBuild())
+			{
+				AdbKillServer(adbSettings);
+			}
+		}
+
+		Information("Waited {0} seconds for the emulator to boot up.", waited);
+	}
+
+	Information("Setting the ADB properties...");
+
+	var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", settings);
+	Information("{0}", string.Join("\n", lines));
+
+	lines = AdbShell("getprop debug.mono.log", settings);
+	Information("{0}", string.Join("\n", lines));
 }
