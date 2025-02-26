@@ -204,4 +204,9 @@ static partial class ITypeSymbolExtensions
 	public static bool CanAdd(this ITypeSymbol type, SourceGenContext? context) 
 		=> type.AllInterfaces.Any(i => i.ToString() == "System.Collections.IEnumerable")
 		&& type.GetAllMethods("Add", context).Any(m => m.Parameters.Length == 1);
+
+    public static ImmutableArray<IPropertySymbol> GetRequiredProperties(this ITypeSymbol type, SourceGenContext context)
+    {
+        return type.GetAllProperties(context).Where(p => p.IsRequired).ToImmutableArray();
+    }
 }

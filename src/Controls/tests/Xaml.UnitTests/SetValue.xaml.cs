@@ -67,6 +67,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
+	public class MockViewWithRequiredValues : View
+	{
+		public required string RequiredValue { get; set; }
+	}
+
 	[TypeConverter(typeof(SV_FooTypeConveter))]
 	public class SV_Foo
 	{

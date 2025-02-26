@@ -102,5 +102,6 @@
 		</local:MockViewWithValues>
 		<local:MockViewWithValues x:Name="implicit3" Foo="Foo" />
 		<Label x:Name="label16" Text="Welcome to &#10; .NET Multi-platform App UI"/>
+		<local:MockViewWithRequiredValues x:Name="required0" RequiredValue="foo" />
 	</cmp:StackLayout>
 </ContentPage>

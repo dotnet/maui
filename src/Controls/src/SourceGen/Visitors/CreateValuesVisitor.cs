@@ -48,7 +48,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
         //x:Array
         if (type.Equals(Context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.ArrayExtension"), SymbolEqualityComparer.Default))
         {
-            //we might want to mive this to a separate method
+            //we might want to move this to a separate method
             var visitor = new SetPropertiesVisitor(Context);
             // var children = node.Properties.Values.ToList();
             // children.AddRange(node.CollectionItems);
@@ -107,7 +107,6 @@ class CreateValuesVisitor : IXamlNodeVisitor
             node.RegisterSourceInfo(Context, Writer);
             return;
         }
-
 
         if (NodeSGExtensions.GetKnownMarkupExtensions(Context).TryGetValue(type, out var handler))
         {
@@ -213,7 +212,32 @@ class CreateValuesVisitor : IXamlNodeVisitor
         {
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
             
-            Writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
+            Writer.Write($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])})");
+            var requiredProperties = type.GetRequiredProperties(Context);
+            if (requiredProperties.Length > 0)
+            {
+                Writer.WriteLine();
+                using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
+                {
+                    foreach (var prop in requiredProperties)
+                    {
+                        var propNode = node.Properties.FirstOrDefault(p => p.Key.LocalName == prop.Name);
+                        //FIXME support ElementNode
+                        if (propNode.Value is ValueNode vn)
+                        {
+                            var value = vn.ConvertTo(prop.Type, Context);
+                            using (PrePost.NewLineInfo(Writer, (IXmlLineInfo)propNode.Value, Context.FilePath))
+                            {
+                                Writer.WriteLine($"{prop.Name} = {value},");
+                            }
+                            if (!node.SkipProperties.Contains(propNode.Key))
+                                node.SkipProperties.Add(propNode.Key);
+                        }
+                    }
+                }
+            }
+            else   
+                Writer.WriteLine($";");
             Context.Variables[node] = new LocalVariable(type, variableName);
             node.RegisterSourceInfo(Context, Writer);
             return;
