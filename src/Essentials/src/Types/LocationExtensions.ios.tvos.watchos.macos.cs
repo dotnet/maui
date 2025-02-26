@@ -31,6 +31,8 @@ namespace Microsoft.Maui.Devices.Sensors
 				Latitude = location.Coordinate.Latitude,
 				Longitude = location.Coordinate.Longitude,
 				Altitude = location.VerticalAccuracy < 0 ? default(double?) : location.Altitude,
+				EllipsoidalAltitude = location.VerticalAccuracy < 0 ? default(double?) : location.EllipsoidalAltitude,
+				MeanSeaLevelAltitude = location.VerticalAccuracy < 0 ? default(double?) : location.Altitude,
 				Accuracy = location.HorizontalAccuracy,
 				VerticalAccuracy = location.VerticalAccuracy,
 				ReducedAccuracy = reducedAccuracy,
