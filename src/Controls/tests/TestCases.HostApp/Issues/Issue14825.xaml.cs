@@ -19,7 +19,7 @@ public partial class Issue14825 : ContentPage
 			Stream stream = await result.OpenReadAsync(ScreenshotFormat.Png, 100);
 
 			screenshotResult.Add(new Label() { Text = $"Your screenshot ({myWebView.Width}x{myWebView.Height}):" });
-			screenshotResult.Add(new Image() { Source = ImageSource.FromStream(() => stream), WidthRequest = myWebView.Width, HeightRequest = myWebView.Height });
+			screenshotResult.Add(new Image() { Source = ImageSource.FromStream(() => stream), WidthRequest = myWebView.Width, HeightRequest = myWebView.Height, HorizontalOptions = LayoutOptions.Start });
 		}
 	}
 }
