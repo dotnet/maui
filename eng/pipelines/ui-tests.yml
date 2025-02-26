@@ -70,7 +70,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
 
   - name: iosPool
@@ -79,7 +79,7 @@ parameters:
       name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
   
   - name: windowsBuildPool
@@ -106,7 +106,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
 
   - name: iosCompatibilityPool
@@ -115,7 +115,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
 
 resources:
@@ -142,17 +142,16 @@ stages:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.0' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
+        skipProvisioning: false
       ${{ else }}:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.0' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
+        ${{ if parameters.UseProvisionator }}:
+          skipProvisioning: false
       ${{ if parameters.CompatibilityTests }}:
         runCompatibilityTests: true
-      ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
-        skipProvisioning: false
-        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-      ${{ else }}:  
-        skipProvisioning: true
+      
       projects:
         - name: controls
           desc: Controls

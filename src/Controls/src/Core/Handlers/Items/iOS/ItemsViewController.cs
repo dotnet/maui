@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 
-		internal Size? GetSize()
+		internal virtual Size? GetSize()
 		{
 			if (_emptyViewDisplayed)
 			{

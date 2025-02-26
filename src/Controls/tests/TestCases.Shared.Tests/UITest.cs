@@ -288,6 +288,19 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
+		protected void VerifyInternetConnectivity()
+		{
+			try
+			{
+				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(30));
+				Assert.Inconclusive("This device doesn't have internet access");
+			}
+			catch (TimeoutException)
+			{
+				// Continue with the test
+			}
+		}
+
 		public override void TestSetup()
 		{
 			base.TestSetup();
