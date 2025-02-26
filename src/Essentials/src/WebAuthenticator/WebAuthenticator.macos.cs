@@ -73,6 +73,60 @@ namespace Microsoft.Maui.Authentication
 			return await tcsResponse.Task;
 		}
 
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions, CancellationToken cancellationToken)
+		{
+			var url = webAuthenticatorOptions?.Url;
+			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
+
+			if (!AppInfo.VerifyHasUrlScheme(callbackUrl.Scheme))
+				throw new InvalidOperationException("You must register your URL Scheme handler in your app's Info.plist!");
+
+			// Cancel any previous task that's still pending
+			if (tcsResponse?.Task != null && !tcsResponse.Task.IsCompleted)
+				tcsResponse.TrySetCanceled();
+
+			tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
+			redirectUri = callbackUrl;
+			var scheme = redirectUri.Scheme;
+
+			// Use the CancellationToken to cancel the operation
+			using (cancellationToken.Register(() => tcsResponse.TrySetCanceled()))
+			{
+				if (OperatingSystem.IsMacOSVersionAtLeast(10, 15))
+				{
+					static void AuthSessionCallback(NSUrl cbUrl, NSError error)
+					{
+						if (error == null)
+							OpenUrlCallback(cbUrl);
+						else if (error.Domain == asWebAuthenticationSessionErrorDomain && error.Code == asWebAuthenticationSessionErrorCodeCanceledLogin)
+							tcsResponse.TrySetCanceled();
+						else
+							tcsResponse.TrySetException(new NSErrorException(error));
+
+						was = null;
+					}
+
+					was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
+
+					using (was)
+					{
+						var ctx = new ContextProvider(Platform.GetCurrentWindow());
+						was.PresentationContextProvider = ctx;
+						was.PrefersEphemeralWebBrowserSession = webAuthenticatorOptions?.PrefersEphemeralWebBrowserSession ?? false;
+
+						was.Start();
+						return await tcsResponse.Task;
+					}
+				}
+
+				var opened = NSWorkspace.SharedWorkspace.OpenUrl(url);
+				if (!opened)
+					tcsResponse.TrySetException(new Exception("Error opening Safari"));
+
+				return await tcsResponse.Task
+			}
+		}
+
 		public bool OpenUrlCallback(Uri uri)
 		{
 			// If we aren't waiting on a task, don't handle the url
