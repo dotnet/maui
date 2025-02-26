@@ -232,7 +232,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				// The FooterView frame is updated when the CollectionView does not contain any items.
 				// Previously, the FooterView frame was updated only for a CollectionView with an ItemSource.
-				if (_footerUIView != null && (_footerUIView.Frame.Y != height || emptyHeight > 0 || _footerUIView.Frame.Height != footerHeight))
+				if (_footerUIView != null && (_footerUIView.Frame.Y != height || emptyHeight > 0 || _footerUIView.Frame.Height != footerHeight || _footerUIView.Frame.Y != footerHeight))
 				{
 					_footerUIView.Frame = new CoreGraphics.CGRect(0, height + emptyHeight, CollectionView.Frame.Width, footerHeight);
 				}
