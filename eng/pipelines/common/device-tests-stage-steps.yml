@@ -53,7 +53,7 @@ steps:
       skipAndroidPlatformApis: ${{ or(eq(parameters.buildType, 'testOnly'), ne(parameters.platform, 'android')) }}
       onlyAndroidPlatformDefaultApis: true
       skipAndroidEmulatorImages: ${{ or(eq(parameters.buildType, 'buildOnly'), ne(parameters.platform, 'android')) }}
-      skipAndroidCreateAvds: ${{ or(eq(parameters.buildType, 'buildOnly'), ne(parameters.platform, 'android')) }}
+      skipAndroidCreateAvds: true
       androidEmulatorApiLevel: ${{ parameters.apiversion }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if eq(parameters.skipProvisioning, false) }}:
