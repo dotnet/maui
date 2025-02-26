@@ -88,55 +88,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.ViewWillLayoutSubviews();
 			// This updates the positions of the header view and footer view as their sizes change dynamically
-			UpdatePositions();
-		}
-
-		bool NeedsHorizontalUpdate(UIView view, UIView emptyView, nfloat contentWidth)
-		{
-			if (view is null)
-				return false;
-
-			// Check if the view is out of position horizontally
-			// For the footer, we also compare view.Frame.X against view.Frame.Width.
-			bool needsUpdate =
-				view.Frame.X != contentWidth ||
-				view.Frame.X < (emptyView?.Frame.X ?? float.MaxValue) ||
-				(view.Frame.X != view.Frame.Width);
-
-			return needsUpdate;
-		}
-
-		bool NeedsVerticalUpdate(UIView view, UIView emptyView, nfloat contentHeight)
-		{
-			if (view is null)
-				return false;
-
-			// Check if the view is out of position vertically
-			// For the footer, we also compare view.Frame.Y against view.Frame.Height.
-			bool needsUpdate =
-				view.Frame.Y != contentHeight ||
-				view.Frame.Y < ((emptyView?.Frame.Y + emptyView?.Frame.Height) ?? float.MaxValue) ||
-				(view.Frame.Y != view.Frame.Height);
-
-			return needsUpdate;
-		}
-
-		void UpdatePositions()
-		{
 			var emptyView = CollectionView.ViewWithTag(EmptyTag);
 
 			if (IsHorizontal)
 			{
-				if (NeedsHorizontalUpdate(_headerUIView, emptyView, ItemsViewLayout.CollectionViewContentSize.Width)
-					|| NeedsHorizontalUpdate(_footerUIView, emptyView, ItemsViewLayout.CollectionViewContentSize.Width))
+				if ((_headerUIView is not null && (_headerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width || _headerUIView.Frame.X < emptyView?.Frame.X)) || (_footerUIView is not null && (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width || _footerUIView.Frame.X != _footerUIView.Frame.Width || _footerUIView.Frame.X < emptyView?.Frame.X)))
 				{
 					UpdateHeaderFooterPosition();
 				}
 			}
 			else
 			{
-				if (NeedsVerticalUpdate(_headerUIView, emptyView, ItemsViewLayout.CollectionViewContentSize.Height)
-					|| NeedsVerticalUpdate(_footerUIView, emptyView, ItemsViewLayout.CollectionViewContentSize.Height))
+				if ((_headerUIView is not null && (_headerUIView.Frame.Y != ItemsViewLayout.CollectionViewContentSize.Height || _headerUIView.Frame.Y < (emptyView?.Frame.Y + emptyView?.Frame.Height))) || (_footerUIView is not null && (_footerUIView.Frame.Y != ItemsViewLayout.CollectionViewContentSize.Height || _footerUIView.Frame.Y != _footerUIView.Frame.Height || _footerUIView.Frame.Y < (emptyView?.Frame.Y + emptyView?.Frame.Height))))
 				{
 					UpdateHeaderFooterPosition();
 				}
