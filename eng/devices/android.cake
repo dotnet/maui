@@ -74,6 +74,9 @@ Teardown(context =>
 Task("connectToDevice")
 	.Does(async () =>
 	{
+		// Kill the ADB server to ensure a clean start
+		AdbKillServer(adbSettings);
+
 		DetermineDeviceCharacteristics(testDevice, DefaultApiLevel);
 
 		// The Emulator Start command seems to hang sometimes so let's only give it two minutes to complete
