@@ -130,7 +130,7 @@ stages:
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-        skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
+        skipProvisioning: false
       ${{ else }}:
         androidApiLevels: [ 33, 23 ]
         iosVersions: [ 'simulator-18.0' ]
