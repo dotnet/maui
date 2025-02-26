@@ -48,7 +48,7 @@ namespace Samples.View
 			}
 		}
 
-		Task OnDisplayAlertAsync(string message)
+		Task OnDisplayAlert(string message)
 		{
 			return DisplayAlertAsync(Title, message, "OK");
 		}
