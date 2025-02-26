@@ -134,6 +134,18 @@ namespace Microsoft.Maui.Devices.Sensors
 		public double? Altitude { get; set; }
 
 		/// <summary>
+		/// Gets the altitude in meters (if available) in a reference system which is specified by <see cref="AltitudeReferenceSystem"/>.
+		/// </summary>
+		/// <remarks>Returns 0 or <see langword="null"/> if not available.</remarks>
+		public double? EllipsoidalAltitude { get; set; }
+
+		/// <summary>
+		/// Gets Mean Sea Level altitude of this location in meters (if available) in a reference system which is specified by <see cref="AltitudeReferenceSystem"/>.
+		/// </summary>
+		/// <remarks>Returns 0 or <see langword="null"/> if not available.</remarks>
+		public double? MeanSeaLevelAltitude { get; set; }
+
+		/// <summary>
 		/// Gets or sets the horizontal accuracy (in meters) of the location.
 		/// </summary>
 		public double? Accuracy { get; set; }
