@@ -69,7 +69,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
 
   - name: androidPoolX64
     type: object
@@ -86,7 +86,7 @@ parameters:
       name: $(iosDeviceTestsVmPool)
       vmImage: $(iosDeviceTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         
   - name: catalystPool
     type: object
@@ -94,7 +94,7 @@ parameters:
       name: $(iosDeviceTestsVmPool)
       vmImage: $(iosDeviceTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
 
   - name: windowsPool
     type: object
@@ -132,7 +132,7 @@ stages:
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-        skipProvisioning: ${{ or(not(parameters.UseProvisionator), false) }}
+        skipProvisioning: false
       ${{ else }}:
         androidApiLevels: [ 33, 23 ]
         iosVersions: [ 'simulator-18.2' ]

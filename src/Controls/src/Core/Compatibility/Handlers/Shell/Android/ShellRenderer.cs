@@ -235,8 +235,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// Don't force the commit if this is our first load 
 			if (previousView == null)
 			{
-				transaction
-					.SetReorderingAllowedEx(true);
+				transaction.SetReorderingAllowedEx(true);
 			}
 
 			transaction.CommitAllowingStateLossEx();
@@ -245,7 +244,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				previousView.Destroyed -= OnDestroyed;
 
-				previousView.Dispose();
 				previousView = null;
 			}
 
