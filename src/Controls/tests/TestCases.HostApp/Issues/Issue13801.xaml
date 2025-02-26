@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue13801">
+
+  <StackLayout VerticalOptions="Start">
+    <Path AutomationId="Path"
+          Stroke="Red"
+          StrokeThickness="5"
+          Data="M 0 0 L 100 0 L 100 100 L 0 100 Z"
+          Margin="20"/>
+    <Path Stroke="Blue"
+          StrokeThickness="5"
+          Data="M 0 0 L 100 0 L 100 100 L 0 100 Z"
+          Margin="-10"/>
+  </StackLayout>
+</ContentPage>
