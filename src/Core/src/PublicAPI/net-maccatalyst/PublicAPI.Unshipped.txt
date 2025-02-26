@@ -66,6 +66,7 @@ static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui
 static Microsoft.Maui.ElementHandlerExtensions.GetServiceProvider(this Microsoft.Maui.IElementHandler! handler) -> System.IServiceProvider!
 static Microsoft.Maui.ElementHandlerExtensions.IsConnected(this Microsoft.Maui.IElementHandler! handler) -> bool
 static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
+static Microsoft.Maui.Handlers.ButtonHandler.MapBackground(Microsoft.Maui.Handlers.IButtonHandler! handler, Microsoft.Maui.IButton! button) -> void
 static Microsoft.Maui.Handlers.HybridWebViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
 static Microsoft.Maui.Handlers.HybridWebViewHandler.MapEvaluateJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
 static Microsoft.Maui.Handlers.HybridWebViewHandler.MapInvokeJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
