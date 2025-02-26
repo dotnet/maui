@@ -38,7 +38,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformControl(editorHandler);
-				return nativeView.Visibility == Windows.UI.Xaml.Visibility.Visible;
+				return nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
 			});
 		}
 	}
