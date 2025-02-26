@@ -16,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests
 #elif MACUITEST
 		[TestFixture(TestDevice.Mac)]
 #elif WINTEST
-		[TestFixture(TestDevice.Windows)]
 	[TestFixture(TestDevice.Windows)]
 #endif
 	public abstract class UITest : UITestBase
