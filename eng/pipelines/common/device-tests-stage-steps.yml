@@ -84,32 +84,35 @@ steps:
   #                 Prepare Build                  #
   ##################################################
 
-  # Download the pre-build >NET MAUI workload and install it to the local .NET SDK
-  - ${{ if eq(parameters.useArtifacts, true) }}:
+  # Do not prepare the .NET install if we are not going to build anything
+  - ${{ if ne(parameters.buildType, 'testOnly') }}:
 
-    - task: DownloadBuildArtifacts@0
-      displayName: 'Download Packages'
-      inputs:
-        artifactName: ${{ parameters.artifactName }}
-        itemPattern: ${{ parameters.artifactItemPattern }}
-        downloadPath: ${{ parameters.checkoutDirectory }}/artifacts
+    # Download the pre-build .NET MAUI workload and install it to the local .NET SDK
+    - ${{ if eq(parameters.useArtifacts, true) }}:
 
-    - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
-      displayName: Move the downloaded artifacts
+      - task: DownloadBuildArtifacts@0
+        displayName: 'Download Packages'
+        inputs:
+          artifactName: ${{ parameters.artifactName }}
+          itemPattern: ${{ parameters.artifactItemPattern }}
+          downloadPath: ${{ parameters.checkoutDirectory }}/artifacts
 
-    - script: dotnet cake --target=dotnet-local-workloads --verbosity=diagnostic
-      displayName: 'Install .NET (Local Workloads)'
-      retryCountOnTaskFailure: 2
-      workingDirectory: ${{ parameters.checkoutDirectory }}
-      env:
-        DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-        PRIVATE_BUILD: $(PrivateBuild)
+      - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
+        displayName: Move the downloaded artifacts
 
-  # Run the build for .NET MAUI on this machine
-  - ${{ else }}:
+      - script: dotnet cake --target=dotnet-local-workloads --verbosity=diagnostic
+        displayName: 'Install .NET (Local Workloads)'
+        retryCountOnTaskFailure: 2
+        workingDirectory: ${{ parameters.checkoutDirectory }}
+        env:
+          DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+          PRIVATE_BUILD: $(PrivateBuild)
 
-    - script: dotnet cake --target=dotnet-buildtasks --configuration="Release"
-      displayName: 'Build the MSBuild Tasks'
+    # Run the build for .NET MAUI on this machine
+    - ${{ else }}:
+
+      - script: dotnet cake --target=dotnet-buildtasks --configuration="Release"
+        displayName: 'Build the MSBuild Tasks'
 
 
   ##################################################
