@@ -48,9 +48,9 @@ namespace Samples.View
 			}
 		}
 
-		Task OnDisplayAlert(string message)
+		Task OnDisplayAlertAsync(string message)
 		{
-			return DisplayAlert(Title, message, "OK");
+			return DisplayAlertAsync(Title, message, "OK");
 		}
 
 		Task OnNavigate(BaseViewModel vm, bool showModal)

@@ -173,7 +173,7 @@ public class Bugzilla40955 : TestFlyoutPage
 
 			lbl.GestureRecognizers.Add(new TapGestureRecognizer
 			{
-				Command = new Command(async () => await DisplayAlert("Alert", Success, "Ok"))
+				Command = new Command(async () => await DisplayAlertAsync("Alert", Success, "Ok"))
 			});
 
 			var successLabel = new Label();

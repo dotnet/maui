@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				Text = "File"
 			};
 
-			fileSwipeItem.Invoked += (sender, e) => { DisplayAlert("SwipeView", "File Invoked", "Ok"); };
+			fileSwipeItem.Invoked += (sender, e) => { DisplayAlertAsync("SwipeView", "File Invoked", "Ok"); };
 
 			var fileSwipeItems = new SwipeItems { fileSwipeItem };
 
@@ -62,7 +62,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				Text = "Url"
 			};
 
-			urlSwipeItem.Invoked += (sender, e) => { DisplayAlert("SwipeView", "Url Invoked", "Ok"); };
+			urlSwipeItem.Invoked += (sender, e) => { DisplayAlertAsync("SwipeView", "Url Invoked", "Ok"); };
 
 			var urlSwipeItems = new SwipeItems { urlSwipeItem };
 
@@ -106,7 +106,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				Text = "Font"
 			};
 
-			fontSwipeItem.Invoked += (sender, e) => { DisplayAlert("SwipeView", "Font Invoked", "Ok"); };
+			fontSwipeItem.Invoked += (sender, e) => { DisplayAlertAsync("SwipeView", "Font Invoked", "Ok"); };
 
 			var fontSwipeItems = new SwipeItems { fontSwipeItem };
 

@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			await Navigation.PushModalAsync(new ContentPage());
 			await Navigation.PushModalAsync(new ContentPage());
-			await this.DisplayAlert("hello", "message", "Cancel");
+			await this.DisplayAlertAsync("hello", "message", "Cancel");
 			await Navigation.PopModalAsync();
 			await Navigation.PopModalAsync();
 		}
@@ -84,7 +84,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			OpenPrompt(sender, e, (page) =>
 			{
-				return page.DisplayAlert("hello", "message", "Cancel");
+				return page.DisplayAlertAsync("hello", "message", "Cancel");
 			});
 		}
 
@@ -104,7 +104,7 @@ namespace Maui.Controls.Sample.Issues
 
 		async void OpenAlertWithNewUIWindow(System.Object sender, System.EventArgs e)
 		{
-			await this.DisplayAlert("hello", "message", "Cancel");
+			await this.DisplayAlertAsync("hello", "message", "Cancel");
 		}
 #endif
 	}

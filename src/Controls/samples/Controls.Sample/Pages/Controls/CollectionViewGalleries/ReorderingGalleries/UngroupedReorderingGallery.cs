@@ -80,7 +80,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ReorderingGalleries
 
 			if (DeviceInfo.Platform == DevicePlatform.WinUI && !(collectionView.ItemsSource is INotifyCollectionChanged))
 			{
-				await DisplayAlert("Warning!", "Reordering on UWP/WinUI only works with ObservableCollections!", "OK");
+				await DisplayAlertAsync("Warning!", "Reordering on UWP/WinUI only works with ObservableCollections!", "OK");
 			}
 		}
 	}

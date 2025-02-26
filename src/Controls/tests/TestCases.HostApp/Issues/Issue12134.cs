@@ -43,7 +43,7 @@ namespace Maui.Controls.Sample.Issues
 		private async void DisplayCookies()
 		{
 			var result = await (Content as StackLayout).Children.OfType<WebView>().Last().EvaluateJavaScriptAsync("document.cookie");
-			await DisplayAlert("Cookies", result, "Ok");
+			await DisplayAlertAsync("Cookies", result, "Ok");
 		}
 
 		private async void WebViewOnNavigated(object sender, WebNavigatedEventArgs e)

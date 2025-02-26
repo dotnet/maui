@@ -16,12 +16,12 @@ namespace Maui.Controls.Sample.Pages
 
 		async void OnListViewItemTapped(object sender, ItemTappedEventArgs e)
 		{
-			await DisplayAlert("Item Tapped", "ItemTapped event fired.", "OK");
+			await DisplayAlertAsync("Item Tapped", "ItemTapped event fired.", "OK");
 		}
 
 		async void TapGestureRecognizer_Tapped(object sender, EventArgs e)
 		{
-			await DisplayAlert("Tap Gesture Recognizer", "Tapped event fired.", "OK");
+			await DisplayAlertAsync("Tap Gesture Recognizer", "Tapped event fired.", "OK");
 		}
 
 		void OnToggleButtonClicked(object sender, EventArgs e)

@@ -17,7 +17,7 @@ public class Issue7290 : TestShell
 
 		displayAlertPage.Appearing += async (_, __) =>
 		{
-			await displayAlertPage.DisplayAlert("Title", "Close Alert", "Cancel");
+			await displayAlertPage.DisplayAlertAsync("Title", "Close Alert", "Cancel");
 			this.CurrentItem = Items[1];
 		};
 
