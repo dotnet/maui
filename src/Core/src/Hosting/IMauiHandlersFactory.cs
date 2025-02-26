@@ -7,6 +7,7 @@ namespace Microsoft.Maui
 {
 	public interface IMauiHandlersFactory : IMauiFactory
 	{
+		[Obsolete("Use GetHandlerType(IElement) instead.")]
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		Type? GetHandlerType(Type iview);
 

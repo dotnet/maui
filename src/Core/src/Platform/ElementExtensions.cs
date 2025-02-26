@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -34,9 +34,9 @@ namespace Microsoft.Maui.Platform
 	{
 		static HashSet<Type> handlersWithConstructors = new HashSet<Type>();
 
-		static IElementHandler? CreateTypeWithInjection(this Type viewType, IMauiContext mauiContext)
+		static IElementHandler? CreateTypeWithInjection(this IElement view, IMauiContext mauiContext)
 		{
-			var handlerType = mauiContext.Handlers.GetHandlerType(viewType);
+			var handlerType = mauiContext.Handlers.GetHandlerType(view);
 
 			if (handlerType == null)
 				return null;
@@ -76,13 +76,13 @@ namespace Microsoft.Maui.Platform
 				try
 				{
 					if (handlersWithConstructors.Contains(viewType))
-						handler = viewType.CreateTypeWithInjection(context);
+						handler = view.CreateTypeWithInjection(context);
 					else
 						handler = context.Handlers.GetHandler(view, context);
 				}
 				catch (MissingMethodException)
 				{
-					handler = viewType.CreateTypeWithInjection(context);
+					handler = view.CreateTypeWithInjection(context);
 					if (handler != null)
 						handlersWithConstructors.Add(view.GetType());
 				}

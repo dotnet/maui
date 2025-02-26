@@ -204,7 +204,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					renderer = GetNewRenderer();
 				else
 				{
-					var viewHandlerType = MauiContext.Handlers.GetHandlerType(cell.View.GetType());
+					var viewHandlerType = MauiContext.Handlers.GetHandlerType(cell.View);
 					var reflectableType = renderer as System.Reflection.IReflectableType;
 					var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : (renderer != null ? renderer.GetType() : typeof(System.Object));
 
@@ -228,8 +228,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				SetNeedsLayout();
 			}
-
-
 		}
 	}
 }
