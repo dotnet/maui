@@ -19,6 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		[TestFixture(TestDevice.Mac)]
 #elif WINTEST
 		[TestFixture(TestDevice.Windows)]
+	[TestFixture(TestDevice.Windows)]
 #endif
 	public abstract class UITest : UITestBase
 	{
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
 					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.0");
-					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "FE996E6B-0D88-4D9B-A7BE-72AB288FCA9E");
+					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
