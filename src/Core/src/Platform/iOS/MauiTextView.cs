@@ -177,7 +177,9 @@ namespace Microsoft.Maui.Platform
 			if (KeyboardAutoManagerScroll.IsKeyboardShowing)
 			{
 				var cursorRect = KeyboardAutoManagerScroll.FindCursorPosition();
-				if (cursorRect.HasValue && cursorRect.Value.Bottom > KeyboardAutoManagerScroll.KeyboardFrame.Top)
+				var keyboardTop = KeyboardAutoManagerScroll.KeyboardFrame.Top;
+
+				if (cursorRect.HasValue && cursorRect.Value.Bottom > keyboardTop)
 				{
 					var offset = cursorRect.Value.Bottom - KeyboardAutoManagerScroll.KeyboardFrame.Top;
 					ContentOffset = new CGPoint(ContentOffset.X, ContentOffset.Y + offset);
