@@ -317,7 +317,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, heightMapperCalled);
 			Assert.Equal(2, widthMapperCalled);
 		}
-		
+
 		[Fact]
 		public void ShouldPropagateVisibilityToChildren()
 		{
