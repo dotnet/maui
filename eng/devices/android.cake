@@ -74,8 +74,12 @@ Teardown(context =>
 Task("connectToDevice")
 	.Does(async () =>
 	{
-		// Kill the ADB server to ensure a clean start
-		AdbKillServer(adbSettings);
+		if (IsCIBuild())
+		{
+			// Kill the ADB server to ensure a clean start on CI
+			// TODO: this should probably move into the yaml
+			AdbKillServer(adbSettings);
+		}
 
 		DetermineDeviceCharacteristics(testDevice, DefaultApiLevel);
 
