@@ -8,6 +8,7 @@ using AndroidX.Activity.Result;
 using AndroidX.Activity.Result.Contract;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
+using static AndroidX.Activity.Result.Contract.ActivityResultContracts;
 using AndroidUri = Android.Net.Uri;
 
 namespace Microsoft.Maui.Media
@@ -17,23 +18,19 @@ namespace Microsoft.Maui.Media
 		public bool IsCaptureSupported
 			=> Application.Context.PackageManager.HasSystemFeature(PackageManager.FeatureCameraAny);
 
+		internal static bool IsPhotoPickerAvailable
+			=> PickVisualMedia.InvokeIsPhotoPickerAvailable(Platform.AppContext);
+
 		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
 			=> PickAsync(options, true);
 
 		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
 			=> PickAsync(options, false);
 
-		public async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo)
-		{
-			var pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
-				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance)
-				.Build();
-
-			var androidUri = await PickVisualMediaForResult.Launch(pickVisualMediaRequest);
-			var path = FileSystemUtils.EnsurePhysicalPath(androidUri);
-
-			return new FileResult(path);
-		}
+		public async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo) 
+			=> IsPhotoPickerAvailable 
+				? await PickUsingPhotoPicker(photo) 
+				: await PickUsingIntermediateActivity(options, photo);
 
 		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)
 			=> CaptureAsync(options, true);
@@ -77,6 +74,52 @@ namespace Microsoft.Maui.Media
 			{
 				return null;
 			}
+		}
+
+		async Task<FileResult> PickUsingIntermediateActivity(MediaPickerOptions options, bool photo)
+		{
+			var intent = new Intent(Intent.ActionGetContent);
+			intent.SetType(photo ? FileMimeTypes.ImageAll : FileMimeTypes.VideoAll);
+
+			var pickerIntent = Intent.CreateChooser(intent, options?.Title);
+
+			try
+			{
+				string path = null;
+				void OnResult(Intent intent)
+				{
+					// The uri returned is only temporary and only lives as long as the Activity that requested it,
+					// so this means that it will always be cleaned up by the time we need it because we are using
+					// an intermediate activity.
+
+					path = FileSystemUtils.EnsurePhysicalPath(intent.Data);
+				}
+
+				await IntermediateActivity.StartAsync(pickerIntent, PlatformUtils.requestCodeMediaPicker, onResult: OnResult);
+
+				return new FileResult(path);
+			}
+			catch (OperationCanceledException)
+			{
+				return null;
+			}
+		}
+
+		async Task<FileResult> PickUsingPhotoPicker(bool photo)
+		{
+			var pickVisualMediaRequest = new PickVisualMediaRequest.Builder()
+				.SetMediaType(photo ? ActivityResultContracts.PickVisualMedia.ImageOnly.Instance : ActivityResultContracts.PickVisualMedia.VideoOnly.Instance)
+				.Build();
+
+			var androidUri = await PickVisualMediaForResult.Instance.Launch(pickVisualMediaRequest);
+
+			if (androidUri?.Equals(AndroidUri.Empty) ?? true)
+			{
+				return default;
+			}
+
+			var path = FileSystemUtils.EnsurePhysicalPath(androidUri);
+			return new FileResult(path);
 		}
 
 		async Task<string> CapturePhotoAsync(Intent captureIntent)

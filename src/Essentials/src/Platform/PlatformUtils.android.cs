@@ -10,6 +10,7 @@ namespace Microsoft.Maui.ApplicationModel
 	static class PlatformUtils
 	{
 		internal const int requestCodeFilePicker = 11001;
+		internal const int requestCodeMediaPicker = 11002;
 		internal const int requestCodeMediaCapture = 11003;
 		internal const int requestCodePickContact = 11004;
 

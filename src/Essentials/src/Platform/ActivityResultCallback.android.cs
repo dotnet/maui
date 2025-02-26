@@ -2,20 +2,15 @@
 using AndroidX.Activity.Result;
 using JavaObject = Java.Lang.Object;
 
-namespace Microsoft.Maui.ApplicationModel
+namespace Microsoft.Maui.ApplicationModel;
+
+class ActivityResultCallback<T>(Action<T> onActivityResult) : JavaObject, IActivityResultCallback
+	where T : JavaObject
 {
-	class ActivityResultCallback<T> : JavaObject, IActivityResultCallback
+	readonly Action<T> _onActivityResult = onActivityResult;
+
+	public void OnActivityResult(JavaObject result)
 	{
-		readonly Action<T> _callback;
-
-		public ActivityResultCallback(Action<T> callback) => _callback = callback;
-
-		public void OnActivityResult(JavaObject result)
-		{
-			if (result is T obj)
-			{
-				_callback(obj);
-			}
-		}
+		_onActivityResult.Invoke(result as T);
 	}
 }
