@@ -43,7 +43,7 @@ stages:
         - ${{ platform }}_device_tests_${{ replace(parameters.targetFrameworkVersion.dependsOn, '.', '') }}
     jobs:
 
-    - ${{ if eq('${{ platform }}', 'android') }}:
+    - ${{ if eq(platform, 'android') }}:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
           - template: device-tests-jobs.yml
@@ -68,7 +68,7 @@ stages:
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
 
-    - ${{ if eq('${{ platform }}', 'ios') }}:
+    - ${{ if eq(platform, 'ios') }}:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
           - template: device-tests-jobs.yml
@@ -92,7 +92,7 @@ stages:
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
 
-    - ${{ if eq('${{ platform }}', 'catalyst') }}:
+    - ${{ if eq(platform, 'catalyst') }}:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.catalyst, '') }}:
           - template: device-tests-jobs.yml
@@ -116,7 +116,7 @@ stages:
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
 
-    - ${{ if eq('${{ platform }}', 'windows') }}:
+    - ${{ if eq(platform, 'windows') }}:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.windows, '') }}:
           - ${{ each windowsVersion in parameters.windowsVersions }}:
