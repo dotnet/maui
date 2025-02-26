@@ -24,6 +24,14 @@ namespace Microsoft.Maui.DeviceTests
 		Android.Text.TextUtils.TruncateAt? GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
 			GetPlatformButton(buttonHandler).Ellipsize;
 
+		Task<float> GetPlatformOpacity(ButtonHandler buttonHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformButton(buttonHandler);
+				return nativeView.Alpha;
+			});
+		}
 
 		[Theory(DisplayName = "Button Icon has Correct Position"), Category(TestCategory.Layout)]
 		[InlineData(Button.ButtonContentLayout.ImagePosition.Left)]
