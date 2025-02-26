@@ -18,7 +18,7 @@
                 <Button Text="Toggle Footer"
                         Clicked="ToggleFooter"></Button>
             </StackLayout>
-            <local:CollectionView2 Grid.Row="1" x:Name="CollectionView" AutomationId="CollectionViewAutomation">
+            <local:CollectionView2 Grid.Row="1" x:Name="CollectionView">
                 <local:CollectionView2.ItemsLayout>
                     <GridItemsLayout Span="3"
                                      Orientation="Horizontal"
