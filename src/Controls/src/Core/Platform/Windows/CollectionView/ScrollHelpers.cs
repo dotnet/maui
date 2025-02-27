@@ -305,17 +305,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static async Task<bool> ScrollToItemAsync(ListViewBase list, object targetItem, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition)
 		{
-			double height = 0;
-
 			var targetContainer = list.ContainerFromItem(targetItem) as UIElement;
-
-			if (list.IsGrouping)
-			{
-				height = GetTopAreaHeight(list, targetContainer);
-			}
 
 			if (targetContainer != null)
 			{
+				double height = 0;
+
+				if (list.IsGrouping)
+				{
+					height = GetHeaderHeight(list, targetContainer);
+				}
+
 				await ScrollToTargetContainerAsync(targetContainer, scrollViewer, scrollToPosition, height);
 				return true;
 			}
@@ -323,10 +323,10 @@ namespace Microsoft.Maui.Controls.Platform
 			return false;
 		}
 
-		static double GetTopAreaHeight(ListViewBase list, UIElement targetContainer)
+		static double GetHeaderHeight(ListViewBase list, UIElement targetContainer)
 		{
 			var groupHeader = list.GroupHeaderContainerFromItemContainer(targetContainer);
-			return list.IsGrouping ? (groupHeader as ListViewHeaderItem).ActualHeight : 0;
+			return (groupHeader as ListViewHeaderItem).ActualHeight;
 		}
 
 		public static async Task AnimateToItemAsync(ListViewBase list, object targetItem, ScrollToPosition scrollToPosition)
