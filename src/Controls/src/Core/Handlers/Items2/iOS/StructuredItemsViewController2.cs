@@ -168,7 +168,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (footerView is not null)
 			{
-				footerView.Frame = new CGRect(footerView.Frame.X, emptyViewFrame.Bottom, footerView.Frame.Width, footerView.Frame.Height);
+				if (emptyViewFrame.Height > 0)
+					footerView.Frame = new CGRect(footerView.Frame.X, emptyViewFrame.Bottom, footerView.Frame.Width, footerView.Frame.Height);
+				else
+					footerView.Frame = new CGRect(footerView.Frame.X, CollectionView.ContentSize.Height - footerView.Frame.Height, footerView.Frame.Width, footerView.Frame.Height);
 			}
 
 			return emptyViewFrame;
