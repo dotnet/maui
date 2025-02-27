@@ -68,7 +68,10 @@ namespace Microsoft.Maui.Platform
 
 		void LoadPlatformView(IElement view)
 		{
-			currentPlatformView = _pendingLoadedView ?? CreatePlatformView(view);
+			var platformView = _pendingLoadedView ?? CreatePlatformView(view);
+			platformView = platformView.Superview as WrapperView ?? platformView;
+
+			currentPlatformView = platformView;
 			_pendingLoadedView = null;
 
 			View!.AddSubview(currentPlatformView);
