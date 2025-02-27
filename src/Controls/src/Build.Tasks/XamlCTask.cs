@@ -172,11 +172,22 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				LoggingHelper.LogMessage(Low, "  GenerateFullPaths is enabled but FullPathPrefix is missing or empty.");
 			}
 
+			AttachHelper.AttachToProcessIfEnabled();
 			using (var fallbackResolver = DefaultAssemblyResolver == null ? new XamlCAssemblyResolver() : null)
 			{
+				//Assembly    "obj\\Debug\\net9.0-windows10.0.19041.0\\win10-x64\\MauiApp14.dll"  string
+				//FullPathPrefix  "C:\\Users\\evgenyt\\source\\repos\\MauiApp14"  string
+
 				var resolver = DefaultAssemblyResolver ?? fallbackResolver;
 				if (resolver is XamlCAssemblyResolver xamlCResolver)
 				{
+					string path = Path.Combine(this.FullPathPrefix, this.Assembly);
+					path = Path.GetDirectoryName(path);
+					if (Directory.Exists(path))
+					{
+						xamlCResolver.AddSearchDirectory(path);
+					}
+
 					if (ReferencePath != null)
 					{
 						var paths = ReferencePath.Select(p => IOPath.GetDirectoryName(p.Replace("//", "/"))).Distinct();

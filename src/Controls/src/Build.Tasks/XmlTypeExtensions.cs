@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
-using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
@@ -10,25 +9,35 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 {
 	static class XmlTypeExtensions
 	{
+		static readonly string _xmlnsDefinitionName = typeof(XmlnsDefinitionAttribute).FullName;
+
+		static void GatherXmlnsDefinitionAttributes(List<XmlnsDefinitionAttribute> xmlnsDefinitions, AssemblyDefinition asmDef)
+		{
+			foreach (var ca in asmDef.CustomAttributes)
+			{
+				if (ca.AttributeType.FullName == _xmlnsDefinitionName)
+				{
+					var attr = GetXmlnsDefinition(ca, asmDef);
+					xmlnsDefinitions.Add(attr);
+				}
+			}
+		}
+
 		static IList<XmlnsDefinitionAttribute> GatherXmlnsDefinitionAttributes(ModuleDefinition module)
 		{
+			AttachHelper.AttachToProcessIfEnabled();
+
 			var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 
 			if (module.AssemblyReferences?.Count > 0)
 			{
 				// Search for the attribute in the assemblies being
 				// referenced.
+				GatherXmlnsDefinitionAttributes(xmlnsDefinitions, module.Assembly);
 				foreach (var asmRef in module.AssemblyReferences)
 				{
 					var asmDef = module.AssemblyResolver.Resolve(asmRef);
-					foreach (var ca in asmDef.CustomAttributes)
-					{
-						if (ca.AttributeType.FullName == typeof(XmlnsDefinitionAttribute).FullName)
-						{
-							var attr = GetXmlnsDefinition(ca, asmDef);
-							xmlnsDefinitions.Add(attr);
-						}
-					}
+					GatherXmlnsDefinitionAttributes(xmlnsDefinitions, asmDef);
 				}
 			}
 			else
@@ -97,7 +106,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			throw new BuildException(BuildExceptionCode.TypeResolution, xmlInfo, null, $"{xmlType.NamespaceUri}:{xmlType.Name}");
 		}
 
-		public static XmlnsDefinitionAttribute GetXmlnsDefinition(this CustomAttribute ca, AssemblyDefinition asmDef)
+		static XmlnsDefinitionAttribute GetXmlnsDefinition(this CustomAttribute ca, AssemblyDefinition asmDef)
 		{
 			var attr = new XmlnsDefinitionAttribute(
 							ca.ConstructorArguments[0].Value as string,
