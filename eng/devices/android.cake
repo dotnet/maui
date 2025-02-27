@@ -5,7 +5,7 @@
 const int DefaultApiLevel = 30;
 
 const int EmulatorStartProcessTimeoutSeconds = 1 * 60;
-int EmulatorBootTimeoutSeconds = (IsRunningOnLinux() ? 2 : 5) * 60;
+int EmulatorBootTimeoutSeconds = (IsRunningOnLinux() ? 2 : 10) * 60;
 
 Information("Local Dotnet: {0}", localDotnet);
 
