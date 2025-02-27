@@ -5,7 +5,7 @@
 const int DefaultApiLevel = 30;
 
 const int EmulatorStartProcessTimeoutSeconds = 1 * 60;
-int EmulatorBootTimeoutSeconds = (IsRunningOnLinux() ? 2 : 10) * 60;
+int EmulatorBootTimeoutSeconds = (IsRunningOnLinux() ? 2 : 5) * 60;
 
 Information("Local Dotnet: {0}", localDotnet);
 
@@ -610,6 +610,10 @@ void PrepareDevice(bool waitForBoot)
 			Information("Waiting {0}/{1} seconds for the emulator to boot up.", waited, total);
 			if (waited++ > total)
 			{
+				// macOS just does not work here sometimes and only xharness can fix
+				if (!IsRunningOnLinux())
+					break;
+
 				throw new Exception("The emulator did not finish booting in time.");
 			}
 
