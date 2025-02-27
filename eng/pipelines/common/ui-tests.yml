@@ -55,10 +55,10 @@ stages:
           - template: ui-tests-build-sample.yml
             parameters:
                 runtimeVariant: "Mono"
-                ${{ if parameters.skipProvisioning }}:
-                  provisioning: false
-                ${{ else }}:
-                  provisioning: true
+                # ${{ if parameters.skipProvisioning }}:
+                #   provisioning: false
+                # ${{ else }}:
+                #   provisioning: true
   
   - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
     - stage: build_ui_tests_nativeaot
@@ -91,10 +91,10 @@ stages:
           - template: ui-tests-build-sample.yml
             parameters:
                 platform: windows
-                ${{ if parameters.skipProvisioning }}:
-                  provisioning: false
-                ${{ else }}:
-                  provisioning: true
+                # ${{ if parameters.skipProvisioning }}:
+                #   provisioning: false
+                # ${{ else }}:
+                #   provisioning: true
 
   - stage: android_ui_tests
     displayName: Android UITests
