@@ -48,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The Opacity property of a BoxView should match with native IsVisible")]
+		[Description("The Opacity property of a BoxView should match with native Opacity")]
 		public async Task VerifyBoxViewOpacityProperty()
 		{
 			var boxView = new BoxView
