@@ -59,6 +59,7 @@ steps:
       ${{ if eq(parameters.skipProvisioning, false) }}:
         skipProvisionator : false
         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+      skipInternalFeeds: eq('${{ parameters.buildType }}', 'testOnly')
 
 
   ##################################################

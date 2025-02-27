@@ -26,6 +26,7 @@ parameters:
   outputVariableName: 'dotnetbuilds-internal-container-read-token'
   expiryInHours: 1
   base64Encode: false
+  skipInternalFeeds: false
 
 steps:
 
@@ -175,7 +176,7 @@ steps:
   #               Provisioning Feeds               #
   ##################################################
 
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+  - ${{ if and(eq(variables['System.TeamProject'], 'devdiv'), ne(parameters.skipInternalFeeds, 'true')) }}:
     - template: ../../common/templates-official/steps/enable-internal-sources.yml
 
     - template: ../../common/templates-official/steps/enable-internal-runtimes.yml

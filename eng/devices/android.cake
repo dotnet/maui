@@ -4,8 +4,8 @@
 
 const int DefaultApiLevel = 30;
 
-const int EmulatorStartProcessTimeoutSeconds = 3 * 60;
-const int EmulatorBootTimeoutSeconds = 3 * 60;
+const int EmulatorStartProcessTimeoutSeconds = 1 * 60;
+const int EmulatorBootTimeoutSeconds = 1 * 60;
 
 Information("Local Dotnet: {0}", localDotnet);
 
