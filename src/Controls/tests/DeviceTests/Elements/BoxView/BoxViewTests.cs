@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
-using Microsoft.Maui.Controls.Handlers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -47,8 +47,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The Background of a Button should match with native Background")]
-		public async Task BoxViewBackground()
+		[Description("The Background of a BoxView should match with native Background")]
+		public async Task BoxViewBackgroundConsistent()
 		{
 			var boxView = new BoxView
 			{

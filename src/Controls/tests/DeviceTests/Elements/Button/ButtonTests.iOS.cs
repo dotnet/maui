@@ -1,12 +1,12 @@
 ﻿#nullable enable
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using UIKit;
 using Xunit;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The Cornerradius of a Button should match with native CornerRadius")]
+		[Description("The CornerRadius of a Button should match with native CornerRadius")]
 		public async Task ButtonCornerRadius()
 		{
 			var button = new Button
