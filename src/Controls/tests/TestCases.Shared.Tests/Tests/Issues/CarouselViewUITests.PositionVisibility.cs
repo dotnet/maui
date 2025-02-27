@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // For more information, see : https://github.com/dotnet/maui/issues/24482
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // For more information, see : https://github.com/dotnet/maui/issues/24482 . On Mac the SwipeRightToLeft is not working as expected and reduces the volume of the simulator.
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
