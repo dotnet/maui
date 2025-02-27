@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnScrolled(recyclerView, dx, dy);
 
-			var itemCount = recyclerView.GetAdapter()?.ItemCount;
+			var itemCount = recyclerView.GetAdapter()?.ItemCount ?? 0;
 			_horizontalOffset = itemCount == 0 ? 0 : _horizontalOffset + dx;
 			_verticalOffset = itemCount == 0 ? 0 : _verticalOffset + dy;
 
