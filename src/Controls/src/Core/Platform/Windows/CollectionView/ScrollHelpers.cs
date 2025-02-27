@@ -321,7 +321,14 @@ namespace Microsoft.Maui.Controls.Platform
 		static double GetHeaderHeight(ListViewBase list, UIElement targetContainer)
 		{
 			var groupHeader = list.GroupHeaderContainerFromItemContainer(targetContainer);
-			return (groupHeader as ListViewHeaderItem).ActualHeight;
+			if (groupHeader is ListViewHeaderItem headerItem)
+			{
+				return headerItem.ActualHeight;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 
 		public static async Task AnimateToItemAsync(ListViewBase list, object targetItem, ScrollToPosition scrollToPosition)
