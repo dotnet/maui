@@ -20,6 +20,7 @@ public class Issue27922 : _IssuesUITest
 		App.WaitForElement("27922ScrollToButton");
 		App.Tap("27922ScrollToButton");
 		App.WaitForElement("Coffee");
+		VerifyScreenshot();
 	}
 }
 

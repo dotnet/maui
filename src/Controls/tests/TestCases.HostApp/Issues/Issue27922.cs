@@ -24,7 +24,8 @@ namespace Controls.TestCases.HostApp.Issues
 				AutomationId = "27922GroupedCollection",
 				ItemTemplate = new DataTemplate(() =>
 				{
-					Label label = new Label { Padding = 10 };
+					Label label = new Label { Padding = 10, HeightRequest = 80 };
+					label.FontAttributes = FontAttributes.Bold;
 					label.SetBinding(Label.TextProperty, "Name");
 					return label;
 				}),
