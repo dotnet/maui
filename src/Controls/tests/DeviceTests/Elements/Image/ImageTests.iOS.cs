@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using UIKit;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -151,5 +152,18 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(100, image.Height);
 			Assert.Equal(200, image.Width);
 		}
+
+		UIImageView GetPlatformImage(ImageHandler imageHandler) =>
+            imageHandler.PlatformView;
+    
+        Task<float> GetPlatformOpacity(ImageHandler imageHandler)
+        {
+            return InvokeOnMainThreadAsync(() =>
+            {
+                var nativeView = GetPlatformImage(imageHandler);
+                return (float)nativeView.Alpha;
+            });
+        }
+
 	}
 }

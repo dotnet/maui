@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
+using Android.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -68,6 +69,18 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
+
+		ImageView GetPlatformImage(ImageHandler imageHandler) =>
+            imageHandler.PlatformView;
+    
+        Task<float> GetPlatformOpacity(ImageHandler imageHandler)
+        {
+            return InvokeOnMainThreadAsync(() =>
+            {
+                var nativeView = GetPlatformImage(imageHandler);
+                return (float)nativeView.Alpha;
+            });
+        }
 	}
 
 	// This subclass of memory stream is deliberately set up to trick Glide into using the cached image
