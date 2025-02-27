@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 			var pagerParent = (shell.CurrentPage.Handler as IPlatformViewHandler)
 				.PlatformView.FindParent(x => x.NextResponder is UITabBarController);
 
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(15, 0))
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15, 0) || OperatingSystem.IsMacOSVersionAtLeast(15, 0))
 			{
 				return pagerParent.Subviews.ElementAtOrDefault(1).Subviews.FirstOrDefault(v => v is UITabBar) as UITabBar;
 			}
