@@ -7,6 +7,7 @@ using Microsoft.Maui.Platform;
 using System.ComponentModel;
 using Xunit;
 using Microsoft.Maui.Controls;
+
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class BoxViewTests
