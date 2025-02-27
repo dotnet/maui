@@ -133,9 +133,9 @@ stages:
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
                       ${{ if parameters.skipProvisioning }}:
-                        provisioning: false
+                        provisioningSteps: false
                       ${{ else }}:
-                        provisioning: true
+                        provisioningSteps: true
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
@@ -178,9 +178,9 @@ stages:
                       runtimeVariant : "Mono"
                       testFilter: $(CATEGORYGROUP)
                       ${{ if parameters.skipProvisioning }}:
-                        provisioning: false
+                        provisioningSteps: false
                       ${{ else }}:
-                        provisioning: true
+                        provisioningSteps: true
 
   - stage: ios_ui_tests_mono_cv2
     displayName: iOS UITests Mono CollectionView2
@@ -219,9 +219,9 @@ stages:
                       testFilter: "CollectionView"
                       testConfigurationArgs: "CollectionView2"
                       ${{ if parameters.skipProvisioning }}:
-                        provisioning: false
+                        provisioningSteps: false
                       ${{ else }}:
-                        provisioning: true
+                        provisioningSteps: true
 
   - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
     - stage: ios_ui_tests_nativeaot
@@ -265,9 +265,9 @@ stages:
                         runtimeVariant : "NativeAOT"
                         testFilter: $(CATEGORYGROUP)
                         ${{ if parameters.skipProvisioning }}:
-                          provisioning: false
+                          provisioningSteps: false
                         ${{ else }}:
-                          provisioning: true
+                          provisioningSteps: true
 
   - stage: winui_ui_tests
     displayName: WinUI UITests
@@ -300,9 +300,9 @@ stages:
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
                       ${{ if parameters.skipProvisioning }}:
-                        provisioning: false
+                        provisioningSteps: false
                       ${{ else }}:
-                        provisioning: true
+                        provisioningSteps: true
 
   - stage: mac_ui_tests
     displayName: macOS UITests
@@ -336,6 +336,6 @@ stages:
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
                       ${{ if parameters.skipProvisioning }}:
-                        provisioning: false
+                        provisioningSteps: false
                       ${{ else }}:
-                        provisioning: true
+                        provisioningSteps: true
