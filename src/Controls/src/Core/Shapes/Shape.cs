@@ -440,7 +440,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			result.Height += StrokeThickness;
 			result.Width += StrokeThickness;
 
-			if (this is Line || this is Path || this is Polyline)
+			if (this is Line or Path or Polyline)
 			{
 				result.Height += Margin.VerticalThickness;
 				result.Width += Margin.HorizontalThickness;
