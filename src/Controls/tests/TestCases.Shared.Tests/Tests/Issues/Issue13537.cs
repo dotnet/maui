@@ -9,7 +9,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #if ANDROID
 		const string backButtonIdentifier = "";
 #else
-        const string backButtonIdentifier = "Home";
+		const string backButtonIdentifier = "Home";
 #endif
 		public Issue13537(TestDevice testDevice) : base(testDevice)
 		{
@@ -29,7 +29,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That(result, Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
 		}
 
-
+#if TEST_FAILS_ON_CATALYST
+		//App.TapBackArrow doesnot actually tab the back arrow button instead it taps the first tab element on the screen as both have the same access identifier.
 		[Test]
 		[Category(UITestCategories.Shell)]
 		public void ApplyQueryAttributeShouldTriggerforPushAndBackButton()
@@ -38,13 +39,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("PushAsyncButton");
 			App.WaitForElement("InnerPageTestLabel");
 #if IOS
-            App.Back();
+			App.Back();
 #else
 			App.TapBackArrow(backButtonIdentifier);
 #endif
 			var result = App.WaitForElement("HomePageTestLabel").GetText();
 			Assert.That(result, Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
 		}
+#endif
 
 
 		[Test]
