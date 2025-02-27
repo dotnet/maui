@@ -32,12 +32,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static UWPPoint AdjustToStart(UWPPoint point, ScrollViewer scrollViewer, double height)
 		{
-			if (IsVertical(scrollViewer))
-			{
-				return AdjustToStartVertical(point, height);
-			}
-
-			return AdjustToStartHorizontal(point, height);
+			return IsVertical(scrollViewer) ? AdjustToStartVertical(point, height) : AdjustToStartHorizontal(point, height);
 		}
 
 
