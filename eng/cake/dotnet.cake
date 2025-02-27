@@ -761,12 +761,6 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
         {
             Configuration = config,
             NoBuild = noBuild,
-            Filter = filter,
-            Loggers = { 
-                $"trx;LogFileName={results}",
-                $"console;verbosity=normal"
-            }, 
-           	ResultsDirectory = GetTestResultsDirectory(),
         //    Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
             ArgumentCustomization = args => 
             { 
@@ -782,11 +776,20 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
                     {
                         args.Append($"/p:{prop.Key}={prop.Value}");
                     }        
-                }        
-                    
-                // https://github.com/microsoft/vstest/issues/5112
-                args.Append($"/p:VStestUseMSBuildOutput=false");
-                
+                }
+
+                args.Append("--");
+
+                args.Append("--results-directory");
+                args.Append(GetTestResultsDirectory());
+
+                args.Append("--report-trx");
+
+                args.Append("--report-trx-filename");
+                args.Append(results);
+
+                args.Append("--filter");
+                args.Append(filter);
                 return args;
             }
         };
