@@ -12,7 +12,7 @@ parameters:
   testFilter: ''
   skipAppiumDoctor: ${{ eq(variables['Agent.OS'], 'Darwin') }}
   testConfigurationArgs: ''
-  provisioning: false
+  skipProvisioning: true
 
 steps:
   - task: DownloadPipelineArtifact@2
@@ -56,11 +56,11 @@ steps:
       skipAndroidCreateAvds: ${{ ne(parameters.platform, 'android') }}
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      ${{ if parameters.provisioning }}:
+      ${{ if parameters.skipProvisioning }}:
+        skipProvisionator: true
+      ${{ else }}:  
         skipProvisionator: false
         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-      ${{ else }}:  
-        skipProvisionator: true
 
   - task: PowerShell@2
     condition: ne('${{ parameters.platform }}' , 'windows')
