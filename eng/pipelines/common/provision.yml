@@ -87,8 +87,8 @@ steps:
   # Provisioning Windows - Set dump file location
   - pwsh: |
       $errorPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
-      New-ItemProperty -Path $errorPath -Name DumpFolder -PropertyType String -Value "$(Build.ArtifactStagingDirectory)/crash-dumps"
-      New-ItemProperty -Path $errorPath -Name DumpType -PropertyType DWORD -Value 2
+      New-ItemProperty -Path $errorPath -Name DumpFolder -PropertyType String -Value "$(Build.ArtifactStagingDirectory)/crash-dumps" -Force
+      New-ItemProperty -Path $errorPath -Name DumpType -PropertyType DWORD -Value 2 -Force
     displayName: 'Set dump file location'
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
     continueOnError: true
