@@ -10,7 +10,6 @@ parameters:
   configuration : "Release"
   runtimeVariant : "Mono"
   testFilter: ''
-  skipAppiumDoctor: ${{ eq(variables['Agent.OS'], 'Darwin') }}
   testConfigurationArgs: ''
   skipProvisioning: true
 
@@ -98,7 +97,8 @@ steps:
     displayName: "Install node"
 
   - pwsh: |
-      dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="${{ parameters.skipAppiumDoctor }}" -bl:"$(LogDirectory)/provision-appium.binlog"
+      $skipAppiumDoctor = if ($IsMacOS) { "true" } else { "false" }
+      dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
     displayName: "Install Appium"
     continueOnError: false
     retryCountOnTaskFailure: 1
