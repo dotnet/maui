@@ -147,10 +147,10 @@ stages:
         androidApiLevels: [ 30 ]
         iosVersions: [ '18.0' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
-        ${{ if parameters.UseProvisionator }}:
-          skipProvisioning: false
-        ${{ else }}:
-          skipProvisioning: true
+        # ${{ if parameters.UseProvisionator }}:
+        #   skipProvisioning: false
+        # ${{ else }}:
+        #   skipProvisioning: true
       ${{ if parameters.CompatibilityTests }}:
         runCompatibilityTests: true
       
