@@ -20,7 +20,12 @@ namespace Microsoft.Maui.DeviceTests
 			var pagerParent = (shell.CurrentPage.Handler as IPlatformViewHandler)
 				.PlatformView.FindParent(x => x.NextResponder is UITabBarController);
 
-			return pagerParent.Subviews.FirstOrDefault(v => v.GetType() == typeof(UITabBar)) as UITabBar;
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(15, 0))
+			{
+				return pagerParent.Subviews.ElementAtOrDefault(1).Subviews.FirstOrDefault(v => v is UITabBar) as UITabBar;
+			}
+
+			return pagerParent.Subviews.FirstOrDefault(v => v is UITabBar) as UITabBar;
 		}
 
 		async Task ValidateTabBarIconColor(
