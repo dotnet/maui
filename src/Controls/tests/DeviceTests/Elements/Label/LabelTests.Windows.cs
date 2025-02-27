@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Handlers;
+﻿using System.Threading.Tasks;
+using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -24,8 +25,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var nativeView = GetPlatformControl(labelHandler);
-				return nativeView.Opacity;
+				var nativeView = GetPlatformLabel(labelHandler);
+				return (float)nativeView.Opacity;
 			});
 		}
 	}

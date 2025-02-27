@@ -49,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformControl(searchBarHandler);
-				return nativeView.Opacity;
+				return (float)nativeView.Opacity;
 			});
 		}
 	}

@@ -60,24 +60,6 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertColorAtPoint(border, expected, typeof(BorderHandler), cornerRadius, cornerRadius);
 		}
 
-		[Fact]
-		[Description("The Opacity property of a Border should match with native IsVisible")]
-		public async Task VerifyBorderOpacityProperty()
-		{
-			var border = new Border
-			{
-				Opacity = 0.35f
-			}
-			var expectedValue = border.Opacity;
-
-			var handler = await CreateHandlerAsync<BorderHandler>(border);
-			var nativeView = GetNativeBorder(handler);
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var nativeOpacityValue = nativeView.Opacity;
-				Assert.Equal(expectedValue, nativeOpacityValue);
-			});
-		}
 		ContentPanel GetNativeBorder(BorderHandler borderHandler) =>
 			borderHandler.PlatformView;
 

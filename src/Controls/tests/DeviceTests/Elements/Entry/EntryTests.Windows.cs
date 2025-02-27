@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformControl(entryHandler);
-				return nativeView.Opacity;
+				return (float)nativeView.Opacity;
 			});
 		}
 

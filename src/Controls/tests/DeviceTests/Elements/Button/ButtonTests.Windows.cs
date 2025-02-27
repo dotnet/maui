@@ -24,8 +24,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
-				var nativeView = GetNativeBoxView(buttonHandler);
-				return nativeView.Opacity;
+				var nativeView = GetPlatformButton(buttonHandler);
+				return (float)nativeView.Opacity;
 			});
 		}
 	}
