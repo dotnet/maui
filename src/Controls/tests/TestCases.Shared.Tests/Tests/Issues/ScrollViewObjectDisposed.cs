@@ -18,6 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Description("Tapping a button inside the ScrollView does not cause an exception.")]
 		public void ScrollViewObjectDisposedTest()
 		{
+			App.WaitForElement("TestButtonId");
 			// 1. Tap the button.
 			App.Tap("TestButtonId");
 
