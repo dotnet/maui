@@ -22,10 +22,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(15, 0) || OperatingSystem.IsMacOSVersionAtLeast(15, 0))
 			{
-				return pagerParent.Subviews.ElementAtOrDefault(1).Subviews.FirstOrDefault(v => v is UITabBar) as UITabBar;
+				return pagerParent.Subviews.ElementAtOrDefault(1).Subviews.FirstOrDefault(v => v.GetType() == typeof(UITabBar)) as UITabBar;
 			}
 
-			return pagerParent.Subviews.FirstOrDefault(v => v is UITabBar) as UITabBar;
+			return pagerParent.Subviews.FirstOrDefault(v => v.GetType() == typeof(UITabBar)) as UITabBar;
 		}
 
 		async Task ValidateTabBarIconColor(
