@@ -207,17 +207,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.ViewWillTransitionToSize(toSize, coordinator);
 			if (!OperatingSystem.IsMacCatalyst())
 			{
+				bool shouldShowSplitMode = FlyoutPageController.ShouldShowSplitMode;
 				if (FlyoutOverlapsDetailsInPopoverMode)
 				{
-					if (FlyoutPageController.ShouldShowSplitMode)
-						UpdatePresented(true);
-					else
-						UpdatePresented(false);
+					UpdatePresented(shouldShowSplitMode);
 				}
-				else
+				else if (!shouldShowSplitMode && _presented)
 				{
-					if (!FlyoutPageController.ShouldShowSplitMode && _presented)
-						UpdatePresented(false);
+					UpdatePresented(false);
 				}
 			}
 
