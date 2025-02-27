@@ -805,7 +805,11 @@ public static class KeyboardAutoManagerScroll
 
 		var bottomScrollIndicatorInset = bottomInset;
 
-		bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
+		// When the superview is a MauiCollectionView and the scrollView is a MauiTextView, we do not want to consider the Bottom Inset
+		// reserved for the Footer.
+		bool isMauiTextViewInCV = scrolledView is UITextView && LastScrollView is UICollectionView;
+
+		bottomInset = isMauiTextViewInCV ? bottomInset : nfloat.Max(StartingContentInsets.Bottom, bottomInset);
 		bottomScrollIndicatorInset = nfloat.Max(StartingScrollIndicatorInsets.Bottom, bottomScrollIndicatorInset);
 
 		if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
@@ -815,12 +819,7 @@ public static class KeyboardAutoManagerScroll
 		}
 
 		var movedInsets = scrolledView.ContentInset;
-		// When the superview is a MauiCollectionView and the scrollView is a MauiTextView, we do not want to change the bottom inset.
-		bool shouldAdjustBottom = !(scrolledView is UITextView && LastScrollView is UICollectionView);
-		if (shouldAdjustBottom)
-		{
-			movedInsets.Bottom = bottomInset;
-		}
+		movedInsets.Bottom = bottomInset;
 
 		// if we are in an editor that is inside a scrollView and are below where the keyboard will appear,
 		// the outer scrollview will put the cursor above the keyboard and we will
