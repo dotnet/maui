@@ -19,15 +19,6 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).CurrentTitle);
 		}
 
-		Task<float> GetPlatformOpacity(ButtonHandler buttonHandler)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var nativeView = GetPlatformButton(buttonHandler);
-				return (float)nativeView.Alpha; 
-			});
-		}
-		
 		UILineBreakMode GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
 			GetPlatformButton(buttonHandler).TitleLabel.LineBreakMode;
 

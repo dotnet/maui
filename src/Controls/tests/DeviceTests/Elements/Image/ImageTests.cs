@@ -93,21 +93,21 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-        [Description("The Opacity property of a image should match with native Opacity")]
-        public async Task VerifyImageOpacityProperty()
-        {
-            var image = new Image
-            {
-                Opacity = 0.35f
-            };
-            var expectedValue = image.Opacity;
-        
-            var handler = await CreateHandlerAsync<ImageHandler>(image);
-            await InvokeOnMainThreadAsync(async () =>
-            {
-                var nativeOpacityValue = await GetPlatformOpacity(handler);
-                Assert.Equal(expectedValue, nativeOpacityValue);
-            });
-        }
+		[Description("The Opacity property of a image should match with native Opacity")]
+		public async Task VerifyImageOpacityProperty()
+		{
+			var image = new Image
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = image.Opacity;
+
+			var handler = await CreateHandlerAsync<ImageHandler>(image);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var nativeOpacityValue = await GetPlatformOpacity(handler);
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
+		}
 	}
 }

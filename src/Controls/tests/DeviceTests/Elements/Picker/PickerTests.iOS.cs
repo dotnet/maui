@@ -9,16 +9,16 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class PickerTests : ControlsHandlerTestBase
-	{
-		protected Task<string> GetPlatformControlText(MauiPicker platformView)
-		{
-			return InvokeOnMainThreadAsync(() => platformView.Text);
-		}
+    public partial class PickerTests : ControlsHandlerTestBase
+    {
+        protected Task<string> GetPlatformControlText(MauiPicker platformView)
+        {
+            return InvokeOnMainThreadAsync(() => platformView.Text);
+        }
 
-		MauiPicker GetPlatformPicker(PickerHandler pickerHandler) =>
+        MauiPicker GetPlatformPicker(PickerHandler pickerHandler) =>
             pickerHandler.PlatformView;
-    
+
         Task<float> GetPlatformOpacity(PickerHandler pickerHandler)
         {
             return InvokeOnMainThreadAsync(() =>
@@ -28,5 +28,5 @@ namespace Microsoft.Maui.DeviceTests
             });
         }
 
-	}
+    }
 }

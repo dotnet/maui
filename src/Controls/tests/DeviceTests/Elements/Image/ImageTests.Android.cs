@@ -71,16 +71,16 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		ImageView GetPlatformImage(ImageHandler imageHandler) =>
-            imageHandler.PlatformView;
-    
-        Task<float> GetPlatformOpacity(ImageHandler imageHandler)
-        {
-            return InvokeOnMainThreadAsync(() =>
-            {
-                var nativeView = GetPlatformImage(imageHandler);
-                return (float)nativeView.Alpha;
-            });
-        }
+			imageHandler.PlatformView;
+
+		Task<float> GetPlatformOpacity(ImageHandler imageHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformImage(imageHandler);
+				return (float)nativeView.Alpha;
+			});
+		}
 	}
 
 	// This subclass of memory stream is deliberately set up to trick Glide into using the cached image

@@ -102,7 +102,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformLabel(labelHandler);
-				return nativeView.Alpha;
+				return (float)nativeView.Alpha;
 			});
 		}
 	}

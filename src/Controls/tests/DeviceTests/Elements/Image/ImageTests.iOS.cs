@@ -154,16 +154,16 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		UIImageView GetPlatformImage(ImageHandler imageHandler) =>
-            imageHandler.PlatformView;
-    
-        Task<float> GetPlatformOpacity(ImageHandler imageHandler)
-        {
-            return InvokeOnMainThreadAsync(() =>
-            {
-                var nativeView = GetPlatformImage(imageHandler);
-                return (float)nativeView.Alpha;
-            });
-        }
+			imageHandler.PlatformView;
+
+		Task<float> GetPlatformOpacity(ImageHandler imageHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformImage(imageHandler);
+				return (float)nativeView.Alpha;
+			});
+		}
 
 	}
 }
