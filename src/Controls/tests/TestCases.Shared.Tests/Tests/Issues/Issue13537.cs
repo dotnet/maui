@@ -4,8 +4,8 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue13537 : _IssuesUITest
-		{
+	public class Issue13537 : _IssuesUITest
+	{
 #if ANDROID
 		const string backButtonIdentifier = "";
 #else
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-			public override string Issue => "ApplyQueryAttributes should Trigger for all navigations";
+		public override string Issue => "ApplyQueryAttributes should Trigger for all navigations";
 
 		[Test]
 		[Category(UITestCategories.Shell)]
@@ -26,10 +26,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("InnerPageTestLabel");
 			App.Tap("PopAsyncButton");
 			var result = App.WaitForElement("HomePageTestLabel").GetText();
-			Assert.That(result , Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
+			Assert.That(result, Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
 		}
 
-#if !MACCATALYST
+
 		[Test]
 		[Category(UITestCategories.Shell)]
 		public void ApplyQueryAttributeShouldTriggerforPushAndBackButton()
@@ -43,9 +43,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.TapBackArrow(backButtonIdentifier);
 #endif
 			var result = App.WaitForElement("HomePageTestLabel").GetText();
-			Assert.That(result , Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
+			Assert.That(result, Is.EqualTo("Issue13537HomePage QueryAttribute is triggered"));
 		}
-#endif
+
 
 		[Test]
 		[Category(UITestCategories.Shell)]
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("FavouritePageTestLabel");
 			App.Tap("GoToAsyncButton");
 			var result = App.WaitForElement("InnerPageTestLabel").GetText();
-			Assert.That(result , Is.EqualTo("Parameter From Favorite Page to New Page"));
+			Assert.That(result, Is.EqualTo("Parameter From Favorite Page to New Page"));
 		}
 	}
 
