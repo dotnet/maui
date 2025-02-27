@@ -5,7 +5,7 @@
 const int DefaultApiLevel = 30;
 
 const int EmulatorStartProcessTimeoutSeconds = 1 * 60;
-int EmulatorBootTimeoutSeconds = (IsRunningOnLinux() ? 2 : 5) * 60;
+const int EmulatorBootTimeoutSeconds = 2 * 60;
 
 Information("Local Dotnet: {0}", localDotnet);
 
@@ -316,10 +316,7 @@ AndroidEmulatorToolSettings AdjustEmulatorSettingsForCI(AndroidEmulatorToolSetti
 {
 	if (IsCIBuild())
 	{
-		var gpu =
-			IsRunningOnLinux() ? "-gpu swiftshader_indirect" :
-		 	IsRunningOnWindows() ? "" :
-			"-gpu guest";
+		var gpu = IsRunningOnLinux() ? "-gpu swiftshader_indirect" : "";
 		settings.ArgumentCustomization = args => args
 			.Append(gpu)
 			.Append("-no-window")
