@@ -781,7 +781,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
                 args.Append("--");
 
                 args.Append("--results-directory");
-                args.Append(GetTestResultsDirectory());
+                args.Append(GetTestResultsDirectory().FullPath);
 
                 args.Append("--report-trx");
 
