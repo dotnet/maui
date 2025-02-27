@@ -61,7 +61,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The IsEnabled property of a BoxView should match with native IsEnabled")]		
+		[Description("The IsEnabled property of a Border should match with native IsEnabled")]		
 		public async Task VerifyBorderIsEnabledProperty()
 		{
 			var border = new Border();
