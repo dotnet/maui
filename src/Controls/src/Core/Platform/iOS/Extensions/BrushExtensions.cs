@@ -121,8 +121,11 @@ namespace Microsoft.Maui.Controls.Platform
 			if (backgroundLayer == null)
 				return null;
 
-			var size = new CGSize(backgroundLayer.Bounds.Size.Width * UIScreen.MainScreen.Scale, backgroundLayer.Bounds.Size.Height * UIScreen.MainScreen.Scale);
-			var renderer = new UIGraphicsImageRenderer(size);
+			var format = new UIGraphicsImageRendererFormat()
+			{
+				Scale = UIScreen.MainScreen.Scale
+			};
+			var renderer = new UIGraphicsImageRenderer(backgroundLayer.Bounds.Size, format);
 			var gradientImage = renderer.CreateImage((UIGraphicsImageRendererContext ctx) =>
 			{
 				backgroundLayer.RenderInContext(ctx.CGContext);
