@@ -12,6 +12,9 @@
 	<ContentPage.Resources>
 		<ResourceDictionary>
 			<Color x:Key="purple">Purple</Color>
+			<DataTemplate x:Key="requiredTemplate">
+				<Label Text="Required Template"/>
+			</DataTemplate>
 		</ResourceDictionary>
 		<local:SetValue_ReverseConverter x:Key="ReverseConverter"/>
 	</ContentPage.Resources>
@@ -102,6 +105,6 @@
 		</local:MockViewWithValues>
 		<local:MockViewWithValues x:Name="implicit3" Foo="Foo" />
 		<Label x:Name="label16" Text="Welcome to &#10; .NET Multi-platform App UI"/>
-		<local:MockViewWithRequiredValues x:Name="required0" RequiredValue="foo" />
+		<local:MockViewWithRequiredValues x:Name="required0" RequiredValue="foo" RequiredColor="{StaticResource purple}" RequiredTemplate="{StaticResource requiredTemplate}" />
 	</cmp:StackLayout>
 </ContentPage>

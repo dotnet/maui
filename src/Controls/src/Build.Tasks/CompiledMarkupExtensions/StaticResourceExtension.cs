@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (!eNode.Properties.TryGetValue(name, out INode keyNode) && eNode.CollectionItems.Any())
 				keyNode = eNode.CollectionItems[0];
 
-			if (!(keyNode is ValueNode keyValueNode))
+			if (keyNode is not ValueNode keyValueNode)
 				throw new BuildException(BuildExceptionCode.StaticResourceSyntax, eNode as IXmlLineInfo, null, null);
 
 			var n = eNode;

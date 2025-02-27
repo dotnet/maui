@@ -13,8 +13,8 @@
       - _SOURCEGEN_LINEINFO_ENABLE: Augment the code with #line directives.
       - _SOURCEGEN_SOURCEINFO_ENABLE: write calls to RegisterSourceInfo (between conditions) for Instrumentatin purposes
     -->
-    <DefineConstants>$(DefineConstants);__SOURCEGEN__;_SOURCEGEN_LINEINFO_ENABLE;_SOURCEGEN_SOURCEINFO_ENABLE</DefineConstants>
-    <!-- <DefineConstants>$(DefineConstants);__SOURCEGEN__</DefineConstants> -->
+    <!-- <DefineConstants>$(DefineConstants);__SOURCEGEN__;_SOURCEGEN_LINEINFO_ENABLE;_SOURCEGEN_SOURCEINFO_ENABLE</DefineConstants> -->
+    <DefineConstants>$(DefineConstants);__SOURCEGEN__</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>

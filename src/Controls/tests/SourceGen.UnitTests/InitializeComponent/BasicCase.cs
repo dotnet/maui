@@ -66,6 +66,7 @@ public partial class TestPage
 #endif
 		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
 		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
+		button.transientNamescope = iNameScope;
 		iNameScope.RegisterName("MyButton", button);
 		button.StyleId ??= "MyButton";
 		this.MyButton = button;

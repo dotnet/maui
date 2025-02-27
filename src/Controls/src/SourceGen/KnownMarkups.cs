@@ -93,6 +93,89 @@ internal class KnownMarkups
 		return $"typeof({typeSymbol.ToFQDisplayString()})";
 	}
 
+	public static string ProvideValueForStaticResourceExtension(IElementNode? node, SourceGenContext context, out ITypeSymbol? returnType)
+	{
+		returnType = context.Compilation.ObjectType;
+		if (node is null)
+		{
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"invalid StaticResource"));
+			return string.Empty;
+		}
+
+		if (!node.Properties.TryGetValue(new XmlName("", "Key"), out INode keyNode) &&
+			node.CollectionItems.Count == 1)
+			keyNode = node.CollectionItems[0];
+
+		if (keyNode is not ValueNode vn)
+		{
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"invalid StaticResource"));
+			return string.Empty;
+		}
+
+		var key = vn.Value as string;
+		if (IsNullOrEmpty(key))
+		{
+			context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, $"invalid StaticResource"));
+			return string.Empty;
+		}
+		
+		while (node != null)
+        {
+            if (!node.Properties.TryGetValue(new XmlName(XamlParser.MauiUri, "Resources"), out var resourcesNode))
+			{
+				node = node.Parent as ElementNode;
+                continue;
+			}
+			//single resource in <Resources>
+			if (resourcesNode is IElementNode irn
+				&& irn.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode)
+				&& context.Variables.TryGetValue(irn, out var variable)
+				&& xKeyNode is ValueNode xKeyValueNode
+				&& xKeyValueNode.Value as string == key)
+			{
+				returnType = variable.Type;
+				return variable.Name;
+			}
+			//multiple resources in <Resources>
+			else if (resourcesNode is ListNode lr)
+			{
+				foreach (var rn in lr.CollectionItems)
+				{
+					if (rn is IElementNode irn2
+						&& irn2.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode2)
+						&& context.Variables.TryGetValue(irn2, out var var0)
+						&& xKeyNode2 is ValueNode xKeyValueNode2
+						&& xKeyValueNode2.Value as string == key)
+					{
+						returnType = var0.Type;
+						return var0.Name;
+					}
+				}
+			}
+			//explicit ResourceDictionary in Resources
+			else if (  resourcesNode is IElementNode resourceDictionary
+					&& resourceDictionary.XmlType.Name == "ResourceDictionary")
+			{
+				foreach (var rn in resourceDictionary.CollectionItems)
+				{
+					if (rn is IElementNode irn3
+						&& irn3.Properties.TryGetValue(XmlName.xKey, out INode xKeyNode3)
+						&& irn3.XmlType.Name != "OnPlatform"
+						&& context.Variables.TryGetValue(irn3, out var var1)
+						&& xKeyNode3 is ValueNode xKeyValueNode3
+						&& xKeyValueNode3.Value as string == key)
+					{
+						returnType = var1.Type;
+						return var1.Name;
+					}
+				}
+			}
+			node = node.Parent as ElementNode;
+        }
+		//fallback
+		return $"global::Microsoft.Maui.Controls.Application.Current?.Resources[\"{key}\"] ?? throw new global::System.Exception(\"StaticResource not found for key {key}\")";
+    }
+
 	public static string ProvideValueForSetter(IElementNode node, SourceGenContext context, out ITypeSymbol? returnType)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!;

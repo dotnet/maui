@@ -72,7 +72,9 @@ static class NodeSGExtensions
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticExtension")!, KnownMarkups.ProvideValueForStaticExtension},
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DynamicResourceExtension")!, KnownMarkups.ProvideValueForDynamicResourceExtension},
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StyleSheetExtension")!, KnownMarkups.ProvideValueForStyleSheetExtension},
-        {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TypeExtension")!, KnownMarkups.ProvideValueForTypeExtension},        
+        {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TypeExtension")!, KnownMarkups.ProvideValueForTypeExtension},
+        //Not complete yet
+        // {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticResourceExtension")!, KnownMarkups.ProvideValueForStaticResourceExtension},
     };
 
     public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)

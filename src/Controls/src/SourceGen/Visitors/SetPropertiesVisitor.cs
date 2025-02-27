@@ -110,7 +110,6 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
             {
                 var templateContext = new SourceGenContext(Writer, context.Compilation, context.SourceProductionContext, context.XmlnsCache, context.TypeCache, context.RootType!, null) {FilePath = context.FilePath, ParentContext = context};
-
                 //inflate the template
 			    node.Accept(new CreateValuesVisitor(templateContext), null);
 			    node.Accept(new SetNamescopesAndRegisterNamesVisitor(templateContext), null);
@@ -136,9 +135,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         else if (parentNode.IsCollectionItem(node) && parentNode is IElementNode)
         {
             var parentVar = Context.Variables[(IElementNode)parentNode];
-            string? contentProperty;
+			string? contentProperty;
 
-            if (CanAddToResourceDictionary(parentVar, parentVar.Type, node, Context))
+			if (CanAddToResourceDictionary(parentVar, parentVar.Type, node, Context))
                 AddToResourceDictionary(Writer, parentVar, node, Context);
             else if ((contentProperty = parentVar.Type.GetContentPropertyName(context)) != null)
             {
@@ -185,7 +184,8 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 					return;
             var elementType = parentVar.Type;
             var localName = parentList.XmlName.LocalName;
-            var bpFieldSymbol = parentVar.Type.GetBindableProperty(parentList.XmlName.NamespaceURI, ref localName, out System.Boolean attached, context, node as IXmlLineInfo);        
+
+			var bpFieldSymbol = parentVar.Type.GetBindableProperty(parentList.XmlName.NamespaceURI, ref localName, out _, context, node as IXmlLineInfo);        
             var propertySymbol = parentVar.Type.GetAllProperties(localName, context).FirstOrDefault();
             var typeandconverter = bpFieldSymbol?.GetBPTypeAndConverter(context);
 
@@ -402,7 +402,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
         return false;
     }
 
-    static bool HasDoubleImplicitConversion(ITypeSymbol? fromType, ITypeSymbol? toType, SourceGenContext context, out IMethodSymbol? op)
+    internal static bool HasDoubleImplicitConversion(ITypeSymbol? fromType, ITypeSymbol? toType, SourceGenContext context, out IMethodSymbol? op)
     {
         op = null;
         if (fromType == null || toType == null)

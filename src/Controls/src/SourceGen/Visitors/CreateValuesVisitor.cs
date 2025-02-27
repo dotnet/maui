@@ -211,33 +211,58 @@ class CreateValuesVisitor : IXamlNodeVisitor
         else if (ctor != null)
         {
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
-            
-            Writer.Write($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])})");
+            //Required properties for object initializer
+            //TODO we could treat all ValueNodes as requiredProperties for object initializer
             var requiredProperties = type.GetRequiredProperties(Context);
-            if (requiredProperties.Length > 0)
+            
+            if (requiredProperties.Length == 0)
+                Writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])});");
+
+            else
             {
-                Writer.WriteLine();
-                using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
-                {
-                    foreach (var prop in requiredProperties)
-                    {
-                        var propNode = node.Properties.FirstOrDefault(p => p.Key.LocalName == prop.Name);
-                        //FIXME support ElementNode
-                        if (propNode.Value is ValueNode vn)
-                        {
-                            var value = vn.ConvertTo(prop.Type, Context);
-                            using (PrePost.NewLineInfo(Writer, (IXmlLineInfo)propNode.Value, Context.FilePath))
-                            {
-                                Writer.WriteLine($"{prop.Name} = {value},");
-                            }
-                            if (!node.SkipProperties.Contains(propNode.Key))
-                                node.SkipProperties.Add(propNode.Key);
-                        }
-                    }
-                }
+                //FIXME this is partially done, so fail for now                               
+                Context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, LocationCreate(Context.FilePath!, node, type.Name), "Required properties not supported yet"));
+                return;
+
+                //if requiredProperties are elementNodes and IValueProvider, ProvideValue before creating the object
+                // foreach (var prop in requiredProperties)
+                // {
+                //     var propNode = node.Properties.FirstOrDefault(p => p.Key.LocalName == prop.Name);
+                //     if (propNode.Value is not ElementNode en)
+                //         continue;
+                    
+                //     var visitor = new SetPropertiesVisitor(Context);
+                //     foreach (var n in en.Properties.Values.ToArray())
+				// 	    n.Accept(visitor, en);
+                //     foreach (var n in en.CollectionItems.ToArray())
+                //         n.Accept(visitor, en);
+
+                //     en.TryProvideValue(Context);
+                // }
+
+                // PrePost.LineInfo(Writer, (IXmlLineInfo)node, Context.FilePath);
+                // Writer.WriteLine($"var {variableName} = new {type.ToFQDisplayString()}({string.Join(", ", parameters?.ToMethodParameters(Context) ?? [])})");
+                // using (PrePost.NewBlock(Writer, begin: "{", end: "};"))
+                // {
+                //     foreach (var prop in requiredProperties)
+                //     {
+                //         var propNode = node.Properties.FirstOrDefault(p => p.Key.LocalName == prop.Name);
+                //         if (propNode.Value is null)
+                //             continue;
+
+                //         PrePost.LineInfo(Writer, (IXmlLineInfo)propNode.Value, Context.FilePath);
+                //         if (propNode.Value is ValueNode vn)
+                //             Writer.WriteLine($"{prop.Name} = {vn.ConvertTo(prop.Type, Context)},");
+                //         else if (propNode.Value is ElementNode elementNode)
+                //             Writer.WriteLine($"{prop.Name} = ({prop.Type.ToFQDisplayString()}){(SetPropertiesVisitor.HasDoubleImplicitConversion(Context.Variables[elementNode].Type, prop.Type, Context, out var conv) ? "(" + conv!.ReturnType.ToFQDisplayString()+ ")" : string.Empty)}{Context.Variables[elementNode].Name},");
+                //         if (!node.SkipProperties.Contains(propNode.Key))
+                //             node.SkipProperties.Add(propNode.Key);
+
+                //     }
+                //     PrePost.LineDefault(Writer);
+                // }
             }
-            else   
-                Writer.WriteLine($";");
+
             Context.Variables[node] = new LocalVariable(type, variableName);
             node.RegisterSourceInfo(Context, Writer);
             return;
