@@ -9,7 +9,6 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
