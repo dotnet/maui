@@ -55,7 +55,10 @@ stages:
           - template: ui-tests-build-sample.yml
             parameters:
                 runtimeVariant: "Mono"
-                provisioning: ${{ not(parameters.skipProvisioning) }}
+                ${{ if parameters.skipProvisioning }}:
+                  provisioning: false
+                ${{ else }}:
+                  provisioning: true
   
   - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
     - stage: build_ui_tests_nativeaot
@@ -88,7 +91,10 @@ stages:
           - template: ui-tests-build-sample.yml
             parameters:
                 platform: windows
-                provisioning: ${{ not(parameters.skipProvisioning) }}
+                ${{ if parameters.skipProvisioning }}:
+                  provisioning: false
+                ${{ else }}:
+                  provisioning: true
 
   - stage: android_ui_tests
     displayName: Android UITests
@@ -126,7 +132,10 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
-                      provisioning: ${{ not(parameters.skipProvisioning) }}
+                      ${{ if parameters.skipProvisioning }}:
+                        provisioning: false
+                      ${{ else }}:
+                        provisioning: true
 
   - stage: ios_ui_tests_mono
     displayName: iOS UITests Mono
@@ -168,7 +177,10 @@ stages:
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       runtimeVariant : "Mono"
                       testFilter: $(CATEGORYGROUP)
-                      provisioning: ${{ not(parameters.skipProvisioning) }}
+                      ${{ if parameters.skipProvisioning }}:
+                        provisioning: false
+                      ${{ else }}:
+                        provisioning: true
 
   - stage: ios_ui_tests_mono_cv2
     displayName: iOS UITests Mono CollectionView2
@@ -206,7 +218,10 @@ stages:
                       runtimeVariant : "Mono"
                       testFilter: "CollectionView"
                       testConfigurationArgs: "CollectionView2"
-                      provisioning: ${{ not(parameters.skipProvisioning) }}
+                      ${{ if parameters.skipProvisioning }}:
+                        provisioning: false
+                      ${{ else }}:
+                        provisioning: true
 
   - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
     - stage: ios_ui_tests_nativeaot
@@ -249,7 +264,10 @@ stages:
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                         runtimeVariant : "NativeAOT"
                         testFilter: $(CATEGORYGROUP)
-                        provisioning: ${{ not(parameters.skipProvisioning) }}
+                        ${{ if parameters.skipProvisioning }}:
+                          provisioning: false
+                        ${{ else }}:
+                          provisioning: true
 
   - stage: winui_ui_tests
     displayName: WinUI UITests
@@ -281,7 +299,10 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
-                      provisioning: ${{ not(parameters.skipProvisioning) }}
+                      ${{ if parameters.skipProvisioning }}:
+                        provisioning: false
+                      ${{ else }}:
+                        provisioning: true
 
   - stage: mac_ui_tests
     displayName: macOS UITests
@@ -314,4 +335,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
-                      provisioning: ${{ not(parameters.skipProvisioning) }}
+                      ${{ if parameters.skipProvisioning }}:
+                        provisioning: false
+                      ${{ else }}:
+                        provisioning: true
