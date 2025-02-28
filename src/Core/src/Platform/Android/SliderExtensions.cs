@@ -81,13 +81,17 @@ namespace Microsoft.Maui.Platform
 			const int TARGET_SIZE = 20; // 10 radius * 2
 			int thumbSize = (int)context.ToPixels(TARGET_SIZE);
 
-			Bitmap bitmap = Bitmap.CreateBitmap(thumbSize, thumbSize, Bitmap.Config.Argb8888!);
-			Canvas canvas = new Canvas(bitmap);
-			thumbDrawable.SetBounds(0, 0, thumbSize, thumbSize);
-			thumbDrawable.Draw(canvas);
+			using (Bitmap bitmap = Bitmap.CreateBitmap(thumbSize, thumbSize, Bitmap.Config.Argb8888!))
+			using (Canvas canvas = new Canvas(bitmap))
+			{
+				thumbDrawable.SetBounds(0, 0, thumbSize, thumbSize);
+				thumbDrawable.Draw(canvas);
 
-			BitmapDrawable finalDrawable = new BitmapDrawable(context.Resources, bitmap);
-			seekBar.SetThumb(finalDrawable);
+				using (BitmapDrawable finalDrawable = new BitmapDrawable(context.Resources, bitmap))
+				{
+					seekBar.SetThumb(finalDrawable);
+				}
+			}
 		}
 
 		static void SetDefaultThumb(SeekBar seekBar, ISlider slider, Android.Content.Context context)
