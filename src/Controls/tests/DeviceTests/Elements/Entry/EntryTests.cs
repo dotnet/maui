@@ -205,7 +205,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The Opacity property of a Entry should match with native Opacity")]
+		[Description("The Opacity property of an Entry should match with native Opacity")]
 		public async Task VerifyEntryOpacityProperty()
 		{
 			var entry = new Entry
