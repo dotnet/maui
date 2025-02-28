@@ -486,5 +486,11 @@ namespace Microsoft.Maui.Controls
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Text), Text);
 			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
+
+		internal override bool TrySetValue(string text)
+		{
+			Text = text;
+			return true;
+		}
 	}
 }

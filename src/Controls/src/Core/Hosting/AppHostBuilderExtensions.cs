@@ -67,7 +67,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
 		handlersCollection.AddHandler<Button, ButtonHandler>();
-		handlersCollection.AddHandler<CheckBox, CheckBoxHandler>();
 		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
 		handlersCollection.AddHandler<Editor, EditorHandler>();
 		handlersCollection.AddHandler<Entry, EntryHandler>();
@@ -244,7 +243,6 @@ public static partial class AppHostBuilderExtensions
 		Application.RemapForControls();
 		VisualElement.RemapForControls();
 		Button.RemapForControls();
-		CheckBox.RemapForControls();
 		DatePicker.RemapForControls();
 		RadioButton.RemapForControls();
 		FlyoutPage.RemapForControls();

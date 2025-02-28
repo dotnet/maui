@@ -153,6 +153,9 @@ static Microsoft.Maui.Controls.Element.RemapForControlsIfNeeded<T>(System.Action
 virtual Microsoft.Maui.Controls.Element.GetHandler(Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler?
 virtual Microsoft.Maui.Controls.Element.GetHandlerType() -> System.Type?
 virtual Microsoft.Maui.Controls.Element.RemapForControlsIfNeeded() -> void
+override Microsoft.Maui.Controls.CheckBox.GetHandler(Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler?
+override Microsoft.Maui.Controls.CheckBox.GetHandlerType() -> System.Type?
+override Microsoft.Maui.Controls.CheckBox.RemapForControlsIfNeeded() -> void
 override Microsoft.Maui.Controls.Label.GetHandler(Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler?
 override Microsoft.Maui.Controls.Label.GetHandlerType() -> System.Type?
 override Microsoft.Maui.Controls.Label.RemapForControlsIfNeeded() -> void

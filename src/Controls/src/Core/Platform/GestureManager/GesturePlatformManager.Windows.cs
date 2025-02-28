@@ -88,25 +88,7 @@ namespace Microsoft.Maui.Controls.Platform
 		// Do we need to provide a hook for this in the handlers?
 		// For now I just built this ugly matching statement
 		// to replicate our handlers where we are setting this to true
-		public bool PreventGestureBubbling
-		{
-			get
-			{
-				return Element switch
-				{
-					Button => true,
-					CheckBox => true,
-					DatePicker => true,
-					Stepper => true,
-					Slider => true,
-					Switch => true,
-					TimePicker => true,
-					ImageButton => true,
-					RadioButton => true,
-					_ => false,
-				};
-			}
-		}
+		public bool PreventGestureBubbling => Element.PreventGestureBubbling;
 
 		public FrameworkElement? Control
 		{
