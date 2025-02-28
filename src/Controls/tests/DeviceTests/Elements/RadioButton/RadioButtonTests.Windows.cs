@@ -44,9 +44,15 @@ namespace Microsoft.Maui.DeviceTests
             var nativeView = GetNativeRadioButton(handler);
             await InvokeOnMainThreadAsync(() =>
             {
-                var cornerRadius = (float)nativeView.CornerRadius.TopLeft;
-                Assert.Equal(expectedValue, cornerRadius);
-            });
+                var cornerRadiusTopLeft = (float)nativeView.CornerRadius.TopLeft;
+				var cornerRadiusTopRight = (float)nativeView.CornerRadius.TopRight;
+				var cornerRadiusBottomLeft = (float)nativeView.CornerRadius.BottomLeft;
+				var cornerRadiusBottomRight = (float)nativeView.CornerRadius.BottomRight;
+				Assert.Equal(expectedValue, cornerRadiusTopLeft);
+				Assert.Equal(expectedValue, cornerRadiusTopRight);
+				Assert.Equal(expectedValue, cornerRadiusBottomLeft);
+				Assert.Equal(expectedValue, cornerRadiusBottomRight);
+			});
         }
 
 		[Fact]
