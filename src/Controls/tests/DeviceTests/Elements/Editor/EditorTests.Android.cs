@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
@@ -66,5 +67,27 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(2, editor.CursorPosition);
 		}
+
+		[Fact]
+		[Description("The ScaleX property of a Editor should match with native ScaleX")]
+        public async Task ScaleXConsistent()
+        {
+            var editor = new Editor() { ScaleX = 0.45f };
+            var handler = await CreateHandlerAsync<EditorHandler>(editor);
+            var expected = editor.ScaleX;
+            var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
+            Assert.Equal(expected, platformScaleX);
+        }
+
+		[Fact]
+		[Description("The ScaleY property of a Editor should match with native ScaleY")]
+        public async Task ScaleYConsistent()
+        {
+            var editor = new Editor() { ScaleY = 0.45f };
+            var handler = await CreateHandlerAsync<EditorHandler>(editor);
+            var expected = editor.ScaleY;
+            var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
+            Assert.Equal(expected, platformScaleY);
+        }
 	}
 }
