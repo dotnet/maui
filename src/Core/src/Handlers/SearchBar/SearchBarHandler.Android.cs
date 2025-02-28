@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Handlers
 		void OnQueryTextSubmit(object? sender, QueryTextSubmitEventArgs e)
 		{
 			VirtualView.SearchButtonPressed();
-			e.Handled = true;
+		    e.Handled = false;
 		}
 
 		void OnQueryTextChange(object? sender, QueryTextChangeEventArgs e)

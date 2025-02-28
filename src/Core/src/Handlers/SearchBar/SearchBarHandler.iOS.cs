@@ -214,6 +214,10 @@ namespace Microsoft.Maui.Handlers
 			void OnSearchButtonClicked(object? sender, EventArgs e)
 			{
 				VirtualView?.SearchButtonPressed();
+				if(sender is UISearchBar platformView) 
+				{
+					platformView.ResignFirstResponder();
+				}
 			}
 
 			void OnTextPropertySet(object? sender, UISearchBarTextChangedEventArgs a)
