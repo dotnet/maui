@@ -1,8 +1,11 @@
 ﻿#nullable enable
+using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -42,6 +45,25 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return -1;
+		}
+
+		[Fact]
+		[Description("The IsEnabled of a SearchBar should match with native IsEnabled")]
+		public async Task VerifySearchBarIsEnabledProperty()
+		{
+			var searchBar = new SearchBar
+			{
+				IsEnabled = false
+			};
+			var expectedValue = searchBar.IsEnabled;
+
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.IsEnabled;
+				Assert.Equal(expectedValue, isEnabled);
+			});
 		}
 	}
 }
