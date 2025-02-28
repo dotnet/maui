@@ -102,6 +102,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			get
 			{
+				var backButtonBehavior = Shell.GetBackButtonBehavior(Page);
+				var isVisible = backButtonBehavior.GetPropertyIfSet(BackButtonBehavior.IsVisibleProperty, true);
+
+				if (!isVisible)
+            		return false;
+				
 				if (_page?.Navigation?.NavigationStack?.Count > 1)
 					return true;
 
@@ -483,7 +489,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (backButtonVisibleFromBehavior && (backButtonVisible || !defaultDrawerArrowDrawable))
 					toolbar.NavigationIcon = icon;
 			}
-			else if (_flyoutBehavior == FlyoutBehavior.Flyout || !defaultDrawerArrowDrawable)
+			else if (_flyoutBehavior == FlyoutBehavior.Flyout || (!defaultDrawerArrowDrawable && backButtonVisible))
 			{
 				bool drawerEnabled = isEnabled && icon != null;
 				_drawerToggle.DrawerIndicatorEnabled = drawerEnabled;
@@ -499,6 +505,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
+				toolbar.NavigationIcon = null;
 			}
 
 			_drawerToggle.SyncState();

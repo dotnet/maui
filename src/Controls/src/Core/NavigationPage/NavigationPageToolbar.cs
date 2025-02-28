@@ -180,9 +180,10 @@ namespace Microsoft.Maui.Controls
 
 			// Set this before BackButtonVisible triggers an update to the handler
 			// This way all useful information is present
+			// Show drawer toggle if it's a FlyoutPage, toolbar button should be shown, and either no pages are pushed or back button is not visible
 			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton()
 #if !WINDOWS // TODO NET 10 : Move this logic to ShouldShowToolbarButton
-				&& !anyPagesPushed.Value
+				&& (!anyPagesPushed.Value || !BackButtonVisible)
 #endif
 				)
 				_drawerToggleVisible = true;
