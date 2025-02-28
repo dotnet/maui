@@ -4,6 +4,6 @@
              x:Class="Controls.TestCases.HostApp.Issues.Issue28110"
              Title="Issue28110">
      <VerticalStackLayout>
-              <SearchBar AutomationId="MauiSearchBar" />
+              <SearchBar Text="Text" AutomationId="MauiSearchBar" />
              </VerticalStackLayout>
 </ContentPage>
