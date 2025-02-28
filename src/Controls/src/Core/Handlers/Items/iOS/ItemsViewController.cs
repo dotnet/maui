@@ -721,6 +721,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var frame = DetermineEmptyViewFrame();
+			RemeasureLayout(_emptyViewFormsElement);
+			frame = new CGRect(frame.X, frame.Y, frame.Width, Math.Max(frame.Height, _emptyViewFormsElement.Height));
 
 			_emptyUIView.Frame = frame;
 
