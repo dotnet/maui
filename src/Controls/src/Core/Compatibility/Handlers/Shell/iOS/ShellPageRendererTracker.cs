@@ -353,7 +353,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					icon = result?.Value;
 				}
-				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
+				// Show hamburger icon if it's the root page, or if the back button is not visible.
+				else if (String.IsNullOrWhiteSpace(text) && (IsRootPage || !backButtonVisible) && _flyoutBehavior == FlyoutBehavior.Flyout)
 				{
 					icon = DrawHamburger();
 				}
@@ -361,7 +362,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (icon != null)
 				{
 					NavigationItem.LeftBarButtonItem =
-						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, IsRootPage)) { Enabled = enabled };
+						new UIBarButtonItem(icon, UIBarButtonItemStyle.Plain, (s, e) => LeftBarButtonItemHandler(ViewController, (IsRootPage || !backButtonVisible))) { Enabled = enabled };
 				}
 				else
 				{

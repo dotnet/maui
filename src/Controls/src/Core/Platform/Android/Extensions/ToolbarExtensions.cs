@@ -103,11 +103,18 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				nativeToolbar.NavigationIcon = new DrawerArrowDrawable(context!);
-				if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
-					iconDrawable.Progress = 0;
+				if (!toolbar.DrawerToggleVisible)
+				{
+					nativeToolbar.NavigationIcon = null;
+				}
+				else
+				{
+					nativeToolbar.NavigationIcon = new DrawerArrowDrawable(context!);
+					if (nativeToolbar.NavigationIcon is DrawerArrowDrawable iconDrawable)
+						iconDrawable.Progress = 0;
 
-				nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
+					nativeToolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
+				}
 			}
 
 			nativeToolbar.UpdateIconColor(toolbar);
