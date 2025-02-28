@@ -152,6 +152,12 @@ steps:
   #                    Publish                     #
   ##################################################
 
+  # Cleanup and create simulator logs for iOS builds
+  - ${{ if eq(parameters.platform, 'ios')}}:
+    - script: dotnet cake --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
+      displayName: Cleanup and Create Simulator Logs
+      continueOnError: true
+
   # Publish the artifacts directory if this is a build-only job
   - ${{ if eq(parameters.buildType, 'buildOnly') }}:
     - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin

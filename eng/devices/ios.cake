@@ -60,8 +60,7 @@ Task("connectToDevice")
 			return;
 		}
 
-		bool createLogs = targetCleanup && IsCIBuild();
-		PerformCleanupIfNeeded(deviceCleanupEnabled, createLogs);
+		PerformCleanupIfNeeded(deviceCleanupEnabled, false);
 
 		// Device or simulator setup
 		if (testDevice.Contains("device"))
@@ -73,6 +72,12 @@ Task("connectToDevice")
 			GetSimulators(testDevice, dotnetToolPath);
 			ResetSimulators(testDevice, dotnetToolPath);
 		}
+	});
+
+Task("Cleanup")
+	.Does(() =>
+	{
+		PerformCleanupIfNeeded(deviceCleanupEnabled, true);
 	});
 
 Task("buildOnly")
