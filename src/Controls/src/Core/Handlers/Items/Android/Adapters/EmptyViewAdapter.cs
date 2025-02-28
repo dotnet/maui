@@ -316,6 +316,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (item is DataTemplate dataTemplate)
 			{
 				var content = dataTemplate.CreateContent() as IView;
+
+				if (content?.Handler is null)
+				{
+					TemplateHelpers.GetHandler(content as View, ItemsView.FindMauiContext());
+				}
 				size = content.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			}
 
