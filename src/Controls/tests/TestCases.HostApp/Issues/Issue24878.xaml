@@ -19,8 +19,16 @@
                 <ToolbarItem Text="Icon 1"/>
                 <ToolbarItem Text="Icon 2"/>
             </ContentPage.ToolbarItems>
-            
-            <Label IsVisible="{AppThemeBinding Dark='True', Light='False'}" TextColor="White" Text="Hello" AutomationId="label"/>
+
+            <VerticalStackLayout>
+                <Button Text="Change theme"
+                        Clicked="Button_Clicked"
+                        AutomationId="button"/>
+                <Label IsVisible="{AppThemeBinding Dark='True', Light='False'}"
+                       TextColor="White"
+                       Text="Hello"
+                       AutomationId="label"/>
+            </VerticalStackLayout>
         </ContentPage>
     </ShellContent>
 
