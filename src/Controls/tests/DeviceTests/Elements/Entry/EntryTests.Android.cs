@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
 using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
@@ -80,5 +81,27 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(longText[..4], entry.Text);
 		}
+
+		[Fact]
+		[Description("The ScaleX property of a Entry should match with native ScaleX")]
+        public async Task ScaleXConsistent()
+        {
+            var entry = new Entry() { ScaleX = 0.45f };
+            var handler = await CreateHandlerAsync<EntryHandler>(entry);
+            var expected = entry.ScaleX;
+            var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
+            Assert.Equal(expected, platformScaleX);
+        }
+
+		[Fact]
+		[Description("The ScaleY property of a Entry should match with native ScaleY")]
+        public async Task ScaleYConsistent()
+        {
+            var entry = new Entry() { ScaleY = 0.45f };
+            var handler = await CreateHandlerAsync<EntryHandler>(entry);
+            var expected = entry.ScaleY;
+            var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
+            Assert.Equal(expected, platformScaleY);
+        }
 	}
 }

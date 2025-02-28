@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -87,6 +88,28 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(LineBreakMode.TailTruncation.ToPlatform(), GetPlatformLineBreakMode(handler));
 			}));
 		}
+
+		[Fact]
+		[Description("The ScaleX property of a Label should match with native ScaleX")]
+        public async Task ScaleXConsistent()
+        {
+            var label = new Label() { ScaleX = 0.45f };
+            var handler = await CreateHandlerAsync<LabelHandler>(label);
+            var expected = label.ScaleX;
+            var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
+            Assert.Equal(expected, platformScaleX);
+        }
+
+		[Fact]
+		[Description("The ScaleY property of a Label should match with native ScaleY")]
+        public async Task ScaleYConsistent()
+        {
+            var label = new Label() { ScaleY = 0.45f };
+            var handler = await CreateHandlerAsync<LabelHandler>(label);
+            var expected = label.ScaleY;
+            var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
+            Assert.Equal(expected, platformScaleY);
+        }
 
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
