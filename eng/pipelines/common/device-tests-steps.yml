@@ -156,6 +156,7 @@ steps:
   - ${{ if eq(parameters.platform, 'ios')}}:
     - script: dotnet cake --target=Cleanup -Script eng/devices/${{ parameters.platform }}.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
       displayName: Cleanup and Create Simulator Logs
+      condition: always()
       continueOnError: true
 
   # Publish the artifacts directory if this is a build-only job
