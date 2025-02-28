@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Handlers;
+using System.ComponentModel;
+using System.Threading.Tasks;
 using Xunit;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -43,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
             await InvokeOnMainThreadAsync(() =>
             {
                 var cornerRadius = (float)nativeView.CornerRadius.TopLeft;
-                Assert.Equal(expected, cornerRadius);
+                Assert.Equal(expectedValue, cornerRadius);
             });
         }
 
@@ -61,7 +63,7 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = GetNativeRadioButton(handler);
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var isEnabled = nativeView.Enabled;
+				var isEnabled = nativeView.IsEnabled;
 				Assert.Equal(expectedValue, isEnabled);
 			});		
 		}

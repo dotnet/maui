@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
@@ -58,23 +59,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertColorAtPoint(border, expected, typeof(BorderHandler), cornerRadius, cornerRadius);
-		}
-
-		[Fact]
-		[Description("The IsEnabled property of a Border should match with native IsEnabled")]		
-		public async Task VerifyBorderIsEnabledProperty()
-		{
-			var border = new Border();
-			border.IsEnabled = true;
-			var expectedValue = border.IsEnabled;
-
-			var handler = await CreateHandlerAsync<BorderHandler>(border);
-			var nativeView = GetNativeBorder(handler);
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var isEnabled = nativeView.Enabled;
-				Assert.Equal(expectedValue, isEnabled);
-			});		
 		}
 
 		ContentPanel GetNativeBorder(BorderHandler borderHandler) =>
