@@ -46,7 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The Opacity property of a Checkbox should match with native Opacity")]
+		[Description("The Opacity property of a CheckBox should match with native Opacity")]
 		public async Task VerifyCheckBoxOpacityProperty()
 		{
 			var checkBox = new CheckBox
