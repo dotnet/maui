@@ -107,5 +107,27 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
+		
+		[Fact]
+		[Description("The ScaleX property of a Button should match with native ScaleX")]
+        public async Task ScaleXConsistent()
+        {
+            var button = new Button() { ScaleX = 0.45f };
+            var handler = await CreateHandlerAsync<ButtonHandler>(button);
+            var expected = button.ScaleX;
+            var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
+            Assert.Equal(expected, platformScaleX);
+        }
+
+		[Fact]
+		[Description("The ScaleY property of a BoxView should match with native ScaleY")]
+        public async Task ScaleYConsistent()
+        {
+            var button = new Button() { ScaleY = 0.45f };
+            var handler = await CreateHandlerAsync<ButtonHandler>(button);
+            var expected = button.ScaleY;
+            var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
+            Assert.Equal(expected, platformScaleY);
+        }
 	}
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
@@ -99,6 +100,28 @@ namespace Microsoft.Maui.DeviceTests
 				return (float)nativeView.Alpha;
 			});
 		}
+
+		[Fact]
+		[Description("The ScaleX property of a Image should match with native ScaleX")]
+        public async Task ScaleXConsistent()
+        {
+            var image = new Image() { ScaleX = 0.45f };
+            var handler = await CreateHandlerAsync<ImageHandler>(image);
+            var expected = image.ScaleX;
+            var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
+            Assert.Equal(expected, platformScaleX);
+        }
+
+		[Fact]
+		[Description("The ScaleY property of a Image should match with native ScaleY")]
+        public async Task ScaleYConsistent()
+        {
+            var image = new Image() { ScaleY = 0.45f };
+            var handler = await CreateHandlerAsync<ImageHandler>(image);
+            var expected = image.ScaleY;
+            var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
+            Assert.Equal(expected, platformScaleY);
+        }
 	}
 
 	// This subclass of memory stream is deliberately set up to trick Glide into using the cached image
