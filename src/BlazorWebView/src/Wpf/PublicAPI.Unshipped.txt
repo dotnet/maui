@@ -1,1 +1,8 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseCompositionControl.get -> bool
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseCompositionControl.init -> void
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseLayoutRoundingCompositionControl.get -> bool
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseLayoutRoundingCompositionControl.set -> void
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.WebView.get -> Microsoft.Web.WebView2.Wpf.IWebView2!
+static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseLayoutRoundingCompositionControlProperty -> System.Windows.DependencyProperty!
+~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.WebView.get -> Microsoft.Web.WebView2.Wpf.IWebView2
