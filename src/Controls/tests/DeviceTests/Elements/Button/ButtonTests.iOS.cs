@@ -22,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		UILineBreakMode GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
 			GetPlatformButton(buttonHandler).TitleLabel.LineBreakMode;
-			
+
 		[Fact("Clicked works after GC")]
 		public async Task ClickedWorksAfterGC()
 		{
@@ -92,10 +92,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync<ButtonHandler>(button);
 			var nativeView = GetPlatformButton(handler);
-			await InvokeOnMainThreadAsync(  () =>
+			await InvokeOnMainThreadAsync(() =>
 			{
 				var platformCornerRadius = nativeView.Layer.CornerRadius;
-        		Assert.Equal(expectedValue,   platformCornerRadius);
+				Assert.Equal(expectedValue, platformCornerRadius);
 			});
 		}
 	}
