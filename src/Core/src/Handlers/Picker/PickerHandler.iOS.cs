@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiPicker CreatePlatformView() =>
 			new MauiPicker(null) { BorderStyle = UITextBorderStyle.RoundedRect };
 
-		void DisplayAlert(MauiPicker uITextField)
+		void DisplayAlertAsync(MauiPicker uITextField)
 		{
 			var paddingTitle = 0;
 			if (!string.IsNullOrEmpty(VirtualView.Title))
@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Handlers
 
 				// The PlatformView will always be a MauiPicker (which derives from UITextfield) by definition, but we're forced to use
 				// UITextField as the parameter to satisfy the signature for ShouldBeginEditing. The following cast is safe. 
-				handler.DisplayAlert((MauiPicker)textField);
+				handler.DisplayAlertAsync((MauiPicker)textField);
 				return false;
 			}
 #else

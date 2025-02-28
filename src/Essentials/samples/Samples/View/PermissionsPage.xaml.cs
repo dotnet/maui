@@ -26,7 +26,7 @@ namespace Samples.View
 			WeakReferenceMessenger.Default.Register<Exception, string>(
 				this,
 				nameof(PermissionException),
-				async (p, ex) => await DisplayAlert("Permission Error", ex.Message, "OK"));
+				async (p, ex) => await DisplayAlertAsync("Permission Error", ex.Message, "OK"));
 		}
 
 		protected override void OnDisappearing()

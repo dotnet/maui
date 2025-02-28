@@ -366,14 +366,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void DisplayAlert()
+		public void DisplayAlertAsync()
 		{
 			var page = new ContentPage() { IsPlatformEnabled = true };
 
 			AlertArguments args = null;
 			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments e) => args = e);
 
-			var task = page.DisplayAlert("Title", "Message", "Accept", "Cancel");
+			var task = page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
 
 			Assert.Equal("Title", args.Title);
 			Assert.Equal("Message", args.Message);
@@ -389,14 +389,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void DisplayActionSheet()
+		public void DisplayActionSheetAsync()
 		{
 			var page = new ContentPage() { IsPlatformEnabled = true };
 
 			ActionSheetArguments args = null;
 			MessagingCenter.Subscribe(this, Page.ActionSheetSignalName, (Page sender, ActionSheetArguments e) => args = e);
 
-			var task = page.DisplayActionSheet("Title", "Cancel", "Destruction", "Other 1", "Other 2");
+			var task = page.DisplayActionSheetAsync("Title", "Cancel", "Destruction", "Other 1", "Other 2");
 
 			Assert.Equal("Title", args.Title);
 			Assert.Equal("Destruction", args.Destruction);
