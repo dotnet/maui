@@ -4,8 +4,8 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue16522 : _IssuesUITest
-    {
+	public class Issue16522 : _IssuesUITest
+	{
 		public Issue16522(TestDevice device) : base(device)
 		{
 		}
@@ -16,6 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void ShellTabBarBackgroundColor()
 		{
+			App.WaitForElement("Label");
+			App.Tap("Settings");
+			App.Tap("Main");
 			App.WaitForElement("Label");
 			VerifyScreenshot();
 		}
