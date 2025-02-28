@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			SetValue(RootComponentsProperty, new RootComponentsCollection());
 			RootComponents.CollectionChanged += HandleRootComponentsCollectionChanged;
 
-			var visualHostingControlType = UseLayoutRoundingCompositionControl ? typeof(WebView2CompositionControl) : typeof(Microsoft.Web.WebView2.Wpf.WebView2);
+			var visualHostingControlType = UseCompositionControl ? typeof(WebView2CompositionControl) : typeof(Microsoft.Web.WebView2.Wpf.WebView2);
 
 			Template = new ControlTemplate
 			{
