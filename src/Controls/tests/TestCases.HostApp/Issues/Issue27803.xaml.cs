@@ -3,7 +3,7 @@ namespace Controls.TestCases.HostApp.Issues;
 [Issue(IssueTracker.Github,27803,"DatePicker default format on iOS",PlatformAffected.iOS)]
 public partial class Issue27803 : ContentPage
 {
-	private DateTime workDate = new DateTime(2000, 1, 1);
+	private DateTime workDate = new DateTime(2025, 2, 25);
 	public DateTime WorkDate 
 	{
 		get => workDate;
