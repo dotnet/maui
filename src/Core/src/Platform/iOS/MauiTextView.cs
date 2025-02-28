@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Platform
 		readonly MauiLabel _placeholderLabel;
 		nfloat? _defaultPlaceholderSize;
 		TextAlignment _verticalTextAlignment;
+		UITextAlignment _horizontalTextAlignment;
 
 		public MauiTextView()
 		{
@@ -35,14 +36,15 @@ namespace Microsoft.Maui.Platform
 			base.WillMoveToWindow(window);
 		}
 
-		public override UITextAlignment TextAlignment
+		//TODO : Replace this with UITextView.TextAlignment in NET 10
+		internal UITextAlignment HorizontalTextAlignment
 		{
-			get => base.TextAlignment;
+			get => _horizontalTextAlignment;
 			set
 			{
-				if (base.TextAlignment != value)
+				if (_horizontalTextAlignment != value)
 				{
-					base.TextAlignment = value;
+					_horizontalTextAlignment = value;
 					UpdateHorizontalTextAlignment(value);
 				}
 			}
@@ -163,6 +165,7 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateHorizontalTextAlignment(UITextAlignment textAlignment)
 		{
+			TextAlignment = textAlignment;
 			if (_placeholderLabel is null)
 				return;
 
