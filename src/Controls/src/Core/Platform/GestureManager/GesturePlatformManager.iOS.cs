@@ -523,7 +523,7 @@ namespace Microsoft.Maui.Controls.Platform
 				ProcessRecognizerHandlerTap(weakEventTracker, weakRecognizer, originPoint, (int)sender.NumberOfTapsRequired, sender);
 			});
 
-			var result = new UITapGestureRecognizer(action)
+			var result = new MauiUITapGestureRecognizer(action)
 			{
 				NumberOfTapsRequired = (uint)tapGesture.NumberOfTapsRequired,
 				ShouldRecognizeSimultaneously = ShouldRecognizeTapsTogether
@@ -548,40 +548,34 @@ namespace Microsoft.Maui.Controls.Platform
 
 			return result;
 		}
+		class MauiUITapGestureRecognizer: UITapGestureRecognizer
+		{
+			public MauiUITapGestureRecognizer(Action<UITapGestureRecognizer> action):base(action)
+			{
+
+			}
+
+		}
 
 		static bool ShouldRecognizeTapsTogether(UIGestureRecognizer gesture, UIGestureRecognizer other)
 		{
 			// If multiple tap gestures are potentially firing (because multiple tap gesture recognizers have been
 			// added to the MAUI Element), we want to allow them to fire simultaneously if they have the same number
 			// of taps and touches
-
-			var tap = gesture as UITapGestureRecognizer;
-			if (tap == null)
+			var tap = gesture as MauiUITapGestureRecognizer;
+			var otherTap = other as MauiUITapGestureRecognizer;
+			
+			if(tap != null && otherTap != null)
 			{
+				if(Equals(tap.View,other.View))
+				{
+					if(tap.NumberOfTapsRequired == otherTap.NumberOfTapsRequired)
+					{
+						return true;
+					}
+				}
 				return false;
 			}
-
-			var otherTap = other as UITapGestureRecognizer;
-			if (otherTap == null)
-			{
-				return false;
-			}
-
-			if (!Equals(tap.View, otherTap.View))
-			{
-				return false;
-			}
-
-			if (tap.NumberOfTapsRequired != otherTap.NumberOfTapsRequired)
-			{
-				return false;
-			}
-
-			if (tap.NumberOfTouchesRequired != otherTap.NumberOfTouchesRequired)
-			{
-				return false;
-			}
-
 			return true;
 		}
 
