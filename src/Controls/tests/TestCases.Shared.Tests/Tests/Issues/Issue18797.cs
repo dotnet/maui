@@ -22,14 +22,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			_ = App.WaitForElement("datePicker");
 
 			App.Click("datePicker");
-
-			((AppiumApp)App).Driver.FindElements(MobileBy.XPath("//android.widget.Button[@resource-id=\"android:id/button1\"]")).First().Click();
-
+			App.WaitForElement("Cancel");
+			App.Click("Cancel");
+			App.WaitForElement("focusedLabel");
 			var focusedLabelText = App.FindElement("focusedLabel").GetText();
 			var unfocusedLabelText = App.FindElement("unfocusedLabel").GetText();
 
-			ClassicAssert.True(focusedLabelText == "Focused: true");
-			ClassicAssert.True(unfocusedLabelText == "Unfocused: true");
+			Assert.That(focusedLabelText, Is.EqualTo("Focused: true"));
+			Assert.That(unfocusedLabelText, Is.EqualTo("Unfocused: true"));
 		}
 	}
 }
