@@ -1,7 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 18797, "[Android] Datepicker focus and unfocus event not firing on android", PlatformAffected.Android)]
@@ -12,12 +9,12 @@ namespace Maui.Controls.Sample.Issues
 			InitializeComponent();
 		}
 
-		void DatePicker_Focused(System.Object sender, Microsoft.Maui.Controls.FocusEventArgs e)
+		void DatePicker_Focused(object sender, FocusEventArgs e)
 		{
 			FocusedLabel.Text = "Focused: true";
 		}
 
-		void DatePicker_Unfocused(System.Object sender, Microsoft.Maui.Controls.FocusEventArgs e)
+		void DatePicker_Unfocused(object sender, FocusEventArgs e)
 		{
 			UnfocusedLabel.Text = "Unfocused: true";
 		}
