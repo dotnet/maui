@@ -272,7 +272,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPlatformViewTouched(object? sender, AView.TouchEventArgs e)
 		{
-			//Allow Touch to propagate to view. If not set to false, tocuh will be consumed entirely by gestures.
+			//Allow Touch to propagate to the view. If not set to false, the touch will be consumed entirely by gestures.
 			 e.Handled = false;
 
 			if (_disposed)
@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			if (e.Event != null)
-				OnTouchEvent(e.Event);		
+				OnTouchEvent(e.Event);
 		}
 
 		void SetupElement(VisualElement? oldElement, VisualElement? newElement)
