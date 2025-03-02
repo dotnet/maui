@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -273,6 +273,7 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnPlatformViewTouched(object? sender, AView.TouchEventArgs e)
 		{
 			//Allow Touch to propagate to the view. If not set to false, the touch will be consumed entirely by gestures.
+			if(Control is not null && Control.Focusable)
 			 e.Handled = false;
 
 			if (_disposed)
