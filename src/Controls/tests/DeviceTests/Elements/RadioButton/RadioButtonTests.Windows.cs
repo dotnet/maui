@@ -1,8 +1,8 @@
-﻿using Microsoft.Maui.Handlers;
-using Xunit;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Handlers;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 			radioButton.IsVisible = false;
 			var expectedValue = radioButton.IsVisible;
 
-			var handler = await CreateHandlerAsync<RadioButton>(radioButton);
+			var handler = await CreateHandlerAsync<RadioButtonHandler>(radioButton);
 			var nativeView = GetNativeRadioButton(handler);
 			await InvokeOnMainThreadAsync(() =>
    			{
