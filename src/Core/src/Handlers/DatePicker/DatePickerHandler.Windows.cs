@@ -85,5 +85,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			handler.PlatformView?.UpdateBackground(datePicker);
 		}
+
+		internal override bool PreventGestureBubbling => true;
 	}
 }
