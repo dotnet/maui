@@ -480,7 +480,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
 
-				if (backButtonVisible)
+				if (backButtonVisible || !defaultDrawerArrowDrawable)
 					toolbar.NavigationIcon = icon;
 			}
 			else if (_flyoutBehavior == FlyoutBehavior.Flyout || !defaultDrawerArrowDrawable)
