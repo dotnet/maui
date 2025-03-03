@@ -148,10 +148,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			handler.PlatformView.FlyoutCustomContent = flyoutView.Flyout?.ToPlatform(handler.MauiContext);
 
 		}
+
 		public static void MapFlowDirection(ShellHandler handler, Shell view)
 		{
 			handler.PlatformView.UpdateFlowDirection(view);
 		}
+
 		public static void MapIsPresented(ShellHandler handler, IFlyoutView flyoutView)
 		{
 			// WinUI Will close the pane inside of the apply template code
