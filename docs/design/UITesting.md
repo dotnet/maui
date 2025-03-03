@@ -24,7 +24,7 @@ This will be the majority of new tests added which will be primarily for testing
 ## Adding a Reproduction to the Test App
 
 You will need to create some kind of UI to test against, which will go in the Controls.TestCases.HostApp project. This will be an actual MAUI app under test and has no dependency on Appium. Create a new class within `src/Controls/tests/TestCases.HostApp/Issues` and attribute it with `[Issue]`. Create it like any normal page you would make in app to reproduce the issue. This could be just in XAML or just code, along with a screenshot.
-This projects requires a rebuild after changeing something inside it because the `Controls.TestCases.Shared.Tests` is loosely coupled to this project and starts a previously compiled executeable of `src/Controls/tests/TestCases.HostApp`.
+This project requires a rebuild after making changes because the `Controls.TestCases.Shared.Tests` is loosely coupled to this project. It initiates a previously compiled executable from `src/Controls/tests/TestCases.HostApp`.
 
 ## Adding a Test to Interact with the Reproduction
 
