@@ -12,20 +12,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "[Bug] Exception Ancestor must be provided for all pushes except first";
+		public override string Issue => "ListView with DataTemplateSelector can have only 17 Templates, even with CachingStrategy=RetainElement";
 
-		// Crash after navigating
-		/*
 		[Test]
 		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Bugzilla42956Test()
 		{
 			App.WaitForElement(Success);
 		}
-		*/
 	}
 }

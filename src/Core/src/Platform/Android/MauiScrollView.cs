@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Platform
 		internal float LastY { get; set; }
 
 		internal bool ShouldSkipOnTouch;
+		internal int HorizontalScrollOffset => _hScrollView?.ScrollX ?? 0;
 
 		public MauiScrollView(Context context) : base(context)
 		{
@@ -62,10 +63,14 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_hScrollView.HorizontalScrollBarEnabled = scrollBarVisibility == ScrollBarVisibility.Always;
+			_hScrollView.ScrollbarFadingEnabled = _horizontalScrollVisibility != ScrollBarVisibility.Always;
+			PlatformInterop.RequestLayoutIfNeeded(this);
 		}
 
 		public void SetVerticalScrollBarVisibility(ScrollBarVisibility scrollBarVisibility)
 		{
+			ScrollBarVisibility verticalScrollVisibility = scrollBarVisibility;
+
 			if (_defaultVerticalScrollVisibility == 0)
 				_defaultVerticalScrollVisibility = VerticalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
 
@@ -73,8 +78,8 @@ namespace Microsoft.Maui.Platform
 				scrollBarVisibility = _defaultVerticalScrollVisibility;
 
 			VerticalScrollBarEnabled = scrollBarVisibility == ScrollBarVisibility.Always;
-
-			this.HandleScrollBarVisibilityChange();
+			ScrollbarFadingEnabled = verticalScrollVisibility != ScrollBarVisibility.Always;
+			PlatformInterop.RequestLayoutIfNeeded(this);
 		}
 
 		public void SetContent(View content)
@@ -112,7 +117,7 @@ namespace Microsoft.Maui.Platform
 				}
 				// If the user has changed between horiztonal and both we want to request a new layout
 				// so the Horizontal Layout can be adjusted to satisfy the new orientation.
-				else if(orientationChanged)
+				else if (orientationChanged)
 				{
 					PlatformInterop.RequestLayoutIfNeeded(this);
 				}
@@ -209,7 +214,7 @@ namespace Microsoft.Maui.Platform
 					MeasureSpec.MakeMeasureSpec(hScrollViewHeight, MeasureSpecMode.Exactly));
 			}
 		}
-		
+
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
 			base.OnLayout(changed, left, top, right, bottom);
@@ -427,7 +432,6 @@ namespace Microsoft.Maui.Platform
 			set
 			{
 				base.HorizontalScrollBarEnabled = value;
-				this.HandleScrollBarVisibilityChange();
 			}
 		}
 

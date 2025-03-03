@@ -42,6 +42,7 @@
   <PropertyGroup>
     <NuGetAuditMode>all</NuGetAuditMode>
     <NuGetAuditLevel>moderate</NuGetAuditLevel>
+    <RestoreEnablePackagePruning>false</RestoreEnablePackagePruning>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -55,6 +56,15 @@
     <_MauiPreviousDotNetVersion Condition="'$(_MauiPreviousDotNetVersion)' == ''">$(_MauiPreviousDotNetVersionMajor).$(_MauiPreviousDotNetVersionMinor)</_MauiPreviousDotNetVersion>
     <_MauiPreviousDotNetVersionNoDot Condition="'$(_MauiPreviousDotNetVersionNoDot)' == ''">$(_MauiPreviousDotNetVersionMajor)$(_MauiPreviousDotNetVersionMinor)</_MauiPreviousDotNetVersionNoDot>
     <_MauiPreviousDotNetTfm Condition="'$(_MauiPreviousDotNetTfm)' == ''">net$(_MauiPreviousDotNetVersion)</_MauiPreviousDotNetTfm>
+
+    <!-- The minimum TFM that the packaged will install into -->
+    <_MauiMinimumSupportedDotNetTfm>$(_MauiDotNetVersion)</_MauiMinimumSupportedDotNetTfm>
+    <_MauiMinimumSupportedDotNetTfm Condition="'$(IncludePreviousTfms)' == 'true'">$(_MauiPreviousDotNetVersion)</_MauiMinimumSupportedDotNetTfm>
+
+    <!-- The minimum supported version of the workload that the packages will install into -->
+    <MicrosoftMauiMinimumSupportedWorkloadVersion>$(_MauiDotNetVersion).0</MicrosoftMauiMinimumSupportedWorkloadVersion>
+    <!-- If the previous TFMs are included, then we want to use the latest previous workload for safety -->
+    <MicrosoftMauiMinimumSupportedWorkloadVersion Condition="'$(IncludePreviousTfms)' == 'true'">$(_MauiPreviousDotNetVersion).0</MicrosoftMauiMinimumSupportedWorkloadVersion>
 
     <_MauiTargetPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_MauiTargetPlatformIdentifier>
     <_MauiNoTargetPlatform>false</_MauiNoTargetPlatform>
@@ -158,6 +168,8 @@
     <WindowsPreviousTargetFrameworkVersion>10.0.19041.0</WindowsPreviousTargetFrameworkVersion>
     <Windows2PreviousTargetFrameworkVersion>10.0.20348.0</Windows2PreviousTargetFrameworkVersion>
     <TizenPreviousTargetFrameworkVersion>7.0</TizenPreviousTargetFrameworkVersion>
+    <!-- Minimums -->
+    <MinimumWindowsTargetFrameworkVersion>10.0.17763.0</MinimumWindowsTargetFrameworkVersion>
   </PropertyGroup>
 
   <Import Condition="Exists('Directory.Build.Override.props')" Project="Directory.Build.Override.props" />

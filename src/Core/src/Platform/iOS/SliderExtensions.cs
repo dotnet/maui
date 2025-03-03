@@ -54,6 +54,11 @@ namespace Microsoft.Maui.Platform
 
 				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);
 			}
+			else
+			{
+				uiSlider.SetThumbImage(null, UIControlState.Normal);
+				uiSlider.UpdateThumbColor(slider);
+			}
 		}
 	}
 }

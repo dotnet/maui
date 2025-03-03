@@ -1,7 +1,4 @@
-﻿#if !WINDOWS
-// This test won't work on Windows right now because we can only test desktop, so touch events
-// (like LongPress) don't really work. The test should work manually on a touch screen, though.
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,16 +12,18 @@ public class Issue2981 : _IssuesUITest
 
 	public override string Issue => "Long Press on ListView causes crash";
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// [FailsOnIOS]
-	// public void Issue2981Test()
-	// {
-	// 	App.Screenshot("I am at Issue 1");
-	// 	App.TouchAndHold(q => q.Marked("Cell1"));
-	// 	App.Screenshot("Long Press first cell");
-	// 	App.TouchAndHold(q => q.Marked("Cell2"));
-	// 	App.Screenshot("Long Press second cell");
-	// }
-}
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void Issue2981Test()
+	{
+		App.WaitForElement("Cell1");
+
+#if MACCATALYST
+		App.LongPress("Cell1");
+		App.LongPress("Cell2");
+#else
+		App.TouchAndHold("Cell1");
+		App.TouchAndHold("Cell2");
 #endif
+	}
+}

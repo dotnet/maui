@@ -1,4 +1,4 @@
-﻿#if IOS || MACCATALYST
+﻿#if TEST_FAILS_ON_WINDOWS //related issue: https://github.com/dotnet/maui/issues/27843
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnMacWhenRunningOnXamarinUITest("ScrollRight is not implemented on Mac")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void ScrollCarouselViewAfterDispose()
 		{
 			App.WaitForElement("goToShow");

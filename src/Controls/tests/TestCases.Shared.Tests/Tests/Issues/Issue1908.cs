@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,16 +10,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "Image reuse"; 
-		
+		public override string Issue => "Image reuse";
+
 		[Test]
 		[Category(UITestCategories.Image)]
 		[Category(UITestCategories.Compatibility)]
 		public void Issue1908Test()
 		{
 			App.WaitForElement("OASIS1");
-			App.Screenshot("For manual review. Images load");
+			App.WaitForElement("OASIS2");
+			App.WaitForElement("OASIS1");
 		}
 	}
 }
-#endif

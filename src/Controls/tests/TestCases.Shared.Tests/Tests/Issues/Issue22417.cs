@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST //This test is failing, likely due to product issue, for more information: https://github.com/dotnet/maui/issues/27059
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,12 +13,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented on macOS")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("Flaky test on Windows https://github.com/dotnet/maui/issues/27059")]
 		public async Task AddItemsToCarouselViewWorks()
 		{
 			App.WaitForElement("WaitForStubControl");
 
-			App.Click("AddItemButton");
+			App.Tap("AddItemButton");
 
 			await Task.Delay(500);
 
@@ -25,3 +26,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

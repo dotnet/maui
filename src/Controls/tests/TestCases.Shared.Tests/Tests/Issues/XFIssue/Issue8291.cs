@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST // TouchAndHold not supported on Mac, Also using LongPress is not applicable on this case, while LongPress does not open the context menu for Entry/Editor control.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,31 +13,34 @@ public class Issue8291 : _IssuesUITest
 
 	public override string Issue => "[Android] Editor - Text selection menu does not appear when selecting text on an editor placed within a ScrollView";
 
-	//[Test]
-	//[Category(UITestCategories.Editor)]
-	//[FailsOnAndroidWhenRunningOnXamarinUITest]
-	//public void ContextMenuShowsUpWhenPressAndHoldTextOnEditorAndEntryField()
-	//{
-	//	App.TouchAndHold("PressEditor");
-	//	TestForPopup();
-	//	App.Tap("PressEntry");
-	//	App.TouchAndHold("PressEntry");
-	//	TestForPopup();
-	//}
+	[Test]
+	[Category(UITestCategories.Editor)]
+	public void ContextMenuShowsUpWhenPressAndHoldTextOnEditorAndEntryField()
+	{
+		App.WaitForElement("PressEditor");
+		App.TouchAndHold("PressEditor");
 
-	//void TestForPopup()
-	//{
-	//	var result = App.QueryUntilPresent(() =>
-	//	{
-	//		return App.Query("Paste")
-	//				.Union(App.Query("Share"))
-	//				.Union(App.Query("Copy"))
-	//				.Union(App.Query("Cut"))
-	//				.Union(App.Query("Select All"))
-	//				.ToArray();
-	//	});
+		TestForPopup();
+		App.Tap("PressEntry");
 
-	//	Assert.IsNotNull(result);
-	//	Assert.IsTrue(result.Length > 0);
-	//}
+		App.TouchAndHold("PressEditor");
+		TestForPopup();
+	}
+
+	void TestForPopup()
+	{
+		var result = App.QueryUntilPresent(() =>
+		{
+			return "Paste"
+					.Union("Share")
+					.Union("Copy")
+					.Union("Cut")
+					.Union("Select All")
+					.ToArray();
+		});
+
+		Assert.That(result, Is.Not.Null);
+		Assert.That(result.Length, Is.GreaterThan(0));
+	}
 }
+#endif

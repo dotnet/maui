@@ -20,7 +20,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		MauiContext SetupMauiContext()
 		{
 			var mauiApp1 = MauiApp.CreateBuilder()
-				.UseMauiApp<ApplicationStub>()
 				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ButtonWithControlsMapper, ButtonWithControlsMapperHandler>())
 				.Build();
 
@@ -119,7 +118,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		class ButtonWithControlsMapper : Button
 		{
-		
+
 			public Action MapperCalled { get; private set; }
 			public ButtonWithControlsMapper(Action mapperCalled)
 			{

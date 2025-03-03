@@ -2,6 +2,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Maui;
 using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Dispatching;
@@ -46,11 +49,16 @@ namespace Microsoft.Maui.DeviceTests
 			appBuilder = ConfigureBuilder(appBuilder);
 			additionalCreationActions?.Invoke(appBuilder);
 
+			appBuilder.Services.TryAdd(ServiceDescriptor.Singleton<ILoggerFactory, NullLoggerFactory>());
+			appBuilder.Services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(NullLogger<>)));
+
 			_mauiApp = appBuilder.Build();
 			_servicesProvider = _mauiApp.Services;
 
 			_mauiContext = new ContextStub(_servicesProvider);
 		}
+
+		protected ILogger TestRunnerLogger => MauiContext.CreateLogger(this.GetType());
 
 		protected virtual MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
 		{

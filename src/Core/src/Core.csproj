@@ -45,14 +45,15 @@
     <ProjectReference Include="..\..\Graphics\src\Graphics.Win2D\Graphics.Win2D.csproj" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
+    <AndroidGradleProject Include="../AndroidNative/build.gradle" ModuleName="maui" />
     <PackageReference Include="Xamarin.Android.Glide" Version="$(_XamarinAndroidGlideVersion)" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.5.1" />
-    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.11.0.3" />
-    <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.1.0.24" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.UI" Version="2.8.0.1" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" Version="2.8.0.1" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" Version="2.8.0.1" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" Version="2.8.0.1" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.7.2" />
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.12.0.2" />
+    <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.1.0.26" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.UI" Version="2.8.5.1" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" Version="2.8.5.1" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" Version="2.8.5.1" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" Version="2.8.5.1" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="Tizen.UIExtensions.NUI" />
@@ -64,15 +65,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="nuget\**" Exclude="nuget\**\*.in.*" PackagePath="" Pack="true" />
+    <None Remove="nuget\**" />
+    <None Include="nuget\**" Exclude="nuget\**\*.in.*;nuget\**\net-windows\*" PackagePath="" Pack="true" />
+    <None Include="nuget\buildTransitive\net-windows\**" PackagePath="buildTransitive\net$(_MauiMinimumSupportedDotNetTfm)-windows$(MinimumWindowsTargetFrameworkVersion)" Pack="true" />
   </ItemGroup>
 
   <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
     <ItemGroup>
-      <_CopyItems Include="nuget\buildTransitive\**" Exclude="nuget\**\*.in.*" />
-      <_CopyItems Include="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets" />
+      <_CopyItems Include="nuget\buildTransitive\**" SubFolder="" Exclude="nuget\**\*.in.*;nuget\**\net-*\*" />
+      <_CopyItems Include="nuget\buildTransitive\net-windows\**" SubFolder="net$(_MauiMinimumSupportedDotNetTfm)-windows$(MinimumWindowsTargetFrameworkVersion)" />
+      <_CopyItems Include="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets" SubFolder="" />
     </ItemGroup>
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(SubFolder)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
   </Target>
 
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
@@ -84,10 +88,12 @@
   <Target Name="_GenerateBundledVersions"
     BeforeTargets="Build;AssignTargetPaths"
     DependsOnTargets="SetVersions"
-    Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng\Versions.props;nuget\buildTransitive\Microsoft.Maui.Core.BundledVersions.in.targets"
+    Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)Directory.Build.props;$(MauiRootDirectory)eng\Versions.props;nuget\buildTransitive\Microsoft.Maui.Core.BundledVersions.in.targets"
     Outputs="$(IntermediateOutputPath)Microsoft.Maui.Core.BundledVersions.targets">
     <ItemGroup>
       <_ValuesToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
+      <_ValuesToReplace Include="MINIMUM_SUPPORTED_TFM" PropertyName="_MauiMinimumSupportedDotNetTfm" />
+      <_ValuesToReplace Include="MINIMUM_SUPPORTED_WORKLOAD" PropertyName="MicrosoftMauiMinimumSupportedWorkloadVersion" />
     </ItemGroup>
     <Copy
       SourceFiles="nuget\buildTransitive\Microsoft.Maui.Core.BundledVersions.in.targets"

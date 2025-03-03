@@ -2,13 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using CoreGraphics;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using UIKit;
-using CoreGraphics;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Layouts;
+using UIKit;
 
 namespace Microsoft.Maui.Controls
 {
@@ -115,13 +115,13 @@ namespace Microsoft.Maui.Controls
 			var titleRectHeight = titleRect.Height;
 
 			var buttonContentWidth =
-				+ (nfloat)Math.Max(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0)
+				+(nfloat)Math.Max(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0)
 				+ (nfloat)padding.Left
 				+ (nfloat)padding.Right
 				+ (nfloat)borderWidth * 2;
 
 			var buttonContentHeight =
-				+ (nfloat)Math.Max(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0)
+				+(nfloat)Math.Max(titleRectHeight, platformButton.CurrentImage?.Size.Height ?? 0)
 				+ (nfloat)padding.Top
 				+ (nfloat)padding.Bottom
 				+ (nfloat)borderWidth * 2;
@@ -139,19 +139,6 @@ namespace Microsoft.Maui.Controls
 				{
 					buttonContentWidth += spacing;
 					buttonContentWidth += (nfloat)Math.Min(titleRectWidth, platformButton.CurrentImage?.Size.Width ?? 0);
-				}
-			}
-
-			// if the image is on top or bottom, let's make sure the title is not cut off by ensuring we have enough padding for the image and title.
-			if (image is not null
-				&& (layout.Position == ButtonContentLayout.ImagePosition.Top || layout.Position == ButtonContentLayout.ImagePosition.Bottom))
-			{
-				var maxTitleRect = ComputeTitleRect(platformButton, button, image, double.PositiveInfinity, double.PositiveInfinity, borderWidth, padding, true);
-
-				var smallerWidth = (nfloat)Math.Min(maxTitleRect.Width, platformButton.CurrentImage?.Size.Width ?? 0);
-				if (padding.HorizontalThickness < smallerWidth)
-				{
-					buttonContentWidth += (nfloat)(smallerWidth - padding.HorizontalThickness);
 				}
 			}
 
@@ -213,27 +200,40 @@ namespace Microsoft.Maui.Controls
 				var sharedSpacing = spacing / 2;
 
 				// These are just used to shift the image and title to center
-				// Which makes the later math easier to follow
-				imageInsets.Left += titleWidth / 2;
-				imageInsets.Right -= titleWidth / 2;
-				titleInsets.Left -= imageWidth / 2;
-				titleInsets.Right += imageWidth / 2;
+				// Which makes the later math easier to follow				
+				if (layout.Position == ButtonContentLayout.ImagePosition.Left || layout.Position == ButtonContentLayout.ImagePosition.Right)
+				{
+					imageInsets.Left += titleWidth / 2;
+					imageInsets.Right -= titleWidth / 2;
+					titleInsets.Left -= imageWidth / 2;
+					titleInsets.Right += imageWidth / 2;
+				}
 
 				if (layout.Position == ButtonContentLayout.ImagePosition.Top)
 				{
 					imageInsets.Top -= (titleHeight / 2) + sharedSpacing;
 					imageInsets.Bottom += (titleHeight / 2) + sharedSpacing;
+					imageInsets.Left += (float)(((size.Width - imageWidth) / 2) - borderWidth);
+					imageInsets.Right += (float)(((size.Width - imageWidth) / 2) - borderWidth);
 
 					titleInsets.Top += (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom -= (imageHeight / 2) + sharedSpacing;
+					titleInsets.Left -= (nfloat)(imageWidth - padding.Left);
+					titleInsets.Right += (nfloat)padding.Right;
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Bottom)
 				{
 					imageInsets.Top += (titleHeight / 2) + sharedSpacing;
 					imageInsets.Bottom -= (titleHeight / 2) + sharedSpacing;
+					imageInsets.Left += (float)(((size.Width - imageWidth) / 2) - borderWidth);
+					imageInsets.Right += (float)(((size.Width - imageWidth) / 2) - borderWidth);
 
 					titleInsets.Top -= (imageHeight / 2) + sharedSpacing;
 					titleInsets.Bottom += (imageHeight / 2) + sharedSpacing;
+
+					titleInsets.Left -= (nfloat)(imageWidth - padding.Left);
+					titleInsets.Right += (nfloat)padding.Right;
+
 				}
 				else if (layout.Position == ButtonContentLayout.ImagePosition.Left)
 				{
@@ -276,7 +276,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="padding"></param>
 		/// <param name="isMeasuring"></param>
 		/// <returns>Returns a <see cref="CGRect"/> that contains the title text.</returns>
-		CGRect ComputeTitleRect (UIButton platformButton, Button button, UIImage image,  double widthConstraint, double heightConstraint, double borderWidth, Thickness padding, bool isMeasuring)
+		CGRect ComputeTitleRect(UIButton platformButton, Button button, UIImage image, double widthConstraint, double heightConstraint, double borderWidth, Thickness padding, bool isMeasuring)
 		{
 			if (string.IsNullOrEmpty(platformButton.CurrentTitle))
 			{
@@ -286,7 +286,8 @@ namespace Microsoft.Maui.Controls
 			var titleWidthConstraint = widthConstraint - ((nfloat)borderWidth * 2);
 			var titleHeightConstraint = heightConstraint - ((nfloat)borderWidth * 2);
 
-			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle) && titleWidthConstraint != double.PositiveInfinity)
+			if (image is not null && !string.IsNullOrEmpty(platformButton.CurrentTitle) && titleWidthConstraint != double.PositiveInfinity
+			&& (button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Left || button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Right))
 			{
 				// In non-UIButtonConfiguration setups, the title will always be truncated by the image's width
 				// even when the image is on top or bottom.
@@ -312,7 +313,7 @@ namespace Microsoft.Maui.Controls
 			if (currentTitleText.Length > 0 && button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Left || button.ContentLayout.Position == ButtonContentLayout.ImagePosition.Right)
 			{
 				// Measure the width of the first character in the string using the same font as the TitleLabel. If a character cannot fit in the titleRect, let's use a zero size.
-				var minimumCharacterWidth = new Foundation.NSString(currentTitleText.Substring(0,1)).GetSizeUsingAttributes(new UIStringAttributes { Font = platformButton.TitleLabel.Font });
+				var minimumCharacterWidth = new Foundation.NSString(currentTitleText.Substring(0, 1)).GetSizeUsingAttributes(new UIStringAttributes { Font = platformButton.TitleLabel.Font });
 				if (double.IsNaN(titleRect.Width) || double.IsNaN(titleRect.Height) || titleRect.Width < minimumCharacterWidth.Width)
 				{
 					titleRect = Rect.Zero;

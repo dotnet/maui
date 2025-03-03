@@ -14,14 +14,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.WebView)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void Bugzilla35733Test()
 		{
+			VerifyInternetConnectivity();
 			App.WaitForElement("btnGo");
 			App.Tap("btnGo");
 			App.WaitForElement("WebViewTest");
-			App.Screenshot("I didn't crash");
 		}
 	}
 }

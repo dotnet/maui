@@ -1,4 +1,3 @@
-#if !MACCATALYST // MACCATALYST doesn't support VerifyScreenshot tests
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -8,7 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	public class Issue23973(TestDevice device) : _IssuesUITest(device)
 	{
 		protected override bool ResetAfterEachTest => true;
-		public override string Issue => "Default Modal Page Is Not Transparent"; 
+		public override string Issue => "Default Modal Page Is Not Transparent";
 
 		[Test]
 		[Category(UITestCategories.Navigation)]
@@ -19,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-#if !WINDOWS
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		public void VerifyTransparentModalShowsPageBeneathModal()
@@ -28,7 +26,5 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("PushTransparentModal");
 			VerifyScreenshot();
 		}
-#endif
 	}
 }
-#endif

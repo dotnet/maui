@@ -73,6 +73,18 @@ namespace Microsoft.Maui.Handlers
 				popoverPresentation.SourceRect = uITextField.Bounds;
 			}
 
+			EventHandler? editingDidEndHandler = null;
+
+			editingDidEndHandler = async (s, e) =>
+			{
+				await pickerController.DismissViewControllerAsync(true);
+				if (VirtualView is IPicker virtualView)
+					virtualView.IsFocused = false;
+				uITextField.EditingDidEnd -= editingDidEndHandler;
+			};
+
+			uITextField.EditingDidEnd += editingDidEndHandler;
+
 			var platformWindow = MauiContext?.GetPlatformWindow();
 			platformWindow?.BeginInvokeOnMainThread(() =>
 			{
@@ -204,9 +216,6 @@ namespace Microsoft.Maui.Handlers
 				_handler = new(handler);
 				_virtualView = new(virtualView);
 
-#if MACCATALYST
-				platformView.ShouldBeginEditing += OnShouldBeginEditing;
-#endif
 				platformView.EditingDidBegin += OnStarted;
 				platformView.EditingDidEnd += OnEnded;
 				platformView.EditingChanged += OnEditing;
@@ -214,27 +223,12 @@ namespace Microsoft.Maui.Handlers
 
 			public void Disconnect(MauiPicker platformView)
 			{
-#if MACCATALYST
-				platformView.ShouldBeginEditing -= OnShouldBeginEditing;
-#endif
 				platformView.EditingDidBegin -= OnStarted;
 				platformView.EditingDidEnd -= OnEnded;
 				platformView.EditingChanged -= OnEditing;
 			}
 
-#if MACCATALYST
-			bool OnShouldBeginEditing (UITextField textField)
-			{
-				if (Handler is not PickerHandler handler)
-					return false;
-
-
-				// The PlatformView will always be a MauiPicker (which derives from UITextfield) by definition, but we're forced to use
-				// UITextField as the parameter to satisfy the signature for ShouldBeginEditing. The following cast is safe. 
-				handler.DisplayAlert((MauiPicker)textField);
-				return false;
-			}
-#else
+#if !MACCATALYST
 			public void OnDone()
 			{
 				if (Handler is PickerHandler handler)
@@ -248,6 +242,12 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (VirtualView is IPicker virtualView)
 					virtualView.IsFocused = true;
+#if MACCATALYST
+				if (Handler is not PickerHandler handler)
+					return;
+
+				handler.DisplayAlert(handler.PlatformView);
+#endif
 			}
 
 			void OnEnded(object? sender, EventArgs eventArgs)

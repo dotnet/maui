@@ -18,7 +18,7 @@ public class Bugzilla40173 : TestContentPage
 
 	protected override void Init()
 	{
-		var outputLabel = new Label() { AutomationId = "outputlabel" };
+		var outputLabel = new Label() { Text = "Default", AutomationId = "outputlabel" };
 		var testButton = new Button
 		{
 			Text = "Can't Touch This",
@@ -78,22 +78,34 @@ public class Bugzilla40173 : TestContentPage
 		testListView.ItemsSource = items;
 		testListView.ItemTemplate = new DataTemplate(() =>
 		{
+
+			var grid = new Grid
+			{
+				HeightRequest = 60
+			};
+
+			var itemLabel = new Label
+			{
+				VerticalOptions = LayoutOptions.Center,
+				HorizontalOptions = LayoutOptions.Start
+			};
+			itemLabel.SetBinding(Label.TextProperty, ".");
+			var boxView = new BoxView
+			{
+				Color = Colors.Pink.MultiplyAlpha(0.5f)
+			};
+			boxView.SetBinding(BoxView.AutomationIdProperty, ".");
+
+			grid.Children.Add(itemLabel);
+			grid.Children.Add(boxView);
+
 			var result = new ViewCell
 			{
-				View = new Grid
-				{
-					Children =
-					{
-						new BoxView
-						{
-							AutomationId = ListTapTarget,
-							Color = Colors.Pink.MultiplyAlpha(0.5f)
-						}
-					}
-				}
+				View = grid
 			};
 
 			return result;
+
 		});
 
 		testListView.ItemSelected += (sender, args) => outputLabel.Text = ListTapSuccessText;

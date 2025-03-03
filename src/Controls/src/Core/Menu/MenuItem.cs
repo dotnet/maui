@@ -31,9 +31,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IconImageSource"/>.</summary>
 		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(MenuItem), default(ImageSource),
-			propertyChanged: (bindable, oldValue, newValue) => {
-					((MenuItem)bindable).AddRemoveLogicalChildren(oldValue, newValue);
-				}
+			propertyChanged: (bindable, oldValue, newValue) =>
+			{
+				((MenuItem)bindable).AddRemoveLogicalChildren(oldValue, newValue);
+				OnImageSourceChanged(bindable, oldValue, newValue);
+			}
 		);
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
@@ -181,6 +183,20 @@ namespace Microsoft.Maui.Controls
 			}
 
 			ppc.PropagatePropertyChanged(IsEnabledProperty.PropertyName);
+		}
+
+		static void OnImageSourceChanged(BindableObject bindable, object oldvalue, object newValue)
+		{
+			if (oldvalue is ImageSource oldImageSource)
+				oldImageSource.SourceChanged -= ((MenuItem)bindable).OnImageSourceSourceChanged;
+
+			if (newValue is ImageSource newImageSource)
+				newImageSource.SourceChanged += ((MenuItem)bindable).OnImageSourceSourceChanged;
+		}
+
+		void OnImageSourceSourceChanged(object sender, EventArgs e)
+		{
+			OnPropertyChanged(IconImageSourceProperty.PropertyName);
 		}
 	}
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -75,5 +76,22 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);
 		}
+
+		[Fact]
+		[Description("The BackgroundColor of a Image should match with native background color")]
+		public async Task ImageBackgroundColorConsistent()
+		{
+			var expected = Colors.AliceBlue;
+			var image = new Image()
+			{
+				BackgroundColor = expected,
+				HeightRequest = 100,
+				WidthRequest = 200
+			};
+
+			await ValidateHasColor(image, expected, typeof(ImageHandler));
+		}
+
+
 	}
 }

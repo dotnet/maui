@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 8964, "Adding an item to the beginning of the bound ItemSource causes the carousel to skip sometimes", PlatformAffected.Android)]
-public class Issue8964 : TestContentPage 
+public class Issue8964 : TestContentPage
 {
 	object _currentItem;
 	int _counter;
@@ -35,7 +35,7 @@ public class Issue8964 : TestContentPage
 		};
 
 		var stackLayout = new StackLayout
-		{ 
+		{
 			lbl, CarouselViewUnderTest, _lbl,
 		};
 

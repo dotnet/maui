@@ -96,7 +96,7 @@ Task("GenerateMsixCert")
 	{
 		Information("Generating cert");
 		var rsa = RSA.Create();
-		var req = new CertificateRequest("CN=" + certCN, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+		var req = new CertificateRequest("CN=" + certCN, rsa, System.Security.Cryptography.HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
 		req.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection
 		{
@@ -156,7 +156,10 @@ Task("Build")
 	s.ToolPath = dotnetToolPath;
 	s.Configuration = CONFIGURATION;
 	s.Framework = TARGET_FRAMEWORK;
-	s.MSBuildSettings = new DotNetMSBuildSettings();
+	s.MSBuildSettings = new DotNetMSBuildSettings()
+	{
+		ArgumentCustomization = args => args.Append("/bl:" + binlog),
+	};
 	s.MSBuildSettings.Properties.Add("RuntimeIdentifierOverride", new List<string> { "win10-x64" });
 	
 	var launchSettingsNeedle = "Project";

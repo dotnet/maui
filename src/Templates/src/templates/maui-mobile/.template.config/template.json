@@ -69,6 +69,7 @@
             "Resources/Raw/SeedData.json",
             "Resources/Fonts/FluentSystemIcons-Regular.ttf",
             "Resources/Fonts/SegoeUI-Semibold.ttf",
+            "Resources/Fonts/FluentUI.cs",
             "Services/**",
             "Resources/Styles/AppStyles.xaml",
             "Utilities/**"

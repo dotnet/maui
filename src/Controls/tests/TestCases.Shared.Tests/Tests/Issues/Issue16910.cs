@@ -1,7 +1,7 @@
-﻿using NUnit.Framework;
+﻿using System.Threading.Tasks;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
-using System.Threading.Tasks;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
@@ -13,34 +13,28 @@ public class Issue16910 : _IssuesUITest
 	protected override bool ResetAfterEachTest => true;
 	public Issue16910(TestDevice device)
 		: base(device)
-	{ 
+	{
 
 	}
 
-#if !MACCATALYST
 	[Test]
-	[FailsOnMacWhenRunningOnXamarinUITest("When the refreshview appears on catalyst. Appium starts to have a really hard time finding elements")]
 	public void BindingUpdatesFromProgrammaticRefresh()
 	{
 		_ = App.WaitForElement("StartRefreshing");
 		App.Tap("StartRefreshing");
 		App.WaitForElement("IsRefreshing");
-		App.Click("StopRefreshing");
+		App.Tap("StopRefreshing");
 		App.WaitForElement("IsNotRefreshing");
 	}
-#endif
-
-// Windows only works with touch inputs which we don't have running on the test server
-#if !WINDOWS && !MACCATALYST
+#if TEST_FAILS_ON_CATALYST //Scroll actions cannot be performed on the macOS test server
 	[Test]
 	public void BindingUpdatesFromInteractiveRefresh()
 	{
 		_ = App.WaitForElement("CollectionView");
-		App.ScrollUp("CollectionView");
+		App.ScrollUp("CollectionView", ScrollStrategy.Gesture, 0.7, 500);
 		App.WaitForElement("IsRefreshing");
 		App.Tap("StopRefreshing");
 		App.WaitForElement("IsNotRefreshing");
 	}
 #endif
-
 }

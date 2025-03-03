@@ -192,5 +192,46 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(bottomLevelItem1.IsEnabled);
 			Assert.False(bottomLevelItem2.IsEnabled);
 		}
+
+		[Fact]
+		public async void UpdateMenuBarItemBindingContext()
+		{
+			bool fired = false;
+			var cmd = new Command(() => fired = true);
+			var bindingContext = new
+			{
+				MenuItemCommand = cmd
+			};
+
+			MenuFlyoutItem flyout;
+			MenuBarItem menuItem;
+			var mainPage = new ContentPage
+			{
+				MenuBarItems =
+				{
+					(menuItem = new MenuBarItem
+					{
+						(flyout = new MenuFlyoutItem { })
+					})
+				}
+			};
+
+			mainPage.BindingContext = bindingContext;
+			flyout.SetBinding(MenuFlyoutItem.CommandProperty, new Binding("MenuItemCommand"));
+
+			var page = new ContentPage
+			{
+				BindingContext = bindingContext
+			};
+
+			NavigationPage nav = new NavigationPage(mainPage);
+			TestWindow testWindow = new TestWindow(nav);
+			await mainPage.Navigation.PushAsync(page);
+			await page.Navigation.PopAsync();
+
+			flyout.Command.Execute(null);
+
+			Assert.True(fired);
+		}
 	}
 }

@@ -6,36 +6,31 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue198 : _IssuesUITest
 {
+	const string PageOne = "Page One";
+	const string PageThree = "Page Three";
 	public Issue198(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
 	public override string Issue => "TabbedPage shouldn't proxy content of NavigationPage";
 
-	// [Test]
-	// [Category(UITestCategories.TabbedPage)]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// 	public void Issue198TestsNREWithPopModal()
-	// 	{
-	// 		App.WaitForElement(q => q.Marked("Page One"));
-	// 		App.WaitForElement(q => q.Button("Leave"));
-	// 		App.Screenshot("All Elements Present");
+	[Test]
+	[Category(UITestCategories.TabbedPage)]
+	public void Issue198TestsNREWithPopModal()
+	{
+		App.WaitForTabElement(PageOne);
+		App.WaitForElement("Leave");
 
-	// 		App.Tap(q => q.Marked("Leave"));
-	// 		App.Screenshot("Clicked Leave");
+		App.Tap("Leave");
 
-	// 		App.WaitForElement(q => q.Marked("Bug Repro's"));
-	// #if !__MACOS__
-	// 		App.ClearText(q => q.Raw("* marked:'SearchBarGo'"));
-	// 		App.EnterText(q => q.Raw("* marked:'SearchBarGo'"), "G198");
-	// #endif
-	// 		App.Tap(q => q.Marked("SearchButton"));
-	// 		App.Screenshot("Navigate into gallery again");
+		// Due to the current architecture of the HostApp, we cannot navigate back to the Bug Repro's page.
+		// Also it's not recommended to place a TabbedPage into a NavigationPage.
+		// App.WaitForElement("Bug Repro's");
+		// App.EnterText("SearchBarGo", "G198");
+		// App.Tap("SearchButton");
 
-	// 		App.WaitForElement(q => q.Marked("Page Three"));
-	// 		App.Tap(q => q.Marked("Page Three"));
+		App.TapTab(PageThree);
 
-	// 		App.WaitForElement(q => q.Marked("No Crash"));
-	// 		App.Screenshot("App did not crash");
-	// 	}
+		App.WaitForElement("No Crash");
+	}
 }

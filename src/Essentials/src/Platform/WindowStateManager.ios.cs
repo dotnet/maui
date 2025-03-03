@@ -140,7 +140,7 @@ namespace Microsoft.Maui.ApplicationModel
 				try
 				{
 					using var scenes = UIApplication.SharedApplication.ConnectedScenes;
-					var windowScene = scenes.ToArray().OfType<UIWindowScene>().FirstOrDefault(scene => 
+					var windowScene = scenes.ToArray().OfType<UIWindowScene>().FirstOrDefault(scene =>
 						scene.Session.Role == UIWindowSceneSessionRole.Application);
 					return windowScene?.Windows.FirstOrDefault();
 				}
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.ApplicationModel
 				try
 				{
 					using var scenes = UIApplication.SharedApplication.ConnectedScenes;
-					var windowScene = scenes.ToArray().OfType<UIWindowScene>().FirstOrDefault(scene => 
+					var windowScene = scenes.ToArray().OfType<UIWindowScene>().FirstOrDefault(scene =>
 						scene.Session.Role == UIWindowSceneSessionRole.Application);
 					return windowScene?.Windows;
 				}

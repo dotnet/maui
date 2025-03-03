@@ -13,7 +13,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Tap Double Tap";
 
 		[Test]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		[Category(UITestCategories.Gestures)]
 		[Category(UITestCategories.Compatibility)]
 		public void TapThenDoubleTap()
@@ -23,10 +22,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("TapLabel");
 
 			App.Tap("TapLabel");
-			App.WaitForNoElement("Single");
+			App.WaitForElement("Single");
 
 			App.DoubleTap("TapLabel");
-			App.WaitForNoElement("Double");
+
+#if ANDROID
+			// In CI Double tap does not effective sometimes so retry once before failing to resolve the flakiness.
+			try
+			{
+				App.WaitForElement("Double");
+			}
+			catch (TimeoutException)
+			{
+				App.WaitForElement("Single");
+				App.DoubleTap("TapLabel");
+			}
+#endif
+			App.WaitForElement("Double");
 		}
 	}
 }

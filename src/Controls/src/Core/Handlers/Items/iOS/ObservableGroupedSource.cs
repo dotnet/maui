@@ -4,23 +4,21 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal class ObservableGroupedSource : IObservableItemsViewSource
 	{
-		readonly UICollectionView _collectionView;
-		readonly UICollectionViewController _collectionViewController;
+		readonly WeakReference<UICollectionViewController> _collectionViewController;
+		UICollectionView _collectionView => _collectionViewController.TryGetTarget(out var controller) ? controller.CollectionView : null;
 		readonly IList _groupSource;
 		bool _disposed;
 		List<ObservableItemsSource> _groups = new List<ObservableItemsSource>();
 
 		public ObservableGroupedSource(IEnumerable groupSource, UICollectionViewController collectionViewController)
 		{
-			_collectionViewController = collectionViewController;
-			_collectionView = _collectionViewController.CollectionView;
+			_collectionViewController = new(collectionViewController);
 			_groupSource = groupSource as IList ?? new ListSource(groupSource);
 
 			if (_groupSource is INotifyCollectionChanged incc)
@@ -28,6 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				incc.CollectionChanged += CollectionChanged;
 			}
 
+			_groupCount = GroupsCount();
 			ResetGroupTracking();
 		}
 
@@ -39,7 +38,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		public int GroupCount => _groupSource.Count;
+		int _groupCount = 0;
+
+		public int GroupCount => _groupCount;
 
 		public int ItemCount
 		{
@@ -125,13 +126,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void ResetGroupTracking()
 		{
+			if (!_collectionViewController.TryGetTarget(out var controller))
+				return;
+
 			ClearGroupTracking();
 
 			for (int n = 0; n < _groupSource.Count; n++)
 			{
 				if (_groupSource[n] is INotifyCollectionChanged && _groupSource[n] is IEnumerable list)
 				{
-					_groups.Add(new ObservableItemsSource(list, _collectionViewController, n));
+					_groups.Add(new ObservableItemsSource(list, controller, n));
 				}
 			}
 		}
@@ -155,6 +159,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
+			if (!_collectionViewController.TryGetTarget(out var controller))
+				return;
+
+			// Force UICollectionView to get the internal accounting straight
+			var collectionView = controller.CollectionView;
+			if (!collectionView.Hidden)
+			{
+				var numberOfSections = collectionView.NumberOfSections();
+				for (int section = 0; section < numberOfSections; section++)
+				{
+					collectionView.NumberOfItemsInSection(section);
+				}
+			}
+
 			switch (args.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
@@ -181,6 +199,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			ResetGroupTracking();
 
+			_groupCount = GroupsCount();
+
 			_collectionView.ReloadData();
 			if (collectionWasReset)
 			{
@@ -197,9 +217,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool NotLoadedYet()
 		{
+			if (!_collectionViewController.TryGetTarget(out var controller))
+				return false;
 			// If the UICollectionView hasn't actually been loaded, then calling InsertSections or DeleteSections is 
 			// going to crash or get in an unusable state; instead, ReloadData should be used
-			return !_collectionViewController.IsViewLoaded || _collectionViewController.View.Window == null;
+			return !controller.IsViewLoaded || controller.View.Window == null;
 		}
 
 		void Add(NotifyCollectionChangedEventArgs args)
@@ -212,6 +234,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _groupSource.IndexOf(args.NewItems[0]);
 			var count = args.NewItems.Count;
+			_groupCount += count;
 
 			// Adding a group will change the section index for all subsequent groups, so the easiest thing to do
 			// is to reset all the group tracking to get it up-to-date
@@ -245,6 +268,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Since we have a start index, we can be more clever about removing the item(s) (and get the nifty animations)
 			var count = args.OldItems.Count;
+			_groupCount -= count;
 
 			// Queue up the updates to the UICollectionView
 			Update(() => _collectionView.DeleteSections(CreateIndexSetFrom(startIndex, count)));
@@ -291,6 +315,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		int GetGroupCount(int groupIndex)
 		{
+			if (groupIndex < 0 || groupIndex >= _groupSource.Count)
+			{
+				return 0;
+			}
+
 			switch (_groupSource[groupIndex])
 			{
 				case IList list:
@@ -310,6 +339,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		object GetGroupItemAt(int groupIndex, int index)
 		{
+			if (groupIndex < 0 || groupIndex >= _groupSource.Count)
+			{
+				return -1;
+			}
+
 			switch (_groupSource[groupIndex])
 			{
 				case IList list:
@@ -370,6 +404,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			update();
+		}
+
+		int GroupsCount()
+		{
+			if (_groupSource is IList list)
+				return list.Count;
+
+			int count = 0;
+			foreach (var item in _groupSource)
+				count++;
+			return count;
 		}
 	}
 }

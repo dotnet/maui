@@ -12,22 +12,17 @@ public class Issue2964 : _IssuesUITest
 
 	public override string Issue => "TabbedPage toolbar item crash";
 
-	// [Test]
-	// [Category(UITestCategories.ToolbarItem)]
-	// public void Issue2964Test()
-	// {
-	// 	App.Screenshot("I am at Issue 2964");
+	[Test]
+	[Category(UITestCategories.ToolbarItem)]
+	public void Issue2964Test()
+	{
+		App.WaitForElement("FlyoutButton");
+		App.Tap("FlyoutButton");
+		App.WaitForElement("Page1PushModalButton");
+		App.Tap("Page1PushModalButton");
+		App.WaitForElement("ModalPagePopButton");
+		App.Tap("ModalPagePopButton");
+		App.WaitForElement("Page1Label");
 
-	// 	App.Tap(q => q.Marked("FlyoutButton"));
-	// 	App.Screenshot("Create new Detail instance");
-
-	// 	App.Tap(q => q.Marked("Page1PushModalButton"));
-	// 	App.Screenshot("Modal is pushed");
-
-	// 	App.Tap(q => q.Marked("ModalPagePopButton"));
-	// 	App.Screenshot("Modal is popped");
-
-	// 	App.WaitForElement(q => q.Marked("Page1Label"));
-	// 	App.Screenshot("Didn't blow up! :)");
-	// }
+	}
 }

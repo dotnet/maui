@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 6323, "TabbedPage Page not watching icon changes", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 6323, "TabbedPage Page not watching icon changes", PlatformAffected.UWP, isInternetRequired: true)]
 public class Issue6323 : TestTabbedPage
 {
 	protected override void Init()
@@ -12,7 +12,7 @@ public class Issue6323 : TestTabbedPage
 		{
 			Children.Add(new ContentPage
 			{
-				Content = new Label { Text = "Success" },
+				Content = new Label { Text = "Success", AutomationId = "Success" },
 				Title = "I'm a title"
 			});
 			return false;

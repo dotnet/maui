@@ -34,12 +34,12 @@ public class Issue5831 : TestShell
 #pragma warning disable CS0618 // Type or member is obsolete
 		var stackLayout = new StackLayout() { VerticalOptions = LayoutOptions.FillAndExpand };
 #pragma warning restore CS0618 // Type or member is obsolete
-		stackLayout.AddLogicalChild(new Label { Text = "Go to the other page via the flyout, then come back. The items in the collection view should look identical when you return to this page." });
-		stackLayout.AddLogicalChild(collectionView);
+		stackLayout.Children.Add(new Label { Text = "Go to the other page via the flyout, then come back. The items in the collection view should look identical when you return to this page." });
+		stackLayout.Children.Add(collectionView);
 		var collectionViewPage = new ContentPage { Content = stackLayout, BindingContext = this };
 		mainFlyoutItem.Items.Add(collectionViewPage);
 
-		otherFlyoutItem.Items.Add(new ContentPage { Content = new Label { Text = "Go back to main page via the flyout" } });
+		otherFlyoutItem.Items.Add(new ContentPage { Content = new Label { Text = "Go back to main page via the flyout", AutomationId = "Label" } });
 
 		Items.Add(new FlyoutItem
 		{

@@ -7648,10 +7648,8 @@ override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedCont
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.HeaderContainer.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.HeaderContainer.OnLayout(bool changed, int l, int t, int r, int b) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.HeaderContainer.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnDestroy() -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRenderer.OnShellSectionChanged() -> void
-override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellItemRendererBase.OnDestroy() -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchView.OnAttachedToWindow() -> void

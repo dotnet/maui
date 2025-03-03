@@ -138,7 +138,7 @@ namespace Microsoft.Maui.UnitTesting.Hosting
 			Assert.Equal(typeof(ViewStub), resolvedServiceType);
 		}
 
-		class ChildViewStub : ViewStub, IParentAViewStub, IParentBViewStub {}
+		class ChildViewStub : ViewStub, IParentAViewStub, IParentBViewStub { }
 		interface IParentAViewStub : IViewStub { }
 		interface IParentBViewStub : IViewStub { }
 	}

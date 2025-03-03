@@ -25,7 +25,7 @@ public class Bugzilla46363 : TestContentPage
 		};
 
 		var instructions = new Label();
-		var result = new Label { Text = Testing };
+		var result = new Label { AutomationId = "TestingLabel", Text = Testing };
 
 		s_tapCommand = new Command(() =>
 		{

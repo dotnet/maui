@@ -160,5 +160,17 @@
         <Setter Property="MinWidth" Value="{ThemeResource ListViewItemMinWidth}" />
         <Setter Property="MinHeight" Value="0" />
     </Style>
-    
+
+  <Style x:Key="JumpListGrid" TargetType="GridView">
+    <Setter Property="ItemTemplate">
+      <Setter.Value>
+        <DataTemplate>
+          <Border Background="{ThemeResource SystemColorControlAccentBrush}" Padding="5" Margin="3" MinHeight="80" MinWidth="80">
+            <TextBlock Text="{Binding}" Style="{ThemeResource SubheaderTextBlockStyle}" VerticalAlignment="Bottom" />
+          </Border>
+        </DataTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+  
 </ResourceDictionary>

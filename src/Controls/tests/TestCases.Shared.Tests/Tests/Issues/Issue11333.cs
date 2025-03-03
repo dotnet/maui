@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if TEST_FAILS_ON_WINDOWS // For more information, see : https://github.com/dotnet/maui/issues/27638
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		public override string Issue => "[Bug] SwipeView does not work on Android if child has TapGestureRecognizer";
-		
+
 		const string SwipeViewId = "SwipeViewId";
 
 		[Test]

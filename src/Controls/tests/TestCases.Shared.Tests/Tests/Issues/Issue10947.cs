@@ -7,13 +7,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue10947 : _IssuesUITest
 {
-    public Issue10947(TestDevice device)
+	public Issue10947(TestDevice device)
 		: base(device)
 	{ }
 
-    public override string Issue => "CollectionView Header and Footer Scrolling";
-    string HeaderEntry => "HeaderEntry";
-    string FooterEntry => "FooterEntry";
+	public override string Issue => "CollectionView Header and Footer Scrolling";
+	string HeaderEntry => "HeaderEntry";
+	string FooterEntry => "FooterEntry";
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]

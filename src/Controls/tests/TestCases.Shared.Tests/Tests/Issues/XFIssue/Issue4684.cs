@@ -9,21 +9,24 @@ public class Issue4684 : _IssuesUITest
 	{
 	}
 
+	const string connect = "Connect";
+	const string control = "Control";
 	public override string Issue => "[Android] don't clear shell content because native page isn't visible";
 
-	//[Test]
-	//[Category(UITestCategories.Shell)]
-	//public void NavigatingBackAndForthDoesNotCrash()
-	//{
-	//	TapInFlyout("Connect");
-	//	App.Tap("Control");
-
-	//	TapInFlyout("Home");
-	//	TapInFlyout("Connect");
-
-	//	App.Tap("Connect");
-	//	App.Tap("Control");
-
-	//	App.WaitForElement("Success");
-	//}
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void NavigatingBackAndForthDoesNotCrash()
+	{
+		App.TapInShellFlyout("Connect");
+		App.WaitForElementTillPageNavigationSettled("Connect");
+		App.TapTab(control, true);
+		App.WaitForElementTillPageNavigationSettled("Control");
+		App.TapInShellFlyout("Home");
+		App.WaitForElementTillPageNavigationSettled("Control");
+		App.TapInShellFlyout("Connect");
+		App.TapTab(connect, true);
+		App.WaitForElement("Connect");
+		App.TapTab(control, true);
+		App.WaitForElement("Success");
+	}
 }

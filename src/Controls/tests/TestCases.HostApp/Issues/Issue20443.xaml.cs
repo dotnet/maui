@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
-using System.Runtime.CompilerServices;
 
 namespace Controls.TestCases.HostApp.Issues
 {
-	[Issue(IssueTracker.Github, 20443, "CollectionView item gets wrong size after refresh", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Github, 20443, "CollectionView item sizing wrong after refresh", PlatformAffected.iOS)]
 
 	public partial class Issue20443 : ContentPage
 	{
@@ -39,7 +39,7 @@ namespace Controls.TestCases.HostApp.Issues
 			RefreshCommand = new Command(
 				async () =>
 				{
-					await Task.Delay(2000);
+					await Task.Delay(1000);
 					IsRefreshing = false;
 				});
 

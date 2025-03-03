@@ -6,7 +6,13 @@
              mc:Ignorable="d"
              x:Class="Maui.Controls.Sample.CollectionViewGalleries.ScrollToGalleries.ScrollToGroup">
     <ContentPage.Content>
-        <StackLayout>
+
+       <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"></RowDefinition>
@@ -26,7 +32,7 @@
                 <Button Grid.Row="2" Grid.ColumnSpan="2" x:Name="ScrollTo" Text="Go" AutomationId="GoButton"/>
             </Grid>
 
-            <Grid>
+            <Grid Grid.Row="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
@@ -45,7 +51,7 @@
                 <Button Grid.Row="2" Grid.ColumnSpan="2" x:Name="ScrollToItem" Text="Go" AutomationId="GoItemButton"/>
             </Grid>
             
-            <CollectionView x:Name="CollectionView" IsGrouped="True">
+            <CollectionView x:Name="CollectionView" IsGrouped="True" Grid.Row="2" >
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -73,6 +79,7 @@
                 </CollectionView.GroupFooterTemplate>
 
             </CollectionView>
-        </StackLayout>
+        </Grid>
+
     </ContentPage.Content>
 </ContentPage>

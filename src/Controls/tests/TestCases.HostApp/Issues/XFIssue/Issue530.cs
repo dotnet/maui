@@ -10,17 +10,21 @@ public class Issue530 : TestContentPage
 
 	protected override void Init()
 	{
-		var dataTemplate = new DataTemplate(typeof(TextCell));
-		dataTemplate.SetBinding(TextCell.TextProperty, new Binding("."));
-
 		_list = new ListView
 		{
-			ItemTemplate = dataTemplate
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label();
+				label.SetBinding(Label.TextProperty, new Binding("."));
+				label.SetBinding(Label.AutomationIdProperty, new Binding("."));
+				return new ViewCell { View = label };
+			})
 		};
 
 		_button = new Button
 		{
 			Text = "Load",
+			AutomationId = "Load"
 		};
 
 		_button.Clicked += async (sender, e) =>

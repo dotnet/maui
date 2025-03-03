@@ -11,16 +11,27 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	{
 		public static void Compile(
 			Type type,
+			out bool hasLoggedErrors,
+			string targetFramework = null,
+			bool treatWarningsAsErrors = false,
+			bool compileBindingsWithSource = true)
+			=> Compile(type, out _, out hasLoggedErrors, targetFramework, treatWarningsAsErrors, compileBindingsWithSource);
+
+		public static void Compile(
+			Type type,
 			string targetFramework = null,
 			bool treatWarningsAsErrors = false,
 			bool compileBindingsWithSource = true)
 		{
-			Compile(type, out _, targetFramework, treatWarningsAsErrors, compileBindingsWithSource);
+			Compile(type, out _, out var hasLoggedErrors, targetFramework, treatWarningsAsErrors, compileBindingsWithSource);
+			if (hasLoggedErrors)
+				throw new Exception("XamlC failed");
 		}
 
 		public static void Compile(
 			Type type,
 			out MethodDefinition methodDefinition,
+			out bool hasLoggedErrors,
 			string targetFramework = null,
 			bool treatWarningsAsErrors = false,
 			bool compileBindingsWithSource = true,
@@ -51,6 +62,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			if (xamlc.Execute(out IList<Exception> exceptions) || exceptions == null || !exceptions.Any())
 			{
 				methodDefinition = xamlc.InitCompForType;
+				hasLoggedErrors = xamlc.LoggingHelper.HasLoggedErrors;
 				return;
 			}
 			if (exceptions.Count > 1)

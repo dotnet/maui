@@ -171,7 +171,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (_previousSize != Bounds.Size)
 			{
 				SetNeedsDisplay();
-				this.UpdateBackgroundLayer();
 			}
 
 			base.LayoutSubviews();
@@ -229,7 +228,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_pendingSuperViewSetNeedsLayout = false;
 				this.Superview?.SetNeedsLayout();
 			}
-			else{
+			else
+			{
 				_pendingSuperViewSetNeedsLayout = true;
 			}
 		}

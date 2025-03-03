@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
@@ -597,12 +598,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (viewer == null)
 			{
 				RoutedEventHandler loadedHandler = null;
-				loadedHandler = async (o, e) =>
+				loadedHandler = (o, e) =>
 				{
 					List.Loaded -= loadedHandler;
 
 					// Here we try to avoid an exception, see explanation at bottom
-					await Control.Dispatcher.RunIdleAsync(args => { ScrollTo(group, item, toPosition, shouldAnimate, includeGroup); });
+					MainThread.BeginInvokeOnMainThread(() => { ScrollTo(group, item, toPosition, shouldAnimate, includeGroup); });
 				};
 				List.Loaded += loadedHandler;
 				return;
@@ -806,6 +807,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		private protected override void DisconnectHandlerCore()
 		{
+			if (Element is ITemplatedItemsView<Cell> templatedItemsView)
+			{
+				templatedItemsView.TemplatedItems.CollectionChanged -= OnCollectionChanged;
+			}
+
 			CleanUpResources();
 			base.DisconnectHandlerCore();
 		}

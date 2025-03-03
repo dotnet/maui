@@ -86,7 +86,7 @@ public class Issue6077 : TestNavigationPage
 
 			var content = new ContentView { Content = label };
 
-			grid.AddLogicalChild(content);
+			grid.Children.Add(content);
 
 			return grid;
 		});

@@ -8,7 +8,7 @@ public partial class Issue5949_2 : ContentPage
 	public Issue5949_2()
 	{
 		InitializeComponent();
-		ToolbarItems.Add(new ToolbarItem(ToolBarItem, null, () => Navigation.PushAsync(LoginPage())));
+		ToolbarItems.Add(new ToolbarItem(ToolBarItem, null, () => Navigation.PushAsync(LoginPage())) { AutomationId = ToolBarItem });
 		BindingContext = new _5949ViewModel();
 	}
 
