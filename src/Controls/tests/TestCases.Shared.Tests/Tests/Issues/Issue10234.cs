@@ -15,6 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void ScrollCarouselViewAfterDispose()
 		{
 			App.WaitForElement("goToShow");

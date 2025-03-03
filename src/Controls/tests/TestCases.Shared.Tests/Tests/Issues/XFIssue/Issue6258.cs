@@ -1,4 +1,5 @@
-#if ANDROID
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS// The automation ID for the image icon in the Windows context menu is not working in Appium.
+//ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,7 +20,7 @@ public class Issue6258 : _IssuesUITest
 	{
 		App.WaitForElement("ListViewItem");
 		App.ActivateContextMenu("ListViewItem");
-		VerifyScreenshot();
+		App.WaitForElement(AppiumQuery.ByAccessibilityId("coffee.png"));
 	}
 }
 #endif

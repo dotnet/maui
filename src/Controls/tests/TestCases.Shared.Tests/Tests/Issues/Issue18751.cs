@@ -16,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest("Currently fails on Android; see https://github.com/dotnet/maui/issues/15994")]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("Currently fails on Windows; see https://github.com/dotnet/maui/issues/15994")]
 		public async Task Issue18751Test()
 		{
 			App.WaitForElement("WaitForStubControl");

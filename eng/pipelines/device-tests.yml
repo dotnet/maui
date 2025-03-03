@@ -42,33 +42,24 @@ pr:
     - THIRD-PARTY-NOTICES.TXT
 
 variables:
-    - template: /eng/pipelines/common/variables.yml
-    - name: AgentPoolAccessToken
-      value: $(botdeploy--azdo--token)
+  - template: /eng/pipelines/common/variables.yml
+  - name: AgentPoolAccessToken
+    value: $(botdeploy--azdo--token)
 
 parameters:
-    - name: UseProvisionator
-      type: boolean
-      default: false
 
-    - name: provisionatorChannel
-      displayName: "Provisionator channel"
-      type: string
-      default: "latest" # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
+  - name: UseProvisionator
+    type: boolean
+    default: false
 
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
     type: string
     default: 'latest'
 
-    - name: androidPool
-      type: object
-      default:
-          name: $(androidTestsVmPool)
-          vmImage: $(androidTestsVmImage)
-          demands:
-              - Agent.OSVersion -equals 14.5
-              - Agent.OSArchitecture -equals X64
+  - name: BuildEverything
+    type: boolean
+    default: false
 
   - name: androidPool
     type: object
@@ -76,7 +67,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
 
   - name: androidPoolX64
     type: object
@@ -84,7 +75,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
 
   - name: iosPool
@@ -93,7 +84,7 @@ parameters:
       name: $(iosDeviceTestsVmPool)
       vmImage: $(iosDeviceTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         
   - name: catalystPool
     type: object
@@ -101,26 +92,26 @@ parameters:
       name: $(iosDeviceTestsVmPool)
       vmImage: $(iosDeviceTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
 
-    - name: windowsPool
-      type: object
-      default:
-          name: $(windowsTestsVmPool)
-          vmImage: $(windowsTestsVmImage)
+  - name: windowsPool
+    type: object
+    default:
+      name: $(windowsTestsVmPool)
+      vmImage: $(windowsTestsVmImage)
 
-    - name: targetFrameworkVersions
-      type: object
-      default:
-          - tfm: net9.0
+  - name: targetFrameworkVersions
+    type: object
+    default:
+      - tfm: net9.0
 
 resources:
-    repositories:
-        - repository: yaml-templates
-          type: github
-          name: xamarin/yaml-templates
-          endpoint: xamarin
-          ref: refs/heads/main
+  repositories:
+    - repository: yaml-templates
+      type: github
+      name: xamarin/yaml-templates
+      endpoint: xamarin
+      ref: refs/heads/main
 
 stages:
 - ${{ each targetFrameworkVersion in parameters.targetFrameworkVersions }}:

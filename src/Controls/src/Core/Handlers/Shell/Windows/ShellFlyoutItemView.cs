@@ -128,6 +128,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
+			base.ArrangeOverride(finalSize);
+
 			// Replaced ActualWidth with finalSize.Width since ActualWidth updates only after ArrangeOverride completes, 
 			// ensuring accurate layout during the initial arrangement phase.
 			if (finalSize.Width > 0 && _content is IView view)

@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
 //For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
 using NUnit.Framework;
 using UITest.Appium;
@@ -26,12 +26,9 @@ public class Bugzilla58875 : _IssuesUITest
 		App.Tap(Button1Id);
 		App.WaitForElement(Target);
 		App.ActivateContextMenu(Target);
-		App.WaitForElement(ContextAction, timeout: TimeSpan.FromSeconds(2));
-		App.Back();
-
-#if ANDROID
-		App.Back(); // Back button dismisses the ContextAction first, so we need to hit back one more time to get to previous page
-#endif
+		App.WaitForElement(ContextAction);
+		App.DismissContextMenu();
+		App.TapBackArrow();
 
 		App.WaitForElement(Button1Id);
 		App.Tap(Button1Id);
