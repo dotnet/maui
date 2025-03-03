@@ -548,7 +548,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			return result;
 		}
-		class MauiUITapGestureRecognizer: UITapGestureRecognizer
+		internal class MauiUITapGestureRecognizer: UITapGestureRecognizer
 		{
 			public MauiUITapGestureRecognizer(Action<UITapGestureRecognizer> action):base(action)
 			{
