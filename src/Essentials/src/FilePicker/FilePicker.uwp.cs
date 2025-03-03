@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Storage
 			if (allowMultiple)
 			{
 				var fileList = await picker.PickMultipleFilesAsync();
-				if (fileList != null)
+				if (fileList != null && fileList.Any())
 					resultList.AddRange(fileList);
 			}
 			else
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Storage
 					resultList.Add(file);
 			}
 
-			return resultList.Select(storageFile => new FileResult(storageFile));
+			return resultList.Count == 0 ? null : resultList.Select(storageFile => new FileResult(storageFile));
 		}
 
 		static void SetFileTypes(PickOptions options, FileOpenPicker picker)
