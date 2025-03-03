@@ -30,6 +30,41 @@ namespace Microsoft.Maui.DeviceTests
 			}));
 		}
 
+		[Fact]
+        public async Task RTLWorksOnLabelWithFormattedText()
+        {
+            var label = new Label { FlowDirection = FlowDirection.RightToLeft, FormattedText = new FormattedString
+                {
+                    Spans =
+                    {
+                        new Span { Text = "Label with RTL and FormattedText" },
+                    }
+                }, };
+			var expected = UITextAlignment.Right;
+            var handler = await CreateHandlerAsync<LabelHandler>(label);
+            var platformLabel = GetPlatformLabel(handler);
+            var platformTextAlignment = await InvokeOnMainThreadAsync(() => handler.PlatformView.TextAlignment);
+            Assert.Equal(expected, platformTextAlignment);
+        }
+
+		[Fact]
+        public async Task RTLWorksOnLabelWithLineHeight()
+        {
+            var label = new Label { FlowDirection = FlowDirection.RightToLeft, LineHeight = 3, FormattedText = new FormattedString
+                {
+                    Spans =
+                    {
+                        new Span { Text = "Label with RTL and LineHeight" },
+                    }
+                }, };
+			var expected = UITextAlignment.Right;
+            var handler = await CreateHandlerAsync<LabelHandler>(label);
+            var platformLabel = GetPlatformLabel(handler);
+            var platformTextAlignment = await InvokeOnMainThreadAsync(() => handler.PlatformView.TextAlignment);            
+            Assert.Equal(expected, platformTextAlignment);
+        }
+
+
 		UILabel GetPlatformLabel(LabelHandler labelHandler) =>
 			(UILabel)labelHandler.PlatformView;
 
