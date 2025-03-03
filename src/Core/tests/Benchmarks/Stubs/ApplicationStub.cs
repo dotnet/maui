@@ -35,5 +35,9 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		public void ActivateWindow(IWindow window) { }
 
 		public void ThemeChanged() { }
+
+		IElementHandler? IElement.GetElementHandler(IMauiContext context) => null;
+
+		Type? IElement.GetElementHandlerType() => null;
 	}
 }

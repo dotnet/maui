@@ -17,6 +17,10 @@ namespace Microsoft.Maui.UnitTests
 
 		public string Property { get; set; } = "Default";
 
+		public IElementHandler GetElementHandler(IMauiContext context) => throw new System.NotImplementedException();
+
+		public System.Type GetElementHandlerType() => throw new System.NotImplementedException();
+
 		public IWindow CreateWindow(IActivationState activationState)
 		{
 			throw new System.NotImplementedException();

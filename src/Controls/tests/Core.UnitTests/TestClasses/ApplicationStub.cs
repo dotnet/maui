@@ -48,5 +48,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			return null;
 		}
+
+		IElementHandler? IElement.GetElementHandler(IMauiContext context) => null;
+
+		Type? IElement.GetElementHandlerType() => null;
 	}
 }

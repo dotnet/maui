@@ -4,6 +4,10 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
+// Several methods on the IMauiHandlersFactory interface are marked as obsolete but we should still
+// keep the tests for these methods until we drop those methods completely
+#pragma warning disable CS0618
+
 namespace Microsoft.Maui.UnitTests.Hosting
 {
 	[Category(TestCategory.Core, TestCategory.Hosting)]
@@ -275,6 +279,72 @@ namespace Microsoft.Maui.UnitTests.Hosting
 
 			Type handlerType = mauiHandlersFactory.GetHandlerType(typeof(ViewStub));
 			Assert.Null(handlerType);
+		}
+
+		[Fact]
+		public void HostBuilderResolvesToHandlerWhenHandlerIsNotRegisteredButTheViewCanCreateItsHandler()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var view = new CustomView();
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handler = mauiHandlersFactory.GetHandler(view, context: null);
+
+			Assert.NotNull(handler);
+			Assert.IsType<CustomViewHandler>(handler);
+		}
+
+		[Fact]
+		public void HostBuilderResolvesToHandlerTypeWhenHandlerIsNotRegisteredButTheViewKnowsItsHandlerType()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.Build();
+
+			var view = new CustomView();
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handlerType = mauiHandlersFactory.GetHandlerType(view);
+
+			Assert.NotNull(handlerType);
+			Assert.Same(typeof(CustomViewHandler), handlerType);
+		}
+
+		[Fact]
+		public void DefaultHandlerCanBeReplacedByExplicitlyRegisteringAHandler()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<CustomView, ViewHandlerStub>())
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			IElementHandler handler = mauiHandlersFactory.GetHandler(new CustomView(), context: null);
+			Assert.IsType<ViewHandlerStub>(handler);
+		}
+
+		[Fact]
+		public void DefaultHandlerTypeCanBeReplacedByExplicitlyRegisteringAHandler()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<CustomView, ViewHandlerStub>())
+				.Build();
+
+			var mauiHandlersFactory = mauiApp.Services.GetRequiredService<IMauiHandlersFactory>();
+
+			var handlerType = mauiHandlersFactory.GetHandlerType(new CustomView());
+			Assert.Same(typeof(ViewHandlerStub), handlerType);
+		}
+
+		class CustomView : ViewStub
+		{
+			protected override IElementHandler GetElementHandlerCore(IMauiContext context) => new CustomViewHandler();
+			protected override Type GetElementHandlerTypeCore() => typeof(CustomViewHandler);
+		}
+
+		class CustomViewHandler : ViewHandlerStub
+		{
 		}
 	}
 }
