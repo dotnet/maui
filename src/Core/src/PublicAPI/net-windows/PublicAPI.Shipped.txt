@@ -1219,7 +1219,6 @@ Microsoft.Maui.ITextStyle.Font.get -> Microsoft.Maui.Font
 Microsoft.Maui.ITextStyle.TextColor.get -> Microsoft.Maui.Graphics.Color!
 Microsoft.Maui.ITimePicker
 Microsoft.Maui.ITimePicker.Format.get -> string!
-Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
 Microsoft.Maui.ITimePicker.Time.set -> void
 Microsoft.Maui.ITitledElement
 Microsoft.Maui.ITitledElement.Title.get -> string?
