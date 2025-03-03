@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync<BorderHandler>(border);
 			var nativeView = GetNativeBorder(handler);
-			await InvokeOnMainThreadAsync( async () =>
+			await InvokeOnMainThreadAsync(() =>
    			{
 				var isVisible = nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
 				Assert.Equal(expectedValue, isVisible);
