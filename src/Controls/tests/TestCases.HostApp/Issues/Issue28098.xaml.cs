@@ -1,61 +1,62 @@
 using System.Collections.ObjectModel;
 
-namespace Maui.Controls.Sample.Issues;
-
-[Issue(IssueTracker.Github, 28098, "Returning back from navigation to MainPage would result in a blank screen", PlatformAffected.iOS)]
-public partial class Issue28098 : ContentPage
+namespace Maui.Controls.Sample.Issues
 {
-	public Issue28098()
+	[Issue(IssueTracker.Github, 28098, "Returning back from navigation to MainPage would result in a blank screen", PlatformAffected.iOS)]
+	public partial class Issue28098 : ContentPage
 	{
-		InitializeComponent();
+		public Issue28098()
+		{
+			InitializeComponent();
+		}
+
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+			_viewModel.OnAppearing();
+		}
+		private async void Button_Clicked(object sender, EventArgs e)
+		{
+			await Navigation.PushModalAsync(new NewPage());
+		}
 	}
 
-	protected override void OnAppearing()
+	public class NewPage : ContentPage
 	{
-		base.OnAppearing();
-		_viewModel.OnAppearing();
-	}
-	private async void Button_Clicked(object sender, EventArgs e)
-	{
-		await Navigation.PushModalAsync(new ActionPage());
-	}
-}
-
-public class ActionPage : ContentPage
-{
-	public ActionPage()
-	{
-		var button = new Button { Text = "GoBack", AutomationId = "BackButton" };
-		button.Clicked += async (s, e) => await Navigation.PopModalAsync();
-		Content = button;
-	}
-}
-
-public class MainPageViewModel
-{
-	public Command LoadItemsCommand { get; }
-	public ObservableCollection<Item> Items { get; }
-
-	public void OnAppearing()
-	{
-		LoadItemsCommand.Execute(null);
+		public NewPage()
+		{
+			var button = new Button { Text = "GoBack", AutomationId = "BackButton" };
+			button.Clicked += async (s, e) => await Navigation.PopModalAsync();
+			Content = button;
+		}
 	}
 
-	void ExecuteLoadItemsCommand()
+	public class MainPageViewModel
 	{
-		Items.Clear();
-		Items.Add(new Item() { Name = "Item1" });
-		Items.Add(new Item() { Name = "Item2" });
+		public Command LoadItemsCommand { get; }
+		public ObservableCollection<Item> Items { get; }
+
+		public void OnAppearing()
+		{
+			LoadItemsCommand.Execute(null);
+		}
+
+		void ExecuteLoadItemsCommand()
+		{
+			Items.Clear();
+			Items.Add(new Item() { Name = "Item1" });
+			Items.Add(new Item() { Name = "Item2" });
+		}
+		public MainPageViewModel()
+		{
+			Items = new ObservableCollection<Item>();
+
+			LoadItemsCommand = new Command(() => ExecuteLoadItemsCommand());
+		}
 	}
-	public MainPageViewModel()
+
+	public class Item
 	{
-		Items = new ObservableCollection<Item>();
-
-		LoadItemsCommand = new Command(() => ExecuteLoadItemsCommand());
+		public string Name { get; set; }
 	}
-}
-
-public class Item
-{
-	public string Name { get; set; }
 }

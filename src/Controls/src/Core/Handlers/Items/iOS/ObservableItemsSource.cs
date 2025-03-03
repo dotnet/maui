@@ -319,6 +319,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			if (collectionView.Window is null)
+			{
+				// when navigating back to the previous page and perform the collection changes simultaneously, the CollectionView does not load properly
+				// So called ReloadData() to update collectionview properly.
+				collectionView.ReloadData();
+				return;
+			}
+
 			OnCollectionViewUpdating(args);
 			update(collectionView);
 			OnCollectionViewUpdated(args);
