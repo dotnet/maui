@@ -33,7 +33,7 @@ public partial class MauiXmlnsDef
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
-		public void XamlParseErrorsHaveFileInfo([Values(false, true)] bool useCompiledXaml)
+		public void XamlParseXmlnsDefinitionForThisAssembly([Values(false, true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				MockCompiler.Compile(typeof(MauiXmlnsDef));
