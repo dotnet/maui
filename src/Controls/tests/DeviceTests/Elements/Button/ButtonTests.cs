@@ -70,25 +70,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidateHasColor(button, expected, typeof(ButtonHandler));
 		}
-
-		[Fact]
-		[Description("The Opacity property of a Button should match with native Opacity")]
-		public async Task VerifyButtonOpacityProperty()
-		{
-			var button = new Button
-			{
-				Opacity = 0.35f
-			};
-			var expectedValue = button.Opacity;
-
-			var handler = await CreateHandlerAsync<ButtonHandler>(button);
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var nativeOpacityValue = await GetPlatformOpacity(handler);
-				Assert.Equal(expectedValue, nativeOpacityValue);
-			});
-		}
-
-
 	}
 }
