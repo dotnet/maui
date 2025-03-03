@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		}
 
-		public static void MapFlowDirection(ShellHandler handler, Shell view)
+		internal static void MapFlowDirection(ShellHandler handler, Shell view)
 		{
 			handler.PlatformView.UpdateFlowDirection(view);
 		}
