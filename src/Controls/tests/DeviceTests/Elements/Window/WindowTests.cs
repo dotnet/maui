@@ -59,7 +59,6 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Entry, EntryHandler>();
 					handlers.AddHandler<Editor, EditorHandler>();
 					handlers.AddHandler<SearchBar, SearchBarHandler>();
-					handlers.AddHandler<BoxView, BoxViewHandler>();
 				});
 			});
 		}
