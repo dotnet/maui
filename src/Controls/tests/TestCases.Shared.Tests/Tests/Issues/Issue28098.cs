@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
             App.Tap("Button");
             App.WaitForElement("BackButton");
             App.Tap("BackButton");
-            App.WaitForElement("CarouselView");
+            VerifyScreenshot();
         }
     }
 }
