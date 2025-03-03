@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Xml;
@@ -160,13 +161,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var skipassembly = !DefaultCompile;
 			bool success = true;
 
-			var assemblyFile = new FileInfo(Assembly);
-			if (!assemblyFile.Exists)
+			if (!File.Exists(Assembly))
 			{
 				LoggingHelper.LogMessage(Normal, $"{new string(' ', 2)}Assembly file not found. Skipping XamlC.");
 				return true;
 			}
-			using var staging = new StagingHelper(assemblyFile.FullName);
 
 			if (GenerateFullPaths && string.IsNullOrEmpty(FullPathPrefix))
 			{
@@ -178,18 +177,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				var resolver = DefaultAssemblyResolver ?? fallbackResolver;
 				if (resolver is XamlCAssemblyResolver xamlCResolver)
 				{
-					// Example:
-					//   [assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/2021/maui", "MauiApp14.Views")]
-					// When resolving types from "this" MauiApp14.dll we need to make sure we can load it from e.g.
-					//   FullPathPrefix:  "C:\repos\MauiApp14"
-					//   Assembly:        "obj\Debug\MauiApp14.dll"
-					//   Additional path: "C:\repos\MauiApp14\obj\Debug\staging_abcxyz"
-					if (staging.StageAssembly() is string stagePath)
-					{
-						LoggingHelper.LogMessage(Low, $"{new string(' ', 2)}Adding searchpath {stagePath}");
-						xamlCResolver.AddSearchDirectory(stagePath);
-					}
-
 					if (ReferencePath != null)
 					{
 						var paths = ReferencePath.Select(p => IOPath.GetDirectoryName(p.Replace("//", "/"))).Distinct();
@@ -493,68 +480,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return ca.ConstructorArguments[0].Value as string;
 			}
 			return null;
-		}
-
-		private class StagingHelper : IDisposable
-		{
-			private readonly string sourcePath;
-			private readonly string root;
-
-			public StagingHelper(string path)
-			{
-				sourcePath = path;
-				root = Path.GetDirectoryName(sourcePath);
-				root = Path.Combine(root, $"staging_3192A270B2D2");
-
-				// If we failed to clear staging from last build then try doing it now
-				ClearStagingArea();
-			}
-
-			public void Dispose()
-			{
-				// If staged assembly got loaded then we will not be able to delete it.
-				// We'll do at the beginning of next build.
-				ClearStagingArea();
-			}
-
-			public string StageAssembly()
-			{
-				try
-				{
-					if (!File.Exists(sourcePath))
-					{
-						return null;
-					}
-
-					for (int i = 0; i < 100; i++)
-					{
-						string baseName = Path.GetRandomFileName();
-						string tempDir = Path.Combine(root, baseName);
-						if (!Directory.Exists(tempDir))
-						{
-							Directory.CreateDirectory(tempDir);
-							string target = Path.Combine(tempDir, Path.GetFileName(sourcePath));
-							File.Copy(sourcePath, target);
-							return tempDir;
-						}
-					}
-				}
-				catch { }
-
-				return null;
-			}
-
-			void ClearStagingArea()
-			{
-				try
-				{
-					if (Directory.Exists(root))
-					{
-						Directory.Delete(root, true);
-					}
-				}
-				catch { }
-			}
 		}
 	}
 }
