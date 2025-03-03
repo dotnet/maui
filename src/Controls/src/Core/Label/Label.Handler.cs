@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls;
 
@@ -11,10 +10,8 @@ partial class Label
 		return new LabelHandler();
 	}
 
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 	protected override Type? GetHandlerType()
 	{
-		RemapForControlsIfNeeded();
 		return typeof(LabelHandler);
 	}
 

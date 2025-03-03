@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls;
 
@@ -17,7 +16,6 @@ partial class Element
 	/// <summary>
 	/// Create the type of the Handler for the Element.
 	/// </summary>
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 	protected virtual Type? GetHandlerType()
 	{
 		return null;
@@ -30,7 +28,6 @@ partial class Element
 
 	IElementHandler? IElement.GetElementHandler(IMauiContext context) => GetHandler(context);
 
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 	Type? IElement.GetElementHandlerType() => GetHandlerType();
 
 	private static readonly HashSet<Type> s_remappedTypes = new ();

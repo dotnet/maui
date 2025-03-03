@@ -11,7 +11,6 @@ namespace Microsoft.Maui
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		Type? GetHandlerType(Type iview);
 
-		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		Type? GetHandlerType(IElement element);
 
 		IElementHandler? GetHandler(IElement element, IMauiContext context);

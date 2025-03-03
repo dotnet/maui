@@ -23,7 +23,6 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets the Handler Type for the Element.
 		/// </summary>
-		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		Type? GetElementHandlerType();
 	}
 }

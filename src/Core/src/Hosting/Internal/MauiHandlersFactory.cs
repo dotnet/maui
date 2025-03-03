@@ -31,7 +31,6 @@ namespace Microsoft.Maui.Hosting.Internal
 			return view.GetElementHandler(context);
 		}
 
-		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public Type? GetHandlerType(IElement view)
 		{
 			// Try to get the handler type from the service collection first.

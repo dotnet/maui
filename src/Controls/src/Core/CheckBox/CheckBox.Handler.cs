@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls;
 
@@ -11,10 +10,8 @@ partial class CheckBox
 		return new CheckBoxHandler();
 	}
 
-	[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 	protected override Type? GetHandlerType()
 	{
-		RemapForControlsIfNeeded();
 		return typeof(CheckBoxHandler);
 	}
 
