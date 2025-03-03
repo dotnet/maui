@@ -38,19 +38,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public void ThemeChanged() { }
 
-		public IElementHandler GetElementHandler(IMauiContext context)
-		{
-			return null;
-		}
+		IElementHandler IElement.GetElementHandler(IMauiContext context) => null;
 
-		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
-		public Type GetElementHandlerType()
-		{
-			return null;
-		}
-
-		IElementHandler? IElement.GetElementHandler(IMauiContext context) => null;
-
-		Type? IElement.GetElementHandlerType() => null;
+		Type IElement.GetElementHandlerType() => null;
 	}
 }
