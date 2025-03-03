@@ -8,25 +8,25 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>143f7e2ca0da249a03d183b388b2a70af9379edb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.99.0-ci.main.190">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.99.0-preview.2.198">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>f775a3d92b0547c25d5e0e8509adddeb0cc1c364</Sha>
+      <Sha>5a1bbe6cb0aac9eb012acfc0c871f8624ce9b791</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk.net10.0_18.2" Version="18.2.10471-net10-p2">
-      <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>9c19f630b4ed94074f12a2e6e3ef83cf97f89a81</Sha>
+    <Dependency Name="Microsoft.MacCatalyst.Sdk.net10.0_18.2" Version="18.2.10547-net10-p2">
+      <Uri>https://github.com/dotnet/macios</Uri>
+      <Sha>61804c64df38bd101b38c7d27c0a4e6a1d82ebca</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk.net10.0_15.2" Version="15.2.10471-net10-p2">
-      <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>9c19f630b4ed94074f12a2e6e3ef83cf97f89a81</Sha>
+    <Dependency Name="Microsoft.macOS.Sdk.net10.0_15.2" Version="15.2.10547-net10-p2">
+      <Uri>https://github.com/dotnet/macios</Uri>
+      <Sha>61804c64df38bd101b38c7d27c0a4e6a1d82ebca</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk.net10.0_18.2" Version="18.2.10471-net10-p2">
-      <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>9c19f630b4ed94074f12a2e6e3ef83cf97f89a81</Sha>
+    <Dependency Name="Microsoft.iOS.Sdk.net10.0_18.2" Version="18.2.10547-net10-p2">
+      <Uri>https://github.com/dotnet/macios</Uri>
+      <Sha>61804c64df38bd101b38c7d27c0a4e6a1d82ebca</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk.net10.0_18.2" Version="18.2.10471-net10-p2">
-      <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>9c19f630b4ed94074f12a2e6e3ef83cf97f89a81</Sha>
+    <Dependency Name="Microsoft.tvOS.Sdk.net10.0_18.2" Version="18.2.10547-net10-p2">
+      <Uri>https://github.com/dotnet/macios</Uri>
+      <Sha>61804c64df38bd101b38c7d27c0a4e6a1d82ebca</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
