@@ -169,5 +169,21 @@ namespace Microsoft.Maui.Handlers
 				virtualView.IsFocused = isFocused;
 			}
 		}
+
+		// TODO is it a good idea to have virtual methods for one specific platform?
+		// TODO move the switch to the control handlers' overrides
+		internal virtual bool PreventGestureBubbling
+			=> this switch
+			{
+				Button => true,
+				DatePicker => true,
+				Stepper => true,
+				Slider => true,
+				Switch => true,
+				TimePicker => true,
+				ImageButton => true,
+				RadioButton => true,
+				_ => false,
+			};
 	}
 }

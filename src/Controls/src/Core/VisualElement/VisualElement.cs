@@ -2470,20 +2470,5 @@ namespace Microsoft.Maui.Controls
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(BindingContext), BindingContext, nameof(Bounds), Bounds);
 			return $"{GetType().FullName}: {debugText}";
 		}
-
-		// TODO move to individual overrides
-		internal virtual bool PreventGestureBubbling
-			=> this switch
-			{
-				Button => true,
-				DatePicker => true,
-				Stepper => true,
-				Slider => true,
-				Switch => true,
-				TimePicker => true,
-				ImageButton => true,
-				RadioButton => true,
-				_ => false,
-			};
 	}
 }

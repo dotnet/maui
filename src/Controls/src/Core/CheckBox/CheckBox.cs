@@ -54,8 +54,6 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		internal override bool PreventGestureBubbling => true;
-
 		protected internal override void ChangeVisualState()
 		{
 			if (IsEnabled && IsChecked)

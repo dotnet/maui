@@ -88,7 +88,9 @@ namespace Microsoft.Maui.Controls.Platform
 		// Do we need to provide a hook for this in the handlers?
 		// For now I just built this ugly matching statement
 		// to replicate our handlers where we are setting this to true
-		public bool PreventGestureBubbling => Element.PreventGestureBubbling;
+		// TODO remove the comment above? or the PreventGestureBubbling property be made public to fully resolve the previous TODO?
+		public bool PreventGestureBubbling =>
+			=> (Element?.Handler as ViewHandler)?.PreventGestureBubbling ?? false;
 
 		public FrameworkElement? Control
 		{
