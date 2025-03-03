@@ -133,13 +133,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (sender is not ItemCollection items)
 				return;
 
-			var itemsCount = items.Count;
-
-			if (itemsCount == 0)
-				return;
-
 			ListViewBase.DispatcherQueue.TryEnqueue(() =>
 			{
+				
+				var itemsCount = items.Count;
+
+				if (itemsCount == 0)
+					return;
+
 				if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 				{
 					var firstItem = items[0];
