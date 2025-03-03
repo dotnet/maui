@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Hosting.Internal
 {
 	sealed class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
 	{
-		readonly ConcurrentDictionary<Type, Type> _serviceCache = new ConcurrentDictionary<Type, Type>();
+		readonly ConcurrentDictionary<Type, Type?> _serviceCache = new ();
 
 		readonly RegisteredHandlerServiceTypeSet _registeredHandlerServiceTypeSet;
 
@@ -21,11 +21,13 @@ namespace Microsoft.Maui.Hosting.Internal
 		{
 			// Try to get the handler from the service collection first.
 			// This allows app developers to override the default handler for a view.
-			if (GetService(GetVirtualViewHandlerServiceType(view.GetType())) is IElementHandler handler)
+			if (TryGetVirtualViewHandlerServiceType(view.GetType()) is Type serviceType
+				&& GetService(serviceType) is IElementHandler handler)
 			{
 				return handler;
 			}
 
+			// TODO should we throw if the handler is not found?
 			return view.GetElementHandler(context);
 		}
 
@@ -34,11 +36,13 @@ namespace Microsoft.Maui.Hosting.Internal
 		{
 			// Try to get the handler type from the service collection first.
 			// This allows app developers to override the default handler for a view.
-			if (InternalCollection.TryGetService(GetVirtualViewHandlerServiceType(view.GetType()), out ServiceDescriptor? serviceDescriptor))
+			if (TryGetVirtualViewHandlerServiceType(view.GetType()) is Type serviceType
+				&& InternalCollection.TryGetService(serviceType, out ServiceDescriptor? serviceDescriptor))
 			{
 				return serviceDescriptor?.ImplementationType;
 			}
 
+			// TODO should we throw if the handler is not found?
 			return view.GetElementHandlerType();
 		}
 
@@ -61,7 +65,10 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
 
-		private Type GetVirtualViewHandlerServiceType(Type type)
+		private Type? TryGetVirtualViewHandlerServiceType(Type type)
 			=> _serviceCache.GetOrAdd(type, _registeredHandlerServiceTypeSet.ResolveVirtualViewToRegisteredHandlerServiceType);
+
+		private Type GetVirtualViewHandlerServiceType(Type type)
+			=> TryGetVirtualViewHandlerServiceType(type) ?? throw new HandlerNotFoundException($"Unable to find a {nameof(IElementHandler)} corresponding to {type}. Please register a handler for {type} using `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` or `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler`");
 	}
 }

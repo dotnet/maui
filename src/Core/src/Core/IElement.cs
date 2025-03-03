@@ -18,7 +18,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Creates the Handler for the Element.
 		/// </summary>
-		IElementHandler? GetElementHandler(IMauiContext context);
+		IElementHandler? GetElementHandler(IMauiContext context); // TODO rename to `CreateElementHandler`?
 
 		/// <summary>
 		/// Gets the Handler Type for the Element.
