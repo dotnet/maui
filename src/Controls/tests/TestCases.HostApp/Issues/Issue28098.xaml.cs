@@ -17,13 +17,13 @@ namespace Maui.Controls.Sample.Issues
 		}
 		private async void Button_Clicked(object sender, EventArgs e)
 		{
-			await Navigation.PushModalAsync(new NewPage());
+			await Navigation.PushModalAsync(new ActionPage());
 		}
 	}
 
-	public class NewPage : ContentPage
+	public class ActionPage : ContentPage
 	{
-		public NewPage()
+		public ActionPage()
 		{
 			var button = new Button { Text = "GoBack", AutomationId = "BackButton" };
 			button.Clicked += async (s, e) => await Navigation.PopModalAsync();
