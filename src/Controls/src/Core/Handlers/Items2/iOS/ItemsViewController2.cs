@@ -545,7 +545,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			_emptyUIView.RemoveFromSuperview();
-			CollectionView.ContentInset = new UIEdgeInsets(0, 0, 0, 0);
+			CollectionView.ContentInset = UIEdgeInsets.Zero;
 
 			_emptyViewDisplayed = false;
 		}
@@ -565,14 +565,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			if (IsHorizontal)
 			{
-				var request = formsElement.Measure(double.PositiveInfinity, CollectionView.Frame.Height);
-				formsElement.Arrange(new Rect(0, 0, request.Width, CollectionView.Frame.Height));
+				MeasureAndArrange(formsElement, double.PositiveInfinity, CollectionView.Frame.Height);
 			}
 			else
 			{
-				var request = formsElement.Measure(CollectionView.Frame.Width, double.PositiveInfinity);
-				formsElement.Arrange(new Rect(0, 0, CollectionView.Frame.Width, request.Height));
+				MeasureAndArrange(formsElement, CollectionView.Frame.Width, double.PositiveInfinity);
 			}
+		}
+
+		void MeasureAndArrange(VisualElement element, double widthConstraint, double heightConstraint)
+		{
+			var request = element.Measure(widthConstraint, heightConstraint);
+			element.Arrange(new Rect(0, 0, request.Width, request.Height));
 		}
 
 		void LayoutEmptyView()
