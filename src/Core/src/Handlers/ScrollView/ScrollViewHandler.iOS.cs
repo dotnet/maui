@@ -11,16 +11,13 @@ namespace Microsoft.Maui.Handlers
 	{
 		const nint ContentTag = 0x845fed;
 
-		//Scroll view not resizing correctly when orientation changes
-		public override bool NeedsContainer => true;
-
 		readonly ScrollEventProxy _eventProxy = new();
 
 		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
 
 		protected override UIScrollView CreatePlatformView()
 		{
-			return new MauiScrollView();
+			return new MauiScrollView(this);
 		}
 
 		protected override void ConnectHandler(UIScrollView platformView)
@@ -160,9 +157,8 @@ namespace Microsoft.Maui.Handlers
 			var contentSize = MeasureContent(scrollView, scrollView.Padding, contentWidthConstraint, contentHeightConstraint);
 
 			// Our target size is the smaller of it and the constraints
-			var width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
-			var height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
-
+			var width = Math.Min(contentSize.Width, widthConstraint);
+			var height = Math.Min(contentSize.Height, heightConstraint);
 			width = ViewHandlerExtensions.ResolveConstraints(width, scrollView.Width, scrollView.MinimumWidth, scrollView.MaximumWidth);
 			height = ViewHandlerExtensions.ResolveConstraints(height, scrollView.Height, scrollView.MinimumHeight, scrollView.MaximumHeight);
 
