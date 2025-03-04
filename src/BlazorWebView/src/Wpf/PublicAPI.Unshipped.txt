@@ -4,5 +4,6 @@ Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseCompositionControl.
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseLayoutRoundingCompositionControl.get -> bool
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseLayoutRoundingCompositionControl.set -> void
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.WebView.get -> Microsoft.Web.WebView2.Wpf.IWebView2!
+override Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.EndInit() -> void
 static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UseLayoutRoundingCompositionControlProperty -> System.Windows.DependencyProperty!
 ~Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializedEventArgs.WebView.get -> Microsoft.Web.WebView2.Wpf.IWebView2

@@ -122,14 +122,19 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			SetValue(RootComponentsProperty, new RootComponentsCollection());
 			RootComponents.CollectionChanged += HandleRootComponentsCollectionChanged;
 
+			ApplyTabNavigation(IsTabStop);
+		}
+
+		public override void EndInit()
+		{
+			base.EndInit();
+
 			var visualHostingControlType = UseCompositionControl ? typeof(WebView2CompositionControl) : typeof(Microsoft.Web.WebView2.Wpf.WebView2);
 
 			Template = new ControlTemplate
 			{
 				VisualTree = new FrameworkElementFactory(visualHostingControlType, WebViewTemplateChildName)
 			};
-
-			ApplyTabNavigation(IsTabStop);
 		}
 
 		/// <summary>
