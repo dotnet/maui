@@ -742,6 +742,24 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(label, expected, typeof(LabelHandler));
 		}
 
+		[Fact]
+		[Description("The Opacity property of a Label should match with native Opacity")]
+		public async Task VerifyLabelOpacityProperty()
+		{
+			var label = new Label
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = label.Opacity;
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var nativeOpacityValue = await GetPlatformOpacity(handler);
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
+		}
+
 		Color TextColor(LabelHandler handler)
 		{
 #if __IOS__
