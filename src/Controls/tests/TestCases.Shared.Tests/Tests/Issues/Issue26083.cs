@@ -18,8 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ItemsWrapGridShouldUpdateBasedOnCollectionViewSize()
 		{
 			App.WaitForElement("Button");
+			VerifyScreenshot("ItemsWrapGridWithDefaultWidth");
 			App.Tap("Button");
-			VerifyScreenshot();
+			VerifyScreenshot("ItemsWrapGridWithMinimalWidth");
 		}
 	}
 }
