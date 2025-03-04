@@ -30,6 +30,24 @@ namespace Microsoft.Maui.Controls.Platform
 			return AdjustToMakeVisibleHorizontal(point, itemSize, scrollViewer);
 		}
 
+		static UWPPoint AdjustToStart(UWPPoint point, ScrollViewer scrollViewer, double height)
+		{
+			return IsVertical(scrollViewer) ? AdjustToStartVertical(point, height) : AdjustToStartHorizontal(point, height);
+		}
+
+
+		static UWPPoint AdjustToStartVertical(UWPPoint point, double headerHeight)
+		{
+			return new UWPPoint(point.X, point.Y - headerHeight);
+		}
+
+		static UWPPoint AdjustToStartHorizontal(UWPPoint point, double headerHeight)
+		{
+			return new UWPPoint(point.X - headerHeight, point.Y);
+		}
+
+
+
 		static UWPPoint AdjustToMakeVisibleVertical(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer)
 		{
 			if (point.Y > (scrollViewer.VerticalOffset + scrollViewer.ViewportHeight))
@@ -286,11 +304,31 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (targetContainer != null)
 			{
-				await ScrollToTargetContainerAsync(targetContainer, scrollViewer, scrollToPosition);
+				double height = 0;
+
+				if (list.IsGrouping)
+				{
+					height = GetHeaderHeight(list, targetContainer);
+				}
+
+				await ScrollToTargetContainerAsync(targetContainer, scrollViewer, scrollToPosition, height);
 				return true;
 			}
 
 			return false;
+		}
+
+		static double GetHeaderHeight(ListViewBase list, UIElement targetContainer)
+		{
+			var groupHeader = list.GroupHeaderContainerFromItemContainer(targetContainer);
+			if (groupHeader is ListViewHeaderItem headerItem)
+			{
+				return headerItem.ActualHeight;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 
 		public static async Task AnimateToItemAsync(ListViewBase list, object targetItem, ScrollToPosition scrollToPosition)
@@ -381,7 +419,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		static async Task ScrollToTargetContainerAsync(UIElement targetContainer, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition)
+		static async Task ScrollToTargetContainerAsync(UIElement targetContainer, ScrollViewer scrollViewer, ScrollToPosition scrollToPosition, double height)
 		{
 			var transform = targetContainer.TransformToVisual(scrollViewer.Content as UIElement);
 			var position = transform?.TransformPoint(Zero);
@@ -402,6 +440,7 @@ namespace Microsoft.Maui.Controls.Platform
 				case ScrollToPosition.Start:
 					// The transform will put the container at the top of the ScrollViewer; we'll need to adjust for
 					// other scroll positions
+					offset = AdjustToStart(offset, scrollViewer, height);
 					break;
 				case ScrollToPosition.MakeVisible:
 					offset = AdjustToMakeVisible(offset, itemSize, scrollViewer);
