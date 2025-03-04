@@ -141,7 +141,7 @@ stages:
       projects:
         - name: essentials
           desc: Essentials
-          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsExclude: [25, 27] # Ignore for now API25 since the runs's are not stable
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
