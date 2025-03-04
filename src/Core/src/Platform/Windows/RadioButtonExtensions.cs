@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateStrokeThickness(this RadioButton nativeRadioButton, IRadioButton radioButton)
 		{
-			nativeRadioButton.BorderThickness = radioButton.StrokeThickness <= 0 ? WinUIHelpers.CreateThickness(3) : WinUIHelpers.CreateThickness(radioButton.StrokeThickness);
+			nativeRadioButton.BorderThickness = radioButton.StrokeThickness <= 0 ? WinUIHelpers.CreateThickness(0) : WinUIHelpers.CreateThickness(radioButton.StrokeThickness);
 		}
 
 		public static void UpdateCornerRadius(this RadioButton nativeRadioButton, IRadioButton radioButton)
