@@ -72,34 +72,41 @@ namespace Microsoft.Maui.Platform
 		internal static CGSize SizeThatFitsImage(
 			this UIImageView imageView,
 			CGSize constraints,
-			Thickness? padding = null)
+			Thickness padding = default)
 		{
 			// If there's no image, we don't need to take up any space
 			if (imageView.Image is null)
+			{
 				return new CGSize(0, 0);
+			}
 
-			Thickness calculatedPadding = padding ?? default(Thickness);
 			CGSize imageSize = imageView.Image.Size;
+			double imageWidth = imageSize.Width;
+			double imageHeight = imageSize.Height;
 
-			double contentWidth = imageSize.Width + calculatedPadding.HorizontalThickness;
-			double contentHeight = imageSize.Height + calculatedPadding.VerticalThickness;
+			var horizontalThickness = padding.HorizontalThickness;
+			var verticalThickness = padding.VerticalThickness;
 
-			double constrainedWidth = Math.Min(contentWidth, constraints.Width);
-			double constrainedHeight = Math.Min(contentHeight, constraints.Height);
+			var widthConstraint = constraints.Width - horizontalThickness;
+			var heightConstraint = constraints.Height - verticalThickness;
 
-			double widthRatio = constrainedWidth / imageSize.Width;
-			double heightRatio = constrainedHeight / imageSize.Height;
+
+			var constrainedWidth = Math.Min(imageWidth, widthConstraint);
+			var constrainedHeight = Math.Min(imageHeight, heightConstraint);
 
 			// In cases where we the image must fit its given constraints, we must shrink based on the smallest dimension (scale factor)
 			// that can fit it
 			if (imageView.ContentMode == UIViewContentMode.ScaleAspectFit)
 			{
+				var widthRatio = constrainedWidth / imageWidth;
+				var heightRatio = constrainedHeight / imageHeight;
 				var scaleFactor = Math.Min(widthRatio, heightRatio);
-				return new CGSize(imageSize.Width * scaleFactor, imageSize.Height * scaleFactor);
+
+				return new CGSize(imageWidth * scaleFactor + horizontalThickness, imageHeight * scaleFactor + verticalThickness);
 			}
 
 			// Cases where AspectMode is ScaleToFill or Center
-			return new CGSize(constrainedWidth, constrainedHeight);
+			return new CGSize(constrainedWidth + horizontalThickness, constrainedHeight + verticalThickness);
 		}
 	}
 }
