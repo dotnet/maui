@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Platform
 		// to replicate our handlers where we are setting this to true
 		// TODO remove the comment above? or the PreventGestureBubbling property be made public to fully resolve the previous TODO?
 		public bool PreventGestureBubbling =>
-			=> (Element?.Handler as ViewHandler)?.PreventGestureBubbling ?? false;
+			(Element?.Handler as ViewHandler)?.PreventGestureBubbling ?? false;
 
 		public FrameworkElement? Control
 		{
