@@ -151,6 +151,18 @@ namespace UITest.Appium
 				appiumOptions.PlatformVersion = platformVersion;
 
 			appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.NewCommandTimeout, 3000);
+
+			var aiEndPoint = config.GetProperty<string>("AIEndPoint");
+			if (!string.IsNullOrEmpty(aiEndPoint))
+				appiumOptions.AddAdditionalAppiumOption("AIEndPoint", aiEndPoint);
+
+			var aiApiKey = config.GetProperty<string>("AIApiKey");
+			if (!string.IsNullOrEmpty(aiApiKey))
+				appiumOptions.AddAdditionalAppiumOption("AIApiKey", aiApiKey);
+
+			var aiModelName = config.GetProperty<string>("AIModelName");
+			if (!string.IsNullOrEmpty(aiModelName))
+				appiumOptions.AddAdditionalAppiumOption("AIModelName", aiModelName);
 		}
 
 		public void Dispose()
