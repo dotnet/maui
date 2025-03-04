@@ -43,9 +43,15 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsChecked(IRadioButtonHandler handler, IRadioButton radioButton)
 		{
 			if (radioButton.IsChecked)
+			{
 				handler.PlatformView.AccessibilityValue = "1";
+				radioButton.IsFocused = true;
+			}
 			else
+			{
 				handler.PlatformView.AccessibilityValue = "0";
+				radioButton.IsFocused = false;
+			}
 		}
 
 		[MissingMapper]
