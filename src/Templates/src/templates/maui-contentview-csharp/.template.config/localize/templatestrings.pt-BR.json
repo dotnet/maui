@@ -1,7 +1,0 @@
-{
-  "author": "Microsoft",
-  "name": ".NET MAUI ContentView (C#)",
-  "description": "Um modo de exibição para exibir conteúdo usando C#. Isso é muito adequado para criar seus próprios controles personalizados e reutilizáveis.",
-  "postActions/openInEditor/description": "Abre NewContent1.cs no editor.",
-  "symbols/namespace/description": "Namespace do código gerado."
-}
