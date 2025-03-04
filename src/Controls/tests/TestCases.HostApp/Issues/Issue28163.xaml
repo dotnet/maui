@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Controls.TestCases.HostApp.Issues.Issue28163"
+             Title="Issue28163">
+    <VerticalStackLayout  Spacing="10"
+            Padding="30,0"
+            VerticalOptions="Fill">
+                 <Grid ColumnDefinitions="*,*">
+                  <Label Text="Focused Fired: " />
+                  <Label Grid.Column="1" AutomationId="FocusedLabel" x:Name="focusedlabel" />
+                 </Grid>
+                  <Grid ColumnDefinitions="*,*">
+                  <Label Text="Unfocused Fired: " />
+                  <Label Grid.Column="1" AutomationId="UnFocusedLabel"  x:Name="unfocusedlabel" />
+                 </Grid>
+                   <Grid ColumnDefinitions="*,*">
+                  <Label Text="CheckChanged Fired: " />
+                  <Label Grid.Column="1" AutomationId="CheckChangedLabel" x:Name="checkChangedlabel" />
+                 </Grid>
+                <RadioButton AutomationId="MauiRadioButton" Content="Radio Button with events" 
+                  Focused="RadioButton_Focused"
+                  CheckedChanged="RadioButton_CheckedChanged"
+                  Unfocused="RadioButton_Unfocused"/>
+                  <RadioButton AutomationId="EmptyRadioButton" Content="Normal RadioButton"/>
+             </VerticalStackLayout>
+</ContentPage>
