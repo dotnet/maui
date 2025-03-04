@@ -16,9 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ShellFlowDirectionUpdate()
 		{
 			App.WaitForElement("label");
-#if WINDOWS
 			App.TapShellFlyoutIcon();
-#endif
 			VerifyScreenshot();
 		}
 	}
