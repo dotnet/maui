@@ -1,6 +1,4 @@
-using System;
 using CoreGraphics;
-using SceneKit;
 using UIKit;
 
 namespace Microsoft.Maui.Graphics.Platform
@@ -48,7 +46,6 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static UIImage NormalizeOrientation(this UIImage target, bool disposeOriginal = false)
 		{
-
 			if (target.Orientation == UIImageOrientation.Up)
 			{
 				return target;
