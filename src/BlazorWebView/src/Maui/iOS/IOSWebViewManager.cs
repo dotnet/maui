@@ -246,9 +246,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				{
 					_webView.Logger.LaunchExternalBrowser(uri);
 
-#pragma warning disable CA1416, CA1422 // TODO: OpenUrl(...) has [UnsupportedOSPlatform("ios10.0")]
-					UIApplication.SharedApplication.OpenUrl(requestUrl);
-#pragma warning restore CA1416, CA1422
+					UIApplication.SharedApplication.OpenUrl(requestUrl, new UIApplicationOpenUrlOptions(), null);
 				}
 
 				if (strategy != UrlLoadingStrategy.OpenInWebView)
