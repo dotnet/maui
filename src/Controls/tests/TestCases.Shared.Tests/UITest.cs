@@ -184,9 +184,9 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					case TestDevice.Android:
 						environmentName = "android";
-						var deviceApiLevel = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel");
-						var deviceScreenSize = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize");
-						var deviceScreenDensity = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity");
+						var deviceApiLevel = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel")!;
+						var deviceScreenSize = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize")!;
+						var deviceScreenDensity = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity")!;
 
 						if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
 						{
@@ -195,8 +195,8 @@ namespace Microsoft.Maui.TestCases.Tests
 						break;
 
 					case TestDevice.iOS:
-						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
-						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
+						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion")!;
+						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName")!;
 
 						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
 						{
