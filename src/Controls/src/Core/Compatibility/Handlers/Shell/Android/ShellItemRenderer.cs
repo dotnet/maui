@@ -111,8 +111,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_bottomSheetDialog = null;
 			}
 
-			_navigationArea.LayoutChange -= OnNavigationAreaLayoutChange;
-			_navigationArea?.Dispose();
+			if (_navigationArea is not null)
+			{
+				_navigationArea.LayoutChange -= OnNavigationAreaLayoutChange;
+				_navigationArea.Dispose();
+			}
 			_appearanceTracker?.Dispose();
 			_outerLayout?.Dispose();
 
@@ -371,7 +374,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_bottomSheetDialog = null;
 			}
 		}
-		
+
 		private void OnNavigationAreaLayoutChange(object sender, AView.LayoutChangeEventArgs e)
 		{
 			UpdateTabBarVisibility();
