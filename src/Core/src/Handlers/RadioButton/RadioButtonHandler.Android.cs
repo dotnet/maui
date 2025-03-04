@@ -93,10 +93,10 @@ namespace Microsoft.Maui.Handlers
 	    void OnFocusChanged(object? sender, View.FocusChangeEventArgs e)
 		{
 			if(VirtualView is not null)
-			VirtualView.IsFocused = e.HasFocus;
+				VirtualView.IsFocused = e.HasFocus;
 
 			if(PlatformView is not null && PlatformView.Clickable && e.HasFocus)
-			      PlatformView.PerformClick();
+			    PlatformView.PerformClick();
 
 		}
 		void OnCheckChanged(object? sender, CompoundButton.CheckedChangeEventArgs e)

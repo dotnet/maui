@@ -12,7 +12,6 @@ public class Issue28163 : _IssuesUITest
 
 	public override string Issue => "RadioButton Focused and Unfocused Events Not Firing on iOS and Android";
 
-
     [Test]
     [Category(UITestCategories.RadioButton)]
     public void RadioButttonFocusEventsShouldFire()
@@ -32,8 +31,5 @@ public class Issue28163 : _IssuesUITest
         Assert.That(focusedText,Is.EqualTo("True"));
         Assert.That(unfocusedText,Is.EqualTo("True"));
         Assert.That(checkChangedText,Is.EqualTo("True"));
-        
-
-
     }
 }
