@@ -86,10 +86,21 @@ namespace Microsoft.Maui.Handlers
 			uITextField.EditingDidEnd += editingDidEndHandler;
 
 			var platformWindow = MauiContext?.GetPlatformWindow();
+			var currentViewController = GetCurrentViewController(platformWindow?.RootViewController);
 			platformWindow?.BeginInvokeOnMainThread(() =>
 			{
-				_ = platformWindow?.RootViewController?.PresentViewControllerAsync(pickerController, true);
+				currentViewController?.PresentViewControllerAsync(pickerController, true);
 			});
+		}
+
+		static UIViewController? GetCurrentViewController(UIViewController? viewController)
+		{
+			while (viewController?.PresentedViewController != null)
+			{
+				viewController = viewController.PresentedViewController;
+			}
+ 
+			return viewController;
 		}
 #endif
 
