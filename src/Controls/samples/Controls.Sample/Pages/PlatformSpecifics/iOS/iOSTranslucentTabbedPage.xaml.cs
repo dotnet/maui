@@ -2,17 +2,13 @@
 using System.Windows.Input;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-
 namespace Maui.Controls.Sample.Pages
 {
 	public partial class iOSTranslucentTabbedPage : Microsoft.Maui.Controls.TabbedPage
 	{
-		ICommand returnToPlatformSpecificsPage;
-
-		public iOSTranslucentTabbedPage(ICommand restore)
+		public iOSTranslucentTabbedPage()
 		{
 			InitializeComponent();
-			returnToPlatformSpecificsPage = restore;
 		}
 
 		void OnToggleButtonClicked(object sender, EventArgs e)
@@ -33,7 +29,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnReturnButtonClicked(object sender, EventArgs e)
 		{
-			returnToPlatformSpecificsPage.Execute(null);
+			Navigation.PopAsync();
 		}
 	}
 }
