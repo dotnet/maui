@@ -19,8 +19,7 @@
 
 
 
-    <Grid BackgroundColor="red"
-            Margin="20">
+    <Grid BackgroundColor="red">
         <ScrollView Orientation="Vertical">
             <VerticalStackLayout Spacing="5"
                                  Padding="15">
