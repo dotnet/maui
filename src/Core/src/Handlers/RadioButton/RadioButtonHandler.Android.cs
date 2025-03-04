@@ -1,4 +1,5 @@
-﻿using Android.Views;
+﻿using System;
+using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 
@@ -18,7 +19,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			return new AppCompatRadioButton(Context)
 			{
-				SoundEffectsEnabled = false
+				SoundEffectsEnabled = false,
+				Focusable = true,
+				FocusableInTouchMode = true,
 			};
 		}
 
@@ -26,13 +29,19 @@ namespace Microsoft.Maui.Handlers
 		{
 			AppCompatRadioButton? platformRadioButton = GetPlatformRadioButton(this);
 			if (platformRadioButton != null)
+			{
 				platformRadioButton.CheckedChange += OnCheckChanged;
+				platformRadioButton.FocusChange += OnFocusChanged;
+			}
 		}
-
+	
 		protected override void DisconnectHandler(View platformView)
 		{
 			if (platformView is AppCompatRadioButton platformRadioButton)
+			{
 				platformRadioButton.CheckedChange -= OnCheckChanged;
+				platformRadioButton.FocusChange -= OnFocusChanged;
+			}
 		}
 
 		public static void MapBackground(IRadioButtonHandler handler, IRadioButton radioButton)
@@ -82,6 +91,15 @@ namespace Microsoft.Maui.Handlers
 			GetPlatformRadioButton(handler)?.UpdateCornerRadius(radioButton);
 		}
 
+	    void OnFocusChanged(object? sender, View.FocusChangeEventArgs e)
+		{
+			if(VirtualView is not null)
+			VirtualView.IsFocused = e.HasFocus;
+
+			if(PlatformView is not null && PlatformView.Clickable && e.HasFocus)
+			      PlatformView.PerformClick();
+
+		}
 		void OnCheckChanged(object? sender, CompoundButton.CheckedChangeEventArgs e)
 		{
 			if (VirtualView == null)
