@@ -2249,6 +2249,21 @@ namespace UITest.Appium
 			app.TapInFlyout(flyoutItem, false);
 		}
 
+
+		/// <summary>
+		/// Toggles the visibility of secondary toolbar items.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void ToggleSecondaryToolbarItems(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumWindowsApp)
+			{
+				throw new InvalidOperationException($"ToggleSecondaryToolbarItems is not supported");
+			}
+
+			app.CommandExecutor.Execute("toggleSecondaryToolbarItems", ImmutableDictionary<string, object>.Empty);
+		}
+
 		/// <summary>
 		/// Taps the "More" button in the app, with platform-specific logic for Android and Windows.
 		/// This method does not currently support iOS and macOS platforms, where the "More" button is not shown.
