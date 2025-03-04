@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 
 		protected override UIView CreatePlatformView(IElement view)
 		{
-			return new PageView
+			return new ContentView
 			{
 				CrossPlatformLayout = (IContentView)view
 			};
