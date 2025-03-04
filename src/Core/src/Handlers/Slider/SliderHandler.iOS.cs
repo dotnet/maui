@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class SliderHandler : ViewHandler<ISlider, UISlider>
 	{
 		readonly SliderProxy _proxy = new();
+		UITapGestureRecognizer? _sliderTapRecognizer;
 
 		protected override UISlider CreatePlatformView()
 		{
@@ -22,12 +23,45 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 			_proxy.Connect(VirtualView, platformView);
+			_sliderTapRecognizer = null;
 		}
 
 		protected override void DisconnectHandler(UISlider platformView)
 		{
 			base.DisconnectHandler(platformView);
 			_proxy.Disconnect(platformView);
+		}
+
+		internal void MapUpdateOnTap(bool isMapUpdateOnTapEnabled)
+		{
+			if (isMapUpdateOnTapEnabled)
+			{
+				if (_sliderTapRecognizer == null)
+				{
+					_sliderTapRecognizer = new UITapGestureRecognizer((recognizer) =>
+					{
+						var control = PlatformView;
+						if (control != null)
+						{
+							var tappedLocation = recognizer.LocationInView(control);
+							if (tappedLocation != default)
+							{
+								var val = tappedLocation.X * control.MaxValue / control.Frame.Size.Width;
+								VirtualView.Value = val;
+							}
+						}
+					});
+					PlatformView.AddGestureRecognizer(_sliderTapRecognizer);
+				}
+			}
+			else
+			{
+				if (_sliderTapRecognizer != null)
+				{
+					PlatformView.RemoveGestureRecognizer(_sliderTapRecognizer);
+					_sliderTapRecognizer = null;
+				}
+			}
 		}
 
 		public static void MapMinimum(ISliderHandler handler, ISlider slider)
