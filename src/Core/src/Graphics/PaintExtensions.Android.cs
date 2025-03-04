@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Graphics
 
 		internal static bool IsSolid(this SolidPaint paint)
 		{
-			return paint.Color.Alpha == 1;
+			return paint?.Color != null && paint.Color.Alpha == 1;
 		}
 
 		internal static bool IsSolid(this LinearGradientPaint paint)
