@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue25007">
+    <VerticalStackLayout>
+        <Button AutomationId="EnableInputTransparentButton"
+                Text="Enable input transparent for this content page"
+                Clicked="ButtonClicked"/>
+        <Button AutomationId="ActionButton"
+                x:Name="ActionButton"
+                Clicked="UpdateCountClicked"
+                Text="Count: 0"/>
+    </VerticalStackLayout>
+</ContentPage>
