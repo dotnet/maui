@@ -10,6 +10,11 @@ namespace Microsoft.Maui.Controls
 	{
 		internal static void RemapForControls()
 		{
+			RemapForControlsIfNeeded<Element>(RemapForControlsCore);
+		}
+
+		private static void RemapForControlsCore()
+		{
 			ViewHandler.ViewMapper.ReplaceMapping<Maui.IElement, IElementHandler>(AutomationProperties.IsInAccessibleTreeProperty.PropertyName, MapAutomationPropertiesIsInAccessibleTree);
 			ViewHandler.ViewMapper.ReplaceMapping<Maui.IElement, IElementHandler>(AutomationProperties.ExcludedWithChildrenProperty.PropertyName, MapAutomationPropertiesExcludedWithChildren);
 		}

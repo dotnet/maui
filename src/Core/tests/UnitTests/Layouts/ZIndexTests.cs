@@ -60,6 +60,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			IElementHandler IElement.Handler { get; set; }
 
+			IElementHandler IElement.GetElementHandler(IMauiContext context) => throw new System.NotImplementedException();
+
+			System.Type IElement.GetElementHandlerType() => throw new System.NotImplementedException();
+
 			public void InvalidateArrange()
 			{
 				throw new System.NotImplementedException();

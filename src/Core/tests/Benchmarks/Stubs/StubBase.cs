@@ -14,6 +14,10 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			set => Handler = (IViewHandler)value;
 		}
 
+		IElementHandler? IElement.GetElementHandler(IMauiContext context) => new StubBaseHandler();
+
+		Type? IElement.GetElementHandlerType() => typeof(StubBaseHandler);
+
 		IElement IElement.Parent => Parent;
 
 		public bool IsEnabled { get; set; } = true;

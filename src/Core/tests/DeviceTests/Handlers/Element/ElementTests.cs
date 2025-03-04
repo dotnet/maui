@@ -28,6 +28,10 @@ namespace Microsoft.Maui.DeviceTests
 			public IElement Parent { get; set; }
 
 			public IElementHandler Handler { get; set; }
+
+			public IElementHandler GetElementHandler(IMauiContext context) => throw new System.NotImplementedException();
+
+			public System.Type GetElementHandlerType() => throw new System.NotImplementedException();
 		}
 
 		[Fact]

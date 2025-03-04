@@ -413,52 +413,6 @@ namespace Microsoft.Maui.Controls
 			return text;
 		}
 
-		internal static bool TrySetValue(this Element element, string text)
-		{
-			if (element is Label label)
-			{
-				label.Text = text;
-				return true;
-			}
-			else if (element is Entry entry)
-			{
-				entry.Text = text;
-				return true;
-			}
-			else if (element is Editor editor)
-			{
-				editor.Text = text;
-				return true;
-			}
-			else if (element is CheckBox cb && bool.TryParse(text, out bool result))
-			{
-				cb.IsChecked = result;
-				return true;
-			}
-			else if (element is Switch sw && bool.TryParse(text, out bool swResult))
-			{
-				sw.IsToggled = swResult;
-				return true;
-			}
-			else if (element is RadioButton rb && bool.TryParse(text, out bool rbResult))
-			{
-				rb.IsChecked = rbResult;
-				return true;
-			}
-			else if (element is TimePicker tp && TimeSpan.TryParse(text, out TimeSpan tpResult))
-			{
-				tp.Time = tpResult;
-				return true;
-			}
-			else if (element is DatePicker dp && DateTime.TryParse(text, out DateTime dpResult))
-			{
-				dp.Date = dpResult;
-				return true;
-			}
-
-			return false;
-		}
-
 		static internal bool RequestFocus(this VisualElement view)
 		{
 			// if there is an attached handler, we use that and we will end up in the MapFocus method below
