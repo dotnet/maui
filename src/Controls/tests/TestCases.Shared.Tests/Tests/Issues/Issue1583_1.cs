@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,19 +15,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public async Task Issue1583_1_WebviewTest()
 		{
+			VerifyInternetConnectivity();
 			App.WaitForElement("label", "Could not find label", TimeSpan.FromSeconds(10), null, null);
 			await Task.Delay(TimeSpan.FromSeconds(3));
-			App.Screenshot("I didn't crash and i can see Skøyen");
+			App.WaitForElement("Loaded https://www.google.no/maps/place/Skøyen");
 			App.Tap("hashButton");
 			await Task.Delay(TimeSpan.FromSeconds(3));
-			App.Screenshot("I didn't crash and i can see the GitHub comment #issuecomment-389443737");
+			App.WaitForElement("Loaded https://github.com/xamarin/Xamarin.Forms/issues/2736#issuecomment-389443737");
 			App.Tap("queryButton");
 			await Task.Delay(TimeSpan.FromSeconds(3));
-			App.Screenshot("I didn't crash and i can see google search for http://microsoft.com");
+			App.WaitForElement("Microsoft");
 		}
 	}
-}
-#endif
+} 
