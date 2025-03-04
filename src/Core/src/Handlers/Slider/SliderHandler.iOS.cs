@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 			_proxy.Connect(VirtualView, platformView);
+			_sliderTapRecognizer = null;
 		}
 
 		protected override void DisconnectHandler(UISlider platformView)
