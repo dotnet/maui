@@ -224,12 +224,6 @@ namespace Microsoft.Maui.Platform
 			return returnSize;
 		}
 
-		public override void SetNeedsLayout()
-		{
-			InvalidateConstraintsCache();
-			base.SetNeedsLayout();
-		}
-
 		partial void ClipChanged()
 		{
 			SetClip();
@@ -325,7 +319,11 @@ namespace Microsoft.Maui.Platform
 			_invalidateParentWhenMovedToWindow = true;
 		}
 
-		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating) => SetNeedsLayout();
+		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		{
+			InvalidateConstraintsCache();
+			SetNeedsLayout();
+		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
