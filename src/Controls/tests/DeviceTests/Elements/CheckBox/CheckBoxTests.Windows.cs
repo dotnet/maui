@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml.Controls;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -10,5 +11,21 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		CheckBox GetNativeCheckBox(CheckBoxHandler checkBoxHandler) =>
 			checkBoxHandler.PlatformView;
+
+		[Fact("The IsEnabled of a CheckBox should match with native IsEnabled")]
+		public async Task CheckBoxIsEnabled()
+		{
+			var checkBox = new Microsoft.Maui.Controls.CheckBox();
+			checkBox.IsEnabled = false;
+			var expectedValue = checkBox.IsEnabled;
+
+			var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
+			var nativeView = GetNativeCheckBox(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.IsEnabled;
+				Assert.Equal(expectedValue, isEnabled);
+			});
+		}
 	}
 }
