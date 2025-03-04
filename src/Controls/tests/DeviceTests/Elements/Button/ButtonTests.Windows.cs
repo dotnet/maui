@@ -19,5 +19,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		TextTrimming GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
 			(GetPlatformButton(buttonHandler).Content as FrameworkElement)!.GetFirstDescendant<TextBlock>()!.TextTrimming;
+
+		Task<bool> GetPlatformIsVisible(ButtonHandler buttonHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformButton(buttonHandler);
+				return nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
+			});
+		}
 	}
 }

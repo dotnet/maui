@@ -24,6 +24,14 @@ namespace Microsoft.Maui.DeviceTests
 		Android.Text.TextUtils.TruncateAt? GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
 			GetPlatformButton(buttonHandler).Ellipsize;
 
+		Task<bool> GetPlatformIsVisible(ButtonHandler buttonHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformButton(buttonHandler);
+				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+			});
+		}
 
 		[Theory(DisplayName = "Button Icon has Correct Position"), Category(TestCategory.Layout)]
 		[InlineData(Button.ButtonContentLayout.ImagePosition.Left)]
@@ -80,6 +88,5 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(drawables[matchingDrawableIndex]);
 			});
 		}
-
 	}
 }
