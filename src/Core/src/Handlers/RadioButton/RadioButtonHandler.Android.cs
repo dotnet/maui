@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 				platformRadioButton.FocusChange += OnFocusChanged;
 			}
 		}
-	
+
 		protected override void DisconnectHandler(View platformView)
 		{
 			if (platformView is AppCompatRadioButton platformRadioButton)
