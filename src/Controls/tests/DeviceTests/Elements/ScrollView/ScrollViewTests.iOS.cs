@@ -50,7 +50,8 @@ namespace Microsoft.Maui.DeviceTests
 			static CoreGraphics.CGSize getViewportSize(UIScrollView scrollView)
 			{
 				return scrollView.AdjustedContentInset.InsetRect(scrollView.Bounds).Size;
-			};
+			}
+			;
 
 			var scrollViewHandler = await InvokeOnMainThreadAsync(() =>
 			{
