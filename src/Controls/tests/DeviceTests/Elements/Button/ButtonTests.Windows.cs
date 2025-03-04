@@ -5,6 +5,7 @@ using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.ComponentModel;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The Opacity property of a Button should match with native Opacity")]
 		public async Task VerifyButtonOpacityProperty()
 		{
-			var button = new Button
+			var button = new Microsoft.Maui.Controls.Button
 			{
 				Opacity = 0.35f
 			};
