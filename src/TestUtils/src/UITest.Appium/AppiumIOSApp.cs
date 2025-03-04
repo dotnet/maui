@@ -12,6 +12,7 @@ namespace UITest.Appium
 			: base(new IOSDriver(remoteAddress, GetOptions(config)), config)
 		{
 			_commandExecutor.AddCommandGroup(new AppiumAppleContextMenuActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumAppleStepperActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSMouseActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSTouchActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSSpecificActions(this));
@@ -19,7 +20,6 @@ namespace UITest.Appium
 			_commandExecutor.AddCommandGroup(new AppiumIOSThemeChangeAction(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSAlertActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSThemeChangeAction(this));
-			_commandExecutor.AddCommandGroup(new AppiumIOSStepperActions(this));
 		}
 
 		public override ApplicationState AppState
