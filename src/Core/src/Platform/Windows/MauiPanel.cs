@@ -47,7 +47,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var measure = CrossPlatformMeasure(availableSize.Width, availableSize.Height);
-
+			measure.Width = Math.Max(measure.Width, 0);
+			measure.Height = Math.Max(measure.Height, 0);
 			return measure.ToPlatform();
 		}
 
