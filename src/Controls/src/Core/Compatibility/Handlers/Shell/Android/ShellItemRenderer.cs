@@ -13,6 +13,7 @@ using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -84,7 +85,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			HookEvents(ShellItem);
 			SetupMenu();
-
+			var appearance = ShellContext.Shell.GetAppearanceForPivot(ShellItem);
+			if (_bottomView.Background is ColorDrawable background && appearance is IShellAppearanceElement appearanceElement)
+			{
+				// Set the background color to the EffectiveTabBarBackgroundColor if it exists, otherwise use the default
+				background.Color = appearanceElement.EffectiveTabBarBackgroundColor?.ToPlatform() ?? ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
+			}
 			_appearanceTracker = ShellContext.CreateBottomNavViewAppearanceTracker(ShellItem);
 			_bottomNavigationTracker = new BottomNavigationViewTracker();
 			((IShellController)ShellContext.Shell).AddAppearanceObserver(this, ShellItem);
