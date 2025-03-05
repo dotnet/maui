@@ -22,9 +22,9 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 		public double X { get; set; }
 		public double Y { get; set; }
 
-		IElementHandler? IElement.GetElementHandler(IMauiContext context) => throw new System.NotImplementedException();
+		IElementHandler IElement.GetElementHandler(IMauiContext context) => throw new System.NotImplementedException();
 
-		Type? IElement.GetElementHandlerType() => throw new System.NotImplementedException();
+		Type IElement.GetElementHandlerType() => throw new System.NotImplementedException();
 
 		public void Activated()
 		{
