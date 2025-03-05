@@ -30,23 +30,10 @@ namespace Microsoft.Maui.Controls.Platform
 			return AdjustToMakeVisibleHorizontal(point, itemSize, scrollViewer);
 		}
 
-		static UWPPoint AdjustToStart(UWPPoint point, ScrollViewer scrollViewer, double height)
-		{
-			return IsVertical(scrollViewer) ? AdjustToStartVertical(point, height) : AdjustToStartHorizontal(point, height);
-		}
-
-
-		static UWPPoint AdjustToStartVertical(UWPPoint point, double headerHeight)
+		static UWPPoint AdjustToStart(UWPPoint point, double height)
 		{
 			return new UWPPoint(point.X, point.Y - headerHeight);
 		}
-
-		static UWPPoint AdjustToStartHorizontal(UWPPoint point, double headerHeight)
-		{
-			return new UWPPoint(point.X - headerHeight, point.Y);
-		}
-
-
 
 		static UWPPoint AdjustToMakeVisibleVertical(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer)
 		{
@@ -440,7 +427,7 @@ namespace Microsoft.Maui.Controls.Platform
 				case ScrollToPosition.Start:
 					// The transform will put the container at the top of the ScrollViewer; we'll need to adjust for
 					// other scroll positions
-					offset = AdjustToStart(offset, scrollViewer, height);
+					offset = AdjustToStart(offset, height);
 					break;
 				case ScrollToPosition.MakeVisible:
 					offset = AdjustToMakeVisible(offset, itemSize, scrollViewer);
