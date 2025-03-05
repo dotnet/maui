@@ -131,7 +131,10 @@ namespace Microsoft.Maui.Controls
 
 		void RefreshBarBackground()
 		{
-			PlatformView.UpdateBarBackground(this);
+			if(Handler?.PlatformView is MaterialToolbar materialToolbar)
+			{
+				materialToolbar.UpdateBarBackground(this);
+			}
 		}
 
 		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2) =>
