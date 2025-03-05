@@ -13,16 +13,28 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	public static class ToolbarItemExtensions
 	{
-		public static UIKit.UIBarButtonItem ToUIBarButtonItem(this Microsoft.Maui.Controls.ToolbarItem item, bool forceName)
-		{
-			return ToUIBarButtonItem(item, false, false);
-		}
-
 		public static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName = false, bool forcePrimary = false)
 		{
 			if (item.Order == ToolbarItemOrder.Secondary && !forcePrimary)
+			{
 				return new SecondaryToolbarItem(item);
+			}
+
 			return new PrimaryToolbarItem(item, forceName);
+		}
+
+		public static UIMenuElement ToUIMenuElement(this ToolbarItem item)
+		{
+			var imagePath = item.IconImageSource?.ToString();
+            var image = string.IsNullOrEmpty(imagePath) ? null : UIImage.FromBundle(imagePath);
+            
+			var action = UIAction.Create(item.Text, image, null, _ =>
+            {
+                item.Command?.Execute(item.CommandParameter);
+                ((IMenuItemController)item).Activate();
+            });
+
+            return action;
 		}
 
 		sealed class PrimaryToolbarItem : UIBarButtonItem
