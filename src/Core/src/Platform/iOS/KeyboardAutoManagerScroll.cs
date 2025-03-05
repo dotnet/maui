@@ -805,7 +805,11 @@ public static class KeyboardAutoManagerScroll
 
 		var bottomScrollIndicatorInset = bottomInset;
 
-		bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
+		// When the superview is a MauiCollectionView and the scrollView is a MauiTextView, we do not want to consider the Bottom Inset
+		// reserved for the Footer.
+		bool isMauiTextViewInCV = scrolledView is UITextView && LastScrollView is UICollectionView;
+
+		bottomInset = isMauiTextViewInCV ? bottomInset : nfloat.Max(StartingContentInsets.Bottom, bottomInset);
 		bottomScrollIndicatorInset = nfloat.Max(StartingScrollIndicatorInsets.Bottom, bottomScrollIndicatorInset);
 
 		if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
