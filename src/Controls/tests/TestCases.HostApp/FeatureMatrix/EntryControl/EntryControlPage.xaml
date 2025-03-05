@@ -1,0 +1,40 @@
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.EntryControlMainPage">
+    <StackLayout Padding="20">
+        <Label Text="Entry Control"
+               FontSize="20"
+               HorizontalOptions="Center"/>
+
+        <local:UITestEntry
+            Text="{Binding Text}"
+            Placeholder="Enter some text"
+            AutomationId="EntryText"
+            ClearButtonVisibility="WhileEditing"
+            HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
+            VerticalTextAlignment="{Binding VerticalTextAlignment}"
+            IsPassword="{Binding IsPassword}"
+            FontAutoScalingEnabled="{Binding FontAutoScalingEnabled}"
+            FontSize="{Binding FontSize}"
+            CharacterSpacing="{Binding CharacterSpacing}"
+            TextColor="{Binding TextColor}"
+            IsReadOnly="{Binding IsReadOnly}"
+            IsTextPredictionEnabled="{Binding IsTextPredictionEnabled}"
+            IsSpellCheckEnabled="{Binding IsSpellCheckEnabled}"
+            MaxLength="{Binding MaxLength}"
+            SelectionLength="{Binding SelectionLength}"
+            CursorPosition="{Binding CursorPosition}"
+            ReturnType="{Binding ReturnType}"
+            Keyboard="{Binding Keyboard}"
+            FontFamily="{Binding FontFamily}"
+            IsCursorVisible="False"
+            HeightRequest="50"/>
+    </StackLayout>
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                     Clicked="NavigateToOptionsPage_Clicked"></ToolbarItem>
+    </ContentPage.ToolbarItems>
+
+</ContentPage>
