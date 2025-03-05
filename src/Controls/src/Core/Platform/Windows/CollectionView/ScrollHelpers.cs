@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		static UWPPoint AdjustToStart(UWPPoint point, double height)
 		{
-			return new UWPPoint(point.X, point.Y - headerHeight);
+			return new UWPPoint(point.X, point.Y - height);
 		}
 
 		static UWPPoint AdjustToMakeVisibleVertical(UWPPoint point, UWPSize itemSize, ScrollViewer scrollViewer)
