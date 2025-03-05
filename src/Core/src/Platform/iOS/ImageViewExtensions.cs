@@ -67,19 +67,28 @@ namespace Microsoft.Maui.Platform
 		/// <remarks>The default iOS implementation of SizeThatFits only returns the image's dimensions and ignores the constraints.</remarks>
 		/// <param name="imageView">The <see cref="UIImageView"/> to be measured.</param>
 		/// <param name="constraints">The specified size constraints.</param>
+		/// <param name="padding"></param>
 		/// <returns>The size where the image would fit depending on the aspect ratio.</returns>
-		internal static CGSize SizeThatFitsImage(this UIImageView imageView, CGSize constraints)
+		internal static CGSize SizeThatFitsImage(
+			this UIImageView imageView,
+			CGSize constraints,
+			Thickness? padding = null)
 		{
 			// If there's no image, we don't need to take up any space
 			if (imageView.Image is null)
 				return new CGSize(0, 0);
 
-			var heightConstraint = constraints.Height;
-			var widthConstraint = constraints.Width;
-			var imageSize = imageView.Image.Size;
+			Thickness calculatedPadding = padding ?? default(Thickness);
+			CGSize imageSize = imageView.Image.Size;
 
-			var widthRatio = Math.Min(imageSize.Width, widthConstraint) / imageSize.Width;
-			var heightRatio = Math.Min(imageSize.Height, heightConstraint) / imageSize.Height;
+			double contentWidth = imageSize.Width + calculatedPadding.HorizontalThickness;
+			double contentHeight = imageSize.Height + calculatedPadding.VerticalThickness;
+
+			double constrainedWidth = Math.Min(contentWidth, constraints.Width);
+			double constrainedHeight = Math.Min(contentHeight, constraints.Height);
+
+			double widthRatio = constrainedWidth / imageSize.Width;
+			double heightRatio = constrainedHeight / imageSize.Height;
 
 			// In cases where we the image must fit its given constraints, we must shrink based on the smallest dimension (scale factor)
 			// that can fit it
@@ -90,7 +99,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Cases where AspectMode is ScaleToFill or Center
-			return constraints;
+			return new CGSize(constrainedWidth, constrainedHeight);
 		}
 	}
 }
