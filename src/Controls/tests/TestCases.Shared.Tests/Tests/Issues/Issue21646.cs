@@ -19,6 +19,6 @@ public class Issue21646: _IssuesUITest
 		App.WaitForElement("NavigateToNextPageButton");
 		App.Tap("NavigateToNextPageButton");
 		App.WaitForElement("SecondPageLabel");
-		App.WaitForFlyoutIcon(FlyoutIconAutomationId);
+		App.WaitForFlyoutIcon(FlyoutIconAutomationId, false);
 	}
 }
