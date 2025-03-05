@@ -16,8 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shell)]
 		public void ShellNavigationShouldWorkInMoreTab()
 		{
-			App.WaitForElementTillPageNavigationSettled("Navigate to page 6");
-			App.Tap("Navigate to page 6");
+			App.WaitForElementTillPageNavigationSettled("NavigationToPageSixthButton");
+			App.Tap("NavigationToPageSixthButton");
 			App.WaitForElementTillPageNavigationSettled("NavigateToDetailButton");
 			App.Tap("NavigateToDetailButton");
 			App.WaitForElementTillPageNavigationSettled("NavigateBackButton");

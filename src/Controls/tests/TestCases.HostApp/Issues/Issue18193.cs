@@ -38,7 +38,7 @@
 	{
 		public Issue18193MainPage()
 		{
-			Button sixthPageButton = new Button() { AutomationId = "NavigationToPage6Button", Text = "Navigate to page 6" };
+			Button sixthPageButton = new Button() { AutomationId = "NavigationToPageSixthButton", Text = "Navigate to page 6" };
 			sixthPageButton.Clicked += (s, e) => Issue18193.Current.GoToAsync("//" + nameof(Issue18193Page6));
 			Content = sixthPageButton;
 		}
