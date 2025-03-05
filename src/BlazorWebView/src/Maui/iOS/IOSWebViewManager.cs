@@ -105,7 +105,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				_webView = webView ?? throw new ArgumentNullException(nameof(webView));
 			}
 
-
 			public override void RunJavaScriptAlertPanel(WKWebView webView, string message, WKFrameInfo frame, Action completionHandler)
 			{
 				PresentAlertController(
@@ -246,7 +245,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				{
 					_webView.Logger.LaunchExternalBrowser(uri);
 
-					UIApplication.SharedApplication.OpenUrl(requestUrl, new UIApplicationOpenUrlOptions(), null);
+					UIApplication.SharedApplication.OpenUrl(requestUrl, new UIApplicationOpenUrlOptions(), (success) =>
+					{
+						if (!success)
+						{
+							_webView.Logger.LogError($"There was an error trying to open URL: {requestUrl}");
+						}
+					});
 				}
 
 				if (strategy != UrlLoadingStrategy.OpenInWebView)
