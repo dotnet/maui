@@ -790,7 +790,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(targetFontSize, platformTypeface.PointSize);
 #elif __ANDROID__
 			var targetTypeface = fontManager.GetTypeface(font);
-			var targetFontSize = handler.MauiContext.Context.ToPixels(fontManager.GetFontSize(font).Value);		
+			var targetFontSize = handler.MauiContext.Context.ToPixels(fontManager.GetFontSize(font).Value);
 			var platformTypeface = handler.PlatformView.Typeface;
 			var platformFontSize = handler.PlatformView.TextSize;
 
