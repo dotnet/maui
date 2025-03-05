@@ -67,7 +67,7 @@ parameters:
       name: $(1ESPTPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - ImageOverride -equals 1ESPT-Ubuntu-22.04
+        - ImageOverride -equals 1ESPT-Ubuntu22.04
 
   - name: androidPoolX64
     type: object
@@ -75,7 +75,7 @@ parameters:
       name: $(1ESPTPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - ImageOverride -equals 1ESPT-Ubuntu-22.04
+        - ImageOverride -equals 1ESPT-Ubuntu22.04
 
   - name: iosPool
     type: object
