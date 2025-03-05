@@ -87,7 +87,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 
 			// Tap Clear Button
-			App.TapCoordinates(entryRect.X + entryRect.Width - 15, entryRect.CenterY());
+			App.TapCoordinates(entryRect.X + entryRect.Width - 17, entryRect.CenterY());
 
 			entryText = App.WaitForElement("EntryWithMargin").GetText();
 
