@@ -84,24 +84,78 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact]
 		[Description("The ScaleX property of a Entry should match with native ScaleX")]
-        public async Task ScaleXConsistent()
-        {
-            var entry = new Entry() { ScaleX = 0.45f };
-            var handler = await CreateHandlerAsync<EntryHandler>(entry);
-            var expected = entry.ScaleX;
-            var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
-            Assert.Equal(expected, platformScaleX);
-        }
+		public async Task ScaleXConsistent()
+		{
+			var entry = new Entry() { ScaleX = 0.45f };
+			var expected = entry.ScaleX;
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var platformEntry = GetPlatformControl(handler);
+			var platformScaleX = await InvokeOnMainThreadAsync(() => platformEntry.ScaleX);
+			Assert.Equal(expected, platformScaleX);
+		}
 
 		[Fact]
 		[Description("The ScaleY property of a Entry should match with native ScaleY")]
-        public async Task ScaleYConsistent()
-        {
-            var entry = new Entry() { ScaleY = 0.45f };
-            var handler = await CreateHandlerAsync<EntryHandler>(entry);
-            var expected = entry.ScaleY;
-            var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
-            Assert.Equal(expected, platformScaleY);
-        }
+		public async Task ScaleYConsistent()
+		{
+			var entry = new Entry() { ScaleY = 0.45f };
+			var expected = entry.ScaleY;
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var platformEntry = GetPlatformControl(handler);
+			var platformScaleY = await InvokeOnMainThreadAsync(() => platformEntry.ScaleY);
+			Assert.Equal(expected, platformScaleY);
+		}
+
+		[Fact]
+		[Description("The Scale property of a Entry should match with native Scale")]
+		public async Task ScaleConsistent()
+		{
+			var entry = new Entry() { Scale = 2.0f };
+			var expected = entry.Scale;
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var platformEntry = GetPlatformControl(handler);
+			var platformScaleX = await InvokeOnMainThreadAsync(() => platformEntry.ScaleX);
+			var platformScaleY = await InvokeOnMainThreadAsync(() => platformEntry.ScaleY);
+			Assert.Equal(expected, platformScaleX);
+			Assert.Equal(expected, platformScaleY);
+		}
+
+		[Fact]
+		[Description("The RotationX property of a Entry should match with native RotationX")]
+		public async Task RotationXConsistent()
+		{
+			var entry = new Entry() { RotationX = 33.0 };
+			var expected = entry.RotationX;
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var platformEntry = GetPlatformControl(handler);
+			var platformRotationX = await InvokeOnMainThreadAsync(() => platformEntry.RotationX);
+			Assert.Equal(expected, platformRotationX);
+		}
+
+		[Fact]
+		[Description("The RotationY property of a Entry should match with native RotationY")]
+		public async Task RotationYConsistent()
+		{
+			var entry = new Entry() { RotationY = 33.0 };
+			var expected = entry.RotationY;
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var platformEntry = GetPlatformControl(handler);
+			var platformRotationY = await InvokeOnMainThreadAsync(() => platformEntry.RotationY);
+			Assert.Equal(expected, platformRotationY);
+		}
+
+		[Fact]
+		[Description("The Rotation property of a Entry should match with native Rotation")]
+		public async Task RotationConsistent()
+		{
+			var editor = new Entry() { Rotation = 33.0 };
+			var expected = editor.Rotation;
+			var handler = await CreateHandlerAsync<EntryHandler>(editor);
+			var platformEntry = GetPlatformControl(handler);
+			var platformRotationX = await InvokeOnMainThreadAsync(() => platformEntry.RotationX);
+			var platformRotationY = await InvokeOnMainThreadAsync(() => platformEntry.RotationY);
+			Assert.Equal(expected, platformRotationX);
+			Assert.Equal(expected, platformRotationY);
+		}
 	}
 }
