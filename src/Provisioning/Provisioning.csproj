@@ -241,13 +241,15 @@
 		<PropertyGroup>
 			<_JdkHostArchitecture Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">amd64</_JdkHostArchitecture>
 			<_JdkHostArchitecture Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'X64' ">arm64</_JdkHostArchitecture>
+			<ProvisionRequiresSudo Condition=" '$(ProvisionRequiresSudo)' == '' ">True</ProvisionRequiresSudo>
+			<_JdkSudo Condition=" '$(ProvisionRequiresSudo)' == 'True' ">sudo </_JdkSudo>
 		</PropertyGroup>
 		<ItemGroup>
 			<_ProvisionJdkLinuxCommands Include="wget https://packages.microsoft.com/config/ubuntu/`lsb_release -rs`/packages-microsoft-prod.deb -O packages-microsoft-prod.deb" />
-			<_ProvisionJdkLinuxCommands Include="sudo dpkg -i packages-microsoft-prod.deb" />
+			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)dpkg -i packages-microsoft-prod.deb" />
 			<_ProvisionJdkLinuxCommands Include="rm packages-microsoft-prod.deb" />
-			<_ProvisionJdkLinuxCommands Include="sudo apt-get update" />
-			<_ProvisionJdkLinuxCommands Include="sudo apt-get install -y msopenjdk-$(_AndroidJdkMajorVersion)" />
+			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)apt-get update" />
+			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)apt-get install -y msopenjdk-$(_AndroidJdkMajorVersion)" />
 		</ItemGroup>
 		<Exec Command="%(_ProvisionJdkLinuxCommands.Identity)" />
 		<PropertyGroup>
