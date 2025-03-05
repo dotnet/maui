@@ -667,25 +667,26 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_newTabIconColors is not null)
 				return _newTabIconColors;
 
-			int defaultColor = 0;
+			int defaultColor;
 			int checkedColor;
 
 			if (barItemColor is not null)
 				defaultColor = barItemColor.ToPlatform().ToArgb();
 			else
-				defaultColor = GetDefaultColor(defaultColor);
+				defaultColor = GetDefaultColor();
 
 			if (barSelectedItemColor is not null)
 				checkedColor = barSelectedItemColor.ToPlatform().ToArgb();
 			else
-				checkedColor = GetDefaultColor(defaultColor);
+				checkedColor = GetDefaultColor();
 
 			_newTabIconColors = GetColorStateList(defaultColor, checkedColor);
 			return _newTabIconColors;
 		}
 
-		int GetDefaultColor(int defaultColor)
+		int GetDefaultColor()
 		{
+			int defaultColor;
 #pragma warning disable XAOBS001 // Obsolete
 			var styledAttributes =
 				TintTypedArray.ObtainStyledAttributes(_context.Context, null, Resource.Styleable.NavigationBarView, Resource.Attribute.bottomNavigationStyle, 0);
