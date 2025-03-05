@@ -116,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The ScaleY property of a Image should match with native ScaleY")]
 		public async Task ScaleYConsistent()
 		{
-			var image = new Image() { ScaleY = 0.45f };
+			var image = new Image() { ScaleY = 1.23f };
 			var expected = image.ScaleY;
 			var handler = await CreateHandlerAsync<ImageHandler>(image);
 			var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
@@ -151,7 +151,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The RotationY property of a Image should match with native RotationY")]
 		public async Task RotationYConsistent()
 		{
-			var image = new Image() { RotationY = 33.0 };
+			var image = new Image() { RotationY = 87.0 };
 			var expected = image.RotationY;
 			var handler = await CreateHandlerAsync<ImageHandler>(image);
 			var platformRotationY = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationY);
@@ -162,13 +162,11 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The Rotation property of a Image should match with native Rotation")]
 		public async Task RotationConsistent()
 		{
-			var image = new Image() { Rotation = 33.0 };
+			var image = new Image() { Rotation = 23.0 };
 			var expected = image.Rotation;
 			var handler = await CreateHandlerAsync<ImageHandler>(image);
-			var platformRotationX = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationX);
-			var platformRotationY = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationY);
-			Assert.Equal(expected, platformRotationX);
-			Assert.Equal(expected, platformRotationY);
+			var platformRotation = await InvokeOnMainThreadAsync(() => handler.PlatformView.Rotation);
+			Assert.Equal(expected, platformRotation);
 		}
 	}
 

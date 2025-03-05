@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The ScaleY property of a Picker should match with native ScaleY")]
 		public async Task ScaleYConsistent()
 		{
-			var picker = new Picker() { ScaleY = 0.45f };
+			var picker = new Picker() { ScaleY = 1.23f };
 			var expected = picker.ScaleY;
 			var handler = await CreateHandlerAsync<PickerHandler>(picker);
 			var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The RotationY property of a Picker should match with native RotationY")]
 		public async Task RotationYConsistent()
 		{
-			var picker = new Picker() { RotationY = 33.0 };
+			var picker = new Picker() { RotationY = 87.0 };
 			var expected = picker.RotationY;
 			var handler = await CreateHandlerAsync<PickerHandler>(picker);
 			var platformRotationY = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationY);
@@ -91,13 +91,11 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The Rotation property of a Picker should match with native Rotation")]
 		public async Task RotationConsistent()
 		{
-			var picker = new Picker() { Rotation = 33.0 };
+			var picker = new Picker() { Rotation = 23.0 };
 			var expected = picker.Rotation;
 			var handler = await CreateHandlerAsync<PickerHandler>(picker);
-			var platformRotationX = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationX);
-			var platformRotationY = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationY);
-			Assert.Equal(expected, platformRotationX);
-			Assert.Equal(expected, platformRotationY);
+			var platformRotation = await InvokeOnMainThreadAsync(() => handler.PlatformView.Rotation);
+			Assert.Equal(expected, platformRotation);
 		}
 	}
 }

@@ -84,7 +84,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The ScaleY property of a Editor should match with native ScaleY")]
 		public async Task ScaleYConsistent()
 		{
-			var editor = new Editor() { ScaleY = 0.45f };
+			var editor = new Editor() { ScaleY = 1.23f };
 			var expected = editor.ScaleY;
 			var handler = await CreateHandlerAsync<EditorHandler>(editor);
 			var PlatformEditor = GetPlatformControl(handler);
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The RotationY property of a Editor should match with native RotationY")]
 		public async Task RotationYConsistent()
 		{
-			var editor = new Editor() { RotationY = 33.0 };
+			var editor = new Editor() { RotationY = 87.0 };
 			var expected = editor.RotationY;
 			var handler = await CreateHandlerAsync<EditorHandler>(editor);
 			var PlatformEditor = GetPlatformControl(handler);
@@ -134,14 +134,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The Rotation property of a Editor should match with native Rotation")]
 		public async Task RotationConsistent()
 		{
-			var editor = new Editor() { Rotation = 33.0 };
+			var editor = new Editor() { Rotation = 23.0 };
 			var expected = editor.Rotation;
 			var handler = await CreateHandlerAsync<EditorHandler>(editor);
 			var PlatformEditor = GetPlatformControl(handler);
-			var platformRotationX = await InvokeOnMainThreadAsync(() => PlatformEditor.RotationX);
-			var platformRotationY = await InvokeOnMainThreadAsync(() => PlatformEditor.RotationY);
-			Assert.Equal(expected, platformRotationX);
-			Assert.Equal(expected, platformRotationY);
+			var platformRotation = await InvokeOnMainThreadAsync(() => PlatformEditor.Rotation);
+			Assert.Equal(expected, platformRotation);
 		}
 	}
 }

@@ -98,7 +98,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The ScaleY property of a Entry should match with native ScaleY")]
 		public async Task ScaleYConsistent()
 		{
-			var entry = new Entry() { ScaleY = 0.45f };
+			var entry = new Entry() { ScaleY = 1.23f };
 			var expected = entry.ScaleY;
 			var handler = await CreateHandlerAsync<EntryHandler>(entry);
 			var platformEntry = GetPlatformControl(handler);
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The RotationY property of a Entry should match with native RotationY")]
 		public async Task RotationYConsistent()
 		{
-			var entry = new Entry() { RotationY = 33.0 };
+			var entry = new Entry() { RotationY = 87.0 };
 			var expected = entry.RotationY;
 			var handler = await CreateHandlerAsync<EntryHandler>(entry);
 			var platformEntry = GetPlatformControl(handler);
@@ -148,14 +148,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The Rotation property of a Entry should match with native Rotation")]
 		public async Task RotationConsistent()
 		{
-			var editor = new Entry() { Rotation = 33.0 };
+			var editor = new Entry() { Rotation = 23.0 };
 			var expected = editor.Rotation;
 			var handler = await CreateHandlerAsync<EntryHandler>(editor);
 			var platformEntry = GetPlatformControl(handler);
-			var platformRotationX = await InvokeOnMainThreadAsync(() => platformEntry.RotationX);
-			var platformRotationY = await InvokeOnMainThreadAsync(() => platformEntry.RotationY);
-			Assert.Equal(expected, platformRotationX);
-			Assert.Equal(expected, platformRotationY);
+			var platformRotation = await InvokeOnMainThreadAsync(() => platformEntry.Rotation);
+			Assert.Equal(expected, platformRotation);
 		}
 	}
 }

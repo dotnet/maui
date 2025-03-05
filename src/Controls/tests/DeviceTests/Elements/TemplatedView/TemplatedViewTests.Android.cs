@@ -31,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
         [Description("The ScaleY property of a TemplatedView should match with native ScaleY")]
         public async Task ScaleYConsistent()
         {
-            var templatedView = new TemplatedView() { ScaleY = 0.45f };
+            var templatedView = new TemplatedView() { ScaleY = 1.23f };
             var expected = templatedView.ScaleY;
             var handler = await CreateHandlerAsync<ContentViewHandler>(templatedView);
             var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.DeviceTests
         [Description("The RotationY property of a TemplatedView should match with native RotationY")]
         public async Task RotationYConsistent()
         {
-            var templatedView = new TemplatedView() { RotationY = 33.0 };
+            var templatedView = new TemplatedView() { RotationY = 87.0 };
             var expected = templatedView.RotationY;
             var handler = await CreateHandlerAsync<SearchBarHandler>(templatedView);
             var platformRotationY = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationY);
@@ -77,13 +77,11 @@ namespace Microsoft.Maui.DeviceTests
         [Description("The Rotation property of a TemplatedView should match with native Rotation")]
         public async Task RotationConsistent()
         {
-            var templatedView = new TemplatedView() { Rotation = 33.0 };
+            var templatedView = new TemplatedView() { Rotation = 23.0 };
             var expected = templatedView.Rotation;
             var handler = await CreateHandlerAsync<SearchBarHandler>(templatedView);
-            var platformRotationX = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationX);
-            var platformRotationY = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationY);
-            Assert.Equal(expected, platformRotationX);
-            Assert.Equal(expected, platformRotationY);
+            var platformRotation = await InvokeOnMainThreadAsync(() => handler.PlatformView.Rotation);
+            Assert.Equal(expected, platformRotation);
         }
     }
 }
