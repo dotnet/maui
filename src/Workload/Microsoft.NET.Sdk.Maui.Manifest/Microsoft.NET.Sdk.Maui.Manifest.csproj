@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <_JsonInputFile Include="WorkloadDependencies.in.json" OutputPath="$(IntermediateOutputPath)WorkloadDependencies.json" Pack="true" />
     <_JsonInputFile Include="WorkloadManifest.in.json" OutputPath="$(IntermediateOutputPath)WorkloadManifest.json" Pack="true" />
     <_JsonInputFile Include="WorkloadManifest.in.targets" OutputPath="$(IntermediateOutputPath)WorkloadManifest.targets" Pack="true" />
     <_JsonInputFile Include="Rollback.in.json" OutputPath="$(IntermediateOutputPath)Rollback.json" Pack="false" />
@@ -54,6 +55,15 @@
       <_VersionsToReplace Include="MicrosoftAspNetCoreComponentsWebViewPackageVersion" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreMetadataPackageVersion" />
       <_VersionsToReplace Include="MicrosoftJSInteropPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftWindowsAppSDKPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftWindowsSDKBuildToolsPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftGraphicsWin2DPackageVersion" />
+      <_VersionsToReplace Include="MicrosoftWindowsWebView2PackageVersion" />
+      <_VersionsToReplace Include="AppiumVersion" />
+      <_VersionsToReplace Include="AppiumWindowsDriverVersion" />
+      <_VersionsToReplace Include="AppiumXCUITestDriverVersion" />
+      <_VersionsToReplace Include="AppiumMac2DriverVersion" />
+      <_VersionsToReplace Include="AppiumUIAutomator2DriverVersion" />
       <_VersionsToReplace Update="@(_VersionsToReplace)" PropertyName="%(Identity)" />
       <_VersionsToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
       <_VersionsToReplace Include="MAUI_DOTNET_VERSION_MAJOR" PropertyName="_MauiDotNetVersionMajor" />
@@ -129,6 +139,7 @@
   <Target Name="_CopyManifest" AfterTargets="Build">
     <ItemGroup>
       <_Files Include="$(OutputPath)WorkloadManifest.*" />
+      <_Files Include="$(OutputPath)WorkloadDependencies.*" />
     </ItemGroup>
     <Copy SourceFiles="@(_Files)" DestinationFolder="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.maui" />
   </Target>
