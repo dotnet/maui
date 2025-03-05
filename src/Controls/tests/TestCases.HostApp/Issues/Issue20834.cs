@@ -1,4 +1,4 @@
-﻿namespace Maui.Controls.Sample.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 20834, "[Android] GraphicsView can also be visible outside the canvas", PlatformAffected.Android)]
 public class Issue20834 : TestContentPage
