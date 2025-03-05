@@ -31,14 +31,7 @@
 			button.Clicked += (s, e) =>
 			{
 				//If the FontImageSource color is given, the tab icon color should be applied solely based on the specified color, regardless of the SelectedTabColor or UnselectedTabColor.
-				IconImageSource = new FontImageSource
-				{
-					FontFamily = "Ion",
-					Glyph = "\uf30c",
-					Color = Colors.Violet,
-					Size = 15
-				};
-
+				(this.IconImageSource as FontImageSource).Color = Colors.Violet;
 			};
 			Title = "Tab 1";
 			var verticalStackLayout = new VerticalStackLayout
