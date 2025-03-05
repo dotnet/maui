@@ -1,4 +1,3 @@
-#if IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -17,23 +16,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Entry)]
 		public void ErrorShouldNotBeThrown()
 		{
-			try
-			{
-				_ = App.WaitForElement("GoToTest");
-				App.Tap("GoToTest");
-				
-				_ = App.WaitForElement("entry");
-				App.Tap("entry");
-				App.Tap("button");
+			_ = App.WaitForElement("GoToTest");
+			App.Tap("GoToTest");
 
-				// The test passes if no crash is observed
-				App.FindElement("editor");
-			}
-			finally
-			{
-				Reset();
-			}
+			_ = App.WaitForElement("entry");
+			App.Tap("entry");
+			App.Tap("button");
+
+			// The test passes if no crash is observed
+			App.FindElement("editor");
 		}
 	}
 }
-#endif

@@ -1,4 +1,3 @@
-#if ANDROID
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -11,7 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			: base(device)
 		{ }
 
-		public override string Issue => "Process the hardware enter key as \"Done\"";
+		public override string Issue => "Process the hardware enter key as Done";
 
 		[Test]
 		[Category(UITestCategories.Entry)]
@@ -24,4 +23,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif

@@ -10,11 +10,13 @@
 
 		public class MainPage : ContentPage
 		{
-			protected override void OnAppearing()
+			protected override async void OnAppearing()
 			{
 				base.OnAppearing();
 
-				Navigation.PushAsync(new FirstPage());
+				//Allow the OnAppearing method to return control to the UI thread before continuing with navigation.
+				await Task.Yield();
+				await Navigation.PushAsync(new FirstPage());
 			}
 
 			public class FirstPage : ContentPage
