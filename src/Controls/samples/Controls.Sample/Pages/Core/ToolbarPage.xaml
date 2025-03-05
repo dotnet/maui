@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.ToolbarPage"    
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
+    <views:BasePage.ToolbarItems>
+        <ToolbarItem Text="Test (1)" Clicked="ItemClicked" />
+        <ToolbarItem Text="Test (2)" Clicked="ItemClicked" />
+        <ToolbarItem Text="Test Secondary (1)" Order="Secondary" Priority="1" IconImageSource="coffee.png" Clicked="ItemClicked" />
+        <ToolbarItem Text="Test Secondary (2)" Order="Secondary" Priority="2" Clicked="ItemClicked" />
+        <ToolbarItem Text="Test Secondary (4)" Order="Secondary" Priority="4" Clicked="ItemClicked" />
+        <ToolbarItem Text="Test Secondary (3)" Order="Secondary" Priority="3" Clicked="ItemClicked" />
+    </views:BasePage.ToolbarItems>
+    <views:BasePage.Content>
+        <VerticalStackLayout Margin="12">
+            <Label x:Name="menuLabel" Text="You clicked on ToolbarItem: {none}" />
+        </VerticalStackLayout>
+    </views:BasePage.Content>
+</views:BasePage>
