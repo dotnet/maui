@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				e.Result = _uiSearchBar.BecomeFirstResponder();
 			}
-			else if (!e.Focus)
+			else
 			{
 				e.Result = _uiSearchBar.ResignFirstResponder();
 			}
