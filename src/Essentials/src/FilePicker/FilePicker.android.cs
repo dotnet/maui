@@ -33,11 +33,11 @@ namespace Microsoft.Maui.Storage
 					// The uri returned is only temporary and only lives as long as the Activity that requested it,
 					// so this means that it will always be cleaned up by the time we need it because we are using
 					// an intermediate activity.
-				    bool requireExtendedAccess = !(OperatingSystem.IsAndroidVersionAtLeast(30) && Android.OS.Environment.IsExternalStorageManager);
+					bool requireExtendedAccess = !(OperatingSystem.IsAndroidVersionAtLeast(30) && Android.OS.Environment.IsExternalStorageManager);
 
 					if (intent.ClipData == null)
 					{
-						var path = FileSystemUtils.EnsurePhysicalPath(intent.Data,requireExtendedAccess);
+						var path = FileSystemUtils.EnsurePhysicalPath(intent.Data, requireExtendedAccess);
 						resultList.Add(new FileResult(path));
 					}
 					else
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Storage
 						for (var i = 0; i < intent.ClipData.ItemCount; i++)
 						{
 							var uri = intent.ClipData.GetItemAt(i).Uri;
-							var path = FileSystemUtils.EnsurePhysicalPath(uri,requireExtendedAccess);
+							var path = FileSystemUtils.EnsurePhysicalPath(uri, requireExtendedAccess);
 							resultList.Add(new FileResult(path));
 						}
 					}

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -51,6 +52,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[TypeConverter(typeof(ShellItemConverter))]
+	[DebuggerTypeProxy(typeof(ShellItemDebugView))]
 	public class ShellItem : ShellGroupItem, IShellItemController, IElementConfiguration<ShellItem>, IPropertyPropagationController, IVisualTreeElement
 	{
 		#region PropertyKeys
@@ -367,6 +369,19 @@ namespace Microsoft.Maui.Controls
 
 			public override object ConvertTo(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, Type destinationType)
 				=> throw new NotSupportedException();
+		}
+
+		/// <summary>
+		/// Provides a debug view for the <see cref="ShellItem"/> class.
+		/// </summary>
+		/// <param name="shellItem">The <see cref="ShellItem"/> instance to debug.</param>
+		private sealed class ShellItemDebugView(ShellItem shellItem) : BaseShellItemDebugView(shellItem)
+		{
+			public ShellSection CurrentItem => shellItem.CurrentItem;
+
+			public IList<ShellSection> Items => shellItem.Items;
+
+			public Window Window => shellItem.Window;
 		}
 	}
 }

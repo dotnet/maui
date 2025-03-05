@@ -10,19 +10,19 @@
 		}
 
 		protected override void Init()
-        {
-            var grid = new Grid();
- 
-            grid.Children.Add(new Switch()
-            {
-                ThumbColor = Colors.Red,
-                OnColor = Colors.Yellow,
-                HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.Center,
-                AutomationId = switchId
-            });
- 
-            Content = grid;
-        }
+		{
+			var grid = new Grid();
+
+			grid.Children.Add(new Switch()
+			{
+				ThumbColor = Colors.Red,
+				OnColor = Colors.Yellow,
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
+				AutomationId = switchId
+			});
+
+			Content = grid;
+		}
 	}
 }

@@ -46,7 +46,7 @@ public class Issue1658 : TestNavigationPage
 							Text = "Right click on any item within viewcell (including this label) should trigger context action on this row and you should see a coffee cup. Tap on colored box should change box color",
 							AutomationId = "ListViewItem",
 							VerticalOptions = LayoutOptions.Center,
-                            HorizontalOptions = LayoutOptions.FillAndExpand
+							HorizontalOptions = LayoutOptions.FillAndExpand
 						},
 						label
 					}

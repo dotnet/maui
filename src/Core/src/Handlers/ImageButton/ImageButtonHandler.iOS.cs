@@ -11,6 +11,15 @@ namespace Microsoft.Maui.Handlers
 
 		readonly ImageButtonProxy _proxy = new();
 
+		protected override void SetupContainer()
+		{
+			base.SetupContainer();
+			if (ContainerView is WrapperView wrapperView)
+			{
+				wrapperView.CrossPlatformLayout = VirtualView as ICrossPlatformLayout;
+			}
+		}
+		
 		protected override UIButton CreatePlatformView()
 		{
 			var platformView = new UIButton(UIButtonType.System)

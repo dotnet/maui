@@ -148,7 +148,7 @@ stages:
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if parameters.CompatibilityTests }}:
         runCompatibilityTests: true
-      ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
+      ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
         skipProvisioning: false
         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
       ${{ else }}:  
