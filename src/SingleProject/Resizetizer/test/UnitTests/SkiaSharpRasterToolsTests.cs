@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
-	public class SkiaSharpBitmapToolsTests
+	public class SkiaSharpRasterToolsTests
 	{
 		public class Resize : IDisposable
 		{
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
 				info.Resize = false;
-				var tools = new SkiaSharpBitmapTools(info, Logger);
+				var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
-				var tools = new SkiaSharpBitmapTools(info, Logger);
+				var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
-				var tools = new SkiaSharpBitmapTools(info, Logger);
+				var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 0.5m);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			{
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.png";
-				var tools = new SkiaSharpBitmapTools(info, Logger);
+				var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.png";
 				info.BaseSize = new SKSize(512, 512);
-				var tools = new SkiaSharpBitmapTools(info, Logger);
+				var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.png";
 				info.BaseSize = new SKSize(512, 512);
-				var tools = new SkiaSharpBitmapTools(info, Logger);
+				var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 0.5m);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
 				info.TintColor = SKColors.Red;
-				var tools = new SkiaSharpBitmapTools(info, Logger);
+				var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
 				info.TintColor = SKColors.Red.WithAlpha(127);
-				var tools = new SkiaSharpBitmapTools(info, Logger);
+				var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera.png";
 				info.TintColor = SKColors.Red;
-				var tools = new SkiaSharpBitmapTools(info, Logger);
+				var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.png";
 				info.TintColor = SKColors.Red;
-				var tools = new SkiaSharpBitmapTools(info, Logger);
+				var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
@@ -236,7 +236,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				var info = new ResizeImageInfo();
 				info.Filename = "images/camera_color.png";
 				info.TintColor = SKColors.Red.WithAlpha(127);
-				var tools = new SkiaSharpBitmapTools(info, Logger);
+				var tools = new SkiaSharpRasterTools(info, Logger);
 				var dpiPath = new DpiPath("", 1);
 
 				tools.Resize(dpiPath, DestinationFilename);
