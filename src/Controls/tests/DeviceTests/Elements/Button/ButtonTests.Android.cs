@@ -124,7 +124,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The ScaleY property of a Button should match with native ScaleY")]
 		public async Task ScaleYConsistent()
 		{
-			var button = new Button() { ScaleY = 0.45f };
+			var button = new Button() { ScaleY = 1.23f };
 			var expected = button.ScaleY;
 			var handler = await CreateHandlerAsync<ButtonHandler>(button);
 			var platformButton = GetPlatformButton(handler);
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The Scale property of a Button should match with native Scale")]
 		public async Task ScaleConsistent()
 		{
-			var button = new Button() { Scale = 0.45f };
+			var button = new Button() { Scale = 2.0f };
 			var expected = button.Scale;
 			var handler = await CreateHandlerAsync<ButtonHandler>(button);
 			var platformButton = GetPlatformButton(handler);
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The RotationY property of a Button should match with native RotationY")]
 		public async Task RotationYConsistent()
 		{
-			var button = new Button() { RotationY = 33.0 };
+			var button = new Button() { RotationY = 87.0 };
 			var expected = button.RotationY;
 			var handler = await CreateHandlerAsync<ButtonHandler>(button);
 			var platformButton = GetPlatformButton(handler);
@@ -174,14 +174,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The Rotation property of a Button should match with native Rotation")]
 		public async Task RotationConsistent()
 		{
-			var button = new Button() { Rotation = 33.0 };
+			var button = new Button() { Rotation = 23.0 };
 			var expected = button.Rotation;
 			var handler = await CreateHandlerAsync<ButtonHandler>(button);
 			var platformButton = GetPlatformButton(handler);
-			var platformRotationX = await InvokeOnMainThreadAsync(() => platformButton.RotationX);
-			var platformRotationY = await InvokeOnMainThreadAsync(() => platformButton.RotationY);
-			Assert.Equal(expected, platformRotationX);
-			Assert.Equal(expected, platformRotationY);
+			var platformRotation = await InvokeOnMainThreadAsync(() => platformButton.Rotation);
+			Assert.Equal(expected, platformRotation);
 		}
 	}
 }

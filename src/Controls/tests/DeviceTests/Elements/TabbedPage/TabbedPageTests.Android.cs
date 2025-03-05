@@ -157,7 +157,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The ScaleY property of a TabbedPage should match with native ScaleY")]
 		public async Task ScaleYConsistent()
 		{
-			var tabbedPage = new TabbedPage() { ScaleY = 0.45f };
+			var tabbedPage = new TabbedPage() { ScaleY = 1.23f };
 			var expected = tabbedPage.ScaleY;
 			var handler = await CreateHandlerAsync<TabbedViewHandler>(tabbedPage);
 			var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
@@ -192,7 +192,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The RotationY property of a TabbedPage should match with native RotationY")]
 		public async Task RotationYConsistent()
 		{
-			var tabbedPage = new TabbedPage() { RotationY = 33.0 };
+			var tabbedPage = new TabbedPage() { RotationY = 87.0 };
 			var expected = tabbedPage.RotationY;
 			var handler = await CreateHandlerAsync<TabbedViewHandler>(tabbedPage);
 			var platformRotationY = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationY);
@@ -203,13 +203,11 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The Rotation property of a TabbedPage should match with native Rotation")]
 		public async Task RotationConsistent()
 		{
-			var tabbedPage = new TabbedPage() { Rotation = 33.0 };
+			var tabbedPage = new TabbedPage() { Rotation = 23.0 };
 			var expected = tabbedPage.Rotation;
 			var handler = await CreateHandlerAsync<TabbedViewHandler>(tabbedPage);
-			var platformRotationX = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationX);
-			var platformRotationY = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationY);
-			Assert.Equal(expected, platformRotationX);
-			Assert.Equal(expected, platformRotationY);
+			var platformRotation = await InvokeOnMainThreadAsync(() => handler.PlatformView.Rotation);
+			Assert.Equal(expected, platformRotation);
 		}
 		BottomNavigationView GetBottomNavigationView(IPlatformViewHandler tabViewHandler)
 		{
