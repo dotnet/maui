@@ -40,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
         [Description("The ScaleY property of a CheckBox should match with native ScaleY")]
         public async Task ScaleYConsistent()
         {
-            var checkBox = new CheckBox() { ScaleY = 0.45f };
+            var checkBox = new CheckBox() { ScaleY = 1.23f };
             var expected = checkBox.ScaleY;
             var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
             var PlatformCheckBox = GetNativeCheckBox(handler);
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.DeviceTests
         [Description("The RotationY property of a CheckBox should match with native RotationY")]
         public async Task RotationYConsistent()
         {
-            var checkBox = new CheckBox() { RotationY = 33.0 };
+            var checkBox = new CheckBox() { RotationY = 87.0 };
             var expected = checkBox.RotationY;
             var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
             var PlatformCheckBox = GetNativeCheckBox(handler);
@@ -90,14 +90,12 @@ namespace Microsoft.Maui.DeviceTests
         [Description("The Rotation property of a CheckBox should match with native Rotation")]
         public async Task RotationConsistent()
         {
-            var checkBox = new CheckBox() { Rotation = 33.0 };
+            var checkBox = new CheckBox() { Rotation = 23.0 };
             var expected = checkBox.Rotation;
             var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
             var PlatformCheckBox = GetNativeCheckBox(handler);
-            var platformRotationX = await InvokeOnMainThreadAsync(() => PlatformCheckBox.RotationX);
-            var platformRotationY = await InvokeOnMainThreadAsync(() => PlatformCheckBox.RotationY);
-            Assert.Equal(expected, platformRotationX);
-            Assert.Equal(expected, platformRotationY);
+            var platformRotation = await InvokeOnMainThreadAsync(() => PlatformCheckBox.Rotation);
+            Assert.Equal(expected, platformRotation);
         }
     }
 }

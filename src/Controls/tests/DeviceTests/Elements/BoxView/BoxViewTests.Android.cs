@@ -39,7 +39,7 @@ namespace Microsoft.Maui.DeviceTests
         [Description("The ScaleY property of a BoxView should match with native ScaleY")]
         public async Task ScaleYConsistent()
         {
-            var boxView = new BoxView() { ScaleY = 0.45f };
+            var boxView = new BoxView() { ScaleY = 1.23f };
             var expected = boxView.ScaleY;
             var handler = await CreateHandlerAsync<ShapeViewHandler>(boxView);
             var platformBoxView = GetNativeBoxView(handler);
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.DeviceTests
         [Description("The RotationY property of a BoxView should match with native RotationY")]
         public async Task RotationYConsistent()
         {
-            var boxView = new BoxView() { RotationY = 33.0 };
+            var boxView = new BoxView() { RotationY = 87.0 };
             var expected = boxView.RotationY;
             var handler = await CreateHandlerAsync<ShapeViewHandler>(boxView);
             var platformBoxView = GetNativeBoxView(handler);
@@ -89,14 +89,12 @@ namespace Microsoft.Maui.DeviceTests
         [Description("The Rotation property of a BoxView should match with native Rotation")]
         public async Task RotationConsistent()
         {
-            var boxView = new BoxView() { Rotation = 33.0 };
+            var boxView = new BoxView() { Rotation = 23.0 };
             var expected = boxView.Rotation;
             var handler = await CreateHandlerAsync<ShapeViewHandler>(boxView);
             var platformBoxView = GetNativeBoxView(handler);
-            var platformRotationX = await InvokeOnMainThreadAsync(() => platformBoxView.RotationX);
-            var platformRotationY = await InvokeOnMainThreadAsync(() => platformBoxView.RotationY);
-            Assert.Equal(expected, platformRotationX);
-            Assert.Equal(expected, platformRotationY);
+            var platformRotation = await InvokeOnMainThreadAsync(() => platformBoxView.Rotation);
+            Assert.Equal(expected, platformRotation);
         }
     }
 }

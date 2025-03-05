@@ -59,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The ScaleY property of a SearchBar should match with native ScaleY")]
 		public async Task ScaleYConsistent()
 		{
-			var searchBar = new SearchBar() { ScaleY = 0.45f };
+			var searchBar = new SearchBar() { ScaleY = 1.23f };
 			var expected = searchBar.ScaleY;
 			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
 			var platformSearchBar = GetPlatformControl(handler);
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The RotationY property of a SearchBar should match with native RotationY")]
 		public async Task RotationYConsistent()
 		{
-			var searchBar = new SearchBar() { RotationY = 33.0 };
+			var searchBar = new SearchBar() { RotationY = 87.0 };
 			var expected = searchBar.RotationY;
 			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
 			var platformSearchBar = GetPlatformControl(handler);
@@ -109,14 +109,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The Rotation property of a SearchBar should match with native Rotation")]
 		public async Task RotationConsistent()
 		{
-			var searchBar = new SearchBar() { Rotation = 33.0 };
+			var searchBar = new SearchBar() { Rotation = 23.0 };
 			var expected = searchBar.Rotation;
 			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
 			var platformSearchBar = GetPlatformControl(handler);
-			var platformRotationX = await InvokeOnMainThreadAsync(() => platformSearchBar.RotationX);
-			var platformRotationY = await InvokeOnMainThreadAsync(() => platformSearchBar.RotationY);
-			Assert.Equal(expected, platformRotationX);
-			Assert.Equal(expected, platformRotationY);
+			var platformRotation = await InvokeOnMainThreadAsync(() => platformSearchBar.Rotation);
+			Assert.Equal(expected, platformRotation);
 		}
 	}
 }

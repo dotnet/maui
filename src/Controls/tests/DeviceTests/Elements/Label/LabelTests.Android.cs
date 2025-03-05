@@ -105,7 +105,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The ScaleY property of a Label should match with native ScaleY")]
 		public async Task ScaleYConsistent()
 		{
-			var label = new Label() { ScaleY = 0.45f };
+			var label = new Label() { ScaleY = 1.23f };
 			var expected = label.ScaleY;
 			var handler = await CreateHandlerAsync<LabelHandler>(label);
 			var platformLabel = GetPlatformLabel(handler);
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The RotationY property of a Label should match with native RotationY")]
 		public async Task RotationYConsistent()
 		{
-			var label = new Label() { RotationY = 33.0 };
+			var label = new Label() { RotationY = 87.0 };
 			var expected = label.RotationY;
 			var handler = await CreateHandlerAsync<LabelHandler>(label);
 			var platformLabel = GetPlatformLabel(handler);
@@ -155,14 +155,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Description("The Rotation property of a Label should match with native Rotation")]
 		public async Task RotationConsistent()
 		{
-			var label = new Label() { Rotation = 33.0 };
+			var label = new Label() { Rotation = 23.0 };
 			var expected = label.Rotation;
 			var handler = await CreateHandlerAsync<LabelHandler>(label);
 			var platformLabel = GetPlatformLabel(handler);
-			var platformRotationX = await InvokeOnMainThreadAsync(() => platformLabel.RotationX);
-			var platformRotationY = await InvokeOnMainThreadAsync(() => platformLabel.RotationY);
-			Assert.Equal(expected, platformRotationX);
-			Assert.Equal(expected, platformRotationY);
+			var platformRotation = await InvokeOnMainThreadAsync(() => platformLabel.Rotation);
+			Assert.Equal(expected, platformRotation);
 		}
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
