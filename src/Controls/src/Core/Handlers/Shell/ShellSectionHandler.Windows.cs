@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Text;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using WFrame = Microsoft.UI.Xaml.Controls.Frame;
 
 
@@ -151,10 +152,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (e.PropertyName == nameof(ShellContent.Title))
 			{
-				if (shellContent.Parent is ShellSection shellSection && shellSection.Parent is ShellItem shellItem && shellItem.Handler is ShellItemHandler shellItemHandler)
-				{
-					shellItemHandler.UpdateTitle();
-				}
+				shellContent.UpdateTitle();
 			}
 		}
 
