@@ -30,14 +30,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			Inner.Add(item);
-
-#if ANDROID
-			// Crash occurs in android when tapping on a flyout menu item after clearing and re-adding items
-			if (item.Parent is Shell shell && Inner.Count > 1)
-			{
-				shell.NotifyFlyoutBehaviorObservers();
-			}
-#endif
 		}
 	}
 }

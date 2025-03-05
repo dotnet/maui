@@ -161,6 +161,15 @@ namespace Microsoft.Maui.Controls
 			}
 
 			CollectionChanged?.Invoke(this, e);
+
+#if ANDROID
+			// Crash occurs in android when tapping on a flyout menu item after clearing and re-adding items
+			if (Count == 2 && this is ShellItemCollection shellItemCollection)
+            {
+                var shell = shellItemCollection[0].Parent as Shell;
+                shell?.NotifyFlyoutBehaviorObservers();
+            }
+#endif
 		}
 
 		void Removing(IEnumerable items)
