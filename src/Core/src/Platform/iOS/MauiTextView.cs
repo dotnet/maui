@@ -162,6 +162,7 @@ namespace Microsoft.Maui.Platform
 
 		void ShouldCenterVertically()
 		{
+			KeyboardAutoManagerScroll.IgnoreContentInsetAdjustment = false;
 			var contentHeight = ContentSize.Height;
 			var availableSpace = Bounds.Height - contentHeight * ZoomScale;
 			if (availableSpace <= 0)
@@ -172,6 +173,11 @@ namespace Microsoft.Maui.Platform
 				Maui.TextAlignment.End => new CGPoint(0, -Math.Max(1, availableSpace)),
 				_ => ContentOffset,
 			};
+
+			if (VerticalTextAlignment == Maui.TextAlignment.Center || VerticalTextAlignment == Maui.TextAlignment.End)
+			{
+				KeyboardAutoManagerScroll.IgnoreContentInsetAdjustment = true;
+			}
 		}
 
 		void UpdatePlaceholderFont(UIFont? value)
