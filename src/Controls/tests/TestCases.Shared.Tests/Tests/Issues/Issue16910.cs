@@ -28,6 +28,7 @@ public class Issue16910 : _IssuesUITest
 	}
 #if TEST_FAILS_ON_CATALYST //Scroll actions cannot be performed on the macOS test server
 	[Test]
+ 	[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/28178")]
 	public void BindingUpdatesFromInteractiveRefresh()
 	{
 		_ = App.WaitForElement("CollectionView");
