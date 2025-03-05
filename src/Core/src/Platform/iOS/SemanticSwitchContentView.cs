@@ -30,7 +30,7 @@ internal class SemanticSwitchContentView : ContentView
 		if(!IsFirstResponder)
 		{
 			BecomeFirstResponder();
-			if(View != null)
+			if(View is not null)
 				View.IsFocused = true;
 		}
 	}
