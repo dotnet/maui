@@ -85,12 +85,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			HookEvents(ShellItem);
 			SetupMenu();
-			var appearance = ShellContext.Shell.GetAppearanceForPivot(ShellItem);
-			if (_bottomView.Background is ColorDrawable background && appearance is IShellAppearanceElement appearanceElement)
-			{
-				// Set the background color to the EffectiveTabBarBackgroundColor if it exists, otherwise use the default
-				background.Color = appearanceElement.EffectiveTabBarBackgroundColor?.ToPlatform() ?? ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
-			}
 			_appearanceTracker = ShellContext.CreateBottomNavViewAppearanceTracker(ShellItem);
 			_bottomNavigationTracker = new BottomNavigationViewTracker();
 			((IShellController)ShellContext.Shell).AddAppearanceObserver(this, ShellItem);
@@ -145,6 +139,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				DisplayedPage is null)
 			{
 				return;
+			}
+
+			if (_bottomView.Background is ColorDrawable background && appearance is IShellAppearanceElement apperanceElement)
+			{
+				background.Color = apperanceElement.EffectiveTabBarBackgroundColor?.ToPlatform() ?? ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
 			}
 
 			_appearanceSet = true;
