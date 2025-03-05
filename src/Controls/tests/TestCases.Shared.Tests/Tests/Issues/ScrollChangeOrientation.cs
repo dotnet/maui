@@ -1,4 +1,4 @@
-#if ANDROID || IOS
+#if ANDROID || IOS //This test case verifies "SetOrientationPotrait and Landscape works" exclusively on the Android and IOS platforms
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
