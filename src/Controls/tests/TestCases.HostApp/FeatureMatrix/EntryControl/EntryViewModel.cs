@@ -16,6 +16,7 @@ namespace Maui.Controls.Sample
         private double _characterSpacing = 0;
         private ReturnType _returnType = ReturnType.Default;
         private int _maxLength = -1;
+        private bool _cursorVisible = false;
         private int _cursorPosition = 0;
         private int _selectionLength = 0;
         private bool _isReadOnly = false;
@@ -84,6 +85,11 @@ namespace Maui.Controls.Sample
         {
             get => _cursorPosition;
             set { _cursorPosition = value; OnPropertyChanged(); }
+        }
+        public bool IsCursorVisible
+        {
+            get => _cursorVisible;
+            set { _cursorVisible = value; OnPropertyChanged(); }
         }
         public int SelectionLength
         {

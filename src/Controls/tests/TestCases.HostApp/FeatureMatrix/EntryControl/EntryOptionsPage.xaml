@@ -11,7 +11,7 @@
                 <!-- Left Column -->
                 <StackLayout Grid.Column="0" Padding="3" Spacing="3">
                         <Label Text="Modify Entry Properties" FontSize="15" HorizontalOptions="Center"/>
-                        <Label Text="Entry Text:" FontSize="12"/>
+                        <Label Text="Entry Text:" FontSize="11"/>
                         <local:UITestEntry
                                 Text="{Binding Text}"
                                 Placeholder="Enter some text"
@@ -33,58 +33,62 @@
                                 ReturnType="{Binding ReturnType}"
                                 Keyboard="{Binding Keyboard}"
                                 FontFamily="{Binding FontFamily}"
-                                IsCursorVisible="False"
+                                IsCursorVisible="{Binding IsCursorVisible}"
                                 HeightRequest="50"/>
                         
-                        <Label Text="Font Size:" FontSize="12"/>
+                        <Label Text="Font Size:" FontSize="11"/>
                         <Entry x:Name="FontSizeEntry" Text="{Binding FontSize}" Keyboard="Numeric" TextChanged="FontSizeEntry_TextChanged" AutomationId="FontSizeEntry"/>
-                        <Label Text="Horizontal Alignment:" FontSize="12"/>
+                        <Label Text="Horizontal Alignment:" FontSize="11"/>
                         <StackLayout Orientation="Horizontal" Spacing="3">
                                 <Button Text="Start" AutomationId="HStart" Clicked="HorizontalAlignmentButton_Clicked"/>
                                 <Button Text="Center" AutomationId="HCenter" Clicked="HorizontalAlignmentButton_Clicked"/>
                                 <Button Text="End" AutomationId="HEnd" Clicked="HorizontalAlignmentButton_Clicked"/>
                         </StackLayout>
-                        <Label Text="Vertical Alignment:" FontSize="12"/>
+                        <Label Text="Vertical Alignment:" FontSize="11"/>
                         <StackLayout Orientation="Horizontal" Spacing="3">
                                 <Button Text="Start" AutomationId="VStart" Clicked="VerticalAlignmentButton_Clicked"/>
                                 <Button Text="Center" AutomationId="VCenter" Clicked="VerticalAlignmentButton_Clicked"/>
                                 <Button Text="End" AutomationId="VEnd" Clicked="VerticalAlignmentButton_Clicked"/>
                         </StackLayout>
-                        <Label Text="IsPassword:" FontSize="12"/>
+                        <Label Text="IsPassword:" FontSize="11"/>
                         <StackLayout Orientation="Horizontal" Spacing="3">
-                                <RadioButton x:Name="IsPasswordTrue" Content="True" FontSize="12" GroupName="Password" AutomationId="PasswordTrue" CheckedChanged="IsPasswordTrueOrFalse_Clicked"/>
-                                <RadioButton x:Name="IsPasswordFalse" IsChecked="True" Content="False" FontSize="12" GroupName="Password" AutomationId="PasswordFalse" CheckedChanged="IsPasswordTrueOrFalse_Clicked"/>
+                                <RadioButton x:Name="IsPasswordTrue" Content="True" FontSize="11" GroupName="Password" AutomationId="PasswordTrue" CheckedChanged="IsPasswordTrueOrFalse_Clicked"/>
+                                <RadioButton x:Name="IsPasswordFalse" IsChecked="True" Content="False" FontSize="11" GroupName="Password" AutomationId="PasswordFalse" CheckedChanged="IsPasswordTrueOrFalse_Clicked"/>
                         </StackLayout>
-                        <Label Text="IsReadOnly:" FontSize="12"/>
+                        <Label Text="IsReadOnly:" FontSize="11"/>
                         <StackLayout Orientation="Horizontal" Spacing="3">
-                                <RadioButton x:Name="IsReadOnlyTrue" Content="True" FontSize="12" GroupName="ReadOnly" AutomationId="ReadOnlyTrue" CheckedChanged="IsReadOnlyTrueOrFalse_Clicked"/>
-                                <RadioButton x:Name="IsReadOnlyFalse" IsChecked="True" Content="False" FontSize="12" GroupName="ReadOnly" AutomationId="ReadOnlyFalse" CheckedChanged="IsReadOnlyTrueOrFalse_Clicked"/>
+                                <RadioButton x:Name="IsReadOnlyTrue" Content="True" FontSize="11" GroupName="ReadOnly" AutomationId="ReadOnlyTrue" CheckedChanged="IsReadOnlyTrueOrFalse_Clicked"/>
+                                <RadioButton x:Name="IsReadOnlyFalse" IsChecked="True" Content="False" FontSize="11" GroupName="ReadOnly" AutomationId="ReadOnlyFalse" CheckedChanged="IsReadOnlyTrueOrFalse_Clicked"/>
                         </StackLayout>
-                        <Label Text="IsTextPredictionEnabled:" FontSize="12"/>
+                        <Label Text="IsTextPredictionEnabled:" FontSize="11"/>
                         <StackLayout Orientation="Horizontal" Spacing="3">
-                                <RadioButton x:Name="IsTextPredictionEnabledTrue"   Content="True" FontSize="12" GroupName="TextPrediction" AutomationId="TextPredictionTrue" CheckedChanged="IsTextPredictionEnabledTrueOrFalse_Clicked"/>
-                                <RadioButton x:Name="IsTextPredictionEnabledFalse" Content="False" IsChecked="True" FontSize="12" GroupName="TextPrediction" AutomationId="TextPredictionFalse" CheckedChanged="IsTextPredictionEnabledTrueOrFalse_Clicked"/>
+                                <RadioButton x:Name="IsTextPredictionEnabledTrue"   Content="True" FontSize="11" GroupName="TextPrediction" AutomationId="TextPredictionTrue" CheckedChanged="IsTextPredictionEnabledTrueOrFalse_Clicked"/>
+                                <RadioButton x:Name="IsTextPredictionEnabledFalse" Content="False" IsChecked="True" FontSize="11" GroupName="TextPrediction" AutomationId="TextPredictionFalse" CheckedChanged="IsTextPredictionEnabledTrueOrFalse_Clicked"/>
                         </StackLayout>
-                        <Label Text="IsSpellCheckEnabled:" FontSize="12"/>
+                        <Label Text="IsSpellCheckEnabled:" FontSize="11"/>
                         <StackLayout Orientation="Horizontal" Spacing="3">
-                                <RadioButton x:Name="IsSpellCheckEnabledTrue" Content="True" FontSize="12" GroupName="SpellCheck" AutomationId="SpellCheckTrue" CheckedChanged="IsSpellCheckEnabledTrueOrFalse_Clicked"/>
-                                <RadioButton x:Name="IsSpellCheckEnabledFalse" Content="False" IsChecked="True" FontSize="12" GroupName="SpellCheck" AutomationId="SpellCheckFalse" CheckedChanged="IsSpellCheckEnabledTrueOrFalse_Clicked"/>
+                                <RadioButton x:Name="IsSpellCheckEnabledTrue" Content="True" FontSize="11" GroupName="SpellCheck" AutomationId="SpellCheckTrue" CheckedChanged="IsSpellCheckEnabledTrueOrFalse_Clicked"/>
+                                <RadioButton x:Name="IsSpellCheckEnabledFalse" Content="False" IsChecked="True" FontSize="11" GroupName="SpellCheck" AutomationId="SpellCheckFalse" CheckedChanged="IsSpellCheckEnabledTrueOrFalse_Clicked"/>
                         </StackLayout>
-                        <Label Text="Cursor position:" FontSize="12"/>
+                        <Label Text="Cursor position:" FontSize="11"/>
                         <Entry x:Name="CursorPositionEntry" Text="{Binding CursorPosition}" Keyboard="Numeric" AutomationId="CursorPosition"/>
-                       
+                        <Label Text="IsCursorVisible:" FontSize="11"/>
+                        <StackLayout Orientation="Horizontal" Spacing="3">
+                                <RadioButton x:Name="IsCursorVisibleTrue" Content="True" FontSize="11" GroupName="CursorVisible" AutomationId="CursorVisibleTrue" CheckedChanged="IsCursorVisibleTrueOrFalse_Clicked"/>
+                                <RadioButton x:Name="IsCursorVisibleFalse" Content="False" IsChecked="True" FontSize="11" GroupName="CursorVisible" AutomationId="CursorVisibleFalse" CheckedChanged="IsCursorVisibleTrueOrFalse_Clicked"/>
+                        </StackLayout>
                 </StackLayout>
 
                 <StackLayout Grid.Column="1" Padding="3" Spacing="3">
-                        <Label Text="Text Color:" FontSize="12"/>
+                        <Label Text="Text Color:" FontSize="11"/>
                         <StackLayout Orientation="Horizontal" Spacing="3">
                                 <Button Text="Black" BackgroundColor="Black" TextColor="White" Clicked="TextColorButton_Clicked"/>
                                 <Button Text="Red" BackgroundColor="Red" TextColor="White" Clicked="TextColorButton_Clicked"/>
                                 <Button Text="Blue" BackgroundColor="Blue" TextColor="White" Clicked="TextColorButton_Clicked"/>
                         </StackLayout>
-                        <Label Text="Character Spacing:" FontSize="12"/>
+                        <Label Text="Character Spacing:" FontSize="11"/>
                         <Entry x:Name="CharacterSpacingEntry" Text="{Binding CharacterSpacing}" Keyboard="Numeric" AutomationId="CharacterSpacing" TextChanged="CharacterSpacing_TextChanged"/>
-                        <Label Text="ReturnType" FontSize="12"/>
+                        <Label Text="ReturnType" FontSize="11"/>
                         <StackLayout Orientation="Horizontal" Spacing="3">
                                 <Button Text="Default" AutomationId="Default" Clicked="ReturnTypeButton_Clicked"/>
                                 <Button Text="Next" AutomationId="Next" Clicked="ReturnTypeButton_Clicked"/>
@@ -95,16 +99,16 @@
                                 <Button Text="Search" AutomationId="Search" Clicked="ReturnTypeButton_Clicked"/>
                                 <Button Text="Done" AutomationId="Done" Clicked="ReturnTypeButton_Clicked"/>
                                 </StackLayout>
-                                <Label Text="Max Length:" FontSize="12"/>
-                                <Entry x:Name="MaxLengthEntry" Text="{Binding MaxLength}" Keyboard="Numeric" AutomationId="MaxLength"/>
-                                <Label Text="Selection Length:" FontSize="12"/>
-                                <Entry x:Name="SelectionLengthEntry" Text="{Binding SelectionLength}" Keyboard="Numeric" AutomationId="SelectionLength"/>
-                                <Label Text="Font Auto Scaling Enabled:" FontSize="12"/>
+                                <Label Text="Max Length:" FontSize="11"/>
+                                <Entry x:Name="MaxLengthEntry" Text="{Binding MaxLength}" Keyboard="Numeric" AutomationId="MaxLength" TextChanged="MaxLengthButton_Clicked"/>
+                                <Label Text="Selection Length:" FontSize="11"/>
+                                <Entry x:Name="SelectionLengthEntry" Text="{Binding SelectionLength}" Keyboard="Numeric" AutomationId="SelectionLength" TextChanged="SelectionLength_Clicked"/>
+                                <Label Text="Font Auto Scaling Enabled:" FontSize="11"/>
                                 <StackLayout Orientation="Horizontal" Spacing="3">
-                                        <RadioButton x:Name="FontAutoScalingEnabledTrue" Content="True" FontSize="12" GroupName="FontAutoScaling" AutomationId="FontAutoScalingTrue" CheckedChanged="FontAutoScalingEnabledTrueOrFalse_Clicked"/>
+                                        <RadioButton x:Name="FontAutoScalingEnabledTrue" Content="True" FontSize="11" GroupName="FontAutoScaling" AutomationId="FontAutoScalingTrue" CheckedChanged="FontAutoScalingEnabledTrueOrFalse_Clicked"/>
                                         <RadioButton x:Name="FontAutoScalingEnabledFalse" Content="False" IsChecked="True" GroupName="FontAutoScaling" AutomationId="FontAutoScalingFalse" CheckedChanged="FontAutoScalingEnabledTrueOrFalse_Clicked"/>
                                  </StackLayout>
-                                  <Label Text="Keyboard:" FontSize="12"/>
+                                  <Label Text="Keyboard:" FontSize="11"/>
                         <StackLayout Orientation="Vertical" Spacing="2">
                                 <StackLayout Orientation="Horizontal" Spacing="2">
                                 <Button Text="Default" AutomationId="Default" Clicked="KeyboardButton_Clicked"/>
@@ -120,7 +124,7 @@
                                 <Button Text="Text" AutomationId="Text" Clicked="KeyboardButton_Clicked"/>
                                 </StackLayout>
                         </StackLayout>
-                                <Label Text="Font Family:" FontSize="12"/>
+                                <Label Text="Font Family:" FontSize="11"/>
                                 <Entry x:Name="FontFamilyEntry" Text="{Binding FontFamily}" AutomationId="FontFamily"/>
                 </StackLayout>
         </Grid>

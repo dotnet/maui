@@ -28,7 +28,7 @@
             ReturnType="{Binding ReturnType}"
             Keyboard="{Binding Keyboard}"
             FontFamily="{Binding FontFamily}"
-            IsCursorVisible="False"
+            IsCursorVisible="{Binding IsCursorVisible}"
             HeightRequest="50"/>
     </StackLayout>
 

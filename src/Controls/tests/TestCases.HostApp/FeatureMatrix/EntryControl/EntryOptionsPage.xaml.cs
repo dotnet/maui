@@ -83,12 +83,24 @@ namespace Maui.Controls.Sample
                 _viewModel.MaxLength = maxLength;
             }   
         }
+
+        private void SelectionLength_Clicked(object sender, EventArgs e)
+        {
+            if (int.TryParse(SelectionLengthEntry.Text, out int selectionLength))
+            {
+                _viewModel.SelectionLength = selectionLength;
+            }
+        }
         private void CursorPositionButton_Clicked(object sender, EventArgs e)
         {
             if (int.TryParse(CursorPositionEntry.Text, out int cursorPosition))
             {
                 _viewModel.CursorPosition = cursorPosition;
             }
+        }
+        private void IsCursorVisibleTrueOrFalse_Clicked(object sender, EventArgs e)
+        {
+            _viewModel.IsCursorVisible = IsCursorVisibleTrue.IsChecked;
         }
 
         private void FontSizeEntry_TextChanged(object sender, TextChangedEventArgs e)
