@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-namespace Controls.TestCases.HostApp.Issues
+namespace  Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 27922, "[WinUI]CollectionView with GroupHeader enabled should scroll properly with groupheader",
 		PlatformAffected.UWP)]
