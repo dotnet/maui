@@ -178,7 +178,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 						builder.AppendLine(e.Data);
 						Console.WriteLine(e.Data);
 					}
-			};
+			}
+			;
 
 			var ext = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : "";
 			var dotnet = IOPath.Combine(testDirectory, "..", "..", "..", "..", "..", "..", "..", "bin", "dotnet", $"dotnet{ext}");

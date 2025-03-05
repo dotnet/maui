@@ -1241,7 +1241,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					proxies.Add(new WeakReference(listener));
 				}
 				Assert.NotEmpty(proxies); // Should be at least 1
-			};
+			}
+			;
 			create();
 
 			await Task.Yield();

@@ -296,7 +296,8 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Title = title
 				};
-			};
+			}
+			;
 
 			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled, pages);
 

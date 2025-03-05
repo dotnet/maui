@@ -393,7 +393,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				trans ??= ChildFragmentManager.BeginTransactionEx();
 				trans.Remove(f);
-			};
+			}
+			;
 
 			trans?.CommitAllowingStateLossEx();
 		}

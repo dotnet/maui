@@ -694,7 +694,8 @@ namespace Microsoft.Maui.Controls
 				{
 					sc.Page.PlatformEnabledChanged -= WaitForRendererToGetRemoved;
 					base.OnChildRemoved(child, oldLogicalIndex);
-				};
+				}
+				;
 			}
 			else
 			{

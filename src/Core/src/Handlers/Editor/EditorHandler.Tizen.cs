@@ -31,7 +31,8 @@ namespace Microsoft.Maui.Handlers
 				else
 				{
 					return new TSize(Math.Max(PixelSize + 10, availableWidth), PixelSize + 10);
-				};
+				}
+				;
 			}
 		}
 

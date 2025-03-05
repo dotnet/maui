@@ -145,7 +145,8 @@ namespace Microsoft.Maui.Platform
 
 						if (nativeSlider.Parent is FrameworkElement frameworkElement)
 							frameworkElement.InvalidateMeasure();
-					};
+					}
+					;
 				}
 
 				nativeSlider.ThumbImageSource = nativeThumbImageSource?.Value;

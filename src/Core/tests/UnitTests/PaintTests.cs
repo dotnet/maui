@@ -40,7 +40,7 @@ namespace Microsoft.Maui.UnitTests
 			LinearGradientPaint emptyLinearGradientPaint = new LinearGradientPaint();
 			Assert.False(emptyLinearGradientPaint.IsNullOrEmpty());
 
-			PaintGradientStop[] linearGradientStops = 
+			PaintGradientStop[] linearGradientStops =
 			{
 				new PaintGradientStop(0.1f, Colors.Orange),
 				new PaintGradientStop(0.8f, Colors.Red)
