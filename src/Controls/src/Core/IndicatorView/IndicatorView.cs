@@ -168,17 +168,8 @@ namespace Microsoft.Maui.Controls
 		{
 			args.indicatorView.templatedItemWidth = args.width;
 			args.indicatorView.templatedItemHeight = args.height;
-			SetTemplatedIndicatorSize(args.indicatorView);
 		}
 
-		static void SetTemplatedIndicatorSize(IndicatorView indicatorView)
-		{
-			if (indicatorView.IndicatorLayout is null || !indicatorView.templatedItemWidth.HasValue || !indicatorView.templatedItemHeight.HasValue)
-				return;
-
-			indicatorView.WidthRequest = indicatorView.templatedItemWidth.Value * indicatorView.Count + DefaultPadding * (indicatorView.Count - 1);
-			indicatorView.HeightRequest = indicatorView.templatedItemHeight.Value;
-		}
 
 		void ResetItemsSource(IEnumerable oldItemsSource)
 		{
@@ -198,7 +189,6 @@ namespace Microsoft.Maui.Controls
 			if (sender is ICollection collection)
 			{
 				Count = collection.Count;
-				SetTemplatedIndicatorSize(this);
 				return;
 			}
 			var count = 0;
@@ -208,7 +198,16 @@ namespace Microsoft.Maui.Controls
 				count++;
 			}
 			Count = count;
-			SetTemplatedIndicatorSize(this);
+		}
+
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		{
+			base.MeasureOverride(widthConstraint, heightConstraint);
+
+			var width = templatedItemWidth.Value * Count + DefaultPadding * (Count - 1);
+			var height = templatedItemHeight.Value;
+
+			return new Size(width, height);
 		}
 
 		Paint IIndicatorView.IndicatorColor => IndicatorColor?.AsPaint();
