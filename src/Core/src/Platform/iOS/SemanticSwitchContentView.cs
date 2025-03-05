@@ -16,6 +16,23 @@ internal class SemanticSwitchContentView : ContentView
 	{
 		CrossPlatformLayout = virtualView;
 		IsAccessibilityElement = true;
+		UserInteractionEnabled = true;
+	 	AddGestureRecognizer(new UITapGestureRecognizer(OnTouched){
+			CancelsTouchesInView = false,
+			ShouldRecognizeSimultaneously = GetRecognizeSimultaneously
+		});
+	}
+
+	private bool GetRecognizeSimultaneously(UIGestureRecognizer gestureRecognizer, UIGestureRecognizer otherGestureRecognizer) => true;
+
+	private void OnTouched()
+	{
+		if(!IsFirstResponder)
+		{
+			BecomeFirstResponder();
+			if(View != null)
+				View.IsFocused = true;
+		}
 	}
 
 	static UIAccessibilityTrait? s_switchAccessibilityTraits;
@@ -32,6 +49,15 @@ internal class SemanticSwitchContentView : ContentView
 
 			return s_switchAccessibilityTraits ?? UIAccessibilityTrait.None;
 		}
+	}
+
+	public override bool CanBecomeFirstResponder => true;
+	public override bool CanResignFirstResponder => true;
+	public override bool ResignFirstResponder()
+	{
+		if(View is not null)
+		View.IsFocused = false;
+		return base.ResignFirstResponder();
 	}
 
 	public override UIAccessibilityTrait AccessibilityTraits
