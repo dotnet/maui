@@ -114,7 +114,11 @@ Task("dotnet-buildtasks")
     .IsDependentOn("dotnet")
     .Does(() =>
     {
-        RunMSBuildWithDotNet($"{rootFolder}/Microsoft.Maui.BuildTasks.slnf");
+        var properties = new Dictionary<string, string>
+        {
+            ["BuildTaskOnlyBuild"] = "true"
+        };
+        RunMSBuildWithDotNet($"{rootFolder}/Microsoft.Maui.BuildTasks.slnf", properties);
     })
    .OnError(exception =>
     {
