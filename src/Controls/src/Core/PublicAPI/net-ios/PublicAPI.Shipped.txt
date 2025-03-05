@@ -2583,7 +2583,6 @@
 ~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions.SetAccessibilityProperties(this UIKit.UIView nativeViewElement, Microsoft.Maui.Controls.Element element) -> void
 ~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.AccessibilityExtensions.SetIsAccessibilityElement(this UIKit.UIView Control, Microsoft.Maui.Controls.Element Element, bool? _defaultIsAccessibilityElement = null) -> bool?
 ~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions.ToUIBarButtonItem(this Microsoft.Maui.Controls.ToolbarItem item, bool forceName = false, bool forcePrimary = false) -> UIKit.UIBarButtonItem
-~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.ToolbarItemExtensions.ToUIBarButtonItem(this Microsoft.Maui.Controls.ToolbarItem item, bool forceName) -> UIKit.UIBarButtonItem
 ~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.UIViewExtensions.Descendants(this UIKit.UIView self) -> System.Collections.Generic.IEnumerable<UIKit.UIView>
 ~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.UIViewExtensions.GetSizeRequest(this UIKit.UIView self, double widthConstraint, double heightConstraint, double minimumWidth = -1, double minimumHeight = -1) -> Microsoft.Maui.SizeRequest
 ~static Microsoft.Maui.Controls.Compatibility.Platform.iOS.UIViewExtensions.SetBinding(this UIKit.UIView self, Microsoft.Maui.Controls.BindableProperty targetProperty, Microsoft.Maui.Controls.BindingBase binding) -> void
