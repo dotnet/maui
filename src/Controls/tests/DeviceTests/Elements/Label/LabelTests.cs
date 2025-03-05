@@ -667,16 +667,12 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 #else
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(layout, (handler) =>
 			{
-				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
-				await contentViewHandler.PlatformView.AttachAndRun(() =>
-				{
-					Assert.Equal(double.Round(labelStart.Width, 5), double.Round(layout.Width, 5));
-					Assert.Equal(double.Round(labelCenter.Width, 5), double.Round(layout.Width, 5));
-					Assert.Equal(double.Round(labelEnd.Width, 5), double.Round(layout.Width, 5));
-					Assert.Equal(double.Round(labelFill.Width, 5), double.Round(layout.Width, 5));
-				});
+				Assert.Equal(double.Round(labelStart.Width, 5), double.Round(layout.Width, 5));
+				Assert.Equal(double.Round(labelCenter.Width, 5), double.Round(layout.Width, 5));
+				Assert.Equal(double.Round(labelEnd.Width, 5), double.Round(layout.Width, 5));
+				Assert.Equal(double.Round(labelFill.Width, 5), double.Round(layout.Width, 5));
 			});
 #endif
 		}
