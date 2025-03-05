@@ -23,13 +23,18 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 			_proxy.Connect(VirtualView, platformView);
-			_sliderTapRecognizer = null;
 		}
 
 		protected override void DisconnectHandler(UISlider platformView)
 		{
 			base.DisconnectHandler(platformView);
 			_proxy.Disconnect(platformView);
+			if (_sliderTapRecognizer is not null)
+			{
+				PlatformView.RemoveGestureRecognizer(_sliderTapRecognizer);
+				_sliderTapRecognizer.Dispose();
+				_sliderTapRecognizer = null;
+			}
 		}
 
 		internal void MapUpdateOnTap(bool isMapUpdateOnTapEnabled)

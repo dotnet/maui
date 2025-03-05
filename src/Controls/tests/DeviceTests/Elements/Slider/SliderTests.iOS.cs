@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
             {
                 var layout = new VerticalStackLayout();
                 var slider = new Slider();
-                //slider.On<iOS>().SetUpdateOnTap(true);
+                slider.On<iOS>().SetUpdateOnTap(true);
                 layout.Add(slider);
 
                 var handler = CreateHandler<LayoutHandler>(layout);
