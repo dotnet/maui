@@ -9,11 +9,11 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Collection(RunInNewWindowCollection)]
-	public partial class CheckBoxTests
-	{
-		AppCompatCheckBox GetNativeCheckBox(CheckBoxHandler checkBoxHandler) =>
-			checkBoxHandler.PlatformView;
+    [Collection(RunInNewWindowCollection)]
+    public partial class CheckBoxTests
+    {
+        AppCompatCheckBox GetNativeCheckBox(CheckBoxHandler checkBoxHandler) =>
+            checkBoxHandler.PlatformView;
 
 		Task<float> GetPlatformOpacity(CheckBoxHandler CheckBoxHandler)
 		{
@@ -24,26 +24,80 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
         
-		[Fact]
-		[Description("The ScaleX property of a CheckBox should match with native ScaleX")]
+        [Fact]
+        [Description("The ScaleX property of a CheckBox should match with native ScaleX")]
         public async Task ScaleXConsistent()
         {
             var checkBox = new CheckBox() { ScaleX = 0.45f };
-            var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
             var expected = checkBox.ScaleX;
-            var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
+            var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
+            var PlatformCheckBox = GetNativeCheckBox(handler);
+            var platformScaleX = await InvokeOnMainThreadAsync(() => PlatformCheckBox.ScaleX);
             Assert.Equal(expected, platformScaleX);
         }
 
         [Fact]
-		[Description("The ScaleY property of a BoxView should match with native ScaleY")]
+        [Description("The ScaleY property of a CheckBox should match with native ScaleY")]
         public async Task ScaleYConsistent()
         {
             var checkBox = new CheckBox() { ScaleY = 0.45f };
-            var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
             var expected = checkBox.ScaleY;
-            var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
+            var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
+            var PlatformCheckBox = GetNativeCheckBox(handler);
+            var platformScaleY = await InvokeOnMainThreadAsync(() => PlatformCheckBox.ScaleY);
             Assert.Equal(expected, platformScaleY);
         }
-	}
+        
+        [Fact]
+        [Description("The Scale property of a CheckBox should match with native Scale")]
+        public async Task ScaleConsistent()
+        {
+            var checkBox = new CheckBox() { Scale = 2.0f };
+            var expected = checkBox.Scale;
+            var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
+            var PlatformCheckBox = GetNativeCheckBox(handler);
+            var platformScaleX = await InvokeOnMainThreadAsync(() => PlatformCheckBox.ScaleX);
+            var platformScaleY = await InvokeOnMainThreadAsync(() => PlatformCheckBox.ScaleY);
+            Assert.Equal(expected, platformScaleX);
+            Assert.Equal(expected, platformScaleY);
+        }
+
+        [Fact]
+        [Description("The RotationX property of a CheckBox should match with native RotationX")]
+        public async Task RotationXConsistent()
+        {
+            var checkBox = new CheckBox() { RotationX = 33.0 };
+            var expected = checkBox.RotationX;
+            var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
+            var PlatformCheckBox = GetNativeCheckBox(handler);
+            var platformRotationX = await InvokeOnMainThreadAsync(() => PlatformCheckBox.RotationX);
+            Assert.Equal(expected, platformRotationX);
+        }
+
+        [Fact]
+        [Description("The RotationY property of a CheckBox should match with native RotationY")]
+        public async Task RotationYConsistent()
+        {
+            var checkBox = new CheckBox() { RotationY = 33.0 };
+            var expected = checkBox.RotationY;
+            var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
+            var PlatformCheckBox = GetNativeCheckBox(handler);
+            var platformRotationY = await InvokeOnMainThreadAsync(() => PlatformCheckBox.RotationY);
+            Assert.Equal(expected, platformRotationY);
+        }
+
+        [Fact]
+        [Description("The Rotation property of a CheckBox should match with native Rotation")]
+        public async Task RotationConsistent()
+        {
+            var checkBox = new CheckBox() { Rotation = 33.0 };
+            var expected = checkBox.Rotation;
+            var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
+            var PlatformCheckBox = GetNativeCheckBox(handler);
+            var platformRotationX = await InvokeOnMainThreadAsync(() => PlatformCheckBox.RotationX);
+            var platformRotationY = await InvokeOnMainThreadAsync(() => PlatformCheckBox.RotationY);
+            Assert.Equal(expected, platformRotationX);
+            Assert.Equal(expected, platformRotationY);
+        }
+    }
 }

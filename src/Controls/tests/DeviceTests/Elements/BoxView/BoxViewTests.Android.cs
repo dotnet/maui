@@ -9,10 +9,10 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class BoxViewTests
-	{
-		MauiShapeView GetNativeBoxView(ShapeViewHandler boxViewViewHandler) =>
-			boxViewViewHandler.PlatformView;
+    public partial class BoxViewTests
+    {
+        MauiShapeView GetNativeBoxView(ShapeViewHandler boxViewViewHandler) =>
+            boxViewViewHandler.PlatformView;
 
 		Task<float> GetPlatformOpacity(ShapeViewHandler handler)
 		{
@@ -23,26 +23,80 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
         
-		[Fact]
-		[Description("The ScaleX property of a BoxView should match with native ScaleX")]
+        [Fact]
+        [Description("The ScaleX property of a BoxView should match with native ScaleX")]
         public async Task ScaleXConsistent()
         {
             var boxView = new BoxView() { ScaleX = 0.45f };
-            var handler = await CreateHandlerAsync<ShapeViewHandler>(boxView);
             var expected = boxView.ScaleX;
-            var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
+            var handler = await CreateHandlerAsync<ShapeViewHandler>(boxView);
+            var platformBoxView = GetNativeBoxView(handler);
+            var platformScaleX = await InvokeOnMainThreadAsync(() => platformBoxView.ScaleX);
             Assert.Equal(expected, platformScaleX);
         }
 
         [Fact]
-		[Description("The ScaleY property of a BoxView should match with native ScaleY")]
+        [Description("The ScaleY property of a BoxView should match with native ScaleY")]
         public async Task ScaleYConsistent()
         {
             var boxView = new BoxView() { ScaleY = 0.45f };
-            var handler = await CreateHandlerAsync<ShapeViewHandler>(boxView);
             var expected = boxView.ScaleY;
-            var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
+            var handler = await CreateHandlerAsync<ShapeViewHandler>(boxView);
+            var platformBoxView = GetNativeBoxView(handler);
+            var platformScaleY = await InvokeOnMainThreadAsync(() => platformBoxView.ScaleY);
             Assert.Equal(expected, platformScaleY);
         }
-	}
+
+        [Fact]
+        [Description("The Scale property of a BoxView should match with native Scale")]
+        public async Task ScaleConsistent()
+        {
+            var boxView = new BoxView() { Scale = 2.0f };
+            var expected = boxView.Scale;
+            var handler = await CreateHandlerAsync<ShapeViewHandler>(boxView);
+            var platformBoxView = GetNativeBoxView(handler);
+            var platformScaleX = await InvokeOnMainThreadAsync(() => platformBoxView.ScaleX);
+            var platformScaleY = await InvokeOnMainThreadAsync(() => platformBoxView.ScaleY);
+            Assert.Equal(expected, platformScaleX);
+            Assert.Equal(expected, platformScaleY);
+        }
+
+        [Fact]
+        [Description("The RotationX property of a BoxView should match with native RotationX")]
+        public async Task RotationXConsistent()
+        {
+            var boxView = new BoxView() { RotationX = 33.0 };
+            var expected = boxView.RotationX;
+            var handler = await CreateHandlerAsync<ShapeViewHandler>(boxView);
+            var platformBoxView = GetNativeBoxView(handler);
+            var platformRotationX = await InvokeOnMainThreadAsync(() => platformBoxView.RotationX);
+            Assert.Equal(expected, platformRotationX);
+        }
+
+        [Fact]
+        [Description("The RotationY property of a BoxView should match with native RotationY")]
+        public async Task RotationYConsistent()
+        {
+            var boxView = new BoxView() { RotationY = 33.0 };
+            var expected = boxView.RotationY;
+            var handler = await CreateHandlerAsync<ShapeViewHandler>(boxView);
+            var platformBoxView = GetNativeBoxView(handler);
+            var platformRotationY = await InvokeOnMainThreadAsync(() => platformBoxView.RotationY);
+            Assert.Equal(expected, platformRotationY);
+        }
+
+        [Fact]
+        [Description("The Rotation property of a BoxView should match with native Rotation")]
+        public async Task RotationConsistent()
+        {
+            var boxView = new BoxView() { Rotation = 33.0 };
+            var expected = boxView.Rotation;
+            var handler = await CreateHandlerAsync<ShapeViewHandler>(boxView);
+            var platformBoxView = GetNativeBoxView(handler);
+            var platformRotationX = await InvokeOnMainThreadAsync(() => platformBoxView.RotationX);
+            var platformRotationY = await InvokeOnMainThreadAsync(() => platformBoxView.RotationY);
+            Assert.Equal(expected, platformRotationX);
+            Assert.Equal(expected, platformRotationY);
+        }
+    }
 }
