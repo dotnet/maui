@@ -56,7 +56,8 @@ namespace Maui.Controls.Sample.Issues
                     new Button
                     {
                         Text = "Go to Next Page",
-                        Command = new Command(async () => await OnNavigateButtonClicked())
+                        Command = new Command(async () => await OnNavigateButtonClicked()),
+                        AutomationId = "NavigateToNextPageButton"
                     }
                 }
             };
@@ -85,7 +86,8 @@ namespace Maui.Controls.Sample.Issues
                     new Label
                     {
                         Text = "This is the second page!",
-                        FontSize = 24
+                        FontSize = 24,
+                        AutomationId = "SecondPageLabel"
                     }
                 }
             };
