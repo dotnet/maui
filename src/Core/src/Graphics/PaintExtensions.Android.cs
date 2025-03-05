@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Android.Content;
 using Android.Content.Res;
@@ -82,10 +82,8 @@ namespace Microsoft.Maui.Graphics
 			return color.A is 1;
 		}
 
-		internal static bool IsSolid(this SolidPaint paint)
-		{
-			return paint?.Color != null && paint.Color.Alpha == 1;
-		}
+		internal static bool IsSolid(this SolidPaint? paint) =>
+			paint?.Color.Alpha == 1;
 
 		internal static bool IsSolid(this LinearGradientPaint paint)
 		{
