@@ -73,26 +73,79 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact]
 		[Description("The ScaleX property of a SwipeView should match with native ScaleX")]
-        public async Task ScaleXConsistent()
-        {
-            var swipeView = new SwipeView() { ScaleX = 0.45f };
-            var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
-            var expected = swipeView.ScaleX;
-            var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
-            Assert.Equal(expected, platformScaleX);
-        }
+		public async Task ScaleXConsistent()
+		{
+			var swipeView = new SwipeView() { ScaleX = 0.45f };
+			var expected = swipeView.ScaleX;
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var platformSwipeView = GetPlatformControl(handler);
+			var platformScaleX = await InvokeOnMainThreadAsync(() => platformSwipeView.ScaleX);
+			Assert.Equal(expected, platformScaleX);
+		}
 
 		[Fact]
 		[Description("The ScaleY property of a SwipeView should match with native ScaleY")]
-        public async Task ScaleYConsistent()
-        {
-            var swipeView = new SwipeView() { ScaleY = 0.45f };
-            var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
-            var expected = swipeView.ScaleY;
-            var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
-            Assert.Equal(expected, platformScaleY);
-        }
+		public async Task ScaleYConsistent()
+		{
+			var swipeView = new SwipeView() { ScaleY = 0.45f };
+			var expected = swipeView.ScaleY;
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var platformSwipeView = GetPlatformControl(handler);
+			var platformScaleY = await InvokeOnMainThreadAsync(() => platformSwipeView.ScaleY);
+			Assert.Equal(expected, platformScaleY);
+		}
 
+		[Fact]
+		[Description("The Scale property of a SwipeView should match with native Scale")]
+		public async Task ScaleConsistent()
+		{
+			var swipeView = new SwipeView() { Scale = 2.0f };
+			var expected = swipeView.Scale;
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var platformSwipeView = GetPlatformControl(handler);
+			var platformScaleX = await InvokeOnMainThreadAsync(() => platformSwipeView.ScaleX);
+			var platformScaleY = await InvokeOnMainThreadAsync(() => platformSwipeView.ScaleY);
+			Assert.Equal(expected, platformScaleX);
+			Assert.Equal(expected, platformScaleY);
+		}
+
+		[Fact]
+		[Description("The RotationX property of a SwipeView should match with native RotationX")]
+		public async Task RotationXConsistent()
+		{
+			var swipeView = new SwipeView() { RotationX = 33.0 };
+			var expected = swipeView.RotationX;
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var platformSwipeView = GetPlatformControl(handler);
+			var platformRotationX = await InvokeOnMainThreadAsync(() => platformSwipeView.RotationX);
+			Assert.Equal(expected, platformRotationX);
+		}
+
+		[Fact]
+		[Description("The RotationY property of a SwipeView should match with native RotationY")]
+		public async Task RotationYConsistent()
+		{
+			var swipeView = new SwipeView() { RotationY = 33.0 };
+			var expected = swipeView.RotationY;
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var platformSwipeView = GetPlatformControl(handler);
+			var platformRotationY = await InvokeOnMainThreadAsync(() => platformSwipeView.RotationY);
+			Assert.Equal(expected, platformRotationY);
+		}
+
+		[Fact]
+		[Description("The Rotation property of a SwipeView should match with native Rotation")]
+		public async Task RotationConsistent()
+		{
+			var swipeView = new SwipeView() { Rotation = 33.0 };
+			var expected = swipeView.Rotation;
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var platformSwipeView = GetPlatformControl(handler);
+			var platformRotationX = await InvokeOnMainThreadAsync(() => platformSwipeView.RotationX);
+			var platformRotationY = await InvokeOnMainThreadAsync(() => platformSwipeView.RotationY);
+			Assert.Equal(expected, platformRotationX);
+			Assert.Equal(expected, platformRotationY);
+		}
 		MauiSwipeView GetPlatformControl(SwipeViewHandler handler) =>
 			handler.PlatformView;
 

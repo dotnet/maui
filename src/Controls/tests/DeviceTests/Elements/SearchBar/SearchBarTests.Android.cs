@@ -45,24 +45,78 @@ namespace Microsoft.Maui.DeviceTests
 		
 		[Fact]
 		[Description("The ScaleX property of a SearchBar should match with native ScaleX")]
-        public async Task ScaleXConsistent()
-        {
-            var searchBar = new SearchBar() { ScaleX = 0.45f };
-            var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
-            var expected = searchBar.ScaleX;
-            var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
-            Assert.Equal(expected, platformScaleX);
-        }
+		public async Task ScaleXConsistent()
+		{
+			var searchBar = new SearchBar() { ScaleX = 0.45f };
+			var expected = searchBar.ScaleX;
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			var platformSearchBar = GetPlatformControl(handler);
+			var platformScaleX = await InvokeOnMainThreadAsync(() => platformSearchBar.ScaleX);
+			Assert.Equal(expected, platformScaleX);
+		}
 
 		[Fact]
 		[Description("The ScaleY property of a SearchBar should match with native ScaleY")]
-        public async Task ScaleYConsistent()
-        {
-            var searchBar = new SearchBar() { ScaleY = 0.45f };
-            var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
-            var expected = searchBar.ScaleY;
-            var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
-            Assert.Equal(expected, platformScaleY);
-        }
+		public async Task ScaleYConsistent()
+		{
+			var searchBar = new SearchBar() { ScaleY = 0.45f };
+			var expected = searchBar.ScaleY;
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			var platformSearchBar = GetPlatformControl(handler);
+			var platformScaleY = await InvokeOnMainThreadAsync(() => platformSearchBar.ScaleY);
+			Assert.Equal(expected, platformScaleY);
+		}
+
+		[Fact]
+		[Description("The Scale property of a SearchBar should match with native Scale")]
+		public async Task ScaleConsistent()
+		{
+			var searchBar = new SearchBar() { Scale = 2.0f };
+			var expected = searchBar.Scale;
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			var platformSearchBar = GetPlatformControl(handler);
+			var platformScaleX = await InvokeOnMainThreadAsync(() => platformSearchBar.ScaleX);
+			var platformScaleY = await InvokeOnMainThreadAsync(() => platformSearchBar.ScaleY);
+			Assert.Equal(expected, platformScaleX);
+			Assert.Equal(expected, platformScaleY);
+		}
+
+		[Fact]
+		[Description("The RotationX property of a SearchBar should match with native RotationX")]
+		public async Task RotationXConsistent()
+		{
+			var searchBar = new SearchBar() { RotationX = 33.0 };
+			var expected = searchBar.RotationX;
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			var platformSearchBar = GetPlatformControl(handler);
+			var platformRotationX = await InvokeOnMainThreadAsync(() => platformSearchBar.RotationX);
+			Assert.Equal(expected, platformRotationX);
+		}
+
+		[Fact]
+		[Description("The RotationY property of a SearchBar should match with native RotationY")]
+		public async Task RotationYConsistent()
+		{
+			var searchBar = new SearchBar() { RotationY = 33.0 };
+			var expected = searchBar.RotationY;
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			var platformSearchBar = GetPlatformControl(handler);
+			var platformRotationY = await InvokeOnMainThreadAsync(() => platformSearchBar.RotationY);
+			Assert.Equal(expected, platformRotationY);
+		}
+
+		[Fact]
+		[Description("The Rotation property of a SearchBar should match with native Rotation")]
+		public async Task RotationConsistent()
+		{
+			var searchBar = new SearchBar() { Rotation = 33.0 };
+			var expected = searchBar.Rotation;
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			var platformSearchBar = GetPlatformControl(handler);
+			var platformRotationX = await InvokeOnMainThreadAsync(() => platformSearchBar.RotationX);
+			var platformRotationY = await InvokeOnMainThreadAsync(() => platformSearchBar.RotationY);
+			Assert.Equal(expected, platformRotationX);
+			Assert.Equal(expected, platformRotationY);
+		}
 	}
 }
