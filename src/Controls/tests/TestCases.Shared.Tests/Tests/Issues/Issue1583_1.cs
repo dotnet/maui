@@ -26,7 +26,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("Loaded https://github.com/xamarin/Xamarin.Forms/issues/2736#issuecomment-389443737");
 			App.Tap("queryButton");
 			await Task.Delay(TimeSpan.FromSeconds(3));
-			App.WaitForElement("Microsoft");
+			App.WaitForElementTillPageNavigationSettled("Microsoft");
 		}
 	}
 } 
