@@ -9,7 +9,7 @@
         <ResourceDictionary>
             <ControlTemplate x:Key="Page1">
                 <StackLayout BackgroundColor="Red">
-                    <Button Text="Sheik"
+                    <Button Text="Change Value"
                             AutomationId="Button"
                             Clicked="Button_Clicked"/>
                     <Label Text="First Page"
