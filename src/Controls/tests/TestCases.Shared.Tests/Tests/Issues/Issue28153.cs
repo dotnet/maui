@@ -12,7 +12,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "The border color of the RadioButton is visible in Windows only";
 		[Test]
 		[Category(UITestCategories.RadioButton)]
-		public void RadioButtonBorderColorWithoutBorderWidth()
+		public void ValidateRadioButtonNoBorderColorWhenNoBorderWidth()
 		{
 			App.WaitForElement("RadioButton");
 			VerifyScreenshot();
