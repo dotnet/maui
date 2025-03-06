@@ -1,4 +1,8 @@
 ﻿using Microsoft.Maui.Handlers;
+using Xunit;
+using System.ComponentModel;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -9,5 +13,24 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsChecked(RadioButtonHandler radioButtonHandler) =>
 			GetNativeRadioButton(radioButtonHandler).IsChecked ?? false;
+
+		[Fact]
+		[Description("The Opacity property of a RadioButton should match with native Opacity")]
+		public async Task VerifyRadioButtonOpacityProperty()
+		{
+			var radioButton = new RadioButton
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = radioButton.Opacity;
+
+			var handler = await CreateHandlerAsync<RadioButtonHandler>(radioButton);
+			var nativeView = GetNativeRadioButton(handler);
+			await InvokeOnMainThreadAsync(() =>
+   			{
+				var nativeOpacityValue = (float)nativeView.Opacity;
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
+		}
 	}
 }
