@@ -154,6 +154,19 @@ public partial class GraphicsTests : TestBase
 		Assert.True(solidPaint.IsSolid());
 	}
 
+	[Fact]
+	public void NullSolidPaintTest(string hexColor)
+	{
+		Color nullColor = null;
+		var solidPaintNullColor = new SolidPaint(nullColor);
+
+		Assert.False(solidPaintNullColor.IsSolid());
+
+		SolidPaint nullSolidPaint = null;
+
+		Assert.False(nullSolidPaint.IsSolid());
+	}
+
 	[Theory]
 	[InlineData("#FF0000", "#00FF00")]
 	[InlineData("#00FF00", "#0000FF")]
@@ -167,6 +180,20 @@ public partial class GraphicsTests : TestBase
 		Assert.True(linearGradientPaint.IsSolid());
 	}
 
+	[Fact]
+	public void NullLinearGradientPaintTest()
+	{
+		Color nullStartColor = null;
+		Color nullEndColor = null;
+		var linearGradientPaintNullColors = new LinearGradientPaintStub(nullStartColor, nullEndColor);
+
+		Assert.False(linearGradientPaintNullColors.IsSolid());
+
+		LinearGradientPaintStub nullLinearGradientPaint = null;
+
+		Assert.False(nullLinearGradientPaint.IsSolid());
+	}
+
 	[Theory]
 	[InlineData("#FF0000", "#00FF00")]
 	[InlineData("#00FF00", "#0000FF")]
@@ -178,5 +205,19 @@ public partial class GraphicsTests : TestBase
 		var radialGradientPaint = new RadialGradientPaintStub(startColor, endColor);
 
 		Assert.True(radialGradientPaint.IsSolid());
+	}
+
+	[Fact]
+	public void NullRadialGradientPaintTest()
+	{
+		Color nullStartColor = null;
+		Color nullEndColor = null;
+		var radialGradientPaintNullColors = new RadialGradientPaintStub(nullStartColor, nullEndColor);
+
+		Assert.False(radialGradientPaintNullColors.IsSolid());
+
+		RadialGradientPaintStub nullRadialGradientPaint = null;
+
+		Assert.False(nullRadialGradientPaint.IsSolid());
 	}
 }
