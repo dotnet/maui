@@ -57,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
         {
             var templatedView = new TemplatedView() { RotationX = 33.0 };
             var expected = templatedView.RotationX;
-            var handler = await CreateHandlerAsync<SearchBarHandler>(templatedView);
+            var handler = await CreateHandlerAsync<ContentViewHandler>(templatedView);
             var platformRotationX = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationX);
             Assert.Equal(expected, platformRotationX);
         }
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
         {
             var templatedView = new TemplatedView() { RotationY = 87.0 };
             var expected = templatedView.RotationY;
-            var handler = await CreateHandlerAsync<SearchBarHandler>(templatedView);
+            var handler = await CreateHandlerAsync<ContentViewHandler>(templatedView);
             var platformRotationY = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationY);
             Assert.Equal(expected, platformRotationY);
         }
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.DeviceTests
         {
             var templatedView = new TemplatedView() { Rotation = 23.0 };
             var expected = templatedView.Rotation;
-            var handler = await CreateHandlerAsync<SearchBarHandler>(templatedView);
+            var handler = await CreateHandlerAsync<ContentViewHandler>(templatedView);
             var platformRotation = await InvokeOnMainThreadAsync(() => handler.PlatformView.Rotation);
             Assert.Equal(expected, platformRotation);
         }
