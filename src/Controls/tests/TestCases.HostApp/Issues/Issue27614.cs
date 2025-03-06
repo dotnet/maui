@@ -29,7 +29,7 @@
 			};
 			var button1 = new Button
 			{
-				Text = "Change Label HorizontalOptions to Center",
+				Text = "Change Label HorizontalOptions to End",
 				AutomationId = "EndButton",
 				Margin = new Thickness(5, 5)
 			};
