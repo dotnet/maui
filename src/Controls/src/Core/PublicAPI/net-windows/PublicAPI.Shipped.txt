@@ -1915,10 +1915,10 @@
 ~override Microsoft.Maui.Controls.LayoutOptionsConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext context) -> System.ComponentModel.TypeConverter.StandardValuesCollection
 ~override Microsoft.Maui.Controls.LayoutOptionsConverter.GetStandardValuesExclusive(System.ComponentModel.ITypeDescriptorContext context) -> bool
 ~override Microsoft.Maui.Controls.LayoutOptionsConverter.GetStandardValuesSupported(System.ComponentModel.ITypeDescriptorContext context) -> bool
-~override Microsoft.Maui.Controls.ListStringTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Type sourceType) -> bool
-~override Microsoft.Maui.Controls.ListStringTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Type destinationType) -> bool
-~override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
-~override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object
+override Microsoft.Maui.Controls.ListStringTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.ListStringTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
 ~override Microsoft.Maui.Controls.ListView.CreateDefault(object item) -> Microsoft.Maui.Controls.Cell
 ~override Microsoft.Maui.Controls.ListView.SetupContent(Microsoft.Maui.Controls.Cell content, int index) -> void
 ~override Microsoft.Maui.Controls.ListView.UnhookContent(Microsoft.Maui.Controls.Cell content) -> void
