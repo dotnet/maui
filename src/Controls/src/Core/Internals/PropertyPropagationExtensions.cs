@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Internals
 			if (propertyName == null || propertyName == Shell.NavBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.NavBarIsVisibleProperty, element);
 
-			for (int i = 0; i < children.Count; i++)
+			for (int i = 0; i < children.ToList().Count; i++)
 			{
 				if (children[i] is IPropertyPropagationController view)
 				{
