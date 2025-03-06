@@ -1,4 +1,4 @@
-﻿#if IOS
+﻿#if IOS ////This test case verifies that the sample is working exclusively on iOS platforms "due to navigationBehavior: NavigationBehavior.SetApplicationRoot".
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -16,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		[Category(UITestCategories.Compatibility)]
 		public void PaddingEqualToSafeAreaWorks()
 		{
 			var somePadding = App.WaitForElement("Hello").GetRect();

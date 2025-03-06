@@ -1,4 +1,4 @@
-﻿#if IOS
+﻿#if ANDROID && TEST_FAILS_ON_ANDROID //Related issues: https://github.com/dotnet/maui/issues/26505
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -16,11 +16,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Button)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
+		[FailsOnAndroidWhenRunningOnXamarinUITest("https://github.com/dotnet/maui/issues/26505")]
 		public void Issue1436Test()
 		{
 			App.WaitForElement("TestReady");
-			App.Screenshot("I am at Issue 1436");
+			VerifyScreenshot();
 		}
 	}
 }

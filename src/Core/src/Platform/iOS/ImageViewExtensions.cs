@@ -67,30 +67,46 @@ namespace Microsoft.Maui.Platform
 		/// <remarks>The default iOS implementation of SizeThatFits only returns the image's dimensions and ignores the constraints.</remarks>
 		/// <param name="imageView">The <see cref="UIImageView"/> to be measured.</param>
 		/// <param name="constraints">The specified size constraints.</param>
+		/// <param name="padding"></param>
 		/// <returns>The size where the image would fit depending on the aspect ratio.</returns>
-		internal static CGSize SizeThatFitsImage(this UIImageView imageView, CGSize constraints)
+		internal static CGSize SizeThatFitsImage(
+			this UIImageView imageView,
+			CGSize constraints,
+			Thickness padding = default)
 		{
 			// If there's no image, we don't need to take up any space
 			if (imageView.Image is null)
+			{
 				return new CGSize(0, 0);
+			}
 
-			var heightConstraint = constraints.Height;
-			var widthConstraint = constraints.Width;
-			var imageSize = imageView.Image.Size;
+			CGSize imageSize = imageView.Image.Size;
+			double imageWidth = imageSize.Width;
+			double imageHeight = imageSize.Height;
 
-			var widthRatio = Math.Min(imageSize.Width, widthConstraint) / imageSize.Width;
-			var heightRatio = Math.Min(imageSize.Height, heightConstraint) / imageSize.Height;
+			var horizontalThickness = padding.HorizontalThickness;
+			var verticalThickness = padding.VerticalThickness;
+
+			var widthConstraint = constraints.Width - horizontalThickness;
+			var heightConstraint = constraints.Height - verticalThickness;
+
+
+			var constrainedWidth = Math.Min(imageWidth, widthConstraint);
+			var constrainedHeight = Math.Min(imageHeight, heightConstraint);
 
 			// In cases where we the image must fit its given constraints, we must shrink based on the smallest dimension (scale factor)
 			// that can fit it
 			if (imageView.ContentMode == UIViewContentMode.ScaleAspectFit)
 			{
+				var widthRatio = constrainedWidth / imageWidth;
+				var heightRatio = constrainedHeight / imageHeight;
 				var scaleFactor = Math.Min(widthRatio, heightRatio);
-				return new CGSize(imageSize.Width * scaleFactor, imageSize.Height * scaleFactor);
+
+				return new CGSize(imageWidth * scaleFactor + horizontalThickness, imageHeight * scaleFactor + verticalThickness);
 			}
 
 			// Cases where AspectMode is ScaleToFill or Center
-			return constraints;
+			return new CGSize(constrainedWidth + horizontalThickness, constrainedHeight + verticalThickness);
 		}
 	}
 }

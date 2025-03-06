@@ -134,7 +134,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals arm64
 
   - name: TestTargetFrameworks
@@ -173,21 +173,20 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              ${{ if ne(variables['System.TeamProject'], 'devdiv') }}:
-                demands: ${{ BuildPlatform.demands }}
-              ${{ else }}:
-                demands:
-                  - macOS.Name -equals Sonoma
-                  - macOS.Architecture -equals x64
+              demands: ${{ BuildPlatform.demands }}
             steps:
               - template: common/provision.yml
                 parameters:
                   poolName: ${{ BuildPlatform.poolName }}
-                  skipAndroidSdks: true
-                  skipAndroidImages: true
-                  installDefaultAndroidApi: false
+                  skipJdk: false
+                  skipAndroidCommonSdks: false
+                  skipAndroidPlatformApis: false
+                  onlyAndroidPlatformDefaultApis: true
+                  skipAndroidEmulatorImages: true
+                  skipAndroidCreateAvds: true
+                  skipProvisioning: true
                   skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                  ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'true') ) }}:
+                  ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
                     skipProvisionator: false
                     gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                   ${{ else }}:
@@ -257,11 +256,15 @@ stages:
                     parameters:
                       checkoutDirectory: '$(System.DefaultWorkingDirectory)'
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      skipAndroidSdks: true
-                      skipAndroidImages: true
-                      installDefaultAndroidApi: true
+                      skipJdk: false
+                      skipAndroidCommonSdks: false
+                      skipAndroidPlatformApis: false
+                      onlyAndroidPlatformDefaultApis: true
+                      skipAndroidEmulatorImages: true
+                      skipAndroidCreateAvds: true
+                      skipProvisioning: true
                       skipXcode: ${{ ne(PackPlatform.name , 'macOS') }}
-                      ${{ if or(eq(parameters.UseProvisionator, 'True'), eq(variables['internalProvisioning'],'True') )}}:
+                      ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
                         skipProvisionator: false
                         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                       ${{ else }}:  
@@ -280,21 +283,20 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
-            ${{ if ne(variables['System.TeamProject'], 'devdiv') }}:
-              demands: ${{ BuildPlatform.demands }}
-            ${{ else }}:
-              demands:
-                - macOS.Name -equals Sonoma
-                - macOS.Architecture -equals x64          
+            demands: ${{ BuildPlatform.demands }}     
           steps:
             - template: common/provision.yml
               parameters:
                 poolName: ${{ BuildPlatform.poolName }}
-                skipAndroidSdks: true
-                skipAndroidImages: true
-                installDefaultAndroidApi: true
+                skipJdk: false
+                skipAndroidCommonSdks: false
+                skipAndroidPlatformApis: false
+                onlyAndroidPlatformDefaultApis: true
+                skipAndroidEmulatorImages: true
+                skipAndroidCreateAvds: true
+                skipProvisioning: true
                 skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
-                ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
+                ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
                   skipProvisionator: false
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
                 ${{ else }}:  
@@ -352,7 +354,7 @@ stages:
               skipAndroidImages: true
               installDefaultAndroidApi: true
               skipXcode: false
-              ${{ if or(eq(parameters.UseProvisionator, 'True'), eq(variables['internalProvisioning'],'True') )}}:
+              ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') )}}:
                 skipProvisionator: false
                 gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
               ${{ else }}:  
