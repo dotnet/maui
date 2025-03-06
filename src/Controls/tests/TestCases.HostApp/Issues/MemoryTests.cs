@@ -67,7 +67,7 @@ namespace Maui.Controls.Sample.Issues
 							{
 								AutomationId = "Image",
 								Source = "red.png",
-								Background = Colors.Black,
+								Background = Colors.Black
 							};
 						});
 						break;
