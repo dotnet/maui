@@ -79,6 +79,26 @@ steps:
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       timeoutInMinutes: 30
 
+  # Provision Additional Software
+  - ${{ if ne(parameters.skipProvisionator, true) }}:
+    # Prepare macOS
+    - task: xamops.azdevex.provisionator-task.provisionator@3
+      displayName: 'Provision Additional Software'
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      continueOnError: true
+      inputs:
+        provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
+        provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+        github_token: ${{ parameters.gitHubToken }}
+      env:
+        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+        AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+        ${{ if eq(parameters.skipAndroidSdks, true) }}:
+          SKIP_ANDROID_API_SDKS: 'true'
+        ${{ if eq(parameters.skipAndroidImages, true) }}:
+          SKIP_ANDROID_API_IMAGES: 'true'
+        ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
+          INSTALL_DEFAULT_ANDROID_API: 'true'
 
   ##################################################
   #              Provisioning Windows              #
