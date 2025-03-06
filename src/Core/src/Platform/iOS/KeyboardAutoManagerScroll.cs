@@ -184,7 +184,7 @@ public static class KeyboardAutoManagerScroll
 	{
 		notification.UserInfo?.SetAnimationDuration();
 
-		if (LastScrollView is not null)
+		if (LastScrollView?.Window is not null)
 		{
 			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, AnimateHidingKeyboard, () => { });
 		}
