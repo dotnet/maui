@@ -1,6 +1,5 @@
 parameters:
   androidPool: { }
-  androidPoolX64: { }
   iosPool: { }
   catalystPool: { }
   windowsPool: { }
