@@ -83,17 +83,13 @@ namespace Microsoft.Maui.Graphics
 		}
 
 		internal static bool IsSolid(this SolidPaint? paint) =>
-			paint?.Color.Alpha == 1;
+			paint?.Color?.Alpha == 1;
 
-		internal static bool IsSolid(this LinearGradientPaint paint)
-		{
-			return paint.GradientStops.All(s => s.Color.Alpha == 1);
-		}
+		internal static bool IsSolid(this LinearGradientPaint? paint) =>
+			paint?.GradientStops?.All(s => s.Color?.Alpha == 1) == true;
 
-		internal static bool IsSolid(this RadialGradientPaint paint)
-		{
-			return paint.GradientStops.All(s => s.Color.Alpha == 1);
-		}
+		internal static bool IsSolid(this RadialGradientPaint? paint) =>
+			paint?.GradientStops?.All(s => s.Color?.Alpha == 1) == true;
 
 		internal static bool IsValid(this GradientPaint? gradientPaint) =>
 			gradientPaint?.GradientStops?.Length > 0;
