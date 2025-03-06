@@ -144,7 +144,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("EntryText1");
-			App.EnterText("EntryText1", "Test@1234");	
+			App.EnterText("EntryText1", "Test@1234");
 			App.WaitForElement("PasswordTrue");
 			App.Tap("PasswordTrue");
 			App.WaitForElement("Apply");
@@ -358,6 +358,52 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Entry)]
+		public void VerifyIsPasswordBasedOnCharacterSpacing()
+		{
+			// Exception exception = null;
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EntryText1");
+			App.EnterText("EntryText1", "Test@1234");
+			App.ClearText("CharacterSpacing");
+			App.EnterText("CharacterSpacing", "5");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
+			// VerifyScreenshotOrSetException(ref exception,"IsPassword_CharacterSpacing_Default");
+			App.Tap("Options");
+			App.WaitForElement("EntryText1");
+			App.EnterText("EntryText1", "Test@1234");
+			App.ClearText("CharacterSpacing");
+			App.EnterText("CharacterSpacing", "5");
+			App.WaitForElement("PasswordTrue");
+			App.Tap("PasswordTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
+			// VerifyScreenshotOrSetException(ref exception,"IsPassword_CharacterSpacing_True");
+			// if (exception != null)
+			// {
+			// 	throw exception;
+			// }
+		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
 		public void VerifyTextWhenIsPasswordTrueOrFalse()
 		{
 			// Exception exception = null;
@@ -495,29 +541,22 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Entry)]
 		public void VerifyTextWhenMaxLengthSetValue()
 		{
-			// Exception exception = null;
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("EntryText1");
-			App.EnterText("EntryText1", "Test@1234abc");
+			App.EnterText("EntryText1", "Test Max Length");
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
-			App.Tap("EntryText");
-			// VerifyScreenshotOrSetException(ref exception, "MaxLength_Default");
+			Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test Max Length"));
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("EntryText1");
-			App.EnterText("EntryText1", "Test@1234abc");
+			App.EnterText("EntryText1", "Test Max Length");
 			App.ClearText("MaxLength");
 			App.EnterText("MaxLength", "8");
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
-			App.Tap("EntryText");
-			// VerifyScreenshotOrSetException(ref exception, "MaxLength_8");
-			// if (exception != null)
-			// {
-			// 	throw exception;
-			// }
+			Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test Max"));
 		}
 
 		[Test]
@@ -531,11 +570,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("EntryText1");
 			App.EnterText("EntryText1", "Test@1234abc");
 			App.Tap("PasswordTrue");
+			App.Tap("PasswordFalse");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
-			App.Tap("EntryText");
-			// VerifyScreenshotOrSetException(ref exception, "IsPassword_MaxLength_Default");
+			Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test@1234abc"));
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("EntryText1");
@@ -543,15 +582,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ClearText("MaxLength");
 			App.EnterText("MaxLength", "8");
 			App.Tap("PasswordTrue");
+			App.Tap("PasswordFalse");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
-			App.Tap("EntryText");
-			// VerifyScreenshotOrSetException(ref exception, "IsPassword_MaxLength_8");
-			// if (exception != null)
-			// {
-			// 	throw exception;
-			// }
+			Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test@123"));
 		}
 
 		[Test]
@@ -567,6 +602,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "VerticalTextAlignment_HorizontalTextAlignment_Default");
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -579,6 +620,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "VerticalTextAlignment_HorizontalTextAlignment_End");
 			// if (exception != null)
 			// {
@@ -599,6 +646,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "TextColor_Default");
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -609,6 +662,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "TextColor_Red");
 			// if (exception != null)
 			// {
@@ -629,6 +688,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "FontSize_Default");
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -639,6 +704,56 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
+			// VerifyScreenshotOrSetException(ref exception, "FontSize_20");
+			// if (exception != null)
+			// {
+			// 	throw exception;
+			// }
+		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifyIsPasswordWhenFontSizeSet()
+		{
+			// Exception exception = null;
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EntryText1");
+			App.EnterText("EntryText1", "Test Entry");
+			App.Tap("PasswordTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
+			// VerifyScreenshotOrSetException(ref exception, "FontSize_Default");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EntryText1");
+			App.EnterText("EntryText1", "Test Entry");
+			App.Tap("PasswordTrue");
+			App.ClearText("FontSizeEntry");
+			App.EnterText("FontSizeEntry", "20");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "FontSize_20");
 			// if (exception != null)
 			// {
@@ -653,23 +768,82 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Exception exception = null;
 			App.WaitForElement("Options");
 			App.Tap("Options");
+			App.WaitForElement("TextPredictionTrue");
+			App.Tap("TextPredictionTrue");
 			App.WaitForElement("EntryText1");
 			App.EnterText("EntryText1", "Test Entry");
-			App.Tap("TextPredictionTrue");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "IsTextPredictionEnabled_True");
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("EntryText1");
 			App.EnterText("EntryText1", "Test Entry");
-			App.Tap("TextPredictionFalse");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
+			// VerifyScreenshotOrSetException(ref exception, "IsTextPredictionEnabled_False");
+			// if (exception != null)
+			// {
+			// 	throw exception;
+			// }
+		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifyIsPasswordWhenIsTextPredictionEnabledTrueOrFalse()
+		{
+			// Exception exception = null;
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("TextPredictionTrue");
+			App.Tap("TextPredictionTrue");
+			App.WaitForElement("EntryText1");
+			App.EnterText("EntryText1", "Test@1234");
+			App.Tap("PasswordTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
+			// VerifyScreenshotOrSetException(ref exception, "IsTextPredictionEnabled_True");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("TextPredictionFalse");
+			App.Tap("TextPredictionFalse");
+			App.WaitForElement("EntryText1");
+			App.EnterText("EntryText1", "Test@1234");
+			App.Tap("PasswordTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "IsTextPredictionEnabled_False");
 			// if (exception != null)
 			// {
@@ -684,23 +858,84 @@ namespace Microsoft.Maui.TestCases.Tests
 			// Exception exception = null;
 			App.WaitForElement("Options");
 			App.Tap("Options");
+			App.WaitForElement("SpellCheckTrue");
+			App.Tap("SpellCheckTrue");
 			App.WaitForElement("EntryText1");
 			App.EnterText("EntryText1", "Test Entry");
-			App.Tap("SpellCheckTrue");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "IsSpellCheckEnabled_True");
 			App.WaitForElement("Options");
 			App.Tap("Options");
+			App.WaitForElement("SpellCheckFalse");
+			App.Tap("SpellCheckFalse");
 			App.WaitForElement("EntryText1");
 			App.EnterText("EntryText1", "Test Entry");
-			App.Tap("SpellCheckFalse");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
+			// VerifyScreenshotOrSetException(ref exception, "IsSpellCheckEnabled_False");
+			// if (exception != null)
+			// {
+			// 	throw exception;
+			// }
+		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifyIsPasswordWhenIsSpellCheckEnabledTrueOrFalse()
+		{
+			//Exception exception = null;
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("SpellCheckTrue");
+			App.Tap("SpellCheckTrue");
+			App.WaitForElement("EntryText1");
+			App.EnterText("EntryText1", "Test@1234");
+			App.Tap("PasswordTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
+			// VerifyScreenshotOrSetException(ref exception, "IsSpellCheckEnabled_True");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("SpellCheckFalse");
+			App.Tap("SpellCheckFalse");
+			App.WaitForElement("EntryText1");
+			App.EnterText("EntryText1", "Test@1234");
+			App.Tap("PasswordTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "IsSpellCheckEnabled_False");
 			// if (exception != null)
 			// {
@@ -721,6 +956,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "CharacterSpacing_Default");
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -731,6 +972,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "CharacterSpacing_5");
 			// if (exception != null)
 			// {
@@ -751,6 +998,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "SelectionLength_Default");
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -761,6 +1014,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "SelectionLength_5");
 			// if (exception != null)
 			// {
@@ -781,19 +1040,74 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "CursorPosition_Default");
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("EntryText1");
 			App.EnterText("EntryText1", "Test Entry");
-			App.WaitForElement("CursorVisibleTrue");
-			App.Tap("CursorVisibleTrue");
 			App.ClearText("CursorPosition");
 			App.EnterText("CursorPosition", "5");
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// VerifyScreenshotOrSetException(ref exception, "CursorPosition_5");
+			// if (exception != null)
+			// {
+			// 	throw exception;
+			// }
+		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifyIsPasswordWhenCursorPositionValueSet()
+		{
+			// Exception exception = null;
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EntryText1");
+			App.EnterText("EntryText1", "Test@1234");
+			App.Tap("PasswordTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
+			// VerifyScreenshotOrSetException(ref exception, "IsPassword_CursorPosition_Default");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EntryText1");
+			App.EnterText("EntryText1", "Test@1234");
+			App.ClearText("CursorPosition");
+			App.EnterText("CursorPosition", "5");
+			App.Tap("PasswordTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
+			// VerifyScreenshotOrSetException(ref exception, "IsPassword_CursorPosition_5");
 			// if (exception != null)
 			// {
 			// 	throw exception;
@@ -823,8 +1137,96 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
+			//android ios mac dif behavior
+			#if MACCATALYST
+			Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test EntryTestEntry"));
+			#elif IOS
 			Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("TestEntry"));
+			#endif
+		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifyTextWhenFontFamilySet()
+		{
+			// Exception exception = null;
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EntryText1");
+			App.EnterText("EntryText1", "Test Entry");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
+			// VerifyScreenshotOrSetException(ref exception, "Text_FontFamily_Default");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.EnterText("FontFamily", "MontserratBold");
+			App.WaitForElement("EntryText1");
+			App.EnterText("EntryText1", "Test Entry");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}	
+#endif
+			// VerifyScreenshotOrSetException(ref exception, "Text_FontFamily_AfterChange");
+			// if (exception != null)
+			// {
+			// 	throw exception;
+			// }
+		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifyIsPasswordWhenFontFamilySet()
+		{
+			// Exception exception = null;
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EntryText1");
+			App.EnterText("EntryText1", "Test@1234");
+			App.Tap("PasswordFalse");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
+			// VerifyScreenshotOrSetException(ref exception, "IsPassword_FontFamily_Default");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.EnterText("FontFamily", "MontserratBold");
+			App.WaitForElement("EntryText1");
+			App.EnterText("EntryText1", "Test@1234");
+			App.Tap("PasswordFalse");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
+			// VerifyScreenshotOrSetException(ref exception, "IsPassword_FontFamily_AfterChange");
+			// if (exception != null)
+			// {	
+			// 	throw exception;
+			// }
 		}
 	}
 }

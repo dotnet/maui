@@ -12,7 +12,7 @@
                 <StackLayout Grid.Column="0" Padding="3" Spacing="3">
                         <Label Text="Modify Entry Properties" FontSize="15" HorizontalOptions="Center"/>
                         <Label Text="Entry Text:" FontSize="11"/>
-                        <local:UITestEntry
+                        <Entry
                                 Text="{Binding Text}"
                                 Placeholder="Enter some text"
                                 AutomationId="EntryText1"
@@ -33,7 +33,6 @@
                                 ReturnType="{Binding ReturnType}"
                                 Keyboard="{Binding Keyboard}"
                                 FontFamily="{Binding FontFamily}"
-                                IsCursorVisible="{Binding IsCursorVisible}"
                                 HeightRequest="50"/>
                         
                         <Label Text="Font Size:" FontSize="11"/>
@@ -73,10 +72,6 @@
                         <Label Text="Cursor position:" FontSize="11"/>
                         <Entry x:Name="CursorPositionEntry" Text="{Binding CursorPosition}" Keyboard="Numeric" AutomationId="CursorPosition"/>
                         <Label Text="IsCursorVisible:" FontSize="11"/>
-                        <StackLayout Orientation="Horizontal" Spacing="3">
-                                <RadioButton x:Name="IsCursorVisibleTrue" Content="True" FontSize="11" GroupName="CursorVisible" AutomationId="CursorVisibleTrue" CheckedChanged="IsCursorVisibleTrueOrFalse_Clicked"/>
-                                <RadioButton x:Name="IsCursorVisibleFalse" Content="False" IsChecked="True" FontSize="11" GroupName="CursorVisible" AutomationId="CursorVisibleFalse" CheckedChanged="IsCursorVisibleTrueOrFalse_Clicked"/>
-                        </StackLayout>
                 </StackLayout>
 
                 <StackLayout Grid.Column="1" Padding="3" Spacing="3">
@@ -125,7 +120,7 @@
                                 </StackLayout>
                         </StackLayout>
                                 <Label Text="Font Family:" FontSize="11"/>
-                                <Entry x:Name="FontFamilyEntry" Text="{Binding FontFamily}" AutomationId="FontFamily"/>
+                                <Entry x:Name="FontFamilyEntry" Text="{Binding FontFamily}" AutomationId="FontFamily" TextChanged="FontFamilyEntry_TextChanged"/>
                 </StackLayout>
         </Grid>
 </ContentPage>

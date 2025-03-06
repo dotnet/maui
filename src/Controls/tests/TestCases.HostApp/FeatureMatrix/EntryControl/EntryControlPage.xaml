@@ -7,7 +7,7 @@
                FontSize="20"
                HorizontalOptions="Center"/>
 
-        <local:UITestEntry
+        <Entry
             Text="{Binding Text}"
             Placeholder="Enter some text"
             AutomationId="EntryText"
@@ -28,7 +28,6 @@
             ReturnType="{Binding ReturnType}"
             Keyboard="{Binding Keyboard}"
             FontFamily="{Binding FontFamily}"
-            IsCursorVisible="{Binding IsCursorVisible}"
             HeightRequest="50"/>
     </StackLayout>
 

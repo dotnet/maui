@@ -98,10 +98,7 @@ namespace Maui.Controls.Sample
                 _viewModel.CursorPosition = cursorPosition;
             }
         }
-        private void IsCursorVisibleTrueOrFalse_Clicked(object sender, EventArgs e)
-        {
-            _viewModel.IsCursorVisible = IsCursorVisibleTrue.IsChecked;
-        }
+        
 
         private void FontSizeEntry_TextChanged(object sender, TextChangedEventArgs e)
         {
