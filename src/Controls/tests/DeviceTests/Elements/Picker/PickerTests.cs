@@ -70,5 +70,23 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidateHasColor(picker, expected, typeof(PickerHandler));
 		}
+
+		[Fact]
+		[Description("The Opacity property of a Picker should match with native Opacity")]
+		public async Task VerifyPickerOpacityProperty()
+		{
+			var picker = new Picker
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = picker.Opacity;
+
+			var handler = await CreateHandlerAsync<PickerHandler>(picker);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var nativeOpacityValue = await GetPlatformOpacity(handler);
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
+		}
 	}
 }
