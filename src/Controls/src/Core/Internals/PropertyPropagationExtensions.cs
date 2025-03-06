@@ -30,9 +30,12 @@ namespace Microsoft.Maui.Controls.Internals
 
 			if (children is IReadOnlyList<IVisualTreeElement> childList)
 			{
-				foreach (var child in childList.OfType<IPropertyPropagationController>().ToList())
+				for (int i = 0; i < childList.Count; i++)
 				{
-					child.PropagatePropertyChanged(propertyName);
+					if (childList[i] is IPropertyPropagationController view)
+					{
+						view.PropagatePropertyChanged(propertyName);
+					}
 				}
 			}
 		}
