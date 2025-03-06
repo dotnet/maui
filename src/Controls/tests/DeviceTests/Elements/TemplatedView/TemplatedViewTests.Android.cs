@@ -44,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests
         {
             var templatedView = new TemplatedView() { Scale = 2.0f };
             var expected = templatedView.Scale;
-            var handler = await CreateHandlerAsync<SearchBarHandler>(templatedView);
+            var handler = await CreateHandlerAsync<ContentViewHandler>(templatedView);
             var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
             var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
             Assert.Equal(expected, platformScaleX);
