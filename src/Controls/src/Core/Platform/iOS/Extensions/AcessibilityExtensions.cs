@@ -24,6 +24,12 @@ internal static class AcessibilityExtensions
 		{
 			var firstChild = cell.ContentView.Subviews[0];
 
+			// if the first child is a control, changing the accessibility traits from an entry to a button could be confusing.
+			if (firstChild is UIControl)
+			{
+				return;
+			}
+
 			if (selectionMode != SelectionMode.None)
 			{
 				firstChild.AccessibilityTraits |= UIAccessibilityTrait.Button;
