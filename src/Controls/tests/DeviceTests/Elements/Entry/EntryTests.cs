@@ -1,8 +1,10 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
@@ -186,6 +188,39 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		[Fact]
+		[Description("The BackgroundColor of a Entry should match with native background color")]
+		public async Task EntryBackgroundColorConsistent()
+		{
+			var expected = Colors.AliceBlue;
+			var entry = new Entry()
+			{
+				BackgroundColor = expected,
+				HeightRequest = 100,
+				WidthRequest = 200
+			};
+
+			await ValidateHasColor(entry, expected, typeof(EntryHandler));
+		}
+
+		[Fact]
+		[Description("The Opacity property of an Entry should match with native Opacity")]
+		public async Task VerifyEntryOpacityProperty()
+		{
+			var entry = new Entry
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = entry.Opacity;
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var nativeOpacityValue = await GetPlatformOpacity(handler);
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
+		}
 
 		[Category(TestCategory.Entry)]
 		[Category(TestCategory.TextInput)]

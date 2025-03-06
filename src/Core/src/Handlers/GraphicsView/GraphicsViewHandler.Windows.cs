@@ -29,9 +29,9 @@ namespace Microsoft.Maui.Handlers
 		internal static void MapBackground(IGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
 			if (graphicsView.Background is not null)
-            {
-                handler.PlatformView?.Invalidate();
-            }
+			{
+				handler.PlatformView?.Invalidate();
+			}
 		}
 
 		public static void MapDrawable(IGraphicsViewHandler handler, IGraphicsView graphicsView)

@@ -1,50 +1,50 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="9.0.0-prerelease.25103.3">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="9.0.0-prerelease.25113.3">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>22a44bd14f5d6308acdda4b6dd67e4d7aa0bca5b</Sha>
+      <Sha>edc52ac68c1bf77e3b107fc8a448674a6d058d8a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="9.0.0-prerelease.25103.3">
+    <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Xunit" Version="9.0.0-prerelease.25113.3">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>22a44bd14f5d6308acdda4b6dd67e4d7aa0bca5b</Sha>
+      <Sha>edc52ac68c1bf77e3b107fc8a448674a6d058d8a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="9.0.0-prerelease.25103.3">
+    <Dependency Name="Microsoft.DotNet.XHarness.CLI" Version="9.0.0-prerelease.25113.3">
       <Uri>https://github.com/dotnet/xharness</Uri>
-      <Sha>22a44bd14f5d6308acdda4b6dd67e4d7aa0bca5b</Sha>
+      <Sha>edc52ac68c1bf77e3b107fc8a448674a6d058d8a</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="9.0.0-beta.24623.3">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Feed" Version="9.0.0-beta.25111.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e0e05154656254a735ebf19ffa5a37a8b915039b</Sha>
+      <Sha>5da211e1c42254cb35e7ef3d5a8428fb24853169</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.24623.3">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.25111.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e0e05154656254a735ebf19ffa5a37a8b915039b</Sha>
+      <Sha>5da211e1c42254cb35e7ef3d5a8428fb24853169</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.24623.3">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.25111.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e0e05154656254a735ebf19ffa5a37a8b915039b</Sha>
+      <Sha>5da211e1c42254cb35e7ef3d5a8428fb24853169</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Workloads" Version="9.0.0-beta.24623.3">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Workloads" Version="9.0.0-beta.25111.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e0e05154656254a735ebf19ffa5a37a8b915039b</Sha>
+      <Sha>5da211e1c42254cb35e7ef3d5a8428fb24853169</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.24623.3">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.25111.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e0e05154656254a735ebf19ffa5a37a8b915039b</Sha>
+      <Sha>5da211e1c42254cb35e7ef3d5a8428fb24853169</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SharedFramework.Sdk" Version="9.0.0-beta.24623.3">
+    <Dependency Name="Microsoft.DotNet.SharedFramework.Sdk" Version="9.0.0-beta.25111.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e0e05154656254a735ebf19ffa5a37a8b915039b</Sha>
+      <Sha>5da211e1c42254cb35e7ef3d5a8428fb24853169</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="9.0.0-beta.24623.3">
+    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="9.0.0-beta.25111.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e0e05154656254a735ebf19ffa5a37a8b915039b</Sha>
+      <Sha>5da211e1c42254cb35e7ef3d5a8428fb24853169</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="9.0.0-beta.24623.3">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="9.0.0-beta.25111.5">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>e0e05154656254a735ebf19ffa5a37a8b915039b</Sha>
+      <Sha>5da211e1c42254cb35e7ef3d5a8428fb24853169</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>

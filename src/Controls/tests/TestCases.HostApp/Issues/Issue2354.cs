@@ -1,7 +1,7 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
 
-	[Issue(IssueTracker.Github, 2354, "ListView, ImageCell and disabled source cache and same image url", PlatformAffected.iOS | PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 2354, "ListView, ImageCell and disabled source cache and same image url", PlatformAffected.iOS | PlatformAffected.Android, isInternetRequired: true)]
 	public class Issue2354 : TestContentPage
 	{
 		protected override void Init()
