@@ -5,6 +5,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -18,6 +19,25 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(()
 				=> GetPlatformControl(handler).Subviews.Length != 0);
+		}
+
+		[Fact]
+		[Description("The IsVisible property of a SwipeView should match with native IsVisible")]		
+		public async Task VerifySwipeViewIsVisibleProperty()
+		{
+			var swipeView = new SwipeView
+			{
+				IsVisible = false
+			};
+			var expectedValue = swipeView.IsVisible;
+
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+   			{
+				var isVisible = !nativeView.Hidden;
+				Assert.Equal(expectedValue, isVisible);
+			});	
 		}
 	}
 }

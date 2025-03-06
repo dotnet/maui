@@ -96,5 +96,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		int GetPlatformMaxLines(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).MaxLines;
+
+		Task<bool> GetPlatformIsVisible(LabelHandler labelHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformLabel(labelHandler);
+				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+			});
+		}
 	}
 }
