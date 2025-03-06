@@ -3,7 +3,7 @@
 namespace Maui.Controls.Sample.Issues
 {
 
-	[Issue(IssueTracker.Github, 7393, "[Bug] CollectionView problems and crashes with IsGrouped=\"true\"",
+	[Issue(IssueTracker.Github, 7393, "[Bug] CollectionView problems and crashes with IsGrouped is true",
 		PlatformAffected.iOS)]
 	public class Issue7393 : TestContentPage
 	{

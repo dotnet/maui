@@ -20,7 +20,6 @@ namespace Maui.Controls.Sample.Issues
 			label = new Label()
 			{
 				Text = "Welcome to Main page",
-				AutomationId = "FirstPageLabel"
 			};
 
 			var button = new Button() { Text = "MoveToNextPage", AutomationId = "MoveToNextPage" };
@@ -33,13 +32,25 @@ namespace Maui.Controls.Sample.Issues
 
 		protected override void OnNavigatedTo(NavigatedToEventArgs args)
 		{
-			label.Text = "OnNavigationTo method is called";
+			var stackLayout = (StackLayout)Content;
+			stackLayout.Add(new Label
+			{
+				AutomationId = "FirstPageLabel",
+				Text = "OnNavigatedTo method is called"
+			});
+
 			base.OnNavigatedTo(args);
 		}
 
 		private void Button_Clicked(object sender, EventArgs e)
 		{
-			label.Text = "Welcome to Main page"; // label text should be reset to original text
+			var stackLayout = (StackLayout)Content;
+			// remove the navigated label when leaving the page
+			if (stackLayout.OfType<Label>().FirstOrDefault(l => l.AutomationId == "FirstPageLabel") is { } label)
+			{
+				stackLayout.Children.Remove(label);
+			}
+
 			Navigation.PushAsync(new SecondPage25371());
 		}
 	}
