@@ -1,4 +1,4 @@
-#if ANDROID
+#if ANDROID // This test case only works on Android because Send Keys functionality is platform-specific and does not behave the same way on iOS, macOS, or Windows.
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
