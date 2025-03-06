@@ -20,9 +20,9 @@ namespace Microsoft.Maui.Platform
 		}
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.AtMost && Layout is { } layout)
+			if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.AtMost && Layout is not null)
 			{
-				int maxWidth = (int)Math.Ceiling(GetMaxLineWidth(layout)) + CompoundPaddingLeft + CompoundPaddingRight;
+				int maxWidth = (int)Math.Ceiling(GetMaxLineWidth(Layout)) + CompoundPaddingLeft + CompoundPaddingRight;
 				widthMeasureSpec = MeasureSpec.MakeMeasureSpec(maxWidth, MeasureSpecMode.AtMost);
 			}
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
