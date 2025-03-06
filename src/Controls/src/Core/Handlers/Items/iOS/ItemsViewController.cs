@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected ItemsViewLayout ItemsViewLayout { get; set; }
 
 		bool _initialized;
+		bool _laidOut;
 		bool _isEmpty = true;
 		bool _emptyViewDisplayed;
 		bool _disposed;
@@ -193,7 +194,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void ViewWillAppear(bool animated)
 		{
 			base.ViewWillAppear(animated);
-			ConstrainItemsToBounds();
 		}
 
 		public override void ViewWillLayoutSubviews()
@@ -203,6 +203,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.ViewWillLayoutSubviews();
 			InvalidateMeasureIfContentSizeChanged();
 			LayoutEmptyView();
+
+			_laidOut = true;
 		}
 
 		void InvalidateLayoutIfItemsMeasureChanged()
@@ -212,7 +214,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var changed = false;
 			for (int n = 0; n < visibleCells.Length; n++)
 			{
-				if (visibleCells[n] is TemplatedCell { MeasureInvalidated: true } cell && cell.VerifyAndUpdateSize())
+				if (visibleCells[n] is TemplatedCell { MeasureInvalidated: true })
 				{
 					changed = true;
 				}
@@ -302,7 +304,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var contentBounds = CollectionView.AdjustedContentInset.InsetRect(CollectionView.Bounds);
 			var constrainedSize = contentBounds.Size;
-			ItemsViewLayout.UpdateConstraints(constrainedSize);
+			ItemsViewLayout.UpdateConstraints(constrainedSize, !_laidOut);
 		}
 
 		void EnsureLayoutInitialized()

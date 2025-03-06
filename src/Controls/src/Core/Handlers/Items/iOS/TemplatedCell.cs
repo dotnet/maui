@@ -94,40 +94,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var preferredAttributes = base.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
 
-			var preferredSize = preferredAttributes.Frame.Size;
-
-			if (preferredSize.IsCloseTo(_size)
-				&& AttributesConsistentWithConstrainedDimension(preferredAttributes))
+			if (_measureInvalidated || !AttributesConsistentWithConstrainedDimension(preferredAttributes))
 			{
-				return preferredAttributes;
+				UpdateCellSize();
 			}
 
-			var size = UpdateCellSize();
-
 			// Adjust the preferred attributes to include space for the Forms element
-			preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
+			preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, _size);
 
 			OnLayoutAttributesChanged(preferredAttributes);
 
 			return preferredAttributes;
 		}
 
-		CGSize UpdateCellSize()
+		void UpdateCellSize()
 		{
 			// Measure this cell (including the Forms element) if there is no constrained size
 			var size = ConstrainedSize == default ? Measure() : ConstrainedSize;
 
-			// Update the size of the root view to accommodate the Forms element
-			var platformView = PlatformHandler.ToPlatform();
-			platformView.Frame = new CGRect(CGPoint.Empty, size);
-
-			// Layout the Maui element 
-			var nativeBounds = platformView.Frame.ToRectangle();
-			PlatformHandler.VirtualView.Arrange(nativeBounds);
-			_size = nativeBounds.Size;
+			_size = size.ToSize();
 			_measureInvalidated = false;
-
-			return size;
 		}
 
 		[Obsolete]
@@ -146,6 +132,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var rectangle = platformView.Frame.ToRectangle();
 			PlatformHandler.VirtualView.Arrange(rectangle);
 			_size = rectangle.Size;
+			_measureInvalidated = false;
 		}
 
 		public override void PrepareForReuse()
@@ -169,7 +156,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					oldElement.BindingContext = null;
 					itemsView.RemoveLogicalChild(oldElement);
 					ClearSubviews();
-					_size = Size.Zero;
 				}
 
 				// Create the content and renderer for the view 
@@ -223,6 +209,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ClearSubviews();
 
 			InitializeContentConstraints(platformView);
+			ContentView.MarkAsCrossPlatformLayoutBacking();
 
 			UpdateVisualStates();
 		}
@@ -303,25 +290,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_measureInvalidated = true;
 				Superview?.SetNeedsLayout();
 			}
-		}
-
-		internal bool VerifyAndUpdateSize()
-		{
-			_measureInvalidated = false;
-			var (needsUpdate, toSize) = NeedsContentSizeUpdate(_size);
-
-			if (!needsUpdate)
-			{
-				return false;
-			}
-
-			// Cache the size for next time
-			_size = toSize;
-
-			// Notify size has changed
-			OnContentSizeChanged();
-
-			return true;
 		}
 
 		protected void OnContentSizeChanged()
