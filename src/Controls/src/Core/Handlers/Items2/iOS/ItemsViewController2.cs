@@ -198,19 +198,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		void InvalidateLayoutIfItemsMeasureChanged()
 		{
 			var visibleCells = CollectionView.VisibleCells;
-			var changed = false;
-			for (int n = 0; n < visibleCells.Length; n++)
+			List<NSIndexPath> invalidatedPaths = null;
+
+			var visibleCellsLength = visibleCells.Length;
+			for (int n = 0; n < visibleCellsLength; n++)
 			{
-				if (visibleCells[n] is TemplatedCell2 { MeasureInvalidated: true })
+				if (visibleCells[n] is TemplatedCell2 { MeasureInvalidated: true } cell)
 				{
-					changed = true;
-					break;
+					invalidatedPaths ??= new List<NSIndexPath>(visibleCellsLength);
+					var path = CollectionView.IndexPathForCell(cell);
+					invalidatedPaths.Add(path);
 				}
 			}
 
-			if (changed)
+			if (invalidatedPaths != null)
 			{
-				ItemsViewLayout.InvalidateLayout();
+				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
+				layoutInvalidationContext.InvalidateItems(invalidatedPaths.ToArray());
+				CollectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 			}
 		}
 

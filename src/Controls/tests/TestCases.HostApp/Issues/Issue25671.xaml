@@ -13,11 +13,11 @@
                              AbsoluteLayout.LayoutBounds="0,0,1,1">
 
       <i:Issue25671ContentView>
-        <i:Issue25671Label Text="Hello world" Padding="16,8" TextColor="White" />
+        <i:Issue25671Label Text="Hello world" Padding="16,8" TextColor="White" x:Name="HeadingLabel" AutomationId="HeadingLabel" />
       </i:Issue25671ContentView>
 
-      <i:Issue25671CollectionView x:Name="CV" AutomationId="CV" Grid.Row="1">
-        <i:Issue25671CollectionView.ItemTemplate>
+      <CollectionView x:Name="CV" AutomationId="CV" Grid.Row="1">
+        <CollectionView.ItemTemplate>
           <DataTemplate>
             <i:Issue25671ContentView Padding="16">
               <i:Issue25671VerticalStackLayout Shadow="{Shadow Radius=16, Brush=Black, Opacity=0.24}"
@@ -33,8 +33,8 @@
               </i:Issue25671VerticalStackLayout>
             </i:Issue25671ContentView>
           </DataTemplate>
-        </i:Issue25671CollectionView.ItemTemplate>
-      </i:Issue25671CollectionView>
+        </CollectionView.ItemTemplate>
+      </CollectionView>
       
       <i:Issue25671VerticalStackLayout Grid.Row="2" BackgroundColor="DarkBlue">
         <i:Issue25671Button Text="Regenerate items" Padding="16,8" TextColor="White" Clicked="RegenerateItems" AutomationId="RegenerateItems" />
