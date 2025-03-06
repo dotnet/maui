@@ -24,14 +24,21 @@ namespace Microsoft.AspNetCore.Components.WebView
 		private static string ApplicationAssemblyName { get; } = Assembly.GetEntryAssembly()?.GetName().Name
 			?? "__application_assembly__";
 
+		private const string NotifyCssUpdatedScript =
+@"export function notifyCssUpdated(matchPathSuffix) {
+	const allLinkElems = Array.from(document.querySelectorAll('link[rel=stylesheet]'));
+	allLinkElems.forEach(elem => {
+		const url = new URL(elem.href);
+		if (url.pathname.endsWith(matchPathSuffix)) {
+			url.searchParams.set('reload_version', Date.now());
+			elem.href = url.toString();
+		}
+	});
+}";
+
 		private static readonly Dictionary<(string AssemblyName, string RelativePath), (string? ContentType, byte[] Content)> _updatedContent = new()
 		{
-			{ (ApplicationAssemblyName, "_framework/static-content-hot-reload.js"), ("text/javascript", Encoding.UTF8.GetBytes(@"
-	export function notifyCssUpdated() {
-		const allLinkElems = Array.from(document.querySelectorAll('link[rel=stylesheet]'));
-		allLinkElems.forEach(elem => elem.href += '');
-	}
-")) }
+			{ (ApplicationAssemblyName, "_framework/static-content-hot-reload.js"), ("text/javascript", Encoding.UTF8.GetBytes(NotifyCssUpdatedScript)) }
 		};
 
 		/// <summary>
@@ -153,8 +160,18 @@ namespace Microsoft.AspNetCore.Components.WebView
 						// We could try to supply the URL of the modified file, so the JS-side logic could only update the affected
 						// stylesheet. This would reduce flicker. However, this involves hardcoding further details about URL conventions
 						// (e.g., _content/AssemblyName/Path) and accounting for configurable content roots. To reduce the chances of
-						// CSS hot reload being broken by customizations, we'll have the JS-side code refresh all stylesheets.
-						await module.InvokeVoidAsync("notifyCssUpdated");
+						// CSS hot reload being broken by customizations, we'll have the JS-side refresh stylesheets with a matching filename.
+						// Most of the time this will only reload a single stylesheet.
+
+						string matchPathSuffix = "/" + Path.GetFileName(relativePath);
+						if (matchPathSuffix.EndsWith(".bundle.scp.css"))
+						{
+							// Bundles from class libraries are imported in the <Project>.styles.css file,
+							// so match that file instead of the bundle.
+							matchPathSuffix = ".styles.css";
+						}
+
+						await module.InvokeVoidAsync("notifyCssUpdated", matchPathSuffix);
 					}
 				}
 				catch (Exception ex)

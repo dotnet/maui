@@ -18,7 +18,7 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     steps:
       - name: 'Push autoformatted patch'
-        uses: rolfbjarne/autoformat-push@v0.2
+        uses: rolfbjarne/autoformat-push@v0.5
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           commentContents: 'Thank you for your pull request. We are auto-formatting your source code to follow our code guidelines.'
