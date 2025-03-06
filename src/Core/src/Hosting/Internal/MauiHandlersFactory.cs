@@ -27,7 +27,6 @@ namespace Microsoft.Maui.Hosting.Internal
 				return handler;
 			}
 
-			// TODO should we throw if the handler is not found?
 			return view.GetElementHandler(context);
 		}
 
@@ -41,7 +40,6 @@ namespace Microsoft.Maui.Hosting.Internal
 				return serviceDescriptor?.ImplementationType;
 			}
 
-			// TODO should we throw if the handler is not found?
 			return view.GetElementHandlerType();
 		}
 
