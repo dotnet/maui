@@ -1,6 +1,7 @@
 #nullable disable
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls.Internals
 {
@@ -27,15 +28,11 @@ namespace Microsoft.Maui.Controls.Internals
 			if (propertyName == null || propertyName == Shell.NavBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.NavBarIsVisibleProperty, element);
 
-			var childList = children as IReadOnlyList<IVisualTreeElement>;
-			if (childList is not null)
+			if (children is IReadOnlyList<IVisualTreeElement> childList)
 			{
-				for (int i = 0; i < childList.Count; i++)
+				foreach (var child in childList.OfType<IPropertyPropagationController>().ToList())
 				{
-					if (childList[i] is IPropertyPropagationController view)
-					{
-						view.PropagatePropertyChanged(propertyName);
-					}
+					child.PropagatePropertyChanged(propertyName);
 				}
 			}
 		}
