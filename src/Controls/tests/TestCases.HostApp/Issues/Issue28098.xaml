@@ -11,8 +11,12 @@
         <Button Clicked="Button_Clicked"
                 AutomationId="Button"
                 Text="Button"/>
-        <CarouselView ItemsSource="{Binding Items}"
-                      Loop="False">
+        <CarouselView  WidthRequest="350"
+                       HeightRequest="570"
+                       HorizontalOptions="Fill"
+                       VerticalOptions="Fill"
+                       ItemsSource="{Binding Items}"
+                       Loop="False">
             <CarouselView.ItemTemplate>
                 <DataTemplate>
                     <StackLayout>
