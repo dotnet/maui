@@ -45,7 +45,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-
 		public async Task CheckFileResultWithFilePath()
 		{
 			string filePath = Path.Combine(FileSystem.CacheDirectory, "sample.txt");
