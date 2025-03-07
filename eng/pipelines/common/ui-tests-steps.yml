@@ -48,7 +48,12 @@ steps:
           
   - template: provision.yml
     parameters:
-      skipAndroidSdks: ${{ ne(parameters.platform, 'android') }}
+      skipProvisioning:  true
+      skipJdk: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidPlatformApis: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidEmulatorImages: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidCreateAvds: ${{ ne(parameters.platform, 'android') }}
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if parameters.skipProvisioning }}:
@@ -93,10 +98,9 @@ steps:
     displayName: "Install node"
 
   - pwsh: |
-      $fullLogsDir = Join-Path "$(LogDirectory)" "npm"
-      ./eng/scripts/appium-install.ps1 -logsDir "$fullLogsDir"
-      Dir -Recurse $(APPIUM_HOME) | Get-Childitem | Select Fullname
-    displayName: "Install Appium (Drivers)"
+      $skipAppiumDoctor = if ($IsMacOS) { "true" } else { "false" }
+      dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
+    displayName: "Install Appium"
     continueOnError: false
     retryCountOnTaskFailure: 1
     timeoutInMinutes: 10

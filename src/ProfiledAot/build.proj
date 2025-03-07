@@ -7,9 +7,16 @@
     <EnvVars>DOTNET_MULTILEVEL_LOOKUP=0</EnvVars>
   </PropertyGroup>
   <Target Name="Record">
-    <Error Condition=" '$(App)' != 'maui' and '$(App)' != 'maui-blazor' " Text="Please pass -p:App=maui or -p:App=maui-blazor" />
+    <Error Condition=" '$(App)' != 'maui' and '$(App)' != 'maui-sc' and '$(App)' != 'maui-blazor' " Text="Please pass -p:App=maui, -p:App=maui-sc, or -p:App=maui-blazor" />
     <RemoveDir Directories="$(Intermediate)" />
-    <Exec Command="&quot;$(DotNetToolPath)&quot; new $(App) -o $(Intermediate)" EnvironmentVariables="$(EnvVars)" />
+    <PropertyGroup Condition=" '$(App)' != 'maui-sc' ">
+      <_TemplateName>$(App)</_TemplateName>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(App)' == 'maui-sc' ">
+      <_TemplateName>maui</_TemplateName>
+      <_TemplateParameters>-sc</_TemplateParameters>
+    </PropertyGroup>
+    <Exec Command="&quot;$(DotNetToolPath)&quot; new $(_TemplateName) $(_TemplateParameters) -o $(Intermediate)" EnvironmentVariables="$(EnvVars)" />
     <!-- Copy replacement files-->
     <ItemGroup>
       <_FilesToCopy Include="src/$(App)/*" />
