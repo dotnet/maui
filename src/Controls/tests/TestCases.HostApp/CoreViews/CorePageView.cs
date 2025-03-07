@@ -77,6 +77,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new TimePickerCoreGalleryPage(), "Time Picker Gallery"),
 			new GalleryPageFactory(() => new WebViewCoreGalleryPage(), "WebView Gallery"),
 			new GalleryPageFactory(() => new SliderControlPage(), "Slider Feature Matrix"),
+			new GalleryPageFactory(() => new EmptyViewMainPage(), "CollectionView Feature Matrix1"),
 		};
 
 		public CorePageView(Page rootPage)

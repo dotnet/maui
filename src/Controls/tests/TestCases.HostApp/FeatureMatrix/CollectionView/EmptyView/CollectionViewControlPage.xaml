@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.CollectionViewControlMainPage"
+             Title="CollectionViewFeature">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                Clicked="NavigateToOptionsPage_Clicked"
+                AutomationId="Options"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid Padding="10">
+        <CollectionView
+            x:Name="collectionView"
+            ItemsSource="{Binding ItemsSource}"
+            EmptyView="{Binding EmptyView}"
+            Header="{Binding Header}"
+            Footer="{Binding Footer}"
+            EmptyViewTemplate="{Binding EmptyViewTemplate}"
+            HeaderTemplate="{Binding HeaderTemplate}"
+            FooterTemplate="{Binding FooterTemplate}"
+            ItemTemplate="{Binding ItemTemplate}"
+            IsGrouped="{Binding IsGrouped}"
+            AutomationId="CollectionViewControl">
+            <CollectionView.GroupHeaderTemplate>
+                <DataTemplate>
+                    <Label Text="{Binding Key}"
+                           FontAttributes="Bold"
+                           FontSize="16"/>
+                </DataTemplate>
+            </CollectionView.GroupHeaderTemplate>
+        </CollectionView>
+    </Grid>
+</ContentPage>
