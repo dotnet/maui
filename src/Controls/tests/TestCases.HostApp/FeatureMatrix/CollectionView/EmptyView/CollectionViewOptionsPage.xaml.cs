@@ -124,7 +124,7 @@ namespace Maui.Controls.Sample
                     };
                     grid.Children.Add(new Label
                     {
-                        Text = "No Template Items Available (Grid View)",
+                        Text = "No Template Items Available(Grid View)",
                         HorizontalOptions = LayoutOptions.Center,
                         VerticalOptions = LayoutOptions.Center,
                         FontSize = 18,
@@ -152,7 +152,7 @@ namespace Maui.Controls.Sample
                     };
                     grid.Children.Add(new Label
                     {
-                        Text = "Header Template (Grid View)",
+                        Text = "Header Template(Grid View)",
                         FontSize = 18,
                         FontAttributes = FontAttributes.Bold,
                         HorizontalOptions = LayoutOptions.Center,
@@ -181,7 +181,7 @@ namespace Maui.Controls.Sample
                     };
                     grid.Children.Add(new Label
                     {
-                        Text = "Footer Template (Grid View)",
+                        Text = "Footer Template(Grid View)",
                         FontSize = 18,
                         FontAttributes = FontAttributes.Bold,
                         HorizontalOptions = LayoutOptions.Center,
@@ -201,11 +201,14 @@ namespace Maui.Controls.Sample
             }
             else if (ItemTemplateBasic.IsChecked)
             {
-                // Basic DataTemplate with proper binding
+                // Basic DataTemplate with a single Label element
                 _viewModel.ItemTemplate = new DataTemplate(() =>
                 {
-                    var label = new Label { FontSize = 18 };
-                    label.SetBinding(Label.TextProperty, new Binding("Caption"));
+                    var label = new Label
+                    {
+                        Text = "CollectionViewItem",
+                    };
+
                     return label;
                 });
             }
