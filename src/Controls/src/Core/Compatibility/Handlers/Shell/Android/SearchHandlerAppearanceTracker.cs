@@ -101,10 +101,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else
 			{
-				_control.ClearFocus();
-				_control.HideSoftInput();
+				_control?.ClearFocus();
+				_control?.HideSoftInput();
 			}
 		}
+		
 		void UpdateSearchBarColors()
 		{
 			UpdateBackgroundColor();
