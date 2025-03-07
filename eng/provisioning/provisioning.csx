@@ -75,7 +75,7 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP
 
 		}
 	}
-
+	AndroidSdk().SdkManagerPackage ("build-tools;34.0.0");
 	AndroidSdk().SdkManagerPackage ("build-tools;35.0.0");
 }
 
