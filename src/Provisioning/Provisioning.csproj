@@ -234,7 +234,7 @@
 	</Target>
 
 	<Target Name="ProvisionJdkMacOS" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsMacOS)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
-		<Exec Command="brew install --cask microsoft-openjdk@$(_AndroidJdkVersion)" />
+		<Exec Command="brew install --cask microsoft-openjdk@$(_AndroidJdkMajorVersion)" />
 	</Target>
 
 	<Target Name="ProvisionJdkLinux" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsLinux)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
