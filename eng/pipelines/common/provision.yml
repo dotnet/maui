@@ -93,12 +93,6 @@ steps:
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
-        ${{ if eq(parameters.skipAndroidSdks, true) }}:
-          SKIP_ANDROID_API_SDKS: 'true'
-        ${{ if eq(parameters.skipAndroidImages, true) }}:
-          SKIP_ANDROID_API_IMAGES: 'true'
-        ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
-          INSTALL_DEFAULT_ANDROID_API: 'true'
 
   ##################################################
   #              Provisioning Windows              #
