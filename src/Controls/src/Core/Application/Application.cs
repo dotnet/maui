@@ -224,8 +224,9 @@ namespace Microsoft.Maui.Controls
 
 			return null;
 #elif ANDROID
-			if (Current?.Windows?.Count > 0)
-				return Current.Windows[0].MauiContext.Context?.GetAccentColor();
+			var context = (Current?.Windows?.Count > 0 && Current.Windows[0].MauiContext is not null) ? Current.Windows[0].MauiContext.Context : Current?.FindMauiContext()?.Context;
+			if (context is not null)
+				return context?.GetAccentColor();
 
 			return null;
 #elif IOS

@@ -13,7 +13,7 @@ parameters:
   default: []
 - name: runAsPublic
   type: boolean
-  default: false
+  default: true
 
 stages:
 - stage: Pack
@@ -44,19 +44,19 @@ stages:
         - checkout: self
           fetchDepth: 1
           clean: true
-        steps:
-
+        steps:            
         - script: $(_buildScript)
                   -restore -build
                   -configuration $(_BuildConfig)
                   /p:ArchiveTests=true
                   /p:TreatWarningsAsErrors=false
+                  /p:_SkipUpdateBuildNumber=true
                   /bl:$(Build.Arcade.LogsPath)build.binlog
                   $(_OfficialBuildIdArgs)
           displayName: 🛠️ Build
 
         # Run on public pipeline
-        - ${{ if eq(parameters.runAsPublic, 'true') }}:
+        - ${{ if parameters.runAsPublic }}:
           - script: $(_buildScript)
                     -restore -pack
                     -publish $(_PublishArgs)
@@ -66,7 +66,7 @@ stages:
             displayName: Pack & Publish
 
         # Run on internal pipeline
-        - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        - ${{ if and(not(parameters.runAsPublic) , notin(variables['Build.Reason'], 'PullRequest')) }}:
           - script: $(_buildScript)
                     -restore -pack
                     -sign $(_SignArgs)

@@ -54,7 +54,7 @@ parameters:
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
     type: string
-    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
+    default: 'latest'
 
   - name: BuildEverything
     type: boolean
@@ -70,7 +70,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
 
   - name: iosPool
@@ -79,7 +79,7 @@ parameters:
       name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
   
   - name: windowsBuildPool
@@ -106,7 +106,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
 
   - name: iosCompatibilityPool
@@ -115,7 +115,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
 
 resources:
@@ -148,7 +148,7 @@ stages:
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if parameters.CompatibilityTests }}:
         runCompatibilityTests: true
-      ${{ if or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'],'True') ) }}:
+      ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
         skipProvisioning: false
         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
       ${{ else }}:  

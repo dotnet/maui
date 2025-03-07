@@ -1,4 +1,4 @@
-#if MACCATALYST || WINDOWS
+#if MACCATALYST || WINDOWS // This test verifies that "the class defines a custom TitleBar for a ContentPage" that works on Desktop platforms only.
 
 using NUnit.Framework;
 using UITest.Appium;
@@ -50,6 +50,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_Initial");
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
+			App.WaitForElement("WelcomeLabel").Tap(); // Move the cursor from the Back Button to avoid the cursor.
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
 			App.TapBackArrow("Issue24489_2");
 
@@ -57,6 +58,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_StartPageWithSmallTitleBar");
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
+			App.WaitForElement("WelcomeLabel").Tap(); // Move the cursor from the Back Button to avoid the cursor.
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
 			App.TapBackArrow("Issue24489_2");
 
@@ -65,6 +67,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement("OpenTitlebarWithLargeHeightRequest").Tap();
 			App.WaitForElement("ToggleButton");
+			App.WaitForElement("WelcomeLabel").Tap(); // Move the cursor from the Back Button to avoid the cursor.
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_LargeHeightRequest");
 		}
 

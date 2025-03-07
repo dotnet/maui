@@ -96,5 +96,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		int GetPlatformMaxLines(LabelHandler labelHandler) =>
 			GetPlatformLabel(labelHandler).MaxLines;
+
+		Task<float> GetPlatformOpacity(LabelHandler labelHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformLabel(labelHandler);
+				return (float)nativeView.Alpha;
+			});
+		}
 	}
 }

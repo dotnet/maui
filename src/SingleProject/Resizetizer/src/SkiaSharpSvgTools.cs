@@ -47,22 +47,18 @@ namespace Microsoft.Maui.Resizetizer
 
 				// vector scaling has rounding issues, so first draw as intended
 				var info = new SKImageInfo((int)size.Width, (int)size.Height);
-				using var bmp = new SKBitmap(info);
-				using var cvn = new SKCanvas(bmp);
+				using var surface = SKSurface.Create(info);
+				var cvn = surface.Canvas;
 
 				// draw to a larger canvas first
 				cvn.Clear(SKColors.Transparent);
 				cvn.DrawPicture(svg.Picture, Paint);
 
-				// set the paint to be the highest quality it can find
-				var paint = new SKPaint
-				{
-					IsAntialias = true,
-					FilterQuality = SKFilterQuality.High
-				};
+				// convert it all into an image
+				using var img = surface.Snapshot();
 
 				// draw to the main canvas using the correct quality settings
-				canvas.DrawBitmap(bmp, 0, 0, paint);
+				canvas.DrawImage(img, 0, 0, SamplingOptions, Paint);
 			}
 		}
 

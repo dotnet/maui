@@ -1,4 +1,5 @@
-﻿#if ANDROID
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
+//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -13,23 +14,20 @@ public class Bugzilla42832 : _IssuesUITest
 
 	public override string Issue => "Scrolling a ListView with active ContextAction Items causes NRE";
 
-	// TODO From Xamarin.UITest migration: test failed
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// public void ContextActionsScrollNRE()
-	// {
-	// 	App.TouchAndHold("Item #0");
-	// 	App.WaitForElement("Test Item");
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void ContextActionsScrollNRE()
+	{
+		App.ActivateContextMenu("Item #0");
+		App.WaitForElement("Test Item");
 
-	// 	int counter = 0;
-	// 	while(counter < 5)
-	// 	{
-	// 		App.ScrollDown("Item #15", ScrollStrategy.Gesture);
-	// 		App.ScrollUp("Item #0", ScrollStrategy.Gesture);
-	// 		counter++;
-	// 	}
-
-	// 	App.Screenshot("If the app did not crash, then the test has passed.");
-	// }
+		int counter = 0;
+		while (counter < 5)
+		{
+			App.ScrollDown("Item #10", ScrollStrategy.Gesture);
+			App.ScrollUp("Item #0", ScrollStrategy.Gesture);
+			counter++;
+		}
+	}
 }
 #endif
