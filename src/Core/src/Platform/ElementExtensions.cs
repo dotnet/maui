@@ -37,6 +37,10 @@ namespace Microsoft.Maui.Platform
 		static IElementHandler? CreateTypeWithInjection(this Type viewType, IMauiContext mauiContext)
 		{
 #pragma warning disable CS0618 // Type or member is obsolete
+			// This method is only called when the call to IMauiHandlersFactory.GetHandler(IElement, IMauiContext)
+			// threw an exception. This only happens when the handler type is registered in the DI container and it has a constructor
+			// which requires injection. We are calling the IMauiHandlersFactory.GetHandlerType(Type) method which is obsolete
+			// because it has the [return: DynamicallyAccessedMembers] annotation.
 			var handlerType = mauiContext.Handlers.GetHandlerType(viewType);
 #pragma warning restore CS0618
 
