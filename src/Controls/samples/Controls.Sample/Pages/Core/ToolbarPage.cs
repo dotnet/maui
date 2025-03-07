@@ -17,4 +17,14 @@ public partial class ToolbarPage
 			menuLabel.Text = $"You clicked on ToolbarItem: {tbi.Text}";
 		}
 	}
+
+	private void Button_Clicked(object sender, EventArgs e)
+	{
+		secondary4.IsEnabled = !secondary4.IsEnabled;
+	}
+
+	private void Button_Clicked1(object sender, EventArgs e)
+	{
+		primary1.IsEnabled = !primary1.IsEnabled;
+	}
 }

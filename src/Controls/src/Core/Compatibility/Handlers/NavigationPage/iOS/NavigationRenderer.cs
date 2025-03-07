@@ -1695,7 +1695,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					if (item.Order == ToolbarItemOrder.Secondary)
 					{
-						(secondaries ??= []).Add(item.ToUIMenuElement());
+						(secondaries ??= []).Add(item.ToSecondaryToolbarItem().PlatformAction);
 					}
 					else
 					{
