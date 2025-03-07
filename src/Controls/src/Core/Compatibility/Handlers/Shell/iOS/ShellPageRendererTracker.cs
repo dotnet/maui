@@ -486,7 +486,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			img = UIGraphics.GetImageFromCurrentImageContext();
 			UIGraphics.EndImageContext();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			_nSCache.SetObjectforKey(img, (NSString)hamburgerKey);
+#pragma warning restore CS0618 // Type or member is obsolete
 			return img;
 		}
 

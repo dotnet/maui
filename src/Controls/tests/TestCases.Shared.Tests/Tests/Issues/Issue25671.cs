@@ -1,4 +1,4 @@
-#if ANDROID || IOS
+#if ANDROID || IOS //This test is only valid for Android and iOS as it measures the layout passes.
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
