@@ -43,5 +43,25 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			await Assert.ThrowsAsync<FileNotFoundException>(() => FileSystem.OpenAppPackageFileAsync("MissingFile.txt")).ConfigureAwait(false);
 		}
+
+		[Fact]
+
+		public async Task CheckFileResultWithFilePath()
+		{
+			string filePath = Path.Combine(FileSystem.CacheDirectory, "sample.txt");
+			await File.WriteAllTextAsync(filePath, "Sample content for testing");
+
+			var fileResult = new FileResult(filePath);
+
+			using var stream = await fileResult.OpenReadAsync();
+
+			Assert.NotNull(stream);
+
+			var bytes = new byte[stream.Length];
+			_ = await stream.ReadAsync(bytes, 0, (int)stream.Length);
+
+			Assert.True(bytes.Length > 0);
+			File.Delete(filePath);
+		}
 	}
 }
