@@ -117,9 +117,6 @@ namespace Microsoft.Maui.Storage
 		internal FileResult(IStorageFile file)
 			: base(file)
 		{
-			
 		}
-
-
 	}
 }
