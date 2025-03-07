@@ -22,23 +22,23 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("WaitForStubControl");
 
-			App.WaitForElement("0");
+			App.WaitForElement("Issue25991Item1");
 
 			App.Click("ScrollToPerson2Button");
 			App.Click(AddItemButton);
 
-			App.WaitForElement("1");
+			App.WaitForElement("Issue25991Item2");
 
 			App.Click("KeepItemsInViewButton");
 			App.Click(AddItemButton);
 
 
-			App.WaitForElement("0");
+			App.WaitForElement("Issue25991Item1");
 
 			App.Click("KeepLastItemInViewButton");
 			App.Click(AddItemButton);
 
-			App.WaitForElement("4");
+			App.WaitForElement("Issue25991Item5");
 
 		}
 	}

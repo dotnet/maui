@@ -8,12 +8,14 @@ namespace Maui.Controls.Sample.Issues
 		public class Issue25991Model
 		{
 			public string Text { get; set; }
+
+			public string AutomationId { get; set; }
 		}
 
 		ObservableCollection<Issue25991Model> _collection = new ObservableCollection<Issue25991Model>()
 		{
-			new Issue25991Model() { Text = "Item 1" },
-			new Issue25991Model() { Text = "Item 2" }
+			new Issue25991Model() { Text = "Item 1" , AutomationId = "Issue25991Item1" },
+			new Issue25991Model() { Text = "Item 2", AutomationId = "Issue25991Item2"  }
 		};
 
 		Label InfoLabel { get; set; }
@@ -54,6 +56,7 @@ namespace Maui.Controls.Sample.Issues
 				StackLayout stackLayout = new StackLayout();
 				Label nameLabel = new Label();
 				nameLabel.SetBinding(Label.TextProperty, "Text");
+				nameLabel.SetBinding(Label.AutomationIdProperty, "AutomationId");
 				nameLabel.FontSize = 25;
 				nameLabel.TextColor = Colors.Red;
 				stackLayout.Children.Add(nameLabel);
@@ -119,10 +122,12 @@ namespace Maui.Controls.Sample.Issues
 
 		void OnAddButtonClicked(object sender, EventArgs e)
 		{
-			_collection.Add(new Issue25991Model()
-			{
-				Text = "Item " + (_collection.Count + 1),
-			});
+			_collection.RemoveAt(_collection.Count - 1);
+			// _collection.Add(new Issue25991Model()
+			// {
+			// 	Text = "Item " + (_collection.Count + 1),
+			// 	AutomationId = "Issue25991Item" + (_collection.Count + 1)
+			// });
 		}
 
 		void OnKeepItemsInViewButtonClicked(object sender, EventArgs e)

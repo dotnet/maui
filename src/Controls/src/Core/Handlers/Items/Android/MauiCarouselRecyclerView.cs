@@ -270,7 +270,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// While Modifying the collection we should consider the ItemsUpdatingScrollMode to update the position
 			if (Carousel.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				carouselPosition = count - 1;
+				if (count == 0)
+				{
+					carouselPosition = 0;
+				}
+				else
+				{
+					carouselPosition = count - 1;
+				}
+
 			}
 			else if (Carousel.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
@@ -283,7 +291,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				GetDispatcher()
 					.Dispatch(() =>
 					{
-
 						SetCurrentItem(carouselPosition);
 						UpdatePosition(carouselPosition);
 
