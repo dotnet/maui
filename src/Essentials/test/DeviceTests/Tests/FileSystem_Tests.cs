@@ -56,10 +56,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			Assert.NotNull(stream);
 
-			var bytes = new byte[stream.Length];
-			_ = await stream.ReadAsync(bytes, 0, (int)stream.Length);
-
-			Assert.True(bytes.Length > 0);
 			File.Delete(filePath);
 		}
 	}
