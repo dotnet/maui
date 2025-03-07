@@ -7,7 +7,6 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
