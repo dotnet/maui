@@ -39,6 +39,15 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
+		Task<float> GetPlatformOpacity(EntryHandler entryHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(entryHandler);
+				return nativeView.Alpha;
+			});
+		}
+
 		[Fact]
 		public async Task CursorPositionPreservedWhenTextTransformPresent()
 		{

@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 			if (platformButton.ImageView.Image is not null)
 			{
 				return platformButton.ImageView
-					.SizeThatFitsImage(constraintSize, Padding.IsNaN ? null : Padding).ToSize();
+					.SizeThatFitsImage(constraintSize, Padding.IsNaN ? default : Padding).ToSize();
 			}
 
 			return platformButton.SizeThatFits(constraintSize).ToSize();

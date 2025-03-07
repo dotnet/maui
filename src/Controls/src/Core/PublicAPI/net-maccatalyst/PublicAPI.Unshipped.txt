@@ -341,7 +341,6 @@ virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>
 virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.UpdateVisibility() -> void
 virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewDelegator2<TItemsView, TViewController>.GetVisibleItemsIndex() -> (bool VisibleItems, int First, int Center, int Last)
 virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.UpdateLayout() -> void
-override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWindow() -> void
 static Microsoft.Maui.Controls.Element.RemapForControlsIfNeeded<T>(System.Action! remapForControls) -> void
 virtual Microsoft.Maui.Controls.Element.GetHandler(Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler?
 virtual Microsoft.Maui.Controls.Element.GetHandlerType() -> System.Type?
@@ -352,3 +351,6 @@ override Microsoft.Maui.Controls.CheckBox.RemapForControlsIfNeeded() -> void
 override Microsoft.Maui.Controls.Label.GetHandler(Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler?
 override Microsoft.Maui.Controls.Label.GetHandlerType() -> System.Type?
 override Microsoft.Maui.Controls.Label.RemapForControlsIfNeeded() -> void
+*REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.SetNeedsLayout() -> void
+*REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWindow() -> void
+override Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MovedToWindow() -> void
