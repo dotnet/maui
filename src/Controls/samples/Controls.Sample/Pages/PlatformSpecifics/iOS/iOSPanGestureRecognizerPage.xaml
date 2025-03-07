@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ContentPage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"            
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample.ViewModels"
+    xmlns:models="clr-namespace:Maui.Controls.Sample.Models"
     x:Class="Maui.Controls.Sample.Pages.iOSPanGestureRecognizerPage"
-    Title="Pan Gesture Recognizer">
+    Title="Pan Gesture Recognizer"
+    x:DataType="local:ListViewViewModel">
     <StackLayout Margin="20">
         <Label x:Name="_messageLabel" Text="Scroll the list. If you touch the age Label, this Label will change." FontAttributes="Bold" />
         <Button Text="Toggle Simultaneous Gesture Recognition" Clicked="OnButtonClicked" />
         <ListView ItemsSource="{Binding GroupedEmployees}" GroupDisplayBinding="{Binding Key}" IsGroupingEnabled="true">
             <ListView.ItemTemplate>
-                <DataTemplate>
+                <DataTemplate x:DataType="models:Person">
                     <ViewCell>
                         <Grid>
                             <Grid.ColumnDefinitions>
