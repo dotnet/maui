@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
+//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,17 +14,17 @@ public class Bugzilla59580 : _IssuesUITest
 
 	public override string Issue => "Raising Command.CanExecutChanged causes crash on Android";
 
-	// [Test]
-	// [Category(UITestCategories.TableView)]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void RaisingCommandCanExecuteChangedCausesCrashOnAndroid()
-	// {
-	// 	App.WaitForElement(c => c.Marked("Cell"));
+	[Test]
+	[Category(UITestCategories.TableView)]
+	public void RaisingCommandCanExecuteChangedCausesCrashOnAndroid()
+	{
+		App.WaitForElement("Cell");
 
-	// 	App.ActivateContextMenu("Cell");
+		App.ActivateContextMenu("Cell");
 
-	// 	App.WaitForElement(c => c.Marked("Fire CanExecuteChanged"));
-	// 	App.Tap(c => c.Marked("Fire CanExecuteChanged"));
-	// 	App.WaitForElement("Cell");
-	// }
+		App.WaitForElement("Fire CanExecuteChanged");
+		App.Tap("Fire CanExecuteChanged");
+		App.WaitForElement("Cell");
+	}
 }
+#endif
