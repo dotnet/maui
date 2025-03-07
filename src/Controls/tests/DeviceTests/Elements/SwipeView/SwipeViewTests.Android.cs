@@ -170,7 +170,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
-		
+
+		[Fact]
 		[Description("The IsEnabled of a SwipeView should match with native IsEnabled")]		
 		public async Task VerifySwipeViewIsEnabledProperty()
 		{
