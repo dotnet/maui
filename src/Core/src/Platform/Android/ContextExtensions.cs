@@ -124,11 +124,12 @@ namespace Microsoft.Maui.Platform
 
 		public static (int left, int top, int right, int bottom) ToPixels(this Context context, Graphics.Rect rectangle)
 		{
+			var left = (int)context.ToPixels(rectangle.Left);
 			return
 			(
-				(int)context.ToPixels(rectangle.Left),
+				left,
 				(int)context.ToPixels(rectangle.Top),
-				(int)context.ToPixels(rectangle.Right),
+				left + (int)context.ToPixels(rectangle.Width),
 				(int)context.ToPixels(rectangle.Bottom)
 			);
 		}
