@@ -29,6 +29,7 @@ string CONFIGURATION = Argument("configuration", "Debug");
 var windowsVersion = Argument("apiversion", EnvironmentVariable("WINDOWS_PLATFORM_VERSION") ?? defaultVersion);
 
 var dotnetToolPath = GetDotnetToolPath();
+LogSetupInfo(dotnetToolPath);
 
 // other
 string PLATFORM = "windows";
@@ -58,24 +59,6 @@ Information("Build Configuration: {0}", CONFIGURATION);
 
 Information("Target Framework: {0}", TARGET_FRAMEWORK);
 Information("Windows version: {0}", windowsVersion);
-
-Setup(context =>
-{
-	Cleanup();
-});
-
-Teardown(context =>
-{
-	Cleanup();
-});
-
-void Cleanup()
-{
-	if (!DEVICE_CLEANUP)
-		return;
-}
-
-Task("Cleanup");
 
 Task("GenerateMsixCert")
 	.WithCriteria(isPackagedTestRun)
@@ -132,10 +115,9 @@ Task("GenerateMsixCert")
 	currentUserMyStore.Close();
 });
 
-Task("Build")
+Task("buildOnly")
 	.IsDependentOn("GenerateMsixCert")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
-	.WithCriteria(!string.IsNullOrEmpty(PACKAGEID))
 	.Does(() =>
 {
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
@@ -199,8 +181,7 @@ Task("Build")
 	DotNetPublish(PROJECT.FullPath, s);
 });
 
-Task("Test")
-	.IsDependentOn("Build")
+Task("testOnly")
 	.IsDependentOn("SetupTestPaths")
 	.Does(() =>
 {
@@ -426,6 +407,16 @@ Task("Test")
 	}
 });
 
+Task("build")
+	.IsDependentOn("buildOnly");
+
+Task("test")
+	.IsDependentOn("buildOnly")
+	.IsDependentOn("testOnly");
+
+Task("buildAndTest")
+	.IsDependentOn("buildOnly")
+	.IsDependentOn("testOnly");
 
 Task("SetupTestPaths")
 	.Does(() => {
