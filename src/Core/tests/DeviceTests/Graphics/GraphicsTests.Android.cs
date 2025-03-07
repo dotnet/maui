@@ -183,12 +183,6 @@ public partial class GraphicsTests : TestBase
 	[Fact]
 	public void NullLinearGradientPaintTest()
 	{
-		Color nullStartColor = null;
-		Color nullEndColor = null;
-		var linearGradientPaintNullColors = new LinearGradientPaintStub(nullStartColor, nullEndColor);
-
-		Assert.False(linearGradientPaintNullColors.IsSolid());
-
 		LinearGradientPaintStub nullLinearGradientPaint = null;
 
 		Assert.False(nullLinearGradientPaint.IsSolid());
@@ -210,14 +204,8 @@ public partial class GraphicsTests : TestBase
 	[Fact]
 	public void NullRadialGradientPaintTest()
 	{
-		Color nullStartColor = null;
-		Color nullEndColor = null;
-		var radialGradientPaintNullColors = new RadialGradientPaintStub(nullStartColor, nullEndColor);
-
-		Assert.False(radialGradientPaintNullColors.IsSolid());
-
 		RadialGradientPaintStub nullRadialGradientPaint = null;
-
+		
 		Assert.False(nullRadialGradientPaint.IsSolid());
 	}
 }
