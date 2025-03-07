@@ -82,5 +82,17 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return platformView.VerticalAlignment;
 		}
+
+		ComboBox GetPlatformPicker(PickerHandler pickerHandler) =>
+			pickerHandler.PlatformView;
+
+		Task<float> GetPlatformOpacity(PickerHandler pickerHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformPicker(pickerHandler);
+				return (float)nativeView.Opacity;
+			});
+		}
 	}
 }
