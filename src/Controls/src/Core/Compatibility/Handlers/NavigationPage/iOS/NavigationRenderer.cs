@@ -1703,7 +1703,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 				}
 
-				if (primaries is not null)
+				if (primaries is not null && primaries.Count > 0)
 				{
 					primaries.Reverse();
 				}
