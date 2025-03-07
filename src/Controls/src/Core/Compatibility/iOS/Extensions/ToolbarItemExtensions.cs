@@ -2,7 +2,9 @@
 using System;
 using System.ComponentModel;
 using CoreGraphics;
+using Foundation;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using PointF = CoreGraphics.CGPoint;
@@ -15,26 +17,33 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 	{
 		public static UIBarButtonItem ToUIBarButtonItem(this ToolbarItem item, bool forceName = false, bool forcePrimary = false)
 		{
-			if (item.Order == ToolbarItemOrder.Secondary && !forcePrimary)
-			{
-				return new SecondaryToolbarItem(item);
-			}
+			// if (item.Order == ToolbarItemOrder.Secondary && !forcePrimary)
+			// {
+			// 	return new SecondaryToolbarItem(item);
+			// }
 
 			return new PrimaryToolbarItem(item, forceName);
 		}
 
-		public static UIMenuElement ToUIMenuElement(this ToolbarItem item)
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		internal static SecondaryToolbarItem ToSecondaryToolbarItem(this ToolbarItem item)
+#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
-			var imagePath = item.IconImageSource?.ToString();
-            var image = string.IsNullOrEmpty(imagePath) ? null : UIImage.FromBundle(imagePath);
-            
-			var action = UIAction.Create(item.Text, image, null, _ =>
+			var action = UIAction.Create(item.Text, null, null, _ =>
             {
                 item.Command?.Execute(item.CommandParameter);
                 ((IMenuItemController)item).Activate();
             });
 
-            return action;
+			if (item.IconImageSource != null && !item.IconImageSource.IsEmpty)
+			{
+				item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
+				{
+					action.Image = result?.Value;
+				});
+			}
+
+            return new SecondaryToolbarItem(item, action);
 		}
 
 		sealed class PrimaryToolbarItem : UIBarButtonItem
@@ -149,42 +158,43 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 		}
 
-		sealed class SecondaryToolbarItem : UIBarButtonItem
+		internal sealed class SecondaryToolbarItem
 		{
 			readonly WeakReference<ToolbarItem> _item;
+			readonly WeakReference<UIAction> _nativeItem;
 
-			public SecondaryToolbarItem(ToolbarItem item) : base(new SecondaryToolbarItemContent())
+			public UIAction PlatformAction
+			{
+				get
+				{
+					if (_nativeItem.TryGetTarget(out var nativeItem))
+					{
+						return nativeItem;
+					}
+
+					return null;
+				}
+			}
+
+			public SecondaryToolbarItem(ToolbarItem item, UIAction nativeItem)
 			{
 				_item = new(item);
+				_nativeItem = new(nativeItem);
+
 				UpdateText(item);
 				UpdateIcon(item);
 				UpdateIsEnabled(item);
 
-				((SecondaryToolbarItemContent)CustomView).TouchUpInside += OnClicked;
 				item.PropertyChanged += OnPropertyChanged;
 
-				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
-					AccessibilityIdentifier = item.AutomationId;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-				this.SetAccessibilityHint(item);
-				this.SetAccessibilityLabel(item);
-#pragma warning restore CS0618 // Type or member is obsolete
-			}
-
-			void OnClicked(object sender, EventArgs e)
-			{
-				if (_item.TryGetTarget(out var item))
+				if (item is not null && !string.IsNullOrEmpty(item.AutomationId)
+					&& _nativeItem.TryGetTarget(out var nativeAction))
 				{
-					((IMenuItemController)item).Activate();
+					nativeAction.AccessibilityIdentifier = item.AutomationId;
 				}
-			}
 
-			protected override void Dispose(bool disposing)
-			{
-				if (disposing && _item.TryGetTarget(out var item))
-					item.PropertyChanged -= OnPropertyChanged;
-				base.Dispose(disposing);
+				//this.SetAccessibilityHint(item);
+				//this.SetAccessibilityLabel(item);
 			}
 
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -198,111 +208,29 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 					UpdateIcon(item);
 				else if (e.PropertyName == MenuItem.IsEnabledProperty.PropertyName)
 					UpdateIsEnabled(item);
-#pragma warning disable CS0618 // Type or member is obsolete
-				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
-					this.SetAccessibilityHint(item);
-				else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
-					this.SetAccessibilityLabel(item);
-#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			void UpdateIcon(ToolbarItem item)
 			{
-				if (item.IconImageSource != null && !item.IconImageSource.IsEmpty)
+				if (_nativeItem.TryGetTarget(out var nativeItem))
 				{
-					item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
-					{
-						((SecondaryToolbarItemContent)CustomView).Image = result?.Value;
-					});
-				}
-				else
-				{
-					((SecondaryToolbarItemContent)CustomView).Image = null;
+					nativeItem.Image = item.IconImageSource?.GetPlatformMenuImage(item.FindMauiContext());
 				}
 			}
 
 			void UpdateIsEnabled(ToolbarItem item)
 			{
-				((UIControl)CustomView).Enabled = item.IsEnabled;
+				if (_nativeItem.TryGetTarget(out var nativeItem))
+				{
+					nativeItem.UpdateIsEnabled(item.IsEnabled);
+				}
 			}
 
 			void UpdateText(ToolbarItem item)
 			{
-				((SecondaryToolbarItemContent)CustomView).Text = item.Text;
-			}
-
-			sealed class SecondaryToolbarItemContent : UIControl
-			{
-				readonly UIImageView _imageView;
-				readonly UILabel _label;
-
-				public SecondaryToolbarItemContent()
+				if (_nativeItem.TryGetTarget(out var nativeItem))
 				{
-					BackgroundColor = UIColor.Clear;
-					_imageView = new UIImageView { BackgroundColor = UIColor.Clear };
-					AddSubview(_imageView);
-
-					_label = new UILabel { BackgroundColor = UIColor.Clear, Lines = 1, LineBreakMode = UILineBreakMode.TailTruncation, Font = UIFont.SystemFontOfSize(10) };
-					AddSubview(_label);
-				}
-
-				public override bool Enabled
-				{
-					get { return base.Enabled; }
-					set
-					{
-						base.Enabled = value;
-						_label.Enabled = value;
-						_imageView.Alpha = value ? 1f : 0.25f;
-					}
-				}
-
-				public UIImage Image
-				{
-					get { return _imageView.Image; }
-					set { _imageView.Image = value; }
-				}
-
-				public string Text
-				{
-					get { return _label.Text; }
-					set { _label.Text = value; }
-				}
-
-				public override void LayoutSubviews()
-				{
-					base.LayoutSubviews();
-
-					const float padding = 5f;
-					var imageSize = _imageView.SizeThatFitsImage(Bounds.Size);
-					var fullStringSize = _label.SizeThatFits(Bounds.Size);
-
-					if (imageSize.Width > 0 && (string.IsNullOrEmpty(Text) || fullStringSize.Width > Bounds.Width / 3))
-					{
-						_imageView.Frame = new RectangleF(PointF.Empty, imageSize);
-						_imageView.Center = new PointF(Bounds.GetMidX(), Bounds.GetMidY());
-						_label.Hidden = true;
-						return;
-					}
-
-					_label.Hidden = false;
-					var availableWidth = Bounds.Width - padding * 3 - imageSize.Width;
-					var stringSize = _label.SizeThatFits(new SizeF(availableWidth, Bounds.Height - padding * 2));
-
-					availableWidth = Bounds.Width;
-					availableWidth -= stringSize.Width;
-					availableWidth -= imageSize.Width;
-
-					var x = availableWidth / 2;
-
-					var frame = new RectangleF(new PointF(x, Bounds.GetMidY() - imageSize.Height / 2), imageSize);
-					_imageView.Frame = frame;
-
-					frame.X = frame.Right + (imageSize.Width > 0 ? padding : 0);
-					frame.Size = stringSize;
-					frame.Height = Bounds.Height;
-					frame.Y = 0;
-					_label.Frame = frame;
+					nativeItem.Title = item.Text;
 				}
 			}
 		}
