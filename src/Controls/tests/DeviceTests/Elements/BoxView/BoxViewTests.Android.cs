@@ -23,20 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 				return nativeView.Alpha;
 			});
 		}
-		 
-		Task<int> GetPlatformCornerRadius(BoxViewHandler boxViewHandler)
-        {
-            return InvokeOnMainThreadAsync(() =>
-            {
-                var platformView = GetNativeBoxView(boxViewHandler);
-                if (platformView.Background is Android.Graphics.Drawables.GradientDrawable gradientDrawable)
-                {
-                    return (int)gradientDrawable.CornerRadius;
-                }
-                return 0;
-            });
-        }
-
+        
         [Fact]
 		[Description("The IsEnabled property of a BoxView should match with native IsEnabled")]		
 		public async Task VerifyBoxViewIsEnabledProperty()
