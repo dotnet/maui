@@ -155,7 +155,7 @@ public partial class GraphicsTests : TestBase
 	}
 
 	[Fact]
-	public void NullSolidPaintTest(string hexColor)
+	public void NullSolidPaintTest()
 	{
 		Color nullColor = null;
 		var solidPaintNullColor = new SolidPaint(nullColor);
