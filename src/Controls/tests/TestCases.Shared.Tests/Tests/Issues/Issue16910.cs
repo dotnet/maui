@@ -30,8 +30,9 @@ public class Issue16910 : _IssuesUITest
 	[Test]
 	public void BindingUpdatesFromInteractiveRefresh()
 	{
-		_ = App.WaitForElement("CollectionView");
-		App.ScrollUp("CollectionView", ScrollStrategy.Gesture, 0.7, 500);
+		var collectionViewRect = App.WaitForElement("CollectionView").GetRect();
+		//In CI, using App.ScrollDown sometimes fails to trigger the refresh command, so here use DragCoordinates instead of the ScrollDown action in Appium.
+		App.DragCoordinates(collectionViewRect.CenterX(), collectionViewRect.Y + 50, collectionViewRect.CenterX(), collectionViewRect.Y + collectionViewRect.Height - 50);
 		App.WaitForElement("IsRefreshing");
 		App.Tap("StopRefreshing");
 		App.WaitForElement("IsNotRefreshing");

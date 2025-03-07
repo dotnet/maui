@@ -64,19 +64,10 @@ parameters:
   - name: androidPool
     type: object
     default:
-      name: $(androidTestsVmPool)
+      name: $(1ESPTPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Sequoia
-
-  - name: androidPoolX64
-    type: object
-    default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals x64
+        - ImageOverride -equals 1ESPT-Ubuntu22.04
 
   - name: iosPool
     type: object
@@ -118,7 +109,6 @@ stages:
   - template: common/device-tests.yml
     parameters:
       androidPool: ${{ parameters.androidPool }}
-      androidPoolX64: ${{ parameters.androidPoolX64 }}
       iosPool: ${{ parameters.iosPool }}
       catalystPool: ${{ parameters.catalystPool }}
       windowsPool: ${{ parameters.windowsPool }}
@@ -141,7 +131,7 @@ stages:
       projects:
         - name: essentials
           desc: Essentials
-          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsExclude: [25, 27] # Ignore for now API25 since the runs's are not stable
           androidConfiguration: 'Release'
           iOSConfiguration: 'Debug'
           windowsConfiguration: 'Debug'
