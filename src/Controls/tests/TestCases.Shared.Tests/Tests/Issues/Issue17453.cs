@@ -11,7 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Clear Entry text tapping the clear button not working";
 		protected override bool ResetAfterEachTest => true;
-		
+
 		[Test]
 		[Category(UITestCategories.Entry)]
 		public void EntryClearButtonWorksEntryDoesntClearWhenNotClickingOnClear()
@@ -85,7 +85,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement("EntryWithMargin");
 
-
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
 			// Tap Clear Button
 			App.TapCoordinates(entryRect.X + entryRect.Width - 17, entryRect.CenterY());
 
