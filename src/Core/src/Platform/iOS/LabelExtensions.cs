@@ -1,3 +1,4 @@
+using System;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -151,10 +152,12 @@ namespace Microsoft.Maui.Platform
 
 	internal class HtmlTextGestureRecognizer:  UITapGestureRecognizer
 	{
-		public HtmlTextGestureRecognizer(System.Action<UITapGestureRecognizer> action):base(action)
+		public HtmlTextGestureRecognizer(Action<UITapGestureRecognizer> action):base(action)
 		{
-
+				CancelsTouchesInView = false;
+				ShouldRecognizeSimultaneously = GetRecognizeSimultaneously;
 		}
 
+		private bool GetRecognizeSimultaneously(UIGestureRecognizer gestureRecognizer, UIGestureRecognizer otherGestureRecognizer) => true;
 	}
 }
