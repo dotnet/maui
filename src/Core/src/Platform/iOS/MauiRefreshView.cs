@@ -75,15 +75,9 @@ namespace Microsoft.Maui.Platform
 			if (view is UIScrollView scrollView)
 			{
 				if (refreshing)
-					scrollView.SetContentOffset(new CoreGraphics.CGPoint(0, _originalY - _refreshControlHeight), true);
+					scrollView.SetContentOffset(new CGPoint(0, _originalY - _refreshControlHeight), true);
 				else
-				{
-					// Restore the scroll position after a slight delay to ensure layout has stabilized
-					DispatchQueue.MainQueue.DispatchAfter(new DispatchTime(DispatchTime.Now, TimeSpan.FromMilliseconds(100)), () =>
-					{
-						scrollView.SetContentOffset(new CoreGraphics.CGPoint(0, _originalY), true);
-					});
-				}
+					scrollView.ContentOffset = new CGPoint(0, _originalY);
 
 				return true;
 			}
