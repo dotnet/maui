@@ -19,7 +19,7 @@ public class Bugzilla36955 : _IssuesUITest
 	{
 		App.WaitForElement("Button");
 		Assert.That(App.FindElement("Button").GetText(), Is.EqualTo("False"));
-		
+
 		ToggleSwitch();
 		Assert.That(App.FindElement("Button").GetText(), Is.EqualTo("True"));
 	}

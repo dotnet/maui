@@ -11,8 +11,7 @@ namespace Microsoft.Maui.Controls.Design
 		{ }
 
 		private static readonly string[] knownValues =
-			new[]
-			{
+			[
 				"AliceBlue",
 				"AntiqueWhite",
 				"Aqua",
@@ -161,7 +160,7 @@ namespace Microsoft.Maui.Controls.Design
 				"WhiteSmoke",
 				"Yellow",
 				"YellowGreen"
-			};
+			];
 
 		private static readonly HashSet<string> knowValuesSet;
 
@@ -211,9 +210,11 @@ namespace Microsoft.Maui.Controls.Design
 
 	internal static partial class RegexHelper
 	{
+		static readonly string pattern = @"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$";
+
 #if NET7_0_OR_GREATER
 		// #rgb, #rrggbb, #aarrggbb are all valid 
-		[GeneratedRegex (@"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$", RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
+		[GeneratedRegex (pattern, RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
 		internal static partial Regex RxColorHex
 		{
 			get;
@@ -221,7 +222,7 @@ namespace Microsoft.Maui.Controls.Design
 #else
 		internal static readonly Regex RxColorHex =
 										new (
-											@"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}([0-9a-fA-F]{2})?)$",
+											pattern,
 											RegexOptions.Compiled | RegexOptions.Singleline,		
 											TimeSpan.FromMilliseconds(1000)							// against malicious input
 											);
@@ -249,5 +250,4 @@ namespace Microsoft.Maui.Controls.Design
 											);
 #endif
 	}
-
 }

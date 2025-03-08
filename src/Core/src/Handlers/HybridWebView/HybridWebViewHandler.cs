@@ -509,14 +509,14 @@ namespace Microsoft.Maui.Handlers
 			return Interlocked.Increment(ref _asyncInvokeTaskId);
 		}
 		ConcurrentDictionary<string, TaskCompletionSource<string>> IHybridWebViewTaskManager.AsyncTaskCallbacks => _asyncTaskCallbacks;
+#endif	
 
 		internal partial class RegexHelper
 		{
 #if NET7_0_OR_GREATER
-
 			// get every quote in the string along with all the backslashes preceding it
 			[GeneratedRegex (@"(\\*?)'", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
-			public static partial Regex AllQuotesWithPrecedingBackslashsRegex
+			internal static partial Regex AllQuotesWithPrecedingBackslashsRegex
 			{
 				get;
 			}

@@ -33,39 +33,39 @@ public class Issue5132 : TestShell
 		});
 	}
 
-// 	static string DefaultFontFamily()
-// 	{
-// 		var fontFamily = "";
-// #pragma warning disable CS0618 // Type or member is obsolete
-// #pragma warning disable CS0618 // Type or member is obsolete
-// #pragma warning disable CS0618 // Type or member is obsolete
-// #pragma warning disable CS0618 // Type or member is obsolete
-// #pragma warning disable CS0612 // Type or member is obsolete
-// #pragma warning disable CS0612 // Type or member is obsolete
-// #pragma warning disable CS0612 // Type or member is obsolete
-// #pragma warning disable CS0612 // Type or member is obsolete
-// 		switch (Device.RuntimePlatform)
-// 		{
-// 			case Device.iOS:
-// 				fontFamily = "Ionicons";
-// 				break;
-// 			case Device.WinUI:
-// 				fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
-// 				break;
-// 			case Device.Android:
-// 			default:
-// 				fontFamily = "fonts/ionicons.ttf#";
-// 				break;
-// 		}
-// #pragma warning restore CS0612 // Type or member is obsolete
-// #pragma warning restore CS0612 // Type or member is obsolete
-// #pragma warning restore CS0612 // Type or member is obsolete
-// #pragma warning restore CS0612 // Type or member is obsolete
-// #pragma warning restore CS0618 // Type or member is obsolete
-// #pragma warning restore CS0618 // Type or member is obsolete
-// #pragma warning restore CS0618 // Type or member is obsolete
-// #pragma warning restore CS0618 // Type or member is obsolete
+	// 	static string DefaultFontFamily()
+	// 	{
+	// 		var fontFamily = "";
+	// #pragma warning disable CS0618 // Type or member is obsolete
+	// #pragma warning disable CS0618 // Type or member is obsolete
+	// #pragma warning disable CS0618 // Type or member is obsolete
+	// #pragma warning disable CS0618 // Type or member is obsolete
+	// #pragma warning disable CS0612 // Type or member is obsolete
+	// #pragma warning disable CS0612 // Type or member is obsolete
+	// #pragma warning disable CS0612 // Type or member is obsolete
+	// #pragma warning disable CS0612 // Type or member is obsolete
+	// 		switch (Device.RuntimePlatform)
+	// 		{
+	// 			case Device.iOS:
+	// 				fontFamily = "Ionicons";
+	// 				break;
+	// 			case Device.WinUI:
+	// 				fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
+	// 				break;
+	// 			case Device.Android:
+	// 			default:
+	// 				fontFamily = "fonts/ionicons.ttf#";
+	// 				break;
+	// 		}
+	// #pragma warning restore CS0612 // Type or member is obsolete
+	// #pragma warning restore CS0612 // Type or member is obsolete
+	// #pragma warning restore CS0612 // Type or member is obsolete
+	// #pragma warning restore CS0612 // Type or member is obsolete
+	// #pragma warning restore CS0618 // Type or member is obsolete
+	// #pragma warning restore CS0618 // Type or member is obsolete
+	// #pragma warning restore CS0618 // Type or member is obsolete
+	// #pragma warning restore CS0618 // Type or member is obsolete
 
-// 		return fontFamily;
-// 	}
+	// 		return fontFamily;
+	// 	}
 }

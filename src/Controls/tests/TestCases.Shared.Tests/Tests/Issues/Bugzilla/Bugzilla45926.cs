@@ -30,7 +30,7 @@ public class Bugzilla45926 : _IssuesUITest
 		App.WaitForElementTillPageNavigationSettled("Second Page #1");
 
 		//Getting nullreference exception on iOS while tapping back button. so using waitforElement for back button element.
-#if IOS 
+#if IOS
 		App.WaitForElement("Back");
 #endif
 

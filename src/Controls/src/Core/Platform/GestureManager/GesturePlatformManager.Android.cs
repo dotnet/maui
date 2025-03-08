@@ -150,7 +150,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var context = Control.Context;
 			var listener = new InnerScaleListener(new PinchGestureHandler(() => View), context.FromPixels);
 			var detector = new ScaleGestureDetector(context, listener, Control.Handler);
+#pragma warning disable CS0618 // Type or member is obsolete
 			ScaleGestureDetectorCompat.SetQuickScaleEnabled(detector, true);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return detector;
 		}

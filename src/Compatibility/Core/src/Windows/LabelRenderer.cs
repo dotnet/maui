@@ -434,8 +434,11 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 		internal static partial class RegexHelper
 		{
+			static readonly ReadOnlySpan<char> brPattern = @"<br>";
+
 #if NET7_0_OR_GREATER
-			[GeneratedRegex ("<br>", RegexOptions.None, matchTimeoutMilliseconds: 1000)]
+			// get every quote in the string along with all the backslashes preceding it
+			[GeneratedRegex (brPattern, RegexOptions.None, matchTimeoutMilliseconds: 1000)]
 			internal static partial Regex NewLinesRegex
 			{
 				get;
@@ -443,9 +446,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 #else
 			internal static readonly Regex NewLinesRegex =
 											new (
-												"<br>",
-												RegexOptions.Compiled,		
-												TimeSpan.FromMilliseconds(1000)							// against malicious input
+												// get every quote in the string along with all the backslashes preceding it
+												brPattern,
+												RegexOptions.Compiled,
+												TimeSpan.FromMilliseconds(1000) 		// against malicious input
 												);
 #endif
 		}

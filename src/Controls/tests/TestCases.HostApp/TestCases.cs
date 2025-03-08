@@ -14,6 +14,37 @@ namespace Maui.Controls.Sample
 			bool _filterManual;
 			string _filter;
 
+			void CheckInternetAndLoadPage(Type type)
+			{
+				try
+				{
+					using (var httpClient = new HttpClient())
+					{
+						httpClient.Timeout = TimeSpan.FromSeconds(5);
+						using (var httpResponse = httpClient.GetAsync(@"https://www.github.com", HttpCompletionOption.ResponseHeadersRead))
+						{
+							httpResponse.Wait();
+							if (httpResponse.Result.IsSuccessStatusCode)
+							{
+								var page = ActivatePage(type);
+								Application.Current.Windows[0].Page = page;
+							}
+							else
+							{
+								var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
+								Application.Current.Windows[0].Page = noInternetConnectionPage;
+							}
+						}
+					}
+				}
+				catch
+				{
+					var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
+					Application.Current.Windows[0].Page = noInternetConnectionPage;
+				}
+			}
+
+
 			static TextCell MakeIssueCell(string text, string detail, Action tapped)
 			{
 				PageToAction[text] = tapped;
@@ -28,19 +59,13 @@ namespace Maui.Controls.Sample
 			Action ActivatePageAndNavigate(IssueAttribute issueAttribute, Type type)
 			{
 				Action navigationAction = null;
-				
-				if(issueAttribute.IsInternetRequired)
-				{
-					NetworkAccess accessType = Connectivity.Current.NetworkAccess;
 
-					if (accessType != NetworkAccess.Internet)
+				if (issueAttribute.IsInternetRequired)
+				{
+					return () =>
 					{
-						return () =>
-						{
-							var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
-							Application.Current.Windows[0].Page = noInternetConnectionPage;
-						};
-					}
+						CheckInternetAndLoadPage(type);
+					};
 				}
 
 				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushAsync)

@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return ((IEnumerable)_internal).GetEnumerator();
 		}
 
-		void OnItemsVectorChanged(global::Windows.Foundation.Collections.IObservableVector<object> sender, 
+		void OnItemsVectorChanged(global::Windows.Foundation.Collections.IObservableVector<object> sender,
 			global::Windows.Foundation.Collections.IVectorChangedEventArgs @event)
 		{
 			_vectorChanged.Invoke(sender, @event);

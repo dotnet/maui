@@ -67,16 +67,18 @@ namespace Microsoft.Maui.Resizetizer
 
 		internal static partial class RegexHelper
 		{
+			static readonly string ResourceFilenameRegexPattern = @"^[a-z]([a-z0-9_]*[a-z0-9])?$";
+
 #if NET7_0_OR_GREATER
-			[GeneratedRegex (@"^[a-z]([a-z0-9_]*[a-z0-9])?$", RegexOptions.Singleline, matchTimeoutMilliseconds: 1000))]
-			static partial Regex ResourceFilenameRegex
+			[GeneratedRegex (@"^[a-z]([a-z0-9_]*[a-z0-9])?$", RegexOptions.Singleline, matchTimeoutMilliseconds: 1000)]
+			internal static partial Regex ResourceFilenameRegex
 			{
 				get;
 			}
 #else
 			public static readonly Regex ResourceFilenameRegex =
 											new (
-												@"^[a-z]([a-z0-9_]*[a-z0-9])?$",
+												ResourceFilenameRegexPattern,
 												RegexOptions.Compiled | RegexOptions.Singleline,		
 												TimeSpan.FromMilliseconds(1000)							// against malicious input
 												);

@@ -1,6 +1,6 @@
 {
   "author": "Microsoft",
-  "name": "Okno platformy .NET MAUI (C#)",
+  "name": ".NET MAUI Window (C#)",
   "description": "Okno do wyświetlania strony przy użyciu języka C#.",
   "postActions/openInEditor/description": "Otwiera plik NewWindow1.cs w edytorze.",
   "symbols/namespace/description": "Przestrzeń nazw wygenerowanego kodu."
