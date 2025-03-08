@@ -33,6 +33,9 @@ namespace Microsoft.Maui.Handlers
 			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow += OnViewDetachedFromWindow;
 
+			if (platformView.Context is MauiAppCompatActivity context)
+				context.ThemeChanged += OnThemeChanged;
+
 			if (platformView.IsAttachedToWindow)
 				OnViewAttachedToWindow();
 		}
@@ -59,6 +62,10 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.ViewAttachedToWindow -= OnViewAttachedToWindow;
 			platformView.ViewDetachedFromWindow -= OnViewDetachedFromWindow;
+
+			if (platformView.Context is MauiAppCompatActivity context)
+				context.ThemeChanged -= OnThemeChanged;
+
 			OnViewDetachedFromWindow();
 
 			base.DisconnectHandler(platformView);
@@ -120,6 +127,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler is DatePickerHandler platformHandler)
 				handler.PlatformView?.UpdateTextColor(datePicker);
+		}
+
+		void OnThemeChanged(object? sender, Android.Content.Res.UiMode e)
+		{
+			PlatformView?.UpdateBackground(VirtualView);
 		}
 
 		void ShowPickerDialog()
