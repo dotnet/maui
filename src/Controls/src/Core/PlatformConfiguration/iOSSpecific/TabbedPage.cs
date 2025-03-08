@@ -31,5 +31,28 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			SetTranslucencyMode(config.Element, value);
 			return config;
 		}
+
+//todo add these methods to public API 
+#pragma warning disable RS0016
+		public static readonly BindableProperty AutoResizeIconsProperty =
+			BindableProperty.Create("AutoResizeIcons",
+				typeof(bool), typeof(TabbedPage), false);
+
+		public static bool GetAutoResizeIcons(BindableObject element)
+			=> (bool)element.GetValue(AutoResizeIconsProperty);
+
+		public static void SetAutoResizeIcons(BindableObject element, bool value)
+			=> element.SetValue(AutoResizeIconsProperty, value);
+
+		public static bool GetAutoResizeIcons(
+			this IPlatformElementConfiguration<iOS, FormsElement> config)
+			=> GetAutoResizeIcons(config.Element);
+
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetAutoResizeIcons(
+			this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
+		{
+			SetAutoResizeIcons(config.Element, value);
+			return config;
+		}
 	}
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using UIKit;
@@ -117,6 +118,41 @@ namespace Microsoft.Maui.Platform
 
 			// Set the TabBarAppearance
 			tabBar.StandardAppearance = tabBar.ScrollEdgeAppearance = _tabBarAppearance;
+		}
+
+		internal static UIImage? AutoResizeTabBarImage(UITraitCollection traitCollection, UIImage image)
+		{
+			if (image == null)
+			{
+				return null;
+			}
+
+			CGSize newSize = image.Size;
+
+			//https://developer.apple.com/design/human-interface-guidelines/tab-bars#Target-dimensions
+			bool isRegularTabBar = traitCollection.VerticalSizeClass == UIUserInterfaceSizeClass.Regular;
+			if (image.Size.Width > image.Size.Height) //Wide
+			{
+				newSize.Width = isRegularTabBar ? 31 : 23;
+				newSize.Height = newSize.Width * image.Size.Height / image.Size.Width;
+			}
+			else if (image.Size.Width < image.Size.Height) //Tall
+			{
+				newSize.Height = isRegularTabBar ? 28 : 20;
+				newSize.Width = newSize.Height * image.Size.Width / image.Size.Height;
+			}
+			else //Square
+			{
+				newSize.Width = isRegularTabBar ? 25 : 18;
+				newSize.Height = newSize.Width;
+			}
+
+			UIGraphics.BeginImageContextWithOptions(newSize, false, 0);
+			image.Draw(new CGRect(0, 0, newSize.Width, newSize.Height));
+			var resizedImage = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+
+			return resizedImage;
 		}
 	}
 }
