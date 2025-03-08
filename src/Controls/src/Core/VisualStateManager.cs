@@ -723,7 +723,7 @@ namespace Microsoft.Maui.Controls
 
 		internal static void MergeWithParent(this IList<VisualStateGroup> groups, VisualStateGroupList parentVisualStateGroups)
 		{
-			// Find these VisualStateGroup that are the same for the parent and the chil VisualStateGroupList
+			// Find these VisualStateGroup that are the same for the parent and the child VisualStateGroupList
 			foreach (var parentVisualStateGroup in parentVisualStateGroups)
 			{
 				if (groups.FirstOrDefault(x => x.Name == parentVisualStateGroup.Name) is { } visualStateGroup)
