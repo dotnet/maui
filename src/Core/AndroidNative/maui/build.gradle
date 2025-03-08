@@ -3,6 +3,7 @@ plugins {
 }
 
 android {
+    namespace 'com.microsoft.maui'
     compileSdk 34
 
     defaultConfig {
