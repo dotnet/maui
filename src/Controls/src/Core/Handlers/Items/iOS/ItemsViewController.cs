@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected ItemsViewLayout ItemsViewLayout { get; set; }
 
 		bool _initialized;
+		bool _laidOut;
 		bool _isEmpty = true;
 		bool _emptyViewDisplayed;
 		bool _disposed;
@@ -193,18 +194,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void ViewWillAppear(bool animated)
 		{
 			base.ViewWillAppear(animated);
-			ConstrainItemsToBounds();
 		}
 
 		public override void ViewWillLayoutSubviews()
 		{
 			ConstrainItemsToBounds();
+			InvalidateLayoutIfItemsMeasureChanged();
 			base.ViewWillLayoutSubviews();
 			InvalidateMeasureIfContentSizeChanged();
 			LayoutEmptyView();
+
+			_laidOut = true;
 		}
 
+		void InvalidateLayoutIfItemsMeasureChanged()
+		{
+			var visibleCells = CollectionView.VisibleCells;
 
+			var changed = false;
+			for (int n = 0; n < visibleCells.Length; n++)
+			{
+				if (visibleCells[n] is TemplatedCell { MeasureInvalidated: true })
+				{
+					changed = true;
+				}
+			}
+
+			if (changed)
+			{
+				ItemsViewLayout.InvalidateLayout();
+			}
+		}
 
 		void MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
 		{
@@ -284,7 +304,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var contentBounds = CollectionView.AdjustedContentInset.InsetRect(CollectionView.Bounds);
 			var constrainedSize = contentBounds.Size;
-			ItemsViewLayout.UpdateConstraints(constrainedSize);
+			ItemsViewLayout.UpdateConstraints(constrainedSize, !_laidOut);
 		}
 
 		void EnsureLayoutInitialized()
@@ -373,7 +393,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void UpdateTemplatedCell(TemplatedCell cell, NSIndexPath indexPath)
 		{
-			cell.ContentSizeChanged -= CellContentSizeChanged;
 			cell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
 
 			var bindingContext = ItemsSource[indexPath];
@@ -382,7 +401,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_measurementCells != null && _measurementCells.TryGetValue(bindingContext, out TemplatedCell measurementCell))
 			{
 				_measurementCells.Remove(bindingContext);
-				measurementCell.ContentSizeChanged -= CellContentSizeChanged;
 				measurementCell.LayoutAttributesChanged -= CellLayoutAttributesChanged;
 				cell.UseContent(measurementCell);
 			}
@@ -391,7 +409,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				cell.Bind(ItemsView.ItemTemplate, ItemsSource[indexPath], ItemsView);
 			}
 
-			cell.ContentSizeChanged += CellContentSizeChanged;
 			cell.LayoutAttributesChanged += CellLayoutAttributesChanged;
 
 			ItemsViewLayout.PrepareCellForLayout(cell);
@@ -405,29 +422,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected object GetItemAtIndex(NSIndexPath index)
 		{
 			return ItemsSource[index];
-		}
-
-		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
-		void CellContentSizeChanged(object sender, EventArgs e)
-		{
-			if (_disposed)
-				return;
-
-			if (!(sender is TemplatedCell cell))
-			{
-				return;
-			}
-
-			var visibleCells = CollectionView.VisibleCells;
-
-			for (int n = 0; n < visibleCells.Length; n++)
-			{
-				if (cell == visibleCells[n])
-				{
-					ItemsViewLayout?.InvalidateLayout();
-					return;
-				}
-			}
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: CollectionViewTests.ItemsSourceDoesNotLeak")]
