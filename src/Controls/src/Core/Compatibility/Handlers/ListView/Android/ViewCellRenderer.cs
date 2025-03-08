@@ -198,7 +198,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				//cell.View.Handler.DisconnectHandler();
 
 				Performance.Start(out string reference);
-				var viewHandlerType = _viewHandler.MauiContext.Handlers.GetHandlerType(cell.View.GetType());
+				var viewHandlerType = _viewHandler.MauiContext.Handlers.GetHandlerType(cell.View);
 				var reflectableType = _viewHandler as System.Reflection.IReflectableType;
 				var rendererType = reflectableType != null ? reflectableType.GetTypeInfo().AsType() : (_viewHandler != null ? _viewHandler.GetType() : typeof(System.Object));
 				if (_viewHandler != null && rendererType == viewHandlerType)

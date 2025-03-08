@@ -99,5 +99,13 @@ namespace Microsoft.Maui.UnitTests
 
 		public Size Measure(double widthConstraint, double heightConstraint) =>
 			Size.Zero;
+
+		IElementHandler IElement.GetElementHandler(IMauiContext context) => GetElementHandlerCore(context);
+
+		protected virtual IElementHandler GetElementHandlerCore(IMauiContext context) => throw new System.NotImplementedException();
+
+		System.Type IElement.GetElementHandlerType() => GetElementHandlerTypeCore();
+
+		protected virtual System.Type GetElementHandlerTypeCore() => throw new System.NotImplementedException();
 	}
 }

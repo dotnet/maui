@@ -64,3 +64,7 @@ static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
+Microsoft.Maui.IElement.GetElementHandler(Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler?
+Microsoft.Maui.IElement.GetElementHandlerType() -> System.Type?
+Microsoft.Maui.IMauiHandlersFactory.GetHandler(Microsoft.Maui.IElement! element, Microsoft.Maui.IMauiContext! context) -> Microsoft.Maui.IElementHandler?
+Microsoft.Maui.IMauiHandlersFactory.GetHandlerType(Microsoft.Maui.IElement! element) -> System.Type?

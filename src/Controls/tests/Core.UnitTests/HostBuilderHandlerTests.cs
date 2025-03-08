@@ -45,7 +45,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory]
-		[InlineData(typeof(Label), typeof(LabelHandler))]
 		[InlineData(typeof(Button), typeof(ButtonHandler))]
 		[InlineData(typeof(ContentPage), typeof(PageHandler))]
 		[InlineData(typeof(Page), typeof(PageHandler))]

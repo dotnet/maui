@@ -4,3 +4,6 @@ P:Microsoft.Maui.MauiWinUIApplication.Services;Use the IPlatformApplication.Curr
 P:Microsoft.Maui.MauiWinUIApplication.Application;Use the IPlatformApplication.Current.Application instead
 P:Microsoft.UI.Xaml.Window.AppWindow;This API doesn't have null safety. Use GetAppWindow() and make sure to account for the possibility that GetAppWindow() might be null.
 P:Microsoft.UI.Xaml.Controls.Panel.Children;Use MauiPanel.CachedChildren instead to avoid performance hit
+P:Microsoft.Maui.IMauiHandlersFactory.GetHandler(System.Type);Use Microsoft.Maui.IMauiHandlersFactory.GetHandler(IElement, IMauiContext) instead
+P:Microsoft.Maui.IMauiHandlersFactory.GetHandler`1;Use Microsoft.Maui.IMauiHandlersFactory.GetHandler(IElement, IMauiContext) instead
+P:Microsoft.Maui.IMauiHandlersFactory.GetHandlerType;Use Microsoft.Maui.IMauiHandlersFactory.GetHandlerType(IElement) instead

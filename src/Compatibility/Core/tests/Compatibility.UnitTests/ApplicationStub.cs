@@ -11,6 +11,10 @@ namespace Microsoft.Maui.Compatibility.Core.UnitTests
 
 		public Maui.IElement Parent { get; set; }
 
+		public Maui.IElementHandler GetElementHandler(IMauiContext context) => null;
+
+		public System.Type GetElementHandlerType() => null;
+
 		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
 
 		public string Property { get; set; } = "Default";

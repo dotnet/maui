@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -35,5 +37,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ActivateWindow(IWindow window) { }
 
 		public void ThemeChanged() { }
+
+		IElementHandler IElement.GetElementHandler(IMauiContext context) => null;
+
+		Type IElement.GetElementHandlerType() => null;
 	}
 }
