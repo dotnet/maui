@@ -1944,26 +1944,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ClipsToBounds = true;
 			}
 
-			// A solution based on this code https://github.dev/devxoul/UINavigationItem-Margin
-			// responsible for removing the system margin inside the navigation bar
 			UIEdgeInsets CalculateUIEdgeInsets()
 			{
 				var type = UIBarButtonSystemItem.FixedSpace;
 				var spacer = new UIBarButtonItem(type, (_, _) => { });
-
-				if (UIDevice.CurrentDevice.CheckSystemVersion(11, 0))
-				{
-					spacer.Width = SystemMargin + 8;
-				}
-				else
-				{
-					spacer.Width = SystemMargin - 16;
-				}
+				spacer.Width = SystemMargin + (OperatingSystem.IsIOSVersionAtLeast(11) ? 8 : -16);
 
 				nfloat screenWidth = UIScreen.MainScreen.Bounds.Size.Width;
 
-				// A margin of private class `UINavigationButton` is different from custom view
-				if (!UIDevice.CurrentDevice.CheckSystemVersion(11, 0) && screenWidth < 375)
+				if (!OperatingSystem.IsIOSVersionAtLeast(11) && screenWidth < 375)
 				{
 					// 3.5 and 4 inch
 					spacer.Width += 8;
