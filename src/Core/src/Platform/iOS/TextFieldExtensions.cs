@@ -244,5 +244,24 @@ namespace Microsoft.Maui.Platform
 
 			return tintedImage;
 		}
+
+		internal static void AddMauiDoneAccessoryView(this UITextField textField, IViewHandler handler)
+		{
+#if !MACCATALYST
+			var accessoryView = new MauiDoneAccessoryView();
+			accessoryView.SetDataContext(handler);
+			accessoryView.SetDoneClicked(OnDoneClicked);
+			textField.InputAccessoryView = accessoryView;
+#endif
+		}
+
+		static void OnDoneClicked(object sender)
+		{
+			if (sender is IEntryHandler entryHandler)
+			{
+				entryHandler.PlatformView.ResignFirstResponder();
+				entryHandler.VirtualView.Completed();
+			}
+		}
 	}
 }
