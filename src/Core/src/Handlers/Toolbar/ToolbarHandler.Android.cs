@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
+using Android.Graphics;
+using Android.Graphics.Drawables;
 using Android.Runtime;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
@@ -35,6 +37,8 @@ namespace Microsoft.Maui.Handlers
 			base.OnDisconnectHandler(platformView);
 			if (platformView is MaterialToolbar mt && mt.IsAlive())
 				mt.RemoveFromParent();
+
+			PlatformView.NavigationClick -= PlatformViewNavigationClick;
 		}
 
 		public static void MapTitle(IToolbarHandler arg1, IToolbar arg2)
@@ -43,6 +47,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		DrawerLayout? _drawerLayout;
+		Drawable? _drawerIcon;
 		NavController? _navController;
 		StackNavigationManager? _stackNavigationManager;
 
@@ -56,6 +61,19 @@ namespace Microsoft.Maui.Handlers
 
 			_drawerLayout = drawerLayout;
 			SetupToolbar();
+		}
+
+		internal async void UpdateToolbarIcon(IImageSource imageSource)
+		{
+			var image = await imageSource.GetPlatformImageAsync(MauiContext!);
+			var drawable = image?.Value;
+			if (drawable != null)
+			{
+				_drawerIcon = drawable;
+				PlatformView.NavigationIcon = drawable;
+				PlatformView.NavigationClick -= PlatformViewNavigationClick;
+				PlatformView.NavigationClick += PlatformViewNavigationClick;
+			}
 		}
 
 		internal void SetupWithNavController(NavController navController, StackNavigationManager stackNavigationManager)
@@ -92,6 +110,16 @@ namespace Microsoft.Maui.Handlers
 			// the call to SetupWithNavController resets the Navigation Icon
 			UpdateValue(nameof(IToolbar.BackButtonVisible));
 			PlatformView.SetNavigationOnClickListener(BackNavigationClick);
+
+			if (!VirtualView.BackButtonVisible && _drawerIcon != null)
+			{
+				PlatformView.NavigationIcon = _drawerIcon;
+			}
+		}
+
+		void PlatformViewNavigationClick(object? sender, Toolbar.NavigationClickEventArgs e)
+		{
+			BackClick();
 		}
 
 		void BackClick()
