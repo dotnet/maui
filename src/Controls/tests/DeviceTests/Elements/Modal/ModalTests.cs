@@ -162,7 +162,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact(
 #if WINDOWS
-		Skip = "Fails on Windows"
+			Skip = "Fails on Windows"
+#elif IOS || MACCATALYST
+			Skip = "Flaky Test. More information: https://github.com/dotnet/maui/issues/28271"
 #endif
 		)]
 		public async Task PushingNavigationPageModallyWithShellShowsToolbarCorrectly()
