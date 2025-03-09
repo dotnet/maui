@@ -238,6 +238,9 @@ namespace Microsoft.Maui.Controls
 		static object CoerceSelectedIndex(BindableObject bindable, object value)
 		{
 			var picker = (Picker)bindable;
+			if (picker.Items is not null && !picker._itemsLoaded)
+				return value;
+
 			return picker.Items == null ? -1 : ((int)value).Clamp(-1, picker.Items.Count - 1);
 		}
 
@@ -351,6 +354,7 @@ namespace Microsoft.Maui.Controls
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
 			Handler?.UpdateValue(nameof(IPicker.Items));
 
+			_itemsLoaded = true;
 			ClampSelectedIndex();
 		}
 
@@ -433,6 +437,8 @@ namespace Microsoft.Maui.Controls
 		Font ITextStyle.Font => this.ToFont();
 
 		IList<string> IPicker.Items => Items;
+
+		bool _itemsLoaded;
 
 		int IPicker.SelectedIndex
 		{
