@@ -42,6 +42,8 @@ Microsoft.Maui.ITitleBar.Title.get -> string?
 Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
 *REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
+Microsoft.Maui.Platform.IAutoSizableCALayer
+Microsoft.Maui.Platform.IAutoSizableCALayer.AutoSizeToSuperLayer() -> void
 Microsoft.Maui.Platform.MauiHybridWebView
 Microsoft.Maui.Platform.MauiHybridWebView.MauiHybridWebView(Microsoft.Maui.Handlers.HybridWebViewHandler! handler, CoreGraphics.CGRect frame, WebKit.WKWebViewConfiguration! configuration) -> void
 Microsoft.Maui.Platform.MauiHybridWebView.SendRawMessage(string! rawMessage) -> void
