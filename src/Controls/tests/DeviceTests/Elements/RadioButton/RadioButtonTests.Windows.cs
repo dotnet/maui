@@ -1,8 +1,8 @@
-﻿using Microsoft.Maui.Handlers;
-using Xunit;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Handlers;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -28,9 +28,9 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = GetNativeRadioButton(handler);
 			await InvokeOnMainThreadAsync(() =>
    			{
-				var nativeOpacityValue = (float)nativeView.Opacity;
-				Assert.Equal(expectedValue, nativeOpacityValue);
-			});
+				   var nativeOpacityValue = (float)nativeView.Opacity;
+				   Assert.Equal(expectedValue, nativeOpacityValue);
+			   });
 		}
 	}
 }

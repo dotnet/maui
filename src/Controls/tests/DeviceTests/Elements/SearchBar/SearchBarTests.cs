@@ -1,10 +1,10 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.DeviceTests
 				Opacity = 0.35f
 			};
 			var expectedValue = searchBar.Opacity;
-			
+
 			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
 			await InvokeOnMainThreadAsync(async () =>
 			{
