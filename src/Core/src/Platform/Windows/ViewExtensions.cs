@@ -190,6 +190,10 @@ namespace Microsoft.Maui.Platform
 			// WinUI uses NaN for "unspecified", so as long as we're using NaN for unspecified on the xplat side, 
 			// we can just propagate the value straight through
 			platformView.Height = view.Height;
+			if ((platformView.VerticalAlignment != UI.Xaml.VerticalAlignment.Top || view.Background != null) && view.MinimumHeight > 0)
+			{
+				platformView.MinHeight = view.MinimumHeight;
+			}
 		}
 
 		public static void UpdateMinimumHeight(this FrameworkElement platformView, IView view)
@@ -200,7 +204,8 @@ namespace Microsoft.Maui.Platform
 			{
 				// We only use the minimum value if it's been explicitly set; otherwise, clear the local
 				// value so that the platform/theme can use the default minimum height for this control
-				platformView.MinHeight = minHeight;
+				if (platformView.VerticalAlignment == UI.Xaml.VerticalAlignment.Top && view.Background == null)
+					platformView.MinHeight = minHeight;
 			}
 			else
 			{
