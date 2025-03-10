@@ -142,8 +142,8 @@ namespace Microsoft.Maui.Layouts
 
 				InitializeCells();
 
-				// some _childrenToLayout could have set Height/Width abosultely set, while our columns/rows are on auto or *
-				// in this case we set set the column/row size to the child's size
+				// Some _childrenToLayout may have an absolute Height/Width, while our columns/rows are set to auto or *.  
+				// In this case, we adjust the column/row size to match the child's size.  
 				foreach (var cell in _cells)
 				{
 					var view = _childrenToLayOut[cell.ViewIndex];
@@ -536,12 +536,12 @@ namespace Microsoft.Maui.Layouts
 				AdjustDefinitions(_columns, _gridWidthConstraint);
 			}
 
-			static void AdjustDefinitions(Definition[] definitions, double gridContrains)
+			static void AdjustDefinitions(Definition[] definitions, double gridConstrain)
 			{
 				var definitionsTempMax = definitions.Sum(d => d.Size);
-				if (definitionsTempMax > gridContrains)
+				if (definitionsTempMax > gridConstrain)
 				{
-					var overflow = definitionsTempMax - gridContrains;
+					var overflow = definitionsTempMax - gridConstrain;
 					var biggestDefinition = definitions.Where(d => d.IsAuto || d.IsStar).OrderByDescending(d => d.Size).FirstOrDefault();
 					if (biggestDefinition != null)
 					{
