@@ -1,5 +1,4 @@
-﻿//#if WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using OpenQA.Selenium.Internal;
 using UITest.Appium;
 using UITest.Core;
@@ -25,15 +24,33 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Border)]
 		public void GridAutosStarsScollToEndDisplaysLastItem()
 		{
+			TestWindows();
+			TestOtherPlatforms();
+		}
+
+		private void TestWindows()
+		{
+#if WINDOWS
 			var firstItem = App.WaitForElement(_firstItemId);
 			var lastItem = App.WaitForElement(_lastItemId);
 			Assert.That(lastItem.IsDisplayed().Equals(false));
 
 			App.ScrollDown(_itemsId);
 			App.WaitForTextToBePresentInElement(_lastItemId, _lastItemText);
-			
+
 			Assert.That(lastItem.IsDisplayed().Equals(true));
+#endif
+		}
+
+		private void TestOtherPlatforms()
+		{
+#if !WINDOWS
+			var firstItem = App.WaitForElement(_firstItemId);
+
+			App.ScrollDown(_itemsId);
+			var lastItem = App.WaitForElement(_lastItemId);
+			Assert.That(lastItem.IsDisplayed().Equals(true));
+#endif
 		}
 	}
 }
-//#endif
