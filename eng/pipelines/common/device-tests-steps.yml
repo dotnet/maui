@@ -162,9 +162,13 @@ steps:
   # Publish the artifacts directory if this is a build-only job
   - ${{ if eq(parameters.buildType, 'buildOnly') }}:
     - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
-      displayName: Publish Artifacts Directory
-      condition: always()
+      displayName: Publish Succeeded Artifacts Directory
+      condition: succeeded()
       artifact: ${{ parameters.appArtifactName }}
+    - publish: ${{ parameters.checkoutDirectory }}/artifacts/bin
+      displayName: Publish Failed Artifacts Directory
+      condition: not(succeeded())
+      artifact: ${{ parameters.appArtifactName }}_failed_$(System.JobAttempt)
 
   # Publish the test results
   - ${{ if ne(parameters.buildType, 'buildOnly') }}:
