@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Shape)]
 		public void Issue13801VerifyPathMargin()
 		{
-			App.WaitForElement("PathShape");
+			App.WaitForElement("PathLabel");
 			VerifyScreenshot();
 		}
 	}
