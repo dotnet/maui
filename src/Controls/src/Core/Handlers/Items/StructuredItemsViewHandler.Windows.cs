@@ -301,7 +301,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				switch (ListViewBase)
 				{
 					case FormsListView formsListView:
-						formsListView.ItemContainerStyle = GetVerticalItemContainerStyle(linearItemsLayout);
+						if (linearItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
+						{
+							formsListView.ItemContainerStyle = GetHorizontalItemContainerStyle(linearItemsLayout);
+						}
+						else
+						{
+							formsListView.ItemContainerStyle = GetVerticalItemContainerStyle(linearItemsLayout);
+						}
 						break;
 					case WListView listView:
 						listView.ItemContainerStyle = GetHorizontalItemContainerStyle(linearItemsLayout);
