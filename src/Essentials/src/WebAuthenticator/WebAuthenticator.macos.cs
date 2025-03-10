@@ -24,6 +24,9 @@ namespace Microsoft.Maui.Authentication
 		}
 
 		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
+			=> await AuthenticateAsync(webAuthenticatorOptions, CancellationToken.None);
+
+		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions, CancellationToken cancellationToken)
 		{
 			var url = webAuthenticatorOptions?.Url;
 			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
@@ -39,38 +42,42 @@ namespace Microsoft.Maui.Authentication
 			redirectUri = callbackUrl;
 			var scheme = redirectUri.Scheme;
 
-			if (OperatingSystem.IsMacOSVersionAtLeast(10, 15))
+			// Use the CancellationToken to cancel the operation
+			using (cancellationToken.Register(() => tcsResponse.TrySetCanceled()))
 			{
-				static void AuthSessionCallback(NSUrl cbUrl, NSError error)
+				if (OperatingSystem.IsMacOSVersionAtLeast(10, 15))
 				{
-					if (error == null)
-						OpenUrlCallback(cbUrl);
-					else if (error.Domain == asWebAuthenticationSessionErrorDomain && error.Code == asWebAuthenticationSessionErrorCodeCanceledLogin)
-						tcsResponse.TrySetCanceled();
-					else
-						tcsResponse.TrySetException(new NSErrorException(error));
+					static void AuthSessionCallback(NSUrl cbUrl, NSError error)
+					{
+						if (error == null)
+							OpenUrlCallback(cbUrl);
+						else if (error.Domain == asWebAuthenticationSessionErrorDomain && error.Code == asWebAuthenticationSessionErrorCodeCanceledLogin)
+							tcsResponse.TrySetCanceled();
+						else
+							tcsResponse.TrySetException(new NSErrorException(error));
 
-					was = null;
+						was = null;
+					}
+
+					was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
+
+					using (was)
+					{
+						var ctx = new ContextProvider(Platform.GetCurrentWindow());
+						was.PresentationContextProvider = ctx;
+						was.PrefersEphemeralWebBrowserSession = webAuthenticatorOptions?.PrefersEphemeralWebBrowserSession ?? false;
+
+						was.Start();
+						return await tcsResponse.Task;
+					}
 				}
 
-				was = new ASWebAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
+				var opened = NSWorkspace.SharedWorkspace.OpenUrl(url);
+				if (!opened)
+					tcsResponse.TrySetException(new Exception("Error opening Safari"));
 
-				using (was)
-				{
-					var ctx = new ContextProvider(Platform.GetCurrentWindow());
-					was.PresentationContextProvider = ctx;
-					was.PrefersEphemeralWebBrowserSession = webAuthenticatorOptions?.PrefersEphemeralWebBrowserSession ?? false;
-
-					was.Start();
-					return await tcsResponse.Task;
-				}
+				return await tcsResponse.Task
 			}
-
-			var opened = NSWorkspace.SharedWorkspace.OpenUrl(url);
-			if (!opened)
-				tcsResponse.TrySetException(new Exception("Error opening Safari"));
-
-			return await tcsResponse.Task;
 		}
 
 		public bool OpenUrlCallback(Uri uri)
