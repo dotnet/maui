@@ -1,3 +1,4 @@
+#if !MACCATALYST // On Mac platform, Label does not wrap properly when a width request is set https://github.com/dotnet/maui/issues/15559
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -18,3 +19,4 @@ public class Issue28117 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
