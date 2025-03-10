@@ -1,8 +1,6 @@
 using Microsoft.Maui.Handlers;
 using System.ComponentModel;
-using System.Threading.Tasks;
 using Xunit;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 
@@ -24,6 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Opacity = 0.35f
 			};
+			var handler = await CreateHandlerAsync<RadioButtonHandler>(radioButton);
 			var expectedValue = radioButton.Opacity;
 			var nativeView = GetNativeRadioButton(handler);
 			await InvokeOnMainThreadAsync(() =>
@@ -32,8 +31,9 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
-
-        [Description("The CornerRadius of a RadioButton should match with native CornerRadius")]        
+		
+		[Fact]
+		[Description("The CornerRadius of a RadioButton should match with native CornerRadius")]        
         public async Task RadioButtonCornerRadius()
         {
             var radioButton = new RadioButton();
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, cornerRadiusBottomRight);
 			});
         }
-
+		
 		[Fact]
 		[Description("The IsEnabled of a RadioButton should match with native IsEnabled")]		
 		public async Task VerifyRadioButtonIsEnabledProperty()
