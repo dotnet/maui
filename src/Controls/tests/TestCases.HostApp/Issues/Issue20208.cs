@@ -1,12 +1,10 @@
 ﻿using Maui.Controls.Sample.Issues;
 
 namespace Controls.TestCases.HostApp.Issues;
+
 [Issue(IssueTracker.Github, 20208, "When minimumheightrequest is set on label, the label is not vertically centered in Windows", PlatformAffected.UWP)]
 public class Issue20208 : TestContentPage
 {
-	public Issue20208()
-	{
-	}
 	protected override void Init()
 	{
 		FlexLayout flexLayout = new FlexLayout
@@ -16,6 +14,7 @@ public class Issue20208 : TestContentPage
 			BackgroundColor = Colors.Red,
 			HeightRequest = 50,
 		};
+
 		Label labelWithMinimumHeight = new Label
 		{
 			AutomationId = "LabelWithMinimumHeight",
@@ -24,7 +23,9 @@ public class Issue20208 : TestContentPage
 			MinimumHeightRequest = 39,
 			Text = "Hello, World!"
 		};
+
 		flexLayout.Children.Add(labelWithMinimumHeight);
+
 		Content = flexLayout;
 	}
 }
