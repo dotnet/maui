@@ -59,7 +59,7 @@
     </ScrollView>
     
     <Border x:Name="InvisibleBorder"
-        WidthRequest="250"
+        WidthRequest="50"
         Background="Red"
         Grid.Row="1"
         Grid.Column="1">
