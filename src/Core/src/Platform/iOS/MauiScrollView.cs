@@ -8,12 +8,17 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents, ICrossPlatformLayoutBacking, IPlatformMeasureInvalidationController
 	{
+		WeakReference<IScrollViewHandler> _handlerRef;
 		bool _invalidateParentWhenMovedToWindow;
 		double _lastMeasureHeight;
 		double _lastMeasureWidth;
 		double _lastArrangeHeight;
 		double _lastArrangeWidth;
 
+		public MauiScrollView(IScrollViewHandler handler)
+		{
+			_handlerRef = new WeakReference<IScrollViewHandler>(handler);
+		}
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
 		ICrossPlatformLayout? ICrossPlatformLayoutBacking.CrossPlatformLayout
@@ -50,22 +55,42 @@ namespace Microsoft.Maui.Platform
 				var crossPlatformBounds = AdjustedContentInset.InsetRect(bounds).Size.ToSize();
 				var crossPlatformContentSize = crossPlatformLayout.CrossPlatformArrange(new Rect(new Point(), crossPlatformBounds));
 				var contentSize = crossPlatformContentSize.ToCGSize();
+				var viewportSize = GetViewportSize(this);
+				_handlerRef.TryGetTarget(out IScrollViewHandler? handler);
 
 				// When the content size changes, we need to adjust the scrollable area size so that the content can fit in it.
 				if (ContentSize != contentSize)
 				{
-					ContentSize = contentSize;
+					SetContentSizeForOrientation(this, viewportSize.Width, viewportSize.Height, handler?.VirtualView.Orientation ?? ScrollOrientation.Both, crossPlatformContentSize);
 
 					// Invalidation stops at `UIScrollViews` for performance reasons,
 					// but when the content size changes, we need to invalidate the ancestors
 					// in case the ScrollView is configured to grow/shrink with its content.
 					this.InvalidateAncestorsMeasures();
 				}
+
+
 			}
 
 			base.LayoutSubviews();
 		}
 
+		static CGSize GetViewportSize(UIScrollView platformScrollView)
+		{
+			return platformScrollView.AdjustedContentInset.InsetRect(platformScrollView.Bounds).Size;
+		}
+		static void SetContentSizeForOrientation(UIScrollView uiScrollView, double viewportWidth, double viewportHeight, ScrollOrientation orientation, Size contentSize)
+		{
+			if (orientation is ScrollOrientation.Vertical or ScrollOrientation.Neither)
+			{
+				contentSize.Width = Math.Min(contentSize.Width, viewportWidth);
+			}
+			if (orientation is ScrollOrientation.Horizontal or ScrollOrientation.Neither)
+			{
+				contentSize.Height = Math.Min(contentSize.Height, viewportHeight);
+			}
+			uiScrollView.ContentSize = contentSize;
+		}
 		public override CGSize SizeThatFits(CGSize size)
 		{
 			if (CrossPlatformLayout is not { } crossPlatformLayout)

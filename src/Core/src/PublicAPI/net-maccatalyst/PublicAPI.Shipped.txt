@@ -1675,7 +1675,6 @@ Microsoft.Maui.Platform.MauiRefreshView.RefreshControl.get -> UIKit.UIRefreshCon
 Microsoft.Maui.Platform.MauiRefreshView.UpdateContent(Microsoft.Maui.IView? content, Microsoft.Maui.IMauiContext? mauiContext) -> void
 Microsoft.Maui.Platform.MauiRefreshView.UpdateIsEnabled(bool isRefreshViewEnabled) -> void
 Microsoft.Maui.Platform.MauiScrollView
-Microsoft.Maui.Platform.MauiScrollView.MauiScrollView() -> void
 Microsoft.Maui.Platform.MauiSearchBar
 Microsoft.Maui.Platform.MauiSearchBar.MauiSearchBar() -> void
 Microsoft.Maui.Platform.MauiSearchBar.MauiSearchBar(CoreGraphics.CGRect frame) -> void
