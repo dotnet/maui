@@ -125,7 +125,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				);
 			}
 
+#pragma warning disable CS0672 // Member overrides obsolete member
 			public override void RunJavaScriptTextInputPanel(
+#pragma warning restore CS0672 // Member overrides obsolete member
 				WKWebView webView, string prompt, string? defaultText, WKFrameInfo frame, Action<string> completionHandler)
 			{
 				PresentAlertController(

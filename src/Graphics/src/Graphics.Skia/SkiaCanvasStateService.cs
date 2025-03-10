@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Graphics.Skia
 	{
 		private SKPaint _defaultFillPaint;
 		private SKPaint _defaultFontPaint;
+		private SKFont _defaultFontFont;
 		private SKPaint _defaultStrokePaint;
 
 		public SkiaCanvasState CreateNew(object context)
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Graphics.Skia
 				FillPaint = _defaultFillPaint.CreateCopy(),
 				StrokePaint = _defaultStrokePaint.CreateCopy(),
 				FontPaint = _defaultFontPaint.CreateCopy(),
+				FontFont = _defaultFontFont.CreateCopy(),
 			};
 
 			return state;
@@ -28,7 +30,7 @@ namespace Microsoft.Maui.Graphics.Skia
 
 		public void Reset(SkiaCanvasState currentState)
 		{
-			currentState.Reset(_defaultFontPaint, _defaultFillPaint, _defaultStrokePaint);
+			currentState.Reset(_defaultFontPaint, _defaultFontFont, _defaultFillPaint, _defaultStrokePaint);
 		}
 
 		private void EnsureDefaults()
@@ -56,6 +58,13 @@ namespace Microsoft.Maui.Graphics.Skia
 			{
 				Color = SKColors.Black,
 				IsAntialias = true,
+#pragma warning disable CS0618 // Type or member is obsolete
+				Typeface = SKTypeface.FromFamilyName("Arial")
+#pragma warning restore CS0618 // Type or member is obsolete
+			};
+
+			_defaultFontFont = new SKFont
+			{
 				Typeface = SKTypeface.FromFamilyName("Arial")
 			};
 		}
@@ -65,6 +74,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			_defaultFillPaint.Dispose();
 			_defaultStrokePaint.Dispose();
 			_defaultFontPaint.Dispose();
+			_defaultFontFont.Dispose();
 		}
 	}
 }
