@@ -4,6 +4,7 @@ using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -140,6 +141,36 @@ namespace Microsoft.Maui.DeviceTests
 			var PlatformEditor = GetPlatformControl(handler);
 			var platformRotation = await InvokeOnMainThreadAsync(() => PlatformEditor.Rotation);
 			Assert.Equal(expected, platformRotation);
+		}
+
+		[Theory]
+		[InlineData(true, FlowDirection.LeftToRight, Android.Views.TextAlignment.ViewStart)]
+		[InlineData(true, FlowDirection.RightToLeft, Android.Views.TextAlignment.ViewStart)]
+		[InlineData(false, FlowDirection.LeftToRight, Android.Views.TextAlignment.ViewStart)]
+		[InlineData(false, FlowDirection.RightToLeft, Android.Views.TextAlignment.ViewStart)]
+		[Description("The Editor's text alignment should match the expected alignment when FlowDirection is applied explicitly or implicitly")]
+		public async Task EditorAlignmentMatchesFlowDirection(bool isExplicit, FlowDirection flowDirection, Android.Views.TextAlignment expectedAlignment)
+		{
+			var editor = new Editor { Text = "Checking flow direction" };
+			var contentPage = new ContentPage { Title = "Flow Direction", Content = editor };
+
+			if (isExplicit)
+			{
+				editor.FlowDirection = flowDirection;
+			}
+			else
+			{
+				contentPage.FlowDirection = flowDirection;
+			}
+
+			var handler = await CreateHandlerAsync<EditorHandler>(editor);
+			var nativeAlignment = await contentPage.Dispatcher.DispatchAsync(() =>
+			{
+				var textField = GetPlatformControl(handler);
+				return textField.TextAlignment;
+			});
+
+			Assert.Equal(expectedAlignment, nativeAlignment);
 		}
 	}
 }
