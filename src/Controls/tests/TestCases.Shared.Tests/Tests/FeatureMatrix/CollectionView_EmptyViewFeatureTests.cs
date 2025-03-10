@@ -1,4 +1,4 @@
-
+#if TEST_FAILS_ON_WINDOWS // EmptyView Elements not accessible via Automation on Windows, Issue Link: https://github.com/dotnet/maui/issues/28022
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(String)");
 		}
 
-        [Test]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewDisplayed_ItemSourceEmptyGroupedListSetFirst_AndEmptyViewString()
 		{
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(String)");
 		}
 
-        [Test]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewDisplayed_ItemSourceEmptyListSetFirst_AndCustomEmptyView()
 		{
@@ -159,7 +159,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(Grid View)");
 		}
 
-        [Test]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewDisplayed_ItemSourceEmptyGroupedListSetFirst_AndCustomEmptyView()
 		{
@@ -192,8 +192,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("No Items Available(Grid View)");
 		}
- 
-        [Test]
+
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndEmptyViewTemplate()
 		{
@@ -230,8 +230,265 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
-	
-        [Test]
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndBasicItemTemplate()
+		{
+			App.WaitForElement("EmptyViewButton");
+			App.Tap("EmptyViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsSourceNone");
+			App.Tap("ItemsSourceNone");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
+			App.WaitForElement("ItemTemplateBasic");
+			App.Tap("ItemTemplateBasic");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(String)");
+			App.WaitForNoElement("CollectionViewItem");
+			App.WaitForNoElement("CollectionViewItem");
+			App.WaitForNoElement("CollectionViewItem");
+			App.WaitForNoElement("CollectionViewItem");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndBasicItemTemplate_WithoutSettingItemSourceNull()
+		{
+			App.WaitForElement("EmptyViewButton");
+			App.Tap("EmptyViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
+			App.WaitForElement("ItemTemplateBasic");
+			App.Tap("ItemTemplateBasic");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("No Items Available(String)");
+			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("CollectionViewItem");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewDisplayed_WhenCustomEmptyView_AndBaicItemTemplate()
+		{
+			App.WaitForElement("EmptyViewButton");
+			App.Tap("EmptyViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsSourceNone");
+			App.Tap("ItemsSourceNone");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("ItemTemplateBasic");
+			App.Tap("ItemTemplateBasic");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(Grid View)");
+			App.WaitForNoElement("CollectionViewItem");
+			App.WaitForNoElement("CollectionViewItem");
+			App.WaitForNoElement("CollectionViewItem");
+			App.WaitForNoElement("CollectionViewItem");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewDisplayed_WhenCustomEmptyView_AndBaicItemTemplate_WithoutSettingItemSourceNull()
+		{
+			App.WaitForElement("EmptyViewButton");
+			App.Tap("EmptyViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("ItemTemplateBasic");
+			App.Tap("ItemTemplateBasic");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("No Items Available(Grid View)");
+			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("CollectionViewItem");
+		}
+
+		// Emptyview template
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewTemplateDisplayed_WhenCustomView()
+		{
+			App.WaitForElement("EmptyViewButton");
+			App.Tap("EmptyViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsSourceNone");
+			App.Tap("ItemsSourceNone");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Template Items Available(Grid View)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewTemplateDisplayed_ItemSourceEmptyListSetFirst_AndCustomEmptyViewTemplate()
+		{
+			App.WaitForElement("EmptyViewButton");
+			App.Tap("EmptyViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsSourceEmptyList");
+			App.Tap("ItemsSourceEmptyList");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Template Items Available(Grid View)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewTemplateDisplayed_WhenCustomEmptyViewTemplateSetFirst_AndItemSourceEmptyList()
+		{
+			App.WaitForElement("EmptyViewButton");
+			App.Tap("EmptyViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("ItemsSourceEmptyList");
+			App.Tap("ItemsSourceEmptyList");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Template Items Available(Grid View)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewTemplateDisplayed_ItemSourceEmptyGroupedListSetFirst_AndCustomEmptyViewTemplate()
+		{
+			App.WaitForElement("EmptyViewButton");
+			App.Tap("EmptyViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsSourceEmptyGroupedList");
+			App.Tap("ItemsSourceEmptyGroupedList");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Template Items Available(Grid View)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewTemplateDisplayed_WhenCustomEmptyViewTemplateSetFirst_AndItemSourceEmptyGroupedList()
+		{
+			App.WaitForElement("EmptyViewButton");
+			App.Tap("EmptyViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("ItemsSourceEmptyGroupedList");
+			App.Tap("ItemsSourceEmptyGroupedList");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Template Items Available(Grid View)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewTemplateDisplayed_WhenEmptyViewTemplate_AndEmptyViewString()
+		{
+			App.WaitForElement("EmptyViewButton");
+			App.Tap("EmptyViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsSourceNone");
+			App.Tap("ItemsSourceNone");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Template Items Available(Grid View)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewTemplateDisplayed_WhenEmptyViewTemplate_AndCustomEmptyView()
+		{
+			App.WaitForElement("EmptyViewButton");
+			App.Tap("EmptyViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsSourceNone");
+			App.Tap("ItemsSourceNone");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Template Items Available(Grid View)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewTemplateDisplayed_WhenCustomEmptyViewTemplate_AndBaicItemTemplate()
+		{
+			App.WaitForElement("EmptyViewButton");
+			App.Tap("EmptyViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsSourceNone");
+			App.Tap("ItemsSourceNone");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("ItemTemplateBasic");
+			App.Tap("ItemTemplateBasic");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Template Items Available(Grid View)");
+			App.WaitForNoElement("CollectionViewItem");
+			App.WaitForNoElement("CollectionViewItem");
+			App.WaitForNoElement("CollectionViewItem");
+			App.WaitForNoElement("CollectionViewItem");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewTemplateDisplayed_WhenCustomEmptyViewTemplate_AndBaicItemTemplate_WithoutSettingItemSourceNull()
+		{
+			App.WaitForElement("EmptyViewButton");
+			App.Tap("EmptyViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("ItemTemplateBasic");
+			App.Tap("ItemTemplateBasic");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("No Template Items Available(Grid View)");
+			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("CollectionViewItem");
+		}
+
+#if TEST_FAILS_ON_ANDROID // Header and footer is not visibile
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndFooterString()
 		{
@@ -351,7 +608,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Footer Template(Grid View)");
 		}
 
-        [Test]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndHeaderString()
 		{
@@ -470,260 +727,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(Grid View)");
 			App.WaitForElement("Header Template(Grid View)");
 		}
-     
-        [Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndBasicItemTemplate()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
-			App.WaitForElement("ItemTemplateBasic");
-			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Items Available(String)");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndBasicItemTemplate_WithoutSettingItemSourceNull()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
-			App.WaitForElement("ItemTemplateBasic");
-			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("No Items Available(String)");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenCustomEmptyView_AndBaicItemTemplate()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("ItemTemplateBasic");
-			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Items Available(Grid View)");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenCustomEmptyView_AndBaicItemTemplate_WithoutSettingItemSourceNull()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("ItemTemplateBasic");
-			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("No Items Available(Grid View)");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-		}
-
-    // Emptyview template
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenCustomView()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("EmptyViewTemplateGrid");
-			App.Tap("EmptyViewTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Template Items Available(Grid View)");
-		}
-       
-	    [Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_ItemSourceEmptyListSetFirst_AndCustomEmptyViewTemplate()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceEmptyList");
-			App.Tap("ItemsSourceEmptyList");
-			App.WaitForElement("EmptyViewTemplateGrid");
-			App.Tap("EmptyViewTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Template Items Available(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenCustomEmptyViewTemplateSetFirst_AndItemSourceEmptyList()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewTemplateGrid");
-			App.Tap("EmptyViewTemplateGrid");
-			App.WaitForElement("ItemsSourceEmptyList");
-			App.Tap("ItemsSourceEmptyList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Template Items Available(Grid View)");
-		}
-
-        [Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_ItemSourceEmptyGroupedListSetFirst_AndCustomEmptyViewTemplate()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceEmptyGroupedList");
-			App.Tap("ItemsSourceEmptyGroupedList");
-			App.WaitForElement("EmptyViewTemplateGrid");
-			App.Tap("EmptyViewTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Template Items Available(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenCustomEmptyViewTemplateSetFirst_AndItemSourceEmptyGroupedList()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewTemplateGrid");
-			App.Tap("EmptyViewTemplateGrid");
-			App.WaitForElement("ItemsSourceEmptyGroupedList");
-			App.Tap("ItemsSourceEmptyGroupedList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Template Items Available(Grid View)");
-		}
- 
-        [Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenEmptyViewTemplate_AndEmptyViewString()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("EmptyViewTemplateGrid");
-			App.Tap("EmptyViewTemplateGrid");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Template Items Available(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenEmptyViewTemplate_AndCustomEmptyView()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("EmptyViewTemplateGrid");
-			App.Tap("EmptyViewTemplateGrid");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Template Items Available(Grid View)");
-		}
-        
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenCustomEmptyViewTemplate_AndBaicItemTemplate()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("EmptyViewTemplateGrid");
-			App.Tap("EmptyViewTemplateGrid");
-			App.WaitForElement("ItemTemplateBasic");
-			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Template Items Available(Grid View)");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-		}
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenCustomEmptyViewTemplate_AndBaicItemTemplate_WithoutSettingItemSourceNull()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewTemplateGrid");
-			App.Tap("EmptyViewTemplateGrid");
-			App.WaitForElement("ItemTemplateBasic");
-			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("No Template Items Available(Grid View)");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-		}
+#endif
 	}
 }
+#endif
