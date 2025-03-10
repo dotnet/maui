@@ -27,17 +27,21 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static UIImage ScaleImage(this UIImage target, CGSize size, bool disposeOriginal = false)
 		{
-			UIGraphics.BeginImageContext(size);
-			target.Draw(new CGRect(CGPoint.Empty, size));
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-
-			if (disposeOriginal)
+			using (var renderer = new UIGraphicsImageRenderer(target.Size))
 			{
-				target.Dispose();
-			}
+				var resultImage = renderer.CreateImage((UIGraphicsImageRendererContext imageContext) =>
+				{
+					var cgcontext = imageContext.CGContext;
+					cgcontext.DrawImage(new CGRect(CGPoint.Empty, size), target.CGImage);
 
-			return image;
+					if (disposeOriginal)
+					{
+						target.Dispose();
+					}
+				});
+
+				return resultImage;
+			}
 		}
 
 		public static UIImage NormalizeOrientation(this UIImage target, bool disposeOriginal = false)
@@ -47,17 +51,20 @@ namespace Microsoft.Maui.Graphics.Platform
 				return target;
 			}
 
-			UIGraphics.BeginImageContextWithOptions(target.Size, false, target.CurrentScale);
-			target.Draw(CGPoint.Empty);
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-
-			if (disposeOriginal)
+			using (var renderer = new UIGraphicsImageRenderer(target.Size))
 			{
-				target.Dispose();
-			}
+				var resultImage = renderer.CreateImage((UIGraphicsImageRendererContext imageContext) =>
+				{
+					var cgcontext = imageContext.CGContext;
+					cgcontext.DrawImage(new CGRect(0, 0, target.Size.Width, target.Size.Height), target.CGImage);
+					if (disposeOriginal)
+					{
+						target.Dispose();
+					}
+				});
 
-			return image;
+				return resultImage;
+			}
 		}
 	}
 }
