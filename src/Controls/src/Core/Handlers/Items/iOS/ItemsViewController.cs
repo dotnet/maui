@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (invalidatedPaths != null)
 			{
-				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
+				var layoutInvalidationContext = new UICollectionViewFlowLayoutInvalidationContext();
 				layoutInvalidationContext.InvalidateItems(invalidatedPaths.ToArray());
 				CollectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 			}
