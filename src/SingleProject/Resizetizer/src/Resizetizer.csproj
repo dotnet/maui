@@ -72,10 +72,15 @@
       <_CopyItems Include="@(_ResizetizerFiles)" />
     </ItemGroup>
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)%(_CopyItems.Arch)" ContinueOnError="true" Retries="0" />
+    <MakeDir Directories="$(IntermediateOutputPath)adjustments" />
     <AdjustReferencedAssemblyVersion
       Assembly="$(_AdjustmentsAssembly)"
       ReferencedAssembly="$(_AdjustmentsReferencedAssembly)"
-      OutputAssembly="$(_MauiBuildTasksLocation)Svg.Skia.dll" />
+      OutputAssembly="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
+    <Copy SourceFiles="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" DestinationFiles="$(_MauiBuildTasksLocation)Svg.Skia.dll" ContinueOnError="true" Retries="0" />
+    <ItemGroup>
+      <FileWrites Include="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
+    </ItemGroup>
   </Target>
 
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
