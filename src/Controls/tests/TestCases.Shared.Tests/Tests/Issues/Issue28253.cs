@@ -16,7 +16,7 @@ public class Issue28253 : _IssuesUITest
 	[Category(UITestCategories.RadioButton)]
 	public void RadioButtonsShouldHaveImages()
 	{
-		App.WaitForElement("coffeeImage");
+		App.WaitForElement("label");
 		VerifyScreenshot();
 	}
 }

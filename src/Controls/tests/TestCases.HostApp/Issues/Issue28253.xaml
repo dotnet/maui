@@ -5,6 +5,7 @@
              Title="Issue28253">
     <ScrollView>
         <StackLayout Margin="15,30">
+            <Label Text="RadioButton with Image and Label" AutomationId="label"/>
             <RadioButton Value="Elephant">
                 <RadioButton.Content>
                     <Image Source="dotnet_bot.png"/>
