@@ -189,7 +189,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void ViewWillLayoutSubviews()
 		{
-			InvalidateLayoutIfItemsMeasureChanged();
+			if (CollectionView is Items.MauiCollectionView { NeedsCellLayout: true } collectionView)
+			{
+				InvalidateLayoutIfItemsMeasureChanged();
+				collectionView.NeedsCellLayout = false;
+			}
+
 			base.ViewWillLayoutSubviews();
 			LayoutEmptyView();
 			InvalidateMeasureIfContentSizeChanged();
@@ -197,7 +202,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void InvalidateLayoutIfItemsMeasureChanged()
 		{
-			var visibleCells = CollectionView.VisibleCells;
+			var collectionView = CollectionView;
+			var visibleCells = collectionView.VisibleCells;
 			List<NSIndexPath> invalidatedPaths = null;
 
 			var visibleCellsLength = visibleCells.Length;
@@ -206,7 +212,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				if (visibleCells[n] is TemplatedCell2 { MeasureInvalidated: true } cell)
 				{
 					invalidatedPaths ??= new List<NSIndexPath>(visibleCellsLength);
-					var path = CollectionView.IndexPathForCell(cell);
+					var path = collectionView.IndexPathForCell(cell);
 					invalidatedPaths.Add(path);
 				}
 			}
@@ -215,7 +221,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
 				layoutInvalidationContext.InvalidateItems(invalidatedPaths.ToArray());
-				CollectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
+				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 			}
 		}
 

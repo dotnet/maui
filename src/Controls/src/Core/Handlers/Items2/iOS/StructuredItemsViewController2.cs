@@ -1,8 +1,8 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Controls.Handlers.Items;
 using ObjCRuntime;
 using UIKit;
 
@@ -181,7 +181,52 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void ViewWillLayoutSubviews()
 		{
+			if (CollectionView is Items.MauiCollectionView { NeedsCellLayout: true })
+			{
+				InvalidateLayoutIfItemsMeasureChanged();
+			}
+
 			base.ViewWillLayoutSubviews();
+		}
+
+		void InvalidateLayoutIfItemsMeasureChanged()
+		{
+			var collectionView = CollectionView;
+			List<NSIndexPath> invalidatedPaths = null;
+			
+			if (ItemsView.Header is not null || ItemsView.HeaderTemplate is not null)
+			{
+				var visibleHeaders = collectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Header);
+				foreach (var header in visibleHeaders)
+				{
+					if (header is TemplatedCell2 { MeasureInvalidated: true } headerCell)
+					{
+						invalidatedPaths ??= new List<NSIndexPath>(2);
+						invalidatedPaths.Add(collectionView.IndexPathForCell(headerCell));
+					}
+				}
+			}
+
+
+			if (ItemsView.Footer is not null || ItemsView.FooterTemplate is not null)
+			{
+				var visibleFooters = collectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Footer);
+				foreach (var footer in visibleFooters)
+				{
+					if (footer is TemplatedCell2 { MeasureInvalidated: true } footerCell)
+					{
+						invalidatedPaths ??= new List<NSIndexPath>(1);
+						invalidatedPaths.Add(collectionView.IndexPathForCell(footerCell));
+					}
+				}
+			}
+
+			if (invalidatedPaths != null)
+			{
+				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
+				layoutInvalidationContext.InvalidateItems(invalidatedPaths.ToArray());
+				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
+			}
 		}
 	}
 }

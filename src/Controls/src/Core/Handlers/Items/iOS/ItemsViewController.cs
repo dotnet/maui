@@ -199,7 +199,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void ViewWillLayoutSubviews()
 		{
 			ConstrainItemsToBounds();
-			InvalidateLayoutIfItemsMeasureChanged();
+
+			if (CollectionView is Items.MauiCollectionView { NeedsCellLayout: true } collectionView)
+			{
+				InvalidateLayoutIfItemsMeasureChanged();
+				collectionView.NeedsCellLayout = false;
+			}
+
 			base.ViewWillLayoutSubviews();
 			InvalidateMeasureIfContentSizeChanged();
 			LayoutEmptyView();

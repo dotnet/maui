@@ -13,8 +13,6 @@ public class Issue25362 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	[FailsOnIOSWhenRunningOnXamarinUITest("This is not working for CV2 yet")]
-	[FailsOnMacWhenRunningOnXamarinUITest("This is not working for CV2 yet")]
 	public void HeaderShouldNotCollapseWithItems()
 	{
 		App.WaitForElement("button");

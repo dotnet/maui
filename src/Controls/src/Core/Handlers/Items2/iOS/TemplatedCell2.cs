@@ -283,7 +283,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (!_measureInvalidated && _bound)
 			{
 				_measureInvalidated = true;
-				Superview?.SetNeedsLayout();
 			}
 		}
 	}
