@@ -5,7 +5,7 @@ public class AppDelegate : UIApplicationDelegate
 {
 	public override UIWindow? Window { get; set; }
 
-	public override bool FinishedLaunching(UIApplication application, NSDictionary launchOptions) => true;
+	public override bool FinishedLaunching(UIApplication application, NSDictionary? launchOptions) => true;
 
 	public override UISceneConfiguration GetConfiguration(UIApplication application, UISceneSession connectingSceneSession, UISceneConnectionOptions options) =>
 		Enumerable.FirstOrDefault<NSUserActivity>(options.UserActivities)?.ActivityType == "NewTaskWindow"
