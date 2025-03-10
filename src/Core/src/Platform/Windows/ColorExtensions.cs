@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Platform
 
 		public static bool IsDefault(this Graphics.Color? color)
 		{
-			return color == null;
+			return color is null;
 		}
 
 		public static WBrush ToPlatform(this Graphics.Color color)
