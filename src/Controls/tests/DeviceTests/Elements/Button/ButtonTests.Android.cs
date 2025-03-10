@@ -34,6 +34,15 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		Task<bool> GetPlatformIsVisible(ButtonHandler buttonHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformButton(buttonHandler);
+				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+			});
+		}
+
 		[Theory(DisplayName = "Button Icon has Correct Position"), Category(TestCategory.Layout)]
 		[InlineData(Button.ButtonContentLayout.ImagePosition.Left)]
 		[InlineData(Button.ButtonContentLayout.ImagePosition.Top)]
