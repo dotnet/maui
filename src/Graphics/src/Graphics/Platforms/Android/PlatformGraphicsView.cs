@@ -76,9 +76,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			dirtyRect.Height /= _scale;
 			dirtyRect.Width /= _scale;
 			_drawable.Draw(_scalingCanvas, dirtyRect);
-			_canvas.Canvas = null;
 
 			androidCanvas.Restore();
+			_canvas.Canvas = null;
 		}
 
 		protected override void OnSizeChanged(int width, int height, int oldWidth, int oldHeight)
