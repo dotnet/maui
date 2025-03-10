@@ -1,4 +1,5 @@
-﻿using WScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
+﻿using Microsoft.UI.Xaml.Controls;
+using WScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
 
 namespace Microsoft.Maui.Platform
 {
