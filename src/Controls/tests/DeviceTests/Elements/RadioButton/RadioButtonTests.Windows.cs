@@ -22,8 +22,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Opacity = 0.35f
 			};
-			var handler = await CreateHandlerAsync<RadioButtonHandler>(radioButton);
 			var expectedValue = radioButton.Opacity;
+
+			var handler = await CreateHandlerAsync<RadioButtonHandler>(radioButton);
 			var nativeView = GetNativeRadioButton(handler);
 			await InvokeOnMainThreadAsync(() =>
 			{
@@ -31,20 +32,20 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
-		
-		[Fact]
-		[Description("The CornerRadius of a RadioButton should match with native CornerRadius")]        
-        public async Task RadioButtonCornerRadius()
-        {
-            var radioButton = new RadioButton();
-            radioButton.CornerRadius = 15;
-            var expectedValue = radioButton.CornerRadius;
 
-            var handler = await CreateHandlerAsync<RadioButtonHandler>(radioButton);
-            var nativeView = GetNativeRadioButton(handler);
-            await InvokeOnMainThreadAsync(() =>
-            {
-                var cornerRadiusTopLeft = (float)nativeView.CornerRadius.TopLeft;
+		[Fact]
+		[Description("The CornerRadius of a RadioButton should match with native CornerRadius")]
+		public async Task RadioButtonCornerRadius()
+		{
+			var radioButton = new RadioButton();
+			radioButton.CornerRadius = 15;
+			var expectedValue = radioButton.CornerRadius;
+
+			var handler = await CreateHandlerAsync<RadioButtonHandler>(radioButton);
+			var nativeView = GetNativeRadioButton(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var cornerRadiusTopLeft = (float)nativeView.CornerRadius.TopLeft;
 				var cornerRadiusTopRight = (float)nativeView.CornerRadius.TopRight;
 				var cornerRadiusBottomLeft = (float)nativeView.CornerRadius.BottomLeft;
 				var cornerRadiusBottomRight = (float)nativeView.CornerRadius.BottomRight;
@@ -53,10 +54,10 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, cornerRadiusBottomLeft);
 				Assert.Equal(expectedValue, cornerRadiusBottomRight);
 			});
-        }
-		
+		}
+
 		[Fact]
-		[Description("The IsEnabled of a RadioButton should match with native IsEnabled")]		
+		[Description("The IsEnabled of a RadioButton should match with native IsEnabled")]
 		public async Task VerifyRadioButtonIsEnabledProperty()
 		{
 			var radioButton = new RadioButton
@@ -71,7 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var isEnabled = nativeView.IsEnabled;
 				Assert.Equal(expectedValue, isEnabled);
-			});		
+			});
 		}
 	}
 }
