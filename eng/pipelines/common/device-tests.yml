@@ -13,7 +13,7 @@ parameters:
   artifactName: 'nuget'
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
-  androidConfiguration: 'debug' # Indicates the configuration to use for Android. We're slowly enabling this for all projects
+  androidConfiguration: 'release'
   useArtifacts: false
   targetFrameworkVersion:
     tfm: ''
