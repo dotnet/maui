@@ -2737,10 +2737,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, row: 1, col: 0, colSpan: 1);
 
 			var measure = MeasureAndArrange(grid, widthConstraint: widthConstraint, heightConstraint: 100);
-
-			// view1 should make column 0 at least `determinantViewWidth` units wide
-			// So view0 should be getting measured at _at least_ that value; if the widthConstraint is larger
-			// than that, the * should bump the measure value up to match the widthConstraint
+			// measured should not exceed constraint
 			var expectedMeasureWidth = Math.Min(determinantViewWidth, widthConstraint);
 
 			view0.Received().Measure(Arg.Is<double>(expectedMeasureWidth), Arg.Any<double>());
@@ -2758,10 +2755,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, row: 0, col: 1, rowSpan: 1);
 
 			var measure = MeasureAndArrange(grid, widthConstraint: 100, heightConstraint: heightConstraint);
-
-			// view1 should make row 0 at least `determinantViewHeight` units tall
-			// So view0 should be getting measured at _at least_ that value; if the heightConstraint is larger
-			// than that, the * should bump the measure value up to match the heightConstraint
+			// measured should not exceed constraint
 			var expectedMeasureHeight = Math.Min(determinantViewHeight, heightConstraint);
 
 			view0.Received().Measure(Arg.Any<double>(), Arg.Is<double>(expectedMeasureHeight));
@@ -2796,7 +2790,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var expectedeView1Width = widthConstraint - view2Width;
 			var expectedView1Height = heightConstraint - view0Height;
 			view1.Received().Measure(Arg.Is<double>(expectedeView1Width), Arg.Is<double>(expectedView1Height));
-			var expectedView2Height = expectedView1Height; // expresses equality of view1 and view2 width
+			var expectedView2Height = expectedView1Height; // expresses equality of view1 and view2 height
 			view2.Received().Measure(Arg.Is<double>(double.PositiveInfinity), Arg.Is<double>(expectedView2Height));
 
 		}
