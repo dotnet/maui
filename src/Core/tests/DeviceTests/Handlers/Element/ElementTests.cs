@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public void ElementToHandlerThrowsWhenMatchingHandlerServiceTypeNotRegistered()
 		{
-			// UnregisteredElementStub not registered in ConfigureTestBuilder
+			// UnregisteredElementStub not registered in ConfigureTestBuilder and the interface methods return null
 			Assert.Throws<HandlerNotFoundException>(() => new UnregisteredElementStub().ToHandler(MauiContext));
 		}
 
@@ -28,6 +28,10 @@ namespace Microsoft.Maui.DeviceTests
 			public IElement Parent { get; set; }
 
 			public IElementHandler Handler { get; set; }
+
+			public IElementHandler GetElementHandler(IMauiContext context) => null;
+
+			public System.Type GetElementHandlerType() => null;
 		}
 
 		[Fact]

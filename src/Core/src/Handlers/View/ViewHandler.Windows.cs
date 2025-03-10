@@ -169,5 +169,7 @@ namespace Microsoft.Maui.Handlers
 				virtualView.IsFocused = isFocused;
 			}
 		}
+
+		internal virtual bool PreventGestureBubbling => false;
 	}
 }

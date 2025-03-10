@@ -43,6 +43,17 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(IsCheckedProperty, value);
 		}
 
+		internal override bool TrySetValue(string text)
+		{
+			if (bool.TryParse(text, out bool result))
+			{
+				IsChecked = result;
+				return true;
+			}
+
+			return false;
+		}
+
 		protected internal override void ChangeVisualState()
 		{
 			if (IsEnabled && IsChecked)

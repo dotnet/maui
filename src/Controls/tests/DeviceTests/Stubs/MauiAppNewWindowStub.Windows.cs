@@ -125,5 +125,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			throw new NotImplementedException();
 		}
+
+		public IElementHandler GetElementHandler(IMauiContext context)
+		{
+			throw new NotImplementedException();
+		}
+
+		public System.Type GetElementHandlerType()
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

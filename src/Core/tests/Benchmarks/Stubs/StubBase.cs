@@ -14,6 +14,10 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			set => Handler = (IViewHandler)value;
 		}
 
+		IElementHandler IElement.GetElementHandler(IMauiContext context) => throw new NotImplementedException();
+
+		Type IElement.GetElementHandlerType() => throw new NotImplementedException();
+
 		IElement IElement.Parent => Parent;
 
 		public bool IsEnabled { get; set; } = true;

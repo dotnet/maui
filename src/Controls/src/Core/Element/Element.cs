@@ -490,6 +490,43 @@ namespace Microsoft.Maui.Controls
 			SetValue(property, value, specificity: SetterSpecificity.FromHandler);
 		}
 
+		internal virtual bool TrySetValue(string text)
+		{
+			// TODO move this into overrides in each control type
+			if (this is Entry entry)
+			{
+				entry.Text = text;
+				return true;
+			}
+			else if (this is Editor editor)
+			{
+				editor.Text = text;
+				return true;
+			}
+			else if (this is Switch sw && bool.TryParse(text, out bool swResult))
+			{
+				sw.IsToggled = swResult;
+				return true;
+			}
+			else if (this is RadioButton rb && bool.TryParse(text, out bool rbResult))
+			{
+				rb.IsChecked = rbResult;
+				return true;
+			}
+			else if (this is TimePicker tp && TimeSpan.TryParse(text, out TimeSpan tpResult))
+			{
+				tp.Time = tpResult;
+				return true;
+			}
+			else if (this is DatePicker dp && DateTime.TryParse(text, out DateTime dpResult))
+			{
+				dp.Date = dpResult;
+				return true;
+			}
+
+			return false;
+		}
+
 		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool EffectIsAttached(string name)

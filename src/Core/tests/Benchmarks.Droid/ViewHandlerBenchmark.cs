@@ -101,6 +101,10 @@ public class ViewHandlerBenchmark
 
 		public IMauiHandlersCollection GetCollection() => throw new NotImplementedException();
 
+		public Type? GetHandlerType(IElement element) => throw new NotImplementedException();
+
+		public IElementHandler? GetHandler(IElement element, IMauiContext context) => throw new NotImplementedException();
+
 		public IElementHandler? GetHandler(Type type) => throw new NotImplementedException();
 
 		public IElementHandler? GetHandler<T>() where T : IElement => throw new NotImplementedException();

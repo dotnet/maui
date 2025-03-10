@@ -11,6 +11,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public IElementHandler Handler { get; set; }
 
+		public IElementHandler GetElementHandler(IMauiContext context) => throw new System.NotImplementedException();
+
+		public System.Type GetElementHandlerType() => throw new System.NotImplementedException();
+
 		public IElement Parent { get; set; }
 
 		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
