@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Platform
 	{
 		bool _invalidateParentWhenMovedToWindow;
 		static bool? _respondsToSafeArea;
+		bool? _insideScrollView;
 
 		double _lastMeasureHeight = double.NaN;
 		double _lastMeasureWidth = double.NaN;
@@ -31,8 +32,21 @@ namespace Microsoft.Maui.Platform
 				return false;
 			}
 
+			if (Window is not null)
+			{
+				// If I'm inside a scrollable container then I don't need to adjust for the safe area
+				// The scroll view will handle insetting the content if needed
+				_insideScrollView = _insideScrollView == true || this.GetParentOfType<UIScrollView>() is not null;				
+				if (_insideScrollView.Value)
+				{
+					return false;
+				}
+			}
+
 			if (_respondsToSafeArea.HasValue)
+			{
 				return _respondsToSafeArea.Value;
+			}
 
 			return (bool)(_respondsToSafeArea = RespondsToSelector(new Selector("safeAreaInsets")));
 
@@ -211,6 +225,11 @@ namespace Microsoft.Maui.Platform
 
 		public override void MovedToWindow()
 		{
+			if(Window is null)
+			{
+				_insideScrollView = null;
+			}
+
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
 			if (_invalidateParentWhenMovedToWindow)
