@@ -79,8 +79,6 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			androidCanvas.Restore();
 			_canvas.Canvas = null;
-
-			androidCanvas.Restore();
 		}
 
 		protected override void OnSizeChanged(int width, int height, int oldWidth, int oldHeight)
