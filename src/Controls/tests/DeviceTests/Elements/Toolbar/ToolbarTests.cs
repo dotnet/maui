@@ -158,8 +158,13 @@ namespace Microsoft.Maui.DeviceTests
 				= new Dictionary<ControlsPageTypesTestCase, Page>();
 
 			var nextPage = GetPage(pageSet[0]);
-			var window = new Window(nextPage);
+			Window window = null!;
 
+			await InvokeOnMainThreadAsync(() =>
+			{
+				// This reads DisplayInfo, so it needs main thread
+				window = new Window(nextPage);
+			});
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{
