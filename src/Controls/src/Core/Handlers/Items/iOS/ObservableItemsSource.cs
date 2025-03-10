@@ -314,7 +314,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 
 			var collectionView = controller.CollectionView;
-			if (collectionView.Hidden || collectionView.Window == null)
+			if (collectionView.Hidden)
 			{
 				return;
 			}
