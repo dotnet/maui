@@ -4,8 +4,9 @@
              x:Class="Maui.Controls.Sample.Issues.Issue13801">
 
       <StackLayout VerticalOptions="Start">
-            <Path AutomationId="PathShape"
-                  Stroke="Red"
+            <Label AutomationId="PathLabel"
+                   Text="Path with Margin"/>
+            <Path Stroke="Red"
                   StrokeThickness="5"
                   Data="M 0 0 L 100 0 L 100 100 L 0 100 Z"
                   Margin="20"/>
