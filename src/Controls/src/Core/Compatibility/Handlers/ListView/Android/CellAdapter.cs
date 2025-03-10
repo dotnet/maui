@@ -8,6 +8,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.App;
 using Microsoft.Maui.Controls.Platform;
+using static Microsoft.Maui.Controls.Platform.ModalNavigationManager;
 using AActionMode = global::AndroidX.AppCompat.View.ActionMode;
 using AListView = Android.Widget.ListView;
 using AMenu = Android.Views.IMenu;
@@ -225,6 +226,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (cell == null)
 				return false;
+
+			var fragmentManager = view?.Context?.GetActivity()?.GetFragmentManager();
+			if (fragmentManager.Fragments.Count > 1 && fragmentManager.Fragments[^1] is ModalFragment modalFragment)
+				return modalFragment.HandleContextMode(cell);
 
 			if (_actionMode != null || _supportActionMode != null)
 			{
