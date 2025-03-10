@@ -35,7 +35,7 @@
 			grid.Add(graphicsView);
 
 			rootLayout.Add(grid);
-			rootLayout.Add(new StackLayout()
+			rootLayout.Add(new BoxView()
 			{
 				BackgroundColor = Colors.CornflowerBlue,
 				WidthRequest = 100,
@@ -76,7 +76,7 @@ internal class Issue20834_Drawable : IDrawable
 	public void Draw(ICanvas canvas, RectF dirtyRect)
 	{
 		canvas.SaveState();
-		canvas.FillColor = Colors.Coral;
+		canvas.FillColor = Colors.Blue;
 		canvas.FillEllipse(X, Y, 100, 100);
 		canvas.ResetState();
 	}
