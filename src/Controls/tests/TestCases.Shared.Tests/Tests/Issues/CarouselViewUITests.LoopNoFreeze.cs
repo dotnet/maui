@@ -28,19 +28,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("0 item");
 
 			App.WaitForElement(_carouselAutomationId);
-			App.ScrollRight("_carouselAutomationId", ScrollStrategy.Gesture, 0.99);
+			App.ScrollRight(_carouselAutomationId, ScrollStrategy.Gesture, 0.99);
 
 			App.WaitForElement("1 item");
-			App.ScrollRight("_carouselAutomationId", ScrollStrategy.Gesture, 0.99);
+			App.ScrollRight(_carouselAutomationId, ScrollStrategy.Gesture, 0.99);
 
 
 			App.WaitForElement("2 item");
-			App.WaitForElement("_btnRemoveAutomationId");
+			App.WaitForElement(_btnRemoveAutomationId);
 			App.Tap(_btnRemoveAutomationId);
 
 			App.WaitForElement("1 item");
 
-			App.ScrollRight("_carouselAutomationId", ScrollStrategy.Gesture, 0.99);
+			App.ScrollRight(_carouselAutomationId, ScrollStrategy.Gesture, 0.99);
 
 			App.WaitForElement("0 item");
 		}
