@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Handlers
 			// These set the defaults so visually it matches up with other platforms
 			platformView.SetPadding(0, 0, 0, 0);
 			platformView.SoundEffectsEnabled = false;
+			platformView.SetAdjustViewBounds(true);
 
 			return platformView;
 		}
