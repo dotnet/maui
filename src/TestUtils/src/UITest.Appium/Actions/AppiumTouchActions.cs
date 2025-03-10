@@ -400,7 +400,7 @@ namespace UITest.Appium
 		{
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 			var dragSequence = new ActionSequence(touchDevice, 0);
-			dragSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)fromX, (int)fromY, TimeSpan.Zero));
+			dragSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)fromX, (int)fromY, TimeSpan.FromMilliseconds(2)));
 			dragSequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
 			dragSequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)toX, (int)toY, TimeSpan.FromMilliseconds(250)));
 			dragSequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
