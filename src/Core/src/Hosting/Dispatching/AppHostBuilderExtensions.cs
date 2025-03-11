@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -36,6 +37,8 @@ namespace Microsoft.Maui.Hosting
 		public static MauiAppBuilder ConfigureEnvironmentVariables(this MauiAppBuilder builder)
 		{
 			IDictionary environmentVariables = Environment.GetEnvironmentVariables();
+
+			string devTunnelId = environmentVariables["DEVTUNNEL_ID"]?.ToString() ?? string.Empty;
 
 #if !NETSTANDARD
 			// For Android we read the environment variables from a text file that is written to the device/emulator
@@ -96,6 +99,10 @@ namespace Microsoft.Maui.Hosting
 						}
 					}
 
+					if (!string.IsNullOrEmpty(devTunnelId))
+					{
+						value = ReplaceLocalhost(value, devTunnelId);
+					}
 					settings.Add(new KeyValuePair<string, string?>(variableName, value));
 				}
 			}
@@ -103,6 +110,20 @@ namespace Microsoft.Maui.Hosting
 			builder.Configuration.AddInMemoryCollection(settings);
 
 			return builder;
+		}
+
+		static string ReplaceLocalhost(string uri, string devTunnelId)
+		{
+			// source format is `http[s]://localhost:[port]`
+			// tunnel format is `http[s]://exciting-tunnel-[port].devtunnels.ms`
+
+			var replacement = Regex.Replace(
+				uri,
+				@"://localhost\:(\d+)(.*)",
+				$"://{devTunnelId}-$1.devtunnels.ms$2",
+				RegexOptions.Compiled);
+
+			return replacement;
 		}
 
 		internal static IDispatcher GetRequiredApplicationDispatcher(this IServiceProvider provider)
