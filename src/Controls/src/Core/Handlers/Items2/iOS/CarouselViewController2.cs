@@ -296,6 +296,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		private int GetTargetPosition()
 		{
+			if (ItemsSource.ItemCount == 0)
+			{
+				return 0;
+			}
+			
 			return ItemsView.ItemsUpdatingScrollMode switch
 			{
 				ItemsUpdatingScrollMode.KeepItemsInView => 0,
