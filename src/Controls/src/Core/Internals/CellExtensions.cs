@@ -40,7 +40,9 @@ namespace Microsoft.Maui.Controls.Internals
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/CellExtensions.xml" path="//Member[@MemberName='GetPath']/Docs/*" />
 		public static Tuple<int, int> GetPath(this Cell cell)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			return TableView.TableSectionModel.GetPath(cell);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

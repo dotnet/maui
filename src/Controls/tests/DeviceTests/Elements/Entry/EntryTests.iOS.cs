@@ -179,6 +179,7 @@ namespace Microsoft.Maui.DeviceTests
 					ReturnType = ReturnType.Next
 				};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				var tableView = new TableView()
 				{
 					Root = new TableRoot("Table Title") {
@@ -195,6 +196,7 @@ namespace Microsoft.Maui.DeviceTests
 						},
 					}
 				};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				var layout = new VerticalStackLayout()
 				{
