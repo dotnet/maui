@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Platform
 		internal float LastY { get; set; }
 
 		internal bool ShouldSkipOnTouch;
+		internal int HorizontalScrollOffset => _hScrollView?.ScrollX ?? 0;
 
 		public MauiScrollView(Context context) : base(context)
 		{
@@ -62,10 +63,14 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_hScrollView.HorizontalScrollBarEnabled = scrollBarVisibility == ScrollBarVisibility.Always;
+			_hScrollView.ScrollbarFadingEnabled = _horizontalScrollVisibility != ScrollBarVisibility.Always;
+			PlatformInterop.RequestLayoutIfNeeded(this);
 		}
 
 		public void SetVerticalScrollBarVisibility(ScrollBarVisibility scrollBarVisibility)
 		{
+			ScrollBarVisibility verticalScrollVisibility = scrollBarVisibility;
+
 			if (_defaultVerticalScrollVisibility == 0)
 				_defaultVerticalScrollVisibility = VerticalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
 
@@ -73,8 +78,8 @@ namespace Microsoft.Maui.Platform
 				scrollBarVisibility = _defaultVerticalScrollVisibility;
 
 			VerticalScrollBarEnabled = scrollBarVisibility == ScrollBarVisibility.Always;
-
-			this.HandleScrollBarVisibilityChange();
+			ScrollbarFadingEnabled = verticalScrollVisibility != ScrollBarVisibility.Always;
+			PlatformInterop.RequestLayoutIfNeeded(this);
 		}
 
 		public void SetContent(View content)
@@ -427,7 +432,6 @@ namespace Microsoft.Maui.Platform
 			set
 			{
 				base.HorizontalScrollBarEnabled = value;
-				this.HandleScrollBarVisibilityChange();
 			}
 		}
 

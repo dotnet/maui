@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				//The order of lookup is to look for the Extension-suffixed class name first and then look for the class name without the Extension suffix.
 				XmlType type = new XmlType(namespaceuri, name + "Extension", typeArguments);
-				if (!type.TryGetTypeReference(contextProvider.Context.Cache, contextProvider.Context.Module, null, out _))
+				if (!type.TryGetTypeReference(contextProvider.Context.Cache, contextProvider.Context.Module, null, expandToExtension: true, out _))
 					type = new XmlType(namespaceuri, name, typeArguments);
 
 				if (type == null)

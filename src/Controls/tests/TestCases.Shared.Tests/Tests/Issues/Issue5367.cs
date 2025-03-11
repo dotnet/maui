@@ -6,8 +6,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue5367 : _IssuesUITest
 	{
-		const string MaxLengthEditor = "MaxLength Editor";
-		const string ForceBigStringButton = "Force Big String Button";
+		const string MaxLengthEditor = "MaxLengthEditor";
+		const string ForceBigStringButton = "StringButton";
 
 		public Issue5367(TestDevice testDevice) : base(testDevice)
 		{
@@ -18,13 +18,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Editor)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue5367Test()
 		{
 			App.WaitForElement(MaxLengthEditor);
 			App.Tap(ForceBigStringButton);
+			var text = App.WaitForElement(MaxLengthEditor).GetText() ?? string.Empty;
+			int count = text.Count();
+			Assert.That(count, Is.EqualTo(14));
 		}
 	}
 }

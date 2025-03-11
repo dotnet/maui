@@ -9,10 +9,10 @@ public class Bugzilla41038 : TestFlyoutPage
 	protected override void Init()
 	{
 		Title = "Main";
-		
+
 		// Set FlyoutBehavior to Popover to ensure consistent behavior across desktop and mobile platforms.
 		// Windows and Catalyst default (FlyoutLayoutBehavior.Default) uses Split mode, which differs from mobile platforms.
-		FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover; 
+		FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
 		var btnViewA = new Button() { Text = "ViewA", AutomationId = "ViewA" };
 		btnViewA.Clicked += Button_Clicked;
 
@@ -49,7 +49,7 @@ public class Bugzilla41038 : TestFlyoutPage
 
 		await _navPage.Navigation.PushAsync(newRoot);
 		_navPage.Navigation.RemovePage(root);
-		IsPresented = false; 
+		IsPresented = false;
 	}
 
 	public class ViewA : ContentPage

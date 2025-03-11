@@ -107,15 +107,15 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateBarBackground()
 		{
-			if(_currentBarBackground is GradientBrush oldBarBackground)
+			if (_currentBarBackground is GradientBrush oldBarBackground)
 			{
 				oldBarBackground.Parent = null;
 				oldBarBackground.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
 			}
-			
+
 			_currentBarBackground = BarBackground;
 
-			if(_currentBarBackground is GradientBrush newBarBackground && Parent is Element parent)
+			if (_currentBarBackground is GradientBrush newBarBackground && Parent is Element parent)
 			{
 				newBarBackground.Parent = parent;
 				newBarBackground.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
@@ -131,7 +131,10 @@ namespace Microsoft.Maui.Controls
 
 		void RefreshBarBackground()
 		{
-			PlatformView.UpdateBarBackground(this);
+			if (Handler?.PlatformView is MaterialToolbar materialToolbar)
+			{
+				materialToolbar.UpdateBarBackground(this);
+			}
 		}
 
 		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2) =>

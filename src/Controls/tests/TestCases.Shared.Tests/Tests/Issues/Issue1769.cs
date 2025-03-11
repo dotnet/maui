@@ -28,5 +28,5 @@ public class Issue1769 : _IssuesUITest
 		Assert.That(App.FindElement("SwitchLabel").GetText(), Is.EqualTo(string.Format(SwitchIsNowLabelTextFormat, false)));
 		App.Tap(SwitchAutomatedId);
 		Assert.That(App.FindElement("SwitchLabel").GetText(), Is.EqualTo(string.Format(SwitchIsNowLabelTextFormat, true)));
-}
+	}
 }

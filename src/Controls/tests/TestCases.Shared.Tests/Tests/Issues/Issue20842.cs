@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,19 +17,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public async Task VerifyCollectionViewItemsAfterScrolling()
+		public void VerifyCollectionViewItemsAfterScrolling()
 		{
 			App.WaitForElement(scrollUpButton);
-
+			App.WaitForElement(scrollDownButton);
 			App.Tap(scrollDownButton);
-			await Task.Delay(200);
+			App.WaitForElement(scrollUpButton);
 			App.Tap(scrollUpButton);
-			await Task.Delay(200);
+			App.WaitForElement(scrollDownButton);
 			App.Tap(scrollDownButton);
-   			await Task.Delay(500);
-
 			VerifyScreenshot();
 		}
 	}
 }
-#endif

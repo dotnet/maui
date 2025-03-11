@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS //App Crashes on windows, Issue: https://github.com/dotnet/maui/issues/26803
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,4 +22,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif
