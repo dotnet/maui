@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBarBackground(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			platformToolbar.Background = toolbar.BarBackground?.ToBrush();
+			platformToolbar.SetBarBackground(toolbar.BarBackground?.ToBrush());
 		}
 
 		public static void UpdateTitleView(this MauiToolbar platformToolbar, Toolbar toolbar)
