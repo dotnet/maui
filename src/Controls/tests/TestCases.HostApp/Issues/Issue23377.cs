@@ -1,14 +1,12 @@
 ﻿namespace Maui.Controls.Sample.Issues;
-[XamlCompilation(XamlCompilationOptions.Compile)]
-[Issue(IssueTracker.Github, 23377, "Item Spacing misbehaviour for horizontal list", PlatformAffected.UWP)]
-public partial class Issue23377 : ContentPage
+[Issue(IssueTracker.Github, 23377, "Horizontal Item spacing in collectionView", PlatformAffected.UWP)]
+public class Issue23377 : TestContentPage
 {
 	public List<string> Items { get; set; }
 	private Button button;
-	private Entry _entry;
 	private CollectionView collectionView;
 
-	public Issue23377()
+	protected override void Init()
 	{
 		Items = new List<string>
 		{
@@ -17,14 +15,7 @@ public partial class Issue23377 : ContentPage
 		};
 		BindingContext = this;
 
-		var grid = new Grid();
-		var stackLayout = new StackLayout();
-
-		_entry = new Entry
-		{
-			AutomationId = "EntryControl",
-			Keyboard = Keyboard.Numeric
-		};
+		var VerticalStackLayout = new VerticalStackLayout();
 
 		button = new Button
 		{
@@ -33,9 +24,6 @@ public partial class Issue23377 : ContentPage
 		};
 
 		button.Clicked += Button_Clicked;
-
-		stackLayout.Children.Add(_entry);
-		stackLayout.Children.Add(button);
 
 		collectionView = new CollectionView
 		{
@@ -51,22 +39,17 @@ public partial class Issue23377 : ContentPage
 			return label;
 		});
 
-		grid.Children.Add(stackLayout);
-		grid.Children.Add(collectionView);
+		VerticalStackLayout.Children.Add(collectionView);
+		VerticalStackLayout.Children.Add(button);
 
-
-		Content = grid;
+		Content = VerticalStackLayout;
 	}
 
 	void Button_Clicked(object sender, EventArgs e)
 	{
-		if (double.TryParse(_entry.Text, out double spacingValue))
+		if (collectionView.ItemsLayout is LinearItemsLayout linearItemsLayout)
 		{
-			if (collectionView.ItemsLayout is LinearItemsLayout linearItemsLayout)
-			{
-				linearItemsLayout.ItemSpacing = spacingValue;
-			}
+			linearItemsLayout.ItemSpacing = 80;
 		}
 	}
 }
-
