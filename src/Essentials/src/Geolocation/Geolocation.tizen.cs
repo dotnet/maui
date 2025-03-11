@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 		public bool IsListeningForeground { get => false; }
 		
-		public bool IsSupported { get => false; }
+		public bool IsEnabled { get => false; }
 
 		public Task<Location?> GetLastKnownLocationAsync() => Task.FromResult<Location?>(lastKnownLocation);
 

@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		public bool IsListeningForeground { get => continuousListener is not null; }
 
-		public bool IsSupported
+		public bool IsEnabled
 		{
 			get
 			{
