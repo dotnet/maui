@@ -62,7 +62,9 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
 				handlers.AddHandler<Switch, SwitchHandler>();
 				handlers.AddHandler<SwitchCell, SwitchCellRenderer>();
+#pragma warning disable CS0618 // Type or member is obsolete
 				handlers.AddHandler<TableView, TableViewRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 				handlers.AddHandler<TextCell, TextCellRenderer>();
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 				handlers.AddHandler<Toolbar, ToolbarHandler>();
