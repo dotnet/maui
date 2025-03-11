@@ -156,12 +156,14 @@
                                  CheckedChanged="OnGroupHeaderTemplateChanged"
                                  Content="None"
                                  FontSize="11"
-                                 GroupName="GroupHeaderTemplateGroup"/>
+                                 GroupName="GroupHeaderTemplateGroup"
+                                 AutomationId="GroupHeaderTemplateNone"/>
                     <RadioButton x:Name="GroupHeaderTemplateGrid"
                                  CheckedChanged="OnGroupHeaderTemplateChanged"
                                  Content="View"
                                  FontSize="11"
-                                 GroupName="GroupHeaderTemplateGroup"/>
+                                 GroupName="GroupHeaderTemplateGroup"
+                                 AutomationId="GroupHeaderTemplateGrid"/>
                 </StackLayout>
                 <!-- GroupFooterTemplate -->
                 <Label Text="GroupFooterTemplate:"
@@ -173,12 +175,14 @@
                                  CheckedChanged="OnGroupFooterTemplateChanged"
                                  Content="None"
                                  FontSize="11"
-                                 GroupName="GroupFooterTemplateGroup"/>
+                                 GroupName="GroupFooterTemplateGroup"
+                                 AutomationId="GroupFooterTemplateNone"/>
                     <RadioButton x:Name="GroupFooterTemplateGrid"
                                  CheckedChanged="OnGroupFooterTemplateChanged"
                                  Content="View"
                                  FontSize="11"
-                                 GroupName="GroupFooterTemplateGroup"/>
+                                 GroupName="GroupFooterTemplateGroup"
+                                 AutomationId="GroupFooterTemplateGrid"/>
                 </StackLayout>
                 <!--IsGrouped-->
                 <Label Text="IsGrouped:"
@@ -189,11 +193,13 @@
                                  Content="True"
                                  IsChecked="True"
                                  CheckedChanged="OnIsGroupedChanged"
-                                 FontSize="11"/>
+                                 FontSize="11"
+                                 AutomationId="IsGroupedTrue"/>
                     <RadioButton x:Name="IsGroupedFalse"
                                  Content="False"
                                  CheckedChanged="OnIsGroupedChanged"
-                                 FontSize="11"/>
+                                 FontSize="11"
+                                 AutomationId="IsGroupedFalse"/>
                 </StackLayout>
                 <!-- ItemTemplate -->
                 <Label Text="Item Template:"
@@ -208,7 +214,7 @@
                                  CheckedChanged="OnItemTemplateChanged"
                                  AutomationId="ItemTemplateNone"/>
                     <RadioButton x:Name="ItemTemplateBasic"
-                                 Content="Basic DataTemplate"
+                                 Content="Basic"
                                  FontSize="11"
                                  GroupName="ItemTemplateGroup"
                                  CheckedChanged="OnItemTemplateChanged"
@@ -219,6 +225,12 @@
                                  GroupName="ItemTemplateGroup"
                                  CheckedChanged="OnItemTemplateChanged"
                                  AutomationId="ItemTemplateGrid"/>
+                    <RadioButton x:Name="ItemTemplateSelector"
+                                 Content="DataTemplateSelector"
+                                 FontSize="11"
+                                 GroupName="ItemTemplateGroup"
+                                 CheckedChanged="OnItemTemplateChanged"
+                                 AutomationId="ItemTemplateSelector"/>
                 </StackLayout>
                 <!-- ItemsSource Selection -->
                 <Label Text="ItemsSource:"

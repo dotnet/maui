@@ -1,25 +1,25 @@
 using System;
 using Microsoft.Maui.Controls;
 using System.Collections.ObjectModel;
-
+ 
 namespace Maui.Controls.Sample
 {
     public partial class CollectionViewOptionsPage : ContentPage
     {
         private CollectionViewViewModel _viewModel;
-
+ 
         public CollectionViewOptionsPage(CollectionViewViewModel viewModel)
         {
             InitializeComponent();
             _viewModel = viewModel;
             BindingContext = _viewModel;
         }
-
+ 
         private void ApplyButton_Clicked(object sender, EventArgs e)
         {
             Navigation.PopAsync();
         }
-
+ 
         private void OnEmptyViewChanged(object sender, CheckedChangedEventArgs e)
         {
             if (EmptyViewNone.IsChecked)
@@ -48,7 +48,7 @@ namespace Maui.Controls.Sample
                 _viewModel.EmptyView = grid;
             }
         }
-
+ 
         private void OnHeaderChanged(object sender, CheckedChangedEventArgs e)
         {
             if (HeaderNone.IsChecked)
@@ -77,7 +77,7 @@ namespace Maui.Controls.Sample
                 _viewModel.Header = grid;
             }
         }
-
+ 
         private void OnFooterChanged(object sender, CheckedChangedEventArgs e)
         {
             if (FooterNone.IsChecked)
@@ -106,7 +106,7 @@ namespace Maui.Controls.Sample
                 _viewModel.Footer = grid;
             }
         }
-
+ 
         private void OnEmptyViewTemplateChanged(object sender, CheckedChangedEventArgs e)
         {
             if (EmptyViewTemplateNone.IsChecked)
@@ -134,7 +134,7 @@ namespace Maui.Controls.Sample
                 });
             }
         }
-
+ 
         private void OnHeaderTemplateChanged(object sender, CheckedChangedEventArgs e)
         {
             if (HeaderTemplateNone.IsChecked)
@@ -163,7 +163,7 @@ namespace Maui.Controls.Sample
                 });
             }
         }
-
+ 
         private void OnFooterTemplateChanged(object sender, CheckedChangedEventArgs e)
         {
             if (FooterTemplateNone.IsChecked)
@@ -192,7 +192,7 @@ namespace Maui.Controls.Sample
                 });
             }
         }
-
+ 
         private void OnGroupHeaderTemplateChanged(object sender, CheckedChangedEventArgs e)
         {
             if (GroupHeaderTemplateNone.IsChecked)
@@ -260,7 +260,7 @@ namespace Maui.Controls.Sample
                 _viewModel.IsGrouped = true;
             }
         }
-
+ 
         private void OnItemTemplateChanged(object sender, CheckedChangedEventArgs e)
         {
             if (ItemTemplateNone.IsChecked)
@@ -275,8 +275,15 @@ namespace Maui.Controls.Sample
                     var label = new Label
                     {
                         Text = "CollectionViewItem",
+                        FontSize = 18,
+                        FontAttributes = FontAttributes.Bold,
+                        HorizontalOptions = LayoutOptions.Center,
+                        VerticalOptions = LayoutOptions.Center,
+                        TextColor = Colors.Black,
+                        BackgroundColor = Colors.LightGray,
+                        Padding = new Thickness(10)
                     };
-
+ 
                     return label;
                 });
             }
@@ -303,8 +310,51 @@ namespace Maui.Controls.Sample
                     return grid;
                 });
             }
+            else if (ItemTemplateSelector.IsChecked)
+            {
+                // DataTemplateSelector
+                var template1 = new DataTemplate(() =>
+                {
+                    var label = new Label
+                    {
+                        Text = "Template 1",
+                        FontSize = 18,
+                        FontAttributes = FontAttributes.Bold,
+                        HorizontalOptions = LayoutOptions.Center,
+                        VerticalOptions = LayoutOptions.Center,
+                        TextColor = Colors.Black,
+                        BackgroundColor = Colors.LightGray,
+                        Padding = new Thickness(10)
+                    };
+ 
+                    return label;
+                });
+ 
+                var template2 = new DataTemplate(() =>
+                {
+                    var label = new Label
+                    {
+                        Text = "Template 2",
+                        FontSize = 18,
+                        FontAttributes = FontAttributes.Bold,
+                        HorizontalOptions = LayoutOptions.Center,
+                        VerticalOptions = LayoutOptions.Center,
+                        TextColor = Colors.Black,
+                        BackgroundColor = Colors.LightGray,
+                        Padding = new Thickness(10)
+                    };
+ 
+                    return label;
+                });
+ 
+                _viewModel.ItemTemplate = new CollectionViewViewModel.CustomDataTemplateSelector
+                {
+                    Template1 = template1,
+                    Template2 = template2
+                };
+            }
         }
-
+ 
         private void OnItemsSourceChanged(object sender, CheckedChangedEventArgs e)
         {
             if (!(sender is RadioButton radioButton) || !e.Value)

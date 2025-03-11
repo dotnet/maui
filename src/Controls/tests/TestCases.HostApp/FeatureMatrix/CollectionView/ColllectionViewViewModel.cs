@@ -213,6 +213,23 @@ namespace Maui.Controls.Sample
                     $"{images[n % images.Length]}, {n}", images[n % images.Length], n));
             }
         }
+
+        public class CustomDataTemplateSelector : DataTemplateSelector
+        {
+            public DataTemplate Template1 { get; set; }
+            public DataTemplate Template2 { get; set; }
+
+            protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
+            {
+                // Implement your logic to select the appropriate template
+                if (item is CollectionViewTestItem testItem)
+                {
+                    return testItem.Index % 2 == 0 ? Template1 : Template2;
+                }
+
+                return Template1;
+            }
+        }
     }
 
     public class CollectionViewTestItem
