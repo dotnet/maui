@@ -59,6 +59,21 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(passed, $"Waited for raw message response but it never arrived or didn't match (last message: {lastRawMessage})");
 			});
 
+		[Theory]
+		[InlineData("/asyncdata.txt", 200)]
+		[InlineData("/missingfile.txt", 404)]
+		public Task RequestFileFromJS(string url, int expectedStatus) =>
+			RunTest(async (hybridWebView) =>
+			{
+				var result = await hybridWebView.InvokeJavaScriptAsync<int>(
+					"RequestFileFromJS",
+					HybridWebViewTestContext.Default.Int32,
+					[url],
+					[HybridWebViewTestContext.Default.String]);
+
+				Assert.Equal(expectedStatus, result);
+			});
+
 		[Fact]
 		public Task InvokeJavaScriptMethodWithParametersAndNullsAndComplexResult() =>
 			RunTest(async (hybridWebView) =>
