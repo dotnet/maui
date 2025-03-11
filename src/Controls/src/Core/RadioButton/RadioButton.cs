@@ -280,9 +280,13 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 			if (propertyName == BorderColorProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IRadioButton.StrokeColor));
+			}
 			else if (propertyName == BorderWidthProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IRadioButton.StrokeThickness));
+			}
 		}
 
 		bool IBorderElement.IsCornerRadiusSet() => IsSet(BorderElement.CornerRadiusProperty);
