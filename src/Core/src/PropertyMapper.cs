@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 #if IOS || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -16,17 +15,13 @@ namespace Microsoft.Maui
 {
 	public abstract class PropertyMapper : IPropertyMapper
 	{
-		// TODO: Make this private in .NET10
 		protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new(StringComparer.Ordinal);
+
 		IPropertyMapper[]? _chained;
 
-		List<string>? _updatePropertiesKeys;
-		List<Action<IElementHandler, IElement>>? _updatePropertiesMappers;
-		Dictionary<string, Action<IElementHandler, IElement>?>? _cachedMappers;
-
-		List<string> UpdatePropertiesKeys => _updatePropertiesKeys ?? SnapshotMappers().UpdatePropertiesKeys;
-		List<Action<IElementHandler, IElement>> UpdatePropertiesMappers => _updatePropertiesMappers ?? SnapshotMappers().UpdatePropertiesMappers;
-		Dictionary<string, Action<IElementHandler, IElement>?> CachedMappers => _cachedMappers ?? SnapshotMappers().CachedMappers;
+		// Keep a distinct list of the keys so we don't run any duplicate (overridden) updates more than once
+		// when we call UpdateProperties
+		HashSet<string>? _updateKeys;
 
 		public PropertyMapper()
 		{
@@ -40,65 +35,49 @@ namespace Microsoft.Maui
 		protected virtual void SetPropertyCore(string key, Action<IElementHandler, IElement> action)
 		{
 			_mapper[key] = action;
-
 			ClearKeyCache();
 		}
 
 		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
 		{
 			if (!viewHandler.CanInvokeMappers())
+				return;
+
+			if (_mapper.TryGetValue(key, out var action))
 			{
+				action.Invoke(viewHandler, virtualView);
 				return;
 			}
-
-			TryUpdatePropertyCore(key, viewHandler, virtualView);
-		}
-
-		internal bool TryUpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
-		{
-			var cachedMappers = CachedMappers;
-			if (cachedMappers.TryGetValue(key, out var action))
+			
+			if (Chained is not null)
 			{
-				if (action is not null)
+				foreach (var ch in Chained)
 				{
-					action(viewHandler, virtualView);
-					return true;
+					if (ch is ICanUpdate can && can.TryUpdateProperty(viewHandler, virtualView, key))
+					{
+						return;
+					}
+
+					if (ch.GetProperty(key) is {} prop)
+					{
+						prop.Invoke(viewHandler, virtualView);
+						return;
+					}
 				}
-
-				return false;
 			}
-
-			// CachedMappers initially contains only the UpdateProperties keys which may not contain the key we are looking for.
-			// See AndroidBatchPropertyMapper for an example.
-			var mapper = GetProperty(key);
-			cachedMappers[key] = mapper;
-
-			if (mapper is not null)
-			{
-				mapper(viewHandler, virtualView);
-				return true;
-			}
-
-			return false;
 		}
 
 		public virtual Action<IElementHandler, IElement>? GetProperty(string key)
 		{
 			if (_mapper.TryGetValue(key, out var action))
-			{
 				return action;
-			}
-
-			var chainedPropertyMappers = Chained;
-			if (chainedPropertyMappers is not null)
+			else if (Chained is not null)
 			{
-				foreach (var ch in chainedPropertyMappers)
+				foreach (var ch in Chained)
 				{
 					var returnValue = ch.GetProperty(key);
 					if (returnValue != null)
-					{
 						return returnValue;
-					}
 				}
 			}
 
@@ -107,24 +86,20 @@ namespace Microsoft.Maui
 
 		public void UpdateProperty(IElementHandler viewHandler, IElement? virtualView, string property)
 		{
-			if (virtualView == null || !viewHandler.CanInvokeMappers())
-			{
+			if (virtualView == null)
 				return;
-			}
 
-			TryUpdatePropertyCore(property, viewHandler, virtualView);
+			UpdatePropertyCore(property, viewHandler, virtualView);
 		}
 
 		public void UpdateProperties(IElementHandler viewHandler, IElement? virtualView)
 		{
-			if (virtualView == null || !viewHandler.CanInvokeMappers())
-			{
+			if (virtualView == null)
 				return;
-			}
 
-			foreach (var mapper in UpdatePropertiesMappers)
+			foreach (var key in UpdateKeys)
 			{
-				mapper(viewHandler, virtualView);
+				UpdatePropertyCore(key, viewHandler, virtualView);
 			}
 		}
 
@@ -138,65 +113,34 @@ namespace Microsoft.Maui
 			}
 		}
 
-		// TODO: Make private in .NET10 with a new name: ClearMergedMappers
-		protected virtual void ClearKeyCache()
+		private HashSet<string> PopulateKeys()
 		{
-			_updatePropertiesMappers = null;
-			_updatePropertiesKeys = null;
-			_cachedMappers = null;
+			var keys = new HashSet<string>(StringComparer.Ordinal);
+			foreach (var key in GetKeys())
+			{
+				keys.Add(key);
+			}
+			return keys;
 		}
 
-		// TODO: Remove in .NET10
-		public virtual IReadOnlyCollection<string> UpdateKeys => UpdatePropertiesKeys;
+		protected virtual void ClearKeyCache()
+		{
+			_updateKeys = null;
+		}
+
+		public virtual IReadOnlyCollection<string> UpdateKeys => _updateKeys ??= PopulateKeys();
 
 		public virtual IEnumerable<string> GetKeys()
 		{
-			// We want to retain the initial order of the keys to avoid race conditions
-			// when a property mapping is overridden by a new instance of property mapper.
-			// As an example, the container view mapper should always run first.
-			// Siblings mapper should not have keys intersection.
-			var chainedPropertyMappers = Chained;
-			if (chainedPropertyMappers is not null)
+			foreach (var key in _mapper.Keys)
+				yield return key;
+
+			if (Chained is not null)
 			{
-				for (int i = chainedPropertyMappers.Length - 1; i >= 0; i--)
-				{
-					foreach (var key in chainedPropertyMappers[i].GetKeys())
-					{
+				foreach (var chain in Chained)
+					foreach (var key in chain.GetKeys())
 						yield return key;
-					}
-				}
 			}
-
-			// Enqueue keys from this mapper.
-			foreach (var mapper in _mapper)
-			{
-				yield return mapper.Key;
-			}
-		}
-
-		private (List<string> UpdatePropertiesKeys, List<Action<IElementHandler, IElement>> UpdatePropertiesMappers, Dictionary<string, Action<IElementHandler, IElement>?> CachedMappers) SnapshotMappers()
-		{
-			var updatePropertiesKeys = GetKeys().Distinct().ToList();
-			var updatePropertiesMappers = new List<Action<IElementHandler, IElement>>(updatePropertiesKeys.Count);
-#if ANDROID
-			var cacheSize = updatePropertiesKeys.Count + AndroidBatchPropertyMapper.SkipList.Count;
-#else
-			var cacheSize = updatePropertiesKeys.Count;
-#endif
-			var cachedMappers = new Dictionary<string, Action<IElementHandler, IElement>?>(cacheSize);
-
-			foreach (var key in updatePropertiesKeys)
-			{
-				var mapper = GetProperty(key)!;
-				updatePropertiesMappers.Add(mapper);
-				cachedMappers[key] = mapper;
-			}
-
-			_updatePropertiesKeys = updatePropertiesKeys;
-			_updatePropertiesMappers = updatePropertiesMappers;
-			_cachedMappers = cachedMappers;
-
-			return (updatePropertiesKeys, updatePropertiesMappers, cachedMappers);
 		}
 	}
 
@@ -209,6 +153,11 @@ namespace Microsoft.Maui
 		void UpdateProperties(IElementHandler elementHandler, IElement virtualView);
 
 		void UpdateProperty(IElementHandler elementHandler, IElement virtualView, string property);
+	}
+
+	interface ICanUpdate : IPropertyMapper
+	{
+		bool TryUpdateProperty(IElementHandler elementHandler, IElement virtualView, string property);
 	}
 
 	public interface IPropertyMapper<out TVirtualView, out TViewHandler> : IPropertyMapper
@@ -245,22 +194,12 @@ namespace Microsoft.Maui
 			SetPropertyCore(key, (h, v) =>
 			{
 				if (v is TVirtualView vv)
-				{
 					action?.Invoke((TViewHandler)h, vv);
-				}
 				else if (Chained != null)
 				{
 					foreach (var chain in Chained)
 					{
-						// Try to leverage our internal method which uses merged mappers
-						if (chain is PropertyMapper propertyMapper)
-						{
-							if (propertyMapper.TryUpdatePropertyCore(key, h, v))
-							{
-								break;
-							}
-						}
-						else if (chain.GetProperty(key) != null)
+						if (chain.GetProperty(key) != null)
 						{
 							chain.UpdateProperty(h, v, key);
 							break;
