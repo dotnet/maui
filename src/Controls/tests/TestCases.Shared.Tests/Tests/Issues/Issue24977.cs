@@ -16,17 +16,31 @@ public class Issue24977 : _IssuesUITest
     [Category(UITestCategories.Editor)]
     public void KeepEditorCursorAboveKeyboardWithVerticalAlignmentAsCenter()
     {
+        TestKeepEditorCursorAboveKeyboard("CenterButton", true);
+    }
+
+    [Test]
+    [Category(UITestCategories.Editor)]
+    public void KeepEditorCursorAboveKeyboardWithVerticalAlignmentAsEnd()
+    {
+        TestKeepEditorCursorAboveKeyboard("EndButton");
+    }
+
+    void TestKeepEditorCursorAboveKeyboard(string buttonId, bool fromCenter = false)
+    {
+        App.WaitForElement(buttonId);
+        App.Tap(buttonId);
+        Thread.Sleep(1000);
+
         var app = App as AppiumApp;
-        if (app is null)
-        {
+        if (app == null)
             return;
-        }
 
         var editorRect = app.WaitForElement("IssueEditor").GetRect();
         app.Click("IssueEditor");
 
         var sb = new StringBuilder();
-        for (int i = 1; i <= 15; i++)
+        for (int i = 1; i <= 20; i++)
         {
             sb.Append($"\n{i}");
         }
@@ -36,16 +50,24 @@ public class Issue24977 : _IssuesUITest
         var keyboardLocation = KeyboardScrolling.FindiOSKeyboardLocation(app.Driver);
 
         var cursorLabel = app.WaitForElement("CursorHeightTracker").GetText();
-
         var cursorHeight1 = Convert.ToDouble(cursorLabel);
-
-        if (keyboardLocation is Point keyboardPoint)
+        try
         {
-            Assert.That(cursorHeight1 < keyboardPoint.Y);
+            if (keyboardLocation is Point keyboardPoint)
+            {
+                Assert.That(cursorHeight1 < keyboardPoint.Y);
+            }
+            else
+            {
+                Assert.Fail("keyboardLocation is null");
+            }
         }
-        else
+        finally
         {
-            Assert.Fail("keyboardLocation is null");
+            if (fromCenter)
+            {
+                App.Back();
+            }
         }
     }
 }
