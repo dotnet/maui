@@ -98,11 +98,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				var horizontalEndAlignment = TextAlignment.End;
 				var horizontalCenterAlignment = TextAlignment.Center;
-				var horizontalStartAlignment = TextAlignment.Start;				
+				var horizontalStartAlignment = TextAlignment.Start;
 
 				var editor = new Editor
 				{
-					HorizontalTextAlignment = horizontalStartAlignment,
 					Placeholder = "This is a placeholder"
 				};
 
@@ -122,11 +121,12 @@ namespace Microsoft.Maui.DeviceTests
 
 					var placeholderLabel = handler.PlatformView.Subviews.OfType<UIKit.UILabel>().FirstOrDefault();
 
-					Assert.Equal(UIKit.UITextAlignment.Left, placeholderLabel?.TextAlignment);
 					editor.HorizontalTextAlignment = horizontalCenterAlignment;
 					Assert.Equal(UIKit.UITextAlignment.Center, placeholderLabel?.TextAlignment);
 					editor.HorizontalTextAlignment = horizontalEndAlignment;
 					Assert.Equal(UIKit.UITextAlignment.Right, placeholderLabel?.TextAlignment);
+					editor.HorizontalTextAlignment = horizontalStartAlignment;
+					Assert.Equal(UIKit.UITextAlignment.Left, placeholderLabel?.TextAlignment);
 
 				});
 			}
