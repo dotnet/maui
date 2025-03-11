@@ -99,11 +99,6 @@ stages:
           - ${{ each api in parameters.androidApiLevels }}:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_ui_tests_${{ project.name }}_${{ api }}
-                strategy:
-                  matrix:
-                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -125,7 +120,6 @@ stages:
                         device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-                      testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: ios_ui_tests_mono
@@ -137,11 +131,6 @@ stages:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
-                strategy:
-                  matrix:
-                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -167,7 +156,6 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       runtimeVariant : "Mono"
-                      testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: ios_ui_tests_mono_cv2
@@ -218,11 +206,6 @@ stages:
             - ${{ each version in parameters.iosVersions }}:
               - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
                 - job: ios_ui_tests_nativeaot_${{ project.name }}_${{ replace(version, '.', '_') }}
-                  strategy:
-                    matrix:
-                      ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                        ${{ categoryGroup }}:
-                          CATEGORYGROUP: ${{ categoryGroup }}
                   timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                   workspace:
                     clean: all
@@ -248,7 +231,6 @@ stages:
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                         runtimeVariant : "NativeAOT"
-                        testFilter: $(CATEGORYGROUP)
                         skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: winui_ui_tests
@@ -258,11 +240,6 @@ stages:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.winui, '') }}:
               - job: winui_ui_tests_${{ project.name }}
-                strategy:
-                  matrix:
-                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -280,7 +257,6 @@ stages:
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-                      testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: mac_ui_tests
@@ -290,11 +266,6 @@ stages:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.mac, '') }}:
               - job: mac_ui_tests_${{ project.name }}
-                strategy:
-                  matrix:
-                    ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
-                      ${{ categoryGroup }}:
-                        CATEGORYGROUP: ${{ categoryGroup }}
                 timeoutInMinutes: 240 # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
@@ -313,5 +284,4 @@ stages:
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-                      testFilter: $(CATEGORYGROUP)
                       skipProvisioning: ${{ parameters.skipProvisioning }}
