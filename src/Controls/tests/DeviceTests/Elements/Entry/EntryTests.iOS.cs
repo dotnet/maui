@@ -115,7 +115,9 @@ namespace Microsoft.Maui.DeviceTests
 					builder.ConfigureMauiHandlers(handlers =>
 					{
 						handlers.AddHandler<ListView, ListViewRenderer>();
+#pragma warning disable CS0618 // Type or member is obsolete
 						handlers.AddHandler<TableView, TableViewRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 						handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 						handlers.AddHandler<Entry, EntryHandler>();
 						handlers.AddHandler<EntryCell, EntryCellRenderer>();
