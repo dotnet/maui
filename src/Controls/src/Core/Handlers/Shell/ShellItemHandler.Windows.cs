@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				var currentItem = parentShell.CurrentItem?.CurrentItem;
 				if (currentItem?.Title != shellContent.Title && currentItem != shellContent.Parent)
 				{
-					((IShellItemController)parentShell.CurrentItem).ProposeSection(shellContent);
+					(parentShell.CurrentItem as IShellItemController)?.ProposeSection(shellContent);
 				}
 				parentShell.CurrentItem = shellContent;
 			}
