@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Maui.Controls.Sample.Issues;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -7,9 +8,13 @@ namespace Controls.TestCases.Issues;
 [Issue(IssueTracker.Github, 12500, "Shell does not always raise Navigating event on Windows", PlatformAffected.UWP)]
 public class Issue12500 : Shell
 {
+	private NavigationViewModel _viewModel;
 	public Issue12500()
 	{
 		this.FlyoutBehavior = FlyoutBehavior.Disabled;
+
+		_viewModel = new NavigationViewModel();
+
 		// Create TabBar
 		var tabBar = new TabBar();
 
@@ -17,33 +22,27 @@ public class Issue12500 : Shell
 		tabBar.Items.Add(new ShellContent
 		{
 			Title = "Hello, World!",
-			Route = "12500",
-			ContentTemplate = new DataTemplate(typeof(Issue12500Main))
+			Route = "MainPage",
+			ContentTemplate = new DataTemplate(() => new Issue12500Main { BindingContext = _viewModel })
 		});
-
 		// Add ShellContent for EventsPage
 		tabBar.Items.Add(new ShellContent
 		{
 			Title = "Events",
-			Route = "12500EventPage",
-			ContentTemplate = new DataTemplate(typeof(Issue12500EventPage))
-		});
-
-		// Add ShellContent for DummyPage
-		tabBar.Items.Add(new ShellContent
-		{
-			Title = "Sample",
-			Route = "12500SamplePage",
-			ContentTemplate = new DataTemplate(typeof(Issue12500Sample))
+			Route = "EventPage",
+			ContentTemplate = new DataTemplate(() => new Issue12500EventPage { BindingContext = _viewModel })
 		});
 
 		// Add TabBar to Shell
 		this.Items.Add(tabBar);
 	}
-	protected async override void OnNavigating(ShellNavigatingEventArgs args)
+	protected override void OnNavigating(ShellNavigatingEventArgs args)
 	{
 		base.OnNavigating(args);
-		await DisplayAlert("Navigating", "Navigating to " + args.Target.Location.OriginalString, "OK");
+		string targetPageRoute = args.Target.Location.ToString();
+
+		// Update ViewModel with new navigation text
+		_viewModel.LabelText = $"Navigating to {targetPageRoute}";
 
 	}
 }
@@ -51,44 +50,18 @@ public class Issue12500EventPage : ContentPage
 {
 	public Issue12500EventPage()
 	{
-		Title = "Issue12500 Event Page";
-
-		Content = new VerticalStackLayout
+		var label = new Label
 		{
-			Children =
-				{
-					new Label
-					{
-						Text = "This is Issue12500 Event Page.",
-						AutomationId = "Issue12500EventPage",
-						FontSize = 24,
-						HorizontalOptions = LayoutOptions.Center,
-						VerticalOptions = LayoutOptions.Center
-					}
-				}
+			AutomationId = "Issue12500EventPage",
+			FontSize = 24,
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center
 		};
-	}
-}
-
-public class Issue12500Sample : ContentPage
-{
-	public Issue12500Sample()
-	{
-		Title = "Issue12500 Sample Page";
+		label.SetBinding(Label.TextProperty, nameof(NavigationViewModel.LabelText)); // Bind to ViewModel
 
 		Content = new VerticalStackLayout
 		{
-			Children =
-				{
-					new Label
-					{
-						Text = "This is Issue12500 Sample Page.",
-						AutomationId="Issue12500SamplePage",
-						FontSize = 24,
-						HorizontalOptions = LayoutOptions.Center,
-						VerticalOptions = LayoutOptions.Center
-					}
-				}
+			Children = { label }
 		};
 	}
 }
@@ -97,21 +70,44 @@ public class Issue12500Main : ContentPage
 {
 	public Issue12500Main()
 	{
-		Title = "Issue12500 Main Page";
+		var label = new Label
+		{
+			AutomationId = "Issue12500MainPage",
+			FontSize = 24,
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center
+		};
+		label.SetBinding(Label.TextProperty, nameof(NavigationViewModel.LabelText)); // Bind to ViewModel
 
 		Content = new VerticalStackLayout
 		{
-			Children =
-				{
-					new Label
-					{
-						Text = "This is Issue12500 Main Page.",
-						AutomationId="Issue12500MainPage",
-						FontSize = 24,
-						HorizontalOptions = LayoutOptions.Center,
-						VerticalOptions = LayoutOptions.Center
-					}
-				}
+			Children = { label }
 		};
+	}
+}
+
+
+public class NavigationViewModel : INotifyPropertyChanged
+{
+	private string _labelText;
+
+	public string LabelText
+	{
+		get => _labelText;
+		set
+		{
+			if (_labelText != value)
+			{
+				_labelText = value;
+				OnPropertyChanged(nameof(LabelText));
+			}
+		}
+	}
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	protected virtual void OnPropertyChanged(string propertyName)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 }
