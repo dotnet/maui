@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<local:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				 xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+				 x:Class="Maui.Controls.Sample.Issues.Issue27622">
+  <local:TestContentPage.Content>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+      <StackLayout 
+        Spacing="6"
+        RadioButtonGroup.GroupName="colors">
+        <Label 
+          Text="What's the CollectionView SelectionMode?" />
+        <RadioButton 
+          x:Name="NoneRadioButton" 
+          AutomationId="NoneRadioButton"
+          Content="None" 
+          CheckedChanged="OnNoneRadioButtonCheckedChanged" />
+        <RadioButton 
+          x:Name="SingleRadioButton" 
+          AutomationId="SingleRadioButton" 
+          Content="Single"
+          CheckedChanged="OnSingleRadioButtonCheckedChanged" />
+        <RadioButton 
+          x:Name="MultipleRadioButton" 
+          AutomationId="MultipleRadioButton"
+          Content="Multiple" 
+          CheckedChanged="OnMultipleRadioButtonCheckedChanged" />
+      </StackLayout>
+      <CollectionView 
+        Grid.Row="1" 
+        x:Name="CollectionView27622"
+        AutomationId="CollectionView27622" 
+        ItemsSource="{Binding Items}">
+        <CollectionView.ItemsLayout>
+          <LinearItemsLayout 
+            Orientation="Vertical" 
+            ItemSpacing="6"/>
+        </CollectionView.ItemsLayout>
+        <CollectionView.ItemTemplate>
+          <DataTemplate>
+            <Grid>
+              <Label 
+                Text="{Binding Text}" 
+                Margin="6"
+                HorizontalTextAlignment="Center"
+                VerticalTextAlignment="Center"/>
+            </Grid>
+          </DataTemplate>
+        </CollectionView.ItemTemplate>
+      </CollectionView>
+    </Grid>
+  </local:TestContentPage.Content>
+</local:TestContentPage>
