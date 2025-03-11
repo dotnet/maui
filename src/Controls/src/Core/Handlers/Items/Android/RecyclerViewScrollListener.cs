@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		TItemsView _itemsView;
 		readonly bool _getCenteredItemOnXAndY = false;
 		bool _hasCompletedFirstLayout = false;
+		bool _scrollStarted;
 
 		public RecyclerViewScrollListener(TItemsView itemsView, ItemsViewAdapter<TItemsView, TItemsViewSource> itemsViewAdapter) : this(itemsView, itemsViewAdapter, false)
 		{
@@ -31,6 +32,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ItemsViewAdapter = itemsViewAdapter;
 			// Reset flag when adapter changes to handle ItemsSource updates
 			_hasCompletedFirstLayout = false;
+		}
+
+		public override void OnScrollStateChanged(RecyclerView recyclerView, int newState)
+		{
+			base.OnScrollStateChanged(recyclerView, newState);
+			_scrollStarted = newState != RecyclerView.ScrollStateIdle;
 		}
 
 		public override void OnScrolled(RecyclerView recyclerView, int dx, int dy)
@@ -68,7 +75,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Don't send RemainingItemsThresholdReached event for non-linear layout managers
 			// This can also happen if a layout pass has not happened yet
-			if (Last == -1 || ItemsViewAdapter is null || _itemsView.RemainingItemsThreshold == -1)
+			if (Last == -1 || ItemsViewAdapter is null || !_scrollStarted || _itemsView.RemainingItemsThreshold == -1)
 			{
 				return;
 			}
