@@ -24,6 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		readonly VisualRegressionTester _visualRegressionTester;
 		readonly IImageEditorFactory _imageEditorFactory;
 		readonly VisualTestContext _visualTestContext;
+		readonly string chnagesFile;
 
 		protected UITest(TestDevice testDevice) : base(testDevice)
 		{
@@ -32,6 +33,8 @@ namespace Microsoft.Maui.TestCases.Tests
 				ciArtifactsDirectory = Path.Combine(ciArtifactsDirectory, "Controls.TestCases.Shared.Tests");
 
 			string projectRootDirectory = Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory)!;
+
+			chnagesFile = Path.Combine(ciArtifactsDirectory ?? projectRootDirectory, "chnages.txt");
 
 			_visualRegressionTester = new VisualRegressionTester(testRootDirectory: projectRootDirectory,
 				visualComparer: new MagickNetVisualComparer(),
@@ -229,6 +232,10 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 
 				name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+
+				var newname = $"{TestContext.CurrentContext.Test.Type?.Name}-{name}";
+
+				File.AppendAllText(chnagesFile, $"{name};{newname}{Environment.NewLine}");
 
 				// Currently Android is the OS with the ripple animations, but Windows may also have some animations
 				// that need to finish before taking a screenshot.
