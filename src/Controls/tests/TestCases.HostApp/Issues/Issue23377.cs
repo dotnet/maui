@@ -29,7 +29,8 @@ public class Issue23377 : TestContentPage
 		{
 			ItemsSource = Items,
 			Margin = new Thickness(100),
-			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
+			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
+			HeightRequest = 200,
 		};
 
 		collectionView.ItemTemplate = new DataTemplate(() =>
