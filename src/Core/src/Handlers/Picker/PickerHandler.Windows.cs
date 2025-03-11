@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Handlers
 				ph2.SetUpdatingItemSource(false);
 		}
 
-		// TODO: Uncomment me on NET8 [Obsolete]
+		[Obsolete("Use Microsoft.Maui.Handlers.PickerHandler.MapItems instead")]
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
 
 		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);
