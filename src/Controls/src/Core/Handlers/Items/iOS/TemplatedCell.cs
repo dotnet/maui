@@ -102,6 +102,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Adjust the preferred attributes to include space for the Forms element
 			preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, _size);
 
+			// We need to set the Frame on the virtual view.
+			// Subviews will eventually be arranged via LayoutSubviews.
+			var frame = new Rect(Point.Zero, _size);
+			var virtualView = PlatformHandler.VirtualView!;
+			if (virtualView.Frame != frame)
+			{
+				PlatformHandler.VirtualView!.Arrange(frame);
+			}
+
 			OnLayoutAttributesChanged(preferredAttributes);
 
 			return preferredAttributes;

@@ -43,12 +43,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 #if IOS
             var maxMeasurePasses = 221;
-            var maxArrangePasses = 185;
+            var maxArrangePasses = 231;
 
             if (App.FindElement("HeadingLabel").GetText() == "CollectionViewHandler2")
             {
-	            maxMeasurePasses = 354;
-	            maxArrangePasses = 313;
+	            maxMeasurePasses = 338;
+	            maxArrangePasses = 379;
             }
 #elif ANDROID
 			const int maxMeasurePasses = 353;

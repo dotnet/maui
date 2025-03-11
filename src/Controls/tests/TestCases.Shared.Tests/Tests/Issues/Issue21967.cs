@@ -47,13 +47,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.WaitForElement("FullSize");
 				App.Tap("FullSize");
 				App.SetOrientationPortrait();
-				await Task.Delay(100);
+				await Task.Delay(300);
 				var itemSizePortrait = App.WaitForElement("Item1").GetRect();
 				App.SetOrientationLandscape();
-				await Task.Delay(100);
+				await Task.Delay(300);
 				var itemSizeLandscape = App.WaitForElement("Item1").GetRect();
 				App.SetOrientationPortrait();
-				await Task.Delay(100);
+				await Task.Delay(300);
 				var itemSizePortrait2 = App.WaitForElement("Item1").GetRect();
 
 				ClassicAssert.Greater(itemSizeLandscape.Width, itemSizePortrait.Width);

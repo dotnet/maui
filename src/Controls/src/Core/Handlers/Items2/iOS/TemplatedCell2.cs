@@ -97,11 +97,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 
 				var size = ScrollDirection == UICollectionViewScrollDirection.Vertical
-					? new Size(preferredAttributes.Size.Width, _measuredSize.Height).ToCGSize()
-					: new Size(_measuredSize.Width, preferredAttributes.Size.Height).ToCGSize();
+					? new Size(preferredAttributes.Size.Width, _measuredSize.Height)
+					: new Size(_measuredSize.Width, preferredAttributes.Size.Height);
 
 				preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
 				preferredAttributes.ZIndex = 2;
+
+				// We need to set the Frame on the virtual view.
+				// Subviews will eventually be arranged via LayoutSubviews.
+				var frame = new Rect(Point.Zero, size);
+				var virtualView = PlatformHandler.VirtualView!;
+				if (virtualView.Frame != frame)
+				{
+					PlatformHandler.VirtualView!.Arrange(frame);
+				}
 
 				_measureInvalidated = false;
 			}
@@ -117,7 +126,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
 		{
-			var virtualView = template.CreateContent(bindingContext, itemsView) as View;
+			var virtualView = PlatformHandler?.VirtualView as View ?? 
+			                  template.CreateContent(bindingContext, itemsView) as View;
+
 			BindVirtualView(virtualView, bindingContext, itemsView, false);
 		}
 
