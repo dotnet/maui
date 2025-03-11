@@ -16,6 +16,7 @@ parameters:
   # Provisionator / Xcode
   skipProvisionator: true
   checkoutDirectory: $(System.DefaultWorkingDirectory)
+  provisionatorPath: $(provisionator.path)
   provisionatorXCodePath: $(provisionator.xcode)
   provisionatorChannel: 'latest'
   provisionatorExtraArguments: $(provisionator.extraArguments)
