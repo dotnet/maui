@@ -126,9 +126,6 @@ steps:
       if ($testConfigrationArgs) {
         $command += " --TEST_CONFIGURATION_ARGS=""$testConfigrationArgs"""
       }
-      if ($testFilter) {
-        $command += " --test-filter ""$testFilter"""
-      }
 
       Write-Host "Running command: $command"
 
