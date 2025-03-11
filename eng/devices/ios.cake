@@ -40,29 +40,7 @@ Information($"Test Results Path: {testResultsPath}");
 Information("Runtime Variant: {0}", RUNTIME_VARIANT);
 
 var dotnetToolPath = GetDotnetToolPath();
-
-Setup(context =>
-{
-	LogSetupInfo(dotnetToolPath);
-
-	if (!deviceBoot)
-	{
-		return;
-	}
-	bool createLogs = targetCleanup && IsCIBuild();
-	PerformCleanupIfNeeded(deviceCleanupEnabled, createLogs);
-
-	// Device or simulator setup
-	if (testDevice.Contains("device"))
-	{
-		GetDevices(iosVersion, dotnetToolPath);
-	}
-	else if (testDevice.IndexOf("_") != -1)
-	{
-		GetSimulators(testDevice, dotnetToolPath);
-		ResetSimulators(testDevice, dotnetToolPath);
-	}
-});
+LogSetupInfo(dotnetToolPath);
 
 Teardown(context => 
 {
@@ -74,24 +52,59 @@ Teardown(context =>
 	PerformCleanupIfNeeded(deviceCleanupEnabled, true);
 });
 
-Task("Cleanup");
+Task("connectToDevice")
+	.Does(() =>
+	{
+		if (!deviceBoot)
+		{
+			return;
+		}
 
-// Todo this doesn't work for iOS currently
-// Task("boot");
+		PerformCleanupIfNeeded(deviceCleanupEnabled, false);
 
-Task("Build")
+		// Device or simulator setup
+		if (testDevice.Contains("device"))
+		{
+			GetDevices(iosVersion, dotnetToolPath);
+		}
+		else if (testDevice.IndexOf("_") != -1)
+		{
+			GetSimulators(testDevice, dotnetToolPath);
+			ResetSimulators(testDevice, dotnetToolPath);
+		}
+	});
+
+Task("Cleanup")
+	.Does(() =>
+	{
+		PerformCleanupIfNeeded(deviceCleanupEnabled, true);
+	});
+
+Task("buildOnly")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
 		ExecuteBuild(projectPath, testDevice, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath);
 	});
 
-Task("Test")
-	.IsDependentOn("Build")
+Task("testOnly")
+	.IsDependentOn("connectToDevice")
+	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
 		ExecuteTests(projectPath, testDevice, testResultsPath, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
 	});
+
+Task("build")
+	.IsDependentOn("buildOnly");
+
+Task("test")
+	.IsDependentOn("buildOnly")
+	.IsDependentOn("testOnly");
+
+Task("buildAndTest")
+	.IsDependentOn("buildOnly")
+	.IsDependentOn("testOnly");
 
 Task("uitest-build")
 	.IsDependentOn("dotnet-buildtasks")
@@ -101,6 +114,7 @@ Task("uitest-build")
 	});
 
 Task("uitest-prepare")
+	.IsDependentOn("connectToDevice")
 	.Does(() =>
 	{
 		ExecutePrepareUITests(projectPath, testAppProjectPath, testDevice, testResultsPath, binlogDirectory, configuration, targetFramework, runtimeIdentifier, iosVersion, dotnetToolPath);
@@ -289,66 +303,78 @@ void ExecuteBuildUITestApp(string appProject, string device, string binDir, stri
 }
 
 // Helper methods
-
 void PerformCleanupIfNeeded(bool cleanupEnabled, bool createDeviceLogs)
 {
-	if (cleanupEnabled)
+	try
 	{
-		var logDirectory = GetLogDirectory();
-		Information("Cleaning up...");
-		Information("Deleting XHarness simulator if exists...");
-		var sims = ListAppleSimulators().Where(s => s.Name.Contains("XHarness")).ToArray();
-		foreach (var sim in sims)
+		if (cleanupEnabled)
 		{
-			var timestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
-			if(createDeviceLogs)
+			var logDirectory = GetLogDirectory();
+			Information("Cleaning up...");
+			Information("Deleting XHarness simulator if exists...");
+			var sims = ListAppleSimulators().Where(s => s.Name.Contains("XHarness")).ToArray();
+			foreach (var sim in sims)
 			{
-				try
+				var timestamp = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+				if(createDeviceLogs)
 				{
-					var homeDirectory = Environment.GetEnvironmentVariable("HOME");
-					Information("Diagnostics Reports");
-					StartProcess("zip", new ProcessSettings {
-						Arguments = new ProcessArgumentBuilder()
-							.Append("-9r")
-							.AppendQuoted($"{logDirectory}/DiagnosticReports_{sim.UDID}_{timestamp}.zip")
-							.AppendQuoted($"{homeDirectory}/Library/Logs/DiagnosticReports/"),
-						RedirectStandardOutput = false
-					});
+					try
+					{
+						var homeDirectory = Environment.GetEnvironmentVariable("HOME");
+						Information("Diagnostics Reports");
+						StartProcess("zip", new ProcessSettings {
+							Arguments = new ProcessArgumentBuilder()
+								.Append("-9r")
+								.AppendQuoted($"{logDirectory}/DiagnosticReports_{sim.UDID}_{timestamp}.zip")
+								.AppendQuoted($"{homeDirectory}/Library/Logs/DiagnosticReports/"),
+							RedirectStandardOutput = false
+						});
 
-					Information("CoreSimulator");
-					StartProcess("zip", new ProcessSettings {
-						Arguments = new ProcessArgumentBuilder()
-							.Append("-9r")
-							.AppendQuoted($"{logDirectory}/CoreSimulator_{sim.UDID}_{timestamp}.zip")
-							.AppendQuoted($"{homeDirectory}/Library/Logs/CoreSimulator/{sim.UDID}"),
-						RedirectStandardOutput = false
-					});
+						Information("CoreSimulator");
+						StartProcess("zip", new ProcessSettings {
+							Arguments = new ProcessArgumentBuilder()
+								.Append("-9r")
+								.AppendQuoted($"{logDirectory}/CoreSimulator_{sim.UDID}_{timestamp}.zip")
+								.AppendQuoted($"{homeDirectory}/Library/Logs/CoreSimulator/{sim.UDID}"),
+							RedirectStandardOutput = false
+						});
 
-					StartProcess("xcrun", $"simctl spawn {sim.UDID} log collect --output {homeDirectory}/{sim.UDID}_{timestamp}_log.logarchive");
+						StartProcess("xcrun", $"simctl spawn {sim.UDID} log collect --output {homeDirectory}/{sim.UDID}_{timestamp}_log.logarchive");
 
-					StartProcess("zip", new ProcessSettings {
-						Arguments = new ProcessArgumentBuilder()
-							.Append("-9r")
-							.AppendQuoted($"{logDirectory}/{sim.UDID}_{timestamp}_log.logarchive.zip")
-							.AppendQuoted($"{homeDirectory}/{sim.UDID}_{timestamp}_log.logarchive"),
-						RedirectStandardOutput = false
-					});
+						StartProcess("zip", new ProcessSettings {
+							Arguments = new ProcessArgumentBuilder()
+								.Append("-9r")
+								.AppendQuoted($"{logDirectory}/{sim.UDID}_{timestamp}_log.logarchive.zip")
+								.AppendQuoted($"{homeDirectory}/{sim.UDID}_{timestamp}_log.logarchive"),
+							RedirectStandardOutput = false
+						});
 
-					var screenshotPath = $"{testResultsPath}/{sim.UDID}_{timestamp}_screenshot.png";
-					StartProcess("xcrun", $"simctl io {sim.UDID} screenshot {screenshotPath}");
+						var screenshotPath = $"{testResultsPath}/{sim.UDID}_{timestamp}_screenshot.png";
+						StartProcess("xcrun", $"simctl io {sim.UDID} screenshot {screenshotPath}");
+					}
+					catch(Exception ex)
+					{
+						Information($"Failed to collect logs for simulator {sim.Name} ({sim.UDID}): {ex.Message}");
+						Information($"Command Executed: simctl spawn {sim.UDID} log collect --output {logDirectory}/{sim.UDID}_{timestamp}_log.logarchive");
+					}
 				}
-				catch(Exception ex)
-				{
-					Information($"Failed to collect logs for simulator {sim.Name} ({sim.UDID}): {ex.Message}");
-					Information($"Command Executed: simctl spawn {sim.UDID} log collect --output {logDirectory}/{sim.UDID}_{timestamp}_log.logarchive");
-				}
+
+				Information($"Deleting XHarness simulator {sim.Name} ({sim.UDID})...");
+				StartProcess("xcrun", $"simctl shutdown {sim.UDID}");
+				ExecuteWithRetries(() => StartProcess("xcrun", $"simctl delete {sim.UDID}"), 3);
 			}
-
-			Information($"Deleting XHarness simulator {sim.Name} ({sim.UDID})...");
-			StartProcess("xcrun", $"simctl shutdown {sim.UDID}");
-			ExecuteWithRetries(() => StartProcess("xcrun", $"simctl delete {sim.UDID}"), 3);
 		}
-
+	}
+	catch (Exception ex)
+	{
+		if (IsCIBuild())
+		{
+			Information($"Error during cleanup: {ex}");
+		}
+		else
+		{
+			throw;
+		}
 	}
 }
 

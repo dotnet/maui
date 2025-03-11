@@ -1,13 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.Maui.Handlers
 {
 #if ANDROID
-	class AndroidBatchPropertyMapper<TVirtualView, TViewHandler> : PropertyMapper<TVirtualView, TViewHandler>
-		where TVirtualView : IElement
-		where TViewHandler : IElementHandler
+	class AndroidBatchPropertyMapper
 	{
+		public const string InitializeBatchedPropertiesKey = "_InitializeBatchedProperties";
+
 		// During mass property updates, this list of properties will be skipped
 		public static HashSet<string> SkipList = new(StringComparer.Ordinal)
 		{ 
@@ -27,28 +27,46 @@ namespace Microsoft.Maui.Handlers
 			nameof(IView.AnchorX),
 			nameof(IView.AnchorY),
 		};
+	}
+
+	class AndroidBatchPropertyMapper<TVirtualView, TViewHandler> : PropertyMapper<TVirtualView, TViewHandler>
+		where TVirtualView : IElement
+		where TViewHandler : IElementHandler
+	{
 
 		public AndroidBatchPropertyMapper(params IPropertyMapper[] chained) : base(chained) { }
 
 		public override IEnumerable<string> GetKeys()
 		{
-			foreach (var key in _mapper.Keys)
-			{
-				// When reporting the key list for mass updates up the chain, ignore properties in SkipList.
-				// These will be handled by ViewHandler.SetVirtualView() instead.
-				if (SkipList.Contains(key))
-				{
-					continue;
-				}
+			var skipList = AndroidBatchPropertyMapper.SkipList;
 
-				yield return key;
+			// We want to retain the initial order of the keys to avoid race conditions
+			// when a property mapping is overridden by a new instance of property mapper.
+			// As an example, the container view mapper should always run first.
+			// Siblings mapper should not have keys intersection.
+			var chainedPropertyMappers = Chained;
+			if (chainedPropertyMappers is not null)
+			{
+				for (int i = chainedPropertyMappers.Length - 1; i >= 0; i--)
+				{
+					foreach (var key in chainedPropertyMappers[i].GetKeys())
+					{
+						yield return key;
+					}
+				}
 			}
 
-			if (Chained is not null)
+			// Enqueue keys from this mapper.
+			foreach (var mapper in _mapper)
 			{
-				foreach (var chain in Chained)
-					foreach (var key in chain.GetKeys())
-						yield return key;
+				var key = mapper.Key;
+
+				// When reporting the key list for mass updates up the chain, ignore properties in SkipList.
+				// These will be handled by ViewHandler.SetVirtualView() instead.
+				if (!skipList.Contains(key))
+				{
+					yield return key;
+				}
 			}
 		}
 	}

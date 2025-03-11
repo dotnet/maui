@@ -66,7 +66,30 @@ public class BindingSourceGenerator : IIncrementalGenerator
 			&& method.Name.Identifier.Text == "Create"
 			&& invocation.ArgumentList.Arguments.Count >= 1
 			&& invocation.ArgumentList.Arguments[0].Expression is not LiteralExpressionSyntax
-			&& invocation.ArgumentList.Arguments[0].Expression is not ObjectCreationExpressionSyntax;
+			&& invocation.ArgumentList.Arguments[0].Expression is not ObjectCreationExpressionSyntax
+			&& GetTypeNameFromExpression(method.Expression) switch
+			{
+				"Binding" => true,
+				"BindingBase" => true,
+				_ => false
+			};
+	}
+
+	private static string GetTypeNameFromExpression(ExpressionSyntax expression)
+	{
+		// Handle simple identifiers (Binding.Create)
+		if (expression is IdentifierNameSyntax identifier)
+		{
+			return identifier.Identifier.Text;
+		}
+
+		// Handle qualified names (Microsoft.Maui.Controls.Binding.Create)
+		if (expression is MemberAccessExpressionSyntax memberAccess)
+		{
+			return memberAccess.Name.Identifier.Text;
+		}
+
+		return string.Empty;
 	}
 
 	private static Result<BindingInvocationDescription> GetBindingForGeneration(GeneratorSyntaxContext context, CancellationToken t)

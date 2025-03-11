@@ -22,6 +22,11 @@ namespace Microsoft.Maui.DeviceTests
 		public static MauiApp CreateMauiApp(List<Assembly> testAssemblies)
 		{
 			var appBuilder = MauiApp.CreateBuilder();
+
+#if DEBUG
+			appBuilder.Services.AddHybridWebViewDeveloperTools();
+#endif
+
 			appBuilder
 				.ConfigureLifecycleEvents(life =>
 				{
