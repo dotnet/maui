@@ -1,6 +1,3 @@
-#if TEST_FAILS_ON_CATALYST
-// When maximizing the window to verify the screenshot on Mac, resizing did not occur properly on cv1. Therefore, I have restricted Catalyst for now.
-// for more information , see https://github.com/dotnet/maui/issues/26969
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -18,8 +15,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void CarouselItemsShouldRenderProperly()
 		{
 			App.WaitForElement("CarouselView");
+#if WINDOWS
+            Thread.Sleep(2000); // Wait for scrollbar to disappear to avoid flaky test failures in CI
+#endif
 			VerifyScreenshot();
 		}
 	}
 }
-#endif
