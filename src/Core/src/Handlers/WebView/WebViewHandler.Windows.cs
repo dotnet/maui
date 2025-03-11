@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Handlers
 		readonly HashSet<string> _loadedCookies = new();
 
 		protected override WebView2 CreatePlatformView() => new MauiWebView(this);
+		WebNavigationResult _navigationResult;
 
 		internal WebNavigationEvent CurrentNavigationEvent
 		{
@@ -43,6 +44,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var window = MauiContext!.GetPlatformWindow();
 			_proxy.Connect(window);
+			_navigationResult = WebNavigationResult.Success;
 		}
 
 		void Disconnect(WebView2 platformView)
@@ -71,7 +73,14 @@ namespace Microsoft.Maui.Handlers
 
 				// Reset in this case because this is the last event we will get
 				if (cancel)
+				{
 					_eventState = WebNavigationEvent.NewPage;
+					_navigationResult = WebNavigationResult.Cancel;
+				}
+				else
+				{
+					_navigationResult = WebNavigationResult.Success;
+				}
 			}
 		}
 
@@ -388,7 +397,7 @@ namespace Microsoft.Maui.Handlers
 
 			void OnNavigationCompleted(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
 			{
-				if (Handler is WebViewHandler handler)
+				if (Handler is WebViewHandler handler && handler._navigationResult != WebNavigationResult.Cancel)
 				{
 					if (args.IsSuccess)
 						handler.NavigationSucceeded(sender, args);
