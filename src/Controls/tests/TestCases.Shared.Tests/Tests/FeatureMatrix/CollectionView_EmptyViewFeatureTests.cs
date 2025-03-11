@@ -8,7 +8,8 @@ namespace Microsoft.Maui.TestCases.Tests
 {
 	public class CollectionView_EmptyViewFeatureTests : UITest
 	{
-		public const string EmptyViewFeatureMatrix = "CollectionView Feature Matrix1";
+		public const string CollectionViewFeatureMatrix = "CollectionView Feature Matrix";
+
 		protected override bool ResetAfterEachTest => true;
 
 		public CollectionView_EmptyViewFeatureTests(TestDevice device)
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		protected override void FixtureSetup()
 		{
 			base.FixtureSetup();
-			App.NavigateToGallery(EmptyViewFeatureMatrix);
+			App.NavigateToGallery(CollectionViewFeatureMatrix);
 		}
 
 
@@ -31,8 +32,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewString");
 			App.Tap("EmptyViewString");
 			App.WaitForElement("Apply");
@@ -48,8 +47,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewGrid");
 			App.Tap("EmptyViewGrid");
 			App.WaitForElement("Apply");
@@ -201,8 +198,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewString");
 			App.Tap("EmptyViewString");
 			App.WaitForElement("EmptyViewTemplateGrid");
@@ -220,8 +215,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewGrid");
 			App.Tap("EmptyViewGrid");
 			App.WaitForElement("EmptyViewTemplateGrid");
@@ -239,8 +232,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewString");
 			App.Tap("EmptyViewString");
 			App.WaitForElement("ItemTemplateBasic");
@@ -248,31 +239,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("No Items Available(String)");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndBasicItemTemplate_WithoutSettingItemSourceNull()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
-			App.WaitForElement("ItemTemplateBasic");
-			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("No Items Available(String)");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
 		}
 
 		[Test]
@@ -283,8 +249,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewGrid");
 			App.Tap("EmptyViewGrid");
 			App.WaitForElement("ItemTemplateBasic");
@@ -292,31 +256,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("No Items Available(Grid View)");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenCustomEmptyView_AndBaicItemTemplate_WithoutSettingItemSourceNull()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("ItemTemplateBasic");
-			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("No Items Available(Grid View)");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
 		}
 
 		// Emptyview template
@@ -328,8 +267,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewTemplateGrid");
 			App.Tap("EmptyViewTemplateGrid");
 			App.WaitForElement("Apply");
@@ -413,8 +350,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewTemplateGrid");
 			App.Tap("EmptyViewTemplateGrid");
 			App.WaitForElement("EmptyViewString");
@@ -432,8 +367,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewTemplateGrid");
 			App.Tap("EmptyViewTemplateGrid");
 			App.WaitForElement("EmptyViewGrid");
@@ -451,8 +384,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewTemplateGrid");
 			App.Tap("EmptyViewTemplateGrid");
 			App.WaitForElement("ItemTemplateBasic");
@@ -460,31 +391,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("No Template Items Available(Grid View)");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-			App.WaitForNoElement("CollectionViewItem");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenCustomEmptyViewTemplate_AndBaicItemTemplate_WithoutSettingItemSourceNull()
-		{
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewTemplateGrid");
-			App.Tap("EmptyViewTemplateGrid");
-			App.WaitForElement("ItemTemplateBasic");
-			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("No Template Items Available(Grid View)");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
-			App.WaitForElement("CollectionViewItem");
 		}
 
 #if TEST_FAILS_ON_ANDROID // Header and footer is not visibile
@@ -496,8 +402,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewString");
 			App.Tap("EmptyViewString");
 			App.WaitForElement("FooterString");
@@ -516,8 +420,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewString");
 			App.Tap("EmptyViewString");
 			App.WaitForElement("FooterGrid");
@@ -536,8 +438,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewGrid");
 			App.Tap("EmptyViewGrid");
 			App.WaitForElement("FooterString");
@@ -556,8 +456,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewGrid");
 			App.Tap("EmptyViewGrid");
 			App.WaitForElement("FooterGrid");
@@ -576,8 +474,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewString");
 			App.Tap("EmptyViewString");
 			App.WaitForElement("FooterTemplateGrid");
@@ -596,8 +492,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewGrid");
 			App.Tap("EmptyViewGrid");
 			App.WaitForElement("FooterTemplateGrid");
@@ -616,8 +510,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewString");
 			App.Tap("EmptyViewString");
 			App.WaitForElement("HeaderString");
@@ -636,8 +528,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewString");
 			App.Tap("EmptyViewString");
 			App.WaitForElement("HeaderGrid");
@@ -656,8 +546,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewGrid");
 			App.Tap("EmptyViewGrid");
 			App.WaitForElement("HeaderString");
@@ -676,8 +564,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewGrid");
 			App.Tap("EmptyViewGrid");
 			App.WaitForElement("HeaderGrid");
@@ -696,8 +582,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewString");
 			App.Tap("EmptyViewString");
 			App.WaitForElement("HeaderTemplateGrid");
@@ -716,8 +600,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("EmptyViewGrid");
 			App.Tap("EmptyViewGrid");
 			App.WaitForElement("HeaderTemplateGrid");

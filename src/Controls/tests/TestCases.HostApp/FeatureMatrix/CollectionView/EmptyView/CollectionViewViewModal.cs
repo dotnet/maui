@@ -39,7 +39,7 @@ namespace Maui.Controls.Sample
         private DataTemplate _headerTemplate;
         private DataTemplate _footerTemplate;
         private DataTemplate _itemTemplate;
-        private ItemsSourceType _itemsSourceType = ItemsSourceType.ListT;
+        private ItemsSourceType _itemsSourceType = ItemsSourceType.None;
         private bool _isGrouped;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -169,7 +169,7 @@ namespace Maui.Controls.Sample
                         ItemsSourceType.ObservableCollectionT => _observableCollection,
                         ItemsSourceType.IEnumerableT => _flatList.AsEnumerable(),
                         ItemsSourceType.None => null,
-                        _ => _flatList // Default to flat list
+                        _ => null // Default to flat list
                     };
                 }
             }

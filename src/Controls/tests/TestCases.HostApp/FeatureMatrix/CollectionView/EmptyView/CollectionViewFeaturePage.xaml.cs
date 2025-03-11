@@ -3,17 +3,17 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample
 {
-	public class EmptyViewMainPage : NavigationPage
+	public class CollectionViewFeaturePage : NavigationPage
 	{
-		public EmptyViewMainPage()
+		public CollectionViewFeaturePage()
 		{
-			PushAsync(new EmptyViewContentPage());
+			PushAsync(new CollectionViewFeatureMainPage());
 		}
 	}
 
-	public partial class EmptyViewContentPage : ContentPage
+	public partial class CollectionViewFeatureMainPage : ContentPage
 	{
-		public EmptyViewContentPage()
+		public CollectionViewFeatureMainPage()
 		{
 			InitializeComponent();
 		}
