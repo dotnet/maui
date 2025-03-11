@@ -1859,6 +1859,7 @@ Microsoft.Maui.PlatformContentViewGroup.ViewGroupDispatchDraw(Android.Graphics.C
 Microsoft.Maui.PlatformWrapperView
 Microsoft.Maui.PlatformWrapperView.PlatformWrapperView(Android.Content.Context? context) -> void
 Microsoft.Maui.PlatformWrapperView.PlatformWrapperView(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.PlatformWrapperView.SetHasShadow(bool hasShadow) -> void
 Microsoft.Maui.PortHandlerAttribute
 Microsoft.Maui.PortHandlerAttribute.Description.get -> string?
 Microsoft.Maui.PortHandlerAttribute.Description.set -> void
