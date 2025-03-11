@@ -235,6 +235,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 				var newname = $"{TestContext.CurrentContext.Test.Type?.Name}-{name}";
 
+				Directory.CreateDirectory(Path.GetDirectoryName(chnagesFile));
 				File.AppendAllText(chnagesFile, $"{name};{newname}{Environment.NewLine}");
 
 				// Currently Android is the OS with the ripple animations, but Windows may also have some animations
