@@ -5,11 +5,11 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue27622 : _IssuesUITest
+	public class Issue27622 : _IssuesUITest
 	{
 		const string CollectionView = "CollectionView27622";
 		const string NoneRadioButton = "NoneRadioButton";
-		const string SingleRadioButton = "SingleRadioButton"; 
+		const string SingleRadioButton = "SingleRadioButton";
 		const string MultipleRadioButton = "MultipleRadioButton";
 
 		public Issue27622(TestDevice testDevice) : base(testDevice)
@@ -61,10 +61,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot("MultipleCollectionViewKeyboardNavigation");
 		}
 
-			void SendTabKey()
+		void SendTabKey()
 		{
 			if (App is not AppiumWindowsApp appiumWindowsApp)
-				throw new InvalidOperationException("SendDownArrowKey is only supported on AppiumWindowsApp");
+				throw new InvalidOperationException("SendTabKey is only supported on AppiumWindowsApp");
 
 			appiumWindowsApp.Driver.ExecuteScript("windows: keys", new Dictionary<string, object>
 			{
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		void SendSpaceBarKey()
 		{
 			if (App is not AppiumWindowsApp appiumWindowsApp)
-				throw new InvalidOperationException("SendDownArrowKey is only supported on AppiumWindowsApp");
+				throw new InvalidOperationException("SendSpaceBarKey is only supported on AppiumWindowsApp");
 
 			appiumWindowsApp.Driver.ExecuteScript("windows: keys", new Dictionary<string, object>
 			{
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		void SendDownArrowKey()
 		{
-			if(App is not AppiumWindowsApp appiumWindowsApp)
+			if (App is not AppiumWindowsApp appiumWindowsApp)
 				throw new InvalidOperationException("SendDownArrowKey is only supported on AppiumWindowsApp");
 
 			appiumWindowsApp.Driver.ExecuteScript("windows: keys", new Dictionary<string, object>
