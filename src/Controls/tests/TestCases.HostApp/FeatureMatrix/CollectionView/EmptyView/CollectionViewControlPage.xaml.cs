@@ -29,7 +29,7 @@ namespace Maui.Controls.Sample
 		private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 		{
 			BindingContext = _viewModel = new CollectionViewViewModel();
-			await Navigation.PushAsync(new CollectionViewOptionsPage(_viewModel));
+			await Navigation.PushAsync(new EmptyViewOptionsPage(_viewModel));
 		}
 	}
 }

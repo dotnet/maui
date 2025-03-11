@@ -4,11 +4,11 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample
 {
-    public partial class CollectionViewOptionsPage : ContentPage
+    public partial class EmptyViewOptionsPage : ContentPage
     {
         private CollectionViewViewModel _viewModel;
 
-        public CollectionViewOptionsPage(CollectionViewViewModel viewModel)
+        public EmptyViewOptionsPage(CollectionViewViewModel viewModel)
         {
             InitializeComponent();
             _viewModel = viewModel;
@@ -42,7 +42,6 @@ namespace Maui.Controls.Sample
                     Text = "No Items Available(Grid View)",
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
-                    FontSize = 18,
                     TextColor = Colors.Blue
                 });
                 _viewModel.EmptyView = grid;
@@ -69,9 +68,7 @@ namespace Maui.Controls.Sample
                 grid.Children.Add(new Label
                 {
                     Text = "CollectionView Header(Grid View)",
-                    FontSize = 18,
                     HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center,
                     TextColor = Colors.Blue
                 });
                 _viewModel.Header = grid;
@@ -98,9 +95,7 @@ namespace Maui.Controls.Sample
                 grid.Children.Add(new Label
                 {
                     Text = "CollectionView Footer(Grid View)",
-                    FontSize = 18,
                     HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center,
                     TextColor = Colors.Red
                 });
                 _viewModel.Footer = grid;
@@ -127,7 +122,6 @@ namespace Maui.Controls.Sample
                         Text = "No Template Items Available(Grid View)",
                         HorizontalOptions = LayoutOptions.Center,
                         VerticalOptions = LayoutOptions.Center,
-                        FontSize = 18,
                         TextColor = Colors.Blue
                     });
                     return grid;
@@ -153,10 +147,8 @@ namespace Maui.Controls.Sample
                     grid.Children.Add(new Label
                     {
                         Text = "Header Template(Grid View)",
-                        FontSize = 18,
                         FontAttributes = FontAttributes.Bold,
                         HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center,
                         TextColor = Colors.Blue
                     });
                     return grid;
@@ -182,10 +174,8 @@ namespace Maui.Controls.Sample
                     grid.Children.Add(new Label
                     {
                         Text = "Footer Template(Grid View)",
-                        FontSize = 18,
                         FontAttributes = FontAttributes.Bold,
                         HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center,
                         TextColor = Colors.Green
                     });
                     return grid;

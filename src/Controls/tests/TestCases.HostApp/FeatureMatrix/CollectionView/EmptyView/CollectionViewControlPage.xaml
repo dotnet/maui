@@ -10,7 +10,6 @@
                 AutomationId="Options"/>
     </ContentPage.ToolbarItems>
 
-    <Grid Padding="10">
         <CollectionView
             x:Name="collectionView"
             ItemsSource="{Binding ItemsSource}"
@@ -23,13 +22,5 @@
             ItemTemplate="{Binding ItemTemplate}"
             IsGrouped="{Binding IsGrouped}"
             AutomationId="CollectionViewControl">
-            <CollectionView.GroupHeaderTemplate>
-                <DataTemplate>
-                    <Label Text="{Binding Key}"
-                           FontAttributes="Bold"
-                           FontSize="16"/>
-                </DataTemplate>
-            </CollectionView.GroupHeaderTemplate>
         </CollectionView>
-    </Grid>
 </ContentPage>
