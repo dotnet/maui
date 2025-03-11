@@ -276,7 +276,6 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-#pragma warning disable RS0016
 		protected override void OnPropertyChanged(string propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);
