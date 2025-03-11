@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -20,10 +22,170 @@ namespace Microsoft.Maui.Handlers
 	/// Handlers are also responsible for instantiating the underlying platform view, and mapping the cross-platform control API to the platform view API. </remarks>
 	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
+		class ViewHandlerPropertyMapper : IPropertyMapper<IView, IViewHandler>
+		{
+			static IPropertyMapper Base => ElementHandler.ElementMapper;
+
+			public void Add(string key, Action<IViewHandler, IView> action)
+			{
+				throw new NotImplementedException();
+			}
+
+			public IEnumerable<string> GetKeys()
+			{
+				// This property is a special one and needs to be set before other properties.
+				yield return nameof(IViewHandler.ContainerView);
+				yield return nameof(IView.AutomationId);
+				yield return nameof(IView.Clip);
+				yield return nameof(IView.Shadow);
+				yield return nameof(IView.Visibility);
+				yield return nameof(IView.Background);
+				yield return nameof(IView.FlowDirection);
+				yield return nameof(IView.Width);
+				yield return nameof(IView.Height);
+				yield return nameof(IView.MinimumHeight);
+				yield return nameof(IView.MaximumHeight);
+				yield return nameof(IView.MinimumWidth);
+				yield return nameof(IView.MaximumWidth);
+				yield return nameof(IView.IsEnabled);
+				yield return nameof(IView.Opacity);
+				yield return nameof(IView.Semantics);
+				yield return nameof(IView.TranslationX);
+				yield return nameof(IView.TranslationY);
+				yield return nameof(IView.Scale);
+				yield return nameof(IView.ScaleX);
+				yield return nameof(IView.ScaleY);
+				yield return nameof(IView.Rotation);
+				yield return nameof(IView.RotationX);
+				yield return nameof(IView.RotationY);
+				yield return nameof(IView.AnchorX);
+				yield return nameof(IView.AnchorY);
+#pragma warning disable CS0618 // Type or member is obsolete
+				yield return nameof(IBorder.Border);
+#pragma warning restore CS0618 // Type or member is obsolete
+#if ANDROID || WINDOWS || TIZEN
+				yield return nameof(IToolbarElement.Toolbar);
+#endif
+				yield return nameof(IView.InputTransparent);
+				yield return nameof(IToolTipElement.ToolTip);
+#if WINDOWS || MACCATALYST
+				yield return nameof(IContextFlyoutElement.ContextFlyout);
+#endif
+				
+				foreach(var key in Base.GetKeys())
+				{
+					yield return key;
+				}
+			}
+
+			public Action<IElementHandler, IElement>? GetProperty(string key)
+			{
+				throw new NotImplementedException();
+			}
+
+			public void UpdateProperties(IElementHandler elementHandler, IElement virtualView)
+			{
+				if (elementHandler is not IViewHandler viewHandler || virtualView is not IView view)
+					return;
+
+				// This property is a special one and needs to be set before other properties.
+				MapContainerView(viewHandler, view);
+				MapAutomationId(viewHandler, view);
+				MapClip(viewHandler, view);
+				MapShadow(viewHandler, view);
+				MapVisibility(viewHandler, view);
+				MapBackground(viewHandler, view);
+				MapFlowDirection(viewHandler, view);
+				MapWidth(viewHandler, view);
+				MapHeight(viewHandler, view);
+				MapMinimumHeight(viewHandler, view);
+				MapMaximumHeight(viewHandler, view);
+				MapMinimumWidth(viewHandler, view);
+				MapMaximumWidth(viewHandler, view);
+				MapIsEnabled(viewHandler, view);
+				MapOpacity(viewHandler, view);
+				MapSemantics(viewHandler, view);
+				MapTranslationX(viewHandler, view);
+				MapTranslationY(viewHandler, view);
+				MapScale(viewHandler, view);
+				MapScaleX(viewHandler, view);
+				MapScaleY(viewHandler, view);
+				MapRotation(viewHandler, view);
+				MapRotationX(viewHandler, view);
+				MapRotationY(viewHandler, view);
+				MapAnchorX(viewHandler, view);
+				MapAnchorY(viewHandler, view);
+#pragma warning disable CS0618 // Type or member is obsolete
+				MapBorderView(viewHandler, view);
+#pragma warning restore CS0618 // Type or member is obsolete
+#if ANDROID || WINDOWS || TIZEN
+				MapToolbar(viewHandler, view);
+#endif
+				MapInputTransparent(viewHandler, view);
+				MapToolTip(viewHandler, view);
+#if WINDOWS || MACCATALYST
+				MapContextFlyout(viewHandler, view);
+#endif
+
+				Base.UpdateProperties(elementHandler, virtualView);
+			}
+
+			public void UpdateProperty(IElementHandler elementHandler, IElement virtualView, string property)
+			{
+				if (elementHandler is not IViewHandler viewHandler || virtualView is not IView view)
+					return;
+
+				switch (property)
+				{
+					// This property is a special one and needs to be set before other properties.
+					case nameof(IViewHandler.ContainerView): MapContainerView(viewHandler, view); break;
+					case nameof(IView.AutomationId): MapAutomationId(viewHandler, view); break;
+					case nameof(IView.Clip): MapClip(viewHandler, view); break;
+					case nameof(IView.Shadow): MapShadow(viewHandler, view); break;
+					case nameof(IView.Visibility): MapVisibility(viewHandler, view); break;
+					case nameof(IView.Background): MapBackground(viewHandler, view); break;
+					case nameof(IView.FlowDirection): MapFlowDirection(viewHandler, view); break;
+					case nameof(IView.Width): MapWidth(viewHandler, view); break;
+					case nameof(IView.Height): MapHeight(viewHandler, view); break;
+					case nameof(IView.MinimumHeight): MapMinimumHeight(viewHandler, view); break;
+					case nameof(IView.MaximumHeight): MapMaximumHeight(viewHandler, view); break;
+					case nameof(IView.MinimumWidth): MapMinimumWidth(viewHandler, view); break;
+					case nameof(IView.MaximumWidth): MapMaximumWidth(viewHandler, view); break;
+					case nameof(IView.IsEnabled): MapIsEnabled(viewHandler, view); break;
+					case nameof(IView.Opacity): MapOpacity(viewHandler, view); break;
+					case nameof(IView.Semantics): MapSemantics(viewHandler, view); break;
+					case nameof(IView.TranslationX): MapTranslationX(viewHandler, view); break;
+					case nameof(IView.TranslationY): MapTranslationY(viewHandler, view); break;
+					case nameof(IView.Scale): MapScale(viewHandler, view); break;
+					case nameof(IView.ScaleX): MapScaleX(viewHandler, view); break;
+					case nameof(IView.ScaleY): MapScaleY(viewHandler, view); break;
+					case nameof(IView.Rotation): MapRotation(viewHandler, view); break;
+					case nameof(IView.RotationX): MapRotationX(viewHandler, view); break;
+					case nameof(IView.RotationY): MapRotationY(viewHandler, view); break;
+					case nameof(IView.AnchorX): MapAnchorX(viewHandler, view); break;
+					case nameof(IView.AnchorY): MapAnchorY(viewHandler, view); break;
+	#pragma warning disable CS0618 // Type or member is obsolete
+					case nameof(IBorder.Border): MapBorderView(viewHandler, view); break;
+	#pragma warning restore CS0618 // Type or member is obsolete
+	#if ANDROID || WINDOWS || TIZEN
+					case nameof(IToolbarElement.Toolbar): MapToolbar(viewHandler, view); break;
+	#endif
+					case nameof(IView.InputTransparent): MapInputTransparent(viewHandler, view); break;
+					case nameof(IToolTipElement.ToolTip): MapToolTip(viewHandler, view); break;
+	#if WINDOWS || MACCATALYST
+					case nameof(IContextFlyoutElement.ContextFlyout): MapContextFlyout(viewHandler, view); break;
+	#endif
+					default: Base.UpdateProperty(elementHandler, virtualView, property); break;
+				}
+			}
+		}
+
 		/// <summary>
 		/// A dictionary that maps the virtual view properties to their platform view counterparts.
 		/// </summary>
-		public static IPropertyMapper<IView, IViewHandler> ViewMapper =
+		public static IPropertyMapper<IView, IViewHandler> ViewMapper = 
+			// new ViewHandlerPropertyMapper();
+//*
 #if ANDROID
 			// Use a custom mapper for Android which knows how to batch the initial property sets
 			new AndroidBatchPropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
@@ -74,6 +236,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
 #endif
 			};
+// */
 
 		/// <summary>
 		/// A dictionary that maps the virtual view commands to their platform view counterparts.
