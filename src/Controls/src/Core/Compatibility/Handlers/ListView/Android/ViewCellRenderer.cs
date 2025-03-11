@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			BindableProperty unevenRows = null, rowHeight = null;
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (ParentView is TableView)
 			{
 				unevenRows = TableView.HasUnevenRowsProperty;
@@ -40,6 +41,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				unevenRows = ListView.HasUnevenRowsProperty;
 				rowHeight = ListView.RowHeightProperty;
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (cell.View == null)
 				throw new InvalidOperationException($"ViewCell must have a {nameof(cell.View)}");
@@ -49,6 +51,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			// If the convertView is null we don't want to return the same view, we need to return a new one.
 			// We should probably do this for ListView as well
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (ParentView is TableView)
 			{
 				view.ToPlatform().RemoveFromParent();
@@ -60,6 +63,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (c != null)
 					return c;
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var newContainer = new ViewCellContainer(context, (IPlatformViewHandler)cell.View.Handler, cell, ParentView, unevenRows, rowHeight);
 
