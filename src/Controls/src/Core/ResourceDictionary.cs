@@ -149,6 +149,7 @@ namespace Microsoft.Maui.Controls
 		void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
 		{
 			((ICollection<KeyValuePair<string, object>>)_innerDictionary).CopyTo(array, arrayIndex);
+			((ICollection<KeyValuePair<string, object>>)_mergedInstance)?.CopyTo(array, arrayIndex + _innerDictionary.Count);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Count']/Docs/*" />
@@ -164,7 +165,8 @@ namespace Microsoft.Maui.Controls
 
 		bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
 		{
-			return ((ICollection<KeyValuePair<string, object>>)_innerDictionary).Remove(item);
+			return ((ICollection<KeyValuePair<string, object>>)_innerDictionary).Remove(item) ||
+				(((ICollection<KeyValuePair<string, object>>)_mergedInstance)?.Remove(item) ?? false);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Add'][4]/Docs/*" />

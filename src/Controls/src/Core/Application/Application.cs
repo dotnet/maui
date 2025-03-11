@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls
 		Page? _singleWindowMainPage;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='MainPage']/Docs/*" />
-		public Page? MainPage
+		public virtual Page? MainPage
 		{
 			get
 			{

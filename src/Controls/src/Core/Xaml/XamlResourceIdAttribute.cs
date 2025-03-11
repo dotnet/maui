@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -29,13 +30,28 @@ namespace Microsoft.Maui.Controls.Xaml
 			Type = type;
 		}
 
+		private const int ResourceIdIndex = 0;
+		private const int PathIndex = 1;
+		private const int TypeIndex = 2;
+
 		internal static string GetResourceIdForType(Type type)
 		{
 			var assembly = type.Assembly;
-			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+			try
 			{
-				if (xria.Type == type)
-					return xria.ResourceId;
+				foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+				{
+					if (xria.Type == type)
+						return xria.ResourceId;
+				}
+			}
+			catch
+			{
+				foreach (var xria in assembly.GetCustomAttributesData().Where(data => data.AttributeType == typeof(XamlResourceIdAttribute)))
+				{
+					if (xria.NamedArguments[TypeIndex].TypedValue.Value is Type argType && argType == type)
+						return xria.NamedArguments[ResourceIdIndex].TypedValue.Value?.ToString();
+				}
 			}
 			return null;
 		}
@@ -43,20 +59,42 @@ namespace Microsoft.Maui.Controls.Xaml
 		internal static string GetPathForType(Type type)
 		{
 			var assembly = type.Assembly;
-			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+			try
 			{
-				if (xria.Type == type)
-					return xria.Path;
+				foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+				{
+					if (xria.Type == type)
+						return xria.Path;
+				}
+			}
+			catch
+			{
+				foreach (var xria in assembly.GetCustomAttributesData().Where(data => data.AttributeType == typeof(XamlResourceIdAttribute)))
+				{
+					if (xria.NamedArguments[TypeIndex].TypedValue.Value is Type argType && argType == type)
+						return xria.NamedArguments[PathIndex].TypedValue.Value?.ToString();
+				}
 			}
 			return null;
 		}
 
 		internal static string GetResourceIdForPath(Assembly assembly, string path)
 		{
-			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+			try
 			{
-				if (xria.Path == path)
-					return xria.ResourceId;
+				foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+				{
+					if (xria.Path == path)
+						return xria.ResourceId;
+				}
+			}
+			catch
+			{
+				foreach (var xria in assembly.GetCustomAttributesData().Where(data => data.AttributeType == typeof(XamlResourceIdAttribute)))
+				{
+					if (xria.NamedArguments[PathIndex].TypedValue.Value?.ToString() == path)
+						return xria.NamedArguments[ResourceIdIndex].TypedValue.Value?.ToString();
+				}
 			}
 			return null;
 		}
@@ -64,10 +102,21 @@ namespace Microsoft.Maui.Controls.Xaml
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		internal static Type GetTypeForResourceId(Assembly assembly, string resourceId)
 		{
-			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+			try
 			{
-				if (xria.ResourceId == resourceId)
-					return xria.Type;
+				foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+				{
+					if (xria.ResourceId == resourceId)
+						return xria.Type;
+				}
+			}
+			catch
+			{
+				foreach (var xria in assembly.GetCustomAttributesData().Where(data => data.AttributeType == typeof(XamlResourceIdAttribute)))
+				{
+					if (xria.NamedArguments[ResourceIdIndex].TypedValue.Value?.ToString() == resourceId)
+						return xria.NamedArguments[TypeIndex].TypedValue.Value as Type;
+				}
 			}
 			return null;
 		}
@@ -75,10 +124,21 @@ namespace Microsoft.Maui.Controls.Xaml
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		internal static Type GetTypeForPath(Assembly assembly, string path)
 		{
-			foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+			try
 			{
-				if (xria.Path == path)
-					return xria.Type;
+				foreach (var xria in assembly.GetCustomAttributes<XamlResourceIdAttribute>())
+				{
+					if (xria.Path == path)
+						return xria.Type;
+				}
+			}
+			catch
+			{
+				foreach (var xria in assembly.GetCustomAttributesData().Where(data => data.AttributeType == typeof(XamlResourceIdAttribute)))
+				{
+					if (xria.NamedArguments[PathIndex].TypedValue.Value?.ToString() == path)
+						return xria.NamedArguments[TypeIndex].TypedValue.Value as Type;
+				}
 			}
 			return null;
 		}

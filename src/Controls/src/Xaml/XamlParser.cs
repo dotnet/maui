@@ -370,7 +370,15 @@ namespace Microsoft.Maui.Controls.Xaml
 				currentAssembly?.FullName,
 				(typeInfo) =>
 				{
-					var t = Type.GetType($"{typeInfo.clrNamespace}.{typeInfo.typeName}, {typeInfo.assemblyName}");
+					Type t = null;
+					try
+					{
+						t = Type.GetType($"{typeInfo.clrNamespace}.{typeInfo.typeName}, {typeInfo.assemblyName}");
+					}
+					catch (System.IO.FileLoadException)
+					{
+						t = TypeLoader.TypeProvider?.Invoke($"{typeInfo.clrNamespace}.{typeInfo.typeName}", typeInfo.assemblyName);
+					}
 					if (t is not null && t.IsPublicOrVisibleInternal(currentAssembly))
 						return t;
 					return null;
