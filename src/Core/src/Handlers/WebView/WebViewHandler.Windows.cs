@@ -397,7 +397,7 @@ namespace Microsoft.Maui.Handlers
 
 			void OnNavigationCompleted(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
 			{
-				if (Handler is WebViewHandler handler && handler._navigationResult != WebNavigationResult.Cancel)
+				if (Handler is WebViewHandler handler && handler._navigationResult is not WebNavigationResult.Cancel)
 				{
 					if (args.IsSuccess)
 						handler.NavigationSucceeded(sender, args);
