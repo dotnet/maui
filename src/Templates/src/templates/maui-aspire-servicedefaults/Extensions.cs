@@ -23,8 +23,6 @@ public static class Extensions
 
         builder.Services.ConfigureHttpClientDefaults(http =>
         {
-            http.DisableDevCertSecurityCheck();
-
             // Turn on resilience by default
             http.AddStandardResilienceHandler();
 
@@ -92,33 +90,6 @@ public static class Extensions
         return builder;
     }
 
-    public static TBuilder WithDevTunnel<TBuilder>(this TBuilder builder, string devTunnelId) where TBuilder : IHostApplicationBuilder
-    {
-        // Check if key already exists in configuration
-        var foo = builder.Configuration.Properties.Any();
-        
-        if (builder.Configuration["DOTNET_DEV_TUNNEL_ID"] is not null)
-        {
-            // Replace localhost in existing configuration values
-            foreach (var key in builder.Configuration.AsEnumerable().Select(kvp => kvp.Key))
-            {
-                var value = builder.Configuration[key];
-
-                if (value is not null)
-                {
-                    builder.Configuration[key] = ReplaceLocalhost(value, devTunnelId);
-                }
-            }
-        }
-        else
-        {
-            // Add the dev tunnel ID to the configuration
-            builder.Configuration["DOTNET_DEV_TUNNEL_ID"] = devTunnelId;
-        }
-
-        return builder;
-    }
-
     private class OpenTelemetryInitializer : IMauiInitializeService
     {
         public void Initialize(IServiceProvider services)
@@ -146,19 +117,5 @@ public static class Extensions
         //}
 
         return builder;
-    }
-
-    private static string ReplaceLocalhost(string uri, string devTunnelId)
-    {
-        // source format is `http[s]://localhost:[port]`
-        // tunnel format is `http[s]://exciting-tunnel-[port].devtunnels.ms`
-
-        var replacement = Regex.Replace(
-            uri,
-            @"://localhost\:(\d+)(.*)",
-            $"://{devTunnelId}-$1.devtunnels.ms$2",
-            RegexOptions.Compiled);
-
-        return replacement;
     }
 }
