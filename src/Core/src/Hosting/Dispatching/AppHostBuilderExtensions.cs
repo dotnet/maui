@@ -38,8 +38,6 @@ namespace Microsoft.Maui.Hosting
 		{
 			IDictionary environmentVariables = Environment.GetEnvironmentVariables();
 
-			string devTunnelId = environmentVariables["DEVTUNNEL_ID"]?.ToString() ?? string.Empty;
-
 #if !NETSTANDARD
 			// For Android we read the environment variables from a text file that is written to the device/emulator
 			if (OperatingSystem.IsAndroid())
@@ -51,6 +49,8 @@ namespace Microsoft.Maui.Hosting
 					.ToDictionary(parts => parts[0], parts => parts[1]);
 			}
 #endif
+
+			string devTunnelId = environmentVariables["DEVTUNNEL_ID"]?.ToString() ?? string.Empty;
 
 			var variablesToInclude = new HashSet<string>
 			{
