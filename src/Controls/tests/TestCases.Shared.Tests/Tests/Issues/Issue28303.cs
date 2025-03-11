@@ -16,9 +16,7 @@ public class Issue28303 : _IssuesUITest
 	public void VerifyWebViewNavigatedEventTriggered()
 	{
 		VerifyInternetConnectivity();
-		var navigatingLabel = App.WaitForElement("navigatingLabel");
 		var navigatedLabel = App.WaitForElement("navigatedLabel");
-
 		Assert.That(navigatedLabel.GetText(), Is.EqualTo("WebView Navigated event is not triggered"));
 	}
 }

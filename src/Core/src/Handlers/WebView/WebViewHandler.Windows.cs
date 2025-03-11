@@ -11,12 +11,12 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WebViewHandler : ViewHandler<IWebView, WebView2>
 	{
+		WebNavigationResult _navigationResult;
 		WebNavigationEvent _eventState;
 		readonly WebView2Proxy _proxy = new();
 		readonly HashSet<string> _loadedCookies = new();
 
 		protected override WebView2 CreatePlatformView() => new MauiWebView(this);
-		WebNavigationResult _navigationResult;
 
 		internal WebNavigationEvent CurrentNavigationEvent
 		{

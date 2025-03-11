@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 28303, "[Windows] WebView Navigated event called after cancelling it", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 28303, "[Windows] WebView Navigated event called after cancelling it", PlatformAffected.UWP, isInternetRequired: true)]
 public partial class Issue28303 : ContentPage
 {
 	public Issue28303()
@@ -10,6 +10,7 @@ public partial class Issue28303 : ContentPage
 		var webView = new WebView()
 		{
 			HeightRequest = 300,
+			WidthRequest = 400,
 			AutomationId = "webView",
 			Source = "https://learn.microsoft.com/dotnet/maui"
 		};
