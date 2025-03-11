@@ -5,14 +5,26 @@ class Issue28153 : ContentPage
 {
 	public Issue28153()
 	{
-		var verticalStackLayout = new VerticalStackLayout();
-		var radioButton = new RadioButton
+		VerticalStackLayout verticalStackLayout = new VerticalStackLayout();
+
+		RadioButton radioButtonWithoutBorder = new RadioButton
 		{
-			AutomationId = "RadioButton",
-			Content = "RadioButton",         
-			BorderColor = Colors.Red          
+			AutomationId = "RadioButtonWithoutBorder",
+			Content = "RadioButton",
+			BorderColor = Colors.Red
 		};
-		verticalStackLayout.Children.Add(radioButton);
+
+		RadioButton radioButtonWithBorder = new RadioButton
+		{
+			AutomationId = "RadioButtonWithBorder",
+			Content = "RadioButton",
+			BorderColor = Colors.Red,
+			BorderWidth = 3
+		};
+
+		verticalStackLayout.Children.Add(radioButtonWithoutBorder);
+		verticalStackLayout.Children.Add(radioButtonWithBorder);
+
 		Content = verticalStackLayout;
 	}
 }
