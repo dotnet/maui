@@ -13,6 +13,7 @@ Microsoft.Maui.Controls.CollectionView.On<T>() -> Microsoft.Maui.Controls.IPlatf
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
 Microsoft.Maui.Controls.Platform.CollectionViewExtensions
+Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.CollectionView
 override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewHandler<TItemsView>.UpdateItemsLayout() -> void
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
@@ -57,6 +58,10 @@ static Microsoft.Maui.Controls.Platform.CollectionViewExtensions.UpdateSingleSel
 *REMOVED*~static Microsoft.Maui.Controls.VisualElement.ControlsVisualElementMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IView, Microsoft.Maui.IViewHandler>
 *REMOVED*~static Microsoft.Maui.Controls.WebView.ControlsWebViewMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWebView, Microsoft.Maui.Handlers.WebViewHandler>
 *REMOVED*~static Microsoft.Maui.Controls.Window.ControlsWindowMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWindow, Microsoft.Maui.Handlers.WindowHandler>
+~static Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.CollectionView.GetSingleSelectionFollowsFocus(Microsoft.Maui.Controls.BindableObject element) -> bool
+~static Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.CollectionView.GetSingleSelectionFollowsFocus(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Windows, Microsoft.Maui.Controls.CollectionView> config) -> bool
+~static Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.CollectionView.SetSingleSelectionFollowsFocus(Microsoft.Maui.Controls.BindableObject element, bool value) -> void
+~static Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.CollectionView.SetSingleSelectionFollowsFocus(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Windows, Microsoft.Maui.Controls.CollectionView> config, bool value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Windows, Microsoft.Maui.Controls.CollectionView>
 ~static readonly Microsoft.Maui.Controls.BaseShellItem.FlyoutItemIsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
 const Microsoft.Maui.Controls.TitleBar.ContentHiddenState = "ContentCollapsed" -> string!
 const Microsoft.Maui.Controls.TitleBar.ContentVisibleState = "ContentVisible" -> string!
@@ -160,6 +165,7 @@ static readonly Microsoft.Maui.Controls.TitleBar.TitleProperty -> Microsoft.Maui
 static readonly Microsoft.Maui.Controls.TitleBar.TrailingContentProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.TitleBarProperty -> Microsoft.Maui.Controls.BindableProperty!
 virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Controls.Window! window) -> void
+~static readonly Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.CollectionView.SingleSelectionFollowsFocusProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Switch.OffColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~Microsoft.Maui.Controls.Switch.OffColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.Switch.OffColor.set -> void
