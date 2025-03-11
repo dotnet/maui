@@ -215,7 +215,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						}
 						else
 						{
-							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}' '{platformVersion}'. Follow the steps on the MAUI UI testing wiki.");
+							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS {_defaultiOSVersion}) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}' '{platformVersion}'. Follow the steps on the MAUI UI testing wiki.");
 						}
 						break;
 
