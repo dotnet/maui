@@ -52,23 +52,26 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var flyoutPage = CreateFlyoutPage(
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var flyoutPage = CreateFlyoutPage(
 					flyoutPageType,
 					new NavigationPage(new ContentPage() { Content = new Border(), Title = "Detail" }),
 					new ContentPage() { Title = "Flyout" });
 
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), async (handler) =>
-			{
-				var currentDetailPage = flyoutPage.Detail;
+				await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), async (handler) =>
+				{
+					var currentDetailPage = flyoutPage.Detail;
 
-				// Set with new page
-				var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
-				flyoutPage.Detail = navPage;
-				await OnNavigatedToAsync(navPage);
+					// Set with new page
+					var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
+					flyoutPage.Detail = navPage;
+					await OnNavigatedToAsync(navPage);
 
-				// Set back to previous page
-				flyoutPage.Detail = currentDetailPage;
-				await OnNavigatedToAsync(currentDetailPage);
+					// Set back to previous page
+					flyoutPage.Detail = currentDetailPage;
+					await OnNavigatedToAsync(currentDetailPage);
+				});
 			});
 		}
 
