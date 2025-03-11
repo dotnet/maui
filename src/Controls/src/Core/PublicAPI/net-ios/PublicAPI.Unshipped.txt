@@ -389,3 +389,4 @@ Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationSty
 *REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.SetNeedsLayout() -> void
 *REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWindow() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MovedToWindow() -> void
+*REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWindow() -> void
