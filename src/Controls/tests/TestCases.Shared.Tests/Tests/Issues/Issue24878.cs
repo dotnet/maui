@@ -16,10 +16,12 @@ public class Issue24878 : _IssuesUITest
 	public void ToolbarItemsShouldBeVisible()
 	{
 		App.WaitForElement("button");
-		App.Click("button");
-		App.WaitForElement("label");
+		VerifyScreenshot("ToolbarItemsShouldBeVisible_Before");
 
-		VerifyScreenshot();
+		App.Click("button");
+
+		App.WaitForElement("label");
+		VerifyScreenshot("ToolbarItemsShouldBeVisible_After");
 	}
 }
 #endif
