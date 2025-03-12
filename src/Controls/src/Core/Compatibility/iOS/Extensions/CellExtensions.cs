@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			NSIndexPath path;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (self.RealParent is ListView)
 			{
 				var section = 0;
@@ -31,6 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else
 				throw new NotSupportedException("Unknown cell parent type");
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return path;
 		}

@@ -10,15 +10,19 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class TableViewRenderer : ViewRenderer<TableView, AListView>
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static PropertyMapper<TableView, TableViewRenderer> Mapper =
 				new PropertyMapper<TableView, TableViewRenderer>(VisualElementRendererMapper);
+#pragma warning restore CS0618 // Type or member is obsolete
 
-
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static CommandMapper<TableView, TableViewRenderer> CommandMapper =
 			new CommandMapper<TableView, TableViewRenderer>(VisualElementRendererCommandMapper);
-
+#pragma warning restore CS0618 // Type or member is obsolete
 		TableViewModelRenderer _adapter;
 		bool _reattached;
 		bool _disposed;
@@ -28,7 +32,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			AutoPackage = false;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected virtual TableViewModelRenderer GetModelRenderer(AListView listView, TableView view)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			return new TableViewModelRenderer(Context, listView, view);
 		}
@@ -43,7 +49,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return new AListView(Context);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected override void OnElementChanged(ElementChangedEventArgs<TableView> e)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			base.OnElementChanged(e);
 
@@ -57,7 +65,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			listView.Focusable = false;
 			listView.DescendantFocusability = DescendantFocusability.AfterDescendants;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			TableView view = e.NewElement;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			_adapter = GetModelRenderer(listView, view);
 			listView.Adapter = _adapter;

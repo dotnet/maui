@@ -136,7 +136,9 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				var table = RealParent as TableView;
+#pragma warning restore CS0618 // Type or member is obsolete
 				if (table != null)
 					return table.HasUnevenRows && Height > 0 ? Height : table.RowHeight;
 
@@ -163,11 +165,13 @@ namespace Microsoft.Maui.Controls
 			if (_nextCallToForceUpdateSizeQueued)
 				return;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if ((Parent as ListView)?.HasUnevenRows == true || (Parent as TableView)?.HasUnevenRows == true)
 			{
 				_nextCallToForceUpdateSizeQueued = true;
 				OnForceUpdateSizeRequested();
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		public event EventHandler Tapped;

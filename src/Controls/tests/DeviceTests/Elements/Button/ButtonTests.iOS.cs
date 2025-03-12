@@ -64,7 +64,9 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Wait for image to load and force the grid to measure itself again
 				await Task.Delay(1000);
+#pragma warning disable CS0618 // Type or member is obsolete
 				layout.Measure(double.PositiveInfinity, double.PositiveInfinity);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				await handler.ToPlatform().AssertContainsColor(Colors.Blue, MauiContext); // Grid renders
 				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext); // Image within button renders

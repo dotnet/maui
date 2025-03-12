@@ -55,7 +55,9 @@ namespace Microsoft.Maui.DeviceTests.TestCases
 			new object[] { typeof(Stepper) },
 			new object[] { typeof(SwipeView) },
 			new object[] { typeof(Switch) },
+#pragma warning disable CS0618 // Type or member is obsolete
 			new object[] { typeof(TableView) },
+#pragma warning restore CS0618 // Type or member is obsolete
 			new object[] { typeof(TimePicker) },
 			new object[] { typeof(WebView) },
 		};
@@ -107,7 +109,9 @@ namespace Microsoft.Maui.DeviceTests.TestCases
 				handlers.AddHandler<Stepper, StepperHandler>();
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
 				handlers.AddHandler<Switch, SwitchHandler>();
+#pragma warning disable CS0618 // Type or member is obsolete
 				handlers.AddHandler<TableView, TableViewRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 				handlers.AddHandler<WebView, WebViewHandler>();
 			});

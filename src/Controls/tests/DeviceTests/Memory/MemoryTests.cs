@@ -62,7 +62,9 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
 				handlers.AddHandler<Switch, SwitchHandler>();
 				handlers.AddHandler<SwitchCell, SwitchCellRenderer>();
+#pragma warning disable CS0618 // Type or member is obsolete
 				handlers.AddHandler<TableView, TableViewRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 				handlers.AddHandler<TextCell, TextCellRenderer>();
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 				handlers.AddHandler<Toolbar, ToolbarHandler>();
@@ -170,7 +172,9 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(SwipeView))]
 	[InlineData(typeof(Switch))]
 	[InlineData(typeof(TimePicker))]
+#pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(TableView))]
+#pragma warning restore CS0618 // Type or member is obsolete
 	//[InlineData(typeof(WebView))] - This test was moved to MemoryTests.cs inside Appium
 	[InlineData(typeof(CollectionView))]
 	public async Task HandlerDoesNotLeak(Type type)
