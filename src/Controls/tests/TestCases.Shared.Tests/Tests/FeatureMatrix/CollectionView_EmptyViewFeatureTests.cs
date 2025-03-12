@@ -351,8 +351,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 #if TEST_FAILS_ON_ANDROID  
-// Header and Footer not visibile on Android. Issue Link: https://github.com/dotnet/maui/issues/28350
+// CollectionView Footer Positioned Incorrectly on Android. Issue Link: https://github.com/dotnet/maui/issues/28350
 // HeaderTemplate and FooterTemplate are not displayed when ItemsSource is initially set to null on Android. Issue Link: https://github.com/dotnet/maui/issues/28337
+// Header and footer are not displayed when emptyview selected first Issue Link: https://github.com/dotnet/maui/issues/28351
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndFooterString()
