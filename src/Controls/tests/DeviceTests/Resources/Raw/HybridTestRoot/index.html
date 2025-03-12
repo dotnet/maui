@@ -88,6 +88,11 @@
             return jsonData;
         }
 
+        async function RequestFileFromJS(url) {
+            const response = await fetch(url);
+            return response.status;
+        }
+
         function ThrowAnError(value, errorType) {
             if (errorType === 1) {                  // throw number
                 throw value;
