@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Platform
 		// For now I just built this ugly matching statement
 		// to replicate our handlers where we are setting this to true
 		public bool PreventGestureBubbling =>
-			(Element.Handler as ViewHandler)?.PreventGestureBubbling ?? false;
+			(Element?.Handler as ViewHandler)?.PreventGestureBubbling ?? false;
 
 		public FrameworkElement? Control
 		{
