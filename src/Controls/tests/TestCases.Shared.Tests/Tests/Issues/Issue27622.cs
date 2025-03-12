@@ -23,6 +23,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewKeyboardNavigation()
 		{
+			Exception? exception = null;
+
 			App.WaitForElement(CollectionView);
 
 			// Test keyboard navigation by sending Down and Up arrow keys with a 
@@ -36,7 +38,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			SendDownArrowKey(); // Item 3
 			SendDownArrowKey(); // Item 4
 			SendUpArrowKey(); // Item 3
-			VerifyScreenshot("NoneCollectionViewKeyboardNavigation");
+			VerifyScreenshotOrSetException(ref exception, "NoneCollectionViewKeyboardNavigation");
 
 			// Test keyboard navigation by sending Down and Up arrow keys with a 
 			// Single CollectionView SelectionMode.
@@ -46,7 +48,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			SendTabKey(); // Move the focus to CollectionView
 			SendDownArrowKey(); // Item 4
 			SendDownArrowKey(); // Item 5
-			VerifyScreenshot("SingleCollectionViewKeyboardNavigation");
+			VerifyScreenshotOrSetException(ref exception, "SingleCollectionViewKeyboardNavigation");
 
 			// Test keyboard navigation by sending Down and Up arrow keys with a 
 			// Multiple CollectionView SelectionMode.
@@ -58,7 +60,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			SendDownArrowKey(); // Item 7
 			SendDownArrowKey(); // Item 8
 			SendSpaceBarKey(); // Item 8 is selected
-			VerifyScreenshot("MultipleCollectionViewKeyboardNavigation");
+			VerifyScreenshotOrSetException(ref exception, "MultipleCollectionViewKeyboardNavigation");
+			
+			if (exception != null)
+			{
+				throw exception;
+			}
 		}
 
 		void SendTabKey()
