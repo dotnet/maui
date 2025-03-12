@@ -8,6 +8,12 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
 	public partial class VisualElement
 	{
+		internal static new void RemapIfNeeded()
+		{
+			Element.RemapIfNeeded();
+			RemappingHelper.RemapIfNeeded(typeof(VisualElement), RemapForControls);
+		}
+
 		internal static new void RemapForControls()
 		{
 			RemapForControls(ViewHandler.ViewMapper, ViewHandler.ViewCommandMapper);
