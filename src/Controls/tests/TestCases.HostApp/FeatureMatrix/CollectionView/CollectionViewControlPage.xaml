@@ -11,7 +11,7 @@
     </ContentPage.ToolbarItems>
 
     <Grid Padding="10">
-        <CollectionView
+        <local:CollectionView2
             x:Name="collectionView"
             ItemsSource="{Binding ItemsSource}"
             EmptyView="{Binding EmptyView}"
@@ -25,6 +25,6 @@
             ItemTemplate="{Binding ItemTemplate}"
             IsGrouped="{Binding IsGrouped}"
             AutomationId="CollectionViewControl">
-        </CollectionView>
+        </local:CollectionView2>
     </Grid>
 </ContentPage>
