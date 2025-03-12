@@ -14,6 +14,7 @@ internal sealed class ElementHandlerAttribute<THandler> : ElementHandlerAttribut
 	public override IElementHandler CreateHandler()
 	{
 		var handler = new THandler();
+		RemappingHelper.RemapIfNeeded(typeof(THandler), handler);
 		return handler;
 	}
 	
