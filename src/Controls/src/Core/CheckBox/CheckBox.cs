@@ -117,5 +117,16 @@ namespace Microsoft.Maui.Controls
 		{
 			return $"{base.GetDebuggerDisplay()}, IsChecked = {IsChecked}";
 		}
+
+		internal override bool TrySetValue(string text)
+		{
+			if (bool.TryParse(text, out bool result))
+			{
+				IsChecked = result;
+				return true;
+			}
+
+			return false;
+		}
 	}
 }
