@@ -14,5 +14,10 @@ namespace Maui.Controls.Sample.Issues
 		{
 			Items.Add("Item " + (Items.Count + 1));
 		}
+
+		private void Button_Clicked1(object sender, EventArgs e)
+		{
+			Navigation.PopAsync();
+		}
 	}
 }

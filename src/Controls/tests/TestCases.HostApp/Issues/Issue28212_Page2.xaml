@@ -7,12 +7,18 @@
              Title="Issue 28212">
 
   <VerticalStackLayout>
-    <Button Text="Add" Clicked="Button_Clicked"></Button>
-    <CollectionView x:Name="collectionView" ItemsSource="{Binding Source={Reference secondPage}, Path=Items}" WidthRequest="200">
+    <Button Text="Add"
+            Clicked="Button_Clicked"></Button>
+    <Button Text="Back"
+            AutomationId="BackButton"
+            Clicked="Button_Clicked1"></Button>
+    <CollectionView x:Name="collectionView"
+                    ItemsSource="{Binding Source={Reference secondPage}, Path=Items}"
+                    WidthRequest="200">
       <CollectionView.EmptyView>
-        <Label Text="Empty" />
+        <Label Text="Empty"/>
       </CollectionView.EmptyView>
     </CollectionView>
   </VerticalStackLayout>
- 
+
 </ContentPage>
