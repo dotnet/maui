@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 	[Category(UITestCategories.RefreshView)]
 	public class Issue28343 : _IssuesUITest
 	{
@@ -15,7 +16,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Progress spinner is not disabled after setting content on disabled RefreshView.";
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 		[Test]
 		public void ProgressSpinnerNotDisabledOnStartup()
 		{
