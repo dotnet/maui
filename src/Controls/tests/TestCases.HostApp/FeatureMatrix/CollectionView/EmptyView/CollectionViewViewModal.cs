@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using Maui.Controls.Sample.CollectionViewGalleries;
 
 namespace Maui.Controls.Sample
 {
@@ -212,48 +213,6 @@ namespace Maui.Controls.Sample
             Caption = caption;
             Image = image;
             Index = index;
-        }
-    }
-
-    internal class ExampleTemplates
-    {
-        public static DataTemplate PhotoTemplate()
-        {
-            return new DataTemplate(() =>
-            {
-                var templateLayout = new Grid
-                {
-                    RowDefinitions = new RowDefinitionCollection { new RowDefinition(), new RowDefinition() },
-                    WidthRequest = 200,
-                    HeightRequest = 100,
-                };
-
-                var image = new Image
-                {
-                    WidthRequest = 100,
-                    HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center,
-                    Margin = new Thickness(2, 5, 2, 2),
-                    AutomationId = "photo"
-                };
-                image.SetBinding(Image.SourceProperty, new Binding("Image"));
-
-                var caption = new Label
-                {
-                    FontSize = 12,
-                    HorizontalOptions = LayoutOptions.Fill,
-                    HorizontalTextAlignment = TextAlignment.Center,
-                    Margin = new Thickness(2, 0, 2, 2),
-                    BackgroundColor = Colors.Blue
-                };
-                caption.SetBinding(Label.TextProperty, new Binding("Caption"));
-
-                templateLayout.Children.Add(image);
-                templateLayout.Children.Add(caption);
-                Grid.SetRow(caption, 1);
-
-                return templateLayout;
-            });
         }
     }
 }
