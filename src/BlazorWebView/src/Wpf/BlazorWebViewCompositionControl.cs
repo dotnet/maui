@@ -16,14 +16,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
+using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2CompositionControl;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
 {
 	/// <summary>
 	/// A Windows Presentation Foundation (WPF) control for hosting Razor components locally in Windows desktop applications.
 	/// </summary>
-	public class BlazorWebView : Control, IAsyncDisposable
+	public class BlazorWebViewCompositionControl : Control, IAsyncDisposable
 	{
 		#region Dependency property definitions
 		/// <summary>
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		public static readonly DependencyProperty HostPageProperty = DependencyProperty.Register(
 			name: nameof(HostPage),
 			propertyType: typeof(string),
-			ownerType: typeof(BlazorWebView),
+			ownerType: typeof(BlazorWebViewCompositionControl),
 			typeMetadata: new PropertyMetadata(OnHostPagePropertyChanged));
 
 		/// <summary>
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		public static readonly DependencyProperty StartPathProperty = DependencyProperty.Register(
 			name: nameof(StartPath),
 			propertyType: typeof(string),
-			ownerType: typeof(BlazorWebView),
+			ownerType: typeof(BlazorWebViewCompositionControl),
 			typeMetadata: new PropertyMetadata("/"));
 
 		/// <summary>
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		public static readonly DependencyProperty RootComponentsProperty = DependencyProperty.Register(
 			name: nameof(RootComponents),
 			propertyType: typeof(RootComponentsCollection),
-			ownerType: typeof(BlazorWebView));
+			ownerType: typeof(BlazorWebViewCompositionControl));
 
 		/// <summary>
 		/// The backing store for the <see cref="Services"/> property.
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		public static readonly DependencyProperty ServicesProperty = DependencyProperty.Register(
 			name: nameof(Services),
 			propertyType: typeof(IServiceProvider),
-			ownerType: typeof(BlazorWebView),
+			ownerType: typeof(BlazorWebViewCompositionControl),
 			typeMetadata: new PropertyMetadata(OnServicesPropertyChanged));
 
 		/// <summary>
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		public static readonly DependencyProperty UrlLoadingProperty = DependencyProperty.Register(
 			name: nameof(UrlLoading),
 			propertyType: typeof(EventHandler<UrlLoadingEventArgs>),
-			ownerType: typeof(BlazorWebView));
+			ownerType: typeof(BlazorWebViewCompositionControl));
 
 		/// <summary>
 		/// The backing store for the <see cref="BlazorWebViewInitializing"/> event.
@@ -75,15 +75,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		public static readonly DependencyProperty BlazorWebViewInitializingProperty = DependencyProperty.Register(
 			name: nameof(BlazorWebViewInitializing),
 			propertyType: typeof(EventHandler<BlazorWebViewInitializingEventArgs>),
-			ownerType: typeof(BlazorWebView));
+			ownerType: typeof(BlazorWebViewCompositionControl));
 
 		/// <summary>
 		/// The backing store for the <see cref="BlazorWebViewInitialized"/> event.
 		/// </summary>
 		public static readonly DependencyProperty BlazorWebViewInitializedProperty = DependencyProperty.Register(
 			name: nameof(BlazorWebViewInitialized),
-			propertyType: typeof(EventHandler<BlazorWebViewInitializedEventArgs>),
-			ownerType: typeof(BlazorWebView));
+			propertyType: typeof(EventHandler<BlazorWebViewCompositionControlInitializedEventArgs>),
+			ownerType: typeof(BlazorWebViewCompositionControl));
 
 		#endregion
 
@@ -92,21 +92,23 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		private WebView2WebViewManager? _webviewManager;
 		private bool _isDisposed;
 
-		static BlazorWebView()
+		static BlazorWebViewCompositionControl()
 		{
-			// By default, prevent the BlazorWebView from receiving focus. Focus should typically be directed
+			// By default, prevent the BlazorWebViewCompositionControl from receiving focus. Focus should typically be directed
 			// to the underlying WebView2 control.
-			FocusableProperty.OverrideMetadata(typeof(BlazorWebView), new FrameworkPropertyMetadata(false));
+			FocusableProperty.OverrideMetadata(typeof(BlazorWebViewCompositionControl), new FrameworkPropertyMetadata(false));
 
 			// Listen for changes to the IsTabStop property so we can manipulate how tab navigation affects
-			// the BlazorWebView's subtree.
-			IsTabStopProperty.OverrideMetadata(typeof(BlazorWebView), new FrameworkPropertyMetadata(OnIsTabStopPropertyChanged));
+			// the BlazorWebViewCompositionControl's subtree.
+			IsTabStopProperty.OverrideMetadata(typeof(BlazorWebViewCompositionControl), new FrameworkPropertyMetadata(OnIsTabStopPropertyChanged));
+
+			UseLayoutRoundingProperty.OverrideMetadata(typeof(BlazorWebViewCompositionControl), new FrameworkPropertyMetadata(OnUseLayoutRoundingPropertyChanged));
 		}
 
 		/// <summary>
-		/// Creates a new instance of <see cref="BlazorWebView"/>.
+		/// Creates a new instance of <see cref="BlazorWebViewCompositionControl"/>.
 		/// </summary>
-		public BlazorWebView()
+		public BlazorWebViewCompositionControl()
 		{
 			ComponentsDispatcher = new WpfDispatcher(Application.Current.Dispatcher);
 
@@ -126,7 +128,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// </summary>
 		/// <remarks>
 		/// Directly using some functionality of the inner web view can cause unexpected results because its behavior
-		/// is controlled by the <see cref="BlazorWebView"/> that is hosting it.
+		/// is controlled by the <see cref="BlazorWebViewCompositionControl"/> that is hosting it.
 		/// </remarks>
 		[Browsable(false)]
 		public WebView2Control WebView => _webview!;
@@ -179,9 +181,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		/// <summary>
 		/// Allows customizing the web view after it is created.
 		/// </summary>
-		public EventHandler<BlazorWebViewInitializedEventArgs> BlazorWebViewInitialized
+		public EventHandler<BlazorWebViewCompositionControlInitializedEventArgs> BlazorWebViewInitialized
 		{
-			get => (EventHandler<BlazorWebViewInitializedEventArgs>)GetValue(BlazorWebViewInitializedProperty);
+			get => (EventHandler<BlazorWebViewCompositionControlInitializedEventArgs>)GetValue(BlazorWebViewInitializedProperty);
 			set => SetValue(BlazorWebViewInitializedProperty, value);
 		}
 
@@ -195,23 +197,29 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			set => SetValue(ServicesProperty, value);
 		}
 
-		private static void OnServicesPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((BlazorWebView)d).OnServicesPropertyChanged(e);
+		private static void OnServicesPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((BlazorWebViewCompositionControl)d).OnServicesPropertyChanged(e);
 
 		private void OnServicesPropertyChanged(DependencyPropertyChangedEventArgs e) => StartWebViewCoreIfPossible();
 
-		private static void OnHostPagePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((BlazorWebView)d).OnHostPagePropertyChanged(e);
+		private static void OnHostPagePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((BlazorWebViewCompositionControl)d).OnHostPagePropertyChanged(e);
 
 		private void OnHostPagePropertyChanged(DependencyPropertyChangedEventArgs e) => StartWebViewCoreIfPossible();
 
-		private static void OnIsTabStopPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((BlazorWebView)d).OnIsTabStopPropertyChanged(e);
+		private static void OnIsTabStopPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((BlazorWebViewCompositionControl)d).OnIsTabStopPropertyChanged(e);
 
 		private void OnIsTabStopPropertyChanged(DependencyPropertyChangedEventArgs e) => ApplyTabNavigation((bool)e.NewValue);
+
+		private static void OnUseLayoutRoundingPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((BlazorWebViewCompositionControl)d).OnUseLayoutRoundingPropertyChanged(e);
+
+		private void OnUseLayoutRoundingPropertyChanged(DependencyPropertyChangedEventArgs e) => ApplyUseLayoutRounding((bool)e.NewValue);
 
 		private void ApplyTabNavigation(bool isTabStop)
 		{
 			var keyboardNavigationMode = isTabStop ? KeyboardNavigationMode.Local : KeyboardNavigationMode.None;
 			KeyboardNavigation.SetTabNavigation(this, keyboardNavigationMode);
 		}
+
+		private void ApplyUseLayoutRounding(bool useLayoutRounding) => WebView.UseLayoutRounding = useLayoutRounding;
 
 		private bool RequiredStartupPropertiesSet =>
 			_webview != null &&
@@ -250,7 +258,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				return;
 			}
 
-			var logger = Services.GetService<ILogger<BlazorWebView>>() ?? NullLogger<BlazorWebView>.Instance;
+			var logger = Services.GetService<ILogger<BlazorWebViewCompositionControl>>() ?? NullLogger<BlazorWebViewCompositionControl>.Instance;
 
 			// We assume the host page is always in the root of the content directory, because it's
 			// unclear there's any other use case. We can add more options later if so.
@@ -284,7 +292,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 				hostPageRelativePath,
 				(args) => UrlLoading?.Invoke(this, args),
 				(args) => BlazorWebViewInitializing?.Invoke(this, args),
-				(args) => BlazorWebViewInitialized?.Invoke(this, (BlazorWebViewInitializedEventArgs)args),
+				(args) => BlazorWebViewInitialized?.Invoke(this, (BlazorWebViewCompositionControlInitializedEventArgs)args),
 				logger);
 
 			StaticContentHotReloadManager.AttachToWebViewManagerIfEnabled(_webviewManager);
@@ -330,7 +338,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		}
 
 		/// <summary>
-		/// Creates a file provider for static assets used in the <see cref="BlazorWebView"/>. The default implementation
+		/// Creates a file provider for static assets used in the <see cref="BlazorWebViewCompositionControl"/>. The default implementation
 		/// serves files from disk. Override this method to return a custom <see cref="IFileProvider"/> to serve assets such
 		/// as <c>wwwroot/index.html</c>. Call the base method and combine its return value with a <see cref="CompositeFileProvider"/>
 		/// to use both custom assets and default assets.
@@ -378,7 +386,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		}
 
 		/// <summary>
-		/// Allows asynchronous disposal of the <see cref="BlazorWebView" />.
+		/// Allows asynchronous disposal of the <see cref="BlazorWebViewCompositionControl" />.
 		/// </summary>
 		protected virtual async ValueTask DisposeAsyncCore()
 		{

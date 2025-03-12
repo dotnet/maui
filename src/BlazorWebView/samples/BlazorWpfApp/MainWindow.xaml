@@ -29,6 +29,17 @@
                     </blazor:BlazorWebView.RootComponents>
                 </local:CustomFilesBlazorWebView>
             </TabItem>
+            <TabItem Header="BlazorWebViewCompositionControl">
+                <Grid>
+                    <blazor:BlazorWebViewCompositionControl HostPage="wwwroot\index.html" Services="{StaticResource services3}" x:Name="blazorWebViewCompositionControl1">
+                        <blazor:BlazorWebViewCompositionControl.RootComponents>
+                            <blazor:RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
+                        </blazor:BlazorWebViewCompositionControl.RootComponents>
+                    </blazor:BlazorWebViewCompositionControl>
+
+                    <Button Content="BEGONE AirSpace-problem&#10;Click to toggle UseLayoutRounding" Background="LightGreen" Height="200" Width="250" Click="ToggleUseLayoutRounding" />
+                </Grid>
+            </TabItem>
         </TabControl>
     </DockPanel>
 </Window>
