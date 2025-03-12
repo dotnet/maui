@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 23502, "WebView Navigated event is not triggered", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 23502, "WebView Navigated event is not triggered", PlatformAffected.Android, isInternetRequired: true)]
 public partial class Issue23502 : ContentPage
 {
 	public Issue23502()
