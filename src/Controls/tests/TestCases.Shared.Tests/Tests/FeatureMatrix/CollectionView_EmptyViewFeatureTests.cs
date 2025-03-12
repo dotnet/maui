@@ -1,4 +1,5 @@
 #if TEST_FAILS_ON_WINDOWS // EmptyView Elements not accessible via Automation on Windows, Issue Link: https://github.com/dotnet/maui/issues/28022
+// EmptyViewTemplate not displayed when ItemsSource is initially set to a list and then set to Null Issue Link: https://github.com/dotnet/maui/issues/28334
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -349,7 +350,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
 
-#if TEST_FAILS_ON_ANDROID // Header and footer is not visibile
+#if TEST_FAILS_ON_ANDROID  
+// Header and Footer not visibile on Android. Issue Link: https://github.com/dotnet/maui/issues/28350
+// HeaderTemplate and FooterTemplate are not displayed when ItemsSource is initially set to null on Android. Issue Link: https://github.com/dotnet/maui/issues/28337
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndFooterString()
