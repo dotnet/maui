@@ -42,7 +42,21 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		internal static ILRootNode ParseXaml(Stream stream, TypeReference typeReference)
 		{
-			using (var reader = XmlReader.Create(stream))
+			var globalXmlns = true;
+
+			var nsmgr = new XmlNamespaceManager(new NameTable());
+			nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
+			if (globalXmlns)
+			{
+				nsmgr.AddNamespace("", XamlParser.MauiUri);
+				nsmgr.AddNamespace("maui", XamlParser.MauiUri);
+				nsmgr.AddNamespace("x", XamlParser.X2009Uri);
+				//feed all the XmlnsPrefix defined in the assembly
+			}
+
+			using (var reader = XmlReader.Create(stream,
+										new XmlReaderSettings { ConformanceLevel = globalXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+										new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None)))
 			{
 				while (reader.Read())
 				{
@@ -73,8 +87,22 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (!resource.Name.EndsWith(".xaml", StringComparison.InvariantCulture))
 				return false;
 
+			var globalXmlns = true;
+
+			var nsmgr = new XmlNamespaceManager(new NameTable());
+			nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
+			if (globalXmlns)
+			{
+				nsmgr.AddNamespace("", XamlParser.MauiUri);
+				nsmgr.AddNamespace("maui", XamlParser.MauiUri);
+				nsmgr.AddNamespace("x", XamlParser.X2009Uri);
+				//feed all the XmlnsPrefix defined in the assembly
+			}
+
 			using (var resourceStream = resource.GetResourceStream())
-			using (var reader = XmlReader.Create(resourceStream))
+			using (var reader = XmlReader.Create(resourceStream,
+										new XmlReaderSettings { ConformanceLevel = globalXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+										new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None)))
 			{
 				// Read to the first Element
 				while (reader.Read() && reader.NodeType != XmlNodeType.Element)

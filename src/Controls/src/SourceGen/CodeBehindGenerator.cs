@@ -130,10 +130,28 @@ public class CodeBehindGenerator : IIncrementalGenerator
 			return null;
 		}
 
+
+		var globalXmlns = true;
+
+		var nsmgr = new XmlNamespaceManager(new NameTable());
+		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
+		if (globalXmlns)
+		{
+			nsmgr.AddNamespace("", XamlParser.MauiUri);
+			nsmgr.AddNamespace("maui", XamlParser.MauiUri);
+			nsmgr.AddNamespace("x", XamlParser.X2009Uri);
+			//feed all the XmlnsPrefix defined in the assembly
+		}
+
+		
+		using var reader = XmlReader.Create(  new StringReader(text.ToString()),
+										new XmlReaderSettings { ConformanceLevel = globalXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+										new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None));
+
 		var xmlDoc = new XmlDocument();
 		try
 		{
-			xmlDoc.LoadXml(text.ToString());
+			xmlDoc.Load(reader);
 		}
 		catch (XmlException xe)
 		{
@@ -148,9 +166,6 @@ public class CodeBehindGenerator : IIncrementalGenerator
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		cancellationToken.ThrowIfCancellationRequested();
-
-		var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
-		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
 
 		var root = xmlDoc.SelectSingleNode("/*", nsmgr);
 		if (root == null)

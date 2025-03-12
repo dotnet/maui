@@ -59,8 +59,22 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public static void Load(object view, string xaml, Assembly rootAssembly, bool useDesignProperties)
 		{
+			var globalXmlns = true;
+
+			var nsmgr = new XmlNamespaceManager(new NameTable());
+			nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
+			if (globalXmlns)
+			{
+				nsmgr.AddNamespace("", XamlParser.MauiUri);
+				nsmgr.AddNamespace("maui", XamlParser.MauiUri);
+				nsmgr.AddNamespace("x", XamlParser.X2009Uri);
+				//feed all the XmlnsPrefix defined in the assembly
+			}
+
 			using (var textReader = new StringReader(xaml))
-			using (var reader = XmlReader.Create(textReader))
+			using (var reader = XmlReader.Create(textReader,
+										new XmlReaderSettings { ConformanceLevel = globalXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+										new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None)))
 			{
 				while (reader.Read())
 				{
