@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			_proxy.Connect(this, platformView);
 			base.ConnectHandler(platformView);
+			_navigationResult = WebNavigationResult.Success;
 
 			if (platformView.IsLoaded)
 				OnLoaded();
@@ -44,7 +45,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			var window = MauiContext!.GetPlatformWindow();
 			_proxy.Connect(window);
-			_navigationResult = WebNavigationResult.Success;
 		}
 
 		void Disconnect(WebView2 platformView)
