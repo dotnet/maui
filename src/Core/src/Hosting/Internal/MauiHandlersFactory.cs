@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,7 +8,7 @@ namespace Microsoft.Maui.Hosting.Internal
 {
 	sealed class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
 	{
-		readonly ConcurrentDictionary<Type, Type> _serviceCache = new ConcurrentDictionary<Type, Type>();
+		readonly ConcurrentDictionary<Type, Type?> _serviceCache = new();
 
 		readonly RegisteredHandlerServiceTypeSet _registeredHandlerServiceTypeSet;
 
@@ -21,7 +20,8 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		public IElementHandler? GetHandler(Type type)
 		{
-			if (GetService(GetVirtualViewHandlerServiceType(type)) is IElementHandler handler)
+			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
+				&& GetService(serviceType) is IElementHandler handler)
 			{
 				return handler;
 			}
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Hosting.Internal
 				return elementHandlerAttribute.CreateHandler();
 			}
 
-			return null;
+			throw new HandlerNotFoundException($"Unable to find a {nameof(IElementHandler)} corresponding to {type}. Please register a handler for {type} using `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` or `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler`");
 		}
 
 		public IElementHandler? GetHandler<T>() where T : IElement
@@ -40,8 +40,8 @@ namespace Microsoft.Maui.Hosting.Internal
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public Type? GetHandlerType(Type iview)
 		{
-			
-			if (InternalCollection.TryGetService(GetVirtualViewHandlerServiceType(iview), out ServiceDescriptor? serviceDescriptor)
+			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
+				&& InternalCollection.TryGetService(serviceType, out ServiceDescriptor? serviceDescriptor)
 				&& serviceDescriptor?.ImplementationType is Type type)
 			{
 				return type;
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
 
-		private Type GetVirtualViewHandlerServiceType(Type type)
+		private Type? TryGetVirtualViewHandlerServiceType(Type type)
 			=> _serviceCache.GetOrAdd(type, _registeredHandlerServiceTypeSet.ResolveVirtualViewToRegisteredHandlerServiceType);
 	}
 }
