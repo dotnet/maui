@@ -1618,7 +1618,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
-			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
+			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage, navigationType));
 			_previousPage = null;
 
 			if (CurrentPage != null)
@@ -1644,8 +1644,35 @@ namespace Microsoft.Maui.Controls
 
 			if (!args.Cancelled)
 			{
+				NavigationType navigationType = NavigationType.PageSwap;
+
+				switch (args.Source)
+				{
+					case ShellNavigationSource.Pop:
+						navigationType = NavigationType.Pop;
+						break;
+					case ShellNavigationSource.ShellItemChanged:
+						navigationType = NavigationType.PageSwap;
+						break;
+					case ShellNavigationSource.ShellSectionChanged:
+						navigationType = NavigationType.PageSwap;
+						break;
+					case ShellNavigationSource.ShellContentChanged:
+						navigationType = NavigationType.PageSwap;
+						break;
+					case ShellNavigationSource.Push:
+						navigationType = NavigationType.Push;
+						break;
+					case ShellNavigationSource.PopToRoot:
+						navigationType = NavigationType.PopToRoot;
+						break;
+					case ShellNavigationSource.Insert:
+						navigationType = NavigationType.Insert;
+						break;
+				}
+
 				_previousPage = CurrentPage;
-				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs());
+				CurrentPage?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
 			}
 		}
 

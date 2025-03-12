@@ -377,12 +377,12 @@ namespace Microsoft.Maui.Controls
 		void SendNavigated(Page previousPage, NavigationType navigationType)
 		{
 			previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
-			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
+			CurrentPage.SendNavigatedTo(new NavigatedToEventArgs(previousPage, navigationType));
 		}
 
-		void SendNavigating(Page navigatingFrom = null)
+		void SendNavigating(NavigationType navigationType, Page navigatingFrom = null)
 		{
-			(navigatingFrom ?? CurrentPage)?.SendNavigatingFrom(new NavigatingFromEventArgs());
+			(navigatingFrom ?? CurrentPage)?.SendNavigatingFrom(new NavigatingFromEventArgs(CurrentPage, navigationType));
 		}
 
 
@@ -792,7 +792,7 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigating(currentPage);
+						Owner.SendNavigating(NavigationType.Pop, currentPage);
 						Owner.FireDisappearing(currentPage);
 						Owner.FireAppearing(newCurrentPage);
 					},
@@ -829,7 +829,7 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigating(previousPage);
+						Owner.SendNavigating(NavigationType.PopToRoot, previousPage);
 						Owner.FireDisappearing(previousPage);
 						Owner.FireAppearing(newPage);
 					},
@@ -854,7 +854,7 @@ namespace Microsoft.Maui.Controls
 					},
 					() =>
 					{
-						Owner.SendNavigating(previousPage);
+						Owner.SendNavigating(NavigationType.Push, previousPage);
 						Owner.FireDisappearing(previousPage);
 						Owner.FireAppearing(root);
 					},

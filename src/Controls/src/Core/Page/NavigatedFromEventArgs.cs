@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	internal enum NavigationType
+	public enum NavigationType
 	{
 		Push,
 		Pop,
@@ -17,9 +17,9 @@ namespace Microsoft.Maui.Controls
 
 	public sealed class NavigatedFromEventArgs : EventArgs
 	{
-		internal NavigationType NavigationType { get; }
+		public NavigationType NavigationType { get; }
 
-		internal Page DestinationPage { get; }
+		public Page DestinationPage { get; }
 
 		internal NavigatedFromEventArgs(Page destinationPage, NavigationType navigationType)
 		{

@@ -6155,7 +6155,6 @@ Microsoft.Maui.Controls.NavigableElement
 Microsoft.Maui.Controls.NavigatedFromEventArgs
 Microsoft.Maui.Controls.NavigatedToEventArgs
 Microsoft.Maui.Controls.NavigatingFromEventArgs
-Microsoft.Maui.Controls.NavigatingFromEventArgs.NavigatingFromEventArgs() -> void
 Microsoft.Maui.Controls.NavigationEventArgs
 Microsoft.Maui.Controls.NavigationPage
 Microsoft.Maui.Controls.NavigationPage.NavigationPage() -> void
