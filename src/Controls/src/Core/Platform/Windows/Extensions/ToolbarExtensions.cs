@@ -13,6 +13,11 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateIsVisible(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
 			platformToolbar.Visibility = (toolbar.IsVisible) ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
+
+			if (platformToolbar.Visibility == UI.Xaml.Visibility.Collapsed && platformToolbar.IsBackButtonVisible == NavigationViewBackButtonVisible.Visible)
+			{
+				platformToolbar.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+			}
 		}
 
 		public static void UpdateTitleIcon(this MauiToolbar platformToolbar, Toolbar toolbar)
