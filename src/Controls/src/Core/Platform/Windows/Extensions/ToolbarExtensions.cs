@@ -35,10 +35,6 @@ namespace Microsoft.Maui.Controls.Platform
 			platformToolbar.IsBackEnabled =
 				toolbar.BackButtonEnabled && toolbar.BackButtonVisible;
 
-			// Adjusts WinUI TogglePaneButton visibility based on DrawerToggleVisible setting.
-			if (platformToolbar.TogglePaneButton is not null)
-				platformToolbar.TogglePaneButton.Visibility = toolbar.DrawerToggleVisible ? UI.Xaml.Visibility.Visible : UI.Xaml.Visibility.Collapsed;
-
 			platformToolbar
 				.IsBackButtonVisible = (toolbar.BackButtonVisible) ? NavigationViewBackButtonVisible.Visible : NavigationViewBackButtonVisible.Collapsed;
 
@@ -47,7 +43,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateBarBackground(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			platformToolbar.Background = toolbar.BarBackground?.ToBrush();
+			platformToolbar.SetBarBackground(toolbar.BarBackground?.ToBrush());
 		}
 
 		public static void UpdateTitleView(this MauiToolbar platformToolbar, Toolbar toolbar)

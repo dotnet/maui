@@ -1,11 +1,20 @@
 parameters:
-  poolName: ''
-  clearCaches: true
+  # Xcode
   skipXcode: false
+  # .NET NuGet caches
+  clearCaches: true
+  # Android - JDK
+  skipJdk: false
+  # Android - SDK Packages
+  skipAndroidCommonSdks: false
+  onlyAndroidPlatformDefaultApis: false
+  skipAndroidPlatformApis: false
+  # Android - Emulators
+  androidEmulatorApiLevel: ''
+  skipAndroidEmulatorImages: true # For most builds we won't need these
+  skipAndroidCreateAvds: true # For most builds we won't need these
+  # Provisionator / Xcode
   skipProvisionator: true
-  skipAndroidSdks: false
-  skipAndroidImages: false
-  installDefaultAndroidApi: false
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   provisionatorPath: $(provisionator.path)
   provisionatorXCodePath: $(provisionator.xcode)
@@ -13,21 +22,29 @@ parameters:
   provisionatorExtraArguments: $(provisionator.extraArguments)
   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
   certPass: $(pass--components-mac-ios-certificate-p12)
+  # Enabling internal runtimes / feeds
   federatedServiceConnection: 'dotnetbuilds-internal-read'
   outputVariableName: 'dotnetbuilds-internal-container-read-token'
   expiryInHours: 1
   base64Encode: false
+  skipInternalFeeds: false
 
 steps:
-  # Prepare macOS
+
+  ##################################################
+  #               Provisioning macOS               #
+  ##################################################
+
+  # Provisioning macOS - Agent cleanser
   - template: agent-cleanser/v1.yml@yaml-templates
     parameters:
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       UninstallMono: false
       UninstallXamarinMac: true
       CleanseAgentToolsDotNet: true
       SelfHealPowerShell: false
-        
-  # Provision Xcode
+          
+  # Provisioning macOS - Xcode
   - ${{ if ne(parameters.skipXcode, 'true') }}:
     - ${{ if ne(parameters.skipProvisionator, true) }}:
       - task: xamops.azdevex.provisionator-task.provisionator@3
@@ -40,7 +57,6 @@ steps:
         env:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
           AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
-
     - script: |
         echo Remove old Xamarin Settings
         rm -f ~/Library/Preferences/Xamarin/Settings.plist
@@ -78,31 +94,27 @@ steps:
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
-        ${{ if eq(parameters.skipAndroidSdks, true) }}:
-          SKIP_ANDROID_API_SDKS: 'true'
-        ${{ if eq(parameters.skipAndroidImages, true) }}:
-          SKIP_ANDROID_API_IMAGES: 'true'
-        ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
-          INSTALL_DEFAULT_ANDROID_API: 'true'
- 
-    # Prepare Windows
-    - task: xamops.azdevex.provisionator-task.provisionator@3
-      displayName: 'Provision Additional Software'
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-      inputs:
-        provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
-        provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-        github_token: ${{ parameters.gitHubToken }}
-      env:
-        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-        ${{ if eq(parameters.skipAndroidSdks, true) }}:
-          SKIP_ANDROID_API_SDKS: 'true'
-        ${{ if eq(parameters.skipAndroidImages, true) }}:
-          SKIP_ANDROID_API_IMAGES: 'true'
-        ${{ if eq(parameters.installDefaultAndroidApi, true) }}:
-          INSTALL_DEFAULT_ANDROID_API: 'true'
 
-  # Prepare Both
+  ##################################################
+  #              Provisioning Windows              #
+  ##################################################
+
+  # Provisioning Windows - Set dump file location
+  - pwsh: |
+      $errorPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps"
+      New-ItemProperty -Path $errorPath -Name DumpFolder -PropertyType String -Value "$(Build.ArtifactStagingDirectory)/crash-dumps" -Force
+      New-ItemProperty -Path $errorPath -Name DumpType -PropertyType DWORD -Value 2 -Force
+    displayName: 'Set dump file location'
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+    continueOnError: true
+    timeoutInMinutes: 5
+
+
+  ##################################################
+  #               Provisioning .NET                #
+  ##################################################
+
+  # Provisioning .NET - .NET SDK
   - task: UseDotNet@2
     displayName: 'Use .NET SDK $(DOTNET_VERSION)'
     inputs:
@@ -110,11 +122,76 @@ steps:
       version: $(DOTNET_VERSION)
       includePreviewVersions: true
 
+  # Provisioning .NET - Clear all NuGet caches
   - ${{ if eq(parameters.clearCaches, 'true') }}:
     - pwsh: dotnet nuget locals all --clear
       displayName: 'Clear all NuGet caches'
 
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+  # Provisioning .NET - .NET tools
+  - pwsh: |
+      dotnet tool restore
+    displayName: 'Restore .NET Tools'
+
+
+  ##################################################
+  #              Provisioning Android              #
+  ##################################################
+
+  # Provisioning Android - JDK
+  - ${{ if ne(parameters.skipJdk, 'true') }}:
+    - pwsh: dotnet build -t:ProvisionJdk -bl:"$(LogDirectory)/provision-jdk.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+      displayName: 'Provision JDK'
+      condition: succeeded()
+
+  # Provisioning Android - Android SDK common packages (eg: cmdline-tools, emulator, platform-tools, build-tools)
+  - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
+    - pwsh: dotnet build -t:ProvisionAndroidSdkCommonPackages -bl:"$(LogDirectory)/provision-androidsdk-common.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+      displayName: 'Provision Android SDK - Common Packages'
+      condition: succeeded()
+
+  # Provisioning Android - Android environment variables
+  - ${{ if ne(parameters.skipAndroidCommonSdks, 'true') }}:
+    - pwsh: |
+        echo "Setting ANDROID_SDK_ROOT and ANDROID_HOME..."
+        $jsonOutput = & dotnet android sdk info --format=Json | ConvertFrom-Json
+        $preferredSdk = $jsonOutput.SdkInfo.Path
+        echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$preferredSdk"
+        echo "ANDROID_SDK_ROOT set to '$preferredSdk'"
+        echo "##vso[task.setvariable variable=ANDROID_HOME]$preferredSdk"
+        echo "ANDROID_HOME set to '$preferredSdk'"
+      displayName: 'Provision Android SDK - Environment variables'
+      condition: succeeded()
+
+  # Provisioning Android - Android SDK platform APIs (eg: platforms;android-29, platforms;android-30)
+  - ${{ if ne(parameters.skipAndroidPlatformApis, 'true') }}:
+    - pwsh: dotnet build -t:ProvisionAndroidSdkPlatformApiPackages -p:AndroidSdkProvisionDefaultApiLevelsOnly="$Env:AndroidSdkProvisionDefaultApiLevelsOnly" -bl:"$(LogDirectory)/provision-androidsdk-platform-apis.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+      displayName: 'Provision Android SDK - Platform APIs'
+      condition: succeeded()
+      env:
+        AndroidSdkProvisionDefaultApiLevelsOnly: ${{ parameters.onlyAndroidPlatformDefaultApis }}
+
+  # Provisioning Android - Emulator images (eg: system-images;android-34;google_apis;aarch64)
+  - ${{ if ne(parameters.skipAndroidEmulatorImages, 'true') }}:
+    - pwsh: dotnet build -t:ProvisionAndroidSdkEmulatorImagePackages -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-emulator-images.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+      displayName: 'Provision Android SDK - Emulator Images'
+      condition: succeeded()
+      env:
+        AndroidSdkProvisionApiLevel: ${{ parameters.androidEmulatorApiLevel }}
+
+  # Provisioning Android - Android AVDs (actual emulator virtual devices)
+  - ${{ if ne(parameters.skipAndroidCreateAvds, 'true') }}:
+    - pwsh: dotnet build -t:ProvisionAndroidSdkAvdCreateAvds -p:AndroidSdkProvisionApiLevel="$Env:AndroidSdkProvisionApiLevel" -bl:"$(LogDirectory)/provision-androidsdk-create-avds.binlog" ./src/Provisioning/Provisioning.csproj -v:detailed
+      displayName: 'Provision Android SDK - Create AVDs'
+      condition: succeeded()
+      env:
+        AndroidSdkProvisionApiLevel: ${{ parameters.androidEmulatorApiLevel }}
+
+
+  ##################################################
+  #               Provisioning Feeds               #
+  ##################################################
+
+  - ${{ if and(eq(variables['System.TeamProject'], 'devdiv'), ne(parameters.skipInternalFeeds, 'true')) }}:
     - template: ../../common/templates-official/steps/enable-internal-sources.yml
 
     - template: ../../common/templates-official/steps/enable-internal-runtimes.yml
