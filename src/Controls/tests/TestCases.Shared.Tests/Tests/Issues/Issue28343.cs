@@ -15,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Progress spinner is not disabled after setting content on disabled RefreshView.";
 
-#if TEST_FAILS_ON_CATALYST || TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 		[Test]
 		public void ProgressSpinnerNotDisabledOnStartup()
 		{
