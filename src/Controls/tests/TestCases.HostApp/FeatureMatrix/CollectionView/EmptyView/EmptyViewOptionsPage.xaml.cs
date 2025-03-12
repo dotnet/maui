@@ -192,21 +192,16 @@ namespace Maui.Controls.Sample
             }
             else if (ItemTemplateBasic.IsChecked)
             {
-                
                 _viewModel.ItemTemplate = new DataTemplate(() =>
                 {
-                    var label = new Label
-                    {
-                        Text =  "{Binding .}",
-                    };
-
+                    var label = new Label();
+                    label.SetBinding(Label.TextProperty, new Binding("Caption"));
                     return label;
                 });
             }
             else if (ItemTemplateGrid.IsChecked)
             {
                 _viewModel.ItemTemplate = ExampleTemplates.PhotoTemplate();
-                 
             }
         }
 
