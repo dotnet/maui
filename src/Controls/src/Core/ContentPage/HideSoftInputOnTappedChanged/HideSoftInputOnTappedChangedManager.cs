@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 			{
 				foreach (var page in _contentPages)
 				{
-					if (page.HideSoftInputOnTapped && page.HasNavigatedTo)
+					if (page.HideSoftInputOnTapped && (page.HasNavigatedTo || (page is ContentPage && _contentPages.Count == 1)))
 						return true;
 				}
 				return false;
