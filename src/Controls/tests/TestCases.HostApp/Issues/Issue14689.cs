@@ -6,17 +6,17 @@ public partial class Issue14689 : TabbedPage
 	public Issue14689()
 	{
 		Children.Add(new ContentPage() { Title = "NoNavigationPage" });
-		Children.Add(new NavigationPage(new _14689NavigationPage()) { Title = "HasNavigationPage", AutomationId = "tab2" });
-		Children.Add(new NavigationPage(new _14689NavigationPage()) { Title = "HasNavigationPage1", AutomationId = "tab3" });
+		Children.Add(new NavigationPage(new Issue14689Page()) { Title = "HasNavigationPage" });
+		Children.Add(new NavigationPage(new Issue14689Page()) { Title = "HasNavigationPage1" });
 	}
 }
 
-public partial class _14689NavigationPage : ContentPage
+public partial class Issue14689Page : ContentPage
 {
-	public _14689NavigationPage()
+	public Issue14689Page()
 	{
 		var button = new Button() { Text = "Push a page", VerticalOptions = LayoutOptions.Start, AutomationId = "button" };
-		button.Clicked += (s, e) => { this.Navigation.PushAsync(new _14689NavigationPage()); };
+		button.Clicked += (s, e) => { this.Navigation.PushAsync(new Issue14689Page()); };
 		Content = button;
 	}
 }
