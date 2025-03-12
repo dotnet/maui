@@ -25,6 +25,6 @@ public class Issue28212 : _IssuesUITest
 		App.WaitForElement("ButtonId");
 		App.Click("ButtonId");
 		App.WaitForElement("Item 1");
-		VerifyScreenshot();
+		VerifyScreenshot("Issue28212_CollectionView");
 	}
 }
