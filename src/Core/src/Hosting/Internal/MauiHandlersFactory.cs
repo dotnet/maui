@@ -1,7 +1,7 @@
-#nullable enable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,7 +20,19 @@ namespace Microsoft.Maui.Hosting.Internal
 		}
 
 		public IElementHandler? GetHandler(Type type)
-			=> GetService(GetVirtualViewHandlerServiceType(type)) as IElementHandler;
+		{
+			if (GetService(GetVirtualViewHandlerServiceType(type)) is IElementHandler handler)
+			{
+				return handler;
+			}
+
+			if (TryGetElementHandlerAttribute(type, out var elementHandlerAttribute))
+			{
+				return elementHandlerAttribute.CreateHandler();
+			}
+
+			return null;
+		}
 
 		public IElementHandler? GetHandler<T>() where T : IElement
 			=> GetHandler(typeof(T));
@@ -28,9 +40,32 @@ namespace Microsoft.Maui.Hosting.Internal
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public Type? GetHandlerType(Type iview)
 		{
-			InternalCollection.TryGetService(GetVirtualViewHandlerServiceType(iview), out ServiceDescriptor? serviceDescriptor);
+			
+			if (InternalCollection.TryGetService(GetVirtualViewHandlerServiceType(iview), out ServiceDescriptor? serviceDescriptor)
+				&& serviceDescriptor?.ImplementationType is Type type)
+			{
+				return type;
+			}
 
-			return serviceDescriptor?.ImplementationType;
+			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
+			{
+				return GetHandlerType(elementHandlerAttribute);
+			}
+
+			return null;
+
+			[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2073",
+				Justification = "There is no need to create instances of the handlers for types with this attribute using reflection."
+					+ "We intentionally avoid annotating these handler types with DAM.")]
+			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+			static Type GetHandlerType(ElementHandlerAttribute elementHandlerAttribute)
+				=> elementHandlerAttribute.HandlerType;
+		}
+
+		private static bool TryGetElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)
+		{
+			elementHandlerAttribute = viewType.GetCustomAttribute(typeof(ElementHandlerAttribute), inherit: false) as ElementHandlerAttribute;
+			return elementHandlerAttribute != null;
 		}
 
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
