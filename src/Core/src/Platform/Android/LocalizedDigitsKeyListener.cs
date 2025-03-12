@@ -18,15 +18,6 @@ namespace Microsoft.Maui.Platform
 		static Dictionary<char, LocalizedDigitsKeyListener>? UnsignedCache;
 		static Dictionary<char, LocalizedDigitsKeyListener>? SignedCache;
 
-		static char GetDecimalSeparator()
-		{
-			if (!(NumberFormat.Instance is DecimalFormat))
-				return '.';
-
-			string symbol = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-			return symbol == string.Empty ? '.' : symbol[0];
-		}
-
 		public static NumberKeyListener Create(InputTypes inputTypes)
 		{
 			if ((inputTypes & InputTypes.NumberFlagDecimal) == 0)
@@ -38,7 +29,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// Figure out what the decimal separator is for the current locale
-			char decimalSeparator = GetDecimalSeparator();
+			var symbol = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+			var decimalSeparator = string.IsNullOrEmpty(symbol) ? '.' : symbol[0];
 
 			if (decimalSeparator == '.')
 			{
