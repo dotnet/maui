@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Windows;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using WebViewAppShared;
 
 namespace BlazorWpfApp
 {
@@ -42,19 +42,9 @@ namespace BlazorWpfApp
 			services2.AddSingleton<AppState>(_appState);
 			Resources.Add("services2", services2.BuildServiceProvider());
 
-
-			var services3 = new ServiceCollection();
-			services3.AddWpfBlazorWebView();
-#if DEBUG
-			services3.AddBlazorWebViewDeveloperTools();
-#endif
-
-			services3.AddSingleton<AppState>(_appState);
-			Resources.Add("services3", services3.BuildServiceProvider());
-
 			InitializeComponent();
 
-			blazorWebView1.RootComponents.RegisterForJavaScript<DynamicComponent>("my-dynamic-root-component");
+			blazorWebView1.RootComponents.RegisterForJavaScript<MyDynamicComponent>("my-dynamic-root-component");
 		}
 
 		private void Button_Click(object sender, RoutedEventArgs e)
@@ -69,10 +59,5 @@ namespace BlazorWpfApp
 		{
 			blazorWebView1.WebView.CoreWebView2.ExecuteScriptAsync("alert('hello from native UI')");
 		}
-
-		private void ToggleLayoutRounding(object sender, RoutedEventArgs e)
-		{
-			blazorWebView3.UseLayoutRoundingCompositionControl = !blazorWebView3.UseLayoutRoundingCompositionControl;
-		}
-    }
+	}
 }

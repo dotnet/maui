@@ -7,39 +7,28 @@
         xmlns:local="clr-namespace:BlazorWpfApp"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-  <DockPanel>
-    <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Background="CadetBlue">
-      <Label>This is native WPF UI</Label>
-      <Button Click="Button_Click" Margin="4" Padding="4">Check counter</Button>
-      <Button Click="WebViewAlertButton_Click" Margin="4" Padding="4">WebView alert</Button>
-    </StackPanel>
+    <DockPanel>
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Background="CadetBlue">
+            <Label>This is native WPF UI</Label>
+            <Button Click="Button_Click" Margin="4" Padding="4">Check counter</Button>
+            <Button Click="WebViewAlertButton_Click" Margin="4" Padding="4">WebView alert</Button>
+        </StackPanel>
 
-    <TabControl>
-      <TabItem Header="BlazorWebView">
-        <blazor:BlazorWebView HostPage="wwwroot\index.html" Services="{StaticResource services1}" x:Name="blazorWebView1">
-          <blazor:BlazorWebView.RootComponents>
-            <blazor:RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
-          </blazor:BlazorWebView.RootComponents>
-        </blazor:BlazorWebView>
-      </TabItem>
-      <TabItem Header="Custom Files BlazorWebView">
-        <local:CustomFilesBlazorWebView HostPage="wwwroot\customindex.html" Services="{StaticResource services2}" x:Name="blazorWebView2">
-          <blazor:BlazorWebView.RootComponents>
-            <blazor:RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
-          </blazor:BlazorWebView.RootComponents>
-        </local:CustomFilesBlazorWebView>
-      </TabItem>
-      <TabItem Header="BlazorWebView UseCompositionControl">
-        <Grid>
-          <blazor:BlazorWebView UseCompositionControl="True" HostPage="wwwroot\index.html" Services="{StaticResource services3}" x:Name="blazorWebView3">
-            <blazor:BlazorWebView.RootComponents>
-              <blazor:RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
-            </blazor:BlazorWebView.RootComponents>
-          </blazor:BlazorWebView>
-
-          <Button Content="BEGONE AirSpace-problem&#10;Click to toggle LayoutRounding" Background="LightGreen" Height="200" Width="250" Click="ToggleLayoutRounding" />
-        </Grid>
-      </TabItem>
-    </TabControl>
-  </DockPanel>
+        <TabControl>
+            <TabItem Header="BlazorWebView">
+                <blazor:BlazorWebView HostPage="wwwroot\index.html" Services="{StaticResource services1}" x:Name="blazorWebView1">
+                    <blazor:BlazorWebView.RootComponents>
+                        <blazor:RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
+                    </blazor:BlazorWebView.RootComponents>
+                </blazor:BlazorWebView>
+            </TabItem>
+            <TabItem Header="Custom Files BlazorWebView">
+                <local:CustomFilesBlazorWebView HostPage="wwwroot\customindex.html" Services="{StaticResource services2}" x:Name="blazorWebView2">
+                    <blazor:BlazorWebView.RootComponents>
+                        <blazor:RootComponent Selector="#app" ComponentType="{x:Type local:Main}" />
+                    </blazor:BlazorWebView.RootComponents>
+                </local:CustomFilesBlazorWebView>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
 </Window>

@@ -16,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Web.WebView2.Wpf;
+using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
 
 namespace Microsoft.AspNetCore.Components.WebView.Wpf
 {
@@ -85,19 +85,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			propertyType: typeof(EventHandler<BlazorWebViewInitializedEventArgs>),
 			ownerType: typeof(BlazorWebView));
 
-		/// <summary>
-		/// The backing store for the <see cref="UseLayoutRoundingCompositionControl"/> property.
-		/// </summary>
-		public static readonly DependencyProperty UseLayoutRoundingCompositionControlProperty = DependencyProperty.Register(
-			name: nameof(UseLayoutRoundingCompositionControl),
-			propertyType: typeof(bool),
-			ownerType: typeof(BlazorWebView),
-			typeMetadata: new PropertyMetadata(true, OnUseLayoutRoundingCompositionControlPropertyChanged));
-
 		#endregion
 
 		private const string WebViewTemplateChildName = "WebView";
-		private IWebView2? _webview;
+		private WebView2Control? _webview;
 		private WebView2WebViewManager? _webviewManager;
 		private bool _isDisposed;
 
@@ -122,37 +113,23 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 			SetValue(RootComponentsProperty, new RootComponentsCollection());
 			RootComponents.CollectionChanged += HandleRootComponentsCollectionChanged;
 
-			var visualHostingControlType = UseLayoutRoundingCompositionControl ? typeof(WebView2CompositionControl) : typeof(Microsoft.Web.WebView2.Wpf.WebView2);
-
 			Template = new ControlTemplate
 			{
-				VisualTree = new FrameworkElementFactory(visualHostingControlType, WebViewTemplateChildName)
+				VisualTree = new FrameworkElementFactory(typeof(WebView2Control), WebViewTemplateChildName)
 			};
 
 			ApplyTabNavigation(IsTabStop);
 		}
 
 		/// <summary>
-		/// Returns the inner <see cref="IWebView2"/> used by this control.
+		/// Returns the inner <see cref="WebView2Control"/> used by this control.
 		/// </summary>
 		/// <remarks>
 		/// Directly using some functionality of the inner web view can cause unexpected results because its behavior
 		/// is controlled by the <see cref="BlazorWebView"/> that is hosting it.
 		/// </remarks>
 		[Browsable(false)]
-		public IWebView2 WebView => _webview!;
-
-		/// <summary>
-		/// Use a WebView2CompositionControl instead of the default WebView2-component for rendering.
-		/// </summary>
-		/// <remarks>
-		/// The content of WebView2CompositionControl is rendered by an Image. By default, UseLayoutRounding of WebView2CompositionControl is set to true. This can prevent the Image from becoming blurry at certain dimensions, but it disables anti-aliasing. Set it to false if you want to keep the anti-aliasing.
-		/// <see cref="UseLayoutRoundingCompositionControl"/>.
-		/// </remarks>
-		/// <remarks>
-		/// Note that the WebView2CompositionControl uses a GraphicsCaptureSession to capture the screen content from the underlying browser processes. As such, you may experience lower framerates compared to the standard WebView2 control, and DRM protected content will fail to play or display properly.
-		/// </remarks>
-		public bool UseCompositionControl { get; init; }
+		public WebView2Control WebView => _webview!;
 
 		/// <summary>
 		/// Path to the host page within the application's static files. For example, <code>wwwroot\index.html</code>.
@@ -209,18 +186,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		}
 
 		/// <summary>
-		/// Gets or sets a value that indicates whether layout rounding should be applied to this element's size and position during layout.
-		/// </summary>
-		/// <remarks>
-		/// This can prevent the Image from becoming blurry at certain dimensions, but it disables anti-aliasing. Set it to false if you want to keep the anti-aliasing.
-		/// </remarks>
-		public bool UseLayoutRoundingCompositionControl
-		{
-			get => (bool)GetValue(UseLayoutRoundingCompositionControlProperty);
-			set => SetValue(UseLayoutRoundingCompositionControlProperty, value);
-		}
-		
-		/// <summary>
 		/// Gets or sets an <see cref="IServiceProvider"/> containing services to be used by this control and also by application code.
 		/// This property must be set to a valid value for the Razor components to start.
 		/// </summary>
@@ -241,18 +206,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 		private static void OnIsTabStopPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((BlazorWebView)d).OnIsTabStopPropertyChanged(e);
 
 		private void OnIsTabStopPropertyChanged(DependencyPropertyChangedEventArgs e) => ApplyTabNavigation((bool)e.NewValue);
-
-		private static void OnUseLayoutRoundingCompositionControlPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) => ((BlazorWebView)d).OnUseLayoutRoundingCompositionControlPropertyChanged(e);
-
-		private void OnUseLayoutRoundingCompositionControlPropertyChanged(DependencyPropertyChangedEventArgs e)
-		{
-			if (!UseCompositionControl)
-			{
-				return;
-			}
-
-			((WebView2CompositionControl)_webview!).UseLayoutRounding = (bool)e.NewValue;
-		}
 
 		private void ApplyTabNavigation(bool isTabStop)
 		{
@@ -275,7 +228,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Wpf
 
 			if (_webview == null)
 			{
-				_webview = (IWebView2)GetTemplateChild(WebViewTemplateChildName);
+				_webview = (WebView2Control)GetTemplateChild(WebViewTemplateChildName);
 				StartWebViewCoreIfPossible();
 			}
 		}
