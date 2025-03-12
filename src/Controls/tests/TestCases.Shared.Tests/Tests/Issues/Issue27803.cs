@@ -1,4 +1,4 @@
-using System;
+#if  TEST_FAILS_ON_CATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -13,7 +13,6 @@ public class Issue27803 : _IssuesUITest
 
 	public override string Issue => "DatePicker default format on iOS";
 
-#if !MACCATALYST
     [Test]
     [Category(UITestCategories.DatePicker)]
     public void DatePickerTextColorShouldUpdate()
@@ -24,5 +23,5 @@ public class Issue27803 : _IssuesUITest
 
         VerifyScreenshot();
     }
-#endif
 }
+#endif
