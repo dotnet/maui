@@ -82,6 +82,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateAutomationId();
 			}
+			else if (e.Is(SearchHandler.QueryProperty))
+			{
+				_editText.Text = _searchHandler.Query;
+			}
 		}
 
 		void EditTextFocusChange(object s, AView.FocusChangeEventArgs args)

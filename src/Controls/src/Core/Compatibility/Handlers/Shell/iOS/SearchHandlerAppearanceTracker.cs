@@ -115,6 +115,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateSearchBarVerticalTextAlignment(_uiSearchBar.FindDescendantView<UITextField>());
 			}
+			else if(e.Is(SearchHandler.QueryProperty))
+			{
+				_uiSearchBar.Text = _searchHandler.Query;
+			}
 		}
 
 		void GetDefaultSearchBarColors(UISearchBar searchBar)
