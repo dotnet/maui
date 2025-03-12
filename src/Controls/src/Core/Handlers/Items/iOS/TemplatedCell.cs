@@ -96,33 +96,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (_measureInvalidated || !AttributesConsistentWithConstrainedDimension(preferredAttributes))
 			{
-				UpdateCellSize();
+				// Measure this cell (including the Forms element) if there is no constrained size
+				var size = ConstrainedSize == default ? Measure() : ConstrainedSize;
+
+				_size = size.ToSize();
+				_measureInvalidated = false;
 			}
 
 			// Adjust the preferred attributes to include space for the Forms element
 			preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, _size);
-
-			// We need to set the Frame on the virtual view.
-			// Subviews will eventually be arranged via LayoutSubviews.
-			var frame = new Rect(Point.Zero, _size);
-			var virtualView = PlatformHandler.VirtualView!;
-			if (virtualView.Frame != frame)
-			{
-				PlatformHandler.VirtualView!.Arrange(frame);
-			}
 
 			OnLayoutAttributesChanged(preferredAttributes);
 
 			return preferredAttributes;
 		}
 
-		void UpdateCellSize()
+		public override void LayoutSubviews()
 		{
-			// Measure this cell (including the Forms element) if there is no constrained size
-			var size = ConstrainedSize == default ? Measure() : ConstrainedSize;
+			if (PlatformHandler?.VirtualView is { } virtualView)
+			{
+				// While the platform view Frame is set via auto-layout constraints,
+				// we have to set the Frame on the virtual view manually.
+				// Subviews will eventually be arranged via LayoutSubviews once the cell comes into play.
+				var frame = new Rect(Point.Zero, Bounds.Size.ToSize());
+				if (virtualView.Frame != frame)
+				{
+					virtualView.Arrange(frame);
+				}
+			}
 
-			_size = size.ToSize();
-			_measureInvalidated = false;
+			base.LayoutSubviews();
 		}
 
 		[Obsolete]

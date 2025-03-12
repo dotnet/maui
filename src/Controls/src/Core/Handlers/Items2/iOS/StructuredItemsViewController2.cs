@@ -191,18 +191,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void InvalidateLayoutIfItemsMeasureChanged()
 		{
+			// If the header or footer is a view, we need to check if the measure has changed.
+			// We could then invalidate the layout for supplementary cell only `collectionView.IndexPathForCell(headerCell)` like we do on standard cells,
+			// but that causes other cells to oddly collapse (see Issue25362 UITest), so in this case we have to stick with `InvalidateLayout`.
 			var collectionView = CollectionView;
-			List<NSIndexPath> invalidatedPaths = null;
 			
 			if (ItemsView.Header is not null || ItemsView.HeaderTemplate is not null)
 			{
 				var visibleHeaders = collectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Header);
 				foreach (var header in visibleHeaders)
 				{
-					if (header is TemplatedCell2 { MeasureInvalidated: true } headerCell)
+					if (header is TemplatedCell2 { MeasureInvalidated: true })
 					{
-						invalidatedPaths ??= new List<NSIndexPath>(2);
-						invalidatedPaths.Add(collectionView.IndexPathForCell(headerCell));
+						collectionView.CollectionViewLayout.InvalidateLayout();
+						return;
 					}
 				}
 			}
@@ -213,19 +215,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				var visibleFooters = collectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Footer);
 				foreach (var footer in visibleFooters)
 				{
-					if (footer is TemplatedCell2 { MeasureInvalidated: true } footerCell)
+					if (footer is TemplatedCell2 { MeasureInvalidated: true })
 					{
-						invalidatedPaths ??= new List<NSIndexPath>(1);
-						invalidatedPaths.Add(collectionView.IndexPathForCell(footerCell));
+						collectionView.CollectionViewLayout.InvalidateLayout();
+						return;
 					}
 				}
-			}
-
-			if (invalidatedPaths != null)
-			{
-				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
-				layoutInvalidationContext.InvalidateItems(invalidatedPaths.ToArray());
-				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 			}
 		}
 	}

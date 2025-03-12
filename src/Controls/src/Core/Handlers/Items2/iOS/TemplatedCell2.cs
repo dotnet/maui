@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var preferredAttributes = base.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
 
-			if (PlatformHandler?.VirtualView is not null)
+			if (PlatformHandler?.VirtualView is { } virtualView)
 			{
 				var constraints = ScrollDirection == UICollectionViewScrollDirection.Vertical
 					? new Size(preferredAttributes.Size.Width, double.PositiveInfinity)
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (_measureInvalidated || _cachedConstraints != constraints)
 				{
-					var measure = PlatformHandler.VirtualView.Measure(constraints.Width, constraints.Height);
+					var measure = virtualView.Measure(constraints.Width, constraints.Height);
 					_cachedConstraints = constraints;
 					_measuredSize = measure;
 				}
@@ -103,19 +103,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
 				preferredAttributes.ZIndex = 2;
 
-				// We need to set the Frame on the virtual view.
-				// Subviews will eventually be arranged via LayoutSubviews.
-				var frame = new Rect(Point.Zero, size);
-				var virtualView = PlatformHandler.VirtualView!;
-				if (virtualView.Frame != frame)
-				{
-					PlatformHandler.VirtualView!.Arrange(frame);
-				}
-
 				_measureInvalidated = false;
 			}
 
 			return preferredAttributes;
+		}
+
+		public override void LayoutSubviews()
+		{
+			if (PlatformHandler?.VirtualView is { } virtualView)
+			{
+				// While the platform view Frame is set via auto-layout constraints,
+				// we have to set the Frame on the virtual view manually.
+				// Subviews will eventually be arranged via LayoutSubviews once the cell comes into play.
+				var frame = new Rect(Point.Zero, Bounds.Size.ToSize());
+				if (virtualView.Frame != frame)
+				{
+					virtualView.Arrange(frame);
+				}
+			}
+
+			base.LayoutSubviews();
 		}
 
 		public override void PrepareForReuse()
