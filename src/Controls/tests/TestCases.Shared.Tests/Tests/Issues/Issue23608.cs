@@ -23,4 +23,5 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 	}
+#endif
 }
