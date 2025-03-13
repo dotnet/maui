@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			get
 			{
 				var backButtonBehavior = Shell.GetBackButtonBehavior(Page);
-				var isVisible = backButtonBehavior.GetPropertyIfSet(BackButtonBehavior.IsVisibleProperty, true);
+				var isVisible = backButtonBehavior?.GetPropertyIfSet(BackButtonBehavior.IsVisibleProperty, true) ?? false;
 
 				if (!isVisible)
             		return false;
