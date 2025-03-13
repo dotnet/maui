@@ -245,49 +245,19 @@
                                      FontSize="10"
                                      GroupName="ItemsSourceGroup"
                                      CheckedChanged="OnItemsSourceChanged"
-                                     AutomationId="ItemsSourceList"/>
-                        <RadioButton x:Name="ItemsSourceEmptyList"
-                                     Content="Empty List"
-                                     FontSize="10"
-                                     GroupName="ItemsSourceGroup"
-                                     CheckedChanged="OnItemsSourceChanged"
-                                     AutomationId="ItemsSourceEmptyList"/>
-                        <RadioButton x:Name="ItemsSourceGroupedList"
-                                     Content="Grouped List"
-                                     FontSize="10"
-                                     GroupName="ItemsSourceGroup"
-                                     CheckedChanged="OnItemsSourceChanged"
-                                     AutomationId="ItemsSourceGroupedList"/>
-                    </HorizontalStackLayout>
-                    <!-- Second Row -->
-                    <HorizontalStackLayout Spacing="10">
-                        <RadioButton x:Name="ItemsSourceEmptyGroupedList"
-                                     Content="Empty Grouped List"
-                                     FontSize="10"
-                                     GroupName="ItemsSourceGroup"
-                                     CheckedChanged="OnItemsSourceChanged"
-                                     AutomationId="ItemsSourceEmptyGroupedList"/>
-                        <RadioButton x:Name="ItemsSourceObservableCollection"
-                                     Content="ObservableCollection"
-                                     FontSize="10"
-                                     GroupName="ItemsSourceGroup"
-                                     CheckedChanged="OnItemsSourceChanged"
-                                     AutomationId="ItemsSourceObservableCollection"/>
-                    </HorizontalStackLayout>
-                    <!-- Third Row -->
-                    <HorizontalStackLayout Spacing="10">
-                        <RadioButton x:Name="ItemsSourceIEnumerable"
-                                     Content="IEnumerable"
-                                     FontSize="10"
-                                     GroupName="ItemsSourceGroup"
-                                     CheckedChanged="OnItemsSourceChanged"
-                                     AutomationId="ItemsSourceIEnumerable"/>
+                                     AutomationId="ItemsSourceList"/>                        
                         <RadioButton x:Name="ItemsSourceNone"
                                      Content="None"
                                      FontSize="10"
                                      GroupName="ItemsSourceGroup"
                                      CheckedChanged="OnItemsSourceChanged"
                                      AutomationId="ItemsSourceNone"/>
+                        <RadioButton x:Name="ItemsSourceGroupedList"
+                                     Content="Grouped List"
+                                     FontSize="10"
+                                     GroupName="ItemsSourceGroup"
+                                     CheckedChanged="OnItemsSourceChanged"
+                                     AutomationId="ItemsSourceGroupedList"/>
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
             </StackLayout>

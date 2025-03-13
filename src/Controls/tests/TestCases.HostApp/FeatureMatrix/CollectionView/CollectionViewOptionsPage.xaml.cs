@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Maui.Controls;
 using System.Collections.ObjectModel;
+using Maui.Controls.Sample.CollectionViewGalleries;
  
 namespace Maui.Controls.Sample
 {
@@ -269,12 +270,12 @@ namespace Maui.Controls.Sample
             }
             else if (ItemTemplateBasic.IsChecked)
             {
-                // Basic DataTemplate with a single Label element
                 _viewModel.ItemTemplate = new DataTemplate(() =>
                 {
                     var label = new Label
                     {
-                        Text = "CollectionViewItem",
+
+                        Text =  "{Binding .}",
                         FontSize = 18,
                         FontAttributes = FontAttributes.Bold,
                         HorizontalOptions = LayoutOptions.Center,
@@ -289,26 +290,7 @@ namespace Maui.Controls.Sample
             }
             else if (ItemTemplateGrid.IsChecked)
             {
-                // Grid DataTemplate with proper binding
-                _viewModel.ItemTemplate = new DataTemplate(() =>
-                {
-                    var captionLabel = new Label { FontSize = 18, HorizontalOptions = LayoutOptions.Center };
-                    captionLabel.SetBinding(Label.TextProperty, new Binding("Caption"));
-                    var image = new Image { WidthRequest = 100, HorizontalOptions = LayoutOptions.Center };
-                    image.SetBinding(Image.SourceProperty, new Binding("Image"));
-                    var grid = new Grid
-                    {
-                        BackgroundColor = Colors.LightGray,
-                        Padding = new Thickness(10)
-                    };
-                    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                    grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                    grid.Children.Add(captionLabel);
-                    Grid.SetRow(captionLabel, 0);
-                    grid.Children.Add(image);
-                    Grid.SetRow(image, 1);
-                    return grid;
-                });
+                _viewModel.ItemTemplate = ExampleTemplates.PhotoTemplate();
             }
             else if (ItemTemplateSelector.IsChecked)
             {
@@ -360,7 +342,7 @@ namespace Maui.Controls.Sample
             if (!(sender is RadioButton radioButton) || !e.Value)
                 return;
             // Set IsGrouped based on selection
-            if (radioButton == ItemsSourceGroupedList || radioButton == ItemsSourceEmptyGroupedList)
+            if (radioButton == ItemsSourceGroupedList)
             {
                 _viewModel.IsGrouped = true;
             }
@@ -371,16 +353,8 @@ namespace Maui.Controls.Sample
             // Set ItemsSourceType based on selection
             if (radioButton == ItemsSourceList)
                 _viewModel.ItemsSourceType = ItemsSourceType.ListT;
-            else if (radioButton == ItemsSourceEmptyList)
-                _viewModel.ItemsSourceType = ItemsSourceType.EmptyListT;
-            else if (radioButton == ItemsSourceObservableCollection)
-                _viewModel.ItemsSourceType = ItemsSourceType.ObservableCollectionT;
             else if (radioButton == ItemsSourceGroupedList)
                 _viewModel.ItemsSourceType = ItemsSourceType.GroupedListT;
-            else if (radioButton == ItemsSourceEmptyGroupedList)
-                _viewModel.ItemsSourceType = ItemsSourceType.EmptyGroupedListT;
-            else if (radioButton == ItemsSourceIEnumerable)
-                _viewModel.ItemsSourceType = ItemsSourceType.IEnumerableT;
             else if (radioButton == ItemsSourceNone)
                 _viewModel.ItemsSourceType = ItemsSourceType.None;
         }

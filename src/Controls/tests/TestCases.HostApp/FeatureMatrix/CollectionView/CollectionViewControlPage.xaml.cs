@@ -4,25 +4,14 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample
 {
-	public class CollectionViewControlPage : NavigationPage
+	public partial class CollectionViewControlPage : ContentPage
 	{
 		private CollectionViewViewModel _viewModel;
 
 		public CollectionViewControlPage()
 		{
-			_viewModel = new CollectionViewViewModel();
-			PushAsync(new CollectionViewControlMainPage(_viewModel));
-		}
-	}
-
-	public partial class CollectionViewControlMainPage : ContentPage
-	{
-		private CollectionViewViewModel _viewModel;
-
-		public CollectionViewControlMainPage(CollectionViewViewModel viewModel)
-		{
 			InitializeComponent();
-			_viewModel = viewModel;
+			_viewModel = new CollectionViewViewModel();
 			BindingContext = _viewModel;
 		}
 
