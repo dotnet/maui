@@ -112,7 +112,7 @@ namespace Microsoft.Maui.DeviceTests
 		private class TestWrapperView : UIView
 		{
 			private readonly TaskCompletionSource _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-			
+
 			public Task WaitForLayoutPassAsync() => _tcs.Task;
 
 			public override void LayoutSubviews()
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.DeviceTests
 				_tcs.TrySetResult();
 			}
 		}
-		
+
 		public static async Task<T> AttachAndRun<T>(this UIView view, Func<Task<T>> action)
 		{
 			var currentView = FindContentView();
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					return _contentView;
 				}
-				
+
 				if (GetKeyWindow(UIApplication.SharedApplication) is not UIWindow window)
 				{
 					throw new InvalidOperationException("Could not attach view - unable to find UIWindow");
@@ -223,24 +223,13 @@ namespace Microsoft.Maui.DeviceTests
 				}));
 			}
 
-			UIImage image;
-
-			if (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
-			{
-				var renderer = new UIGraphicsImageRenderer(imageRect.Size);
-				image = renderer.CreateImage(c =>
-				{
-					view.Layer.RenderInContext(c.CGContext);
-				});
-			}
-			else
-			{
-				UIGraphics.BeginImageContext(imageRect.Size);
-				var context = UIGraphics.GetCurrentContext();
-				view.Layer.RenderInContext(context);
-				image = UIGraphics.GetImageFromCurrentImageContext();
-				UIGraphics.EndImageContext();
-			}
+#pragma warning disable CA1416 // Validate platform compatibility
+			UIGraphics.BeginImageContext(imageRect.Size);
+			var context = UIGraphics.GetCurrentContext();
+			view.Layer.RenderInContext(context);
+			var image = UIGraphics.GetImageFromCurrentImageContext();
+			UIGraphics.EndImageContext();
+#pragma warning restore CA1416 // Validate platform compatibility
 
 			logger?.LogDebug($"Finish: {image.Size}");
 
