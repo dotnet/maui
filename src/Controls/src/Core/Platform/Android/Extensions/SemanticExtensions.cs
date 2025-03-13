@@ -11,8 +11,14 @@ namespace Microsoft.Maui.Controls.Platform
 			if (info == null)
 				return;
 
-			if (virtualView.TapGestureRecognizerNeedsDelegate())
+			if (virtualView.TapGestureRecognizerNeedsActionClick())
+			{
 				info.AddAction(AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick);
+			}
+			if (virtualView.TapGestureRecognizerNeedsButtonAnnouncement())
+			{
+				info.ClassName = "android.widget.Button";
+			}
 		}
 
 		internal static void AddOrRemoveControlsAccessibilityDelegate(this View virtualView)
