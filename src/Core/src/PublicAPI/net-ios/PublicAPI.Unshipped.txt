@@ -56,7 +56,6 @@ override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(WebKit.WKWe
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> WebKit.WKWebView!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.DisconnectHandler(WebKit.WKWebView! platformView) -> void
 override Microsoft.Maui.Platform.MauiScrollView.LayoutSubviews() -> void
-override Microsoft.Maui.Platform.MauiScrollView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.MauiScrollView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
@@ -113,3 +112,6 @@ override Microsoft.Maui.Handlers.ImageButtonHandler.SetupContainer() -> void
 *REMOVED*virtual Microsoft.Maui.MauiUIApplicationDelegate.FinishedLaunching(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
 *REMOVED*virtual Microsoft.Maui.MauiUIApplicationDelegate.WillFinishLaunching(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
 *REMOVED*static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this UIKit.IUIApplicationDelegate! platformApplication, Microsoft.Maui.IApplication! application, UIKit.UIApplication! uiApplication, Foundation.NSDictionary! launchOptions) -> void
+override Microsoft.Maui.Handlers.PageHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+*REMOVED*override Microsoft.Maui.Platform.WrapperView.SetNeedsLayout() -> void
+*REMOVED*override Microsoft.Maui.Platform.MauiView.SetNeedsLayout() -> void
