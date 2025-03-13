@@ -498,17 +498,6 @@ namespace Microsoft.Maui.Handlers
 
 #if !NETSTANDARD
 		internal static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
-#endif
-
-		// IHybridWebViewTaskManager implementation
-		ConcurrentDictionary<string, TaskCompletionSource<string>> _asyncTaskCallbacks = new ConcurrentDictionary<string, TaskCompletionSource<string>>();
-		int _asyncInvokeTaskId;
-
-		int IHybridWebViewTaskManager.GetNextInvokeTaskId()
-		{
-			return Interlocked.Increment(ref _asyncInvokeTaskId);
-		}
-		ConcurrentDictionary<string, TaskCompletionSource<string>> IHybridWebViewTaskManager.AsyncTaskCallbacks => _asyncTaskCallbacks;
 #endif	
 
 		internal partial class RegexHelper
