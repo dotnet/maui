@@ -16,7 +16,7 @@ public class Issue20131 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void FlyoutShouldRespectSafeAreaInLandscape()
 	{
-		App.WaitForElement("FlyoutHeader");
+		App.WaitForElement("Label");
 #if ANDROID || IOS
 		App.SetOrientationLandscape();
 #elif MACCATALYST

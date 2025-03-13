@@ -17,8 +17,7 @@ public class Issue20131 : Shell
                 {
                     Children =
                     {
-                        new Label { Text = "Hello", TextColor = Colors.White, FontSize = 20, AutomationId = "FlyoutHeader",
-},
+                        new Label { Text = "Hello", TextColor = Colors.White, FontSize = 20, AutomationId = "Label"},
                         new Label { Text = "Second line", TextColor = Colors.White, FontSize = 16 }
                     }
                 }
