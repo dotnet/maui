@@ -1,7 +1,7 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 14689, "TabbedPage Back button not updated", PlatformAffected.UWP, NavigationBehavior.SetApplicationRoot)]
-public partial class Issue14689 : TabbedPage
+public class Issue14689 : TabbedPage
 {
 	public Issue14689()
 	{
@@ -11,7 +11,7 @@ public partial class Issue14689 : TabbedPage
 	}
 }
 
-public partial class Issue14689Page : ContentPage
+public class Issue14689Page : ContentPage
 {
 	public Issue14689Page()
 	{
