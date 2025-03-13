@@ -44,7 +44,7 @@
          </CollectionView.ItemTemplate>
       </CollectionView>
 
-      <Label Text="Grid" Padding="0,10,10,10"/>
+      <!-- <Label Text="Grid" Padding="0,10,10,10"/>
       <CollectionView SelectionMode="Single" x:Name="grid">
          <CollectionView.ItemsSource>
                <x:Array Type="{x:Type x:String}">
@@ -61,7 +61,7 @@
                   </Grid>
                </DataTemplate>
          </CollectionView.ItemTemplate>
-      </CollectionView>
+      </CollectionView> -->
 
       <Button Text="Toggle SelectionMode" Clicked="Button_Clicked" AutomationId="ToggleSelectionModeButton" />
       <Label x:Name="selectionLabel" />

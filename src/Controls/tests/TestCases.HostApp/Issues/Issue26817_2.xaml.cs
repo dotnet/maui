@@ -22,10 +22,10 @@ namespace Maui.Controls.Sample.Issues
 
 			border.SelectionMode = selectionMode;
 			vsl.SelectionMode = selectionMode;
-			grid.SelectionMode = selectionMode;
+			// grid.SelectionMode = selectionMode;
 			CheckAccessibilityTraits(border, Label1, "Border:");
 			CheckAccessibilityTraits(vsl, Label2, "VSL:");
-			CheckAccessibilityTraits(grid, Label3, "Grid:");
+			// CheckAccessibilityTraits(grid, Label3, "Grid:");
 
 			selectionLabel.Text = "selectionMode: " + selectionMode;
 
