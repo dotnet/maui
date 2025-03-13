@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else if (e.Is(SearchHandler.TextTransformProperty))
 			{
-				UpdateTextTransform();				
+				UpdateTextTransform();
 			}
 			else if (e.Is(SearchHandler.PlaceholderColorProperty))
 			{
