@@ -13,10 +13,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (virtualView.TapGestureRecognizerNeedsActionClick())
 			{
+				// Add "double tap to activate" to the screen reader
 				info.AddAction(AccessibilityNodeInfoCompat.AccessibilityActionCompat.ActionClick);
 			}
 			if (virtualView.TapGestureRecognizerNeedsButtonAnnouncement())
 			{
+				// Add "button" to the screen reader
 				info.ClassName = "android.widget.Button";
 			}
 		}
