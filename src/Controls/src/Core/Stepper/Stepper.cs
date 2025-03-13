@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 	{
 		/// <summary>Bindable property for <see cref="Maximum"/>.</summary>
 		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(nameof(Maximum), typeof(double), typeof(Stepper), 100.0,
-			validateValue: (bindable, value) => (double)value > ((Stepper)bindable).Minimum,
+			validateValue: (bindable, value) => (double)value >= ((Stepper)bindable).Minimum,
 			coerceValue: (bindable, value) =>
 			{
 				var stepper = (Stepper)bindable;
