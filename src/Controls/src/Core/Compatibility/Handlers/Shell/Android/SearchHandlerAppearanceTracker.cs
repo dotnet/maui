@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else if (e.Is(SearchHandler.TextTransformProperty))
 			{
-				UpdateText();				
+				UpdateTextTransform();				
 			}
 			else if (e.Is(SearchHandler.PlaceholderColorProperty))
 			{
@@ -84,12 +84,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else if (e.Is(SearchHandler.QueryProperty))
 			{
-				_editText.Text = _searchHandler.Query;
 				UpdateText();
-				// Prevents the cursor to reset to position zero
-				// when the text is set programmatically
-				_editText.SetSelection(_editText.Text?.Length ?? 0);
 			}
+		}
+
+		void UpdateText()
+		{
+			_editText.Text = _searchHandler.Query;
+			UpdateTextTransform();
+
+			// Prevents the cursor to reset to position zero when the text is set programmatically	
+			_editText.SetSelection(_editText.Text?.Length ?? 0);
 		}
 
 		void EditTextFocusChange(object s, AView.FocusChangeEventArgs args)
@@ -101,7 +106,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			UpdateBackgroundColor();
 			UpdateTextColor();
-			UpdateText();
+			UpdateTextTransform();
 			UpdatePlaceholderColor();
 			UpdateCancelButtonColor();
 			UpdateAutomationId();
@@ -138,7 +143,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_editText.UpdateVerticalAlignment(_searchHandler.VerticalTextAlignment, TextAlignment.Center.ToVerticalGravityFlags());
 		}
 
-		void UpdateText()
+		void UpdateTextTransform()
 		{
 			_editText.Text = _searchHandler.UpdateFormsText(_editText.Text, _searchHandler.TextTransform);
 		}
