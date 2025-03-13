@@ -15,19 +15,10 @@ public class Issue14689 : _IssuesUITest
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageBackButtonUpdated()
 	{
-#if ANDROID
-		string tab1Title = "HASNAVIGATIONPAGE";
-		string tab2Title = "NONAVIGATIONPAGE";
-#else
-		string tab1Title = "HasNavigationPage";
-		string tab2Title = "NoNavigationPage";
-#endif
-		App.WaitForElement(tab1Title);
-		App.Tap(tab1Title);
+		App.TapTab("HasNavigationPage");
 		App.WaitForElement("button");
 		App.Tap("button");
-		App.WaitForElement(tab2Title);
-		App.Tap(tab2Title);
+		App.TapTab("NoNavigationPage");
 #if WINDOWS
 		VerifyScreenshot(includeTitleBar: true); // On Windows, the back button is visible in the title bar
 #else
