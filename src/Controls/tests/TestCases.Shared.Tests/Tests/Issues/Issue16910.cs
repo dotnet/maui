@@ -26,6 +26,7 @@ public class Issue16910 : _IssuesUITest
 		App.Tap("StopRefreshing");
 		App.WaitForElement("IsNotRefreshing");
 	}
+
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Failing on Mac and Windows. Flaky Test. More information: https://github.com/dotnet/maui/issues/28368
 	[Test]
 	public void BindingUpdatesFromInteractiveRefresh()
