@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS // Graphics view is not accessible on Windows
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -22,3 +23,4 @@ public class Issue20834 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
