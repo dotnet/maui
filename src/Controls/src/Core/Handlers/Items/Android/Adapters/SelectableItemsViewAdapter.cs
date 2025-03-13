@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Android.Content;
 using AndroidX.RecyclerView.Widget;
 using Object = Java.Lang.Object;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -12,10 +13,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		where TItemsSource : IItemsViewSource
 	{
 		List<SelectableViewHolder> _currentViewHolders = new List<SelectableViewHolder>();
+		SelectableItemsView _selectableItemsView;
 
 		protected internal SelectableItemsViewAdapter(TItemsView selectableItemsView,
 			Func<View, Context, ItemContentView> createView = null) : base(selectableItemsView, createView)
 		{
+			_selectableItemsView = selectableItemsView;
 		}
 
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
@@ -35,6 +38,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Make sure that if this item is one of the selected items, it's marked as selected
 			selectable.IsSelected = PositionIsSelected(position);
+
+			holder.ItemView.AddRecyclerItemViewAccessibility(_selectableItemsView.SelectionMode != SelectionMode.None);
 		}
 
 		public override void OnViewRecycled(Object holder)
@@ -75,6 +80,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				}
 			}
 		}
+
+		// internal void UpdateItemAccessibilityEvents(SelectableItemsView selectableItemsView)
+		// {
+		// 	var mode = selectableItemsView.SelectionMode;
+
+		// 	if (selectableItemsView is CollectionView colView)
+		// 	{
+		// 		var platCollectionView = colView.Handler?.PlatformView;
+		// 		foreach (var item in colView.ItemsSource)
+		// 		{
+		// 			// if (item is IAccessibilityElement accessibilityElement)
+		// 			// {
+		// 			// 	accessibilityElement.AccessibilityEvents = mode == SelectionMode.Single
+		// 			// 		? AccessibilityEvents.SingleSelection
+		// 			// 		: AccessibilityEvents.MultipleSelection;
+		// 			// }
+
+		// 			// AccessibilityClassName
+		// 		}
+		// 	}
+		// }
 
 		int[] GetSelectedPositions()
 		{
