@@ -2,14 +2,11 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 28330, "Stepper allows to increment when value equals to maximum", PlatformAffected.All)]
 public class Issue28330 : TestContentPage
 {
-    private Stepper stepper;
-    private Label stepperValue;
-
     protected override void Init()
     {
         var layout = new StackLayout { };
 
-        stepper = new Stepper
+        Stepper stepper = new Stepper
         {
             AutomationId = "stepper",
             HorizontalOptions = LayoutOptions.Center,
@@ -19,16 +16,16 @@ public class Issue28330 : TestContentPage
             Value = 1
         };
 
-        stepperValue = new Label
+        Label label = new Label
         {
-            AutomationId = "stepperValue",
+            AutomationId = "label",
             HorizontalOptions = LayoutOptions.Center,
             FontSize = 32
         };
-        stepperValue.SetBinding(Label.TextProperty, new Binding("Value", source: stepper));
+        label.SetBinding(Label.TextProperty, new Binding("Value", source: stepper));
 
         layout.Children.Add(stepper);
-        layout.Children.Add(stepperValue);
+        layout.Children.Add(label);
 
         Content = layout;
     }

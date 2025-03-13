@@ -15,8 +15,8 @@ public class Issue28330 : _IssuesUITest
     [Category(UITestCategories.Stepper)]
     public void Issue28330StepperIncrementShouldBeDisabled()
     {
-        App.WaitForElement("stepperValue");
+        App.WaitForElement("label");
         App.IncreaseStepper("stepper");
-        Assert.That(App.FindElement("stepperValue").GetText(), Is.EqualTo("1"));
+        Assert.That(App.FindElement("label").GetText(), Is.EqualTo("1"));
     }
 }
