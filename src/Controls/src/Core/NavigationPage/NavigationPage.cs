@@ -54,6 +54,7 @@ namespace Microsoft.Maui.Controls
 
 		INavigationPageController NavigationPageController => this;
 
+	
 		partial void Init();
 
 #if WINDOWS || ANDROID || TIZEN
@@ -63,6 +64,7 @@ namespace Microsoft.Maui.Controls
 #endif
 
 		bool _setForMaui;
+			
 		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public NavigationPage() : this(UseMauiHandler)
 		{
@@ -111,6 +113,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal Task CurrentNavigationTask { get; set; }
+
+		internal NavigationType NavigationType { get; set; } = NavigationType.Initialize;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='Peek']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -699,8 +703,7 @@ namespace Microsoft.Maui.Controls
 				},
 				() =>
 				{
-					// TODO this is the wrong navigation type
-					SendNavigated(null, NavigationType.Initialize);
+					SendNavigated(null, NavigationType);
 				})
 				.FireAndForget(Handler);
 			}
@@ -750,6 +753,7 @@ namespace Microsoft.Maui.Controls
 				Owner.SendHandlerUpdateAsync(false,
 					() =>
 					{
+						Owner.NavigationType = NavigationType.Insert;
 						int index = Owner.InternalChildren.IndexOf(before);
 						Owner.InternalChildren.Insert(index, page);
 
@@ -783,6 +787,7 @@ namespace Microsoft.Maui.Controls
 				await Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						Owner.NavigationType = NavigationType.Pop;
 						Owner.CurrentPage = newCurrentPage;
 						Owner.RemoveFromInnerChildren(currentPage);
 						if (currentPage.TitleView != null)
@@ -817,6 +822,7 @@ namespace Microsoft.Maui.Controls
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						Owner.NavigationType = NavigationType.PopToRoot;
 						var lastIndex = NavigationStack.Count - 1;
 						while (lastIndex > 0)
 						{
@@ -850,6 +856,7 @@ namespace Microsoft.Maui.Controls
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						Owner.NavigationType = NavigationType.Push;
 						Owner.PushPage(root);
 					},
 					() =>
@@ -886,6 +893,7 @@ namespace Microsoft.Maui.Controls
 				Owner.SendHandlerUpdateAsync(false,
 					() =>
 					{
+						Owner.NavigationType = NavigationType.Remove;
 						Owner.RemoveFromInnerChildren(page);
 
 						if (Owner.RootPage == page)
