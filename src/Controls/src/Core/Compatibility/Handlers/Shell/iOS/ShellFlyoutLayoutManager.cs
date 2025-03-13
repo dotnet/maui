@@ -280,15 +280,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (HeaderView is not null && !double.IsNaN(ArrangedHeaderViewHeightWithMargin))
 			{
-				nfloat safeArea = 0;
+				nfloat safeAreaTop = 0;
+        		nfloat safeAreaLeft = 0;
 				if (ShouldHonorSafeArea(HeaderView.View))
 				{
 					// We add the safe area if margin is not explicitly set.
-					safeArea = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
+					var safeAreaInsets = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
+					safeAreaTop = safeAreaInsets.Top;
+            		safeAreaLeft = safeAreaInsets.Left;
 				}
 
 				// For header's Y offset, we should only consider the safe area but not its margin, since it will be handled by MAUI's layout system.
-				HeaderView.Frame = new CGRect(0, _headerOffset + safeArea, parentFrame.Width, ArrangedHeaderViewHeightWithMargin);
+				HeaderView.Frame = new CGRect(safeAreaLeft, _headerOffset + safeAreaTop, parentFrame.Width - safeAreaLeft, ArrangedHeaderViewHeightWithMargin);
 
 				if (_context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll && HeaderViewTopVerticalOffset > 0 && _headerOffset < 0)
 				{
@@ -343,7 +346,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		bool ShouldHonorSafeArea(View view)
+		internal bool ShouldHonorSafeArea(View view)
 		{
 			return view != null
 				&& !view.IsSet(View.MarginProperty)
