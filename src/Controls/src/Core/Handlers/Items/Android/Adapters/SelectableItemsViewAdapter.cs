@@ -81,27 +81,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		// internal void UpdateItemAccessibilityEvents(SelectableItemsView selectableItemsView)
-		// {
-		// 	var mode = selectableItemsView.SelectionMode;
-
-		// 	if (selectableItemsView is CollectionView colView)
-		// 	{
-		// 		var platCollectionView = colView.Handler?.PlatformView;
-		// 		foreach (var item in colView.ItemsSource)
-		// 		{
-		// 			// if (item is IAccessibilityElement accessibilityElement)
-		// 			// {
-		// 			// 	accessibilityElement.AccessibilityEvents = mode == SelectionMode.Single
-		// 			// 		? AccessibilityEvents.SingleSelection
-		// 			// 		: AccessibilityEvents.MultipleSelection;
-		// 			// }
-
-		// 			// AccessibilityClassName
-		// 		}
-		// 	}
-		// }
-
 		int[] GetSelectedPositions()
 		{
 			switch (ItemsView.SelectionMode)
