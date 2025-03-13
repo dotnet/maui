@@ -16,20 +16,17 @@ public class Issue14497 : Shell
     }
 }
 
-public partial class Issue14497Page : ContentPage
+public class Issue14497Page : ContentPage
 {
-    CustomSearchHandler _searchHandler;
+    Issue14497CustomSearchHandler _searchHandler;
     public Issue14497Page()
     {
-        _searchHandler = new CustomSearchHandler()
-        {
-            AutomationId = "searchHandler"
-        };
+        _searchHandler = new Issue14497CustomSearchHandler();
 
         Button button = new Button
         {
             Text = "Change Search Text",
-            AutomationId = "Button_ChangeSearchText"
+            AutomationId = "ChangeSearchText"
         };
 
         button.Clicked += Button_Clicked;
@@ -49,9 +46,9 @@ public partial class Issue14497Page : ContentPage
     }
 }
 
-public class CustomSearchHandler : SearchHandler
+public class Issue14497CustomSearchHandler : SearchHandler
 {
-    public CustomSearchHandler()
+    public Issue14497CustomSearchHandler()
     {
         Placeholder = "Search...";
         ShowsResults = false;

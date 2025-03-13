@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateText(UITextField uiTextField)
 		{
-			if (uiTextField == null)
+			if (uiTextField is null)
 				return;
 
 			uiTextField.Text = _searchHandler.Query;

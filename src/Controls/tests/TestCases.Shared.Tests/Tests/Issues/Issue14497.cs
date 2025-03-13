@@ -15,9 +15,9 @@ public class Issue14497 : _IssuesUITest
 	[Category(UITestCategories.SearchBar)]
 	public void DynamicallyQueryNotUpdating()
 	{
-
-		App.WaitForElement("Button_ChangeSearchText");
-		App.Tap("Button_ChangeSearchText");
+		const string ChangeSearchText = "ChangeSearchText";
+		App.WaitForElement(ChangeSearchText);
+		App.Tap(ChangeSearchText);
 		VerifyScreenshot();
 	}
 }
