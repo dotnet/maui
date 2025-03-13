@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateSearchBarPlaceholder(uiTextField);
 			UpdateCancelButtonColor(cancelButton);
 			UpdateSearchBarBackgroundColor(uiTextField);
-			UpdateTextTransform(uiTextField);
+			UpdateText(uiTextField);
 		}
 
 		internal void UpdateFlowDirection(Shell shell)
@@ -87,9 +87,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateTextColor(_uiSearchBar.FindDescendantView<UITextField>());
 			}
-			else if (e.Is(SearchHandler.TextTransformProperty))
+			else if (e.Is(SearchHandler.TextTransformProperty) || e.Is(SearchHandler.QueryProperty))
 			{
-				UpdateTextTransform(_uiSearchBar.FindDescendantView<UITextField>());
+				_uiSearchBar.Text = _searchHandler.Query;
+				UpdateText(_uiSearchBar.FindDescendantView<UITextField>());
 			}
 			else if (e.IsOneOf(SearchHandler.PlaceholderColorProperty, SearchHandler.PlaceholderProperty))
 			{
@@ -114,10 +115,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.Is(SearchHandler.VerticalTextAlignmentProperty))
 			{
 				UpdateSearchBarVerticalTextAlignment(_uiSearchBar.FindDescendantView<UITextField>());
-			}
-			else if(e.Is(SearchHandler.QueryProperty))
-			{
-				_uiSearchBar.Text = _searchHandler.Query;
 			}
 		}
 
@@ -217,7 +214,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			//searchBarTextField.leftViewMode = .unlessEditing
 		}
 
-		void UpdateTextTransform(UITextField textField)
+		void UpdateText(UITextField textField)
 		{
 			if (textField == null)
 				return;
