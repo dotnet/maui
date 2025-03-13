@@ -181,7 +181,7 @@ namespace Microsoft.Maui.Controls
 			// Set this before BackButtonVisible triggers an update to the handler
 			// This way all useful information is present
 			if (Parent is FlyoutPage flyout && flyout.ShouldShowToolbarButton()
-#if !WINDOWS
+#if !WINDOWS // TODO NET 10 : Move this logic to ShouldShowToolbarButton
 				&& !anyPagesPushed.Value
 #endif
 				)
