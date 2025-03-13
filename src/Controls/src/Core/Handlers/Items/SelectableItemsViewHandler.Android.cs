@@ -15,6 +15,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			=> handler.PlatformView.UpdateSelection(itemsView);
 
 		public static void MapSelectionMode(SelectableItemsViewHandler<TItemsView> handler, SelectableItemsView itemsView)
-			=> handler.PlatformView.UpdateSelection(itemsView);
+		{
+			handler.PlatformView.UpdateSelection(itemsView);
+			handler.PlatformView.UpdateItemAccessibilityEvents(itemsView, handler);
+		}
 	}
 }
