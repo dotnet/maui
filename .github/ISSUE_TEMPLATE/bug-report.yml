@@ -164,6 +164,8 @@ body:
         - 9.0.22 SR2.2
         - 9.0.30 SR3
         - 9.0.40 SR4
+        - 9.0.50 SR5
+        - 10.0.0-preview.1
     validations:
       required: true
   - type: dropdown
