@@ -506,28 +506,22 @@ namespace Microsoft.Maui.DeviceTests
 
 			SetupBuilder();
 
-			await InvokeOnMainThreadAsync(async () =>
+			var hybridWebView = new HybridWebView
 			{
-				var hybridWebView = new HybridWebView()
-				{
-					WidthRequest = 100,
-					HeightRequest = 100,
+				WidthRequest = 100,
+				HeightRequest = 100,
 
-					HybridRoot = "HybridTestRoot",
-					DefaultFile = defaultFile ?? "index.html",
-				};
+				HybridRoot = "HybridTestRoot",
+				DefaultFile = defaultFile ?? "index.html",
+			};
 
-				var handler = CreateHandler(hybridWebView);
+			// Set up the view to be displayed/parented and run our tests on it
+			await AttachAndRun(hybridWebView, async handler =>
+			{
+				await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
-				var platformView = handler.PlatformView;
-
-				// Set up the view to be displayed/parented and run our tests on it
-				await AttachAndRun(hybridWebView, async (handler) =>
-				{
-					await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
-
-					await test(hybridWebView);
-				});
+				// This is randomly failing on iOS, so let's add a timeout to avoid device tests running for hours
+				await test(hybridWebView).WaitAsync(TimeSpan.FromSeconds(5));
 			});
 		}
 
@@ -686,7 +680,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static partial class WebViewHelpers
 		{
-			const int MaxWaitTimes = 60;
+			const int MaxWaitTimes = 100;
 			const int WaitTimeInMS = 250;
 
 			private static async Task Retry(Func<Task<bool>> tryAction, Func<int, Task<Exception>> createExceptionWithTimeoutMS)
@@ -695,8 +689,10 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					if (await tryAction())
 					{
+						await Task.Delay(WaitTimeInMS);
 						return;
 					}
+
 					await Task.Delay(WaitTimeInMS);
 				}
 
