@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		Color _defaultBackgroundColor = new Color(0.964f);
 		Color _defaultForegroundColor = Colors.Black;
 		Color _defaultUnselectedColor = Colors.Black.MultiplyAlpha(0.7f);
+		CGSize _previousSize;
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
@@ -160,6 +161,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewDidLayoutSubviews();
 
 			LayoutBar();
+			if (CollectionView.Frame.Width != _previousSize.Width || CollectionView.Frame.Height != _previousSize.Height)
+			{
+				_previousSize = CollectionView.Frame.Size;
+				CollectionView.CollectionViewLayout.InvalidateLayout();
+			}
 
 			_bottomShadow.Frame = new CGRect(0, CollectionView.Frame.Bottom, CollectionView.Frame.Width, 0.5);
 		}
