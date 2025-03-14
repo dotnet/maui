@@ -325,12 +325,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		public override CGSize GetSizeForChildContentContainer(IUIContentContainer contentContainer, CGSize parentContainerSize)
-#pragma warning restore RS0016 // Add public types and members to the declared API
-		{
-			return base.GetSizeForChildContentContainer(contentContainer, parentContainerSize);
-		}
 
 		void UpdateHeaderTitle(int index, ShellContent shellContent)
 		{
@@ -388,14 +382,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				base.LayoutSubviews();
 
 				Label.Frame = Bounds;
-			}
-
-			public override CGRect Frame
-			{
-#pragma warning disable RS0016 // Add public types and members to the declared API
-				get => base.Frame;
-				set => base.Frame = value;
-#pragma warning restore RS0016 // Add public types and members to the declared API
 			}
 
 			public override CGSize SizeThatFits(CGSize size)
