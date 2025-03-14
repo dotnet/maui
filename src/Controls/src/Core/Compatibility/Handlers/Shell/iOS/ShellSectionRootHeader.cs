@@ -18,7 +18,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		Color _defaultBackgroundColor = new Color(0.964f);
 		Color _defaultForegroundColor = Colors.Black;
 		Color _defaultUnselectedColor = Colors.Black.MultiplyAlpha(0.7f);
-		CGSize _previousSize;
 
 		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
 		{
@@ -161,11 +160,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewDidLayoutSubviews();
 
 			LayoutBar();
-			if (CollectionView.Frame.Width != _previousSize.Width || CollectionView.Frame.Height != _previousSize.Height)
-			{
-				_previousSize = CollectionView.Frame.Size;
-				CollectionView.CollectionViewLayout.InvalidateLayout();
-			}
 
 			_bottomShadow.Frame = new CGRect(0, CollectionView.Frame.Bottom, CollectionView.Frame.Width, 0.5);
 		}
@@ -331,6 +325,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override CGSize GetSizeForChildContentContainer(IUIContentContainer contentContainer, CGSize parentContainerSize)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			return base.GetSizeForChildContentContainer(contentContainer, parentContainerSize);
+		}
+
 		void UpdateHeaderTitle(int index, ShellContent shellContent)
 		{
 			if (CollectionView.CellForItem(NSIndexPath.FromItemSection(index, 0)) is ShellSectionHeaderCell cell)
@@ -387,6 +388,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				base.LayoutSubviews();
 
 				Label.Frame = Bounds;
+			}
+
+			public override CGRect Frame
+			{
+#pragma warning disable RS0016 // Add public types and members to the declared API
+				get => base.Frame;
+				set => base.Frame = value;
+#pragma warning restore RS0016 // Add public types and members to the declared API
 			}
 
 			public override CGSize SizeThatFits(CGSize size)
