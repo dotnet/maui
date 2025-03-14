@@ -5,7 +5,7 @@ using Maui.Controls.Sample.Issues;
 
 namespace Maui.Controls.Sample
 {
-	public static class MauiProgram
+	public static partial class MauiProgram
 	{
 		public static MauiApp CreateMauiApp()
 		{
@@ -57,6 +57,15 @@ namespace Maui.Controls.Sample
 			appBuilder.Services.AddScoped<ScopedPage>();
 			return appBuilder.Build();
 		}
+
+		static partial void OverrideMainPage(ref Page mainPage);
+
+		public static Page CreateDefaultMainPage()
+		{
+			Page mainPage = null;
+			OverrideMainPage(ref mainPage);
+			return mainPage ?? new CoreNavigationPage();
+		}
 	}
 
 	class App : Application
@@ -70,11 +79,6 @@ namespace Maui.Controls.Sample
 
 		public static bool PreloadTestCasesIssuesList { get; set; } = true;
 
-		public Page CreateDefaultMainPage()
-		{
-			return new CoreNavigationPage();
-		}
-
 		protected override void OnAppLinkRequestReceived(Uri uri)
 		{
 			base.OnAppLinkRequestReceived(uri);
@@ -82,7 +86,7 @@ namespace Maui.Controls.Sample
 
 		protected override Window CreateWindow(IActivationState activationState)
 		{
-			var window = new Window(CreateDefaultMainPage());
+			var window = new Window(MauiProgram.CreateDefaultMainPage());
 #if WINDOWS || MACCATALYST
 
 			// For desktop use a fixed window size, so that screenshots are deterministic,
