@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample.Pages
 
 		async void TapGestureRecognizer_Tapped(object sender, EventArgs e)
 		{
-			await DisplayAlert("Item", "Tapped", "Successfully");
+			await DisplayAlertAsync("Item", "Tapped", "Successfully");
 		}
 	}
 }
