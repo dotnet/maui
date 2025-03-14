@@ -68,6 +68,34 @@
 				<Setter Property="TextColor" Value="Red"></Setter>
 				<Setter Property="Margin" Value="2,10,2,10"></Setter>
 			</Style>
+
+			<Style TargetType="Button" x:Key="ParentButtonStyleWithCustomVisualState">
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState Name="Custom">
+                                <VisualState.Setters>
+                                    <Setter Property="TextColor" Value="Red" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+            <Style TargetType="Button" x:Key="DerivedButtonStyleWithNormalState" BasedOn="{StaticResource ParentButtonStyleWithCustomVisualState}">
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                             <VisualState Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="TextColor" Value="White" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
 			
 		</ResourceDictionary>
 	</ContentPage.Resources>
@@ -146,6 +174,7 @@
 
 		<Label x:Name="TargetLabel1" Style="{StaticResource ErrorLabel}"></Label>
 
+		<Button x:Name="Button2" Style="{StaticResource DerivedButtonStyleWithNormalState}"/>
 	</StackLayout>
 
 </ContentPage>
