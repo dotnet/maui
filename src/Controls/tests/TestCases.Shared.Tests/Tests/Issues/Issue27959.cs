@@ -17,7 +17,8 @@ public class Issue27959 : _IssuesUITest
 	public void EmptyViewHeaderFooterToggleNullToNonNull()
 	{
 		App.WaitForElement("EmptyViewButton").Click();
-		App.WaitForElement("ToggleHeaderButton").Click();
+		App.WaitForElement("ToggleHeaderButton");
+		App.Click("ToggleHeaderButton");
 		App.WaitForNoElement("Header");
 		App.Click("ToggleHeaderButton");
 		App.WaitForElement("Header");
@@ -25,7 +26,7 @@ public class Issue27959 : _IssuesUITest
 		App.WaitForNoElement("Footer");
 		App.Click("ToggleFooterButton");
 		App.WaitForElement("Footer");
-		App.Back();
+		App.TapBackArrow();
 	}
 
 	[Test, Order(2)]
@@ -33,11 +34,12 @@ public class Issue27959 : _IssuesUITest
 	public void EmptyViewHeaderFooterTemplateToggleNullToNonNull()
 	{
 		App.WaitForElement("EmptyViewViewTemplatedButton").Click();
-		App.WaitForElement("ToggleHeaderTemplateButton").Click();
+		App.WaitForElement("ToggleHeaderTemplateButton");
+		App.Click("ToggleHeaderTemplateButton");
 		App.WaitForNoElement("HeaderTemplate");
 		App.Click("ToggleHeaderTemplateButton");
 		App.WaitForElement("HeaderTemplate");
-		App.Back();
+		App.TapBackArrow();
 	}
 
 	[Test, Order(3)]
@@ -45,7 +47,8 @@ public class Issue27959 : _IssuesUITest
 	public void ItemsViewHeaderFooterToggleNullToNonNull()
 	{
 		App.WaitForElement("ItemsViewButton").Click();
-		App.WaitForElement("ItemsViewToggleHeaderButton").Click();
+		App.WaitForElement("ItemsViewToggleHeaderButton");
+		App.Click("ItemsViewToggleHeaderButton");
 		App.WaitForNoElement("ItemsViewHeader");
 		App.Click("ItemsViewToggleHeaderButton");
 		App.WaitForElement("ItemsViewHeader");
@@ -53,7 +56,7 @@ public class Issue27959 : _IssuesUITest
 		App.WaitForNoElement("ItemsViewFooter");
 		App.Click("ItemsViewToggleFooterButton");
 		App.WaitForElement("ItemsViewFooter");
-		App.Back();
+		App.TapBackArrow();
 	}
 
 	[Test, Order(4)]
@@ -61,7 +64,8 @@ public class Issue27959 : _IssuesUITest
 	public void ItemsViewHeaderFooterTemplatedToggleNullToNonNull()
 	{
 		App.WaitForElement("ItemsViewTemplatedButton").Click();
-		App.WaitForElement("ToggleHeaderTemplateButton").Click();
+		App.WaitForElement("ToggleHeaderTemplateButton");
+		App.Click("ToggleHeaderTemplateButton");
 		App.WaitForNoElement("ItemsHeaderTemplate");
 		App.Click("ToggleHeaderTemplateButton");
 		App.WaitForElement("ItemsHeaderTemplate");
