@@ -1,20 +1,19 @@
-﻿#nullable disable
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class CheckBox
+	public partial class CheckBox : IRemappable
 	{
-		internal new static void RemapForControls()
+		void IRemappable.RemapForControls()
 		{
+			RemappingHelper.RemapIfNeeded(typeof(VisualElement), VisualElement.RemapIfNeeded);
+
 			CheckBoxHandler.Mapper.ReplaceMapping<ICheckBox, ICheckBoxHandler>(nameof(Color), MapColor);
 		}
 
-		internal static void MapColor(ICheckBoxHandler handler, ICheckBox view)
+		internal static void MapColor(ICheckBoxHandler? handler, ICheckBox view)
 		{
 			handler?.UpdateValue(nameof(ICheckBox.Foreground));
 		}
