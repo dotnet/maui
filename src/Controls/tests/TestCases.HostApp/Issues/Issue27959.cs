@@ -139,14 +139,18 @@ public class Issue27959_EmptyViewHeaderFooter : TestContentPage
 	void ToggleHeader(object sender, System.EventArgs e)
 	{
 		if (_storedHeader == null)
+		{
 			_storedHeader = _collectionView.Header;
+		}
 		_collectionView.Header = _collectionView.Header == null ? _storedHeader : null;
 	}
 
 	void ToggleFooter(object sender, System.EventArgs e)
 	{
 		if (_storedFooter == null)
+		{
 			_storedFooter = _collectionView.Footer;
+		}
 		_collectionView.Footer = _collectionView.Footer == null ? _storedFooter : null;
 	}
 }
@@ -234,7 +238,9 @@ public class Issue27959_EmptyViewTemplatedHeaderFooterTemplated : TestContentPag
 	void ToggleHeader(object sender, System.EventArgs e)
 	{
 		if (_storedHeaderTemplate == null)
+		{
 			_storedHeaderTemplate = _templatedCollectionView.HeaderTemplate;
+		}
 		_templatedCollectionView.HeaderTemplate = _templatedCollectionView.HeaderTemplate == null
 			? _storedHeaderTemplate
 			: null;
@@ -243,7 +249,9 @@ public class Issue27959_EmptyViewTemplatedHeaderFooterTemplated : TestContentPag
 	void ToggleFooter(object sender, System.EventArgs e)
 	{
 		if (_storedFooterTemplate == null)
+		{
 			_storedFooterTemplate = _templatedCollectionView.FooterTemplate;
+		}
 		_templatedCollectionView.FooterTemplate = _templatedCollectionView.FooterTemplate == null
 			? _storedFooterTemplate
 			: null;
@@ -326,14 +334,18 @@ public class Issue27959_ItemsHeaderFooterView : TestContentPage
 	void ToggleHeader(object sender, System.EventArgs e)
 	{
 		if (_storedHeader == null)
+		{
 			_storedHeader = _collectionView.Header;
+		}
 		_collectionView.Header = _collectionView.Header == null ? _storedHeader : null;
 	}
 
 	void ToggleFooter(object sender, System.EventArgs e)
 	{
 		if (_storedFooter == null)
+		{
 			_storedFooter = _collectionView.Footer;
+		}
 		_collectionView.Footer = _collectionView.Footer == null ? _storedFooter : null;
 	}
 }
@@ -410,7 +422,9 @@ public class Issue27959_ItemsHeaderFooterTemplatedView : TestContentPage
 	void ToggleHeader(object sender, EventArgs e)
 	{
 		if (_savedHeaderTemplate == null)
+		{
 			_savedHeaderTemplate = _collectionView.HeaderTemplate;
+		}
 		_collectionView.HeaderTemplate = _collectionView.HeaderTemplate == null
 			? _savedHeaderTemplate
 			: null;
@@ -419,7 +433,9 @@ public class Issue27959_ItemsHeaderFooterTemplatedView : TestContentPage
 	void ToggleFooter(object sender, EventArgs e)
 	{
 		if (_savedFooterTemplate == null)
+		{
 			_savedFooterTemplate = _collectionView.FooterTemplate;
+		}
 		_collectionView.FooterTemplate = _collectionView.FooterTemplate == null
 			? _savedFooterTemplate
 			: null;
