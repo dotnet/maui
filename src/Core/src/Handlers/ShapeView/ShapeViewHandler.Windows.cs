@@ -20,7 +20,10 @@ namespace Microsoft.Maui.Handlers
 			{
 				handler.UpdateValue(nameof(IViewHandler.ContainerView));
 				handler.ToPlatform().UpdateBackground(shapeView);
+			}
 
+			if (shapeView.Background is not null || shapeView.Fill is not null)
+			{
 				handler.PlatformView?.InvalidateShape(shapeView);
 			}
 		}
