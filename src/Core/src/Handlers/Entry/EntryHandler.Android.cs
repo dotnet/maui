@@ -5,6 +5,7 @@ using Android.Views;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
+using Microsoft.Maui.Graphics;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
@@ -273,5 +274,13 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
 			_clearButtonVisible = false;
 		}
+
+
+		public override void PlatformArrange(Rect frame)
+		{
+			this.PrepareForTextViewArrange(frame);
+			base.PlatformArrange(frame);
+		}
+		
 	}
 }
