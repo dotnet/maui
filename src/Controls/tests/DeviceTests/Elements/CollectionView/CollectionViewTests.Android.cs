@@ -88,6 +88,16 @@ namespace Microsoft.Maui.DeviceTests
 				});
 		}
 
+		//src/Compatibility/Core/tests/Android/RendererTests.cs
+		[Fact(DisplayName = "EmptySource should have a count of zero")]
+		[Trait("Category", "CollectionView")]
+		public void EmptySourceCountIsZero()
+		{
+			var emptySource = new EmptySource();
+			var count = emptySource.Count;
+			Assert.Equal(0, count);
+		}
+
 		//src/Compatibility/Core/tests/Android/ObservrableItemsSourceTests.cs#L52
 		[Fact(DisplayName = "CollectionView with SnapPointsType set should not crash")]
 		public async Task SnapPointsDoNotCrashOnOlderAPIs()
@@ -102,14 +112,14 @@ namespace Microsoft.Maui.DeviceTests
 			};
 			collectionView.ItemsLayout = itemsLayout;
 
-			await InvokeOnMainThreadAsync(() => 
+			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<CollectionViewHandler>(collectionView);
 
 				var platformView = handler.PlatformView;
 
 				collectionView.Handler = null;
-			});			
+			});
 		}
 
 		//src/Compatibility/Core/tests/Android/ObservrableItemsSourceTests.cs#L52
@@ -128,9 +138,9 @@ namespace Microsoft.Maui.DeviceTests
 			source.Add("Item 3");
 
 			var count = 0;
-			await Task.Run(() => 
+			await Task.Run(() =>
 			{
-				Application.Current.Dispatcher.Dispatch(() => 
+				Application.Current.Dispatcher.Dispatch(() =>
 				{
 					count = ois.Count;
 				});
@@ -138,7 +148,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(3, ois.Count);
 		}
 
-    	Android.OS.Handler _handler = new Android.OS.Handler(Android.OS.Looper.MainLooper);
+		Android.OS.Handler _handler = new Android.OS.Handler(Android.OS.Looper.MainLooper);
 
 		//src/Compatibility/Core/tests/Android/ObservrableItemsSourceTests.cs#L52
 		[Fact(DisplayName = "Adding items is reflected after UI thread processes them")]
@@ -171,12 +181,12 @@ namespace Microsoft.Maui.DeviceTests
 				onMainThreadCount = ois.Count;
 			});
 
-			Assert.Equal(0, countBeforeNotify); 
-			Assert.Equal(1, onMainThreadCount); 
-			Assert.Equal(1, notifier.InsertCount); 
+			Assert.Equal(0, countBeforeNotify);
+			Assert.Equal(1, onMainThreadCount);
+			Assert.Equal(1, notifier.InsertCount);
 		}
 
-        //src/Compatibility/Core/tests/Android/ObservrableItemsSourceTests.cs#L52
+		//src/Compatibility/Core/tests/Android/ObservrableItemsSourceTests.cs#L52
 		[Fact(DisplayName = "Removing items is reflected after UI thread processes them")]
 		public async Task RemoveItemCountConsistentOnUIThread()
 		{
@@ -194,9 +204,9 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			var onMainThreadCount = 0;
-			await Task.Run(() => 
+			await Task.Run(() =>
 			{
-				Application.Current.Dispatcher.Dispatch(() => 
+				Application.Current.Dispatcher.Dispatch(() =>
 				{
 					onMainThreadCount = ois.Count;
 				});
