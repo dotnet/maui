@@ -136,16 +136,12 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(2, ois.Count);
 
 			source.Add("Item 3");
-
 			var count = 0;
-			await Task.Run(() =>
-			{
-				Application.Current.Dispatcher.Dispatch(() =>
-				{
-					count = ois.Count;
-				});
+			await InvokeOnMainThreadAsync(() =>
+			{ 
+				count = ois.Count;
+				Assert.Equal(3, ois.Count);
 			});
-			Assert.Equal(3, ois.Count);
 		}
 
 		Android.OS.Handler _handler = new Android.OS.Handler(Android.OS.Looper.MainLooper);
@@ -163,7 +159,6 @@ namespace Microsoft.Maui.DeviceTests
 			int countBeforeNotify = -1;
 			int onMainThreadCount = -1;
 
-
 			await Task.Run(() =>
 			{
 				source.Add(1);
@@ -173,8 +168,6 @@ namespace Microsoft.Maui.DeviceTests
 					countBeforeNotify = ois.Count;
 				});
 			});
-
-			await Task.Delay(100);
 
 			await InvokeOnMainThreadAsync(() =>
 			{
@@ -204,13 +197,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			var onMainThreadCount = 0;
-			await Task.Run(() =>
+			await InvokeOnMainThreadAsync(() =>
 			{
-				Application.Current.Dispatcher.Dispatch(() =>
-				{
-					onMainThreadCount = ois.Count;
-				});
+				onMainThreadCount = ois.Count;
 			});
+
 			Assert.Equal(1, countBeforeNotify);
 			Assert.Equal(0, onMainThreadCount);
 			Assert.Equal(1, notifier.RemoveCount);
@@ -237,8 +228,6 @@ namespace Microsoft.Maui.DeviceTests
 					positionBeforeNotify = ois.GetPosition("zero");
 				});
 			});
-
-			await Task.Delay(100);
 
 			int positionAfterNotify = -1;
 			await InvokeOnMainThreadAsync(() =>
