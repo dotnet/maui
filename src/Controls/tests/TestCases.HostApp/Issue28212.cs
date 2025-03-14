@@ -28,7 +28,7 @@ public class Issue28212_Page1 : ContentPage
 		_issue28212_Page2 = new Issue28212_Page2();
 		button = new Button();
 		button.Text = "Click to Navigate";
-		button.AutomationId = "ButtonId";
+		button.AutomationId = "Button";
 		button.Clicked += Button_Clicked;
 		button.HeightRequest = 100;
 		verticalStackLayout = new VerticalStackLayout();

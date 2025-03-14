@@ -16,14 +16,14 @@ public class Issue28212 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void Issue28212_CollectionView()
 	{
-		App.WaitForElement("ButtonId");
-		App.Click("ButtonId");
+		App.WaitForElement("Button");
+		App.Click("Button");
 		App.WaitForElement("Add");
 		App.Click("Add");
 		App.WaitForElement("Item 1");
 		App.Click("BackButton");
-		App.WaitForElement("ButtonId");
-		App.Click("ButtonId");
+		App.WaitForElement("Button");
+		App.Click("Button");
 		App.WaitForElement("Item 1");
 	}
 }
