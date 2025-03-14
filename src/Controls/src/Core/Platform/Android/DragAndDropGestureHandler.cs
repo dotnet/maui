@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return false;
 
 			foreach (var gesture in gestures)
-				if (gesture is DragGestureRecognizer)
+				if (gesture is DragGestureRecognizer || gesture is DropGestureRecognizer)
 					return true;
 
 			return false;
