@@ -122,12 +122,11 @@ namespace Maui.Controls.Sample.Issues
 
 		void OnAddButtonClicked(object sender, EventArgs e)
 		{
-			_collection.RemoveAt(_collection.Count - 1);
-			// _collection.Add(new Issue25991Model()
-			// {
-			// 	Text = "Item " + (_collection.Count + 1),
-			// 	AutomationId = "Issue25991Item" + (_collection.Count + 1)
-			// });
+			_collection.Add(new Issue25991Model()
+			{
+				Text = "Item " + (_collection.Count + 1),
+				AutomationId = "Issue25991Item" + (_collection.Count + 1)
+			});
 		}
 
 		void OnKeepItemsInViewButtonClicked(object sender, EventArgs e)
