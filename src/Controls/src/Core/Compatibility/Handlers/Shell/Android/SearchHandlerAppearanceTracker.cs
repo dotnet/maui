@@ -82,6 +82,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateAutomationId();
 			}
+			else if (e.Is(SearchHandler.QueryProperty))
+			{
+				UpdateText();
+			}
+		}
+
+		void UpdateText()
+		{
+			_editText.Text = _searchHandler.Query;
+			UpdateTextTransform();
+
+			// Prevents the cursor to reset to position zero when the text is set programmatically	
+			_editText.SetSelection(_editText.Text?.Length ?? 0);
 		}
 
 		void EditTextFocusChange(object s, AView.FocusChangeEventArgs args)
