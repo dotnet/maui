@@ -95,6 +95,24 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		[Description("The IsVisible property of a SearchBar should match with native IsVisible")]		
+		public async Task VerifySearchBarIsVisibleProperty()
+		{
+			var searchBar = new SearchBar
+			{
+				IsVisible = false
+			};
+			var expectedValue = searchBar.IsVisible;
+
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			await InvokeOnMainThreadAsync(async () =>
+   			{
+				var isVisible = await GetPlatformIsVisible(handler);
+				Assert.Equal(expectedValue, isVisible);
+			});
+		}
+
 #if false
 		// TODO: The search bar controls are composite controls and need to be attached to the UI to run
 		[Category(TestCategory.SearchBar)]
