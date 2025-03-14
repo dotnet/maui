@@ -189,9 +189,40 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void ViewWillLayoutSubviews()
 		{
+			if (CollectionView is Items.MauiCollectionView { NeedsCellLayout: true } collectionView)
+			{
+				InvalidateLayoutIfItemsMeasureChanged();
+				collectionView.NeedsCellLayout = false;
+			}
+
 			base.ViewWillLayoutSubviews();
 			LayoutEmptyView();
 			InvalidateMeasureIfContentSizeChanged();
+		}
+
+		void InvalidateLayoutIfItemsMeasureChanged()
+		{
+			var collectionView = CollectionView;
+			var visibleCells = collectionView.VisibleCells;
+			List<NSIndexPath> invalidatedPaths = null;
+
+			var visibleCellsLength = visibleCells.Length;
+			for (int n = 0; n < visibleCellsLength; n++)
+			{
+				if (visibleCells[n] is TemplatedCell2 { MeasureInvalidated: true } cell)
+				{
+					invalidatedPaths ??= new List<NSIndexPath>(visibleCellsLength);
+					var path = collectionView.IndexPathForCell(cell);
+					invalidatedPaths.Add(path);
+				}
+			}
+
+			if (invalidatedPaths != null)
+			{
+				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
+				layoutInvalidationContext.InvalidateItems(invalidatedPaths.ToArray());
+				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
+			}
 		}
 
 		void Items.MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
@@ -577,8 +608,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal virtual void CellDisplayingEndedFromDelegate(UICollectionViewCell cell, NSIndexPath indexPath)
 		{
-			if (cell is TemplatedCell2 TemplatedCell2 &&
-				(TemplatedCell2.PlatformHandler?.VirtualView as View)?.BindingContext is object bindingContext)
+			if (cell is TemplatedCell2 templatedCell2 &&
+				(templatedCell2.PlatformHandler?.VirtualView as View)?.BindingContext is { } bindingContext)
 			{
 				// We want to unbind a cell that is no longer present in the items source. Unfortunately
 				// it's too expensive to check directly, so let's check that the current binding context
@@ -591,7 +622,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					!Items.IndexPathHelpers.IsIndexPathValid(itemsSource, indexPath) ||
 					!Equals(itemsSource[indexPath], bindingContext))
 				{
-					TemplatedCell2.Unbind();
+					templatedCell2.Unbind();
 				}
 			}
 		}

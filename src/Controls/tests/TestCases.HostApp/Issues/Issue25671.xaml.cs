@@ -17,6 +17,13 @@ public partial class Issue25671 : ContentPage
 	{
 		InitializeComponent();
 		GenerateItems();
+		CV.HandlerChanged += (s, e) =>
+		{
+			if (CV.Handler is { } handler)
+			{
+				HeadingLabel.Text = handler.GetType().Name;
+			}
+		};
 	}
 
 	void RegenerateItems(object sender, EventArgs args)
@@ -39,15 +46,6 @@ public partial class Issue25671 : ContentPage
 				Glyph = char.ConvertFromUtf32(0xf127 + i % 10)
 			});
 	}
-}
-
-#if IOS
-// When CV2 is completed and can handle resize of items we can remove this pointer to CV1
-internal class Issue25671CollectionView : CollectionView1
-#else
-public class Issue25671CollectionView : CollectionView
-#endif
-{
 }
 
 public class Issue25671AbsoluteLayout : AbsoluteLayout
