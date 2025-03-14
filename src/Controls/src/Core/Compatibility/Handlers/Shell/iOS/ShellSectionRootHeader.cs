@@ -325,7 +325,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-
 		void UpdateHeaderTitle(int index, ShellContent shellContent)
 		{
 			if (CollectionView.CellForItem(NSIndexPath.FromItemSection(index, 0)) is ShellSectionHeaderCell cell)
