@@ -164,5 +164,33 @@ namespace Microsoft.Maui.DeviceTests
 			var platformRotation = await InvokeOnMainThreadAsync(() => platformEntry.Rotation);
 			Assert.Equal(expected, platformRotation);
 		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a Entry should match with native Translation")]
+		public async Task EntryTranslationConsistent()
+		{
+			var entry = new Entry()
+			{
+				Text = "Entry Test",
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var translation = nativeView.TranslationX;
+				var density = Microsoft.Maui.Devices.DeviceDisplay.Current.MainDisplayInfo.Density;
+				var expectedInPixels = density * entry.TranslationX;
+
+				Assert.Equal(expectedInPixels, translation, 1.0);
+
+				var translationY = nativeView.TranslationY;
+				var expectedYInPixels = density * entry.TranslationY;
+				Assert.Equal(expectedYInPixels, translationY, 1.0);
+			});
+		}
 	}
 }
