@@ -99,6 +99,74 @@ namespace Microsoft.Maui.DeviceTests
 				return (float)nativeView.Alpha;
 			});
 		}
+
+		[Fact]
+		[Description("The ScaleX property of a Image should match with native ScaleX")]
+		public async Task ScaleXConsistent()
+		{
+			var image = new Image() { ScaleX = 0.45f };
+			var expected = image.ScaleX;
+			var handler = await CreateHandlerAsync<ImageHandler>(image);
+			var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
+			Assert.Equal(expected, platformScaleX);
+		}
+
+		[Fact]
+		[Description("The ScaleY property of a Image should match with native ScaleY")]
+		public async Task ScaleYConsistent()
+		{
+			var image = new Image() { ScaleY = 1.23f };
+			var expected = image.ScaleY;
+			var handler = await CreateHandlerAsync<ImageHandler>(image);
+			var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
+			Assert.Equal(expected, platformScaleY);
+		}
+
+		[Fact]
+		[Description("The Scale property of a Image should match with native Scale")]
+		public async Task ScaleConsistent()
+		{
+			var image = new Image() { Scale = 2.0f };
+			var expected = image.Scale;
+			var handler = await CreateHandlerAsync<ImageHandler>(image);
+			var platformScaleX = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleX);
+			var platformScaleY = await InvokeOnMainThreadAsync(() => handler.PlatformView.ScaleY);
+			Assert.Equal(expected, platformScaleX);
+			Assert.Equal(expected, platformScaleY);
+		}
+
+		[Fact]
+		[Description("The RotationX property of a Image should match with native RotationX")]
+		public async Task RotationXConsistent()
+		{
+			var image = new Image() { RotationX = 33.0 };
+			var expected = image.RotationX;
+			var handler = await CreateHandlerAsync<ImageHandler>(image);
+			var platformRotationX = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationX);
+			Assert.Equal(expected, platformRotationX);
+		}
+
+		[Fact]
+		[Description("The RotationY property of a Image should match with native RotationY")]
+		public async Task RotationYConsistent()
+		{
+			var image = new Image() { RotationY = 87.0 };
+			var expected = image.RotationY;
+			var handler = await CreateHandlerAsync<ImageHandler>(image);
+			var platformRotationY = await InvokeOnMainThreadAsync(() => handler.PlatformView.RotationY);
+			Assert.Equal(expected, platformRotationY);
+		}
+
+		[Fact]
+		[Description("The Rotation property of a Image should match with native Rotation")]
+		public async Task RotationConsistent()
+		{
+			var image = new Image() { Rotation = 23.0 };
+			var expected = image.Rotation;
+			var handler = await CreateHandlerAsync<ImageHandler>(image);
+			var platformRotation = await InvokeOnMainThreadAsync(() => handler.PlatformView.Rotation);
+			Assert.Equal(expected, platformRotation);
+		}
 	}
 
 	// This subclass of memory stream is deliberately set up to trick Glide into using the cached image
