@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.WebView
 	/// <summary>
 	/// Allows configuring the underlying web view after it has been initialized.
 	/// </summary>
-	public class BlazorWebViewInitializedEventArgs : EventArgs
+	public class BlazorWebViewInitializedEventArgs : EventArgs, IBlazorWebViewInitializedEventArgs<WebView2Control>
 	{
 #nullable disable
 #if WINDOWS
