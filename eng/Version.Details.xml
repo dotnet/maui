@@ -1,12 +1,12 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.NET.Sdk" Version="10.0.100-preview.2.25163.38">
+    <Dependency Name="Microsoft.NET.Sdk" Version="10.0.100-preview.2.25163.51">
       <Uri>https://github.com/dotnet/sdk</Uri>
-      <Sha>0bc7e3a5c1e9f349db6d0e1892cdebd06127789b</Sha>
+      <Sha>f03a7691cb191fca7dbcd5c4f8aafccd0a3af37d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-preview.2.25160.1" CoherentParentDependency="Microsoft.NET.Sdk">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-preview.2.25163.2" CoherentParentDependency="Microsoft.NET.Sdk">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>d6370abe3d0a4763c8c5b480015ab83ab2a9f9f6</Sha>
+      <Sha>c81f403737c412942222d13b2753881e62d1e6f7</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.99.0-preview.2.205">
       <Uri>https://github.com/dotnet/android</Uri>
