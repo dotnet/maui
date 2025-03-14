@@ -17,10 +17,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CollectionView)]
 		public void ItemsWrapGridShouldUpdateBasedOnCollectionViewSize()
 		{
+			Exception? exception = null;
 			App.WaitForElement("Button");
-			VerifyScreenshot("ItemsWrapGridWithDefaultWidth");
+			VerifyScreenshotOrSetException(ref exception, "ItemsWrapGridWithDefaultWidth");
 			App.Tap("Button");
-			VerifyScreenshot("ItemsWrapGridWithMinimalWidth");
+			VerifyScreenshotOrSetException(ref exception, "ItemsWrapGridWithMinimalWidth");
+			
+			if (exception != null)
+			{
+				throw exception;
+			}
 		}
 	}
 }
