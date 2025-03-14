@@ -8,6 +8,7 @@ using Microsoft.Maui.Platform;
 using Xunit;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
+
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarTests
@@ -143,6 +144,34 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var nativeView = GetPlatformControl(searchBarHandler);
 				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+			});
+		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a SearchBar should match with native Translation")]
+		public async Task SearchBarTranslationConsistent()
+		{
+			var searchBar = new SearchBar()
+			{
+				Text = "SearchBar Test",
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var translation = nativeView.TranslationX;
+				var density = Microsoft.Maui.Devices.DeviceDisplay.Current.MainDisplayInfo.Density;
+				var expectedInPixels = density * searchBar.TranslationX;
+
+				Assert.Equal(expectedInPixels, translation, 1.0);
+
+				var translationY = nativeView.TranslationY;
+				var expectedYInPixels = density * searchBar.TranslationY;
+				Assert.Equal(expectedYInPixels, translationY, 1.0);
 			});
 		}
 	}
