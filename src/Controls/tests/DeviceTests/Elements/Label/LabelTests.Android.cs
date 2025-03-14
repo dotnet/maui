@@ -11,6 +11,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -86,6 +87,34 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(2, GetPlatformMaxLines(handler));
 				Assert.Equal(LineBreakMode.TailTruncation.ToPlatform(), GetPlatformLineBreakMode(handler));
 			}));
+		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a Label should match with native Translation")]
+		public async Task LabelTranslationConsistent()
+		{
+			var label = new Label()
+			{
+				Text = "Label Test",
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var nativeView = GetPlatformLabel(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var translation = nativeView.TranslationX;
+				var density = Microsoft.Maui.Devices.DeviceDisplay.Current.MainDisplayInfo.Density;
+				var expectedInPixels = density * label.TranslationX;
+
+				Assert.Equal(expectedInPixels, translation, 1.0);
+
+				var translationY = nativeView.TranslationY;
+				var expectedYInPixels = density * label.TranslationY;
+				Assert.Equal(expectedYInPixels, translationY, 1.0);
+			});
 		}
 
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
