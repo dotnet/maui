@@ -623,6 +623,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			OnDataChanged();
+			if(e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				// Native Android ListView retains its scroll position even after data is reset. 
+				// To ensure consistent behavior across all platforms, the scroll position is reset to the 0th position.
+				_realListView.SmoothScrollToPosition(0);
+			}
 		}
 
 		void OnDataChanged()
