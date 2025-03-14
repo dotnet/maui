@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		public bool EnableLongPressGestures =>
-			_dragAndDropGestureHandler.HasAnyDragGestures();
+			_dragAndDropGestureHandler.HasAnyDragAndDropGestures();
 
 		bool HasAnyGestures()
 		{

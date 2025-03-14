@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Platform
 		Func<View> GetView { get; }
 		Func<AView> GetControl { get; }
 
-		public bool HasAnyDragGestures()
+		public bool HasAnyDragAndDropGestures()
 		{
 			var gestures = GetView()?.GestureRecognizers;
 			if (gestures == null || gestures.Count == 0)
@@ -45,22 +45,9 @@ namespace Microsoft.Maui.Controls.Platform
 			return false;
 		}
 
-		public bool HasAnyDropGestures()
-		{
-			var gestures = GetView()?.GestureRecognizers;
-			if (gestures == null || gestures.Count == 0)
-				return false;
-
-			foreach (var gesture in gestures)
-				if (gesture is DropGestureRecognizer)
-					return true;
-
-			return false;
-		}
-
 		public void SetupHandlerForDrop()
 		{
-			if (HasAnyDropGestures())
+			if (HasAnyDragAndDropGestures())
 				GetControl()?.SetOnDragListener(this);
 			else
 				GetControl()?.SetOnDragListener(null);
@@ -250,7 +237,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public void OnLongPress(MotionEvent e)
 		{
-			if (!HasAnyDragGestures())
+			if (!HasAnyDragAndDropGestures())
 				return;
 
 			SendEventArgs<DragGestureRecognizer>(rec =>
