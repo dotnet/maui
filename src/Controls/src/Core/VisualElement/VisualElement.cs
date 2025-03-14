@@ -702,7 +702,7 @@ namespace Microsoft.Maui.Controls
 		/// All types that override this property need to also invoke
 		/// the RefreshIsVisibleProperty() method if the value will change.
 		/// </summary>
-		private protected bool IsVisibleCore
+		public bool IsVisibleCore
 		{
 			get
 			{
@@ -1792,7 +1792,7 @@ namespace Microsoft.Maui.Controls
 		/// This method must always be called if some event occurs and the value of
 		/// the <see cref="IsVisibleCore"/> property will change.
 		/// </summary>
-		internal void RefreshIsVisibleProperty() =>
+		public void RefreshIsVisibleProperty() =>
 			this.RefreshPropertyValue(IsVisibleProperty, _isVisibleExplicit);
 
 		/// <summary>
