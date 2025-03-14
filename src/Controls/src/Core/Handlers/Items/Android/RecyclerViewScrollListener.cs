@@ -34,12 +34,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.OnScrolled(recyclerView, dx, dy);
 
-			// TODO: These offsets will be incorrect upon row size or count change.
-			// They are currently provided in place of LayoutManager's default offset calculation
-			// because it does not report accurate values in the presence of uneven rows.
-			// See https://stackoverflow.com/questions/27507715/android-how-to-get-the-current-x-offset-of-recyclerview
-			_horizontalOffset += dx;
-			_verticalOffset += dy;
+			var itemCount = recyclerView.GetAdapter()?.ItemCount ?? 0;
+			_horizontalOffset = itemCount == 0 ? 0 : _horizontalOffset + dx;
+			_verticalOffset = itemCount == 0 ? 0 : _verticalOffset + dy;
 
 			var (First, Center, Last) = GetVisibleItemsIndex(recyclerView);
 			var itemsViewScrolledEventArgs = new ItemsViewScrolledEventArgs
