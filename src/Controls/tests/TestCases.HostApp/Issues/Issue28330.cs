@@ -6,9 +6,9 @@ public class Issue28330 : TestContentPage
     {
         var layout = new StackLayout { };
 
-        Stepper stepper = new Stepper
+        Stepper Incrementstepper = new Stepper
         {
-            AutomationId = "stepper",
+            AutomationId = "Incrementstepper",
             HorizontalOptions = LayoutOptions.Center,
             Increment = 1,
             Minimum = 1,
@@ -16,16 +16,36 @@ public class Issue28330 : TestContentPage
             Value = 1
         };
 
-        Label label = new Label
+        Label Incrementlabel = new Label
         {
-            AutomationId = "label",
+            AutomationId = "Incrementlabel",
             HorizontalOptions = LayoutOptions.Center,
             FontSize = 32
         };
-        label.SetBinding(Label.TextProperty, new Binding("Value", source: stepper));
+        Incrementlabel.SetBinding(Label.TextProperty, new Binding("Value", source: Incrementstepper));
 
-        layout.Children.Add(stepper);
-        layout.Children.Add(label);
+        Stepper Decrementstepper = new Stepper
+        {
+            AutomationId = "Decrementstepper",
+            HorizontalOptions = LayoutOptions.Center,
+            Increment = 1,
+            Maximum = 1,
+            Minimum = 1,
+            Value = 1
+        };
+
+        Label Decrementlabel = new Label
+        {
+            AutomationId = "Decrementlabel",
+            HorizontalOptions = LayoutOptions.Center,
+            FontSize = 32
+        };
+        Decrementlabel.SetBinding(Label.TextProperty, new Binding("Value", source: Decrementstepper));
+
+        layout.Children.Add(Incrementstepper);
+        layout.Children.Add(Incrementlabel);
+        layout.Children.Add(Decrementstepper);
+        layout.Children.Add(Decrementlabel);
 
         Content = layout;
     }
