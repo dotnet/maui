@@ -39,6 +39,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _isRotating;
 		UIViewPropertyAnimator _pageAnimation;
 		UIEdgeInsets _additionalSafeArea = UIEdgeInsets.Zero;
+#if MACCATALYST
+		CGRect _previousFrameHeader;
+#endif
 
 		ShellSection ShellSection
 		{
@@ -568,6 +571,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				CGRect frame = new CGRect(View.Bounds.X, headerTop, View.Bounds.Width, HeaderHeight);
 				_blurView.Frame = frame;
 				_header.ViewController.View.Frame = frame;
+#if MACCATALYST
+				if (frame.Width != _previousFrameHeader.Width || frame.Height != _previousFrameHeader.Height)
+				{
+					_previousFrameHeader = frame;
+					(_header.ViewController as ShellSectionRootHeader).CollectionView.CollectionViewLayout.InvalidateLayout();
+				}
+#endif
 			}
 
 			nfloat left;
