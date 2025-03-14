@@ -12,6 +12,6 @@
             MaximumTrackColor="Red"
             ThumbColor="Green"
             MinimumTrackColor="Blue"
-            MaximumWidthRequest="250" />
+            WidthRequest="250" />
     </VerticalStackLayout>
 </ContentPage>

@@ -95,9 +95,8 @@ namespace Microsoft.Maui.Handlers
 
 		private const string InvokeJavaScriptThrowsExceptionsSwitch = "HybridWebView.InvokeJavaScriptThrowsExceptions";
 
-		// TODO: .NET 10 flip the default to true for .NET 10
 		private static bool IsInvokeJavaScriptThrowsExceptionsEnabled =>
-			AppContext.TryGetSwitch(InvokeJavaScriptThrowsExceptionsSwitch, out var enabled) && enabled;
+			!AppContext.TryGetSwitch(InvokeJavaScriptThrowsExceptionsSwitch, out var enabled) || enabled;
 
 		void MessageReceived(string rawMessage)
 		{

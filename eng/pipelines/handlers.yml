@@ -169,9 +169,13 @@ stages:
               - template: common/provision.yml
                 parameters:
                   poolName: ${{ BuildPlatform.poolName }}
-                  skipAndroidSdks: true
-                  skipAndroidImages: true
-                  installDefaultAndroidApi: false
+                  skipJdk: false
+                  skipAndroidCommonSdks: false
+                  skipAndroidPlatformApis: false
+                  onlyAndroidPlatformDefaultApis: true
+                  skipAndroidEmulatorImages: true
+                  skipAndroidCreateAvds: true
+                  skipProvisioning: true
                   skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
                   ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
                     skipProvisionator: false
@@ -243,9 +247,13 @@ stages:
                     parameters:
                       checkoutDirectory: '$(System.DefaultWorkingDirectory)'
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      skipAndroidSdks: true
-                      skipAndroidImages: true
-                      installDefaultAndroidApi: true
+                      skipJdk: false
+                      skipAndroidCommonSdks: false
+                      skipAndroidPlatformApis: false
+                      onlyAndroidPlatformDefaultApis: true
+                      skipAndroidEmulatorImages: true
+                      skipAndroidCreateAvds: true
+                      skipProvisioning: true
                       skipXcode: ${{ ne(PackPlatform.name , 'macOS') }}
                       ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
                         skipProvisionator: false
@@ -271,9 +279,13 @@ stages:
             - template: common/provision.yml
               parameters:
                 poolName: ${{ BuildPlatform.poolName }}
-                skipAndroidSdks: true
-                skipAndroidImages: true
-                installDefaultAndroidApi: true
+                skipJdk: false
+                skipAndroidCommonSdks: false
+                skipAndroidPlatformApis: false
+                onlyAndroidPlatformDefaultApis: true
+                skipAndroidEmulatorImages: true
+                skipAndroidCreateAvds: true
+                skipProvisioning: true
                 skipXcode: ${{ ne(BuildPlatform.name , 'macOS') }}
                 ${{ if or(parameters.UseProvisionator, eq(variables['internalProvisioning'],'true') ) }}:
                   skipProvisionator: false

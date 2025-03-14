@@ -25,10 +25,6 @@ namespace Microsoft.Maui.Platform
 		public MauiToolbar()
 		{
 			InitializeComponent();
-			titleIcon.Visibility = UI.Xaml.Visibility.Collapsed;
-			textBlockBorder.Visibility = UI.Xaml.Visibility.Collapsed;
-			menuContent.Visibility = UI.Xaml.Visibility.Collapsed;
-			titleView.Visibility = UI.Xaml.Visibility.Collapsed;
 		}
 
 		internal string? Title
@@ -93,6 +89,15 @@ namespace Microsoft.Maui.Platform
 
 			_menuBarForeground = brush;
 			UpdateMenuBarForeground();
+		}
+
+		internal void SetBarBackground(WBrush? brush)
+		{
+			this.Background = brush;
+
+			// Set CommandBarBackgroundOpen to the same color as the background.
+			// This is necessary because CommandBarBackgroundOpen defines the background color of the CommandBar when it is open.
+			commandBar.Resources["CommandBarBackgroundOpen"] = brush;
 		}
 
 		internal CommandBar CommandBar => commandBar;
