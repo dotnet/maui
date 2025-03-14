@@ -29,7 +29,7 @@ public class Issue14497Page : ContentPage
             AutomationId = "ChangeSearchText"
         };
 
-        button.Clicked += Button_Clicked;
+        button.Clicked += (s,e) => _searchHandler.SetQuery("Hello World");
 
         VerticalStackLayout stackLayout = new VerticalStackLayout
         {
@@ -38,11 +38,6 @@ public class Issue14497Page : ContentPage
 
         Content = stackLayout;
         Shell.SetSearchHandler(this, _searchHandler);
-    }
-
-    private void Button_Clicked(object sender, EventArgs e)
-    {
-        _searchHandler.SetQuery("Hello World");
     }
 }
 
