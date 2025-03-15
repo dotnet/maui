@@ -582,7 +582,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				default:
 					return elementBounds.Left < containerBounds.Right && elementBounds.Right > containerBounds.Left;
-			};
+			}
+			;
 		}
 
 		async void ScrollToRequested(object sender, ScrollToRequestEventArgs args)

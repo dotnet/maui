@@ -48,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformControl(editorHandler);
-				return (float)nativeView.Alpha; 
+				return (float)nativeView.Alpha;
 			});
 		}
 
