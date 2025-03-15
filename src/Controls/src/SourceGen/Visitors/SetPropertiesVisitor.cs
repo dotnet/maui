@@ -181,7 +181,7 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
                 return;
 
             var parentVar = Context.Variables[(IElementNode)parentNode.Parent];
-            if (parentNode is IElementNode && ((IElementNode)parentNode).SkipProperties.Contains(propertyName))
+            if (parentNode is IElementNode node1 && node1.SkipProperties.Contains(propertyName))
 					return;
             var elementType = parentVar.Type;
             var localName = parentList.XmlName.LocalName;
@@ -193,10 +193,14 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
             if (propertyType == null)
                 return;
 
-            //TODO if the var is already created and in context.Variables, use that
+            if (!context.VariablesProperties.TryGetValue((parentVar, bpFieldSymbol, propertySymbol), out var variable))
+            {
+                variable = new LocalVariable(propertyType, NamingHelpers.CreateUniqueVariableName(Context, propertyType));
+                Writer.WriteLine($"var {variable.Name} = {GetOrGetValue(parentVar, bpFieldSymbol, propertySymbol, node, Context)};");
+                context.VariablesProperties[(parentVar, bpFieldSymbol, propertySymbol)] = variable;
+            }
             //TODO if we don't need the var, don't create it (this will likely be optimized by the compiler anyway, but...)
-            var variable = new LocalVariable(propertyType, NamingHelpers.CreateUniqueVariableName(Context, propertyType));
-            Writer.WriteLine($"var {variable.Name} = {GetOrGetValue(parentVar, bpFieldSymbol, propertySymbol, node, Context)};");
+            
 
             if (CanAddToResourceDictionary(variable, propertyType, node, Context))
             {
@@ -501,9 +505,27 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
 	{
 		if (!collectionType.InheritsFrom(context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.ResourceDictionary")!, context))
             return false;
-        if (node.Properties.ContainsKey(XmlName.xKey))
-            //TODO check for dupe key
+
+        if (node.Properties.TryGetValue(XmlName.xKey, out var keyNode))
+        {
+            if (keyNode is not ValueNode vKeyNode || vKeyNode.Value is not string key)
+                //report diagnostic: x:Key must be a string literal
+                return false;
+
+			if (!context.KeysInRD.TryGetValue(parentVar, out var keysInUse))
+			{
+                return true;
+			}
+			if (keysInUse.Contains(key))
+            {
+                var location = LocationCreate(context.FilePath!, (IXmlLineInfo)keyNode, key);
+                context.ReportDiagnostic(Diagnostic.Create(Descriptors.DuplicateKeyInRD, location, key));
+                return false;
+            }
+
             return true;
+        }
+
         //is there an Add() overload that takes the type of the element ?
         var nodeType = context.Variables[node].Type;
         if (collectionType.GetAllMethods("Add", context).FirstOrDefault(m => m.Parameters.Length == 1 && m.Parameters[0].Type.Equals(nodeType, SymbolEqualityComparer.Default)) != null)
@@ -555,6 +577,9 @@ class SetPropertiesVisitor(SourceGenContext context, bool stopOnResourceDictiona
     {
         if (node.Properties.TryGetValue(XmlName.xKey, out var keyNode))
         {
+            if (!context.KeysInRD.ContainsKey(parentVar))
+                context.KeysInRD[parentVar] = new HashSet<string>();
+            context.KeysInRD[parentVar].Add((((ValueNode)keyNode).Value as string)!);
             var key = ((ValueNode)keyNode).Value as string;
             writer.WriteLine($"{parentVar.Name}.Add(\"{key}\", {context.Variables[node].Name});");
             return;

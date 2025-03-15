@@ -231,5 +231,7 @@ namespace Microsoft.Maui.Controls.SourceGen {
 		internal static string MethodResolution => ResourceManager.GetString("MethodResolution", resourceCulture);
 
         internal static string InvalidFormat => ResourceManager.GetString("InvalidFormat", resourceCulture);
+
+        internal static string DuplicateKeyInRD => ResourceManager.GetString("DuplicateKeyInRD", resourceCulture);
 	}
 }

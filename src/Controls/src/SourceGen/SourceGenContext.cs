@@ -26,4 +26,6 @@ class SourceGenContext (IndentedTextWriter writer, Compilation compilation, Sour
     public SourceGenContext? ParentContext {get;set;}
 	public ITypeSymbol? BaseType { get; } = baseType;
 	public IDictionary<INode, ITypeSymbol> Types { get; } = new Dictionary<INode, ITypeSymbol>();
+	public IDictionary<LocalVariable, HashSet<string>> KeysInRD { get; } = new Dictionary<LocalVariable, HashSet<string>>();
+	public IDictionary<(LocalVariable, IFieldSymbol?, IPropertySymbol?), LocalVariable> VariablesProperties { get; } = new Dictionary<(LocalVariable, IFieldSymbol?, IPropertySymbol?), LocalVariable>();
 }
