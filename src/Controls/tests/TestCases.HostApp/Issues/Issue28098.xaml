@@ -12,6 +12,8 @@
                 AutomationId="Button"
                 Text="Button"/>
         <CarouselView  WidthRequest="350"
+                       HorizontalScrollBarVisibility="Never"
+                       VerticalScrollBarVisibility="Never"
                        HeightRequest="570"
                        HorizontalOptions="Fill"
                        VerticalOptions="Fill"
