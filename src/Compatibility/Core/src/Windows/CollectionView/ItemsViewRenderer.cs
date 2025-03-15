@@ -597,7 +597,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 				default:
 					return elementBounds.Left < containerBounds.Right && elementBounds.Right > containerBounds.Left;
-			};
+			}
+			;
 		}
 
 		void OnScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)

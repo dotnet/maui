@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
 using Android.Views;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -6,7 +7,6 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -89,14 +89,14 @@ namespace Microsoft.Maui.DeviceTests
 				Opacity = 0.35f
 			};
 			var expectedValue = swipeView.Opacity;
-			
+
 			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
 			var nativeView = GetPlatformControl(handler);
 			await InvokeOnMainThreadAsync(() =>
    			{
-				var nativeOpacityValue = (float)nativeView.Alpha;
-				Assert.Equal(expectedValue, nativeOpacityValue);
-			});
+				   var nativeOpacityValue = (float)nativeView.Alpha;
+				   Assert.Equal(expectedValue, nativeOpacityValue);
+			   });
 		}
 	}
 }
