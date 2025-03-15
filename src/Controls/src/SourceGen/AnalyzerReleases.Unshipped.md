@@ -31,3 +31,4 @@ MAUIX2000 | XamlInflation | Error | TypeResolutionFailed
 MAUIX2001 | XamlInflation | Error | Descriptors
 MAUIX2002 | XamlInflation | Error | Descriptors
 MAUIX2003 | XamlInflation | Error | Descriptors
+MAUIX2004 | XamlInflation | Error | Descriptors

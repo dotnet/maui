@@ -233,4 +233,8 @@
     <value>Cannot convert "{0}" into "{1}".</value>
     <comment>/</comment>
   </data>
+  <data name="DuplicateKeyInRD" xml:space="preserve">
+    <value>duplicate key in resource dictionary</value>
+    <comment>.</comment>
+  </data>
 </root>
