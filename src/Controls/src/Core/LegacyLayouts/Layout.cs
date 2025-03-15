@@ -591,18 +591,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		internal override void OnIsVisibleChanged(bool oldValue, bool newValue)
-		{
-			base.OnIsVisibleChanged(oldValue, newValue);
-			if (newValue)
-			{
-				if (_lastLayoutSize != new Size(Width, Height))
-				{
-					UpdateChildrenLayout();
-				}
-			}
-		}
-
 		static int GetElementDepth(Element view)
 		{
 			var result = 0;
