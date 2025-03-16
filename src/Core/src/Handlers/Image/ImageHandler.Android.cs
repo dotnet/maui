@@ -74,6 +74,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		public static void MapInputTransparent(IImageHandler handler,IImage image)
+		{
+			if(handler.IsConnected())
+			{
+				handler.PlatformView.Clickable = !image.InputTransparent;
+			}
+		}
+
 		public override void PlatformArrange(Graphics.Rect frame)
 		{
 			if (PlatformView.GetScaleType() == ImageView.ScaleType.CenterCrop)
