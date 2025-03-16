@@ -48,12 +48,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		IListViewController Controller => _listView;
 		protected ITemplatedItemsView<Cell> TemplatedItemsView => _listView;
 
-		public ListViewAdapter(Context context, AListView realListView, ListView listView) : base(context)
+		readonly ListViewRenderer _renderer;
+
+		public ListViewAdapter(Context context, AListView realListView, ListView listView, ListViewRenderer renderer) : base(context)
 		{
 			_context = context;
 			_realListView = realListView;
 			_listView = listView;
 			_prototypicalCellByTypeOrDataTemplate = new Dictionary<object, Cell>();
+			_renderer = renderer;
 
 			if (listView.SelectedItem != null)
 				SelectItem(listView.SelectedItem);
@@ -623,6 +626,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			OnDataChanged();
+			if (e.Action == NotifyCollectionChangedAction.Reset)
+			{
+				_realListView.SetSelection(0);
+				_renderer.ResetScroll();
+			}
 		}
 
 		void OnDataChanged()
