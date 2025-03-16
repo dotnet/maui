@@ -315,11 +315,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		int GetGroupCount(int groupIndex)
 		{
-			if (groupIndex < 0 || groupIndex >= _groupSource.Count)
-			{
-				return 0;
-			}
-
 			switch (_groupSource[groupIndex])
 			{
 				case IList list:
@@ -339,11 +334,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		object GetGroupItemAt(int groupIndex, int index)
 		{
-			if (groupIndex < 0 || groupIndex >= _groupSource.Count)
-			{
-				return -1;
-			}
-
 			switch (_groupSource[groupIndex])
 			{
 				case IList list:
