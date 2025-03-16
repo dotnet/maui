@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 		AAnimation? _dismissAnimation;
 		bool _platformActivated;
 
-		readonly Stack<string> _modals = [];
+		readonly List<string> _modals = [];
 
 		partial void InitializePlatform()
 		{
@@ -93,12 +93,24 @@ namespace Microsoft.Maui.Controls.Platform
 
 		Task<Page> PopModalPlatformAsync(bool animated)
 		{
-			Page modal = CurrentPlatformModalPage;
+			// If we are popping multiple pages and animation is disabled, 
+			// remove pages from the bottom of the stack to avoid visual flickering.
+			var poppingToRootWithoutAnimation = _isPoppingModalStackToRoot && !animated;
+			Page modal = poppingToRootWithoutAnimation ? _platformModalPages[0] : CurrentPlatformModalPage;
+
 			_platformModalPages.Remove(modal);
+			if (_modals.Count == 0)
+			{
+				return Task.FromResult(modal);
+			}
 
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
+			var dialogFragmentId = poppingToRootWithoutAnimation ? _modals[0] : _modals[^1];
+			if (poppingToRootWithoutAnimation)
+				_modals.RemoveAt(0);
+			else
+				_modals.RemoveAt(_modals.Count - 1);
 
-			var dialogFragmentId = _modals.Pop();
 			var dialogFragment = (ModalFragment?)fragmentManager.FindFragmentByTag(dialogFragmentId);
 
 			// If for the dialog is null what we want to do?
@@ -178,7 +190,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
 			var dialogFragmentId = AView.GenerateViewId().ToString();
-			_modals.Push(dialogFragmentId);
+			_modals.Add(dialogFragmentId);
 			dialogFragment.Show(fragmentManager, dialogFragmentId);
 
 			if (animated)
