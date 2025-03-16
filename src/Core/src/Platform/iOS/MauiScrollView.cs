@@ -87,10 +87,19 @@ namespace Microsoft.Maui.Platform
 			_invalidateParentWhenMovedToWindow = true;
 		}
 
-		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		public override void SetNeedsLayout()
 		{
-			SetNeedsLayout();
-			InvalidateConstraintsCache();
+			base.SetNeedsLayout();
+
+			if (IPlatformMeasureInvalidationController.IsInvalidating)
+			{
+				InvalidateConstraintsCache();
+			}
+
+			if (IPlatformMeasureInvalidationController.IsInvalidatingSelf)
+			{
+				this.InvalidateParentMeasure();
+			}
 		}
 
 		bool IsMeasureValid(double widthConstraint, double heightConstraint)
