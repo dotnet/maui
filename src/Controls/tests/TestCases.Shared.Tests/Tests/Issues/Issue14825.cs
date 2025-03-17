@@ -16,7 +16,7 @@ public class Issue14825 : _IssuesUITest
 	[Category(UITestCategories.WebView)]
 	public void ValidateWebViewScreenshot()
 	{
-		VerifyInternetConnectivity();
+		App.WaitForElement("TestLabel", timeout: TimeSpan.FromSeconds(5));
 		App.WaitForElement("TestInstructions");
 
 		// Click the capture button to capture a WebView screenshot.
