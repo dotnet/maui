@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
@@ -276,7 +277,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		protected override void OnPropertyChanged(string propertyName = null)
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);
 			if (propertyName == BorderColorProperty.PropertyName)
@@ -614,7 +615,7 @@ namespace Microsoft.Maui.Controls
 		Font ITextStyle.Font => this.ToFont();
 
 #if ANDROID
-		object IContentView.Content 
+		object IContentView.Content
 		{
 			get
 			{
