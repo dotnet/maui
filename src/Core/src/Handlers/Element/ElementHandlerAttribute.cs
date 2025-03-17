@@ -11,12 +11,6 @@ internal abstract class ElementHandlerAttribute : Attribute
 internal sealed class ElementHandlerAttribute<THandler> : ElementHandlerAttribute
 	where THandler : IElementHandler, new()
 {
-	public override IElementHandler CreateHandler()
-	{
-		var handler = new THandler();
-		RemappingHelper.RemapIfNeeded(typeof(THandler), handler);
-		return handler;
-	}
-	
+	public override IElementHandler CreateHandler() => new THandler();
 	public override Type HandlerType => typeof(THandler);
 }

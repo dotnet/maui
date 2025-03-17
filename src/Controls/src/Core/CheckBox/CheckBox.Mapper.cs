@@ -4,11 +4,13 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
-	public partial class CheckBox : IRemappable
+	public partial class CheckBox
 	{
-		void IRemappable.RemapForControls()
+		static CheckBox() => RemapForControls();
+
+		private new static void RemapForControls()
 		{
-			RemappingHelper.RemapIfNeeded(typeof(VisualElement), VisualElement.RemapIfNeeded);
+			VisualElement.RemapForControls();
 
 			CheckBoxHandler.Mapper.ReplaceMapping<ICheckBox, ICheckBoxHandler>(nameof(Color), MapColor);
 		}

@@ -7,11 +7,13 @@ using Microsoft.Maui.Handlers;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Label.xml" path="Type[@FullName='Microsoft.Maui.Controls.Label']/Docs/*" />
-	public partial class Label : IRemappable
+	public partial class Label
 	{
-		void IRemappable.RemapForControls()
+		static Label() => RemapForControls();
+
+		private new static void RemapForControls()
 		{
-			RemappingHelper.RemapIfNeeded(typeof(VisualElement), VisualElement.RemapIfNeeded);
+			VisualElement.RemapIfNeeded();
 
 			// Adjust the mappings to preserve Controls.Label legacy behaviors
 			// ILabel does not include the TextType property, so we map it here to handle HTML text
