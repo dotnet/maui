@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Internals
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PropertyPropagationExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.PropertyPropagationExtensions']/Docs/*" />
 	public static class PropertyPropagationExtensions
 	{
-		internal static void PropagatePropertyChanged(string propertyName, Element element, IReadOnlyList<IVisualTreeElement> children)
+		internal static void PropagatePropertyChanged(string propertyName, Element element, IEnumerable children)
 		{
 			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				SetFlowDirectionFromParent(element);
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Internals
 			if (propertyName == null || propertyName == Shell.NavBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.NavBarIsVisibleProperty, element);
 
-			foreach (var child in children.ToArray())
+			foreach (var child in children.OfType<IVisualTreeElement>().ToArray())
 			{
 				if (child is IPropertyPropagationController view)
 				{
