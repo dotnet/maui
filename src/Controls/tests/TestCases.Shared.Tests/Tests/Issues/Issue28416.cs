@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_WINDOWS // "DropCompletedResult" does not appear on Windows. Issue https://github.com/dotnet/maui/issues/28448
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // "DropCompletedResult" does not appear on Windows. Issues: https://github.com/dotnet/maui/issues/28448 and https://github.com/dotnet/maui/issues/17554
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
