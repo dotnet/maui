@@ -18,12 +18,15 @@ namespace Microsoft.Maui.Platform
 		List<int> _requestCodes;
 		View _customView;
 		ICustomViewCallback _videoViewCallback;
-		int _defaultSystemUiVisibility;
+		Android.Content.PM.ScreenOrientation _originalOrientation;
+		WindowInsetsControllerCompat _windowInsetsController;
 		bool _isSystemBarVisible;
 
 		public MauiWebChromeClient(IWebViewHandler handler)
 		{
 			_ = handler ?? throw new ArgumentNullException(nameof(handler));
+
+			_originalOrientation = Android.Content.PM.ScreenOrientation.Unspecified;
 
 			SetContext(handler);
 		}
@@ -91,44 +94,67 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_activityRef.TryGetTarget(out Activity context);
-
 			if (context is null)
 				return;
 
+			// Captures the current orientation.
+			_originalOrientation = context.RequestedOrientation;
+
 			_videoViewCallback = callback;
-			
+
 			_customView = view;
 			_customView.SetBackgroundColor(Android.Graphics.Color.White);
-			
+
 			context.RequestedOrientation = Android.Content.PM.ScreenOrientation.Landscape;
 
-			// Hide the SystemBars and Status bar
+			// Handle system UI visibility based on Android version
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
-#pragma warning disable CA1422 // Validate platform compatibility
-				context.Window.SetDecorFitsSystemWindows(false);
-#pragma warning restore CA1422 // Validate platform compatibility
+				WindowCompat.SetDecorFitsSystemWindows(context.Window, false);
 
-				var windowInsets = context.Window.DecorView.RootWindowInsets;
-				_isSystemBarVisible = windowInsets.IsVisible(WindowInsetsCompat.Type.NavigationBars()) || windowInsets.IsVisible(WindowInsetsCompat.Type.StatusBars());
+				var controller = context.Window.InsetsController;
+				if (controller != null)
+				{
+					// Store current visibility state
+					var windowInsets = context.Window.DecorView.RootWindowInsets;
+					_isSystemBarVisible = windowInsets.IsVisible(WindowInsetsCompat.Type.NavigationBars()) ||	
+						windowInsets.IsVisible(WindowInsetsCompat.Type.StatusBars());
 
-				if (_isSystemBarVisible)
-					context.Window.InsetsController?.Hide(WindowInsets.Type.SystemBars());
+					// Hide system bars
+					if (_isSystemBarVisible)
+					{
+						controller.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
+						controller.Hide(WindowInsetsCompat.Type.SystemBars());
+					}
+				}
 			}
-			else
+			else if (OperatingSystem.IsAndroidVersionAtLeast(19))
 			{
-#pragma warning disable CS0618 // Type or member is obsolete
-				_defaultSystemUiVisibility = (int)context.Window.DecorView.SystemUiVisibility;
-				int systemUiVisibility = _defaultSystemUiVisibility | (int)SystemUiFlags.LayoutStable | (int)SystemUiFlags.LayoutHideNavigation | (int)SystemUiFlags.LayoutHideNavigation |
-					(int)SystemUiFlags.LayoutFullscreen | (int)SystemUiFlags.HideNavigation | (int)SystemUiFlags.Fullscreen | (int)SystemUiFlags.Immersive;
-				context.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)systemUiVisibility;
-#pragma warning restore CS0618 // Type or member is obsolete
+				// For API 19-29, use WindowInsetsControllerCompat from AndroidX
+				var decorView = context.Window.DecorView;
+				var windowInsetsController = WindowCompat.GetInsetsController(context.Window, decorView);
+
+				// Store current state
+				_windowInsetsController = windowInsetsController;
+				_isSystemBarVisible = true; // Assume visible by default
+
+				// Hide system bars
+				windowInsetsController.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
+				windowInsetsController.Hide(WindowInsetsCompat.Type.SystemBars());
+
+				// Make content appear behind system bars
+				WindowCompat.SetDecorFitsSystemWindows(context.Window, false);
 			}
 
 			// Add the CustomView
 			if (context.Window.DecorView is FrameLayout layout)
-				layout.AddView(_customView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent));
+			{
+				layout.AddView(_customView, new FrameLayout.LayoutParams(
+					ViewGroup.LayoutParams.MatchParent,
+					ViewGroup.LayoutParams.MatchParent));
+			}
 		}
+
 
 		// OnHideCustomView is the WebView call back when the load view in full screen
 		// and hide the custom container view.
@@ -141,26 +167,43 @@ namespace Microsoft.Maui.Platform
 
 			// Remove the CustomView
 			if (context.Window.DecorView is FrameLayout layout)
+			{
 				layout.RemoveView(_customView);
+			}
 
-			// Show again the SystemBars and Status bar
+			// Restore original screen orientation
+			context.RequestedOrientation = _originalOrientation;
+			
+			// Restore system UI visibility based on Android version
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
-#pragma warning disable CA1422 // Validate platform compatibility
-				context.Window.SetDecorFitsSystemWindows(true);
-#pragma warning restore CA1422 // Validate platform compatibility
+				WindowCompat.SetDecorFitsSystemWindows(context.Window, true);
 
-				if (_isSystemBarVisible)
-					context.Window.InsetsController?.Show(WindowInsets.Type.SystemBars());
+				var controller = context.Window.InsetsController;
+				if (controller != null && _isSystemBarVisible)
+				{
+					controller.Show(WindowInsetsCompat.Type.SystemBars());
+				}
 			}
-			else
-#pragma warning disable CS0618 // Type or member is obsolete
-				context.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)_defaultSystemUiVisibility;
-#pragma warning restore CS0618 // Type or member is obsolete
+			else if (OperatingSystem.IsAndroidVersionAtLeast(19))
+			{
+				// For API 19-29, use WindowInsetsControllerCompat from AndroidX
+				if (_windowInsetsController != null && _isSystemBarVisible)
+				{
+					_windowInsetsController.Show(WindowInsetsCompat.Type.SystemBars());
+				}
 
-			_videoViewCallback.OnCustomViewHidden();
+				// Restore content layout
+				if (context.Window != null)
+				{
+					WindowCompat.SetDecorFitsSystemWindows(context.Window, true);
+				}
+			}
+
+			_videoViewCallback?.OnCustomViewHidden();
 			_customView = null;
 			_videoViewCallback = null;
+			_windowInsetsController = null;
 		}
 
 		internal void Disconnect()
