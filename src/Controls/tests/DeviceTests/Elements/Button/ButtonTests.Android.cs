@@ -207,15 +207,7 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = GetPlatformButton(handler);
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var translation = nativeView.TranslationX;
-				var density = Microsoft.Maui.Devices.DeviceDisplay.Current.MainDisplayInfo.Density;
-				var expectedInPixels = density * button.TranslationX;
-
-				Assert.Equal(expectedInPixels, translation, 1.0);
-
-				var translationY = nativeView.TranslationY;
-				var expectedYInPixels = density * button.TranslationY;
-				Assert.Equal(expectedYInPixels, translationY, 1.0);
+				AssertTranslationMatches(nativeView, button.TranslationX, button.TranslationY);
 			});
 		}
 	}
