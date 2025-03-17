@@ -145,6 +145,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				view.SetValueFromRenderer(BindableObject.BindingContextProperty, bindingContext);
 			}
+
+			this.UpdateAccessibilityTraits(itemsView);
 		}
 
 		bool IsUsingVSMForSelectionColor(View view)

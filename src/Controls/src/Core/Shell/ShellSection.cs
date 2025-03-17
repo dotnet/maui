@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,6 +23,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[TypeConverter(typeof(ShellSectionTypeConverter))]
+	[DebuggerTypeProxy(typeof(ShellSectionDebugView))]
 	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement, IStackNavigation
 	{
 		#region PropertyKeys
@@ -1269,6 +1271,19 @@ namespace Microsoft.Maui.Controls
 					TemplatedPage page => (ShellSection)page,
 					_ => throw new NotSupportedException(),
 				};
+		}
+
+		/// <summary>
+		/// Provides a debug view for the <see cref="ShellSection"/> class.
+		/// </summary>
+		/// <param name="section">The <see cref="ShellSection"/> instance to debug.</param>
+		private sealed class ShellSectionDebugView(ShellSection section)
+		{
+			public ShellSection CurrentItem => section.CurrentItem;
+
+			public IList<ShellContent> Items => section.Items;
+
+			public IReadOnlyList<Page> Stack => section.Stack;
 		}
 	}
 }
