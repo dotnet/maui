@@ -89,7 +89,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Header(Grid View)");
 		}
-
+#if TEST_FAILS_ON_WINDOWS //related issues:https://github.com/dotnet/maui/issues/28022
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderStringWithEmptyViewString()
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Header(Grid View)");
 			App.WaitForElement("No Items Available(Grid View)");
 		}
-
+#endif
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderStringWithFooterString()
@@ -337,7 +337,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("CollectionView Header(String)");
 			App.WaitForElement("Header Template(Grid View)");
 		}
-
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //In CV2 Header View is visible not Header Template.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderViewWhenHeaderTemplateView()
@@ -355,6 +355,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("CollectionView Header(Grid View)");
 			App.WaitForElement("Header Template(Grid View)");
 		}
+#endif
 #endif
 
 
@@ -534,7 +535,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_ANDROID //Both EmptyView and Header template is not visible.
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS //In android Both EmptyView and Header template is not visible. In windows related issue:https://github.com/dotnet/maui/issues/28022
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWhenEmptyViewString()
@@ -792,7 +793,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
-#if TEST_FAILS_ON_ANDROID //footer template is not visible, EmptyView string is visible.
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS //In android footer template is not visible, EmptyView string is visible.In windows related issue:https://github.com/dotnet/maui/issues/28022
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterStringWhenEmptyViewString()
@@ -811,6 +812,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Items Available(String)");
 		}
 #endif
+
+#if TEST_FAILS_ON_WINDOWS //related issue:https://github.com/dotnet/maui/issues/28022
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterViewWhenEmptyViewString()
@@ -864,6 +867,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 			App.WaitForElement("No Items Available(Grid View)");
 		}
+#endif
+
 #if TEST_FAILS_ON_WINDOWS //In CV2 and Windows footer template is not visible, but footer string/view is visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
@@ -883,6 +888,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Footer Template(Grid View)");
 		}
 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //In CV2 footer template is not visible, but footer view is visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterViewWhenFooterTemplateView()
@@ -900,6 +906,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("CollectionView Footer(Grid View)");
 			App.WaitForElement("Footer Template(Grid View)");
 		}
+#endif
 #endif
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In Windows While tap the IsGrouped, the app is crashing.
@@ -1209,7 +1216,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_ANDROID //Both EmptyView and Footer template is not visible.
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS //In android, Both EmptyView and Footer template is not visible. In windows related issue:https://github.com/dotnet/maui/issues/28022
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWhenEmptyViewString()
@@ -1247,6 +1254,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
+#if TEST_FAILS_ON_WINDOWS //In Windows, Footer template is not visible, but footer string/view is visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWhenFooterString()
@@ -1282,6 +1290,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("CollectionView Footer(Grid View)");
 			App.WaitForElement("Footer Template(Grid View)");
 		}
+#endif
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In Windows While tap the IsGrouped, the app is crashing.
 //In CV2, Group header/footer template is not visible, but header string/view is visible.
