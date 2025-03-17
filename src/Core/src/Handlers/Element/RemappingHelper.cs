@@ -23,5 +23,4 @@ internal static class RemappingHelper
 			}
 		}
 	}
-
 }
