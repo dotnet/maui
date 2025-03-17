@@ -897,6 +897,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				Page.PropertyChanged -= OnPagePropertyChanged;
 				((INotifyCollectionChanged)Page.ToolbarItems).CollectionChanged -= OnToolbarItemsChanged;
 				((IShellController)_context.Shell).RemoveFlyoutBehaviorObserver(this);
+				((IShellController)_context.Shell).RemoveAppearanceObserver(this);
 
 				if (BackButtonBehavior != null)
 					BackButtonBehavior.PropertyChanged -= OnBackButtonBehaviorPropertyChanged;
