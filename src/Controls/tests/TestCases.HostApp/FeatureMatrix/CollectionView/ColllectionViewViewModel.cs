@@ -42,7 +42,7 @@ namespace Maui.Controls.Sample
         private DataTemplate _groupHeaderTemplate;
         private DataTemplate _groupFooterTemplate;
         private DataTemplate _itemTemplate;
-        private ItemsSourceType _itemsSourceType = ItemsSourceType.ListT;
+        private ItemsSourceType _itemsSourceType = ItemsSourceType.None;
         private bool _isGrouped;
 
         public event PropertyChangedEventHandler PropertyChanged;

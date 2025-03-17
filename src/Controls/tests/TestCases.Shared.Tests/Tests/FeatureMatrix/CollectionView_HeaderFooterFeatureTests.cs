@@ -92,18 +92,16 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderString_FirstEmptViewString_SecondHeaderString_ThirdItemsSourceNone_WithEmptyViewString()
+		public void VerifyHeaderStringWithEmptyViewString()
 		{
 			App.WaitForElement("HeaderFooterViewButton");
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
 			App.WaitForElement("HeaderString");
 			App.Tap("HeaderString");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Header(String)");
@@ -112,65 +110,21 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderString_FirstEmptViewString_SecondHeaderString_ThirdItemsSourceNone_WithEmptyViewView()
+		public void VerifyHeaderViewWithEmptyViewView()
 		{
 			App.WaitForElement("HeaderFooterViewButton");
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
 			App.WaitForElement("HeaderGrid");
 			App.Tap("HeaderGrid");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Header(Grid View)");
 			App.WaitForElement("No Items Available(Grid View)");
 		}
-
-#if TEST_FAILS_ON_ANDROID //EmptyView string is visible but Header string/view not visible.
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderString_FirstSetItemSourceNone_SecondEmptyView_ThirdHeaderString_WithEmptyViewString()
-		{
-			App.WaitForElement("HeaderFooterViewButton");
-			App.Tap("HeaderFooterViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
-			App.WaitForElement("HeaderString");
-			App.Tap("HeaderString");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Header(String)");
-			App.WaitForElement("No Items Available(String)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderView_FirstSetItemSourceNone_SecondEmptyView_ThirdHeaderString_WithEmptyViewView()
-		{
-			App.WaitForElement("HeaderFooterViewButton");
-			App.Tap("HeaderFooterViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("HeaderGrid");
-			App.Tap("HeaderGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Header(Grid View)");
-			App.WaitForElement("No Items Available(Grid View)");
-		}
-#endif
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
@@ -282,8 +236,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In windows While tap the ItemsSourceGroupedList, the app is crashing.
-//In CV2, Group header/footer template is not visible, but header string/view is visible.
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In windows While tap the IsGrouped, the app is crashing.
+		//In CV2, Group header/footer template is not visible, but header string/view is visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderStringWhenGroupHeaderTemplateView()
@@ -294,8 +248,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("HeaderString");
 			App.Tap("HeaderString");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("GroupHeaderTemplateGrid");
 			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElement("Apply");
@@ -314,8 +268,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("HeaderGrid");
 			App.Tap("HeaderGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("GroupHeaderTemplateGrid");
 			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElement("Apply");
@@ -334,8 +288,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("HeaderString");
 			App.Tap("HeaderString");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("GroupFooterTemplateGrid");
 			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElement("Apply");
@@ -354,8 +308,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("HeaderGrid");
 			App.Tap("HeaderGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("GroupFooterTemplateGrid");
 			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElement("Apply");
@@ -365,7 +319,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_CATALYST //InCV2 and Windows Header String/View is visible not Header Template.
+#if TEST_FAILS_ON_WINDOWS  //InCV2 and Windows Header String/View is visible not Header Template.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderStringWhenHeaderTemplateView()
@@ -404,7 +358,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 
-#if TEST_FAILS_ON_WINDOWS //While tap the ItemsSourceGroupedList, the app is crashing.
+#if TEST_FAILS_ON_WINDOWS //While tap the IsGrouped, the app is crashing.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderStringWhenIsGroupedTrueOrFalse()
@@ -415,8 +369,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("HeaderString");
 			App.Tap("HeaderString");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElement("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
@@ -426,8 +378,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("HeaderString");
 			App.Tap("HeaderString");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElement("IsGroupedFalse");
 			App.Tap("IsGroupedFalse");
 			App.WaitForElement("Apply");
@@ -445,8 +395,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("HeaderGrid");
 			App.Tap("HeaderGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElement("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
@@ -456,8 +404,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("HeaderGrid");
 			App.Tap("HeaderGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElement("IsGroupedFalse");
 			App.Tap("IsGroupedFalse");
 			App.WaitForElement("Apply");
@@ -482,7 +428,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("ItemTemplateBasic");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("cover1.jpg, 0");
+			App.WaitForElement("oasis.jpg, 1");
+			App.WaitForElement("photo.jpg, 2");
+			App.WaitForElement("Vegetables.jpg, 3");
 		}
 
 		[Test]
@@ -501,7 +450,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("ItemTemplateBasic");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("cover1.jpg, 0");
+			App.WaitForElement("oasis.jpg, 1");
+			App.WaitForElement("photo.jpg, 2");
+			App.WaitForElement("Vegetables.jpg, 3");
 		}
 
 		[Test]
@@ -522,6 +474,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Header(String)");
 			App.WaitForElement("Template 1");
+			App.WaitForElement("Template 2");
 		}
 
 		[Test]
@@ -542,6 +495,24 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Header(Grid View)");
 			App.WaitForElement("Template 1");
+			App.WaitForElement("Template 2");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyHeaderTemplate_FirstHeaderTemplate_WhenItemsSourceListView()
+		{
+			App.WaitForElement("HeaderFooterViewButton");
+			App.Tap("HeaderFooterViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("HeaderTemplateGrid");
+			App.Tap("HeaderTemplateGrid");
+			App.WaitForElement("ItemsSourceList");
+			App.Tap("ItemsSourceList");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Header Template(Grid View)");
 		}
 
 #if TEST_FAILS_ON_ANDROID //Header template is not visible.
@@ -561,39 +532,21 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("Header Template(Grid View)");
 		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplate_FirstHeaderTemplate_WhenItemsSourceListView()
-		{
-			App.WaitForElement("HeaderFooterViewButton");
-			App.Tap("HeaderFooterViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("ItemsSourceList");
-			App.Tap("ItemsSourceList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Header Template(Grid View)");
-		}
 #endif
 
+#if TEST_FAILS_ON_ANDROID //Both EmptyView and Header template is not visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplate_FirstSetEmptyViewString_SecondHeaderTemplate_ThirdItemsSourceNone_WhenEmptyViewString()
+		public void VerifyHeaderTemplateWhenEmptyViewString()
 		{
 			App.WaitForElement("HeaderFooterViewButton");
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
 			App.WaitForElement("HeaderTemplateGrid");
 			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Header Template(Grid View)");
@@ -602,102 +555,20 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplate_FirstSetEmptyViewView_SecondHeaderTemplate_ThirdItemsSourceNone_WhenEmptyViewView()
+		public void VerifyHeaderTemplateWhenEmptyViewView()
 		{
 			App.WaitForElement("HeaderFooterViewButton");
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
 			App.WaitForElement("HeaderTemplateGrid");
 			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Header Template(Grid View)");
 			App.WaitForElement("No Items Available(Grid View)");
-		}
-
-#if TEST_FAILS_ON_ANDROID //Header template is not visible, but empty view string is visible.
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplateFirstSetItemSourceNone_SecondEmptyView_ThirdHederTemplate_WhenEmptyViewString()
-		{
-			App.WaitForElement("HeaderFooterViewButton");
-			App.Tap("HeaderFooterViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
-			App.WaitForElement("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Header Template(Grid View)");
-			App.WaitForElement("No Items Available(String)");
-		}
-
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplateFirstSetItemSourceNone_SecondEmptyView_ThirdHeaderTemplate_WhenEmptyViewView()
-		{
-			App.WaitForElement("HeaderFooterViewButton");
-			App.Tap("HeaderFooterViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Header Template(Grid View)");
-			App.WaitForElement("No Items Available(Grid View)");
-		}
-#endif
-
-#if TEST_FAILS_ON_ANDROID //Header template is not visible, but footer string/view is visible.
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplateWhenFooterString()
-		{
-			App.WaitForElement("HeaderFooterViewButton");
-			App.Tap("HeaderFooterViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("FooterString");
-			App.Tap("FooterString");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Header Template(Grid View)");
-			App.WaitForElement("CollectionView Footer(String)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplateWhenFooterView()
-		{
-			App.WaitForElement("HeaderFooterViewButton");
-			App.Tap("HeaderFooterViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Header Template(Grid View)");
-			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 #endif
 
@@ -721,8 +592,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In windows While tap the ItemsSourceGroupedList, the app is crashing.
-//In CV2, Group header/footer template is not visible, but header string/view is visible.
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In windows While tap the IsGrouped, the app is crashing.
+		//In CV2, Group header/footer template is not visible, but header string/view is visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWhenGroupFooterTemplate()
@@ -733,8 +604,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("HeaderTemplateGrid");
 			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("GroupFooterTemplateGrid");
 			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElement("Apply");
@@ -753,8 +624,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("HeaderTemplateGrid");
 			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("GroupHeaderTemplateGrid");
 			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElement("Apply");
@@ -764,7 +635,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In CV2 and Windows, Heder template is not visible, Header String/View is visible.
+#if TEST_FAILS_ON_WINDOWS  //In CV2 and Windows, Heder template is not visible, Header String/View is visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWhenHeaderString()
@@ -802,7 +673,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_WINDOWS //In windows While tap the ItemsSourceGroupedList, the app is crashing.
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID //In windows While tap the IsGrouped, the app is crashing. In android, when IsGrouped Set False Header template is not visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWhenIsGroupedTrueOrFalse()
@@ -813,8 +684,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("HeaderTemplateGrid");
 			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElement("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
@@ -824,8 +693,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("HeaderTemplateGrid");
 			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElement("IsGroupedFalse");
 			App.Tap("IsGroupedFalse");
 			App.WaitForElement("Apply");
@@ -851,7 +718,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Header Template(Grid View)");
-			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("cover1.jpg, 0");
+			App.WaitForElement("oasis.jpg, 1");
+			App.WaitForElement("photo.jpg, 2");
+			App.WaitForElement("Vegetables.jpg, 3");
 		}
 
 		[Test]
@@ -922,168 +792,79 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(Grid View)");
 		}
 
+#if TEST_FAILS_ON_ANDROID //footer template is not visible, EmptyView string is visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterString_FirstEmptyView_SecondFooterString_ThirdItemsSourceNone_WhenEmptyViewString()
+		public void VerifyFooterStringWhenEmptyViewString()
 		{
 			App.WaitForElement("HeaderFooterViewButton");
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
 			App.WaitForElement("FooterString");
 			App.Tap("FooterString");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Footer(String)");
 			App.WaitForElement("No Items Available(String)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterView_FirstEmptyView_SecondFooterView_ThirdItemsSourceNone_WhenEmptyViewString()
-		{
-			App.WaitForElement("HeaderFooterViewButton");
-			App.Tap("HeaderFooterViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Footer(Grid View)");
-			App.WaitForElement("No Items Available(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterString_FirstEmptyView_SecondFooterString_ThirdItemsSourceNone_WhenEmptyViewView()
-		{
-			App.WaitForElement("HeaderFooterViewButton");
-			App.Tap("HeaderFooterViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("FooterString");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.Tap("FooterString");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Footer(String)");
-			App.WaitForElement("No Items Available(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterView_FirstEmptyView_SecondFooterView_ThirdItemsSourceNone_WhenEmptyViewView()
-		{
-			App.WaitForElement("HeaderFooterViewButton");
-			App.Tap("HeaderFooterViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Footer(Grid View)");
-			App.WaitForElement("No Items Available(Grid View)");
-		}
-
-#if TEST_FAILS_ON_ANDROID //Empty view string is visible but footer string/view is not visible.
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterString_FirstItemsSourceNone_SecondEmptyView_ThirdFooterString_WhenEmptyViewString()
-		{
-			App.WaitForElement("HeaderFooterViewButton");
-			App.Tap("HeaderFooterViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
-			App.WaitForElement("FooterString");
-			App.Tap("FooterString");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Footer(String)");
-			App.WaitForElement("No Items Available(String)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterView_FirstItemsSourceNone_SecondEmptyView_ThirdFooterView_WhenEmptyViewString()
-		{
-			App.WaitForElement("HeaderFooterViewButton");
-			App.Tap("HeaderFooterViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Footer(Grid View)");
-			App.WaitForElement("No Items Available(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterString_FirstItemsSourceNone_SecondEmptyView_ThirdFooterString_WhenEmptyViewView()
-		{
-			App.WaitForElement("HeaderFooterViewButton");
-			App.Tap("HeaderFooterViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("FooterString");
-			App.Tap("FooterString");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Footer(String)");
-			App.WaitForElement("No Items Available(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterView_FirstItemsSourceNone_SecondEmptyView_ThirdFooterView_WhenEmptyViewView()
-		{
-			App.WaitForElement("HeaderFooterViewButton");
-			App.Tap("HeaderFooterViewButton");
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Footer(Grid View)");
-			App.WaitForElement("No Items Available(Grid View)");
 		}
 #endif
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyFooterViewWhenEmptyViewString()
+		{
+			App.WaitForElement("HeaderFooterViewButton");
+			App.Tap("HeaderFooterViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("FooterGrid");
+			App.Tap("FooterGrid");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("CollectionView Footer(Grid View)");
+			App.WaitForElement("No Items Available(Grid View)");
+		}
 
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyFooterStringWhenEmptyViewView()
+		{
+			App.WaitForElement("HeaderFooterViewButton");
+			App.Tap("HeaderFooterViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("FooterString");
+			App.Tap("FooterString");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("CollectionView Footer(String)");
+			App.WaitForElement("No Items Available(Grid View)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyFooterViewWhenEmptyViewView()
+		{
+			App.WaitForElement("HeaderFooterViewButton");
+			App.Tap("HeaderFooterViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("FooterGrid");
+			App.Tap("FooterGrid");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("CollectionView Footer(Grid View)");
+			App.WaitForElement("No Items Available(Grid View)");
+		}
+#if TEST_FAILS_ON_WINDOWS //In CV2 and Windows footer template is not visible, but footer string/view is visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterStringWhenFooterTemplateView()
@@ -1094,8 +875,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("FooterString");
 			App.Tap("FooterString");
-			App.WaitForElement("ItemsSourceList");
-			App.Tap("ItemsSourceList");
 			App.WaitForElement("FooterTemplateGrid");
 			App.Tap("FooterTemplateGrid");
 			App.WaitForElement("Apply");
@@ -1114,8 +893,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("FooterGrid");
 			App.Tap("FooterGrid");
-			App.WaitForElement("ItemsSourceList");
-			App.Tap("ItemsSourceList");
 			App.WaitForElement("FooterTemplateGrid");
 			App.Tap("FooterTemplateGrid");
 			App.WaitForElement("Apply");
@@ -1123,8 +900,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("CollectionView Footer(Grid View)");
 			App.WaitForElement("Footer Template(Grid View)");
 		}
+#endif
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In Windows While tap the ItemsSourceGroupedList, the app is crashing.
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In Windows While tap the IsGrouped, the app is crashing.
 //In CV2, Group header/footer template is not visible, but header string/view is visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
@@ -1136,8 +914,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("FooterString");
 			App.Tap("FooterString");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("GroupFooterTemplateGrid");
 			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElement("Apply");
@@ -1156,8 +934,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("FooterGrid");
 			App.Tap("FooterGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("GroupFooterTemplateGrid");
 			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElement("Apply");
@@ -1176,8 +954,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("FooterString");
 			App.Tap("FooterString");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("GroupHeaderTemplateGrid");
 			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElement("Apply");
@@ -1196,8 +974,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("FooterGrid");
 			App.Tap("FooterGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("GroupHeaderTemplateGrid");
 			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElement("Apply");
@@ -1215,10 +993,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("HeaderString");
-			App.Tap("HeaderString");
 			App.WaitForElement("FooterString");
 			App.Tap("FooterString");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Footer(String)");
@@ -1232,10 +1010,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("HeaderGrid");
-			App.Tap("HeaderGrid");
 			App.WaitForElement("FooterGrid");
 			App.Tap("FooterGrid");
+			App.WaitForElement("HeaderGrid");
+			App.Tap("HeaderGrid");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Footer(Grid View)");
@@ -1249,10 +1027,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("HeaderGrid");
-			App.Tap("HeaderGrid");
 			App.WaitForElement("FooterString");
 			App.Tap("FooterString");
+			App.WaitForElement("HeaderGrid");
+			App.Tap("HeaderGrid");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Footer(String)");
@@ -1266,10 +1044,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("HeaderGrid");
-			App.Tap("HeaderGrid");
 			App.WaitForElement("FooterGrid");
 			App.Tap("FooterGrid");
+			App.WaitForElement("HeaderGrid");
+			App.Tap("HeaderGrid");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Footer(Grid View)");
@@ -1284,10 +1062,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
 			App.WaitForElement("FooterString");
 			App.Tap("FooterString");
+			App.WaitForElement("HeaderTemplateGrid");
+			App.Tap("HeaderTemplateGrid");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Footer(String)");
@@ -1302,10 +1080,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
 			App.WaitForElement("FooterGrid");
 			App.Tap("FooterGrid");
+			App.WaitForElement("HeaderTemplateGrid");
+			App.Tap("HeaderTemplateGrid");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Footer(Grid View)");
@@ -1313,7 +1091,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_WINDOWS //In Windows While tap the ItemsSourceGroupedList, the app is crashing.
+#if TEST_FAILS_ON_WINDOWS //In Windows While tap the IsGrouped, the app is crashing.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterStringWhenIsGroupedTrueOrFalse()
@@ -1324,8 +1102,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("FooterString");
 			App.Tap("FooterString");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElement("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
@@ -1343,8 +1119,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("FooterGrid");
 			App.Tap("FooterGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElement("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
@@ -1370,7 +1144,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Footer(String)");
-			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("cover1.jpg, 0");
+			App.WaitForElement("oasis.jpg, 1");
+			App.WaitForElement("photo.jpg, 2");
+			App.WaitForElement("Vegetables.jpg, 3");
 		}
 
 		[Test]
@@ -1390,13 +1167,33 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Footer(Grid View)");
-			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("cover1.jpg, 0");
+			App.WaitForElement("oasis.jpg, 1");
+			App.WaitForElement("photo.jpg, 2");
+			App.WaitForElement("Vegetables.jpg, 3");
 		}
 
-#if TEST_FAILS_ON_ANDROID //Footer template is not visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterTemplateWhenItemsSourceListView()
+		public void VerifyFooterTemplate_FirstFooterTemplateSet_WhenItemsSourceListView()
+		{
+			App.WaitForElement("HeaderFooterViewButton");
+			App.Tap("HeaderFooterViewButton");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("FooterTemplateGrid");
+			App.Tap("FooterTemplateGrid");
+			App.WaitForElement("ItemsSourceList");
+			App.Tap("ItemsSourceList");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Footer Template(Grid View)");
+		}
+
+#if TEST_FAILS_ON_ANDROID //Footer template is not visible, while ItemsSourceList is tapped first.
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyFooterTemplate_FirstItemsSourceListSet_WhenItemsSourceListView()
 		{
 			App.WaitForElement("HeaderFooterViewButton");
 			App.Tap("HeaderFooterViewButton");
@@ -1412,9 +1209,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-////////////////////////////////////////////////////
-
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_ANDROID //Both EmptyView and Footer template is not visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWhenEmptyViewString()
@@ -1423,12 +1218,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("FooterTemplateGrid");
 			App.Tap("FooterTemplateGrid");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("No Items Available(String)");
@@ -1443,12 +1236,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
 			App.WaitForElement("FooterTemplateGrid");
 			App.Tap("FooterTemplateGrid");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("No Items Available(Grid View)");
@@ -1492,7 +1283,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Footer Template(Grid View)");
 		}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In Windows While tap the IsGrouped, the app is crashing.
+//In CV2, Group header/footer template is not visible, but header string/view is visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWhenGroupFooterTemplateView()
@@ -1501,12 +1293,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElement("FooterTemplateGrid");
 			App.Tap("FooterTemplateGrid");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Footer Template(Grid View)");
@@ -1522,12 +1314,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElement("FooterTemplateGrid");
 			App.Tap("FooterTemplateGrid");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Footer Template(Grid View)");
@@ -1535,7 +1327,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_ANDROID
+	#if TEST_FAILS_ON_ANDROID //Footer template is not visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWhenHeaderString()
@@ -1588,8 +1380,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("Footer Template(Grid View)");
 		}
+#endif
 
-#if TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID //In Windows While tap the IsGrouped, the app is crashing. In android when IsGrouped Set False Footer template is not visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWhenIsGroupedTrueOrFalse()
@@ -1598,8 +1391,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElement("FooterTemplateGrid");
 			App.Tap("FooterTemplateGrid");
 			App.WaitForElement("IsGroupedTrue");
@@ -1609,8 +1400,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Footer Template(Grid View)");
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElement("FooterTemplateGrid");
 			App.Tap("FooterTemplateGrid");
 			App.WaitForElement("IsGroupedFalse");
@@ -1629,18 +1418,21 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderFooterViewButton");
 			App.WaitForElement("Options");
 			App.Tap("Options");
+			App.WaitForElement("FooterTemplateGrid");
+			App.Tap("FooterTemplateGrid");
 			App.WaitForElement("ItemsSourceList");
 			App.Tap("ItemsSourceList");
 			App.WaitForElement("ItemTemplateBasic");
 			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("FooterTemplateGrid");
-			App.Tap("FooterTemplateGrid");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Footer Template(Grid View)");
-			App.WaitForElement("CollectionViewItem");
+			App.WaitForElement("cover1.jpg, 0");
+			App.WaitForElement("oasis.jpg, 1");
+			App.WaitForElement("photo.jpg, 2");
+			App.WaitForElement("Vegetables.jpg, 3");
 		}
-#endif
+
 
 	}
 }

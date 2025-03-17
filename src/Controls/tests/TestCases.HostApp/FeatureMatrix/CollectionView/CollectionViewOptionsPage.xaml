@@ -191,12 +191,12 @@
                 <StackLayout Orientation="Horizontal">
                     <RadioButton x:Name="IsGroupedTrue"
                                  Content="True"
-                                 IsChecked="True"
                                  CheckedChanged="OnIsGroupedChanged"
                                  FontSize="11"
                                  AutomationId="IsGroupedTrue"/>
                     <RadioButton x:Name="IsGroupedFalse"
                                  Content="False"
+                                 IsChecked="True"
                                  CheckedChanged="OnIsGroupedChanged"
                                  FontSize="11"
                                  AutomationId="IsGroupedFalse"/>
@@ -241,7 +241,6 @@
                     <HorizontalStackLayout Spacing="10">
                         <RadioButton x:Name="ItemsSourceList"
                                      Content="List"
-                                     IsChecked="True"
                                      FontSize="10"
                                      GroupName="ItemsSourceGroup"
                                      CheckedChanged="OnItemsSourceChanged"
@@ -249,15 +248,10 @@
                         <RadioButton x:Name="ItemsSourceNone"
                                      Content="None"
                                      FontSize="10"
+                                     IsChecked="True"
                                      GroupName="ItemsSourceGroup"
                                      CheckedChanged="OnItemsSourceChanged"
                                      AutomationId="ItemsSourceNone"/>
-                        <RadioButton x:Name="ItemsSourceGroupedList"
-                                     Content="Grouped List"
-                                     FontSize="10"
-                                     GroupName="ItemsSourceGroup"
-                                     CheckedChanged="OnItemsSourceChanged"
-                                     AutomationId="ItemsSourceGroupedList"/>
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
             </StackLayout>

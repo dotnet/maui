@@ -272,18 +272,8 @@ namespace Maui.Controls.Sample
             {
                 _viewModel.ItemTemplate = new DataTemplate(() =>
                 {
-                    var label = new Label
-                    {
-
-                        Text =  "{Binding .}",
-                        FontSize = 18,
-                        FontAttributes = FontAttributes.Bold,
-                        HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center,
-                        TextColor = Colors.Black,
-                        BackgroundColor = Colors.LightGray,
-                        Padding = new Thickness(10)
-                    };
+                     var label = new Label();
+                     label.SetBinding(Label.TextProperty, new Binding("Caption"));
  
                     return label;
                 });
@@ -341,20 +331,9 @@ namespace Maui.Controls.Sample
         {
             if (!(sender is RadioButton radioButton) || !e.Value)
                 return;
-            // Set IsGrouped based on selection
-            if (radioButton == ItemsSourceGroupedList)
-            {
-                _viewModel.IsGrouped = true;
-            }
-            else
-            {
-                _viewModel.IsGrouped = false;
-            }
             // Set ItemsSourceType based on selection
             if (radioButton == ItemsSourceList)
                 _viewModel.ItemsSourceType = ItemsSourceType.ListT;
-            else if (radioButton == ItemsSourceGroupedList)
-                _viewModel.ItemsSourceType = ItemsSourceType.GroupedListT;
             else if (radioButton == ItemsSourceNone)
                 _viewModel.ItemsSourceType = ItemsSourceType.None;
         }
