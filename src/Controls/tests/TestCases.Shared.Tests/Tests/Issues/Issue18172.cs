@@ -14,6 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Shadows not drawing/updating correctly in Windows & cover entire screen";
 
 		[Test]
+		[Category(UITestCategories.GraphicsView)]
 		public async Task Issue18172Test()
 		{
 			await Task.Delay(500);
