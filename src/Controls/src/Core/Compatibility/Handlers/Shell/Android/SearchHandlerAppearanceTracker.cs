@@ -92,8 +92,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void SearchHandlerFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
 		{
-			e.Result = true;
-
 			if (e.Focus)
 			{
 				_control?.RequestFocus();
