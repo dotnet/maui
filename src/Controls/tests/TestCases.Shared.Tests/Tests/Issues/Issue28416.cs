@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS // "DropCompletedResult" does not appear on Windows. Issue https://github.com/dotnet/maui/issues/28448
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -24,3 +25,4 @@ public class Issue28416 : _IssuesUITest
 		App.WaitForElement("DropCompletedResult");
 	}
 }
+#endif
