@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // To fix the issue in windows https://github.com/dotnet/maui/issues/27947
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,8 +16,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void ShellFlowDirectionUpdate()
 		{
 			App.WaitForElement("label");
+			App.TapShellFlyoutIcon();
 			VerifyScreenshot();
 		}
 	}
 }
-#endif
