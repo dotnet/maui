@@ -144,15 +144,7 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = GetNativeBoxView(handler);
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var translation = nativeView.TranslationX;
-				var density = Microsoft.Maui.Devices.DeviceDisplay.Current.MainDisplayInfo.Density;
-				var expectedInPixels = density * boxView.TranslationX;
-
-				Assert.Equal(expectedInPixels, translation, 1.0);
-
-				var translationY = nativeView.TranslationY;
-				var expectedYInPixels = density * boxView.TranslationY;
-				Assert.Equal(expectedYInPixels, translationY, 1.0);
+				AssertTranslationMatches(nativeView, boxView.TranslationX, boxView.TranslationY);
 			});
 		}
 	}

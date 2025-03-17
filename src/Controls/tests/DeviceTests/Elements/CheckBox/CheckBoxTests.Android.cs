@@ -138,15 +138,7 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = GetNativeCheckBox(handler);
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var translation = nativeView.TranslationX;
-				var density = Microsoft.Maui.Devices.DeviceDisplay.Current.MainDisplayInfo.Density;
-				var expectedInPixels = density * checkBox.TranslationX;
-
-				Assert.Equal(expectedInPixels, translation, 1.0);
-
-				var translationY = nativeView.TranslationY;
-				var expectedYInPixels = density * checkBox.TranslationY;
-				Assert.Equal(expectedYInPixels, translationY, 1.0);
+				AssertTranslationMatches(nativeView, checkBox.TranslationX, checkBox.TranslationY);
 			});
 		}
 	}
