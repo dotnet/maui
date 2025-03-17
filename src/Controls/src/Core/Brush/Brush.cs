@@ -65,7 +65,9 @@ namespace Microsoft.Maui.Controls
 				for (int i = 0; i < gradientStopCollection.Count; i++)
 				{
 					var gs = gradientStopCollection[i];
-					gradientStops[i] = new GraphicsGradientStop(gs.Offset, gs.Color);
+
+					if (gs is not null)
+						gradientStops[i] = new GraphicsGradientStop(gs.Offset, gs.Color);
 				}
 
 				if (gradientBrush is LinearGradientBrush linearGradientBrush)

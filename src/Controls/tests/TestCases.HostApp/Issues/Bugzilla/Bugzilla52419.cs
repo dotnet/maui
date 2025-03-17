@@ -44,6 +44,7 @@ class Bugzilla52419Page1 : ContentPage
 					new Button
 					{
 						Text = "Push new page",
+						AutomationId = "PushNewPage",
 						Command = new Command(() => Navigation.PushAsync(new Bugzilla52419Page1()))
 					}
 				}

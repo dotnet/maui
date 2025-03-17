@@ -38,16 +38,22 @@ namespace Microsoft.Maui.Handlers
 				if (sceneSession != null)
 				{
 					// Request that the scene be destroyed
-					UIApplication.SharedApplication.RequestSceneSessionDestruction(sceneSession, null, errorHandler: (Foundation.NSError error) => {
+					UIApplication.SharedApplication.RequestSceneSessionDestruction(sceneSession, null, errorHandler: (Foundation.NSError error) =>
+					{
 						handler.Logger?.LogWarning("Error during window closing. Error: {}", error);
 					});
 				}
 			}
 		}
 
-		[SupportedOSPlatform("maccatalyst13.0")]
 		public static partial void MapActivateWindow(ApplicationHandler handler, IApplication application, object? args)
 		{
+			// ActivateSceneSession requires 17+
+			if (!OperatingSystem.IsIOSVersionAtLeast(17) && !OperatingSystem.IsMacCatalyst())
+			{
+				return;
+			}
+
 			if (args is IWindow window)
 			{
 				var sceneSession = (window.Handler?.PlatformView as UIWindow)?.WindowScene?.Session;
@@ -55,7 +61,8 @@ namespace Microsoft.Maui.Handlers
 				if (sceneSession is not null)
 				{
 					UISceneSessionActivationRequest activationRequest = UISceneSessionActivationRequest.Create(sceneSession);
-					UIApplication.SharedApplication.ActivateSceneSession(activationRequest, errorHandler: (Foundation.NSError error) => {
+					UIApplication.SharedApplication.ActivateSceneSession(activationRequest, errorHandler: (Foundation.NSError error) =>
+					{
 						handler.Logger?.LogWarning("Error during window activation. Error: {}", error);
 					});
 				}

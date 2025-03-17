@@ -12,15 +12,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		#if IOS
 		[Test]
 		[Category(UITestCategories.Shell)]
-#endif
 		public void FlyoutHeaderShouldBeResized()
 		{
 			_ = App.WaitForElement("GoToTest");
 			App.Tap("GoToTest");
-			
+
 			_ = App.WaitForElement("button");
 			App.Tap("button");
 

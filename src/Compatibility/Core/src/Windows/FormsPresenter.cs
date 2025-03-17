@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	internal class FormsPresenter : Microsoft.UI.Xaml.Controls.ContentPresenter
+	internal partial class FormsPresenter : Microsoft.UI.Xaml.Controls.ContentPresenter
 	{
 		public FormsPresenter()
 		{

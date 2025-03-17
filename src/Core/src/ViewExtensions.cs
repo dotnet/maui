@@ -36,10 +36,10 @@ namespace Microsoft.Maui
 			// This gives me a stable list of views to call disconnecthandler on
 			// I'm assuming as this PR evolves we'll probably add some interfaces
 			// that allow handlers to manage their own children and disconnect flow
-			List<IView> _flatList = new List<IView>();			
+			List<IView> _flatList = new List<IView>();
 			BuildFlatList(view, _flatList);
 
-			foreach(var viewToDisconnect in _flatList)
+			foreach (var viewToDisconnect in _flatList)
 			{
 				viewToDisconnect.Handler?.DisconnectHandler();
 			}
@@ -57,7 +57,7 @@ namespace Microsoft.Maui
 				{
 					foreach (var child in vte.GetVisualChildren())
 					{
-						if(child is IView childView)
+						if (child is IView childView)
 						{
 							BuildFlatList(childView, flatList);
 						}
@@ -65,7 +65,7 @@ namespace Microsoft.Maui
 				}
 			}
 		}
-		
+
 		public static Task<IScreenshotResult?> CaptureAsync(this IView view)
 		{
 #if PLATFORM

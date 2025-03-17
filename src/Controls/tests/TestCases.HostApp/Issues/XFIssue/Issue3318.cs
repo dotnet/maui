@@ -10,7 +10,20 @@ public class Issue3318 : TestContentPage
 		var stackLayout = new StackLayout();
 
 		var list = Enumerable.Range(0, 40).Select(c => $"Item {c}").ToArray();
-		var listview = new ListView { ItemsSource = list };
+		var listview = new ListView
+		{
+			ItemsSource = list,
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var viewCell = new ViewCell();
+				var itemTemplateLabel = new Label() { HeightRequest = 30 };
+				itemTemplateLabel.SetBinding(Label.TextProperty, new Binding("."));
+				itemTemplateLabel.SetBinding(Label.AutomationIdProperty, new Binding("."));
+				viewCell.View = itemTemplateLabel;
+				return viewCell;
+			})
+
+		};
 
 		var swShouldAnimate = new Switch();
 		var lblShouldAnimate = new Label { Text = "Should Animate?" };
@@ -33,7 +46,7 @@ public class Issue3318 : TestContentPage
 			listview.ScrollTo(list[19], ScrollToPosition.Start, swShouldAnimate.IsToggled);
 		};
 
-		var btnEnd = new Button { Text = "End" };
+		var btnEnd = new Button { Text = "End", AutomationId = "End" };
 		btnEnd.Clicked += (s, e) =>
 		{
 			listview.ScrollTo(list[19], ScrollToPosition.End, swShouldAnimate.IsToggled);

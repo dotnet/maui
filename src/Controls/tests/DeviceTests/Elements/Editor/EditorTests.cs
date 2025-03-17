@@ -1,7 +1,9 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
@@ -80,7 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(60, desiredSize.Height, 0.5d);
 				});
 		}
-		
+
 		[Fact]
 		public async Task EditorMeasureUpdatesWhenChangingWidth()
 		{
@@ -194,6 +196,21 @@ namespace Microsoft.Maui.DeviceTests
 				});
 		}
 
+		[Fact]
+		[Description("The BackgroundColor of a Editor should match with native background color")]
+		public async Task EditorBackgroundColorConsistent()
+		{
+			var expected = Colors.AliceBlue;
+			var editor = new Editor()
+			{
+				BackgroundColor = expected,
+				HeightRequest = 100,
+				WidthRequest = 200
+			};
+
+			await ValidateHasColor(editor, expected, typeof(EditorHandler));
+		}
+
 		async Task ValidateEditorLayoutChangesForDisabledAutoSize(
 			Action<Editor> arrange,
 			Action<Editor> act,
@@ -273,6 +290,24 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		[Fact]
+		[Description("The Opacity property of a Editor should match with native Opacity")]
+		public async Task VerifyEditorOpacityProperty()
+		{
+			var editor = new Editor
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = editor.Opacity;
+
+			var handler = await CreateHandlerAsync<EditorHandler>(editor);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var nativeOpacityValue = await GetPlatformOpacity(handler);
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
+		}
 
 		[Category(TestCategory.Editor)]
 		[Category(TestCategory.TextInput)]

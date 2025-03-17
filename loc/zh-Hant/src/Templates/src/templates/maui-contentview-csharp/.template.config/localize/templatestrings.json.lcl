@@ -22,6 +22,9 @@
       <Item ItemId=";description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A view for displaying content using C#. This is very suitable for creating your own custom and reusable controls.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[使用 C# 顯示內容的檢視。這非常適合用於建立您自己的自訂和可重複使用的控制項。]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

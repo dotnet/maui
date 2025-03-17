@@ -20,7 +20,7 @@ public class PlatformImageTests
 		Assert.NotNull(image);
 	}
 
-	    private class NonSeekableReadOnlyStream(Stream stream) : Stream
+	private class NonSeekableReadOnlyStream(Stream stream) : Stream
 	{
 		public override bool CanRead => stream.CanRead;
 

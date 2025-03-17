@@ -20,7 +20,6 @@
   <Interfaces />
   <Docs>
     <summary>Event arguments for <c>TextChanged</c> events. Provides old and new text values.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -48,7 +47,6 @@
         <param name="oldTextValue">The old text value.</param>
         <param name="newTextValue">The new text value.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.TextChangedEventArgs" /> with <paramref name="oldTextValue" /> and <paramref name="newTextValue" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NewTextValue">
@@ -73,8 +71,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the new text value.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OldTextValue">
@@ -99,8 +95,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the old text value.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

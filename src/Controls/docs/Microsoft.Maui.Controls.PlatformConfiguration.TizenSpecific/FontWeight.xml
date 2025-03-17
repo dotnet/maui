@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Contains constants for font weights.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Black">
@@ -33,7 +32,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the black font weight.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Bold">
@@ -52,7 +50,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the bold font weight.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Book">
@@ -71,7 +68,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the book font weight.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ExtraBlack">
@@ -90,7 +86,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the extra black font weight.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Light">
@@ -109,7 +104,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the light font weight.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Medium">
@@ -128,7 +122,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the medium font weight.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="None">
@@ -147,7 +140,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying no font weight.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Normal">
@@ -166,7 +158,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the normal, or default, font weight.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SemiBold">
@@ -185,7 +176,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the semibold font weight.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Thin">
@@ -204,7 +194,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the thin font weight.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UltraBold">
@@ -223,7 +212,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the ultrabold font weight.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UltraLight">
@@ -242,7 +230,6 @@
       </ReturnValue>
       <Docs>
         <summary>The constant for specifying the ultralight font weight.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

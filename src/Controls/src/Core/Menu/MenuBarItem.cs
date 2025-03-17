@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls
 
 		readonly List<IMenuElement> _menus = new List<IMenuElement>();
 
-		private protected override IList<Element> LogicalChildrenInternalBackingStore {get; }
+		private protected override IList<Element> LogicalChildrenInternalBackingStore { get; }
 
 		public IMenuElement this[int index]
 		{

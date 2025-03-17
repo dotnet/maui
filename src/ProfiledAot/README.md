@@ -9,12 +9,17 @@ https://github.com/jonathanpeppers/Mono.Profiler.Android#usage-of-the-aot-profil
 Build MAUI following the instructions at [DEVELOPMENT.md][0]. Make
 sure to build with `--configuration=Release`.
 
-Run the `Record` target on each project:
+Run the `Record` target on each "type" of project template:
 
 ```bash
-$ ./bin/dotnet/dotnet build src/ProfiledAot/build.proj -bl -p:App=maui
-$ ./bin/dotnet/dotnet build src/ProfiledAot/build.proj -bl -p:App=maui-blazor
+./.dotnet/dotnet build src/ProfiledAot/build.proj -bl -p:App=maui
+./.dotnet/dotnet build src/ProfiledAot/build.proj -bl -p:App=maui-sc
+./.dotnet/dotnet build src/ProfiledAot/build.proj -bl -p:App=maui-blazor
 ```
+
+* `maui` is `dotnet new maui`
+* `maui-sc` is `dotnet new maui -sc` or (sample content)
+* `maui-blazor` is `dotnet new maui-blazor`
 
 You can also use `-r android-x64`, if you'd prefer an x86_64 emulator.
 
@@ -37,9 +42,9 @@ Build MAUI again with `--configuration=Release` (see
 Create a new project and run it:
 
 ```bash
-$ mkdir foo && cd foo
-$ ../bin/dotnet/dotnet new maui
-$ ../bin/dotnet/dotnet build -c Release -t:Run -f net7.0-android
+mkdir foo && cd foo
+../.dotnet/dotnet new maui
+../.dotnet/dotnet build -c Release -t:Run -f net7.0-android
 ```
 
 Run the app a few times and make sure you get good launch times:
@@ -75,8 +80,8 @@ rm -r ~\.nuget\packages\*\*-dev\
 To verify what methods are AOT'd, clear the log and enable AOT logging:
 
 ```bash
-$ adb logcat -c
-$ adb shell setprop debug.mono.log default,timing=bare,assembly,mono_log_level=debug,mono_log_mask=aot
+adb logcat -c
+adb shell setprop debug.mono.log default,timing=bare,assembly,mono_log_level=debug,mono_log_mask=aot
 ```
 
 Restart the app, and you should be able to see messages like:

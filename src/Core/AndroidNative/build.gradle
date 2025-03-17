@@ -12,15 +12,3 @@ buildscript {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
-
-task createAar(type: Copy){
-    dependsOn ':maui:clean'
-    dependsOn ':maui:assembleRelease'
-
-    tasks.getByPath(':maui:assembleRelease').mustRunAfter(tasks.getByPath(':maui:clean'))
-
-    from('maui/build/outputs/aar/maui-release.aar')
-    into('../src/')
-    include('maui-release.aar')
-    rename('maui-release.aar', 'maui.aar')
-}

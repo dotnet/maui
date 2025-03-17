@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 #endif
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class LineRenderer : ShapeRenderer<Line, WLine>
+	public partial class LineRenderer : ShapeRenderer<Line, WLine>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Line> args)
 		{

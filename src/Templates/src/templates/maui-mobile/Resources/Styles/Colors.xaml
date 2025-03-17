@@ -13,6 +13,16 @@
     <Color x:Key="SecondaryDarkText">#9880e5</Color>
     <Color x:Key="Tertiary">#2B0B98</Color>
 
+<!--#if (IncludeSampleContent) -->
+    <Color x:Key="DarkBackground">#17171a</Color>
+    <Color x:Key="LightOnDarkBackground">#C3C3C3</Color>
+    <Color x:Key="LightBackground">#F2F2F2</Color>
+    <Color x:Key="DarkOnLightBackground">#0D0D0D</Color>
+
+    <Color x:Key="LightSecondaryBackground">#E0E0E0</Color>
+    <Color x:Key="DarkSecondaryBackground">#222228</Color>
+
+<!--#endif -->
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
     <Color x:Key="Magenta">#D600AA</Color>

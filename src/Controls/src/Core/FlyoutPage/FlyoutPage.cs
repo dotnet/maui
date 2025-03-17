@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
@@ -11,6 +13,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutPage']/Docs/*" />
 	[ContentProperty(nameof(Detail))]
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>, IFlyoutView
 	{
 		/// <summary>Bindable property for <see cref="IsGestureEnabled"/>.</summary>
@@ -381,5 +384,10 @@ namespace Microsoft.Maui.Controls
 #else
 		double IFlyoutView.FlyoutWidth => -1;
 #endif
+		private protected override string GetDebuggerDisplay()
+		{
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Detail), Detail, "FlyoutPage", Flyout, nameof(BindingContext), BindingContext);
+			return $"{GetType().FullName}: {debugText}";
+		}
 	}
 }

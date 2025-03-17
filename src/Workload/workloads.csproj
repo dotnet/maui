@@ -10,9 +10,9 @@
     <_RootDir Condition=" '$(BUILD_STAGINGDIRECTORY)' != '' ">$([MSBuild]::EnsureTrailingSlash($(BUILD_STAGINGDIRECTORY)))</_RootDir>
     <_RootDir Condition=" '$(_RootDir)' == '' ">$(MauiRootDirectory)</_RootDir>
     <OutputPath>$(_RootDir)\artifacts\</OutputPath>
-    <ManifestOutputPath>$(OutputPath)manifests</ManifestOutputPath>
-    <PreviewManifestOutputPath>$(OutputPath)manifests-pre</PreviewManifestOutputPath>
-    <PackManifestOutputPath>$(OutputPath)manifests-packs</PackManifestOutputPath>
+    <ManifestOutputPath>$(ArtifactsShippingPackagesDir)/manifests</ManifestOutputPath>
+    <PreviewManifestOutputPath>$(ArtifactsShippingPackagesDir)/manifests-pre</PreviewManifestOutputPath>
+    <PackManifestOutputPath>$(ArtifactsShippingPackagesDir)/manifests-packs</PackManifestOutputPath>
     <MsiNuGetOutputPath>$(ArtifactsShippingPackagesDir)</MsiNuGetOutputPath>
     <NuGetPackagePath Condition=" '$(NuGetPackagePath)' == '' ">$(ArtifactsShippingPackagesDir)</NuGetPackagePath>
     <WorkloadMsiGenProps Condition=" '$(WorkloadMsiGenProps)' == '' ">$(ArtifactsShippingPackagesDir)/vs-workload.props</WorkloadMsiGenProps>
@@ -44,6 +44,8 @@
           https://github.com/dotnet/designs/pull/294
       -->
     <EnableSideBySideManifests Condition=" '$(EnableSideBySideManifests)' == '' ">false</EnableSideBySideManifests>
+    
+    <UseVisualStudioComponentPrefix Condition=" '$(UseVisualStudioComponentPrefix)' == '' ">false</UseVisualStudioComponentPrefix>
   </PropertyGroup>
 
   <ItemGroup>
@@ -127,16 +129,11 @@
       <Output TaskParameter="Msis" ItemName="VSWorkloadMsis" />
       <Output TaskParameter="SwixProjects" ItemName="SwixProjects" />
     </CreateVisualStudioWorkload>
-    <ItemGroup>
-      <FilesToSign Include="$(OutputPath)**\*.msi">
-        <Authenticode>Microsoft400</Authenticode>
-      </FilesToSign>
-    </ItemGroup>
   </Target>
 
   <Target Name="_GenerateManifestsAndMsiNuGets"
         AfterTargets="SignFiles" >
-    <!-- Create NUPKGs containing MSIs -->
+   <!-- Create NUPKGs containing MSIs -->
     <MSBuild
         Projects="%(VSWorkloadMsis.PackageProject)"
         Targets="Restore;Pack"
@@ -145,49 +142,37 @@
 
     <!-- Split swix projects into "components", "components.pre", and "packs" groups to create drops based on %(SwixProjects.PackageType) and %(SwixProjects.IsPreview) -->
     <ItemGroup>
-      <PacksSwixProjects Include="@(SwixProjects)" Condition=" '%(PackageType)' == 'msi-pack' " />
-      <ComponentsSwixProjects Include="@(SwixProjects)" Condition=" '%(PackageType)' == 'msi-manifest' or '%(PackageType)' == 'manifest-package-group' or ('%(PackageType)' == 'component' and '%(IsPreview)' != 'true') " />
-      <ComponentsSwixProjectsPreview Include="@(SwixProjects)" Condition=" '%(PackageType)' == 'msi-manifest' or '%(PackageType)' == 'manifest-package-group' or ('%(PackageType)' == 'component' and '%(IsPreview)' == 'true') " />
+      <SwixWorkloadPackProjects Include="@(SwixProjects)" Condition=" '%(PackageType)' == 'msi-pack' "
+          ManifestOutputPath="$(PackManifestOutputPath)"
+          ZipFile="Workload.VSDrop.$(TargetName).$(ManifestBuildVersion).packs.zip" />
+      <SwixComponentsAndManifests Include="@(SwixProjects)" Condition=" '%(PackageType)' == 'msi-manifest' or '%(PackageType)' == 'manifest-package-group' or ('%(PackageType)' == 'component' and '%(IsPreview)' != 'true') "
+          ManifestOutputPath="$(ManifestOutputPath)"
+          ZipFile="Workload.VSDrop.$(TargetName).$(ManifestBuildVersion).components.zip"/>
+      <SwixPreviewComponentsAndManifests Include="@(SwixProjects)" Condition=" '%(PackageType)' == 'msi-manifest' or '%(PackageType)' == 'manifest-package-group' or ('%(PackageType)' == 'component' and '%(IsPreview)' == 'true') "
+          ManifestOutputPath="$(PreviewManifestOutputPath)"
+          ZipFile="Workload.VSDrop.$(TargetName).$(ManifestBuildVersion)-pre.components.zip"/>
+      <PartitionedSwixProjects Include="@(SwixWorkloadPackProjects);@(SwixComponentsAndManifests);@(SwixPreviewComponentsAndManifests)" />
     </ItemGroup>
 
-    <!-- Create "components" VS manifests -->
-    <MSBuild
-        Projects="%(ComponentsSwixProjects.Identity)"
-        Properties="SwixBuildTargets=$(SwixTargetsPath);ManifestOutputPath=$(ManifestOutputPath)"
-    />
-    <MSBuild
-        Projects="$(MSBuildThisFileDirectory)\maui.vsmanproj"
-        Targets="Restore;GenerateSetupManifest"
-        Properties="SwixBuildTargets=$(SwixTargetsPath);WorkloadMsiGenProps=$(WorkloadMsiGenProps);ManifestOutputPath=$(ManifestOutputPath);TargetName=$(TargetName).components;ManifestBuildNumber=$(DropBuildNumber)/vs-components"
-    />
+    <MSBuild Projects="@(PartitionedSwixProjects)" Properties="SwixBuildTargets=$(SwixTargetsPath);ManifestOutputPath=%(ManifestOutputPath)"/>
 
-    <!-- Create and copy "components.pre" VS manifests to the "components" manifest output path so any build can use preview manifests if requested -->
-    <MSBuild
-        Projects="%(ComponentsSwixProjectsPreview.Identity)"
-        Properties="SwixBuildTargets=$(SwixTargetsPath);ManifestOutputPath=$(PreviewManifestOutputPath)"
-    />
-    <MSBuild
-        Projects="$(MSBuildThisFileDirectory)\maui.vsmanproj"
-        Targets="Restore;GenerateSetupManifest"
-        Properties="SwixBuildTargets=$(SwixTargetsPath);WorkloadMsiGenProps=$(WorkloadMsiGenProps);ManifestOutputPath=$(PreviewManifestOutputPath);TargetName=$(TargetName).components.pre;ManifestBuildNumber=$(DropBuildNumber)/vs-components"
-    />
+    <!-- Create the zip files used for VSDROP creation. -->
+    <!-- Generate metadata for VSDROP automation. This information cannot be obtained during staging when insertions are triggered -->
+    <ItemGroup>
+      <VSDrop Include="%(PartitionedSwixProjects.ZipFile)" SourceDirectory="%(ManifestOutputPath)" />
+      <VSDropMetadata Include="$(ManifestBuildVersion)" />
+      <VSDropMetadata Include="$(BUILD_REPOSITORY_NAME)" />
+      <VSDropMetadata Include="$(BUILD_SOURCEBRANCH)" />
+    </ItemGroup>
+    <WriteLinesToFile File="%(VSDrop.SourceDirectory)\.metadata" Lines="@(VSDropMetadata)" Overwrite="true" />
+    <ZipDirectory Overwrite="true" SourceDirectory="%(VSDrop.SourceDirectory)" DestinationFile="$(ArtifactsShippingPackagesDir)/%(VSDrop.Identity)" />
+
     <ItemGroup>
       <PreviewManifests Include="$(PreviewManifestOutputPath)\*" />
     </ItemGroup>
     <Copy
         SourceFiles="@(PreviewManifests)"
         DestinationFolder="$(ManifestOutputPath)"
-    />
-
-    <!-- Create "packs" VS manifests that can be referenced by different "components" to support building alternate target framework versions -->
-    <MSBuild
-        Projects="%(PacksSwixProjects.Identity)"
-        Properties="SwixBuildTargets=$(SwixTargetsPath);ManifestOutputPath=$(PackManifestOutputPath)"
-    />
-    <MSBuild
-        Projects="$(MSBuildThisFileDirectory)\maui.vsmanproj"
-        Targets="Restore;GenerateSetupManifest"
-        Properties="SwixBuildTargets=$(SwixTargetsPath);WorkloadMsiGenProps=$(WorkloadMsiGenProps);ManifestOutputPath=$(PackManifestOutputPath);TargetName=$(TargetName).packs;ManifestBuildNumber=$(DropBuildNumber)/vs-packs"
     />
   </Target>
 

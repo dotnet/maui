@@ -19,7 +19,6 @@
   </Attributes>
   <Docs>
     <summary>For internal use by platform renderers.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetGroup&lt;TView,TItem&gt;">
@@ -58,7 +57,6 @@
         <param name="cell">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetGroupHeaderContent&lt;TView,TItem&gt;">
@@ -97,7 +95,6 @@
         <param name="cell">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetIndex&lt;TView,TItem&gt;">
@@ -136,7 +133,6 @@
         <param name="cell">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetIsGroupHeader&lt;TView,TItem&gt;">
@@ -175,7 +171,6 @@
         <param name="cell">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetPath">
@@ -199,7 +194,6 @@
         <param name="cell">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetIsGroupHeader&lt;TView,TItem&gt;">
@@ -239,7 +233,6 @@
         <param name="cell">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="value">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

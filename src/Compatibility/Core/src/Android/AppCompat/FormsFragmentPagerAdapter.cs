@@ -13,9 +13,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 {
 	[System.Obsolete]
 	internal class FormsFragmentPagerAdapter<[DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers
-	#if NET8_0 // IL2091
+#if NET8_0 // IL2091
 	| BindableProperty.ReturnTypeMembers
-	#endif
+#endif
 	)] T> : FragmentPagerAdapter where T : Page
 	{
 		MultiPage<T> _page;

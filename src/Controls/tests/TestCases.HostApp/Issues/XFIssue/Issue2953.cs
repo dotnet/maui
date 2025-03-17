@@ -57,6 +57,7 @@ public class Issue2953 : TestContentPage
 			Height = 44;
 			var label = new Label { BackgroundColor = Colors.Pink };
 			label.SetBinding(Label.TextProperty, "GroupName");
+			label.SetBinding(Label.AutomationIdProperty, "GroupName");
 			View = label;
 		}
 	}

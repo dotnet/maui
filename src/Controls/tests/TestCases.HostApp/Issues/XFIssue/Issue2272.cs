@@ -15,7 +15,6 @@ public class Issue2272 : TestContentPage
 		Content = new StackLayout
 		{
 			Spacing = 10,
-			VerticalOptions = LayoutOptions.Start,
 			Children = { userNameEditor }
 		};
 	}

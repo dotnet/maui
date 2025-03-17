@@ -1,6 +1,4 @@
-﻿#if ANDROID
-// https://github.com/dotnet/maui/issues/22892
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,7 +16,7 @@ public class Issue8761 : _IssuesUITest
 	[Category(UITestCategories.CollectionView)]
 	public void CollectionViewHeaderTemplateAndFooterTemplateDontWork()
 	{
-		for( int i = 0; i < 4; i++)
+		for (int i = 0; i < 4; i++)
 		{
 			App.WaitForElement("AddItem");
 			App.Tap("AddItem");
@@ -26,4 +24,3 @@ public class Issue8761 : _IssuesUITest
 		}
 	}
 }
-#endif

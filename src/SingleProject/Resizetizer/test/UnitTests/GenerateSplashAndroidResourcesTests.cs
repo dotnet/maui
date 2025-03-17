@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
@@ -17,7 +18,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 		static readonly Dictionary<string, string> ResizeMetadata = new() { ["Resize"] = "true" };
 
-		public GenerateSplashAndroidResourcesTests()
+		public GenerateSplashAndroidResourcesTests(ITestOutputHelper outputHelper)
+			: base(outputHelper)
 		{
 			_colors = Path.Combine(DestinationDirectory, "values", "maui_colors.xml");
 			_drawable = Path.Combine(DestinationDirectory, "drawable", "maui_splash_image.xml");

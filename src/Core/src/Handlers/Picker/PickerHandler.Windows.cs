@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			UpdatingItemSource = updatingItemSource;
 
-			if (!updatingItemSource)
+			if (!updatingItemSource && VirtualView is not null && (VirtualView.SelectedIndex < VirtualView.GetCount()))
 				UpdateValue(nameof(IPicker.SelectedIndex));
 		}
 

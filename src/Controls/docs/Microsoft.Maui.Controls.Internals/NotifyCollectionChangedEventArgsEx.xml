@@ -19,7 +19,6 @@
   </Attributes>
   <Docs>
     <summary>For internal use by platform renderers.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -41,7 +40,6 @@
         <param name="count">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="action">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -65,7 +63,6 @@
         <param name="action">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="changedItems">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -89,7 +86,6 @@
         <param name="action">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="changedItem">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -115,7 +111,6 @@
         <param name="newItems">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="oldItems">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -141,7 +136,6 @@
         <param name="changedItems">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="startingIndex">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -167,7 +161,6 @@
         <param name="changedItem">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="index">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -193,7 +186,6 @@
         <param name="newItem">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="oldItem">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -221,7 +213,6 @@
         <param name="oldItems">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="startingIndex">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -249,7 +240,6 @@
         <param name="index">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="oldIndex">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -277,7 +267,6 @@
         <param name="index">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="oldIndex">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -305,7 +294,6 @@
         <param name="oldItem">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="index">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Count">
@@ -325,7 +313,6 @@
       <Docs>
         <summary>For internal use by platform renderers.</summary>
         <value>For internal use by the Microsoft.Maui.Controls platform.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -92,7 +92,6 @@ public class Issue2883 : TestContentPage
 		Content = new StackLayout
 		{
 			Orientation = StackOrientation.Vertical,
-			VerticalOptions = LayoutOptions.Start,
 			Children = { tableview, listview, listview2 }
 		};
 	}

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Globalization;
+using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -39,6 +40,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		string? GetCurrentOpacityStatus() => App.FindElement("CurrentOpacity").GetText();
 
-		string GetExpectedCurrentOpacityStatus(double expectedOpacity) => $"Current opacity is {expectedOpacity}";
+		string GetExpectedCurrentOpacityStatus(double expectedOpacity) => $"Current opacity is {expectedOpacity.ToString(CultureInfo.InvariantCulture)}";
 	}
 }

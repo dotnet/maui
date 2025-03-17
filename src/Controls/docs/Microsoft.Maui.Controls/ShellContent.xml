@@ -25,7 +25,6 @@
   </Attributes>
   <Docs>
     <summary>Corresponds to a <see cref="T:Microsoft.Maui.Controls.ContentPage" /> contained in a <see cref="T:Microsoft.Maui.Controls.ShellSection" />.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -39,8 +38,6 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Content">
@@ -58,7 +55,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the <see cref="T:Microsoft.Maui.Controls.Page" />.</summary>
-        <value>To be added.</value>
         <remarks>Using this property will cause performance issues. Please use <see cref="P:Microsoft.Maui.Controls.ShellContent.ContentTemplate" /> instead.</remarks>
       </Docs>
     </Member>
@@ -77,7 +73,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.ShellContent.Content" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ContentTemplate">
@@ -95,8 +90,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a data template to create when ShellContent becomes active.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ContentTemplateProperty">
@@ -114,7 +107,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.ShellContent.ContentTemplate" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MenuItems">
@@ -132,8 +124,6 @@
       </ReturnValue>
       <Docs>
         <summary>Add <see cref="T:Microsoft.Maui.Controls.MenuItem" /> instances to flyout.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MenuItemsProperty">
@@ -151,7 +141,6 @@
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.ShellContent.MenuItems" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnChildAdded">
@@ -172,8 +161,6 @@
       </Parameters>
       <Docs>
         <param name="child">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnChildRemoved">
@@ -199,8 +186,6 @@
       </Parameters>
       <Docs>
         <param name="child">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnChildRemoved">
@@ -223,8 +208,6 @@
       <Docs>
         <param name="child">To be added.</param>
         <param name="oldLogicalIndex">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -246,8 +229,6 @@
       <Docs>
         <param name="page">To be added.</param>
         <summary>Used primarily by XAML to implicitly wrap a page in with a <see cref="T:Microsoft.Maui.Controls.ShellContent" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellContentController.GetOrCreateContent">
@@ -269,8 +250,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellContentController.IsPageVisibleChanged">
@@ -290,8 +269,6 @@
         <ReturnType>System.EventHandler</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellContentController.Page">
@@ -312,8 +289,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IShellContentController.RecyclePage">
@@ -338,7 +313,6 @@
       <Docs>
         <param name="page">To be added.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

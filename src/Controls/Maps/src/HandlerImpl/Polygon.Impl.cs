@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Maps
 		{
 			return Geopath.GetEnumerator();
 		}
-	
+
 		/// <summary>
 		/// Gets the index of a specified location object.
 		/// </summary>

@@ -80,6 +80,8 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal ITitleBar? TitleBar => _titleBar;
+
 		public DataTemplate? AppTitleBarTemplate
 		{
 			get => (DataTemplate?)GetValue(AppTitleBarTemplateProperty);
@@ -107,8 +109,6 @@ namespace Microsoft.Maui.Platform
 				{
 					_appTitleBar = cp;
 				}
-
-				UpdateAppTitleBarTransparency();
 
 				return _appTitleBar;
 			}
@@ -446,6 +446,12 @@ namespace Microsoft.Maui.Platform
 
 			if (_titleBar is null || mauiContext is null)
 			{
+				UpdateBackgroundColorForButtons();
+				if (AppTitleBarContentControl is not null)
+				{
+					AppTitleBarContentControl.Content = null;
+					UpdateAppTitleBarTemplate();
+				}
 				return;
 			}
 
@@ -477,6 +483,22 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal void SetTitleBarVisibility(UI.Xaml.Visibility visibility)
+		{
+			// Set default and custom titlebar container visibility
+			if (AppTitleBarContainer is not null)
+			{
+				AppTitleBarContainer.Visibility = visibility;
+			}
+
+			// Set the back/flyout button container visibility
+			if (NavigationViewControl is not null &&
+				NavigationViewControl.ButtonHolderGrid is not null)
+			{
+				NavigationViewControl.ButtonHolderGrid.Visibility = visibility;
+			}
+		}
+
 		private void TitlebarPropChanged_PropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (_titleBar is not null && _titleBar.Handler?.MauiContext is not null)
@@ -492,10 +514,16 @@ namespace Microsoft.Maui.Platform
 
 		private void UpdateBackgroundColorForButtons()
 		{
-			if (NavigationViewControl?.ButtonHolderGrid is not null &&
-				_titleBar?.Background is SolidPaint bg)
+			if (NavigationViewControl?.ButtonHolderGrid is not null)
 			{
-				NavigationViewControl.ButtonHolderGrid.Background = new SolidColorBrush(bg.Color.ToWindowsColor());
+				if (_titleBar?.Background is SolidPaint bg)
+				{
+					NavigationViewControl.ButtonHolderGrid.Background = new SolidColorBrush(bg.Color.ToWindowsColor());
+				}
+				else
+				{
+					NavigationViewControl.ButtonHolderGrid.Background = new SolidColorBrush(UI.Colors.Transparent);
+				}
 			}
 		}
 
@@ -535,6 +563,17 @@ namespace Microsoft.Maui.Platform
 			PassthroughTitlebarElements = passthroughElements;
 		}
 
+		void UpdateAppTitleBarTemplate()
+		{
+			// Ensure the default Window Title template is reapplied when switching from a TitleBar.
+			// The ContentTemplateSelector is reset to the default when ContentTemplate is null, restoring proper title display.
+			if (AppTitleBarContentControl is not null && AppTitleBarContentControl.ContentTemplateSelector is null)
+			{
+				AppTitleBarContentControl.ContentTemplateSelector =
+				(DataTemplateSelector)Application.Current.Resources["MauiAppTitleBarTemplateSelector"];
+			}
+		}
+
 		static void OnAppTitleBarTemplateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
 			((WindowRootView)d)._appTitleBar = null;
@@ -551,29 +590,6 @@ namespace Microsoft.Maui.Platform
 		{
 			get => (String?)GetValue(TitleProperty);
 			set => SetValue(TitleProperty, value);
-		}
-
-		// Once we switch the TitleBar over to using replaceable IViews we won't need this
-		// but for the sake of first just getting us converted over to the new TitleBar
-		// APIs
-		bool _setTitleBarBackgroundToTransparent = true;
-		internal void SetTitleBarBackgroundToTransparent(bool value)
-		{
-			_setTitleBarBackgroundToTransparent = value;
-			if (value)
-			{
-				UpdateAppTitleBarTransparency();
-			}
-			else
-			{
-				_appTitleBar?.RefreshThemeResources();
-			}
-		}
-
-		void UpdateAppTitleBarTransparency()
-		{
-			if (_setTitleBarBackgroundToTransparent && _appTitleBar is Border border)
-				border.Background = null;
 		}
 
 		internal static readonly DependencyProperty WindowTitleBarContentProperty =

@@ -26,8 +26,6 @@
     <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
-    <!-- TODO: Remove once XamlTypeInfo.g.cs generates trimming-friendly code -->
-    <NoWarn Condition="$(TargetFramework.Contains('-windows'))">$(NoWarn);IL2059</NoWarn>
   </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
@@ -48,8 +46,6 @@
 
   <PropertyGroup>
     <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.Maui.Controls.Generated</InterceptorsPreviewNamespaces>
-    <!-- https://github.com/dotnet/msbuild/issues/9785 -->
-    <CompilerResponseFile Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">$(CompilerResponseFile);WorkaroundXamlPreCompilePreviewFeatures.rsp</CompilerResponseFile>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference

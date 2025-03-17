@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasCompass)
 				return;
 
-			var tcs = new TaskCompletionSource<CompassData>();
+			var tcs = new TaskCompletionSource<CompassData>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			Compass.ReadingChanged += Compass_ReadingChanged;
 			void Compass_ReadingChanged(object sender, CompassChangedEventArgs e)
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasCompass)
 				return;
 
-			var tcs = new TaskCompletionSource<CompassData>();
+			var tcs = new TaskCompletionSource<CompassData>(TaskCreationOptions.RunContinuationsAsynchronously);
 			Compass.ReadingChanged += Compass_ReadingChanged;
 			void Compass_ReadingChanged(object sender, CompassChangedEventArgs e)
 			{
@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasCompass)
 				return;
 
-			var tcs = new TaskCompletionSource<CompassData>();
+			var tcs = new TaskCompletionSource<CompassData>(TaskCreationOptions.RunContinuationsAsynchronously);
 			Compass.ReadingChanged += Compass_ReadingChanged;
 			void Compass_ReadingChanged(object sender, CompassChangedEventArgs e)
 			{

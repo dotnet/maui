@@ -12,26 +12,16 @@ public class Issue2597 : _IssuesUITest
 
 	public override string Issue => "Stepper control .IsEnabled doesn't work";
 
-	// [Test]
-	// [Category(UITestCategories.Stepper)]
-	// [FailsOnIOS]
-// 	public void Issue2597Test()
-// 	{
-// #if __IOS__
-// 		RunningApp.Tap(x => x.Marked("Increment"));
-// #else
-// 		RunningApp.Tap("+");
-// #endif
+	[Test]
+	[Category(UITestCategories.Stepper)]
+	public void Issue2597Test()
+	{
+		App.IncreaseStepper("Stepper");
 
-// 		RunningApp.WaitForElement(q => q.Marked("Stepper value is 0"));
+		Assert.That(App.FindElement("StepperValue").GetText(), Is.EqualTo("Stepper value is 0"));
 
+		App.DecreaseStepper("Stepper");
 
-// #if __IOS__
-// 		RunningApp.Tap(x => x.Marked("Decrement"));
-// #else
-// 		RunningApp.Tap("−");
-// #endif
-
-// 		RunningApp.WaitForElement(q => q.Marked("Stepper value is 0"));
-// 	}
+		Assert.That(App.FindElement("StepperValue").GetText(), Is.EqualTo("Stepper value is 0"));
+	}
 }

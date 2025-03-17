@@ -1,7 +1,7 @@
 namespace Maui.Controls.Sample.Issues;
 
 
-[Issue(IssueTracker.Github, 12126, "",
+[Issue(IssueTracker.Github, 12126, "[iOS] TabBarIsVisible = True/False breaking for multiple nested pages",
 	PlatformAffected.iOS)]
 public class Issue12126 : TestShell
 {

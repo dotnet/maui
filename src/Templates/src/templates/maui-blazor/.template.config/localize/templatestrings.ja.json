@@ -1,12 +1,12 @@
 {
   "author": "Microsoft",
-  "name": ".NET MAUI Blazor アプリ",
-  "description": "Blazor を使用して、iOS、Android、Mac Catalyst、Tizen、および WinUI 用の .NET MAUI アプリケーションを作成するためのプロジェクト",
+  "name": ".NET MAUI Blazor Hybrid アプリ",
+  "description": "Blazor ハイブリッドを使用して iOS、Android、Mac Catalyst、WinUI 、Tizen 用の .NET MAUI アプリケーションを作成するためのプロジェクト",
   "postActions/openInEditor/description": "エディターで Components/Pages/Home.razor を開きます。",
   "symbols/applicationId/description": "プロジェクト内の $(ApplicationId) をオーバーライドします",
-  "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
-  "symbols/IncludeSampleContent/displayName": "_Include sample pages",
-  "symbols/IncludeSampleContent/description": "Configures whether to add sample pages and styling to demonstrate basic usage patterns.",
-  "symbols/Empty/description": "Configures whether to omit sample pages and styling that demonstrate basic usage patterns."
+  "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "ターゲット DOTNET_TFM_VALUE",
+  "symbols/IncludeSampleContent/displayName": "サンプル ページを含める(_I)",
+  "symbols/IncludeSampleContent/description": "基本的な使用パターンを示すサンプル ページとスタイルを追加するかどうかを構成します。",
+  "symbols/Empty/description": "基本的な使用パターンを示すサンプル ページとスタイルを省略するかどうかを構成します。"
 }

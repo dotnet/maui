@@ -19,7 +19,6 @@
   </Attributes>
   <Docs>
     <summary>Represents a shortcut key for a <see cref="T:Microsoft.Maui.Controls.MenuItem" />.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Equals">
@@ -44,7 +43,6 @@
         <summary>Compares <see langword="this" /> accelerator to <paramref name="obj" /> and returns <see langword="true" /> if <paramref name="obj" /> is a of type <see cref="T:Microsoft.Maui.Controls.Accelerator" /> and is equal to this one. Otherwise, returns <see langword="false" />.</summary>
         <returns>
           <see langword="true" /> if <paramref name="obj" /> is a of type <see cref="T:Microsoft.Maui.Controls.Accelerator" /> and is equal to this one. Otherwise, returns <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FromString">
@@ -91,8 +89,6 @@
       <Parameters />
       <Docs>
         <summary>Returns the hashcode for the lower case string that represents the shortcut key.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Keys">
@@ -116,8 +112,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use only.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -165,7 +159,6 @@
       <Docs>
         <summary>Returns a text representation of the accelerator.</summary>
         <returns>The text representation of the accelerator.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

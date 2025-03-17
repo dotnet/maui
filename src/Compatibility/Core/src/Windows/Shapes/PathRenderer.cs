@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 #endif
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class PathRenderer : ShapeRenderer<Path, WPath>
+	public partial class PathRenderer : ShapeRenderer<Path, WPath>
 	{
 		protected override void OnElementChanged(ElementChangedEventArgs<Path> args)
 		{

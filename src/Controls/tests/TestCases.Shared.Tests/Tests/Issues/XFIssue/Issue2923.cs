@@ -13,18 +13,11 @@ public class Issue2923 : _IssuesUITest
 
 	public override string Issue => "First tab does not load until navigating";
 
-	// [Test]
-	// public void Issue2923TestOne()
-	// {
-	// 	RunningApp.WaitForElement(q => q.Marked("FirstPageLabel"));
-	// 	RunningApp.Screenshot("First Tab is showing");
-	// }
-
-	// [Test]
-	// public void Issue2923TestTwo()
-	// {
-	// 	RunningApp.Tap(q => q.Marked("ResetButton"));
-	// 	RunningApp.Screenshot("Tabs Reset");
-	// 	RunningApp.WaitForElement(q => q.Marked("ResetPageLabel"));
-	// }
+	[Test]
+	public void Issue2923TestOne()
+	{
+		App.WaitForElement("FirstPageLabel");
+		App.Tap("ResetButton");
+		App.WaitForElement("ResetPageLabel");
+	}
 }

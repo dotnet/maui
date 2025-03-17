@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 				root.BindingContext = bindingContext;
 			}
 		}
-		
+
 		[Benchmark]
 		public void ApplyBindingContextViaBindingContextInheritance()
 		{

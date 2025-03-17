@@ -18,7 +18,6 @@
   </Attributes>
   <Docs>
     <summary>A <see cref="T:Microsoft.Maui.Controls.SelectableItemsView" /> that presents a collection of items.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -32,8 +31,6 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

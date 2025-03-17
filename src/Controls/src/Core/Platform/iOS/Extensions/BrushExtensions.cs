@@ -148,6 +148,8 @@ namespace Microsoft.Maui.Controls.Platform
 					layer.InsertSublayer(backgroundLayer, index);
 				else
 					layer.AddSublayer(backgroundLayer);
+
+				(backgroundLayer as IAutoSizableCALayer)?.AutoSizeToSuperLayer();
 			}
 		}
 
@@ -176,6 +178,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
+		[Obsolete("MAUI background layers now automatically update their Frame when their SuperLayer Frame changes. This method will be removed in a future release.")]
 		public static void UpdateBackgroundLayer(this UIView view) =>
 			view.UpdateBackgroundLayerFrame(BackgroundLayer);
 

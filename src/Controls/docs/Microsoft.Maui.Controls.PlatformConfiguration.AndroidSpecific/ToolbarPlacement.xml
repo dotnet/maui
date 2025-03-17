@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Enumerates toolbar positions.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Bottom">

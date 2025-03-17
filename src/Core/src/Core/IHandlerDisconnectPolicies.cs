@@ -7,5 +7,5 @@ namespace Microsoft.Maui;
 // - new interface?
 internal interface IHandlerDisconnectPolicies
 {
-    HandlerDisconnectPolicy DisconnectPolicy { get; set;}
+	HandlerDisconnectPolicy DisconnectPolicy { get; set; }
 }

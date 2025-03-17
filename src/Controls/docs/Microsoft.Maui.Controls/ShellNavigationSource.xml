@@ -12,7 +12,6 @@
   </Base>
   <Docs>
     <summary>Enumerates reasons for a navigation event in Shell applications.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Insert">
@@ -30,7 +29,6 @@
       </ReturnValue>
       <MemberValue>4</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="Pop">
@@ -48,7 +46,6 @@
       </ReturnValue>
       <MemberValue>2</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="PopToRoot">
@@ -66,7 +63,6 @@
       </ReturnValue>
       <MemberValue>3</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="Push">
@@ -84,7 +80,6 @@
       </ReturnValue>
       <MemberValue>1</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="Remove">
@@ -102,7 +97,6 @@
       </ReturnValue>
       <MemberValue>5</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="ShellContentChanged">
@@ -120,7 +114,6 @@
       </ReturnValue>
       <MemberValue>8</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="ShellItemChanged">
@@ -138,7 +131,6 @@
       </ReturnValue>
       <MemberValue>6</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="ShellSectionChanged">
@@ -156,7 +148,6 @@
       </ReturnValue>
       <MemberValue>7</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
     <Member MemberName="Unknown">
@@ -174,7 +165,6 @@
       </ReturnValue>
       <MemberValue>0</MemberValue>
       <Docs>
-        <summary>To be added.</summary>
       </Docs>
     </Member>
   </Members>

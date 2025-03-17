@@ -399,7 +399,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					index += xClass.Length;
 					return true;
 				}
-				
+
 				bool SkipWhitespaces()
 				{
 					while (index < xaml.Length && xaml[index] == ' ')
@@ -409,7 +409,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 					return true;
 				}
-				
+
 				bool NextCharacter(char character)
 				{
 					if (index < xaml.Length && xaml[index] != character)

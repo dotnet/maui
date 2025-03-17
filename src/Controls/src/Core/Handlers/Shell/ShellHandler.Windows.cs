@@ -149,6 +149,11 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		}
 
+		internal static void MapFlowDirection(ShellHandler handler, Shell view)
+		{
+			handler.PlatformView.UpdateFlowDirection(view);
+		}
+
 		public static void MapIsPresented(ShellHandler handler, IFlyoutView flyoutView)
 		{
 			// WinUI Will close the pane inside of the apply template code

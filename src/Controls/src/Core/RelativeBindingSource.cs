@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		private async Task Apply(IBindingAdapter bindingAdapter, Element relativeSourceTarget)
-		{	
+		{
 			object? resolvedSource = null;
 			switch (Mode)
 			{
@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty property,
 			SetterSpecificity specificity)
 			: IBindingAdapter
-		{	
+		{
 			public void Apply(object? resolvedSource)
 				=> expression.Apply(resolvedSource, target, property, specificity);
 

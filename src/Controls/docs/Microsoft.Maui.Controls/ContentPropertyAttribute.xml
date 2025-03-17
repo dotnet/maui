@@ -70,7 +70,6 @@ This is equivalent to the following, more explicit XAML
       <Docs>
         <param name="name">The name of the property.</param>
         <summary>Initializes a new instance of the ContentPropertyAttribute class.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Name">
@@ -96,7 +95,6 @@ This is equivalent to the following, more explicit XAML
       <Docs>
         <summary>Gets the name of the content property</summary>
         <value>A string representing the name of the content property.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

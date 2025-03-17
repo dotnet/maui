@@ -3,8 +3,10 @@ using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Storage;
 using Windows.Security.Cryptography.DataProtection;
 using Windows.Storage;
 using SecureStorageDictionary = System.Collections.Concurrent.ConcurrentDictionary<string, byte[]>;
@@ -125,9 +127,7 @@ namespace Microsoft.Maui.Storage
 			{
 				using var stream = File.OpenRead(AppSecureStoragePath);
 
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-				var readPreferences = JsonSerializer.Deserialize<SecureStorageDictionary>(stream);
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+				SecureStorageDictionary readPreferences = JsonSerializer.Deserialize(stream, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
 
 				if (readPreferences != null)
 				{
@@ -148,9 +148,7 @@ namespace Microsoft.Maui.Storage
 			Directory.CreateDirectory(dir);
 
 			using var stream = File.Create(AppSecureStoragePath);
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-			JsonSerializer.Serialize(stream, _secureStorage);
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+			JsonSerializer.Serialize(stream, _secureStorage, SecureStorageJsonSerializerContext.Default.SecureStorageDictionary);
 		}
 
 		public Task<byte[]> GetAsync(string key)
@@ -182,4 +180,9 @@ namespace Microsoft.Maui.Storage
 			Save();
 		}
 	}
+}
+
+[JsonSerializable(typeof(SecureStorageDictionary), TypeInfoPropertyName = nameof(SecureStorageDictionary))]
+internal partial class SecureStorageJsonSerializerContext : JsonSerializerContext
+{
 }

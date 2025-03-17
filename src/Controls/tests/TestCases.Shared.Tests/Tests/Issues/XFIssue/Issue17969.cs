@@ -1,5 +1,4 @@
-﻿#if !MACCATALYST
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnWindows]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void CollectionViewDuplicateViewsWhenAddItemToGroup()
 		{
 			App.WaitForElement("collectionView");
@@ -27,7 +26,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnWindows]
+		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void CollectionViewAddGroupWhenViewIsEmpty()
 		{
 			App.WaitForElement("collectionView");
@@ -36,4 +35,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif

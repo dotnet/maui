@@ -135,6 +135,18 @@
     <value>Associazione: il tipo di indice "{0}" dell'indicizzatore non è supportato.</value>
     <comment>0 is indexer type name</comment>
   </data>
+  <data name="BindingWithoutDataType" xml:space="preserve">
+    <value>È possibile compilare l'associazione per migliorare le prestazioni di runtime se è specificato x:DataType. Per altre informazioni, vedere https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithNullDataType" xml:space="preserve">
+    <value>È possibile compilare l'associazione per migliorare le prestazioni di runtime se x:DataType non è null in modo esplicito. Per altre informazioni, vedere https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>L'associazione potrebbe essere compilata in modo non corretto perché l'annotazione x:DataType proviene da un ambito esterno. Assicurarsi di annotare tutti gli elementi DataTemplate XAML con x:DataType corretto. Per altre informazioni, vedere https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithSourceCompilationSkipped" xml:space="preserve">
+    <value>L'associazione non è stata compilata perché ha una proprietà Source impostata in modo esplicito e la compilazione delle associazioni con Source non è abilitata. Considerare l'abilitazione di questa ottimizzazione impostando &lt;MauiEnableXamlCBindingWithSourceCompilation&gt;true&lt;/MauiEnableXamlCBindingWithSourceCompilation&gt; nel file di progetto e assicurarsi che sia specificato x:DataType correttamente per questa associazione. Per altre informazioni, vedere https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>Associazione: la proprietà "{0}" non è stata trovata in "{1}".</value>
     <comment>0 is property name, 1 is type name</comment>
@@ -193,6 +205,9 @@
     <value>In questo elemento NameScope esiste già un elemento denominato "{0}".</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="ObsoleteProperty" xml:space="preserve">
+    <value>Property, Property Setter o BindableProperty "{0}" è deprecato.</value>
+  </data>
   <data name="PropertyMissing" xml:space="preserve">
     <value>In "{1}" manca la proprietà obbligatoria "{0}".</value>
     <comment>0 is a property name, 1 is a type</comment>
@@ -222,7 +237,7 @@
     <value>La proprietà di origine non è un valore letterale stringa.</value>
   </data>
   <data name="StyleSheetSourceOrContent" xml:space="preserve">
-    <value>Un elemento StyleSheet non può includere sia un elemento Source che contenuto.</value>
+    <value>StyleSheet non può avere sia un'origine che un contenuto.</value>
   </data>
   <data name="StyleSheetStyleNotALiteral" xml:space="preserve">
     <value>La proprietà Style o l'elemento Content non è un valore letterale stringa.</value>
@@ -232,7 +247,11 @@
     <comment>0 is a type name</comment>
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
-    <value>Con x:DataType è previsto un valore letterale stringa, un markup {{x:Type}} oppure {{x:Null}}.</value>
+    <value>x:DataType prevede un valore letterale stringa, un markup {{x:Type}} o {{x:Null}}.</value>
+  </data>
+  <data name="UnattributedMarkupType" xml:space="preserve">
+    <value>Considerare l'attribuzione dell'estensione di markup "{0}" con [RequireService] o [AcceptEmptyServiceProvider] se non ne richiede alcuna.</value>
+    <comment>0 is type name</comment>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>Il prefisso xmlns "{0}" non è dichiarato.</value>
@@ -247,5 +266,8 @@
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:Key prevede un valore letterale stringa.</value>
+  </data>
+  <data name="StaticResourceSyntax" xml:space="preserve">
+    <value>È necessaria una chiave in {StaticResource}.</value>
   </data>
 </root>

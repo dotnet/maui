@@ -1,12 +1,12 @@
-﻿using System.Threading.Tasks;
-using AndroidX.AppCompat.App;
-using Microsoft.Maui.Controls;
-using Microsoft.Extensions.DependencyInjection;
-using Xunit;
-using Microsoft.Maui.DeviceTests.Stubs;
+﻿using System;
+using System.Threading.Tasks;
 using Android.App;
-using System;
+using AndroidX.AppCompat.App;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Hosting;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var activity1 = new MauiAppCompatActivity();
 				var activity2 = new MauiAppCompatActivity();
-				
+
 				activity1.CreatePlatformWindow(app, null);
 
 				var window = app.Windows[0];

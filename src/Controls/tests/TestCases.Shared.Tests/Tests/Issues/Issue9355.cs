@@ -16,13 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
-		[FailsOnMac]
-		[FailsOnWindows]
 		public void Issue9355Test()
 		{
-			App.WaitForNoElement(TestOk);
+			App.WaitForElement(TestOk);
 		}
 	}
 }

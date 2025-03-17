@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Provides access to the back button icon on navigation pages on the GTK platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="BackButtonIconProperty">
@@ -33,7 +32,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that stores the back button icon.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetBackButtonIcon">
@@ -57,7 +55,6 @@
         <param name="element">The navigation page on the GTK platform whose back button icon to get.</param>
         <summary>Gets the icon for the back button.</summary>
         <returns>The path to the back button icon.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetBackButtonIcon">
@@ -81,7 +78,6 @@
         <param name="config">The platform configuration for the navigation page on the GTK platform whose back button icon to get.</param>
         <summary>Gets the path to the back button icon.</summary>
         <returns>The path to the back button icon.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBackButtonIcon">
@@ -106,7 +102,6 @@
         <param name="element">The navigation page on the GTK platform whose back button icon to get.</param>
         <param name="backButtonIcon">The new back button icon path.</param>
         <summary>Sets the path to the back button icon.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBackButtonIcon">
@@ -132,7 +127,6 @@
         <param name="value">The new back button icon path.</param>
         <summary>Sets the path to the back button icon.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -28,7 +28,7 @@
 			var btn = new Button { AutomationId = "Scroll100", Text = "Scroll to 100" };
 			var btn4 = new Button { AutomationId = "Scroll100Anim", Text = "Scroll to 100 no anim" };
 			var btn1 = new Button { AutomationId = "Start", Text = "Start" };
-			var btn2 = new Button { AutomationId = "Center", Text = "Center" };
+			var btn2 = new Button { AutomationId = "CenterPosition", Text = "Center" };
 			var btn3 = new Button { AutomationId = "End", Text = "End" };
 			var btn7 = new Button { Text = "Toggle Scroll Bar Visibility", WidthRequest = 120 };
 			var btn6 = new Button { Text = "MakeVisible", HorizontalOptions = LayoutOptions.Center, BackgroundColor = Colors.Blue };

@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Hosting
 						//
 						// 	  var imageSourceService = provider.GetImageSourceService(typeof(MyImageSource));
 						//    ambiguous match: both StreamImageSourceService and UriImageSourceService are registered for MyImageSource
-						
+
 						throw new InvalidOperationException($"Unable to find a single {nameof(IImageSourceService)} corresponding to {type}. There is an ambiguous match between {bestImageSourceService} ({bestImageSource}) and {imageSourceService} ({imageSource}).");
 					}
 				}

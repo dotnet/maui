@@ -44,6 +44,15 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+		
+		Task<float> GetPlatformOpacity(EntryHandler entryHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(entryHandler);
+				return (float)nativeView.Alpha; 
+			});
+		}
 
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 		public class ScrollTests : ControlsHandlerTestBase

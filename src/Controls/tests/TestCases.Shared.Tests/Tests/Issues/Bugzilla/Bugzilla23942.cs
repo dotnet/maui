@@ -15,11 +15,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
-		[FailsOnMac]
 		public void Bugzilla23942Test()
 		{
-			App.WaitForNoElement("success");
+			App.WaitForElement("success");
 		}
 	}
 }

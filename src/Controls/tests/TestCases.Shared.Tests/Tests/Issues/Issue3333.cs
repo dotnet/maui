@@ -3,10 +3,10 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
-{ 
-    public class Issue3333 : _IssuesUITest
+{
+	public class Issue3333 : _IssuesUITest
 	{
-		const string KSuccess = "If you're reading this the test has passed";
+		const string KSuccess = "If you are reading this the test has passed";
 
 		public Issue3333(TestDevice testDevice) : base(testDevice)
 		{
@@ -18,10 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Navigation)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms]
 		public void SettingBindingContextToNullBeforingPoppingPageCrashes()
 		{
-			App.WaitForNoElement(KSuccess);
+			App.WaitForElement(KSuccess);
 		}
 	}
 }

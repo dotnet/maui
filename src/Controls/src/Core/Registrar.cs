@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Internals
 	{
 		internal const DynamicallyAccessedMemberTypes TargetMembers = DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors;
 
-		[DynamicallyAccessedMembers(TargetMembers)] 
+		[DynamicallyAccessedMembers(TargetMembers)]
 		public readonly Type Target;
 		public readonly short Priority;
 

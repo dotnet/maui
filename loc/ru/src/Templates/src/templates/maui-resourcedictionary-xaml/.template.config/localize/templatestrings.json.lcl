@@ -22,6 +22,9 @@
       <Item ItemId=";description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A repository for resources that are used by a .NET MAUI app. Typical resources that are stored in a ResourceDictionary include styles, control templates, data templates, converters, and colors.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Репозиторий ресурсов, используемых приложением .NET MAUI. Типичные ресурсы, хранимые в ResourceDictionary, включают стили, шаблоны элементов управления, шаблоны данных, преобразователи и цвета.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

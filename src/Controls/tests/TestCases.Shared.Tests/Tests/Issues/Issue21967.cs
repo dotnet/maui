@@ -35,11 +35,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var itemSize = App.WaitForElement("Item1").GetRect();
 			ClassicAssert.Greater(200, itemSize.Height);
 		}
-
+#if IOS || ANDROID //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnMac("This test is failing, likely due to product issue")]
-		[FailsOnWindows("This test is failing, likely due to product issue")]
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public async Task CollectionViewWorksWhenRotatingDevice()
 		{
 			try
@@ -64,5 +64,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.SetOrientationPortrait();
 			}
 		}
+#endif
 	}
 }

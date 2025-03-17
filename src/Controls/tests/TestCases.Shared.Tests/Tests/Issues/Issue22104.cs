@@ -14,7 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnMac]
 		public void VerifyCollectionViewVisualState()
 		{
 			App.WaitForElement("CollectionView");

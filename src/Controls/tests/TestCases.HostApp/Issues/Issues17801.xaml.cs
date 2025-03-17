@@ -1,7 +1,7 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 17801, "ScrollView always has a scroll bar on iOS", PlatformAffected.iOS)]
-	public partial class Issue17801 : ContentPage
+	public partial class Issue17801
 	{
 		int _count = 0;
 

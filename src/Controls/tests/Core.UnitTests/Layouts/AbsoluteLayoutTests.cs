@@ -4,10 +4,10 @@ using Xunit;
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
 	[Category("Layout")]
-	public class AbsoluteLayoutTests : BaseTestFixture 
+	public class AbsoluteLayoutTests : BaseTestFixture
 	{
 		[Fact]
-		public void BoundsDefaultsConsistentForNewChildren() 
+		public void BoundsDefaultsConsistentForNewChildren()
 		{
 			var layout = new AbsoluteLayout();
 

@@ -38,10 +38,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				var widthSpec = Context.CreateMeasureSpec(targetWidth,
 					double.IsInfinity(targetWidth) ? double.NaN : targetWidth
-					, targetWidth);
+					, minimumSize: double.NaN, maximumSize: targetWidth);
 
 				var heightSpec = Context.CreateMeasureSpec(targetHeight, double.IsInfinity(targetHeight) ? double.NaN : targetHeight
-					, targetHeight);
+					, minimumSize: double.NaN, maximumSize: targetHeight);
 
 				var size = pvh.MeasureVirtualView(widthSpec, heightSpec);
 

@@ -64,6 +64,9 @@ namespace Microsoft.Maui.Platform
 			if (padding.IsNaN)
 				padding = defaultPadding ?? Thickness.Zero;
 
+			int additionalPadding = (int)platformButton.Layer.BorderWidth;
+			padding = new Thickness(padding.Left + additionalPadding, padding.Top + additionalPadding, padding.Right + additionalPadding, padding.Bottom + additionalPadding);
+
 			// top and bottom insets reset to a "default" if they are exactly 0
 			// however, internally they are floor-ed, so there is no actual fractions
 			var top = padding.Top;

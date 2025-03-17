@@ -1,7 +1,5 @@
 namespace Maui.Controls.Sample.Issues;
 
-
-
 [Issue(IssueTracker.Bugzilla, 33612,
 	"(A) Removing a page from the navigation stack causes an 'Object reference' exception in Android only",
 	PlatformAffected.Android)]
@@ -41,7 +39,7 @@ public class Bugzilla33612 : TestNavigationPage
 	{
 		public Page2()
 		{
-			var button = new Button { Text = "Go to Page 3" };
+			var button = new Button { Text = "Go To Page 3" };
 			button.Clicked += async (sender, args) =>
 			{
 				int numPagesToRemove = Navigation.NavigationStack.Count;
@@ -78,7 +76,7 @@ public class Bugzilla33612 : TestNavigationPage
 			Content = new StackLayout()
 			{
 				Children = {
-					new Label { Text = "If you're seeing this, nothing crashed. Yay!" }
+					new Label { Text = "If you are seeing this, nothing crashed." }
 				}
 			};
 		}

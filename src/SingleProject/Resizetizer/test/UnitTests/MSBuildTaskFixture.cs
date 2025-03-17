@@ -17,17 +17,10 @@ namespace Microsoft.Maui.Resizetizer.Tests
 		protected List<CustomBuildEventArgs> LogCustomEvents = new List<CustomBuildEventArgs>();
 		protected List<BuildWarningEventArgs> LogWarningEvents = new List<BuildWarningEventArgs>();
 
-		protected MSBuildTaskTestFixture()
-			: this(null)
+		protected MSBuildTaskTestFixture(ITestOutputHelper output)
+			: base(output)
 		{
 		}
-
-		protected MSBuildTaskTestFixture(ITestOutputHelper? output)
-		{
-			Output = output;
-		}
-
-		public ITestOutputHelper? Output { get; }
 
 		// IBuildEngine
 

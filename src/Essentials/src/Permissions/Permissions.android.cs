@@ -474,7 +474,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 					return permissions.ToArray();
 				}
-			}						
+			}
 		}
 
 		public partial class Reminders : BasePlatformPermission
@@ -529,7 +529,7 @@ namespace Microsoft.Maui.ApplicationModel
 					{
 						return [];
 					}
-					
+
 					return new (string, bool)[] { (Manifest.Permission.ReadExternalStorage, true) };
 				}
 			}
@@ -550,7 +550,7 @@ namespace Microsoft.Maui.ApplicationModel
 				{
 					return Task.FromResult(PermissionStatus.Granted);
 				}
-				
+
 				return base.CheckStatusAsync();
 			}
 		}
@@ -560,17 +560,17 @@ namespace Microsoft.Maui.ApplicationModel
 			public override (string androidPermission, bool isRuntime)[] RequiredPermissions
 			{
 
-				get 
+				get
 				{
 					if (OperatingSystem.IsAndroidVersionAtLeast(33))
 					{
 						return [];
 					}
-					
+
 					return new (string, bool)[] { (Manifest.Permission.WriteExternalStorage, true) };
 				}
 			}
-				
+
 			public override Task<PermissionStatus> RequestAsync()
 			{
 				if (OperatingSystem.IsAndroidVersionAtLeast(33))

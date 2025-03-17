@@ -9,8 +9,8 @@
 			int retry = 5;
 			while (retry-- >= 0)
 			{
-				var imageUri = new Uri("https://raw.githubusercontent.com/xamarin/Xamarin.Forms/main/Microsoft.Maui.Controls.ControlGallery.Android/Assets/WebImages/XamarinLogo.png");
-				Content = new Image() { Source = new UriImageSource() { Uri = imageUri }, BackgroundColor = Colors.Black, AutomationId = "success" };
+				var imageUri = new Uri("https://raw.githubusercontent.com/dotnet/maui/main/src/Compatibility/ControlGallery/src/Android/Resources/drawable/coffee.png");
+				Content = new Image() { Source = new UriImageSource() { Uri = imageUri }, BackgroundColor = Colors.Beige, AutomationId = "success" };
 
 				await Task.Delay(50);
 			}

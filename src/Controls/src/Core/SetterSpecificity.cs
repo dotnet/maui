@@ -20,12 +20,12 @@ namespace Microsoft.Maui.Controls
 	{
 		const byte ExtrasVsm = 0x01;
 		const byte ExtrasHandler = 0xFF;
-		
+
 		public const ushort ManualTriggerBaseline = 2;
-		
+
 		public const ushort StyleImplicit = 0x080;
 		public const ushort StyleLocal = 0x100;
-		
+
 		public static readonly SetterSpecificity DefaultValue = new SetterSpecificity(0);
 		public static readonly SetterSpecificity VisualStateSetter = new SetterSpecificity(ExtrasVsm, 0, 0, 0, 0, 0, 0, 0);
 		public static readonly SetterSpecificity FromBinding = new SetterSpecificity(0, 0, 0, 1, 0, 0, 0, 0);
@@ -37,13 +37,13 @@ namespace Microsoft.Maui.Controls
 
 		// handler always apply, but are removed when anything else comes in. see SetValueActual
 		public static readonly SetterSpecificity FromHandler = new SetterSpecificity(0xFF, 0, 0, 0, 0, 0, 0, 0);
-		
+
 		// We store all information in one single UInt64 value to have the fastest comparison possible
 		readonly ulong _value;
 
 
 		public bool IsDefault => _value == 0ul;
-		public bool IsHandler => _value == 0xFFFFFFFFFFFFFFFF; 
+		public bool IsHandler => _value == 0xFFFFFFFFFFFFFFFF;
 		public bool IsVsm => (_value & 0x0100000000000000) != 0;
 		public bool IsVsmImplicit => (_value & 0x0000000004000000) != 0;
 		public bool IsManual => ((_value >> 28) & 0xFFFF) == 1;
@@ -55,14 +55,16 @@ namespace Microsoft.Maui.Controls
 		ushort GetTriggerIndex()
 		{
 			var manual = (ushort)((_value >> 28) & 0xFFFF);
-			if (manual <= 1) return 0;
+			if (manual <= 1)
+				return 0;
 			return (ushort)(manual - 2);
 		}
 
 		(ushort Style, byte Id, byte Class, byte Type) GetStyleInfo()
 		{
 			var style = (ushort)((_value >> 44) & 0xFFF);
-			if (style == 0xFFF) return default;
+			if (style == 0xFFF)
+				return default;
 			return (style, (byte)((_value >> 16) & 0xFF), (byte)((_value >> 8) & 0xFF), (byte)(_value & 0xFF));
 		}
 
@@ -112,7 +114,7 @@ namespace Microsoft.Maui.Controls
 				_value = 0xFFFFFFFFFFFFFFFF;
 				return;
 			}
-			
+
 			// If no style is set, set it to a value which supersedes any other style value
 			if (style == 0)
 			{
@@ -147,12 +149,12 @@ namespace Microsoft.Maui.Controls
 			}
 
 			_value = type
-			         | (ulong)@class << 8
-			         | (ulong)id << 16
-			         | (ulong)(implicitVsm | dynamicResource | binding) << 24
-			         | (ulong)manual << 28
-			         | (ulong)style << 44
-			         | (ulong)vsm << 56
+					 | (ulong)@class << 8
+					 | (ulong)id << 16
+					 | (ulong)(implicitVsm | dynamicResource | binding) << 24
+					 | (ulong)manual << 28
+					 | (ulong)style << 44
+					 | (ulong)vsm << 56
 				;
 		}
 
@@ -192,7 +194,7 @@ namespace Microsoft.Maui.Controls
 		{
 			return new SetterSpecificity(_value - 0x0000100000000000);
 		}
-		
+
 		public override bool Equals(object obj) => obj is SetterSpecificity s && s._value == _value;
 		public override int GetHashCode() => _value.GetHashCode();
 

@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override UICollectionReusableView GetViewForSupplementaryElement(UICollectionView collectionView, NSString elementKind, NSIndexPath indexPath)
 		{
 			// We don't have a header or footer, so we don't need to do anything
-			if(ItemsView.Header is null && ItemsView.Footer is null && ItemsView.HeaderTemplate is null && ItemsView.FooterTemplate is null)
+			if (ItemsView.Header is null && ItemsView.Footer is null && ItemsView.HeaderTemplate is null && ItemsView.FooterTemplate is null)
 			{
 				return null;
 			}
@@ -94,9 +94,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		string DetermineViewReuseId(NSString elementKind)
 		{
 			return DetermineViewReuseId(elementKind == UICollectionElementKindSectionKey.Header
-				? ItemsView.HeaderTemplate 
+				? ItemsView.HeaderTemplate
 				: ItemsView.FooterTemplate, elementKind == UICollectionElementKindSectionKey.Header
-				? ItemsView.Header 
+				? ItemsView.Header
 				: ItemsView.Footer);
 		}
 
@@ -113,13 +113,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			bool isHeader = elementKind == UICollectionElementKindSectionKey.Header;
 
-			if(isHeader)
+			if (isHeader)
 			{
-				if(ItemsView.Header is View headerView)
+				if (ItemsView.Header is View headerView)
 				{
 					cell.Bind(headerView, ItemsView);
 				}
-				else if(ItemsView.HeaderTemplate is not null)
+				else if (ItemsView.HeaderTemplate is not null)
 				{
 					cell.Bind(ItemsView.HeaderTemplate, ItemsView.Header, ItemsView);
 				}
@@ -127,11 +127,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 			else
 			{
-				if(ItemsView.Footer is View footerView)
+				if (ItemsView.Footer is View footerView)
 				{
 					cell.Bind(footerView, ItemsView);
 				}
-				else if(ItemsView.FooterTemplate is not null)
+				else if (ItemsView.FooterTemplate is not null)
 				{
 					cell.Bind(ItemsView.FooterTemplate, ItemsView.Footer, ItemsView);
 				}

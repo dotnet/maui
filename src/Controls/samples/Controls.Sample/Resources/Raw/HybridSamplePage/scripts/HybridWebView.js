@@ -1,5 +1,5 @@
 ﻿window.HybridWebView = {
-    "Init": function () {
+    "Init": function Init() {
         function DispatchHybridWebViewMessage(message) {
             const event = new CustomEvent("HybridWebViewMessageReceived", { detail: { message: message } });
             window.dispatchEvent(event);
@@ -27,11 +27,53 @@
         }
     },
 
-    "SendRawMessage": function (message) {
-        window.HybridWebView.__SendMessageInternal('RawMessage', message);
+    "SendRawMessage": function SendRawMessage(message) {
+        window.HybridWebView.__SendMessageInternal('__RawMessage', message);
     },
 
-    "__SendMessageInternal": function (type, message) {
+    "InvokeDotNet": async function InvokeDotNetAsync(methodName, paramValues) {
+        const body = {
+            MethodName: methodName
+        };
+
+        if (typeof paramValues !== 'undefined') {
+            if (!Array.isArray(paramValues)) {
+                paramValues = [paramValues];
+            }
+
+            for (var i = 0; i < paramValues.length; i++) {
+                paramValues[i] = JSON.stringify(paramValues[i]);
+            }
+
+            if (paramValues.length > 0) {
+                body.ParamValues = paramValues;
+            }
+        }
+
+        const message = JSON.stringify(body);
+
+        var requestUrl = `${window.location.origin}/__hwvInvokeDotNet?data=${encodeURIComponent(message)}`;
+
+        const rawResponse = await fetch(requestUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        const response = await rawResponse.json();
+
+        if (response) {
+            if (response.IsJson) {
+                return JSON.parse(response.Result);
+            }
+
+            return response.Result;
+        }
+
+        return null;
+    },
+
+    "__SendMessageInternal": function __SendMessageInternal(type, message) {
 
         const messageToSend = type + '|' + message;
 
@@ -49,29 +91,54 @@
         }
     },
 
-    "InvokeMethod": function (taskId, methodName, args) {
-        if (methodName[Symbol.toStringTag] === 'AsyncFunction') {
-            // For async methods, we need to call the method and then trigger the callback when it's done
-            const asyncPromise = methodName(...args);
-            asyncPromise
-                .then(asyncResult => {
-                    window.HybridWebView.__TriggerAsyncCallback(taskId, asyncResult);
-                })
-                .catch(error => console.error(error));
-        } else {
-            // For sync methods, we can call the method and trigger the callback immediately
-            const syncResult = methodName(...args);
-            window.HybridWebView.__TriggerAsyncCallback(taskId, syncResult);
+    "__InvokeJavaScript": async function __InvokeJavaScript(taskId, methodName, args) {
+        try {
+            var result = null;
+            if (methodName[Symbol.toStringTag] === 'AsyncFunction') {
+                result = await methodName(...args);
+            } else {
+                result = methodName(...args);
+            }
+            window.HybridWebView.__TriggerAsyncCallback(taskId, result);
+        } catch (ex) {
+            console.error(ex);
+            window.HybridWebView.__TriggerAsyncFailedCallback(taskId, ex);
         }
     },
 
-    "__TriggerAsyncCallback": function (taskId, result) {
-        // Make sure the result is a string
-        if (result && typeof (result) !== 'string') {
-            result = JSON.stringify(result);
+    "__TriggerAsyncFailedCallback": function __TriggerAsyncCallback(taskId, error) {
+
+        if (!error) {
+            json = {
+                Message: "Unknown error",
+                StackTrace: Error().stack
+            };
+        } else if (error instanceof Error) {
+            json = {
+                Name: error.name,
+                Message: error.message,
+                StackTrace: error.stack
+            };
+        } else if (typeof (error) === 'string') {
+            json = {
+                Message: error,
+                StackTrace: Error().stack
+            };
+        } else {
+            json = {
+                Message: JSON.stringify(error),
+                StackTrace: Error().stack
+            };
         }
 
-        window.HybridWebView.__SendMessageInternal('InvokeMethodCompleted', taskId + '|' + result);
+        json = JSON.stringify(json);
+
+        window.HybridWebView.__SendMessageInternal('__InvokeJavaScriptFailed', taskId + '|' + json);
+    },
+
+    "__TriggerAsyncCallback": function __TriggerAsyncCallback(taskId, result) {
+        const json = JSON.stringify(result);
+        window.HybridWebView.__SendMessageInternal('__InvokeJavaScriptCompleted', taskId + '|' + json);
     }
 }
 

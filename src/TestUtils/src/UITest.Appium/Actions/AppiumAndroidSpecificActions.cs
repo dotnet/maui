@@ -5,9 +5,15 @@ namespace UITest.Appium
 {
 	public class AppiumAndroidSpecificActions : ICommandExecutionGroup
 	{
+		const string MoreButton = "OverflowMenuButton";
+
 		const string ToggleAirplaneModeCommand = "toggleAirplaneMode";
 		const string ToggleWifiCommand = "toggleWifi";
+		const string ToggleDataCommand = "toggleData";
 		const string GetPerformanceDataCommand = "getPerformanceData";
+		const string ToggleSystemAnimationsCommand = "toggleSystemAnimations";
+		const string GetSystemBarsCommand = "getSystemBars";
+		const string ToggleSecondaryToolbarItemsCommand = "toggleSecondaryToolbarItems";
 
 		readonly AppiumApp _appiumApp;
 
@@ -15,7 +21,11 @@ namespace UITest.Appium
 		{
 			ToggleAirplaneModeCommand,
 			ToggleWifiCommand,
+			ToggleDataCommand,
 			GetPerformanceDataCommand,
+			ToggleSystemAnimationsCommand,
+			GetSystemBarsCommand,
+			ToggleSecondaryToolbarItemsCommand,
 		};
 
 		public AppiumAndroidSpecificActions(AppiumApp appiumApp)
@@ -34,7 +44,11 @@ namespace UITest.Appium
 			{
 				ToggleAirplaneModeCommand => ToggleAirplaneMode(parameters),
 				ToggleWifiCommand => ToggleWifi(parameters),
+				ToggleDataCommand => ToggleData(parameters),
 				GetPerformanceDataCommand => GetPerformanceData(parameters),
+				ToggleSystemAnimationsCommand => ToggleSystemAnimations(parameters),
+				GetSystemBarsCommand => GetSystemBars(parameters),
+				ToggleSecondaryToolbarItemsCommand => ToggleSecondaryToolbarItems(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -45,6 +59,18 @@ namespace UITest.Appium
 			{
 				// Toggle airplane mode on device.
 				androidDriver.ToggleAirplaneMode();
+
+				return CommandResponse.SuccessEmptyResponse;
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse ToggleData(IDictionary<string, object> parameters)
+		{
+			if (_appiumApp.Driver is AndroidDriver androidDriver)
+			{
+				androidDriver.ToggleData();
 
 				return CommandResponse.SuccessEmptyResponse;
 			}
@@ -71,13 +97,69 @@ namespace UITest.Appium
 			{
 				string performanceDataType = (string)parameters["performanceDataType"];
 
-				if(string.IsNullOrEmpty(performanceDataType))
+				if (string.IsNullOrEmpty(performanceDataType))
 				{
 					performanceDataType = "memoryinfo";
 				}
 
 				// Returns the information of the system state which is supported to read as like cpu, memory, network traffic, and battery.
 				IList<object> result = androidDriver.GetPerformanceData(_appiumApp.GetAppId(), performanceDataType);
+
+				return new CommandResponse(result, CommandResponseResult.Success);
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse ToggleSystemAnimations(IDictionary<string, object> parameters)
+		{
+			try
+			{
+				bool enableSystemAnimations = (bool)parameters["enableSystemAnimations"];
+
+				if (enableSystemAnimations)
+				{
+					ShellHelper.ExecuteShellCommand($"adb shell settings put global window_animation_scale 0");
+					ShellHelper.ExecuteShellCommand($"adb shell settings put global transition_animation_scale 0");
+					ShellHelper.ExecuteShellCommand($"adb shell settings put global animator_duration_scale 0");
+
+					return CommandResponse.SuccessEmptyResponse;
+				}
+				else
+				{
+					ShellHelper.ExecuteShellCommand($"adb shell settings put global window_animation_scale 1");
+					ShellHelper.ExecuteShellCommand($"adb shell settings put global transition_animation_scale 1");
+					ShellHelper.ExecuteShellCommand($"adb shell settings put global animator_duration_scale 1");
+
+					return CommandResponse.SuccessEmptyResponse;
+				}
+			}
+			catch
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+		}
+
+		CommandResponse ToggleSecondaryToolbarItems(IDictionary<string, object> parameters)
+		{
+			try
+			{
+				_appiumApp.WaitForElement(MoreButton);
+				_appiumApp.Tap(MoreButton);
+
+				return CommandResponse.SuccessEmptyResponse;
+			}
+			catch
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+		}
+
+		CommandResponse GetSystemBars(IDictionary<string, object> parameters)
+		{
+			if (_appiumApp.Driver is AndroidDriver androidDriver)
+			{
+				IDictionary<string, object> result = androidDriver.GetSystemBars();
 
 				return new CommandResponse(result, CommandResponseResult.Success);
 			}
