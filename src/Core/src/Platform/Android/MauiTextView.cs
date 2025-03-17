@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Platform
 		static float GetMaxLineWidth(Layout layout)
 		{
 			float maxWidth = 0;
+			//Calculates the maximum width needed to display the content based on the widest line."
 			for (int i = 0, count = layout.LineCount; i < count; i++)
 			{
 				maxWidth = Math.Max(maxWidth, layout.GetLineWidth(i));

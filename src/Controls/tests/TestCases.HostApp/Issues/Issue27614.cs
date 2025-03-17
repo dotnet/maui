@@ -5,12 +5,23 @@
 	{
 		public Issue27614()
 		{
-			var label = new Label
+
+			var singleLineLabel = new Label
 			{
 				HorizontalOptions = LayoutOptions.Start,
 				AutomationId = "Label",
 				Margin = new Thickness(5, 5),
-				Text = "Label and parent layout is behaving differently in iOS",
+				Text = "Hello World",
+				BackgroundColor = Colors.Blue,
+				TextColor = Colors.Black,
+				FontSize = 20
+			};
+
+			var multiLineLabel = new Label
+			{
+				HorizontalOptions = LayoutOptions.Start,
+				Margin = new Thickness(5, 5),
+				Text = "NET MAUI is a framework used to build native, cross-platform desktop and mobile apps from a single C# codebase for Android, iOS, Mac, and Windows",
 				BackgroundColor = Colors.Orchid,
 				TextColor = Colors.Black,
 				FontSize = 20
@@ -25,7 +36,8 @@
 			};
 			button.Clicked += (s, e) =>
 			{
-				label.HorizontalOptions = LayoutOptions.Center;
+				singleLineLabel.HorizontalOptions = LayoutOptions.Center;
+				multiLineLabel.HorizontalOptions = LayoutOptions.Center;
 			};
 			var button1 = new Button
 			{
@@ -35,11 +47,12 @@
 			};
 			button1.Clicked += (s, e) =>
 			{
-				label.HorizontalOptions = LayoutOptions.End;
+				singleLineLabel.HorizontalOptions = LayoutOptions.End;
+				multiLineLabel.HorizontalOptions = LayoutOptions.End;
 			};
 			var layout = new VerticalStackLayout
 			{
-				Children = { label, button, button1 }
+				Children = { singleLineLabel, multiLineLabel, button, button1 }
 			};
 
 			Content = layout;
