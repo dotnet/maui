@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Hosting.Internal
 	sealed class MauiHandlersFactory : MauiFactory, IMauiHandlersFactory
 	{
 		readonly ConcurrentDictionary<Type, Type?> _serviceCache = new();
+		readonly ConcurrentDictionary<Type, ElementHandlerAttribute?> _elementHandlerAttributeCache = new();
 
 		readonly RegisteredHandlerServiceTypeSet _registeredHandlerServiceTypeSet;
 
@@ -62,10 +63,26 @@ namespace Microsoft.Maui.Hosting.Internal
 				=> elementHandlerAttribute.HandlerType;
 		}
 
-		private static bool TryGetElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)
+		private bool TryGetElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)
 		{
-			elementHandlerAttribute = viewType.GetCustomAttribute(typeof(ElementHandlerAttribute), inherit: false) as ElementHandlerAttribute;
-			return elementHandlerAttribute != null;
+			elementHandlerAttribute = _elementHandlerAttributeCache.GetOrAdd(viewType, static (viewType) =>
+			{
+				Type? type = viewType;
+				while (type is not null)
+				{
+					var elementHandlerAttribute = type.GetCustomAttribute(typeof(ElementHandlerAttribute), inherit: false) as ElementHandlerAttribute;
+					if (elementHandlerAttribute is not null)
+					{
+						return elementHandlerAttribute;
+					}
+
+					type = type.BaseType;
+				}
+
+				return null;
+			});
+
+			return elementHandlerAttribute is not null;
 		}
 
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
