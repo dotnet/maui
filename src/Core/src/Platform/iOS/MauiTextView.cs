@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Platform
 			};
 
 			// Scroll the content to the cursor position if it is hidden by the keyboard
-			if (KeyboardAutoManagerScroll.IsKeyboardShowing)
+			if (KeyboardAutoManagerScroll.IsKeyboardShowing && (VerticalTextAlignment == Maui.TextAlignment.Center || VerticalTextAlignment == Maui.TextAlignment.End))
 			{
 				var cursorRect = KeyboardAutoManagerScroll.FindCursorPosition();
 				var keyboardTop = KeyboardAutoManagerScroll.KeyboardFrame.Top;
