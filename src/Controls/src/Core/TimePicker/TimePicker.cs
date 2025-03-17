@@ -1,11 +1,13 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="Type[@FullName='Microsoft.Maui.Controls.TimePicker']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class TimePicker : View, IFontElement, ITextElement, IElementConfiguration<TimePicker>, ITimePicker
 	{
 		/// <summary>Bindable property for <see cref="Format"/>.</summary>
@@ -165,6 +167,11 @@ namespace Microsoft.Maui.Controls
 		{
 			if (bindable is TimePicker timePicker)
 				timePicker.TimeSelected?.Invoke(timePicker, new TimeChangedEventArgs((TimeSpan)oldValue, (TimeSpan)newValue));
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"{base.GetDebuggerDisplay()}, Time = {Time}";
 		}
 	}
 }

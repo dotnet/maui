@@ -17,18 +17,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		// CollectionShouldInvalidateOnVisibilityChange (src\Compatibility\ControlGallery\src\Issues.Shared\Issue13203.cs)
 		[Test]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionShouldInvalidateOnVisibilityChange()
 		{
-			if (Device == TestDevice.Android)
-			{
-				App.WaitForNoElement(Success);
-			}
-			else
-			{
-				Assert.Ignore("This test is failing, requires research.");
-			}
+			App.WaitForElement(Success);
 		}
 	}
 }

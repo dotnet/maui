@@ -104,11 +104,6 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
-		internal static void MapSearchIconColor(ISearchBarHandler handler, ISearchBar searchBar)
-		{
-			handler.PlatformView?.UpdateSearchIconColor(searchBar);
-		}
-
 		public static void MapKeyboard(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateKeyboard(searchBar);
@@ -126,7 +121,6 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.UpdateIsTextPredictionEnabled(VirtualView);
 				PlatformView?.UpdateIsSpellCheckEnabled(VirtualView);
 				PlatformView?.UpdateCancelButtonColor(VirtualView);
-				PlatformView?.UpdateSearchIconColor(VirtualView);
 				PlatformView?.UpdateKeyboard(VirtualView);
 			}
 		}

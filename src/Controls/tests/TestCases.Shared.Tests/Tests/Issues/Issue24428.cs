@@ -1,4 +1,4 @@
-﻿#if ANDROID || IOS
+﻿#if ANDROID || IOS // Using AppThemeBinding and changing theme not working on Windows and ThemeChangeAction not implemented in Appium Catalyst
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Page)]
 		public void NavigationBarBackgroundShouldChange()
 		{
-			try 
+			try
 			{
 				App.WaitForElement("lightThemeLabel");
 				VerifyScreenshot("NavigationBarBackgroundShouldChangeLightTheme");

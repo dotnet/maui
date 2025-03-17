@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			NSCollectionLayoutDimension groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 			NSCollectionLayoutDimension groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
 			nfloat itemSpacing = 0;
+			NSCollectionLayoutGroup group = null;
 
 			var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
 			{
@@ -78,13 +79,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				var groupSize = NSCollectionLayoutSize.Create(groupWidth, groupHeight);
 
-				var group = IsHorizontal ? NSCollectionLayoutGroup.GetHorizontalGroup(groupSize, item, 1) :
-										 NSCollectionLayoutGroup.GetVerticalGroup(groupSize, item, 1);
+				if (OperatingSystem.IsIOSVersionAtLeast(16))
+				{
+					group = IsHorizontal ? NSCollectionLayoutGroup.GetHorizontalGroup(groupSize, item, 1) :
+										   NSCollectionLayoutGroup.GetVerticalGroup(groupSize, item, 1);
+				}
+				else
+				{
+					group = IsHorizontal ? NSCollectionLayoutGroup.CreateHorizontal(groupSize, item, 1) :
+										   NSCollectionLayoutGroup.CreateVertical(groupSize, item, 1);
+				}
 
 				// Create our section layout
 				var section = NSCollectionLayoutSection.Create(group: group);
 				section.InterGroupSpacing = itemSpacing;
-				section.OrthogonalScrollingBehavior = UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered;
+				section.OrthogonalScrollingBehavior = IsHorizontal ? UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered : UICollectionLayoutSectionOrthogonalScrollingBehavior.None;
 				section.VisibleItemsInvalidationHandler = (items, offset, env) =>
 				{
 					//This will allow us to SetPosition when we are scrolling the items

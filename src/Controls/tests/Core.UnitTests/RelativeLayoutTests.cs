@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Content = label,
 			};
 
-			
+
 			relativeLayout.Children.Add(border, Constraint.Constant(20), Constraint.Constant(20), Constraint.RelativeToParent(parent => parent.Height),
 								Constraint.RelativeToParent(parent => parent.Height));
 

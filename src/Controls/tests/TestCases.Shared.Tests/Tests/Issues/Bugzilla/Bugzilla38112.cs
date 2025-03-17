@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS 
+﻿#if TEST_FAILS_ON_WINDOWS
 //After Button Click removes all Items in TableView 
 //For more information: https://github.com/dotnet/maui/issues/26699
 using NUnit.Framework;

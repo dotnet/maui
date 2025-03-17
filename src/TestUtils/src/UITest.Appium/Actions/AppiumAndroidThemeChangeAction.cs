@@ -17,12 +17,12 @@ namespace UITest.Appium
 		{
 			if (commandName == SetLightTheme)
 			{
-				ShellHelper.ExecuteAdbCommand($"adb shell cmd uimode night no");
+				ShellHelper.ExecuteShellCommand($"adb shell cmd uimode night no");
 				return CommandResponse.SuccessEmptyResponse;
 			}
 			else if (commandName == SetDarkTheme)
 			{
-				ShellHelper.ExecuteAdbCommand($"adb shell cmd uimode night yes");
+				ShellHelper.ExecuteShellCommand($"adb shell cmd uimode night yes");
 				return CommandResponse.SuccessEmptyResponse;
 			}
 

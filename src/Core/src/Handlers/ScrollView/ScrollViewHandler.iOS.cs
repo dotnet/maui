@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
-			if (platformView is MauiScrollView platformScrollView)
+			if (platformView is ICrossPlatformLayoutBacking platformScrollView)
 			{
 				platformScrollView.CrossPlatformLayout = this;
 			}
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(UIScrollView platformView)
 		{
-			if (platformView is MauiScrollView platformScrollView)
+			if (platformView is ICrossPlatformLayoutBacking platformScrollView)
 			{
 				platformScrollView.CrossPlatformLayout = null;
 			}

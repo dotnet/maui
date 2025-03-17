@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS 
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
 // Orientation not supported in Catalyst and Windows
 // On iOS FlyoutPage RTL is not working as expected, Issue: https://github.com/dotnet/maui/issues/26726
 using NUnit.Framework;
@@ -35,7 +35,7 @@ public class Issue2818 : _IssuesUITest
 		Assert.That(positionStart, Is.Not.EqualTo(secondPosition));
 	}
 
-	[Test]  
+	[Test]
 	public void RootViewSizeDoesntChangeAfterBackground()
 	{
 		var idiom = App.WaitForElement("Idiom");
@@ -48,7 +48,7 @@ public class Issue2818 : _IssuesUITest
 		App.WaitForElement("OpenRootView");
 		App.Tap("OpenRootView");
 		var windowSize = App.WaitForElement("RootLayout");
-		App.BackgroundApp();  
+		App.BackgroundApp();
 		App.WaitForNoElement("RootLayout");
 		App.ForegroundApp();
 		var newWindowSize = App.WaitForElement("RootLayout");
@@ -61,7 +61,7 @@ public class Issue2818 : _IssuesUITest
 	{
 		App.SetOrientationPortrait();
 	}
- 
+
 }
 #endif
 

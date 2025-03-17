@@ -90,15 +90,34 @@ namespace Microsoft.Maui.Handlers
 
 		void ScrollChange(object? sender, AndroidX.Core.Widget.NestedScrollView.ScrollChangeEventArgs e)
 		{
-			var context = (sender as View)?.Context;
+			var platformView = sender as MauiScrollView;
 
-			if (context == null)
+			if (platformView?.Context is null)
 			{
 				return;
 			}
 
-			VirtualView.VerticalOffset = Context.FromPixels(e.ScrollY);
-			VirtualView.HorizontalOffset = Context.FromPixels(e.ScrollX);
+			int scrollX = e.ScrollX;
+			int scrollY = e.ScrollY;
+
+			if (VirtualView.Orientation == ScrollOrientation.Both)
+			{
+				if (scrollX == 0)
+				{
+					// Need to pass the native HorizontalScrollView's ScrollX position to the virtual view to resolve
+					// the zero scroll offset issue since the framework returns an improper ScrollX value.
+					scrollX = platformView.HorizontalScrollOffset;
+				}
+
+				if (scrollY == 0)
+				{
+					// Pass the native ScrollView's ScrollY to the virtual view to maintain the correct vertical offset.
+					scrollY = platformView.ScrollY;
+				}
+			}
+
+			VirtualView.HorizontalOffset = platformView.Context.FromPixels(scrollX);
+			VirtualView.VerticalOffset = platformView.Context.FromPixels(scrollY);
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)

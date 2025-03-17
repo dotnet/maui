@@ -29,9 +29,9 @@ public class Bugzilla40333 : _IssuesUITest
 		App.WaitForElement(ClickThisId);
 
 		App.Tap(ClickThisId);
-		App.WaitForElement(StillHereId);  
+		App.WaitForElement(StillHereId);
 	}
-	
+
 	[Test]
 	public void ClickingOnMenuItemInRootDoesNotCrash_TabPageVersion()
 	{
@@ -50,10 +50,10 @@ public class Bugzilla40333 : _IssuesUITest
 		App.WaitForElement(ClickThisId);
 
 		App.Tap(ClickThisId);
-		App.WaitForElement(StillHereId);  
+		App.WaitForElement(StillHereId);
 	}
 }
- 
- 
- 
+
+
+
 

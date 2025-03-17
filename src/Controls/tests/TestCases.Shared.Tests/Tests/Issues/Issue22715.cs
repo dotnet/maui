@@ -1,9 +1,8 @@
-#if IOS
+#if IOS //This test case verifies that the sample is working exclusively on IOS platforms "due to use of UIKit APIs".
 using System.Drawing;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using OpenQA.Selenium.Appium.Interactions;
-using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;

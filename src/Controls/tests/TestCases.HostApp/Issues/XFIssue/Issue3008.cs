@@ -79,11 +79,11 @@ public class Issue3008 : TestContentPage
 			GroupHeaderTemplate = new DataTemplate(typeof(MyHeaderViewCell)),
 			ItemTemplate = new DataTemplate(() =>
 			{
-				Label nameLabel = new Label() { Text = "Grouped Item" , AutomationId = "GroupedItem"};
+				Label nameLabel = new Label() { Text = "Grouped Item", AutomationId = "GroupedItem" };
 				var cell = new ViewCell
 				{
 					View = nameLabel,
-				}; 
+				};
 				return cell;
 			}),
 		};

@@ -1,5 +1,5 @@
-using Microsoft.Maui.Controls;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues;
 
@@ -9,11 +9,11 @@ public class Issue1557 : NavigationPage
 {
 	public Issue1557()
 	{
-		
-		var button = new Button { Text = "Bug Repro"};
+
+		var button = new Button { Text = "Bug Repro" };
 		var contentPage = new ContentPage();
 		contentPage.Content = button;
-		button.Clicked += async(sender, e) => await Navigation.PushAsync(new Issue1557Page());
+		button.Clicked += async (sender, e) => await Navigation.PushAsync(new Issue1557Page());
 		Navigation.PushAsync(contentPage);
 	}
 }

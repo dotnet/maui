@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,8 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public async Task ButtonReleasedTest()
 		{
 			App.WaitForElement(ButtonId);
-			App.PressDown(ButtonId);
-
+			App.Tap(ButtonId);
 			await Task.Delay(200);
 
 			// Button should be unloaded, so we should see the success label
@@ -30,4 +28,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif

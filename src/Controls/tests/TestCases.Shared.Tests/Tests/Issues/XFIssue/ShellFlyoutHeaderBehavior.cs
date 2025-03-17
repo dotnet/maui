@@ -26,37 +26,37 @@ public class ShellFlyoutHeaderBehavior : _IssuesUITest
 		Assert.That(startingHeight, Is.EqualTo(endHeight).Within(1));
 	}
 #if !IOS // For iOS, getting incorrect Rect values from GetRect method in Appium even though the size is reduced in UI.
-    [Test]
-    [Category(UITestCategories.Shell)]
-    public void FlyoutHeaderBehaviorCollapseOnScroll()
-    {
-        App.WaitForElement("CollapseOnScroll");
-        App.Tap("CollapseOnScroll");
-        float startingHeight = GetFlyoutHeight();
-        App.ScrollDown("Item 4", ScrollStrategy.Gesture);
-        float endHeight = GetFlyoutHeight();
- 
-        Assert.That(startingHeight, Is.GreaterThan(endHeight));
-    }
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void FlyoutHeaderBehaviorCollapseOnScroll()
+	{
+		App.WaitForElement("CollapseOnScroll");
+		App.Tap("CollapseOnScroll");
+		float startingHeight = GetFlyoutHeight();
+		App.ScrollDown("Item 4", ScrollStrategy.Gesture);
+		float endHeight = GetFlyoutHeight();
 
-    [Test] // Skip this for iOS, because FindElements returns count eventhough the element is scrolled up and hidded from the UI.
-    [Category(UITestCategories.Shell)]
-    public void FlyoutHeaderBehaviorScroll()
-    {
-        App.WaitForElement("Scroll");
-        App.Tap("Scroll");
-        var startingY = GetFlyoutY();
-        App.ScrollDown("Item 5", ScrollStrategy.Gesture);
-        var nextY = GetFlyoutY();
- 
-        while (nextY != null && startingY != null)
-        {
-            Assert.That(startingY.Value, Is.GreaterThanOrEqualTo(nextY.Value));
-            startingY = nextY;
-            App.ScrollDown("Item 5", ScrollStrategy.Gesture);
-            nextY = GetFlyoutY();
-        }
-    }
+		Assert.That(startingHeight, Is.GreaterThan(endHeight));
+	}
+
+	[Test] // Skip this for iOS, because FindElements returns count eventhough the element is scrolled up and hidded from the UI.
+	[Category(UITestCategories.Shell)]
+	public void FlyoutHeaderBehaviorScroll()
+	{
+		App.WaitForElement("Scroll");
+		App.Tap("Scroll");
+		var startingY = GetFlyoutY();
+		App.ScrollDown("Item 5", ScrollStrategy.Gesture);
+		var nextY = GetFlyoutY();
+
+		while (nextY != null && startingY != null)
+		{
+			Assert.That(startingY.Value, Is.GreaterThanOrEqualTo(nextY.Value));
+			startingY = nextY;
+			App.ScrollDown("Item 5", ScrollStrategy.Gesture);
+			nextY = GetFlyoutY();
+		}
+	}
 #endif
 
 	float GetFlyoutHeight() =>

@@ -29,7 +29,8 @@ namespace Microsoft.Maui.IntegrationTests
 				p.StartInfo.UseShellExecute = false;
 				p.StartInfo.RedirectStandardOutput = true;
 				p.StartInfo.RedirectStandardError = true;
-				if (inputAction != null) {
+				if (inputAction != null)
+				{
 					p.StartInfo.RedirectStandardInput = true;
 				}
 				p.OutputDataReceived += (sender, o) =>
@@ -53,7 +54,8 @@ namespace Microsoft.Maui.IntegrationTests
 				p.BeginOutputReadLine();
 				p.BeginErrorReadLine();
 
-				if (inputAction != null) {
+				if (inputAction != null)
+				{
 					inputAction(p);
 				}
 

@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS 
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 // On iOS and Catalyst BoxView is not rendered, issue: https://github.com/dotnet/maui/issues/18746, 
 // On Windows Clip is not properly working, issue: https://github.com/dotnet/maui/issues/14078
 using NUnit.Framework;

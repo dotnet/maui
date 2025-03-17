@@ -8,9 +8,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Bugzilla40955 : _IssuesUITest
 {
 	const string DestructorMessage = "NavigationPageEx Destructor called";
-    const string LabelPage1 = "LabelOne";
-    const string LabelPage2 = "LabelTwo";
-    const string LabelPage3 = "LabelThree";
+	const string LabelPage1 = "LabelOne";
+	const string LabelPage2 = "LabelTwo";
+	const string LabelPage3 = "LabelThree";
 
 	const string Page1Title = "Page1";
 	const string Page2Title = "Page2";
