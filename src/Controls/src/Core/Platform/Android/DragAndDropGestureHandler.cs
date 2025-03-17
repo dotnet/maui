@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public bool HasAnyDragAndDropGestures()
 		{
 			var gestures = GetView()?.GestureRecognizers;
-			if (gestures == null || gestures.Count == 0)
+			if (gestures is null || gestures.Count == 0)
 				return false;
 
 			foreach (var gesture in gestures)
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			view = view ?? GetView();
 
-			if (view == null)
+			if (view is null)
 				return;
 
 			var gestures =
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls.Platform
 					.GestureRecognizers?
 					.OfType<TRecognizer>();
 
-			if (gestures == null)
+			if (gestures is null)
 				return;
 
 			foreach (var gesture in gestures)
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls.Platform
 			package = localStateData?.DataPackage;
 			var dragSourceElement = _currentCustomLocalStateData?.SourceElement;// ?? dragSourceRenderer?.Element;
 
-			if (package == null)
+			if (package is null)
 			{
 				package = new DataPackage();
 				_currentCustomLocalStateData.DataPackage = package;
@@ -193,7 +193,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			var datapackage = customLocalStateData.DataPackage;
-			if (e.LocalState == null)
+			if (e.LocalState is null)
 			{
 				string text = String.Empty;
 				if (e.ClipData?.ItemCount > 0)
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls.Platform
 					var clipData = e.ClipData.GetItemAt(0);
 					var control = GetControl();
 
-					if (control?.Context != null)
+					if (control?.Context is not null)
 						text = clipData.CoerceToText(control?.Context);
 					else
 						text = clipData.Text;
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (String.IsNullOrWhiteSpace(datapackage.Text))
 					datapackage.Text = text;
 
-				if (datapackage.Image == null)
+				if (datapackage.Image is null)
 					datapackage.Image = text;
 			}
 
@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						ClipData.Item item = null;
 
-						if (args.Data.Image != null)
+						if (args.Data.Image is not null)
 						{
 							mimeTypes.Add("image/jpeg");
 							item = ConvertToClipDataItem(args.Data.Image, mimeTypes);
@@ -296,13 +296,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 						var dataPackage = args.Data;
 						ClipData.Item userItem = null;
-						if (dataPackage.Image != null)
+						if (dataPackage.Image is not null)
 							userItem = ConvertToClipDataItem(dataPackage.Image, mimeTypes);
 
-						if (dataPackage.Text != null)
+						if (dataPackage.Text is not null)
 							userItem = new ClipData.Item(dataPackage.Text);
 
-						if (item == null)
+						if (item is null)
 						{
 							item = userItem;
 							userItem = null;
@@ -310,7 +310,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 						data = new ClipData(clipDescription, mimeTypes.ToArray(), item);
 
-						if (userItem != null)
+						if (userItem is not null)
 							data.AddItem(userItem);
 					}
 
