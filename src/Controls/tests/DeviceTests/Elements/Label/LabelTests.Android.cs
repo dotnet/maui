@@ -105,15 +105,7 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = GetPlatformLabel(handler);
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var translation = nativeView.TranslationX;
-				var density = Microsoft.Maui.Devices.DeviceDisplay.Current.MainDisplayInfo.Density;
-				var expectedInPixels = density * label.TranslationX;
-
-				Assert.Equal(expectedInPixels, translation, 1.0);
-
-				var translationY = nativeView.TranslationY;
-				var expectedYInPixels = density * label.TranslationY;
-				Assert.Equal(expectedYInPixels, translationY, 1.0);
+				AssertTranslationMatches(nativeView, label.TranslationX, label.TranslationY);
 			});
 		}
 
