@@ -19,6 +19,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("Settings");
 			App.EnterFullScreen();
+			// Wait a little bit to complete the system animation moving the App Window to FullScreen.
+            Thread.Sleep(500);
 			VerifyScreenshot();
 		}
 	}
