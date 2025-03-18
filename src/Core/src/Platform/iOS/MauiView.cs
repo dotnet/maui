@@ -163,10 +163,27 @@ namespace Microsoft.Maui.Platform
 			_invalidateParentWhenMovedToWindow = true;
 		}
 
-		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
 			InvalidateConstraintsCache();
 			SetNeedsLayout();
+
+			// If we're propagating, we can stop at the first view with fixed constraints
+			if (isPropagating && CrossPlatformLayout is IConstrainedView { HasFixedConstraints: true })
+			{
+				// We're stopping propagation here, but we have to account for the wrapper view
+				// which needs to be invalidated for consistency too.
+				if (Superview is WrapperView wrapper)
+				{
+					wrapper.SetNeedsLayout();
+				}
+
+				return false;
+			}
+
+			// If we're not propagating, then this view is the one triggering the invalidation
+			// and one possible cause is that constraints have changed, so we have to propagate the invalidation.
+			return true;
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]

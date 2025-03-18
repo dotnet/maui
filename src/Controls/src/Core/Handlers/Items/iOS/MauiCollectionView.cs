@@ -25,12 +25,11 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IP
 		_invalidateParentWhenMovedToWindow = true;
 	}
 
-	void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+	bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 	{
-		if (!isPropagating)
-		{
-			SetNeedsLayout();
-		}
+		SetNeedsLayout();
+
+		return !isPropagating;
 	}
 
 	[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
