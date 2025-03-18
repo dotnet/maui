@@ -569,10 +569,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_blurView.Frame = frame;
 				_header.ViewController.View.Frame = frame;
 #if MACCATALYST
-				var layoutIfNeed = (_header.ViewController as UICollectionViewController).CollectionView.CollectionViewLayout.ShouldInvalidateLayoutForBoundsChange(frame);
-				if (layoutIfNeed)
+				if (_header.ViewController is UICollectionViewController collectionViewController)
 				{
-					(_header.ViewController as UICollectionViewController).CollectionView.CollectionViewLayout.InvalidateLayout();
+					var layout = collectionViewController.CollectionView.CollectionViewLayout;
+					var layoutIfNeed = layout.ShouldInvalidateLayoutForBoundsChange(frame);
+					if (layoutIfNeed)
+					{
+						layout.InvalidateLayout();
+					}
 				}
 #endif
 			}
