@@ -583,8 +583,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				var header = list.TemplatedItems.GetGroup(0).HeaderContent;
 			}
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 
 			// use less or equal because mono will keep the last header var alive no matter what
 			Assert.True(TestCell.NumberOfCells <= 6, $"{TestCell.NumberOfCells} <= 6");

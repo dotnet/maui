@@ -382,9 +382,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			create();
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
+			TestHelpers.Collect();
 
 			Assert.False(weakProxy.IsAlive);
 		}
@@ -439,15 +437,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.True(list.AddObject(), "GC hasn't run");
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 
 			Assert.True(list.AddObject(), "GC run, but proxy should still hold a reference");
 
 			_proxyForWeakToWeakTest = null;
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 
 			Assert.False(list.AddObject(), "Proxy is gone and GC has run");
 		}

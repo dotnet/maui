@@ -23,9 +23,7 @@ namespace Microsoft.Maui.UnitTests.Views
 					fired = true;
 			};
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.CollectAsync();
 			GC.KeepAlive(shape);
 
 			fill.Color = Colors.Green;
@@ -55,9 +53,7 @@ namespace Microsoft.Maui.UnitTests.Views
 					fired = true;
 			};
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.CollectAsync();
 			GC.KeepAlive(shape);
 
 			stroke.Color = Colors.Green;

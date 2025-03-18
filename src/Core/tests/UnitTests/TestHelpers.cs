@@ -16,5 +16,24 @@ namespace Microsoft.Maui.UnitTests
 
 			return reference.IsAlive;
 		}
+
+		public static void Collect(int count = 10)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+			}
+		}
+
+		public static async Task CollectAsync(int count = 10)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				await Task.Yield();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+			}
+		}
 	}
 }

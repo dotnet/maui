@@ -736,9 +736,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			create();
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
+			TestHelpers.Collect();
 
 			if (mode == BindingMode.TwoWay || mode == BindingMode.OneWay)
 				Assert.False(weakViewModel.IsAlive, "ViewModel wasn't collected");
@@ -1437,9 +1435,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(1, viewmodel.InvocationListSize());
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.CollectAsync();
 
 			viewmodel.OnPropertyChanged("Foo");
 
@@ -1491,17 +1487,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(1, viewModel.InvocationListSize());
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.CollectAsync();
 
 			Assert.False(bindingRef.IsAlive, "Binding should not be alive!");
 			Assert.False(buttonRef.IsAlive, "Button should not be alive!");
 
 			// WeakPropertyChangedProxy won't go away until the second GC, PropertyChangedProxy unsubscribes in its finalizer
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.CollectAsync();
 			Assert.False(proxyRef.IsAlive, "WeakPropertyChangedProxy should not be alive!");
 		}
 
@@ -1642,9 +1634,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					new Tuple<Func<MockViewModel, object>, string> (mvm=>mvm, "Text")
 				});
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
+			TestHelpers.Collect();
 			var swtb = Stopwatch.StartNew();
 			for (var i = 0; i < it; i++)
 			{
@@ -1659,9 +1649,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				setter: (mvm, s) => mvm.Text = s,
 				handlers: null);
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
+			TestHelpers.Collect();
 			var swtbh = Stopwatch.StartNew();
 			for (var i = 0; i < it; i++)
 			{
@@ -1672,9 +1660,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Bar", bindable.GetValue(property));
 
 			binding = new Binding("Text");
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
+			TestHelpers.Collect();
 			var swb = Stopwatch.StartNew();
 			for (var i = 0; i < it; i++)
 			{
@@ -1684,9 +1670,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			swb.Stop();
 			Assert.Equal("Bar", bindable.GetValue(property));
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
+			TestHelpers.Collect();
 			var swsv = Stopwatch.StartNew();
 			for (var i = 0; i < it; i++)
 				bindable.SetValue(property, (i % 2 == 0 ? vm0 : vm1).Text);
@@ -1713,9 +1697,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					new Tuple<Func<MockViewModel, object>, string> (mvm=>mvm, "Text")
 				});
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
+			TestHelpers.Collect();
 			bindable.SetBinding(property, binding);
 			var swtb = Stopwatch.StartNew();
 			for (var i = 0; i < it; i++)
@@ -1728,9 +1710,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				setter: (mvm, s) => mvm.Text = s,
 				handlers: null);
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
+			TestHelpers.Collect();
 			bindable.SetBinding(property, binding);
 			var swtbh = Stopwatch.StartNew();
 			for (var i = 0; i < it; i++)
@@ -1739,9 +1719,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Bar", bindable.GetValue(property));
 
 			binding = new Binding("Text");
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
+			TestHelpers.Collect();
 			bindable.SetBinding(property, binding);
 			var swb = Stopwatch.StartNew();
 			for (var i = 0; i < it; i++)
@@ -1749,9 +1727,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			swb.Stop();
 			Assert.Equal("Bar", bindable.GetValue(property));
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
+			TestHelpers.Collect();
 			bindable.SetBinding(property, binding);
 			var swsv = Stopwatch.StartNew();
 			for (var i = 0; i < it; i++)

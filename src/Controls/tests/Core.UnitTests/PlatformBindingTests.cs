@@ -200,8 +200,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 
 			//this should collect the ConditionalWeakTable
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 		}
 
 		public void Dispose() => DispatcherProvider.SetCurrent(null);
@@ -342,9 +341,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			create();
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
+			TestHelpers.Collect();
 
 			Assert.False(wr.IsAlive);
 		}
@@ -378,9 +375,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			create();
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-			GC.Collect();
+			TestHelpers.Collect();
 
 			Assert.False(wr.IsAlive);
 		}

@@ -362,7 +362,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var weakReference = CreateReference();
 
-			await TestHelpers.Collect();
+			await TestHelpers.CollectAsync();
 
 			Assert.False(weakReference.IsAlive);
 

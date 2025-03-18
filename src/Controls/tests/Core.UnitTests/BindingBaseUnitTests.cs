@@ -647,8 +647,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			create();
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 
 			if (mode == BindingMode.TwoWay || mode == BindingMode.OneWay)
 				Assert.False(weakViewModel.IsAlive, "ViewModel wasn't collected");
@@ -760,8 +759,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			create();
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 
 			Assert.False(weakCollection.IsAlive);
 			Assert.False(weakContext.IsAlive);
@@ -796,8 +794,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			create();
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 
 			Assert.False(weakCollection.IsAlive);
 			Assert.False(weakContext.IsAlive);

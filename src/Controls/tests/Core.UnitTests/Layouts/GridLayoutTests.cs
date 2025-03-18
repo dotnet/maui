@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			WeakReference reference = CreateReference();
 
-			await TestHelpers.Collect();
+			await TestHelpers.CollectAsync();
 
 			Assert.False(reference.IsAlive, "Grid should not be alive!");
 
@@ -223,9 +223,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 				reference = new(grid);
 			}
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.CollectAsync();
 
 			Assert.False(reference.IsAlive, "Grid should not be alive!");
 		}

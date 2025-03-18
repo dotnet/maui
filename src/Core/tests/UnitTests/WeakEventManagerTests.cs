@@ -262,8 +262,7 @@ namespace Microsoft.Maui.UnitTests
 				ts.Subscribe(source);
 			})();
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 
 			Assert.NotNull(wr);
 			Assert.False(wr?.IsAlive);
@@ -286,8 +285,7 @@ namespace Microsoft.Maui.UnitTests
 				ts.Subscribe(source);
 			})();
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 			new TestSubscriber().Unsubscribe(source);
 
 			Assert.NotNull(wr);

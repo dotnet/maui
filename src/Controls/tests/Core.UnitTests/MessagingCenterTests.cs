@@ -202,8 +202,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				MessagingCenter.Subscribe<TestPublisher>(subscriber, "test", p => throw new XunitException("The subscriber should have been collected."));
 			})();
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 
 			var pub = new TestPublisher();
 			pub.Test(); // Assert.Fail() shouldn't be called, because the TestSubcriber object should have ben GCed
@@ -223,8 +222,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				subscriber.SubscribeToTestMessages();
 			})();
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 
 			var pub = new TestPublisher();
 			pub.Test();
@@ -248,8 +246,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				MessagingCenter.Subscribe<TestPublisher>(subscriber, "test", p => subscriber.SetSuccess());
 			})();
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 
 			Assert.True(wr.IsAlive); // The closure in Subscribe should be keeping the subscriber alive
 			Assert.NotNull(wr.Target as TestSubcriber);
@@ -287,7 +284,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var wr = CreateReference();
 
-			await TestHelpers.Collect();
+			await TestHelpers.CollectAsync();
 
 			Assert.False(wr.IsAlive); // The Action target and subscriber were the same object, so both could be collected
 		}
@@ -301,8 +298,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			MessagingCenter.Subscribe<TestPublisher>(_subscriber, "test", p => MessagingCenterTestsCallbackSource.Increment(ref i));
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 
 			var pub = new TestPublisher();
 			pub.Test();
@@ -320,8 +316,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var source = new MessagingCenterTestsCallbackSource();
 			MessagingCenter.Subscribe<TestPublisher>(_subscriber, "test", p => source.SuccessCallback(ref success));
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 
 			var pub = new TestPublisher();
 			pub.Test();

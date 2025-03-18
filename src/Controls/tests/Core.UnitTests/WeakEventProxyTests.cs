@@ -22,9 +22,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				reference = new WeakReference(subscriber);
 			}
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.CollectAsync();
 
 			Assert.False(reference.IsAlive, "Subscriber should not be alive!");
 		}
@@ -40,9 +38,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			NotifyCollectionChangedEventHandler handler = (s, e) => fired = true;
 			proxy.Subscribe(list, handler);
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.CollectAsync();
 			GC.KeepAlive(handler);
 
 			list.Add("a");

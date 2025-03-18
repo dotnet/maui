@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var reference = CreateReference();
 
 			// GC
-			await TestHelpers.Collect();
+			await TestHelpers.CollectAsync();
 
 			Assert.False(reference.IsAlive, "TitleBar should not be alive!");
 
