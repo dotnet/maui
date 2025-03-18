@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -23,6 +23,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			return reference.IsAlive;
+		}
+
+		public static async Task<bool> WaitForCollect<T>(this WeakReference<T> reference)
+			where T : class
+		{
+			for (int i = 0; i < 40; i++)
+			{
+				await Task.Yield();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+
+				if (!reference.TryGetTarget(out _))
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 	}
 }
