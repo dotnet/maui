@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("Switch");
 			App.Tap("Switch");
-			//VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SwitchOff");
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SwitchOff");
 			App.WaitForElement("Switch");
 			App.Tap("Switch");
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SwitchOn");
