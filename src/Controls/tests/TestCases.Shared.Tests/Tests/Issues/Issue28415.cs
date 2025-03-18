@@ -10,13 +10,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "CollectionView display is broken when setting IsVisible after items are added ";
+		public override string Issue => "CollectionView display is broken when setting IsVisible after items are added";
 
 		[Test]
 		[Category(UITestCategories.IsVisible)]
 		[Category(UITestCategories.CollectionView)]
 		public void CollectionViewItemsShouldBeVisible()
 		{
+			App.WaitForElement("LoadListButton");
+			App.Click("LoadListButton");
 			App.WaitForElement("Item1");
 		}
 

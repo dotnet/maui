@@ -4,10 +4,11 @@ using Microsoft.Maui.Controls.Shapes;
 namespace Maui.Controls.Sample.Issues
 {
 
-	[Issue(IssueTracker.Github, 28415, "CollectionView display is broken when setting IsVisible after items are added ", PlatformAffected.Android)]
+	[Issue(IssueTracker.Github, 28415, "CollectionView display is broken when setting IsVisible after items are added", PlatformAffected.Android)]
 	public class Issue28415 : ContentPage
 	{
 		CollectionView _collectionView;
+
 		public Issue28415()
 		{
 			_collectionView = new CollectionView
@@ -36,15 +37,22 @@ namespace Maui.Controls.Sample.Issues
 				})
 			};
 
-			Content = new VerticalStackLayout
+			Button button = new Button
 			{
-				Children = { _collectionView }
+				Text = "Load List",
+				AutomationId = "LoadListButton",
+				Command = new Command(() => LoadList())
+			};
+
+			Content = new StackLayout
+			{
+				Children = { button, _collectionView }
 			};
 		}
 
-		protected override async void OnAppearing()
+		async void LoadList()
 		{
-			_collectionView.ItemsSource = new ObservableCollection<string>(Enumerable.Range(0, 1000).Select(i => $"Item{i}"));
+			_collectionView.ItemsSource = new ObservableCollection<string>(Enumerable.Range(0, 40).Select(i => $"Item{i}"));
 			await Task.Delay(1000);
 			_collectionView.IsVisible = true;
 		}
