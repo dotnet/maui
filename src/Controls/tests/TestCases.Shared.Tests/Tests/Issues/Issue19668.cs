@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-public class Issue19668:_IssuesUITest
+public class Issue19668 : _IssuesUITest
 {
 	public Issue19668(TestDevice testDevice) : base(testDevice)
 	{
@@ -15,7 +15,7 @@ public class Issue19668:_IssuesUITest
 	[Category(UITestCategories.Border)]
 	public void BoxViewPlacementInsideBorder()
 	{
-		App.WaitForElement("Border");
+		App.WaitForElement("Label");
 		VerifyScreenshot();
 	}
 }
