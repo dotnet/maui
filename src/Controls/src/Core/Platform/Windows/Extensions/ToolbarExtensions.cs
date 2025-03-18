@@ -87,7 +87,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		private static void UpdateBackButtonVisibility(MauiToolbar platformToolbar, Toolbar toolbar)
 		{
-			platformToolbar.IsBackButtonVisible = toolbar.BackButtonVisible ? NavigationViewBackButtonVisible.Visible : NavigationViewBackButtonVisible.Collapsed;
+			platformToolbar.IsBackButtonVisible = 
+				toolbar.BackButtonVisible 
+					? NavigationViewBackButtonVisible.Visible 
+					: NavigationViewBackButtonVisible.Collapsed;
 		}
 	}
 }
