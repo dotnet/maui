@@ -79,7 +79,7 @@ static partial class ITypeSymbolExtensions
         => symbol.GetAllMembers(name, context).OfType<IMethodSymbol>();
 
     public static IEnumerable<IFieldSymbol> GetFields(this ITypeSymbol symbol)
-        => symbol.GetFields();
+        => symbol.GetMembers().OfType<IFieldSymbol>();
     public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol, SourceGenContext? context)
         => symbol.GetAllMembers(context).OfType<IFieldSymbol>();
     public static IEnumerable<IFieldSymbol> GetAllFields(this ITypeSymbol symbol, string name, SourceGenContext? context)

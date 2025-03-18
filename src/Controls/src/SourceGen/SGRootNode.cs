@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Xml;
 using Microsoft.Maui.Controls.Xaml;
 
@@ -11,5 +12,7 @@ class SGRootNode : RootNode
 			// TypeReference = typeReference;
 		}
 
-		// public TypeReference TypeReference { get; private set; }
-	}
+	public IList<string>? DisableWarnings { get; internal set; }
+
+	// public TypeReference TypeReference { get; private set; }
+}

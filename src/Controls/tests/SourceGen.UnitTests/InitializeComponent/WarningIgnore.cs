@@ -2,14 +2,16 @@ using System.Linq;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.SourceGen.UnitTests;
-public class BasicCase : SourceGenXamlInitializeComponentTestBase
+public class CSWarningIgnore : SourceGenXamlInitializeComponentTestBase
 {
 	[Test]
-	public void BasicXaml()
+	public void WarningIgnore()
 	{
 		var xaml =
 """
 <?xml version="1.0" encoding="UTF-8"?>
+<?xaml-comp warning-disable="0168,CS0612"?>
+<?xaml-comp warning-disable="FOOBAR" compile=true?>
 <ContentPage
 	xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -49,6 +51,8 @@ public partial class TestPage : ContentPage
 //------------------------------------------------------------------------------
 #nullable enable
 
+#pragma warning disable 0168, CS0612, FOOBAR
+
 namespace Test;
 
 [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.SourceGen, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", "1.0.0.0")]
@@ -58,11 +62,11 @@ public partial class TestPage
 	{
 		var button = new global::Microsoft.Maui.Controls.Button();
 #if _MAUIXAML_SG_SOURCEINFO
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(button!, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 6, 4);
+		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(button!, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 8, 4);
 #endif
 		var __root = this;
 #if _MAUIXAML_SG_SOURCEINFO
-		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 2, 2);
+		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(__root!, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), 4, 2);
 #endif
 		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
 		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);

@@ -22,162 +22,115 @@ namespace Microsoft.Maui.Controls.SourceGen
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
+		//conversion
+		public static DiagnosticDescriptor ConversionFailed = new DiagnosticDescriptor(
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
+
 		public static DiagnosticDescriptor RectConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1003",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.RectConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
-		public static DiagnosticDescriptor ColorConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1004",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ColorConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			category: "XamlParsing",
-			defaultSeverity: DiagnosticSeverity.Error,
-			isEnabledByDefault: true);
-
 		public static DiagnosticDescriptor PointConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1005",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.PointConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor ThicknessConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1006",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ThicknessConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor CornerRadiusConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1007",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.CornerRadiusConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor EasingConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1008",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.EasingConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			category: "XamlParsing",
-			defaultSeverity: DiagnosticSeverity.Error,
-			isEnabledByDefault: true);
-
-		public static DiagnosticDescriptor EnumTypeConverterConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1009",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			messageFormat: new LocalizableResourceString(nameof(MauiGResources.EnumTypeConverterConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor FlexBasisConversionFailed = new DiagnosticDescriptor(
 			id: "MAUIG1010",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.FlexBasisConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor FlowDirectionConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1011",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.FlowDirectionConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor GridLengthConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1012",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.GridLengthConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
-		public static DiagnosticDescriptor ImageSourceConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1013",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ImageSourceConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			category: "XamlParsing",
-			defaultSeverity: DiagnosticSeverity.Error,
-			isEnabledByDefault: true);
-			
 		public static DiagnosticDescriptor ListStringConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1014",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ListStringConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
-		public static DiagnosticDescriptor PointCollectionConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1015",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			messageFormat: new LocalizableResourceString(nameof(MauiGResources.PointCollectionConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			category: "XamlParsing",
-			defaultSeverity: DiagnosticSeverity.Error,
-			isEnabledByDefault: true);
-			
-		public static DiagnosticDescriptor PathGeometryConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1016",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			messageFormat: new LocalizableResourceString(nameof(MauiGResources.PathGeometryConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			category: "XamlParsing",
-			defaultSeverity: DiagnosticSeverity.Error,
-			isEnabledByDefault: true);
-
 		public static DiagnosticDescriptor StrokeShapeConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1017",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.StrokeShapeConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor ColumnDefinitionCollectionConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1018",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ColumnDefinitionCollectionConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 
 		public static DiagnosticDescriptor RowDefinitionCollectionConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1019",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.RowDefinitionCollectionConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
 			
 		public static DiagnosticDescriptor LayoutOptionsConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1020",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			id: "MAUIG1010",
+			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailedTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			messageFormat: new LocalizableResourceString(nameof(MauiGResources.LayoutOptionsConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			category: "XamlParsing",
-			defaultSeverity: DiagnosticSeverity.Error,
-			isEnabledByDefault: true);
-			
-		public static DiagnosticDescriptor ConstraintConversionFailed = new DiagnosticDescriptor(
-			id: "MAUIG1021",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			messageFormat: new LocalizableResourceString(nameof(MauiGResources.ConstraintConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			category: "XamlParsing",
-			defaultSeverity: DiagnosticSeverity.Error,
-			isEnabledByDefault: true);
-
-		public static DiagnosticDescriptor InvalidFormat = new DiagnosticDescriptor(
-			id: "MAUIG1022",
-			title: new LocalizableResourceString(nameof(MauiGResources.ConversionFailed), MauiGResources.ResourceManager, typeof(MauiGResources)),
-			messageFormat: new LocalizableResourceString(nameof(MauiGResources.InvalidFormat), MauiGResources.ResourceManager, typeof(MauiGResources)),
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
