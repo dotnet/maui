@@ -30,6 +30,19 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		public bool IsListeningForeground { get => continuousListener is not null; }
 
+		public bool IsEnabled
+		{
+			get
+			{
+				if (LocationManager is null)
+					return false;
+
+				return OperatingSystem.IsAndroidVersionAtLeast(28)
+					? LocationManager.IsLocationEnabled
+					: LocationManager.IsProviderEnabled(LocationManager.GpsProvider) || LocationManager.IsProviderEnabled(LocationManager.NetworkProvider);
+			}
+		}
+
 		public async Task<Location?> GetLastKnownLocationAsync()
 		{
 			if (LocationManager is null)
