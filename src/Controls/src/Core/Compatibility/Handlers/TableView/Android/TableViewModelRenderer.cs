@@ -12,7 +12,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class TableViewModelRenderer : CellAdapter
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
 		readonly TableView _view;
+#pragma warning restore CS0618 // Type or member is obsolete
 		protected readonly Context Context;
 		ITableViewController Controller => _view;
 		Cell _restoreFocus;
@@ -75,7 +77,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public TableViewModelRenderer(Context context, AListView listView, TableView view) : base(context)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			_view = view;
 			Context = context;

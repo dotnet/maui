@@ -9,7 +9,9 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class TableViewRenderer : ViewRenderer<TableView, UITableView>
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		const int DefaultRowHeight = 44;
 		UIView _originalBackgroundView;
@@ -65,7 +67,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return intent == TableIntent.Data ? UITableViewStyle.Plain : UITableViewStyle.Grouped;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected override void OnElementChanged(ElementChangedEventArgs<TableView> e)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (e.NewElement != null)
 			{
@@ -96,12 +100,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.OnElementPropertyChanged(sender, e);
 
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (e.PropertyName == TableView.RowHeightProperty.PropertyName)
 				UpdateRowHeight();
 			else if (e.PropertyName == TableView.HasUnevenRowsProperty.PropertyName)
 				SetSource();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
 				UpdateBackgroundView();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		protected override void UpdateNativeWidget()

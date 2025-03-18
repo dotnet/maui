@@ -10,5 +10,14 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		CheckBox GetNativeCheckBox(CheckBoxHandler checkBoxHandler) =>
 			checkBoxHandler.PlatformView;
+
+		Task<float> GetPlatformOpacity(CheckBoxHandler checkBoxHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetNativeCheckBox(checkBoxHandler);
+				return (float)nativeView.Opacity;
+			});
+		}
 	}
 }

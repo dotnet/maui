@@ -291,6 +291,24 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
+		[Fact]
+		[Description("The Opacity property of a Editor should match with native Opacity")]
+		public async Task VerifyEditorOpacityProperty()
+		{
+			var editor = new Editor
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = editor.Opacity;
+
+			var handler = await CreateHandlerAsync<EditorHandler>(editor);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var nativeOpacityValue = await GetPlatformOpacity(handler);
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
+		}
+
 		[Category(TestCategory.Editor)]
 		[Category(TestCategory.TextInput)]
 		[Collection(RunInNewWindowCollection)]
