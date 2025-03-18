@@ -30,7 +30,6 @@ public class Issue15508 : ContentPage
 			BackgroundColor = Colors.Gray
 		};
 
-		// Create the button and set up its click event
 		_scrollButton = new Button
 		{
 			Text = "Scroll activated through message",
@@ -41,12 +40,10 @@ public class Issue15508 : ContentPage
 
 		_scrollButton.Clicked += OnScrollButtonClicked;
 
-		// Set up the layout for the button
 		var buttonLayout = new VerticalStackLayout();
 		buttonLayout.Children.Add(_scrollButton);
 		mainGrid.Add(buttonLayout, 1, 0);
 
-		// Set up the ScrollView and its content
 		_scrollView = new ScrollView
 		{
 			BackgroundColor = Colors.LightCoral,
@@ -56,7 +53,6 @@ public class Issue15508 : ContentPage
 			WidthRequest = 150
 		};
 
-		// Create the label content for the ScrollView
 		_scrollLabel = new Label
 		{
 			AutomationId = "ScrollLabel",
@@ -66,13 +62,11 @@ public class Issue15508 : ContentPage
 		_scrollView.Content = _scrollLabel;
 		mainGrid.Add(_scrollView, 0, 0);
 
-		// Set the content of the page
 		Content = mainGrid;
 	}
 
 	string GenerateLabelText()
 	{
-		// Generates the long text for the label dynamically
 		var textBuilder = new StringBuilder();
 
 		for (char c = 'a'; c <= 'z'; c++)
@@ -85,7 +79,6 @@ public class Issue15508 : ContentPage
 
 	void OnScrollButtonClicked(object sender, EventArgs e)
 	{
-		// Scroll to the top of the ScrollView
 		Application.Current?.Dispatcher.DispatchAsync(async () =>
 		{
 			await _scrollView.ScrollToAsync(0, 0, true);
