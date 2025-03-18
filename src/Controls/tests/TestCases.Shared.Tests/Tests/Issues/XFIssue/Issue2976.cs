@@ -18,10 +18,10 @@ public class Issue2976 : _IssuesUITest
 	// [FailsOnIOS]
 	// public void Issue1Test()
 	// {
-	// 	RunningApp.Screenshot("I am at Issue 2976");
-	// 	RunningApp.Tap(q => q.Marked("DEMOA"));
-	// 	RunningApp.Tap(q => q.Marked("DEMOB"));
-	// 	RunningApp.Tap(q => q.Marked("DEMOC"));
-	// 	RunningApp.Tap(q => q.Marked("DEMOD"));
+	// 	App.Screenshot("I am at Issue 2976");
+	// 	App.Tap(q => q.Marked("DEMOA"));
+	// 	App.Tap(q => q.Marked("DEMOB"));
+	// 	App.Tap(q => q.Marked("DEMOC"));
+	// 	App.Tap(q => q.Marked("DEMOD"));
 	// }
 }

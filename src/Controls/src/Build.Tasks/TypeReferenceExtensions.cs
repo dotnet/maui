@@ -235,9 +235,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				}
 			}
 
-			if (typeRef.IsValueType)
-				return false;
-
 			if (typeRef.FullName == "System.Object")
 				return false;
 			var typeDef = typeRef.ResolveCached(cache);

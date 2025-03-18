@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers.Benchmarks
 			{
 				_resourceDictionary.Add($"key{i}", i);
 			}
-			
+
 			for (var j = 0; j < Size; j++)
 			{
 				var merged = new ResourceDictionary();

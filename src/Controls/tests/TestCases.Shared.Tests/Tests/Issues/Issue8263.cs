@@ -10,22 +10,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "[Enhancement] Add On/Off VisualStates for Switch"; 
-		
+		public override string Issue => "[Enhancement] Add On/Off VisualStates for Switch";
+
 		[Test]
 		[Category(UITestCategories.Switch)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
-		[FailsOnMac]
-		[FailsOnWindows]
 		public void SwitchOnOffVisualStatesTest()
 		{
 			App.WaitForElement("Switch");
-			App.Screenshot("Switch Default");
 			App.Tap("Switch");
-			App.Screenshot("Switch Off with Red ThumbColor");
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SwitchOff");
+			App.WaitForElement("Switch");
 			App.Tap("Switch");
-			App.Screenshot("Switch On with Green ThumbColor");
+			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SwitchOn");
 		}
 	}
 }

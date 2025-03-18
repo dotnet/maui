@@ -67,7 +67,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			catch
 			{
 				var failure = app.FindElement("Failed")?.GetText();
-				if(failure is not null)
+				if (failure is not null)
 				{
 					Assert.Fail(failure);
 				}

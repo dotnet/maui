@@ -1,11 +1,11 @@
 #nullable disable
 using System;
 using System.Collections;
+using System.Collections.Specialized;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Items;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.Controls.Handlers.Items;
-using System.Collections.Specialized;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {

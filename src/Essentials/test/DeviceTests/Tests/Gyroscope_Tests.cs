@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasGyroscope)
 				return;
 
-			var tcs = new TaskCompletionSource<GyroscopeData>();
+			var tcs = new TaskCompletionSource<GyroscopeData>(TaskCreationOptions.RunContinuationsAsynchronously);
 			Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
 			Gyroscope.Start(sensorSpeed);
 
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasGyroscope)
 				return;
 
-			var tcs = new TaskCompletionSource<GyroscopeData>();
+			var tcs = new TaskCompletionSource<GyroscopeData>(TaskCreationOptions.RunContinuationsAsynchronously);
 			Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
 			Gyroscope.Start(sensorSpeed);
 
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			if (!HardwareSupport.HasGyroscope)
 				return;
 
-			var tcs = new TaskCompletionSource<GyroscopeData>();
+			var tcs = new TaskCompletionSource<GyroscopeData>(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			Gyroscope.ReadingChanged += Gyroscope_ReadingChanged;
 			Gyroscope.Start(sensorSpeed);

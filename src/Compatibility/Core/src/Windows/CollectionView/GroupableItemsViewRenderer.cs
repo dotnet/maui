@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Data;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class GroupableItemsViewRenderer<TItemsView> : SelectableItemsViewRenderer<TItemsView>
+	public partial class GroupableItemsViewRenderer<TItemsView> : SelectableItemsViewRenderer<TItemsView>
 		where TItemsView : GroupableItemsView
 	{
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs changedProperty)

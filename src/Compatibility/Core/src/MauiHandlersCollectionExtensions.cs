@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 			return handlersCollection;
 		}
 
-		public static IMauiHandlersCollection AddCompatibilityRenderer<TControlType,  [DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)] TRenderer>(this IMauiHandlersCollection handlersCollection)
+		public static IMauiHandlersCollection AddCompatibilityRenderer<TControlType, [DynamicallyAccessedMembers(Internals.HandlerType.TargetMembers)] TRenderer>(this IMauiHandlersCollection handlersCollection)
 			where TControlType : IView
 		{
 			Internals.Registrar.CheckIfRendererIsCompatibilityRenderer(typeof(TRenderer));

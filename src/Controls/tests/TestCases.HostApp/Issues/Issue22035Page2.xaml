@@ -3,18 +3,19 @@
   xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
   x:Class="Maui.Controls.Sample.Issues.Issue22035Page2"
-  xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
+  xmlns:cv2="clr-namespace:Maui.Controls.Sample"
+   xmlns:local="clr-namespace:Maui.Controls.Sample.Issues">
   <Grid RowDefinitions="Auto,*">
     <Button
       Grid.Row="0"
       AutomationId="TestLoadButton"
       Text="Load Items"     
       Pressed="OnLoadButtonPressed" />
-    <CarouselView 
+    <cv2:CarouselView2 
       Grid.Row="1"
       ItemsSource="{Binding Images}" 
       MaximumHeightRequest="150">
-      <CarouselView.ItemTemplate>
+      <cv2:CarouselView2.ItemTemplate>
         <DataTemplate x:DataType="local:Issue22035Model">
           <Grid
             RowDefinitions="*, Auto">
@@ -28,7 +29,7 @@
               Text="{Binding Text}"/>
           </Grid>
         </DataTemplate>
-      </CarouselView.ItemTemplate>
-    </CarouselView>
+      </cv2:CarouselView2.ItemTemplate>
+    </cv2:CarouselView2>
   </Grid>
 </ContentPage>

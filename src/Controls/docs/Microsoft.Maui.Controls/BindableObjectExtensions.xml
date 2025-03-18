@@ -50,9 +50,6 @@
         <param name="bindableObject">To be added.</param>
         <param name="bindableProperty">To be added.</param>
         <param name="returnIfNotSet">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAppThemeColor">
@@ -79,8 +76,6 @@
         <param name="targetProperty">To be added.</param>
         <param name="light">To be added.</param>
         <param name="dark">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBinding">
@@ -248,8 +243,6 @@ Debug.WriteLine (label.Text); // prints "John Doe"
         <param name="targetProperty">To be added.</param>
         <param name="light">To be added.</param>
         <param name="dark">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

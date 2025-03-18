@@ -1,6 +1,6 @@
-﻿using Microsoft.Maui.Controls.Internals;
+﻿using System.Collections.Generic;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls
 {
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 
 		public const string TitleBarSubtitle = "PART_Subtitle";
 		public const string SubtitleVisibleState = "SubtitleVisible";
-		public const string SubtitleHiddenState = "SubTitleCollapsed";
+		public const string SubtitleHiddenState = "SubtitleCollapsed";
 
 		public const string TitleBarLeading = "PART_LeadingContent";
 		public const string LeadingVisibleState = "LeadingContentVisible";
@@ -81,6 +81,7 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				titlebar.ApplyVisibleState(LeadingVisibleState);
+				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
@@ -134,6 +135,7 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				titlebar.ApplyVisibleState(ContentVisibleState);
+				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
@@ -147,6 +149,7 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				titlebar.ApplyVisibleState(TrailingVisibleState);
+				(newValue as Layout)?.IgnoreLayoutSafeArea();
 			}
 		}
 
@@ -256,6 +259,16 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		internal void Cleanup()
+		{
+			PropertyChanged -= TitleBar_PropertyChanged;
+			if (Window is not null)
+			{
+				Window.Activated -= Window_Activated;
+				Window.Deactivated -= Window_Deactivated;
+			}
+		}
+
 		private void TitleBar_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(Window) && Window is not null)
@@ -349,9 +362,10 @@ namespace Microsoft.Maui.Controls
 #if !MACCATALYST
 					new ColumnDefinition(150),             // Min drag region + padding for system buttons
 #endif
-				}
+				},
+				IgnoreSafeArea = true,
 			};
-			
+
 			contentGrid.SetBinding(
 				BackgroundColorProperty,
 				static (TitleBar tb) => tb.BackgroundColor,
@@ -421,17 +435,17 @@ namespace Microsoft.Maui.Controls
 				FontSize = 12,
 				IsVisible = false
 			};
-			
+
 			contentGrid.Add(titleLabel);
 			contentGrid.SetColumn(titleLabel, 2);
 
 			titleLabel.SetBinding(
-				Label.TextProperty, 
+				Label.TextProperty,
 				static (TitleBar tb) => tb.Title,
 				source: RelativeBindingSource.TemplatedParent);
 
 			titleLabel.SetBinding(
-				Label.TextColorProperty, 
+				Label.TextColorProperty,
 				static (TitleBar tb) => tb.ForegroundColor,
 				source: RelativeBindingSource.TemplatedParent);
 

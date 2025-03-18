@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Provides control over simultaneous recognition for pan gesture recognizers.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="EnableAccessibilityScalingForNamedFontSizesProperty">
@@ -32,7 +31,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls whether named font sizes should participate in the device's accessibility scaling.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetEnableAccessibilityScalingForNamedFontSizes">
@@ -56,7 +54,6 @@
         <summary>Returns a Boolean value that tells whether named font sizes should participate in the device's accessibility scaling.</summary>
         <returns>
           <see langword="true" /> for device's accessibility scaling. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetEnableAccessibilityScalingForNamedFontSizes">
@@ -80,7 +77,6 @@
         <summary>Returns a Boolean value that tells whether named font sizes should participate in the device's accessibility scaling.</summary>
         <returns>
           <see langword="true" /> for device's accessibility scaling. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHandleControlUpdatesOnMainThread">
@@ -101,9 +97,6 @@
       </Parameters>
       <Docs>
         <param name="element">The element on which to perform the operation.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHandleControlUpdatesOnMainThread">
@@ -124,9 +117,6 @@
       </Parameters>
       <Docs>
         <param name="config">The platform configuration for the element on which to perform the operation.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetPanGestureRecognizerShouldRecognizeSimultaneously">
@@ -151,7 +141,6 @@
         <summary>Returns a Boolean value that tells whether the pan gesture recognizer should participate in simultaneous recognition of gestures.</summary>
         <returns>
           <see langword="true" /> for simultaneous recognition. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetPanGestureRecognizerShouldRecognizeSimultaneously">
@@ -176,7 +165,6 @@
         <summary>Returns a Boolean value that tells whether the pan gesture recognizer should participate in simultaneous recognition of gestures.</summary>
         <returns>
           <see langword="true" /> for simultaneous recognition. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HandleControlUpdatesOnMainThreadProperty">
@@ -193,8 +181,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PanGestureRecognizerShouldRecognizeSimultaneouslyProperty">
@@ -213,7 +199,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls whether the pan gesture recognizer should participate in simultaneous recognition of gestures.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetEnableAccessibilityScalingForNamedFontSizes">
@@ -238,7 +223,6 @@
         <param name="value">
           <see langword="true" /> for device's accessibility scaling. Otherwise, <see langword="false" />.</param>
         <summary>Sets a Boolean value that controls whether named font sizes should participate in the device's accessibility scaling.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetEnableAccessibilityScalingForNamedFontSizes">
@@ -264,7 +248,6 @@
           <see langword="true" /> for device's accessibility scaling. Otherwise, <see langword="false" />.</param>
         <summary>Sets a Boolean value that controls whether named font sizes should participate in the device's accessibility scaling.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHandleControlUpdatesOnMainThread">
@@ -287,8 +270,6 @@
       <Docs>
         <param name="element">The element on which to perform the operation.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHandleControlUpdatesOnMainThread">
@@ -311,9 +292,7 @@
       <Docs>
         <param name="config">The platform configuration for the element on which to perform the operation.</param>
         <param name="value">To be added.</param>
-        <summary>To be added.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetPanGestureRecognizerShouldRecognizeSimultaneously">
@@ -339,7 +318,6 @@
         <param name="value">
           <see langword="true" /> for simultaneous recognition. Otherwise, <see langword="false" />.</param>
         <summary>Sets a Boolean value that controls whether the pan gesture recognizer should participate in simultaneous recognition of gestures.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetPanGestureRecognizerShouldRecognizeSimultaneously">
@@ -366,7 +344,6 @@
           <see langword="true" /> for simultaneous recognition. Otherwise, <see langword="false" />.</param>
         <summary>Sets a Boolean value that controls whether the pan gesture recognizer should participate in simultaneous recognition of gestures.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -125,6 +125,7 @@ public class Issue1939 : TestContentPage
 		{
 			var title = new Label { TextColor = Colors.White, FontSize = 16 };
 			title.SetBinding(Label.TextProperty, new Binding("GroupName", BindingMode.OneWay));
+			title.SetBinding(Label.AutomationIdProperty, new Binding("GroupName", BindingMode.OneWay));
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			View = new StackLayout

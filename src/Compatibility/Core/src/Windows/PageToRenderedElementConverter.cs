@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class PageToRenderedElementConverter : Microsoft.UI.Xaml.Data.IValueConverter
+	public partial class PageToRenderedElementConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{

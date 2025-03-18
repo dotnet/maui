@@ -2,7 +2,6 @@
 
 namespace Maui.Controls.Sample.Issues
 {
-	// Issue12777 (src\ControlGallery\src\Issues.Shared\Issue12777.cs
 	[Issue(IssueTracker.None, 12777, "[Bug] CarouselView NRE if item template is not specified", PlatformAffected.iOS)]
 	public class CarouselViewNoItemTemplate : ContentPage
 	{
@@ -17,13 +16,11 @@ namespace Maui.Controls.Sample.Issues
 				Padding = new Thickness(12),
 				BackgroundColor = Colors.Black,
 				TextColor = Colors.White,
-				Text = "Without exceptions, the test has passed."
-			};
-
-			var carouselView = new CarouselView
-			{
+				Text = "Without exceptions, the test has passed.",
 				AutomationId = "TestCarouselView"
 			};
+
+			var carouselView = new CarouselView();
 
 			carouselView.SetBinding(ItemsView.ItemsSourceProperty, nameof(Issue12777ViewModel.Items));
 

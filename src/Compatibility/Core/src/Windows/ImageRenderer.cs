@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class ImageRenderer : ViewRenderer<Image, Microsoft.UI.Xaml.Controls.Image>, IImageVisualElementRenderer
+	public partial class ImageRenderer : ViewRenderer<Image, Microsoft.UI.Xaml.Controls.Image>, IImageVisualElementRenderer
 	{
 		bool _measured;
 		bool _disposed;

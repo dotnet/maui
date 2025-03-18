@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Provides access to the bread crumb bar for pages on the Tizen platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="BreadCrumbProperty">
@@ -33,7 +32,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that represents bread crumb bar value.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetBreadCrumb">
@@ -57,7 +55,6 @@
         <param name="page">The page whose bread crumb representation to get.</param>
         <summary>Returns the breadcrumb representation for a page.</summary>
         <returns>The breadcrumb representation for the page.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetBreadCrumb">
@@ -81,7 +78,6 @@
         <param name="config">The platform configuration for the page whose bread crumb representation to get.</param>
         <summary>Returns the breadcrumb representation for a page.</summary>
         <returns>The breadcrumb representation for the page.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBreadCrumb">
@@ -106,7 +102,6 @@
         <param name="page">The page whose bread crumb value to set.</param>
         <param name="value">The new bread crumb value.</param>
         <summary>Sets the bread crumb value for the page.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetBreadCrumb">
@@ -132,7 +127,6 @@
         <param name="value">The new bread crumb value.</param>
         <summary>Sets the bread crumb value for the page.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

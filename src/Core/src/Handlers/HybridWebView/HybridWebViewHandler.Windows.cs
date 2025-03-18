@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
@@ -12,6 +16,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class HybridWebViewHandler : ViewHandler<IHybridWebView, WebView2>
 	{
 		private readonly HybridWebView2Proxy _proxy = new();
+		private readonly Lazy<IBuffer> _404MessageBuffer = new(() => Encoding.UTF8.GetBytes("Resource not found (404)").AsBuffer());
 
 		protected override WebView2 CreatePlatformView()
 		{
@@ -102,13 +107,48 @@ namespace Microsoft.Maui.Handlers
 			// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
 			using var deferral = eventArgs.GetDeferral();
 
-			var requestUri = HybridWebViewQueryStringHelper.RemovePossibleQueryString(eventArgs.Request.Uri);
+			var (stream, contentType, statusCode, reason) = await GetResponseStreamAsync(eventArgs.Request.Uri);
+			var contentLength = stream?.Size ?? 0;
+			var headers =
+				$"""
+				Content-Type: {contentType}
+				Content-Length: {contentLength}
+				""";
+
+			eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
+				Content: stream,
+				StatusCode: statusCode,
+				ReasonPhrase: reason,
+				Headers: headers);
+
+			// Notify WebView2 that the deferred (async) operation is complete and we set a response.
+			deferral.Complete();
+		}
+
+		private async Task<(IRandomAccessStream Stream, string ContentType, int StatusCode, string Reason)> GetResponseStreamAsync(string url)
+		{
+			var requestUri = HybridWebViewQueryStringHelper.RemovePossibleQueryString(url);
 
 			if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
 			{
 				var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
 
+				// 1. Try special InvokeDotNet path
+				if (relativePath == InvokeDotNetPath)
+				{
+					var fullUri = new Uri(url);
+					var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
+					var contentBytes = await InvokeDotNetAsync(invokeQueryString);
+					if (contentBytes is not null)
+					{
+						var ras = await CopyContentToRandomAccessStreamAsync(contentBytes.AsBuffer());
+						return (Stream: ras, ContentType: "application/json", StatusCode: 200, Reason: "OK");
+					}
+				}
+
 				string contentType;
+
+				// 2. If nothing found yet, try to get static content from the asset path
 				if (string.IsNullOrEmpty(relativePath))
 				{
 					relativePath = VirtualView.DefaultFile;
@@ -124,48 +164,44 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				var assetPath = Path.Combine(VirtualView.HybridRoot!, relativePath!);
-				var contentStream = await GetAssetStreamAsync(assetPath);
+				using var contentStream = await GetAssetStreamAsync(assetPath);
 
-				if (contentStream is null)
+				if (contentStream is not null)
 				{
-					var notFoundContent = "Resource not found (404)";
-					eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
-						Content: null,
-						StatusCode: 404,
-						ReasonPhrase: "Not Found",
-						Headers: GetHeaderString("text/plain", notFoundContent.Length)
-					);
+					// 3.a. If something was found, return the content
+					var ras = await CopyContentToRandomAccessStreamAsync(contentStream);
+					return (Stream: ras, ContentType: contentType, StatusCode: 200, Reason: "OK");
 				}
-				else
-				{
-					eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
-						Content: await CopyContentToRandomAccessStreamAsync(contentStream),
-						StatusCode: 200,
-						ReasonPhrase: "OK",
-						Headers: GetHeaderString(contentType, (int)contentStream.Length)
-					);
-				}
-
-				contentStream?.Dispose();
 			}
 
-			// Notify WebView2 that the deferred (async) operation is complete and we set a response.
-			deferral.Complete();
-
-			async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
-			{
-				using var memStream = new MemoryStream();
-				await content.CopyToAsync(memStream);
-				var randomAccessStream = new InMemoryRandomAccessStream();
-				await randomAccessStream.WriteAsync(memStream.GetWindowsRuntimeBuffer());
-				return randomAccessStream;
-			}
+			// 3.b. Otherwise, return a 404
+			var ras404 = await CopyContentToRandomAccessStreamAsync(_404MessageBuffer.Value);
+			return (Stream: ras404, ContentType: "text/plain", StatusCode: 404, Reason: "Not Found");
 		}
 
-		private protected static string GetHeaderString(string contentType, int contentLength) =>
-$@"Content-Type: {contentType}
-Content-Length: {contentLength}";
+		static async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
+		{
+			var ras = new InMemoryRandomAccessStream();
+			var stream = ras.AsStreamForWrite(); // do not dispose as this stream IS the IMRAS
+			await content.CopyToAsync(stream);
+			await stream.FlushAsync();
+			ras.Seek(0);
+			return ras;
+		}
 
+		static async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(IBuffer content)
+		{
+			var ras = new InMemoryRandomAccessStream();
+			await ras.WriteAsync(content);
+			await ras.FlushAsync();
+			ras.Seek(0);
+			return ras;
+		}
+
+		[RequiresUnreferencedCode(DynamicFeatures)]
+#if !NETSTANDARD
+		[RequiresDynamicCode(DynamicFeatures)]
+#endif
 		private sealed class HybridWebView2Proxy
 		{
 			private WeakReference<Window>? _window;

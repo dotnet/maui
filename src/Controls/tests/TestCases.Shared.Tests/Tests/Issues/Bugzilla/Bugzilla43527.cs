@@ -13,17 +13,13 @@ public class Bugzilla43527 : _IssuesUITest
 
 	public override string Issue => "[UWP] Detail title does not update when wrapped in a NavigationPage";
 
-	// [Test]
-	// [Category(UITestCategories.FlyoutPage)]
-	// public void TestB43527UpdateTitle()
-	// {
-	// 	// TODO from Xamarin.UITest migration
-	// 	// I'm not sure if this actually verifies the functionality here
-	// 	// we might need to add a VerifyScreenshot for this
-	//	// And test is failing so disabled for now
-	// 	App.WaitForElement("Change Title");
-	// 	App.WaitForElement("Test Page");
-	// 	App.Tap("Change Title");
-	// 	App.WaitForNoElement("Test Page");
-	// }
+	[Test]
+	[Category(UITestCategories.FlyoutPage)]
+	public void TestB43527UpdateTitle()
+	{
+		App.WaitForElement("Change Title");
+		App.WaitForElement("Test Page");
+		App.Tap("Change Title");
+		App.WaitForElement("New Title");
+	}
 }

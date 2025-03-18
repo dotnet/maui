@@ -69,14 +69,14 @@ namespace Microsoft.Maui.Handlers
 		static void UpdateContent(IRefreshViewHandler handler)
 		{
 			if (handler.VirtualView is IContentView cv && cv.PresentedContent is IView view)
-			{				
+			{
 				handler.PlatformView.UpdateContent(view, handler.MauiContext);
 			}
 			else
 			{
 				handler.PlatformView.UpdateContent(handler.VirtualView.Content, handler.MauiContext);
 			}
-			
+
 		}
 
 		static void UpdateRefreshColor(IRefreshViewHandler handler)

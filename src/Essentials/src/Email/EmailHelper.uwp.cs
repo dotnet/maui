@@ -41,10 +41,11 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 		}
 
 		static IntPtr GetUnmanagedArray<TStruct>(TStruct[]? array)
+			where TStruct : struct
 		{
 			if (array?.Length > 0)
 			{
-				var size = Marshal.SizeOf(typeof(TStruct));
+				var size = Marshal.SizeOf<TStruct>();
 
 				var intptr = Marshal.AllocHGlobal(array.Length * size);
 
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 			var count = array?.Length;
 			if (count > 0)
 			{
-				var size = Marshal.SizeOf(typeof(TStruct));
+				var size = Marshal.SizeOf<TStruct>();
 
 				var ptr = intptr;
 				for (var i = 0; i < count; i++)

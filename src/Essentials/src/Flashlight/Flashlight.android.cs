@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Devices
 {
 	class FlashlightImplementation : IFlashlight
 	{
-		static CameraManager CameraManager => 
+		static CameraManager CameraManager =>
 			Application.Context.GetSystemService(Context.CameraService) as CameraManager;
 
 		static readonly object locker = new object();

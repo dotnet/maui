@@ -65,7 +65,7 @@ public class Issue3008 : TestContentPage
 		{
 			ItemTemplate = new DataTemplate(() =>
 			{
-				Label nameLabel = new Label() { Text = "Not Grouped Item" };
+				Label nameLabel = new Label() { Text = "Not Grouped Item", AutomationId = "NotGroupedItem" };
 				var cell = new ViewCell
 				{
 					View = nameLabel,
@@ -79,7 +79,7 @@ public class Issue3008 : TestContentPage
 			GroupHeaderTemplate = new DataTemplate(typeof(MyHeaderViewCell)),
 			ItemTemplate = new DataTemplate(() =>
 			{
-				Label nameLabel = new Label() { Text = "Grouped Item" };
+				Label nameLabel = new Label() { Text = "Grouped Item", AutomationId = "GroupedItem" };
 				var cell = new ViewCell
 				{
 					View = nameLabel,
@@ -105,6 +105,7 @@ public class Issue3008 : TestContentPage
 				new Button()
 				{
 					Text = "Click Until Success",
+					AutomationId = "ClickUntilSuccess",
 					Command = new Command(() =>
 					{
 						if(clickCount == 0)

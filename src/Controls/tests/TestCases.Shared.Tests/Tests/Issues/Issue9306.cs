@@ -1,4 +1,4 @@
-﻿#if IOS
+﻿#if TEST_FAILS_ON_WINDOWS // On Windows AutomationId is not working for Stacklayout, Hence we used to swipe the layout here so we can't use the inner elements AutomationId. More Information:https://github.com/dotnet/maui/issues/4715
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -20,8 +20,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.SwipeView)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
 		public void Issue9306SwipeViewCloseSwiping()
 		{
 			App.WaitForElement(SwipeViewId);
@@ -34,7 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			var result = App.FindElement(LeftCountLabelId).GetText();
 
-			ClassicAssert.AreEqual("1", result);
+			Assert.That(result, Is.EqualTo("1"));
 		}
 	}
 }

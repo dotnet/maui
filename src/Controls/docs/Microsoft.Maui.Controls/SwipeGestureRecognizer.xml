@@ -18,7 +18,6 @@
   </Interfaces>
   <Docs>
     <summary>Recognizer for swipe gestures.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -34,7 +33,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.SwipeGestureRecognizer" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Command">
@@ -54,7 +52,6 @@
       <Docs>
         <summary>Gets or sets the command to run when a swipe gesture is recognized.</summary>
         <value>The command to run when a swipe gesture is recognized.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CommandParameter">
@@ -74,7 +71,6 @@
       <Docs>
         <summary>Gets or sets the parameter to pass to commands that take one.</summary>
         <value>The parameter to pass to commands that take one.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CommandParameterProperty">
@@ -93,7 +89,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.SwipeGestureRecognizer.CommandParameter" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CommandProperty">
@@ -112,7 +107,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.SwipeGestureRecognizer.Command" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Direction">
@@ -132,7 +126,6 @@
       <Docs>
         <summary>Gets or sets the direction of swipes to recognize.</summary>
         <value>The direction of swipes to recognize.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="DirectionProperty">
@@ -151,7 +144,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.SwipeGestureRecognizer.Direction" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendSwiped">
@@ -176,7 +168,6 @@
         <param name="sender">The view that was swiped.</param>
         <param name="direction">The swipe direction.</param>
         <summary>Method that is called by the platform renderer when a swipe occurs.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Swiped">
@@ -195,7 +186,6 @@
       </ReturnValue>
       <Docs>
         <summary>Method that is called when a view is swiped.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Threshold">
@@ -215,7 +205,6 @@
       <Docs>
         <summary>Gets or sets the minimum swipe distance that will cause the gesture to be recognized.</summary>
         <value>The minimum swipe distance that will cause the gesture to be recognized.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ThresholdProperty">
@@ -234,7 +223,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.SwipeGestureRecognizer.Threshold" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.ISwipeGestureController.DetectSwipe">
@@ -262,8 +250,6 @@
         <param name="sender">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="direction">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.ISwipeGestureController.SendSwipe">
@@ -293,7 +279,6 @@
         <param name="totalX">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="totalY">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

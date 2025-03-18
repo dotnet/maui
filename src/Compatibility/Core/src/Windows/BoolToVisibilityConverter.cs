@@ -3,7 +3,7 @@ using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public sealed class BoolToVisibilityConverter : Microsoft.UI.Xaml.Data.IValueConverter
+	public sealed partial class BoolToVisibilityConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
 		public bool FalseIsVisible { get; set; }
 

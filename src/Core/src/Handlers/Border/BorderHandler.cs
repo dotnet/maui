@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 		public static CommandMapper<IBorderView, BorderHandler> CommandMapper = new(ViewCommandMapper)
 		{
 		};
-		
+
 		private Size _lastSize;
 
 		public BorderHandler() : base(Mapper, CommandMapper)

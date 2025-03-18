@@ -1,4 +1,5 @@
-﻿#if ANDROID
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
+//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -13,18 +14,17 @@ public class Issue2794 : _IssuesUITest
 
 	public override string Issue => "TableView does not react on underlying collection change";
 
-	// [Test]
-	// [Category(UITestCategories.TableView)]
-	// [FailsOnAndroid]
-	// public void Issue2794Test()
-	// {
-	// 	RunningApp.TouchAndHold(x => x.Marked("Cell2"));
-	// 	RunningApp.Tap(x => x.Text("Delete me first"));
-	// 	RunningApp.WaitForNoElement(q => q.Marked("Cell2"));
+	[Test]
+	[Category(UITestCategories.TableView)]
+	public void Issue2794Test()
+	{
+		App.ActivateContextMenu("Cell2");
+		App.Tap("Delete me first");
+		App.WaitForNoElement("Cell2");
 
-	// 	RunningApp.TouchAndHold(x => x.Marked("Cell1"));
-	// 	RunningApp.Tap(x => x.Text("Delete me after"));
-	// 	RunningApp.WaitForNoElement(q => q.Marked("Cell1"));
-	// }
+		App.ActivateContextMenu("Cell1");
+		App.Tap("Delete me after");
+		App.WaitForNoElement("Cell1");
+	}
 }
 #endif

@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					var topPage = _platformModalPages[_platformModalPages.Count - 2];
 					var controller = (topPage?.Handler as IPlatformViewHandler)?.ViewController;
-					if (controller is not null)
+					if (controller?.ViewIfLoaded?.Window is not null)
 					{
 						await controller.PresentViewControllerAsync(wrapper, animated);
 						await Task.Delay(5);

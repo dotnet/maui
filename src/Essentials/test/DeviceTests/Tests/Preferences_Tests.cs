@@ -246,6 +246,27 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public void FailsWithUnsupportedType() =>
 			Assert.Throws<NotSupportedException>(() => Preferences.Default.Set("anything", new int[] { 1 }));
 
+#if WINDOWS
+		[Fact]
+		public void DateTime_Supports_Reading_String_Compat()
+		{
+			// This is a special test where when unpackaged on windows in .NET 8
+			// dates were stored as ToString but in .NET 9 they are stored as ToBinary.
+			// This test ensures that the compat layer is working correctly
+			// and that the date is read correctly regardless of the storage format.
+			// This test is only valid on windows unpackaged.
+
+			if (ApplicationModel.AppInfoUtils.IsPackagedApp)
+				return;
+
+			Preferences.Default.Set("datetime_compat", testDateTime.ToString(), null);
+
+			var get = Preferences.Default.Get("datetime_compat", DateTime.MinValue, null);
+
+			Assert.Equal(testDateTime, get);
+		}
+#endif
+
 		[Theory]
 		[InlineData("datetime1", null)]
 		[InlineData("datetime1", sharedNameTestData)]

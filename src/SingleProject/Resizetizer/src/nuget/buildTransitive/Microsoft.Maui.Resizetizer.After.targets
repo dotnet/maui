@@ -59,21 +59,6 @@
             _CleanResizetizer;
         </CleanDependsOn>
 
-        <_ResizetizerInputsFile>$(IntermediateOutputPath)mauiimage.inputs</_ResizetizerInputsFile>
-        <_ResizetizerOutputsFile>$(IntermediateOutputPath)mauiimage.outputs</_ResizetizerOutputsFile>
-        <_ResizetizerStampFile>$(IntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
-        <_MauiFontInputsFile>$(IntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
-        <_MauiFontStampFile>$(IntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
-        <_MauiSplashInputsFile>$(IntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
-        <_MauiSplashStampFile>$(IntermediateOutputPath)mauisplash.stamp</_MauiSplashStampFile>
-        <_MauiManifestStampFile>$(IntermediateOutputPath)mauimanifest.stamp</_MauiManifestStampFile>
-
-        <_ResizetizerIntermediateOutputRoot>$(IntermediateOutputPath)resizetizer\</_ResizetizerIntermediateOutputRoot>
-        <_MauiIntermediateImages>$(_ResizetizerIntermediateOutputRoot)r\</_MauiIntermediateImages>
-        <_MauiIntermediateFonts>$(_ResizetizerIntermediateOutputRoot)f\</_MauiIntermediateFonts>
-        <_MauiIntermediateSplashScreen>$(_ResizetizerIntermediateOutputRoot)sp\</_MauiIntermediateSplashScreen>
-        <_MauiIntermediateManifest>$(_ResizetizerIntermediateOutputRoot)m\</_MauiIntermediateManifest>
-
         <_ResizetizerPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_ResizetizerPlatformIdentifier>
         <_ResizetizerNoTargetPlatform Condition="'$(_ResizetizerPlatformIdentifier)' == ''">True</_ResizetizerNoTargetPlatform>
         <_ResizetizerPlatformIsAndroid Condition="'$(_ResizetizerPlatformIdentifier)' == 'android'">True</_ResizetizerPlatformIsAndroid>
@@ -83,6 +68,23 @@
         <_ResizetizerPlatformIstvOS Condition="'$(_ResizetizerPlatformIdentifier)' == 'tvos'">True</_ResizetizerPlatformIstvOS>
         <_ResizetizerPlatformIsWindows Condition="$(_ResizetizerPlatformIdentifier.Contains('windows')) == 'True'">True</_ResizetizerPlatformIsWindows>
         <_ResizetizerPlatformIsTizen Condition="'$(_ResizetizerPlatformIdentifier)' == 'tizen'">True</_ResizetizerPlatformIsTizen>
+
+        <_ResizetizerIntermediateOutputPath Condition=" '$(_ResizetizerIntermediateOutputPath)' == '' " >$(IntermediateOutputPath)</_ResizetizerIntermediateOutputPath>
+
+        <_ResizetizerInputsFile>$(_ResizetizerIntermediateOutputPath)mauiimage.inputs</_ResizetizerInputsFile>
+        <_ResizetizerOutputsFile>$(_ResizetizerIntermediateOutputPath)mauiimage.outputs</_ResizetizerOutputsFile>
+        <_ResizetizerStampFile>$(_ResizetizerIntermediateOutputPath)mauiimage.stamp</_ResizetizerStampFile>
+        <_MauiFontInputsFile>$(_ResizetizerIntermediateOutputPath)mauifont.inputs</_MauiFontInputsFile>
+        <_MauiFontStampFile>$(_ResizetizerIntermediateOutputPath)mauifont.stamp</_MauiFontStampFile>
+        <_MauiSplashInputsFile>$(_ResizetizerIntermediateOutputPath)mauisplash.inputs</_MauiSplashInputsFile>
+        <_MauiSplashStampFile>$(_ResizetizerIntermediateOutputPath)mauisplash.stamp</_MauiSplashStampFile>
+        <_MauiManifestStampFile>$(_ResizetizerIntermediateOutputPath)mauimanifest.stamp</_MauiManifestStampFile>
+
+        <_ResizetizerIntermediateOutputRoot>$(_ResizetizerIntermediateOutputPath)resizetizer\</_ResizetizerIntermediateOutputRoot>
+        <_MauiIntermediateImages>$(_ResizetizerIntermediateOutputRoot)r\</_MauiIntermediateImages>
+        <_MauiIntermediateFonts>$(_ResizetizerIntermediateOutputRoot)f\</_MauiIntermediateFonts>
+        <_MauiIntermediateSplashScreen>$(_ResizetizerIntermediateOutputRoot)sp\</_MauiIntermediateSplashScreen>
+        <_MauiIntermediateManifest>$(_ResizetizerIntermediateOutputRoot)m\</_MauiIntermediateManifest>
 
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
@@ -504,7 +506,7 @@
         </ItemGroup>
 
         <!-- Stamp file for Outputs -->
-        <MakeDir Directories="$(IntermediateOutputPath)"/>
+        <MakeDir Directories="$(_ResizetizerIntermediateOutputPath)"/>
         <Touch Files="$(_MauiSplashStampFile)" AlwaysCreate="True" />
 
         <ItemGroup>

@@ -70,7 +70,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// 🚀 unsubscribe from propertychanged
 			Cell.PropertyChanged -= _propertyChangedHandler;
 			// Allows the Cell to unsubscribe from Parent.PropertyChanged
-			Cell.Parent = null;
+			if (Cell.Parent is ListView)
+				Cell.Parent = null;
 		}
 
 

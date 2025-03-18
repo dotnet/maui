@@ -22,7 +22,7 @@ public class Bugzilla31602 : TestFlyoutPage
 		public SidemenuPage()
 		{
 			Title = "Side";
-			IconImageSource = "menuIcon.png";
+			IconImageSource = "menu_icon.png";
 			var lbl = new Label { Text = "SideMenu", AutomationId = "SideMenu" };
 			var btn = new Button { Text = "Menu Opener" };
 

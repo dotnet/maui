@@ -14,6 +14,14 @@ public class Bugzilla39530 : TestContentPage
 		var tapgr = new TapGestureRecognizer();
 		var pinchgr = new PinchGestureRecognizer();
 
+		var frameLabel = new Label
+		{
+			Text = "Frame Content",
+			AutomationId = "frameLabel",
+			HorizontalOptions = LayoutOptions.Center,
+			VerticalOptions = LayoutOptions.Center
+		};
+
 		var frame = new Frame
 		{
 			HasShadow = false,
@@ -23,7 +31,8 @@ public class Bugzilla39530 : TestContentPage
 			Padding = new Thickness(5),
 			HeightRequest = 300,
 			WidthRequest = 300,
-			AutomationId = "frame"
+			AutomationId = "frame",
+			Content = frameLabel
 		};
 
 		var tapCount = 0;

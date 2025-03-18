@@ -9,7 +9,7 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class FlyoutPageControl : Control, IToolbarProvider, ITitleViewRendererController
+	public partial class FlyoutPageControl : Control, IToolbarProvider, ITitleViewRendererController
 	{
 		public static readonly DependencyProperty FlyoutProperty = DependencyProperty.Register(nameof(Flyout), typeof(FrameworkElement), typeof(FlyoutPageControl),
 			new PropertyMetadata(default(FrameworkElement)));
@@ -388,7 +388,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 
 	}
 
-	public class MasterDetailControl : FlyoutPageControl
+	public partial class MasterDetailControl : FlyoutPageControl
 	{
 		public FrameworkElement Master
 		{

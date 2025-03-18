@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Storage
 		/// <inheritdoc cref="Set(string, string?)"/>
 		public static void Set(string key, DateTime value) =>
 			Set(key, value, null);
-		
+
 		/// <inheritdoc cref="Get(string, string?)"/>
 		public static DateTimeOffset Get(string key, DateTimeOffset defaultValue) =>
 			Get(key, defaultValue, null);

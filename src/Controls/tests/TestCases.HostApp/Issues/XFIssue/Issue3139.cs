@@ -8,7 +8,8 @@ public class Issue3139 : TestContentPage
 		var statusLabel = new Label()
 		{
 			FontSize = 40,
-			TextColor = Colors.White
+			TextColor = Colors.White,
+			AutomationId = "StatusLabel"
 		};
 		Content = new StackLayout()
 		{

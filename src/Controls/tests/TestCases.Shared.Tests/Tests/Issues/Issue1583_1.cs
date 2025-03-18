@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
+		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public async Task Issue1583_1_WebviewTest()
 		{
 			App.WaitForElement("label", "Could not find label", TimeSpan.FromSeconds(10), null, null);

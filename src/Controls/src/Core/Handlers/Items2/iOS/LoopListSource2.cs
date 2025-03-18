@@ -24,6 +24,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public bool Loop { get; set; }
 
-		public int LoopCount => Loop && Count > 0  ? Count + 2 : Count;
+		public int LoopCount => Loop && Count > 0 ? Count + 2 : Count;
 	}
 }

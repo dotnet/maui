@@ -135,6 +135,18 @@
     <value>Vazba: Nepodporovaný typ indexu indexeru: {0}</value>
     <comment>0 is indexer type name</comment>
   </data>
+  <data name="BindingWithoutDataType" xml:space="preserve">
+    <value>Vazbu je možné zkompilovat, aby se zvýšil výkon modulu runtime, pokud je zadána hodnota pro x:DataType. Další informace najdete na adrese https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithNullDataType" xml:space="preserve">
+    <value>Vazbu je možné zkompilovat, aby se zvýšil výkon modulu runtime, pokud není pro x:DataType explicitně zadána hodnota null. Další informace najdete na adrese https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>Vazba může být nesprávně zkompilovaná, protože poznámka pro x:DataType pochází z vnějšího oboru. Nezapomeňte zadat u všech elementů XAML šablony DataTemplate poznámku se správnou hodnotou pro x:DataType. Další informace najdete na adrese https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
+  <data name="BindingWithSourceCompilationSkipped" xml:space="preserve">
+    <value>Vazba nebyla zkompilována, protože má explicitně nastavenou vlastnost Source a kompilace takových vazeb není povolena. Zvažte povolení této optimalizace nastavením hodnoty &lt;MauiEnableXamlCBindingWithSourceCompilation&gt;true&lt;/MauiEnableXamlCBindingWithSourceCompilation&gt; v souboru projektu a zajistěte, aby byla u této vazby zadána správná hodnota pro x:DataType. Další informace najdete na adrese https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.</value>
+  </data>
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>Vazba: Vlastnost {0} nejde u typu {1} najít.</value>
     <comment>0 is property name, 1 is type name</comment>
@@ -193,6 +205,9 @@
     <value>Element s názvem {0} už v tomto oboru názvů existuje.</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="ObsoleteProperty" xml:space="preserve">
+    <value>Vlastnost, metoda Setter vlastnosti nebo {0} BindableProperty jsou zastaralé.</value>
+  </data>
   <data name="PropertyMissing" xml:space="preserve">
     <value>Chybí povinná vlastnost {0} pro typ {1}.</value>
     <comment>0 is a property name, 1 is a type</comment>
@@ -222,7 +237,7 @@
     <value>Zdrojová vlastnost není řetězcový literál.</value>
   </data>
   <data name="StyleSheetSourceOrContent" xml:space="preserve">
-    <value>Šablona stylů nemůže obsahovat jak zdroj, tak obsah.</value>
+    <value>Šablona stylů nemůže obsahovat současně zdroj i obsah.</value>
   </data>
   <data name="StyleSheetStyleNotALiteral" xml:space="preserve">
     <value>Vlastnost Style nebo obsah není řetězcový literál.</value>
@@ -233,6 +248,10 @@
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
     <value>x:DataType očekává řetězcový literál, značku {{x:Type}} nebo {{x:Null}}.</value>
+  </data>
+  <data name="UnattributedMarkupType" xml:space="preserve">
+    <value>Zvažte přiřazení rozšíření značek {0} s parametrem [RequireService] nebo (pokud nevyžaduje žádnou službu) s parametrem [AcceptEmptyServiceProvider].</value>
+    <comment>0 is type name</comment>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>Nedeklarovaná předpona xmlns: {0}</value>
@@ -247,5 +266,8 @@
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:Key očekává řetězcový literál.</value>
+  </data>
+  <data name="StaticResourceSyntax" xml:space="preserve">
+    <value>Ve zdroji {StaticResource} se vyžaduje klíč.</value>
   </data>
 </root>

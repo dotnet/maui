@@ -10,6 +10,9 @@ public class Bugzilla41038 : TestFlyoutPage
 	{
 		Title = "Main";
 
+		// Set FlyoutBehavior to Popover to ensure consistent behavior across desktop and mobile platforms.
+		// Windows and Catalyst default (FlyoutLayoutBehavior.Default) uses Split mode, which differs from mobile platforms.
+		FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
 		var btnViewA = new Button() { Text = "ViewA", AutomationId = "ViewA" };
 		btnViewA.Clicked += Button_Clicked;
 

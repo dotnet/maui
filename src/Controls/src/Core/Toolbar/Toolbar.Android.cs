@@ -19,6 +19,8 @@ namespace Microsoft.Maui.Controls
 		List<IMenuItem> _currentMenuItems = new List<IMenuItem>();
 		List<ToolbarItem> _currentToolbarItems = new List<ToolbarItem>();
 
+		Brush _currentBarBackground;
+
 		NavigationRootManager? NavigationRootManager =>
 			Handler?.MauiContext?.GetNavigationRootManager();
 
@@ -103,6 +105,38 @@ namespace Microsoft.Maui.Controls
 			_platformTitleView.Child = (IPlatformViewHandler?)_platformTitleViewHandler;
 		}
 
+		void UpdateBarBackground()
+		{
+			if (_currentBarBackground is GradientBrush oldBarBackground)
+			{
+				oldBarBackground.Parent = null;
+				oldBarBackground.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
+			}
+
+			_currentBarBackground = BarBackground;
+
+			if (_currentBarBackground is GradientBrush newBarBackground && Parent is Element parent)
+			{
+				newBarBackground.Parent = parent;
+				newBarBackground.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
+			}
+
+			RefreshBarBackground();
+		}
+
+		void OnBarBackgroundChanged(object? sender, EventArgs e)
+		{
+			RefreshBarBackground();
+		}
+
+		void RefreshBarBackground()
+		{
+			if (Handler?.PlatformView is MaterialToolbar materialToolbar)
+			{
+				materialToolbar.UpdateBarBackground(this);
+			}
+		}
+
 		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2) =>
 			MapBarTextColor((IToolbarHandler)arg1, arg2);
 
@@ -143,7 +177,7 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapBarBackground(IToolbarHandler arg1, Toolbar arg2)
 		{
-			arg1.PlatformView.UpdateBarBackground(arg2);
+			arg2.UpdateBarBackground();
 		}
 
 		public static void MapBackButtonTitle(IToolbarHandler arg1, Toolbar arg2)

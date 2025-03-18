@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Ignore("The sample is crashing.")]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatforms("The sample is crashing. More information: https://github.com/dotnet/maui/issues/21204")]
+		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("The sample is crashing. More information: https://github.com/dotnet/maui/issues/21204")]
 		public void Bugzilla34061Test()
 		{
 			App.Screenshot("I am at Bugzilla34061 ");

@@ -12,8 +12,6 @@
   </Base>
   <Interfaces />
   <Docs>
-    <summary>To be added.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -27,8 +25,6 @@
       </AssemblyInfo>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AddEventHandler">
@@ -57,8 +53,6 @@
       <Docs>
         <param name="handler">To be added.</param>
         <param name="eventName">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AddEventHandler&lt;TEventArgs&gt;">
@@ -95,8 +89,6 @@
         <typeparam name="TEventArgs">To be added.</typeparam>
         <param name="handler">To be added.</param>
         <param name="eventName">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HandleEvent">
@@ -121,8 +113,6 @@
         <param name="sender">To be added.</param>
         <param name="args">To be added.</param>
         <param name="eventName">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RemoveEventHandler">
@@ -151,8 +141,6 @@
       <Docs>
         <param name="handler">To be added.</param>
         <param name="eventName">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RemoveEventHandler&lt;TEventArgs&gt;">
@@ -189,8 +177,6 @@
         <typeparam name="TEventArgs">To be added.</typeparam>
         <param name="handler">To be added.</param>
         <param name="eventName">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

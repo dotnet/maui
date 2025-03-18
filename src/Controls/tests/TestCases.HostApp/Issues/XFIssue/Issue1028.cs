@@ -1,7 +1,7 @@
 namespace Maui.Controls.Sample.Issues;
 
 
-[Issue(IssueTracker.Github, 1028, "ViewCell in TableView raises exception - root page is ContentPage, Content is TableView", PlatformAffected.WinPhone, NavigationBehavior.PushModalAsync)]
+[Issue(IssueTracker.Github, 1028, "ViewCell in TableView raises exception - root page is ContentPage, Content is TableView", PlatformAffected.WinPhone)]
 
 public class Issue1028 : TestContentPage
 {

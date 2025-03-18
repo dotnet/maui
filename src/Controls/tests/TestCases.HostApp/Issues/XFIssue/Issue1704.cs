@@ -43,7 +43,7 @@ class OnLoadAnimationPage : ContentPage
 
 		_referenceImage = new Image
 		{
-			Source = "GifTwo.gif",
+			Source = "giftwo.gif",
 			HorizontalOptions = LayoutOptions.Start
 		};
 
@@ -57,7 +57,7 @@ class OnLoadAnimationPage : ContentPage
 
 		_animatedImage = new Image
 		{
-			Source = "GifTwo.gif",
+			Source = "giftwo.gif",
 			HorizontalOptions = LayoutOptions.Start
 		};
 
@@ -101,7 +101,7 @@ class OnStartAnimationPage : ContentPage
 
 		_referenceImage = new Image
 		{
-			Source = "GifOne.gif",
+			Source = "gifone.gif",
 			HorizontalOptions = LayoutOptions.Start
 		};
 
@@ -115,7 +115,7 @@ class OnStartAnimationPage : ContentPage
 
 		_animatedImage = new Image
 		{
-			Source = "GifOne.gif",
+			Source = "gifone.gif",
 			HorizontalOptions = LayoutOptions.Start
 		};
 
@@ -306,9 +306,8 @@ class LoadImageSourceAnimationPage : ContentPage
 					context.LoadButton = null;
 					context.LoadIndicator = null;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0612 // Type or member is obsolete
-					Device.BeginInvokeOnMainThread(() =>
+
+					MainThread.BeginInvokeOnMainThread(() =>
 					{
 						if (loadButton != null)
 							loadButton.IsEnabled = true;
@@ -327,8 +326,6 @@ class LoadImageSourceAnimationPage : ContentPage
 							animationImage.IsAnimationPlaying = true;
 						}
 					});
-#pragma warning restore CS0612 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
 				}
 			}
 		}
@@ -375,6 +372,8 @@ class MiscPage : ContentPage
 		_noAnimationFallbackImage = new Image
 		{
 			Source = "coffee.png",
+			HeightRequest = 60,
+			WidthRequest = 60,
 			HorizontalOptions = LayoutOptions.Start
 		};
 
@@ -388,7 +387,7 @@ class MiscPage : ContentPage
 
 		_initNoAnimationImage = new Image
 		{
-			Source = "GifTwo.gif",
+			Source = "giftwo.gif",
 			HorizontalOptions = LayoutOptions.Start
 		};
 
@@ -436,7 +435,7 @@ class MiscPage : ContentPage
 
 		_stressTestImage = new Image
 		{
-			Source = "GifTwo.gif",
+			Source = "giftwo.gif",
 			HorizontalOptions = LayoutOptions.Start,
 			IsVisible = false
 		};
@@ -504,25 +503,22 @@ class MiscPage : ContentPage
 	{
 		for (int i = 0; i < _stressTestIterationCount && !_abortStressTest; i++)
 		{
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0612 // Type or member is obsolete
-			Device.BeginInvokeOnMainThread(() =>
+
+			MainThread.BeginInvokeOnMainThread(() =>
 			{
 				if (i % 2 == 0)
 				{
-					_stressTestImage.Source = "GifTwo.gif";
+					_stressTestImage.Source = "giftwo.gif";
 				}
 				else
 				{
-					_stressTestImage.Source = "GifOne.gif";
+					_stressTestImage.Source = "gifone.gif";
 				}
 
 				_stressTestProgressBar.Progress = (double)i / (double)_stressTestIterationCount;
 
 				_nextStressTest.Set();
 			});
-#pragma warning restore CS0612 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			_nextStressTest.WaitOne();
 
@@ -532,9 +528,7 @@ class MiscPage : ContentPage
 			await Task.Delay(10).ConfigureAwait(false);
 		}
 
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0612 // Type or member is obsolete
-		Device.BeginInvokeOnMainThread(() =>
+		MainThread.BeginInvokeOnMainThread(() =>
 		{
 			_startStressTestButton.Text = "Run Stress Test";
 			_startStressTestButton.IsEnabled = true;
@@ -542,7 +536,5 @@ class MiscPage : ContentPage
 			if (!_abortStressTest)
 				_stressTestProgressBar.Progress = 1;
 		});
-#pragma warning restore CS0612 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
 	}
 }

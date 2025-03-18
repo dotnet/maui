@@ -14,10 +14,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.WebView)]
-		[FailsOnAndroid("This test is failing, likely due to product issue")]
-		[FailsOnWindows("This test is failing, likely due to product issue")]
 		public void WebViewNoCrashPopup()
 		{
+			VerifyInternetConnectivity();
 			App.WaitForElement("OpenModalButton");
 			App.Click("OpenModalButton");
 

@@ -85,24 +85,36 @@
       <Item ItemId=";BindingWithNullDataType" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Binding could be compiled to improve runtime performance if x:DataType is not explicitly null. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Привязка может быть скомпилирована для повышения производительности среды выполнения, если для x:DataType не задано значение NULL явным образом. Дополнительные сведения см. по адресу https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";BindingWithSourceCompilationSkipped" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Binding was not compiled because it has an explicitly set Source property and compilation of bindings with Source is not enabled. Consider enabling this optimization by setting the <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation> in your project file and make sure the correct x:DataType is specified for this binding. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Привязка не была скомпилирована, поскольку для нее явным образом задано свойство Source, а компиляция привязок со свойством Source не включена. Попробуйте включить эту оптимизацию путем установки значения <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation> в файле проекта. Убедитесь, что для этой привязки указан правильный атрибут x:DataType. Дополнительные сведения см. по адресу https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";BindingWithXDataTypeFromOuterScope" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Binding might be compiled incorrectly since the x:DataType annotation comes from an outer scope. Make sure you annotate all DataTemplate XAML elements with the correct x:DataType. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Привязка может быть скомпилирована неправильно, поскольку аннотация x:DataType взята из внешней области. Убедитесь, что для всех элементов XAML DataTemplate используется правильная аннотация x:DataType. Дополнительные сведения см. по адресу https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";BindingWithoutDataType" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Binding could be compiled to improve runtime performance if x:DataType is specified. See https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings for more information.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Привязка может быть скомпилирована для повышения производительности среды выполнения, если задан атрибут x:DataType. Дополнительные сведения см. по адресу https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -217,6 +229,9 @@
       <Item ItemId=";ObsoleteProperty" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Property, Property setter or BindableProperty "{0}" is deprecated.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Свойство, метод задания свойства или BindableProperty "{0}" упразднены.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -277,6 +292,9 @@
       <Item ItemId=";StaticResourceSyntax" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A key is required in {StaticResource}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Необходимо указать ключ в {StaticResource}.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -301,8 +319,8 @@
       <Item ItemId=";StyleSheetSourceOrContent" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[StyleSheet cannot have both a Source and a content.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[Таблица стилей (StyleSheet) не может одновременно содержать источник (Source) и содержимое.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[У таблицы стилей не может быть свойство Source и содержимое.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[StyleSheet can not have both a Source and a content.]]></Val>
@@ -331,14 +349,17 @@
       <Item ItemId=";UnattributedMarkupType" ItemType="0;.resx" PsrId="211" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Consider attributing the markup extension "{0}" with [RequireService]5D; or [AcceptEmptyServiceProvider]5D; if it doesn't require any.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Попробуйте присвоить расширению разметки "{0}" аннотацию [RequireService]5D; или [AcceptEmptyServiceProvider]5D;, если оно не требует никаких аннотаций.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";XDataTypeSyntax" ItemType="0;.resx" PsrId="211" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[x:DataType expects a string literal, an {{x:Type}} markup or {{x:Null}}.]]></Val>
-          <Tgt Cat="Text" Stat="Update" Orig="New">
-            <Val><![CDATA[x:DataType ожидает строковый литерал, разметку {{x:Type}} или {{x:Nul}l}.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Для x:DataType ожидается строковый литерал, разметка {{x:Type}} или {{x:Null}}.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[x:DataType expects a string literal, an {{x:Type}} markup or {{x:Nul}l}.]]></Val>

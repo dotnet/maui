@@ -40,7 +40,7 @@ public class Issue15565 : TestShell
 					{
 						BackgroundColor = Colors.Red,
 						AutomationId = "TitleViewId",
-						Children = { new Label() { Text = titleView, VerticalTextAlignment = TextAlignment.End } }
+						Children = { new Label() { Text = titleView, AutomationId = titleView, VerticalTextAlignment = TextAlignment.End } }
 					});
 			}
 

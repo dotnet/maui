@@ -114,7 +114,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		#if !ANDROID //https://github.com/dotnet/maui/pull/24610
+#if !ANDROID //https://github.com/dotnet/maui/pull/24610
 		[Fact]
 		public async void DisconnectedCarouselViewDoesNotHookCollectionViewChanged()
 		{
@@ -147,11 +147,14 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(data.IsCollectionChangedEventEmpty);
 			});
 
-			carouselView.Handler?.DisconnectHandler();
+			await InvokeOnMainThreadAsync(() =>
+			{
+				carouselView.Handler?.DisconnectHandler();
+			});
 
 			Assert.True(data.IsCollectionChangedEventEmpty);
 		}
-		#endif
+#endif
 	}
 
 	internal class CustomDataTemplateSelectorSelector : DataTemplateSelector

@@ -14,7 +14,7 @@ using WSwipeMode = Microsoft.UI.Xaml.Controls.SwipeMode;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class SwipeViewRenderer : ViewRenderer<SwipeView, WSwipeControl>
+	public partial class SwipeViewRenderer : ViewRenderer<SwipeView, WSwipeControl>
 	{
 		bool _isDisposed;
 		Dictionary<WSwipeItem, SwipeItem> _leftItems;

@@ -30,7 +30,8 @@
 			var labelDescription = new Label
 			{
 				Text = "If you opened this page, the app didn't crash and you can read three lines in the label above, this test has passed",
-				VerticalOptions = LayoutOptions.StartAndExpand
+				VerticalOptions = LayoutOptions.StartAndExpand,
+				AutomationId = "Success"
 			};
 #pragma warning restore CS0618 // Type or member is obsolete
 

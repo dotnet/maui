@@ -29,6 +29,7 @@ string CONFIGURATION = Argument("configuration", "Debug");
 var windowsVersion = Argument("apiversion", EnvironmentVariable("WINDOWS_PLATFORM_VERSION") ?? defaultVersion);
 
 var dotnetToolPath = GetDotnetToolPath();
+LogSetupInfo(dotnetToolPath);
 
 // other
 string PLATFORM = "windows";
@@ -59,24 +60,6 @@ Information("Build Configuration: {0}", CONFIGURATION);
 Information("Target Framework: {0}", TARGET_FRAMEWORK);
 Information("Windows version: {0}", windowsVersion);
 
-Setup(context =>
-{
-	Cleanup();
-});
-
-Teardown(context =>
-{
-	Cleanup();
-});
-
-void Cleanup()
-{
-	if (!DEVICE_CLEANUP)
-		return;
-}
-
-Task("Cleanup");
-
 Task("GenerateMsixCert")
 	.WithCriteria(isPackagedTestRun)
 	.Does(() =>
@@ -96,7 +79,7 @@ Task("GenerateMsixCert")
 	{
 		Information("Generating cert");
 		var rsa = RSA.Create();
-		var req = new CertificateRequest("CN=" + certCN, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+		var req = new CertificateRequest("CN=" + certCN, rsa, System.Security.Cryptography.HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
 		req.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection
 		{
@@ -132,10 +115,9 @@ Task("GenerateMsixCert")
 	currentUserMyStore.Close();
 });
 
-Task("Build")
+Task("buildOnly")
 	.IsDependentOn("GenerateMsixCert")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
-	.WithCriteria(!string.IsNullOrEmpty(PACKAGEID))
 	.Does(() =>
 {
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
@@ -156,7 +138,10 @@ Task("Build")
 	s.ToolPath = dotnetToolPath;
 	s.Configuration = CONFIGURATION;
 	s.Framework = TARGET_FRAMEWORK;
-	s.MSBuildSettings = new DotNetMSBuildSettings();
+	s.MSBuildSettings = new DotNetMSBuildSettings()
+	{
+		ArgumentCustomization = args => args.Append("/bl:" + binlog),
+	};
 	s.MSBuildSettings.Properties.Add("RuntimeIdentifierOverride", new List<string> { "win10-x64" });
 	
 	var launchSettingsNeedle = "Project";
@@ -196,8 +181,7 @@ Task("Build")
 	DotNetPublish(PROJECT.FullPath, s);
 });
 
-Task("Test")
-	.IsDependentOn("Build")
+Task("testOnly")
 	.IsDependentOn("SetupTestPaths")
 	.Does(() =>
 {
@@ -423,6 +407,16 @@ Task("Test")
 	}
 });
 
+Task("build")
+	.IsDependentOn("buildOnly");
+
+Task("test")
+	.IsDependentOn("buildOnly")
+	.IsDependentOn("testOnly");
+
+Task("buildAndTest")
+	.IsDependentOn("buildOnly")
+	.IsDependentOn("testOnly");
 
 Task("SetupTestPaths")
 	.Does(() => {
@@ -551,7 +545,7 @@ Task("uitest")
 	DotNetBuild(PROJECT.FullPath, buildSettings);
 
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
-	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows.log");
+	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows_{name}.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, localToolPath, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-windows");

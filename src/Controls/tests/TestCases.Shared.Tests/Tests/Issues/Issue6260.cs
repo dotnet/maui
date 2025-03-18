@@ -17,10 +17,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
-		[FailsOnMac]
-		[FailsOnWindows]
 		public void NonAppCompatBasicSwitchTest()
 		{
 			App.WaitForElement(success);

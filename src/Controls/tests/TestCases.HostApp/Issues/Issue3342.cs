@@ -12,7 +12,9 @@
 
 			var hiddenLabel = new Label
 			{
-				Text = "FAIL"
+				Text = "FAIL",
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center
 			};
 
 			var target = new BoxView

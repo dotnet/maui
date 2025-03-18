@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 #if __IOS__
 using Foundation;
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
-		
+
 		[Fact(DisplayName = "Does Not Leak")]
 		public async Task DoesNotLeak()
 		{
@@ -666,16 +667,12 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 #else
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(layout, (handler) =>
 			{
-				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
-				await contentViewHandler.PlatformView.AttachAndRun(() =>
-				{
-					Assert.Equal(double.Round(labelStart.Width, 5), double.Round(layout.Width, 5));
-					Assert.Equal(double.Round(labelCenter.Width, 5), double.Round(layout.Width, 5));
-					Assert.Equal(double.Round(labelEnd.Width, 5), double.Round(layout.Width, 5));
-					Assert.Equal(double.Round(labelFill.Width, 5), double.Round(layout.Width, 5));
-				});
+				Assert.Equal(double.Round(labelStart.Width, 5), double.Round(layout.Width, 5));
+				Assert.Equal(double.Round(labelCenter.Width, 5), double.Round(layout.Width, 5));
+				Assert.Equal(double.Round(labelEnd.Width, 5), double.Round(layout.Width, 5));
+				Assert.Equal(double.Round(labelFill.Width, 5), double.Round(layout.Width, 5));
 			});
 #endif
 		}
@@ -723,6 +720,39 @@ namespace Microsoft.Maui.DeviceTests
 				label.FontFamily = "Baskerville";
 				label.FontSize = 64;
 				AssertEquivalentFont(handler, label.ToFont());
+			});
+		}
+
+		[Fact]
+		[Description("The BackgroundColor of a Label should match with native background color")]
+		public async Task LabelBackgroundColorConsistent()
+		{
+			var expected = Colors.AliceBlue;
+			var label = new Label()
+			{
+				BackgroundColor = expected,
+				HeightRequest = 100,
+				WidthRequest = 200
+			};
+
+			await ValidateHasColor(label, expected, typeof(LabelHandler));
+		}
+
+		[Fact]
+		[Description("The Opacity property of a Label should match with native Opacity")]
+		public async Task VerifyLabelOpacityProperty()
+		{
+			var label = new Label
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = label.Opacity;
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var nativeOpacityValue = await GetPlatformOpacity(handler);
+				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
 

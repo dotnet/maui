@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Controls the presence of the corner radius of box views on the GTK platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetHasCornerRadius">
@@ -38,7 +37,6 @@
         <param name="element">The box view element on the GTK platform whose corner radius to get.</param>
         <summary>Returns a Boolean value that tells whether the box view has a corner radius set.</summary>
         <returns>A Boolean value that tells whether the box view has a corner radius set.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHasCornerRadius">
@@ -62,7 +60,6 @@
         <param name="config">The platform configuration for the box view element on the GTK platform whose corner radius to get.</param>
         <summary>Returns a Boolean value that tells whether the box view has a corner radius set.</summary>
         <returns>A Boolean value that tells whether the box view has a corner radius set.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HasCornerRadiusProperty">
@@ -81,7 +78,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls whether the box view has a corner radius.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHasCornerRadius">
@@ -106,7 +102,6 @@
         <param name="element">The box view element on the GTK platform whose corner radius presence to set.</param>
         <param name="tabPosition">The new corner radius presence value.</param>
         <summary>Sets the corner radius presence.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetHasCornerRadius">
@@ -132,7 +127,6 @@
         <param name="value">The new corner radius presence value</param>
         <summary>Sets the corner radius presence.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

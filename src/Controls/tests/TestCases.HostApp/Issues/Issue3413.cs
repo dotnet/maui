@@ -8,10 +8,7 @@
 		{
 			Padding = new Thickness(20);
 
-			var layout = new StackLayout
-			{
-				Orientation = StackOrientation.Vertical
-			};
+			var layout = new VerticalStackLayout();
 
 			var searchBar = new SearchBar
 			{
@@ -22,10 +19,7 @@
 			layout.Children.Add(new Label { Text = "Vertical" });
 			layout.Children.Add(searchBar);
 
-			var layout1 = new StackLayout
-			{
-				Orientation = StackOrientation.Horizontal
-			};
+			var layout1 = new HorizontalStackLayout();
 
 			var searchBar1 = new SearchBar
 			{
@@ -37,17 +31,18 @@
 			layout1.Children.Add(new Label { Text = "Horizontal" });
 			layout1.Children.Add(searchBar1);
 
-#pragma warning disable CS0618 // Type or member is obsolete
 			var searchBar2 = new SearchBar
 			{
 				BackgroundColor = Colors.Blue,
 				Text = "i m with expand",
-				HorizontalOptions = LayoutOptions.CenterAndExpand,
+				HorizontalOptions = LayoutOptions.Center,
 				AutomationId = "srb_grid"
 			};
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			var grid = new Grid();
+			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto, });
+			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto, });
+			grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto, });
 			grid.Children.Add(layout);
 			Grid.SetRow(layout, 0);
 			grid.Children.Add(layout1);

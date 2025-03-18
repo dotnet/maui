@@ -22,6 +22,9 @@
       <Item ItemId=";description" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[A page for displaying content using C#.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Stránka pro zobrazení obsahu s využitím kódu C#]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>

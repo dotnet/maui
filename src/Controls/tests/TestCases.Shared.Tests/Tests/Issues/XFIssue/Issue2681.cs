@@ -12,11 +12,12 @@ public class Issue2681 : _IssuesUITest
 
 	public override string Issue => "[UWP] Label inside Listview gets stuck inside infinite loop";
 
-	// [Test]
-	// [Category(UITestCategories.ListView)]
-	// public void ListViewDoesntFreezeApp()
-	// {
-	// 	RunningApp.Tap(x => x.Marked(NavigateToPage));
-	// 	RunningApp.WaitForElement("3");
-	// }
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void ListViewDoesntFreezeApp()
+	{
+		App.WaitForElement("NavigateToPage");
+		App.Tap("NavigateToPage");
+		App.WaitForElement("3");
+	}
 }

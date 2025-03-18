@@ -198,13 +198,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 					var lineHeight = bounds.Height();
 					var lineStartOffset = layout.GetLineStart(curLine);
-					var lineVisibleEndOffset = layout.GetLineVisibleEnd(curLine);
+
+					// Retrieve the offset of the last visible character on the current line.
+					// The method `GetLineVisibleEnd(curLine)` returns the position right after the last visible character on the line.
+					// To get the exact offset of the last visible character, subtract 1 from this position.
+					var lineVisibleEndOffset = layout.GetLineVisibleEnd(curLine) - 1;
 
 					var startOffset = (curLine == spanStartLine) ? spanStartOffset : lineStartOffset;
 					var spanStartX = (int)layout.GetPrimaryHorizontal(startOffset);
 
 					var endOffset = (curLine == spanEndLine) ? spanEndOffset : lineVisibleEndOffset;
-					var spanEndX = (int)layout.GetSecondaryHorizontal(endOffset);
+					var validEndOffset = System.Math.Min(endOffset, layout.GetLineEnd(curLine));
+					var spanEndX = (int)layout.GetSecondaryHorizontal(validEndOffset);
 
 					var spanWidth = spanEndX - spanStartX;
 					var spanLeftX = spanStartX;

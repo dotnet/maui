@@ -60,7 +60,7 @@ namespace Maui.Controls.Sample
 			if (UseCollectionView2)
 			{
 #if IOS || MACCATALYST
-			
+
 				appBuilder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();

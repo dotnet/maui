@@ -17,7 +17,6 @@
   </Attributes>
   <Docs>
     <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Insert">

@@ -100,15 +100,15 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			}
 			return fileFromRoot;
 		}
-		
+
 		internal static string GetFileFromRoot(string file)
 		{
 			var fileFromRootpath = GetFilePathFromRoot(file);
 			if (string.IsNullOrEmpty(fileFromRootpath))
 			{
-					Assert.Fail($"Unable to find {file} at path: {fileFromRootpath}");
-					return null;
-				}
+				Assert.Fail($"Unable to find {file} at path: {fileFromRootpath}");
+				return null;
+			}
 			return File.ReadAllText(fileFromRootpath);
 		}
 	}

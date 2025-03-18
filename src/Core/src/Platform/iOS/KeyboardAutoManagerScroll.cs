@@ -7,8 +7,8 @@
 
 using System;
 using System.Text;
-using System.Threading;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
@@ -184,7 +184,7 @@ public static class KeyboardAutoManagerScroll
 	{
 		notification.UserInfo?.SetAnimationDuration();
 
-		if (LastScrollView is not null)
+		if (LastScrollView?.Window is not null)
 		{
 			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, AnimateHidingKeyboard, () => { });
 		}
@@ -695,7 +695,7 @@ public static class KeyboardAutoManagerScroll
 			}
 			else
 			{
-				ApplyContentInset (ScrolledView, LastScrollView, true, false);
+				ApplyContentInset(ScrolledView, LastScrollView, true, false);
 				// if our View is an editor, we can adjust the ContentInset.Bottom so that the text cursor will stay above the keyboard
 				if (ScrolledView != View && View is UITextView textView)
 				{
@@ -805,7 +805,11 @@ public static class KeyboardAutoManagerScroll
 
 		var bottomScrollIndicatorInset = bottomInset;
 
-		bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
+		// When the superview is a MauiCollectionView and the scrollView is a MauiTextView, we do not want to consider the Bottom Inset
+		// reserved for the Footer.
+		bool isMauiTextViewInCV = scrolledView is UITextView && LastScrollView is UICollectionView;
+
+		bottomInset = isMauiTextViewInCV ? bottomInset : nfloat.Max(StartingContentInsets.Bottom, bottomInset);
 		bottomScrollIndicatorInset = nfloat.Max(StartingScrollIndicatorInsets.Bottom, bottomScrollIndicatorInset);
 
 		if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
@@ -854,7 +858,7 @@ public static class KeyboardAutoManagerScroll
 	}
 
 	static bool IsHorizontalCollectionView(UIView collectionView)
-    => collectionView is UICollectionView { CollectionViewLayout: UICollectionViewFlowLayout { ScrollDirection: UICollectionViewScrollDirection.Horizontal }};
+	=> collectionView is UICollectionView { CollectionViewLayout: UICollectionViewFlowLayout { ScrollDirection: UICollectionViewScrollDirection.Horizontal } };
 
 	internal static nfloat FindKeyboardHeight()
 	{

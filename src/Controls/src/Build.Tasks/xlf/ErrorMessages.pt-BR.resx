@@ -135,6 +135,18 @@
     <value>Associação: tipo de índice do indexador sem suporte: "{0}".</value>
     <comment>0 is indexer type name</comment>
   </data>
+  <data name="BindingWithoutDataType" xml:space="preserve">
+    <value>A associação poderá ser compilada para melhorar o desempenho do runtime se x:DataType for especificado. Confira https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings para obter mais informações.</value>
+  </data>
+  <data name="BindingWithNullDataType" xml:space="preserve">
+    <value>A associação poderá ser compilada para melhorar o desempenho do runtime se x:DataType não for explicitamente nulo. Confira https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings para obter mais informações.</value>
+  </data>
+  <data name="BindingWithXDataTypeFromOuterScope" xml:space="preserve">
+    <value>A associação pode ser compilada incorretamente, pois a anotação x:DataType vem de um escopo externo. Certifique-se de anotar todos os elementos XAML do DataTemplate com o x:DataType correto. Confira https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings para obter mais informações.</value>
+  </data>
+  <data name="BindingWithSourceCompilationSkipped" xml:space="preserve">
+    <value>A associação não foi compilada porque tem uma propriedade Source explicitamente definida e a compilação de associações com Source não está habilitada. Considere habilitar esta otimização definindo &lt;MauiEnableXamlCBindingWithSourceCompilation&gt;true&lt;/MauiEnableXamlCBindingWithSourceCompilation&gt; no arquivo de projeto e certifique-se de que o x:DataType correto esteja especificado para esta associação. Confira https://learn.microsoft.com/dotnet/maui/fundamentals/data-binding/compiled-bindings para obter mais informações.</value>
+  </data>
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>Associação: a propriedade "{0}" não foi encontrada em "{1}".</value>
     <comment>0 is property name, 1 is type name</comment>
@@ -193,6 +205,9 @@
     <value>Já existe um elemento com o nome "{0}" neste NameScope.</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="ObsoleteProperty" xml:space="preserve">
+    <value>Property, Property setter ou BindableProperty "{0}" foram preteridos.</value>
+  </data>
   <data name="PropertyMissing" xml:space="preserve">
     <value>Propriedade obrigatória "{0}" ausente de "{1}".</value>
     <comment>0 is a property name, 1 is a type</comment>
@@ -222,7 +237,7 @@
     <value>A propriedade de origem não é um literal de cadeia de caracteres.</value>
   </data>
   <data name="StyleSheetSourceOrContent" xml:space="preserve">
-    <value>A StyleSheet não pode ter uma Origem e também um conteúdo.</value>
+    <value>StyleSheet não pode ter uma Fonte e um conteúdo.</value>
   </data>
   <data name="StyleSheetStyleNotALiteral" xml:space="preserve">
     <value>A propriedade ou o Conteúdo de Estilo não é um literal de cadeia de caracteres.</value>
@@ -232,7 +247,11 @@
     <comment>0 is a type name</comment>
   </data>
   <data name="XDataTypeSyntax" xml:space="preserve">
-    <value>O x:DataType espera um literal de cadeia de caracteres, uma marcação {{x:Type}} ou um {{x:Null}}.</value>
+    <value>x:DataType espera um literal de cadeia de caracteres, uma marcação {{x:Type}} ou {{x:Null}}.</value>
+  </data>
+  <data name="UnattributedMarkupType" xml:space="preserve">
+    <value>Considere atribuir a extensão de marcação "{0}" com [RequireService] ou [AcceptEmptyServiceProvider] se nenhuma for exigida.</value>
+    <comment>0 is type name</comment>
   </data>
   <data name="XmlnsUndeclared" xml:space="preserve">
     <value>Prefixo xmlns não declarado "{0}".</value>
@@ -247,5 +266,8 @@
   </data>
   <data name="XKeyNotLiteral" xml:space="preserve">
     <value>x:Key espera uma cadeia de caracteres literal.</value>
+  </data>
+  <data name="StaticResourceSyntax" xml:space="preserve">
+    <value>Uma chave é necessária em {StaticResource}.</value>
   </data>
 </root>

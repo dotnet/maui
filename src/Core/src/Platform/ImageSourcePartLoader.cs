@@ -28,11 +28,11 @@ namespace Microsoft.Maui.Platform
 		IImageSourceServiceProvider? _imageSourceServiceProvider;
 #endif
 
-		#if ANDROID
+#if ANDROID
 		// This is a temporary workaround for Android so that images don't just keep vanishing
 		// We will have a better fix in the next release that's better integrated with Glide
 		internal bool CheckForImageLoadedOnAttached { get; set; }
-		#endif
+#endif
 
 		readonly IImageSourcePartSetter _setter;
 
