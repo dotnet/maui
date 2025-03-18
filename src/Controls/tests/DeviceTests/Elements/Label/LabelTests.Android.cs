@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -88,6 +89,79 @@ namespace Microsoft.Maui.DeviceTests
 			}));
 		}
 
+		[Fact]
+		[Description("The ScaleX property of a Label should match with native ScaleX")]
+		public async Task ScaleXConsistent()
+		{
+			var label = new Label() { ScaleX = 0.45f };
+			var expected = label.ScaleX;
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var platformLabel = GetPlatformLabel(handler);
+			var platformScaleX = await InvokeOnMainThreadAsync(() => platformLabel.ScaleX);
+			Assert.Equal(expected, platformScaleX);
+		}
+
+		[Fact]
+		[Description("The ScaleY property of a Label should match with native ScaleY")]
+		public async Task ScaleYConsistent()
+		{
+			var label = new Label() { ScaleY = 1.23f };
+			var expected = label.ScaleY;
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var platformLabel = GetPlatformLabel(handler);
+			var platformScaleY = await InvokeOnMainThreadAsync(() => platformLabel.ScaleY);
+			Assert.Equal(expected, platformScaleY);
+		}
+
+		[Fact]
+		[Description("The Scale property of a Label should match with native Scale")]
+		public async Task ScaleConsistent()
+		{
+			var label = new Label() { Scale = 2.0f };
+			var expected = label.Scale;
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var platformLabel = GetPlatformLabel(handler);
+			var platformScaleX = await InvokeOnMainThreadAsync(() => platformLabel.ScaleX);
+			var platformScaleY = await InvokeOnMainThreadAsync(() => platformLabel.ScaleY);
+			Assert.Equal(expected, platformScaleX);
+			Assert.Equal(expected, platformScaleY);
+		}
+
+		[Fact]
+		[Description("The RotationX property of a Label should match with native RotationX")]
+		public async Task RotationXConsistent()
+		{
+			var label = new Label() { RotationX = 33.0 };
+			var expected = label.RotationX;
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var platformLabel = GetPlatformLabel(handler);
+			var platformRotationX = await InvokeOnMainThreadAsync(() => platformLabel.RotationX);
+			Assert.Equal(expected, platformRotationX);
+		}
+
+		[Fact]
+		[Description("The RotationY property of a Label should match with native RotationY")]
+		public async Task RotationYConsistent()
+		{
+			var label = new Label() { RotationY = 87.0 };
+			var expected = label.RotationY;
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var platformLabel = GetPlatformLabel(handler);
+			var platformRotationY = await InvokeOnMainThreadAsync(() => platformLabel.RotationY);
+			Assert.Equal(expected, platformRotationY);
+		}
+
+		[Fact]
+		[Description("The Rotation property of a Label should match with native Rotation")]
+		public async Task RotationConsistent()
+		{
+			var label = new Label() { Rotation = 23.0 };
+			var expected = label.Rotation;
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var platformLabel = GetPlatformLabel(handler);
+			var platformRotation = await InvokeOnMainThreadAsync(() => platformLabel.Rotation);
+			Assert.Equal(expected, platformRotation);
+		}
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 
