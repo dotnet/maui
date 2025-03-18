@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("NavigateButton");
 
 			var navigatedToBeforeNavigate = App.FindElement("OnNavigatedToLabel").GetText();
-			Assert.That(navigatedToBeforeNavigate, Is.EqualTo("PreviousPage: Null, NavigationType: Initialize"));
+			Assert.That(navigatedToBeforeNavigate, Is.EqualTo("PreviousPage: Null, NavigationType: Push"));
 			
 			var navigatingFromBeforeNavigate = App.FindElement("OnNavigatingFromLabel").GetText();
 			Assert.That(navigatingFromBeforeNavigate, Is.EqualTo(string.Empty));
