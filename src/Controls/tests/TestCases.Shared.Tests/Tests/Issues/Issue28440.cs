@@ -16,12 +16,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.FlyoutPage)]
 		public void CheckFlyoutPageIsPresentedState()
 		{
-			App.WaitForElement("Button");
-			var buttonRect = App.WaitForElement("Button").GetRect();
+			var buttonElement = App.WaitForElement("Button");
+			var buttonRect = buttonElement.GetRect();
 			App.Tap("Button");
 			App.WaitForElement("flyoutMenu");
 			float tapX = buttonRect.X + buttonRect.Width - 10;
-    		float tapY = buttonRect.CenterY();
+			float tapY = buttonRect.CenterY();
 			App.TapCoordinates(tapX, tapY);
 			App.WaitForElement("Button");
 			App.Tap("Button");
