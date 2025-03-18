@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Handlers
 		protected override MauiPicker CreatePlatformView() =>
 			new MauiPicker(null) { BorderStyle = UITextBorderStyle.RoundedRect };
 
-		void DisplayAlertAsync(MauiPicker uITextField)
+		void DisplayAlert(MauiPicker uITextField)
 		{
 			var paddingTitle = 0;
 			if (!string.IsNullOrEmpty(VirtualView.Title))
