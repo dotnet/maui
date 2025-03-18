@@ -13,11 +13,16 @@ public class Issue14497 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
-	[Category(UITestCategories.SearchBar)]
 	public void DynamicallyQueryNotUpdating()
 	{
 		App.WaitForElement(ChangeSearchText);
 		App.Tap(ChangeSearchText);
-		VerifyScreenshot();
+#if MACCATALYST || IOS
+		Assert.That(App.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField")).GetText(), Is.EqualTo("Hello World"));
+#elif ANDROID
+		Assert.That(App.WaitForElement(AppiumQuery.ByXPath("//android.widget.EditText")).GetText(), Is.EqualTo("Hello World"));
+#else
+		Assert.That(App.WaitForElement("TextBox").GetText(), Is.EqualTo("Hello World"));
+#endif
 	}
 }
