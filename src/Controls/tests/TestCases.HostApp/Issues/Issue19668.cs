@@ -31,6 +31,7 @@ public class Issue19668 : ContentPage
 		var plusLabel = new Label
 		{
 			Text = "+",
+			AutomationId = "Label",
 			VerticalOptions = LayoutOptions.Center
 		};
 		horizontalStackLayout.Add(plusLabel);
@@ -57,7 +58,6 @@ public class Issue19668 : ContentPage
 			HeightRequest = 35,
 			StrokeThickness = 3,
 			Background = Colors.Green,
-			AutomationId = "Border",
 			StrokeShape = new RoundRectangle
 			{
 				CornerRadius = 6
