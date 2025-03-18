@@ -11,7 +11,7 @@
         <Button Clicked="Button_Clicked"
                 AutomationId="Button"
                 Text="Button"/>
-        <CarouselView  WidthRequest="350"
+        <CarouselView  x:Name="carouselView" WidthRequest="350"
                        HeightRequest="570"
                        HorizontalOptions="Fill"
                        VerticalOptions="Fill"
