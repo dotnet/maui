@@ -74,6 +74,10 @@ public partial class TestPage
 		xmlNamespaceResolver.Add("x", "http://schemas.microsoft.com/winfx/2009/xaml");
 		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlTypeResolver), new global::Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver(xmlNamespaceResolver, typeof(global::Test.TestPage).Assembly));
 		var bindingBase = (global::Microsoft.Maui.Controls.BindingBase)((global::Microsoft.Maui.Controls.Xaml.IMarkupExtension<global::Microsoft.Maui.Controls.BindingBase>)bindingExtension).ProvideValue(xamlServiceProvider);
+#if _MAUIXAML_SG_SOURCEINFO
+		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(bindingBase!) == null)
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingBase!, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), -1, -1);
+#endif
 		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingBase);
 	}
 }

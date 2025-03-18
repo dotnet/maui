@@ -64,6 +64,7 @@ static class GeneratorHelpers
 
 	static SGRootNode? ParseXaml(string xaml)
     {
+		List<string> warningDisableList = [];
 		using (var stringreader = new StringReader(xaml))
         using (var reader = XmlReader.Create(stringreader))
         {
@@ -72,13 +73,29 @@ static class GeneratorHelpers
                 //Skip until element
                 if (reader.NodeType == XmlNodeType.Whitespace)
                     continue;
+				if (reader.NodeType == XmlNodeType.ProcessingInstruction)
+				{
+					if (reader.Name != "xaml-comp")
+						continue;
+					if (reader.Value.Contains("warning-disable"))
+					{
+						//FIXME: this need proper parsing
+						reader.Value.Split(' ').Select(v => v.Trim()).Where(w => w.StartsWith("warning-disable")).ToList().ForEach(s =>
+							warningDisableList.AddRange(s.Split('=').Last().Trim('"').Split(',').Select(s => s.Trim())));
+					}
+					continue;						
+				}
+
                 if (reader.NodeType != XmlNodeType.Element)
                 {
                     Debug.WriteLine("Unhandled node {0} {1} {2}", reader.NodeType, reader.Name, reader.Value);
                     continue;
                 }
 
-				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, XamlParser.GetTypeArguments(reader)), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition);
+				var rootnode = new SGRootNode(new XmlType(reader.NamespaceURI, reader.Name, XamlParser.GetTypeArguments(reader)), /*typeReference, */(IXmlNamespaceResolver)reader, ((IXmlLineInfo)reader).LineNumber, ((IXmlLineInfo)reader).LinePosition)
+				{
+					DisableWarnings = warningDisableList,
+				};
                 XamlParser.ParseXaml(rootnode, reader);
 
                 return rootnode;

@@ -10,6 +10,7 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls.SourceGen;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.Xaml;
 using static LocationHelpers;
 
@@ -256,8 +257,9 @@ static class KnownTypeConverters
             }
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ColorConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
-
+#pragma warning disable RS0030 // Do not use banned APIs
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+#pragma warning restore RS0030 // Do not use banned APIs
         return "default";
     }
 
@@ -438,7 +440,7 @@ static class KnownTypeConverters
         }
 
 #pragma warning disable RS0030 // Do not use banned APIs
-		context.ReportDiagnostic(Diagnostic.Create(Descriptors.EnumTypeConverterConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, value, toType?.ToDisplayString()));
+		context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, value, toType?.ToDisplayString()));
 #pragma warning restore RS0030 // Do not use banned APIs
 
 		return "default";
@@ -452,24 +454,45 @@ static class KnownTypeConverters
             value = value.Trim();
 
             if (value.Equals("Auto", StringComparison.OrdinalIgnoreCase))
-            {
                 return $"global::Microsoft.Maui.Layouts.FlexBasis.Auto";
-            }
 
-            if (value.EndsWith("%", StringComparison.OrdinalIgnoreCase)
+            if (   value.EndsWith("%", StringComparison.OrdinalIgnoreCase)
                 && float.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out float relflex))
-            {
                 return $"new global::Microsoft.Maui.Layouts.FlexBasis({relflex / 100}, true)";
-            }
 
             if (float.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out float flex))
-            {
                 return $"new global::Microsoft.Maui.Layouts.FlexBasis({flex}, false)";
-            }
         }
 
         context.ReportDiagnostic(Diagnostic.Create(Descriptors.FlexBasisConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
 
+        return "default";
+    }
+
+    public static string ConvertFontSize(string value, BaseNode node, ITypeSymbol toType, SourceGenContext context, LocalVariable? parentVar = null)
+    {
+        var xmlLineInfo = (IXmlLineInfo)node;
+        if (!string.IsNullOrEmpty(value))
+        {
+            value = value.Trim();
+            if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out double size))
+                return $"{SymbolDisplay.FormatPrimitive(size, true, false)}D";
+
+
+            var namedSizeSymbol = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.NamedSize")!;
+
+            var detectedEnumValue = namedSizeSymbol.GetFields().FirstOrDefault(
+                f => string.Equals(f.Name, value, StringComparison.OrdinalIgnoreCase));
+            if (detectedEnumValue is not null)
+            {
+                var type = parentVar?.Type ?? context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Label")!;
+                return $"global::Microsoft.Maui.Controls.Device.GetNamedSize((global::Microsoft.Maui.Controls.NamedSize){detectedEnumValue.ConstantValue}, typeof({type.ToFQDisplayString()}))";
+            }
+        }
+
+#pragma warning disable RS0030 // Do not use banned APIs
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+#pragma warning restore RS0030 // Do not use banned APIs
         return "default";
     }
 
@@ -481,19 +504,13 @@ static class KnownTypeConverters
             value = value.Trim();
 
             if (value.Equals("ltr", StringComparison.OrdinalIgnoreCase))
-            {
                 return "global::Microsoft.Maui.FlowDirection.LeftToRight";
-            }
 
             if (value.Equals("rtl", StringComparison.OrdinalIgnoreCase))
-            {
                 return "global::Microsoft.Maui.FlowDirection.RightToLeft";
-            }
 
             if (value.Equals("inherit", StringComparison.OrdinalIgnoreCase))
-            {
                 return "global::Microsoft.Maui.FlowDirection.MatchParent";
-            }
 
             return ConvertEnum(value, node, toType, context);
         }
@@ -588,8 +605,9 @@ static class KnownTypeConverters
                 $"global::Microsoft.Maui.Controls.ImageSource.FromUri(new global::System.Uri(\"{uri}\"))" : $"global::Microsoft.Maui.Controls.ImageSource.FromFile(\"{value}\")";
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ImageSourceConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
-
+#pragma warning disable RS0030 // Do not use banned APIs
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+#pragma warning restore RS0030 // Do not use banned APIs
         return "default";
     }
     
@@ -603,8 +621,9 @@ static class KnownTypeConverters
             return $"new global::System.Collections.Generic.List<string> {{ {string.Join(", ", value.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(v => $"\"{v.Trim()}\""))} }}";
         }
 
+#pragma warning disable RS0030 // Do not use banned APIs
         context.ReportDiagnostic(Diagnostic.Create(Descriptors.ListStringConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
-
+#pragma warning restore RS0030 // Do not use banned APIs
         return "default";
     }
 
@@ -637,23 +656,27 @@ static class KnownTypeConverters
 				}
 				else
                 {
-					context.ReportDiagnostic(Diagnostic.Create(Descriptors.PointCollectionConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
-
+#pragma warning disable RS0030 // Do not use banned APIs
+					context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+#pragma warning restore RS0030 // Do not use banned APIs
                     return "default";
                 }
 			}
 
 			if (hasX)
             {
-				context.ReportDiagnostic(Diagnostic.Create(Descriptors.PointCollectionConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
-
+#pragma warning disable RS0030 // Do not use banned APIs
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+#pragma warning restore RS0030 // Do not use banned APIs
                 return "default";
             }
 
 			return $"new global::Microsoft.Maui.Controls.PointCollection(new[] {{ {string.Join(", ", pointCollection)} }})";
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(Descriptors.PointCollectionConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
+#pragma warning disable RS0030 // Do not use banned APIs
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+#pragma warning restore RS0030 // Do not use banned APIs
 
         return "default";
     }
@@ -669,8 +692,9 @@ static class KnownTypeConverters
             return "new global::Microsoft.Maui.Controls.Shapes.PathGeometry()";
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(Descriptors.PathGeometryConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
-
+#pragma warning disable RS0030 // Do not use banned APIs
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType?.ToDisplayString()));
+#pragma warning restore RS0030 // Do not use banned APIs
         return "default";
     }
 
@@ -845,8 +869,9 @@ static class KnownTypeConverters
                 return $"global::Microsoft.Maui.Controls.Compatibility.Constraint.Constant({size})";
         }
 
-        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConstraintConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value));
-
+#pragma warning disable RS0030 // Do not use banned APIs
+        context.ReportDiagnostic(Diagnostic.Create(Descriptors.ConversionFailed, LocationCreate(context.FilePath!, xmlLineInfo, value), value, toType.ToDisplayString()));
+#pragma warning restore RS0030 // Do not use banned APIs
         return "default";
     }
 

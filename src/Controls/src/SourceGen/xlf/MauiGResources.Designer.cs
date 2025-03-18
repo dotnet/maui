@@ -99,10 +99,9 @@ namespace Microsoft.Maui.Controls.SourceGen {
                 return ResourceManager.GetString("ConversionFailed", resourceCulture);
             }
         }
-
-        internal static string ColorConversionFailed {
+        internal static string ConversionFailedTitle {
             get {
-                return ResourceManager.GetString("ColorConversionFailed", resourceCulture);
+                return ResourceManager.GetString("ConversionFailedTitle", resourceCulture);
             }
         }
         
@@ -135,12 +134,6 @@ namespace Microsoft.Maui.Controls.SourceGen {
                 return ResourceManager.GetString("EasingConversionFailed", resourceCulture);
             }
         }
-
-        internal static string EnumTypeConverterConversionFailed {
-            get {
-                return ResourceManager.GetString("EnumTypeConverterConversionFailed", resourceCulture);
-            }
-        }
         
         internal static string FlexBasisConversionFailed {
             get {
@@ -157,24 +150,6 @@ namespace Microsoft.Maui.Controls.SourceGen {
         internal static string GridLengthConversionFailed {
             get {
                 return ResourceManager.GetString("GridLengthConversionFailed", resourceCulture);
-            }
-        }
-        
-        internal static string ImageSourceConversionFailed {
-            get {
-                return ResourceManager.GetString("ImageSourceConversionFailed", resourceCulture);
-            }
-        }
-        
-        internal static string PointCollectionConversionFailed {
-            get {
-                return ResourceManager.GetString("PointCollectionConversionFailed", resourceCulture);
-            }
-        }
-
-        internal static string PathGeometryConversionFailed {
-            get {
-                return ResourceManager.GetString("PathGeometryConversionFailed", resourceCulture);
             }
         }
         
@@ -201,12 +176,6 @@ namespace Microsoft.Maui.Controls.SourceGen {
                 return ResourceManager.GetString("LayoutOptionsConversionFailed", resourceCulture);
             }
         }
-        
-        internal static string ConstraintConversionFailed {
-            get {
-                return ResourceManager.GetString("ConstraintConversionFailed", resourceCulture);
-            }
-        }
 
         internal static string SymbolResolution {
             get {
@@ -229,8 +198,6 @@ namespace Microsoft.Maui.Controls.SourceGen {
 		internal static string MemberResolution => ResourceManager.GetString("MemberResolution", resourceCulture);
 
 		internal static string MethodResolution => ResourceManager.GetString("MethodResolution", resourceCulture);
-
-        internal static string InvalidFormat => ResourceManager.GetString("InvalidFormat", resourceCulture);
 
         internal static string DuplicateKeyInRD => ResourceManager.GetString("DuplicateKeyInRD", resourceCulture);
 	}
