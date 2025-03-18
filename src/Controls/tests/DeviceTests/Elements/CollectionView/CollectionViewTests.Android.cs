@@ -98,7 +98,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0, count);
 		}
 
-		//src/Compatibility/Core/tests/Android/ObservrableItemsSourceTests.cs#L52
+		//src/Compatibility/Core/tests/Android/ObservableItemsSourceTests.cs#L52
 		[Fact(DisplayName = "CollectionView with SnapPointsType set should not crash")]
 		public async Task SnapPointsDoNotCrashOnOlderAPIs()
 		{
@@ -122,7 +122,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		//src/Compatibility/Core/tests/Android/ObservrableItemsSourceTests.cs#L52
+		//src/Compatibility/Core/tests/Android/ObservableItemsSourceTests.cs#L52
 		[Fact(DisplayName = "ObservableCollection modifications are reflected after UI thread processes them")]
 		public async Task ObservableSourceItemsCountConsistent()
 		{
