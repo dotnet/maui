@@ -1,51 +1,53 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace Controls.TestCases.HostApp.Issues;
 
 [Issue(IssueTracker.Github, 15508, "Scrollview.ScrollTo execution only returns after manual scroll", PlatformAffected.UWP)]
 public class Issue15508 : ContentPage
 {
-	ScrollView scrollView;
-	Label label1;
+	ScrollView _scrollView;
+	Label _scrollLabel;
+	Button _scrollButton;
 	public Issue15508()
 	{
+		InitializeComponent();
+	}
 
-		var grid = new Grid()
+	void InitializeComponent()
+	{
+		var mainGrid = new Grid
 		{
-			ColumnDefinitions = new ColumnDefinitionCollection()
-			{
-				new ColumnDefinition() { Width = GridLength.Auto},
-				new ColumnDefinition() { Width = GridLength.Star},
-			},
-			RowDefinitions = new RowDefinitionCollection()
-			{
-				new RowDefinition { Height = GridLength.Auto },
-				new RowDefinition { Height = GridLength.Star },
-			},
+			ColumnDefinitions =
+				{
+					new ColumnDefinition { Width = GridLength.Auto },
+					new ColumnDefinition { Width = GridLength.Star }
+				},
+			RowDefinitions =
+				{
+					new RowDefinition { Height = GridLength.Auto },
+					new RowDefinition { Height = GridLength.Star }
+				},
 			BackgroundColor = Colors.Gray
 		};
 
-		var verticalStack = new VerticalStackLayout();
-
-		Button button = new Button()
+		// Create the button and set up its click event
+		_scrollButton = new Button
 		{
 			Text = "Scroll activated through message",
 			WidthRequest = 250,
 			HorizontalOptions = LayoutOptions.Start,
-			AutomationId = "ButtonToScroll",
+			AutomationId = "ButtonToScroll"
 		};
 
-		button.Clicked += button_clicked;
+		_scrollButton.Clicked += OnScrollButtonClicked;
 
-		verticalStack.Children.Add(button);
+		// Set up the layout for the button
+		var buttonLayout = new VerticalStackLayout();
+		buttonLayout.Children.Add(_scrollButton);
+		mainGrid.Add(buttonLayout, 1, 0);
 
-		grid.Add(verticalStack, 1, 0);
-
-		scrollView = new ScrollView
+		// Set up the ScrollView and its content
+		_scrollView = new ScrollView
 		{
 			BackgroundColor = Colors.LightCoral,
 			VerticalOptions = LayoutOptions.Start,
@@ -54,75 +56,40 @@ public class Issue15508 : ContentPage
 			WidthRequest = 150
 		};
 
-		label1 = new Label()
+		// Create the label content for the ScrollView
+		_scrollLabel = new Label
 		{
 			AutomationId = "ScrollLabel",
-			Text =
-			"a" + Environment.NewLine +
-			"b" + Environment.NewLine +
-			"c" + Environment.NewLine +
-			"d" + Environment.NewLine +
-			"e" + Environment.NewLine +
-			"f" + Environment.NewLine +
-			"g" + Environment.NewLine +
-			"h" + Environment.NewLine +
-			"i" + Environment.NewLine +
-			"j" + Environment.NewLine +
-			"k" + Environment.NewLine +
-			"l" + Environment.NewLine +
-			"m" + Environment.NewLine +
-			"n" + Environment.NewLine +
-			"o" + Environment.NewLine +
-			"p" + Environment.NewLine +
-			"q" + Environment.NewLine +
-			"r" + Environment.NewLine +
-			"s" + Environment.NewLine +
-			"t" + Environment.NewLine +
-			"u" + Environment.NewLine +
-			"v" + Environment.NewLine +
-			"w" + Environment.NewLine +
-			"x" + Environment.NewLine +
-			"y" + Environment.NewLine +
-			"z" + Environment.NewLine +
-			"a" + Environment.NewLine +
-			"b" + Environment.NewLine +
-			"c" + Environment.NewLine +
-			"d" + Environment.NewLine +
-			"e" + Environment.NewLine +
-			"f" + Environment.NewLine +
-			"g" + Environment.NewLine +
-			"h" + Environment.NewLine +
-			"i" + Environment.NewLine +
-			"j" + Environment.NewLine +
-			"k" + Environment.NewLine +
-			"l" + Environment.NewLine +
-			"m" + Environment.NewLine +
-			"n" + Environment.NewLine +
-			"o" + Environment.NewLine +
-			"p" + Environment.NewLine +
-			"q" + Environment.NewLine +
-			"r" + Environment.NewLine +
-			"s" + Environment.NewLine +
-			"t" + Environment.NewLine +
-			"u" + Environment.NewLine +
-			"v" + Environment.NewLine +
-			"w" + Environment.NewLine +
-			"x" + Environment.NewLine +
-			"y" + Environment.NewLine +
-			"z" + Environment.NewLine
+			Text = GenerateLabelText()
 		};
 
-		scrollView.Content = label1;
-		grid.Add(scrollView, 0, 0);
-		Content = grid;
+		_scrollView.Content = _scrollLabel;
+		mainGrid.Add(_scrollView, 0, 0);
+
+		// Set the content of the page
+		Content = mainGrid;
 	}
 
-	void button_clicked(object sender, EventArgs e)
+	string GenerateLabelText()
 	{
+		// Generates the long text for the label dynamically
+		var textBuilder = new StringBuilder();
+
+		for (char c = 'a'; c <= 'z'; c++)
+		{
+			textBuilder.AppendLine(c.ToString());
+		}
+
+		return textBuilder.ToString();
+	}
+
+	void OnScrollButtonClicked(object sender, EventArgs e)
+	{
+		// Scroll to the top of the ScrollView
 		Application.Current?.Dispatcher.DispatchAsync(async () =>
 		{
-			await scrollView.ScrollToAsync(0, 0, true);
-			label1.Text = "The text is successfully changed";
+			await _scrollView.ScrollToAsync(0, 0, true);
+			_scrollLabel.Text = "The text is successfully changed";
 		});
 	}
 }
