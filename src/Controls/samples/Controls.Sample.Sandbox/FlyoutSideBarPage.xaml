@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<FlyoutPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+            x:Class="Maui.Controls.Sample.FlyoutSideBarPage"
+            xmlns:local="clr-namespace:Maui.Controls.Sample"
+            FlyoutLayoutBehavior="Popover"
+            IsPresentedChanged="FlyoutPage_IsPresentedChanged"
+            IsPresented="{Binding IsPresented, Mode=TwoWay}" >
+
+    <FlyoutPage.BindingContext>
+        <local:FlyoutViewModel/>
+    </FlyoutPage.BindingContext>
+
+    <FlyoutPage.Flyout>
+        <local:NewPage1/>
+    </FlyoutPage.Flyout>
+
+    <FlyoutPage.Detail>
+        <NavigationPage x:Name="DetailPage">
+            <x:Arguments>
+                <local:MainPage NavigationPage.HasNavigationBar="False"/>
+            </x:Arguments>
+        </NavigationPage>
+    </FlyoutPage.Detail>
+</FlyoutPage>
