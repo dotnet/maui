@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Platform
 
 		public WBrush? Background
 		{
-			get => (IsSelected ? SelectedBackground : UnselectedBackground) ?? new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+			get => (IsSelected ? SelectedBackground : UnselectedBackground) ?? new SolidColorBrush(Microsoft.UI.Colors.Transparent); //The Background color is set to null since both SelectedBackground and UnselectedBackground return null. Adding a default transparent background ensures it is never null, preventing rendering inconsistencies.
 		}
 
 		public object? Data
