@@ -15,14 +15,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue2775Test()
 		{
 			App.WaitForElement("TestReady");
-			App.Screenshot("I am at Issue 2775");
-			App.Screenshot("I see the Label");
+			VerifyScreenshot();
 		}
 	}
 }

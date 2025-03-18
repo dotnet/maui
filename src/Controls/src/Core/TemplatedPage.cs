@@ -59,6 +59,11 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void OnApplyTemplate()
 		{
+			OnApplyTemplateImpl();
+		}
+		void OnApplyTemplateImpl()
+		{
+			Handler?.UpdateValue(nameof(IContentView.Content));
 		}
 
 		protected override void OnChildRemoved(Element child, int oldLogicalIndex)

@@ -1,5 +1,4 @@
-﻿#if ANDROID || IOS || WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -38,7 +37,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// 2. Increase the value.
 			App.IncreaseStepper(stepperAutomationId);
-			App.Screenshot("Increase the Stepper value");
 
 			// 3. Verify that the value has increased.
 			var step3Value = App.FindElement(valueAutomationId).GetText();
@@ -62,7 +60,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// 2. Increase the value.
 			App.IncreaseStepper(stepperAutomationId);
-			App.Screenshot("Increase the Stepper value");
 
 			// 3. Verify that the value has increased.
 			var step3Value = App.FindElement(valueAutomationId).GetText();
@@ -70,7 +67,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			// 4. Decrease the value.
 			App.DecreaseStepper(stepperAutomationId);
-			App.Screenshot("Decrease the Stepper value");
 
 			// 5. Verify that the value has decreased.
 			var step5Value = App.FindElement(valueAutomationId).GetText();
@@ -78,4 +74,3 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 	}
 }
-#endif

@@ -11,13 +11,14 @@ namespace Microsoft.Maui.Graphics.Skia
 		private readonly ITextAttributes _textAttributes;
 		private readonly string _value;
 		private readonly TextFlow _textFlow;
-		private readonly SKPaint _paint;
-		private readonly bool _disposePaint;
+		private readonly SKFont _font;
+		private readonly bool _disposeFont;
 		private readonly float _lineHeight;
 		private readonly float _descent;
 
 		public bool WordWrap { get; set; } = true;
 
+		[Obsolete("Use SkiaTextLayout(string, RectF, ITextAttributes, LayoutLine, TextFlow, SKFont) instead.")]
 		public SkiaTextLayout(
 			string value,
 			RectF rect,
@@ -25,28 +26,42 @@ namespace Microsoft.Maui.Graphics.Skia
 			LayoutLine callback,
 			TextFlow textFlow = TextFlow.ClipBounds,
 			SKPaint paint = null)
+			: this(value, rect, textAttributes, callback, textFlow, paint?.ToFont())
+		{
+		}
+
+		public SkiaTextLayout(
+			string value,
+			RectF rect,
+			ITextAttributes textAttributes,
+			LayoutLine callback,
+			TextFlow textFlow = TextFlow.ClipBounds,
+			SKFont font = null)
 		{
 			_value = value;
 			_textAttributes = textAttributes;
 			_rect = rect;
 			_callback = callback;
 			_textFlow = textFlow;
-			_paint = paint;
 
-			if (paint == null)
+			if (font is not null)
 			{
-				_paint = new SKPaint()
+				_font = font;
+			}
+			else
+			{
+				_font = new SKFont()
 				{
-					Typeface = _textAttributes?.Font?.ToSKTypeface() ?? SKTypeface.Default,
-					TextSize = _textAttributes.FontSize
+					Typeface = _textAttributes.Font?.ToSKTypeface() ?? SKTypeface.Default,
+					Size = _textAttributes.FontSize
 				};
 
-				_disposePaint = true;
+				_disposeFont = true;
 			}
 
-			var metrics = _paint.FontMetrics;
+			var metrics = _font.Metrics;
 			_descent = metrics.Descent;
-			_lineHeight = _paint.FontSpacing;
+			_lineHeight = _font.Spacing;
 		}
 
 		public void LayoutText()
@@ -67,11 +82,6 @@ namespace Microsoft.Maui.Graphics.Skia
 			var top = y;
 			var bottom = y + height;
 
-			if (_textAttributes.HorizontalAlignment == HorizontalAlignment.Right)
-				_paint.TextAlign = SKTextAlign.Right;
-			else if (_textAttributes.HorizontalAlignment == HorizontalAlignment.Center)
-				_paint.TextAlign = SKTextAlign.Center;
-
 			var lines = CreateLines(y, bottom, width);
 			switch (_textAttributes.VerticalAlignment)
 			{
@@ -85,8 +95,6 @@ namespace Microsoft.Maui.Graphics.Skia
 					LayoutTopAligned(lines, x, y, width);
 					break;
 			}
-
-			_paint.TextAlign = SKTextAlign.Left;
 		}
 
 		private void LayoutCenterAligned(
@@ -215,7 +223,7 @@ namespace Microsoft.Maui.Graphics.Skia
 				if (_textFlow == TextFlow.ClipBounds && _textAttributes.VerticalAlignment == VerticalAlignment.Top && y > bottom)
 					return lines;
 
-				var count = (int)_paint.BreakText(_value.Substring(index), width, out var textWidth);
+				var count = _font.BreakText(_value.AsSpan(index), width, out var textWidth);
 
 				var found = false;
 				if (WordWrap && index + count < length)
@@ -230,10 +238,12 @@ namespace Microsoft.Maui.Graphics.Skia
 					}
 				}
 
-				var line = _value.Substring(index, count);
+				var line = _value.AsSpan(index, count);
 				if (found)
-					textWidth = _paint.MeasureText(line);
-				lines.Add(new TextLine(line, textWidth));
+				{
+					textWidth = _font.MeasureText(line);
+				}
+				lines.Add(new TextLine(line.ToString(), textWidth));
 
 				index += count;
 			}
@@ -243,22 +253,15 @@ namespace Microsoft.Maui.Graphics.Skia
 
 		public void Dispose()
 		{
-			if (_disposePaint)
-				_paint?.Dispose();
+			if (_disposeFont)
+				_font?.Dispose();
 		}
 	}
 
-	public class TextLine
+	public class TextLine(string value, float width)
 	{
-		public string Value { get; }
-		public float Width { get; }
+		public string Value { get; } = value;
 
-		public TextLine(
-			string value,
-			float width)
-		{
-			Value = value;
-			Width = width;
-		}
+		public float Width { get; } = width;
 	}
 }

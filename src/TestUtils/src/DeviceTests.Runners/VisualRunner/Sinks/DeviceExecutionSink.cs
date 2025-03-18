@@ -13,20 +13,29 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 	{
 		readonly SynchronizationContext _context;
 		readonly ITestListener _listener;
+		readonly TestRunLogger _logger;
 		readonly Dictionary<ITestCase, TestCaseViewModel> _testCases;
 
 		public DeviceExecutionSink(
 			Dictionary<ITestCase, TestCaseViewModel> testCases,
 			ITestListener listener,
+			TestRunLogger logger,
 			SynchronizationContext context)
 		{
 			_testCases = testCases ?? throw new ArgumentNullException(nameof(testCases));
 			_listener = listener ?? throw new ArgumentNullException(nameof(listener));
+			_logger = logger ?? throw new ArgumentNullException(nameof(logger));
 			_context = context ?? throw new ArgumentNullException(nameof(context));
 
 			Execution.TestFailedEvent += HandleTestFailed;
 			Execution.TestPassedEvent += HandleTestPassed;
 			Execution.TestSkippedEvent += HandleTestSkipped;
+			Execution.TestStartingEvent += HandleTestStarting;
+		}
+
+		void HandleTestStarting(MessageHandlerArgs<ITestStarting> args)
+		{
+			LogSingleTestStarting(args.Message);
 		}
 
 		void HandleTestFailed(MessageHandlerArgs<ITestFailed> args)
@@ -42,6 +51,18 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		void HandleTestSkipped(MessageHandlerArgs<ITestSkipped> args)
 		{
 			MakeTestResultViewModel(args.Message, TestState.Skipped);
+		}
+
+		void LogSingleTestStarting(ITestStarting test)
+		{
+			var displayName = test.TestCase.DisplayName;
+
+			if (test.TestCase.Traits.TryGetValue("Category", out var categories) && categories.Count > 0)
+			{
+				displayName = $"[{string.Join(", ", categories)}] {displayName}";
+			}
+
+			_logger.LogTestStart(displayName);
 		}
 
 		async void MakeTestResultViewModel(ITestResultMessage testResult, TestState outcome)

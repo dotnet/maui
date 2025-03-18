@@ -84,7 +84,11 @@ namespace Microsoft.Maui.Graphics
 
 		public override string ToString()
 		{
-			return $"[Color: Red={Red}, Green={Green}, Blue={Blue}, Alpha={Alpha}]";
+			var r = Red.ToString(CultureInfo.InvariantCulture);
+			var g = Green.ToString(CultureInfo.InvariantCulture);
+			var b = Blue.ToString(CultureInfo.InvariantCulture);
+			var a = Alpha.ToString(CultureInfo.InvariantCulture);
+			return $"[Color: Red={r}, Green={g}, Blue={b}, Alpha={a}]";
 		}
 
 		public override int GetHashCode()
