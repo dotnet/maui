@@ -10,17 +10,16 @@ public class Issue5132 : TestShell
 		Title = "Shell";
 		FlyoutIcon = new FontImageSource
 		{
-			Glyph = "\uf2fb",
-			FontFamily = DefaultFontFamily(),
+			Glyph = "\uf224",
+			FontFamily = "Ion",
 			Size = 20,
 			AutomationId = _idIconElement
 		};
-#pragma warning disable CS0618 // Type or member is obsolete
-		FlyoutIcon.SetValue(AutomationProperties.HelpTextProperty, "This as Shell FlyoutIcon");
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-		FlyoutIcon.SetValue(AutomationProperties.NameProperty, "Shell Icon");
-#pragma warning restore CS0618 // Type or member is obsolete
+
+		FlyoutIcon.SetValue(SemanticProperties.HintProperty, "This as Shell FlyoutIcon");
+
+		FlyoutIcon.SetValue(SemanticProperties.DescriptionProperty, "Shell Icon");
+
 		Items.Add(new FlyoutItem
 		{
 			Title = _titleElement,
@@ -34,39 +33,39 @@ public class Issue5132 : TestShell
 		});
 	}
 
-	static string DefaultFontFamily()
-	{
-		var fontFamily = "";
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0612 // Type or member is obsolete
-#pragma warning disable CS0612 // Type or member is obsolete
-#pragma warning disable CS0612 // Type or member is obsolete
-#pragma warning disable CS0612 // Type or member is obsolete
-		switch (Device.RuntimePlatform)
-		{
-			case Device.iOS:
-				fontFamily = "Ionicons";
-				break;
-			case Device.WinUI:
-				fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
-				break;
-			case Device.Android:
-			default:
-				fontFamily = "fonts/ionicons.ttf#";
-				break;
-		}
-#pragma warning restore CS0612 // Type or member is obsolete
-#pragma warning restore CS0612 // Type or member is obsolete
-#pragma warning restore CS0612 // Type or member is obsolete
-#pragma warning restore CS0612 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
+	// 	static string DefaultFontFamily()
+	// 	{
+	// 		var fontFamily = "";
+	// #pragma warning disable CS0618 // Type or member is obsolete
+	// #pragma warning disable CS0618 // Type or member is obsolete
+	// #pragma warning disable CS0618 // Type or member is obsolete
+	// #pragma warning disable CS0618 // Type or member is obsolete
+	// #pragma warning disable CS0612 // Type or member is obsolete
+	// #pragma warning disable CS0612 // Type or member is obsolete
+	// #pragma warning disable CS0612 // Type or member is obsolete
+	// #pragma warning disable CS0612 // Type or member is obsolete
+	// 		switch (Device.RuntimePlatform)
+	// 		{
+	// 			case Device.iOS:
+	// 				fontFamily = "Ionicons";
+	// 				break;
+	// 			case Device.WinUI:
+	// 				fontFamily = "Assets/Fonts/ionicons.ttf#ionicons";
+	// 				break;
+	// 			case Device.Android:
+	// 			default:
+	// 				fontFamily = "fonts/ionicons.ttf#";
+	// 				break;
+	// 		}
+	// #pragma warning restore CS0612 // Type or member is obsolete
+	// #pragma warning restore CS0612 // Type or member is obsolete
+	// #pragma warning restore CS0612 // Type or member is obsolete
+	// #pragma warning restore CS0612 // Type or member is obsolete
+	// #pragma warning restore CS0618 // Type or member is obsolete
+	// #pragma warning restore CS0618 // Type or member is obsolete
+	// #pragma warning restore CS0618 // Type or member is obsolete
+	// #pragma warning restore CS0618 // Type or member is obsolete
 
-		return fontFamily;
-	}
+	// 		return fontFamily;
+	// 	}
 }

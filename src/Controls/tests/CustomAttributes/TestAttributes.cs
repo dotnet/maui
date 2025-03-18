@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 	{
 
 		public IssueAttribute(IssueTracker issueTracker, int issueNumber, string description,
-			NavigationBehavior navigationBehavior = NavigationBehavior.Default, int issueTestNumber = 0)
+			NavigationBehavior navigationBehavior = NavigationBehavior.Default, int issueTestNumber = 0, bool isInternetRequired = false)
 		{
 			IssueTracker = issueTracker;
 			IssueNumber = issueNumber.ToString();
@@ -56,10 +56,11 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 			PlatformsAffected = PlatformAffected.Default;
 			NavigationBehavior = navigationBehavior;
 			IssueTestNumber = issueTestNumber;
+			IsInternetRequired = isInternetRequired;
 		}
 
 		public IssueAttribute(IssueTracker issueTracker, string issueNumber, string description,
-			NavigationBehavior navigationBehavior = NavigationBehavior.Default, int issueTestNumber = 0)
+			NavigationBehavior navigationBehavior = NavigationBehavior.Default, int issueTestNumber = 0, bool isInternetRequired = false)
 		{
 			IssueTracker = issueTracker;
 			IssueNumber = issueNumber;
@@ -67,11 +68,12 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 			PlatformsAffected = PlatformAffected.Default;
 			NavigationBehavior = navigationBehavior;
 			IssueTestNumber = issueTestNumber;
+			IsInternetRequired = isInternetRequired;
 		}
 
 		public IssueAttribute(IssueTracker issueTracker, int issueNumber, string description,
 			PlatformAffected platformsAffected, NavigationBehavior navigationBehavior = NavigationBehavior.Default,
-			int issueTestNumber = 0)
+			int issueTestNumber = 0, bool isInternetRequired = false)
 		{
 			IssueTracker = issueTracker;
 			IssueNumber = issueNumber.ToString();
@@ -79,11 +81,12 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 			PlatformsAffected = platformsAffected;
 			NavigationBehavior = navigationBehavior;
 			IssueTestNumber = issueTestNumber;
+			IsInternetRequired = isInternetRequired;
 		}
 
 		public IssueAttribute(IssueTracker issueTracker, string issueNumber, string description,
 			PlatformAffected platformsAffected, NavigationBehavior navigationBehavior = NavigationBehavior.Default,
-			int issueTestNumber = 0)
+			int issueTestNumber = 0, bool isInternetRequired = false)
 		{
 			IssueTracker = issueTracker;
 			IssueNumber = issueNumber;
@@ -91,6 +94,7 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 			PlatformsAffected = platformsAffected;
 			NavigationBehavior = navigationBehavior;
 			IssueTestNumber = issueTestNumber;
+			IsInternetRequired = isInternetRequired;
 		}
 
 		public IssueTracker IssueTracker { get; }
@@ -104,6 +108,8 @@ namespace Microsoft.Maui.Controls.CustomAttributes
 		public PlatformAffected PlatformsAffected { get; }
 
 		public NavigationBehavior NavigationBehavior { get; }
+
+		public bool IsInternetRequired { get; }
 
 		public string DisplayName => IssueTestNumber == 0
 			? $"{IssueTracker.ToString().Substring(0, 1)}{IssueNumber}"

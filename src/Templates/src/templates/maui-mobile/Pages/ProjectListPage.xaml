@@ -16,6 +16,7 @@
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
     <Grid>
+      <ScrollView>
         <VerticalStackLayout 
             BindableLayout.ItemsSource="{Binding Projects}" 
             Margin="{StaticResource LayoutPadding}" 
@@ -34,6 +35,7 @@
                 </DataTemplate>
             </BindableLayout.ItemTemplate>
         </VerticalStackLayout>
+      </ScrollView>
 
         <controls:AddButton 
             Command="{Binding AddProjectCommand}" />

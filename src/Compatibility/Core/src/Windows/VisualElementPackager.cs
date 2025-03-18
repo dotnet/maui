@@ -129,7 +129,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (_columnSpan > 0)
 				Microsoft.UI.Xaml.Controls.Grid.SetColumnSpan(childRenderer.ContainerElement, _columnSpan);
 
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 			_panel.Children.Add(childRenderer.ContainerElement);
+#pragma warning restore RS0030 // Do not use banned APIs
 		}
 
 		void OnChildAdded(object sender, ElementEventArgs e)
@@ -164,7 +166,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (_columnSpan > 0)
 					childRenderer.ContainerElement.ClearValue(Microsoft.UI.Xaml.Controls.Grid.ColumnSpanProperty);
 
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 				_panel.Children.Remove(childRenderer.ContainerElement);
+#pragma warning restore RS0030 // Do not use banned APIs
 
 				view.Cleanup();
 			}

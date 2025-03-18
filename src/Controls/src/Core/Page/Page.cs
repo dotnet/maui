@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -18,6 +20,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	/// <remarks><see cref = "Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="Page"/> class are most prominently used as the top level UI element in .NET MAUI applications. In addition to their role as the main pages of applications, <see cref="Page"/> objects and their descendants can be used with navigation classes, such as <see cref="NavigationPage"/> or <see cref="FlyoutPage"/>, among others, to provide rich user experiences that conform to the expected behaviors on each platform.
 	/// </remarks>
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement
 #if IOS
 	,IiOSPageSpecifics
@@ -62,7 +65,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(Page), null);
 
 		/// <summary>Bindable property for <see cref="IconImageSource"/>.</summary>
-		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
+		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource), propertyChanged: OnImageSourceChanged);
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
 
@@ -899,6 +902,20 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		static void OnImageSourceChanged(BindableObject bindable, object oldvalue, object newValue)
+		{
+			if (oldvalue is ImageSource oldImageSource)
+				oldImageSource.SourceChanged -= ((Page)bindable).OnImageSourceSourceChanged;
+
+			if (newValue is ImageSource newImageSource)
+				newImageSource.SourceChanged += ((Page)bindable).OnImageSourceSourceChanged;
+		}
+
+		void OnImageSourceSourceChanged(object sender, EventArgs e)
+		{
+			OnPropertyChanged(IconImageSourceProperty.PropertyName);
+		}
+
 		/// <summary>
 		/// Raised after the page was navigated to.
 		/// </summary>
@@ -938,5 +955,11 @@ namespace Microsoft.Maui.Controls
 		/// <returns>The <see cref="Window"/> instance that parents the page.</returns>
 		public virtual Window GetParentWindow()
 			=> this.FindParentOfType<Window>();
+
+		private protected override string GetDebuggerDisplay()
+		{
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(BindingContext), BindingContext, nameof(Title), Title);
+			return $"{this.GetType().FullName}: {debugText}";
+		}
 	}
 }

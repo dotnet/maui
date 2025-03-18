@@ -1,4 +1,3 @@
-#if ANDROID
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Bugzilla, 27731, "[Android] Action Bar can not be controlled reliably on FlyoutPage", PlatformAffected.Android)]
@@ -35,7 +34,7 @@ public class Bugzilla27731 : NavigationPage
 				{
 					Children =
 					{
-						new Label { Text = $"This is page {count}." },
+						new Label { Text = $"This is page {count}.", AutomationId = "PageLabel" },
 						new Button { Text = "Click", AutomationId = "Click", Command = new Command(() => Navigation.PushAsync(new Page2(title))) }
 					}
 				};
@@ -43,4 +42,3 @@ public class Bugzilla27731 : NavigationPage
 		}
 	}
 }
-#endif

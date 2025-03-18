@@ -7,11 +7,11 @@
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.DeviceTests</AssemblyName>
     <NoWarn>$(NoWarn),CA1416</NoWarn>
-    <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
     <RuntimeIdentifiers Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">android-arm64;android-x86;android-x64</RuntimeIdentifiers>
+    <IsTestProject>true</IsTestProject>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
   </PropertyGroup>
 
@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
+    <MauiImage Include="Resources\Images\white.png" Link="Resources\Images\white_tab.png"  BaseSize="23,23" />
     <MauiImage Remove="Resources\Images\red-embedded.png" />
     <None Remove="Resources\Images\red-embedded.png" />
     <EmbeddedResource Include="Resources\Images\red-embedded.png" LogicalName="red-embedded.png" />

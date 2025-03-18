@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -132,6 +133,44 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			relativeLayout.Children.Remove(child);
 			relativeLayout.Children.Add(child, Constraint.Constant(50), Constraint.Constant(40));
 			Assert.Equal(child.Bounds, new Rect(50, 40, 100, 20));
+		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/24897
+		public void RelativeLayoutContentShouldBeAppeared()
+		{
+			const int radius = 20;
+
+			var relativeLayout = new RelativeLayout()
+			{
+				IsPlatformEnabled = true,
+			};
+
+			var label = new Label()
+			{
+				IsPlatformEnabled = true,
+				Text = "Hello, World!",
+				VerticalTextAlignment = TextAlignment.Center,
+			};
+
+			var shape = new RoundRectangle()
+			{
+				CornerRadius = new CornerRadius(radius),
+			};
+
+			var border = new Border()
+			{
+				IsPlatformEnabled = true,
+				StrokeShape = shape,
+				Content = label,
+			};
+
+
+			relativeLayout.Children.Add(border, Constraint.Constant(20), Constraint.Constant(20), Constraint.RelativeToParent(parent => parent.Height),
+								Constraint.RelativeToParent(parent => parent.Height));
+
+			relativeLayout.Layout(new Rect(0, 0, 300, 300));
+			Assert.Equal(new Rect(20, 20, 300, 300), border.Bounds);
 		}
 
 		[Fact]

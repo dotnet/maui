@@ -1,4 +1,7 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
+// On iOS and Catalyst BoxView is not rendered, issue: https://github.com/dotnet/maui/issues/18746, 
+// On Windows Clip is not properly working, issue: https://github.com/dotnet/maui/issues/14078
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,36 +15,13 @@ public class Issue7823_XF : _IssuesUITest
 
 	public override string Issue => "[Bug] Frame corner radius.";
 
-	//[Test]
-	//[Category(UITestCategories.Frame)]
-	//[FailsOnAndroidWhenRunningOnXamarinUITest]
-	//public void Issue7823TestIsClippedIssue()
-	//{
-	//	App.WaitForElement(RootFrame);
-	//	AssertIsClipped(true);
-	//	App.Tap(SetClipBounds);
-	//	AssertIsClipped(false);
-	//}
-
-	//void AssertIsClipped(bool expected)
-	//{
-	//	if (App.IsApiHigherThan(21))
-	//	{
-	//		var cliptoOutlineValue = App.InvokeFromElement<bool>(SecondaryFrame, GetClipToOutline)[0];
-	//		Assert.AreEqual(expected, cliptoOutlineValue);
-	//	}
-	//	else if (App.IsApiHigherThan(19))
-	//	{
-	//		var clipBounds = App.InvokeFromElement<object>(SecondaryFrame, GetClipBounds)[0];
-	//		if (expected)
-	//			Assert.IsNotNull(clipBounds);
-	//		else
-	//			Assert.IsNull(clipBounds);
-	//	}
-	//	else
-	//	{
-	//		var clipChildrenValue = App.InvokeFromElement<bool>(SecondaryFrame, GetClipChildren)[0];
-	//		Assert.AreEqual(expected, clipChildrenValue);
-	//	}
-	//}
+	[Test]
+	[Category(UITestCategories.Frame)]
+	public void Issue7823TestIsClippedIssue()
+	{
+		App.WaitForElement("Frame Corner Radius");
+		App.Tap("SetClipBounds");
+		VerifyScreenshot();
+	}
 }
+#endif

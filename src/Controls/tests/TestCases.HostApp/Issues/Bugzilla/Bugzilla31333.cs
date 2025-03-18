@@ -142,7 +142,7 @@ public class Bugzilla31333 : TestContentPage
 		}
 	}
 
-	StackLayout CreateListViewTestSection(Type controlType,string automationId)
+	StackLayout CreateListViewTestSection(Type controlType, string automationId)
 	{
 		var name = controlType.GenericTypeArguments[0].Name;
 		name = name.Replace("Extended", "", StringComparison.InvariantCultureIgnoreCase);
@@ -206,7 +206,7 @@ public class Bugzilla31333 : TestContentPage
 
 	protected override void Init()
 	{
-		var entrySection = CreateListViewTestSection(typeof(ExtendedCell<ExtendedEntry>),"EntryListView");
+		var entrySection = CreateListViewTestSection(typeof(ExtendedCell<ExtendedEntry>), "EntryListView");
 		var editorSection = CreateListViewTestSection(typeof(ExtendedCell<ExtendedEditor>), "EditorListView");
 
 		var entryTableSection = CreateTableViewTestSection<ExtendedEntry>("EntryTable");

@@ -138,11 +138,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			int firstVisibleItemIndex = -1, centerItemIndex = -1, lastVisibleItemIndex = -1;
 			if (VisibleItems)
 			{
-				firstVisibleItemIndex = (int)First.Item;
-				centerItemIndex = (int)Center.Item;
-				lastVisibleItemIndex = (int)Last.Item;
+				IItemsViewSource source = ViewController.ItemsSource;
+
+				firstVisibleItemIndex = GetItemIndex(First, source);
+				centerItemIndex = GetItemIndex(Center, source);
+				lastVisibleItemIndex = GetItemIndex(Last, source);
 			}
 			return (VisibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
+		}
+
+		static int GetItemIndex(NSIndexPath indexPath, IItemsViewSource itemSource)
+		{
+			int index = (int)indexPath.Item;
+
+			if (indexPath.Section > 0)
+			{
+				for (int i = 0; i < indexPath.Section; i++)
+				{
+					index += itemSource.ItemCountInGroup(i);
+				}
+			}
+
+			return index;
 		}
 
 		static NSIndexPath GetCenteredIndexPath(UICollectionView collectionView)

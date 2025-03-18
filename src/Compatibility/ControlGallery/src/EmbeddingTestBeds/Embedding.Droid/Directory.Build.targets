@@ -1,9 +1,0 @@
-<Project>
-  <ItemGroup>
-    <PackageReference Include="Xamarin.AndroidX.Browser" Version="1.8.0.6" />
-    <PackageReference Include="Xamarin.AndroidX.Palette" Version="1.0.0.29" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.5.1" />
-    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.11.0.3" />
-  </ItemGroup>
-  <Import Project="..\..\..\..\..\eng\AndroidX.targets" />
-</Project>

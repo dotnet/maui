@@ -39,7 +39,7 @@ namespace Samples
 
 			Titlebar = headerBar;
 
-			var hpanned = new HPaned
+			var hpanned = new Paned(Orientation.Horizontal)
 			{
 				Position = 300
 			};

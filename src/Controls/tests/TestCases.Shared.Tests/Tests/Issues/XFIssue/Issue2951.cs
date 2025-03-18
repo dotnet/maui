@@ -35,7 +35,7 @@ public class Issue2951 : _IssuesUITest
 
 		// Use VerifyScreenshot to ensure the button background color has been updated properly
 		// This screenshot is captured to visually confirm that the background color has changed as expected
-		VerifyScreenshot(); 
-		
+		VerifyScreenshot();
+
 	}
 }

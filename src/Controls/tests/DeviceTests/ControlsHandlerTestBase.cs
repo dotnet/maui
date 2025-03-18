@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -146,8 +147,11 @@ namespace Microsoft.Maui.DeviceTests
 			else
 				timeOut ??= TimeSpan.FromSeconds(15);
 
+			TestRunnerLogger.LogDebug($"Before InvokeOnMainThreadAsync");
+
 			return InvokeOnMainThreadAsync(async () =>
 			{
+				TestRunnerLogger.LogDebug($"Starting InvokeOnMainThreadAsync");
 				IWindow window = CreateWindowForContent(view);
 
 				var application = mauiContext.Services.GetService<IApplication>();
@@ -162,10 +166,13 @@ namespace Microsoft.Maui.DeviceTests
 
 				try
 				{
+					TestRunnerLogger.LogDebug($"Requesting Semaphore to Start");
 					await _takeOverMainContentSempahore.WaitAsync();
+					TestRunnerLogger.LogDebug($"Obtained Semaphore");
 
 					await SetupWindowForTests<THandler>(window, async () =>
 					{
+						TestRunnerLogger.LogDebug($"Window Setup For Tests");
 						IView content = window.Content;
 
 						if (content is FlyoutPage fp)
@@ -249,8 +256,8 @@ namespace Microsoft.Maui.DeviceTests
 						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
 
+						TestRunnerLogger.LogDebug($"Running Test");
 						await action(handler).WaitAsync(timeOut.Value);
-
 
 #if !WINDOWS
 						bool isActivated = controlsWindow?.IsActivated ?? false;
@@ -268,6 +275,7 @@ namespace Microsoft.Maui.DeviceTests
 				finally
 				{
 					_takeOverMainContentSempahore.Release();
+					TestRunnerLogger.LogDebug($"Finished Running Test");
 				}
 			});
 		}

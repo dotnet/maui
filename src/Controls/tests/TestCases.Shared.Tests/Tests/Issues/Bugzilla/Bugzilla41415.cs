@@ -1,5 +1,4 @@
-﻿#if !IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,28 +15,20 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "ScrollX and ScrollY values are not consistent with iOS";
+		public override string Issue => "ScrollX and ScrollY values at the ScrollView.Scrolled event are not consistent in ScrollOrientation.Both mode";
 
-		// Bugzilla41415 (src\Compatibility\ControlGallery\src\Issues.Shared\Bugzilla41415.cs)
 		[Test]
-		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
-		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void Bugzilla41415Test()
 		{
-			// This test is failing, likely due to product issue
-
 			App.WaitForElement(ButtonId);
 			App.Tap(ButtonId);
-			App.WaitForNoElement("x: 100");
-			App.WaitForNoElement("y: 100");
-			App.WaitForNoElement("z: True", timeout: TimeSpan.FromSeconds(25));
-			App.WaitForNoElement("a: True");
+			App.WaitForElement(ButtonId);
+			App.WaitForElementTillPageNavigationSettled("x: 100");
+			App.WaitForElementTillPageNavigationSettled("y: 100");
 			App.Tap(ButtonId);
-			App.WaitForNoElement("x: 200");
-			App.WaitForNoElement("y: 100");
-			App.WaitForNoElement("z: True", timeout: TimeSpan.FromSeconds(25));
-			App.WaitForNoElement("a: False");
+			App.WaitForElement(ButtonId);
+			App.WaitForElementTillPageNavigationSettled("y: 100");
+			App.WaitForElementTillPageNavigationSettled("x: 200");
 		}
 	}
 }
-#endif

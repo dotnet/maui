@@ -274,27 +274,42 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				case Button.ButtonContentLayout.ImagePosition.Top:
 					container.Orientation = Orientation.Vertical;
 					image.Margin = WinUIHelpers.CreateThickness(0, 0, 0, spacing);
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 					container.Children.Add(image);
 					container.Children.Add(textBlock);
+#pragma warning restore RS0030 // Do not use banned APIs
+
 					break;
 				case Button.ButtonContentLayout.ImagePosition.Bottom:
 					container.Orientation = Orientation.Vertical;
 					image.Margin = WinUIHelpers.CreateThickness(0, spacing, 0, 0);
+
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 					container.Children.Add(textBlock);
 					container.Children.Add(image);
+#pragma warning restore RS0030 // Do not use banned APIs
+
 					break;
 				case Button.ButtonContentLayout.ImagePosition.Right:
 					container.Orientation = Orientation.Horizontal;
 					image.Margin = WinUIHelpers.CreateThickness(spacing, 0, 0, 0);
+
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 					container.Children.Add(textBlock);
 					container.Children.Add(image);
+#pragma warning restore RS0030 // Do not use banned APIs
+
 					break;
 				default:
 					// Defaults to image on the left
 					container.Orientation = Orientation.Horizontal;
 					image.Margin = WinUIHelpers.CreateThickness(0, 0, spacing, 0);
+
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons.
 					container.Children.Add(image);
 					container.Children.Add(textBlock);
+#pragma warning restore RS0030 // Do not use banned APIs
+
 					break;
 			}
 

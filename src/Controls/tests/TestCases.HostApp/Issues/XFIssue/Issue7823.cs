@@ -24,14 +24,13 @@ public class Issue7823_XF : TestContentPage
 			{
 				AutomationId = BoxView,
 				BackgroundColor = Colors.Green,
-				WidthRequest = 100,
 				HeightRequest = 100
 			}
 		};
 
 		Content = new StackLayout()
 		{
-			new Label() { AutomationId = "ApiLabel" },
+			new Label() { AutomationId = "ApiLabel", Text = "Frame Corner Radius" },
 			new Frame
 			{
 				AutomationId = RootFrame,

@@ -12,7 +12,7 @@ public class Issue4138 : TestNavigationPage
 {
 	protected override void Init()
 	{
-		ContentPage contentPage = new ContentPage() { Content = new Label(){ Text = "Content Page", AutomationId = "ContentPage"}};
+		ContentPage contentPage = new ContentPage() { Content = new Label() { Text = "Content Page", AutomationId = "ContentPage" } };
 
 		NavigationPage.SetTitleIconImageSource(contentPage, "coffee.png");
 

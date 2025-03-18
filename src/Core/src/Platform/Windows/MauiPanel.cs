@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using WSize = global::Windows.Foundation.Size;
@@ -8,6 +9,18 @@ namespace Microsoft.Maui.Platform
 {
 	public abstract class MauiPanel : Panel, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
 	{
+		UIElementCollection? _cachedChildren;
+
+		[SuppressMessage("ApiDesign", "RS0030:Do not use banned APIs", Justification = "Panel.Children property is banned to enforce use of this CachedChildren property.")]
+		internal UIElementCollection CachedChildren
+		{
+			get
+			{
+				_cachedChildren ??= Children;
+				return _cachedChildren;
+			}
+		}
+
 		public ICrossPlatformLayout? CrossPlatformLayout
 		{
 			get; set;

@@ -18,7 +18,7 @@ public class Issue973 : TestFlyoutPage
 		// Set FlyoutBehavior to Popover to ensure consistent behavior across desktop and mobile platforms.
 		// Windows and Catalyst default (FlyoutLayoutBehavior.Default) uses Split mode, which differs from mobile platforms.
 		FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
-		
+
 		var cells = new[] {
 			new PageNameObject ("Close Flyout"),
 			new PageNameObject ("Page 1"),
@@ -49,7 +49,7 @@ public class Issue973 : TestFlyoutPage
 
 			if (cellName == "Close Flyout")
 			{
-		       IsPresented = false;
+				IsPresented = false;
 			}
 			else
 			{
@@ -60,7 +60,7 @@ public class Issue973 : TestFlyoutPage
 
 				d.PresentMaster += (s, args) =>
 				{
-				    IsPresented = true;
+					IsPresented = true;
 				};
 
 				Detail = d;

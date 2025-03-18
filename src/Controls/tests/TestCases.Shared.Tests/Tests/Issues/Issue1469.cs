@@ -18,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.LifeCycle)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void Issue1469Test()
 		{
 			App.WaitForElement(Go);

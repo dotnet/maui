@@ -14,6 +14,37 @@ namespace Maui.Controls.Sample
 			bool _filterManual;
 			string _filter;
 
+			void CheckInternetAndLoadPage(Type type)
+			{
+				try
+				{
+					using (var httpClient = new HttpClient())
+					{
+						httpClient.Timeout = TimeSpan.FromSeconds(5);
+						using (var httpResponse = httpClient.GetAsync(@"https://www.github.com", HttpCompletionOption.ResponseHeadersRead))
+						{
+							httpResponse.Wait();
+							if (httpResponse.Result.IsSuccessStatusCode)
+							{
+								var page = ActivatePage(type);
+								Application.Current.Windows[0].Page = page;
+							}
+							else
+							{
+								var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
+								Application.Current.Windows[0].Page = noInternetConnectionPage;
+							}
+						}
+					}
+				}
+				catch
+				{
+					var noInternetConnectionPage = ActivatePage(typeof(NoInternetConnectionPage));
+					Application.Current.Windows[0].Page = noInternetConnectionPage;
+				}
+			}
+
+
 			static TextCell MakeIssueCell(string text, string detail, Action tapped)
 			{
 				PageToAction[text] = tapped;
@@ -28,6 +59,14 @@ namespace Maui.Controls.Sample
 			Action ActivatePageAndNavigate(IssueAttribute issueAttribute, Type type)
 			{
 				Action navigationAction = null;
+
+				if (issueAttribute.IsInternetRequired)
+				{
+					return () =>
+					{
+						CheckInternetAndLoadPage(type);
+					};
+				}
 
 				if (issueAttribute.NavigationBehavior == NavigationBehavior.PushAsync)
 				{
@@ -77,6 +116,7 @@ namespace Maui.Controls.Sample
 				public int IssueTestNumber { get; set; }
 				public string Name { get; set; }
 				public string Description { get; set; }
+				public bool IsInternetRequired { get; set; }
 				public Action Action { get; set; }
 
 				public bool Matches(string filter)
@@ -149,6 +189,7 @@ namespace Maui.Controls.Sample
 						 IssueTestNumber = attribute.IssueTestNumber,
 						 Name = attribute.DisplayName,
 						 Description = attribute.Description,
+						 IsInternetRequired = attribute.IsInternetRequired,
 						 Action = ActivatePageAndNavigate(attribute, type)
 					 }).ToList();
 #endif

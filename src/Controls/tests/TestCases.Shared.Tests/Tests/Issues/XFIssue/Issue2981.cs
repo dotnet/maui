@@ -17,7 +17,7 @@ public class Issue2981 : _IssuesUITest
 	public void Issue2981Test()
 	{
 		App.WaitForElement("Cell1");
-		
+
 #if MACCATALYST
 		App.LongPress("Cell1");
 		App.LongPress("Cell2");

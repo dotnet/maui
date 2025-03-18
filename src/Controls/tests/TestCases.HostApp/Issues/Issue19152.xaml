@@ -2,12 +2,13 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue19152"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
              Title="Issue19152">
     <ScrollView>
         <VerticalStackLayout
         Padding="30,0"
         Spacing="25">
-            <Entry Background="White" AutomationId="entry" x:Name="entry" TextColor="Blue" Text="Entry Text" ClearButtonVisibility="WhileEditing"/>
+            <local:UITestEntry Background="White" AutomationId="entry" x:Name="entry" TextColor="Blue" Text="Entry Text" ClearButtonVisibility="WhileEditing" IsSpellCheckEnabled="False" IsCursorVisible="False"/>
             <Button AutomationId="button"
             x:Name="button"
             Text="Click me" 

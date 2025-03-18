@@ -15,7 +15,7 @@ namespace UITest.Appium
 			SetOrientationPortraitCommand,
 			SetOrientationLandscapeCommand,
 			GetOrientationCommand,
-		}; 
+		};
 
 		public AppiumOrientationActions(AppiumApp app)
 		{

@@ -64,6 +64,8 @@
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#FFFFFF" BaseSize="168,208" />
     <MauiFont Include="Resources\Fonts\**" />
+    <MauiFont Remove="Resources\Fonts\Dokdo-Regular.ttf" />
+    <EmbeddedResource Include="Resources\Fonts\Dokdo-Regular.ttf" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 

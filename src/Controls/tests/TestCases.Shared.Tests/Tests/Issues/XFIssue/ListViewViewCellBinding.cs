@@ -18,8 +18,8 @@ public class ListViewViewCellBinding : _IssuesUITest
 	public void ListViewViewCellBindingTestsAllElementsPresent()
 	{
 		App.WaitForElement("Remove");
-		App.WaitForElement( "Add");
-		App.WaitForElement( "1");
+		App.WaitForElement("Add");
+		App.WaitForElement("1");
 		App.WaitForElement("100.0");
 		App.WaitForElement("2");
 		App.WaitForElement("200.0");

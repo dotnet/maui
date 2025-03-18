@@ -2,9 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
@@ -18,6 +20,8 @@ namespace Microsoft.Maui.Controls
 	/// <remarks>
 	/// The base class for most .NET MAUI on-screen elements. Provides most properties, events, and methods for presenting an item on screen.
 	/// </remarks>
+
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement
 	{
 		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>
@@ -265,9 +269,12 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create("TransformOrigin", typeof(Point), typeof(VisualElement), new Point(.5d, .5d),
 									propertyChanged: (b, o, n) => { (((VisualElement)b).AnchorX, ((VisualElement)b).AnchorY) = (Point)n; });
 
+		bool _isVisibleExplicit = (bool)IsVisibleProperty.DefaultValue;
+
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), true,
-			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
+			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue),
+			coerceValue: CoerceIsVisibleProperty);
 
 		/// <summary>Bindable property for <see cref="Opacity"/>.</summary>
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
@@ -687,6 +694,36 @@ namespace Microsoft.Maui.Controls
 				}
 
 				return _inputTransparentExplicit;
+			}
+		}
+
+		/// <summary>
+		/// This value represents the cumulative IsVisible value.
+		/// All types that override this property need to also invoke
+		/// the RefreshIsVisibleProperty() method if the value will change.
+		/// </summary>
+		private protected bool IsVisibleCore
+		{
+			get
+			{
+				if (_isVisibleExplicit == false)
+				{
+					// If the explicitly set value is false, then nothing else matters
+					// And we can save the effort of a Parent check
+					return false;
+				}
+
+				var parent = Parent as VisualElement;
+				while (parent is not null)
+				{
+					if (!parent.IsVisible)
+					{
+						return false;
+					}
+					parent = parent.Parent as VisualElement;
+				}
+
+				return _isVisibleExplicit;
 			}
 		}
 
@@ -1495,6 +1532,7 @@ namespace Microsoft.Maui.Controls
 				fe.Handler?.UpdateValue(nameof(IView.Visibility));
 			}
 
+			(this as IPropertyPropagationController)?.PropagatePropertyChanged(IsVisibleProperty.PropertyName);
 			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
 		}
 
@@ -1659,6 +1697,17 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
+		static object CoerceIsVisibleProperty(BindableObject bindable, object value)
+		{
+			if (bindable is VisualElement visualElement)
+			{
+				visualElement._isVisibleExplicit = (bool)value;
+				return visualElement.IsVisibleCore;
+			}
+
+			return false;
+		}
+
 		static void OnInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			(bindable as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.InputTransparentProperty.PropertyName);
@@ -1726,6 +1775,9 @@ namespace Microsoft.Maui.Controls
 			if (propertyName == null || propertyName == InputTransparentProperty.PropertyName)
 				this.RefreshPropertyValue(InputTransparentProperty, _inputTransparentExplicit);
 
+			if (propertyName == null || propertyName == IsVisibleProperty.PropertyName)
+				this.RefreshPropertyValue(IsVisibleProperty, _isVisibleExplicit);
+
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
@@ -1735,6 +1787,13 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected void RefreshIsEnabledProperty() =>
 			this.RefreshPropertyValue(IsEnabledProperty, _isEnabledExplicit);
+
+		/// <summary>
+		/// This method must always be called if some event occurs and the value of
+		/// the <see cref="IsVisibleCore"/> property will change.
+		/// </summary>
+		internal void RefreshIsVisibleProperty() =>
+			this.RefreshPropertyValue(IsVisibleProperty, _isVisibleExplicit);
 
 		/// <summary>
 		/// This method must always be called if some event occurs and the value of
@@ -1752,17 +1811,23 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateBoundsComponents(Rect bounds)
 		{
+			if (_frame == bounds)
+				return;
 			_frame = bounds;
 
 			BatchBegin();
 
 			X = bounds.X;
 			Y = bounds.Y;
+			var previousWidth = Width;
+			var previousHeight = Height;
 			Width = bounds.Width;
 			Height = bounds.Height;
-
-			SizeAllocated(Width, Height);
-			SizeChanged?.Invoke(this, EventArgs.Empty);
+			if (previousHeight != Height || previousWidth != Width)
+			{
+				SizeAllocated(Width, Height);
+				SizeChanged?.Invoke(this, EventArgs.Empty);
+			}
 
 			BatchCommit();
 		}
@@ -1847,6 +1912,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the shadow effect cast by the element. This is a bindable property.
 		/// </summary>
+		[TypeConverter(typeof(ShadowTypeConverter))]
 		public Shadow Shadow
 		{
 			get { return (Shadow)GetValue(ShadowProperty); }
@@ -1905,7 +1971,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="bounds">The new bounds of the element.</param>
 		/// <returns>The resulting size of this element's frame by the platform.</returns>
-		/// <remarks>Subclasses will stil want to call <see cref="ArrangeOverride"/> on the base class or call <see cref="IViewHandler.PlatformArrange"/> on the <see cref="Handler"/> .</remarks>
+		/// <remarks>Subclasses will still want to call <see cref="ArrangeOverride"/> on the base class or call <see cref="IViewHandler.PlatformArrange"/> on the <see cref="Handler"/> .</remarks>
 		protected virtual Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
@@ -1979,22 +2045,8 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Semantics? IView.Semantics => UpdateSemantics();
 
-		private protected virtual Semantics? UpdateSemantics()
-		{
-			if (!this.IsSet(SemanticProperties.HintProperty) &&
-				!this.IsSet(SemanticProperties.DescriptionProperty) &&
-				!this.IsSet(SemanticProperties.HeadingLevelProperty))
-			{
-				_semantics = null;
-				return _semantics;
-			}
-
-			_semantics ??= new Semantics();
-			_semantics.Description = SemanticProperties.GetDescription(this);
-			_semantics.HeadingLevel = SemanticProperties.GetHeadingLevel(this);
-			_semantics.Hint = SemanticProperties.GetHint(this);
-			return _semantics;
-		}
+		private protected virtual Semantics? UpdateSemantics() =>
+			_semantics = SemanticProperties.UpdateSemantics(this, _semantics);
 
 		static double EnsurePositive(double value)
 		{
@@ -2411,6 +2463,12 @@ namespace Microsoft.Maui.Controls
 					throw new NotSupportedException();
 				return visibility.ToString();
 			}
+		}
+
+		private protected virtual string GetDebuggerDisplay()
+		{
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(BindingContext), BindingContext, nameof(Bounds), Bounds);
+			return $"{GetType().FullName}: {debugText}";
 		}
 	}
 }

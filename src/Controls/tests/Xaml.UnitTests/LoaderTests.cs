@@ -792,7 +792,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void BindingIsResolvedAsBindingExtension()
 		// https://github.com/xamarin/Microsoft.Maui.Controls/issues/3606#issuecomment-422377338
 		{
-			var bindingType = XamlParser.GetElementType(new XmlType("http://schemas.microsoft.com/dotnet/2021/maui", "Binding", null), null, null, out var ex);
+			var bindingType = XamlParser.GetElementType(new XmlType("http://schemas.microsoft.com/dotnet/2021/maui", "Binding", null), null, null, true, out var ex);
 			Assert.That(ex, Is.Null);
 			Assert.That(bindingType, Is.EqualTo(typeof(BindingExtension)));
 			var module = ModuleDefinition.CreateModule("foo", new ModuleParameters()

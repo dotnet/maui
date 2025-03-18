@@ -41,7 +41,7 @@ namespace Microsoft.Maui
 			{
 				Logger?.LogWarning(ex, "Unable to load image file '{File}'.", imageSource.File);
 
-				throw;
+				return FromResult(null);
 			}
 		}
 

@@ -23,6 +23,6 @@ public class Issue2964 : _IssuesUITest
 		App.WaitForElement("ModalPagePopButton");
 		App.Tap("ModalPagePopButton");
 		App.WaitForElement("Page1Label");
-	 
+
 	}
 }

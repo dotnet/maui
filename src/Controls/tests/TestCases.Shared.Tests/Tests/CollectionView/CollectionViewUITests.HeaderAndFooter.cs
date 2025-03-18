@@ -4,32 +4,32 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
+
+	public class CollectionViewHeaderAndFooterTests : CollectionViewUITests
+	{
+
+		protected override bool ResetAfterEachTest => true;
+
+		public CollectionViewHeaderAndFooterTests(TestDevice device)
+			: base(device)
+		{
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void HeaderFooterStringWorks()
+		{
+			// Navigate to the selection galleries
+			VisitInitialGallery("Header Footer");
+
+			// Navigate to the specific sample inside selection galleries
+			VisitSubGallery("Header/Footer (String)");
+
+			App.WaitForElement("Just a string as a header");
+			App.WaitForElement("This footer is also a string");
+		}
 #if IOS
-    public class CollectionViewHeaderAndFooterTests : CollectionViewUITests
-    {
-
-        protected override bool ResetAfterEachTest => true;
-
-        public CollectionViewHeaderAndFooterTests(TestDevice device)
-            : base(device)
-        {
-        }
-
-        [Test]
-        [Category(UITestCategories.CollectionView)]
-        public void HeaderFooterStringWorks()
-        {
-            // Navigate to the selection galleries
-            VisitInitialGallery("Header Footer");
-
-            // Navigate to the specific sample inside selection galleries
-            VisitSubGallery("Header/Footer (String)");
-
-            App.WaitForElement("Just a string as a header");
-            App.WaitForElement("This footer is also a string");
-        }
-
-        [Test]
+		[Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterViewWorks()
         {
@@ -72,6 +72,10 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 
+#if TEST_FAILS_ON_IOS
+        // The screenshot that's currently generated for this test is wrong
+        // So, we're ignoring this test due to it causing confusion when other changes
+        // cause this test to fail.
         [Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterGridHorizontalWorks()
@@ -89,6 +93,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
             VerifyScreenshot();
         }
-    }
 #endif
+#endif
+	}
 }

@@ -10,20 +10,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "AlertView doesn't scroll when text is to large";
+		public override string Issue => "Pull to refresh doesn't work if iOS 11 large titles is enabled";
 
 		[Test]
-		[Category(UITestCategories.DisplayAlert)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
+		[Category(UITestCategories.ListView)]
 		public void TestIssue1905RefreshShows()
 		{
-			// wait for test to load
-			App.WaitForElement("btnRefresh");
-			App.Screenshot("Should show refresh control");
-
-			// wait for test to finish so it doesn't keep working
-			// in the background and break the next test
+			App.WaitForElement("Refresh");
 			App.WaitForElement("data refreshed");
 		}
 	}

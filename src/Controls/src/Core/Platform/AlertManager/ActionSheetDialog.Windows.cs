@@ -82,6 +82,10 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			};
 
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. Here we can just cache it.
+			var mainLayoutChildren = mainLayout.Children;
+#pragma warning restore RS0030 // Do not use banned APIs
+
 			var firstLayout = new UI.Xaml.Controls.Grid
 			{
 				RowDefinitions =
@@ -91,13 +95,17 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			};
 
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. Here we can just cache it.
+			var firstLayoutChildren = firstLayout.Children;
+#pragma warning restore RS0030 // Do not use banned APIs
+
 			TitleBlock = new TextBlock { FontSize = 18, MaxLines = 2 };
-			firstLayout.Children.Add(TitleBlock);
+			firstLayoutChildren.Add(TitleBlock);
 			UI.Xaml.Controls.Grid.SetRow(TitleBlock, 0);
 
 			OptionsList = new UI.Xaml.Controls.ListView { IsItemClickEnabled = true, Margin = new UI.Xaml.Thickness(0, 10, 0, 10), SelectionMode = UI.Xaml.Controls.ListViewSelectionMode.None };
 			OptionsList.ItemClick += ListItemSelected;
-			firstLayout.Children.Add(OptionsList);
+			firstLayoutChildren.Add(OptionsList);
 			UI.Xaml.Controls.Grid.SetRow(OptionsList, 1);
 
 			var secondLayout = new UI.Xaml.Controls.Grid
@@ -110,20 +118,24 @@ namespace Microsoft.Maui.Controls.Platform
 				VerticalAlignment = VerticalAlignment.Bottom
 			};
 
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. Here we can just cache it.
+			var secondLayoutChildren = secondLayout.Children;
+#pragma warning restore RS0030 // Do not use banned APIs
+
 			LeftBtn = new UI.Xaml.Controls.Button { Height = 32, HorizontalAlignment = HorizontalAlignment.Stretch, Margin = new UI.Xaml.Thickness(0, 0, 5, 0) };
 			LeftBtn.Click += ActionButtonClicked;
-			secondLayout.Children.Add(LeftBtn);
+			secondLayoutChildren.Add(LeftBtn);
 			UI.Xaml.Controls.Grid.SetColumn(LeftBtn, 0);
 
 			RightBtn = new UI.Xaml.Controls.Button { Height = 32, HorizontalAlignment = HorizontalAlignment.Stretch, Margin = new UI.Xaml.Thickness(5, 0, 0, 0) };
 			RightBtn.Click += ActionButtonClicked;
-			secondLayout.Children.Add(RightBtn);
+			secondLayoutChildren.Add(RightBtn);
 			UI.Xaml.Controls.Grid.SetColumn(RightBtn, 1);
 
-			mainLayout.Children.Add(firstLayout);
+			mainLayoutChildren.Add(firstLayout);
 			UI.Xaml.Controls.Grid.SetRow(firstLayout, 0);
 
-			mainLayout.Children.Add(secondLayout);
+			mainLayoutChildren.Add(secondLayout);
 			UI.Xaml.Controls.Grid.SetRow(secondLayout, 1);
 
 			Content = mainLayout;

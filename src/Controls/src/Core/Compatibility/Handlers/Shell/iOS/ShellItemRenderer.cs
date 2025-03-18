@@ -75,7 +75,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					ShellItem.SetValueFromRenderer(ShellItem.CurrentItemProperty, renderer.ShellSection);
 					CurrentRenderer = renderer;
-					MoreNavigationController?.PopToRootViewController(false);
 				}
 
 				if (ReferenceEquals(value, MoreNavigationController))

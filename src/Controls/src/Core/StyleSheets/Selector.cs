@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.Maui.Controls.StyleSheets
 {
@@ -311,6 +312,66 @@ namespace Microsoft.Maui.Controls.StyleSheets
 				//		break;
 				//	}
 				//return siblingIndex != -1;
+			}
+		}
+
+		[DebuggerDisplay("{id} - {class} = {type}")]
+		public struct SelectorSpecificity
+		{
+			int id;
+			int @class;
+			int type;
+
+			public int Id { get => id; }
+			public int Class { get => @class; }
+			public int Type { get => type; }
+
+			public static SelectorSpecificity FromSelector(Selector selector)
+			{
+				switch (selector)
+				{
+					case Selector.Class c:
+						return new SelectorSpecificity { @class = 1 };
+					case Selector.Id i:
+						return new SelectorSpecificity { id = 1 };
+					case Selector.Element e:
+						return new SelectorSpecificity { type = 1 };
+					case Selector.Base b:
+						return new SelectorSpecificity { type = 1 };
+					case Selector.And a:
+						return FromSelector(a.Left) + FromSelector(a.Right);
+					case Selector.Or o:
+						return FromSelector(o.Left) + FromSelector(o.Right);
+					case Selector.Child c:
+						return FromSelector(c.Left) + FromSelector(c.Right);
+					case Selector.Descendent d:
+						return FromSelector(d.Left) + FromSelector(d.Right);
+					case Selector.Adjacent a:
+						return FromSelector(a.Left) + FromSelector(a.Right);
+					case Selector.Sibling s:
+						return FromSelector(s.Left) + FromSelector(s.Right);
+					default:
+						return default;
+				}
+			}
+
+			public static SelectorSpecificity operator +(SelectorSpecificity left, SelectorSpecificity right)
+			{
+				return new SelectorSpecificity
+				{
+					id = left.id + right.id,
+					@class = left.@class + right.@class,
+					type = left.type + right.type
+				};
+			}
+			public SelectorSpecificity Add(SelectorSpecificity other)
+			{
+				return new SelectorSpecificity
+				{
+					id = id + other.id,
+					@class = @class + other.@class,
+					type = type + other.type
+				};
 			}
 		}
 	}

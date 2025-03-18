@@ -6,11 +6,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Bugzilla43663 : _IssuesUITest
 {
-#if MACCATALYST
-	const string AlertCancelButton = "action-button--999";
-#else
 	const string AlertCancelButton = "Cancel";
-#endif
 
 	public Bugzilla43663(TestDevice testDevice) : base(testDevice)
 	{
@@ -24,12 +20,10 @@ public class Bugzilla43663 : _IssuesUITest
 	{
 		App.WaitForElement("Click to push Modal");
 		App.Tap("Click to push Modal");
-		App.WaitForElementTillPageNavigationSettled(AlertCancelButton);
-		App.Tap(AlertCancelButton);
+		App.TapDisplayAlertButton(AlertCancelButton);
 		App.WaitForElement("Modal");
 		App.Tap("Click to dismiss modal");
-		App.WaitForElementTillPageNavigationSettled(AlertCancelButton);		
-		App.Tap(AlertCancelButton);
+		App.TapDisplayAlertButton(AlertCancelButton);
 		App.WaitForElement("Click to push Modal");
 	}
 }

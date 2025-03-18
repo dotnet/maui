@@ -1,4 +1,7 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
+// Orientation nott supported in MacCatalyt and Windows. 
+// on iOS detail page elements are not accessible through appium when flyout is open. Issue: https://github.com/dotnet/maui/issues/16245
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,59 +15,60 @@ public class Issue7556 : _IssuesUITest
 
 	public override string Issue => "[iOS] Masterbehavior.popover not being observed on iOS 13";
 
-	// TODO: Marked as ManualReview in original test, can we somehow automate this?
-	//[Test]
-	//[Category(UITestCategories.FlyoutPage)]
-	//public void MasterStillVisibleAfterPushingAndPoppingModalPage()
-	//{
-	//	if (!App.IsTablet())
-	//		return;
+	[Test]
+	[Category(UITestCategories.FlyoutPage)]
+	public void MasterStillVisibleAfterPushingAndPoppingModalPage()
+	{
+		App.SetOrientationLandscape();
+		App.WaitForElement("Split");
+		App.TapFlyoutPageIcon("Flyout");
+		App.WaitForElement("Flyout Visible");
+		App.WaitForElementTillPageNavigationSettled("PushModalPage");
+		App.Tap("PushModalPage");
+		App.WaitForElementTillPageNavigationSettled("PopModalPage");
+		App.Tap("PopModalPage");
+		App.WaitForElement("Flyout Visible");
+	}
 
-	//	App.SetOrientationLandscape();
-	//	App.WaitForElement("Split");
-	//	App.WaitForElement("Flyout Visible");
-	//	App.Tap("PushModalPage");
-	//	App.Tap("PopModalPage");
-	//	App.WaitForElement("Flyout Visible");
-	//}
+	[Test]
+	[Category(UITestCategories.FlyoutPage)]
+	public void SplitOnLandscapeFailsToDetectClose()
+	{
+		while (App.WaitForElement("CurrentMasterBehavior").ReadText() != Microsoft.Maui.Controls.FlyoutLayoutBehavior.SplitOnLandscape.ToString())
+		{
+			App.Tap("ChangeMasterBehavior");
 
-	//[Test]
-	//public void SplitOnLandscapeFailsToDetectClose()
-	//{
-	//	if (!App.IsTablet())
-	//		return;
+			if (App.FindElements("Flyout Visible").Count > 0)
+				App.Tap("Close Flyout");
+		}
 
-	//	while (App.WaitForElement("CurrentMasterBehavior")[0].ReadText() != FlyoutLayoutBehavior.SplitOnLandscape.ToString())
-	//	{
-	//		App.Tap("ChangeMasterBehavior");
+		App.TapFlyoutPageIcon("Flyout");
 
-	//		if (App.Query("Flyout Visible").Length > 0)
-	//			App.Tap("Close Flyout");
-	//	}
+		App.WaitForElement("Flyout Visible");
+		App.Tap("Close Flyout");
 
-	//	App.Tap("Flyout");
-	//	App.WaitForElement("Flyout Visible");
-	//	App.Tap("Close Flyout");
+		App.SetOrientationLandscape();
+		App.WaitForElement("Close Flyout");
+		App.SetOrientationPortrait();
+		App.WaitForElement("Close Flyout");
+		App.SetOrientationLandscape();
+		App.WaitForElement("Close Flyout");
+		App.SetOrientationPortrait();
 
-	//	App.SetOrientationLandscape();
-	//	App.SetOrientationPortrait();
-	//	App.SetOrientationLandscape();
-	//	App.SetOrientationPortrait();
+		if (App.FindElements("Flyout Visible").Count > 0)
+			App.Tap("Close Flyout");
 
-	//	if (App.Query("Flyout Visible").Length > 0)
-	//		App.Tap("Close Flyout");
+		App.TapFlyoutPageIcon("Flyout");
+		App.WaitForElement("Flyout Visible");
+		App.Tap("Close Flyout");
+		App.TapFlyoutPageIcon("Flyout");
+		App.WaitForElement("Flyout Visible");
+	}
 
-	//	App.Tap("Flyout");
-	//	App.WaitForElement("Flyout Visible");
-	//	App.Tap("Close Flyout");
-	//	App.Tap("Flyout");
-	//	App.WaitForElement("Flyout Visible");
-	//}
-
-	//[TearDown]
-	//public override void TearDown()
-	//{
-	//	App.SetOrientationPortrait();
-	//	base.TearDown();
-	//}
+	[TearDown]
+	public void TearDown()
+	{
+		App.SetOrientationPortrait();
+	}
 }
+#endif

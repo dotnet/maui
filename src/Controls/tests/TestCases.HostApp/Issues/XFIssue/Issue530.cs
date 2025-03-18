@@ -12,7 +12,7 @@ public class Issue530 : TestContentPage
 	{
 		_list = new ListView
 		{
-			ItemTemplate = new DataTemplate(() => 
+			ItemTemplate = new DataTemplate(() =>
 			{
 				var label = new Label();
 				label.SetBinding(Label.TextProperty, new Binding("."));

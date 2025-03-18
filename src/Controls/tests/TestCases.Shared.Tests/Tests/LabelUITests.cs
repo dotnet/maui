@@ -47,19 +47,28 @@ public class LabelUITests : _ViewUITests
 	}
 
 	[Test]
+	public void FontFamilyLoadsDynamically()
+	{
+		var remote = GoToStateRemote("FontFamily");
+
+		remote.TapStateButton();
+		VerifyScreenshot("LabelUITests_FontFamily_Ionicons");
+	}
+
+#if WINDOWS
+	[Ignore("Windows App SDK 1.6 broke this test. See more details in https://github.com/dotnet/maui/issues/26749")]
+#endif
+	[Test]
 	public void FontFamily()
 	{
 		var remote = GoToStateRemote();
 
-		//VerifyScreenshot("LabelUITests_FontFamily_FontAwesome");
+		VerifyScreenshot("LabelUITests_FontFamily_FontAwesome");
 
-		// This works though?!
 		remote.TapStateButton();
 		VerifyScreenshot("LabelUITests_FontFamily_Ionicons");
 
-		// TODO: fix me -- broken in WinAppSDK 1.6 for some unknown reason
-		// Issue12153 covers font awesome tests, so not totally sure what's going on
-		//remote.TapStateButton();
-		//VerifyScreenshot("LabelUITests_FontFamily_FontAwesome");
+		remote.TapStateButton();
+		VerifyScreenshot("LabelUITests_FontFamily_FontAwesome");
 	}
 }

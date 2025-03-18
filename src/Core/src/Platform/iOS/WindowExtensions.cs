@@ -36,9 +36,9 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateCoordinates(this UIWindow platformWindow, IWindow window)
 		{
-			if (OperatingSystem.IsMacCatalyst() && OperatingSystem.IsIOSVersionAtLeast(16) && platformWindow.WindowScene is {} windowScene)
+			if (OperatingSystem.IsMacCatalyst() && OperatingSystem.IsIOSVersionAtLeast(16) && platformWindow.WindowScene is { } windowScene)
 			{
-				if (double.IsNaN(window.X) || double.IsNaN(window.Y) || double.IsNaN(window.Width) || double.IsNaN(window.Height)) 
+				if (double.IsNaN(window.X) || double.IsNaN(window.Y) || double.IsNaN(window.Width) || double.IsNaN(window.Height))
 				{
 					return;
 				}
@@ -48,7 +48,8 @@ namespace Microsoft.Maui.Platform
 					SystemFrame = new CGRect(window.X, window.Y, window.Width, window.Height)
 				};
 
-				windowScene.RequestGeometryUpdate(preferences, (error) => {
+				windowScene.RequestGeometryUpdate(preferences, (error) =>
+				{
 					window.Handler?.MauiContext?.CreateLogger<UIWindow>()?.LogError("Requesting geometry update failed with error '{error}'.", error);
 				});
 			}
