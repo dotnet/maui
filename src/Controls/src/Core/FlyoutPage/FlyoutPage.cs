@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls
 
 				var previousDetail = _detail;
 				// TODO MAUI refine this to fire earlier
-				_detail?.SendNavigatingFrom(new NavigatingFromEventArgs());
+				_detail?.SendNavigatingFrom(new NavigatingFromEventArgs(previousDetail, NavigationType.PageSwap));
 
 				OnPropertyChanging();
 				if (_detail != null)
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(_detail, NavigationType.PageSwap));
-				_detail?.SendNavigatedTo(new NavigatedToEventArgs(previousDetail));
+				_detail?.SendNavigatedTo(new NavigatedToEventArgs(previousDetail, NavigationType.PageSwap));
 			}
 		}
 
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls
 				// TODO MAUI refine this to fire earlier
 				var previousFlyout = _flyout;
 				// TODO MAUI refine this to fire earlier
-				_flyout?.SendNavigatingFrom(new NavigatingFromEventArgs());
+				_flyout?.SendNavigatingFrom(new NavigatingFromEventArgs(_flyout, NavigationType.PageSwap));
 
 				OnPropertyChanging();
 				if (_flyout != null)
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				previousFlyout?.SendNavigatedFrom(new NavigatedFromEventArgs(_flyout, NavigationType.PageSwap));
-				_flyout?.SendNavigatedTo(new NavigatedToEventArgs(previousFlyout));
+				_flyout?.SendNavigatedTo(new NavigatedToEventArgs(previousFlyout, NavigationType.PageSwap));
 			}
 		}
 
