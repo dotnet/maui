@@ -3,7 +3,7 @@ using System;
 
 namespace Maui.Controls.Sample.Issues
 {
-    [Issue(IssueTracker.Github, 216468, "Flyout icon should remain visible when a page is pushed onto a ShellPage with the back button disabled.", PlatformAffected.WPF | PlatformAffected.Android)]
+    [Issue(IssueTracker.None, 21646, "Flyout icon should remain visible when a page is pushed onto a ShellPage with the back button disabled.", PlatformAffected.WPF | PlatformAffected.Android)]
     public class Issue21646_ShellFlyout : Shell
     {
         public Issue21646_ShellFlyout()

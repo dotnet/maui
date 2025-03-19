@@ -100,13 +100,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public bool CanNavigateBack
 		{
 			get
-			{
-				var backButtonBehavior = Shell.GetBackButtonBehavior(Page);
-				var isVisible = backButtonBehavior?.GetPropertyIfSet(BackButtonBehavior.IsVisibleProperty, true) ?? false;
-
-				if (!isVisible)
-            		return false;
-				
+			{	
 				if (_page?.Navigation?.NavigationStack?.Count > 1)
 					return true;
 
@@ -470,7 +464,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				icon = _flyoutIconDrawerDrawable;
 			}
 
-			if (icon == null && (_flyoutBehavior == FlyoutBehavior.Flyout || CanNavigateBack))
+			if (icon == null && (_flyoutBehavior == FlyoutBehavior.Flyout || CanNavigateBack && backButtonVisible))
 			{
 				_drawerArrowDrawable ??= new DrawerArrowDrawable(context.GetThemedContext());
 				icon = _drawerArrowDrawable;
@@ -478,9 +472,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			if (icon != null)
-				icon.Progress = (CanNavigateBack) ? 1 : 0;
+				icon.Progress = (CanNavigateBack && backButtonVisible) ? 1 : 0;
 
-			if (command != null || CanNavigateBack)
+			if (command != null || CanNavigateBack && backButtonVisible)
 			{
 				_drawerToggle.DrawerIndicatorEnabled = false;
 
@@ -558,7 +552,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (image == null ||
 				toolbar.SetNavigationContentDescription(image) == null)
 			{
-				if (CanNavigateBack)
+				if (CanNavigateBack && _toolbar?.BackButtonVisible == true)
 					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_navigate_up_description);
 				else
 					toolbar.SetNavigationContentDescription(Resource.String.nav_app_bar_open_drawer_description);
