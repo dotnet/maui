@@ -35,7 +35,6 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
 				handlers.AddHandler<Shape, ShapeViewHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
-				handlers.AddHandler<EntryCell, EntryCellRenderer>();
 				handlers.AddHandler<Editor, EditorHandler>();
 #pragma warning disable CS0618 // Type or member is obsolete
 				handlers.AddHandler<Frame, FrameRenderer>();
@@ -43,7 +42,6 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
 				handlers.AddHandler<HybridWebView, HybridWebViewHandler>();
 				handlers.AddHandler<Label, LabelHandler>();
-				handlers.AddHandler<ListView, ListViewRenderer>();
 				handlers.AddHandler<Layout, LayoutHandler>();
 				handlers.AddHandler<Picker, PickerHandler>();
 				handlers.AddHandler<Polygon, PolygonHandler>();
@@ -51,7 +49,6 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<IContentView, ContentViewHandler>();
 				handlers.AddHandler<Image, ImageHandler>();
 				handlers.AddHandler<ImageButton, ImageButtonHandler>();
-				handlers.AddHandler<ImageCell, ImageCellRenderer>();
 				handlers.AddHandler<IndicatorView, IndicatorViewHandler>();
 				handlers.AddHandler<RadioButton, RadioButtonHandler>();
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
@@ -61,15 +58,19 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Stepper, StepperHandler>();
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
 				handlers.AddHandler<Switch, SwitchHandler>();
-				handlers.AddHandler<SwitchCell, SwitchCellRenderer>();
 #pragma warning disable CS0618 // Type or member is obsolete
+				handlers.AddHandler<SwitchCell, SwitchCellRenderer>();
 				handlers.AddHandler<TableView, TableViewRenderer>();
-#pragma warning restore CS0618 // Type or member is obsolete
 				handlers.AddHandler<TextCell, TextCellRenderer>();
+				handlers.AddHandler<ViewCell, ViewCellRenderer>();
+				handlers.AddHandler<ImageCell, ImageCellRenderer>();
+				handlers.AddHandler<ListView, ListViewRenderer>();
+				handlers.AddHandler<EntryCell, EntryCellRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 				handlers.AddHandler<Toolbar, ToolbarHandler>();
 				handlers.AddHandler<WebView, WebViewHandler>();
-				handlers.AddHandler<ViewCell, ViewCellRenderer>();
+				
 #if IOS || MACCATALYST
 				handlers.AddHandler<NavigationPage, NavigationRenderer>();
 				handlers.AddHandler<TabbedPage, TabbedRenderer>();
