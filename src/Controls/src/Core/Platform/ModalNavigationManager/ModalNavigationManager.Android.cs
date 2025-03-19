@@ -233,6 +233,7 @@ namespace Microsoft.Maui.Controls.Platform
 			NavigationRootManager? _navigationRootManager;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
 			bool _pendingAnimation = true;
+			bool _wasStopped;
 
 			public event EventHandler? AnimationEnded;
 
@@ -333,6 +334,12 @@ namespace Microsoft.Maui.Controls.Platform
 				SetStyle(DialogFragment.StyleNormal, Resource.Style.Maui_MainTheme_NoActionBar);
 			}
 
+			public override void OnStop()
+			{
+				base.OnStop();
+				_wasStopped = true;
+			}
+
 			public override void OnStart()
 			{
 				base.OnStart();
@@ -346,13 +353,15 @@ namespace Microsoft.Maui.Controls.Platform
 				int height = ViewGroup.LayoutParams.MatchParent;
 				dialog.Window.SetLayout(width, height);
 
-				if (IsAnimated)
+				if (IsAnimated && !_wasStopped)
 				{
 					var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_enter_anim)!;
 					View.StartAnimation(animation);
 
 					animation.AnimationEnd += OnAnimationEnded;
 				}
+
+				_wasStopped = false;
 
 				void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
 				{
