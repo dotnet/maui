@@ -132,6 +132,11 @@ namespace Microsoft.Maui.Platform
 
 		bool TryInsertRefresh(UIView view, int index = 0)
 		{
+			if(!_refreshControl.Enabled)
+			{
+				return false;
+			}
+
 			_refreshControlParent = view;
 
 			if (view is UIScrollView scrollView)

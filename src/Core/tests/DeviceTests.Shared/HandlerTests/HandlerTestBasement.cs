@@ -304,7 +304,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync<RawBitmap>(async () =>
 			{
-				var platformView = CreateHandler(view, handlerType).ToPlatform();
+				var handler = CreateHandler(view, handlerType);
+				var platformView = view.ToPlatform();
 #if WINDOWS
 				return await platformView.AttachAndRun<RawBitmap>(async (window) => await view.AsRawBitmapAsync(), MauiContext);
 #else
