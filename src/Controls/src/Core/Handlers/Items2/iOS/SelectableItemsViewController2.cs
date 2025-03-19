@@ -5,6 +5,7 @@ using System.Linq;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
@@ -149,6 +150,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			UpdatePlatformSelection();
+			CollectionView.UpdateAccessibilityTraits(ItemsView);
 		}
 
 		void SynchronizePlatformSelectionWithSelectedItems()
