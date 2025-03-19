@@ -10,6 +10,8 @@ using Android.Graphics.Drawables;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Core.Content;
+using AndroidX.Core.Graphics;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
@@ -656,29 +658,43 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected virtual ColorStateList GetItemIconTintColorState()
 		{
 			if (_orignalTabIconColors is null)
+			{
 				_orignalTabIconColors = IsBottomTabPlacement ? _bottomNavigationView.ItemIconTintList : _tabLayout.TabIconTint;
+			}
 
 			Color barItemColor = BarItemColor;
 			Color barSelectedItemColor = BarSelectedItemColor;
 
 			if (barItemColor is null && barSelectedItemColor is null)
+			{
 				return _orignalTabIconColors;
+			}
 
 			if (_newTabIconColors is not null)
+			{
 				return _newTabIconColors;
+			}
 
 			int defaultColor;
 			int checkedColor;
 
 			if (barItemColor is not null)
+			{
 				defaultColor = barItemColor.ToPlatform().ToArgb();
+			}
 			else
+			{
 				defaultColor = GetDefaultColor();
+			}
 
 			if (barSelectedItemColor is not null)
+			{
 				checkedColor = barSelectedItemColor.ToPlatform().ToArgb();
+			}
 			else
+			{
 				checkedColor = GetDefaultColor();
+			}
 
 			_newTabIconColors = GetColorStateList(defaultColor, checkedColor);
 			return _newTabIconColors;
@@ -687,10 +703,12 @@ namespace Microsoft.Maui.Controls.Handlers
 		int GetDefaultColor()
 		{
 			int defaultColor;
-#pragma warning disable XAOBS001 // Obsolete
 			var styledAttributes =
-				TintTypedArray.ObtainStyledAttributes(_context.Context, null, Resource.Styleable.NavigationBarView, Resource.Attribute.bottomNavigationStyle, 0);
-#pragma warning restore XAOBS001 // Obsolete
+				_context.Context.Theme.ObtainStyledAttributes(
+					null,
+					Resource.Styleable.NavigationBarView,
+					Resource.Attribute.bottomNavigationStyle,
+					0);
 
 			try
 			{
@@ -707,9 +725,17 @@ namespace Microsoft.Maui.Controls.Handlers
 					// But just in case, we'll just hard code to some defaults
 					// instead of leaving the application in a broken state
 					if (IsDarkTheme)
-						defaultColor = new Color(1, 1, 1, 0.6f).ToPlatform();
+					{
+						defaultColor = ColorUtils.SetAlphaComponent(
+							ContextCompat.GetColor(_context.Context, Resource.Color.primary_dark_material_light),
+							153); // 60% opacity
+					}
 					else
-						defaultColor = new Color(0, 0, 0, 0.6f).ToPlatform();
+					{
+						defaultColor = ColorUtils.SetAlphaComponent(
+							ContextCompat.GetColor(_context.Context, Resource.Color.primary_dark_material_dark),
+							153); // 60% opacity
+					}
 				}
 			}
 			finally
