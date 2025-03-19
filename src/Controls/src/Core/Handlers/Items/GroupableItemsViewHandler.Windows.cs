@@ -23,13 +23,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var itemTemplate = Element.ItemTemplate;
 				var itemsSource = Element.ItemsSource;
 
-				return new CollectionViewSource
+				if (itemTemplate is not null)
 				{
-					Source = TemplatedItemSourceFactory.CreateGrouped(itemsSource, itemTemplate,
+					return new CollectionViewSource
+					{
+						Source = TemplatedItemSourceFactory.CreateGrouped(itemsSource, itemTemplate,
 					ItemsView.GroupHeaderTemplate, ItemsView.GroupFooterTemplate, Element, mauiContext: MauiContext),
-					IsSourceGrouped = true,
-					ItemsPath = new Microsoft.UI.Xaml.PropertyPath(nameof(GroupTemplateContext.Items))
-				};
+						IsSourceGrouped = true,
+						ItemsPath = new Microsoft.UI.Xaml.PropertyPath(nameof(GroupTemplateContext.Items))
+					};
+				}
+				else
+				{
+					// Creates and returns a grouped CollectionViewSource using itemsSource as the data source when an itemTemplate is not defined.
+					return new CollectionViewSource
+					{
+						Source = itemsSource,
+						IsSourceGrouped = true,
+					};
+				}
 			}
 			else
 			{
