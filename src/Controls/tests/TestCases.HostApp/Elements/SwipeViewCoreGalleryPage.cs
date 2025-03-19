@@ -24,7 +24,7 @@
 
 			swipeItemToRight.Invoked += (sender, e) =>
 			{
-				DisplayAlert("SwipeView", "Invoked", "Ok");
+				DisplayAlertAsync("SwipeView", "Invoked", "Ok");
 			};
 
 			var swipeToRightItems = new SwipeItems { swipeItemToRight };
@@ -72,7 +72,7 @@
 
 			swipeItemToLeft.Invoked += (sender, e) =>
 			{
-				DisplayAlert("SwipeView", "Invoked", "Ok");
+				DisplayAlertAsync("SwipeView", "Invoked", "Ok");
 			};
 
 			var swipeToLeftItems = new SwipeItems { swipeItemToLeft };

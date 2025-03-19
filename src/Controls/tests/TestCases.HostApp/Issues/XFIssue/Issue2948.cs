@@ -74,7 +74,7 @@ public class Issue2948 : TestFlyoutPage
 
 			btn.Clicked += (object sender, EventArgs e) =>
 			{
-				DisplayAlert("Clicked", "I was clicked", "Ok");
+				DisplayAlertAsync("Clicked", "I was clicked", "Ok");
 			};
 
 			Grid.SetColumn(btn, 1);
