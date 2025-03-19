@@ -22,38 +22,57 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateValue(this UISlider uiSlider, ISlider slider)
 		{
 			if ((float)slider.Value != uiSlider.Value)
+			{
 				uiSlider.Value = (float)slider.Value;
+			}
 		}
 
 		public static void UpdateMinimumTrackColor(this UISlider uiSlider, ISlider slider)
 		{
-			if (slider.MinimumTrackColor != null)
+			if (slider.MinimumTrackColor is not null)
+			{
 				uiSlider.MinimumTrackTintColor = slider.MinimumTrackColor.ToPlatform();
+			}
 		}
 
 		public static void UpdateMaximumTrackColor(this UISlider uiSlider, ISlider slider)
 		{
-			if (slider.MaximumTrackColor != null)
+			if (slider.MaximumTrackColor is not null)
+			{
 				uiSlider.MaximumTrackTintColor = slider.MaximumTrackColor.ToPlatform();
+			}
 		}
 
 		public static void UpdateThumbColor(this UISlider uiSlider, ISlider slider)
 		{
-			if (slider.ThumbColor != null)
+			if (slider.ThumbColor is not null)
+			{
 				uiSlider.ThumbTintColor = slider.ThumbColor.ToPlatform();
+			}
 		}
 
 		public static async Task UpdateThumbImageSourceAsync(this UISlider uiSlider, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var thumbImageSource = slider.ThumbImageSource;
-			if (thumbImageSource != null)
+			if (thumbImageSource is not null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var scale = uiSlider.GetDisplayDensity();
 				var result = await service.GetImageAsync(thumbImageSource, scale);
 				var thumbImageSize = result?.Value.Size ?? CGSize.Empty;
 				var defaultThumbSize = CalculateDefaultThumbSize(uiSlider);
-				UIImage? thumbImage = result?.Value?.ResizeImageSource(defaultThumbSize.Width, defaultThumbSize.Height, thumbImageSize);
+
+				UIImage? thumbImage;
+				if (thumbImageSize.IsEmpty)
+				{
+					thumbImage = result?.Value;
+				}
+				else
+				{
+					// Resize the image if the size is valid
+					thumbImage = result?.Value?.ResizeImageSource(defaultThumbSize.Width, defaultThumbSize.Height, thumbImageSize);
+				}
+
 				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);
 			}
 			else
