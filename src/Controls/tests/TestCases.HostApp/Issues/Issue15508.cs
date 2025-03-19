@@ -5,7 +5,6 @@ public class Issue15508 : ContentPage
 {
 	ScrollView _scrollView;
 	Label _scrollLabel;
-	Button _scrollButton;
 	public Issue15508()
 	{
 		InitializeComponent();
@@ -24,16 +23,15 @@ public class Issue15508 : ContentPage
 				{
 					new RowDefinition { Height = GridLength.Auto },
 					new RowDefinition { Height = GridLength.Star }
-				},
-			BackgroundColor = Colors.Gray
+				}
 		};
 
-		_scrollButton = new Button
+		Button _scrollButton = new Button
 		{
-			Text = "Scroll activated through message",
+			Text = "Scroll",
 			WidthRequest = 250,
 			HorizontalOptions = LayoutOptions.Start,
-			AutomationId = "ButtonToScroll"
+			AutomationId = "Button"
 		};
 
 		_scrollButton.Clicked += OnScrollButtonClicked;
@@ -44,7 +42,6 @@ public class Issue15508 : ContentPage
 
 		_scrollView = new ScrollView
 		{
-			BackgroundColor = Colors.LightCoral,
 			VerticalOptions = LayoutOptions.Start,
 			MaximumHeightRequest = 70,
 			WidthRequest = 150
@@ -52,7 +49,7 @@ public class Issue15508 : ContentPage
 
 		_scrollLabel = new Label
 		{
-			AutomationId = "ScrollLabel",
+			AutomationId = "Label",
 			Text = "Not Scrolled"
 		};
 
