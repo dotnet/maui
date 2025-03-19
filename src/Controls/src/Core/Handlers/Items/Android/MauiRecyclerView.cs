@@ -638,29 +638,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateEmptyViewHeaderAndFooterState()
 		{
-			if (ItemsView is StructuredItemsView structuredItemsView)
+			if (ItemsView is not StructuredItemsView structuredItemsView || _emptyViewAdapter is null)
 			{
-				bool headerOrFooterChanged = false;
-				if (_emptyViewAdapter.Header != structuredItemsView.Header || _emptyViewAdapter.HeaderTemplate != structuredItemsView.HeaderTemplate)
-				{
-					_emptyViewAdapter.Header = structuredItemsView.Header;
-					_emptyViewAdapter.HeaderTemplate = structuredItemsView.HeaderTemplate;
-					headerOrFooterChanged = true;
-				}
+				return;
+			}
 
-				if (_emptyViewAdapter.Footer != structuredItemsView.Footer || _emptyViewAdapter.FooterTemplate != structuredItemsView.FooterTemplate)
-				{
-					_emptyViewAdapter.Footer = structuredItemsView.Footer;
-					_emptyViewAdapter.FooterTemplate = structuredItemsView.FooterTemplate;
-					headerOrFooterChanged = true;
-				}
+			bool headerOrFooterChanged = false;
+			if (_emptyViewAdapter.Header != structuredItemsView.Header || _emptyViewAdapter.HeaderTemplate != structuredItemsView.HeaderTemplate)
+			{
+				_emptyViewAdapter.Header = structuredItemsView.Header;
+				_emptyViewAdapter.HeaderTemplate = structuredItemsView.HeaderTemplate;
+				headerOrFooterChanged = true;
+			}
 
-				if (headerOrFooterChanged)
-				{
-					_emptyViewAdapter.EmptyView = ItemsView?.EmptyView;
-					_emptyViewAdapter.EmptyViewTemplate = ItemsView?.EmptyViewTemplate;
-					_emptyViewAdapter.NotifyDataSetChanged();
-				}
+			if (_emptyViewAdapter.Footer != structuredItemsView.Footer || _emptyViewAdapter.FooterTemplate != structuredItemsView.FooterTemplate)
+			{
+				_emptyViewAdapter.Footer = structuredItemsView.Footer;
+				_emptyViewAdapter.FooterTemplate = structuredItemsView.FooterTemplate;
+				headerOrFooterChanged = true;
+			}
+
+			if (headerOrFooterChanged)
+			{
+				_emptyViewAdapter.EmptyView = ItemsView?.EmptyView;
+				_emptyViewAdapter.EmptyViewTemplate = ItemsView?.EmptyViewTemplate;
+				_emptyViewAdapter.NotifyDataSetChanged();
 			}
 		}
 	}
