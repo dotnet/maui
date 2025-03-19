@@ -44,7 +44,8 @@ namespace Maui.Controls.Sample
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
                     FontSize = 18,
-                    TextColor = Colors.Blue
+                    TextColor = Colors.Blue,
+                    AutomationId = "EmptyViewLabel"
                 });
                 _viewModel.EmptyView = grid;
             }
@@ -73,7 +74,8 @@ namespace Maui.Controls.Sample
                     FontSize = 18,
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
-                    TextColor = Colors.Blue
+                    TextColor = Colors.Blue,
+                    AutomationId = "HeaderViewLabel"
                 });
                 _viewModel.Header = grid;
             }
@@ -102,7 +104,8 @@ namespace Maui.Controls.Sample
                     FontSize = 18,
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
-                    TextColor = Colors.Red
+                    TextColor = Colors.Red,
+                    AutomationId = "FooterViewLabel"
                 });
                 _viewModel.Footer = grid;
             }
@@ -129,7 +132,8 @@ namespace Maui.Controls.Sample
                         HorizontalOptions = LayoutOptions.Center,
                         VerticalOptions = LayoutOptions.Center,
                         FontSize = 18,
-                        TextColor = Colors.Blue
+                        TextColor = Colors.Blue,
+                        AutomationId = "EmptyViewTemplateLabel"
                     });
                     return grid;
                 });
@@ -158,7 +162,8 @@ namespace Maui.Controls.Sample
                         FontAttributes = FontAttributes.Bold,
                         HorizontalOptions = LayoutOptions.Center,
                         VerticalOptions = LayoutOptions.Center,
-                        TextColor = Colors.Blue
+                        TextColor = Colors.Blue,
+                        AutomationId = "HeaderTemplateLabel"
                     });
                     return grid;
                 });
@@ -187,7 +192,8 @@ namespace Maui.Controls.Sample
                         FontAttributes = FontAttributes.Bold,
                         HorizontalOptions = LayoutOptions.Center,
                         VerticalOptions = LayoutOptions.Center,
-                        TextColor = Colors.Green
+                        TextColor = Colors.Green,
+                        AutomationId = "FooterTemplateLabel"
                     });
                     return grid;
                 });
@@ -216,7 +222,8 @@ namespace Maui.Controls.Sample
                         FontAttributes = FontAttributes.Bold,
                         HorizontalOptions = LayoutOptions.Center,
                         VerticalOptions = LayoutOptions.Center,
-                        TextColor = Colors.Green
+                        TextColor = Colors.Green,
+                        AutomationId = "GroupHeaderTemplateLabel"
                     });
                     return grid;
                 });
@@ -244,7 +251,8 @@ namespace Maui.Controls.Sample
                         FontAttributes = FontAttributes.Bold,
                         HorizontalOptions = LayoutOptions.Center,
                         VerticalOptions = LayoutOptions.Center,
-                        TextColor = Colors.Red
+                        TextColor = Colors.Red,
+                        AutomationId = "GroupFooterTemplateLabel"
                     });
                     return grid;
                 });
