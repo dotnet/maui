@@ -82,8 +82,10 @@ namespace Microsoft.Maui.Handlers
 				{
 					handler.VirtualView.ScrollFinished();
 				}
-
-				handler.PlatformView.ChangeView(request.HorizontalOffset, request.VerticalOffset, null, request.Instant);
+				else
+				{
+					handler.PlatformView.ChangeView(request.HorizontalOffset, request.VerticalOffset, null, request.Instant);
+				}
 			}
 		}
 
