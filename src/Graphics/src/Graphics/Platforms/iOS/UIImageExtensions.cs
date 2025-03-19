@@ -75,7 +75,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		internal static UIImage ResizeImageSource(this UIImage sourceImage, nfloat maxWidth, nfloat maxHeight, CGSize originalImageSize, bool shouldScaleUp = false)
 		{
 			if (sourceImage is null || sourceImage.CGImage is null)
+			{
 				return null;
+			}
 
 			maxWidth = (nfloat)Math.Min(maxWidth, originalImageSize.Width);
 			maxHeight = (nfloat)Math.Min(maxHeight, originalImageSize.Height);
@@ -85,7 +87,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			float maxResizeFactor = (float)Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
 
 			if (maxResizeFactor > 1 && !shouldScaleUp)
+			{
 				return sourceImage;
+			}
 
 			return UIImage.FromImage(sourceImage.CGImage, sourceImage.CurrentScale / maxResizeFactor, sourceImage.Orientation);
 		}
