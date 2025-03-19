@@ -21,18 +21,20 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static void CancelAnimations(this VisualElement view)
 		{
-			if (view == null)
+			if (view is null)
+			{
 				throw new ArgumentNullException(nameof(view));
+			}
 
-			view.AbortAnimation(nameof(LayoutTo));
-			view.AbortAnimation(nameof(TranslateTo));
-			view.AbortAnimation(nameof(RotateTo));
-			view.AbortAnimation(nameof(RotateYTo));
-			view.AbortAnimation(nameof(RotateXTo));
-			view.AbortAnimation(nameof(ScaleTo));
-			view.AbortAnimation(nameof(ScaleXTo));
-			view.AbortAnimation(nameof(ScaleYTo));
-			view.AbortAnimation(nameof(FadeTo));
+			view.AbortAnimation(nameof(LayoutToAsync));
+			view.AbortAnimation(nameof(TranslateToAsync));
+			view.AbortAnimation(nameof(RotateToAsync));
+			view.AbortAnimation(nameof(RotateYToAsync));
+			view.AbortAnimation(nameof(RotateXToAsync));
+			view.AbortAnimation(nameof(ScaleToAsync));
+			view.AbortAnimation(nameof(ScaleXToAsync));
+			view.AbortAnimation(nameof(ScaleYToAsync));
+			view.AbortAnimation(nameof(FadeToAsync));
 		}
 
 		static Task<bool> AnimateToAsync(this VisualElement view, double start, double end, string name,
@@ -83,7 +85,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(view));
 			}
 
-			return AnimateToAsync(view, view.Opacity, opacity, nameof(FadeTo), (v, value) => v.Opacity = value, length, easing);
+			return AnimateToAsync(view, view.Opacity, opacity, nameof(FadeToAsync), (v, value) => v.Opacity = value, length, easing);
 		}
 
 		/// <inheritdoc cref="LayoutToAsync(VisualElement, Rect, uint, Easing?)" />
@@ -120,7 +122,7 @@ namespace Microsoft.Maui.Controls
 				return new Rect(x, y, w, h);
 			};
 
-			return AnimateToAsync(view, 0, 1, nameof(LayoutTo), (v, value) => v.Layout(computeBounds(value)), length, easing);
+			return AnimateToAsync(view, 0, 1, nameof(LayoutToAsync), (v, value) => v.Layout(computeBounds(value)), length, easing);
 		}
 
 		/// <inheritdoc cref="RelRotateToAsync(VisualElement, double, uint, Easing?)" />
@@ -197,7 +199,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(view));
 			}
 
-			return AnimateToAsync(view, view.Rotation, rotation, nameof(RotateTo), (v, value) => v.Rotation = value, length, easing);
+			return AnimateToAsync(view, view.Rotation, rotation, nameof(RotateToAsync), (v, value) => v.Rotation = value, length, easing);
 		}
 
 		/// <inheritdoc cref="RotateXToAsync(VisualElement, double, uint, Easing?)" />
@@ -223,7 +225,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(view));
 			}
 
-			return AnimateToAsync(view, view.RotationX, rotation, nameof(RotateXTo), (v, value) => v.RotationX = value, length, easing);
+			return AnimateToAsync(view, view.RotationX, rotation, nameof(RotateXToAsync), (v, value) => v.RotationX = value, length, easing);
 		}
 
 		/// <inheritdoc cref="RotateYToAsync(VisualElement, double, uint, Easing?)" />
@@ -249,7 +251,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(view));
 			}
 
-			return AnimateToAsync(view, view.RotationY, rotation, nameof(RotateYTo), (v, value) => v.RotationY = value, length, easing);
+			return AnimateToAsync(view, view.RotationY, rotation, nameof(RotateYToAsync), (v, value) => v.RotationY = value, length, easing);
 		}
 
 		/// <inheritdoc cref="ScaleToAsync(VisualElement, double, uint, Easing?)" />
@@ -274,7 +276,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(view));
 			}
 
-			return AnimateToAsync(view, view.Scale, scale, nameof(ScaleTo), (v, value) => v.Scale = value, length, easing);
+			return AnimateToAsync(view, view.Scale, scale, nameof(ScaleToAsync), (v, value) => v.Scale = value, length, easing);
 		}
 
 		/// <inheritdoc cref="ScaleXToAsync(VisualElement, double, uint, Easing?)" />
@@ -300,7 +302,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(view));
 			}
 
-			return AnimateToAsync(view, view.ScaleX, scale, nameof(ScaleXTo), (v, value) => v.ScaleX = value, length, easing);
+			return AnimateToAsync(view, view.ScaleX, scale, nameof(ScaleXToAsync), (v, value) => v.ScaleX = value, length, easing);
 		}
 
 		/// <inheritdoc cref="ScaleYToAsync(VisualElement, double, uint, Easing?)" />
@@ -326,7 +328,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(view));
 			}
 
-			return AnimateToAsync(view, view.ScaleY, scale, nameof(ScaleYTo), (v, value) => v.ScaleY = value, length, easing);
+			return AnimateToAsync(view, view.ScaleY, scale, nameof(ScaleYToAsync), (v, value) => v.ScaleY = value, length, easing);
 		}
 
 		/// <inheritdoc cref="TranslateToAsync(VisualElement, double, double, uint, Easing?)" />
@@ -376,7 +378,7 @@ namespace Microsoft.Maui.Controls
 			{
 				{ 0, 1, new Animation(translateX, view.TranslationX, x, easing: easing) },
 				{ 0, 1, new Animation(translateY, view.TranslationY, y, easing: easing) }
-			}.Commit(view, nameof(TranslateTo), 16, length, null, (f, a) => tcs.SetResult(a));
+			}.Commit(view, nameof(TranslateToAsync), 16, length, null, (f, a) => tcs.SetResult(a));
 
 			return tcs.Task;
 		}
