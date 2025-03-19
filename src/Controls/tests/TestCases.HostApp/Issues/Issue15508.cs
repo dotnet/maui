@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace Controls.TestCases.HostApp.Issues;
+﻿namespace Controls.TestCases.HostApp.Issues;
 
 [Issue(IssueTracker.Github, 15508, "Scrollview.ScrollTo execution only returns after manual scroll", PlatformAffected.UWP)]
 public class Issue15508 : ContentPage
@@ -48,7 +46,6 @@ public class Issue15508 : ContentPage
 		{
 			BackgroundColor = Colors.LightCoral,
 			VerticalOptions = LayoutOptions.Start,
-			VerticalScrollBarVisibility = ScrollBarVisibility.Always,
 			MaximumHeightRequest = 70,
 			WidthRequest = 150
 		};
@@ -56,7 +53,7 @@ public class Issue15508 : ContentPage
 		_scrollLabel = new Label
 		{
 			AutomationId = "ScrollLabel",
-			Text = GenerateLabelText()
+			Text = "Not Scrolled"
 		};
 
 		_scrollView.Content = _scrollLabel;
@@ -65,24 +62,12 @@ public class Issue15508 : ContentPage
 		Content = mainGrid;
 	}
 
-	string GenerateLabelText()
-	{
-		var textBuilder = new StringBuilder();
-
-		for (char c = 'a'; c <= 'z'; c++)
-		{
-			textBuilder.AppendLine(c.ToString());
-		}
-
-		return textBuilder.ToString();
-	}
-
 	void OnScrollButtonClicked(object sender, EventArgs e)
 	{
 		Application.Current?.Dispatcher.DispatchAsync(async () =>
 		{
 			await _scrollView.ScrollToAsync(0, 0, true);
-			_scrollLabel.Text = "The text is successfully changed";
+			_scrollLabel.Text = "Scroll Completed";
 		});
 	}
 }

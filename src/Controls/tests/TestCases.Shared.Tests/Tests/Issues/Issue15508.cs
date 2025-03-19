@@ -17,7 +17,8 @@ public class Issue15508 : _IssuesUITest
 	{
 		App.WaitForElement(ButtonToScroll);
 		App.Tap(ButtonToScroll);
-		Assert.That(App.FindElement("ScrollLabel").GetText(), Is.EqualTo("The text is successfully changed"));
+		var scrollLabel = App.FindElement("ScrollLabel");
+		Assert.That(scrollLabel.GetText(), Is.EqualTo("Scroll Completed"));
 	}
 }
 
