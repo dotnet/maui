@@ -28,11 +28,11 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";name" ItemType="0" PsrId="306" Leaf="true">
+      <Item ItemId=";name" ItemType="0" PsrId="306" InstFlg="true" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET MAUI Blazor Hybrid and Web App]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Гибридное и веб-приложение .NET MAUI Blazor]]></Val>
+            <Val><![CDATA[Приложение .NET MAUI Blazor Hybrid и Web]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />

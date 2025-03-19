@@ -26,11 +26,17 @@ namespace Microsoft.Maui.Handlers
 		public static IPropertyMapper<IView, IViewHandler> ViewMapper =
 #if ANDROID
 			// Use a custom mapper for Android which knows how to batch the initial property sets
-			new AndroidBatchPropertyMapper<IView, IViewHandler>(ElementMapper)
+			new AndroidBatchPropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
 #else
 			new PropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
 #endif
 			{
+				// This property is a special one and needs to be set before other properties.
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
+#if ANDROID
+				[AndroidBatchPropertyMapper.InitializeBatchedPropertiesKey] = MapInitializeBatchedProperties,
+#endif
+
 				[nameof(IView.AutomationId)] = MapAutomationId,
 				[nameof(IView.Clip)] = MapClip,
 				[nameof(IView.Shadow)] = MapShadow,
@@ -56,7 +62,6 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IView.RotationY)] = MapRotationY,
 				[nameof(IView.AnchorX)] = MapAnchorX,
 				[nameof(IView.AnchorY)] = MapAnchorY,
-				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 #pragma warning disable CS0618 // Type or member is obsolete
 				[nameof(IBorder.Border)] = MapBorderView,
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -67,10 +72,6 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IToolTipElement.ToolTip)] = MapToolTip,
 #if WINDOWS || MACCATALYST
 				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
-#endif
-
-#if ANDROID
-				["_InitializeBatchedProperties"] = MapInitializeBatchedProperties
 #endif
 			};
 

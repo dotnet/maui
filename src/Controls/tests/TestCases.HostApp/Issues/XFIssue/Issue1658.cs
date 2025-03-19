@@ -24,20 +24,18 @@ public class Issue1658 : TestNavigationPage
 					AutomationId = "coffee.png"
 				});
 
-				var box = new BoxView
+				var label = new Label
 				{
-					WidthRequest = 30,
-					HeightRequest = 30,
-					Color = Colors.Red,
-					AutomationId = "ColorBox"
+					Text = "Tap label",
+					AutomationId = "labelId"
 				};
 
 				var gr = new TapGestureRecognizer();
 				gr.Command = new Command(() =>
 				{
-					box.Color = box.Color == Colors.Red ? Colors.Yellow : Colors.Red;
+					label.Text = label.Text == "Tap label" ? "Success" : "Tap label";
 				});
-				box.GestureRecognizers.Add(gr);
+				label.GestureRecognizers.Add(gr);
 				cells.View = new StackLayout()
 				{
 					Orientation = StackOrientation.Horizontal,
@@ -46,9 +44,11 @@ public class Issue1658 : TestNavigationPage
 						new Label()
 						{
 							Text = "Right click on any item within viewcell (including this label) should trigger context action on this row and you should see a coffee cup. Tap on colored box should change box color",
-							AutomationId = "ListViewItem"
+							AutomationId = "ListViewItem",
+							VerticalOptions = LayoutOptions.Center,
+							HorizontalOptions = LayoutOptions.FillAndExpand
 						},
-						box
+						label
 					}
 				};
 

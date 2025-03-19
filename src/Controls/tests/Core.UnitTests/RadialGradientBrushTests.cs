@@ -16,6 +16,44 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void TestNullOrEmptyRadialGradientPaintWithEmptyGradientStop()
+		{
+			RadialGradientBrush radialGradientBrush = new RadialGradientBrush
+			{
+				Center = new Point(0, 0),
+				Radius = 10,
+				GradientStops = new GradientStopCollection
+				{
+					new GradientStop(),
+					new GradientStop()
+				}
+			};
+
+			Paint radialGradientPaint = radialGradientBrush;
+
+			Assert.True(radialGradientPaint.IsNullOrEmpty());
+		}
+
+		[Fact]
+		public void TestNullOrEmptyRadialGradientPaintWithNullGradientStop()
+		{
+			RadialGradientBrush radialGradientBrush = new RadialGradientBrush
+			{
+				Center = new Point(0, 0),
+				Radius = 10,
+				GradientStops = new GradientStopCollection
+				{
+					null,
+					null
+				}
+			};
+
+			Paint radialGradientPaint = radialGradientBrush;
+
+			Assert.True(radialGradientPaint.IsNullOrEmpty());
+		}
+
+		[Fact]
 		public void TestConstructorUsingGradientStopCollection()
 		{
 			var gradientStops = new GradientStopCollection
