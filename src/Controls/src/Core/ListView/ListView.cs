@@ -358,7 +358,7 @@ namespace Microsoft.Maui.Controls
 			if (!RefreshAllowed)
 				return;
 
-			SetValue(IsRefreshingProperty, true);
+			SetValue(IsRefreshingProperty, true, SetterSpecificity.FromHandler);
 			OnRefreshing(EventArgs.Empty);
 
 			ICommand command = RefreshCommand;
@@ -368,7 +368,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='EndRefresh']/Docs/*" />
 		public void EndRefresh()
 		{
-			SetValue(IsRefreshingProperty, false);
+			SetValue(IsRefreshingProperty, false, SetterSpecificity.FromHandler);
 		}
 
 		public event EventHandler<ItemVisibilityEventArgs> ItemAppearing;
