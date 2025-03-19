@@ -133,8 +133,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				while (run)
 				{
-					await label.ScaleTo(2, 500);
-					run = !(await label.ScaleTo(0.5, 500));
+					await label.ScaleToAsync(2, 500);
+					run = !(await label.ScaleToAsync(0.5, 500));
 				}
 			});
 		}
