@@ -178,4 +178,34 @@ internal class KnownMarkups
 			return $"global::Microsoft.Maui.Controls.StyleSheets.StyleSheet.FromResource({resourcePath}, {assembly}, {lineInfo})";
 		}
 	}
+
+	internal static string ProvideValueForBindingExtension(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType)
+	{
+		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
+
+		string? path;
+		if (markupNode.Properties.TryGetValue(new XmlName("", "Path"), out var pathNode)
+			&& pathNode is ValueNode { Value: string pathValue })
+		{
+			path = pathValue;
+		}
+		else if (markupNode.CollectionItems.Count == 1
+			&& markupNode.CollectionItems[0] is ValueNode { Value: string singleCollectionItemValue })
+		{
+			path = singleCollectionItemValue;
+		}
+		else
+		{
+			// no path
+			throw new Exception(); //FIXME report diagnostic
+		}
+
+		// TODO read all the other optional properties
+
+		// TODO look for x:DataType
+		// TODO if we have x:DataType, return new TypedBinding<TSource, TProperty>
+
+		// Fallback to string-based binding
+		return $"new global::Microsoft.Maui.Controls.Binding(\"{path}\")";
+	}
 }

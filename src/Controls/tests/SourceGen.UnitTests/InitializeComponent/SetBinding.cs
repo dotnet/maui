@@ -55,7 +55,7 @@ public partial class TestPage
 {
 	private partial void InitializeComponentSourceGen()
 	{
-		var bindingExtension = new global::Microsoft.Maui.Controls.Xaml.BindingExtension();
+		var bindingExtension = new global::Microsoft.Maui.Controls.Binding("Title");
 #if _MAUIXAML_SG_SOURCEINFO
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingExtension!, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), -1, -1);
 #endif
@@ -65,20 +65,7 @@ public partial class TestPage
 #endif
 		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
 		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
-#line 1 "Test.xaml"
-		bindingExtension.Path = "Title";
-#line default
-		var xamlServiceProvider = new global::Microsoft.Maui.Controls.Xaml.Internals.XamlServiceProvider(this);
-		var xmlNamespaceResolver = new global::Microsoft.Maui.Controls.Xaml.Internals.XmlNamespaceResolver();
-		xmlNamespaceResolver.Add("", "http://schemas.microsoft.com/dotnet/2021/maui");
-		xmlNamespaceResolver.Add("x", "http://schemas.microsoft.com/winfx/2009/xaml");
-		xamlServiceProvider.Add(typeof(global::Microsoft.Maui.Controls.Xaml.IXamlTypeResolver), new global::Microsoft.Maui.Controls.Xaml.Internals.XamlTypeResolver(xmlNamespaceResolver, typeof(global::Test.TestPage).Assembly));
-		var bindingBase = (global::Microsoft.Maui.Controls.BindingBase)((global::Microsoft.Maui.Controls.Xaml.IMarkupExtension<global::Microsoft.Maui.Controls.BindingBase>)bindingExtension).ProvideValue(xamlServiceProvider);
-#if _MAUIXAML_SG_SOURCEINFO
-		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(bindingBase!) == null)
-			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingBase!, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), -1, -1);
-#endif
-		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingBase);
+		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingExtension);
 	}
 }
 
