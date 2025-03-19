@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Controls.TestCases.HostApp.Issues.Issue19313"
+             Title="Issue19313">
+    <VerticalStackLayout Margin="20" Spacing="30">
+        <CheckBox AutomationId="MauiCheckBox" WidthRequest="50" HeightRequest="50" >
+            <CheckBox.GestureRecognizers>
+                <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+            </CheckBox.GestureRecognizers>
+        </CheckBox>
+        <Label AutomationId="MauiLabel" x:Name="tappedLabel" />
+    </VerticalStackLayout>
+</ContentPage>
