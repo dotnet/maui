@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Controls.TestCases.HostApp.Issues.Issue27831"
+             Title="Issue27831">
+    <VerticalStackLayout VerticalOptions="Start">
+        <Editor AutomationId="MauiEditor" Placeholder="Enter...">
+            <Editor.GestureRecognizers>
+                <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped" />
+            </Editor.GestureRecognizers>
+        </Editor>
+        <Label AutomationId="MauiLabel" x:Name="label"></Label>
+    </VerticalStackLayout>
+</ContentPage>
