@@ -312,6 +312,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var poppedControllers = PopToRootViewController(animated);
 
+			_ignorePopCall = false;
+			var success = !await task;
+
 			if (poppedControllers is not null)
 			{
 				foreach (var poppedController in poppedControllers)
@@ -326,9 +329,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 				}
 			}
-
-			_ignorePopCall = false;
-			var success = !await task;
 
 			UpdateToolBarVisible();
 			return success;
