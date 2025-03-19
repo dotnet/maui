@@ -12,6 +12,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	[Category(TestCategory.ListView)]
 	public partial class ListViewTests : ControlsHandlerTestBase
@@ -455,4 +456,5 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 	}
+#pragma warning restore CS0618 // Type or member is obsolete
 }
