@@ -99,8 +99,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				OnScrollToRequested(this, request);
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (_previousFrame != Frame)
+#pragma warning disable CS0618 // Type or member is obsolete
 				_previousFrame = Frame;
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		protected override void SetBackground(Brush brush)
@@ -1665,7 +1669,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			? UITableViewStyle.Plain
 			  : UITableViewStyle.Grouped)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			TableView.CellLayoutMarginsFollowReadableWidth = false;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			_usingLargeTitles = usingLargeTitles;
 
@@ -1690,6 +1696,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					//hack: On iOS11 with large titles we need to adjust the scroll offset manually
 					//since our UITableView is not the first child of the UINavigationController
 					//This also forces the spinner color to be correct if we started refreshing immediately after changing it.
+#pragma warning disable CS0618 // Type or member is obsolete
 					UpdateContentOffset(TableView.ContentOffset.Y - _refresh.Frame.Height, () =>
 					{
 						if (_refresh == null || _disposed)
@@ -1701,8 +1708,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 						//hack: when we don't have cells in our UITableView the spinner fails to appear
 						CheckContentSize();
+#pragma warning disable CS0618 // Type or member is obsolete
 						TableView.ScrollRectToVisible(new RectangleF(0, 0, _refresh.Bounds.Width, _refresh.Bounds.Height), true);
+#pragma warning restore CS0618 // Type or member is obsolete
 					});
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 			}
 			else
@@ -1769,7 +1779,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (!_refresh.Refreshing && !_isRefreshing)
 			{
 				_isRefreshing = true;
+#pragma warning disable CS0618 // Type or member is obsolete
 				UpdateContentOffset(TableView.ContentOffset.Y - _refresh.Frame.Height, StartRefreshing);
+#pragma warning restore CS0618 // Type or member is obsolete
 				list.SendRefreshing();
 			}
 		}
@@ -1789,7 +1801,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void ViewWillAppear(bool animated)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			(TableView?.Source as ListViewRenderer.ListViewDataSource)?.Cleanup();
+#pragma warning restore CS0618 // Type or member is obsolete
 			if (!_list.TryGetTarget(out var list))
 				return;
 			if (!list.IsRefreshing || !_refresh.Refreshing)
@@ -1802,7 +1816,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void ViewWillLayoutSubviews()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			(TableView?.Source as ListViewRenderer.ListViewDataSource)?.DetermineEstimatedRowHeight();
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		public void UpdateRefreshControlColor(UIColor color)
@@ -1835,9 +1851,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void CheckContentSize()
 		{
 			//adding a default height of at least 1 pixel tricks iOS to show the spinner
+#pragma warning disable CS0618 // Type or member is obsolete
 			var contentSize = TableView.ContentSize;
+#pragma warning restore CS0618 // Type or member is obsolete
 			if (contentSize.Height == 0)
+#pragma warning disable CS0618 // Type or member is obsolete
 				TableView.ContentSize = new SizeF(contentSize.Width, 1);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void OnRefreshingChanged(object sender, EventArgs eventArgs)
@@ -1863,7 +1883,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateContentOffset(nfloat offset, Action completed = null)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			UIView.Animate(0.2, () => TableView.ContentOffset = new CoreGraphics.CGPoint(TableView.ContentOffset.X, offset), completed);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 

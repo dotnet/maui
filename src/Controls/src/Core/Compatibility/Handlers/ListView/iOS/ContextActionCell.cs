@@ -143,7 +143,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				((INotifyCollectionChanged)cell.ContextActions).CollectionChanged += OnContextItemsChanged;
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var height = Frame.Height + (parentListView != null && parentListView.SeparatorVisibility == SeparatorVisibility.None ? 0.5f : 0f);
+#pragma warning restore CS0618 // Type or member is obsolete
 			var width = ContentView.Frame.Width;
 
 			nativeCell.Frame = new RectangleF(0, 0, width, height);

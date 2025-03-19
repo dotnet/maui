@@ -107,7 +107,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				//TODO: Determine how best to hide the separator line when there is an accessory on the cell
 				if (SupressSeparator && Accessory == UITableViewCellAccessory.None)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					var oldFrame = Frame;
+#pragma warning restore CS0618 // Type or member is obsolete
 					ContentView.Bounds = new RectangleF(oldFrame.Location, new SizeF(oldFrame.Width, oldFrame.Height + 0.5f));
 				}
 

@@ -40,7 +40,9 @@ namespace Microsoft.Maui.DeviceTests.TestCases
 			new object[] { typeof(IndicatorView) },
 			new object[] { typeof(Label) },
 			new object[] { typeof(Line) },
+#pragma warning disable CS0618 // Type or member is obsolete
 			new object[] { typeof(ListView) },
+#pragma warning restore CS0618 // Type or member is obsolete
 			new object[] { typeof(Picker) },
 			new object[] { typeof(Polygon) },
 			new object[] { typeof(Polyline) },

@@ -156,7 +156,9 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(IndicatorView))]
 	[InlineData(typeof(Line))]
 	[InlineData(typeof(Label))]
+#pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(ListView))]
+#pragma warning restore CS0618 // Type or member is obsolete
 	[InlineData(typeof(Path))]
 	[InlineData(typeof(Picker))]
 	[InlineData(typeof(Polygon))]
@@ -183,8 +185,10 @@ public class MemoryTests : ControlsHandlerTestBase
 
 #if ANDROID
 		// NOTE: skip certain controls on older Android devices
+#pragma warning disable CS0618 // Type or member is obsolete
 		if ((type == typeof(DatePicker) || type == typeof(ListView)) && !OperatingSystem.IsAndroidVersionAtLeast(30))
 				return;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		if (type == typeof(HybridWebView) && !OperatingSystem.IsAndroidVersionAtLeast(24))
 		{
@@ -214,6 +218,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				border.StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(10) };
 				border.Content = new Label();
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (view is ContentView content)
 			{
 				content.Content = new Label();
@@ -222,8 +227,12 @@ public class MemoryTests : ControlsHandlerTestBase
 			{
 				listView.ItemTemplate = new DataTemplate(() =>
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					var cell = new TextCell();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 					cell.SetBinding(TextCell.TextProperty, ".");
+#pragma warning restore CS0618 // Type or member is obsolete
 					return cell;
 				});
 				listView.ItemsSource = observable;
@@ -257,6 +266,7 @@ public class MemoryTests : ControlsHandlerTestBase
 						Content = new Grid { Children = { new Ellipse(), new ContentPresenter() } }
 					});
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 			var handler = CreateHandler<LayoutHandler>(layout);
 			viewReference = new WeakReference(view);
 			handlerReference = new WeakReference(view.Handler);
@@ -372,11 +382,21 @@ public class MemoryTests : ControlsHandlerTestBase
 	}
 
 	[Theory("Cells Do Not Leak")]
+#pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(TextCell))]
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(EntryCell))]
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(ImageCell))]
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(SwitchCell))]
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 	[InlineData(typeof(ViewCell))]
+#pragma warning restore CS0618 // Type or member is obsolete
 	public async Task CellsDoNotLeak(Type type)
 	{
 		SetupBuilder();
@@ -387,27 +407,34 @@ public class MemoryTests : ControlsHandlerTestBase
 
 		await CreateHandlerAndAddToWindow(new Window(navPage), async () =>
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			await navPage.Navigation.PushAsync(new ContentPage
 			{
 				Content = new ListView
 				{
 					ItemTemplate = new DataTemplate(() =>
 					{
+#pragma warning disable CS0618 // Type or member is obsolete
 						var cell = (Cell)Activator.CreateInstance(type);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 						if (cell is ViewCell viewCell)
 						{
 							viewCell.View = new Label();
 						}
+#pragma warning restore CS0618 // Type or member is obsolete
 						references.Add(new(cell));
 						return cell;
 					}),
 					ItemsSource = observable
 				}
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			Assert.NotEmpty(references);
 			foreach (var reference in references.ToArray())
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (reference.Target is Cell cell)
 				{
 					Assert.NotNull(cell.Handler);
@@ -415,6 +442,7 @@ public class MemoryTests : ControlsHandlerTestBase
 					Assert.NotNull(cell.Handler.PlatformView);
 					references.Add(new(cell.Handler.PlatformView));
 				}
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			await navPage.Navigation.PopAsync();
