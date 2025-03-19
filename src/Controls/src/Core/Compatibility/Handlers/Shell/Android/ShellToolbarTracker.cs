@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public bool CanNavigateBack
 		{
 			get
-			{	
+			{
 				if (_page?.Navigation?.NavigationStack?.Count > 1)
 					return true;
 
