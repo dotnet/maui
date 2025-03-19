@@ -117,14 +117,14 @@
   </PropertyGroup>
 
   <!-- this is CI, so everything should be there -->
-  <PropertyGroup Condition="'$(CI)' == 'true' or '$(TF_BUILD)' == 'true'">
+  <PropertyGroup Condition="('$(CI)' == 'true' or '$(TF_BUILD)' == 'true') and ('$(BuildTaskOnlyBuild)' != 'true')">
     <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">true</IncludeWindowsTargetFrameworks>
     <!-- Disabled until net10.0-tizen is available -->
     <IncludeTizenTargetFrameworks>false</IncludeTizenTargetFrameworks>
-    <IncludeMacOSTargetFrameworks>true</IncludeMacOSTargetFrameworks>
+    <IncludeMacOSTargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">true</IncludeMacOSTargetFrameworks>
     <IncludeAndroidTargetFrameworks>true</IncludeAndroidTargetFrameworks>
-    <IncludeMacCatalystTargetFrameworks>true</IncludeMacCatalystTargetFrameworks>
-    <IncludeIosTargetFrameworks>true</IncludeIosTargetFrameworks>
+    <IncludeMacCatalystTargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">true</IncludeMacCatalystTargetFrameworks>
+    <IncludeIosTargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">true</IncludeIosTargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup>

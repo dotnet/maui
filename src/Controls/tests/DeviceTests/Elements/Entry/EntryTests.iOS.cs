@@ -44,6 +44,15 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+		
+		Task<float> GetPlatformOpacity(EntryHandler entryHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(entryHandler);
+				return (float)nativeView.Alpha; 
+			});
+		}
 
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 		public class ScrollTests : ControlsHandlerTestBase
@@ -115,7 +124,9 @@ namespace Microsoft.Maui.DeviceTests
 					builder.ConfigureMauiHandlers(handlers =>
 					{
 						handlers.AddHandler<ListView, ListViewRenderer>();
+#pragma warning disable CS0618 // Type or member is obsolete
 						handlers.AddHandler<TableView, TableViewRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 						handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 						handlers.AddHandler<Entry, EntryHandler>();
 						handlers.AddHandler<EntryCell, EntryCellRenderer>();
@@ -179,6 +190,7 @@ namespace Microsoft.Maui.DeviceTests
 					ReturnType = ReturnType.Next
 				};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				var tableView = new TableView()
 				{
 					Root = new TableRoot("Table Title") {
@@ -195,6 +207,7 @@ namespace Microsoft.Maui.DeviceTests
 						},
 					}
 				};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				var layout = new VerticalStackLayout()
 				{

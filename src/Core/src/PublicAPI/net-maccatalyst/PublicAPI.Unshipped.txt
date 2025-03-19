@@ -43,6 +43,8 @@ Microsoft.Maui.IWindow.TitleBar.get -> Microsoft.Maui.ITitleBar?
 Microsoft.Maui.IWebView.ProcessTerminated(Microsoft.Maui.WebProcessTerminatedEventArgs! args) -> void
 *REMOVED*Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView!
 Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
+Microsoft.Maui.Platform.IAutoSizableCALayer
+Microsoft.Maui.Platform.IAutoSizableCALayer.AutoSizeToSuperLayer() -> void
 Microsoft.Maui.Platform.MauiHybridWebView
 Microsoft.Maui.Platform.MauiHybridWebView.MauiHybridWebView(Microsoft.Maui.Handlers.HybridWebViewHandler! handler, CoreGraphics.CGRect frame, WebKit.WKWebViewConfiguration! configuration) -> void
 Microsoft.Maui.Platform.MauiHybridWebView.SendRawMessage(string! rawMessage) -> void
@@ -55,7 +57,6 @@ override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(WebKit.WKWe
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> WebKit.WKWebView!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.DisconnectHandler(WebKit.WKWebView! platformView) -> void
 override Microsoft.Maui.Platform.MauiScrollView.LayoutSubviews() -> void
-override Microsoft.Maui.Platform.MauiScrollView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.MauiScrollView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
@@ -77,6 +78,7 @@ static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 *REMOVED*static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement! view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
+static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this UIKit.IUIApplicationDelegate! platformApplication, Microsoft.Maui.IApplication! application, UIKit.UIApplication! uiApplication, Foundation.NSDictionary? launchOptions) -> void
 static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement? view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
 static Microsoft.Maui.Platform.TextInputExtensions.GetCursorPosition(this UIKit.IUITextInput! platformView, int cursorOffset = 0) -> int
 static Microsoft.Maui.Platform.TextInputExtensions.GetSelectedTextLength(this UIKit.IUITextInput! platformView) -> int
@@ -98,6 +100,8 @@ Microsoft.Maui.Platform.TextInputExtensions
 *REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
 *REMOVED*Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation) -> void
+virtual Microsoft.Maui.MauiUIApplicationDelegate.FinishedLaunching(UIKit.UIApplication! application, Foundation.NSDictionary? launchOptions) -> bool
+virtual Microsoft.Maui.MauiUIApplicationDelegate.WillFinishLaunching(UIKit.UIApplication! application, Foundation.NSDictionary? launchOptions) -> bool
 virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DecidePolicy(WebKit.WKWebView! webView, WebKit.WKNavigationAction! navigationAction, System.Action<WebKit.WKNavigationActionPolicy>! decisionHandler) -> void
 virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
 virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFailProvisionalNavigation(WebKit.WKWebView! webView, WebKit.WKNavigation! navigation, Foundation.NSError! error) -> void
@@ -106,3 +110,9 @@ static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Han
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateReturnType(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void
 Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
 override Microsoft.Maui.Handlers.ImageButtonHandler.SetupContainer() -> void
+*REMOVED*virtual Microsoft.Maui.MauiUIApplicationDelegate.FinishedLaunching(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
+*REMOVED*virtual Microsoft.Maui.MauiUIApplicationDelegate.WillFinishLaunching(UIKit.UIApplication! application, Foundation.NSDictionary! launchOptions) -> bool
+*REMOVED*static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this UIKit.IUIApplicationDelegate! platformApplication, Microsoft.Maui.IApplication! application, UIKit.UIApplication! uiApplication, Foundation.NSDictionary! launchOptions) -> void
+override Microsoft.Maui.Handlers.PageHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
+*REMOVED*override Microsoft.Maui.Platform.WrapperView.SetNeedsLayout() -> void
+*REMOVED*override Microsoft.Maui.Platform.MauiView.SetNeedsLayout() -> void
