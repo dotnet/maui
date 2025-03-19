@@ -51,7 +51,9 @@ namespace Microsoft.Maui.Platform
 		{
 			var context = seekBar.Context;
 			if (context is null || !seekBar.IsAlive())
+			{
 				return;
+			}
 
 			var thumbImageSource = slider.ThumbImageSource;
 			if (thumbImageSource is not null)
@@ -98,7 +100,7 @@ namespace Microsoft.Maui.Platform
 		{
 			seekBar.SetThumb(context.GetDrawable(Resource.Drawable.abc_seekbar_thumb_material));
 
-			if (slider.ThumbColor == null && context.Theme != null)
+			if (slider.ThumbColor is null && context.Theme is not null)
 			{
 				using var value = new TypedValue();
 				if (context.Theme.ResolveAttribute(Android.Resource.Attribute.ColorAccent, value, true))
