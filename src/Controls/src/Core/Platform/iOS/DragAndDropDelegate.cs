@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_viewHandler.VirtualView is View view)
 			{
 				HandleDrop(view, cdi.DataPackage, session, new PlatformDropEventArgs(cdi.View.Handler.PlatformView as UIView, interaction, session));
-				HandleDropCompleted(cdi.View, new PlatformDropCompletedEventArgs(cdi.View.Handler.PlatformView as UIView, interaction, session));
+				HandleDropCompleted(cdi.View, new PlatformDropCompletedEventArgs(cdi.View.Handler?.PlatformView as UIView, interaction, session));
 			}
 			else if (_viewHandler.VirtualView is View v)
 			{
