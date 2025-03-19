@@ -51,7 +51,9 @@ namespace Microsoft.Maui.Platform
 		{
 			var context = seekBar.Context;
 			if (context is null || !seekBar.IsAlive())
+			{
 				return;
+			}
 
 			var thumbImageSource = slider.ThumbImageSource;
 			if (thumbImageSource is not null)

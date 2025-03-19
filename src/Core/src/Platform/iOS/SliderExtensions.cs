@@ -22,19 +22,25 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateValue(this UISlider uiSlider, ISlider slider)
 		{
 			if ((float)slider.Value != uiSlider.Value)
+			{
 				uiSlider.Value = (float)slider.Value;
+			}
 		}
 
 		public static void UpdateMinimumTrackColor(this UISlider uiSlider, ISlider slider)
 		{
-			if (slider.MinimumTrackColor != null)
+			if (slider.MinimumTrackColor is not null)
+			{
 				uiSlider.MinimumTrackTintColor = slider.MinimumTrackColor.ToPlatform();
+			}
 		}
 
 		public static void UpdateMaximumTrackColor(this UISlider uiSlider, ISlider slider)
 		{
-			if (slider.MaximumTrackColor != null)
+			if (slider.MaximumTrackColor is not null)
+			{
 				uiSlider.MaximumTrackTintColor = slider.MaximumTrackColor.ToPlatform();
+			}
 		}
 
 		public static void UpdateThumbColor(this UISlider uiSlider, ISlider slider)
@@ -53,7 +59,7 @@ namespace Microsoft.Maui.Platform
 		public static async Task UpdateThumbImageSourceAsync(this UISlider uiSlider, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var thumbImageSource = slider.ThumbImageSource;
-			if (thumbImageSource != null)
+			if (thumbImageSource is not null)
 			{
 				// Clear the thumb color if we have a thumb image, so that slider doesn't clear image when sliding
 				uiSlider.ThumbTintColor = null;
