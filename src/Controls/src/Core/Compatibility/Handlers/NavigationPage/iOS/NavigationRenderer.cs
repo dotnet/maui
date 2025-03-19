@@ -311,7 +311,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var task = GetAppearedOrDisappearedTask(page);
 
-			PopToRootViewController(animated);
+			var poppedControllers = PopToRootViewController(animated);
+
+			if (poppedControllers is not null)
+			{
+				foreach (var poppedController in poppedControllers)
+				{
+					if (poppedController is ParentingViewController parentingViewController)
+					{
+						parentingViewController.Disconnect(false);
+					}
+					else
+					{
+						poppedController?.Dispose();
+					}
+				}
+			}
 
 			_ignorePopCall = false;
 			var success = !await task;
