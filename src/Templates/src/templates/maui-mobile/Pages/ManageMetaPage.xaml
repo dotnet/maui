@@ -6,11 +6,12 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:DataType="pageModels:ManageMetaPageModel"
              x:Class="MauiApp._1.Pages.ManageMetaPage"
+             x:Name="MetaPage"
              Title="Categories and Tags">
-
 
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior
+                BindingContext="{Binding Path=BindingContext, Source={x:Reference MetaPage}, x:DataType=ContentPage}"
                 EventName="Appearing"                
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
@@ -61,7 +62,7 @@
                                 <Entry.Behaviors>
                                     <toolkit:TextValidationBehavior 
                                         InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                        Flags="ValidateOnUnfocusing"
+                                        Flags="ValidateOnUnfocused"
                                         RegexPattern="^#(?:[0-9a-fA-F]{3}){1,2}$" />
                                 </Entry.Behaviors>
                             </Entry>
@@ -103,7 +104,7 @@
                                 <Entry.Behaviors>
                                     <toolkit:TextValidationBehavior 
                                         InvalidStyle="{StaticResource InvalidEntryStyle}"
-                                        Flags="ValidateOnUnfocusing"
+                                        Flags="ValidateOnUnfocused"
                                         RegexPattern="^#(?:[0-9a-fA-F]{3}){1,2}$" />
                                 </Entry.Behaviors>
                             </Entry>
