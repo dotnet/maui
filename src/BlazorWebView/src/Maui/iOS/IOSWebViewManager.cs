@@ -124,10 +124,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					cancelAction: _ => completionHandler(false)
 				);
 			}
-
-#pragma warning disable CS0672 // Member overrides obsolete member
-			public override void RunJavaScriptTextInputPanel(
-#pragma warning restore CS0672 // Member overrides obsolete member
+			
+			[Export("webView(_:runJavaScriptTextInputPanelWithPrompt:defaultText:initiatedByFrame:completionHandler:)")]
+			public void RunJavaScriptTextInputPanelWithPrompt(
 				WKWebView webView, string prompt, string? defaultText, WKFrameInfo frame, Action<string> completionHandler)
 			{
 				PresentAlertController(
