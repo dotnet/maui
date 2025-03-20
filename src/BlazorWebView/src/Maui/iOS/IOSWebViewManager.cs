@@ -126,16 +126,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			}
 
 #pragma warning disable CS0672 // Member overrides obsolete member
-			public override void RunJavaScriptTextInputPanel(WKWebView webView, string prompt, string? defaultText, WKFrameInfo frame, [BlockProxy(typeof(NIDActionArity1V56))] Action<string> completionHandler)
+			public override void RunJavaScriptTextInputPanel(
 #pragma warning restore CS0672 // Member overrides obsolete member
+				WKWebView webView, string prompt, string? defaultText, WKFrameInfo frame, Action<string> completionHandler)
 			{
 				PresentAlertController(
-						webView,
-						prompt,
-						defaultText: defaultText,
-						okAction: x => completionHandler(x.TextFields[0].Text!),
-						cancelAction: _ => completionHandler(null!)
-					);
+					webView,
+					prompt,
+					defaultText: defaultText,
+					okAction: x => completionHandler(x.TextFields[0].Text!),
+					cancelAction: _ => completionHandler(null!)
+				);
 			}
 
 			private static string GetJsAlertTitle(WKWebView webView)
