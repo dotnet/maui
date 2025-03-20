@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using ObjCRuntime;
 using UIKit;
 using WebKit;
 
@@ -123,17 +124,18 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					cancelAction: _ => completionHandler(false)
 				);
 			}
-			
-			public void ShowJavaScriptTextInputPanel(
-				WKWebView webView, string prompt, string? defaultText, Action<string?> completionHandler)
+
+#pragma warning disable CS0672 // Member overrides obsolete member
+			public override void RunJavaScriptTextInputPanel(WKWebView webView, string prompt, string? defaultText, WKFrameInfo frame, [BlockProxy(typeof(NIDActionArity1V56))] Action<string> completionHandler)
+#pragma warning restore CS0672 // Member overrides obsolete member
 			{
 				PresentAlertController(
-					webView,
-					prompt,
-					defaultText: defaultText,
-					okAction: x => completionHandler(x.TextFields[0].Text!),
-					cancelAction: _ => completionHandler(null!)
-				);
+						webView,
+						prompt,
+						defaultText: defaultText,
+						okAction: x => completionHandler(x.TextFields[0].Text!),
+						cancelAction: _ => completionHandler(null!)
+					);
 			}
 
 			private static string GetJsAlertTitle(WKWebView webView)
