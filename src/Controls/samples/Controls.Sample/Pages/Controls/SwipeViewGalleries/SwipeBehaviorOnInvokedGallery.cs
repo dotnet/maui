@@ -38,7 +38,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			swipeLayout.Children.Add(swipeBehaviorOnInvokedPicker);
 
 			var deleteSwipeItem = new SwipeItem { BackgroundColor = Colors.Red, Text = "Delete", IconImageSource = "calculator.png" };
-			deleteSwipeItem.Invoked += (sender, e) => { DisplayAlert("SwipeView", "Delete Invoked", "Ok"); };
+			deleteSwipeItem.Invoked += (sender, e) => { DisplayAlertAsync("SwipeView", "Delete Invoked", "Ok"); };
 
 			var leftSwipeItems = new SwipeItems
 			{
