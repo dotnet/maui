@@ -71,7 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 		//src/Compatibility/Core/tests/iOS/NavigationTests.cs
 		[Fact]
 		[Description("Multiple calls to NavigationRenderer.Dispose shouldn't crash")]
-		public void NavigationRendererDoubleDisposal()
+		public async Task NavigationRendererDoubleDisposal()
 		{
 			SetupBuilder();
 
@@ -81,14 +81,14 @@ namespace Microsoft.Maui.DeviceTests
 				Content = new Label { Text = "Hello" }
 			};
 
-			root.Dispatcher.DispatchAsync(() =>
+			await root.Dispatcher.DispatchAsync(() =>
 			{
 				var navPage = new NavigationPage(root);
 				var handler = CreateHandler(navPage);
 
 				// Calling Dispose more than once should be fine
-				(handler.PlatformView as NavigationRenderer).Dispose();
-				(handler.PlatformView as NavigationRenderer).Dispose();
+				(handler as NavigationRenderer).Dispose();
+				(handler as NavigationRenderer).Dispose();
 			});
 		}
 	}
