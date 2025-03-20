@@ -123,11 +123,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					cancelAction: _ => completionHandler(false)
 				);
 			}
-
-#pragma warning disable CS0672 // Member overrides obsolete member
-			public override void RunJavaScriptTextInputPanel(
-#pragma warning restore CS0672 // Member overrides obsolete member
-				WKWebView webView, string prompt, string? defaultText, WKFrameInfo frame, Action<string> completionHandler)
+			
+			public void ShowJavaScriptTextInputPanel(
+				WKWebView webView, string prompt, string? defaultText, Action<string?> completionHandler)
 			{
 				PresentAlertController(
 					webView,
@@ -182,10 +180,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (cancelAction != null)
 					AddCancelAction(controller, () => cancelAction(controller));
 
-#pragma warning disable CA1416, CA1422 // TODO:  'UIApplication.Windows' is unsupported on: 'ios' 15.0 and later
-				GetTopViewController(UIApplication.SharedApplication.Windows.FirstOrDefault(m => m.IsKeyWindow)?.RootViewController)?
+				GetTopViewController(UIApplication.SharedApplication.ConnectedScenes.OfType<UIWindowScene>().SelectMany(scene => scene.Windows).FirstOrDefault(window => window.IsKeyWindow)?.RootViewController)?
 					.PresentViewController(controller, true, null);
-#pragma warning restore CA1416, CA1422
 			}
 
 			private static UIViewController? GetTopViewController(UIViewController? viewController)
