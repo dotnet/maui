@@ -311,7 +311,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_ = new GenericGlobalLayoutListener((listner,view) =>
 					{
-						_navigationRootManager.RootView.ViewTreeObserver?.RemoveOnGlobalLayoutListener(listner);
+						listner.Invalidate();
 
 						var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_enter_anim)!;
 						_navigationRootManager.RootView.StartAnimation(animation);
