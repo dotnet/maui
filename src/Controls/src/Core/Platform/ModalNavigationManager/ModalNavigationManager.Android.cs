@@ -316,7 +316,6 @@ namespace Microsoft.Maui.Controls.Platform
 						var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_enter_anim)!;
 						_navigationRootManager.RootView.StartAnimation(animation);
 						animation.AnimationEnd += OnAnimationEnded;
-						listner.Dispose();
 					},_navigationRootManager.RootView);
 				}
 				return _navigationRootManager?.RootView ??
