@@ -15,32 +15,29 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		protected override bool ResetAfterEachTest => true;
 
-#if ANDROID
+#if TEST_FAILS_ON_WINDOWS // For more information, see :https://github.com/dotnet/maui/issues/28006
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnIOSWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
-		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void KeepItemsInView()
 		{
 			App.WaitForElement("ScrollToMiddle");
 			App.Click("ScrollToMiddle");
-			App.WaitForNoElement("Vegetables.jpg, 10");
+			App.WaitForElement("Vegetables.jpg, 10");
 
 			for (int n = 0; n < 25; n++)
 			{
 				App.Click("AddItemAbove");
 			}
 
-			App.WaitForNoElement("Vegetables.jpg, 10");
+			App.WaitForElement("Vegetables.jpg, 10");
 		}
 #endif
 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // The test fails on iOS and macOS because Appium is unable to locate the Picker control elements resulting in a TimeoutException. For more information, see: https://github.com/dotnet/maui/issues/28024
 		// KeepScrollOffset (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
-		//[Test]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void KeepScrollOffset()
 		{
 			App.WaitForElement("SelectScrollMode");
@@ -49,15 +46,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement("ScrollToMiddle");
 			App.Click("ScrollToMiddle");
-			App.WaitForNoElement("Vegetables.jpg, 10");
+			App.WaitForElement("Vegetables.jpg, 10");
 			App.Click("AddItemAbove");
-			App.WaitForNoElement("photo.jpg, 9");
+			App.WaitForElement("photo.jpg, 9");
 		}
 
 		// KeepLastItemInView(src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewItemsUpdatingScrollMode.cs)
-		//[Test]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
 		public void KeepLastItemInView()
 		{
 			App.WaitForElement("SelectScrollMode");
@@ -66,9 +62,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement("ScrollToMiddle");
 			App.Click("ScrollToMiddle");
-			App.WaitForNoElement("Vegetables.jpg, 10");
+			App.WaitForElement("Vegetables.jpg, 10");
 			App.Click("AddItemToEnd");
 			App.WaitForElement("Added item");
 		}
+#endif
 	}
 }

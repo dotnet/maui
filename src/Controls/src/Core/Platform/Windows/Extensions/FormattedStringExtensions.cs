@@ -41,7 +41,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default)
 		{
-			textBlock.Inlines.Clear();
+			var textBlockInlines = textBlock.Inlines;
+			textBlockInlines.Clear();
 
 			// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
 			textBlock.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
@@ -68,7 +69,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				SetMeasuredLineHeight(run, lineHeights[i]);
 
-				textBlock.Inlines.Add(run);
+				textBlockInlines.Add(run);
 
 				if (background is not null || textColor is not null)
 				{
@@ -152,11 +153,13 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			// Span count is larger than 0, so we can always assign as the variable will be always used.
+			var controlInlines = control.Inlines;
+
 			for (int i = 0; i < spans.Count; i++)
 			{
 				var span = spans[i];
-
-				var inline = control.Inlines.ElementAt(i);
+				var inline = controlInlines.ElementAt(i);
 
 				var startRect = inline.ContentStart.GetCharacterRect(LogicalDirection.Forward);
 				var endRect = inline.ContentEnd.GetCharacterRect(LogicalDirection.Forward);
