@@ -1,14 +1,35 @@
 ﻿namespace Controls.TestCases.HostApp.Issues;
 
 [Issue(IssueTracker.Github, 23293, "'Grouping for Vertical list without DataTemplates' page loading exception", PlatformAffected.UWP)]
-class Issue23293 : ContentPage
+public class Issue23293 : ContentPage
 {
 	public List<AnimalGroup> Animals { get; private set; } = new List<AnimalGroup>();
+
 	public Issue23293()
+	{
+		CreateAnimalsCollection();
+	
+		var collectionViewWithoutDataTemplate = new CollectionView
+		{
+			AutomationId = "CollectionViewWithoutDataTemplate",
+			ItemsSource = Animals,
+			IsGrouped = true,
+		};
+
+		var grid = new Grid();
+		grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+		grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
+
+		grid.Add(collectionViewWithoutDataTemplate, 0, 1);
+		
+		Content = grid;
+	}
+
+	void CreateAnimalsCollection()
 	{
 		Animals.Add(new AnimalGroup("Bears", new List<Animal>
 		{
-			new Animal { Name = "American Black Bear" },	
+			new Animal { Name = "American Black Bear" },
 			new Animal { Name = "Asian Black Bear" },
 			new Animal { Name = "Brown Bear" },
 			new Animal { Name = "Grizzly-Polar Bear Hybrid" },
@@ -50,21 +71,6 @@ class Issue23293 : ContentPage
 			new Animal { Name = "Squirrel Monkey" },
 			new Animal { Name = "Golden Lion Tamarin" },
 		}));
-	
-		var collectionViewWithoutDataTemplate = new CollectionView
-		{
-			AutomationId = "CollectionViewWithoutDataTemplate",
-			ItemsSource = Animals,
-			IsGrouped = true,
-		};
-
-		var grid = new Grid();
-		grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-		grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
-
-		grid.Add(collectionViewWithoutDataTemplate, 0, 1);
-		
-		Content = grid;
 	}
 }
 
