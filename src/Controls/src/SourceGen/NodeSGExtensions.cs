@@ -65,15 +65,23 @@ static class NodeSGExtensions
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Setter")!, KnownMarkups.ProvideValueForSetter},
     };
 
-    static Dictionary<ITypeSymbol, ProvideValueDelegate>? KnownSGMarkupExtensions;
+    static Dictionary<ITypeSymbol, ProvideValueDelegate>? KnownSGEarlyMarkupExtensions;
+    static Dictionary<ITypeSymbol, ProvideValueDelegate>? KnownSGLateMarkupExtensions;
 
-    public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownMarkupExtensions(SourceGenContext context)
-        => KnownSGMarkupExtensions ??= new (SymbolEqualityComparer.Default)
+    // These markup extensions can provide values early since the input is just a string literal
+    public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownEarlyMarkupExtensions(SourceGenContext context)
+        => KnownSGEarlyMarkupExtensions ??= new (SymbolEqualityComparer.Default)
     {
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StaticExtension")!, KnownMarkups.ProvideValueForStaticExtension},
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.DynamicResourceExtension")!, KnownMarkups.ProvideValueForDynamicResourceExtension},
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.StyleSheetExtension")!, KnownMarkups.ProvideValueForStyleSheetExtension},
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TypeExtension")!, KnownMarkups.ProvideValueForTypeExtension},
+    };
+
+    // These markup extensions can only provide values late once the properties have their final values
+    public static Dictionary<ITypeSymbol, ProvideValueDelegate> GetKnownLateMarkupExtensions(SourceGenContext context)
+        => KnownSGLateMarkupExtensions ??= new (SymbolEqualityComparer.Default)
+    {
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.BindingExtension")!, KnownMarkups.ProvideValueForBindingExtension},
     };
 
@@ -489,7 +497,7 @@ static class NodeSGExtensions
         if (!context.Variables.TryGetValue(node, out var variable))
             return false;
 
-        if (GetKnownMarkupExtensions(context).TryGetValue(variable.Type, out var provideValue))
+        if (GetKnownLateMarkupExtensions(context).TryGetValue(variable.Type, out var provideValue))
         {
             var value = provideValue.Invoke(node, context, out var returnType0);
             var variableName = NamingHelpers.CreateUniqueVariableName(context, returnType0 ?? context.Compilation.ObjectType);
@@ -617,5 +625,10 @@ static class NodeSGExtensions
             typeName = target.XmlType.Name;
         
         return XmlTypeExtensions.GetTypeSymbol(typeName!, context.ReportDiagnostic, context.Compilation, context.XmlnsCache, parent);
+    }
+
+    public static bool RepresentsType(this INode node, string namespaceUri, string name)
+    {
+        return node is IElementNode elementNode && elementNode.XmlType.RepresentsType(namespaceUri, name);
     }
 }

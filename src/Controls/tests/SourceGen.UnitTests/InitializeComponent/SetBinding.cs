@@ -55,7 +55,7 @@ public partial class TestPage
 {
 	private partial void InitializeComponentSourceGen()
 	{
-		var bindingExtension = new global::Microsoft.Maui.Controls.Binding("Title");
+		var bindingExtension = new global::Microsoft.Maui.Controls.Xaml.BindingExtension();
 #if _MAUIXAML_SG_SOURCEINFO
 		global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingExtension!, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), -1, -1);
 #endif
@@ -65,7 +65,15 @@ public partial class TestPage
 #endif
 		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
 		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
-		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingExtension);
+#line 1 "Test.xaml"
+		bindingExtension.Path = "Title";
+#line default
+		var bindingBase = new global::Microsoft.Maui.Controls.Binding(bindingExtension.Path, bindingExtension.Mode, bindingExtension.Converter, bindingExtension.ConverterParameter, bindingExtension.StringFormat, bindingExtension.Source) { UpdateSourceEventName = bindingExtension.UpdateSourceEventName, FallbackValue = bindingExtension.FallbackValue, TargetNullValue = bindingExtension.TargetNullValue, DataType = null };
+#if _MAUIXAML_SG_SOURCEINFO
+		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(bindingBase!) == null)
+			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingBase!, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), -1, -1);
+#endif
+		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingBase);
 	}
 }
 
