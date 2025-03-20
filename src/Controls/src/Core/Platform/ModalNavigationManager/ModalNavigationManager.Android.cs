@@ -307,9 +307,27 @@ namespace Microsoft.Maui.Controls.Platform
 				_navigationRootManager.Connect(_modal, modalContext);
 
 				UpdateBackgroundColor();
+				if (IsAnimated && _navigationRootManager is not null && _navigationRootManager.RootView is not null)
+				{
+					_ = new GenericGlobalLayoutListener((listner,view) =>
+					{
+						_navigationRootManager.RootView.ViewTreeObserver?.RemoveOnGlobalLayoutListener(listner);
 
+						var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_enter_anim)!;
+						_navigationRootManager.RootView.StartAnimation(animation);
+						animation.AnimationEnd += OnAnimationEnded;
+					},_navigationRootManager.RootView);
+				}
 				return _navigationRootManager?.RootView ??
 					throw new InvalidOperationException("Root view not initialized");
+			}
+			void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
+			{
+				if (sender is not AAnimation animation)
+					return;
+
+				animation.AnimationEnd -= OnAnimationEnded;
+			    FireAnimationEnded();
 			}
 
 			public override void OnCreate(Bundle? savedInstanceState)
@@ -329,26 +347,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				int width = ViewGroup.LayoutParams.MatchParent;
 				int height = ViewGroup.LayoutParams.MatchParent;
-				dialog.Window.SetLayout(width, height);
-
-				if (IsAnimated)
-				{
-					var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_enter_anim)!;
-					View.StartAnimation(animation);
-
-					animation.AnimationEnd += OnAnimationEnded;
-				}
-
-				void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
-				{
-					if (sender is not AAnimation animation)
-					{
-						return;
-					}
-
-					animation.AnimationEnd -= OnAnimationEnded;
-					FireAnimationEnded();
-				}
+				dialog.Window.SetLayout(width, height);		
 			}
 
 			public override void OnDismiss(IDialogInterface dialog)
