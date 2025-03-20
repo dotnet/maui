@@ -3,7 +3,7 @@
 [Issue(IssueTracker.Github, 23293, "'Grouping for Vertical list without DataTemplates' page loading exception", PlatformAffected.UWP)]
 public class Issue23293 : ContentPage
 {
-	public List<AnimalGroup> Animals { get; set; } = new List<AnimalGroup>();
+	public List<Issue23293AnimalGroup> Animals { get; set; } = new List<Issue23293AnimalGroup>();
 
 	public Issue23293()
 	{
@@ -27,64 +27,64 @@ public class Issue23293 : ContentPage
 
 	void CreateAnimalsCollection()
 	{
-		Animals.Add(new AnimalGroup("Bears", new List<Animal>
+		Animals.Add(new Issue23293AnimalGroup("Bears", new List<Issue23293Animal>
 		{
-			new Animal { Name = "American Black Bear" },
-			new Animal { Name = "Asian Black Bear" },
-			new Animal { Name = "Brown Bear" },
-			new Animal { Name = "Grizzly-Polar Bear Hybrid" },
-			new Animal { Name = "Sloth Bear" },
+			new Issue23293Animal { Name = "American Black Bear" },
+			new Issue23293Animal { Name = "Asian Black Bear" },
+			new Issue23293Animal { Name = "Brown Bear" },
+			new Issue23293Animal { Name = "Grizzly-Polar Bear Hybrid" },
+			new Issue23293Animal { Name = "Sloth Bear" },
 		}));
 
-		Animals.Add(new AnimalGroup("Cats", new List<Animal>
+		Animals.Add(new Issue23293AnimalGroup("Cats", new List<Issue23293Animal>
 		{
-			new Animal { Name = "Abyssinian" },
-			new Animal { Name = "Arabian Mau" },
-			new Animal { Name = "Bengal" },
-			new Animal { Name = "Burmese" },
-			new Animal { Name = "Cyprus" },
+			new Issue23293Animal { Name = "Abyssinian" },
+			new Issue23293Animal { Name = "Arabian Mau" },
+			new Issue23293Animal { Name = "Bengal" },
+			new Issue23293Animal { Name = "Burmese" },
+			new Issue23293Animal { Name = "Cyprus" },
 		}));
 
-		Animals.Add(new AnimalGroup("Dogs", new List<Animal>
+		Animals.Add(new Issue23293AnimalGroup("Dogs", new List<Issue23293Animal>
 		{
-			new Animal { Name = "Afghan Hound" },
-			new Animal { Name = "Alpine Dachsbracke" },
-			new Animal { Name = "American Bulldog" },
-			new Animal { Name = "Bearded Collie" },
-			new Animal { Name = "Boston Terrier" },
+			new Issue23293Animal { Name = "Afghan Hound" },
+			new Issue23293Animal { Name = "Alpine Dachsbracke" },
+			new Issue23293Animal { Name = "American Bulldog" },
+			new Issue23293Animal { Name = "Bearded Collie" },
+			new Issue23293Animal { Name = "Boston Terrier" },
 		}));
 
-		Animals.Add(new AnimalGroup("Elephants", new List<Animal>
+		Animals.Add(new Issue23293AnimalGroup("Elephants", new List<Issue23293Animal>
 		{
-			new Animal { Name = "African Bush Elephant" },
-			new Animal { Name = "African Forest Elephant" },
-			new Animal { Name = "Desert Elephant" },
-			new Animal { Name = "Borneo Elephant" },
-			new Animal { Name = "Indian Elephant" },
+			new Issue23293Animal { Name = "African Bush Elephant" },
+			new Issue23293Animal { Name = "African Forest Elephant" },
+			new Issue23293Animal { Name = "Desert Elephant" },
+			new Issue23293Animal { Name = "Borneo Elephant" },
+			new Issue23293Animal { Name = "Indian Elephant" },
 		}));
 
-		Animals.Add(new AnimalGroup("Monkeys", new List<Animal>
+		Animals.Add(new Issue23293AnimalGroup("Monkeys", new List<Issue23293Animal>
 		{
-			new Animal { Name = "Baboon" },
-			new Animal { Name = "Capuchin Monkey" },
-			new Animal { Name = "Blue Monkey" },
-			new Animal { Name = "Squirrel Monkey" },
-			new Animal { Name = "Golden Lion Tamarin" },
+			new Issue23293Animal { Name = "Baboon" },
+			new Issue23293Animal { Name = "Capuchin Monkey" },
+			new Issue23293Animal { Name = "Blue Monkey" },
+			new Issue23293Animal { Name = "Squirrel Monkey" },
+			new Issue23293Animal { Name = "Golden Lion Tamarin" },
 		}));
 	}
 }
 
-public class AnimalGroup : List<Animal>
+public class Issue23293AnimalGroup : List<Issue23293Animal>
 {
 	public string Name { get; }
 
-	public AnimalGroup(string name, List<Animal> animals) : base(animals)
+	public Issue23293AnimalGroup(string name, List<Issue23293Animal> animals) : base(animals)
 	{
 		Name = name;
 	}
 }
 
-public class Animal
+public class Issue23293Animal
 {
 	public string Name { get; set; }
 
