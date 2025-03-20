@@ -55,7 +55,7 @@ public partial class Issue4356 : TestContentPage
 		var articlelistingitem = mi.CommandParameter;
 
 		if (articlelistingitem != null)
-			await DisplayAlert("Alert", "I'm not deleting just refreshing...", "Ok");
+			await DisplayAlertAsync("Alert", "I'm not deleting just refreshing...", "Ok");
 		ViewModel.LoadFavoritesCommand.Execute(null);
 	}
 
