@@ -109,7 +109,7 @@ class CreateValuesVisitor : IXamlNodeVisitor
         }
 
 
-        if (NodeSGExtensions.GetKnownMarkupExtensions(Context).TryGetValue(type, out var handler))
+        if (NodeSGExtensions.GetKnownEarlyMarkupExtensions(Context).TryGetValue(type, out var handler))
         {
             var variableName = NamingHelpers.CreateUniqueVariableName(Context, type);
             Writer.WriteLine($"var {variableName} = {handler(node, Context, out var returnType)};");

@@ -183,29 +183,183 @@ internal class KnownMarkups
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 
-		string? path;
-		if (markupNode.Properties.TryGetValue(new XmlName("", "Path"), out var pathNode)
-			&& pathNode is ValueNode { Value: string pathValue })
+		if (!context.Variables.TryGetValue(markupNode, out LocalVariable extVariable))
 		{
-			path = pathValue;
-		}
-		else if (markupNode.CollectionItems.Count == 1
-			&& markupNode.CollectionItems[0] is ValueNode { Value: string singleCollectionItemValue })
-		{
-			path = singleCollectionItemValue;
-		}
-		else
-		{
-			// no path
 			throw new Exception(); //FIXME report diagnostic
 		}
 
-		// TODO read all the other optional properties
+		string path = GetBindingPath(markupNode);
+		INamedTypeSymbol? dataTypeSymbol = null;
 
-		// TODO look for x:DataType
-		// TODO if we have x:DataType, return new TypedBinding<TSource, TProperty>
+		if (TryGetXDataType(markupNode, context, out XmlType? dataType) && dataType is not null
+			&& dataType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, out dataTypeSymbol) && dataTypeSymbol is not null)
+		{
+			// TODO try to compile the binding
+		}
 
-		// Fallback to string-based binding
-		return $"new global::Microsoft.Maui.Controls.Binding(\"{path}\")";
+		var dataTypeExpression = dataTypeSymbol is not null
+			? $"typeof({dataTypeSymbol.ToFQDisplayString()})"
+			: "null";
+
+		// fallback to the string-based binding
+		return $"new global::Microsoft.Maui.Controls.Binding(" +
+			$"{extVariable.Name}.Path, " +
+			$"{extVariable.Name}.Mode, " + 
+			$"{extVariable.Name}.Converter, " + 
+			$"{extVariable.Name}.ConverterParameter, " +
+			$"{extVariable.Name}.StringFormat, " +
+			$"{extVariable.Name}.Source) " +
+			"{ " +
+				$"UpdateSourceEventName = {extVariable.Name}.UpdateSourceEventName, " +
+				$"FallbackValue = {extVariable.Name}.FallbackValue, " +
+				$"TargetNullValue = {extVariable.Name}.TargetNullValue, " +
+				$"DataType = {dataTypeExpression} " +
+			"}";
+
+		static string GetBindingPath(IElementNode node)
+		{
+			if (node.Properties.TryGetValue(new XmlName("", "Path"), out var pathNode)
+				&& pathNode is ValueNode { Value: string pathValue })
+			{
+				return pathValue;
+			}
+			else if (node.CollectionItems.Count == 1
+				&& node.CollectionItems[0] is ValueNode { Value: string singleCollectionItemValue })
+			{
+				return singleCollectionItemValue;
+			}
+			else
+			{
+				// no path
+				// TODO report diagnostic
+				return ".";
+			}
+		}
+
+		static bool TryGetXDataType(IElementNode node, SourceGenContext context, out XmlType? dataType)
+		{
+			dataType = null;
+
+			if (!TryFindXDataTypeNode(node, context, out INode? dataTypeNode, out bool xDataTypeIsInOuterScope))
+			{
+				return false;
+			}
+
+			if (dataTypeNode is null)
+			{
+				// TODO
+				// context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, GetLocation(context, node)));
+				// _context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithoutDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+				return false;
+			}
+
+			if (xDataTypeIsInOuterScope)
+			{
+				// TODO
+				// _context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithXDataTypeFromOuterScope, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+				// continue compilation
+			}
+
+			if (dataTypeNode.RepresentsType(XamlParser.X2009Uri, "NullExtension"))
+			{
+				// TODO
+				// context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithNullDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+				return false;
+			}
+
+			string? dataTypeName = (dataTypeNode as ValueNode)?.Value as string;
+			if (dataTypeName is null)
+			{
+				// TODO
+				// throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
+				throw new Exception("XDataTypeSyntax");
+			}
+
+			try
+			{
+				dataType = TypeArgumentsParser.ParseSingle(dataTypeName, node.NamespaceResolver, dataTypeNode as IXmlLineInfo)
+					// ?? throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
+					?? throw new Exception("XDataTypeSyntax"); // TODO
+			}
+			catch (XamlParseException)
+			{
+				var prefix = dataTypeName.Contains(":") ? dataTypeName.Substring(0, dataTypeName.IndexOf(":", StringComparison.Ordinal)) : "";
+				// throw new BuildException(XmlnsUndeclared, dataTypeNode as IXmlLineInfo, null, prefix);
+				throw new Exception($"XmlnsUndeclared {prefix}"); // TODO
+			}
+
+			return true;
+		}
+
+		static bool TryFindXDataTypeNode(IElementNode elementNode, SourceGenContext context, out INode? dataTypeNode, out bool isInOuterScope)
+		{
+			isInOuterScope = false;
+			dataTypeNode = null;
+
+			// Special handling for BindingContext={Binding ...}
+			// The order of checks is:
+			// - x:DataType on the binding itself
+			// - SKIP looking for x:DataType on the parent
+			// - continue looking for x:DataType on the parent's parent...
+			IElementNode? skipNode = null;
+			if (IsBindingContextBinding(elementNode))
+			{
+				skipNode = GetParent(elementNode);
+			}
+
+			IElementNode? node = elementNode;
+			while (node is not null)
+			{
+				if (node != skipNode && node.Properties.TryGetValue(XmlName.xDataType, out dataTypeNode))
+				{
+					return true;
+				}
+
+				if (DoesNotInheritDataType(node, context))
+				{
+					return false;
+				}
+
+				// When the binding is inside of a DataTemplate and the x:DataType is in the parent scope,
+				// it is usually a bug.
+				if (node.RepresentsType(XamlParser.MauiUri, "DataTemplate"))
+				{
+					isInOuterScope = true;
+				}
+
+				node = GetParent(node);
+			}
+
+			return false;
+		}
+
+		static bool DoesNotInheritDataType(IElementNode node, SourceGenContext context)
+		{
+			return GetParent(node) is IElementNode parentNode
+				&& parentNode.XmlType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, out INamedTypeSymbol? parentTypeSymbol)
+				&& parentTypeSymbol is not null
+				&& node.TryGetPropertyName(parentNode, out XmlName propertyName)
+				&& parentTypeSymbol.GetAllProperties(propertyName.LocalName, context).FirstOrDefault() is IPropertySymbol propertySymbol
+				&& propertySymbol.GetAttributes().Any(a => a.AttributeClass?.ToFQDisplayString() == "Microsoft.Maui.Controls.Xaml.DoesNotInheritDataTypeAttribute");
+		}
+
+		static IElementNode? GetParent(IElementNode node)
+		{
+			return node switch
+			{
+				{ Parent: ListNode { Parent: IElementNode parentNode } } => parentNode,
+				{ Parent: IElementNode parentNode } => parentNode,
+				_ => null,
+			};
+		}
+
+		static bool IsBindingContextBinding(IElementNode node)
+		{
+			// looking for BindingContext="{Binding ...}"
+			return GetParent(node) is IElementNode parentNode
+				&& node.TryGetPropertyName(parentNode, out var propertyName)
+				&& propertyName.NamespaceURI == ""
+				&& propertyName.LocalName == "BindingContext";
+		}
 	}
 }

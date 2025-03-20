@@ -135,6 +135,11 @@ static class XmlTypeExtensions
 		return XmlnsHelper.ParseNamespaceFromXmlns(namespaceuri);
 	}
 
+	public static bool RepresentsType(this XmlType xmlType, string namespaceUri, string name)
+	{
+		return xmlType.Name == name && xmlType.NamespaceUri == namespaceUri;
+	}
+
 // 	static string GetTypeNameFromCustomNamespace(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache)
 // 	{
 // #nullable disable
