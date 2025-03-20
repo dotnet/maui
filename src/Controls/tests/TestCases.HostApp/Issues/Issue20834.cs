@@ -5,13 +5,22 @@ public class Issue20834 : TestContentPage
 {
 	readonly Issue20834_Drawable drawable = new();
 	float oldX, oldY;
-	StackLayout rootLayout;
+	Grid rootLayout;
 	Grid grid;
 	GraphicsView graphicsView;
 
 	protected override void Init()
 	{
-		rootLayout = new StackLayout();
+		rootLayout = new Grid()
+		{
+			RowDefinitions = new RowDefinitionCollection()
+		{
+			new RowDefinition() { Height = 300 },
+			new RowDefinition() { Height = 100 },
+			new RowDefinition() { Height = 100 }
+			}
+		};
+
 		grid = new Grid()
 		{
 			BackgroundColor = Color.FromArgb("#1a2033"),
@@ -28,20 +37,30 @@ public class Issue20834 : TestContentPage
 			TextColor = Colors.White,
 		};
 
+		Label invalidDroplabel = new Label()
+		{
+			AutomationId = "DropTarget_2",
+			Text = "Circle should be visible here",
+			HeightRequest = 100,
+			TextColor = Colors.White,
+			VerticalOptions = LayoutOptions.Start,
+		};
+
 		graphicsView.Drawable = drawable;
 		graphicsView.StartInteraction += GraphicsView_StartInteraction;
 		graphicsView.DragInteraction += GraphicsView_DragInteraction;
 
 		grid.Add(graphicsView);
 
-		rootLayout.Add(grid);
+		rootLayout.Add(grid, 0, 0);
+		rootLayout.Add(invalidDroplabel, 0, 0);
 		rootLayout.Add(new BoxView()
 		{
 			BackgroundColor = Colors.CornflowerBlue,
 			WidthRequest = 100,
 			HeightRequest = 100,
-		});
-		rootLayout.Add(label);
+		}, 0, 1);
+		rootLayout.Add(label, 0, 2);
 
 		Content = rootLayout;
 
