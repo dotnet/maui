@@ -3,7 +3,7 @@
 [Issue(IssueTracker.Github, 23293, "'Grouping for Vertical list without DataTemplates' page loading exception", PlatformAffected.UWP)]
 public class Issue23293 : ContentPage
 {
-	public List<AnimalGroup> Animals { get; private set; } = new List<AnimalGroup>();
+	public List<AnimalGroup> Animals { get; set; } = new List<AnimalGroup>();
 
 	public Issue23293()
 	{
