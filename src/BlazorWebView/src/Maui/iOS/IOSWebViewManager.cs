@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					cancelAction: _ => completionHandler(false)
 				);
 			}
-			
+
 			[Export("webView(_:runJavaScriptTextInputPanelWithPrompt:defaultText:initiatedByFrame:completionHandler:)")]
 			public void RunJavaScriptTextInputPanelWithPrompt(
 				WKWebView webView, string prompt, string? defaultText, WKFrameInfo frame, Action<string> completionHandler)
