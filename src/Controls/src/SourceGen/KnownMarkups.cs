@@ -189,10 +189,9 @@ internal class KnownMarkups
 		}
 
 		string path = GetBindingPath(markupNode);
-		INamedTypeSymbol? dataTypeSymbol = null;
+		ITypeSymbol? dataTypeSymbol = null;
 
-		if (TryGetXDataType(markupNode, context, out XmlType? dataType) && dataType is not null
-			&& dataType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, out dataTypeSymbol) && dataTypeSymbol is not null)
+		if (TryGetXDataType(markupNode, context, out dataTypeSymbol) && dataTypeSymbol is not null)
 		{
 			// TODO try to compile the binding
 		}
@@ -236,9 +235,9 @@ internal class KnownMarkups
 			}
 		}
 
-		static bool TryGetXDataType(IElementNode node, SourceGenContext context, out XmlType? dataType)
+		static bool TryGetXDataType(IElementNode node, SourceGenContext context, out ITypeSymbol? dataTypeSymbol)
 		{
-			dataType = null;
+			dataTypeSymbol = null;
 
 			if (!TryFindXDataTypeNode(node, context, out INode? dataTypeNode, out bool xDataTypeIsInOuterScope))
 			{
@@ -267,19 +266,26 @@ internal class KnownMarkups
 				return false;
 			}
 
+			// TypeExtension would already provide the type value, so we can just grab it from the context
+			if (dataTypeNode.RepresentsType(XamlParser.X2009Uri, "TypeExtension")
+				&& context.Types.TryGetValue(dataTypeNode, out dataTypeSymbol))
+			{
+				return true;
+			}
+
 			string? dataTypeName = (dataTypeNode as ValueNode)?.Value as string;
 			if (dataTypeName is null)
 			{
 				// TODO
 				// throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
-				throw new Exception("XDataTypeSyntax");
+				// throw new Exception($"dataTypeNode {dataTypeNode} is not a value node"); // TODO
+				return false;
 			}
 
+			XmlType? dataType = null;
 			try
 			{
-				dataType = TypeArgumentsParser.ParseSingle(dataTypeName, node.NamespaceResolver, dataTypeNode as IXmlLineInfo)
-					// ?? throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
-					?? throw new Exception("XDataTypeSyntax"); // TODO
+				dataType = TypeArgumentsParser.ParseSingle(dataTypeName, node.NamespaceResolver, dataTypeNode as IXmlLineInfo);
 			}
 			catch (XamlParseException)
 			{
@@ -288,6 +294,22 @@ internal class KnownMarkups
 				throw new Exception($"XmlnsUndeclared {prefix}"); // TODO
 			}
 
+			if (dataType is null)
+			{
+				// TODO
+				// throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
+				// throw new Exception($"cannot parse {dataTypeName}"); // TODO
+				return false;
+			}
+
+			if (!dataType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, out INamedTypeSymbol? symbol) && symbol is not null)
+			{
+				// TODO
+				// report diagnostic
+				return false;
+			}
+
+			dataTypeSymbol = symbol;
 			return true;
 		}
 
