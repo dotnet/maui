@@ -60,6 +60,17 @@ namespace Maui.Controls.Sample.Issues
 							};
 						});
 						break;
+					case "Image":
+						this.Navigation.RunMemoryTest(() =>
+						{
+							return new Image
+							{
+								AutomationId = "Image",
+								Source = "red.png",
+								Background = Colors.Black
+							};
+						});
+						break;
 					default:
 						break;
 				}

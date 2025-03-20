@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 
@@ -212,7 +213,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					if (CollectionView.ContentSize.Height + headerHeight <= CollectionView.Bounds.Height)
 						yOffset = -headerHeight;
 
-					CollectionView.ContentOffset = new CoreGraphics.CGPoint(CollectionView.ContentOffset.X, yOffset);
+					if (currentOffset.Y.Value < headerHeight)
+					{
+						CollectionView.ContentOffset = new CoreGraphics.CGPoint(CollectionView.ContentOffset.X, yOffset);
+					}
 				}
 
 				if (_headerUIView != null && _headerUIView.Frame.Y != headerHeight)
@@ -227,7 +231,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					height = ItemsViewLayout.CollectionViewContentSize.Height;
 				}
 
-				if (_footerUIView != null && (_footerUIView.Frame.Y != height || emptyHeight > 0))
+				if (_footerUIView != null && (_footerUIView.Frame.Y != height || emptyHeight > 0 || _footerUIView.Frame.Height != footerHeight))
 				{
 					_footerUIView.Frame = new CoreGraphics.CGRect(0, height + emptyHeight, CollectionView.Frame.Width, footerHeight);
 				}
@@ -238,6 +242,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.HandleFormsElementMeasureInvalidated(formsElement);
 			UpdateHeaderFooterPosition();
+		}
+
+		internal override Size? GetSize()
+		{
+			var size = base.GetSize();
+			return new Size(size.Value.Width, size.Value.Height + (_headerUIView?.Frame.Height ?? 0) + (_footerUIView?.Frame.Height ?? 0));
 		}
 
 		internal void UpdateLayoutMeasurements()

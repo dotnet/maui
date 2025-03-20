@@ -32,5 +32,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("RunMemoryTestButton");
 			App.AssertMemoryTest();
 		}
+
+		[Test]
+		[Category(UITestCategories.Image)]
+		public void ImageDoesNotLeak()
+		{
+			App.WaitForElement("DataTypeEntry");
+			App.EnterText("DataTypeEntry", "Image");
+			App.Tap("RunMemoryTestButton");
+			App.AssertMemoryTest();
+		}
 	}
 }

@@ -5,6 +5,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -18,6 +19,25 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(()
 				=> GetPlatformControl(handler).Subviews.Length != 0);
+		}
+
+		[Fact]
+		[Description("The Opacity property of a SwipeView should match with native Opacity")]
+		public async Task VerifySwipeViewOpacityProperty()
+		{
+			var swipeView = new SwipeView
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = swipeView.Opacity;
+			
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+   			{
+				var nativeOpacityValue = (float)nativeView.Alpha;
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
 		}
 	}
 }

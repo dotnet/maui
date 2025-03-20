@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if ANDROID //This test case verifies "The background property of AppCompatEditText (TimePicker) works" exclusively on the Android platform.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

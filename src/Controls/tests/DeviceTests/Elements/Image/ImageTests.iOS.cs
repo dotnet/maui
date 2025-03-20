@@ -1,9 +1,11 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using UIKit;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -151,5 +153,35 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(100, image.Height);
 			Assert.Equal(200, image.Width);
 		}
+
+		[Fact]
+		[Description("The Opacity property of a image should match with native Opacity")]
+		public async Task VerifyImageOpacityProperty()
+		{
+			var image = new Image
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = image.Opacity;
+
+			var handler = await CreateHandlerAsync<ImageHandler>(image);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var nativeOpacityValue = await GetPlatformOpacity(handler);
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
+		}
+		UIImageView GetPlatformImage(ImageHandler imageHandler) =>
+			imageHandler.PlatformView;
+
+		Task<float> GetPlatformOpacity(ImageHandler imageHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformImage(imageHandler);
+				return (float)nativeView.Alpha;
+			});
+		}
+
 	}
 }

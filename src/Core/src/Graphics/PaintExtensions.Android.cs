@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.Linq;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
+using AColor = Android.Graphics.Color;
 using AOrientation = Android.Graphics.Drawables.GradientDrawable.Orientation;
 using APaint = Android.Graphics.Paint;
 
@@ -74,6 +75,21 @@ namespace Microsoft.Maui.Graphics
 			drawable.SetBackground(patternPaint);
 
 			return drawable;
+		}
+
+		internal static bool IsSolid(this AColor color)
+		{
+			return color.A is 1;
+		}
+
+		internal static bool IsSolid(this SolidPaint paint)
+		{
+			return !paint.IsNullOrEmpty() && paint.Color.Alpha == 1;
+		}
+
+		internal static bool IsSolid(this GradientPaint paint)
+		{
+			return !paint.IsNullOrEmpty() && paint.GradientStops.All(s => s.Color?.Alpha == 1);
 		}
 
 		internal static bool IsValid(this GradientPaint? gradientPaint) =>

@@ -292,6 +292,47 @@ public class DiagnosticsTests
 		var diagnostic = Assert.Single(result.SourceGeneratorDiagnostics);
 		Assert.Equal("BSG0005", diagnostic.Id);
 	}
+
+	[Fact]
+	public void DoesNotReportWarningWhenUsingBindablePropertyCreateWithLambdaInPropertyChanged()
+	{
+		var source = """
+			using Microsoft.Maui.Controls;
+		
+			public partial class TimelineBaseView : Grid
+			{
+				public TimelineBaseView()
+				{
+					InitializeComponent();
+				}
+
+				public static readonly BindableProperty MainContentProperty
+					= BindableProperty.Create(nameof(MainContent), typeof(View), typeof(TimelineBaseView), default(View),
+						propertyChanged: (obj, oldValue, newValue) =>
+						{
+							if (obj is TimelineBaseView self)
+								self.mainContent.Content = newValue as View;
+						});
+
+				public View MainContent
+				{
+					get => (View)GetValue(MainContentProperty);
+					set => SetValue(MainContentProperty, value);
+				}
+			}
+
+			public static class Program
+			{
+				public static void Main()
+				{
+					var timelineBaseView = new TimelineBaseView();
+				}
+			}
+			""";
+
+		var result = SourceGenHelpers.Run(source);
+		Assert.Empty(result.SourceGeneratorDiagnostics);
+	}
 }
 
 internal class IncrementalGeneratorA : IIncrementalGenerator
@@ -303,15 +344,15 @@ internal class IncrementalGeneratorA : IIncrementalGenerator
 			(ctx, compilation) =>
 			{
 				var source = """
-				using Microsoft.Maui.Controls;
-				namespace SomeNamespace
-				{
-					public partial class ClassA
-					{
-						public Button CounterBtn;
-					}
-				}
-				""";
+                using Microsoft.Maui.Controls;
+                namespace SomeNamespace
+                {
+                    public partial class ClassA
+                    {
+                        public Button CounterBtn;
+                    }
+                }
+                """;
 				ctx.AddSource("SampleSourceGeneratorOutput.g.cs", SourceText.From(source, Encoding.UTF8));
 			});
 	}

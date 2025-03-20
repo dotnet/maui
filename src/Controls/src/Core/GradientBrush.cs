@@ -65,8 +65,11 @@ namespace Microsoft.Maui.Controls
 
 			foreach (var newStop in newCollection)
 			{
-				newStop.Parent = this;
-				newStop.PropertyChanged += OnGradientStopPropertyChanged;
+				if (newStop is not null)
+				{
+					newStop.Parent = this;
+					newStop.PropertyChanged += OnGradientStopPropertyChanged;
+				}
 			}
 		}
 

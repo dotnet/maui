@@ -1,4 +1,5 @@
-#if ANDROID
+#if TEST_FAILS_ON_WINDOWS // On the Windows platform, the automationId of the Glyph icon is not working.
+//For more information : https://github.com/dotnet/maui/issues/27702
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
