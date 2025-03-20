@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla30166Test()
 		{
-			App.WaitForElement("PushModal");	
+			App.WaitForElement("PushModal");
 			App.Tap("PushModal");
 			App.WaitForElement("GoBack");
 			App.Tap("GoBack");

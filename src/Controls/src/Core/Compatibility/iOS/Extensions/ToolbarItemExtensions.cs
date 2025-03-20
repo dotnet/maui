@@ -105,7 +105,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				else
 				{
-					item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
+					var mauiContext = item.FindMauiContext();
+					if (mauiContext is null)
+					{
+						return;
+					}
+					item.IconImageSource.LoadImage(mauiContext, result =>
 					{
 						Image = result?.Value;
 						Style = UIBarButtonItemStyle.Plain;

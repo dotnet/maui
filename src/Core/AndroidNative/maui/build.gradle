@@ -23,6 +23,12 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    afterEvaluate {
+        tasks.withType(com.android.build.gradle.tasks.BundleAar).configureEach { task ->
+            task.archiveFileName.set("maui.aar")
+        }
+    }
 }
 
 dependencies {

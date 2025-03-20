@@ -1,5 +1,4 @@
-﻿#if !MACCATALYST // VerifyScreenshot() is not supported on MacCatalyst
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -25,4 +24,3 @@ public class Issue14471 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
-#endif

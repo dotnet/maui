@@ -1,8 +1,10 @@
 ﻿#nullable disable
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -11,6 +13,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
 #pragma warning disable CS0618 // Type or member is obsolete
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
@@ -478,6 +481,12 @@ namespace Microsoft.Maui.Controls
 		private protected override void InvalidateMeasureLegacy(InvalidationTrigger trigger, int depth, int depthLeveltoInvalidate)
 		{
 			base.InvalidateMeasureLegacy(trigger, depth, 1);
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Content), Content);
+			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
 	}
 }

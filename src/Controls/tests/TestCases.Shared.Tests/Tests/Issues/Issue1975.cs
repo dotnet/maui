@@ -18,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void ClickPropagatesToOnTouchListener()
 		{
 			App.WaitForElement(Go);

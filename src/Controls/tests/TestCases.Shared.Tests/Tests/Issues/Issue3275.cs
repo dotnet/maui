@@ -18,14 +18,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void Issue3275Test()
 		{
 			App.WaitForElement(BtnLeakId);
 			App.Tap(BtnLeakId);
 			App.WaitForElement(BtnScrollToId);
 			App.Tap(BtnScrollToId);
-			App.Back();
+			App.TapBackArrow();
 			App.WaitForElement(BtnLeakId);
 		}
 	}

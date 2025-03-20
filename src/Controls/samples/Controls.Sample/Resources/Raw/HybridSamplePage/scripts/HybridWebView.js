@@ -91,29 +91,54 @@
         }
     },
 
-    "__InvokeJavaScript": function __InvokeJavaScript(taskId, methodName, args) {
-        if (methodName[Symbol.toStringTag] === 'AsyncFunction') {
-            // For async methods, we need to call the method and then trigger the callback when it's done
-            const asyncPromise = methodName(...args);
-            asyncPromise
-                .then(asyncResult => {
-                    window.HybridWebView.__TriggerAsyncCallback(taskId, asyncResult);
-                })
-                .catch(error => console.error(error));
-        } else {
-            // For sync methods, we can call the method and trigger the callback immediately
-            const syncResult = methodName(...args);
-            window.HybridWebView.__TriggerAsyncCallback(taskId, syncResult);
+    "__InvokeJavaScript": async function __InvokeJavaScript(taskId, methodName, args) {
+        try {
+            var result = null;
+            if (methodName[Symbol.toStringTag] === 'AsyncFunction') {
+                result = await methodName(...args);
+            } else {
+                result = methodName(...args);
+            }
+            window.HybridWebView.__TriggerAsyncCallback(taskId, result);
+        } catch (ex) {
+            console.error(ex);
+            window.HybridWebView.__TriggerAsyncFailedCallback(taskId, ex);
         }
     },
 
-    "__TriggerAsyncCallback": function __TriggerAsyncCallback(taskId, result) {
-        // Make sure the result is a string
-        if (result && typeof (result) !== 'string') {
-            result = JSON.stringify(result);
+    "__TriggerAsyncFailedCallback": function __TriggerAsyncCallback(taskId, error) {
+
+        if (!error) {
+            json = {
+                Message: "Unknown error",
+                StackTrace: Error().stack
+            };
+        } else if (error instanceof Error) {
+            json = {
+                Name: error.name,
+                Message: error.message,
+                StackTrace: error.stack
+            };
+        } else if (typeof (error) === 'string') {
+            json = {
+                Message: error,
+                StackTrace: Error().stack
+            };
+        } else {
+            json = {
+                Message: JSON.stringify(error),
+                StackTrace: Error().stack
+            };
         }
 
-        window.HybridWebView.__SendMessageInternal('__InvokeJavaScriptCompleted', taskId + '|' + result);
+        json = JSON.stringify(json);
+
+        window.HybridWebView.__SendMessageInternal('__InvokeJavaScriptFailed', taskId + '|' + json);
+    },
+
+    "__TriggerAsyncCallback": function __TriggerAsyncCallback(taskId, result) {
+        const json = JSON.stringify(result);
+        window.HybridWebView.__SendMessageInternal('__InvokeJavaScriptCompleted', taskId + '|' + json);
     }
 }
 

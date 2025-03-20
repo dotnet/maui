@@ -3,6 +3,7 @@ trigger:
     include:
     - main
     - net9.0
+    - net10.0
     - release/*
   tags:
     include:
@@ -18,7 +19,6 @@ trigger:
     - LICENSE.TXT
     - PATENTS.TXT
     - README.md
-    - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
 
 schedules:
@@ -30,7 +30,6 @@ schedules:
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
-  - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
   - name: VM_IMAGE_HOST
@@ -51,7 +50,12 @@ parameters:
       docsArtifact: xml-docs
 
   - name: Skip1ESComplianceTasks
+    type: boolean
     default: false
+
+  - name: PushMauiPackagesToMaestro
+    type: boolean
+    default: true
 
 resources:
   repositories:
@@ -60,11 +64,6 @@ resources:
       name: xamarin/yaml-templates
       endpoint: xamarin
       ref: refs/heads/main
-    - repository: sdk-insertions
-      type: github
-      name: xamarin/sdk-insertions
-      ref: refs/heads/main
-      endpoint: xamarin
     - repository: 1ESPipelineTemplates
       type: git
       name: 1ESPipelineTemplates/1ESPipelineTemplates
@@ -160,9 +159,12 @@ extends:
                       parameters:
                         checkoutDirectory: '$(System.DefaultWorkingDirectory)'
                         # gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-                        skipAndroidImages: true
-                        skipAndroidSdks: true
-                        installDefaultAndroidApi: true
+                        skipJdk: false
+                        skipAndroidCommonSdks: false
+                        skipAndroidPlatformApis: false
+                        onlyAndroidPlatformDefaultApis: true
+                        skipAndroidEmulatorImages: true
+                        skipAndroidCreateAvds: true
                         skipProvisioning: true
                         skipXcode: true
 
@@ -182,7 +184,7 @@ extends:
             poolName: ${{ parameters.VM_IMAGE_HOST.name }}
             vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
             os: ${{ parameters.VM_IMAGE_HOST.os }}
-            pushMauiPackagesToMaestro: ${{ eq(variables['PushMauiPackagesToMaestro'], 'true') }}
+            pushMauiPackagesToMaestro: ${{ parameters.PushMauiPackagesToMaestro }}
 
         - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
           parameters:

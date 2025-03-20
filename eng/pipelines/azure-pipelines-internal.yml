@@ -3,6 +3,7 @@ trigger:
     include:
     - main
     - net9.0
+    - net10.0
     - release/*
   tags:
     include:
@@ -18,7 +19,6 @@ trigger:
     - LICENSE.TXT
     - PATENTS.TXT
     - README.md
-    - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
 
 schedules:
@@ -28,6 +28,7 @@ schedules:
     include:
     - main
     - net9.0
+    - net10.0
     
 variables:
   - template: /eng/common/templates/variables/pool-providers.yml@self 
@@ -78,6 +79,7 @@ extends:
       parameters:
         pool: ${{ parameters.VM_IMAGE_HOST }}
         enableSourceIndex: true
+        runAsPublic: false
         sourceIndexParams:
           sourceIndexBuildCommand: build.cmd -restore -build -ci /bl:$(Build.Arcade.LogsPath)sourceIndexBuild.binlog /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
           binlogPath: $(Build.Arcade.LogsPath)sourceIndexBuild.binlog
@@ -98,22 +100,20 @@ extends:
         SDLValidationParameters:
           enable: false
 
-    - template: /eng/pipelines/arcade/stage-unit-tests.yml@self
-      parameters:
-        jobMatrix:
-        - name: win_unit_tests
-          displayName: Windows Unit Tests
-          pool:
-            name: Azure Pipelines
-            vmImage: $(HostedWindowsImage)
-            os: windows
-          timeout: 120
-          testOS: Windows
-        - name: mac_unit_tests
-          displayName: macOS Unit Tests
-          pool:
-            name: Azure Pipelines
-            vmImage: $(HostedMacImage)
-            os: macOS
-          timeout: 120
-          testOS: macOS
+    - ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+      - template: /eng/pipelines/arcade/stage-unit-tests.yml@self
+        parameters:
+          jobMatrix:
+          - name: win_unit_tests
+            displayName: Windows Unit Tests
+            pool: ${{ parameters.VM_IMAGE_HOST }}
+            timeout: 120
+            testOS: Windows
+          - name: mac_unit_tests
+            displayName: macOS Unit Tests
+            pool:
+              name: Azure Pipelines
+              vmImage: $(HostedMacImage)
+              os: macOS
+            timeout: 120
+            testOS: macOS

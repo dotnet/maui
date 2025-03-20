@@ -14,17 +14,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue2259Tests()
 		{
+			App.WaitForElement("AddButton");
 			for (int i = 0; i < 20; i++)
 			{
 				App.Tap("AddButton");
 				App.WaitForElement("Name " + (i + 1).ToString());
-				App.Screenshot("Added Cell");
 			}
 		}
 	}

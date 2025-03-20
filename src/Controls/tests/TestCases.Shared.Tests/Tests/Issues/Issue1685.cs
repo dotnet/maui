@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -14,18 +14,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "Entry clears when upadting text from native with one-way binding";
+		public override string Issue => "Entry clears when updating text from native with one-way binding";
 
 		[Test]
 		[Category(UITestCategories.Entry)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void EntryOneWayBindingShouldUpdate()
 		{
 			App.WaitForElement(ButtonId);
 			App.Tap(ButtonId);
-			App.WaitForNoElement(Success);
+			Assert.That(App.FindElement("TestEntry").GetText(), Is.EqualTo(Success));
 		}
 	}
 }
-#endif

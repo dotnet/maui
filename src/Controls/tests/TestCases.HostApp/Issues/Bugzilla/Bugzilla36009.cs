@@ -31,7 +31,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				Children = { contentView }
 			};
-			AbsoluteLayout.SetLayoutBounds(contentView, new Rect(0,0,1,1));
+			AbsoluteLayout.SetLayoutBounds(contentView, new Rect(0, 0, 1, 1));
 			AbsoluteLayout.SetLayoutFlags(contentView, AbsoluteLayoutFlags.All);
 			Content = layout;
 

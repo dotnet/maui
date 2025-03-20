@@ -15,14 +15,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.WebView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
 		public void WebViewDisposesProperly()
 		{
+			App.WaitForElement("NextButton");
 			App.Tap("NextButton");
+			App.WaitForElement("BackButton");
 			App.Tap("BackButton");
+			App.WaitForElement("NextButton");
 			App.Tap("NextButton");
+			App.WaitForElement("BackButton");
 			App.Tap("BackButton");
+			App.WaitForElement("NextButton");
 			App.Tap("NextButton");
+			App.WaitForElement("BackButton");
 			App.Tap("BackButton");
 		}
 	}

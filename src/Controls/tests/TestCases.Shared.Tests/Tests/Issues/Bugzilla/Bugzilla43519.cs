@@ -8,11 +8,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 	{
 		const string Pop = "PopModal";
 		const string Push = "PushModal";
-#if ANDROID
-		const string Page2 = "PAGE 2";
-#else
 		const string Page2 = "Page 2";
-#endif
+
 
 		public Bugzilla43519(TestDevice testDevice) : base(testDevice)
 		{
@@ -25,13 +22,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void TabbedModalNavigation()
 		{
-			App.WaitForElement(Page2);
-			App.Tap(Page2);
+			App.TapTab(Page2);
 			App.WaitForElement(Push);
 			App.Tap(Push);
 			App.WaitForElement(Pop);
 			App.Tap(Pop);
-			App.WaitForElement(Page2);
+			App.WaitForTabElement(Page2);
 		}
 	}
 }

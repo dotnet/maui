@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_currentHeader = null;
 			}
 
-			var header = ItemsView.Header;
+			var header = ItemsView.Header ?? ItemsView.HeaderTemplate;
 
 			switch (header)
 			{
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					if (headerTemplate != null)
 					{
 						ListViewBase.HeaderTemplate = ItemsViewTemplate;
-						ListViewBase.Header = new ItemTemplateContext(headerTemplate, header, Element);
+						ListViewBase.Header = new ItemTemplateContext(headerTemplate, header, Element, mauiContext: MauiContext);
 					}
 					else
 					{
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_currentFooter = null;
 			}
 
-			var footer = ItemsView.Footer;
+			var footer = ItemsView.Footer ?? ItemsView.FooterTemplate;
 
 			switch (footer)
 			{
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					if (footerTemplate != null)
 					{
 						ListViewBase.FooterTemplate = ItemsViewTemplate;
-						ListViewBase.Footer = new ItemTemplateContext(footerTemplate, footer, Element);
+						ListViewBase.Footer = new ItemTemplateContext(footerTemplate, footer, Element, mauiContext: MauiContext);
 					}
 					else
 					{

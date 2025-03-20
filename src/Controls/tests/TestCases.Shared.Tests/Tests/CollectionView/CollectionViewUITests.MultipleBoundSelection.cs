@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Multiselection not working in Catalyst and iOS, Issue: https://github.com/dotnet/maui/issues/26942 & https://github.com/dotnet/maui/issues/26943
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,7 +15,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		// ItemsFromViewModelShouldBeSelected (src\Compatibility\ControlGallery\src\Issues.Shared\CollectionViewBoundMultiSelection.cs)
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest("Click does not find CollectionView elements.")]
 		public void ItemsFromViewModelShouldBeSelected()
 		{
 			// Navigate to the selection galleries
@@ -24,30 +24,32 @@ namespace Microsoft.Maui.TestCases.Tests
 			VisitSubGallery("MultipleSelection,Bound");
 
 			// 1. Initially Items 1 and 2 should be selected (from the view model)
-			App.WaitForNoElement("Selected: Item 1, Item 2");
+			App.WaitForElement("Selected: Item 1, Item 2");
 
 			// 2. Tapping Item 3 should select it and updating the binding
-			App.Click("Item 3");
+			App.Tap("Item 3");
 
-			App.WaitForNoElement("Selected: Item 1, Item 2, Item 3");
+			App.WaitForElement("Selected: Item 1, Item 2, Item 3");
 
 			// 3. Test clearing the selection from the view model and updating it
-			App.Click("ClearAndAdd");
-			App.WaitForNoElement("Selected: Item 1, Item 2");
+			App.Tap("ClearAndAdd");
+			App.WaitForElement("Selected: Item 1, Item 2");
 
 			// 4. Test removing an item from the selection
-			App.Click("Item 2");
-			App.WaitForNoElement("Selected: Item 1");
+			App.Tap("Item 2");
+			App.WaitForElement("Selected: Item 1");
 
 			// 5. Test setting a new selection list in the view mdoel 
-			App.Click("Reset");
-			App.WaitForNoElement("Selected: Item 1, Item 2");
+			App.Tap("Reset");
+			App.WaitForElement("Selected: Item 1, Item 2");
 
-			App.Click("Item 0");
+			App.Tap("Item 0");
 
-			// 6. Test setting the selection directly with CollectionView.SelectedItems 
-			App.Click("DirectUpdate");
-			App.WaitForNoElement("Selected: Item 0, Item 3");
+			// 6. Test setting the selection directly with CollectionView.SelectedItems
+			App.WaitForElement("DirectUpdate");
+			App.Tap("DirectUpdate");
+			App.WaitForElement("Selected: Item 0, Item 3");
 		}
 	}
 }
+#endif

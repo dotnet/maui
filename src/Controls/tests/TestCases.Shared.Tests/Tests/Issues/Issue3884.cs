@@ -15,13 +15,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.BoxView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue3884Test()
 		{
-			App.WaitForElement("TestReady");
-			App.Screenshot("I see a blue circle");
+			App.WaitForElement("You should see a blue circle");
+			VerifyScreenshot();
 		}
 	}
 }

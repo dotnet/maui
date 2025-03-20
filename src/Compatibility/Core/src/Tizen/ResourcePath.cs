@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 				return res;
 			}
 
-		foreach (AppFW.ResourceManager.Category category in Enum.GetValues<AppFW.ResourceManager.Category>())
+			foreach (AppFW.ResourceManager.Category category in Enum.GetValues<AppFW.ResourceManager.Category>())
 			{
 				var path = AppFW.ResourceManager.TryGetPath(category, res);
 

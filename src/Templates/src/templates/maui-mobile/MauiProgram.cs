@@ -20,9 +20,11 @@ public static class MauiProgram
 			.ConfigureSyncfusionToolkit()
 			.ConfigureMauiHandlers(handlers =>
 			{
+//-:cnd:noEmit
 #if IOS || MACCATALYST
 				handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
 #endif
+//+:cnd:noEmit
 			})
 #endif
 			.ConfigureFonts(fonts =>

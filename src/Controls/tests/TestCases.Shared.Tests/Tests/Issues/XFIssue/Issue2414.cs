@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
+//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,24 +14,15 @@ public class Issue2414 : _IssuesUITest
 
 	public override string Issue => "NullReferenceException when swiping over Context Actions";
 
-	// [Test]
-	// [Category(UITestCategories.TableView)]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void TestDoesntCrashShowingContextMenu()
-	// {
-	// 	App.ActivateContextMenu("Swipe ME");
-	// 	App.WaitForElement(c => c.Marked("Text0"));
-	// 	App.Screenshot("Didn't crash");
-	// 	App.Tap(c => c.Marked("Text0"));
-	// }
-
-	// [Test]
-	// [FailsOnIOSWhenRunningOnXamarinUITest]
-	// public void TestShowContextMenuItemsInTheRightOrder()
-	// {
-	// 	App.ActivateContextMenu("Swipe ME");
-	// 	App.WaitForElement(c => c.Marked("Text0"));
-	// 	App.Screenshot("Are the menuitems in the right order?");
-	// 	App.Tap(c => c.Marked("Text0"));
-	// }
+	[Test]
+	[Category(UITestCategories.TableView)]
+	public void TestShowContextMenuItemsInTheRightOrder()
+	{
+		App.WaitForElement("Swipe ME");
+		App.ActivateContextMenu("Swipe ME");
+		App.WaitForElement("Text0");
+		App.Tap("Text0");
+		App.WaitForElement("Swipe ME");
+	}
 }
+#endif

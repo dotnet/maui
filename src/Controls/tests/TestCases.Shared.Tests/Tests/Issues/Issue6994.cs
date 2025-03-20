@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS //Application crash while load the listview, for more information: https://github.com/dotnet/maui/issues/27174
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,13 +15,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Button)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAllPlatformsWhenRunningOnXamarinUITest]
 		public void NullPointerExceptionOnFastLabelTextColorChange()
 		{
 			App.WaitForElement("Click me");
 			App.Tap("Click me");
-			App.WaitForElement("Success");
+			App.WaitForElementTillPageNavigationSettled("Success");
 		}
 	}
 }
+#endif
