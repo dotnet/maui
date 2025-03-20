@@ -1,4 +1,4 @@
-#if ANDROID || IOS // On other platforms as SoftKeyboard is not supported 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //As SoftKeyboard is not supported
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
