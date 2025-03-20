@@ -137,6 +137,14 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TabBarIsVisibleProperty =
 			BindableProperty.CreateAttached("TabBarIsVisible", typeof(bool), typeof(Shell), true);
 
+#pragma warning disable RS0016
+		//todo add it to public API
+		/// <summary>
+		/// Autoresizes tab bar icons.
+		/// </summary>
+		public static readonly BindableProperty AutoResizeTabBarIconsProperty =
+			BindableProperty.CreateAttached("AutoResizeTabBarIcons", typeof(bool), typeof(Shell), false);
+
 		/// <summary>
 		/// Enables any <see cref = "View" /> to be displayed in the navigation bar.
 		/// </summary>
@@ -327,6 +335,23 @@ namespace Microsoft.Maui.Controls
 		/// <param name="obj">The object that modifies the tabs visibility.</param>
 		/// <param name="value"><see langword="true"/> to set the tab bar as visible; otherwise, <see langword="false"/>.</param>
 		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, value);
+
+		/// <summary>
+		/// Gets the tabs auto resize tab bar value when the given <paramref name="obj"/> is active.
+		/// </summary>
+		/// <param name="obj">The object that modifies the tabs icons.</param>
+		/// <returns><see langword="true"/> if the tab bar is visible; otherwise, <see langword="false"/>.</returns>
+		public static bool GetAutoResizeTabBarIcons(BindableObject obj) => (bool)obj.GetValue(AutoResizeTabBarIconsProperty);
+
+		/// <summary>
+		/// Auto resizes tab bar icons when the given <paramref name="obj"/> is active.
+		/// </summary>
+		/// <remarks>
+		/// This applies to iOS only. The rest of the platforms will ignore this property as they resize tab bar icons by default.
+		/// </remarks>
+		/// <param name="obj">The object that modifies the tabs icons.</param>
+		/// <param name="value"><see langword="true"/> auto resizes tab bar icons; otherwise, <see langword="false"/>.</param>
+		public static void SetAutoResizeTabBarIcons(BindableObject obj, bool value) => obj.SetValue(AutoResizeTabBarIconsProperty, value);
 
 		/// <summary>
 		/// Gets any <see cref = "View" /> to be displayed in the navigation bar when the given <paramref name="obj"/> is active.
