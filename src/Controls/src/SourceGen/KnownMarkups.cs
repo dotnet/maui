@@ -379,7 +379,7 @@ internal class KnownMarkups
 				&& parentTypeSymbol is not null
 				&& node.TryGetPropertyName(parentNode, out XmlName propertyName)
 				&& parentTypeSymbol.GetAllProperties(propertyName.LocalName, context).FirstOrDefault() is IPropertySymbol propertySymbol
-				&& propertySymbol.GetAttributes().Any(a => a.AttributeClass?.ToFQDisplayString() == "Microsoft.Maui.Controls.Xaml.DoesNotInheritDataTypeAttribute");
+				&& propertySymbol.GetAttributes().Any(a => a.AttributeClass?.ToFQDisplayString() == "global::Microsoft.Maui.Controls.Xaml.DoesNotInheritDataTypeAttribute");
 		}
 
 		static IElementNode? GetParent(IElementNode node)
