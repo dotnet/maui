@@ -19,7 +19,7 @@ public class Issue6127 : _IssuesUITest
 	public void Issue6127Test()
 	{
 		//AutomationId for ToolBarIcon is not works in android
-#if ANDROID 
+#if ANDROID
 		App.WaitForElement(AppiumQuery.ByXPath("//android.widget.Button[@content-desc='PrimaryToolbarIcon']"));
 #else
 		App.WaitForElement("PrimaryToolbarIcon");

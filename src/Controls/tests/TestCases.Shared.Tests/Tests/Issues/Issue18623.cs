@@ -1,4 +1,4 @@
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 // On MacCatalyst, pressing the ESC key during screenshot capture clears the text. This causes the image generated in CI to differ from local runs.
 //In IOS App.EnterText not working with iOS password for more information : https://github.com/dotnet/maui/issues/18981
 using NUnit.Framework;

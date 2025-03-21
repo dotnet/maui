@@ -66,7 +66,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 						: runInfos.FirstOrDefault()?.TestCases.FirstOrDefault()?.DisplayName;
 				}
 
-				_logger.LogTestStart(message);
+				_logger.LogTestsStart(message);
 
 				try
 				{
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				}
 				finally
 				{
-					_logger.LogTestComplete();
+					_logger.LogTestsComplete();
 				}
 			}
 		}
@@ -284,19 +284,22 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 
 			var diagSink = new DiagnosticMessageSink(d => context.Post(_ => OnDiagnosticMessage?.Invoke(d), null), runInfo.AssemblyFileName, executionOptions.GetDiagnosticMessagesOrDefault());
 
-			var deviceExecSink = new DeviceExecutionSink(xunitTestCases, this, context);
+			var deviceExecSink = new DeviceExecutionSink(xunitTestCases, this, _logger, context);
 
 			IExecutionSink resultsSink = new ExecutionSink(deviceExecSink, new ExecutionSinkOptions
 			{
 				CancelThunk = () => cancelled
 			});
+
 			if (longRunningSeconds > 0)
+			{
 				resultsSink = new ExecutionSink(resultsSink, new ExecutionSinkOptions
 				{
 					CancelThunk = () => cancelled,
 					DiagnosticMessageSink = diagSink,
 					LongRunningTestTime = TimeSpan.FromSeconds(longRunningSeconds)
 				});
+			}
 
 			var assm = new XunitProjectAssembly() { AssemblyFilename = runInfo.AssemblyFileName };
 			deviceExecSink.OnMessage(new TestAssemblyExecutionStarting(assm, executionOptions));

@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"IsToggled = {IsToggled}, {base.GetDebuggerDisplay()}";
+			return $"{base.GetDebuggerDisplay()}, IsToggled = {IsToggled}";
 		}
 	}
 }

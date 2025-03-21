@@ -8,7 +8,7 @@ public class Bugzilla44166 : TestContentPage
 {
 	protected override void Init()
 	{
-		var label = new Label() { Text = "Testing..." , AutomationId = "Result"};
+		var label = new Label() { Text = "Testing...", AutomationId = "Result" };
 
 		var goButton = new Button { Text = "Go", AutomationId = "Go" };
 		goButton.Clicked += (sender, args) => Application.Current.MainPage = new _44166MDP();

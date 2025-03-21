@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"Progress = {Progress}, {base.GetDebuggerDisplay()}";
+			return $"{base.GetDebuggerDisplay()}, Progress = {Progress}";
 		}
 	}
 }

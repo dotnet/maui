@@ -51,7 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			appBuilder.Services.TryAdd(ServiceDescriptor.Singleton<ILoggerFactory, NullLoggerFactory>());
 			appBuilder.Services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(NullLogger<>)));
-			
+
 			_mauiApp = appBuilder.Build();
 			_servicesProvider = _mauiApp.Services;
 
@@ -304,7 +304,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync<RawBitmap>(async () =>
 			{
-				var platformView = CreateHandler(view, handlerType).ToPlatform();
+				var handler = CreateHandler(view, handlerType);
+				var platformView = view.ToPlatform();
 #if WINDOWS
 				return await platformView.AttachAndRun<RawBitmap>(async (window) => await view.AsRawBitmapAsync(), MauiContext);
 #else

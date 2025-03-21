@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST // Stepper interaction is not implemented for catalyst
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
@@ -20,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("entry");
 			// check the current value.
 			var initialValue = App.FindElement("entry").GetText();
-		    Assert.That("0", Is.EqualTo(initialValue));
+			Assert.That("0", Is.EqualTo(initialValue));
 
 			// Increase the value.
 			App.IncreaseStepper("myStepper");
@@ -46,4 +45,3 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
-#endif

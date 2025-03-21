@@ -409,6 +409,114 @@ configuration:
           isActivitySender:
             user: dotnet-maestro-bot
             issueAuthor: False
+      - not:
+          isActivitySender:
+            user: Ahamed-Ali
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: anandhan-rajagopal
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: BagavathiPerumal
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: deepika2509
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: devanathan-vaithiyanathan
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: Dhivya-SF4094
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: HarishKumarSF4517
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: HarishwaranVijayakumar
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: KarthikRajaKalaimani
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: karthikraja-arumugam
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: LogishaSelvarajSF4525
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: NafeelaNazhir
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: NanthiniMahalingam
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: NirmalKumarYuvaraj
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: nivetha-nagalingam
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: PaulAndersonS
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: prakashKannanSf3972
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: praveenkumarkarunanithi
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: Shalini-Ashokan
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: sheiksyedm
+            issueAuthor: False
+      - not:
+         isActivitySender:
+           user: SubhikshaSf4851
+           issueAuthor: False
+      - not:
+          isActivitySender:
+            user: SuthiYuvaraj
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: SyedAbdulAzeemSF4852
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: Tamilarasan-Paranthaman
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: TamilarasanSF4853
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: Vignesh-SF3580
+            issueAuthor: False
+      - not:
+          isActivitySender:
+            user: vishnumenon2684
+            issueAuthor: False
       - isAction:
           action: Opened
       then:
@@ -521,5 +629,97 @@ configuration:
       - addLabel:
           label: s/triaged
       description: Add 's/triaged' label to issues opened by the (core) team, we assume these issues do not need triaging
+    - if:
+      - or:
+        - payloadType: Issues
+        - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - or:
+        - isActivitySender:
+            user: Ahamed-Ali
+            issueAuthor: False
+        - isActivitySender:
+            user: anandhan-rajagopal
+            issueAuthor: False
+        - isActivitySender:
+            user: BagavathiPerumal
+            issueAuthor: False
+        - isActivitySender:
+            user: deepika2509
+            issueAuthor: False
+        - isActivitySender:
+            user: devanathan-vaithiyanathan
+            issueAuthor: False
+        - isActivitySender:
+            user: Dhivya-SF4094
+            issueAuthor: False
+        - isActivitySender:
+            user: HarishKumarSF4517
+            issueAuthor: False
+        - isActivitySender:
+            user: HarishwaranVijayakumar
+            issueAuthor: False
+        - isActivitySender:
+            user: KarthikRajaKalaimani
+            issueAuthor: False
+        - isActivitySender:
+            user: karthikraja-arumugam
+            issueAuthor: False
+        - isActivitySender:
+            user: LogishaSelvarajSF4525
+            issueAuthor: False
+        - isActivitySender:
+            user: NafeelaNazhir
+            issueAuthor: False
+        - isActivitySender:
+            user: NanthiniMahalingam
+            issueAuthor: False
+        - isActivitySender:
+            user: NirmalKumarYuvaraj
+            issueAuthor: False
+        - isActivitySender:
+            user: nivetha-nagalingam
+            issueAuthor: False
+        - isActivitySender:
+            user: PaulAndersonS
+            issueAuthor: False
+        - isActivitySender:
+            user: prakashKannanSf3972
+            issueAuthor: False
+        - isActivitySender:
+            user: praveenkumarkarunanithi
+            issueAuthor: False
+        - isActivitySender:
+            user: Shalini-Ashokan
+            issueAuthor: False
+        - isActivitySender:
+            user: sheiksyedm
+            issueAuthor: False
+        - isActivitySender:
+            user: SubhikshaSf4851
+            issueAuthor: False
+        - isActivitySender:
+            user: SuthiYuvaraj
+            issueAuthor: False
+        - isActivitySender:
+            user: SyedAbdulAzeemSF4852
+            issueAuthor: False
+        - isActivitySender:
+            user: Tamilarasan-Paranthaman
+            issueAuthor: False
+        - isActivitySender:
+            user: TamilarasanSF4853
+            issueAuthor: False
+        - isActivitySender:
+            user: Vignesh-SF3580
+            issueAuthor: False
+        - isActivitySender:
+            user: vishnumenon2684
+            issueAuthor: False
+      then:
+      - addLabel:
+          label: partner/syncfusion
+      description: Add 'partner/syncfusion' label to issues opened by the Syncfusion partner team
 onFailure: 
 onSuccess: 

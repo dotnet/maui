@@ -29,7 +29,7 @@ public partial class Issue25671 : ContentPage
 	{
 		((Button)sender).Text = $"M: {MeasurePasses}, A: {ArrangePasses}";
 	}
-	
+
 	void GenerateItems()
 	{
 		CV.ItemsSource = Enumerable.Range(4, 200).Select(i =>

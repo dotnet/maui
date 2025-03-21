@@ -105,7 +105,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				_webView = webView ?? throw new ArgumentNullException(nameof(webView));
 			}
 
-
 			public override void RunJavaScriptAlertPanel(WKWebView webView, string message, WKFrameInfo frame, Action completionHandler)
 			{
 				PresentAlertController(
@@ -246,9 +245,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				{
 					_webView.Logger.LaunchExternalBrowser(uri);
 
-#pragma warning disable CA1416, CA1422 // TODO: OpenUrl(...) has [UnsupportedOSPlatform("ios10.0")]
-					UIApplication.SharedApplication.OpenUrl(requestUrl);
-#pragma warning restore CA1416, CA1422
+					UIApplication.SharedApplication.OpenUrl(requestUrl, new UIApplicationOpenUrlOptions(), (success) =>
+					{
+						if (!success)
+						{
+							_webView.Logger.LogError($"There was an error trying to open URL: {requestUrl}");
+						}
+					});
 				}
 
 				if (strategy != UrlLoadingStrategy.OpenInWebView)

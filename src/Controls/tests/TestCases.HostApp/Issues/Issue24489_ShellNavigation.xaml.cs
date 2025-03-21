@@ -6,10 +6,10 @@ namespace Maui.Controls.Sample.Issues;
 
 public partial class Issue24489_ShellNavigation : Shell
 {
-    public Issue24489_ShellNavigation()
+	public Issue24489_ShellNavigation()
 	{
-        InitializeComponent();
-        Routing.RegisterRoute("Issue24489_2", typeof(Issue24489_2));
+		InitializeComponent();
+		Routing.RegisterRoute("Issue24489_2", typeof(Issue24489_2));
 	}
 
 	protected override void OnAppearing()

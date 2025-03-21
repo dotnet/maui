@@ -26,17 +26,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement(Add1);
 			App.Tap(Add1);
 			App.TapTab(Tab2);
-			App.WaitForElementTillPageNavigationSettled(Success);		
+			App.WaitForElementTillPageNavigationSettled(Success);
 		}
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public  void AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash()
+		public void AddingGroupToUnviewedGroupedCollectionViewShouldNotCrash()
 		{
 			App.WaitForElement(Add2);
 			App.Tap(Add2);
 			App.TapTab(Tab3);
 			App.WaitForElementTillPageNavigationSettled(Success);
-		}		
+		}
 	}
 }

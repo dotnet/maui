@@ -29,7 +29,7 @@ public class Bugzilla44166 : _IssuesUITest
 		{
 			App.Tap("GC");
 
-			if(App.WaitForElement("Result").GetText() == "Success")
+			if (App.WaitForElement("Result").GetText() == "Success")
 			{
 				return;
 			}

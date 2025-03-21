@@ -8,7 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Issue6932_emptyviewtemplate : _IssuesUITest
 {
 	const int Count = 10;
-	const string LayoutAutomationId = "1"; 
+	const string LayoutAutomationId = "1";
 	const string AddAutomationId = "Add";
 	const string RemoveAutomationId = "Remove";
 	const string ClearAutomationId = "Clear";
@@ -30,18 +30,18 @@ public class Issue6932_emptyviewtemplate : _IssuesUITest
 		App.Tap(ClearAutomationId);
 		App.WaitForElement(EmptyTemplateAutomationId);
 	}
- 
+
 	[Test]
 	public void AEmptyViewTemplateBecomesVisibleWhenItemsSourceIsEmptiedOneByOne()
 	{
 		App.WaitForElement(LayoutAutomationId);
- 
+
 		for (var i = 0; i < Count; i++)
 			App.Tap(RemoveAutomationId);
- 
+
 		App.WaitForElement(EmptyTemplateAutomationId);
 	}
- 
+
 	[Test]
 	public void CEmptyViewTemplateHidesWhenItemsSourceIsFilled()
 	{

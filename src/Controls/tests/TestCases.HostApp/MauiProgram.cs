@@ -21,6 +21,7 @@ namespace Maui.Controls.Sample
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 					fonts.AddFont("FontAwesome.ttf", "FA");
 					fonts.AddFont("ionicons.ttf", "Ion");
+					fonts.AddFont("Montserrat-Bold.otf", "MontserratBold");
 				})
 				.RenderingPerformanceAddMappers()
 				.Issue21109AddMappers()
@@ -44,6 +45,11 @@ namespace Maui.Controls.Sample
 #endif
 #if IOS || MACCATALYST
 				handlers.AddHandler(typeof(Issue11132Control), typeof(Issue11132ControlHandler));
+#endif
+#if IOS || MACCATALYST || ANDROID
+				handlers.AddHandler(typeof(UITestEditor), typeof(UITestEditorHandler));
+				handlers.AddHandler(typeof(UITestEntry), typeof(UITestEntryHandler));
+				handlers.AddHandler(typeof(UITestSearchBar), typeof(UITestSearchBarHandler));
 #endif
 			});
 

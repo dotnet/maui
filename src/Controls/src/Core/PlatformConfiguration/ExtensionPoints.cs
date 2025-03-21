@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration
 	/// Developers specify the type name of this marker class to the <see cref = "IElementConfiguration{TElement}.On{T}" /> method to specify the underlying Tizen control on which to run a platform-specific effect.
 	/// </remarks>
 	public sealed class Tizen : IConfigPlatform { }
-	
+
 	/// <summary>
 	/// Marker class that identifies the macOS platform.
 	/// </summary>

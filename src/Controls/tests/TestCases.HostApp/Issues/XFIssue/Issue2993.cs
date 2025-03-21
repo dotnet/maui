@@ -18,7 +18,7 @@ public class Issue2993 : TestTabbedPage
 			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Star });
 			grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
 			grid.Children.Add(new Label() { Text = "Top Text", BackgroundColor = Colors.Purple });
-			var bottomLabel = new Label() { Text = "Bottom Text", AutomationId="BottomText" };
+			var bottomLabel = new Label() { Text = "Bottom Text", AutomationId = "BottomText" };
 			Grid.SetRow(bottomLabel, 1);
 			grid.Children.Add(bottomLabel);
 

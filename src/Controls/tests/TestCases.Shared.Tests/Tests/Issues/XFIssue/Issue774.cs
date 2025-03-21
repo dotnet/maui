@@ -27,7 +27,7 @@ public class Issue774 : _IssuesUITest
 	}
 
 	[TearDown]
-	public  void TearDown()
+	public void TearDown()
 	{
 		App.SetOrientationPortrait();
 	}

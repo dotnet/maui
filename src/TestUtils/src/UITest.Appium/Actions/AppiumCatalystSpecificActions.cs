@@ -37,7 +37,7 @@ public class AppiumCatalystSpecificActions : ICommandExecutionGroup
 			_ => CommandResponse.FailedEmptyResponse,
 		};
 	}
-	
+
 	CommandResponse EnterFullScreen(IDictionary<string, object> parameters)
 	{
 		try
@@ -51,7 +51,7 @@ public class AppiumCatalystSpecificActions : ICommandExecutionGroup
 			return CommandResponse.FailedEmptyResponse;
 		}
 	}
-	
+
 	CommandResponse ExitFullScreen(IDictionary<string, object> parameters)
 	{
 		try

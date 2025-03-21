@@ -12,7 +12,7 @@ public partial class Maui26206 : ContentPage
 	{
 		InitializeComponent();
 	}
-	
+
 	public Maui26206(bool useCompiledXaml)
 	{
 		//this stub will be replaced at compile time
@@ -35,7 +35,7 @@ public partial class Maui26206 : ContentPage
 		}
 
 		[Test]
-		public void MultipleResourcesInRD([Values]bool useCompiledXaml)
+		public void MultipleResourcesInRD([Values] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
 				MockCompiler.Compile(typeof(Maui26206));

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			out bool hasLoggedErrors,
 			string targetFramework = null,
 			bool treatWarningsAsErrors = false,
-			bool compileBindingsWithSource = true) 
+			bool compileBindingsWithSource = true)
 			=> Compile(type, out _, out hasLoggedErrors, targetFramework, treatWarningsAsErrors, compileBindingsWithSource);
 
 		public static void Compile(
@@ -22,11 +22,11 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			string targetFramework = null,
 			bool treatWarningsAsErrors = false,
 			bool compileBindingsWithSource = true)
-			{
-				Compile(type, out _, out var hasLoggedErrors, targetFramework, treatWarningsAsErrors, compileBindingsWithSource);
-				if (hasLoggedErrors)
-					throw new Exception("XamlC failed");
-			}
+		{
+			Compile(type, out _, out var hasLoggedErrors, targetFramework, treatWarningsAsErrors, compileBindingsWithSource);
+			if (hasLoggedErrors)
+				throw new Exception("XamlC failed");
+		}
 
 		public static void Compile(
 			Type type,

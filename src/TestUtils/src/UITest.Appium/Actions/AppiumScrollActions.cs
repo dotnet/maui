@@ -213,7 +213,7 @@ namespace UITest.Appium
 
 			PerformActions(driver, startX, startY, endX, endY, strategy, swipeSpeed, element?.Id);
 		}
-		
+
 		AppiumElement? ScrollToDownTo(AppiumDriver driver, string marked, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
 			var timeout = DefaultTimeout;
@@ -305,7 +305,7 @@ namespace UITest.Appium
 		AppiumElement? ScrollUpUntilPresent(AppiumDriver driver, string marked, AppiumElement element, ScrollStrategy strategy, double swipePercentage, int swipeSpeed, bool withInertia = true)
 		{
 			ScrollToUp(driver, element, strategy, swipePercentage, swipeSpeed, withInertia);
-			
+
 			var result = driver.FindElement(By.Id(marked));
 
 			if (result is null)

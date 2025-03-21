@@ -19,7 +19,8 @@
                         <Label 
                             Text="{Binding Title}" 
                             BackgroundColor="Yellow" 
-                            Margin="0,10"/>
+                            Margin="0,10"
+                            AutomationId="HeaderLabel"/>
                     </ContentView>
                 </DataTemplate>
             </CollectionView.HeaderTemplate>

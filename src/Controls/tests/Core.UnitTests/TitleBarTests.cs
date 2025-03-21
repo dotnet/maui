@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public async Task TitleBarDoesNotLeak()
 		{
 			var application = new Application();
-		
+
 			WeakReference CreateReference()
 			{
 				var window = new Window { Page = new ContentPage() };
@@ -28,14 +28,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				((IWindow)window).Destroying();
 				return reference;
 			}
-		
+
 			var reference = CreateReference();
-		
+
 			// GC
 			await TestHelpers.Collect();
-		
+
 			Assert.False(reference.IsAlive, "TitleBar should not be alive!");
-		
+
 			GC.KeepAlive(application);
 		}
 	}

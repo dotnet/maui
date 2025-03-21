@@ -8,7 +8,7 @@ public class Bugzilla41424 : _IssuesUITest
 {
 
 #if ANDROID // Action button on TimePicker dialog is vary on different platforms.
-    const string DatePickerActionButton = "Cancel";
+	const string DatePickerActionButton = "Cancel";
 #elif IOS
 	const string DatePickerActionButton = "Done";
 #elif WINDOWS // No Action button for Windows DatePicker, so picking any date will close the dialog on windows.
@@ -32,7 +32,7 @@ public class Bugzilla41424 : _IssuesUITest
 	public void DatePickerCancelShouldUnfocus()
 	{
 
-        App.WaitForElement(DatePicker);
+		App.WaitForElement(DatePicker);
 		App.Tap(DatePicker);
 
 		CloseDialog();
