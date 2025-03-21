@@ -1,5 +1,7 @@
-﻿using System;
+using System;
 using Microsoft.CodeAnalysis;
+
+#pragma warning disable RS1032 // The diagnostic message should not contain any line return character nor any leading or trailing whitespaces and should either be a single sentence without a trailing period or a multi-sentences with a trailing period
 
 namespace Microsoft.Maui.Controls.SourceGen
 {
