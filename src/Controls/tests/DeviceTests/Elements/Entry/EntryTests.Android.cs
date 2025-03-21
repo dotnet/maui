@@ -3,6 +3,7 @@ using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -79,6 +80,26 @@ namespace Microsoft.Maui.DeviceTests
 			await SetValueAsync<string, EntryHandler>(entry, longText, SetPlatformText);
 
 			Assert.Equal(longText[..4], entry.Text);
+		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a Entry should match with native Translation")]
+		public async Task EntryTranslationConsistent()
+		{
+			var entry = new Entry()
+			{
+				Text = "Entry Test",
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<EntryHandler>(entry);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				AssertTranslationMatches(nativeView, entry.TranslationX, entry.TranslationY);
+			});
 		}
 	}
 }

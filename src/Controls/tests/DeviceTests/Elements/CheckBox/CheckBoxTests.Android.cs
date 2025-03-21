@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -20,6 +21,25 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var nativeView = GetNativeCheckBox(CheckBoxHandler);
 				return nativeView.Alpha;
+			});
+		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a CheckBox should match with native Translation")]
+		public async Task CheckBoxTranslationConsistent()
+		{
+			var checkBox = new CheckBox()
+			{
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
+			var nativeView = GetNativeCheckBox(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				AssertTranslationMatches(nativeView, checkBox.TranslationX, checkBox.TranslationY);
 			});
 		}
 	}
