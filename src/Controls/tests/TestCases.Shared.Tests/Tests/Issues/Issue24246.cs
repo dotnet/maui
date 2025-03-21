@@ -14,13 +14,16 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Layout)]
-		public void TapThenDoubleTap()
+		public void SafeAreaInsetsCorrectlyForMeasureAndArrangePass()
 		{
 			App.WaitForElement("entry");
 			App.EnterText("entry", "Hello, World!");
 
 			var result = App.WaitForElement("entry").GetText();
 			Assert.That(result, Is.EqualTo("Hello, World!"));
+
+			App.WaitForElement("button").Tap();
+			App.WaitForElement("Success");
 		}
 	}
 }
