@@ -1410,6 +1410,25 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		static bool CanSetValue(FieldReference bpRef, bool attached, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
 		{
+			static bool CanSetValue (TypeReference bpTypeRef, VariableDefinition varValue, ILContext context, IXmlLineInfo iXmlLineInfo)
+			{
+				// If it's an attached BP, there's no second chance to handle IMarkupExtensions, so we try here.
+				// Worst case scenario ? InvalidCastException at runtime
+				if (varValue.VariableType.FullName == "System.Object")
+					return true;
+				var implicitOperator = varValue.VariableType.GetImplicitOperatorTo(context.Cache, bpTypeRef, context.Body.Method.Module);
+				if (implicitOperator != null)
+					return true;
+
+				//as we're in the SetValue Scenario, we can accept value types, they'll be boxed
+				if (varValue.VariableType.IsValueType && bpTypeRef.FullName == "System.Object")
+					return true;
+
+				if (varValue.VariableType.InheritsFromOrImplements(context.Cache, bpTypeRef) || varValue.VariableType.FullName == "System.Object")
+					return true;
+				return false;
+			}
+
 			var module = context.Body.Method.Module;
 
 			if (bpRef == null)
@@ -1424,21 +1443,22 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (!context.Variables.TryGetValue(elementNode, out VariableDefinition varValue))
 				return false;
 
+
 			var bpTypeRef = bpRef.GetBindablePropertyType(context.Cache, iXmlLineInfo, module);
-			// If it's an attached BP, there's no second chance to handle IMarkupExtensions, so we try here.
-			// Worst case scenario ? InvalidCastException at runtime
-			if (varValue.VariableType.FullName == "System.Object")
-				return true;
-			var implicitOperator = varValue.VariableType.GetImplicitOperatorTo(context.Cache, bpTypeRef, module);
-			if (implicitOperator != null)
+
+			if (CanSetValue(bpTypeRef, varValue, context, iXmlLineInfo))
 				return true;
 
-			//as we're in the SetValue Scenario, we can accept value types, they'll be boxed
-			if (varValue.VariableType.IsValueType && bpTypeRef.FullName == "System.Object")
-				return true;
+			if (bpTypeRef.ResolveCached(context.Cache).FullName == "System.Nullable`1")
+			{
+				bpTypeRef = ((GenericInstanceType)bpTypeRef).GenericArguments[0];
+				if (CanSetValue(bpTypeRef, varValue, context, iXmlLineInfo))
+					return true;
+			}
 
-			return varValue.VariableType.InheritsFromOrImplements(context.Cache, bpTypeRef) || varValue.VariableType.FullName == "System.Object";
+			return false;
 		}
+
 
 		static bool CanGetValue(VariableDefinition parent, FieldReference bpRef, bool attached, IXmlLineInfo iXmlLineInfo, ILContext context, out TypeReference propertyType)
 		{
@@ -1483,32 +1503,37 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				var @else = Create(OpCodes.Nop);
 				var endif = Create(OpCodes.Nop);
 
-				if (context.Variables[elementNode].VariableType.FullName == "System.Object")
+
+				var varValue = context.Variables[elementNode];
+				if (varValue.VariableType.FullName == "System.Object")
 				{
 					//if(value != null && value.GetType().IsAssignableFrom(typeof(BindingBase)))
-					yield return Create(Ldloc, context.Variables[elementNode]);
+					yield return Create(Ldloc, varValue);
 					yield return Create(Brfalse, @else);
-
 					yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase")));
 					yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
-					yield return Create(Ldloc, context.Variables[elementNode]);
+					yield return Create(Ldloc, varValue);
 					yield return Create(Callvirt, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Object"), methodName: "GetType", paramCount: 0));
 					yield return Create(Callvirt, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "IsAssignableFrom", parameterTypes: new[] { ("mscorlib", "System", "Type") }));
 					yield return Create(Brfalse, @else);
 					//then
-					yield return Create(Ldloc, context.Variables[elementNode]);
+					yield return Create(Ldloc, varValue);
 					yield return Create(Br, endif);
 					//else
 					yield return @else;
 				}
 				var bpTypeRef = bpRef.GetBindablePropertyType(context.Cache, iXmlLineInfo, module);
-				foreach (var instruction in context.Variables[elementNode].LoadAs(context.Cache, bpTypeRef, module))
+				foreach (var instruction in varValue.LoadAs(context.Cache, bpTypeRef, module))
 					yield return instruction;
 				if (bpTypeRef.IsValueType)
+				{
+					if (   bpTypeRef.ResolveCached(context.Cache).FullName == "System.Nullable`1"
+						&& TypeRefComparer.Default.Equals(varValue.VariableType, ((GenericInstanceType)bpTypeRef).GenericArguments[0]))
+						bpTypeRef = ((GenericInstanceType)bpTypeRef).GenericArguments[0];
 					yield return Create(Box, module.ImportReference(bpTypeRef));
-
+				}
 				//endif
-				if (context.Variables[elementNode].VariableType.FullName == "System.Object")
+				if (varValue.VariableType.FullName == "System.Object")
 					yield return endif;
 
 			}
