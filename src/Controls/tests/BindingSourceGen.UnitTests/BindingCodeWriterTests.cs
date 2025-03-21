@@ -49,7 +49,7 @@ public class BindingCodeWriterTests
 	[Fact]
 	public void BuildsWholeBinding()
 	{
-		var code = BindingCodeWriter.GenerateBinding(new BindingInvocationDescription(
+		var code = BindingCodeWriter.GenerateBinding(id: 1, binding: new BindingInvocationDescription(
 			InterceptableLocation: new InterceptableLocationRecord(Version: 1, Data: "serializedData"),
 			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
 			SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
@@ -61,7 +61,7 @@ public class BindingCodeWriterTests
 			]),
 			SetterOptions: new(IsWritable: true, AcceptsNullValue: false),
 			NullableContextEnabled: true,
-			MethodType: InterceptedMethodType.SetBinding), id: 1);
+			MethodType: InterceptedMethodType.SetBinding));
 
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -160,7 +160,7 @@ public class BindingCodeWriterTests
 	public void CorrectlyFormatsSimpleBinding()
 	{
 		var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
-		codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
+		codeBuilder.AppendBindingFactoryMethod(new BindingInvocationDescription(
 			InterceptableLocation: new InterceptableLocationRecord(Version: 1, Data: "serializedData"),
 			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
@@ -178,7 +178,7 @@ public class BindingCodeWriterTests
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
             [InterceptsLocationAttribute(1, @"serializedData")]
-            public static void SetBinding1(
+            public static void SetBinding(
                 this BindableObject bindableObject,
                 BindableProperty bindableProperty,
                 Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
@@ -232,7 +232,7 @@ public class BindingCodeWriterTests
 	public void CorrectlyFormatsBindingWithoutAnyNullablesInPath()
 	{
 		var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
-		codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
+		codeBuilder.AppendBindingFactoryMethod(new BindingInvocationDescription(
 			InterceptableLocation: new InterceptableLocationRecord(Version: 1, Data: "serializedData"),
 			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
@@ -250,7 +250,7 @@ public class BindingCodeWriterTests
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
             [InterceptsLocationAttribute(1, @"serializedData")]
-            public static void SetBinding1(
+            public static void SetBinding(
                 this BindableObject bindableObject,
                 BindableProperty bindableProperty,
                 Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
@@ -300,7 +300,7 @@ public class BindingCodeWriterTests
 	public void CorrectlyFormatsBindingWithoutSetter()
 	{
 		var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
-		codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
+		codeBuilder.AppendBindingFactoryMethod(new BindingInvocationDescription(
 			InterceptableLocation: new InterceptableLocationRecord(Version: 1, Data: "serializedData"),
 			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false, IsValueType: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false, IsValueType: false),
@@ -318,7 +318,7 @@ public class BindingCodeWriterTests
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
             [InterceptsLocationAttribute(1, @"serializedData")]
-            public static void SetBinding1(
+            public static void SetBinding(
                 this BindableObject bindableObject,
                 BindableProperty bindableProperty,
                 Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
@@ -365,7 +365,7 @@ public class BindingCodeWriterTests
 	public void CorrectlyFormatsBindingWithIndexers()
 	{
 		var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
-		codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
+		codeBuilder.AppendBindingFactoryMethod(new BindingInvocationDescription(
 			InterceptableLocation: new InterceptableLocationRecord(Version: 1, Data: "serializedData"),
 			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: true, IsGenericParameter: false),
@@ -383,7 +383,7 @@ public class BindingCodeWriterTests
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
             [InterceptsLocationAttribute(1, @"serializedData")]
-            public static void SetBinding1(
+            public static void SetBinding(
                 this BindableObject bindableObject,
                 BindableProperty bindableProperty,
                 Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
@@ -444,7 +444,7 @@ public class BindingCodeWriterTests
 	public void CorrectlyFormatsBindingWithCasts()
 	{
 		var codeBuilder = new BindingCodeWriter.BindingInterceptorCodeBuilder();
-		codeBuilder.AppendSetBindingInterceptor(id: 1, new BindingInvocationDescription(
+		codeBuilder.AppendBindingFactoryMethod(new BindingInvocationDescription(
 			InterceptableLocation: new InterceptableLocationRecord(Version: 1, Data: "serializedData"),
 			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30), SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsNullable: false, IsGenericParameter: false),
 			PropertyType: new TypeDescription("global::MyNamespace.MyPropertyClass", IsNullable: false, IsGenericParameter: false),
@@ -467,7 +467,7 @@ public class BindingCodeWriterTests
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
             [InterceptsLocationAttribute(1, @"serializedData")]
-            public static void SetBinding1(
+            public static void SetBinding(
                 this BindableObject bindableObject,
                 BindableProperty bindableProperty,
                 Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
