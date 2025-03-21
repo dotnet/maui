@@ -159,18 +159,12 @@ namespace Microsoft.Maui.Handlers
 
 		void OnGotFocus(object sender, UI.Xaml.RoutedEventArgs e)
 		{
-			if (VirtualView is not null)
-			{
-				VirtualView.IsFocused = true;
-			}
+			UpdateIsFocused(true);
 		}
 
 		void OnLostFocus(object sender, UI.Xaml.RoutedEventArgs e)
 		{
-			if (VirtualView is not null)
-			{
-				VirtualView.IsFocused = false;
-			}
+			UpdateIsFocused(false);
 		}
 	}
 }
