@@ -121,7 +121,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void VerifyScreenshotOrSetException(
 			ref Exception? exception,
 			string? name = null,
-			TimeSpan? retryDelay = null
+			TimeSpan? retryDelay = null,
+			int cropTop = 0,
+			int cropBottom = 0
 #if MACUITEST || WINTEST
 			, bool includeTitleBar = false
 #endif
@@ -129,7 +131,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			try
 			{
-				VerifyScreenshot(name, retryDelay
+				VerifyScreenshot(name, retryDelay, cropTop, cropBottom
 #if MACUITEST || WINTEST
 				, includeTitleBar
 #endif
@@ -144,6 +146,8 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void VerifyScreenshot(
 			string? name = null,
 			TimeSpan? retryDelay = null
+			int cropTop = 0,
+			int cropBottom = 0
 #if MACUITEST || WINTEST
 			, bool includeTitleBar = false
 #endif
@@ -250,7 +254,7 @@ namespace Microsoft.Maui.TestCases.Tests
 				// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 				int cropFromTop = _testDevice switch
 				{
-					TestDevice.Android => 63,
+					TestDevice.Android => 60,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
 					TestDevice.Mac => 29,
@@ -269,10 +273,13 @@ namespace Microsoft.Maui.TestCases.Tests
 				// For iOS, crop the home indicator at the bottom.
 				int cropFromBottom = _testDevice switch
 				{
-					TestDevice.Android => 126,
+					TestDevice.Android => 125,
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
+
+				cropFromTop = cropTop > 0 ? cropTop : cropFromTop;
+				cropFromBottom = cropBottom > 0 ? cropBottom : cropFromBottom;
 
 				if (cropFromTop > 0 || cropFromBottom > 0)
 				{
