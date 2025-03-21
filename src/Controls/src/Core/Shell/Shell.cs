@@ -137,8 +137,6 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TabBarIsVisibleProperty =
 			BindableProperty.CreateAttached("TabBarIsVisible", typeof(bool), typeof(Shell), true);
 
-#pragma warning disable RS0016
-		//todo add it to public API
 		/// <summary>
 		/// Autoresizes tab bar icons.
 		/// </summary>
