@@ -32,12 +32,26 @@ namespace Microsoft.Maui.Platform
 
 		public MauiScrollView()
 		{
-			ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 		}
 
 		bool RespondsToSafeArea()
 		{
 			return !(_scrollViewDescendant ??= Superview.GetParentOfType<UIScrollView>() is not null);
+		}
+
+		#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override void AdjustedContentInsetDidChange()
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			base.AdjustedContentInsetDidChange();
+			_safeAreaInvalidated = true;
+
+			// It looks like when this invalidates it doesn't auto trigger a layout pass
+			if (!ValidateSafeArea())
+			{
+				InvalidateConstraintsCache();
+				SetNeedsLayout();
+			}
 		}
 
 		public override void SafeAreaInsetsDidChange()
@@ -111,7 +125,7 @@ namespace Microsoft.Maui.Platform
 			_safeAreaInvalidated = false;
 
 			var oldSafeArea = _safeArea;
-			_safeArea = SafeAreaInsets.ToSafeAreaInsets();
+			_safeArea = AdjustedContentInset.ToSafeAreaInsets();
 
 			var oldApplyingSafeAreaAdjustments = _appliesSafeAreaAdjustments;
 			_appliesSafeAreaAdjustments = RespondsToSafeArea() && !_safeArea.IsEmpty;
@@ -123,18 +137,25 @@ namespace Microsoft.Maui.Platform
 
 		Size CrossPlatformArrange(CGRect bounds)
 		{
-			bounds = new CGRect(CGPoint.Empty, bounds.Size);
+			/*bounds = new CGRect(CGPoint.Empty, bounds.Size);
+
+			if (_appliesSafeAreaAdjustments)
+			{
+				bounds = _safeArea.InsetRect(bounds);
+			}*/
 
 			if (_appliesSafeAreaAdjustments)
 			{
 				bounds = _safeArea.InsetRect(bounds);
 			}
 
-			var size = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
+			var size = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
+			
+			//var size = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
 
 			if (_appliesSafeAreaAdjustments)
 			{
-				size = new Size(size.Width + _safeArea.HorizontalThickness, size.Height + _safeArea.VerticalThickness);
+				//size = new Size(size.Width + _safeArea.HorizontalThickness, size.Height + _safeArea.VerticalThickness);
 			}
 
 			return size;
