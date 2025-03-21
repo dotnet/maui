@@ -69,8 +69,7 @@ internal struct CompiledBindingMarkup
 
 		var createBindingLocalMethod = $$"""
 
-			[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-			private static global::Microsoft.Maui.Controls.BindingBase {{methodName}}(global::Microsoft.Maui.Controls.Xaml.BindingExtension extension)
+			static global::Microsoft.Maui.Controls.BindingBase {{methodName}}(global::Microsoft.Maui.Controls.Xaml.BindingExtension extension)
 			{
 				global::System.Func<{{binding.SourceType}}, {{binding.PropertyType}}> getter = {{GenerateGetterLambda(binding.Path)}};
 
@@ -87,7 +86,7 @@ internal struct CompiledBindingMarkup
 			}
 			""";
 
-		_context.AddtitionalWriters.Add(new StringWriter(new StringBuilder(createBindingLocalMethod)));
+		_context.AddLocalMethod(createBindingLocalMethod);
 		newBindingExpression = $"{methodName}({extVariable.Name})";
 
 		return true;

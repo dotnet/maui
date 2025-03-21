@@ -84,6 +84,12 @@ static class InitializeComponentCodeWriter
                     var sgcontext = new SourceGenContext(codeWriter, compilation, sourceProductionContext, xmlnsCache, typeCache, rootType!, baseType) {FilePath = xamlItem.ProjectItem.RelativePath};
                     using(newblock()) {
                         Visit(root, sgcontext);
+
+                        foreach (var localMethod in sgcontext.LocalMethods)
+                        {
+                            codeWriter.WriteLine(localMethod);
+                            codeWriter.WriteLine();
+                        }
                     }
                     
                     foreach (var writer in sgcontext.AddtitionalWriters)

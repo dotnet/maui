@@ -24,8 +24,6 @@ public class BindingCodeWriterTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System.CodeDom.Compiler;
-
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
                 internal static partial class GeneratedBindingInterceptors
                 {
@@ -78,10 +76,10 @@ public class BindingCodeWriterTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -95,29 +93,24 @@ public class BindingCodeWriterTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute(1, @"serializedData")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, @"serializedData")]
                     public static void SetBinding1(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
+                        global::System.Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
                             setter = static (source, value) => 
@@ -130,10 +123,10 @@ public class BindingCodeWriterTests
                             };
                         }
                         
-                        var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "A"),
                                 new(static source => source.A, "B"),
@@ -177,20 +170,20 @@ public class BindingCodeWriterTests
 		AssertExtensions.CodeIsEqual(
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
-            [InterceptsLocationAttribute(1, @"serializedData")]
+            [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, @"serializedData")]
             public static void SetBinding(
-                this BindableObject bindableObject,
-                BindableProperty bindableProperty,
-                Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
-                BindingMode mode = BindingMode.Default,
-                IValueConverter? converter = null,
+                this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                global::System.Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
+                global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                 object? converterParameter = null,
                 string? stringFormat = null,
                 object? source = null,
                 object? fallbackValue = null,
                 object? targetNullValue = null)
             {
-                Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
+                global::System.Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
                 if (ShouldUseSetter(mode, bindableProperty))
                 {
                     setter = static (source, value) => 
@@ -203,10 +196,10 @@ public class BindingCodeWriterTests
                     };
                 }
 
-                var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
+                var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
                     getter: source => (getter(source), true),
                     setter,
-                    handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
+                    handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
                     {
                         new(static source => source, "A"),
                         new(static source => source.A, "B"),
@@ -249,20 +242,20 @@ public class BindingCodeWriterTests
 		AssertExtensions.CodeIsEqual(
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
-            [InterceptsLocationAttribute(1, @"serializedData")]
+            [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, @"serializedData")]
             public static void SetBinding(
-                this BindableObject bindableObject,
-                BindableProperty bindableProperty,
-                Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
-                BindingMode mode = BindingMode.Default,
-                IValueConverter? converter = null,
-                object? converterParameter = null,
-                string? stringFormat = null,
-                object? source = null,
-                object? fallbackValue = null,
-                object? targetNullValue = null)
+                this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                global::System.Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
+                        object? converterParameter = null,
+                        string? stringFormat = null,
+                        object? source = null,
+                        object? fallbackValue = null,
+                        object? targetNullValue = null)
             {
-                Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
+                global::System.Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
                 if (ShouldUseSetter(mode, bindableProperty))
                 {
                     setter = static (source, value) => 
@@ -271,10 +264,10 @@ public class BindingCodeWriterTests
                     };
                 }
 
-                var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
+                var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
                     getter: source => (getter(source), true),
                     setter,
-                    handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
+                    handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
                     {
                         new(static source => source, "A"),
                         new(static source => source.A, "B"),
@@ -317,29 +310,29 @@ public class BindingCodeWriterTests
 		AssertExtensions.CodeIsEqual(
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
-            [InterceptsLocationAttribute(1, @"serializedData")]
+            [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, @"serializedData")]
             public static void SetBinding(
-                this BindableObject bindableObject,
-                BindableProperty bindableProperty,
-                Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
-                BindingMode mode = BindingMode.Default,
-                IValueConverter? converter = null,
-                object? converterParameter = null,
-                string? stringFormat = null,
-                object? source = null,
-                object? fallbackValue = null,
-                object? targetNullValue = null)
+                this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                global::System.Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
+                        object? converterParameter = null,
+                        string? stringFormat = null,
+                        object? source = null,
+                        object? fallbackValue = null,
+                        object? targetNullValue = null)
             {
-                Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
+                global::System.Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
                 if (ShouldUseSetter(mode, bindableProperty))
                 {
-                    throw new InvalidOperationException("Cannot set value on the source object.");
+                    throw new global::System.InvalidOperationException("Cannot set value on the source object.");
                 }
 
-                var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
+                var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
                     getter: source => (getter(source), true),
                     setter,
-                    handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
+                    handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
                     {
                         new(static source => source, "A"),
                         new(static source => source.A, "B"),
@@ -382,20 +375,20 @@ public class BindingCodeWriterTests
 		AssertExtensions.CodeIsEqual(
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
-            [InterceptsLocationAttribute(1, @"serializedData")]
+            [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, @"serializedData")]
             public static void SetBinding(
-                this BindableObject bindableObject,
-                BindableProperty bindableProperty,
-                Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
-                BindingMode mode = BindingMode.Default,
-                IValueConverter? converter = null,
-                object? converterParameter = null,
-                string? stringFormat = null,
-                object? source = null,
-                object? fallbackValue = null,
-                object? targetNullValue = null)
+                this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                global::System.Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
+                        object? converterParameter = null,
+                        string? stringFormat = null,
+                        object? source = null,
+                        object? fallbackValue = null,
+                        object? targetNullValue = null)
             {
-                Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>? setter = null;
+                global::System.Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>? setter = null;
                 if (ShouldUseSetter(mode, bindableProperty))
                 {
                     setter = static (source, value) => 
@@ -412,10 +405,10 @@ public class BindingCodeWriterTests
                     };
                 }
 
-                var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>(
+                var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>(
                     getter: source => (getter(source), true),
                     setter,
-                    handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
+                    handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
                     {
                         new(static source => source, "Item"),
                         new(static source => source, "Item[12]"),
@@ -466,20 +459,20 @@ public class BindingCodeWriterTests
 		AssertExtensions.CodeIsEqual(
 			$$"""
             {{BindingCodeWriter.GeneratedCodeAttribute}}
-            [InterceptsLocationAttribute(1, @"serializedData")]
+            [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, @"serializedData")]
             public static void SetBinding(
-                this BindableObject bindableObject,
-                BindableProperty bindableProperty,
-                Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
-                BindingMode mode = BindingMode.Default,
-                IValueConverter? converter = null,
+                this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                global::System.Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
+                global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                 object? converterParameter = null,
                 string? stringFormat = null,
                 object? source = null,
                 object? fallbackValue = null,
                 object? targetNullValue = null)
             {
-                Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
+                global::System.Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
                 if (ShouldUseSetter(mode, bindableProperty))
                 {
                     setter = static (source, value) => 
@@ -493,10 +486,10 @@ public class BindingCodeWriterTests
                     };
                 }
 
-                var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
+                var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
                     getter: source => (getter(source), true),
                     setter,
-                    handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
+                    handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
                     {
                         new(static source => source, "A"),
                         new(static source => (source.A as X), "B"),
