@@ -203,50 +203,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("Group Header Template(Grid View)");
 		}
 
-		// IsGrouped
-		[Test, Order(2)]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_IsGroupedTrueSetFirst_AndItemSourceGroupedList()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-
-			// second check
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-
-			App.WaitForElement("Group A");
-			App.WaitForElement("Group B");
-		}
-
-		[Test, Order(3)]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_ItemSourceGroupedListSetFirst_AndIsGroupedTrue()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Group A");
-			App.WaitForElement("Group B");
-		}
-
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyIsGrouped_IsGroupedTrueSetFirst_AndItemSourceList()
@@ -422,8 +378,30 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
-		//CanMixGroups and CanReorderGroups
-		[Test, Order(4)]
+		
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS
+//CanMixGroups Set to False Still Allows Reordering Between Groups in CollectionView on Catalyst Issue Link : https://github.com/dotnet/maui/issues/28530
+//Test fails on CV2 . GroupHeader template is not visible  Issue Link: https://github.com/dotnet/maui/issues/28509
+//.NET MAUI CollectionView does not reorder when grouped on windows Issue Link:  https://github.com/dotnet/maui/issues/13027
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyCanMixGroupsFalseWithCanReorderItems()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("CanReorderItemsTrue");
+			App.Tap("CanReorderItemsTrue");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.DragAndDrop("cover1.jpg, 0", "oasis.jpg, 1");
+			VerifyScreenshot();
+		}
+
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyCanMixGroupsTrueWithCanReorderItems()
 		{
@@ -443,7 +421,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test, Order(6)]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyCanReorderItemsTrueWithCanMixGroups()
 		{
@@ -463,7 +441,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-		[Test, Order(7)]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyCanReorderItemsFalseWithCanMixGroups()
 		{
@@ -480,29 +458,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.DragAndDrop("cover1.jpg, 0", "oasis.jpg, 1");
 			VerifyScreenshot();
 		}
-		
-#if TEST_FAILS_ON_CATALYST 
-//CanMixGroups Set to False Still Allows Reordering Between Groups in CollectionView on Catalyst Issue Link : https://github.com/dotnet/maui/issues/28530
-		[Test, Order(5)]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyCanMixGroupsFalseWithCanReorderItems()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("CanReorderItemsTrue");
-			App.Tap("CanReorderItemsTrue");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.DragAndDrop("cover1.jpg, 0", "oasis.jpg, 1");
-			VerifyScreenshot();
+#endif
 
-		}
-
-#if TEST_FAILS_ON_IOS 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 //Test fails on CV2 . GroupHeader/Footer template is not visible  Issue Link: https://github.com/dotnet/maui/issues/28509
 //Header/Footer Template and View Synchronization Issue in .NET MAUI CollectionView (CV2) Issue Link : https://github.com/dotnet/maui/issues/28504
 		[Test]
@@ -721,7 +679,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Group Header Template(Grid View)");
 		}
 
-
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyGroupHeaderTemplate_WithIsGroupedTrue()
@@ -775,6 +732,38 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("Group Footer Template(Grid View)");
 			App.WaitForElement("Group Footer Template(Grid View)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGrouped_IsGroupedTrueSetFirst_AndItemSourceGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Group A");
+			App.WaitForElement("Group B");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGrouped_ItemSourceGroupedListSetFirst_AndIsGroupedTrue()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Group A");
+			App.WaitForElement("Group B");
 		}
 
 #if TEST_FAILS_ON_ANDROID  // Header and footer template is not visible on Android Issue Link: https://github.com/dotnet/maui/issues/28337
@@ -905,7 +894,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("Group A");
 			App.WaitForNoElement("Group B");
 		}
-#endif
 #endif
 #endif
 	}
