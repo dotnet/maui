@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 28201, "TiteView disposed when Page is disposed", PlatformAffected.iOS)]
+[Issue(IssueTracker.Github, 28201, "TitleView disposed when Page is disposed", PlatformAffected.iOS)]
 public class Issue28201 : NavigationPage
 {
 	public Issue28201()
