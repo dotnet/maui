@@ -147,7 +147,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					int adapterCount = _adapter.Count;
 					for (int i = 0; i < adapterCount; i++)
 					{
+#pragma warning disable CS0618 // Type or member is obsolete
 						var cell = (Cell)_adapter[i];
+#pragma warning restore CS0618 // Type or member is obsolete
 						if (cell.Height > -1)
 						{
 							totalHeight += cell.Height;

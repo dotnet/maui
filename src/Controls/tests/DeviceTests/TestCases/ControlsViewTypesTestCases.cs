@@ -40,7 +40,9 @@ namespace Microsoft.Maui.DeviceTests.TestCases
 			new object[] { typeof(IndicatorView) },
 			new object[] { typeof(Label) },
 			new object[] { typeof(Line) },
+#pragma warning disable CS0618 // Type or member is obsolete
 			new object[] { typeof(ListView) },
+#pragma warning restore CS0618 // Type or member is obsolete
 			new object[] { typeof(Picker) },
 			new object[] { typeof(Polygon) },
 			new object[] { typeof(Polyline) },
@@ -86,7 +88,9 @@ namespace Microsoft.Maui.DeviceTests.TestCases
 #pragma warning restore CS0618 // Type or member is obsolete
 				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
 				handlers.AddHandler<Label, LabelHandler>();
+#pragma warning disable CS0618 // Type or member is obsolete
 				handlers.AddHandler<ListView, ListViewRenderer>();
+#pragma warning restore CS0618 // Type or member is obsolete
 				handlers.AddHandler<Picker, PickerHandler>();
 				handlers.AddHandler<Polygon, PolygonHandler>();
 				handlers.AddHandler<Polyline, PolylineHandler>();
