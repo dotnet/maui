@@ -19,7 +19,7 @@ public class IntegrationTests
 		var result = SourceGenHelpers.Run(source);
 		Assert.NotNull(result.Binding);
 
-		var id = Math.Abs(result.Binding.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding.SimpleLocation!.GetHashCode());
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -63,7 +63,7 @@ public class IntegrationTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -118,7 +118,7 @@ public class IntegrationTests
 		AssertExtensions.AssertNoDiagnostics(result);
 		Assert.NotNull(result.Binding);
 
-		var id = Math.Abs(result.Binding.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding.SimpleLocation!.GetHashCode());
 
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -161,8 +161,8 @@ public class IntegrationTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
-                    public static BindingBase Create{{id}}(
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    public static global::Microsoft.Maui.Controls.BindingBase Create{{id}}(
                         Func<string, int> getter,
                         BindingMode mode = BindingMode.Default,
                         IValueConverter? converter = null,
@@ -289,7 +289,7 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -332,7 +332,7 @@ public class IntegrationTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -410,7 +410,7 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -453,7 +453,7 @@ public class IntegrationTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -637,7 +637,7 @@ public class IntegrationTests
 	public void GenerateSimpleBindingWhenNullableDisabledAndPropertyNullable(string source)
 	{
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -680,7 +680,7 @@ public class IntegrationTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -772,7 +772,7 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -815,7 +815,7 @@ public class IntegrationTests
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -907,7 +907,7 @@ public class IntegrationTests
             """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -951,7 +951,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1048,7 +1048,7 @@ public class IntegrationTests
             """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -1092,7 +1092,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1176,7 +1176,7 @@ public class IntegrationTests
             """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -1219,7 +1219,7 @@ public class IntegrationTests
                 internal static partial class GeneratedBindingInterceptors
                 {
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1300,7 +1300,7 @@ public class IntegrationTests
             """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
@@ -1344,7 +1344,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1431,7 +1431,7 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -1474,7 +1474,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1553,7 +1553,7 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -1596,7 +1596,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1674,7 +1674,7 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -1717,7 +1717,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1794,7 +1794,7 @@ public class IntegrationTests
         """;
 
 		var result = SourceGenHelpers.Run(source);
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 		AssertExtensions.AssertNoDiagnostics(result);
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -1837,7 +1837,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -1909,7 +1909,7 @@ public class IntegrationTests
 		var actual = result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-5-7.g.cs"];
 		AssertExtensions.AssertNoDiagnostics(result);
 
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 
 		AssertExtensions.CodeIsEqual(
 			$$"""
@@ -1952,7 +1952,7 @@ public class IntegrationTests
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
@@ -2018,7 +2018,7 @@ public class IntegrationTests
 		""";
 
 		var result = SourceGenHelpers.Run(source, [new BindingSourceGenerator(), new IncrementalGeneratorSlider()]);
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 		AssertExtensions.AssertNoDiagnostics(result.SourceGeneratorDiagnostics, "Source generator");
 		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
 
@@ -2064,8 +2064,8 @@ public class IntegrationTests
 				{
 					
 					{{BindingCodeWriter.GeneratedCodeAttribute}}
-					[InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
-					public static BindingBase Create{{id}}(
+					[InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+					public static global::Microsoft.Maui.Controls.BindingBase Create{{id}}(
 						Func<global::Microsoft.Maui.Controls.Slider, double> getter,
 						BindingMode mode = BindingMode.Default,
 						IValueConverter? converter = null,
@@ -2132,7 +2132,7 @@ public class IntegrationTests
 		""";
 
 		var result = SourceGenHelpers.Run(source, [new BindingSourceGenerator(), new IncrementalGeneratorSlider()]);
-		var id = Math.Abs(result.Binding!.SimpleLocation.GetHashCode());
+		var id = Math.Abs(result.Binding!.SimpleLocation!.GetHashCode());
 		AssertExtensions.AssertNoDiagnostics(result.SourceGeneratorDiagnostics, "Source generator");
 		AssertExtensions.AssertNoDiagnostics(result.GeneratedCodeCompilationDiagnostics, "Generated code compilation");
 
@@ -2178,7 +2178,7 @@ public class IntegrationTests
 				{
 					
 					{{BindingCodeWriter.GeneratedCodeAttribute}}
-					[InterceptsLocationAttribute({{result.Binding.InterceptableLocation.Version}}, @"{{result.Binding.InterceptableLocation.Data}}")]
+					[InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
 					public static void SetBinding{{id}}(
 					this BindableObject bindableObject,
 					BindableProperty bindableProperty,
