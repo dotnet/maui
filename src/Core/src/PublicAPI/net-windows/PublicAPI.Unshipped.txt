@@ -82,5 +82,7 @@ static Microsoft.Maui.Platform.DatePickerExtensions.UpdateBackground(this Micros
 static Microsoft.Maui.Platform.TimePickerExtensions.UpdateBackground(this Microsoft.UI.Xaml.Controls.TimePicker! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Handlers.TimePickerHandler.MapBackground(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Platform.TextBoxExtensions.GetCursorPosition(this Microsoft.UI.Xaml.Controls.TextBox! textBox, int cursorOffset = 0) -> int
+*REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
+Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
 *REMOVED*static Microsoft.Maui.Platform.ScrollViewerExtensions.UpdateScrollBarVisibility(this Microsoft.UI.Xaml.Controls.ScrollViewer! scrollViewer, Microsoft.Maui.ScrollOrientation orientation, Microsoft.Maui.ScrollBarVisibility horizontalScrollBarVisibility) -> void
 static Microsoft.Maui.Platform.ScrollViewerExtensions.UpdateScrollBarVisibility(this Microsoft.UI.Xaml.Controls.ScrollViewer! scrollViewer, Microsoft.Maui.ScrollOrientation orientation, Microsoft.Maui.ScrollBarVisibility visibility) -> void
