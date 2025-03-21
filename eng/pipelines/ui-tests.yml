@@ -72,7 +72,7 @@ parameters:
       vmImage: $(androidTestsVmImage)
       demands:
         - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals x64
+        - macOS.Architecture -equals arm64
 
   - name: iosPool
     type: object
@@ -81,7 +81,7 @@ parameters:
       vmImage: $(iosTestsVmImage)
       demands:
         - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals x64
+        - macOS.Architecture -equals arm64
   
   - name: windowsBuildPool
     type: object
@@ -99,7 +99,7 @@ parameters:
     type: object
     default:
       name: Azure Pipelines
-      vmImage: macOS-14
+      vmImage: macOS-15
 
   - name: androidCompatibilityPool
     type: object
@@ -108,7 +108,7 @@ parameters:
       vmImage: $(androidTestsVmImage)
       demands:
         - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals x64
+        - macOS.Architecture -equals arm64
 
   - name: iosCompatibilityPool
     type: object
@@ -117,7 +117,7 @@ parameters:
       vmImage: $(androidTestsVmImage)
       demands:
         - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals x64
+        - macOS.Architecture -equals arm64
 
 resources:
   repositories:
