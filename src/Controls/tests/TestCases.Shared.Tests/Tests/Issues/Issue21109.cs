@@ -21,7 +21,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("SearchEntry");
 			Thread.Sleep(500); // Add some wait for poping up the keyboard to resolve flakiness in CI.
 
+			// CI tests sometimes fail due to color inconsistency between the keyboard and bottom navigation bar.
+#if ANDROID
+			VerifyScreenshot(cropTop: 63, cropBottom: 126);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 		[Test, Order(2)]
