@@ -102,6 +102,7 @@ namespace Microsoft.Maui.Controls.Platform
 					else
 					{
 						SetMenuItemTitle(menuItem, item.title);
+						UpdateEnabled(item.tabEnabled, menuItem);
 						loadTasks.Add(SetMenuItemIcon(menuItem, item.icon, mauiContext));
 					}
 				}
