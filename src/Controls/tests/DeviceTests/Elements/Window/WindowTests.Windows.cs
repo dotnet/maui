@@ -71,6 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
+				GC.Collect();
 				GC.WaitForFullGCComplete();
 
 				Assert.True(weakReferences.Count(r => r.IsAlive) == 0);

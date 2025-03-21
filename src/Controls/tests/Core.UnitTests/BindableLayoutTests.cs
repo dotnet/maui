@@ -375,7 +375,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var weakReference = CreateReference();
 
-			await TestHelpers.Collect();
+			await TestHelpers.CollectAsync();
 
 			Assert.False(weakReference.IsAlive);
 
@@ -627,14 +627,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// First GC
 			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.CollectAsync();
 			Assert.False(controllerRef.IsAlive, "BindableLayoutController should not be alive!");
 
 			// Second GC
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.CollectAsync();
 			Assert.False(proxyRef.IsAlive, "WeakCollectionChangedProxy should not be alive!");
 		}
 
@@ -648,9 +645,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(2, layout.Children.Count);
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.CollectAsync();
 
 			list.Add("Baz");
 			Assert.Equal(3, layout.Children.Count);

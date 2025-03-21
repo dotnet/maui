@@ -726,7 +726,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var reference = CreateReference();
 
 			// GC
-			await TestHelpers.Collect();
+			await TestHelpers.CollectAsync();
 
 			Assert.False(reference.IsAlive, "Window should not be alive!");
 
@@ -756,9 +756,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			// GC collect the original key
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.CollectAsync();
 
 			// Same window, doesn't create a new one
 			var actual = ((IApplication)application).CreateWindow(new ActivationState(new MockMauiContext(), new PersistedState

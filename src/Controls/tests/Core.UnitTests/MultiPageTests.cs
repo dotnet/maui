@@ -874,8 +874,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// the collection changed handlers in ListProxy; without the GC calls if we introduce
 			// a reference bug the tests will still usually pass on Debug builds and only intermittently
 			// fail on Release builds. We don't want these bugs to accidentally slip by.
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 		}
 	}
 }

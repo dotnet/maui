@@ -719,8 +719,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await Task.Delay(100);
 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			TestHelpers.Collect();
 
 			Assert.True(isFinalized);
 		}

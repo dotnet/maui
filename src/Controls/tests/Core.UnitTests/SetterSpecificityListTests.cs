@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -46,11 +46,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			list.Remove(SetterSpecificity.FromBinding);
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.False(weakReference.TryGetTarget(out _));
+			var isAlive = await TestHelpers.WaitForCollect(weakReference);
+			Assert.False(isAlive);
 		}
 
 		[Fact]
@@ -67,11 +64,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			list.Remove(SetterSpecificity.ManualValueSetter);
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.False(weakReference.TryGetTarget(out _));
+			var isAlive = await TestHelpers.WaitForCollect(weakReference);
+			Assert.False(isAlive);
 		}
 
 		[Fact]

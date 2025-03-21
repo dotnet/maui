@@ -63,9 +63,7 @@ namespace Microsoft.Maui.UnitTests.Views
 					fired = true;
 			};
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.CollectAsync();
 			GC.KeepAlive(border);
 
 			strokeShape.CornerRadius = new CornerRadius(24);
@@ -86,9 +84,7 @@ namespace Microsoft.Maui.UnitTests.Views
 					fired = true;
 			};
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.CollectAsync();
 			GC.KeepAlive(border);
 
 			stroke.Color = Colors.Green;
