@@ -375,6 +375,9 @@ namespace Microsoft.Maui.Controls.Platform
 						}
 
 						menuItem.SetIcon(iconDrawable);
+
+						// Setting the title, so that tooltip text is displayed in native color
+						menuItem.SetTitle(toolBarItem?.Text ?? string.Empty);
 					}
 				}
 				else
