@@ -32,6 +32,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool _isRotating;
 
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
+			{
+				return;
+			}
+
+			if (ItemsView?.Loop == false || _carouselViewLoopManager is null)
+			{
+				CollectionView.ReloadData();
+				InitialPositionSet = false;
+			}
+		}
+
 		public CarouselViewController(CarouselView itemsView, ItemsViewLayout layout) : base(itemsView, layout)
 		{
 			CollectionView.AllowsSelection = false;
