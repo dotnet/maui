@@ -1436,6 +1436,100 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(refreshing);
 		}
 
+		public class BloodworkStatus
+		{
+			public int Id { get; set; }
+			public string Name { get; set; }
+
+			public override string ToString()
+			{
+				return Name!.ToString();
+			}
+		}
+
+		public class Patient
+		{
+			public int Id { get; set; }
+			public string Name { get; set; }
+			public string MedicalHistory { get; set; }
+			public BloodworkStatus BloodworkStatus { get; set; }
+		}
+		public class MainViewModel 
+		{
+			public ObservableCollection<Patient> Patients { get; set; }
+			public ObservableCollection<BloodworkStatus> BloodworkStatuses { get; set; }
+
+			public MainViewModel()
+			{
+				Patients = new ObservableCollection<Patient>();
+				BloodworkStatuses = new ObservableCollection<BloodworkStatus>();
+
+				BloodworkStatus status = new BloodworkStatus();
+				status.Id = 1;
+				status.Name = "Not started";
+				BloodworkStatuses.Add(status);
+
+				status = new BloodworkStatus();
+				status.Id = 2;
+				status.Name = "In Progress";
+				BloodworkStatuses.Add(status);
+
+				status = new BloodworkStatus();
+				status.Id = 3;
+				status.Name = "Completed";
+				BloodworkStatuses.Add(status);
+
+				var selectedstatus = BloodworkStatuses[1];
+
+				Patient patient = new Patient();
+				patient.Id = 1;
+				patient.Name = "John Nameless";
+				patient.MedicalHistory = "Loves to develop MAUI :/ ";
+				patient.BloodworkStatus = BloodworkStatuses[2];
+				Patients.Add(patient);
+
+				patient = new Patient();
+				patient.Id = 2;
+				patient.Name = "Patrick Schlover";
+				patient.MedicalHistory = "Hail Microsoft";
+				patient.BloodworkStatus = BloodworkStatuses[0];
+				Patients.Add(patient);
+
+				patient = new Patient();
+				patient.Id = 2;
+				patient.Name = "Layla McKanzi";
+				patient.MedicalHistory = "Seeking for a Mecnun";
+				patient.BloodworkStatus = BloodworkStatuses[0];
+				Patients.Add(patient);
+			}
+		}
+
+		[Fact]
+		public void Issue13558()
+		{
+			var page = new ContentPage();
+
+			// Set the BindingContext
+			page.BindingContext = new MainViewModel();
+			var listView = new ListView();
+			page.Content = listView;
+			var dataTemplate = new DataTemplate(() =>
+			{
+				var picker = new Picker();
+				// Bind ItemsSource to the relative source (MainViewModel)
+				picker.SetBinding(Picker.ItemsSourceProperty, new Binding("BloodworkStatuses", source: page.BindingContext));
+				picker.SetBinding(Picker.SelectedItemProperty, new Binding("BloodworkStatus", BindingMode.TwoWay));
+				return new ViewCell { View = picker };
+			});
+			listView.ItemTemplate = dataTemplate;
+			listView.ItemsSource = (page.BindingContext as MainViewModel).Patients;
+
+			// Get the first item in the ListView
+			var firstCell = (ViewCell)listView.TemplatedItems[0];
+			var picker = (Picker)firstCell.View;
+			Assert.Equal("Completed", picker.SelectedItem.ToString()); // Check if the selected item is bound correctly
+		}
+
 		[Fact]
 		public void EndRefresh()
 		{
