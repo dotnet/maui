@@ -4,8 +4,8 @@
              Title="Issue24246"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              ios:Page.UseSafeArea="false">
-  <VerticalStackLayout Background="Purple" IgnoreSafeArea="False" VerticalOptions="Start" IsClippedToBounds="True" >
-    <Entry AutomationId="entry" Background="Green"></Entry>
-    <Label AutomationId="label" Text="If you can't interact with the above entry field, the test has failed" LineBreakMode="CharacterWrap"></Label>
+  <VerticalStackLayout Background="Purple" IgnoreSafeArea="False" VerticalOptions="Start" IsClippedToBounds="True" x:Name="RootLayout" InputTransparent="False" >
+    <Entry AutomationId="entry" Background="Green" Placeholder="You should see a button below this"></Entry>
+    <Button Clicked="Button_Clicked" AutomationId="button" Text="Click" LineBreakMode="CharacterWrap"></Button>
   </VerticalStackLayout>
 </ContentPage>
