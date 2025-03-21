@@ -12,7 +12,6 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
-using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -163,7 +162,7 @@ namespace Microsoft.Maui.DeviceTests
 			var platformRotation = await InvokeOnMainThreadAsync(() => platformLabel.Rotation);
 			Assert.Equal(expected, platformRotation);
 		}
-		
+
 	    [Fact]
 		[Description("The IsEnabled property of a Label should match with native IsEnabled")]		
 		public async Task VerifyLabelIsEnabledProperty()
