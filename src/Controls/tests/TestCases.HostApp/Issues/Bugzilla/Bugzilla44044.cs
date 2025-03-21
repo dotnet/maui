@@ -39,7 +39,7 @@ public class Bugzilla44044 : TestTabbedPage
 					new Button
 					{
 						Text = "Click to DisplayAlert",
-						Command = new Command(() => DisplayAlert("Page 2", "Message", "Cancel")),
+						Command = new Command(() => DisplayAlertAsync("Page 2", "Message", "Cancel")),
 						AutomationId = _btnDisplayAlert
 					}
 				}

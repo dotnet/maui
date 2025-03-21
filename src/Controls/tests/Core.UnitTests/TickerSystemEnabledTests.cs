@@ -22,8 +22,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		static async Task SwapFadeViews(View view1, View view2)
 		{
-			await view1.FadeTo(0, 15000);
-			await view2.FadeTo(1, 15000);
+			await view1.FadeToAsync(0, 15000);
+			await view2.FadeToAsync(1, 15000);
 		}
 
 		[Fact(Timeout = 3000)]
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				var view = AnimationReadyHandlerAsync.Prepare(new View { Opacity = 1 }, out var handler);
 
-				await Task.WhenAll(view.FadeTo(0, 2000), handler.DisableTicker());
+				await Task.WhenAll(view.FadeToAsync(0, 2000), handler.DisableTicker());
 
 				Assert.Equal(0, view.Opacity);
 			});
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				await handler.DisableTicker();
 
-				await view.RotateYTo(200);
+				await view.RotateYToAsync(200);
 
 				Assert.Equal(200, view.RotationY);
 			});
@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				await handler.DisableTicker();
 
-				var result = await label.ScaleTo(2, 500);
+				var result = await label.ScaleToAsync(2, 500);
 
 				Assert.True(result);
 			});
@@ -133,8 +133,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				while (run)
 				{
-					await label.ScaleTo(2, 500);
-					run = !(await label.ScaleTo(0.5, 500));
+					await label.ScaleToAsync(2, 500);
+					run = !(await label.ScaleToAsync(0.5, 500));
 				}
 			});
 		}

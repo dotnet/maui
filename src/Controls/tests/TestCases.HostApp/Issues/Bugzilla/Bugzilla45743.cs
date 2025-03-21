@@ -22,7 +22,7 @@ public class Bugzilla45743 : TestNavigationPage
 #pragma warning disable CS0612 // Type or member is obsolete
 		Device.BeginInvokeOnMainThread(async () =>
 		{
-			await DisplayAlert("Title", "Message", "Accept", "Cancel");
+			await DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
 		});
 #pragma warning restore CS0612 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -50,7 +50,7 @@ public class Bugzilla45743 : TestNavigationPage
 #pragma warning disable CS0612 // Type or member is obsolete
 		Device.BeginInvokeOnMainThread(async () =>
 		{
-			await DisplayAlert("Title 2", "Message", "Accept", "Cancel");
+			await DisplayAlertAsync("Title 2", "Message", "Accept", "Cancel");
 		});
 #pragma warning restore CS0612 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete
@@ -59,7 +59,7 @@ public class Bugzilla45743 : TestNavigationPage
 #pragma warning disable CS0612 // Type or member is obsolete
 		Device.BeginInvokeOnMainThread(async () =>
 		{
-			await DisplayActionSheet("ActionSheet Title", "Cancel", "Close", new string[] { "Test", "Test 2" });
+			await DisplayActionSheetAsync("ActionSheet Title", "Cancel", "Close", new string[] { "Test", "Test 2" });
 		});
 #pragma warning restore CS0612 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete

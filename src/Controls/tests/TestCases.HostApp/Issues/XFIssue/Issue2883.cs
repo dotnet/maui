@@ -35,20 +35,20 @@ public class Issue2883 : TestContentPage
 
 		btnCustom.Clicked += (object sender, EventArgs e) =>
 		{
-			DisplayAlert("Clicked", "I was clicked even disabled", "ok");
+			DisplayAlertAsync("Clicked", "I was clicked even disabled", "ok");
 		};
 		btnCustom1.Clicked += (object sender, EventArgs e) =>
 		{
-			DisplayAlert("Clicked", "I was clicked even disabled", "ok");
+			DisplayAlertAsync("Clicked", "I was clicked even disabled", "ok");
 		};
 
 		btnCustom1Enabled.Clicked += (object sender, EventArgs e) =>
 		{
-			DisplayAlert("Clicked", "I was clicked", "ok");
+			DisplayAlertAsync("Clicked", "I was clicked", "ok");
 		};
 		btnCustomEnabled.Clicked += (object sender, EventArgs e) =>
 		{
-			DisplayAlert("Clicked", "I was clicked", "ok");
+			DisplayAlertAsync("Clicked", "I was clicked", "ok");
 		};
 
 		var customCell = new ViewCell()

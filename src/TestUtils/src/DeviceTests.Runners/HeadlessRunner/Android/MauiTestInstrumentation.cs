@@ -118,14 +118,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 				finalPath = Path.Combine(root, relative, name);
 			}
 
-			if (OperatingSystem.IsAndroidVersionAtLeast(21))
-			{
-				bundle.PutCharSequence("test-results-path", finalPath);
-			}
-			else
-			{
-				bundle.PutString("test-results-path", finalPath);
-			}
+			bundle.PutString("test-results-path", finalPath);
 		}
 
 		Task<Bundle> RunTestsAsync()
