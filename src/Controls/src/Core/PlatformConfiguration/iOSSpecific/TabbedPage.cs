@@ -32,8 +32,6 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-//todo add these methods to public API 
-#pragma warning disable RS0016
 		public static readonly BindableProperty AutoResizeIconsProperty =
 			BindableProperty.Create("AutoResizeIcons",
 				typeof(bool), typeof(TabbedPage), false);
