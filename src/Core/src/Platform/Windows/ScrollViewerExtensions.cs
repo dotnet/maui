@@ -16,10 +16,9 @@ namespace Microsoft.Maui.Platform
 			};
 		}
 
-		public static void UpdateScrollBarVisibility(this ScrollViewer scrollViewer, ScrollOrientation orientation,
-			ScrollBarVisibility horizontalScrollBarVisibility)
+		public static void UpdateScrollBarVisibility(this ScrollViewer scrollViewer, ScrollOrientation orientation, ScrollBarVisibility visibility)
 		{
-			if (horizontalScrollBarVisibility == ScrollBarVisibility.Default)
+			if (visibility == ScrollBarVisibility.Default)
 			{
 				// If the user has not explicitly set a horizontal scroll bar visibility, then the orientation will
 				// determine what the horizontal scroll bar does
@@ -38,7 +37,7 @@ namespace Microsoft.Maui.Platform
 
 			scrollViewer.HorizontalScrollBarVisibility = orientation switch
 			{
-				ScrollOrientation.Horizontal or ScrollOrientation.Both => horizontalScrollBarVisibility.ToWindowsScrollBarVisibility(),
+				ScrollOrientation.Horizontal or ScrollOrientation.Both => visibility.ToWindowsScrollBarVisibility(),
 				_ => WScrollBarVisibility.Disabled,
 			};
 
@@ -52,7 +51,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateContent(this ScrollViewer scrollViewer, IView? content, IMauiContext context)
 		{
-			scrollViewer.Content = content == null ? null : content.ToPlatform(context);
+			scrollViewer.Content = content?.ToPlatform(context);
 		}
 	}
 }
