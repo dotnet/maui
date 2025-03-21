@@ -432,43 +432,7 @@ namespace Microsoft.Maui.Handlers
 
 
 #if PLATFORM && !TIZEN
-		// Copied from WebView.cs
-		internal static string? EscapeJsString(string js)
-		{
-			if (js == null)
-				return null;
-
-			if (!js.Contains('\'', StringComparison.Ordinal))
-				return js;
-
-			//get every quote in the string along with all the backslashes preceding it
-			var singleQuotes = Regex.Matches(js, @"(\\*?)'");
-
-			var uniqueMatches = new List<string>();
-
-			for (var i = 0; i < singleQuotes.Count; i++)
-			{
-				var matchedString = singleQuotes[i].Value;
-				if (!uniqueMatches.Contains(matchedString))
-				{
-					uniqueMatches.Add(matchedString);
-				}
-			}
-
-			uniqueMatches.Sort((x, y) => y.Length.CompareTo(x.Length));
-
-			//escape all quotes from the script as well as add additional escaping to all quotes that were already escaped
-			for (var i = 0; i < uniqueMatches.Count; i++)
-			{
-				var match = uniqueMatches[i];
-				var numberOfBackslashes = match.Length - 1;
-				var slashesToAdd = (numberOfBackslashes * 2) + 1;
-				var replacementStr = "'".PadLeft(slashesToAdd + 1, '\\');
-				js = Regex.Replace(js, @"(?<=[^\\])" + Regex.Escape(match), replacementStr);
-			}
-
-			return js;
-		}
+		internal static string? EscapeJsString(string js) => WebViewHelper.EscapeJsString(js);
 #endif
 
 		internal static async Task<string?> GetAssetContentAsync(string assetPath)

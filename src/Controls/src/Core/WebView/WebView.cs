@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Net;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -290,42 +290,7 @@ namespace Microsoft.Maui.Controls
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		private static string EscapeJsString(string js)
-		{
-			if (js == null)
-				return null;
-
-			if (js.IndexOf("'", StringComparison.Ordinal) == -1)
-				return js;
-
-			//get every quote in the string along with all the backslashes preceding it
-			var singleQuotes = Regex.Matches(js, @"(\\*?)'");
-
-			var uniqueMatches = new List<string>();
-
-			for (var i = 0; i < singleQuotes.Count; i++)
-			{
-				var matchedString = singleQuotes[i].Value;
-				if (!uniqueMatches.Contains(matchedString))
-				{
-					uniqueMatches.Add(matchedString);
-				}
-			}
-
-			uniqueMatches.Sort((x, y) => y.Length.CompareTo(x.Length));
-
-			//escape all quotes from the script as well as add additional escaping to all quotes that were already escaped
-			for (var i = 0; i < uniqueMatches.Count; i++)
-			{
-				var match = uniqueMatches[i];
-				var numberOfBackslashes = match.Length - 1;
-				var slashesToAdd = (numberOfBackslashes * 2) + 1;
-				var replacementStr = "'".PadLeft(slashesToAdd + 1, '\\');
-				js = Regex.Replace(js, @"(?<=[^\\])" + Regex.Escape(match), replacementStr);
-			}
-
-			return js;
-		}
+		internal static string EscapeJsString(string js) => WebViewHelper.EscapeJsString(js);
 
 		/// <inheritdoc/>
 		IWebViewSource IWebView.Source => Source;
