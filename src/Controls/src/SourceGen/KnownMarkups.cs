@@ -239,44 +239,60 @@ internal class KnownMarkups
 		{
 			dataTypeSymbol = null;
 
-			if (!TryFindXDataTypeNode(node, context, out INode? dataTypeNode, out bool xDataTypeIsInOuterScope))
+			if (!TryFindXDataTypeNode(node, context, out INode? dataTypeNode, out bool xDataTypeIsInOuterScope)
+				|| dataTypeNode is null)
 			{
 				return false;
 			}
 
-			if (dataTypeNode is null)
-			{
-				// TODO
-				// context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, GetLocation(context, node)));
-				// _context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithoutDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
-				return false;
-			}
+			var location = LocationHelpers.LocationCreate(context.FilePath!, (IXmlLineInfo)node, "x:DataType");
 
 			if (xDataTypeIsInOuterScope)
 			{
 				// TODO
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Binding with x:DataType from outer scope"));
 				// _context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithXDataTypeFromOuterScope, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
 				// continue compilation
 			}
 
 			if (dataTypeNode.RepresentsType(XamlParser.X2009Uri, "NullExtension"))
 			{
-				// TODO
+				// TODO report warning
+				// context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Binding with x:DataType NullExtension"));
 				// context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithNullDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
 				return false;
 			}
 
 			// TypeExtension would already provide the type value, so we can just grab it from the context
-			if (dataTypeNode.RepresentsType(XamlParser.X2009Uri, "TypeExtension")
-				&& context.Types.TryGetValue(dataTypeNode, out dataTypeSymbol))
+			if (dataTypeNode.RepresentsType(XamlParser.X2009Uri, "TypeExtension"))
 			{
-				return true;
+				// it is possible that the dataTypeNode belongs to the parent context
+				// this is the case for example in this scenario:
+				//
+				//    <DataTemplate x:DataType="local:ItemViewModel">
+				//        <Label Text="{Binding ItemTitle}" />
+				//    </DataTemplate>
+				//
+				SourceGenContext? ctx = context;
+				while (ctx is not null)
+				{
+					if (ctx.Types.TryGetValue(dataTypeNode, out dataTypeSymbol))
+					{
+						return true;
+					}
+
+					ctx = ctx.ParentContext;
+				}
+
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Binding with x:DataType TypeExtension which cannot be resolved"));
+				return false;
 			}
 
 			string? dataTypeName = (dataTypeNode as ValueNode)?.Value as string;
 			if (dataTypeName is null)
 			{
 				// TODO
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, $"dataTypeNode is not a value node, got {dataTypeNode} instead"));
 				// throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
 				// throw new Exception($"dataTypeNode {dataTypeNode} is not a value node"); // TODO
 				return false;
@@ -299,13 +315,14 @@ internal class KnownMarkups
 				// TODO
 				// throw new BuildException(XDataTypeSyntax, dataTypeNode as IXmlLineInfo, null);
 				// throw new Exception($"cannot parse {dataTypeName}"); // TODO
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Cannot parse x:DataType value"));
 				return false;
 			}
 
 			if (!dataType.TryResolveTypeSymbol(null, context.Compilation, context.XmlnsCache, out INamedTypeSymbol? symbol) && symbol is not null)
 			{
-				// TODO
-				// report diagnostic
+				// TODO report the right diagnostic
+				context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, "Cannot resolve x:DataType type"));
 				return false;
 			}
 
