@@ -239,6 +239,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateHorizontalScrollBarVisibility();
 			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
 				UpdateVerticalScrollBarVisibility();
+			else if (e.PropertyName == ListView.HasUnevenRowsProperty.PropertyName)
+				UpdateHasUnevenRows();
+		}
+
+		void UpdateHasUnevenRows()
+		{
+
+			if (_adapter is not null)
+			{
+				for (int i = 0; i < _adapter.Count; i++)
+				{
+					var cell = _adapter.GetCellsFromPosition(i, 1)[0];
+					cell.ForceUpdateSize();
+				}
+			}
 		}
 
 		/*
