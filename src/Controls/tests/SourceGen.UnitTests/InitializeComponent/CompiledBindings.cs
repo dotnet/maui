@@ -73,13 +73,68 @@ public partial class TestPage
 #line 1 "Test.xaml"
 		bindingExtension.Path = "Title";
 #line default
-		var bindingBase = new global::Microsoft.Maui.Controls.Binding(bindingExtension.Path, bindingExtension.Mode, bindingExtension.Converter, bindingExtension.ConverterParameter, bindingExtension.StringFormat, bindingExtension.Source) { UpdateSourceEventName = bindingExtension.UpdateSourceEventName, FallbackValue = bindingExtension.FallbackValue, TargetNullValue = bindingExtension.TargetNullValue, DataType = typeof(global::Test.TestPage) };
+		var bindingBase = CreateTypedBindingFrom_bindingExtension(bindingExtension);
 #if _MAUIXAML_SG_SOURCEINFO
 		if (global::Microsoft.Maui.VisualDiagnostics.GetSourceInfo(bindingBase!) == null)
 			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingBase!, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), -1, -1);
 #endif
 		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingBase);
 	}
+	
+private static global::Microsoft.Maui.Controls.BindingBase CreateTypedBindingFrom_bindingExtension(global::Microsoft.Maui.Controls.Xaml.BindingExtension extension)
+{
+	Func<global::Test.TestPage, string> getter = static source => (source.Title, true);
+
+	return Create(getter, extension.Mode, extension.Converter, extension.ConverterParameter,
+		extension.StringFormat, extension.Source, extension.FallbackValue, extension.TargetNullValue);
+
+			[GeneratedCodeAttribute("Microsoft.Maui.Controls.BindingSourceGen, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", "1.0.0.0")]
+		private static global::Microsoft.Maui.Controls.BindingBase Create(
+			Func<global::Test.TestPage, string> getter,
+			BindingMode mode = BindingMode.Default,
+			IValueConverter? converter = null,
+			object? converterParameter = null,
+			string? stringFormat = null,
+			object? source = null,
+			object? fallbackValue = null,
+			object? targetNullValue = null)
+		{
+			Action<global::Test.TestPage, string>? setter = null;
+			if (ShouldUseSetter(mode))
+			{
+					setter = static (source, value) =>
+					{
+						source.Title = value;
+					};
+			}
+			
+			var binding = new TypedBinding<global::Test.TestPage, string>(
+				getter: source => (getter(source), true),
+				setter,
+			    handlers: new Tuple<Func<global::Test.TestPage, object?>, string>[]
+			{
+				new(static source => source, "Title"),
+			})
+			{
+				Mode = mode,
+				Converter = converter,
+				ConverterParameter = converterParameter,
+				StringFormat = stringFormat,
+				Source = source,
+				FallbackValue = fallbackValue,
+				TargetNullValue = targetNullValue
+			};
+			
+			return binding;
+		}
+
+
+	static bool ShouldUseSetter(BindingMode mode)
+		=> mode == BindingMode.OneWayToSource
+			|| mode == BindingMode.TwoWay
+			|| mode == BindingMode.Default;
+}
+
 }
 
 """;

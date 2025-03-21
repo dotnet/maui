@@ -193,7 +193,11 @@ internal class KnownMarkups
 
 		if (TryGetXDataType(markupNode, context, out dataTypeSymbol) && dataTypeSymbol is not null)
 		{
-			// TODO try to compile the binding
+			var compiledBindingMarkup = new CompiledBindingMarkup(markupNode, path, extVariable, context);
+			if (compiledBindingMarkup.TryCompileBinding(dataTypeSymbol, out string? newBindingExpression) && newBindingExpression is not null)
+			{
+				return newBindingExpression;
+			}
 		}
 
 		var dataTypeExpression = dataTypeSymbol is not null
