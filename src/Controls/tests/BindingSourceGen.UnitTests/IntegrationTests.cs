@@ -1492,7 +1492,7 @@ public class IntegrationTests
                         {
                             setter = static (source, value) =>
                             {
-                                GetUnsafeField{{id}}_button(source).Text = value;
+                                GetUnsafeField__button(source).Text = value;
                             };
                         }
 
@@ -1502,7 +1502,7 @@ public class IntegrationTests
                             handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "_button"),
-                                new(static source => GetUnsafeField{{id}}_button(source), "Text"),
+                                new(static source => GetUnsafeField__button(source), "Text"),
                             })
                         {
                             Mode = mode,
@@ -1515,10 +1515,11 @@ public class IntegrationTests
                         };
 
                         bindableObject.SetBinding(bindableProperty, binding);
+
+                        [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_button")]
+                        static extern ref global::Microsoft.Maui.Controls.Button GetUnsafeField__button(global::MyNamespace.MySourceClass source);
                     }
 
-                    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_button")]
-                    private static extern ref global::Microsoft.Maui.Controls.Button GetUnsafeField{{id}}_button(global::MyNamespace.MySourceClass source);
                 }
             }
             """,
@@ -1613,7 +1614,7 @@ public class IntegrationTests
                         {
                             setter = static (source, value) =>
                             {
-                                GetUnsafeProperty{{id}}Button(source).Text = value;
+                                GetUnsafeProperty_Button(source).Text = value;
                             };
                         }
 
@@ -1623,7 +1624,7 @@ public class IntegrationTests
                             handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "Button"),
-                                new(static source => GetUnsafeProperty{{id}}Button(source), "Text"),
+                                new(static source => GetUnsafeProperty_Button(source), "Text"),
                             })
                         {
                             Mode = mode,
@@ -1636,17 +1637,14 @@ public class IntegrationTests
                         };
 
                         bindableObject.SetBinding(bindableProperty, binding);
+
+                        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_Button")]
+                        static extern global::Microsoft.Maui.Controls.Button GetUnsafeProperty_Button(global::MyNamespace.MySourceClass source);
                     }
-
-                    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_Button")]
-                    private static extern global::Microsoft.Maui.Controls.Button GetUnsafeProperty{{id}}Button(global::MyNamespace.MySourceClass source);
-
-                    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_Button")]
-                    private static extern void SetUnsafeProperty{{id}}Button(global::MyNamespace.MySourceClass source, global::Microsoft.Maui.Controls.Button value);
                 }
             }
             """,
-	result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-17-23.g.cs"]);
+			result.GeneratedFiles["Path-To-Program.cs-GeneratedBindingInterceptors-17-23.g.cs"]);
 	}
 
 	[Fact]
@@ -1737,7 +1735,7 @@ public class IntegrationTests
                         {
                             setter = static (source, value) =>
                             {
-                                SetUnsafeProperty{{id}}Text(source, value);
+                                SetUnsafeProperty_Text(source, value);
                             };
                         }
 
@@ -1759,13 +1757,10 @@ public class IntegrationTests
                         };
 
                         bindableObject.SetBinding(bindableProperty, binding);
+
+                        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_Text")]
+                        static extern void SetUnsafeProperty_Text(global::MyNamespace.MySourceClass source, string value);
                     }
-
-                    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_Text")]
-                    private static extern string GetUnsafeProperty{{id}}Text(global::MyNamespace.MySourceClass source);
-
-                    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_Text")]
-                    private static extern void SetUnsafeProperty{{id}}Text(global::MyNamespace.MySourceClass source, string value);
                 }
             }
             """,
@@ -1792,7 +1787,7 @@ public class IntegrationTests
                     public void SetBinding()
                     {
                         var entry = new Entry();
-                        entry.SetBinding(Entry.TextProperty, static (MySourceClass sc) => sc.Text);
+                        entry.SetBinding(Entry.TextProperty, static (MySourceClass sc) => sc.Text.Length);
                     }
                 }
             }
@@ -1846,7 +1841,7 @@ public class IntegrationTests
                     public static void SetBinding{{id}}(
                         this BindableObject bindableObject,
                         BindableProperty bindableProperty,
-                        Func<global::MyNamespace.MySourceClass, string> getter,
+                        Func<global::MyNamespace.MySourceClass, int> getter,
                         BindingMode mode = BindingMode.Default,
                         IValueConverter? converter = null,
                         object? converterParameter = null,
@@ -1855,18 +1850,19 @@ public class IntegrationTests
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.MySourceClass, string>? setter = null;
+                        Action<global::MyNamespace.MySourceClass, int>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
                             throw new InvalidOperationException("Cannot set value on the source object.");
                         }
 
-                        var binding = new TypedBinding<global::MyNamespace.MySourceClass, string>(
+                        var binding = new TypedBinding<global::MyNamespace.MySourceClass, int>(
                             getter: source => (getter(source), true),
                             setter,
                             handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "Text"),
+                            	new(static source => GetUnsafeProperty_Text(source), "Length"),
                             })
                         {
                             Mode = mode,
@@ -1879,10 +1875,10 @@ public class IntegrationTests
                         };
 
                         bindableObject.SetBinding(bindableProperty, binding);
-                    }
 
-                    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_Text")]
-                    private static extern string GetUnsafeProperty{{id}}Text(global::MyNamespace.MySourceClass source);
+                        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_Text")]
+                        static extern string GetUnsafeProperty_Text(global::MyNamespace.MySourceClass source);
+                    }
                 }
             }
             """,
