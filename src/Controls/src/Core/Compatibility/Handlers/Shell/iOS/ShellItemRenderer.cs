@@ -99,8 +99,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateMoreCellsEnabled();
 		}
 
-#pragma warning disable RS0016
-		//todo add it to public API
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
 			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)

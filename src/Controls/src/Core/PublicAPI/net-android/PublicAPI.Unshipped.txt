@@ -220,3 +220,6 @@ override Microsoft.Maui.Controls.ListStringTypeConverter.CanConvertFrom(System.C
 override Microsoft.Maui.Controls.ListStringTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+~static readonly Microsoft.Maui.Controls.Shell.AutoResizeTabBarIconsProperty -> Microsoft.Maui.Controls.BindableProperty
+~static Microsoft.Maui.Controls.Shell.SetAutoResizeTabBarIcons(Microsoft.Maui.Controls.BindableObject obj, bool value) -> void
+~static Microsoft.Maui.Controls.Shell.GetAutoResizeTabBarIcons(Microsoft.Maui.Controls.BindableObject obj) -> bool
