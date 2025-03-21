@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Controls
 	{
 		const int DefaultPadding = 4;
 
+		internal double? templatedItemWidth;
+		internal double? templatedItemHeight;
+
 		/// <summary>Bindable property for <see cref="IndicatorsShape"/>.</summary>
 		public static readonly BindableProperty IndicatorsShapeProperty = BindableProperty.Create(nameof(IndicatorsShape), typeof(IndicatorShape), typeof(IndicatorView), Controls.IndicatorShape.Circle);
 
@@ -148,14 +151,25 @@ namespace Microsoft.Maui.Controls
 		{
 			if (newValue != null)
 			{
-				indicatorView.IndicatorLayout = new IndicatorStackLayout(indicatorView) { Spacing = DefaultPadding };
+				IndicatorStackLayout indicatorStackLayout = new IndicatorStackLayout(indicatorView) { Spacing = DefaultPadding };
+				indicatorView.IndicatorLayout = indicatorStackLayout;
+				indicatorStackLayout.TemplateSizeChanged += OnTemplateSizeChanged;
 			}
 			else if (indicatorView.IndicatorLayout is not null)
 			{
-				(indicatorView.IndicatorLayout as IndicatorStackLayout)?.Remove();
+				var indicatorStackLayout = indicatorView.IndicatorLayout as IndicatorStackLayout;
+				indicatorStackLayout.TemplateSizeChanged -= OnTemplateSizeChanged;
+				indicatorStackLayout?.Remove();
 				indicatorView.IndicatorLayout = null;
 			}
 		}
+
+		static void OnTemplateSizeChanged(object sender, (IndicatorView indicatorView, double width, double height) args)
+		{
+			args.indicatorView.templatedItemWidth = args.width;
+			args.indicatorView.templatedItemHeight = args.height;
+		}
+
 
 		void ResetItemsSource(IEnumerable oldItemsSource)
 		{
@@ -184,6 +198,16 @@ namespace Microsoft.Maui.Controls
 				count++;
 			}
 			Count = count;
+		}
+
+		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+		{
+			base.MeasureOverride(widthConstraint, heightConstraint);
+
+			var width = templatedItemWidth.Value * Count + DefaultPadding * (Count - 1);
+			var height = templatedItemHeight.Value;
+
+			return new Size(width, height);
 		}
 
 		Paint IIndicatorView.IndicatorColor => IndicatorColor?.AsPaint();
