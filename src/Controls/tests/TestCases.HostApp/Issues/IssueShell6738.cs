@@ -21,6 +21,13 @@
 							AutomationId = "IconColorChangeButton",
 							Text = "Change Icon Color",
 							Command = new Command(() => UpdateFlyoutIconColor(this))
+						},
+
+						new Button
+						{
+							AutomationId = "IconColorDefaultButton",
+							Text = "Change to Default Icon Color",
+							Command = new Command(() => UpdateDefaultFlyoutIconColor(this))
 						}
 
 					}
@@ -37,6 +44,11 @@
 		private void UpdateFlyoutIconColor(Shell shell)
 		{
 			SetForegroundColor(shell, Colors.Green);
+		}
+
+		void UpdateDefaultFlyoutIconColor(Shell shell)
+		{
+			SetForegroundColor(shell, null);
 		}
 	}
 }
