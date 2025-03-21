@@ -25,11 +25,13 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IP
 		_invalidateParentWhenMovedToWindow = true;
 	}
 
-	void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+	public override void SetNeedsLayout()
 	{
-		if (!isPropagating)
+		base.SetNeedsLayout();
+
+		if (IPlatformMeasureInvalidationController.IsInvalidatingSelf)
 		{
-			SetNeedsLayout();
+			this.InvalidateParentMeasure();
 		}
 	}
 

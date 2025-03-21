@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		protected ItemsViewCell2(CGRect frame) : base(frame)
 		{
 			ContentView.BackgroundColor = UIColor.Clear;
+			ContentView.Tag = IPlatformMeasureInvalidationController.PropagationProxyTag;
 
 			var selectedBackgroundView = new UIView
 			{

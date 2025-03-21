@@ -319,10 +319,15 @@ namespace Microsoft.Maui.Platform
 			_invalidateParentWhenMovedToWindow = true;
 		}
 
-		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		public override void SetNeedsLayout()
 		{
-			InvalidateConstraintsCache();
-			SetNeedsLayout();
+			base.SetNeedsLayout();
+
+			if (IPlatformMeasureInvalidationController.IsInvalidating)
+			{
+				InvalidateConstraintsCache();
+				this.InvalidateParentMeasure();
+			}
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]

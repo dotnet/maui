@@ -282,62 +282,59 @@ namespace Microsoft.Maui.Platform
 		/// </remarks>
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
-			if (platformView is IPlatformMeasureInvalidationController mauiPlatformView)
+			// Since SetNeedsLayout can only be called on the main thread, there’s no risk of concurrent execution.
+			// We can safely use a static context to determine whether we're invalidating measures or not.
+			// This ensures that `SetNeedsLayout` propagation occurs only when invalidation is triggered by MAUI.
+			// We avoid propagation when `SetNeedsLayout` is triggered by iOS, such as during transformations
+			// (e.g., Translate, Scale, Rotate) that move the layer partially offscreen (see https://github.com/dotnet/maui/issues/24996).
+			// Unnecessary invalidations during animations can cause significant performance slowdowns.
+			IPlatformMeasureInvalidationController.BeginInvalidation();
+			IPlatformMeasureInvalidationController.SetNeedsLayout(platformView);
+
+			// If platformView is not implementing measure invalidation propagation, we need to manually invalidate the parent view
+			if (platformView is not IPlatformMeasureInvalidationController)
 			{
-				mauiPlatformView.InvalidateMeasure();
-			}
-			else
-			{
-				platformView.SetNeedsLayout();
+				platformView.InvalidateParentMeasure();
 			}
 
-			platformView.InvalidateAncestorsMeasures();
+			IPlatformMeasureInvalidationController.EndInvalidation();
 		}
 
-		internal static void InvalidateAncestorsMeasures(this UIView child)
+		internal static void InvalidateAncestorsMeasures(this UIView platformView)
 		{
-			var childMauiPlatformLayout = child as IPlatformMeasureInvalidationController;
+			IPlatformMeasureInvalidationController.BeginAncestorsInvalidation();
+			InvalidateParentMeasure(platformView);
+			IPlatformMeasureInvalidationController.EndInvalidation();
+		}
 
-			while (true)
+		internal static void InvalidateParentMeasure(this UIView child)
+		{
+			// We verify the presence of a Window to prevent scenarios where an invalidate might propagate up the view hierarchy  
+			// to a SuperView that has already been disposed. Accessing such a disposed view would result in a crash (see #24032).  
+			// This validation is only possible using `IMauiPlatformView`, as it provides a way to schedule an invalidation when the view is moved to window.  
+			// For other cases, we accept the risk since avoiding it could lead to the layout not being updated properly.
+			if (child.Window is null && child is IPlatformMeasureInvalidationController childMauiPlatformLayout)
 			{
-				// We verify the presence of a Window to prevent scenarios where an invalidate might propagate up the view hierarchy  
-				// to a SuperView that has already been disposed. Accessing such a disposed view would result in a crash (see #24032).  
-				// This validation is only possible using `IMauiPlatformView`, as it provides a way to schedule an invalidation when the view is moved to window.  
-				// For other cases, we accept the risk since avoiding it could lead to the layout not being updated properly.
-				if (childMauiPlatformLayout is not null && child.Window is null)
-				{
-					childMauiPlatformLayout.InvalidateAncestorsMeasuresWhenMovedToWindow();
-					return;
-				}
+				childMauiPlatformLayout.InvalidateAncestorsMeasuresWhenMovedToWindow();
+				return;
+			}
 
-				var superview = child.Superview;
-				if (superview is null)
-				{
-					return;
-				}
+			var superview = child.Superview;
+			if (superview is null)
+			{
+				return;
+			}
 
-				// Now invalidate the parent view
-				var superviewMauiPlatformLayout = superview as IPlatformMeasureInvalidationController;
-				if (superviewMauiPlatformLayout is not null)
-				{
-					superviewMauiPlatformLayout.InvalidateMeasure(isPropagating: true);
-				}
-				else
-				{
-					superview.SetNeedsLayout();
-				}
+			IPlatformMeasureInvalidationController.SetNeedsLayout(superview);
 
-				// Potential improvement: if the MAUI view (superview here) is constrained to a fixed size, we could stop propagating
-				// when doing this, we must pay attention to a scenario where a non-fixed-size view becomes fixed-size
-				if (superview is ContentView { IsPage: true } or UIScrollView)
-				{
-					// We reached the root view or a scrollable area (includes collection view), stop propagating
-					// The view will eventually watch its content size and invoke InvalidateAncestorsMeasures when needed
-					return;
-				}
+			while (superview?.Tag == IPlatformMeasureInvalidationController.PropagationProxyTag)
+			{
+				superview = superview.Superview;
 
-				child = superview;
-				childMauiPlatformLayout = superviewMauiPlatformLayout;
+				if (superview is not null)
+				{
+					IPlatformMeasureInvalidationController.SetNeedsLayout(superview);
+				}
 			}
 		}
 
