@@ -153,6 +153,15 @@ namespace Microsoft.Maui.Controls
 
 					CheckVisibility(element);
 				}
+
+#if ANDROID || WINDOWS
+				// When items are cleared, the flyout behavior is set to disabled state. When adding items again, we need to update the flyout behavior. The flyout state should be updated only when the second item is added to the view.
+				if (Count == 2 && this is ShellItemCollection shellItemCollection)
+				{
+					var shell = shellItemCollection[0].Parent as Shell;
+					shell?.NotifyFlyoutBehaviorObservers();
+				}
+#endif
 			}
 
 			if (e.OldItems != null)
