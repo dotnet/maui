@@ -10,7 +10,7 @@ public class Issue28201 : _IssuesUITest
 	public Issue28201(TestDevice testDevice) : base(testDevice)
 	{
 	}
-	public override string Issue => "TiteView disposed when Page is disposed";
+	public override string Issue => "TitleView disposed when Page is disposed";
 
 	[Test]
 	[Category(UITestCategories.TitleView)]
