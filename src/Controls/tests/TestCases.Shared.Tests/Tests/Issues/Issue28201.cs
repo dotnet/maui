@@ -1,4 +1,4 @@
-﻿#if IOS || MACCATALYST
+﻿#if TEST_FAILS_ON_ANDROID // Destructor not triggered on Android: https://github.com/dotnet/maui/issues/28549
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
