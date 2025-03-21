@@ -16,12 +16,14 @@ public class Issue28201 : _IssuesUITest
 	[Category(UITestCategories.TitleView)]
 	public void TitleViewDisposed()
 	{
+		string pushButton = "pushButton";
+		string popButton = "popButton";
 		for (int i = 0; i < 3; i++)
 		{
-			App.WaitForElement("pushButton");
-			App.Tap("pushButton");
-			App.WaitForElement("popButton");
-			App.Tap("popButton");
+			App.WaitForElement(pushButton);
+			App.Tap(pushButton);
+			App.WaitForElement(popButton);
+			App.Tap(popButton);
 		}
 		var label = App.WaitForElement("label");
 		App.Tap("checkStatusButton");
