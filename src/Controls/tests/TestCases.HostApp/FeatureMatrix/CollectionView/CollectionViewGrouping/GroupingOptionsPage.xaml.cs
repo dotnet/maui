@@ -236,8 +236,6 @@ namespace Maui.Controls.Sample
 						Text = "Template 1",
 						FontSize = 18,
 						FontAttributes = FontAttributes.Bold,
-						HorizontalOptions = LayoutOptions.Center,
-						VerticalOptions = LayoutOptions.Center,
 						TextColor = Colors.Black,
 						BackgroundColor = Colors.LightGray,
 						Padding = new Thickness(10)
@@ -253,8 +251,6 @@ namespace Maui.Controls.Sample
 						Text = "Template 2",
 						FontSize = 18,
 						FontAttributes = FontAttributes.Bold,
-						HorizontalOptions = LayoutOptions.Center,
-						VerticalOptions = LayoutOptions.Center,
 						TextColor = Colors.Black,
 						BackgroundColor = Colors.LightGray,
 						Padding = new Thickness(10)

@@ -43,7 +43,7 @@ namespace Maui.Controls.Sample
         private DataTemplate _groupFooterTemplate;
         private DataTemplate _itemTemplate;
         private ItemsSourceType _itemsSourceType = ItemsSourceType.None;
-        private bool _isGrouped;
+        private bool _isGrouped = false;
         private bool _canReorderItems;
         private bool _canMixGroups;
 
@@ -208,22 +208,37 @@ namespace Maui.Controls.Sample
         {
             get
             {
-                return ItemsSourceType switch
+                if (IsGrouped)
                 {
-                    ItemsSourceType.GroupedListT => _groupedList,
-                    ItemsSourceType.EmptyGroupedListT => _emptyGroupedList,
-                    ItemsSourceType.ListT => _flatList,
-                    ItemsSourceType.EmptyListT => _emptyList,
-                    ItemsSourceType.ObservableCollectionT => _observableCollection,
-                    ItemsSourceType.IEnumerableT => _flatList.AsEnumerable(),
-                    ItemsSourceType.None => null,
-                    _ => null // Default to null if no valid type is selected
-                };
+                    return ItemsSourceType switch
+                    {
+                        ItemsSourceType.GroupedListT => _groupedList ?? new List<Grouping<string, CollectionViewTestItem>>(),
+                        ItemsSourceType.EmptyGroupedListT => _emptyGroupedList ?? new List<Grouping<string, CollectionViewTestItem>>(),
+                        _ => new List<Grouping<string, CollectionViewTestItem>>()
+                    };
+                }
+                else
+                {
+                    return ItemsSourceType switch
+                    {
+                        ItemsSourceType.ListT => _flatList,
+                        ItemsSourceType.EmptyListT => _emptyList,
+                        ItemsSourceType.ObservableCollectionT => _observableCollection,
+                        ItemsSourceType.IEnumerableT => _flatList.AsEnumerable(),
+                        ItemsSourceType.None => null,
+                        _ => null
+                    };
+                }
             }
         }
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
+            if (propertyName == nameof(IsGrouped))
+            {
+                OnPropertyChanged(nameof(ItemsSource));
+            }
+
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
@@ -254,7 +269,6 @@ namespace Maui.Controls.Sample
 
             protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
             {
-                // Implement your logic to select the appropriate template
                 if (item is CollectionViewTestItem testItem)
                 {
                     return testItem.Index % 2 == 0 ? Template1 : Template2;
