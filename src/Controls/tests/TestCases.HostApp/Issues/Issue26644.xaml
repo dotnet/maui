@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue26644">
+        <VerticalStackLayout
+                Spacing="15">
+                <Label
+                        HorizontalOptions="Center"
+                        Text="{Binding Source={x:Reference Label1}, Path=Height, x:DataType=Label}"/>
+                <Grid
+                        BackgroundColor="Gray"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center"
+                        ColumnDefinitions="10,auto,10"
+                        RowDefinitions="10,auto,10">
+                        <Label
+                                x:Name="Label1"
+                                AutomationId="Label1"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                BackgroundColor="Pink"
+                                Text="Test Label is 222222222222222222 with multiple line"
+                                FontSize="16"
+                                WidthRequest="300"/>
+                </Grid>
+
+                <Label
+                        Text="{Binding Source={x:Reference Label2}, Path=Height, x:DataType=Label}"
+                        HorizontalOptions="Center"/>
+                <Grid
+                        BackgroundColor="Gray"
+                        ColumnDefinitions="10,300,10"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Start"
+                        RowDefinitions="10,auto,*,auto,10"
+                        RowSpacing="1">
+                        <Label
+                                x:Name="Label2"
+                                AutomationId="Label2"
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                BackgroundColor="Pink"
+                                Text="Test Label is 222222222222222222 with multiple line"
+                                FontSize="16"
+                                HorizontalOptions="Fill"
+                                VerticalOptions="Fill"/>
+                </Grid>
+        </VerticalStackLayout>
+
+</ContentPage>
