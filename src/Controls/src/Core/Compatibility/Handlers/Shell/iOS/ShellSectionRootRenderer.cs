@@ -568,6 +568,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				CGRect frame = new CGRect(View.Bounds.X, headerTop, View.Bounds.Width, HeaderHeight);
 				_blurView.Frame = frame;
 				_header.ViewController.View.Frame = frame;
+#if MACCATALYST
+				if (_header.ViewController is UICollectionViewController collectionViewController)
+				{
+					var layout = collectionViewController.CollectionView.CollectionViewLayout;
+					var layoutIfNeed = layout.ShouldInvalidateLayoutForBoundsChange(frame);
+					if (layoutIfNeed)
+					{
+						layout.InvalidateLayout();
+					}
+				}
+#endif
 			}
 
 			nfloat left;
