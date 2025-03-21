@@ -69,21 +69,22 @@ internal struct CompiledBindingMarkup
 
 		var createBindingLocalMethod = $$"""
 
+			[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
 			private static global::Microsoft.Maui.Controls.BindingBase {{methodName}}(global::Microsoft.Maui.Controls.Xaml.BindingExtension extension)
 			{
-				Func<{{binding.SourceType.GlobalName}}, {{binding.PropertyType.GlobalName}}> getter = {{GenerateGetterLambda(binding.Path)}};
+				global::System.Func<{{binding.SourceType}}, {{binding.PropertyType}}> getter = {{GenerateGetterLambda(binding.Path)}};
 
 				return Create(getter, extension.Mode, extension.Converter, extension.ConverterParameter,
 					extension.StringFormat, extension.Source, extension.FallbackValue, extension.TargetNullValue);
 
 				{{BindingCodeWriter.GenerateBindingMethod(binding)}}
 
-				static bool ShouldUseSetter(BindingMode mode)
-					=> mode == BindingMode.OneWayToSource
-						|| mode == BindingMode.TwoWay
-						|| mode == BindingMode.Default;
+				[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+				static bool ShouldUseSetter(global::Microsoft.Maui.Controls.BindingMode mode)
+					=> mode == global::Microsoft.Maui.Controls.BindingMode.OneWayToSource
+						|| mode == global::Microsoft.Maui.Controls.BindingMode.TwoWay
+						|| mode == global::Microsoft.Maui.Controls.BindingMode.Default;
 			}
-
 			""";
 
 		_context.AddtitionalWriters.Add(new StringWriter(new StringBuilder(createBindingLocalMethod)));
@@ -150,7 +151,10 @@ internal struct CompiledBindingMarkup
 				previousPartType = property.Type;
 
 				setterOptions = new SetterOptions(
-					IsWritable: property.SetMethod != null && !property.SetMethod.IsStatic,
+					IsWritable: property.SetMethod != null
+						&& property.SetMethod.IsPublic()
+						&& !property.SetMethod.IsInitOnly
+						&& !property.SetMethod.IsStatic,
 					AcceptsNullValue: previousPartType.IsTypeNullable(enabledNullable: true));
 			}
 
@@ -198,7 +202,7 @@ internal struct CompiledBindingMarkup
 					previousPartType = indexer.Type;
 
 					setterOptions = new SetterOptions(
-						IsWritable: indexer.SetMethod != null && !indexer.SetMethod.IsStatic,
+						IsWritable: indexer.SetMethod != null && indexer.SetMethod.IsPublic() && !indexer.SetMethod.IsStatic,
 						AcceptsNullValue: previousPartType.IsTypeNullable(enabledNullable: true));
 				}
 				else if (previousPartType is IArrayTypeSymbol arrayType)
@@ -237,7 +241,7 @@ internal struct CompiledBindingMarkup
 			forceConditionalAccessToNextPart = part is Cast;
 		}
 
-		return $"static source => ({expression}, true)";
+		return $"static source => {expression}";
 
 		static IPathPart MaybeWrapInConditionalAccess(IPathPart part, bool forceConditionalAccessToNextPart)
 			=> (forceConditionalAccessToNextPart, part) switch

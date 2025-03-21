@@ -10,7 +10,7 @@ public static class BindingCodeWriter
 {
 	private static readonly string NewLine = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "\r\n" : "\n";
 
-	public static string GeneratedCodeAttribute => $"[GeneratedCodeAttribute(\"{typeof(BindingCodeWriter).Assembly.FullName}\", \"{typeof(BindingCodeWriter).Assembly.GetName().Version}\")]";
+	public static string GeneratedCodeAttribute => $"[global::System.CodeDom.Compiler.GeneratedCodeAttribute(\"{typeof(BindingCodeWriter).Assembly.FullName}\", \"{typeof(BindingCodeWriter).Assembly.GetName().Version}\")]";
 
 	public static string GenerateCommonCode() => $$"""
 		//------------------------------------------------------------------------------
@@ -145,7 +145,7 @@ public static class BindingCodeWriter
 
 			// Initialize setter
 			AppendLines($$"""
-				Action<{{binding.SourceType}}, {{binding.PropertyType}}>? setter = null;
+				global::System.Action<{{binding.SourceType}}, {{binding.PropertyType}}>? setter = null;
 				if ({{GetShouldUseSetterCall(binding.MethodType)}})
 				{
 				""");
@@ -160,7 +160,7 @@ public static class BindingCodeWriter
 			}
 			else
 			{
-				AppendLine("throw new InvalidOperationException(\"Cannot set value on the source object.\");");
+				AppendLine("throw new global::System.InvalidOperationException(\"Cannot set value on the source object.\");");
 			}
 
 			Unindent();
@@ -171,7 +171,7 @@ public static class BindingCodeWriter
 
 			// Create instance of TypedBinding
 			AppendLines($$"""
-				var binding = new TypedBinding<{{binding.SourceType}}, {{binding.PropertyType}}>(
+				var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<{{binding.SourceType}}, {{binding.PropertyType}}>(
 					getter: source => (getter(source), true),
 					setter,
 				""");
@@ -221,15 +221,15 @@ public static class BindingCodeWriter
 			if (binding.MethodType == InterceptedMethodType.SetBinding)
 			{
 				AppendLines($$"""
-					this BindableObject bindableObject,
-					BindableProperty bindableProperty,
+					this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+					global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
 					""");
 			}
 
 			AppendLines($$"""
-				Func<{{binding.SourceType}}, {{binding.PropertyType}}> getter,
-				BindingMode mode = BindingMode.Default,
-				IValueConverter? converter = null,
+				global::System.Func<{{binding.SourceType}}, {{binding.PropertyType}}> getter,
+				global::Microsoft.Maui.Controls.BindingMode mode = BindingMode.Default,
+				global::Microsoft.Maui.Controls.IValueConverter? converter = null,
 				object? converterParameter = null,
 				string? stringFormat = null,
 				object? source = null,
@@ -251,7 +251,7 @@ public static class BindingCodeWriter
 
 		private void AppendMethodName(BindingInvocationDescription binding, string methodNameSuffix)
 		{
-			var visibility = binding.IsPublic ? "public" : "private";
+			var visibility = binding.IsPublic ? "public" : "";
 			Append(binding.MethodType switch
 			{
 				InterceptedMethodType.SetBinding => $"{visibility} static void SetBinding{methodNameSuffix}",
@@ -337,7 +337,7 @@ public static class BindingCodeWriter
 
 		private void AppendHandlersArray(BindingInvocationDescription binding)
 		{
-			AppendLine($"new Tuple<Func<{binding.SourceType}, object?>, string>[]");
+			AppendLine($"new global::System.Tuple<global::System.Func<{binding.SourceType}, object?>, string>[]");
 			AppendLine('{');
 
 			Indent();
