@@ -6,6 +6,9 @@
 			=> virtualView.TapGestureRecognizerNeedsDelegate();
 
 		internal static bool TapGestureRecognizerNeedsDelegate(this View virtualView)
+			=> virtualView.TapGestureRecognizerNeedsButtonAnnouncement();
+
+		internal static bool TapGestureRecognizerNeedsActionClick(this View virtualView)
 		{
 			foreach (var gesture in virtualView.GestureRecognizers)
 			{
@@ -13,6 +16,18 @@
 				if (gesture is TapGestureRecognizer tgr && tgr.NumberOfTapsRequired == 1)
 				{
 					return (tgr.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary;
+				}
+			}
+			return false;
+		}
+
+		internal static bool TapGestureRecognizerNeedsButtonAnnouncement(this View virtualView)
+		{
+			foreach (var gesture in virtualView.GestureRecognizers)
+			{
+				if (gesture is TapGestureRecognizer)
+				{
+					return true;
 				}
 			}
 			return false;
