@@ -40,9 +40,7 @@ namespace Microsoft.Maui.Platform
 			return !(_scrollViewDescendant ??= Superview.GetParentOfType<UIScrollView>() is not null);
 		}
 
-		#pragma warning disable RS0016 // Add public types and members to the declared API
 		public override void AdjustedContentInsetDidChange()
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			base.AdjustedContentInsetDidChange();
 			_safeAreaInvalidated = true;
@@ -50,19 +48,7 @@ namespace Microsoft.Maui.Platform
 			// It looks like when this invalidates it doesn't auto trigger a layout pass
 			if (!ValidateSafeArea())
 			{
-				InvalidateConstraintsCache();
-
-				// need to cleanup
-				if (this is IPlatformMeasureInvalidationController mauiPlatformView)
-				{
-					mauiPlatformView.InvalidateMeasure();
-				}
-				else
-				{
-					this.SetNeedsLayout();
-				}
-
-
+				((IPlatformMeasureInvalidationController)this).InvalidateMeasure();
 				this.InvalidateAncestorsMeasures();
 			}
 		}
