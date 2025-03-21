@@ -8,4 +8,13 @@ public partial class Issue24246 : ContentPage
 	{
 		InitializeComponent();
 	}
+
+	private void Button_Clicked(object sender, EventArgs e)
+	{
+		RootLayout.Insert(0, new Label
+		{
+			Text = "Success",
+			AutomationId = "Success"
+		});
+	}
 }

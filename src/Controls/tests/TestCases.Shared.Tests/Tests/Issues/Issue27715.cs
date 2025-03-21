@@ -12,15 +12,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "ScrollView inside a Grid expands width past device screen when rotated";
+		public override string Issue => "ScrollView measures incorrectly when it has AdjustedContentInsets";
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
 		public void ScrollViewShouldRenderWithinBounds()
 		{
-			App.WaitForElement("label");
-			App.SetOrientationLandscape();
-			VerifyScreenshot();
+			App.WaitForElement("WaitForStubControl");
+			VerifyScreenshot();	
 		}
 	}
 }

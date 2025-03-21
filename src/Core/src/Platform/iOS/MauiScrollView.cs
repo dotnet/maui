@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
@@ -50,7 +51,19 @@ namespace Microsoft.Maui.Platform
 			if (!ValidateSafeArea())
 			{
 				InvalidateConstraintsCache();
-				SetNeedsLayout();
+
+				// need to cleanup
+				if (this is IPlatformMeasureInvalidationController mauiPlatformView)
+				{
+					mauiPlatformView.InvalidateMeasure();
+				}
+				else
+				{
+					this.SetNeedsLayout();
+				}
+
+
+				this.InvalidateAncestorsMeasures();
 			}
 		}
 
@@ -137,27 +150,12 @@ namespace Microsoft.Maui.Platform
 
 		Size CrossPlatformArrange(CGRect bounds)
 		{
-			/*bounds = new CGRect(CGPoint.Empty, bounds.Size);
-
-			if (_appliesSafeAreaAdjustments)
-			{
-				bounds = _safeArea.InsetRect(bounds);
-			}*/
-
 			if (_appliesSafeAreaAdjustments)
 			{
 				bounds = _safeArea.InsetRect(bounds);
 			}
 
 			var size = CrossPlatformLayout?.CrossPlatformArrange(new Rect(new Point(), bounds.Size.ToSize())) ?? Size.Zero;
-			
-			//var size = CrossPlatformLayout?.CrossPlatformArrange(bounds.ToRectangle()) ?? Size.Zero;
-
-			if (_appliesSafeAreaAdjustments)
-			{
-				//size = new Size(size.Width + _safeArea.HorizontalThickness, size.Height + _safeArea.VerticalThickness);
-			}
-
 			return size;
 		}
 
@@ -169,7 +167,7 @@ namespace Microsoft.Maui.Platform
 				widthConstraint -= _safeArea.HorizontalThickness;
 				heightConstraint -= _safeArea.VerticalThickness;
 			}
-
+			
 			var crossPlatformSize = CrossPlatformLayout?.CrossPlatformMeasure(widthConstraint, heightConstraint) ?? Size.Zero;
 
 			if (_appliesSafeAreaAdjustments)
