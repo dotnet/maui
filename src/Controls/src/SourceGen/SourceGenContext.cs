@@ -28,4 +28,16 @@ class SourceGenContext (IndentedTextWriter writer, Compilation compilation, Sour
 	public IDictionary<INode, ITypeSymbol> Types { get; } = new Dictionary<INode, ITypeSymbol>();
 	public IDictionary<LocalVariable, HashSet<string>> KeysInRD { get; } = new Dictionary<LocalVariable, HashSet<string>>();
 	public IDictionary<(LocalVariable, IFieldSymbol?, IPropertySymbol?), LocalVariable> VariablesProperties { get; } = new Dictionary<(LocalVariable, IFieldSymbol?, IPropertySymbol?), LocalVariable>();
+	public IList<string> LocalMethods { get; } = new List<string>();
+	public void AddLocalMethod(string code)
+	{
+		if (ParentContext != null)
+		{
+			ParentContext.AddLocalMethod(code);
+		}
+		else
+		{
+			LocalMethods.Add(code);
+		}
+	}
 }

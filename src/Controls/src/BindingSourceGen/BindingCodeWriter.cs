@@ -25,8 +25,6 @@ public static class BindingCodeWriter
 
 		namespace Microsoft.Maui.Controls.Generated
 		{
-			using System.CodeDom.Compiler;
-
 			{{GeneratedCodeAttribute}}
 			internal static partial class GeneratedBindingInterceptors
 			{
@@ -59,10 +57,10 @@ public static class BindingCodeWriter
 		namespace System.Runtime.CompilerServices
 		{
 			using System;
-			using System.CodeDom.Compiler;
+			using System.Diagnostics;
 		
 			{{GeneratedCodeAttribute}}
-			[global::System.Diagnostics.Conditional("DEBUG")]
+			[Conditional("DEBUG")]
 			[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 			file sealed class InterceptsLocationAttribute : Attribute
 			{
@@ -76,11 +74,6 @@ public static class BindingCodeWriter
 
 		namespace Microsoft.Maui.Controls.Generated
 		{
-			using System;
-			using System.CodeDom.Compiler;
-			using System.Runtime.CompilerServices;
-			using Microsoft.Maui.Controls.Internals;
-
 			internal static partial class GeneratedBindingInterceptors
 			{
 				{{GenerateBindingMethod(binding, methodNameSuffix: id.ToString())}}
@@ -175,10 +168,12 @@ public static class BindingCodeWriter
 					getter: source => (getter(source), true),
 					setter,
 				""");
-			Append("    handlers: ");
+			Indent();
+			Append("handlers: ");
 
 			AppendHandlersArray(binding);
 			AppendLine(')');
+			Unindent();
 			AppendLines($$"""
 				{
 					Mode = mode,
@@ -228,7 +223,7 @@ public static class BindingCodeWriter
 
 			AppendLines($$"""
 				global::System.Func<{{binding.SourceType}}, {{binding.PropertyType}}> getter,
-				global::Microsoft.Maui.Controls.BindingMode mode = BindingMode.Default,
+				global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
 				global::Microsoft.Maui.Controls.IValueConverter? converter = null,
 				object? converterParameter = null,
 				string? stringFormat = null,
@@ -251,18 +246,18 @@ public static class BindingCodeWriter
 
 		private void AppendMethodName(BindingInvocationDescription binding, string methodNameSuffix)
 		{
-			var visibility = binding.IsPublic ? "public" : "";
+			var visibility = binding.IsPublic ? "public " : "";
 			Append(binding.MethodType switch
 			{
-				InterceptedMethodType.SetBinding => $"{visibility} static void SetBinding{methodNameSuffix}",
-				InterceptedMethodType.Create => $"{visibility} static global::Microsoft.Maui.Controls.BindingBase Create{methodNameSuffix}",
+				InterceptedMethodType.SetBinding => $"{visibility}static void SetBinding{methodNameSuffix}",
+				InterceptedMethodType.Create => $"{visibility}static global::Microsoft.Maui.Controls.BindingBase Create{methodNameSuffix}",
 				_ => throw new ArgumentOutOfRangeException(nameof(binding.MethodType))
 			});
 		}
 
 		private void AppendInterceptorAttribute(InterceptableLocationRecord location)
 		{
-			AppendLine($"[InterceptsLocationAttribute({location.Version}, @\"{location.Data}\")]");
+			AppendLine($"[global::System.Runtime.CompilerServices.InterceptsLocationAttribute({location.Version}, @\"{location.Data}\")]");
 		}
 
 		private void AppendSetterLambda(BindingInvocationDescription binding, string sourceVariableName = "source", string valueVariableName = "value")
@@ -427,19 +422,19 @@ public static class BindingCodeWriter
 
 		private void AppendUnsafeFieldAccessor(string fieldName, string memberType, string containingType)
 			=> AppendLines($$"""
-				[UnsafeAccessor(UnsafeAccessorKind.Field, Name = "{{fieldName}}")]
+				[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Field, Name = "{{fieldName}}")]
 				static extern ref {{memberType}} {{CreateUnsafeFieldAccessorMethodName(fieldName)}}({{containingType}} source);
 				""");
 
 		private void AppendUnsafePropertyGetAccessors(string propertyName, string memberType, string containingType)
 			=> AppendLines($$"""
-				[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_{{propertyName}}")]
+				[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = "get_{{propertyName}}")]
 				static extern {{memberType}} {{CreateUnsafePropertyAccessorGetMethodName(propertyName)}}({{containingType}} source);
 				""");
 
 		private void AppendUnsafePropertySetAccessors(string propertyName, string memberType, string containingType)
 			=> AppendLines($$"""
-				[UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_{{propertyName}}")]
+				[global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = "set_{{propertyName}}")]
 				static extern void {{CreateUnsafePropertyAccessorSetMethodName(propertyName)}}({{containingType}} source, {{memberType}} value);
 				""");
 

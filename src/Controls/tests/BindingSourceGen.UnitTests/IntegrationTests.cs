@@ -37,10 +37,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -54,38 +54,33 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<string, int> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<string, int> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<string, int>? setter = null;
+                        global::System.Action<string, int>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
-                            throw new InvalidOperationException("Cannot set value on the source object.");
+                            throw new global::System.InvalidOperationException("Cannot set value on the source object.");
                         }
 
-                        var binding = new TypedBinding<string, int>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<string, int>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<string, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<string, object?>, string>[]
                             {
                                 new(static source => source, "Length"),
                             })
@@ -135,10 +130,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -152,36 +147,30 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
-            
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static global::Microsoft.Maui.Controls.BindingBase Create{{id}}(
-                        Func<string, int> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        global::System.Func<string, int> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<string, int>? setter = null;
+                        global::System.Action<string, int>? setter = null;
                         if (ShouldUseSetter(mode))
                         {
-                            throw new InvalidOperationException("Cannot set value on the source object.");
+                            throw new global::System.InvalidOperationException("Cannot set value on the source object.");
                         }
 
-                        var binding = new TypedBinding<string, int>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<string, int>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<string, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<string, object?>, string>[]
                             {
                                 new(static source => source, "Length"),
                             })
@@ -233,7 +222,6 @@ public class IntegrationTests
 	public void IgnoresOtherBindingCreateMethod()
 	{
 		var source = """
-        using System;
         using MyNamespace;
         var bindingBase = Binding.Create(static (string s) => s.Length);
   
@@ -242,8 +230,8 @@ public class IntegrationTests
             public class Binding
             {
                 public static Microsoft.Maui.Controls.BindingBase Create<TSource, TProperty>(
-                    Func<TSource, TProperty> getter,
-                    Microsoft.Maui.Controls.BindingMode mode = Microsoft.Maui.Controls.BindingMode.Default,
+                    global::System.Func<TSource, TProperty> getter,
+                    global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
                     Microsoft.Maui.Controls.IValueConverter? converter = null,
                     object? converterParameter = null,
                     string? stringFormat = null,
@@ -251,7 +239,7 @@ public class IntegrationTests
                     object? fallbackValue = null,
                     object? targetNullValue = null)
                 {
-                    throw new InvalidOperationException($"Call to Create<{typeof(TSource)}, {typeof(TProperty)}>() was not intercepted.");
+                    throw new global::System.InvalidOperationException($"Call to Create<{typeof(TSource)}, {typeof(TProperty)}>() was not intercepted.");
                 }
             }
         }
@@ -306,10 +294,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -323,29 +311,24 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<global::MyNamespace.A?, int> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<global::MyNamespace.A?, int> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.A?, int>? setter = null;
+                        global::System.Action<global::MyNamespace.A?, int>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
                             setter = static (source, value) =>
@@ -358,10 +341,10 @@ public class IntegrationTests
                             };
                         }
 
-                        var binding = new TypedBinding<global::MyNamespace.A?, int>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A?, int>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<global::MyNamespace.A?, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.A?, object?>, string>[]
                             {
                                 new(static source => source, "B"),
                                 new(static source => source?.B, "C"),
@@ -427,10 +410,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -444,29 +427,24 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<global::MyNamespace.A?, int> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<global::MyNamespace.A?, int> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.A?, int>? setter = null;
+                        global::System.Action<global::MyNamespace.A?, int>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
                             setter = static (source, value) =>
@@ -480,10 +458,10 @@ public class IntegrationTests
                             };
                         }
 
-                        var binding = new TypedBinding<global::MyNamespace.A?, int>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A?, int>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<global::MyNamespace.A?, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.A?, object?>, string>[]
                             {
                                 new(static source => source, "B"),
                                 new(static source => source?.B, "Item"),
@@ -654,10 +632,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -671,29 +649,24 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<global::MyNamespace.A?, global::MyNamespace.C?> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<global::MyNamespace.A?, global::MyNamespace.C?> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.A?, global::MyNamespace.C?>? setter = null;
+                        global::System.Action<global::MyNamespace.A?, global::MyNamespace.C?>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
                             setter = static (source, value) =>
@@ -706,10 +679,10 @@ public class IntegrationTests
                             };
                         }
 
-                        var binding = new TypedBinding<global::MyNamespace.A?, global::MyNamespace.C?>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A?, global::MyNamespace.C?>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<global::MyNamespace.A?, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.A?, object?>, string>[]
                             {
                                 new(static source => source, "B"),
                                 new(static source => source?.B, "C"),
@@ -789,10 +762,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -806,29 +779,24 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<global::MyNamespace.A?, global::MyNamespace.D?> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<global::MyNamespace.A?, global::MyNamespace.D?> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.A?, global::MyNamespace.D?>? setter = null;
+                        global::System.Action<global::MyNamespace.A?, global::MyNamespace.D?>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
                             setter = static (source, value) =>
@@ -841,10 +809,10 @@ public class IntegrationTests
                             };
                         }
 
-                        var binding = new TypedBinding<global::MyNamespace.A?, global::MyNamespace.D?>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A?, global::MyNamespace.D?>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<global::MyNamespace.A?, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.A?, object?>, string>[]
                             {
                                 new(static source => source, "B"),
                                 new(static source => source?.B, "C"),
@@ -925,10 +893,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -942,29 +910,24 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>? setter = null;
+                        global::System.Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
                             setter = static (source, value) =>
@@ -982,10 +945,10 @@ public class IntegrationTests
                             };
                         }
 
-                        var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "A"),
                                 new(static source => (source.A as global::MyNamespace.X), "B"),
@@ -1066,10 +1029,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -1083,29 +1046,24 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
+                        global::System.Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
                             setter = static (source, value) =>
@@ -1119,10 +1077,10 @@ public class IntegrationTests
                             };
                         }
 
-                        var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "A"),
                                 new(static source => (source.A as global::MyNamespace.X), "B"),
@@ -1194,10 +1152,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -1211,37 +1169,32 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<global::MyNamespace.A, int> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<global::MyNamespace.A, int> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.A, int>? setter = null;
+                        global::System.Action<global::MyNamespace.A, int>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
-                            throw new InvalidOperationException("Cannot set value on the source object.");
+                            throw new global::System.InvalidOperationException("Cannot set value on the source object.");
                         }
 
-                        var binding = new TypedBinding<global::MyNamespace.A, int>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A, int>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<global::MyNamespace.A, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.A, object?>, string>[]
                             {
                                 new(static source => source, "X"),
                                 new(static source => (source.X as global::MyNamespace.Wrapper), "Wrapped"),
@@ -1318,10 +1271,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -1335,29 +1288,24 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>? setter = null;
+                        global::System.Action<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
                             setter = static (source, value) => 
@@ -1374,10 +1322,10 @@ public class IntegrationTests
                             };
                         }
 
-                        var binding = new TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass?>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "Item"),
                                 new(static source => source, "Item[12]"),
@@ -1448,10 +1396,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -1465,29 +1413,24 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<global::MyNamespace.MySourceClass, string> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<global::MyNamespace.MySourceClass, string> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.MySourceClass, string>? setter = null;
+                        global::System.Action<global::MyNamespace.MySourceClass, string>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
                             setter = static (source, value) =>
@@ -1496,10 +1439,10 @@ public class IntegrationTests
                             };
                         }
 
-                        var binding = new TypedBinding<global::MyNamespace.MySourceClass, string>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, string>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "_button"),
                                 new(static source => GetUnsafeField__button(source), "Text"),
@@ -1516,7 +1459,7 @@ public class IntegrationTests
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
-                        [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_button")]
+                        [global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Field, Name = "_button")]
                         static extern ref global::Microsoft.Maui.Controls.Button GetUnsafeField__button(global::MyNamespace.MySourceClass source);
                     }
 
@@ -1570,10 +1513,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -1587,29 +1530,24 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<global::MyNamespace.MySourceClass, string> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<global::MyNamespace.MySourceClass, string> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.MySourceClass, string>? setter = null;
+                        global::System.Action<global::MyNamespace.MySourceClass, string>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
                             setter = static (source, value) =>
@@ -1618,10 +1556,10 @@ public class IntegrationTests
                             };
                         }
 
-                        var binding = new TypedBinding<global::MyNamespace.MySourceClass, string>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, string>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "Button"),
                                 new(static source => GetUnsafeProperty_Button(source), "Text"),
@@ -1638,7 +1576,7 @@ public class IntegrationTests
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
-                        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_Button")]
+                        [global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = "get_Button")]
                         static extern global::Microsoft.Maui.Controls.Button GetUnsafeProperty_Button(global::MyNamespace.MySourceClass source);
                     }
                 }
@@ -1691,10 +1629,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -1708,29 +1646,24 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<global::MyNamespace.MySourceClass, string> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<global::MyNamespace.MySourceClass, string> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.MySourceClass, string>? setter = null;
+                        global::System.Action<global::MyNamespace.MySourceClass, string>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
                             setter = static (source, value) =>
@@ -1739,10 +1672,10 @@ public class IntegrationTests
                             };
                         }
 
-                        var binding = new TypedBinding<global::MyNamespace.MySourceClass, string>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, string>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "Text"),
                             })
@@ -1758,7 +1691,7 @@ public class IntegrationTests
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
-                        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "set_Text")]
+                        [global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = "set_Text")]
                         static extern void SetUnsafeProperty_Text(global::MyNamespace.MySourceClass source, string value);
                     }
                 }
@@ -1811,10 +1744,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -1828,38 +1761,33 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<global::MyNamespace.MySourceClass, int> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<global::MyNamespace.MySourceClass, int> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.MySourceClass, int>? setter = null;
+                        global::System.Action<global::MyNamespace.MySourceClass, int>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
-                            throw new InvalidOperationException("Cannot set value on the source object.");
+                            throw new global::System.InvalidOperationException("Cannot set value on the source object.");
                         }
 
-                        var binding = new TypedBinding<global::MyNamespace.MySourceClass, int>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, int>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<global::MyNamespace.MySourceClass, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MySourceClass, object?>, string>[]
                             {
                                 new(static source => source, "Text"),
                             	new(static source => GetUnsafeProperty_Text(source), "Length"),
@@ -1876,7 +1804,7 @@ public class IntegrationTests
 
                         bindableObject.SetBinding(bindableProperty, binding);
 
-                        [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_Text")]
+                        [global::System.Runtime.CompilerServices.UnsafeAccessor(global::System.Runtime.CompilerServices.UnsafeAccessorKind.Method, Name = "get_Text")]
                         static extern string GetUnsafeProperty_Text(global::MyNamespace.MySourceClass source);
                     }
                 }
@@ -1926,10 +1854,10 @@ public class IntegrationTests
             namespace System.Runtime.CompilerServices
             {
                 using System;
-                using System.CodeDom.Compiler;
+                using System.Diagnostics;
 
                 {{BindingCodeWriter.GeneratedCodeAttribute}}
-                [global::System.Diagnostics.Conditional("DEBUG")]
+                [Conditional("DEBUG")]
                 [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
                 file sealed class InterceptsLocationAttribute : Attribute
                 {
@@ -1943,38 +1871,33 @@ public class IntegrationTests
 
             namespace Microsoft.Maui.Controls.Generated
             {
-                using System;
-                using System.CodeDom.Compiler;
-                using System.Runtime.CompilerServices;
-                using Microsoft.Maui.Controls.Internals;
-
                 internal static partial class GeneratedBindingInterceptors
                 {
 
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
-                    [InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+                    [global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
                     public static void SetBinding{{id}}(
-                        this BindableObject bindableObject,
-                        BindableProperty bindableProperty,
-                        Func<global::MyNamespace.MyClass, string> getter,
-                        BindingMode mode = BindingMode.Default,
-                        IValueConverter? converter = null,
+                        this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+                        global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+                        global::System.Func<global::MyNamespace.MyClass, string> getter,
+                        global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+                        global::Microsoft.Maui.Controls.IValueConverter? converter = null,
                         object? converterParameter = null,
                         string? stringFormat = null,
                         object? source = null,
                         object? fallbackValue = null,
                         object? targetNullValue = null)
                     {
-                        Action<global::MyNamespace.MyClass, string>? setter = null;
+                        global::System.Action<global::MyNamespace.MyClass, string>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
-                            throw new InvalidOperationException("Cannot set value on the source object.");
+                            throw new global::System.InvalidOperationException("Cannot set value on the source object.");
                         }
 
-                        var binding = new TypedBinding<global::MyNamespace.MyClass, string>(
+                        var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MyClass, string>(
                             getter: source => (getter(source), true),
                             setter,
-                            handlers: new Tuple<Func<global::MyNamespace.MyClass, object?>, string>[]
+                            handlers: new global::System.Tuple<global::System.Func<global::MyNamespace.MyClass, object?>, string>[]
                             {
                                 new(static source => source, "Text"),
                             })
@@ -2037,11 +1960,11 @@ public class IntegrationTests
 			namespace System.Runtime.CompilerServices
 			{
 				using System;
-				using System.CodeDom.Compiler;
+				using System.Diagnostics;
 
 
 				{{BindingCodeWriter.GeneratedCodeAttribute}}
-				[global::System.Diagnostics.Conditional("DEBUG")]
+				[Conditional("DEBUG")]
 				[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 				file sealed class InterceptsLocationAttribute : Attribute
 				{
@@ -2055,27 +1978,21 @@ public class IntegrationTests
 
 			namespace Microsoft.Maui.Controls.Generated
 			{
-				using System;
-				using System.CodeDom.Compiler;
-				using System.Runtime.CompilerServices;
-				using Microsoft.Maui.Controls.Internals;
-
 				internal static partial class GeneratedBindingInterceptors
 				{
-					
 					{{BindingCodeWriter.GeneratedCodeAttribute}}
-					[InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+					[global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
 					public static global::Microsoft.Maui.Controls.BindingBase Create{{id}}(
-						Func<global::Microsoft.Maui.Controls.Slider, double> getter,
-						BindingMode mode = BindingMode.Default,
-						IValueConverter? converter = null,
+						global::System.Func<global::Microsoft.Maui.Controls.Slider, double> getter,
+						global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+						global::Microsoft.Maui.Controls.IValueConverter? converter = null,
 						object? converterParameter = null,
 						string? stringFormat = null,
 						object? source = null,
 						object? fallbackValue = null,
 						object? targetNullValue = null)
 					{
-						Action<global::Microsoft.Maui.Controls.Slider, double>? setter = null;
+						global::System.Action<global::Microsoft.Maui.Controls.Slider, double>? setter = null;
 						if (ShouldUseSetter(mode))
 						{
 							setter = static (source, value) =>
@@ -2084,10 +2001,10 @@ public class IntegrationTests
 							};
 						}
 
-						var binding = new TypedBinding<global::Microsoft.Maui.Controls.Slider, double>(
+						var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Microsoft.Maui.Controls.Slider, double>(
 							getter: source => (getter(source), true),
 							setter,
-							handlers: new Tuple<Func<global::Microsoft.Maui.Controls.Slider, object?>, string>[]
+							handlers: new global::System.Tuple<global::System.Func<global::Microsoft.Maui.Controls.Slider, object?>, string>[]
 							{
 								new(static source => source, "Value"),
 							})
@@ -2151,11 +2068,10 @@ public class IntegrationTests
 			namespace System.Runtime.CompilerServices
 			{
 				using System;
-				using System.CodeDom.Compiler;
-
+				using System.Diagnostics;
 
 				{{BindingCodeWriter.GeneratedCodeAttribute}}
-				[global::System.Diagnostics.Conditional("DEBUG")]
+				[Conditional("DEBUG")]
 				[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 				file sealed class InterceptsLocationAttribute : Attribute
 				{
@@ -2169,29 +2085,24 @@ public class IntegrationTests
 
 			namespace Microsoft.Maui.Controls.Generated
 			{
-				using System;
-				using System.CodeDom.Compiler;
-				using System.Runtime.CompilerServices;
-				using Microsoft.Maui.Controls.Internals;
-
 				internal static partial class GeneratedBindingInterceptors
 				{
 					
 					{{BindingCodeWriter.GeneratedCodeAttribute}}
-					[InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
+					[global::System.Runtime.CompilerServices.InterceptsLocationAttribute({{result.Binding.InterceptableLocation!.Version}}, @"{{result.Binding.InterceptableLocation!.Data}}")]
 					public static void SetBinding{{id}}(
-					this BindableObject bindableObject,
-					BindableProperty bindableProperty,
-					Func<global::Microsoft.Maui.Controls.Slider, double> getter,
-					BindingMode mode = BindingMode.Default,
-					IValueConverter? converter = null,
-					object? converterParameter = null,
-					string? stringFormat = null,
-					object? source = null,
-					object? fallbackValue = null,
-					object? targetNullValue = null)
+						this global::Microsoft.Maui.Controls.BindableObject bindableObject,
+						global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
+						global::System.Func<global::Microsoft.Maui.Controls.Slider, double> getter,
+						global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+						global::Microsoft.Maui.Controls.IValueConverter? converter = null,
+						object? converterParameter = null,
+						string? stringFormat = null,
+						object? source = null,
+						object? fallbackValue = null,
+						object? targetNullValue = null)
 					{
-						Action<global::Microsoft.Maui.Controls.Slider, double>? setter = null;
+						global::System.Action<global::Microsoft.Maui.Controls.Slider, double>? setter = null;
 						if (ShouldUseSetter(mode, bindableProperty))
 						{
 							setter = static (source, value) =>
@@ -2200,10 +2111,10 @@ public class IntegrationTests
 							};
 						}
 
-						var binding = new TypedBinding<global::Microsoft.Maui.Controls.Slider, double>(
+						var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Microsoft.Maui.Controls.Slider, double>(
 							getter: source => (getter(source), true),
 							setter,
-							handlers: new Tuple<Func<global::Microsoft.Maui.Controls.Slider, object?>, string>[]
+							handlers: new global::System.Tuple<global::System.Func<global::Microsoft.Maui.Controls.Slider, object?>, string>[]
 							{
 								new(static source => source, "Value"),
 							})
