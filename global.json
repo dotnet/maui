@@ -8,6 +8,6 @@
     "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.24570.4"
   },
   "sdk": {
-    "allowPrerelease": false
+    "allowPrerelease": true
   }
 }
