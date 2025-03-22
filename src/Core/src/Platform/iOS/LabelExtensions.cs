@@ -114,36 +114,48 @@ namespace Microsoft.Maui.Platform
 		internal static void DetectAndOpenLink(this UILabel platformLabel)
 		{
 			platformLabel.RemoveHtmlGesture();
-			 var tapGesture = new HtmlTextGestureRecognizer((UITapGestureRecognizer recognizer) =>
-			 {
-			 	if (recognizer.State != UIGestureRecognizerState.Recognized) return;
-			    if (platformLabel.AttributedText is null) return;
+			var _platformLabel = new WeakReference(platformLabel);
+			Action<UITapGestureRecognizer> action = new Action<UITapGestureRecognizer>((recognizer) =>
+			{
+				ProcessRecognizerHandlerTap(_platformLabel,recognizer);
+			});
+			 var tapGesture = new HtmlTextGestureRecognizer(action);
+			 platformLabel.AddGestureRecognizer(tapGesture);	
+		}
+
+		internal static void ProcessRecognizerHandlerTap(WeakReference platformLabel, UITapGestureRecognizer recognizer)
+		{
+			if(platformLabel is not null
+			 && platformLabel.TryGetTarget<UILabel>(out var _platformLabel)
+			 && recognizer is not null)
+			{
+				if (recognizer.State != UIGestureRecognizerState.Recognized) return;
+			    if (_platformLabel.AttributedText is null) return;
 
 				var layoutManager = new NSLayoutManager();
 				var textStorage = new NSTextStorage();
 				var textContainer = new NSTextContainer();
 
-				textStorage.SetString(platformLabel.AttributedText);
+				textStorage.SetString(_platformLabel.AttributedText);
 				layoutManager.AddTextContainer(textContainer);
 				textStorage.AddLayoutManager(layoutManager);
 
 				textContainer.LineFragmentPadding = 0;
-				textContainer.LineBreakMode = platformLabel.LineBreakMode;
-				textContainer.Size = platformLabel.Bounds.Size;
+				textContainer.LineBreakMode = _platformLabel.LineBreakMode;
+				textContainer.Size = _platformLabel.Bounds.Size;
 
-				var location = recognizer.LocationInView(platformLabel);
+				var location = recognizer.LocationInView(_platformLabel);
 				var index = (nint)layoutManager.GetCharacterIndex(location, textContainer);
 
-				if (index < platformLabel.AttributedText.Length)
+				if (index < _platformLabel.AttributedText.Length)
 				{
-					var url = platformLabel.AttributedText.GetAttribute(UIStringAttributeKey.Link, index, out _);
+					var url = _platformLabel.AttributedText.GetAttribute(UIStringAttributeKey.Link, index, out _);
 					if (url is NSUrl nsUrl)
 					{
 						UIApplication.SharedApplication.OpenUrl(nsUrl,new UIApplicationOpenUrlOptions(),null);
 					}
 				}
-			 });
-			 platformLabel.AddGestureRecognizer(tapGesture);	
+			}
 		}
 
 		internal static void UpdateTextPlainText(this UILabel platformLabel, IText label)
