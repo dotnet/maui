@@ -176,5 +176,28 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		{
 			return GetMaxItemCount(config.Element);
 		}
+
+#pragma warning disable RS0016
+		//todo remove this when changing PR from draft to ready
+		public static readonly BindableProperty PopToRootOnTabReselectProperty =
+			BindableProperty.Create("PopToRootOnTabReselect",
+				typeof(bool), typeof(TabbedPage), false);
+
+		public static bool GetPopToRootOnTabReselect(BindableObject element)
+			=> (bool)element.GetValue(PopToRootOnTabReselectProperty);
+
+		public static void SetPopToRootOnTabReselect(BindableObject element, bool value)
+			=> element.SetValue(PopToRootOnTabReselectProperty, value);
+
+		public static bool GetPopToRootOnTabReselect(
+			this IPlatformElementConfiguration<Android, FormsElement> config)
+			=> GetPopToRootOnTabReselect(config.Element);
+
+		public static IPlatformElementConfiguration<Android, FormsElement> SetPopToRootOnTabReselect(
+			this IPlatformElementConfiguration<Android, FormsElement> config, bool value)
+		{
+			SetPopToRootOnTabReselect(config.Element, value);
+			return config;
+		}
 	}
 }
