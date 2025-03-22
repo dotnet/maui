@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Platform
 		platformLabel.UserInteractionEnabled = true;
 			platformLabel.DetectAndOpenLink();
         }
-		internal static void RemoveCurrentGesture(this UILabel platformLabel)
+		internal static void RemoveHtmlGesture(this UILabel platformLabel)
 		{
 			if(platformLabel.GestureRecognizers is null)
 				return;
@@ -104,6 +104,8 @@ namespace Microsoft.Maui.Platform
 				if(gesture is HtmlTextGestureRecognizer htmlTextGesture)
 				{
 					platformLabel.RemoveGestureRecognizer(htmlTextGesture);
+					htmlTextGesture.ShouldReceiveTouch = null;
+					htmlTextGesture.Dispose();
 					break;
 				}
 			}
@@ -111,7 +113,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void DetectAndOpenLink(this UILabel platformLabel)
 		{
-			platformLabel.RemoveCurrentGesture();
+			platformLabel.RemoveHtmlGesture();
 			 var tapGesture = new HtmlTextGestureRecognizer((UITapGestureRecognizer recognizer) =>
 			 {
 			 	if (recognizer.State != UIGestureRecognizerState.Recognized) return;
