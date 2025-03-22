@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 #if __IOS__
@@ -6,6 +7,7 @@ using Foundation;
 #endif
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -59,6 +61,40 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(viewReference.IsAlive, "Label should not be alive!");
 			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
 			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
+		}
+
+		[Fact(DisplayName = "Does Not Leak With TextType.Html")]
+		public async Task LabelWithHtmlText_DoesNotLeak()
+		{
+			SetupBuilder();
+			var references = new List<WeakReference>();
+
+			var window = new Window(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				{
+					var label = new Label
+					{
+						Text = @"<a href=""https://www.example.com"">Example HTML link</a>",
+						TextType = TextType.Html
+					};
+
+					var layout = new Grid();
+					layout.Add(label);
+
+					window.Page = new ContentPage { Content = layout };
+
+					await OnLoadedAsync(label);
+
+					references.Add(new WeakReference(label));
+					references.Add(new WeakReference(label.Handler));
+					references.Add(new WeakReference(label.Handler.PlatformView));
+
+					window.Page = new ContentPage();
+				}
+			});
+			await AssertionExtensions.WaitForGC(references.ToArray());
 		}
 
 		[Theory]
