@@ -67,34 +67,32 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task LabelWithHtmlText_DoesNotLeak()
 		{
 			SetupBuilder();
-			var references = new List<WeakReference>();
 
-			var window = new Window(new ContentPage());
+			WeakReference viewReference = null;
+			WeakReference platformViewReference = null;
+			WeakReference handlerReference = null;
 
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			await InvokeOnMainThreadAsync(() =>
 			{
+				var layout = new Grid();
+
+				var label = new Label
 				{
-					var label = new Label
-					{
-						Text = @"<a href=""https://www.example.com"">Example HTML link</a>",
-						TextType = TextType.Html
-					};
+					Text = @"<a href=""https://www.example.com"">Example HTML link</a>",
+					TextType = TextType.Html
+				};
 
-					var layout = new Grid();
-					layout.Add(label);
-
-					window.Page = new ContentPage { Content = layout };
-
-					await OnLoadedAsync(label);
-
-					references.Add(new WeakReference(label));
-					references.Add(new WeakReference(label.Handler));
-					references.Add(new WeakReference(label.Handler.PlatformView));
-
-					window.Page = new ContentPage();
-				}
+				layout.Add(label);
+				var handler = CreateHandler<LayoutHandler>(layout);
+				viewReference = new WeakReference(label);
+				handlerReference = new WeakReference(label.Handler);
+				platformViewReference = new WeakReference(label.Handler.PlatformView);
 			});
-			await AssertionExtensions.WaitForGC(references.ToArray());
+
+			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
+			Assert.False(viewReference.IsAlive, "Label should not be alive!");
+			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
+			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 		}
 
 		[Theory]
