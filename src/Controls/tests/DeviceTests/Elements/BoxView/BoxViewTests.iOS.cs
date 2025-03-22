@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetNativeBoxView(handler);
-				return (float)nativeView.Alpha; 
+				return (float)nativeView.Alpha;
 			});
 		}
 
