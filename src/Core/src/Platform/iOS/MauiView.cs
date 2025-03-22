@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Platform
 		static bool? _respondsToSafeArea;
 
 		bool _invalidateParentWhenMovedToWindow;
-		bool? _scrollViewDescendant;
 
 		double _lastMeasureHeight = double.NaN;
 		double _lastMeasureWidth = double.NaN;
@@ -38,18 +37,6 @@ namespace Microsoft.Maui.Platform
 			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea)
 			{
 				return false;
-			}
-
-			// not sure if this is right or if this is needed anymore
-			_scrollViewDescendant ??= Superview is MauiView { _scrollViewDescendant: true } ||
-									   Superview.GetParentOfType<UIScrollView>() is UIScrollView scrollView &&
-									   scrollView.AdjustedContentInset != UIEdgeInsets.Zero;
-
-			
-			if (_scrollViewDescendant.Value)
-			{
-				// disabling this behavior for now for testings
-				return true;
 			}
 
 			if (_respondsToSafeArea.HasValue)
@@ -290,7 +277,6 @@ namespace Microsoft.Maui.Platform
 			base.MovedToWindow();
 
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
-			_scrollViewDescendant = null;
 			_safeAreaInvalidated = true;
 
 			if (_invalidateParentWhenMovedToWindow)
