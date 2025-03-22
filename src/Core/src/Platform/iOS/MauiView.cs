@@ -40,8 +40,10 @@ namespace Microsoft.Maui.Platform
 				return false;
 			}
 
+			// not sure if this is right or if this is needed anymore
 			_scrollViewDescendant ??= Superview is MauiView { _scrollViewDescendant: true } ||
-			                          Superview.GetParentOfType<UIScrollView>() is not null;
+									   Superview.GetParentOfType<UIScrollView>() is UIScrollView scrollView &&
+									   scrollView.AdjustedContentInset != UIEdgeInsets.Zero;
 
 			if (_scrollViewDescendant.Value)
 			{
