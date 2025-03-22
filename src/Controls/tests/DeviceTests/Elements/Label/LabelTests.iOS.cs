@@ -65,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformLabel(labelHandler);
-				return (float)nativeView.Alpha; 
+				return (float)nativeView.Alpha;
 			});
 		}
 		public static IEnumerable<object[]> GetCharacterSpacingWithLineHeightWithTextDecorationsWorksTestData()
