@@ -23,6 +23,7 @@ public class Issue8964 : TestContentPage
 			ItemsSource = ItemSourceUnderTest,
 			ItemTemplate = GetCarouselTemplate(),
 			CurrentItem = _currentItem,
+			ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset,
 			AutomationId = "carouseView",
 			Loop = false
 		};
