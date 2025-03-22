@@ -49,7 +49,15 @@ public class BindingSourceGenerator : IIncrementalGenerator
 
 			var fileName = $"{location.FilePath}-GeneratedBindingInterceptors-{location.Line}-{location.Column}.g.cs";
 			var sanitizedFileName = fileName.Replace('/', '-').Replace('\\', '-').Replace(':', '-');
-			var code = BindingCodeWriter.GenerateBinding(binding, (uint)Math.Abs(location.GetHashCode()));
+			var methodNamePrefix = binding.MethodType switch
+			{
+				InterceptedMethodType.SetBinding => "SetBinding",
+				InterceptedMethodType.Create => "Create",
+				_ => throw new NotSupportedException()
+			};
+			var uniqueId = (uint)Math.Abs(location.GetHashCode());
+
+			var code = BindingCodeWriter.GenerateBinding(binding, $"{methodNamePrefix}{uniqueId}");
 			spc.AddSource(sanitizedFileName, code);
 		});
 	}

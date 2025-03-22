@@ -83,6 +83,7 @@ static class NodeSGExtensions
         => KnownSGLateMarkupExtensions ??= new (SymbolEqualityComparer.Default)
     {
         {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.BindingExtension")!, KnownMarkups.ProvideValueForBindingExtension},
+        {context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.Xaml.TemplateBindingExtension")!, KnownMarkups.ProvideValueForTemplateBindingExtension},
     };
 
     public static bool TryGetPropertyName(this INode node, INode parentNode, out XmlName name)
