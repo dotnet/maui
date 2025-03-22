@@ -179,7 +179,17 @@ internal class KnownMarkups
 		}
 	}
 
+	internal static string ProvideValueForTemplateBindingExtension(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType)
+	{
+		return ProvideValueForBindingExtension(markupNode, context, isTemplateBinding: true, out returnType);
+	}
+
 	internal static string ProvideValueForBindingExtension(IElementNode markupNode, SourceGenContext context, out ITypeSymbol? returnType)
+	{
+		return ProvideValueForBindingExtension(markupNode, context, isTemplateBinding: false, out returnType);
+	}
+
+	private static string ProvideValueForBindingExtension(IElementNode markupNode, SourceGenContext context, bool isTemplateBinding, out ITypeSymbol? returnType)
 	{
 		returnType = context.Compilation.GetTypeByMetadataName("Microsoft.Maui.Controls.BindingBase")!;
 
@@ -194,30 +204,42 @@ internal class KnownMarkups
 		if (TryGetXDataType(markupNode, context, out dataTypeSymbol) && dataTypeSymbol is not null)
 		{
 			var compiledBindingMarkup = new CompiledBindingMarkup(markupNode, path, extVariable, context);
-			if (compiledBindingMarkup.TryCompileBinding(dataTypeSymbol, out string? newBindingExpression) && newBindingExpression is not null)
+			if (compiledBindingMarkup.TryCompileBinding(dataTypeSymbol, isTemplateBinding, out string? newBindingExpression) && newBindingExpression is not null)
 			{
 				return newBindingExpression;
 			}
 		}
 
+		// fallback to the string-based binding
 		var dataTypeExpression = dataTypeSymbol is not null
 			? $"typeof({dataTypeSymbol.ToFQDisplayString()})"
 			: "null";
 
-		// fallback to the string-based binding
-		return $"new global::Microsoft.Maui.Controls.Binding(" +
+		var source = isTemplateBinding
+			? "global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent"
+			: $"{extVariable.Name}.Source";
+
+		var expression = $"new global::Microsoft.Maui.Controls.Binding(" +
 			$"{extVariable.Name}.Path, " +
-			$"{extVariable.Name}.Mode, " + 
-			$"{extVariable.Name}.Converter, " + 
+			$"{extVariable.Name}.Mode, " +
+			$"{extVariable.Name}.Converter, " +
 			$"{extVariable.Name}.ConverterParameter, " +
 			$"{extVariable.Name}.StringFormat, " +
-			$"{extVariable.Name}.Source) " +
-			"{ " +
-				$"UpdateSourceEventName = {extVariable.Name}.UpdateSourceEventName, " +
+			$"{source}) ";
+
+		if (isTemplateBinding)
+		{
+			// TemplateBindingExtension doesn't have all the same properties as BindingExtension
+			return expression + $"{{ DataType = {dataTypeExpression} }}";
+		}
+		else
+		{
+			return expression +
+				$"{{ UpdateSourceEventName = {extVariable.Name}.UpdateSourceEventName, " +
 				$"FallbackValue = {extVariable.Name}.FallbackValue, " +
 				$"TargetNullValue = {extVariable.Name}.TargetNullValue, " +
-				$"DataType = {dataTypeExpression} " +
-			"}";
+				$"DataType = {dataTypeExpression} }}";
+		}
 
 		static string GetBindingPath(IElementNode node)
 		{

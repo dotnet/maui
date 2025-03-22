@@ -47,7 +47,7 @@ public class BindingCodeWriterTests
 	[Fact]
 	public void BuildsWholeBinding()
 	{
-		var code = BindingCodeWriter.GenerateBinding(id: 1, binding: new BindingInvocationDescription(
+		var code = BindingCodeWriter.GenerateBinding(methodName: "SetBinding", binding: new BindingInvocationDescription(
 			InterceptableLocation: new InterceptableLocationRecord(Version: 1, Data: "serializedData"),
 			SimpleLocation: new SimpleLocation(FilePath: @"Path\To\Program.cs", Line: 20, Column: 30),
 			SourceType: new TypeDescription("global::MyNamespace.MySourceClass", IsValueType: false, IsNullable: false, IsGenericParameter: false),
@@ -98,7 +98,7 @@ public class BindingCodeWriterTests
             
                     {{BindingCodeWriter.GeneratedCodeAttribute}}
                     [global::System.Runtime.CompilerServices.InterceptsLocationAttribute(1, @"serializedData")]
-                    public static void SetBinding1(
+                    public static void SetBinding(
                         this global::Microsoft.Maui.Controls.BindableObject bindableObject,
                         global::Microsoft.Maui.Controls.BindableProperty bindableProperty,
                         global::System.Func<global::MyNamespace.MySourceClass, global::MyNamespace.MyPropertyClass> getter,

@@ -28,7 +28,7 @@ internal struct CompiledBindingMarkup
 	private Location GetLocation(INode node)
 		=> LocationHelpers.LocationCreate(_context.FilePath!, (IXmlLineInfo)node, "x:DataType");
 
-	public bool TryCompileBinding(ITypeSymbol sourceType, out string? newBindingExpression)
+	public bool TryCompileBinding(ITypeSymbol sourceType, bool isTemplateBinding, out string? newBindingExpression)
 	{
 		newBindingExpression = null;
 
@@ -67,24 +67,41 @@ internal struct CompiledBindingMarkup
 		// TODO emit #line info?
 		// TODO move ShouldUseSetter methods to shared code (public in MAUI?) + the same for the BindingSourceGen?
 
+		var extensionTypeName = isTemplateBinding
+			? "global::Microsoft.Maui.Controls.Xaml.TemplateBindingExtension"
+			: "global::Microsoft.Maui.Controls.Xaml.BindingExtension";
+		var source = isTemplateBinding
+			? "global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent"
+			: "extension.Source";
+		var fallbackValue = isTemplateBinding
+			? "null"
+			: "extension.FallbackValue";
+		var targetNullValue = isTemplateBinding
+			? "null"
+			: "extension.TargetNullValue";
+
 		var createBindingLocalMethod = $$"""
+				static global::Microsoft.Maui.Controls.BindingBase {{methodName}}({{extensionTypeName}} extension)
+				{
+					return Create(
+						getter: {{GenerateGetterLambda(binding.Path)}},
+						extension.Mode,
+						extension.Converter,
+						extension.ConverterParameter,
+						extension.StringFormat,
+						source: {{source}},
+						fallbackValue: {{fallbackValue}},
+						targetNullValue: {{targetNullValue}});
 
-			static global::Microsoft.Maui.Controls.BindingBase {{methodName}}(global::Microsoft.Maui.Controls.Xaml.BindingExtension extension)
-			{
-				global::System.Func<{{binding.SourceType}}, {{binding.PropertyType}}> getter = {{GenerateGetterLambda(binding.Path)}};
+				{{BindingCodeWriter.GenerateBindingMethod(binding, methodName: "Create", indent: 1)}}
 
-				return Create(getter, extension.Mode, extension.Converter, extension.ConverterParameter,
-					extension.StringFormat, extension.Source, extension.FallbackValue, extension.TargetNullValue);
-
-				{{BindingCodeWriter.GenerateBindingMethod(binding)}}
-
-				[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
-				static bool ShouldUseSetter(global::Microsoft.Maui.Controls.BindingMode mode)
-					=> mode == global::Microsoft.Maui.Controls.BindingMode.OneWayToSource
-						|| mode == global::Microsoft.Maui.Controls.BindingMode.TwoWay
-						|| mode == global::Microsoft.Maui.Controls.BindingMode.Default;
-			}
-			""";
+					[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
+					static bool ShouldUseSetter(global::Microsoft.Maui.Controls.BindingMode mode)
+						=> mode == global::Microsoft.Maui.Controls.BindingMode.OneWayToSource
+							|| mode == global::Microsoft.Maui.Controls.BindingMode.TwoWay
+							|| mode == global::Microsoft.Maui.Controls.BindingMode.Default;
+				}
+				""";
 
 		_context.AddLocalMethod(createBindingLocalMethod);
 		newBindingExpression = $"{methodName}({extVariable.Name})";
