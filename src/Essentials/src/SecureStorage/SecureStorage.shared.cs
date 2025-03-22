@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Storage
 		Task<string?> GetAsync(string key);
 		
 		/// <summary>
-		/// Gets and decrypts the value for a given key.
+		/// Gets and decrypts the value for a given key or sets and returns a value if the current one is <see langword="null"/>.
 		/// </summary>
 		/// <param name="key">The key to retrieve the value for.</param>
 		/// <param name="defaultValue">The default value in case the key does not exist.</param>
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Storage
 			Current.GetAsync(key);
 			
 		/// <summary>
-		/// Gets and decrypts the value for a given key.
+		/// Gets and decrypts the value for a given key or sets and returns a value if the current one is <see langword="null"/>.
 		/// </summary>
 		/// <param name="key">The key to retrieve the value for.</param>
 		/// <param name="defaultValue">The default value in case the key does not exist.</param>
