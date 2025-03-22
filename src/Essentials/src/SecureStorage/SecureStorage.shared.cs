@@ -15,6 +15,14 @@ namespace Microsoft.Maui.Storage
 		/// <param name="key">The key to retrieve the value for.</param>
 		/// <returns>The decrypted string value or <see langword="null"/> if a value was not found.</returns>
 		Task<string?> GetAsync(string key);
+		
+		/// <summary>
+		/// Gets and decrypts the value for a given key.
+		/// </summary>
+		/// <param name="key">The key to retrieve the value for.</param>
+		/// <param name="defaultValue">The default value in case the key does not exist.</param>
+		/// <returns>The decrypted string value or <b>defaultValue</b> if a value was not found.</returns>
+		Task<string?> GetOrSetAsync(string key, string? defaultValue);
 
 		/// <summary>
 		/// Sets and encrypts a value for a given key.
@@ -86,6 +94,15 @@ namespace Microsoft.Maui.Storage
 		/// <returns>The decrypted string value or <see langword="null"/> if a value was not found.</returns>
 		public static Task<string?> GetAsync(string key) =>
 			Current.GetAsync(key);
+			
+		/// <summary>
+		/// Gets and decrypts the value for a given key.
+		/// </summary>
+		/// <param name="key">The key to retrieve the value for.</param>
+		/// <param name="defaultValue">The default value in case the key does not exist.</param>
+		/// <returns>The decrypted string value or <b>defaultValue</b> if a value was not found.</returns>
+		public static Task<string?> GetOrSetAsync(string key, string? defaultValue) =>
+			Current.GetOrSetAsync(key, defaultValue);
 
 		/// <summary>
 		/// Sets and encrypts a value for a given key.
@@ -213,6 +230,21 @@ namespace Microsoft.Maui.Storage
 				throw new ArgumentNullException(nameof(key));
 
 			return PlatformGetAsync(key);
+		}
+		
+		public async Task<string?> GetOrSetAsync(string key, string? defaultValue)
+		{
+			if (string.IsNullOrWhiteSpace(key))
+				throw new ArgumentNullException(nameof(key));
+			
+			var existingValue = await PlatformGetAsync(key);
+			if (existingValue == null && defaultValue != null)
+			{
+				await SetAsync(key, defaultValue);
+				return defaultValue;
+			}
+			
+			return existingValue;
 		}
 
 		public Task SetAsync(string key, string value)
