@@ -1,3 +1,4 @@
+using System;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -91,11 +92,85 @@ namespace Microsoft.Maui.Platform
 #pragma warning disable CS8601
 			platformLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
 #pragma warning restore CS8601
+		platformLabel.UserInteractionEnabled = true;
+			platformLabel.DetectAndOpenLink();
+        }
+		internal static void RemoveHtmlGesture(this UILabel platformLabel)
+		{
+			if(platformLabel.GestureRecognizers is null)
+				return;
+			foreach(var gesture in platformLabel.GestureRecognizers)
+			{
+				if(gesture is HtmlTextGestureRecognizer htmlTextGesture)
+				{
+					platformLabel.RemoveGestureRecognizer(htmlTextGesture);
+					htmlTextGesture.ShouldReceiveTouch = null;
+					htmlTextGesture.Dispose();
+					break;
+				}
+			}
+		}
+
+		internal static void DetectAndOpenLink(this UILabel platformLabel)
+		{
+			platformLabel.RemoveHtmlGesture();
+			var _platformLabel = new WeakReference(platformLabel);
+			Action<UITapGestureRecognizer> action = new Action<UITapGestureRecognizer>((recognizer) =>
+			{
+				ProcessRecognizerHandlerTap(_platformLabel,recognizer);
+			});
+			 var tapGesture = new HtmlTextGestureRecognizer(action);
+			 platformLabel.AddGestureRecognizer(tapGesture);	
+		}
+
+		internal static void ProcessRecognizerHandlerTap(WeakReference platformLabel, UITapGestureRecognizer recognizer)
+		{
+			if(platformLabel is not null
+			 && platformLabel.TryGetTarget<UILabel>(out var _platformLabel)
+			 && recognizer is not null)
+			{
+				if (recognizer.State != UIGestureRecognizerState.Recognized) return;
+			    if (_platformLabel.AttributedText is null) return;
+
+				var layoutManager = new NSLayoutManager();
+				var textStorage = new NSTextStorage();
+				var textContainer = new NSTextContainer();
+
+				textStorage.SetString(_platformLabel.AttributedText);
+				layoutManager.AddTextContainer(textContainer);
+				textStorage.AddLayoutManager(layoutManager);
+
+				textContainer.LineFragmentPadding = 0;
+				textContainer.LineBreakMode = _platformLabel.LineBreakMode;
+				textContainer.Size = _platformLabel.Bounds.Size;
+
+				var location = recognizer.LocationInView(_platformLabel);
+				var index = (nint)layoutManager.GetCharacterIndex(location, textContainer);
+
+				if (index < _platformLabel.AttributedText.Length)
+				{
+					var url = _platformLabel.AttributedText.GetAttribute(UIStringAttributeKey.Link, index, out _);
+					if (url is NSUrl nsUrl)
+					{
+						UIApplication.SharedApplication.OpenUrl(nsUrl,new UIApplicationOpenUrlOptions(),null);
+					}
+				}
+			}
 		}
 
 		internal static void UpdateTextPlainText(this UILabel platformLabel, IText label)
 		{
 			platformLabel.Text = label.Text;
 		}
+	}
+	internal class HtmlTextGestureRecognizer:  UITapGestureRecognizer
+	{
+		public HtmlTextGestureRecognizer(Action<UITapGestureRecognizer> action):base(action)
+		{
+				CancelsTouchesInView = false;
+				ShouldRecognizeSimultaneously = GetRecognizeSimultaneously;
+		}
+
+		private bool GetRecognizeSimultaneously(UIGestureRecognizer gestureRecognizer, UIGestureRecognizer otherGestureRecognizer) => true;
 	}
 }
