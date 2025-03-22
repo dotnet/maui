@@ -37,7 +37,7 @@ public partial class Maui23989
 			var layout = new Maui23989(inflator);
 			//without x:DataType, bindings aren't compiled
 			Assert.That(layout.picker0.ItemDisplayBinding, Is.TypeOf<Binding>());
-			if (inflator == XamlInflator.XamlC)
+			if (inflator == XamlInflator.XamlC || inflator == XamlInflator.SourceGen)
 				Assert.That(layout.picker1.ItemDisplayBinding, Is.TypeOf<TypedBinding<MockItemViewModel, string>>());
 			else
 				Assert.That(layout.picker1.ItemDisplayBinding, Is.TypeOf<Binding>());
