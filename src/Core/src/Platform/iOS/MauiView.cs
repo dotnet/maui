@@ -45,9 +45,11 @@ namespace Microsoft.Maui.Platform
 									   Superview.GetParentOfType<UIScrollView>() is UIScrollView scrollView &&
 									   scrollView.AdjustedContentInset != UIEdgeInsets.Zero;
 
+			
 			if (_scrollViewDescendant.Value)
 			{
-				return false;
+				// disabling this behavior for now for testings
+				return true;
 			}
 
 			if (_respondsToSafeArea.HasValue)
