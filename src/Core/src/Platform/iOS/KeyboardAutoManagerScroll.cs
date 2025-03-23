@@ -24,7 +24,7 @@ public static class KeyboardAutoManagerScroll
 	static CGPoint StartingContentOffset;
 	static UIEdgeInsets StartingScrollIndicatorInsets;
 	static UIEdgeInsets StartingContentInsets;
-	static CGRect KeyboardFrame = CGRect.Empty;
+	internal static CGRect KeyboardFrame = CGRect.Empty;
 	static CGPoint TopViewBeginOrigin = new(nfloat.MaxValue, nfloat.MaxValue);
 	static readonly CGPoint InvalidPoint = new(nfloat.MaxValue, nfloat.MaxValue);
 	static double AnimationDuration = 0.25;
