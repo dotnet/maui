@@ -563,10 +563,8 @@ namespace Microsoft.Maui.Controls.Platform
 			// If multiple tap gestures are potentially firing (because multiple tap gesture recognizers have been
 			// added to the MAUI Element), we want to allow them to fire simultaneously if they have the same number
 			// of taps and touches
-			if (gesture is not MauiUITapGestureRecognizer tap)
-				return true;
-			if (other is not MauiUITapGestureRecognizer otherTap)
-				return true;
+			var tap = gesture as MauiUITapGestureRecognizer;
+			var otherTap = other as MauiUITapGestureRecognizer;
 			
 			if(tap != null && otherTap != null)
 			{
