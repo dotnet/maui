@@ -325,6 +325,14 @@ namespace Microsoft.Maui.Controls.Platform
 					_scaleDetector.Value.Dispose();
 				}
 
+				if (_control is not null)
+				{
+					_control.TryGetTarget(out var platformView);
+
+					if (platformView is not null)
+						platformView.Touch -= OnPlatformViewTouched;
+				}
+
 				_control = null;
 				_handler = null;
 			}

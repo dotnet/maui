@@ -1,26 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using Android.OS;
 using Android.Views;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Handlers;
-using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
-using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ViewTests
 	{
+		[Fact]
+		public async Task InputTransparentViewDetachPlatformGestures()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var gesture = new TapGestureRecognizer();
+			
+			var view = new Label()
+			{
+				GestureRecognizers = { gesture }
+			};
+
+			(view as IWindowController).Window = new Controls.Window();
+
+			view.InputTransparent = true;
+
+			await AttachAndRun(view, (handler) =>
+			{
+				var platformView = ((LabelHandler)handler).PlatformView;
+				Assert.NotNull(platformView);
+				
+				view.InputTransparent = false;
+
+				int touchCount = 0;
+
+				gesture.Tapped += (s, e) =>
+				{
+					touchCount++;
+				};
+
+				platformView.DispatchTouchEvent(MotionEvent.Obtain(SystemClock.UptimeMillis(), SystemClock.UptimeMillis(), (int)MotionEventActions.Down, 0, 0, 0));
+				platformView.DispatchTouchEvent(MotionEv 0, 0, 0));
+			
+				Assert.Equal(1, touchCount);
+			});
+		}
+
 		[Theory]
 		[InlineData(1)]
 		[InlineData(2)]
