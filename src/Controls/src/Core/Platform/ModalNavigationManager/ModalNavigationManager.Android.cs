@@ -256,11 +256,22 @@ namespace Microsoft.Maui.Controls.Platform
 
 				dialog.Window.SetBackgroundDrawable(TransparentColorDrawable);
 
-				var attributes = Context?.GetActivity()?.Window?.Attributes;
+				var mainActivityWindow = Context?.GetActivity()?.Window;
+				var attributes = mainActivityWindow?.Attributes;
 
 				if (attributes is not null)
 				{
 					dialog.Window.SetSoftInputMode(attributes.SoftInputMode);
+				}
+
+				if (mainActivityWindow is not null)
+				{
+					var navigationBarColor = mainActivityWindow.NavigationBarColor;
+					var statusBarColor = mainActivityWindow.StatusBarColor;
+#pragma warning disable CA1422
+					dialog.Window.SetNavigationBarColor(new AColor(navigationBarColor));
+				 	dialog.Window.SetStatusBarColor(new AColor(statusBarColor));
+#pragma warning restore CA1422
 				}
 
 				return dialog;
