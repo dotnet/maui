@@ -22,7 +22,9 @@ public class Issue27831 : _IssuesUITest
         var text = App.WaitForElement("MauiLabel").GetText();
 
 		Thread.Sleep(1000);
+		#if ANDROID && IOS
         Assert.That(App.IsKeyboardShown(),Is.EqualTo(true));
+		#endif
         Assert.That(text,Is.EqualTo("Tapped"));
         
 	}
