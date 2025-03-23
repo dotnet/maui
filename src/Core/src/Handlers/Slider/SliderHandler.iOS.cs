@@ -31,7 +31,8 @@ namespace Microsoft.Maui.Handlers
 			_proxy.Disconnect(platformView);
 			if (_sliderTapRecognizer is not null)
 			{
-				PlatformView.RemoveGestureRecognizer(_sliderTapRecognizer);
+				_sliderTapRecognizer.ShouldReceiveTouch = null;
+				platformView.RemoveGestureRecognizer(_sliderTapRecognizer);
 				_sliderTapRecognizer.Dispose();
 				_sliderTapRecognizer = null;
 			}
@@ -41,18 +42,19 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (isMapUpdateOnTapEnabled)
 			{
-				if (_sliderTapRecognizer == null)
+				if (_sliderTapRecognizer is null)
 				{
+					var weakPlatformSlider = new WeakReference<UISlider>(PlatformView);
+					var weakVirtualSlider = new WeakReference<ISlider>(VirtualView);
 					_sliderTapRecognizer = new UITapGestureRecognizer((recognizer) =>
 					{
-						var control = PlatformView;
-						if (control != null)
+						if (weakPlatformSlider.TryGetTarget(out var platformSlider) && weakVirtualSlider.TryGetTarget(out var slider))
 						{
-							var tappedLocation = recognizer.LocationInView(control);
+							var tappedLocation = recognizer.LocationInView(platformSlider);
 							if (tappedLocation != default)
 							{
-								var val = tappedLocation.X * control.MaxValue / control.Frame.Size.Width;
-								VirtualView.Value = val;
+								var val = tappedLocation.X * platformSlider.MaxValue / platformSlider.Frame.Size.Width;
+								slider.Value = val;
 							}
 						}
 					});
