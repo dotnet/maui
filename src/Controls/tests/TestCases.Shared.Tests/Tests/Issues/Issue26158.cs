@@ -16,7 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("entry");
 			App.Click("entry");
+#if ANDROID
 			App.DismissKeyboard();
+#endif
 			VerifyScreenshot();
 		}
 	}
