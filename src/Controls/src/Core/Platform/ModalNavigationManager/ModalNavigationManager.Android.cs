@@ -327,10 +327,12 @@ namespace Microsoft.Maui.Controls.Platform
 					_ = new GenericGlobalLayoutListener((listner,view) =>
 					{
 						listner.Invalidate();
-
-						var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_enter_anim)!;
-						_navigationRootManager.RootView.StartAnimation(animation);
-						animation.AnimationEnd += OnAnimationEnded;
+						if(view is not null)
+						{
+							var animation = AnimationUtils.LoadAnimation(view.Context, Resource.Animation.nav_modal_default_enter_anim)!;
+							view.StartAnimation(animation);
+							animation.AnimationEnd += OnAnimationEnded;
+						}
 					},_navigationRootManager.RootView);
 				}
 				return _navigationRootManager?.RootView ??
