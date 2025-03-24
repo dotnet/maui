@@ -130,7 +130,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				if (popupStack.IsVisible)
 				{
-					await popupStack.FadeTo(0, 100, Easing.Linear);
+					await popupStack.FadeToAsync(0, 100, Easing.Linear);
 					popupStack.IsVisible = false;
 					IsOpen = false;
 				}
@@ -166,11 +166,11 @@ namespace Maui.Controls.Sample.Issues
 
 			private async void PopupStackLayout_Clicked(object sender, EventArgs e)
 			{
-				await popupStack.FadeTo(0, 50, Easing.Linear);
+				await popupStack.FadeToAsync(0, 50, Easing.Linear);
 				popupStack.IsVisible = false;
 
 				popupStack.IsVisible = true;
-				await popupStack.FadeTo(1, 50, Easing.Linear);
+				await popupStack.FadeToAsync(1, 50, Easing.Linear);
 			}
 
 
@@ -229,7 +229,7 @@ namespace Maui.Controls.Sample.Issues
 					popupStack.Opacity = 0;
 					popupStack.IsVisible = true;
 					IsOpen = true;
-					await popupStack.FadeTo(1, 100, Easing.Linear);
+					await popupStack.FadeToAsync(1, 100, Easing.Linear);
 				}
 			}
 
@@ -249,7 +249,7 @@ namespace Maui.Controls.Sample.Issues
 				if (rootPage != null)
 				{
 					var newPos = viewPositionService.GetRelativePosition(this, rootPage);
-					popupStack.TranslateTo(newPos.X - popupStack.WidthRequest, newPos.Y, 1, null);
+					popupStack.TranslateToAsync(newPos.X - popupStack.WidthRequest, newPos.Y, 1, null);
 				}
 			}
 
