@@ -142,4 +142,23 @@ public class SetterBuilderTests
 		Assert.Empty(setter.PatternMatchingExpressions);
 		Assert.Equal("GetUnsafeProperty_Y(source).A = value;", setter.AssignmentStatement);
 	}
+
+	[Fact]
+	public void GeneratesSetterWithValueTypeInTheMiddle()
+	{
+		var setter = Setter.From([
+				new MemberAccess(
+					"FooStruct",
+					IsValueType: true),
+				new MemberAccess(
+					"Bar",
+					IsValueType: false),
+				new MemberAccess(
+					"Value",
+					IsValueType: true)]);
+
+		Assert.Single(setter.PatternMatchingExpressions);
+		Assert.Equal("source.FooStruct is {} p0", setter.PatternMatchingExpressions[0]);
+		Assert.Equal("p0.Bar.Value = value;", setter.AssignmentStatement);
+	}
 }

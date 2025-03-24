@@ -17,11 +17,12 @@ public class CompiledBindings : SourceGenXamlInitializeComponentTestBase
 	xmlns:test="clr-namespace:Test"
 	x:Class="Test.TestPage"
 	x:DataType="test:TestPage"
-    Title="{Binding Title}"/>
+    Title="{Binding Foo.Bar.Title}"/>
 """;
 
 		var code =
 """
+#nullable enable
 using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
@@ -31,12 +32,22 @@ namespace Test;
 [XamlProcessing(XamlInflator.SourceGen)]
 public partial class TestPage : ContentPage
 {
-	public string Title { get; set; } = "Title";
+	public Foo Foo { get; set; } = new Foo { Bar = new Bar() };
 
 	public TestPage()
 	{
 		InitializeComponent();
 	}
+}
+
+public class Foo
+{
+	public Bar Bar { get; set; }
+}
+
+public struct Bar
+{
+	public string Title { get; set; } = "Title";
 }
 """;
 
@@ -71,7 +82,7 @@ public partial class TestPage
 		global::Microsoft.Maui.Controls.Internals.INameScope iNameScope = global::Microsoft.Maui.Controls.Internals.NameScope.GetNameScope(__root) ?? new global::Microsoft.Maui.Controls.Internals.NameScope();
 		global::Microsoft.Maui.Controls.Internals.NameScope.SetNameScope(__root, iNameScope);
 #line 1 "Test.xaml"
-		bindingExtension.Path = "Title";
+		bindingExtension.Path = "Foo.Bar.Title";
 #line default
 		var bindingBase = CreateTypedBindingFrom_bindingExtension(bindingExtension);
 #if _MAUIXAML_SG_SOURCEINFO
@@ -79,53 +90,62 @@ public partial class TestPage
 			global::Microsoft.Maui.VisualDiagnostics.RegisterSourceInfo(bindingBase!, new global::System.Uri("Test.xaml;assembly=SourceGeneratorDriver.Generated", global::System.UriKind.Relative), -1, -1);
 #endif
 		__root.SetBinding(global::Microsoft.Maui.Controls.Page.TitleProperty, bindingBase);
-		
-static global::Microsoft.Maui.Controls.BindingBase CreateTypedBindingFrom_bindingExtension(global::Microsoft.Maui.Controls.Xaml.BindingExtension extension)
+		static global::Microsoft.Maui.Controls.BindingBase CreateTypedBindingFrom_bindingExtension(global::Microsoft.Maui.Controls.Xaml.BindingExtension extension)
 {
-	global::System.Func<global::Test.TestPage, string> getter = static source => source.Title;
+	return Create(
+		getter: static source => source.Foo.Bar.Title,
+		extension.Mode,
+		extension.Converter,
+		extension.ConverterParameter,
+		extension.StringFormat,
+		extension.Source,
+		extension.FallbackValue,
+		extension.TargetNullValue);
 
-	return Create(getter, extension.Mode, extension.Converter, extension.ConverterParameter,
-		extension.StringFormat, extension.Source, extension.FallbackValue, extension.TargetNullValue);
-
-			[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.BindingSourceGen, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", "1.0.0.0")]
-		static global::Microsoft.Maui.Controls.BindingBase Create(
-			global::System.Func<global::Test.TestPage, string> getter,
-			global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
-			global::Microsoft.Maui.Controls.IValueConverter? converter = null,
-			object? converterParameter = null,
-			string? stringFormat = null,
-			object? source = null,
-			object? fallbackValue = null,
-			object? targetNullValue = null)
+	[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Maui.Controls.BindingSourceGen, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", "1.0.0.0")]
+	static global::Microsoft.Maui.Controls.BindingBase Create(
+		global::System.Func<global::Test.TestPage, string> getter,
+		global::Microsoft.Maui.Controls.BindingMode mode = global::Microsoft.Maui.Controls.BindingMode.Default,
+		global::Microsoft.Maui.Controls.IValueConverter? converter = null,
+		object? converterParameter = null,
+		string? stringFormat = null,
+		object? source = null,
+		object? fallbackValue = null,
+		object? targetNullValue = null)
+	{
+		global::System.Action<global::Test.TestPage, string>? setter = null;
+		if (ShouldUseSetter(mode))
 		{
-			global::System.Action<global::Test.TestPage, string>? setter = null;
-			if (ShouldUseSetter(mode))
-			{
-					setter = static (source, value) =>
-					{
-						source.Title = value;
-					};
-			}
-			
-			var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string>(
-				getter: source => (getter(source), true),
-				setter,
-				handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
+				setter = static (source, value) =>
 				{
-					new(static source => source, "Title"),
-				})
-			{
-				Mode = mode,
-				Converter = converter,
-				ConverterParameter = converterParameter,
-				StringFormat = stringFormat,
-				Source = source,
-				FallbackValue = fallbackValue,
-				TargetNullValue = targetNullValue
-			};
-			
-			return binding;
+					if (source.Foo.Bar is {} p0)
+					{
+						p0.Title = value;
+					}
+				};
 		}
+		
+		var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::Test.TestPage, string>(
+			getter: source => (getter(source), true),
+			setter,
+			handlers: new global::System.Tuple<global::System.Func<global::Test.TestPage, object?>, string>[]
+			{
+				new(static source => source, "Foo"),
+				new(static source => source.Foo, "Bar"),
+				new(static source => source.Foo.Bar, "Title"),
+			})
+		{
+			Mode = mode,
+			Converter = converter,
+			ConverterParameter = converterParameter,
+			StringFormat = stringFormat,
+			Source = source,
+			FallbackValue = fallbackValue,
+			TargetNullValue = targetNullValue
+		};
+		
+		return binding;
+	}
 
 
 	[global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

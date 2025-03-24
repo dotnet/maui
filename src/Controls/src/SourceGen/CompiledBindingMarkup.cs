@@ -71,13 +71,13 @@ internal struct CompiledBindingMarkup
 			? "global::Microsoft.Maui.Controls.Xaml.TemplateBindingExtension"
 			: "global::Microsoft.Maui.Controls.Xaml.BindingExtension";
 		var source = isTemplateBinding
-			? "global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent"
+			? "source: global::Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent"
 			: "extension.Source";
 		var fallbackValue = isTemplateBinding
-			? "null"
+			? "fallbackValue: null"
 			: "extension.FallbackValue";
 		var targetNullValue = isTemplateBinding
-			? "null"
+			? "targetNullValue: null"
 			: "extension.TargetNullValue";
 
 		var createBindingLocalMethod = $$"""
@@ -89,9 +89,9 @@ internal struct CompiledBindingMarkup
 						extension.Converter,
 						extension.ConverterParameter,
 						extension.StringFormat,
-						source: {{source}},
-						fallbackValue: {{fallbackValue}},
-						targetNullValue: {{targetNullValue}});
+						{{source}},
+						{{fallbackValue}},
+						{{targetNullValue}});
 
 				{{BindingCodeWriter.GenerateBindingMethod(binding, methodName: "Create", indent: 1)}}
 
@@ -119,11 +119,14 @@ internal struct CompiledBindingMarkup
 		setterOptions = null;
 		bindingPath = default;
 
+		var isNullable = false;
 		var path = _path.Trim('.', ' ');
 		var parts = path.Split(['.'], StringSplitOptions.RemoveEmptyEntries);
 		var bindingPathParts = new List<IPathPart>();
 
 		var previousPartType = sourceType;
+		var previousPartIsNullable = sourceType.IsTypeNullable(enabledNullable: true);
+
 		foreach (var part in parts)
 		{
 			var p = part;
@@ -163,15 +166,33 @@ internal struct CompiledBindingMarkup
 					return false; // TODO report diagnostic
 				}
 
-				bindingPathParts.Add(new MemberAccess(p, property.Type.IsValueType));
-				previousPartType = property.Type;
+				var memberAccess = new MemberAccess(p, property.Type.IsValueType);
+				// TODO: detect if the type is annotated or not
+				// var enabledNullable = previousPartType.NullableAnnotation == NullableAnnotation.Annotated
+				// 	|| previousPartType.GetAttributes().Any(a => a.AttributeClass?.ToFQDisplayString() == "global::System.Runtime.CompilerServices.NullableContextAttribute"
+				// 		&& a.ConstructorArguments.Length == 1
+				// 		&& a.ConstructorArguments[0].Value is int nullableContextValue
+				// 		&& nullableContextValue > 0);
+				var enabledNullable = true;
+				var memberIsNullable = property.Type.IsTypeNullable(enabledNullable);
+				isNullable |= memberIsNullable;
 
+				IPathPart nextPart = previousPartIsNullable
+					? new ConditionalAccess(memberAccess)
+					: memberAccess;
+
+				bindingPathParts.Add(nextPart);
+
+				// TODO: do this only if it is the last part?
 				setterOptions = new SetterOptions(
 					IsWritable: property.SetMethod != null
 						&& property.SetMethod.IsPublic()
 						&& !property.SetMethod.IsInitOnly
 						&& !property.SetMethod.IsStatic,
-					AcceptsNullValue: previousPartType.IsTypeNullable(enabledNullable: true));
+					AcceptsNullValue: memberIsNullable);
+
+				previousPartType = property.Type;
+				previousPartIsNullable = memberIsNullable;
 			}
 
 			if (indexArg != null)
@@ -236,6 +257,18 @@ internal struct CompiledBindingMarkup
 				{
 					return false; // TODO report diagnostic
 				}
+			}
+		}
+
+		if (isNullable)
+		{
+			if (propertyType.IsValueType)
+			{
+				propertyType = _context.Compilation.GetSpecialType(SpecialType.System_Nullable_T).Construct(propertyType);
+			}
+			else
+			{
+				propertyType = propertyType.WithNullableAnnotation(NullableAnnotation.Annotated);
 			}
 		}
 
