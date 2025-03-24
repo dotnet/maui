@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Controls.TestCases.HostApp.Issues.Issue16203"
              Title="Issue16203">
-    <VerticalStackLayout VerticalOptions="Center"c>
+    <VerticalStackLayout VerticalOptions="Center">
         <Button AutomationId="MauiButton" Text="Button" HeightRequest="100"
             Clicked="Button_Clicked">
             <Button.GestureRecognizers>
