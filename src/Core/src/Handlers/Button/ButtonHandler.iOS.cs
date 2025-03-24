@@ -49,8 +49,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 #if MACCATALYST
-		//TODO: make this public on NET8
-		internal static void MapBackground(IButtonHandler handler, IButton button)
+		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
 			//If this is a Mac optimized interface
 			if (OperatingSystem.IsIOSVersionAtLeast(15) && UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Mac)
@@ -218,6 +217,11 @@ namespace Microsoft.Maui.Handlers
 				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
 				button.SetImage(platformImage, UIControlState.Normal);
+
+				// UIButton.SetImage(image, forState:) does not immediately assign the image to UIButton.ImageView.Image.
+				// Instead, the image is set internally and only applied to ImageView when the button is rendered.
+				// To ensure SizeThatFits is correct, and avoid race conditions, we have to force a layout.
+				button.LayoutIfNeeded();
 			}
 		}
 	}

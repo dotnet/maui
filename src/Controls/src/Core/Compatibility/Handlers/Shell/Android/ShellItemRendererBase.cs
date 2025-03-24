@@ -33,7 +33,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IShellObservableFragment _currentFragment;
 		ShellSection _shellSection;
 		Page _displayedPage;
-		bool _disposed;
 
 		protected ShellItemRendererBase(IShellContext shellContext)
 		{
@@ -112,19 +111,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnDestroy();
 			Destroy();
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			if (_disposed)
-				return;
-
-			_disposed = true;
-
-			if (disposing)
-				Destroy();
-
-			base.Dispose(disposing);
 		}
 
 		protected abstract ViewGroup GetNavigationTarget();
