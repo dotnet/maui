@@ -18,7 +18,7 @@ public class Issue14825 : _IssuesUITest
 	{
 		App.WaitForElement("TestLabel", timeout: TimeSpan.FromSeconds(5));
 		App.WaitForElement("TestInstructions");
-
+		Thread.Sleep(2000); // Wait for the WebView to load
 		// Click the capture button to capture a WebView screenshot.
 		App.Click("Capture");
 		App.WaitForElement("TestInstructions", timeout: TimeSpan.FromSeconds(2));
