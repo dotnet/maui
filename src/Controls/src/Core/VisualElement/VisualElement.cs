@@ -1575,33 +1575,34 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected internal virtual void ChangeVisualState()
 		{
-			if (!IsLoaded)
+			try
 			{
-				// We don't want to change the visual state if the element is not loaded because
-				// the Handler or the PlatformView could be null or the PlatformView is not loaded yet.
-				return;
-			}
+				if (!IsEnabled)
+				{
+					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
+				}
+				else if (IsPointerOver)
+				{
+					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
+				}
+				else
+				{
+					VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
+				}
 
-			if (!IsEnabled)
-			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Disabled);
+				if (IsEnabled)
+				{
+					// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
+					// in the control's visual states, the state can end up stuck in PointerOver after the pointer
+					// exits and the control still has focus.
+					VisualStateManager.GoToState(this,
+						IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+				}
 			}
-			else if (IsPointerOver)
+			catch(ObjectDisposedException)
 			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.PointerOver);
-			}
-			else
-			{
-				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
-			}
-
-			if (IsEnabled)
-			{
-				// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
-				// in the control's visual states, the state can end up stuck in PointerOver after the pointer
-				// exits and the control still has focus.
-				VisualStateManager.GoToState(this,
-					IsFocused ? VisualStateManager.CommonStates.Focused : VisualStateManager.CommonStates.Unfocused);
+				// We don't want to change the visual state if the element have already been disposed.
+				// The Handler or the PlatformView could be null.
 			}
 		}
 
