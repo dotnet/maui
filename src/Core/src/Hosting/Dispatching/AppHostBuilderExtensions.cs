@@ -40,7 +40,8 @@ namespace Microsoft.Maui.Hosting
 
 #if !NETSTANDARD
 			// For Android we read the environment variables from a text file that is written to the device/emulator
-			if (OperatingSystem.IsAndroid())
+			// If the file not exists, we will use the default environment variables which is less stable
+			if (OperatingSystem.IsAndroid() && System.IO.File.Exists("/data/local/tmp/ide-launchenv.txt"))
 			{
 				var envVarLines = System.IO.File.ReadAllLines("/data/local/tmp/ide-launchenv.txt");
 
