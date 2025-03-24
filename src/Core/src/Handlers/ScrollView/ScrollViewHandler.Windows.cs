@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVerticalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.PlatformView.VerticalScrollBarVisibility = scrollView.VerticalScrollBarVisibility.ToWindowsScrollBarVisibility();
+			handler.PlatformView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.VerticalScrollBarVisibility);
 		}
 
 		public static void MapOrientation(IScrollViewHandler handler, IScrollView scrollView)
