@@ -41,6 +41,11 @@ public sealed record Setter(string[] PatternMatchingExpressions, string Assignme
 
 				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, innerPart);
 			}
+			else if (part is MemberAccess { IsValueType: true } && part != path.Last())
+			{
+				// It is necessary to create a variable for value types in order to set their properties.
+				AddPatternMatchingExpression("{}");
+			}
 			else
 			{
 				accessAccumulator = AccessExpressionBuilder.ExtendExpression(accessAccumulator, part, part == path.Last());
