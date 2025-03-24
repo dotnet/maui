@@ -18,6 +18,8 @@ parameters:
   poolName: 'Azure Pipelines'
   skipDotNet: false
   buildType: 'buildAndTest' # [ buildAndTest, buildOnly, testOnly ]
+  cleanAgent: false
+
 
 steps:
 
@@ -47,7 +49,7 @@ steps:
   # Provision the variaous SDKs that are needed
   - template: provision.yml
     parameters:
-      agentCleanser: ${{ eq(parameters.platform, 'ios') }}
+      agentCleanser: eq(variables['Agent.OS'], 'Darwin')
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       skipJdk: ${{ ne(parameters.platform, 'android') }}
       skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
