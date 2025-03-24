@@ -47,6 +47,7 @@ steps:
   # Provision the variaous SDKs that are needed
   - template: provision.yml
     parameters:
+      agentCleanser: ${{ eq(parameters.platform, 'ios') }}
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       skipJdk: ${{ ne(parameters.platform, 'android') }}
       skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}

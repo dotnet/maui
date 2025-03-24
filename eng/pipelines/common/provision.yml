@@ -1,4 +1,5 @@
 parameters:
+  agentCleanser: false
   # Xcode
   skipXcode: false
   # .NET NuGet caches
@@ -36,7 +37,7 @@ steps:
   ##################################################
 
   # Provisioning macOS - Agent cleanser
-  - ${{ if eq(variables['Agent.OS'], 'Darwin') }}:
+  - ${{ if eq(parameters.agentCleanser, 'true') }}:
     - template: agent-cleanser/v1.yml@yaml-templates
       parameters:
         UninstallMono: true
