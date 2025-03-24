@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Controls
 {
 	// Don't add IElementConfiguration<Cell> because it kills performance on UWP structures that use Cells
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Cell']/Docs/*" />
-	[Obsolete("The controls which use Cell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
 	public abstract class Cell : Element, ICellController, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IVisualTreeElement
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='DefaultCellHeight']/Docs/*" />
@@ -139,11 +138,11 @@ namespace Microsoft.Maui.Controls
 			{
 #pragma warning disable CS0618 // Type or member is obsolete
 				var table = RealParent as TableView;
-#pragma warning restore CS0618 // Type or member is obsolete
 				if (table != null)
 					return table.HasUnevenRows && Height > 0 ? Height : table.RowHeight;
 
 				var list = RealParent as ListView;
+#pragma warning restore CS0618 // Type or member is obsolete
 				if (list != null)
 					return list.HasUnevenRows && Height > 0 ? Height : list.RowHeight;
 
@@ -232,7 +231,9 @@ namespace Microsoft.Maui.Controls
 		{
 			OnAppearing();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var container = RealParent as ListView;
+#pragma warning restore CS0618 // Type or member is obsolete
 			container?.SendCellAppearing(this);
 		}
 
@@ -242,7 +243,9 @@ namespace Microsoft.Maui.Controls
 		{
 			OnDisappearing();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var container = RealParent as ListView;
+#pragma warning restore CS0618 // Type or member is obsolete
 			container?.SendCellDisappearing(this);
 		}
 
