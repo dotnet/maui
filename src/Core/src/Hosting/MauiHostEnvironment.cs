@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.FileProviders;
+﻿using System.Diagnostics;
+using System.Reflection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.ApplicationModel;
 
@@ -8,7 +10,7 @@ public class MauiHostEnvironment : IHostEnvironment
 {
 	public string EnvironmentName
 	{ 
-		get => "Production";
+		get => IsOptimized(Assembly.GetEntryAssembly()) ? "Production" : "Development";
 		set => throw new System.NotImplementedException();
 	}
 
@@ -28,5 +30,11 @@ public class MauiHostEnvironment : IHostEnvironment
 	{ 
 		get => throw new System.NotImplementedException();
 		set => throw new System.NotImplementedException();
+	}
+
+	static bool IsOptimized(Assembly? asm)
+	{
+		var att = asm?.GetCustomAttribute<DebuggableAttribute>();
+		return att is null || att.IsJITOptimizerDisabled == false;
 	}
 }
