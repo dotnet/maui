@@ -117,6 +117,7 @@ stages:
               artifactName: ${{ parameters.artifactName }}
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
+              cleanAgent: true
 
     - ${{ if eq(platform, 'windows') }}:
       - ${{ each project in parameters.projects }}:
