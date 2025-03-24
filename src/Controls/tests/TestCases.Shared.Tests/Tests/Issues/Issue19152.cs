@@ -28,8 +28,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// On iOS, the virtual keyboard appears inconsistent with keyboard characters casing, can cause flaky test results. As this test verifying only the entry clear button color, crop the bottom portion of the screenshot to exclude the keyboard.
 			// Using DismissKeyboard() would unfocus the control in iOS, so we're using cropping instead to maintain focus during testing.
 			VerifyScreenshot(cropBottom: 1200);  
-#endif
+#else
 			VerifyScreenshot();
+#endif
 		}
 	}
 }
