@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.Hosting
 {
@@ -9,15 +8,7 @@ namespace Microsoft.Maui.Hosting
 	{
 		public string EnvironmentName
 		{ 
-			get
-			{
-#if DEBUG
-				return "Development";
-#else
-				return "Production";
-#endif
-			}
-
+			get => "Production";
 			set => throw new System.NotImplementedException();
 		}
 
@@ -29,7 +20,7 @@ namespace Microsoft.Maui.Hosting
 
 		public string ContentRootPath
 		{ 
-			get => FileSystem.Current.AppDataDirectory;
+			get => throw new System.NotImplementedException();
 			set => throw new System.NotImplementedException();
 		}
 
