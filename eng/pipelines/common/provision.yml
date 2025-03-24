@@ -38,7 +38,8 @@ steps:
   # Provisioning macOS - Agent cleanser
   - template: agent-cleanser/v1.yml@yaml-templates
     parameters:
-      UninstallMono: false
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      UninstallMono: true
       UninstallXamarinMac: true
       CleanseAgentToolsDotNet: true
       SelfHealPowerShell: false
