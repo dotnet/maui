@@ -15,6 +15,7 @@ parameters:
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   androidConfiguration: 'debug' # Indicates the configuration to use for Android. We're slowly enabling this for all projects
   useArtifacts: false
+  cleanup: false
   targetFrameworkVersion:
     tfm: ''
     dependsOn: ''
@@ -90,6 +91,8 @@ stages:
               artifactName: ${{ parameters.artifactName }}
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
+              cleanAgent: ${{ parameters.cleanup }}
+
 
     - ${{ if eq(platform, 'catalyst') }}:
       - ${{ each project in parameters.projects }}:
