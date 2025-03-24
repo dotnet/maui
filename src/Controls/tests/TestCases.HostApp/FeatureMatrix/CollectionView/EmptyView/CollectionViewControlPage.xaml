@@ -10,17 +10,17 @@
                 AutomationId="Options"/>
     </ContentPage.ToolbarItems>
 
-        <CollectionView
+        <local:CollectionView2
             x:Name="collectionView"
             ItemsSource="{Binding ItemsSource}"
             EmptyView="{Binding EmptyView}"
             Header="{Binding Header}"
             Footer="{Binding Footer}"
             EmptyViewTemplate="{Binding EmptyViewTemplate}"
-            HeaderTemplate="{Binding HeaderTemplate}"
-            FooterTemplate="{Binding FooterTemplate}"
+            GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
             ItemTemplate="{Binding ItemTemplate}"
             IsGrouped="{Binding IsGrouped}"
+            ItemsLayout="{Binding ItemsLayout}"
             AutomationId="CollectionViewControl">
-        </CollectionView>
+        </local:CollectionView2>
 </ContentPage>
