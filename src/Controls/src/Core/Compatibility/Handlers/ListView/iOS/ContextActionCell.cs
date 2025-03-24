@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.iOS.Resources;
@@ -36,15 +37,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			using var renderer = new UIGraphicsImageRenderer(size);
 			DestructiveBackground = renderer.CreateImage((UIGraphicsImageRendererContext ctx) =>
 			{
-				var context = ctx.CGContext;
-				context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.Red.CGColor);
-				context.FillRect(rect);
+				FillRect(ctx, rect, ColorExtensions.Red.CGColor);
 			});
 			NormalBackground = renderer.CreateImage((UIGraphicsImageRendererContext ctx) =>
 			{
-				var context = ctx.CGContext;
-				context.SetFillColor(Microsoft.Maui.Platform.ColorExtensions.LightGray.CGColor);
-				context.FillRect(rect);
+				FillRect(ctx, rect, ColorExtensions.LightGray.CGColor);
 			});
 		}
 
@@ -82,6 +79,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 
 			_scroller.ContentOffset = new PointF(0, 0);
+		}
+
+		static void FillRect(UIGraphicsImageRendererContext ctx, RectangleF rect, CGColor color)
+		{
+			var context = ctx.CGContext;
+			context.SetFillColor(color);
+			context.FillRect(rect);
 		}
 
 		public override void LayoutSubviews()

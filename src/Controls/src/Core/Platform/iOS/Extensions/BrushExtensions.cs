@@ -113,19 +113,23 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static UIImage GetBackgroundImage(this UIView control, Brush brush)
 		{
-			if (control == null || brush == null || brush.IsEmpty)
+			if (control is null || brush is null || brush.IsEmpty)
+			{
 				return null;
+			}
 
 			var backgroundLayer = control.GetBackgroundLayer(brush);
 
-			if (backgroundLayer == null)
+			if (backgroundLayer is null || backgroundLayer.Bounds.Size.Width <= 0 || backgroundLayer.Bounds.Size.Height <= 0)
+			{
 				return null;
+			}
 
 			var format = new UIGraphicsImageRendererFormat()
 			{
 				Scale = UIScreen.MainScreen.Scale
 			};
-			var renderer = new UIGraphicsImageRenderer(backgroundLayer.Bounds.Size, format);
+			using var renderer = new UIGraphicsImageRenderer(backgroundLayer.Bounds.Size, format);
 			var gradientImage = renderer.CreateImage((UIGraphicsImageRendererContext ctx) =>
 			{
 				backgroundLayer.RenderInContext(ctx.CGContext);
