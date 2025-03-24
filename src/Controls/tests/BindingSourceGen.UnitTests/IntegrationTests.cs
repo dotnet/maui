@@ -74,7 +74,10 @@ public class IntegrationTests
                         global::System.Action<string, int>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
-                            throw new global::System.InvalidOperationException("Cannot set value on the source object.");
+                            setter = static (source, value) =>
+                            {
+                                throw new global::System.InvalidOperationException("Cannot set value on the source object.");
+                            };
                         }
 
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<string, int>(
@@ -164,7 +167,10 @@ public class IntegrationTests
                         global::System.Action<string, int>? setter = null;
                         if (ShouldUseSetter(mode))
                         {
-                            throw new global::System.InvalidOperationException("Cannot set value on the source object.");
+                            setter = static (source, value) =>
+                            {
+                                throw new global::System.InvalidOperationException("Cannot set value on the source object.");
+                            };
                         }
 
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<string, int>(
@@ -1188,7 +1194,10 @@ public class IntegrationTests
                         global::System.Action<global::MyNamespace.A, int>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
-                            throw new global::System.InvalidOperationException("Cannot set value on the source object.");
+                            setter = static (source, value) =>
+                            {
+                                throw new global::System.InvalidOperationException("Cannot set value on the source object.");
+                            };
                         }
 
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.A, int>(
@@ -1781,7 +1790,10 @@ public class IntegrationTests
                         global::System.Action<global::MyNamespace.MySourceClass, int>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
-                            throw new global::System.InvalidOperationException("Cannot set value on the source object.");
+                            setter = static (source, value) =>
+                            {
+                                throw new global::System.InvalidOperationException("Cannot set value on the source object.");
+                            };
                         }
 
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MySourceClass, int>(
@@ -1891,7 +1903,10 @@ public class IntegrationTests
                         global::System.Action<global::MyNamespace.MyClass, string>? setter = null;
                         if (ShouldUseSetter(mode, bindableProperty))
                         {
-                            throw new global::System.InvalidOperationException("Cannot set value on the source object.");
+                            setter = static (source, value) =>
+                            {
+                                throw new global::System.InvalidOperationException("Cannot set value on the source object.");
+                            };
                         }
 
                         var binding = new global::Microsoft.Maui.Controls.Internals.TypedBinding<global::MyNamespace.MyClass, string>(
