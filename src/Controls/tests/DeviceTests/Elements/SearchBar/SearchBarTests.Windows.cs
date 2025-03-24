@@ -43,5 +43,14 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+		Task<float> GetPlatformOpacity(SearchBarHandler searchBarHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(searchBarHandler);
+				return (float)nativeView.Opacity;
+			});
+		}
 	}
 }

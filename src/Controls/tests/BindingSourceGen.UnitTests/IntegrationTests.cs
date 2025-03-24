@@ -1,8 +1,8 @@
-using Microsoft.Maui.Controls.BindingSourceGen;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Maui.Controls.BindingSourceGen;
 using Xunit;
-using System.Text;
 
 namespace BindingSourceGen.UnitTests;
 public class IntegrationTests

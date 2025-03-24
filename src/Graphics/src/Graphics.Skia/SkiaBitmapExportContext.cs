@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using SkiaSharp;
 
@@ -11,6 +12,7 @@ namespace Microsoft.Maui.Graphics.Skia
 		private SKImage _image;
 		private SKSurface _surface;
 		private SKCanvas _skiaCanvas;
+		private SkiaCanvas _platformCanvas;
 		private ScalingCanvas _canvas;
 
 		public SkiaBitmapExportContext(
@@ -34,17 +36,16 @@ namespace Microsoft.Maui.Graphics.Skia
 
 			if (_surface == null)
 			{
-				System.Diagnostics.Debug.WriteLine("Unable to create a Skia surface");
-				return;
+				throw new InvalidOperationException("Unable to create a Skia surface.");
 			}
 
 			_skiaCanvas = _surface.Canvas;
-			var platformCanvas = new SkiaCanvas
+			_platformCanvas = new SkiaCanvas
 			{
 				Canvas = _skiaCanvas,
 				DisplayScale = displayScale
 			};
-			_canvas = new ScalingCanvas(platformCanvas);
+			_canvas = new ScalingCanvas(_platformCanvas);
 			_disposeBitmap = disposeBitmap;
 		}
 
@@ -60,8 +61,7 @@ namespace Microsoft.Maui.Graphics.Skia
 			{
 				if (_bitmap == null)
 				{
-					var data = SKImage.Encode();
-					_bitmap = SKBitmap.Decode(data);
+					_bitmap = SKBitmap.FromImage(SKImage);
 				}
 
 				return _bitmap;
@@ -70,19 +70,25 @@ namespace Microsoft.Maui.Graphics.Skia
 
 		public override void Dispose()
 		{
+			if (_platformCanvas != null)
+			{
+				_platformCanvas.Dispose();
+				_platformCanvas = null!;
+			}
+
 			if (_skiaCanvas != null)
 			{
 				_skiaCanvas.Dispose();
-				_skiaCanvas = null;
+				_skiaCanvas = null!;
 			}
 
 			if (_surface != null)
 			{
 				_surface.Dispose();
-				_surface = null;
+				_surface = null!;
 			}
 
-			if (_image != null)
+			if (_image != null && _disposeBitmap)
 			{
 				_image.Dispose();
 				_image = null;
@@ -94,7 +100,7 @@ namespace Microsoft.Maui.Graphics.Skia
 				_bitmap = null;
 			}
 
-			_canvas = null;
+			_canvas = null!;
 
 			base.Dispose();
 		}

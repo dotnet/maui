@@ -1,0 +1,289 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+	<!-- Imports all the Provisioning versions -->
+	<Import Project="../../eng/Versions.props" />
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<IsWindows>$([System.OperatingSystem]::IsWindows())</IsWindows>
+		<IsMacOS>$([System.OperatingSystem]::IsMacOS())</IsMacOS>
+		<IsLinux>$([System.OperatingSystem]::IsLinux())</IsLinux>
+	</PropertyGroup>
+
+	<!-- Appium Drivers -->
+	<ItemGroup>
+		<AppiumDrivers Include="uiautomator2" Version="$(AppiumUIAutomator2DriverVersion)" Condition=" '$(AppiumUIAutomator2DriverVersion)' != '' " />
+		<AppiumDrivers Include="windows" Version="$(AppiumWindowsDriverVersion)" Condition=" '$(IsWindows)' == 'True' AND '$(AppiumWindowsDriverVersion)' != '' " />
+		<AppiumDrivers Include="mac2" Version="$(AppiumMac2DriverVersion)" Condition=" '$(IsMacOS)' == 'True' AND '$(AppiumMac2DriverVersion)' != '' " />
+		<AppiumDrivers Include="xcuitest" Version="$(AppiumXCUITestDriverVersion)" Condition=" '$(IsMacOS)' == 'True' AND '$(AppiumXCUITestDriverVersion)' != '' " />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<!-- Get the right ABI string for android avd's based on host os this is running on -->
+		<AndroidSdkHostAbi Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">x86_64</AndroidSdkHostAbi>
+		<AndroidSdkHostAbi Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'X64' ">arm64-v8a</AndroidSdkHostAbi>
+	</PropertyGroup>
+
+
+
+	<!-- ******************************************** -->
+	<!-- * Android SDK Provisioning                   -->
+	<!-- ******************************************** -->
+
+	<ItemGroup>
+		<!-- Android SDK - construct package names to install -->
+		<AndroidSdkPackages Include="platform-tools" />
+		<AndroidSdkPackages Include="build-tools%3B$(AndroidSdkBuildToolsVersion)" />
+		<AndroidSdkPackages Include="cmdline-tools%3B$(AndroidSdkCmdLineToolsVersion)" />
+		<AndroidSdkPackages Include="emulator" />
+	</ItemGroup>
+
+	<Target Name="ProvisionAndroidSdkCommonPackages">
+		<Message Text="Provisioning Android SDK Common Packages" />
+
+		<!-- Assemble the common sdk package names to install in the sdk -->
+		<ItemGroup>
+			<!-- Common Packages -->
+			<AndroidSdkCommonPackages Include="@(AndroidSdkPackages)" />
+		</ItemGroup>
+
+		<!-- Install SDK Common Packages -->
+		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkCommonPackages.Identity)&quot;" />
+
+		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+	</Target>
+
+	<Target Name="ProvisionAndroidSdkPlatformApiPackages">
+		<Message Text="Provisioning Android SDK Platform Packages" />
+
+		<!-- Assemble the platform sdk package names to install in the sdk -->
+		<ItemGroup>
+			<!-- Platform APIs -->
+			<AndroidSdkPlatformApiPackages Include="platforms%3Bandroid-%(AndroidSdkApiLevels.Identity)" Condition=" '$(AndroidSdkProvisionDefaultApiLevelsOnly)' != 'True' Or '%(AndroidSdkApiLevels.IsDefault)' == 'True' " />
+		</ItemGroup>
+
+		<!-- Install SDK Platform API Packages -->
+		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkPlatformApiPackages.Identity)&quot;" />
+
+		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+	</Target>
+
+	<Target Name="ProvisionAndroidSdkEmulatorImagePackages">
+		<Message Text="Provisioning Android SDK Emulator Image Packages" />
+
+		<!-- Assemble the emulator image package names to install in the sdk -->
+		<ItemGroup>
+			<!-- Emulator images -->
+			<AndroidSdkEmulatorImagePackages
+				Include="system-images%3Bandroid-%(AndroidSdkApiLevels.Identity)%3B%(AndroidSdkApiLevels.SystemImageType)%3B$(AndroidSdkHostAbi)"
+				ApiLevel="%(AndroidSdkApiLevels.Identity)" />
+		</ItemGroup>
+
+		<!-- Install SDK Packages -->
+		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkEmulatorImagePackages.Identity)&quot;" 
+		 	  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkEmulatorImagePackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
+
+		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+	</Target>
+
+	<Target Name="ProvisionAndroidSdkAvdCreateAvds">
+		<ItemGroup>
+			<AndroidSdkAvdPackages
+				Include="system-images%3Bandroid-%(AndroidSdkApiLevels.Identity)%3B%(AndroidSdkApiLevels.SystemImageType)%3B$(AndroidSdkHostAbi)"
+				DeviceType="%(AndroidSdkApiLevels.DeviceType)"
+				ApiLevel="%(AndroidSdkApiLevels.Identity)" />
+		</ItemGroup>
+
+		<!-- Create all the AVD's we need based on the api levels specified -->
+		<Exec Command="dotnet android avd create --name &quot;Emulator_%(AndroidSdkAvdPackages.ApiLevel)&quot; --sdk &quot;%(AndroidSdkAvdPackages.Identity)&quot; --device &quot;%(AndroidSdkAvdPackages.DeviceType)&quot; --force" 
+			  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkAvdPackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
+
+		<Exec Command="dotnet android avd list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+	</Target>
+
+	<Target Name="ProvisionAndroidSdk" DependsOnTargets="ProvisionAndroidSdkCommonPackages;ProvisionAndroidSdkPlatformApiPackages;ProvisionAndroidSdkEmulatorImagePackages;ProvisionAndroidSdkAvdCreateAvds">
+		<Error
+			Condition=" '$(MSBuildRuntimeType)' != 'Core' "
+			Text="You should only run this target with 'dotnet build'." />
+	</Target>
+
+
+	<!-- ******************************************** -->
+	<!-- * Appium Provisioning                        -->
+	<!-- ******************************************** -->
+
+	<Target Name="ProvisionAppiumDrivers" DependsOnTargets="InstallAppium">
+
+		<!-- Get a json output list of the installed appium drivers with their version info -->
+		<Exec Command="appium driver list --installed --json" ConsoleToMSBuild="True" IgnoreExitCode="True">
+			<Output TaskParameter="ConsoleOutput" ItemName="_AppiumDriverListInstalledJsonLines" />
+		</Exec>
+
+		<!-- Concatenate the item group console output lines into one single property string -->
+		<PropertyGroup>
+			<_AppiumDriverListInstalledJson>@(_AppiumDriverListInstalledJsonLines->'%(Identity)', ' ')</_AppiumDriverListInstalledJson>
+		</PropertyGroup>
+
+		<!-- Get the version of each driver from the JSON output and put it in a property -->
+		<JsonPeek Content="$(_AppiumDriverListInstalledJson)" Query="$.%(AppiumDrivers.Identity).version">
+			<Output TaskParameter="Result" PropertyName="_AppiumVersion_%(AppiumDrivers.Identity)" />
+		</JsonPeek>
+
+		<!-- Get the groups of drivers to install vs update based on the versions resolved and expected -->
+		<ItemGroup>
+			<AppiumDriversToInstall Include="@(AppiumDrivers)" KeepMetadata="Version" Condition=" '$(_AppiumVersion_%(AppiumDrivers.Identity))' == '' " />
+			<AppiumDriversToUpdate Include="@(AppiumDrivers)" KeepMetadata="Version" Condition=" '$(_AppiumVersion_%(AppiumDrivers.Identity))' != '' AND '$(_AppiumVersion_%(AppiumDrivers.Identity))' != '%(AppiumDrivers.Version)' " />
+		</ItemGroup>
+
+
+		<!-- Update any drivers needing an update (if any) -->
+		<Exec Command="appium driver update %(AppiumDriversToUpdate.Identity)" Condition=" '@(AppiumDriversToUpdate)' != '' " />
+
+		<!-- Install any drivers not yet installed (if any) -->
+		<Exec Command="appium driver install %(AppiumDriversToInstall.Identity)@%(AppiumDriversToInstall.Version)" Condition=" '@(AppiumDriversToInstall)' != '' " />
+
+		<!-- Run doctor command just so we have some output -->
+		<Exec Command="appium driver doctor %(AppiumDrivers.Identity)" ContinueOnError="true" Condition=" '$(SkipAppiumDoctor)' != 'True' " />
+
+		<!-- Run driver list again for our records -->
+		<Exec Command="appium driver list --installed" ContinueOnError="true" />
+	</Target>
+
+	<Target Name="InstallAppium">
+		<!-- Get the NPM package version for appium if installed -->
+		<!-- this uses loglevel error to prevent extra noise in the console output that isn't json -->
+		<Exec Command="npm list -g appium --json --depth 1 --loglevel error" ConsoleToMSBuild="True" IgnoreExitCode="True">
+			<Output TaskParameter="ConsoleOutput" ItemName="_AppiumNpmListOutputLines" />
+		</Exec>
+
+		<!-- Concat the console output lines into a single property -->
+		<PropertyGroup>
+			<_AppiumNpmListOutput>@(_AppiumNpmListOutputLines->'%(Identity)', ' ')</_AppiumNpmListOutput>
+		</PropertyGroup>
+
+		<!-- Peek the appium version info from the json output -->
+		<JsonPeek Content="$(_AppiumNpmListOutput)" Query="$.dependencies.appium.version">
+			<Output TaskParameter="Result" PropertyName="_AppiumNpmListVersion" />
+		</JsonPeek>
+
+		<!-- Install appium at the specified version if necessary -->
+		<Exec Command="npm i --location=global appium@$(AppiumVersion)" Condition=" '$(_AppiumNpmListVersion)' != '$(AppiumVersion)' " />
+	</Target>
+
+	<Target Name="ProvisionAppium" DependsOnTargets="InstallAppium;ProvisionAppiumDrivers">
+		<Error
+			Condition=" '$(MSBuildRuntimeType)' != 'Core' "
+			Text="You should only run this target with 'dotnet build'." />
+	</Target>
+
+	<!-- ******************************************** -->
+	<!-- * Java JDK Provisioning                   -->
+	<!-- ******************************************** -->
+	<Target Name="ProvisionJdk" DependsOnTargets="DetectJdkVersion;ProvisionJdkMacOS;ProvisionJdkWindows;ProvisionJdkLinux">
+		<!-- Call Detect again if we provisioned so we can get the installed path -->
+		<CallTarget Targets="DetectJdkVersion" Condition=" '$(_AndroidJdkRequiresProvisioning)' == 'True' " />
+		
+		<!-- Set the preferred JDK path -->
+		<Exec Command="dotnet android jdk dotnet-prefer --home &quot;$(_AndroidJdkPath)&quot;" />
+
+		<Message Text="##vso[task.setvariable variable=JAVA_HOME]$(_AndroidJdkPath)" Importance="High" />
+
+		<Exec Command="dotnet android jdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+	</Target>
+
+	<Target Name="DetectJdkVersion">
+		<!-- Concat the console output lines into a single property -->
+		<PropertyGroup>
+			<_AndroidJdkListOutput>@(_AndroidJdkListOutputLines->'%(Identity)', ' ')</_AndroidJdkListOutput>
+			<_AndroidJdkVersion>$(JavaJdkVersion)</_AndroidJdkVersion>
+			<!-- Version parsing requires more than just a single major version number -->
+			<_AndroidJdkVersion Condition=" '$(_AndroidJdkVersion)' != '' AND !$(_AndroidJdkVersion.Contains('.')) ">$(JavaJdkVersion).0</_AndroidJdkVersion>
+			<_AndroidJdkMajorVersion>$([System.Version]::Parse($(_AndroidJdkVersion)).Major)</_AndroidJdkMajorVersion>
+			<_AndroidJdkVersionNextMajor>$([MSBuild]::Add($(_AndroidJdkMajorVersion), 1))</_AndroidJdkVersionNextMajor>
+		</PropertyGroup>
+
+		<Exec Command="dotnet android jdk list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+
+		<!-- Find a JDK installed that is >= the JavaJdkVersion but not > the major version specified (eg: [17.0,18.0]) -->
+		<Exec Command="dotnet android jdk list --version &quot;[$(_AndroidJdkVersion),$(_AndroidJdkVersionNextMajor)]&quot; --format=json" ConsoleToMSBuild="True" IgnoreExitCode="True">
+			<Output TaskParameter="ConsoleOutput" ItemName="_AndroidJdkListOutputLines" />
+		</Exec>
+
+		<!-- Concat the console output lines into a single property -->
+		<PropertyGroup>
+			<_AndroidJdkListOutput>@(_AndroidJdkListOutputLines->'%(Identity)', ' ')</_AndroidJdkListOutput>
+		</PropertyGroup>
+
+		<!-- Peek the appium version info from the json output -->
+		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$..Version">
+			<Output TaskParameter="Result" ItemName="_AndroidJdkVersions" />
+		</JsonPeek>
+
+		<JsonPeek Content="$(_AndroidJdkListOutput)" Query="$..Home">
+			<Output TaskParameter="Result" ItemName="_AndroidJdkPaths" />
+		</JsonPeek>
+
+		<PropertyGroup>
+			<_AndroidJdkRequiresProvisioning Condition=" '@(_AndroidJdkVersions)' == '' ">True</_AndroidJdkRequiresProvisioning>
+			<_AndroidJdkPath>%(_AndroidJdkPaths.Identity)</_AndroidJdkPath>
+		</PropertyGroup>
+	</Target>
+
+	<Target Name="ProvisionJdkMacOS" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsMacOS)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
+		<Exec Command="brew install --cask microsoft-openjdk@$(_AndroidJdkMajorVersion)" />
+	</Target>
+
+	<Target Name="ProvisionJdkLinux" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsLinux)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
+		<PropertyGroup>
+			<_JdkHostArchitecture Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">amd64</_JdkHostArchitecture>
+			<_JdkHostArchitecture Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'X64' ">arm64</_JdkHostArchitecture>
+			<ProvisionRequiresSudo Condition=" '$(ProvisionRequiresSudo)' == '' ">True</ProvisionRequiresSudo>
+			<_JdkSudo Condition=" '$(ProvisionRequiresSudo)' == 'True' ">sudo </_JdkSudo>
+		</PropertyGroup>
+		<ItemGroup>
+			<_ProvisionJdkLinuxCommands Include="wget https://packages.microsoft.com/config/ubuntu/`lsb_release -rs`/packages-microsoft-prod.deb -O packages-microsoft-prod.deb" />
+			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)dpkg -i packages-microsoft-prod.deb" />
+			<_ProvisionJdkLinuxCommands Include="rm packages-microsoft-prod.deb" />
+			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)apt-get update" />
+			<_ProvisionJdkLinuxCommands Include="$(_JdkSudo)apt-get install -y msopenjdk-$(_AndroidJdkMajorVersion)" />
+		</ItemGroup>
+		<Exec Command="%(_ProvisionJdkLinuxCommands.Identity)" />
+		<PropertyGroup>
+			<_AndroidJdkPath>/usr/lib/jvm/msopenjdk-$(_AndroidJdkMajorVersion)-$(_JdkHostArchitecture)</_AndroidJdkPath>
+		</PropertyGroup>
+	</Target>
+
+	<Target Name="ProvisionJdkWindows" DependsOnTargets="DetectJdkVersion" Condition=" '$(IsWindows)' == 'True' AND '$(_AndroidJdkRequiresProvisioning)' == 'True' ">
+		<PropertyGroup>
+			<_JdkHostArchitecture Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">x64</_JdkHostArchitecture>
+			<_JdkHostArchitecture Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'X64' ">aarch64</_JdkHostArchitecture>
+			<_JdkUrl>https://aka.ms/download-jdk/microsoft-jdk-$(_AndroidJdkVersion)-windows-$(_JdkHostArchitecture).msi</_JdkUrl>
+			<!-- https://aka.ms/download-jdk/microsoft-jdk-17.0.12-windows-x64.msi -->
+			<_JdkDownloadTempDirectory>$([System.IO.Path]::Combine($([System.IO.Path]::GetTempPath()), "microsoft-openjdk"))</_JdkDownloadTempDirectory>
+		</PropertyGroup>
+
+		<DownloadFile SourceUrl="$(_JdkUrl)" DestinationFolder="./tmp/" Retries="3" SkipUnchangedFiles="False">
+			<Output TaskParameter="DownloadedFile" PropertyName="_JdkDownloadedFile" />
+		</DownloadFile>
+
+		<Exec Command="msiexec /i &quot;$(_JdkDownloadedFile)&quot; ADDLOCAL=FeatureMain,FeatureEnvironment,FeatureJarFileRunWith,FeatureJavaHome /quiet /l*v &quot;$(LogDirectory)/msiexec-jdk-log.log&quot;" />
+
+		<!-- <Exec Command="Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe" />
+		<Exec Command="winget install Microsoft.OpenJDK.$(JavaJdkVersion)" /> -->
+	</Target>
+
+	<Target Name="ProvisionAll" DependsOnTargets="ProvisionAndroidSdk;ProvisionAppium;ProvisionJdk">
+		<Error
+			Condition=" '$(MSBuildRuntimeType)' != 'Core' "
+			Text="You should only run this target with 'dotnet build'." />
+	</Target>
+
+	<ItemGroup>
+		<PackageReference Include="JsonPeek" Version="1.2.0" />
+	</ItemGroup>
+
+</Project>
