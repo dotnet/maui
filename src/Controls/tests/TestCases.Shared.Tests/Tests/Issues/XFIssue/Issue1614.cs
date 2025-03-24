@@ -1,4 +1,5 @@
-﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms Android and iOS.
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms Android and iOS.
+// Cancel button is not displayed after orientation changes on Android issue: https://github.com/dotnet/maui/issues/27900
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

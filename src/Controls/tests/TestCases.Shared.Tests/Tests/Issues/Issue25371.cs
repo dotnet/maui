@@ -1,4 +1,4 @@
-#if IOS
+#if IOS || MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -23,8 +23,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.LongPress("Back");
 
-			var navigationToLabel = App.FindElement("FirstPageLabel").GetText();
-			Assert.That(navigationToLabel, Is.EqualTo("OnNavigationTo method is called"));
+			var navigationToLabel = App.WaitForElement("FirstPageLabel").GetText();
+			Assert.That(navigationToLabel, Is.EqualTo("OnNavigatedTo method is called"));
 		}
 	}
 }

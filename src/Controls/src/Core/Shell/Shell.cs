@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shell']/Docs/*" />
 	[ContentProperty(nameof(Items))]
+	[DebuggerTypeProxy(typeof(ShellDebugView))]
 	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>, IFlyoutView
 	{
 		/// <summary>
@@ -2149,6 +2151,26 @@ namespace Microsoft.Maui.Controls
 
 				protected override Task OnPushModal(Page modal, bool animated) => _shellProxy.PushModalAsync(modal, animated);
 			}
+		}
+
+
+		/// <summary>
+		/// Provides a debug view for the Shell class.
+		/// </summary>
+		/// <param name="shell">The Shell instance to debug.</param>
+		private sealed class ShellDebugView(Shell shell)
+		{
+			public Page CurrentPage => shell.CurrentPage;
+
+			public ShellNavigationState CurrentState => shell.CurrentState;
+
+			public Uri AbsoluteUrl => shell.CurrentState.FullLocation;
+
+			public FlyoutBehavior FlyoutBehavior => shell.FlyoutBehavior;
+
+			public IEnumerable FlyoutItems => shell.FlyoutItems;
+
+			public Window Windows => shell.Window;
 		}
 	}
 }

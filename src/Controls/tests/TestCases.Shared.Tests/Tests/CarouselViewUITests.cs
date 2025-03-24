@@ -10,8 +10,7 @@ namespace Microsoft.Maui.TestCases.Tests
 	{
 		const string CarouselViewGallery = "CarouselView Gallery";
 
-		public CarouselViewUITests(TestDevice device)
-			: base(device)
+		public CarouselViewUITests(TestDevice device) : base(device)
 		{
 		}
 
@@ -25,19 +24,18 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		public async Task CarouselViewSetPosition()
+		public void CarouselViewSetPosition()
 		{
-			await Task.Delay(2000);
+
 			App.WaitForElement("lblPosition");
-			await Task.Delay(3000);
+
 			CheckLabelValue("lblPosition", "3");
 		}
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		public async Task CarouselViewGoToNextCurrentItem()
+		public void CarouselViewGoToNextCurrentItem()
 		{
-			await Task.Delay(2000);
 			int indexToTest = 3;
 			var index = indexToTest.ToString();
 			var nextIndex = (indexToTest + 1).ToString();
@@ -55,9 +53,8 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		public async Task CarouselViewGoToPreviousCurrentItem()
+		public void CarouselViewGoToPreviousCurrentItem()
 		{
-			await Task.Delay(2000);
 			int indexToTest = 3;
 			var index = indexToTest.ToString();
 			var previousIndex = (indexToTest - 1).ToString();
@@ -76,9 +73,9 @@ namespace Microsoft.Maui.TestCases.Tests
 #if !MACCATALYST
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		public async Task CarouselViewKeepPositionChangingOrientation()
+		public void CarouselViewKeepPositionChangingOrientation()
 		{
-			await Task.Delay(2000);
+
 			int indexToTest = 3;
 			var index = indexToTest.ToString();
 
@@ -87,9 +84,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement($"CarouselItem{index}");
 
 			App.SetOrientationLandscape();
+			App.WaitForElement($"CarouselItem{index}");
 			App.SetOrientationPortrait();
+			App.WaitForElement($"CarouselItem{index}");
 
-			await Task.Delay(3000);
+
 
 			CheckLabelValue("lblPosition", index);
 			CheckLabelValue("lblCurrentItem", index);
@@ -101,38 +100,38 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.CarouselView)]
 		public void NavigateBackWhenLooped()
 		{
-            int index = 3;
+			int index = 3;
 
-            for (int i = 0; i < 10; i++)
-            {
-                if (index < 0)
-                {
-                    index = 4;
-                }
-                
-                App.WaitForElement($"CarouselItem{index}");
-                App.ScrollLeft("TheCarouselView");
-                index--;
-            }
+			for (int i = 0; i < 10; i++)
+			{
+				if (index < 0)
+				{
+					index = 4;
+				}
+
+				App.WaitForElement($"CarouselItem{index}");
+				App.ScrollLeft("TheCarouselView");
+				index--;
+			}
 		}
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
 		public void NavigateForwardWhenLooped()
 		{
-            int index = 3;
+			int index = 3;
 
-            for (int i = 0; i < 10; i++)
-            {
-                if (index > 4)
-                {
-                    index = 0;
-                }
-                
-                App.WaitForElement($"CarouselItem{index}");
-                App.ScrollRight("TheCarouselView");
-                index++;
-            }
+			for (int i = 0; i < 10; i++)
+			{
+				if (index > 4)
+				{
+					index = 0;
+				}
+
+				App.WaitForElement($"CarouselItem{index}");
+				App.ScrollRight("TheCarouselView");
+				index++;
+			}
 		}
 #endif
 

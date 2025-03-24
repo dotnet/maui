@@ -14,7 +14,7 @@
     <_SkipUpdateBuildNumber>true</_SkipUpdateBuildNumber>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
-    <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
+    <DotNetInstallScriptUrl>https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
     <DotNetInstallScriptName>dotnet-install.ps1</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetTempDirectory)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
@@ -23,8 +23,8 @@
     <DotNetInstallCommand Condition=" '$(PrivateSdk)' == 'true' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredential $env:DOTNET_TOKEN</DotNetInstallCommand> 
     <DotNetInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
   </PropertyGroup>
-  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('osx'))">
-    <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.sh</DotNetInstallScriptUrl>
+  <PropertyGroup Condition="!$([MSBuild]::IsOSPlatform('windows'))">
+    <DotNetInstallScriptUrl>https://builds.dotnet.microsoft.com/dotnet/scripts/v1/dotnet-install.sh</DotNetInstallScriptUrl>
     <DotNetInstallScriptName>dotnet-install.sh</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetTempDirectory)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(MicrosoftDotnetSdkInternalPackageVersion) --install-dir '$(DotNetDirectory)' --verbose</DotNetInstallCommand>
@@ -127,7 +127,7 @@
       <DotNetXARuntimeInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetXARuntimeInstallCommand)&quot;</DotNetXARuntimeInstallCommand>
       <DotNetXMRuntimeInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetXMRuntimeInstallCommand)&quot;</DotNetXMRuntimeInstallCommand>
     </PropertyGroup>
-    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('osx'))">
+    <PropertyGroup Condition="!$([MSBuild]::IsOSPlatform('windows'))">
       <DotNetXARuntimeInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(VersionFromAndroid) --install-dir '$(DotNetDirectory)' --verbose -Runtime dotnet</DotNetXARuntimeInstallCommand>
       <DotNetXMRuntimeInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(VersionFromMacios) --install-dir '$(DotNetDirectory)' --verbose -Runtime dotnet</DotNetXMRuntimeInstallCommand>
     </PropertyGroup>
@@ -163,10 +163,10 @@
     <_PacksToRemove Include="microsoft.net.workload.mono.toolchain" />
     <!-- Ids for 'dotnet workload install' -->
     <_WorkloadIds Include="android" />
-    <_WorkloadIds Include="maccatalyst" />
-    <_WorkloadIds Include="macos" />
-    <_WorkloadIds Include="ios" />
-    <_WorkloadIds Include="tvos" />
+    <_WorkloadIds Include="maccatalyst" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
+    <_WorkloadIds Include="macos" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
+    <_WorkloadIds Include="ios" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
+    <_WorkloadIds Include="tvos" Condition="!$([MSBuild]::IsOSPlatform('linux'))" />
     <_WorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
   </ItemGroup>
 
@@ -211,6 +211,7 @@
         Command="&quot;$(DotNetToolPath)&quot; workload install ios --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
         EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+        Condition="!$([MSBuild]::IsOSPlatform('linux'))"
     />
 		<ItemGroup>
 			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
@@ -226,6 +227,7 @@
         Command="&quot;$(DotNetToolPath)&quot; workload install maccatalyst --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
         EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+        Condition="!$([MSBuild]::IsOSPlatform('linux'))"
     />
 		<ItemGroup>
 			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
@@ -241,6 +243,7 @@
         Command="&quot;$(DotNetToolPath)&quot; workload install macos --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
         EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+        Condition="!$([MSBuild]::IsOSPlatform('linux'))"
     />
 		<ItemGroup>
 			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
@@ -256,6 +259,7 @@
         Command="&quot;$(DotNetToolPath)&quot; workload install tvos --skip-sign-check --skip-manifest-update --verbosity diag --temp-dir &quot;$(DotNetTempDirectory)&quot; --configfile &quot;$(MauiRootDirectory)NuGet.config&quot;"
         WorkingDirectory="$(MauiRootDirectory)"
         EnvironmentVariables="DOTNET_MULTILEVEL_LOOKUP=0"
+        Condition="!$([MSBuild]::IsOSPlatform('linux'))"
     />
 		<ItemGroup>
 			<_XCSyncFileToRemove Include="$(DotNetDirectory)\packs\Microsoft.*.Sdk.*\*\tools\lib\xcsync\*" />
