@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Hosting
 		/// <summary>
 		/// Gets a builder for configuring metrics services.
 		/// </summary>
-		public MauiMetricsBuilder Metrics => _metricsBuilder.Value;
+		internal MauiMetricsBuilder Metrics => _metricsBuilder.Value;
 
 		IMetricsBuilder IHostApplicationBuilder.Metrics => Metrics;
 

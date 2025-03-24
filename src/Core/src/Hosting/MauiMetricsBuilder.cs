@@ -1,17 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.Metrics;
 
-namespace Microsoft.Maui.Hosting
+namespace Microsoft.Maui.Hosting;
+
+internal class MauiMetricsBuilder(IServiceCollection services) : IMetricsBuilder
 {
-	public class MauiMetricsBuilder : IMetricsBuilder
-	{
-		readonly IServiceCollection _services;
+	readonly IServiceCollection _services = services;
 
-		public MauiMetricsBuilder(IServiceCollection services)
-		{
-			_services = services;
-		}
-
-		public IServiceCollection Services => _services;
-	}
+	public IServiceCollection Services => _services;
 }
