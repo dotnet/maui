@@ -15,6 +15,8 @@ override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewHandler<TItem
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
 Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.Style?
+Microsoft.Maui.Controls.VisualElement.IsVisibleCore.get -> bool
+Microsoft.Maui.Controls.VisualElement.RefreshIsVisibleProperty() -> void
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!

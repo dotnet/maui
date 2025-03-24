@@ -54,10 +54,17 @@ Microsoft.Maui.Platform.MauiHybridWebViewClient.MauiHybridWebViewClient(Microsof
 Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(Android.Content.Context! context, Android.Util.IAttributeSet? attrs, int defStyleAttr) -> void
 Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(Android.Content.Context! context, Android.Util.IAttributeSet? attrs) -> void
 Microsoft.Maui.Platform.MauiMaterialButton.MauiMaterialButton(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+*REMOVED*Microsoft.Maui.PlatformWrapperView.SetHasShadow(bool hasShadow) -> void
 Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.WebProcessTerminatedEventArgs
 Microsoft.Maui.WebProcessTerminatedEventArgs.RenderProcessGoneDetail.get -> Android.Webkit.RenderProcessGoneDetail?
 Microsoft.Maui.WebProcessTerminatedEventArgs.Sender.get -> Android.Views.View?
+override Microsoft.Maui.Handlers.EditorHandler.ConnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EditorHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiAppCompatEditText!
+override Microsoft.Maui.Handlers.EditorHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EntryHandler.ConnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EntryHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiAppCompatEditText!
+override Microsoft.Maui.Handlers.EntryHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.ConnectHandler(Android.Webkit.WebView! platformView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> Android.Webkit.WebView!
 override Microsoft.Maui.Handlers.HybridWebViewHandler.DisconnectHandler(Android.Webkit.WebView! platformView) -> void
@@ -82,6 +89,9 @@ static Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions.AddHybrid
 static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
+static Microsoft.Maui.Platform.EditTextExtensions.GetCursorPosition(this Android.Widget.EditText! editText, int cursorOffset = 0) -> int
+static Microsoft.Maui.Platform.EditTextExtensions.GetSelectedTextLength(this Android.Widget.EditText! editText) -> int
+static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformButton, Microsoft.Maui.IImageButton! imageButton) -> void
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
@@ -99,3 +109,11 @@ virtual Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! c
 static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.SearchViewExtensions.UpdateReturnType(this AndroidX.AppCompat.Widget.SearchView! searchView, Microsoft.Maui.ISearchBar! searchBar) -> void
 Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
+*REMOVED*override Microsoft.Maui.Handlers.EditorHandler.ConnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.EditorHandler.CreatePlatformView() -> AndroidX.AppCompat.Widget.AppCompatEditText!
+*REMOVED*override Microsoft.Maui.Handlers.EditorHandler.DisconnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.EntryHandler.ConnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
+*REMOVED*override Microsoft.Maui.Handlers.EntryHandler.CreatePlatformView() -> AndroidX.AppCompat.Widget.AppCompatEditText!
+*REMOVED*override Microsoft.Maui.Handlers.EntryHandler.DisconnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
+*REMOVED*static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry, Android.Graphics.Drawables.Drawable? clearButtonDrawable) -> void
+*REMOVED*static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry, System.Func<Android.Graphics.Drawables.Drawable?>? getClearButtonDrawable) -> void
