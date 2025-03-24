@@ -225,8 +225,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Theory]
-		[InlineData("myKey", "value123")]
-		[InlineData("myKey", "")]
+		[InlineData("myKey1", "value123")]
+		[InlineData("myKey2", " ")]
+		[InlineData("myKey3", null)]
 		public async Task Get_Or_Set_Async_Returns_Value(string key, string value)
 		{
 			var result = await SecureStorage.GetOrSetAsync(key, value);
