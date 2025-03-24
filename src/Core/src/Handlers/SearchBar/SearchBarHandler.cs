@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISearchBar.TextColor)] = MapTextColor,
 			[nameof(ISearchBar.CancelButtonColor)] = MapCancelButtonColor,
 			[nameof(ISearchBar.SearchIconColor)] = MapSearchIconColor,
-			[nameof(ISearchBar.Keyboard)] = MapKeyboard
+			[nameof(ISearchBar.Keyboard)] = MapKeyboard,
 			[nameof(ISearchBar.ReturnType)] = MapReturnType
 		};
 
