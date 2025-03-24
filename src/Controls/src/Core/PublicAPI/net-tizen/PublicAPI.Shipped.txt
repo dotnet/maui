@@ -156,7 +156,6 @@
 ~Microsoft.Maui.Controls.BindableProperty.PropertyName.get -> string
 ~Microsoft.Maui.Controls.BindableProperty.ReturnType.get -> System.Type
 ~Microsoft.Maui.Controls.BindablePropertyKey.BindableProperty.get -> Microsoft.Maui.Controls.BindableProperty
-~Microsoft.Maui.Controls.Binding.Binding(string path, Microsoft.Maui.Controls.BindingMode mode = Microsoft.Maui.Controls.BindingMode.Default, Microsoft.Maui.Controls.IValueConverter converter = null, object converterParameter = null, string stringFormat = null, object source = null) -> void
 ~Microsoft.Maui.Controls.Binding.Converter.get -> Microsoft.Maui.Controls.IValueConverter
 ~Microsoft.Maui.Controls.Binding.Converter.set -> void
 ~Microsoft.Maui.Controls.Binding.ConverterParameter.get -> object

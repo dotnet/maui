@@ -7,28 +7,44 @@ using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="Type[@FullName='Microsoft.Maui.Controls.Binding']/Docs/*" />
+	/// <summary>
+	/// A single 1:1 immutable data binding.
+	/// </summary>
 	[RequiresUnreferencedCode(TrimmerConstants.StringPathBindingWarning, Url = TrimmerConstants.ExpressionBasedBindingsDocsUrl)]
 	public sealed class Binding : BindingBase
 	{
 		public const string SelfPath = ".";
 		IValueConverter _converter;
 		object _converterParameter;
+		CultureInfo _converterCulture;
 
 		BindingExpression _expression;
 		string _path;
 		object _source;
 		string _updateSourceEventName;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Constructs and initializes a new instance of the <see cref="Binding" /> class.
+		/// </summary>
 		public Binding()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
-		public Binding(string path, BindingMode mode = BindingMode.Default, IValueConverter converter = null, object converterParameter = null, string stringFormat = null, object source = null)
+		/// <summary>
+		/// Constructs and initializes a new instance of the <see cref="Binding" /> class.
+		/// </summary>
+		/// <param name="path">The property path.</param>
+		/// <param name="mode">The binding mode. This property is optional. Default is <see cref="BindingMode.Default" />.</param>
+		/// <param name="converter">The converter. This parameter is optional. Default is <see langword="null" />.</param>
+		/// <param name="converterParameter">An user-defined parameter to pass to the converter. This parameter is optional. Default is <see langword="null" />.</param>
+		/// <param name="converterCulture">A user-defined culture information object to pass to the converter. This parameter is optional. Default is <see langword="null" />.</param>
+		/// <param name="stringFormat">A String format. This parameter is optional. Default is <see langword="null" />.</param>
+		/// <param name="source">An object used as the source for this binding. This parameter is optional. Default is <see langword="null" />.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="path"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown when <paramref name="path"/> is <see langword="null"/> or whitespace.</exception>
+		public Binding(string path, BindingMode mode = BindingMode.Default, IValueConverter converter = null, object converterParameter = null, CultureInfo converterCulture = null, string stringFormat = null, object source = null)
 		{
-			if (path == null)
+			if (path is null)
 				throw new ArgumentNullException(nameof(path));
 			if (string.IsNullOrWhiteSpace(path))
 				throw new ArgumentException("path cannot be an empty string", nameof(path));
@@ -36,12 +52,16 @@ namespace Microsoft.Maui.Controls
 			Path = path;
 			Converter = converter;
 			ConverterParameter = converterParameter;
+			ConverterCulture = converterCulture;
 			Mode = mode;
 			StringFormat = stringFormat;
 			Source = source;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='Converter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the converter to be used for this binding.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown when the binding is already applied.</exception>
 		public IValueConverter Converter
 		{
 			get { return _converter; }
@@ -53,7 +73,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='ConverterParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter passed as argument to the converter.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown when the binding is already applied.</exception>
 		public object ConverterParameter
 		{
 			get { return _converterParameter; }
@@ -65,7 +88,25 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='Path']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the culture information used by the converter.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown when the binding is already applied.</exception>
+		public CultureInfo ConverterCulture
+		{
+			get { return _converterCulture; }
+			set
+			{
+				ThrowIfApplied();
+
+				_converterCulture = value;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the path of the property.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown when the binding is already applied.</exception>
 		public string Path
 		{
 			get { return _path; }
@@ -78,7 +119,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='Source']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the source of the binding.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown when the binding is already applied.</exception>
 		public object Source
 		{
 			get { return _source; }
@@ -91,10 +135,16 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='DoNothing']/Docs/*" />
+		/// <summary>
+		/// Does nothing.
+		/// </summary>
 		public static readonly object DoNothing = MultiBinding.DoNothing; // the instance was moved to MultiBinding because the Binding class is annotated with [RequiresUnreferencedCode]
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Binding.xml" path="//Member[@MemberName='UpdateSourceEventName']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the name of the update source event. The setter throws an exception if the property has already been
+		/// applied.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public string UpdateSourceEventName
 		{
@@ -112,7 +162,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.Apply(fromTarget);
 
-			if (_expression == null)
+			if (_expression is null)
 				_expression = new BindingExpression(this, SelfPath);
 
 			_expression.Apply(fromTarget);
@@ -126,7 +176,7 @@ namespace Microsoft.Maui.Controls
 			var bindingContext = src ?? Context ?? context;
 			base.Apply(bindingContext, bindObj, targetProperty, fromBindingContextChanged, specificity);
 
-			if (src != null && isApplied && fromBindingContextChanged)
+			if (src is not null && isApplied && fromBindingContextChanged)
 				return;
 
 			if (Source is RelativeBindingSource relativeBindingSource)
@@ -145,7 +195,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				if (_expression == null)
+				if (_expression is null)
 					_expression = new BindingExpression(this, SelfPath);
 				_expression.Apply(bindingContext, bindObj, targetProperty, specificity);
 			}
@@ -164,6 +214,7 @@ namespace Microsoft.Maui.Controls
 			{
 				Converter = Converter,
 				ConverterParameter = ConverterParameter,
+				ConverterCulture = ConverterCulture,
 				StringFormat = StringFormat,
 				Source = Source,
 				UpdateSourceEventName = UpdateSourceEventName,
@@ -180,27 +231,27 @@ namespace Microsoft.Maui.Controls
 		internal override object GetSourceValue(object value, Type targetPropertyType)
 		{
 			if (Converter != null)
-				value = Converter.Convert(value, targetPropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+				value = Converter.Convert(value, targetPropertyType, ConverterParameter, ConverterCulture);
 
 			return base.GetSourceValue(value, targetPropertyType);
 		}
 
 		internal override object GetTargetValue(object value, Type sourcePropertyType)
 		{
-			if (Converter != null)
-				value = Converter.ConvertBack(value, sourcePropertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+			if (Converter is not null)
+				value = Converter.ConvertBack(value, sourcePropertyType, ConverterParameter, ConverterCulture);
 
 			return base.GetTargetValue(value, sourcePropertyType);
 		}
 
 		internal override void Unapply(bool fromBindingContextChanged = false)
 		{
-			if (Source != null && !(Source is RelativeBindingSource) && fromBindingContextChanged && IsApplied)
+			if (Source is not null && !(Source is RelativeBindingSource) && fromBindingContextChanged && IsApplied)
 				return;
 
 			base.Unapply(fromBindingContextChanged: fromBindingContextChanged);
 
-			if (_expression != null)
+			if (_expression is not null)
 			{
 				_expression.Unapply();
 			}

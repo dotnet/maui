@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => binding.Path = "path");
 			Assert.Throws<InvalidOperationException>(() => binding.Converter = null);
 			Assert.Throws<InvalidOperationException>(() => binding.ConverterParameter = new object());
+			Assert.Throws<InvalidOperationException>(() => binding.ConverterCulture =CultureInfo.CurrentCulture);
 		}
 
 		[Fact]
@@ -1413,7 +1414,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-#if !WINDOWS_PHONE
 		[Theory, InlineData("en-US"), InlineData("pt-PT"), InlineData("tr-TR")]
 		public void ValueConverterCulture(string culture)
 		{
@@ -1428,7 +1428,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(culture, vm.Text);
 		}
-#endif
 
 		[Fact]
 		public void SelfBindingConverter()
@@ -2059,7 +2058,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("0.9", vm.Text);
 		}
 
-#if !WINDOWS_PHONE
 		[Theory, InlineData("en-US", "0.5", 0.5, 0.9, "0.9")]
 		[InlineData("pt-PT", "0,5", 0.5, 0.9, "0,9")]
 		public void ConvertIsCultureAware(string culture, string sliderSetStringValue, double sliderExpectedDoubleValue, double sliderSetDoubleValue, string sliderExpectedStringValue)
@@ -2077,7 +2075,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(vm.Text, sliderExpectedStringValue);
 		}
-#endif
 
 		[Fact]
 		public void FailToConvert()
@@ -2495,6 +2492,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			button.SetBinding(Button.BackgroundColorProperty, new Binding("BackgroundColor", source: this));
 			button.BackgroundColor = Colors.Coral;
 			button.SetBinding(Button.BackgroundColorProperty, new Binding("BackgroundColor", source: this));
+		}
+
+		[Fact]
+		public void BindingConverterCulture()
+		{
+			var button = new Button { BackgroundColor = Colors.HotPink };
+
+			//shouldn't crash
+			button.BackgroundColor = Colors.Coral;
+			button.SetBinding(Button.BackgroundColorProperty, new Binding("BackgroundColor", source: this, converterCulture: new CultureInfo("nl-NL")));
 		}
 
 		private class IdentityLoggerConverter : IValueConverter
