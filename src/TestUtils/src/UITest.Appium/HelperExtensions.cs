@@ -1764,6 +1764,21 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Triggers the interactive pop gesture on an iOS device, simulating the default swipe-back navigation.
+		/// </summary>
+		/// <param name="app">The application instance used to execute the gesture.</param>
+		/// <exception cref="InvalidOperationException">Thrown if the method is called on a non-iOS Appium instance.</exception>
+		public static void InteractivePopGesture(this IApp app)
+		{
+			if (app is not AppiumIOSApp)
+			{
+				throw new InvalidOperationException($"Interactive Pop Gesture is only supported on AppiumIOSAppp");
+			}
+
+			app.CommandExecutor.Execute("interactivePopGesture", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
 		/// Start recording screen.
 		/// Functionality that's only available on Android, iOS and Windows.
 		/// </summary>
