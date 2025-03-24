@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID // <!-- This test case applies only to Android due to the use of android-specific configurations
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -11,29 +12,22 @@ public class Issue1455 : _IssuesUITest
 
 	public override string Issue => "Context action are not changed when selected item changed on Android";
 
-	//[Test]
-	//[Category(UITestCategories.ListView)]
-	//public void RefreshContextActions()
-	//{
-	//	App.WaitForElement("Cell 1");
-	//	App.Screenshot("I am at Issue 1455");
-	//	App.TouchAndHold(q => q.Marked("Cell 4"));
-	//	App.Screenshot("Long Press Cell 4 to show context actions");
-	//	App.Tap(q => q.Marked("Cell 5"));
-	//	App.Screenshot("Clicked another cell and changed menu items");
-
-	//	Assert.AreEqual(1, App.Query(c => c.Marked("Hendrerit")).Length);
-
-	//	App.Back();
-
-	//	App.WaitForElement("Toggle LegacyMode");
-	//	App.Tap(q => q.Marked("Toggle LegacyMode"));
-
-	//	App.TouchAndHold(q => q.Marked("Cell 4"));
-	//	App.Screenshot("Long Press Cell 4 to show context actions");
-	//	App.Tap(q => q.Marked("Cell 5"));
-	//	App.Screenshot("Clicked another cell and changed menu items");
-
-	//	Assert.AreEqual(1, App.Query(c => c.Marked("Vestibulum")).Length);
-	//}
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void RefreshContextActions()
+	{
+		App.WaitForElement("Cell 1");
+		App.ActivateContextMenu("Cell 4");
+		App.WaitForElement("Vestibulum");
+		App.Tap("Cell 5");
+		App.WaitForElement("Hendrerit");
+		App.Back();
+		App.WaitForElement("Toggle LegacyMode");
+		App.Tap("Toggle LegacyMode");
+		App.ActivateContextMenu("Cell 4");
+		App.WaitForElement("Vestibulum");
+		App.Tap("Cell 5");
+		App.WaitForElement("Vestibulum");
+	}
 }
+#endif

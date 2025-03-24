@@ -14,8 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Slider)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest("Regression test validating the design differences between iOS and Mac specifically")]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("Regression test validating the design differences between iOS and Mac specifically")]
 		public void SettingMaximumTrackColorOnSliderWorks()
 		{
 			App.WaitForElement("WaitForSliderControl");

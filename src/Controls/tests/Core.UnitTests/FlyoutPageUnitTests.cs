@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
@@ -462,6 +463,59 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(1, disappearing);
 			Assert.Equal(1, appearing);
+		}
+
+		[Theory]
+		[InlineData(0)]
+		[InlineData(1)]
+		[InlineData(2)]
+		[InlineData(3)]
+		public async Task VerifyToolbarButtonVisibilityWhenFlyoutReset(int depth)
+		{
+			ContentPage detailContentPage = new ContentPage();
+
+			Page flyout = new ContentPage()
+			{
+				Title = "Initial Flyout"
+			};
+
+			NavigationPage.SetHasNavigationBar(flyout, false);
+
+			var flyoutContentPage = flyout;
+
+			for (int i = 0; i < depth; i++)
+			{
+				flyout = new NavigationPage(flyout)
+				{
+					Title = "Flyout " + i
+				};
+			}
+
+			FlyoutPage flyoutPage = new FlyoutPage
+			{
+				Flyout = flyout,
+				Detail = new NavigationPage(detailContentPage)
+			};
+
+			_ = new TestWindow(flyoutPage);
+
+			Toolbar flyoutToolBar = flyoutPage.Toolbar;
+			Assert.True(flyoutToolBar.IsVisible);
+
+			if (depth >= 1)
+			{
+				var page = new ContentPage();
+				NavigationPage.SetHasNavigationBar(page, false);
+				await flyoutContentPage.Navigation.PushAsync(page);
+			}
+			else
+			{
+				var page = new ContentPage { Title = "Reborn Flyout" };
+				NavigationPage.SetHasNavigationBar(page, false);
+				flyoutPage.Flyout = new ContentPage { Title = "Reborn Flyout" };
+			}
+
+			Assert.True(flyoutToolBar.IsVisible);
 		}
 	}
 

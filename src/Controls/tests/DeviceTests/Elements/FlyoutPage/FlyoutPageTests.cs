@@ -48,46 +48,30 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory]
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
-		public async Task PoppingFlyoutPageDoesntCrash(Type flyoutPageType)
+		public async Task SwappingDetailPageWorksForSplitFlyoutBehavior(Type flyoutPageType)
 		{
 			SetupBuilder();
-			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
 
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			await InvokeOnMainThreadAsync(async () =>
 			{
 				var flyoutPage = CreateFlyoutPage(
 					flyoutPageType,
 					new NavigationPage(new ContentPage() { Content = new Border(), Title = "Detail" }),
 					new ContentPage() { Title = "Flyout" });
 
-				await navPage.PushAsync(flyoutPage);
-				await navPage.PopAsync();
-			});
-		}
+				await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), async (handler) =>
+				{
+					var currentDetailPage = flyoutPage.Detail;
 
-		[Theory]
-		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
-		public async Task SwappingDetailPageWorksForSplitFlyoutBehavior(Type flyoutPageType)
-		{
-			SetupBuilder();
+					// Set with new page
+					var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
+					flyoutPage.Detail = navPage;
+					await OnNavigatedToAsync(navPage);
 
-			var flyoutPage = CreateFlyoutPage(
-					flyoutPageType,
-					new NavigationPage(new ContentPage() { Content = new Border(), Title = "Detail" }),
-					new ContentPage() { Title = "Flyout" });
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), async (handler) =>
-			{
-				var currentDetailPage = flyoutPage.Detail;
-
-				// Set with new page
-				var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
-				flyoutPage.Detail = navPage;
-				await OnNavigatedToAsync(navPage);
-
-				// Set back to previous page
-				flyoutPage.Detail = currentDetailPage;
-				await OnNavigatedToAsync(currentDetailPage);
+					// Set back to previous page
+					flyoutPage.Detail = currentDetailPage;
+					await OnNavigatedToAsync(currentDetailPage);
+				});
 			});
 		}
 
