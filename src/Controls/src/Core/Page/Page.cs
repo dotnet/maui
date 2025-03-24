@@ -305,6 +305,7 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
+		/// <returns>A <see cref="Task"/> that completes when the alert is dismissed.</returns>
 		/// <inheritdoc cref="DisplayAlert(string, string, string, string, FlowDirection)"/>
 		public Task DisplayAlert(string title, string message, string cancel)
 		{
@@ -317,6 +318,7 @@ namespace Microsoft.Maui.Controls
 			return DisplayAlert(title, message, accept, cancel, FlowDirection.MatchParent);
 		}
 
+		/// <returns>A <see cref="Task"/> that completes when the alert is dismissed.</returns>
 		/// <inheritdoc cref="DisplayAlert(string, string, string, string, FlowDirection)"/>
 		public Task DisplayAlert(string title, string message, string cancel, FlowDirection flowDirection)
 		{
