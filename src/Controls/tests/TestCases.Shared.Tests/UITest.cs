@@ -145,7 +145,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public void VerifyScreenshot(
 			string? name = null,
-			TimeSpan? retryDelay = null
+			TimeSpan? retryDelay = null,
 			int cropTop = 0,
 			int cropBottom = 0
 #if MACUITEST || WINTEST
