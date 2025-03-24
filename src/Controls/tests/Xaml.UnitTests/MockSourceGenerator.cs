@@ -49,7 +49,7 @@ public static class MockSourceGenerator
         var current = System.IO.Directory.GetCurrentDirectory();
         var relative = "../../../../Controls.SourceGen/Debug/netstandard2.0/Microsoft.Maui.Controls.SourceGen.dll";
         var path = Path.GetFullPath(current + relative);
-        var analyzerAssembly = Assembly.LoadFile(path);
+        var analyzerAssembly = Assembly.LoadFrom(path);
         var generatorType = analyzerAssembly?.GetType("Microsoft.Maui.Controls.SourceGen.CodeBehindGenerator")!;
         var generator = (generatorType?.GetConstructor([])?.Invoke([]) as IIncrementalGenerator)?.AsSourceGenerator();
 
