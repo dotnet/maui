@@ -13,7 +13,6 @@ Microsoft.Maui.Handlers.IHybridWebViewHandler.PlatformView.get -> WebKit.WKWebVi
 Microsoft.Maui.Handlers.IHybridWebViewHandler.VirtualView.get -> Microsoft.Maui.IHybridWebView!
 Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions
 Microsoft.Maui.Hosting.MauiAppBuilder.Environment.get -> Microsoft.Maui.Hosting.MauiHostEnvironment!
-Microsoft.Maui.Hosting.MauiAppBuilder.Metrics.get -> Microsoft.Maui.Hosting.MauiMetricsBuilder!
 Microsoft.Maui.Hosting.MauiAppBuilder.Properties.get -> System.Collections.Generic.IDictionary<object!, object!>!
 Microsoft.Maui.Hosting.MauiHostEnvironment
 Microsoft.Maui.Hosting.MauiHostEnvironment.ApplicationName.get -> string!
@@ -25,9 +24,6 @@ Microsoft.Maui.Hosting.MauiHostEnvironment.ContentRootPath.set -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment.EnvironmentName.get -> string!
 Microsoft.Maui.Hosting.MauiHostEnvironment.EnvironmentName.set -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment.MauiHostEnvironment() -> void
-Microsoft.Maui.Hosting.MauiMetricsBuilder
-Microsoft.Maui.Hosting.MauiMetricsBuilder.MauiMetricsBuilder(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> void
-Microsoft.Maui.Hosting.MauiMetricsBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.HybridWebViewInvokeJavaScriptRequest(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo? returnTypeJsonTypeInfo, object?[]? paramValues, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos) -> void
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.MethodName.get -> string!
