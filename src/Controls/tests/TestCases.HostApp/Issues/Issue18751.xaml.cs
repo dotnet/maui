@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.ManualTest, "C2", "Can scroll CollectionView inside RefreshView", PlatformAffected.All)]
+	[Issue(IssueTracker.ManualTest, "C2", "Can scroll CollectionView inside RefreshView", PlatformAffected.All, isInternetRequired: true)]
 	public partial class Issue18751 : ContentPage
 	{
 		public Issue18751()
