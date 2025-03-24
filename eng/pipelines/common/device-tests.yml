@@ -91,7 +91,7 @@ stages:
               artifactName: ${{ parameters.artifactName }}
               artifactItemPattern: ${{ parameters.artifactItemPattern }}
               useArtifacts: ${{ parameters.useArtifacts }}
-              cleanAgent: ${{ parameters.cleanup }}
+              cleanAgent: true
 
 
     - ${{ if eq(platform, 'catalyst') }}:

@@ -11,6 +11,7 @@ parameters:
   useArtifacts: false
   cakeArgs: ''
   buildAndTest: true
+  cleanAgent: false
   targetFrameworkVersion:
     tfm: ''
     dependsOn: ''
@@ -101,3 +102,5 @@ jobs:
           deviceTestConfiguration: ${{ parameters.project.configuration }}
           skipProvisioning: ${{ parameters.skipProvisioning }}
           skipDotNet: ${{ eq(parameters.buildAndTest, 'false') }}
+          cleanAgent: ${{ parameters.cleanAgent }}
+
