@@ -821,14 +821,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 #pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
 		Cell GetNewGroupHeaderCell(ITemplatedItemsList<Cell> group)
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
 		{
-#pragma warning disable CS0618 // Type or member is obsolete
 			var groupHeaderCell = _listView.TemplatedItems.GroupHeaderTemplate?.CreateContent(group.ItemsSource, _listView) as Cell;
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (groupHeaderCell != null)
 			{
@@ -836,25 +831,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
-#pragma warning disable CS0618 // Type or member is obsolete
 				groupHeaderCell = new TextCell();
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
 				groupHeaderCell.SetBinding(TextCell.TextProperty, static (ITemplatedItemsList<Cell> g) => g.Name);
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
 				groupHeaderCell.BindingContext = group;
 			}
 
 			groupHeaderCell.Parent = _listView;
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
 			groupHeaderCell.SetIsGroupHeader<ItemsView<Cell>, Cell>(true);
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
+
 			return groupHeaderCell;
 		}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		enum CellType
 		{
