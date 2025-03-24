@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Appium.WebDriver" Version="7.0.0" />
+    <PackageReference Include="Azure.AI.OpenAI" Version="2.2.0-beta.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UITest.Appium\UITest.Appium.csproj" />
+    <ProjectReference Include="..\UITest.Core\UITest.Core.csproj" />
+  </ItemGroup>
+  
+</Project>

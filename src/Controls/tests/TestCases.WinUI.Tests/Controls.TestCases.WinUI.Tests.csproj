@@ -23,6 +23,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.Appium\UITest.Appium.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\UITest.Appium.AI\UITest.Appium.AI.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.Core\UITest.Core.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.Analyzers\UITest.Analyzers.csproj"
