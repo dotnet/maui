@@ -3,13 +3,11 @@
   <PropertyGroup>
     <TargetFramework>DOTNET_TFM</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-	<Nullable>enable</Nullable>
-	<UseMaui>true</UseMaui>
-	<UseMauiCompat>false</UseMauiCompat>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<PackageReference Include="Microsoft.Maui.Core" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Http.Resilience" Version="9.0.0" />
 		<PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="9.0.0" />
 		<PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.9.0" />
