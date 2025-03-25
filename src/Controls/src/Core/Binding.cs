@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Threading;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
@@ -142,7 +143,7 @@ namespace Microsoft.Maui.Controls
 			{
 				ThrowIfApplied();
 
-				_converterCulture = value;
+				_converterCulture = value ?? Thread.CurrentThread.CurrentUICulture;
 			}
 		}
 
