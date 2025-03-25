@@ -1,16 +1,16 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.NET.Sdk" Version="10.0.100-preview.3.25168.31">
+    <Dependency Name="Microsoft.NET.Sdk" Version="10.0.100-preview.3.25175.3">
       <Uri>https://github.com/dotnet/sdk</Uri>
-      <Sha>4412daf081632ae9b92a39ac4993e013e1eb13bb</Sha>
+      <Sha>9aae52605320fca9f67d6237c45a533bdc88f995</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-preview.3.25167.9" CoherentParentDependency="Microsoft.NET.Sdk">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>4ff64a03e5c31fa824c4bc9377ef1ae8134d3f7a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="35.99.0-ci.main.241">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="36.0.0-preview.3.7">
       <Uri>https://github.com/dotnet/android</Uri>
-      <Sha>42c08876c806206a839df6b70eb815dad01f7bb4</Sha>
+      <Sha>2173aca13c88f396757c7d0b52ba8d1d8acc753e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk.net10.0_18.2" Version="18.2.10618-net10-p3">
       <Uri>https://github.com/dotnet/macios</Uri>
