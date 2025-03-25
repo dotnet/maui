@@ -36,7 +36,7 @@ namespace Maui.Controls.Sample
                 Grid grid = new Grid
                 {
                     BackgroundColor = Colors.LightGray,
-                    Padding = new Thickness(10)
+                    Padding = new Thickness(10),
                 };
                 grid.Children.Add(new Label
                 {
