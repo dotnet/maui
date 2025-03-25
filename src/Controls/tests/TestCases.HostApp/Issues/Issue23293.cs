@@ -27,69 +27,59 @@ public class Issue23293 : ContentPage
 
 	void CreateAnimalsCollection()
 	{
-		Animals.Add(new Issue23293AnimalGroup("Bears", new List<Issue23293Animal>
+		Animals.Add(new Issue23293AnimalGroup("Bears", new List<string>
 		{
-			new Issue23293Animal { Name = "American Black Bear" },
-			new Issue23293Animal { Name = "Asian Black Bear" },
-			new Issue23293Animal { Name = "Brown Bear" },
-			new Issue23293Animal { Name = "Grizzly-Polar Bear Hybrid" },
-			new Issue23293Animal { Name = "Sloth Bear" },
+			"American Black Bear",
+			"Asian Black Bear",
+			"Brown Bear",
+			"Grizzly-Polar Bear Hybrid",
+			"Sloth Bear",
 		}));
 
-		Animals.Add(new Issue23293AnimalGroup("Cats", new List<Issue23293Animal>
+		Animals.Add(new Issue23293AnimalGroup("Cats", new List<string>
 		{
-			new Issue23293Animal { Name = "Abyssinian" },
-			new Issue23293Animal { Name = "Arabian Mau" },
-			new Issue23293Animal { Name = "Bengal" },
-			new Issue23293Animal { Name = "Burmese" },
-			new Issue23293Animal { Name = "Cyprus" },
+			"Abyssinian",
+			"Arabian Mau",
+			"Bengal",
+			"Burmese",
+			"Cyprus",
 		}));
 
-		Animals.Add(new Issue23293AnimalGroup("Dogs", new List<Issue23293Animal>
+		Animals.Add(new Issue23293AnimalGroup("Dogs", new List<string>
 		{
-			new Issue23293Animal { Name = "Afghan Hound" },
-			new Issue23293Animal { Name = "Alpine Dachsbracke" },
-			new Issue23293Animal { Name = "American Bulldog" },
-			new Issue23293Animal { Name = "Bearded Collie" },
-			new Issue23293Animal { Name = "Boston Terrier" },
+			"Afghan Hound",
+			"Alpine Dachsbracke",
+			"American Bulldog",
+			"Bearded Collie",
+			"Boston Terrier",
 		}));
 
-		Animals.Add(new Issue23293AnimalGroup("Elephants", new List<Issue23293Animal>
+		Animals.Add(new Issue23293AnimalGroup("Elephants", new List<string>
 		{
-			new Issue23293Animal { Name = "African Bush Elephant" },
-			new Issue23293Animal { Name = "African Forest Elephant" },
-			new Issue23293Animal { Name = "Desert Elephant" },
-			new Issue23293Animal { Name = "Borneo Elephant" },
-			new Issue23293Animal { Name = "Indian Elephant" },
+			"African Bush Elephant",
+			"African Forest Elephant",
+			"Desert Elephant",
+			"Borneo Elephant",
+			"Indian Elephant",
 		}));
 
-		Animals.Add(new Issue23293AnimalGroup("Monkeys", new List<Issue23293Animal>
+		Animals.Add(new Issue23293AnimalGroup("Monkeys", new List<string>
 		{
-			new Issue23293Animal { Name = "Baboon" },
-			new Issue23293Animal { Name = "Capuchin Monkey" },
-			new Issue23293Animal { Name = "Blue Monkey" },
-			new Issue23293Animal { Name = "Squirrel Monkey" },
-			new Issue23293Animal { Name = "Golden Lion Tamarin" },
+			"Baboon",
+			"Capuchin Monkey",
+			"Blue Monkey",
+			"Squirrel Monkey",
+			"Golden Lion Tamarin",
 		}));
 	}
 }
 
-public class Issue23293AnimalGroup : List<Issue23293Animal>
-{
-	public string Name { get; }
-
-	public Issue23293AnimalGroup(string name, List<Issue23293Animal> animals) : base(animals)
-	{
-		Name = name;
-	}
-}
-
-public class Issue23293Animal
+public class Issue23293AnimalGroup : List<string>
 {
 	public string Name { get; set; }
 
-	public override string ToString()
+	public Issue23293AnimalGroup(string name, List<string> animals) : base(animals)
 	{
-		return Name;  
+		Name = name;
 	}
 }
