@@ -10,5 +10,14 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		MauiShapeView GetNativeBoxView(ShapeViewHandler boxViewViewHandler) =>
 			boxViewViewHandler.PlatformView;
+
+		Task<float> GetPlatformOpacity(ShapeViewHandler handler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetNativeBoxView(handler);
+				return nativeView.Alpha;
+			});
+		}
 	}
 }

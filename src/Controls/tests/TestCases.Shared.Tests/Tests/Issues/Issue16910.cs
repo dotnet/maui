@@ -26,12 +26,14 @@ public class Issue16910 : _IssuesUITest
 		App.Tap("StopRefreshing");
 		App.WaitForElement("IsNotRefreshing");
 	}
-#if TEST_FAILS_ON_CATALYST //Scroll actions cannot be performed on the macOS test server
+
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS // Failing on Mac and Windows. Flaky Test. More information: https://github.com/dotnet/maui/issues/28368
 	[Test]
 	public void BindingUpdatesFromInteractiveRefresh()
 	{
-		_ = App.WaitForElement("CollectionView");
-		App.ScrollUp("CollectionView", ScrollStrategy.Gesture, 0.7, 500);
+		var collectionViewRect = App.WaitForElement("CollectionView").GetRect();
+		//In CI, using App.ScrollDown sometimes fails to trigger the refresh command, so here use DragCoordinates instead of the ScrollDown action in Appium.
+		App.DragCoordinates(collectionViewRect.CenterX(), collectionViewRect.Y + 50, collectionViewRect.CenterX(), collectionViewRect.Y + collectionViewRect.Height - 50);
 		App.WaitForElement("IsRefreshing");
 		App.Tap("StopRefreshing");
 		App.WaitForElement("IsNotRefreshing");

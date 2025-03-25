@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue26498 : _IssuesUITest
+	public class Issue26498 : _IssuesUITest
 	{
 		public override string Issue => "Null Exception on clearing collection in list view after navigation";
 		public Issue26498(TestDevice device) : base(device)
