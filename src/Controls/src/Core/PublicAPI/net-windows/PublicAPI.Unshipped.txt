@@ -34,6 +34,8 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentM
 ~Microsoft.Maui.Controls.Binding.Binding(string path, Microsoft.Maui.Controls.BindingMode mode, Microsoft.Maui.Controls.IValueConverter converter, object converterParameter, string stringFormat, object source) -> void
 ~Microsoft.Maui.Controls.Binding.ConverterCulture.get -> System.Globalization.CultureInfo
 ~Microsoft.Maui.Controls.Binding.ConverterCulture.set -> void
+~Microsoft.Maui.Controls.Internals.TypedBindingBase.ConverterCulture.get -> System.Globalization.CultureInfo
+~Microsoft.Maui.Controls.Internals.TypedBindingBase.ConverterCulture.set -> void
 ~Microsoft.Maui.Controls.Page.DisplayActionSheetAsync(string title, string cancel, string destruction, Microsoft.Maui.FlowDirection flowDirection, params string[] buttons) -> System.Threading.Tasks.Task<string>
 ~Microsoft.Maui.Controls.Page.DisplayActionSheetAsync(string title, string cancel, string destruction, params string[] buttons) -> System.Threading.Tasks.Task<string>
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string accept, string cancel) -> System.Threading.Tasks.Task<bool>

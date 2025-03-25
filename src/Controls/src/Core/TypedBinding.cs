@@ -5,22 +5,31 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Threading;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
 using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls.Internals
 {
 	//FIXME: need a better name for this, and share with Binding, so we can share more unittests
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.TypedBindingBase']/Docs/*" />
+	/// <summary>
+	/// For internal use by platform renderers.
+	/// </summary>
+	/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public abstract class TypedBindingBase : BindingBase
 	{
 		IValueConverter _converter;
 		object _converterParameter;
+		CultureInfo _converterCulture;
 		object _source;
 		string _updateSourceEventName;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='Converter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the converter to be used for this binding.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown when the binding is already applied.</exception>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public IValueConverter Converter
 		{
 			get { return _converter; }
@@ -31,7 +40,11 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='ConverterParameter']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the parameter passed as argument to the converter.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown when the binding is already applied.</exception>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public object ConverterParameter
 		{
 			get { return _converterParameter; }
@@ -42,7 +55,27 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/TypedBindingBase.xml" path="//Member[@MemberName='Source']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the culture information used by the converter.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown when the binding is already applied.</exception>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
+		[TypeConverter(typeof(CultureInfoIetfLanguageTagConverter))]
+		public CultureInfo ConverterCulture
+		{
+			get { return _converterCulture; }
+			set
+			{
+				ThrowIfApplied();
+				_converterCulture = value ?? Thread.CurrentThread.CurrentUICulture;
+			}
+		}
+
+		/// <summary>
+		/// Gets or sets the source of the binding.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown when the binding is already applied.</exception>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public object Source
 		{
 			get { return _source; }
@@ -53,6 +86,11 @@ namespace Microsoft.Maui.Controls.Internals
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets the name of the update source event. The setter throws an exception if the property has already been
+		/// applied.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public string UpdateSourceEventName
 		{
 			internal get { return _updateSourceEventName; }
@@ -89,6 +127,7 @@ namespace Microsoft.Maui.Controls.Internals
 		/// <param name="mode">The binding mode.</param>
 		/// <param name="converter">The value converter.</param>
 		/// <param name="converterParameter">The converter parameter.</param>
+		/// <param name="converterCulture">The converter culture.</param>
 		/// <param name="source">The source object.</param>
 		/// <returns>The typed binding.</returns>
 		internal static TypedBinding<TSource, TProperty> ForSingleNestingLevel<TSource, TProperty>(
@@ -98,6 +137,7 @@ namespace Microsoft.Maui.Controls.Internals
 			BindingMode mode = BindingMode.Default,
 			IValueConverter converter = null,
 			object converterParameter = null,
+			CultureInfo converterCulture = null,
 			object source = null)
 		{
 			return new TypedBinding<TSource, TProperty>(
@@ -225,6 +265,7 @@ namespace Microsoft.Maui.Controls.Internals
 				Mode = Mode,
 				Converter = Converter,
 				ConverterParameter = ConverterParameter,
+				ConverterCulture = ConverterCulture,
 				StringFormat = StringFormat,
 				Source = Source,
 				UpdateSourceEventName = UpdateSourceEventName,

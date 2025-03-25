@@ -28,6 +28,15 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(layout.imageSource.Uri, Is.TypeOf<Uri>());
 				Assert.AreEqual("https://xamarin.com/content/images/pages/branding/assets/xamagon.png", layout.imageSource.Uri.ToString());
 			}
+
+			[TestCase(false)]
+			[TestCase(true)]
+			public void CulturesAreConverted(bool useCompiledXaml)
+			{
+				var layout = new TypeConverterTests(useCompiledXaml);
+				Assert.That(layout.imageSource.Uri, Is.TypeOf<Uri>());
+				Assert.AreEqual("https://xamarin.com/content/images/pages/branding/assets/xamagon.png", layout.imageSource.Uri.ToString());
+			}
 		}
 	}
 }
