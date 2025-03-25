@@ -30,14 +30,29 @@
                 HorizontalOptions = LayoutOptions.Center
             };
 
+            var rangeLabel = new Label
+            {
+                AutomationId = "RangeLabel",
+                Text = "Range not set yet",
+                HorizontalOptions = LayoutOptions.Center
+            };
+
             button.Clicked += (sender, e) =>
             {
                 entry.Focus();
+
+            #if IOS
+                if (entry.Handler?.PlatformView is UIKit.UITextField textField && textField.SelectedTextRange != null)
+                {
+                    rangeLabel.Text = $"Start={textField.GetOffsetFromPosition(textField.BeginningOfDocument, textField.SelectedTextRange.Start)}, " +
+                                    $"End={textField.GetOffsetFromPosition(textField.BeginningOfDocument, textField.SelectedTextRange.End)}";
+                }
+            #endif
             };
 
             Content = new StackLayout
             {
-                Children = { entry, button, label },
+                Children = { entry, button, label, rangeLabel },
                 Padding = new Thickness(20),
                 Spacing = 10
             };
