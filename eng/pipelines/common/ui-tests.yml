@@ -55,7 +55,7 @@ stages:
           - template: ui-tests-build-sample.yml
             parameters:
                 runtimeVariant: "Mono"
-                provisioning: ${{ parameters.skipProvisioning }}
+                skipProvisioning: ${{ parameters.skipProvisioning }}
   
   - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
     - stage: build_ui_tests_nativeaot

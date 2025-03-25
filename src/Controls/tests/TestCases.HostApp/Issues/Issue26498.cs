@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Maui.Controls.Sample.Issues;
 
 namespace Maui.Controls.Sample.Issues

@@ -223,6 +223,12 @@ namespace Microsoft.Maui.Handlers
 				else if (evt?.KeyCode is null && (actionId == ImeAction.Done || actionId == currentInputImeFlag))
 				{
 					VirtualView?.Completed();
+					// In case of Search, Go, Send the EditorAction will be invoked for KeyEventActions which will cause Completed to inovke twice
+					//So for these setting handled to true
+					if (actionId == ImeAction.Search ||
+					 actionId == ImeAction.Go ||
+					  actionId == ImeAction.Send)
+						handled = true;
 				}
 			}
 

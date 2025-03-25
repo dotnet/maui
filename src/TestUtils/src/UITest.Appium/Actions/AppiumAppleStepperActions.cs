@@ -3,7 +3,7 @@ using UITest.Core;
 
 namespace UITest.Appium;
 
-class AppiumIOSStepperActions : ICommandExecutionGroup
+class AppiumAppleStepperActions : ICommandExecutionGroup
 {
 	const string IncreaseCommand = "increaseStepper";
 	const string DecreaseCommand = "decreaseStepper";
@@ -16,7 +16,7 @@ class AppiumIOSStepperActions : ICommandExecutionGroup
 
 	readonly AppiumApp _appiumApp;
 
-	public AppiumIOSStepperActions(AppiumApp appiumApp)
+	public AppiumAppleStepperActions(AppiumApp appiumApp)
 	{
 		_appiumApp = appiumApp;
 	}
