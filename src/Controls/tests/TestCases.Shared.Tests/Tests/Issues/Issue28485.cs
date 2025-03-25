@@ -1,4 +1,4 @@
-#if IOS
+#if ANDROID || IOS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -22,6 +22,7 @@ public class Issue28485 : _IssuesUITest
 		App.Click("GotoPage2");
 		App.WaitForElement("GotoPage3");
 		App.Click("GotoPage3");
+		App.WaitForElement("Page3Label");
 		App.Click("Page3Label");
 		App.InteractivePopGesture();
 		App.WaitForElement("Page2Label");
