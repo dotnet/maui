@@ -23,9 +23,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsReadOnly => Inner.IsReadOnly;
 		IList _inner;
 		IList _visibleItems;
-#if ANDROID || WINDOWS
 		bool _isItemsCleared;
-#endif
 
 		protected ShellElementCollection()
 		{
@@ -122,9 +120,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			Inner.Clear();
-#if ANDROID || WINDOWS
 			_isItemsCleared = true;
-#endif
 			CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, list));
 		}
 
@@ -159,8 +155,6 @@ namespace Microsoft.Maui.Controls
 
 					CheckVisibility(element);
 				}
-
-#if ANDROID || WINDOWS
 				// When items are cleared, the flyout behavior is set to disabled state. When adding items again, we need to update the flyout behavior. The flyout state should be updated only when the second item is added to the view.
 				if (_isItemsCleared && Count == 2 && this is ShellItemCollection shellItemCollection)
 				{
@@ -168,7 +162,6 @@ namespace Microsoft.Maui.Controls
 					shell?.NotifyFlyoutBehaviorObservers();
 					_isItemsCleared = false;
 				}
-#endif
 			}
 
 			if (e.OldItems != null)
