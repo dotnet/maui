@@ -1,6 +1,6 @@
 ﻿namespace Controls.TestCases.HostApp.Issues;
 
-[Issue(IssueTracker.Github, 23293, "'Grouping for Vertical list without DataTemplates' page loading exception", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 23293, "Grouping collection view without data template results in displaying the default string representation of the object", PlatformAffected.UWP)]
 public class Issue23293 : ContentPage
 {
 	public List<Issue23293AnimalGroup> Animals { get; set; } = new List<Issue23293AnimalGroup>();

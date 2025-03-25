@@ -8,7 +8,7 @@ public class Issue23293 : _IssuesUITest
 {
 	public Issue23293(TestDevice device) : base(device) { }
 
-	public override string Issue => "'Grouping for Vertical list without DataTemplates' page loading exception";
+	public override string Issue => "Grouping collection view without data template results in displaying the default string representation of the object";
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
