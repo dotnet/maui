@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{
+		const string androidEnvVarFilePath = "/data/local/tmp/ide-launchenv.txt";
+
 		public static MauiAppBuilder ConfigureDispatching(this MauiAppBuilder builder)
 		{
 			// register the DispatcherProvider as a singleton for the entire app
@@ -41,13 +43,19 @@ namespace Microsoft.Maui.Hosting
 #if !NETSTANDARD
 			// For Android we read the environment variables from a text file that is written to the device/emulator
 			// If the file not exists, we will use the default environment variables which is less stable
-			if (OperatingSystem.IsAndroid() && System.IO.File.Exists("/data/local/tmp/ide-launchenv.txt"))
+			if (OperatingSystem.IsAndroid() && System.IO.File.Exists(androidEnvVarFilePath))
 			{
-				var envVarLines = System.IO.File.ReadAllLines("/data/local/tmp/ide-launchenv.txt");
+				var envVarLines = System.IO.File.ReadAllLines(androidEnvVarFilePath);
 
-				environmentVariables = envVarLines
+				var fileEnvironmentVariables = envVarLines
 					.Select(line => line.Split('=', 2))
 					.ToDictionary(parts => parts[0], parts => parts[1]);
+
+				// Merge file environment variables into the existing environment variables
+				foreach (var kvp in fileEnvironmentVariables)
+				{
+					environmentVariables[kvp.Key] = kvp.Value;
+				}
 			}
 #endif
 
