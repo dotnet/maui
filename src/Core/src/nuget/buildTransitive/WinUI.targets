@@ -48,8 +48,8 @@
       <NativePlatform Condition="'$(RuntimeIdentifier)' == 'win10-arm64' or '$(RuntimeIdentifier)' == 'win-arm64'">arm64</NativePlatform>
     </PropertyGroup>
     <ItemGroup>
-      <MicrosoftWindowsAppSDKMsix Include="$([MSBuild]::NormalizeDirectory('$(MicrosoftWindowsAppSDKPackageDir)','tools\Msix\win10-$(NativePlatform)'))Microsoft.WindowsAppRuntime.?.?.Msix"/>
-      <MicrosoftWindowsAppSDKMsix Include="$([MSBuild]::NormalizeDirectory('$(MicrosoftWindowsAppSDKPackageDir)','tools\Msix\win10-$(NativePlatform)'))Microsoft.WindowsAppRuntime.?.?-*.Msix"/>
+      <MicrosoftWindowsAppSDKMsix Include="$([MSBuild]::NormalizeDirectory('$(MicrosoftWindowsAppSDKPackageDir)','tools\Msix\win-$(NativePlatform)'))Microsoft.WindowsAppRuntime.?.?.Msix"/>
+      <MicrosoftWindowsAppSDKMsix Include="$([MSBuild]::NormalizeDirectory('$(MicrosoftWindowsAppSDKPackageDir)','tools\Msix\win-$(NativePlatform)'))Microsoft.WindowsAppRuntime.?.?-*.Msix"/>
     </ItemGroup>
   </Target>
 

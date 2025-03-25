@@ -6,13 +6,12 @@
     <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
     <RootNamespace>GraphicsTester.WinUI.Desktop</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WinUISDKReferences>false</WinUISDKReferences>
     <WindowsPackageType>MSIX</WindowsPackageType>
     <GenerateLibraryLayout>false</GenerateLibraryLayout>
     <IsPackable>false</IsPackable>
-    <UseRidGraph>true</UseRidGraph>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'True'">

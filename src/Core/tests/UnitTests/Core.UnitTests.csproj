@@ -4,6 +4,7 @@
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <AssemblyName>Microsoft.Maui.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
+    <MauiTestProject>true</MauiTestProject>
     <!--
       NOTE: Keep this project on C# 9 to avoid changes in overload resolution, test failures:
       CanAddMultipleEventsViaMultipleConfigureLifecycleEvents, CanAddMultipleEventsViaBuilder, EventsFireExactlyOnce

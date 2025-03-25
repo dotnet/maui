@@ -33,6 +33,10 @@
                 <Label Text="{Binding Pitch}" HorizontalOptions="Center"  IsVisible="{Binding AdvancedOptions}"/>
                 <Slider Value="{Binding Pitch}" Minimum="0.0" Maximum="2.0" IsVisible="{Binding AdvancedOptions}"/>
 
+                <Label Text="Rate" HorizontalOptions="Start" IsVisible="{Binding AdvancedOptions}"/>
+                <Label Text="{Binding Rate}" HorizontalOptions="Center" IsVisible="{Binding AdvancedOptions}"/>
+                <Slider Value="{Binding Rate}" Minimum="0.1" Maximum="2.0" IsVisible="{Binding AdvancedOptions}"/>
+
                 <Button Text="Pick Locale" Command="{Binding PickLocaleCommand}" IsVisible="{Binding AdvancedOptions}"/>
                 <Label Text="{Binding Locale}" IsVisible="{Binding AdvancedOptions}"/>
 
