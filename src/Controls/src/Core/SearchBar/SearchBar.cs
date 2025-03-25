@@ -13,6 +13,9 @@ namespace Microsoft.Maui.Controls
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class SearchBar : InputView, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>, ICommandElement, ISearchBar
 	{
+		/// <summary>Bindable property for <see cref="ReturnType"/>.</summary>
+		public static readonly BindableProperty ReturnTypeProperty = BindableProperty.Create(nameof(ReturnType), typeof(ReturnType), typeof(SearchBar), ReturnType.Search);
+
 		/// <summary>Bindable property for <see cref="SearchCommand"/>.</summary>
 		public static readonly BindableProperty SearchCommandProperty = BindableProperty.Create(
 			nameof(SearchCommand), typeof(ICommand), typeof(SearchBar), null,
@@ -74,6 +77,15 @@ namespace Microsoft.Maui.Controls
 		public new static readonly BindableProperty CharacterSpacingProperty = InputView.CharacterSpacingProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<SearchBar>> _platformConfigurationRegistry;
+
+		/// <summary>
+		/// Determines what the return key on the on-screen keyboard should look like. This is a bindable property.
+		/// </summary>
+		public ReturnType ReturnType
+		{
+			get => (ReturnType)GetValue(ReturnTypeProperty);
+			set => SetValue(ReturnTypeProperty, value);
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='CancelButtonColor']/Docs/*" />
 		public Color CancelButtonColor
