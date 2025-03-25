@@ -18,6 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnAndroidWhenRunningOnXamarinUITest("Currently fails on Android; see https://github.com/dotnet/maui/issues/15994")]
 		public async Task Issue18751Test()
 		{
+			VerifyInternetConnectivity();
+			
 			App.WaitForElement("WaitForStubControl");
 
 			// Load images.
