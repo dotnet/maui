@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	internal static class TestHelpers
 	{
-		public static void Collect(int count = 3)
+		public static void Collect(int count = 10)
 		{
 			for (int i = 0; i < count; i++)
 			{
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		public static async Task CollectAsync(int count = 3)
+		public static async Task CollectAsync(int count = 10)
 		{
 			for (int i = 0; i < count; i++)
 			{
