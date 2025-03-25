@@ -50,8 +50,8 @@ namespace Microsoft.Maui.DeviceTests
 				};
 
 				platformView.DispatchTouchEvent(MotionEvent.Obtain(SystemClock.UptimeMillis(), SystemClock.UptimeMillis(), (int)MotionEventActions.Down, 0, 0, 0));
-				platformView.DispatchTouchEvent(MotionEv 0, 0, 0));
-			
+				platformView.DispatchTouchEvent(MotionEvent.Obtain(SystemClock.UptimeMillis(), SystemClock.UptimeMillis(), (int)MotionEventActions.Up, 0, 0, 0));
+
 				Assert.Equal(1, touchCount);
 			});
 		}
