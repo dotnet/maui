@@ -8,11 +8,15 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 	public static class ViewCell
 	{
 		/// <summary>Bindable property for attached property <c>IsContextActionsLegacyModeEnabled</c>.</summary>
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static readonly BindableProperty IsContextActionsLegacyModeEnabledProperty = BindableProperty.Create("IsContextActionsLegacyModeEnabled", typeof(bool), typeof(Maui.Controls.ViewCell), false, propertyChanged: OnIsContextActionsLegacyModeEnabledPropertyChanged);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		private static void OnIsContextActionsLegacyModeEnabledPropertyChanged(BindableObject element, object oldValue, object newValue)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var cell = element as FormsCell;
+#pragma warning restore CS0618 // Type or member is obsolete
 			cell.IsContextActionsLegacyModeEnabled = (bool)newValue;
 		}
 
@@ -29,13 +33,19 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ViewCell.xml" path="//Member[@MemberName='GetIsContextActionsLegacyModeEnabled'][2]/Docs/*" />
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static bool GetIsContextActionsLegacyModeEnabled(this IPlatformElementConfiguration<Android, FormsCell> config)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			return GetIsContextActionsLegacyModeEnabled(config.Element);
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ViewCell.xml" path="//Member[@MemberName='SetIsContextActionsLegacyModeEnabled'][2]/Docs/*" />
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static IPlatformElementConfiguration<Android, FormsCell> SetIsContextActionsLegacyModeEnabled(this IPlatformElementConfiguration<Android, FormsCell> config, bool value)
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			SetIsContextActionsLegacyModeEnabled(config.Element, value);
 			return config;

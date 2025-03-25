@@ -171,7 +171,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				((INotifyCollectionChanged)e.OldList).CollectionChanged -= OnProxyCollectionChanged;
 			}
 			// Full reset
+#pragma warning disable CS0618 // Type or member is obsolete
 			TableView.ReloadData();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (e.NewList != null)
 			{
@@ -189,25 +191,39 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (e.NewStartingIndex == -1)
 						goto case NotifyCollectionChangedAction.Reset;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 					TableView.BeginUpdates();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 					TableView.InsertRows(GetPaths(section, e.NewStartingIndex, e.NewItems.Count), InsertRowsAnimation);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 					TableView.EndUpdates();
+#pragma warning restore CS0618 // Type or member is obsolete
 
 					break;
 
 				case NotifyCollectionChangedAction.Remove:
 					if (e.OldStartingIndex == -1)
 						goto case NotifyCollectionChangedAction.Reset;
+#pragma warning disable CS0618 // Type or member is obsolete
 					TableView.BeginUpdates();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 					TableView.DeleteRows(GetPaths(section, e.OldStartingIndex, e.OldItems.Count), DeleteRowsAnimation);
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
 					TableView.EndUpdates();
+#pragma warning restore CS0618 // Type or member is obsolete
 					break;
 
 				case NotifyCollectionChangedAction.Move:
 					if (e.OldStartingIndex == -1 || e.NewStartingIndex == -1)
 						goto case NotifyCollectionChangedAction.Reset;
+#pragma warning disable CS0618 // Type or member is obsolete
 					TableView.BeginUpdates();
+#pragma warning restore CS0618 // Type or member is obsolete
 					for (var i = 0; i < e.OldItems.Count; i++)
 					{
 						var oldIndex = e.OldStartingIndex;
@@ -219,21 +235,33 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 							newIndex += i;
 						}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 						TableView.MoveRow(NSIndexPath.FromRowSection(oldIndex, section), NSIndexPath.FromRowSection(newIndex, section));
+#pragma warning restore CS0618 // Type or member is obsolete
 					}
+#pragma warning disable CS0618 // Type or member is obsolete
 					TableView.EndUpdates();
+#pragma warning restore CS0618 // Type or member is obsolete
 					break;
 
 				case NotifyCollectionChangedAction.Replace:
 					if (e.OldStartingIndex == -1)
 						goto case NotifyCollectionChangedAction.Reset;
+#pragma warning disable CS0618 // Type or member is obsolete
 					TableView.BeginUpdates();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 					TableView.ReloadRows(GetPaths(section, e.OldStartingIndex, e.OldItems.Count), ReloadRowsAnimation);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 					TableView.EndUpdates();
+#pragma warning restore CS0618 // Type or member is obsolete
 					break;
 
 				case NotifyCollectionChangedAction.Reset:
+#pragma warning disable CS0618 // Type or member is obsolete
 					TableView.ReloadData();
+#pragma warning restore CS0618 // Type or member is obsolete
 					return;
 			}
 		}

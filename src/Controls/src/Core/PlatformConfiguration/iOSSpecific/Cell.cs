@@ -19,11 +19,17 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			=> element.SetValue(DefaultBackgroundColorProperty, value);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Cell.xml" path="//Member[@MemberName='DefaultBackgroundColor']/Docs/*" />
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static Color DefaultBackgroundColor(this IPlatformElementConfiguration<iOS, FormsElement> config)
+#pragma warning restore CS0618 // Type or member is obsolete
 			=> GetDefaultBackgroundColor(config.Element);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Cell.xml" path="//Member[@MemberName='SetDefaultBackgroundColor'][2]/Docs/*" />
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static IPlatformElementConfiguration<iOS, FormsElement> SetDefaultBackgroundColor(this IPlatformElementConfiguration<iOS, FormsElement> config, Color value)
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			SetDefaultBackgroundColor(config.Element, value);
 			return config;
