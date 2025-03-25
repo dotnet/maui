@@ -50,9 +50,8 @@ namespace Maui.Controls.Sample
                 var stackLayout = new StackLayout
                 {
                     Padding = new Thickness(10),
-                    //Orientation = StackOrientation.Horizontal,
-                    HorizontalOptions = LayoutOptions.Center,  
-                    VerticalOptions = LayoutOptions.Center     
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center
                 };
 
                 var label = new Label
@@ -62,7 +61,7 @@ namespace Maui.Controls.Sample
                 };
                 label.SetBinding(Label.TextProperty, "Caption");
                 stackLayout.Children.Add(label);
-                return stackLayout;  
+                return stackLayout;
             });
 
             GroupHeaderTemplate = new DataTemplate(() =>
@@ -89,20 +88,19 @@ namespace Maui.Controls.Sample
 
         private void LoadItems()
         {
-
             _observableCollection = new ObservableCollection<CollectionViewTestItem>();
-            AddItems(_observableCollection, 50);
-
+            AddItems(_observableCollection, 25, "Fruits");
+            AddItems(_observableCollection, 25, "Vegetables");
             _emptyObservableCollection = new ObservableCollection<CollectionViewTestItem>();
-
-
+          
             _groupedList = new List<Grouping<string, CollectionViewTestItem>>
             {
                 new Grouping<string, CollectionViewTestItem>("Fruits", new List<CollectionViewTestItem>()),
                 new Grouping<string, CollectionViewTestItem>("Vegetables", new List<CollectionViewTestItem>())
             };
-            AddItems(_groupedList[0], 25);
-            AddItems(_groupedList[1], 25);
+ 
+            AddItems(_groupedList[0], 25, "Fruits");       
+            AddItems(_groupedList[1], 25, "Vegetables");   
 
             _emptyGroupedList = new List<Grouping<string, CollectionViewTestItem>>();
         }
@@ -146,7 +144,7 @@ namespace Maui.Controls.Sample
                 {
                     _itemsSourceType = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(ItemsSource));  
+                    OnPropertyChanged(nameof(ItemsSource));
                 }
             }
         }
@@ -180,7 +178,7 @@ namespace Maui.Controls.Sample
                     {
                         ItemsSourceType.GroupedListT => _groupedList,
                         ItemsSourceType.EmptyGroupedListT => _emptyGroupedList,
-                        _ => _groupedList // Default to grouped list
+                        _ => _groupedList  
                     };
                 }
                 else
@@ -190,13 +188,13 @@ namespace Maui.Controls.Sample
                         ItemsSourceType.ObservableCollectionT => _observableCollection,
                         ItemsSourceType.EmptyObservableCollectionT => _emptyObservableCollection,
                         ItemsSourceType.None => null,
-                        _ => null // Default to flat list
+                        _ => null  
                     };
                 }
             }
         }
 
-         public ItemsLayout ItemsLayout
+        public ItemsLayout ItemsLayout
         {
             get => _itemsLayout;
             set
@@ -216,36 +214,43 @@ namespace Maui.Controls.Sample
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private void AddItems(IList<CollectionViewTestItem> list, int count)
+        private void AddItems(IList<CollectionViewTestItem> list, int count, string category)
         {
-            string[] items =
+            string[] fruits =
             {
-               "Apple", "Banana", "Orange", "Grapes", "Mango",
-               "Carrot", "Broccoli", "Spinach", "Potato", "Tomato",
-               "Pineapple", "Strawberry", "Blueberry", "Peach", "Cherry",
-               "Cucumber", "Lettuce", "Onion", "Garlic", "Pepper",
-               "Watermelon", "Papaya", "Kiwi", "Pear", "Plum",
-               "Zucchini", "Pumpkin", "Radish", "Beetroot", "Cabbage",
-               "Avocado", "Fig", "Guava", "Lychee", "Pomegranate",
-               "Sweet Potato", "Turnip", "Cauliflower", "Celery", "Asparagus",
-               "Lime", "Lemon", "Coconut", "Apricot", "Blackberry",
-               "Eggplant", "Chili", "Corn", "Peas", "Mushroom"
+                "Apple", "Banana", "Orange", "Grapes", "Mango",
+                "Pineapple", "Strawberry", "Blueberry", "Peach", "Cherry",
+                "Watermelon", "Papaya", "Kiwi", "Pear", "Plum",
+                "Avocado", "Fig", "Guava", "Lychee", "Pomegranate",
+                "Lime", "Lemon", "Coconut", "Apricot", "Blackberry"
             };
+
+            string[] vegetables =
+            {
+                "Carrot", "Broccoli", "Spinach", "Potato", "Tomato",
+                "Cucumber", "Lettuce", "Onion", "Garlic", "Pepper",
+                "Zucchini", "Pumpkin", "Radish", "Beetroot", "Cabbage",
+                "Sweet Potato", "Turnip", "Cauliflower", "Celery", "Asparagus",
+                "Eggplant", "Chili", "Corn", "Peas", "Mushroom"
+            };
+
+            string[] items = category == "Fruits" ? fruits : vegetables;
 
             for (int n = 0; n < count; n++)
             {
                 list.Add(new CollectionViewTestItem(items[n % items.Length]));
             }
         }
-    }
-
-    public class CollectionViewTestItem
-    {
-        public string Caption { get; set; }
-
-        public CollectionViewTestItem(string caption)
+        public class CollectionViewTestItem
         {
-            Caption = caption;
+            public string Caption { get; set; }
+
+            public CollectionViewTestItem(string caption)
+            {
+                Caption = caption;
+            }
         }
+
     }
 }
+
