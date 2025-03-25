@@ -90,10 +90,10 @@ parameters:
   - name: windowsPool
     type: object
     default:
-      name: $(windowsTestsVmPool)
-      vmImage: $(windowsTestsVmImage)
-      demands:
-        - ImageOverride -equals 1ESPT-Windows2022
+      pool:
+        name: $(windowsTestsVmPool)
+        image: 1ESPT-Windows2022
+        os: windows
  
   - name: targetFrameworkVersions
     type: object
