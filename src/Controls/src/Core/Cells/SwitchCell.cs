@@ -5,6 +5,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/SwitchCell.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwitchCell']/Docs/*" />
+	[Obsolete("The controls which use SwitchCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
 	public class SwitchCell : Cell
 	{
 		/// <summary>Bindable property for <see cref="On"/>.</summary>
