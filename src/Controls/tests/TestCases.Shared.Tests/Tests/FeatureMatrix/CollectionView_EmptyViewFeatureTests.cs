@@ -368,8 +368,7 @@ namespace Microsoft.Maui.TestCases.Tests
             Assert.That(emptyViewBounds.Height, Is.EqualTo(200).Within(5), "EmptyView height should be 200.");
             Assert.That(emptyViewBounds.Width, Is.EqualTo(300).Within(5), "EmptyView width should be 300.");
        }
-
-		// Emptyview template
+ 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayed_WhenCustomView()
