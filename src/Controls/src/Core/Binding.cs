@@ -134,6 +134,7 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets the culture information used by the converter.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">Thrown when the binding is already applied.</exception>
+		[TypeConverter(typeof(CultureInfoIetfLanguageTagConverter))]
 		public CultureInfo ConverterCulture
 		{
 			get { return _converterCulture; }
