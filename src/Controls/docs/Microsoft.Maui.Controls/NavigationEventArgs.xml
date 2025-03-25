@@ -51,7 +51,6 @@
         <param name="page">The page that was popped or is newly visible.</param>
         <summary>
         </summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Page">

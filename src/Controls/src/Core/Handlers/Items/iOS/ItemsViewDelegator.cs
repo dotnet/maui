@@ -108,19 +108,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void CellDisplayingEnded(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath indexPath)
 		{
-			if (ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal)
-			{
-				var actualWidth = collectionView.ContentSize.Width - collectionView.Bounds.Size.Width;
-				if (collectionView.ContentOffset.X >= actualWidth || collectionView.ContentOffset.X < 0)
-					return;
-			}
-			else
-			{
-				var actualHeight = collectionView.ContentSize.Height - collectionView.Bounds.Size.Height;
-
-				if (collectionView.ContentOffset.Y >= actualHeight || collectionView.ContentOffset.Y < 0)
-					return;
-			}
+			ViewController?.CellDisplayingEndedFromDelegate(cell, indexPath);
 		}
 
 		protected virtual (bool VisibleItems, NSIndexPath First, NSIndexPath Center, NSIndexPath Last) GetVisibleItemsIndexPath()
@@ -150,11 +138,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			int firstVisibleItemIndex = -1, centerItemIndex = -1, lastVisibleItemIndex = -1;
 			if (VisibleItems)
 			{
-				firstVisibleItemIndex = (int)First.Item;
-				centerItemIndex = (int)Center.Item;
-				lastVisibleItemIndex = (int)Last.Item;
+				IItemsViewSource source = ViewController.ItemsSource;
+
+				firstVisibleItemIndex = GetItemIndex(First, source);
+				centerItemIndex = GetItemIndex(Center, source);
+				lastVisibleItemIndex = GetItemIndex(Last, source);
 			}
 			return (VisibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
+		}
+
+		static int GetItemIndex(NSIndexPath indexPath, IItemsViewSource itemSource)
+		{
+			int index = (int)indexPath.Item;
+
+			if (indexPath.Section > 0)
+			{
+				for (int i = 0; i < indexPath.Section; i++)
+				{
+					index += itemSource.ItemCountInGroup(i);
+				}
+			}
+
+			return index;
 		}
 
 		static NSIndexPath GetCenteredIndexPath(UICollectionView collectionView)

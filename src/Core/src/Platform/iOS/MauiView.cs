@@ -7,8 +7,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents
+	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 	{
+		bool _invalidateParentWhenMovedToWindow;
 		static bool? _respondsToSafeArea;
 
 		double _lastMeasureHeight = double.NaN;
@@ -32,6 +33,11 @@ namespace Microsoft.Maui.Platform
 
 		protected CGRect AdjustForSafeArea(CGRect bounds)
 		{
+			if (KeyboardAutoManagerScroll.ShouldIgnoreSafeAreaAdjustment)
+			{
+				KeyboardAutoManagerScroll.ShouldScrollAgain = true;
+			}
+
 			if (View is not ISafeAreaView sav || sav.IgnoreSafeArea || !RespondsToSafeArea())
 			{
 				return bounds;
@@ -119,25 +125,19 @@ namespace Microsoft.Maui.Platform
 			var widthConstraint = bounds.Width;
 			var heightConstraint = bounds.Height;
 
-			// If the SuperView is a MauiView (backing a cross-platform ContentView or Layout), then measurement
-			// has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews. But we
-			// _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
+			// If the SuperView is a cross-platform layout backed view (i.e. MauiView, MauiScrollView, LayoutView, ..),
+			// then measurement has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews.
+			// This is especially important to avoid overriding potentially infinite measurement constraints
+			// imposed by the parent (i.e. scroll view) with the current bounds.
+			// But we _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
 			// the window); there's no guarantee that SizeThatFits has been called in that case.
-
-			if (!IsMeasureValid(widthConstraint, heightConstraint) && Superview is not MauiView)
+			if (!IsMeasureValid(widthConstraint, heightConstraint) && !this.IsFinalMeasureHandledBySuperView())
 			{
 				CrossPlatformMeasure(widthConstraint, heightConstraint);
 				CacheMeasureConstraints(widthConstraint, heightConstraint);
 			}
 
 			CrossPlatformArrange(bounds);
-		}
-
-		public override void SetNeedsLayout()
-		{
-			InvalidateConstraintsCache();
-			base.SetNeedsLayout();
-			Superview?.SetNeedsLayout();
 		}
 
 		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
@@ -158,7 +158,18 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
+		{
+			_invalidateParentWhenMovedToWindow = true;
+		}
+
+		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		{
+			InvalidateConstraintsCache();
+			SetNeedsLayout();
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
 		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
 		{
@@ -170,6 +181,11 @@ namespace Microsoft.Maui.Platform
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
+			if (_invalidateParentWhenMovedToWindow)
+			{
+				_invalidateParentWhenMovedToWindow = false;
+				this.InvalidateAncestorsMeasures();
+			}
 		}
 	}
 }

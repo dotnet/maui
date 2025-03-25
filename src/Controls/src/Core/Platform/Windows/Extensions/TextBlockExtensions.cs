@@ -12,12 +12,70 @@ namespace Microsoft.Maui.Controls.Platform
 	internal static class TextBlockExtensions
 	{
 		public static void UpdateLineBreakMode(this TextBlock textBlock, Label label) =>
-			textBlock.UpdateLineBreakMode(label.LineBreakMode);
+			textBlock.SetLineBreakMode(label.LineBreakMode, label.MaxLines);
 
 		public static void UpdateLineBreakMode(this TextBlock textBlock, LineBreakMode lineBreakMode)
 		{
-			if (textBlock == null)
-				return;
+			textBlock.SetLineBreakMode(lineBreakMode, null);
+		}
+
+		static void DetermineTruncatedTextWrapping(TextBlock textBlock) =>
+			textBlock.TextWrapping = textBlock.MaxLines > 1 ? TextWrapping.Wrap : TextWrapping.NoWrap;
+
+		public static void UpdateText(this TextBlock platformControl, Label label)
+		{
+			switch (label.TextType)
+			{
+				case TextType.Html:
+					platformControl.UpdateTextHtml(label);
+					break;
+
+				default:
+					if (label.FormattedText != null)
+						platformControl.UpdateInlines(label);
+					else
+					{
+						if (platformControl.TextHighlighters.Count > 0)
+						{
+							platformControl.TextHighlighters.Clear();
+						}
+						platformControl.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+					}
+					break;
+			}
+		}
+
+		public static double FindDefaultLineHeight(this TextBlock control, Inline inline)
+		{
+			control.Inlines.Add(inline);
+
+			control.Measure(new WSize(double.PositiveInfinity, double.PositiveInfinity));
+
+			var height = control.DesiredSize.Height;
+
+			control.Inlines.Remove(inline);
+
+			return height;
+		}
+
+		public static void UpdateMaxLines(this TextBlock platformControl, Label label)
+		{
+			// Linebreak mode also handles setting MaxLines
+			platformControl.SetLineBreakMode(label.LineBreakMode, label.MaxLines);
+		}
+
+		public static void UpdateDetectReadingOrderFromContent(this TextBlock platformControl, Label label)
+		{
+			if (label.IsSet(Specifics.DetectReadingOrderFromContentProperty))
+				platformControl.SetTextReadingOrder(label.OnThisPlatform().GetDetectReadingOrderFromContent());
+		}
+
+		internal static void SetLineBreakMode(this TextBlock textBlock, LineBreakMode lineBreakMode, int? maxLines = null)
+		{
+			if (maxLines.HasValue && maxLines >= 0)
+				textBlock.MaxLines = maxLines.Value;
+			else
+				textBlock.MaxLines = 0;
 
 			switch (lineBreakMode)
 			{
@@ -50,53 +108,6 @@ namespace Microsoft.Maui.Controls.Platform
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
-		}
-
-		static void DetermineTruncatedTextWrapping(TextBlock textBlock) =>
-			textBlock.TextWrapping = textBlock.MaxLines > 1 ? TextWrapping.Wrap : TextWrapping.NoWrap;
-
-		public static void UpdateText(this TextBlock platformControl, Label label)
-		{
-			switch (label.TextType)
-			{
-				case TextType.Html:
-					platformControl.UpdateTextHtml(label);
-					break;
-
-				default:
-					if (label.FormattedText != null)
-						platformControl.UpdateInlines(label);
-					else
-						platformControl.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
-					break;
-			}
-		}
-
-		public static double FindDefaultLineHeight(this TextBlock control, Inline inline)
-		{
-			control.Inlines.Add(inline);
-
-			control.Measure(new WSize(double.PositiveInfinity, double.PositiveInfinity));
-
-			var height = control.DesiredSize.Height;
-
-			control.Inlines.Remove(inline);
-
-			return height;
-		}
-
-		public static void UpdateMaxLines(this TextBlock platformControl, Label label)
-		{
-			if (label.MaxLines >= 0)
-				platformControl.MaxLines = label.MaxLines;
-			else
-				platformControl.MaxLines = 0;
-		}
-
-		public static void UpdateDetectReadingOrderFromContent(this TextBlock platformControl, Label label)
-		{
-			if (label.IsSet(Specifics.DetectReadingOrderFromContentProperty))
-				platformControl.SetTextReadingOrder(label.OnThisPlatform().GetDetectReadingOrderFromContent());
 		}
 
 		internal static void SetTextReadingOrder(this TextBlock platformControl, bool detectReadingOrderFromContent) =>

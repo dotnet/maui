@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Graphics
 
 		public static CALayer? CreateCALayer(this SolidPaint solidPaint, CGRect frame = default)
 		{
-			var solidColorLayer = new CALayer
+			var solidColorLayer = new StaticCALayer
 			{
 				ContentsGravity = CALayer.GravityResizeAspectFill,
 				Frame = frame,
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Graphics
 			var p1 = linearGradientPaint.StartPoint;
 			var p2 = linearGradientPaint.EndPoint;
 
-			var linearGradientLayer = new CAGradientLayer
+			var linearGradientLayer = new StaticCAGradientLayer
 			{
 				ContentsGravity = CALayer.GravityResizeAspectFill,
 				Frame = frame,
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Graphics
 			if (linearGradientPaint.GradientStops != null && linearGradientPaint.GradientStops.Length > 0)
 			{
 				var orderedStops = linearGradientPaint.GradientStops.OrderBy(x => x.Offset).ToList();
-				linearGradientLayer.Colors = orderedStops.Select(x => x.Color.ToCGColor()).ToArray();
+				linearGradientLayer.Colors = GetCAGradientLayerColors(orderedStops);
 				linearGradientLayer.Locations = GetCAGradientLayerLocations(orderedStops);
 			}
 
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Graphics
 			var center = radialGradientPaint.Center;
 			var radius = radialGradientPaint.Radius;
 
-			var radialGradientLayer = new CAGradientLayer
+			var radialGradientLayer = new StaticCAGradientLayer
 			{
 				ContentsGravity = CALayer.GravityResizeAspectFill,
 				Frame = frame,
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Graphics
 			if (radialGradientPaint.GradientStops != null && radialGradientPaint.GradientStops.Length > 0)
 			{
 				var orderedStops = radialGradientPaint.GradientStops.OrderBy(x => x.Offset).ToList();
-				radialGradientLayer.Colors = orderedStops.Select(x => x.Color.ToCGColor()).ToArray();
+				radialGradientLayer.Colors = GetCAGradientLayerColors(orderedStops);
 				radialGradientLayer.Locations = GetCAGradientLayerLocations(orderedStops);
 			}
 
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Graphics
 		static NSNumber[] GetCAGradientLayerLocations(List<PaintGradientStop> gradientStops)
 		{
 			if (gradientStops == null || gradientStops.Count == 0)
-				return new NSNumber[0];
+				return Array.Empty<NSNumber>();
 
 			if (gradientStops.Count > 1 && gradientStops.Any(gt => gt.Offset != 0))
 				return gradientStops.Select(x => new NSNumber(x.Offset)).ToArray();
@@ -164,6 +164,31 @@ namespace Microsoft.Maui.Graphics
 
 				return locations;
 			}
+		}
+
+		static CGColor[] GetCAGradientLayerColors(List<PaintGradientStop> gradientStops)
+		{
+			if (gradientStops == null || gradientStops.Count == 0)
+				return Array.Empty<CGColor>();
+
+			CGColor[] colors = new CGColor[gradientStops.Count];
+
+			int index = 0;
+			foreach (var gradientStop in gradientStops)
+			{
+				if (gradientStop.Color == Colors.Transparent)
+				{
+					var color = gradientStops[index == 0 ? index + 1 : index - 1].Color;
+					CGColor nativeColor = color.ToPlatform().ColorWithAlpha(0.0f).CGColor;
+					colors[index] = nativeColor;
+				}
+				else
+					colors[index] = gradientStop.Color.ToCGColor();
+
+				index++;
+			}
+
+			return colors;
 		}
 	}
 }

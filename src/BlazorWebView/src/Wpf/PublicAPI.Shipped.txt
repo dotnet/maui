@@ -30,6 +30,8 @@ Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.HostPage.set -> void
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.RootComponents.get -> Microsoft.AspNetCore.Components.WebView.Wpf.RootComponentsCollection!
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.Services.get -> System.IServiceProvider!
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.Services.set -> void
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.StartPath.get -> string!
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.StartPath.set -> void
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UrlLoading.get -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs!>!
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UrlLoading.set -> void
 Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.WebView.get -> Microsoft.Web.WebView2.Wpf.WebView2!
@@ -56,6 +58,8 @@ static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.Blazor
 static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.HostPageProperty -> System.Windows.DependencyProperty!
 static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.RootComponentsProperty -> System.Windows.DependencyProperty!
 static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.ServicesProperty -> System.Windows.DependencyProperty!
+static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.StartPathProperty -> System.Windows.DependencyProperty!
 static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.UrlLoadingProperty -> System.Windows.DependencyProperty!
 virtual Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.CreateFileProvider(string! contentRootDir) -> Microsoft.Extensions.FileProviders.IFileProvider!
 virtual Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.DisposeAsyncCore() -> System.Threading.Tasks.ValueTask
+virtual Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebView.TryDispatchAsync(System.Action<System.IServiceProvider!>! workItem) -> System.Threading.Tasks.Task<bool>!

@@ -10,16 +10,16 @@ using WebKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiRefreshView : UIView, IUIViewLifeCycleEvents
+	public class MauiRefreshView : MauiView
 	{
 		bool _isRefreshing;
 		nfloat _originalY;
 		nfloat _refreshControlHeight;
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView _refreshControlParent;
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView? _contentView;
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIRefreshControl _refreshControl;
 		public UIRefreshControl RefreshControl => _refreshControl;
 
@@ -54,12 +54,14 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateContent(IView? content, IMauiContext? mauiContext)
 		{
-			if (_refreshControlParent != null)
+			if (_refreshControlParent is not null)
+			{
 				TryRemoveRefresh(_refreshControlParent);
+			}
 
 			_contentView?.RemoveFromSuperview();
 
-			if (content != null && mauiContext != null)
+			if (content is not null && mauiContext is not null)
 			{
 				_contentView = content.ToPlatform(mauiContext);
 				AddSubview(_contentView);
@@ -130,6 +132,11 @@ namespace Microsoft.Maui.Platform
 
 		bool TryInsertRefresh(UIView view, int index = 0)
 		{
+			if(!_refreshControl.Enabled)
+			{
+				return false;
+			}
+
 			_refreshControlParent = view;
 
 			if (view is UIScrollView scrollView)
@@ -166,17 +173,6 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
-		public override CGRect Bounds
-		{
-			get => base.Bounds;
-			set
-			{
-				base.Bounds = value;
-				if (_contentView != null)
-					_contentView.Frame = value;
-			}
-		}
-
 		public void UpdateIsEnabled(bool isRefreshViewEnabled)
 		{
 			_refreshControl.Enabled = isRefreshViewEnabled;
@@ -198,19 +194,5 @@ namespace Microsoft.Maui.Platform
 		bool CanUseRefreshControlProperty() =>
 			this.GetNavigationController()?.NavigationBar?.PrefersLargeTitles ?? true;
 #pragma warning restore CA1416
-
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
-		EventHandler? _movedToWindow;
-		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
-		{
-			add => _movedToWindow += value;
-			remove => _movedToWindow -= value;
-		}
-
-		public override void MovedToWindow()
-		{
-			base.MovedToWindow();
-			_movedToWindow?.Invoke(this, EventArgs.Empty);
-		}
 	}
 }

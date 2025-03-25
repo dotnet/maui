@@ -68,5 +68,10 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool ImageSourceLoaded(ImageButtonHandler imageButtonHandler) =>
 			imageButtonHandler.PlatformView.ImageView.Image != null;
+
+		public partial class ImageButtonImageHandlerTests
+		{
+			protected override bool UsesAnimatedImages => false;
+		}
 	}
 }

@@ -10,6 +10,7 @@ using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics.DirectX;
 using Windows.Storage.Streams;
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.DeviceTests
 	public static partial class AssertionExtensions
 	{
 		public static Task<string> CreateColorAtPointErrorAsync(this CanvasBitmap bitmap, WColor expectedColor, int x, int y) =>
-			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
+			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in rendered view.");
 
 		public static Task WaitForKeyboardToShow(this FrameworkElement view, int timeout = 1000)
 		{
@@ -49,7 +50,8 @@ namespace Microsoft.Maui.DeviceTests
 		public static async Task WaitForFocused(this FrameworkElement view, int timeout = 1000)
 		{
 			TaskCompletionSource focusSource = new TaskCompletionSource();
-			view.GotFocus += OnFocused;
+
+			FocusManager.GotFocus += OnFocused;
 
 			try
 			{
@@ -57,20 +59,24 @@ namespace Microsoft.Maui.DeviceTests
 			}
 			finally
 			{
-				view.GotFocus -= OnFocused;
+				FocusManager.GotFocus -= OnFocused;
 			}
 
-			void OnFocused(object? sender, RoutedEventArgs e)
+			void OnFocused(object? sender, FocusManagerGotFocusEventArgs e)
 			{
-				view.GotFocus -= OnFocused;
-				focusSource.SetResult();
+				if (e.NewFocusedElement == view)
+				{
+					FocusManager.GotFocus -= OnFocused;
+					focusSource.SetResult();
+				}
 			}
 		}
 
 		public static async Task WaitForUnFocused(this FrameworkElement view, int timeout = 1000)
 		{
 			TaskCompletionSource focusSource = new TaskCompletionSource();
-			view.LostFocus += OnUnFocused;
+
+			FocusManager.LostFocus += OnUnFocused;
 
 			try
 			{
@@ -78,13 +84,16 @@ namespace Microsoft.Maui.DeviceTests
 			}
 			finally
 			{
-				view.LostFocus -= OnUnFocused;
+				FocusManager.LostFocus -= OnUnFocused;
 			}
 
-			void OnUnFocused(object? sender, RoutedEventArgs e)
+			void OnUnFocused(object? sender, FocusManagerLostFocusEventArgs e)
 			{
-				view.LostFocus -= OnUnFocused;
-				focusSource.SetResult();
+				if (e.OldFocusedElement == view)
+				{
+					FocusManager.LostFocus -= OnUnFocused;
+					focusSource.SetResult();
+				}
 			}
 		}
 
@@ -104,7 +113,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static Task<string> CreateColorAtPointError(this CanvasBitmap bitmap, WColor expectedColor, int x, int y) =>
-			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
+			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in rendered view.");
 
 		public static async Task<string> CreateColorError(this CanvasBitmap bitmap, string message) =>
 			$"{message} This is what it looked like:<img>{await bitmap.ToBase64StringAsync()}</img>";
@@ -147,6 +156,13 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action, IMauiContext mauiContext) =>
 			view.AttachAndRun(window => action(), mauiContext);
 
+		public static Task AttachAndRun(this FrameworkElement view, Func<Task> action, IMauiContext mauiContext) =>
+			view.AttachAndRun(async window =>
+			{
+				await action();
+				return true;
+			}, mauiContext);
+
 		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, T> action, IMauiContext mauiContext) =>
 			view.AttachAndRun((window) =>
 			{
@@ -165,77 +181,14 @@ namespace Microsoft.Maui.DeviceTests
 			if (view.Parent is Border wrapper)
 				view = wrapper;
 
-			TaskCompletionSource? tcs = null;
-			TaskCompletionSource? unloadedTcs = null;
-
-			if (view.Parent == null)
-			{
-				T result;
-
-				try
-				{
-					await _attachAndRunSemaphore.WaitAsync();
-
-					// prepare to wait for element to be in the UI
-					tcs = new TaskCompletionSource();
-					unloadedTcs = new TaskCompletionSource();
-
-					view.Loaded += OnViewLoaded;
-
-					// attach to the UI
-					Grid grid;
-					var window = (Window)mauiContext!.Services!.GetService(typeof(Window))!;
-
-					if (window.Content is not null)
-						throw new Exception("The window retrieved from the service is already attached to existing content");
-
-					window.Content = new Grid
-					{
-						HorizontalAlignment = WHorizontalAlignment.Center,
-						VerticalAlignment = WVerticalAlignment.Center,
-						Children =
-						{
-							(grid = new Grid
-							{
-								Width = view.Width,
-								Height = view.Height,
-								Children =
-								{
-									view
-								}
-							})
-						}
-					};
-
-					window.Activate();
-
-					// wait for element to be loaded
-					await tcs.Task;
-					view.Unloaded += OnViewUnloaded;
-
-					try
-					{
-						result = await Run(() => action(window));
-					}
-					finally
-					{
-						grid.Children.Clear();
-						await unloadedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
-						await Task.Delay(10);
-						window.Close();
-					}
-				}
-				finally
-				{
-					_attachAndRunSemaphore.Release();
-				}
-
-				return result;
-			}
-			else
+			// If the view has a parent, it's already attached to the UI
+			if (view.Parent != null)
 			{
 				// Window is not a XAML type so is never on the hierarchy
 				var window = (Window)mauiContext!.Services!.GetService(typeof(Window))!;
+
+				Assert.True(window?.Content is not null,
+					"Content on Window has not been set. Most likely the window under test isn't being registered against the test service being used. Check if you're passing the right MauiContext in");
 
 				if (window.Content.XamlRoot != view.XamlRoot)
 					throw new Exception("The window retrieved from the service is different than the window this view is attached to");
@@ -243,21 +196,86 @@ namespace Microsoft.Maui.DeviceTests
 				return await Run(() => action(window));
 			}
 
+			// If the view has no parent, we need to attach it to the UI by creating a new window and using that as the host
+			try
+			{
+				await _attachAndRunSemaphore.WaitAsync();
+
+				// prepare to wait for element to be in the UI
+				var loadedTcs = new TaskCompletionSource();
+				var unloadedTcs = new TaskCompletionSource();
+
+				view.Loaded += OnViewLoaded;
+
+				// attach to the UI
+				Grid viewContainer;
+				var window = (Window)mauiContext!.Services!.GetService(typeof(Window))!;
+
+				if (window.Content is not null)
+					throw new Exception("The window retrieved from the service is already attached to existing content");
+
+				window.Content = new Grid
+				{
+					HorizontalAlignment = WHorizontalAlignment.Center,
+					VerticalAlignment = WVerticalAlignment.Center,
+					Children =
+					{
+						(viewContainer = new Grid
+						{
+							Width = view.Width,
+							Height = view.Height,
+							Children =
+							{
+								view
+							}
+						})
+					}
+				};
+
+				window.Activate();
+
+				// wait for element to be loaded
+				await loadedTcs.Task;
+				view.Unloaded += OnViewUnloaded;
+
+				try
+				{
+					return await Run(() => action(window));
+				}
+				finally
+				{
+					// release all views
+					window.Content = null;
+					viewContainer.Children.Clear();
+
+					// wait for an unload
+					await unloadedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+					await Task.Delay(10);
+
+					// close the window
+					window.Close();
+				}
+
+				void OnViewLoaded(object sender, RoutedEventArgs e)
+				{
+					view.Loaded -= OnViewLoaded;
+					loadedTcs?.SetResult();
+				}
+
+				void OnViewUnloaded(object sender, RoutedEventArgs e)
+				{
+					view.Unloaded -= OnViewUnloaded;
+					unloadedTcs?.SetResult();
+				}
+			}
+			finally
+			{
+				_attachAndRunSemaphore.Release();
+			}
+
 			static async Task<T> Run(Func<Task<T>> action)
 			{
 				return await action();
-			}
-
-			void OnViewLoaded(object sender, RoutedEventArgs e)
-			{
-				view.Loaded -= OnViewLoaded;
-				tcs?.SetResult();
-			}
-
-			void OnViewUnloaded(object sender, RoutedEventArgs e)
-			{
-				view.Unloaded -= OnViewUnloaded;
-				unloadedTcs?.SetResult();
 			}
 		}
 

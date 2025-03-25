@@ -19,7 +19,6 @@
   </Interfaces>
   <Docs>
     <summary>Recognizer for pinch gestures.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -36,7 +35,6 @@
       <Parameters />
       <Docs>
         <summary>Constructs a new pinch gesture recognizer.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsPinching">
@@ -63,8 +61,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PinchUpdated">
@@ -84,7 +80,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when a pinch gesture updates.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendPinch">
@@ -119,7 +114,6 @@
         <param name="delta">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="currentScalePoint">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendPinchCanceled">
@@ -150,7 +144,6 @@
       <Docs>
         <param name="sender">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendPinchEnded">
@@ -181,7 +174,6 @@
       <Docs>
         <param name="sender">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendPinchStarted">
@@ -214,7 +206,6 @@
         <param name="sender">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="initialScalePoint">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_viewHandler = viewHandler;
 		}
 
-		public void Disconnect ()
+		public void Disconnect()
 		{
 			_viewHandler = null;
 		}
@@ -90,15 +90,14 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			UIDropOperation operation = UIDropOperation.Cancel;
 
-			if (session.LocalDragSession == null)
-				return new UIDropProposal(operation);
-
 			DataPackage package = null;
-
-			if (session.LocalDragSession.Items.Length > 0 &&
-				session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi)
+			if (session.LocalDragSession != null)
 			{
-				package = cdi.DataPackage;
+				if (session.LocalDragSession.Items.Length > 0 &&
+					session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi)
+				{
+					package = cdi.DataPackage;
+				}
 			}
 
 			var platformArgs = new PlatformDragEventArgs(_viewHandler.PlatformView, interaction, session);
@@ -123,7 +122,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_viewHandler.VirtualView is View view)
 			{
 				HandleDrop(view, cdi.DataPackage, session, new PlatformDropEventArgs(cdi.View.Handler.PlatformView as UIView, interaction, session));
-				HandleDropCompleted(cdi.View, new PlatformDropCompletedEventArgs(cdi.View.Handler.PlatformView as UIView, interaction, session));
+				HandleDropCompleted(cdi.View, new PlatformDropCompletedEventArgs(cdi.View.Handler?.PlatformView as UIView, interaction, session));
 			}
 			else if (_viewHandler.VirtualView is View v)
 			{
@@ -231,7 +230,7 @@ namespace Microsoft.Maui.Controls.Platform
 			},
 			element);
 
-			return returnValue ?? new UIDragItem[0];
+			return returnValue ?? Array.Empty<UIDragItem>();
 		}
 
 		void SetLocalObject(UIDragItem dragItem, IPlatformViewHandler handler, DataPackage data)

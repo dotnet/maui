@@ -15,7 +15,7 @@ using WBrush = Microsoft.UI.Xaml.Media.Brush;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class DatePickerRenderer : ViewRenderer<DatePicker, Microsoft.UI.Xaml.Controls.DatePicker>
+	public partial class DatePickerRenderer : ViewRenderer<DatePicker, Microsoft.UI.Xaml.Controls.DatePicker>
 	{
 		WBrush _defaultBrush;
 		bool _fontApplied;
@@ -202,7 +202,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				if (day == 0)
 					Control.DayVisible = false;
 				else if (day == 3)
-					Control.DayFormat = "day dayofweek.abbreviated";
+					Control.DayFormat = "dayofweek.abbreviated";
 				else if (day == 4)
 					Control.DayFormat = "dayofweek.full";
 				else

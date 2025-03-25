@@ -5,7 +5,7 @@
 	xmlns:sys="clr-namespace:System;assembly=mscorlib"
 	xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests;assembly=Microsoft.Maui.Controls.Xaml.UnitTests"
 	x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.XArray">
-	<x:Array Type="{x:Type sys:String}" x:Key="array">
+	<x:Array Type="{x:Type sys:String}" >
 		<x:String>Hello</x:String>
 		<x:String>World</x:String>
 	</x:Array>

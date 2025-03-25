@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -15,10 +16,11 @@ using Xunit;
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ControlsHandlerTestBase : HandlerTestBase, IDisposable
+	public partial class ControlsHandlerTestBase : HandlerTestBase
 	{
 		// In order to run any page level tests android needs to add itself to the decor view inside a new fragment
 		// that way all the lifecycle events related to being attached to the window will fire
@@ -145,8 +147,11 @@ namespace Microsoft.Maui.DeviceTests
 			else
 				timeOut ??= TimeSpan.FromSeconds(15);
 
+			TestRunnerLogger.LogDebug($"Before InvokeOnMainThreadAsync");
+
 			return InvokeOnMainThreadAsync(async () =>
 			{
+				TestRunnerLogger.LogDebug($"Starting InvokeOnMainThreadAsync");
 				IWindow window = CreateWindowForContent(view);
 
 				var application = mauiContext.Services.GetService<IApplication>();
@@ -161,10 +166,13 @@ namespace Microsoft.Maui.DeviceTests
 
 				try
 				{
+					TestRunnerLogger.LogDebug($"Requesting Semaphore to Start");
 					await _takeOverMainContentSempahore.WaitAsync();
+					TestRunnerLogger.LogDebug($"Obtained Semaphore");
 
 					await SetupWindowForTests<THandler>(window, async () =>
 					{
+						TestRunnerLogger.LogDebug($"Window Setup For Tests");
 						IView content = window.Content;
 
 						if (content is FlyoutPage fp)
@@ -248,8 +256,8 @@ namespace Microsoft.Maui.DeviceTests
 						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
 
+						TestRunnerLogger.LogDebug($"Running Test");
 						await action(handler).WaitAsync(timeOut.Value);
-
 
 #if !WINDOWS
 						bool isActivated = controlsWindow?.IsActivated ?? false;
@@ -267,6 +275,7 @@ namespace Microsoft.Maui.DeviceTests
 				finally
 				{
 					_takeOverMainContentSempahore.Release();
+					TestRunnerLogger.LogDebug($"Finished Running Test");
 				}
 			});
 		}
@@ -561,7 +570,7 @@ namespace Microsoft.Maui.DeviceTests
 			await taskCompletionSource.Task.WaitAsync(timeOut.Value);
 
 			// Wait for the layout to propagate to the platform
-			await AssertionExtensions.Wait(
+			await AssertEventually(
 				() =>
 				{
 					var size = frameworkElement.GetBoundingBox().Size;

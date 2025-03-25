@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issues15815"
+             Title="Issues15815">
+    <Grid RowDefinitions="Auto,Auto, Auto" >
+        <Label Grid.Row="0" Text="The last cell (index 2) is not visible with MeasureAllItems if 1st cell is 50px width" />
+        <CollectionView x:Name="col" BackgroundColor="Pink" Grid.Row="1" ItemsLayout="HorizontalList"
+                        ItemSizingStrategy="MeasureAllItems" HeightRequest="200">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid BackgroundColor="{Binding Color}" WidthRequest="{Binding Width}" HeightRequest="200">
+                        <Label AutomationId="{Binding Id}" Text="{Binding Name}" FontSize="Header" TextColor="Black"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <Label Grid.Row="2" Text="Last Cell Blue should be visible" />
+    </Grid>
+
+</ContentPage>

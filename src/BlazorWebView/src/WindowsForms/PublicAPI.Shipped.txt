@@ -27,6 +27,8 @@ Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.HostPage.set 
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.RootComponents.get -> Microsoft.AspNetCore.Components.WebView.WindowsForms.RootComponentsCollection!
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.Services.get -> System.IServiceProvider!
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.Services.set -> void
+Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.StartPath.get -> string!
+Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.StartPath.set -> void
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.UrlLoading -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs!>?
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.WebView.get -> Microsoft.Web.WebView2.WinForms.WebView2!
 Microsoft.AspNetCore.Components.WebView.WindowsForms.IWindowsFormsBlazorWebViewBuilder
@@ -49,3 +51,4 @@ static Microsoft.AspNetCore.Components.WebView.WindowsForms.RootComponentCollect
 static Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions.AddBlazorWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.BlazorWebViewServiceCollectionExtensions.AddWindowsFormsBlazorWebView(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.Components.WebView.WindowsForms.IWindowsFormsBlazorWebViewBuilder!
 virtual Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.CreateFileProvider(string! contentRootDir) -> Microsoft.Extensions.FileProviders.IFileProvider!
+virtual Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.TryDispatchAsync(System.Action<System.IServiceProvider!>! workItem) -> System.Threading.Tasks.Task<bool>!

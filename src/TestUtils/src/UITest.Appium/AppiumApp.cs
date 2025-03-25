@@ -1,11 +1,12 @@
-﻿using OpenQA.Selenium;
+using System.Xml.Linq;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
 using UITest.Core;
 
 namespace UITest.Appium
 {
-	public abstract class AppiumApp : IApp
+	public abstract class AppiumApp : IApp, IScreenshotSupportedApp, ILogsSupportedApp
 	{
 		protected readonly AppiumDriver _driver;
 		protected readonly IConfig _config;
@@ -13,14 +14,23 @@ namespace UITest.Appium
 
 		public AppiumApp(AppiumDriver driver, IConfig config)
 		{
-			_driver = driver;
-			_config = config;
+			_driver = driver ?? throw new ArgumentNullException(nameof(driver));
+			_config = config ?? throw new ArgumentNullException(nameof(config));
 
 			_commandExecutor = new AppiumCommandExecutor();
-			_commandExecutor.AddCommandGroup(new AppiumPointerActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumMouseActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumTouchActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumTextActions());
 			_commandExecutor.AddCommandGroup(new AppiumGeneralActions());
+			_commandExecutor.AddCommandGroup(new AppiumClipboardActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumDeviceActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumVirtualKeyboardActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumPinchToZoomActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumSliderActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumSwipeActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumScrollActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumOrientationActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumLifecycleActions(this));
 		}
 
 		public abstract ApplicationState AppState { get; }
@@ -30,38 +40,32 @@ namespace UITest.Appium
 		public ICommandExecution CommandExecutor => _commandExecutor;
 		public string ElementTree => _driver.PageSource;
 
-		public void Click(float x, float y)
-		{
-			CommandExecutor.Execute("click", new Dictionary<string, object>()
-			{
-				{ "x", x },
-				{ "y", y }
-			});
-		}
-
 		public FileInfo Screenshot(string fileName)
 		{
-			if (_driver == null)
-			{
-				throw new NullReferenceException("Screenshot: _driver is null");
-			}
-
-			string filename = $"{fileName}.png";
 			Screenshot screenshot = _driver.GetScreenshot();
-			screenshot.SaveAsFile(filename, ScreenshotImageFormat.Png);
-			var file = new FileInfo(filename);
+			screenshot.SaveAsFile(fileName);
+			var file = new FileInfo(fileName);
 			return file;
 		}
 
 		public byte[] Screenshot()
 		{
-			if (_driver == null)
-			{
-				throw new NullReferenceException("Screenshot: _driver is null");
-			}
-
 			Screenshot screenshot = _driver.GetScreenshot();
 			return screenshot.AsByteArray;
+		}
+
+		public IEnumerable<string> GetLogTypes()
+		{
+			return _driver.Manage().Logs.AvailableLogTypes;
+		}
+
+		public IEnumerable<string> GetLogEntries(string logType)
+		{
+			var entries = _driver.Manage().Logs.GetLog(logType);
+			foreach (var entry in entries)
+			{
+				yield return entry.Message;
+			}
 		}
 
 #nullable disable
@@ -84,9 +88,23 @@ namespace UITest.Appium
 			return q.FindElement(this);
 		}
 
+#nullable disable
+		public virtual IUIElement FindElementByText(string text)
+		{
+			// Android (text), iOS (label), Windows (Name)
+			return AppiumQuery.ByXPath("//*[@text='" + text + "' or @label='" + text + "' or @Name='" + text + "']").FindElement(this);
+		}
+#nullable enable
+
 		public virtual IReadOnlyCollection<IUIElement> FindElements(string id)
 		{
 			return Query.ById(id);
+		}
+
+		public virtual IReadOnlyCollection<IUIElement> FindElementsByText(string text)
+		{
+			// Android (text), iOS (label), Windows (Name)
+			return AppiumQuery.ByXPath("//*[@text='" + text + "' or @label='" + text + "' or @Name='" + text + "']").FindElements(this);
 		}
 
 		public virtual IReadOnlyCollection<IUIElement> FindElements(IQuery query)
@@ -113,6 +131,9 @@ namespace UITest.Appium
 
 			if (config.GetProperty<bool>("FullReset"))
 				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.FullReset, "true");
+
+			if (config.GetProperty<bool>("NoReset"))
+				appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.NoReset, "true");
 
 			var appPath = config.GetProperty<string>("AppPath");
 			if (!string.IsNullOrEmpty(appPath))

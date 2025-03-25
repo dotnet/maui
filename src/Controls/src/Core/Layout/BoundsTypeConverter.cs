@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Controls
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			// IMPORTANT! Update BoundsDesignTypeConverter.IsValid if making changes here
 			var strValue = value?.ToString();
 
 			if (strValue != null)

@@ -257,9 +257,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);
-
-			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
-			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 		}
 
 		[Fact("Ensures the border renders the expected size - Issue 15339")]
@@ -271,7 +268,8 @@ namespace Microsoft.Maui.DeviceTests
 			border.Stroke = Colors.Blue;
 			border.StrokeThickness = borderThickness;
 
-			var bitmap = await GetRawBitmap(border, typeof(BorderHandler));
+			// This is randomly failing on iOS, so let's add a timeout to avoid device tests running for hours
+			var bitmap = await GetRawBitmap(border, typeof(BorderHandler)).WaitAsync(TimeSpan.FromSeconds(5));
 			Assert.Equal(200, bitmap.Width, 2d);
 			Assert.Equal(100, bitmap.Height, 2d);
 

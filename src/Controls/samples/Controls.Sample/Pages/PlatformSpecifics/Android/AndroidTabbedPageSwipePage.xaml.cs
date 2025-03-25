@@ -8,7 +8,7 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class AndroidTabbedPageSwipePage : Microsoft.Maui.Controls.TabbedPage
 	{
-		ICommand _returnToPlatformSpecificsPage;
+		ICommand? _returnToPlatformSpecificsPage;
 
 		public AndroidTabbedPageSwipePage()
 		{

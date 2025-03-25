@@ -1,30 +1,19 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
-using Android.Util;
 using Android.Webkit;
 using AWebView = Android.Webkit.WebView;
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 {
-	public static class WebViewHelpers
+	public static partial class WebViewHelpers
 	{
-		const int MaxWaitTimes = 30;
-		const int WaitTimeInMS = 250;
-
 		public static async Task WaitForWebViewReady(AWebView webview)
 		{
-			for (int i = 0; i < MaxWaitTimes; i++)
+			await Retry(async () =>
 			{
 				var blazorObject = await ExecuteScriptAsync(webview, "(window.Blazor !== null) && (window.__BlazorStarted === true)");
-				if (blazorObject == "true")
-				{
-					return;
-				}
-				await Task.Delay(WaitTimeInMS);
-			}
-
-			throw new Exception($"Waited {MaxWaitTimes * WaitTimeInMS}ms but couldn't get window.Blazor to be non-null *and* have window.__BlazorStarted to be true.");
+				return blazorObject == "true";
+			}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get window.Blazor to be non-null *and* have window.__BlazorStarted to be true.")));
 		}
 
 		public static Task<string> ExecuteScriptAsync(AWebView webview, string script)
@@ -38,20 +27,18 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 		{
 			var quotedExpectedValue = "\"" + controlValueToWaitFor + "\"";
 			var latestControlValue = "<no value yet>";
-			for (int i = 0; i < MaxWaitTimes; i++)
+
+			await Retry(async () =>
 			{
 				latestControlValue = await ExecuteScriptAsync(webView, "document.getElementById('controlDiv').innerText");
-				if (latestControlValue == quotedExpectedValue)
-				{
-					return;
-				}
-				await Task.Delay(WaitTimeInMS);
-			}
+				return latestControlValue == quotedExpectedValue;
+			}, createExceptionWithTimeoutMS: async (int timeoutInMS) =>
+			{
+				var documentHtmlJavaScriptEncoded = await ExecuteScriptAsync(webView, "document.body.innerHTML");
+				var documentHtmlString = System.Text.Json.JsonSerializer.Deserialize<string>(documentHtmlJavaScriptEncoded);
 
-			var documentHtmlJavaScriptEncoded = await ExecuteScriptAsync(webView, "document.body.innerHTML");
-			var documentHtmlString = System.Text.Json.JsonSerializer.Deserialize<string>(documentHtmlJavaScriptEncoded);
-
-			throw new Exception($"Waited {MaxWaitTimes * WaitTimeInMS}ms but couldn't get controlDiv to have value '{controlValueToWaitFor}'. Most recent value was '{latestControlValue}'. document.body.innerHTML = {documentHtmlString}");
+				return new Exception($"Waited {timeoutInMS}ms but couldn't get controlDiv to have value '{controlValueToWaitFor}'. Most recent value was '{latestControlValue}'. document.body.innerHTML = {documentHtmlString}");
+			});
 		}
 
 		class JavascriptResult : Java.Lang.Object, IValueCallback

@@ -10,7 +10,12 @@ namespace UITest.Appium
 		private AppiumAndroidApp(Uri remoteAddress, IConfig config)
 			: base(new AndroidDriver(remoteAddress, GetOptions(config)), config)
 		{
+			_commandExecutor.AddCommandGroup(new AppiumAndroidContextMenuActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumAndroidThemeChangeAction());
+			_commandExecutor.AddCommandGroup(new AppiumAndroidSpecificActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumAndroidVirtualKeyboardActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumAndroidAlertActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumAndroidStepperActions(this));
 		}
 
 		public static AppiumAndroidApp CreateAndroidApp(Uri remoteAddress, IConfig config)
@@ -44,26 +49,33 @@ namespace UITest.Appium
 		{
 			get
 			{
-				var appId = Config.GetProperty<string>("AppId") ?? throw new InvalidOperationException($"{nameof(AppState)} could not get the appid property");
-				var state = _driver?.ExecuteScript("mobile: queryAppState", new Dictionary<string, object>
-						{
-							{ "appId", appId },
-						});
+				try
+				{
+					var appId = Config.GetProperty<string>("AppId") ?? throw new InvalidOperationException($"{nameof(AppState)} could not get the appid property");
+					var state = _driver?.ExecuteScript("mobile: queryAppState", new Dictionary<string, object>
+					{
+						{ "appId", appId },
+					});
 
-				// https://github.com/appium/appium-uiautomator2-driver#mobile-queryappstate
-				if (state == null)
+					// https://github.com/appium/appium-uiautomator2-driver#mobile-queryappstate
+					if (state == null)
+					{
+						return ApplicationState.Unknown;
+					}
+
+					return Convert.ToInt32(state) switch
+					{
+						0 => ApplicationState.NotInstalled,
+						1 => ApplicationState.NotRunning,
+						3 or
+						4 => ApplicationState.Running,
+						_ => ApplicationState.Unknown,
+					};
+				}
+				catch
 				{
 					return ApplicationState.Unknown;
 				}
-
-				return Convert.ToInt32(state) switch
-				{
-					0 => ApplicationState.Not_Installed,
-					1 => ApplicationState.Not_Running,
-					3 or
-					4 => ApplicationState.Running,
-					_ => ApplicationState.Unknown,
-				};
 			}
 		}
 
@@ -71,15 +83,32 @@ namespace UITest.Appium
 		{
 			config.SetProperty("PlatformName", "Android");
 			config.SetProperty("AutomationName", "UIAutomator2");
+			var appId = config.GetProperty<string>("AppId");
 
 			var options = new AppiumOptions();
+
 			SetGeneralAppiumOptions(config, options);
 
-			var appId = config.GetProperty<string>("AppId");
 			if (!string.IsNullOrWhiteSpace(appId))
 			{
-				options.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, appId);
+				options.AddAdditionalAppiumOption(MobileCapabilityType.NoReset, "true");
+				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, appId);
+				options.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, $"{appId}.MainActivity");
 			}
+
+			// Maximum amount of milliseconds to wait until the application under test is installed.
+			// 90000 ms by default
+			options.AddAdditionalAppiumOption("appium:androidInstallTimeout", 60000);
+
+			// Timeout used for waiting for the user interface to go into an idle state.
+			// By default, all core uiautomator objects except UiDevice will perform this wait before starting to search for the widget specified by the object's locator.
+			// Once the idle state is detected or the timeout elapses (whichever occurs first), the object will start to wait for the selector to find a match. 
+			// 10000 ms by default.
+			options.AddAdditionalAppiumOption("appium:waitForIdleTimeout", 5000);
+
+			// Whether to disable window animations when starting the instrumentation process.
+			// The animation scale will be restored automatically after the instrumentation process ends.
+			options.AddAdditionalAppiumOption("appium:disableWindowAnimation", true);
 
 			return options;
 		}

@@ -47,10 +47,10 @@ namespace Maui.Controls.Sample.Pages
 					funkyPath.ClosePath();
 					previewParameters.VisiblePath = funkyPath;
 
-					return new UIKit.UIDragPreview(e.PlatformArgs.Sender, previewParameters);
+					return new UIKit.UIDragPreview(e.PlatformArgs!.Sender!, previewParameters);
 				};
 
-				e.PlatformArgs.SetPreviewProvider(action);
+				e.PlatformArgs!.SetPreviewProvider(action);
 			}
 
 			else if (dotnetBotImageSwitch.IsToggled)
@@ -66,11 +66,11 @@ namespace Maui.Controls.Sample.Pages
 					return new UIKit.UIDragPreview(imageView);
 				};
 
-				e.PlatformArgs.SetPreviewProvider(action);
+				e.PlatformArgs!.SetPreviewProvider(action);
 			}
 
 
-			e.PlatformArgs.SetPrefersFullSizePreviews((interaction, session) => { return fullSizedSwitch.IsToggled; });
+			e.PlatformArgs!.SetPrefersFullSizePreviews((interaction, session) => { return fullSizedSwitch.IsToggled; });
 #endif
 		}
 
@@ -90,11 +90,11 @@ namespace Maui.Controls.Sample.Pages
 		{
 #if IOS || MACCATALYST
 			if (copySwitch.IsToggled)
-				e.PlatformArgs.SetDropProposal(new UIKit.UIDropProposal(UIKit.UIDropOperation.Copy));
+				e.PlatformArgs!.SetDropProposal(new UIKit.UIDropProposal(UIKit.UIDropOperation.Copy));
 			else if (moveSwitch.IsToggled)
-				e.PlatformArgs.SetDropProposal(new UIKit.UIDropProposal(UIKit.UIDropOperation.Move));
+				e.PlatformArgs!.SetDropProposal(new UIKit.UIDropProposal(UIKit.UIDropOperation.Move));
 			else if (forbiddenSwitch.IsToggled)
-				e.PlatformArgs.SetDropProposal(new UIKit.UIDropProposal(UIKit.UIDropOperation.Forbidden));
+				e.PlatformArgs!.SetDropProposal(new UIKit.UIDropProposal(UIKit.UIDropOperation.Forbidden));
 #endif
 		}
 

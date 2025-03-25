@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			Content = layout;
 		}
 
-		void ButtonOnClicked(object sender, EventArgs e)
+		void ButtonOnClicked(object? sender, EventArgs e)
 		{
 			OnButtonClicked();
 		}
@@ -50,7 +50,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 		{
 			if (!int.TryParse(Entry.Text, out int index))
 			{
-				indexes = new int[0];
+				indexes = Array.Empty<int>();
 				return false;
 			}
 

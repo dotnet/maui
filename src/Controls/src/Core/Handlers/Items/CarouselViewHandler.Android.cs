@@ -1,11 +1,7 @@
 #nullable disable
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -18,7 +14,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override ItemsViewAdapter<CarouselView, IItemsViewSource> CreateAdapter()
 		{
-			return new CarouselViewAdapter<CarouselView, IItemsViewSource>(VirtualView, (view, context) => new SizedItemContentView(Context, GetItemWidth, GetItemHeight));
+			return new CarouselViewAdapter<CarouselView, IItemsViewSource>(VirtualView, (view, context) =>
+			{
+				return new SizedItemContentView(Context, GetItemWidth, GetItemHeight)
+				{
+					LayoutParameters = new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MatchParent, RecyclerView.LayoutParams.MatchParent)
+				};
+			});
 		}
 
 		protected override RecyclerView CreatePlatformView()

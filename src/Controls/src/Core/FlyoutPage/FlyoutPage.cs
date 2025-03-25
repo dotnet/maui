@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
@@ -11,6 +13,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.FlyoutPage']/Docs/*" />
 	[ContentProperty(nameof(Detail))]
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>, IFlyoutView
 	{
 		/// <summary>Bindable property for <see cref="IsGestureEnabled"/>.</summary>
@@ -41,7 +44,7 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_detail != null && value == null)
-					throw new ArgumentNullException("value", "Detail cannot be set to null once a value is set.");
+					throw new ArgumentNullException(nameof(value), "Detail cannot be set to null once a value is set.");
 
 				if (_detail == value)
 					return;
@@ -66,7 +69,7 @@ namespace Microsoft.Maui.Controls
 					_detail?.SendAppearing();
 				}
 
-				previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(_detail));
+				previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(_detail, NavigationType.PageSwap));
 				_detail?.SendNavigatedTo(new NavigatedToEventArgs(previousDetail));
 			}
 		}
@@ -92,7 +95,7 @@ namespace Microsoft.Maui.Controls
 			set
 			{
 				if (_flyout != null && value == null)
-					throw new ArgumentNullException("value", "Flyout cannot be set to null once a value is set");
+					throw new ArgumentNullException(nameof(value), "Flyout cannot be set to null once a value is set");
 
 				if (string.IsNullOrEmpty(value.Title))
 					throw new InvalidOperationException("Title property must be set on Flyout page");
@@ -121,7 +124,7 @@ namespace Microsoft.Maui.Controls
 					_flyout?.SendAppearing();
 				}
 
-				previousFlyout?.SendNavigatedFrom(new NavigatedFromEventArgs(_flyout));
+				previousFlyout?.SendNavigatedFrom(new NavigatedFromEventArgs(_flyout, NavigationType.PageSwap));
 				_flyout?.SendNavigatedTo(new NavigatedToEventArgs(previousFlyout));
 			}
 		}
@@ -191,6 +194,7 @@ namespace Microsoft.Maui.Controls
 			return behavior != FlyoutLayoutBehavior.Split && !isSplitOnLandscape && !isSplitOnPortrait;
 		}
 
+		[Obsolete("Use ArrangeOverride instead")]
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			if (Flyout == null || Detail == null)
@@ -380,5 +384,10 @@ namespace Microsoft.Maui.Controls
 #else
 		double IFlyoutView.FlyoutWidth => -1;
 #endif
+		private protected override string GetDebuggerDisplay()
+		{
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Detail), Detail, "FlyoutPage", Flyout, nameof(BindingContext), BindingContext);
+			return $"{GetType().FullName}: {debugText}";
+		}
 	}
 }

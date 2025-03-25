@@ -109,7 +109,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 
 			changePositionButton.Clicked += (sender, e) =>
 			{
-				_viewModel.CarouselPosition = Random.Shared.Next(_viewModel.Items.Count);
+				_viewModel.CarouselPosition = Random.Shared.Next(_viewModel.Items!.Count);
 			};
 
 			var addItemButton = new Button
@@ -119,7 +119,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 
 			addItemButton.Clicked += (sender, e) =>
 			{
-				_viewModel.Items.Add(new CarouselData
+				_viewModel.Items!.Add(new CarouselData
 				{
 					Color = Colors.Red,
 					Name = $"{_viewModel.Items.Count + 1}"
@@ -134,10 +134,10 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 
 			removeItemButton.Clicked += (sender, e) =>
 			{
-				if (_viewModel.Items.Any())
-					_viewModel.Items.RemoveAt(_viewModel.Items.Count - 1);
+				if (_viewModel.Items!.Any())
+					_viewModel.Items!.RemoveAt(_viewModel.Items.Count - 1);
 
-				if (_viewModel.Items.Count > 0)
+				if (_viewModel.Items!.Count > 0)
 					_viewModel.CarouselPosition = _viewModel.Items.Count - 1;
 			};
 
@@ -148,7 +148,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 
 			clearItemsButton.Clicked += (sender, e) =>
 			{
-				_viewModel.Items.Clear();
+				_viewModel.Items!.Clear();
 			};
 
 			var lbl = new Label
@@ -196,10 +196,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 
 				grid.Children.Add(info);
 
-				var frame = new Frame
+				var frame = new Border
 				{
-					Content = grid,
-					HasShadow = false
+					Content = grid
 				};
 
 				frame.SetBinding(BackgroundColorProperty, new Binding("Color"));
@@ -224,7 +223,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 	[Preserve(AllMembers = true)]
 	public class CarouselItemsGalleryViewModel : BindableObject
 	{
-		ObservableCollection<CarouselData> _items;
+		ObservableCollection<CarouselData>? _items;
 		int _carouselPosition;
 
 		public CarouselItemsGalleryViewModel(bool empty, bool async)
@@ -268,7 +267,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			};
 		}
 
-		public ObservableCollection<CarouselData> Items
+		public ObservableCollection<CarouselData>? Items
 		{
 			get { return _items; }
 			set

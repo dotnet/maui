@@ -12,7 +12,11 @@ namespace Microsoft.Maui.Controls
 	{
 		////If the base type is one of these, stop registering dynamic resources further
 		////The last one (typeof(Element)) is a safety guard as we might be creating VisualElement directly in internal code
-		static readonly IList<Type> s_stopAtTypes = new List<Type> { typeof(View), typeof(Compatibility.Layout<>), typeof(VisualElement), typeof(NavigableElement), typeof(Element) };
+		static readonly IList<Type> s_stopAtTypes = new List<Type> { typeof(View), 
+#pragma warning disable CS0618 // Type or member is obsolete
+		typeof(Compatibility.Layout<>), 
+#pragma warning restore CS0618 // Type or member is obsolete
+		typeof(VisualElement), typeof(NavigableElement), typeof(Element) };
 
 		IList<BindableProperty> _classStyleProperties;
 
@@ -152,7 +156,7 @@ namespace Microsoft.Maui.Controls
 			Type type = TargetType;
 			while (true)
 			{
-				BindableProperty implicitStyleProperty = BindableProperty.Create("ImplicitStyle", typeof(Style), typeof(NavigableElement), default(Style),
+				BindableProperty implicitStyleProperty = BindableProperty.Create(nameof(ImplicitStyle), typeof(Style), typeof(NavigableElement), default(Style),
 						propertyChanged: (bindable, oldvalue, newvalue) => OnImplicitStyleChanged());
 				_implicitStyles.Add(implicitStyleProperty);
 				Target.SetDynamicResource(implicitStyleProperty, type.FullName);
@@ -170,7 +174,7 @@ namespace Microsoft.Maui.Controls
 			_implicitStyles.Clear();
 
 			//Register the fallback
-			BindableProperty implicitStyleProperty = BindableProperty.Create("ImplicitStyle", typeof(Style), typeof(NavigableElement), default(Style),
+			BindableProperty implicitStyleProperty = BindableProperty.Create(nameof(ImplicitStyle), typeof(Style), typeof(NavigableElement), default(Style),
 						propertyChanged: (bindable, oldvalue, newvalue) => OnImplicitStyleChanged());
 			_implicitStyles.Add(implicitStyleProperty);
 			Target.SetDynamicResource(implicitStyleProperty, fallbackTypeName);

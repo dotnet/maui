@@ -39,6 +39,6 @@
                 FontSize="Large"
                 BackgroundColor="Pink"
                 HorizontalTextAlignment="Center" />
-        </FlexLayout>
+            </FlexLayout>
     </views:BasePage.Content>
 </views:BasePage>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 
 #nullable disable
@@ -52,21 +52,21 @@ namespace Microsoft.Maui.Controls.Xaml
 				if (node.Properties.TryGetValue(new XmlName("", Target), out INode targetNode)
 					|| node.Properties.TryGetValue(new XmlName("", nameof(OnPlatformExtension.Default)), out targetNode))
 				{
-					if (!ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
+					if (!node.TryGetPropertyName(parentNode, out XmlName name))
 						return;
 					if (parentNode is IElementNode parentEnode)
 						parentEnode.Properties[name] = targetNode;
 				}
 				else if (node.CollectionItems.Count > 0) // syntax like {OnPlatform foo, iOS=bar}
 				{
-					if (!ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
+					if (!node.TryGetPropertyName(parentNode, out XmlName name))
 						return;
 					if (parentNode is IElementNode parentEnode)
 						parentEnode.Properties[name] = node.CollectionItems[0];
 				}
 				else //no prop for target and no Default set
 				{
-					if (!ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
+					if (!node.TryGetPropertyName(parentNode, out XmlName name))
 						return;
 					//if there's no value for the targetPlatform, ignore the node.
 					//this is slightly different than what OnPlatform does (return default(T))
@@ -76,57 +76,57 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 
 			//`<OnPlatform>` elements
-			if (node.XmlType.Name == "OnPlatform" && node.XmlType.NamespaceUri == XamlParser.MauiUri)
-			{
-				var onNode = GetOnNode(node, Target) ?? GetDefault(node);
+			//if (node.XmlType.Name == "OnPlatform" && node.XmlType.NamespaceUri == XamlParser.MauiUri)
+			//{
+			//	var onNode = GetOnNode(node, Target) ?? GetDefault(node);
 
-				//Property node
-				if (ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name)
-					&& parentNode is IElementNode parentEnode)
-				{
-					if (onNode != null)
-						parentEnode.Properties[name] = onNode;
-					else
-						parentEnode.Properties.Remove(name);
-					return;
-				}
+			//	//Property node
+			//	if (node.TryGetPropertyName(parentNode, out XmlName name)
+			//		&& parentNode is IElementNode parentEnode)
+			//	{
+			//		if (onNode != null)
+			//			parentEnode.Properties[name] = onNode;
+			//		else
+			//			parentEnode.Properties.Remove(name);
+			//		return;
+			//	}
 
-				//Collection item
-				if (onNode != null && parentNode is IElementNode parentEnode2)
-					parentEnode2.CollectionItems[parentEnode2.CollectionItems.IndexOf(node)] = onNode;
+			//	//Collection item
+			//	if (onNode != null && parentNode is IElementNode parentEnode2)
+			//		parentEnode2.CollectionItems[parentEnode2.CollectionItems.IndexOf(node)] = onNode;
 
-			}
+			//}
 
-			INode GetOnNode(ElementNode onPlatform, string target)
-			{
-				foreach (var onNode in onPlatform.CollectionItems)
-				{
-					if ((onNode as ElementNode).Properties.TryGetValue(new XmlName("", "Platform"), out var platform))
-					{
-						var splits = ((platform as ValueNode).Value as string).Split(',');
-						foreach (var split in splits)
-						{
-							if (string.IsNullOrWhiteSpace(split))
-								continue;
-							if (split.Trim() == target)
-							{
-								if ((onNode as ElementNode).Properties.TryGetValue(new XmlName("", "Value"), out var node))
-									return node;
+			//INode GetOnNode(ElementNode onPlatform, string target)
+			//{
+			//	foreach (var onNode in onPlatform.CollectionItems)
+			//	{
+			//		if ((onNode as ElementNode).Properties.TryGetValue(new XmlName("", "Platform"), out var platform))
+			//		{
+			//			var splits = ((platform as ValueNode).Value as string).Split(',');
+			//			foreach (var split in splits)
+			//			{
+			//				if (string.IsNullOrWhiteSpace(split))
+			//					continue;
+			//				if (split.Trim() == target)
+			//				{
+			//					if ((onNode as ElementNode).Properties.TryGetValue(new XmlName("", "Value"), out var node))
+			//						return node;
 
-								return (onNode as ElementNode).CollectionItems.FirstOrDefault();
-							}
-						}
-					}
-				}
-				return null;
-			}
+			//					return (onNode as ElementNode).CollectionItems.FirstOrDefault();
+			//				}
+			//			}
+			//		}
+			//	}
+			//	return null;
+			//}
 
-			INode GetDefault(ElementNode onPlatform)
-			{
-				if (node.Properties.TryGetValue(new XmlName("", "Default"), out INode defaultNode))
-					return defaultNode;
-				return null;
-			}
+			//INode GetDefault(ElementNode onPlatform)
+			//{
+			//	if (node.Properties.TryGetValue(new XmlName("", "Default"), out INode defaultNode))
+			//		return defaultNode;
+			//	return null;
+			//}
 
 		}
 

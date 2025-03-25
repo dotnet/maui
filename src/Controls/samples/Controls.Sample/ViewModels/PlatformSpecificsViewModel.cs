@@ -113,6 +113,11 @@ namespace Maui.Controls.Sample.ViewModels
 
 				new SectionModel(typeof(MainPage), "TabbedPage Translucent TabBar",
 					"This iOS platform-specific is used to set the translucency mode of the tab bar on a TabbedPage."),
+
+#if MACCATALYST
+				new SectionModel(typeof(TitleBarPage), "TitleBar",
+					"Add a customizable title bar to your window."),
+#endif
 			};
 #elif WINDOWS
 			return new[]
@@ -134,6 +139,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 				new SectionModel(typeof(WindowsReadingOrderPage), "Text Reading Order",
 					"This WinUI platform-specific enables the reading order (left-to-right or right-to-left) of bidirectional text in Entry, Editor, and Label instances to be detected dynamically."),
+
+				new SectionModel(typeof(WindowsTitleBarPage), "TitleBar",
+					"This WinUI platform-specific enables TitleBar customization."),
 
 				new SectionModel(typeof(WindowsRefreshViewPage), "RefreshView Pull Direction",
 					"This WinUI platform-specific enables the pull direction of a RefreshView to be changed to match the orientation of the scrollable control that's displaying data."),

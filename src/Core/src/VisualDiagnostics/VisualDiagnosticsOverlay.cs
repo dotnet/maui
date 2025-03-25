@@ -199,7 +199,7 @@ namespace Microsoft.Maui
 				.ToList();
 		}
 
-		IScrollView? GetParentScrollView(IVisualTreeElement element)
+		static IScrollView? GetParentScrollView(IVisualTreeElement element)
 		{
 			if (element == null)
 				return null;

@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(IEntryHandler handler, Entry entry)
 		{
 			Platform.TextExtensions.UpdateText(handler.PlatformView, entry);
+			EntryHandler.MapFormatting(handler, entry);
 		}
 
 		public static void MapCursorColor(EntryHandler handler, Entry entry) =>

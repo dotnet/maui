@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using UIKit;
@@ -23,8 +24,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	{
 		private IOSWebViewManager? _webviewManager;
 
-		internal const string AppOrigin = "app://" + BlazorWebView.AppHostAddress + "/";
-		internal static readonly Uri AppOriginUri = new(AppOrigin);
+		internal static string AppOrigin { get; } = "app://" + BlazorWebView.AppHostAddress + "/";
+		internal static Uri AppOriginUri { get; } = new(AppOrigin);
 		private const string BlazorInitScript = @"
 			window.__receiveMessageCallbacks = [];
 			window.__dispatchMessageCallback = function(message) {
@@ -80,9 +81,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				Configuration = config
 			});
 
-			// Legacy Developer Extras setting.
-			config.Preferences.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("developerExtrasEnabled"));
-
 			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(MessageReceived), "webwindowinterop");
 			config.UserContentController.AddUserScript(new WKUserScript(
 				new NSString(BlazorInitScript), WKUserScriptInjectionTime.AtDocumentEnd, true));
@@ -96,10 +94,16 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				AutosizesSubviews = true
 			};
 
-			if (OperatingSystem.IsIOSVersionAtLeast(16, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 3))
+			if (DeveloperTools.Enabled)
 			{
-				// Enable Developer Extras for Catalyst/iOS builds for 16.4+
-				webview.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("inspectable"));
+				// Legacy Developer Extras setting.
+				config.Preferences.SetValueForKey(NSObject.FromObject(true), new NSString("developerExtrasEnabled"));
+
+				if (OperatingSystem.IsIOSVersionAtLeast(16, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(16, 6))
+				{
+					// Enable Developer Extras for iOS builds for 16.4+ and Mac Catalyst builds for 16.6 (macOS 13.5)+
+					webview.SetValueForKey(NSObject.FromObject(true), new NSString("inspectable"));
+				}
 			}
 
 			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
@@ -124,13 +128,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			if (_webviewManager != null)
 			{
-				// Dispose this component's contents and block on completion so that user-written disposal logic and
-				// Blazor disposal logic will complete.
-				_webviewManager?
+				// Start the disposal...
+				var disposalTask = _webviewManager?
 					.DisposeAsync()
-					.AsTask()
-					.GetAwaiter()
-					.GetResult();
+					.AsTask()!;
+
+				if (IsBlockingDisposalEnabled)
+				{
+					// If the app is configured to block on dispose via an AppContext switch,
+					// we'll synchronously wait for the disposal to complete. This can cause a deadlock.
+					disposalTask
+						.GetAwaiter()
+						.GetResult();
+				}
+				else
+				{
+					// Otherwise, by default, we'll fire-and-forget the disposal task.
+					disposalTask.FireAndForget(_logger);
+				}
 
 				_webviewManager = null;
 			}

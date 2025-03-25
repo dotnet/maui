@@ -50,33 +50,25 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return xmlnsDefinitions;
 		}
 
-		public static TypeReference GetTypeReference(XamlCache cache, string xmlType, ModuleDefinition module, BaseNode node)
+		public static TypeReference GetTypeReference(XamlCache cache, string typeName, ModuleDefinition module, BaseNode node, bool expandToExtension = true)
 		{
-			var split = xmlType.Split(':');
-			if (split.Length > 2)
-				throw new BuildException(BuildExceptionCode.InvalidXaml, node as IXmlLineInfo, null, xmlType);
-
-			string prefix, name;
-			if (split.Length == 2)
+			try
 			{
-				prefix = split[0];
-				name = split[1];
+				XmlType xmlType = TypeArgumentsParser.ParseSingle(typeName, node.NamespaceResolver, (IXmlLineInfo)node);
+				return GetTypeReference(xmlType, cache, module, node as IXmlLineInfo, expandToExtension: expandToExtension);
 			}
-			else
+			catch (XamlParseException)
 			{
-				prefix = "";
-				name = split[0];
+				throw new BuildException(BuildExceptionCode.InvalidXaml, node as IXmlLineInfo, null, typeName);
 			}
-			var namespaceuri = node.NamespaceResolver.LookupNamespace(prefix) ?? "";
-			return GetTypeReference(new XmlType(namespaceuri, name, null), cache, module, node as IXmlLineInfo);
 		}
 
-		public static TypeReference GetTypeReference(XamlCache cache, string namespaceURI, string typename, ModuleDefinition module, IXmlLineInfo xmlInfo)
+		public static TypeReference GetTypeReference(XamlCache cache, string namespaceURI, string typename, ModuleDefinition module, IXmlLineInfo xmlInfo, bool expandToExtension = true)
 		{
 			return new XmlType(namespaceURI, typename, null).GetTypeReference(cache, module, xmlInfo);
 		}
 
-		public static bool TryGetTypeReference(this XmlType xmlType, XamlCache cache, ModuleDefinition module, IXmlLineInfo xmlInfo, out TypeReference typeReference)
+		public static bool TryGetTypeReference(this XmlType xmlType, XamlCache cache, ModuleDefinition module, IXmlLineInfo xmlInfo, bool expandToExtension, out TypeReference typeReference)
 		{
 			IList<XmlnsDefinitionAttribute> xmlnsDefinitions = cache.GetXmlsDefinitions(module, GatherXmlnsDefinitionAttributes);
 
@@ -89,7 +81,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (type is not null && type.IsPublicOrVisibleInternal(module))
 					return type;
 				return null;
-			});
+			}, expandToExtension: expandToExtension);
 
 			if (type != null && typeArguments != null && type.HasGenericParameters)
 				type = module.ImportReference(type).MakeGenericInstanceType(typeArguments.Select(x => x.GetTypeReference(cache, module, xmlInfo)).ToArray());
@@ -97,9 +89,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return (typeReference = (type == null) ? null : module.ImportReference(type)) != null;
 		}
 
-		public static TypeReference GetTypeReference(this XmlType xmlType, XamlCache cache, ModuleDefinition module, IXmlLineInfo xmlInfo)
+		public static TypeReference GetTypeReference(this XmlType xmlType, XamlCache cache, ModuleDefinition module, IXmlLineInfo xmlInfo, bool expandToExtension = true)
 		{
-			if (TryGetTypeReference(xmlType, cache, module, xmlInfo, out TypeReference typeReference))
+			if (TryGetTypeReference(xmlType, cache, module, xmlInfo, expandToExtension: expandToExtension, out TypeReference typeReference))
 				return typeReference;
 
 			throw new BuildException(BuildExceptionCode.TypeResolution, xmlInfo, null, $"{xmlType.NamespaceUri}:{xmlType.Name}");

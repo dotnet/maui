@@ -137,10 +137,11 @@ namespace Microsoft.Maui.Media
 
 		static void HideSublayers(CALayer layer, Dictionary<CALayer, bool> visibilitySnapshot)
 		{
-			if (layer.Sublayers == null)
+			var sublayers = layer?.Sublayers;
+			if (sublayers is null)
 				return;
 
-			foreach (var sublayer in layer.Sublayers)
+			foreach (var sublayer in sublayers)
 			{
 				HideSublayers(sublayer, visibilitySnapshot);
 
@@ -183,9 +184,9 @@ namespace Microsoft.Maui.Media
 				_ => throw new ArgumentOutOfRangeException(nameof(format))
 			};
 
-			var result = data.AsStream();
+			ArgumentNullException.ThrowIfNull(data);
 
-			return Task.FromResult(result);
+			return Task.FromResult(data.AsStream());
 		}
 
 		Task PlatformCopyToAsync(Stream destination, ScreenshotFormat format, int quality)
@@ -196,6 +197,8 @@ namespace Microsoft.Maui.Media
 				ScreenshotFormat.Jpeg => bmp.AsJPEG(quality / 100.0f),
 				_ => throw new ArgumentOutOfRangeException(nameof(format))
 			};
+
+			ArgumentNullException.ThrowIfNull(data);
 
 			using var result = data.AsStream();
 

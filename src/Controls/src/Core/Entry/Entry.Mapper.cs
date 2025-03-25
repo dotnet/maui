@@ -1,14 +1,11 @@
 ﻿#nullable disable
 using System;
+using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Entry
 	{
-		[Obsolete("Use EntryHandler.Mapper instead.")]
-		public static IPropertyMapper<IEntry, EntryHandler> ControlsEntryMapper =
-			new PropertyMapper<Entry, EntryHandler>(EntryHandler.Mapper);
-
 		internal static new void RemapForControls()
 		{
 			// Adjust the mappings to preserve Controls.Entry legacy behaviors

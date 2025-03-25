@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Resizetizer
 	internal class Utils
 	{
 		static readonly Regex rxResourceFilenameValidation
-			= new Regex(@"^[a-z]+[a-z0-9_]{0,}[^_]$", RegexOptions.Singleline | RegexOptions.Compiled);
+			= new Regex(@"^[a-z]([a-z0-9_]*[a-z0-9])?$", RegexOptions.Singleline | RegexOptions.Compiled);
 
 		public static bool IsValidResourceFilename(string filename)
 			=> rxResourceFilenameValidation.IsMatch(Path.GetFileNameWithoutExtension(filename));
@@ -56,6 +56,16 @@ namespace Microsoft.Maui.Resizetizer
 			var exists = File.Exists(path);
 			var modified = exists ? File.GetLastWriteTimeUtc(path) : System.DateTime.MinValue;
 			return (exists, modified);
+		}
+
+		public static void SetWriteable(string source, bool checkExists = true)
+		{
+			if (checkExists && !File.Exists(source))
+				return;
+
+			var attributes = File.GetAttributes(source);
+			if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+				File.SetAttributes(source, attributes & ~FileAttributes.ReadOnly);
 		}
 	}
 }

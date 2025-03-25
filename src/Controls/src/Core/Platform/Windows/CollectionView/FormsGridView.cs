@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -9,11 +10,12 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class FormsGridView : GridView, IEmptyView
+	internal partial class FormsGridView : GridView, IEmptyView
 	{
 		int _span;
 		ItemsWrapGrid _wrapGrid;
 		ContentControl _emptyViewContentControl;
+		ScrollViewer _scrollViewer;
 		FrameworkElement _emptyView;
 		View _formsEmptyView;
 		Orientation _orientation;
@@ -25,7 +27,8 @@ namespace Microsoft.Maui.Controls.Platform
 			DefaultStyleKey = typeof(FormsGridView);
 
 			RegisterPropertyChangedCallback(ItemsPanelProperty, ItemsPanelChanged);
-			Loaded += OnLoaded;
+
+			ChoosingItemContainer += OnChoosingItemContainer;
 		}
 
 		public int Span
@@ -95,6 +98,11 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateItemSize();
 		}
 
+		void OnChoosingItemContainer(ListViewBase sender, ChoosingItemContainerEventArgs args)
+		{
+			FindItemsWrapGrid();
+		}
+
 		void WrapGridSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			UpdateItemSize();
@@ -107,20 +115,15 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_orientation == Orientation.Horizontal)
 			{
-				_wrapGrid.ItemHeight = _wrapGrid.ActualHeight / Span;
+				_wrapGrid.ItemHeight = Math.Floor(_wrapGrid.ActualHeight / Span);
 			}
 			else
 			{
-				_wrapGrid.ItemWidth = _wrapGrid.ActualWidth / Span;
+				_wrapGrid.ItemWidth = Math.Floor(_wrapGrid.ActualWidth / Span);
 			}
 		}
 
 		void ItemsPanelChanged(DependencyObject sender, DependencyProperty dp)
-		{
-			FindItemsWrapGrid();
-		}
-
-		void OnLoaded(object sender, RoutedEventArgs e)
 		{
 			FindItemsWrapGrid();
 		}
@@ -143,6 +146,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_emptyViewContentControl = GetTemplateChild("EmptyViewContentControl") as ContentControl;
 
+			_scrollViewer = GetTemplateChild("ScrollViewer") as ScrollViewer;
+
 			if (_emptyView != null && _emptyViewContentControl != null)
 			{
 				_emptyViewContentControl.Content = _emptyView;
@@ -152,10 +157,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
-			if (_formsEmptyView != null)
-			{
-				_formsEmptyView.Layout(new Rect(0, 0, finalSize.Width, finalSize.Height));
-			}
+			_formsEmptyView?.Layout(new Rect(0, 0, finalSize.Width, finalSize.Height));
 
 			return base.ArrangeOverride(finalSize);
 		}
@@ -168,9 +170,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateEmptyViewVisibility(WVisibility visibility)
 		{
-			if (_emptyViewContentControl == null)
+			if (_emptyViewContentControl is null)
 			{
 				return;
+			}
+
+			// Adjust the ScrollViewer's hit test visibility if it exists
+			if (_scrollViewer is not null)
+			{
+				// When the empty view is visible, disable hit testing for the ScrollViewer.
+				// This ensures that interactions are directed to the empty view instead of the ScrollViewer.
+				// In the template, the empty view is placed below the ScrollViewer in the visual tree.
+				_scrollViewer.IsHitTestVisible = visibility != WVisibility.Visible;
 			}
 
 			_emptyViewContentControl.Visibility = visibility;

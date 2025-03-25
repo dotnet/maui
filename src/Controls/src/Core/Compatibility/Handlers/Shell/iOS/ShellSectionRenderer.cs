@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Foundation;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
@@ -69,6 +70,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		ShellSection _shellSection;
 		bool _ignorePopCall;
 
+		bool _popRequested;
+
 		// When setting base.ViewControllers iOS doesn't modify the property right away. 
 		// if you set base.ViewControllers to a new array and then retrieve base.ViewControllers
 		// iOS will return the previous array until the new array has been processed
@@ -79,7 +82,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		// You've now added vc1 back because the second call to ViewControllers will still return a ViewControllers list with vc1 in it
 		UIViewController[] _pendingViewControllers;
 
-		public ShellSectionRenderer(IShellContext context) : base()
+		public ShellSectionRenderer(IShellContext context) : base(typeof(MauiNavigationBar), null)
 		{
 			Delegate = new NavDelegate(this);
 			_context = context;
@@ -100,8 +103,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		[Export("navigationBar:shouldPopItem:")]
 		[Internals.Preserve(Conditional = true)]
-		public bool ShouldPopItem(UINavigationBar _, UINavigationItem __) =>
-			SendPop();
+		public bool ShouldPopItem(UINavigationBar _, UINavigationItem __)
+			=> SendPop();
+
+		[Export("navigationBar:didPopItem:")]
+		[Internals.Preserve(Conditional = true)]
+		bool DidPopItem(UINavigationBar _, UINavigationItem __)
+			=> _popRequested || SendPop();
 
 		internal bool SendPop()
 		{
@@ -221,6 +229,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		}
 
 
+		public override void ViewDidAppear(bool animated)
+		{
+			base.ViewDidAppear(animated);
+			if (_context is ShellRenderer shellRenderer)
+			{
+				shellRenderer.ViewController.SetNeedsUpdateOfHomeIndicatorAutoHidden();
+				shellRenderer.ViewController.SetNeedsStatusBarAppearanceUpdate();
+			}
+		}
 
 		void IDisconnectable.Disconnect()
 		{
@@ -377,6 +394,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void OnPopRequested(NavigationRequestedEventArgs e)
 		{
+			_popRequested = true;
 			var page = e.Page;
 			var animated = e.Animated;
 
@@ -417,6 +435,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual async void OnPopToRootRequested(NavigationRequestedEventArgs e)
 		{
+			_popRequested = true;
 			var animated = e.Animated;
 			var task = new TaskCompletionSource<bool>();
 			var pages = _shellSection.Stack.ToList();
@@ -578,12 +597,25 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public override void PushViewController(UIViewController viewController, bool animated)
 		{
 			_pendingViewControllers = null;
-			base.PushViewController(viewController, animated);
+			_popRequested = false;
+			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
+			{
+				tabBarController.MoreNavigationController.PushViewController(viewController, animated);
+			}
+			else
+			{
+				base.PushViewController(viewController, animated);
+			}
 		}
 
 		public override UIViewController PopViewController(bool animated)
 		{
 			_pendingViewControllers = null;
+			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
+			{
+				return tabBarController.MoreNavigationController.PopViewController(animated);
+			}
+
 			return base.PopViewController(animated);
 		}
 
@@ -611,15 +643,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var renderer = (IPlatformViewHandler)page.ToHandler(_shellSection.FindMauiContext());
 
 			var tracker = _context.CreatePageRendererTracker();
-			tracker.ViewController = renderer.ViewController;
+			var pageViewController = renderer.ViewController!;
+			tracker.ViewController = pageViewController;
 			tracker.Page = page;
 
 			_trackers[page] = tracker;
 
-			if (completionSource != null)
-				_completionTasks[renderer.ViewController] = completionSource;
+			var parentTabBar = ParentViewController as UITabBarController;
+			var showsPresentation = parentTabBar == null || ReferenceEquals(parentTabBar.SelectedViewController, this);
+			if (completionSource != null && showsPresentation)
+				_completionTasks[pageViewController] = completionSource;
 
-			PushViewController(renderer.ViewController, animated);
+			PushViewController(pageViewController, animated);
+
+			if (completionSource != null && !showsPresentation)
+				completionSource.TrySetResult(true);
 		}
 
 		async void SendPoppedOnCompletion(Task popTask)
@@ -706,6 +744,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override void DidShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
+				(navigationController.NavigationBar as MauiNavigationBar)?.RefreshIfNeeded();
+
 				var tasks = _self._completionTasks;
 				var popTask = _self._popCompletionTask;
 
@@ -724,11 +764,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				var element = _self.ElementForViewController(viewController);
 
-				bool navBarVisible;
-				if (element is ShellSection)
-					navBarVisible = _self._renderer.ShowNavBar;
-				else
-					navBarVisible = Shell.GetNavBarIsVisible(element);
+				bool navBarVisible = false;
+
+				if (element is not null)
+				{
+					if (element is ShellSection)
+						navBarVisible = _self._renderer.ShowNavBar;
+					else
+						navBarVisible = Shell.GetNavBarIsVisible(element);
+				}
 
 				navigationController.SetNavigationBarHidden(!navBarVisible, true);
 

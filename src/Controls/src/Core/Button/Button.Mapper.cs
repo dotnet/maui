@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 
@@ -11,17 +12,12 @@ namespace Microsoft.Maui.Controls
 	{
 		// IButton does not include the ContentType property, so we map it here to handle Image Positioning
 
-		/// <summary>
-		/// The property mapper that maps the abstract properties to the platform-specific methods for further processing.
-		/// </summary>
-		[Obsolete("Use ButtonHandler.Mapper instead.")]
-		public static IPropertyMapper<IButton, ButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, ButtonHandler>(ButtonHandler.Mapper);
-
 		internal new static void RemapForControls()
 		{
 			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ContentLayout), MapContentLayout);
 #if IOS
 			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Padding), MapPadding);
+			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(BorderWidth), MapBorderWidth);
 #endif
 #if WINDOWS
 			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ImageSource), MapImageSource);

@@ -14,31 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Selects <see cref="T:Microsoft.Maui.Controls.DataTemplate" /> objects by data type and container.</summary>
-    <remarks>
-      <para>Application developers override the <see cref="M:Microsoft.Maui.Controls.DataTemplateSelector.OnSelectTemplate(System.Object,Microsoft.Maui.Controls.BindableObject)" /> method to return a unique <see cref="T:Microsoft.Maui.Controls.DataTemplate" /> for a data type and parent container combination. Additionally, because the same exact template instance must be returned for a given piece of data across successive calls to <see cref="M:Microsoft.Maui.Controls.DataTemplateSelector.SelectTemplate(System.Object,Microsoft.Maui.Controls.BindableObject)" />, developers should create and store these <see cref="T:Microsoft.Maui.Controls.DataTemplate" /> in their constructor overrides.</para>
-      Developers should note the following items:        <list type="bullet"><item><term>OnSelectTemplate must not return another DataTemplateSelector, and
-        </term></item><item><term>The Android platform is limited to 20 templates per list view.</term></item></list>
-      <example>The following example shows a basic use:
-<code lang="c#"><![CDATA[class MyDataTemplateSelector : DataTemplateSelector
-{
-    public MyDataTemplateSelector ()
-    {
-        // Retain instances
-        this.templateOne = new DataTemplate (typeof (ViewA));
-        this.templateTwo = new DataTemplate (typeof (ViewB));
-    }
-    
-    protected override DataTemplate OnSelectTemplate (object item, BindableObject container)
-    {
-        if (item is double)
-            return this.templateOne;
-        return this.templateTwo;
-    }
-    
-    private readonly DataTemplate templateOne;
-    private readonly DataTemplate templateTwo;
-}]]></code></example>
-    </remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">

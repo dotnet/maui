@@ -2,25 +2,50 @@ using System;
 
 namespace Microsoft.Maui
 {
-	/// <include file="../../docs/Microsoft.Maui/KeyboardFlags.xml" path="Type[@FullName='Microsoft.Maui.KeyboardFlags']/Docs/*" />
+	/// <summary>
+	/// Enumerates keyboard option flags that controls capitalization, spellcheck, and suggestion behavior.
+	/// </summary>
 	[Flags]
 	public enum KeyboardFlags
 	{
-		/// <include file="../../docs/Microsoft.Maui/KeyboardFlags.xml" path="//Member[@MemberName='None']/Docs/*" />
+		/// <summary>
+		/// Indicates that nothing will be automatically capitalized.
+		/// </summary>
 		None = 0,
-		/// <include file="../../docs/Microsoft.Maui/KeyboardFlags.xml" path="//Member[@MemberName='CapitalizeSentence']/Docs/*" />
+
+		/// <summary>
+		/// Indicates that the first letters of the first words of each sentence will be automatically capitalized.
+		/// </summary>
 		CapitalizeSentence = 1,
-		/// <include file="../../docs/Microsoft.Maui/KeyboardFlags.xml" path="//Member[@MemberName='Spellcheck']/Docs/*" />
+
+		/// <summary>
+		/// Perform spellcheck on text that the user enters.
+		/// </summary>
 		Spellcheck = 1 << 1,
-		/// <include file="../../docs/Microsoft.Maui/KeyboardFlags.xml" path="//Member[@MemberName='Suggestions']/Docs/*" />
+
+		/// <summary>
+		/// Offer suggested word completions on text that the user enters.
+		/// </summary>
 		Suggestions = 1 << 2,
-		/// <include file="../../docs/Microsoft.Maui/KeyboardFlags.xml" path="//Member[@MemberName='CapitalizeWord']/Docs/*" />
+
+		/// <summary>
+		/// Indicates that the first letter of each word will be automatically capitalized.
+		/// </summary>
 		CapitalizeWord = 1 << 3,
-		/// <include file="../../docs/Microsoft.Maui/KeyboardFlags.xml" path="//Member[@MemberName='CapitalizeCharacter']/Docs/*" />
+
+		/// <summary>
+		/// Indicates that every character will be automatically capitalized.
+		/// </summary>
 		CapitalizeCharacter = 1 << 4,
-		/// <include file="../../docs/Microsoft.Maui/KeyboardFlags.xml" path="//Member[@MemberName='CapitalizeNone']/Docs/*" />
+
+		/// <summary>
+		/// Indicates that nothing will be automatically capitalized.
+		/// </summary>
 		CapitalizeNone = 1 << 5,
-		/// <include file="../../docs/Microsoft.Maui/KeyboardFlags.xml" path="//Member[@MemberName='All']/Docs/*" />
+
+		/// <summary>
+		/// Capitalize the first letter of the first words of sentences, perform spellcheck, and offer suggested word completions on text that the user enters.
+		/// </summary>
 		All = ~0
 	}
 }

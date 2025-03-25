@@ -20,12 +20,14 @@ namespace Maui.Controls.Sample.Pages
 		{
 			MauiWebView.Navigating += OnMauiWebViewNavigating;
 			MauiWebView.Navigated += OnMauiWebViewNavigated;
+			MauiWebView.ProcessTerminated += OnMauiWebViewProcessTerminated;
 		}
 
 		protected override void OnDisappearing()
 		{
 			MauiWebView.Navigating -= OnMauiWebViewNavigating;
 			MauiWebView.Navigated -= OnMauiWebViewNavigated;
+			MauiWebView.ProcessTerminated -= OnMauiWebViewProcessTerminated;
 		}
 
 		void OnUpdateHtmlSourceClicked(object sender, EventArgs args)
@@ -66,14 +68,27 @@ namespace Maui.Controls.Sample.Pages
 			MauiWebView.Eval("alert('text')");
 		}
 
-		void OnMauiWebViewNavigating(object sender, Microsoft.Maui.Controls.WebNavigatingEventArgs e)
+		void OnMauiWebViewNavigating(object? sender, Microsoft.Maui.Controls.WebNavigatingEventArgs e)
 		{
 			Debug.WriteLine($"Navigating - Url: {e.Url}, Event: {e.NavigationEvent}");
 		}
 
-		void OnMauiWebViewNavigated(object sender, Microsoft.Maui.Controls.WebNavigatedEventArgs e)
+		void OnMauiWebViewNavigated(object? sender, Microsoft.Maui.Controls.WebNavigatedEventArgs e)
 		{
 			Debug.WriteLine($"Navigated - Url: {e.Url}, Event: {e.NavigationEvent}, Result: {e.Result}");
+		}
+
+		void OnMauiWebViewProcessTerminated(object? sender, WebViewProcessTerminatedEventArgs e)
+		{
+#if ANDROID
+			var renderProcessGoneDetail = e.PlatformArgs.RenderProcessGoneDetail;
+			Debug.WriteLine($"WebView process failed. DidCrash: {renderProcessGoneDetail?.DidCrash()}");
+#elif WINDOWS
+			var coreWebView2ProcessFailedEventArgs = e.PlatformArgs.CoreWebView2ProcessFailedEventArgs;
+			Debug.WriteLine($"WebView process failed. ExitCode: {coreWebView2ProcessFailedEventArgs.ExitCode}");
+#else
+			Debug.WriteLine("WebView process failed.");
+#endif
 		}
 
 		async void OnEvalAsyncClicked(object sender, EventArgs args)

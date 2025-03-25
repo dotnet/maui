@@ -5,7 +5,7 @@ using UWPDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class GroupHeaderStyleSelector : GroupStyleSelector
+	internal partial class GroupHeaderStyleSelector : GroupStyleSelector
 	{
 		protected override GroupStyle SelectGroupStyleCore(object group, uint level)
 		{

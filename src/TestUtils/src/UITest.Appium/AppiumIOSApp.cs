@@ -11,29 +11,43 @@ namespace UITest.Appium
 		public AppiumIOSApp(Uri remoteAddress, IConfig config)
 			: base(new IOSDriver(remoteAddress, GetOptions(config)), config)
 		{
-			_commandExecutor.AddCommandGroup(new AppiumIOSPointerActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumAppleContextMenuActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumAppleStepperActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumIOSMouseActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumIOSTouchActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumIOSSpecificActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumIOSVirtualKeyboardActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumIOSThemeChangeAction(this));
+			_commandExecutor.AddCommandGroup(new AppiumIOSAlertActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumIOSThemeChangeAction(this));
 		}
 
 		public override ApplicationState AppState
 		{
 			get
 			{
-				var appId = Config.GetProperty<string>("AppId") ?? throw new InvalidOperationException($"{nameof(AppState)} could not get the appid property");
-				var state = _driver?.ExecuteScript("mobile: queryAppState", new Dictionary<string, object>
-						{
-							{ "bundleId", appId },
-						});
-
-				// https://developer.apple.com/documentation/xctest/xcuiapplicationstate?language=objc
-				return Convert.ToInt32(state) switch
+				try
 				{
-					1 => ApplicationState.Not_Running,
-					2 or
-					3 or
-					4 => ApplicationState.Running,
-					_ => ApplicationState.Unknown,
-				};
+					var appId = Config.GetProperty<string>("AppId") ?? throw new InvalidOperationException($"{nameof(AppState)} could not get the appid property");
+					var state = _driver?.ExecuteScript("mobile: queryAppState", new Dictionary<string, object>
+					{
+						{ "bundleId", appId },
+					});
+
+					// https://developer.apple.com/documentation/xctest/xcuiapplicationstate?language=objc
+					return Convert.ToInt32(state) switch
+					{
+						1 => ApplicationState.NotRunning,
+						2 or
+						3 or
+						4 => ApplicationState.Running,
+						_ => ApplicationState.Unknown,
+					};
+				}
+				catch
+				{
+					return ApplicationState.Unknown;
+				}
 			}
 		}
 
@@ -56,6 +70,25 @@ namespace UITest.Appium
 			{
 				options.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, appId);
 			}
+
+			var args = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs");
+			options.AddAdditionalAppiumOption(IOSMobileCapabilityType.ProcessArguments, new Dictionary<string, object>
+			{
+				{ "env", args! }
+			});
+
+			// Allows to change the default timeout for Simulator startup.
+			// By default this value is set to 120000ms (2 minutes).
+			options.AddAdditionalAppiumOption("appium:simulatorStartupTimeout", 90000);
+
+			// Time, in ms, to wait for WebDriverAgent to be pingable.
+			// Defaults to 60000ms.
+			options.AddAdditionalAppiumOption("appium:wdaLaunchTimeout", 50000);
+
+			// The amount of time in float seconds to wait until the application under test is idling.
+			// XCTest requires the app's main thread to be idling in order to execute any action on it, so WDA might not even start/freeze if the app under test is constantly hogging the main thread.
+			// The default value is 10 (seconds).
+			options.AddAdditionalAppiumOption("appium:waitForIdleTimeout", 5);
 
 			return options;
 		}

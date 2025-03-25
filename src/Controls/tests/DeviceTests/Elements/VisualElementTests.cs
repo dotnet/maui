@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 #if IOS || MACCATALYST
 using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
 #endif
@@ -107,10 +108,7 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(1, unloaded);
 				});
 
-				await AssertionExtensions.Wait(() => loaded == 2 && unloaded == 2);
-
-				Assert.Equal(2, loaded);
-				Assert.Equal(2, unloaded);
+				await AssertEventually(() => loaded == 2 && unloaded == 2);
 			}
 
 			[Fact]
@@ -155,9 +153,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					await navPage.PopAsync();
 
-					await AssertionExtensions.Wait(() => loaded == 1 && unloaded == 1);
-					Assert.Equal(1, loaded);
-					Assert.Equal(1, unloaded);
+					await AssertEventually(() => loaded == 1 && unloaded == 1);
 				});
 			}
 		}

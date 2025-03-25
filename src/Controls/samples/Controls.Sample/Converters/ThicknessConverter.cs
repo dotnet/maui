@@ -10,11 +10,11 @@ namespace Controls.Sample.Converters
 	{
 		readonly ThicknessTypeConverter _converter = new();
 
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 		{
 			try
 			{
-				return _converter.ConvertFrom(value);
+				return _converter.ConvertFrom(value!);
 			}
 			catch
 			{
@@ -22,7 +22,7 @@ namespace Controls.Sample.Converters
 			}
 		}
 
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+		public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
 			_converter.ConvertTo(value, targetType);
 	}
 }

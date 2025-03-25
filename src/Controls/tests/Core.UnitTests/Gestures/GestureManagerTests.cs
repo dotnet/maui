@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void DoesntConnectWithOnlyHandlerSet()
+		public void ConnectsWithOnlyHandlerSet()
 		{
 			var handler = Substitute.For<IViewHandler>();
 			var view = Substitute.For<IControlsView>();
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			view.Handler.Returns(handler);
 
 			GestureManager gestureManager = new GestureManager(view);
-			Assert.False(gestureManager.IsConnected);
+			Assert.True(gestureManager.IsConnected);
 		}
 
 		[Fact]

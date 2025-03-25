@@ -9,7 +9,7 @@ using WVisibility = Microsoft.UI.Xaml.Visibility;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public sealed class PageControl : ContentControl, IToolbarProvider, ITitleViewRendererController
+	public sealed partial class PageControl : ContentControl, IToolbarProvider, ITitleViewRendererController
 	{
 		public static readonly DependencyProperty TitleVisibilityProperty = DependencyProperty.Register(nameof(TitleVisibility), typeof(WVisibility), typeof(PageControl), new PropertyMetadata(WVisibility.Visible));
 

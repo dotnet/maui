@@ -19,11 +19,11 @@ jobs:
         steps:
             - uses: actions/checkout@v2
               name: Check out the code
-            - uses: actions/setup-node@v1
+            - uses: actions/setup-node@v4
               name: Setup node
               with:
-                  node-version: "16"
+                  node-version: "18"
             - run: npm install -g cspell
               name: Install cSpell
-            - run: cspell --config ./cSpell.json "docs/**/*.md" --no-progress
+            - run: cspell --config ./eng/automation/cspell/cSpell.json "docs/**/*.md" --no-progress
               name: Run cSpell

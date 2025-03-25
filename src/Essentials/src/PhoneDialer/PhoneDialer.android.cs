@@ -31,7 +31,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 				phoneNumber = PhoneNumberUtils.FormatNumber(number, Java.Util.Locale.Default.Country) ?? phoneNumber;
 
 			// if we are an extension then we need to encode
-			if (phoneNumber.Contains(',', StringComparison.Ordinal) || phoneNumber.Contains(';', StringComparison.Ordinal))
+			if (phoneNumber.Contains(',', StringComparison.Ordinal) || phoneNumber.Contains(';', StringComparison.Ordinal) || phoneNumber.Contains('#', StringComparison.Ordinal))
 				phoneNumber = URLEncoder.Encode(phoneNumber, "UTF-8") ?? phoneNumber;
 
 			var dialIntent = ResolveDialIntent(phoneNumber);

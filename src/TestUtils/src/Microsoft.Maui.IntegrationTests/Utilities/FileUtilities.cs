@@ -4,6 +4,22 @@ namespace Microsoft.Maui.IntegrationTests
 {
 	public static class FileUtilities
 	{
+		public static void ShouldNotContainInFile(string file, string value)
+		{
+			string content = File.ReadAllText(file);
+
+			if (content.Contains(value, StringComparison.OrdinalIgnoreCase))
+				throw new InvalidOperationException($"Found '{value}' in '{file}'.");
+		}
+
+		public static void ShouldContainInFile(string file, string value)
+		{
+			string content = File.ReadAllText(file);
+
+			if (!content.Contains(value, StringComparison.OrdinalIgnoreCase))
+				throw new InvalidOperationException($"Unable to find '{value}' in '{file}'.");
+		}
+
 		public static void ReplaceInFile(string file, string oldValue, string newValue)
 		{
 			string content = File.ReadAllText(file);

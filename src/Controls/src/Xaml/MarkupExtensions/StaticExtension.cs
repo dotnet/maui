@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
@@ -7,6 +8,8 @@ namespace Microsoft.Maui.Controls.Xaml
 {
 	[ContentProperty(nameof(Member))]
 	[ProvideCompiled("Microsoft.Maui.Controls.Build.Tasks.StaticExtension")]
+	[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
+	[RequireService([typeof(IXamlTypeResolver)])]
 	public class StaticExtension : IMarkupExtension
 	{
 		public string Member { get; set; }
@@ -24,11 +27,11 @@ namespace Microsoft.Maui.Controls.Xaml
 			var typename = Member.Substring(0, dotIdx);
 			var membername = Member.Substring(dotIdx + 1);
 
-			var type = typeResolver.Resolve(typename, serviceProvider);
+			var type = typeResolver.Resolve(typename, serviceProvider, expandToExtension: false);
 
 			var pinfo = type.GetRuntimeProperties().FirstOrDefault(pi => pi.Name == membername && pi.GetMethod.IsStatic);
 			if (pinfo != null)
-				return pinfo.GetMethod.Invoke(null, new object[] { });
+				return pinfo.GetMethod.Invoke(null, Array.Empty<object>());
 
 			var finfo = type.GetRuntimeFields().FirstOrDefault(fi => fi.Name == membername && fi.IsStatic);
 			if (finfo != null)

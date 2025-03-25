@@ -26,6 +26,7 @@
 // THE SOFTWARE.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls.Internals;
@@ -36,16 +37,29 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.AnimationExtensions']/Docs/*" />
 	public static class AnimationExtensions
 	{
-		static readonly Dictionary<int, Animation> s_tweeners;
+		// We use a ConcurrentDictionary because Tweener relies on being able to remove
+		// animations from the AnimationManager within its finalizer (via the Remove extension
+		// method below). Since finalization occurs on a different thread, it risks crashes when
+		// the finalizer is running at the same time another animation is finsihing and removing
+		// itself from this dictionary. So until we can change that design, this dictionary must
+		// be thread-safe.
+		static readonly ConcurrentDictionary<int, Animation> s_tweeners;
+
 		static readonly Dictionary<AnimatableKey, Info> s_animations;
 		static readonly Dictionary<AnimatableKey, int> s_kinetics;
+
+		/// <summary>
+		/// This property is used for UnitTest 
+		/// </summary>
+		static internal int TweenersCounter => s_tweeners.Count;
+
 		static int s_currentTweener = 1;
 
 		static AnimationExtensions()
 		{
 			s_animations = new Dictionary<AnimatableKey, Info>();
 			s_kinetics = new Dictionary<AnimatableKey, int>();
-			s_tweeners = new Dictionary<int, Animation>();
+			s_tweeners = new ConcurrentDictionary<int, Animation>();
 		}
 
 		public static int Add(this IAnimationManager animationManager, Action<double> step)
@@ -59,8 +73,15 @@ namespace Microsoft.Maui.Controls
 			};
 			s_tweeners[id] = animation;
 			animation.Commit(animationManager);
+
+			animation.Finished += () =>
+			{
+				s_tweeners.TryRemove(id, out _);
+				animation.Finished = null;
+			};
 			return id;
 		}
+
 		public static int Insert(this IAnimationManager animationManager, Func<long, bool> step)
 		{
 			var id = s_currentTweener++;
@@ -72,13 +93,22 @@ namespace Microsoft.Maui.Controls
 			};
 			s_tweeners[id] = animation;
 			animation.Commit(animationManager);
+
+			animation.Finished += () =>
+			{
+				s_tweeners.TryRemove(id, out _);
+				animation.Finished = null;
+			};
+
 			return id;
 		}
+
 		public static void Remove(this IAnimationManager animationManager, int tickerId)
 		{
-			var animation = s_tweeners[tickerId];
-			s_tweeners.Remove(tickerId);
-			animationManager.Remove(animation);
+			if (s_tweeners.TryRemove(tickerId, out Animation animation))
+			{
+				animationManager.Remove(animation);
+			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/AnimationExtensions.xml" path="//Member[@MemberName='AbortAnimation']/Docs/*" />
@@ -213,14 +243,13 @@ namespace Microsoft.Maui.Controls
 		{
 			if (s_kinetics.TryGetValue(key, out var ticker))
 			{
-				var animation = s_tweeners[ticker];
-				animation.AnimationManager?.Remove(ticker);
-				s_kinetics.Remove(key);
+				if (s_tweeners.TryGetValue(ticker, out Animation animation))
+				{
+					animation.AnimationManager?.Remove(ticker);
+				}
 			}
-			if (!s_kinetics.ContainsKey(key))
-			{
-				return;
-			}
+
+			s_kinetics.Remove(key);
 		}
 
 		static void AnimateInternal<T>(IAnimatable self, IAnimationManager animationManager, string name, Func<double, T> transform, Action<T> callback,
@@ -279,8 +308,11 @@ namespace Microsoft.Maui.Controls
 				if (!result)
 				{
 					finished?.Invoke();
+					if (s_kinetics.TryGetValue(key, out var ticker))
+					{
+						animationManager.Remove(ticker);
+					}
 					s_kinetics.Remove(key);
-					animationManager.Remove(tick);
 				}
 				return result;
 			});
@@ -292,13 +324,15 @@ namespace Microsoft.Maui.Controls
 		static void HandleTweenerFinished(object o, EventArgs args)
 		{
 			var tweener = o as Tweener;
-			Info info;
-			if (tweener != null && s_animations.TryGetValue(tweener.Handle, out info))
+
+			if (tweener != null && s_animations.TryGetValue(tweener.Handle, out Info info))
 			{
-				IAnimatable owner;
-				if (info.Owner.TryGetTarget(out owner))
-					owner.BatchBegin();
-				info.Callback(tweener.Value);
+				var tweenerValue = tweener.Value;
+				info.Owner.TryGetTarget(out IAnimatable owner);
+
+				owner?.BatchBegin();
+
+				info.Callback(tweenerValue);
 
 				var repeat = false;
 
@@ -306,7 +340,9 @@ namespace Microsoft.Maui.Controls
 				var animationsEnabled = info.AnimationManager.Ticker.SystemEnabled;
 
 				if (info.Repeat != null && animationsEnabled)
+				{
 					repeat = info.Repeat();
+				}
 
 				if (!repeat)
 				{
@@ -316,10 +352,9 @@ namespace Microsoft.Maui.Controls
 					tweener.Stop();
 				}
 
-				info.Finished?.Invoke(tweener.Value, !animationsEnabled);
+				info.Finished?.Invoke(tweenerValue, !animationsEnabled);
 
-				if (info.Owner.TryGetTarget(out owner))
-					owner.BatchCommit();
+				owner?.BatchCommit();
 
 				if (repeat)
 				{
@@ -330,11 +365,7 @@ namespace Microsoft.Maui.Controls
 
 		static void HandleTweenerUpdated(object o, EventArgs args)
 		{
-			var tweener = o as Tweener;
-			Info info;
-			IAnimatable owner;
-
-			if (tweener != null && s_animations.TryGetValue(tweener.Handle, out info) && info.Owner.TryGetTarget(out owner))
+			if (o is Tweener tweener && s_animations.TryGetValue(tweener.Handle, out Info info) && info.Owner.TryGetTarget(out IAnimatable owner))
 			{
 				owner.BatchBegin();
 				info.Callback(info.Easing.Ease(tweener.Value));

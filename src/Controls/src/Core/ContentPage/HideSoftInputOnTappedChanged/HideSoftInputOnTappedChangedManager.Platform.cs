@@ -1,4 +1,7 @@
-﻿#if ANDROID || (IOS && !MACCATALYST)
+﻿// This behavior isn't lit up for WinUI because it's never been supported on WinUI, event in Xamarin.Forms
+// The primary purpose of this API is for XF migration purposes. 
+// Ideally users would use behavior that's more accessible forward and consistent with platform expectations.
+#if ANDROID || IOS
 using System;
 using System.Collections.Generic;
 

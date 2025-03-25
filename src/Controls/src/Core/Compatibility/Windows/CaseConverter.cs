@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class CaseConverter : Microsoft.UI.Xaml.Data.IValueConverter
+	public partial class CaseConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
 		public bool ConvertToUpper { get; set; }
 

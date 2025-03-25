@@ -77,9 +77,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 		#region INotifyPropertyChanged
 
-		public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler? PropertyChanged;
 
-		void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		void OnPropertyChanged([CallerMemberName] string propertyName = "")
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}

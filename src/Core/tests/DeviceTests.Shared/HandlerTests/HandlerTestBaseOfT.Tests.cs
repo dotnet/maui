@@ -14,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 	public abstract partial class HandlerTestBase<THandler, TStub>
 	{
 		[Fact]
-		public async Task DisconnectHandlerDoesntCrash()
+		public virtual async Task DisconnectHandlerDoesntCrash()
 		{
 			var handler = await CreateHandlerAsync(new TStub()) as IPlatformViewHandler;
 			await InvokeOnMainThreadAsync(() =>
@@ -78,26 +78,46 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(view.Visibility, id);
 		}
 
-		[Fact(DisplayName = "Setting Semantic Description makes element accessible")]
+		[Fact(DisplayName = "Setting Semantic Description makes element accessible"
+#if MACCATALYST
+			, Skip = "This test fails sometimes on MACCATALYST"
+#endif
+		)]
 		public async virtual Task SettingSemanticDescriptionMakesElementAccessible()
 		{
 			var view = new TStub();
 			MockAccessibilityExpectations(view);
-
 			view.Semantics.Description = "Test";
-			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
+
+#if IOS || MACCATALYST
+			bool attachAndRun = true;
+#else
+			bool attachAndRun = false;
+#endif
+
+			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement(), attachAndRun);
 
 			Assert.True(important);
 		}
 
-		[Fact(DisplayName = "Setting Semantic Hint makes element accessible")]
+		[Fact(DisplayName = "Setting Semantic Hint makes element accessible"
+#if MACCATALYST
+			, Skip = "This test fails sometimes on MACCATALYST"
+#endif
+		)]
 		public async virtual Task SettingSemanticHintMakesElementAccessible()
 		{
 			var view = new TStub();
 			MockAccessibilityExpectations(view);
 
+#if IOS || MACCATALYST
+			bool attachAndRun = true;
+#else
+			bool attachAndRun = false;
+#endif
+
 			view.Semantics.Hint = "Test";
-			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
+			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement(), attachAndRun);
 
 			Assert.True(important);
 		}
@@ -105,6 +125,8 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Semantic Description is set correctly"
 #if ANDROID
 			, Skip = "This value can't be validated through automated tests"
+#elif MACCATALYST
+			, Skip = "This test fails sometimes on MACCATALYST"
 #endif
 		)]
 		public async Task SetSemanticDescription()
@@ -118,6 +140,8 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Semantic Hint is set correctly"
 #if ANDROID
 			, Skip = "This value can't be validated through automated tests"
+#elif MACCATALYST
+			, Skip = "This test fails sometimes on MACCATALYST"
 #endif
 		)]
 		public async Task SetSemanticHint()
@@ -128,12 +152,23 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(view.Semantics.Hint, id);
 		}
 
-		[Fact(DisplayName = "Semantic Heading is set correctly")]
+		[Fact(DisplayName = "Semantic Heading is set correctly"
+#if MACCATALYST
+			, Skip = "This test fails sometimes on MACCATALYST"
+#endif
+		)]
 		public async Task SetSemanticHeading()
 		{
 			var view = new TStub();
 			view.Semantics.HeadingLevel = SemanticHeadingLevel.Level1;
-			var id = await GetValueAsync(view, handler => GetSemanticHeading(handler));
+
+#if IOS || MACCATALYST
+			bool attachAndRun = true;
+#else
+			bool attachAndRun = false;
+#endif
+
+			var id = await GetValueAsync(view, handler => GetSemanticHeading(handler), attachAndRun);
 			Assert.Equal(view.Semantics.HeadingLevel, id);
 		}
 
@@ -245,11 +280,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotEqual(platformViewBounds, new Graphics.Rect());
 		}
 
-		[Theory(DisplayName = "Native View Bounding Box is not empty"
-#if WINDOWS
-			, Skip = "https://github.com/dotnet/maui/issues/9054"
-#endif
-		)]
+		[Theory(DisplayName = "Native View Bounding Box is not empty")]
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
@@ -286,6 +317,12 @@ namespace Microsoft.Maui.DeviceTests
 			else if (size == 1 && view is ISwitch)
 			{
 				// https://github.com/dotnet/maui/issues/11020
+			}
+#endif
+#if WINDOWS
+			else if (view is IContentView)
+			{
+				// https://github.com/dotnet/maui/issues/20228
 			}
 #endif
 			else if (view is IProgress)

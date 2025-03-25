@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -46,7 +47,8 @@ namespace Microsoft.Maui.DeviceTests
 				Y2 = 100,
 				HeightRequest = 100,
 				WidthRequest = 100,
-				Stroke = Colors.Black
+				Stroke = Colors.Black,
+				StrokeThickness = 4
 			};
 
 			var button = new Button()
@@ -67,26 +69,26 @@ namespace Microsoft.Maui.DeviceTests
 				line.Stroke = expected;
 			};
 
-			await PerformClick(button);
-
-			Assert.True(clicked);
-
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun<LineHandler>(line, async (handler) =>
 			{
-				await CreateHandlerAndAddToWindow<LineHandler>(line, (handler) =>
-				{
-					var mauiShapeView = handler.PlatformView;
-					Assert.NotNull(mauiShapeView);
-					var shapeDrawable = mauiShapeView.Drawable as ShapeDrawable;
-					Assert.NotNull(shapeDrawable);
-					var shape = shapeDrawable.ShapeView.Shape as Shape;
-					Assert.NotNull(shape);
+				await PerformClick(button);
 
-					var shapeStroke = shape.Stroke as SolidColorBrush;
-					Assert.Equal(expected, shapeStroke?.Color);
+				Assert.True(clicked);
 
-					return Task.CompletedTask;
-				});
+				await AssertEventually(
+					() =>
+					handler.PlatformView is not null &&
+					handler.PlatformView.Drawable is not null);
+
+				var mauiShapeView = handler.PlatformView;
+				Assert.NotNull(mauiShapeView);
+				var shapeDrawable = mauiShapeView.Drawable as ShapeDrawable;
+				Assert.NotNull(shapeDrawable);
+				var shape = shapeDrawable.ShapeView.Shape as Shape;
+				Assert.NotNull(shape);
+
+				var shapeStroke = shape.Stroke as SolidColorBrush;
+				Assert.Equal(expected, shapeStroke?.Color);
 			});
 		}
 	}

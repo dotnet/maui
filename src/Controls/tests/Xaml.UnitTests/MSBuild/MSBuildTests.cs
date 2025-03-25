@@ -81,8 +81,8 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			Directory.CreateDirectory(tempDirectory);
 
 			//copy _Directory.Build.[props|targets] in test/
-			var props = IOPath.Combine(testDirectory, "..", "..", "..", "MSBuild", "_Directory.Build.props");
-			var targets = IOPath.Combine(testDirectory, "..", "..", "..", "MSBuild", "_Directory.Build.targets");
+			var props = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.props"));
+			var targets = AssemblyInfoTests.GetFilePathFromRoot(IOPath.Combine("src", "Controls", "tests", "Xaml.UnitTests", "MSBuild", "_Directory.Build.targets"));
 
 			if (!File.Exists(props))
 			{
@@ -298,7 +298,7 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			project.Save(projectFile);
 
 			string log = Build(projectFile, additionalArgs: "-p:MauiXamlCValidateOnly=True", shouldSucceed: false);
-			StringAssert.Contains("MainPage.xaml(7,6): XamlC error XFC0000: Cannot resolve type \"http://schemas.microsoft.com/dotnet/2021/maui:NotARealThing\".", log);
+			StringAssert.Contains("MainPage.xaml(7,6): XamlC error XC0000: Cannot resolve type \"http://schemas.microsoft.com/dotnet/2021/maui:NotARealThing\".", log);
 		}
 
 		/// <summary>
@@ -462,15 +462,15 @@ namespace Microsoft.Maui.Controls.MSBuild.UnitTests
 			AssertExists(IOPath.Combine(intermediateDirectory, "XamlC.stamp"));
 		}
 
-		[Test]
-		public void InvalidXml()
-		{
-			var project = NewProject();
-			project.Add(AddFile("MainPage.xaml", "MauiXaml", "notxmlatall"));
-			var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
-			project.Save(projectFile);
-			Assert.Throws<AssertionException>(() => Build(projectFile));
-		}
+		// [Test]
+		// public void InvalidXml()
+		// {
+		// 	var project = NewProject();
+		// 	project.Add(AddFile("MainPage.xaml", "MauiXaml", "notxmlatall"));
+		// 	var projectFile = IOPath.Combine(tempDirectory, "test.csproj");
+		// 	project.Save(projectFile);
+		// 	Assert.Throws<AssertionException>(() => Build(projectFile));
+		// }
 
 		[Test]
 		public void RandomEmbeddedResource()

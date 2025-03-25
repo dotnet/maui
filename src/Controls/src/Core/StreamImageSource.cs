@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	public partial class StreamImageSource : ImageSource, IStreamImageSource
 	{
 		/// <summary>Bindable property for <see cref="Stream"/>.</summary>
-		public static readonly BindableProperty StreamProperty = BindableProperty.Create("Stream", typeof(Func<CancellationToken, Task<Stream>>), typeof(StreamImageSource),
+		public static readonly BindableProperty StreamProperty = BindableProperty.Create(nameof(Stream), typeof(Func<CancellationToken, Task<Stream>>), typeof(StreamImageSource),
 			default(Func<CancellationToken, Task<Stream>>));
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/StreamImageSource.xml" path="//Member[@MemberName='IsEmpty']/Docs/*" />
@@ -35,17 +35,17 @@ namespace Microsoft.Maui.Controls
 			if (IsEmpty)
 				return null;
 
-			OnLoadingStarted();
+			await OnLoadingStarted();
 			userToken.Register(CancellationTokenSource.Cancel);
 			Stream stream = null;
 			try
 			{
 				stream = await Stream(CancellationTokenSource.Token);
-				OnLoadingCompleted(false);
+				await OnLoadingCompleted(false);
 			}
 			catch (OperationCanceledException)
 			{
-				OnLoadingCompleted(true);
+				await OnLoadingCompleted(true);
 				throw;
 			}
 			return stream;

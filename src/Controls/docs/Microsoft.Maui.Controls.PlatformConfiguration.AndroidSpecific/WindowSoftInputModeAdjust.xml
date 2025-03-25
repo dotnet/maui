@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Enumerates values that control how an on-screen input interface is visually accommodated.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Pan">

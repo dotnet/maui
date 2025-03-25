@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using Xunit;
 
@@ -108,7 +107,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(invoked, "Action invoked early.");
 
 			async Task MethodThatThrows() => await task;
-			Assert.ThrowsAsync<ApplicationException>(MethodThatThrows);
+			await Assert.ThrowsAsync<ApplicationException>(MethodThatThrows);
 		});
 
 		[Fact]
@@ -144,10 +143,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(invoked, "Action invoked early.");
 
 			async Task MethodThatThrows() => await task;
-			Assert.ThrowsAsync<ApplicationException>(MethodThatThrows);
+			await Assert.ThrowsAsync<ApplicationException>(MethodThatThrows);
 		});
 
-		private void MockPlatformServices(Action onInvokeOnMainThread, Action<Action> invokeOnMainThread = null)
+		private static void MockPlatformServices(Action onInvokeOnMainThread, Action<Action> invokeOnMainThread = null)
 		{
 			DispatcherProviderStubOptions.InvokeOnMainThread =
 				action =>

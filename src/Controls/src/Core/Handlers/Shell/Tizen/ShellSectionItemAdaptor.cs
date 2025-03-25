@@ -1,5 +1,6 @@
 using System.Collections;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Internals;
 using GColor = Microsoft.Maui.Graphics.Color;
 using NView = Tizen.NUI.BaseComponents.View;
 
@@ -27,8 +28,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var nativeView = base.CreateNativeView(index);
 
 			var view = GetTemplatedView(nativeView);
-			view?.SetBinding(ShellSectionItemView.SelectedColorProperty, new Binding("TitleColor", source: _itemAppearance));
-			view?.SetBinding(ShellSectionItemView.UnselectedColorProperty, new Binding("UnselectedColor", source: _itemAppearance));
+			view?.SetBinding(ShellSectionItemView.SelectedColorProperty, static (ItemAppearance appearance) => appearance.TitleColor, source: _itemAppearance);
+			view?.SetBinding(ShellSectionItemView.UnselectedColorProperty, static (ItemAppearance appearance) => appearance.UnselectedColor, source: _itemAppearance);
 
 			return nativeView;
 		}

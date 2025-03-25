@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.ComponentModel;
+using System.Threading.Tasks;
 #if __IOS__
 using Foundation;
 #endif
@@ -25,6 +27,37 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Layout, LayoutHandler>();
 				});
 			});
+		}
+
+		[Fact(DisplayName = "Does Not Leak")]
+		public async Task DoesNotLeak()
+		{
+			SetupBuilder();
+
+			WeakReference viewReference = null;
+			WeakReference platformViewReference = null;
+			WeakReference handlerReference = null;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var layout = new Grid();
+
+				var label = new Label
+				{
+					Text = "Test"
+				};
+
+				layout.Add(label);
+				var handler = CreateHandler<LayoutHandler>(layout);
+				viewReference = new WeakReference(label);
+				handlerReference = new WeakReference(label.Handler);
+				platformViewReference = new WeakReference(label.Handler.PlatformView);
+			});
+
+			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
+			Assert.False(viewReference.IsAlive, "Label should not be alive!");
+			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
+			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 		}
 
 		[Theory]
@@ -202,6 +235,32 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(3, GetPlatformMaxLines(handler));
 				Assert.Equal(LineBreakMode.CharacterWrap.ToPlatform(), GetPlatformLineBreakMode(handler));
 			}));
+		}
+
+		[Fact(DisplayName = "LineBreakMode TailTruncation does not affect MaxLines")]
+		public async Task TailTruncationDoesNotAffectMaxLines()
+		{
+			var label = new Label()
+			{
+				Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+				MaxLines = 3,
+				LineBreakMode = LineBreakMode.TailTruncation,
+			};
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var platformLabel = GetPlatformLabel(handler);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				Assert.Equal(3, GetPlatformMaxLines(handler));
+				Assert.Equal(LineBreakMode.TailTruncation.ToPlatform(), GetPlatformLineBreakMode(handler));
+
+				label.LineBreakMode = LineBreakMode.CharacterWrap;
+				platformLabel.UpdateLineBreakMode(label);
+
+				Assert.Equal(3, GetPlatformMaxLines(handler));
+				Assert.Equal(LineBreakMode.CharacterWrap.ToPlatform(), GetPlatformLineBreakMode(handler));
+			});
 		}
 
 		[Fact(DisplayName = "MaxLines Initializes Correctly")]
@@ -464,6 +523,69 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task FormattedStringSpanTextHasCorrectColorWhenChanges()
+		{
+			var formattedLabel = new Label
+			{
+				WidthRequest = 200,
+				HeightRequest = 50,
+				FontSize = 16,
+				FormattedText = new FormattedString
+				{
+					Spans =
+					{
+						new Span { Text = "short" },
+						new Span { Text = " long second string" },
+						new Span { Text = " blue string", TextColor = Colors.Blue },
+					}
+				},
+			};
+
+			formattedLabel.TextColor = Colors.Red;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<LabelHandler>(formattedLabel);
+
+				await handler.PlatformView.AssertContainsColor(Colors.Blue, MauiContext);
+				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
+			});
+		}
+
+		[Fact]
+		public async Task FormattedStringSpanTextHasCorrectColorWhenChangedAfterCreation()
+		{
+			var formattedLabel = new Label
+			{
+				WidthRequest = 200,
+				HeightRequest = 50,
+				FontSize = 16,
+				FormattedText = new FormattedString
+				{
+					Spans =
+					{
+						new Span { Text = "short" },
+						new Span { Text = " long second string" },
+						new Span { Text = " blue string", TextColor = Colors.Blue },
+					}
+				},
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<LabelHandler>(formattedLabel);
+
+				await handler.PlatformView.AssertContainsColor(Colors.Blue, MauiContext);
+				await handler.PlatformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
+
+				formattedLabel.TextColor = Colors.Red;
+
+				await handler.PlatformView.AssertContainsColor(Colors.Blue, MauiContext);
+				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
+			});
+		}
+
 		[Theory]
 #if !WINDOWS
 		// TODO fix these, failing on Windows
@@ -545,16 +667,12 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 #else
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(layout, (handler) =>
 			{
-				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
-				await contentViewHandler.PlatformView.AttachAndRun(() =>
-				{
-					Assert.Equal(double.Round(labelStart.Width, 5), double.Round(layout.Width, 5));
-					Assert.Equal(double.Round(labelCenter.Width, 5), double.Round(layout.Width, 5));
-					Assert.Equal(double.Round(labelEnd.Width, 5), double.Round(layout.Width, 5));
-					Assert.Equal(double.Round(labelFill.Width, 5), double.Round(layout.Width, 5));
-				});
+				Assert.Equal(double.Round(labelStart.Width, 5), double.Round(layout.Width, 5));
+				Assert.Equal(double.Round(labelCenter.Width, 5), double.Round(layout.Width, 5));
+				Assert.Equal(double.Round(labelEnd.Width, 5), double.Round(layout.Width, 5));
+				Assert.Equal(double.Round(labelFill.Width, 5), double.Round(layout.Width, 5));
 			});
 #endif
 		}
@@ -602,6 +720,39 @@ namespace Microsoft.Maui.DeviceTests
 				label.FontFamily = "Baskerville";
 				label.FontSize = 64;
 				AssertEquivalentFont(handler, label.ToFont());
+			});
+		}
+
+		[Fact]
+		[Description("The BackgroundColor of a Label should match with native background color")]
+		public async Task LabelBackgroundColorConsistent()
+		{
+			var expected = Colors.AliceBlue;
+			var label = new Label()
+			{
+				BackgroundColor = expected,
+				HeightRequest = 100,
+				WidthRequest = 200
+			};
+
+			await ValidateHasColor(label, expected, typeof(LabelHandler));
+		}
+
+		[Fact]
+		[Description("The Opacity property of a Label should match with native Opacity")]
+		public async Task VerifyLabelOpacityProperty()
+		{
+			var label = new Label
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = label.Opacity;
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var nativeOpacityValue = await GetPlatformOpacity(handler);
+				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
 

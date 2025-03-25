@@ -29,6 +29,7 @@ dotnet_diagnostic.CA1307.severity = error
 dotnet_diagnostic.CA1309.severity = error
 dotnet_diagnostic.CA1311.severity = error
 dotnet_diagnostic.CA1815.severity = error
+dotnet_diagnostic.CA1825.severity = error
 
 # nullability checks
 
@@ -65,6 +66,10 @@ dotnet_style_qualification_for_event = false:suggestion
 csharp_style_var_for_built_in_types = true:none
 csharp_style_var_when_type_is_apparent = true:none
 csharp_style_var_elsewhere = false:none
+
+# Namespace preference (prefer file-scoped namespaces)
+csharp_style_namespace_declarations = file_scoped
+dotnet_diagnostic.IDE0161.severity = suggestion
 
 # use language keywords instead of BCL types
 dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
@@ -105,6 +110,7 @@ dotnet_naming_style.camel_case_underscore_style.capitalization = camel_case
 dotnet_sort_system_directives_first = true
 csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = false
+csharp_prefer_braces = true:suggestion
 
 # Expression-level preferences
 dotnet_style_object_initializer = true:suggestion

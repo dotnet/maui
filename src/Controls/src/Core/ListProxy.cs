@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls
 			{
 				object value;
 				if (!TryGetValue(index, out value))
-					throw new ArgumentOutOfRangeException("index");
+					throw new ArgumentOutOfRangeException(nameof(index));
 
 				return value;
 			}

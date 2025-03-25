@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Xunit;
 using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
@@ -12,9 +14,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestSizing()
 		{
-			var image = new ImageButton { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
+			var image = new ImageButton { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
-			var result = image.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			var result = image.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None);
 
 			Assert.Equal(100, result.Request.Width);
 			Assert.Equal(20, result.Request.Height);
@@ -23,9 +25,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAspectSizingWithConstrainedHeight()
 		{
-			var image = new ImageButton { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
+			var image = new ImageButton { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
-			var result = image.Measure(double.PositiveInfinity, 10);
+			var result = image.Measure(double.PositiveInfinity, 10, MeasureFlags.None);
 
 			Assert.Equal(50, result.Request.Width);
 			Assert.Equal(10, result.Request.Height);
@@ -34,9 +36,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAspectSizingWithConstrainedWidth()
 		{
-			var image = new ImageButton { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
+			var image = new ImageButton { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
-			var result = image.Measure(25, double.PositiveInfinity);
+			var result = image.Measure(25, double.PositiveInfinity, MeasureFlags.None);
 
 			Assert.Equal(25, result.Request.Width);
 			Assert.Equal(5, result.Request.Height);
@@ -45,10 +47,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAspectFillSizingWithConstrainedHeight()
 		{
-			var image = new ImageButton { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
+			var image = new ImageButton { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			image.Aspect = Aspect.AspectFill;
-			var result = image.Measure(double.PositiveInfinity, 10);
+			var result = image.Measure(double.PositiveInfinity, 10, MeasureFlags.None);
 
 			Assert.Equal(50, result.Request.Width);
 			Assert.Equal(10, result.Request.Height);
@@ -57,10 +59,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestAspectFillSizingWithConstrainedWidth()
 		{
-			var image = new ImageButton { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
+			var image = new ImageButton { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			image.Aspect = Aspect.AspectFill;
-			var result = image.Measure(25, double.PositiveInfinity);
+			var result = image.Measure(25, double.PositiveInfinity, MeasureFlags.None);
 
 			Assert.Equal(25, result.Request.Width);
 			Assert.Equal(5, result.Request.Height);
@@ -69,10 +71,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestFillSizingWithConstrainedHeight()
 		{
-			var image = new ImageButton { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
+			var image = new ImageButton { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			image.Aspect = Aspect.AspectFill;
-			var result = image.Measure(double.PositiveInfinity, 10);
+			var result = image.Measure(double.PositiveInfinity, 10, MeasureFlags.None);
 
 			Assert.Equal(50, result.Request.Width);
 			Assert.Equal(10, result.Request.Height);
@@ -81,10 +83,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestFillSizingWithConstrainedWidth()
 		{
-			var image = new ImageButton { Source = ImageSource.FromFile("File.png"), IsPlatformEnabled = true };
+			var image = new ImageButton { Source = ImageSource.FromFile("File.png"), Handler = new SizedHandler() };
 
 			image.Aspect = Aspect.AspectFill;
-			var result = image.Measure(25, double.PositiveInfinity);
+			var result = image.Measure(25, double.PositiveInfinity, MeasureFlags.None);
 
 			Assert.Equal(25, result.Request.Width);
 			Assert.Equal(5, result.Request.Height);
@@ -408,6 +410,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			element.SendReleased();
 			Assert.NotEqual(PressedStateName, stateGroup.CurrentState.Name);
+		}
+
+		class SizedHandler : ImageButtonHandler
+		{
+			Size _size;
+
+			public SizedHandler(Size size) => _size = size;
+
+			public SizedHandler() => _size = new(100, 20);
+
+			protected override object CreatePlatformView() => new();
+
+			public override Size GetDesiredSize(double widthConstraint, double heightConstraint) => _size;
 		}
 	}
 }

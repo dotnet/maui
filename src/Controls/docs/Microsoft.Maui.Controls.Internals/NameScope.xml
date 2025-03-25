@@ -24,7 +24,6 @@
   </Attributes>
   <Docs>
     <summary>For internal use by platform renderers.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -41,7 +40,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetNameScope">
@@ -66,7 +64,6 @@
         <param name="bindable">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NameScopeProperty">
@@ -86,7 +83,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetNameScope">
@@ -112,7 +108,6 @@
         <param name="bindable">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="value">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.INameScope.FindByName">
@@ -140,7 +135,6 @@
         <param name="name">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.INameScope.RegisterName">
@@ -169,7 +163,6 @@
         <param name="name">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="scopedElement">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by platform renderers.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Platform
 	internal class ResignFirstResponderTouchGestureRecognizer : UITapGestureRecognizer
 	{
 		readonly WeakReference<UIView> _targetView;
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: UIViewSubclassTests.ResignFirstResponderTouchGestureRecognizer")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: UIViewSubclassTests.ResignFirstResponderTouchGestureRecognizer")]
 		Token? _token;
 
 		public ResignFirstResponderTouchGestureRecognizer(UIView targetView) :

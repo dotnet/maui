@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
 	public class Gh4516VM
 	{
-		public Uri[] Images { get; } = { };
+		public Uri[] Images { get; } = Array.Empty<Uri>();
 	}
 
 	public partial class Gh4516 : ContentPage

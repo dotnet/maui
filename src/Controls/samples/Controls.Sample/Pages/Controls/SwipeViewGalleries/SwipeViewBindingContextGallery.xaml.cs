@@ -19,15 +19,15 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 	[Preserve(AllMembers = true)]
 	public class SwipeViewBindingContextGalleryModel : BindableObject
 	{
-		public string Title { get; set; }
-		public string SubTitle { get; set; }
+		public string? Title { get; set; }
+		public string? SubTitle { get; set; }
 	}
 
 	[Preserve(AllMembers = true)]
 	public class SwipeViewBindingContextGalleryViewModel : BindableObject
 	{
-		ObservableCollection<SwipeViewBindingContextGalleryModel> _items;
-		SwipeViewBindingContextGalleryModel _tappedItem;
+		ObservableCollection<SwipeViewBindingContextGalleryModel>? _items;
+		SwipeViewBindingContextGalleryModel? _tappedItem;
 
 		public SwipeViewBindingContextGalleryViewModel()
 		{
@@ -35,7 +35,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			LoadItems();
 		}
 
-		public ObservableCollection<SwipeViewBindingContextGalleryModel> Items
+		public ObservableCollection<SwipeViewBindingContextGalleryModel>? Items
 		{
 			get { return _items; }
 			set
@@ -45,7 +45,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			}
 		}
 
-		public SwipeViewBindingContextGalleryModel TappedItem
+		public SwipeViewBindingContextGalleryModel? TappedItem
 		{
 			get { return _tappedItem; }
 			set
@@ -61,7 +61,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 		{
 			for (int i = 0; i < 100; i++)
 			{
-				Items.Add(new SwipeViewBindingContextGalleryModel
+				Items!.Add(new SwipeViewBindingContextGalleryModel
 				{
 					Title = $"Lorem ipsum {i + 1}",
 					SubTitle = "Lorem ipsum dolor sit amet"

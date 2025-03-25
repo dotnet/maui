@@ -14,8 +14,8 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 
 	public class SwipeItemsDisposeModel
 	{
-		public string Title { get; set; }
-		public string SubTitle { get; set; }
+		public string? Title { get; set; }
+		public string? SubTitle { get; set; }
 	}
 
 	public class SwipeItemsDisposeViewModel : BindableObject

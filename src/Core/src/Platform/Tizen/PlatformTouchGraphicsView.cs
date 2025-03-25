@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Platform
 					float deltaX = _lastMovedViewPoints[0].X - points[0].X;
 					float deltaY = _lastMovedViewPoints[0].Y - points[0].Y;
 
-					if (Math.Abs(deltaX) <= 3 && Math.Abs(deltaY) <= 3)
+					if (MathF.Abs(deltaX) <= 3 && MathF.Abs(deltaY) <= 3)
 						return;
 				}
 			}

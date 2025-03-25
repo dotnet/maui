@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 {
 	public partial class ShellChromeGallery
 	{
-		AppShell AppShell => Application.Current.MainPage as AppShell;
+		AppShell? AppShell => this.Window?.Page as AppShell;
 
 		public ShellChromeGallery()
 		{
@@ -24,7 +24,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			flyoutHeaderBehavior.ItemsSource = Enum.GetNames(typeof(FlyoutHeaderBehavior));
 			flyoutHeaderBehavior.SelectedIndexChanged += OnFlyoutHeaderBehaviorSelectedIndexChanged;
 
-			if (AppShell != null)
+			if (AppShell is not null)
 			{
 				flyoutBehavior.SelectedIndex = (int)AppShell.FlyoutBehavior;
 				flyoutHeaderBehavior.SelectedIndex = (int)AppShell.FlyoutHeaderBehavior;
@@ -60,24 +60,40 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 
 
 
-		void OnFlyoutHeaderBehaviorSelectedIndexChanged(object sender, EventArgs e)
+		void OnFlyoutHeaderBehaviorSelectedIndexChanged(object? sender, EventArgs e)
 		{
+			if (AppShell is null)
+				return;
+
 			AppShell.FlyoutHeaderBehavior = (FlyoutHeaderBehavior)flyoutHeaderBehavior.SelectedIndex;
 		}
 
-		void OnFlyoutBehaviorSelectedIndexChanged(object sender, EventArgs e)
+		void OnFlyoutBehaviorSelectedIndexChanged(object? sender, EventArgs e)
 		{
+			if (AppShell is null)
+				return;
 			AppShell.FlyoutBehavior = (FlyoutBehavior)flyoutBehavior.SelectedIndex;
 		}
 
 		protected override void OnAppearing()
 		{
+			if (AppShell is null)
+				return;
 			AppShell.FlyoutBehavior = (FlyoutBehavior)flyoutBehavior.SelectedIndex;
 			AppShell.FlyoutHeaderBehavior = (FlyoutHeaderBehavior)flyoutHeaderBehavior.SelectedIndex;
 		}
 
+		void OnToggleFlyoutIsPresented(object sender, EventArgs e)
+		{
+			if (AppShell is null)
+				return;
+			AppShell.FlyoutIsPresented = !AppShell.FlyoutIsPresented;
+		}
+
 		void OnToggleFlyoutBackgroundColor(object sender, EventArgs e)
 		{
+			if (AppShell is null)
+				return;
 			AppShell.RemoveBinding(Shell.FlyoutBackgroundProperty);
 			if (AppShell.FlyoutBackground.IsEmpty ||
 				AppShell.FlyoutBackground == SolidColorBrush.Purple)
@@ -94,6 +110,11 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 			}
 
 			flyoutBackgroundColor.Background = AppShell.FlyoutBackground;
+		}
+
+		void OnToggleNavBarHasShadow(object sender, EventArgs e)
+		{
+			Shell.SetNavBarHasShadow(this, !Shell.GetNavBarHasShadow(this));
 		}
 
 		void OnToggleNavBarIsVisible(object sender, EventArgs e)

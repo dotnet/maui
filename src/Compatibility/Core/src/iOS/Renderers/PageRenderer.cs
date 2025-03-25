@@ -321,7 +321,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
+#pragma warning disable CA1422 // Validate platform compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
+#pragma warning restore CA1422 // Validate platform compatibility
 
 			if (Forms.IsiOS13OrNewer &&
 				previousTraitCollection.UserInterfaceStyle != TraitCollection.UserInterfaceStyle &&

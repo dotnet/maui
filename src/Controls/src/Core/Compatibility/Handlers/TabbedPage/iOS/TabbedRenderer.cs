@@ -27,7 +27,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool? _defaultBarTranslucent;
 		IMauiContext _mauiContext;
 		UITabBarAppearance _tabBarAppearance;
-		VisualElement _element;
+		WeakReference<VisualElement> _element;
+
+		Brush _currentBarBackground;
 
 		IMauiContext MauiContext => _mauiContext;
 		public static IPropertyMapper<TabbedPage, TabbedRenderer> Mapper = new PropertyMapper<TabbedPage, TabbedRenderer>(TabbedViewHandler.ViewMapper);
@@ -39,6 +41,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public TabbedRenderer()
 		{
+			this.DisableiOS18ToolbarTabs();
 			_viewHandlerWrapper = new ViewHandlerDelegator<TabbedPage>(Mapper, CommandMapper, this);
 		}
 
@@ -57,7 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			get { return (TabbedPage)Element; }
 		}
 
-		public VisualElement Element => _viewHandlerWrapper.Element ?? _element;
+		public VisualElement Element => _viewHandlerWrapper.Element ?? _element?.GetTargetOrDefault();
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -72,11 +75,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public void SetElement(VisualElement element)
 		{
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
-			_element = element;
+			_element = element is null ? null : new(element);
 
 			FinishedCustomizingViewControllers += HandleFinishedCustomizingViewControllers;
-			Tabbed.PropertyChanged += OnPropertyChanged;
-			Tabbed.PagesChanged += OnPagesChanged;
+			if (element is TabbedPage tabbed)
+			{
+				tabbed.PropertyChanged += OnPropertyChanged;
+				tabbed.PagesChanged += OnPagesChanged;
+			}
 
 			OnPagesChanged(null, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
 
@@ -88,6 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateBarTextColor();
 			UpdateSelectedTabColors();
 			UpdateBarTranslucent();
+			UpdatePageSpecifics();
 		}
 
 		public UIViewController ViewController
@@ -106,14 +113,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void ViewDidAppear(bool animated)
 		{
-			Page.SendAppearing();
+			Page?.SendAppearing();
 			base.ViewDidAppear(animated);
 		}
 
 		public override void ViewDidDisappear(bool animated)
 		{
 			base.ViewDidDisappear(animated);
-			Page.SendDisappearing();
+			Page?.SendDisappearing();
 		}
 
 		public override void ViewDidLayoutSubviews()
@@ -133,8 +140,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				Page?.SendDisappearing();
 
-				Tabbed.PropertyChanged -= OnPropertyChanged;
-				Tabbed.PagesChanged -= OnPagesChanged;
+				if (Tabbed is TabbedPage tabbed)
+				{
+					tabbed.PropertyChanged -= OnPropertyChanged;
+					tabbed.PagesChanged -= OnPagesChanged;
+				}
 
 				FinishedCustomizingViewControllers -= HandleFinishedCustomizingViewControllers;
 			}
@@ -151,7 +161,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		UIViewController GetViewController(Page page)
 		{
-			if (page.Handler is not IPlatformViewHandler nvh)
+			if (page?.Handler is not IPlatformViewHandler nvh)
 				return null;
 
 			return nvh.ViewController;
@@ -187,8 +197,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			SetControllers();
 
 			UIViewController controller = null;
-			if (Tabbed.CurrentPage != null)
-				controller = GetViewController(Tabbed.CurrentPage);
+			if (Tabbed?.CurrentPage is Page currentPage)
+				controller = GetViewController(currentPage);
 			if (controller != null && controller != base.SelectedViewController)
 				base.SelectedViewController = controller;
 
@@ -201,7 +211,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (e.PropertyName == nameof(TabbedPage.CurrentPage))
 			{
-				var current = Tabbed.CurrentPage;
+				var current = Tabbed?.CurrentPage;
 				if (current == null)
 					return;
 
@@ -209,6 +219,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (controller == null)
 					return;
 
+				SetNeedsUpdateOfHomeIndicatorAutoHidden();
+				SetNeedsStatusBarAppearanceUpdate();
 				SelectedViewController = controller;
 			}
 			else if (e.PropertyName == TabbedPage.BarBackgroundColorProperty.PropertyName)
@@ -223,8 +235,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateCurrentPagePreferredStatusBarUpdateAnimation();
 			else if (e.PropertyName == TabbedPage.SelectedTabColorProperty.PropertyName || e.PropertyName == TabbedPage.UnselectedTabColorProperty.PropertyName)
 				UpdateSelectedTabColors();
-			else if (e.PropertyName == PrefersHomeIndicatorAutoHiddenProperty.PropertyName)
-				UpdatePrefersHomeIndicatorAutoHiddenOnPages();
+			else if (e.PropertyName == PrefersHomeIndicatorAutoHiddenProperty.PropertyName || e.PropertyName == PrefersStatusBarHiddenProperty.PropertyName)
+				UpdatePageSpecifics();
 			else if (e.PropertyName == TabbedPageConfiguration.TranslucencyModeProperty.PropertyName)
 				UpdateBarTranslucent();
 
@@ -241,15 +253,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateCurrentPagePreferredStatusBarUpdateAnimation()
 		{
-			PageUIStatusBarAnimation animation = ((Page)Element).OnThisPlatform().PreferredStatusBarUpdateAnimation();
-			Tabbed.CurrentPage.OnThisPlatform().SetPreferredStatusBarUpdateAnimation(animation);
+			if (Page is Page page)
+			{
+				PageUIStatusBarAnimation animation = page.OnThisPlatform().PreferredStatusBarUpdateAnimation();
+				Tabbed?.CurrentPage?.OnThisPlatform().SetPreferredStatusBarUpdateAnimation(animation);
+			}
 		}
 
 		void UpdatePrefersStatusBarHiddenOnPages()
 		{
+			if (Tabbed is not TabbedPage tabbed)
+				return;
 			for (var i = 0; i < ViewControllers.Length; i++)
 			{
-				Tabbed.GetPageByIndex(i).OnThisPlatform().SetPrefersStatusBarHidden(Tabbed.OnThisPlatform().PrefersStatusBarHidden());
+				tabbed.GetPageByIndex(i).OnThisPlatform().SetPrefersStatusBarHidden(tabbed.OnThisPlatform().PrefersStatusBarHidden());
 			}
 		}
 
@@ -257,7 +274,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			get
 			{
-				var current = Tabbed.CurrentPage;
+				var current = Tabbed?.CurrentPage;
 				if (current == null)
 					return null;
 
@@ -265,26 +282,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		void UpdatePrefersHomeIndicatorAutoHiddenOnPages()
+		void UpdatePageSpecifics()
 		{
-			bool isHomeIndicatorHidden = Tabbed.OnThisPlatform().PrefersHomeIndicatorAutoHidden();
-			for (var i = 0; i < ViewControllers.Length; i++)
-			{
-				Tabbed.GetPageByIndex(i).OnThisPlatform().SetPrefersHomeIndicatorAutoHidden(isHomeIndicatorHidden);
-			}
+			ChildViewControllerForHomeIndicatorAutoHidden?.SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			ChildViewControllerForStatusBarHidden()?.SetNeedsStatusBarAppearanceUpdate();
 		}
 
 		void Reset()
 		{
+			if (Tabbed is not TabbedPage tabbed)
+				return;
 			var i = 0;
-			foreach (var page in Tabbed.Children)
+			foreach (var page in tabbed.Children)
 				SetupPage(page, i++);
 		}
 
 		void SetControllers()
 		{
+			if (Tabbed is not TabbedPage tabbed)
+				return;
 			var list = new List<UIViewController>();
-			var pages = Tabbed.InternalChildren;
+			var pages = tabbed.InternalChildren;
 			for (var i = 0; i < pages.Count; i++)
 			{
 				var child = pages[i];
@@ -315,10 +333,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateBarBackgroundColor()
 		{
-			if (Tabbed == null || TabBar == null)
+			if (Tabbed is not TabbedPage tabbed || TabBar == null)
 				return;
 
-			var barBackgroundColor = Tabbed.BarBackgroundColor;
+			var barBackgroundColor = tabbed.BarBackgroundColor;
 			var isDefaultColor = barBackgroundColor == null;
 
 			if (isDefaultColor && !_barBackgroundColorWasSet)
@@ -342,20 +360,37 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateBarBackground()
 		{
-			if (Tabbed == null || TabBar == null)
+			if (Tabbed is not TabbedPage tabbed || TabBar == null)
 				return;
 
-			var barBackground = Tabbed.BarBackground;
+			if (_currentBarBackground is GradientBrush oldGradientBrush)
+			{
+				oldGradientBrush.Parent = null;
+				oldGradientBrush.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
+			}
 
-			TabBar.UpdateBackground(barBackground);
+			_currentBarBackground = tabbed.BarBackground;
+
+			if (_currentBarBackground is GradientBrush newGradientBrush)
+			{
+				newGradientBrush.Parent = tabbed;
+				newGradientBrush.InvalidateGradientBrushRequested += OnBarBackgroundChanged;
+			}
+
+			TabBar.UpdateBackground(_currentBarBackground);
+		}
+
+		void OnBarBackgroundChanged(object sender, EventArgs e)
+		{
+			TabBar.UpdateBackground(_currentBarBackground);
 		}
 
 		void UpdateBarTextColor()
 		{
-			if (Tabbed == null || TabBar == null || TabBar.Items == null)
+			if (Tabbed is not TabbedPage tabbed || TabBar == null || TabBar.Items == null)
 				return;
 
-			var barTextColor = Tabbed.BarTextColor;
+			var barTextColor = tabbed.BarTextColor;
 			var isDefaultColor = barTextColor == null;
 
 			if (isDefaultColor && !_barTextColorWasSet)
@@ -395,11 +430,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateBarTranslucent()
 		{
-			if (Tabbed == null || TabBar == null || Element == null)
+			if (Tabbed == null || TabBar == null || Element is not VisualElement element)
 				return;
 
 			_defaultBarTranslucent = _defaultBarTranslucent ?? TabBar.Translucent;
-			switch (TabbedPageConfiguration.GetTranslucencyMode(Element))
+			switch (TabbedPageConfiguration.GetTranslucencyMode(element))
 			{
 				case TranslucencyMode.Translucent:
 					TabBar.Translucent = true;
@@ -415,12 +450,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateChildrenOrderIndex(UIViewController[] viewControllers)
 		{
+			if (Tabbed is not TabbedPage tabbed)
+				return;
 			for (var i = 0; i < viewControllers.Length; i++)
 			{
 				var originalIndex = -1;
 				if (int.TryParse(viewControllers[i].TabBarItem.Tag.ToString(), out originalIndex))
 				{
-					var page = (Page)Tabbed.InternalChildren[originalIndex];
+					var page = (Page)tabbed.InternalChildren[originalIndex];
 					TabbedPage.SetIndex(page, i);
 				}
 			}
@@ -428,9 +465,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateCurrentPage()
 		{
-			var count = Tabbed.InternalChildren.Count;
-			var index = (int)SelectedIndex;
-			((TabbedPage)Element).CurrentPage = index >= 0 && index < count ? Tabbed.GetPageByIndex(index) : null;
+			if (Tabbed is TabbedPage tabbed)
+			{
+				var count = tabbed.InternalChildren.Count;
+				var index = (int)SelectedIndex;
+				tabbed.CurrentPage = index >= 0 && index < count ? tabbed.GetPageByIndex(index) : null;
+			}
 		}
 
 		async void SetTabBarItem(IPlatformViewHandler renderer)
@@ -442,7 +482,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var icons = await GetIcon(page);
 			renderer.ViewController.TabBarItem = new UITabBarItem(page.Title, icons?.Item1, icons?.Item2)
 			{
-				Tag = Tabbed.Children.IndexOf(page),
+				Tag = Tabbed?.Children.IndexOf(page) ?? -1,
 				AccessibilityIdentifier = page.AutomationId
 			};
 			icons?.Item1?.Dispose();
@@ -451,12 +491,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateSelectedTabColors()
 		{
-			if (Tabbed == null || TabBar == null || TabBar.Items == null)
+			if (Tabbed is not TabbedPage tabbed || TabBar == null || TabBar.Items == null)
 				return;
 
-			if (Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) && Tabbed.SelectedTabColor != null)
+			if (tabbed.IsSet(TabbedPage.SelectedTabColorProperty) && tabbed.SelectedTabColor != null)
 			{
-				TabBar.TintColor = Tabbed.SelectedTabColor.ToPlatform();
+				TabBar.TintColor = tabbed.SelectedTabColor.ToPlatform();
 			}
 			else
 			{
@@ -467,8 +507,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateiOS15TabBarAppearance();
 			else
 			{
-				if (Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) && Tabbed.UnselectedTabColor != null)
-					TabBar.UnselectedItemTintColor = Tabbed.UnselectedTabColor.ToPlatform();
+				if (tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) && tabbed.UnselectedTabColor != null)
+					TabBar.UnselectedItemTintColor = tabbed.UnselectedTabColor.ToPlatform();
 				else
 					TabBar.UnselectedItemTintColor = UITabBar.Appearance.TintColor;
 			}
@@ -501,15 +541,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos15.0")]
 		void UpdateiOS15TabBarAppearance()
 		{
+			if (Tabbed is not TabbedPage tabbed)
+				return;
 			TabBar.UpdateiOS15TabBarAppearance(
 				ref _tabBarAppearance,
 				_defaultBarColor,
 				_defaultBarTextColor,
-				Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) ? Tabbed.SelectedTabColor : null,
-				Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? Tabbed.UnselectedTabColor : null,
-				Tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? Tabbed.BarBackgroundColor : null,
-				Tabbed.IsSet(TabbedPage.BarTextColorProperty) ? Tabbed.BarTextColor : null,
-				null);
+				tabbed.IsSet(TabbedPage.SelectedTabColorProperty) ? tabbed.SelectedTabColor : null,
+				tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? tabbed.UnselectedTabColor : null,
+				tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? tabbed.BarBackgroundColor : null,
+				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null,
+				tabbed.IsSet(TabbedPage.BarTextColorProperty) ? tabbed.BarTextColor : null);
 		}
 
 		#region IPlatformViewHandler

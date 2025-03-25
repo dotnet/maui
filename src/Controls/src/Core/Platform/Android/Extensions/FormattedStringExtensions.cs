@@ -102,21 +102,21 @@ namespace Microsoft.Maui.Controls.Platform
 
 				// LineHeight
 				if (span.LineHeight >= 0)
-					spannable.SetSpan(new LineHeightSpan(span.LineHeight), start, end, SpanTypes.InclusiveExclusive);
+					spannable.SetSpan(new PlatformLineHeightSpan(context, (float)span.LineHeight, (float)defaultFontSize), start, end, SpanTypes.InclusiveExclusive);
 
 				// CharacterSpacing
 				var characterSpacing = span.CharacterSpacing >= 0
 					? span.CharacterSpacing
 					: defaultCharacterSpacing;
 				if (characterSpacing >= 0)
-					spannable.SetSpan(new LetterSpacingSpan(characterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
+					spannable.SetSpan(new PlatformFontSpan(characterSpacing.ToEm()), start, end, SpanTypes.InclusiveInclusive);
 
 				// Font
 				var font = span.ToFont(defaultFontSize);
 				if (font.IsDefault && defaultFont.HasValue)
 					font = defaultFont.Value;
 				if (!font.IsDefault)
-					spannable.SetSpan(new FontSpan(font, fontManager, context), start, end, SpanTypes.InclusiveInclusive);
+					spannable.SetSpan(new PlatformFontSpan(context ?? AAplication.Context, font.ToTypeface(fontManager), font.AutoScalingEnabled, (float)font.Size), start, end, SpanTypes.InclusiveInclusive);
 
 				// TextDecorations
 				var textDecorations = span.IsSet(Span.TextDecorationsProperty)
@@ -131,7 +131,9 @@ namespace Microsoft.Maui.Controls.Platform
 			return spannable;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static void RecalculateSpanPositions(this TextView textView, Label element, SpannableString spannableString, SizeRequest finalSize)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (element?.FormattedText?.Spans is null || element.FormattedText.Spans.Count == 0)
 				return;
@@ -196,13 +198,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 					var lineHeight = bounds.Height();
 					var lineStartOffset = layout.GetLineStart(curLine);
-					var lineVisibleEndOffset = layout.GetLineVisibleEnd(curLine);
+
+					// Retrieve the offset of the last visible character on the current line.
+					// The method `GetLineVisibleEnd(curLine)` returns the position right after the last visible character on the line.
+					// To get the exact offset of the last visible character, subtract 1 from this position.
+					var lineVisibleEndOffset = layout.GetLineVisibleEnd(curLine) - 1;
 
 					var startOffset = (curLine == spanStartLine) ? spanStartOffset : lineStartOffset;
 					var spanStartX = (int)layout.GetPrimaryHorizontal(startOffset);
 
 					var endOffset = (curLine == spanEndLine) ? spanEndOffset : lineVisibleEndOffset;
-					var spanEndX = (int)layout.GetSecondaryHorizontal(endOffset);
+					var validEndOffset = System.Math.Min(endOffset, layout.GetLineEnd(curLine));
+					var spanEndX = (int)layout.GetSecondaryHorizontal(validEndOffset);
 
 					var spanWidth = spanEndX - spanStartX;
 					var spanLeftX = spanStartX;
@@ -222,85 +229,6 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				((ISpatialElement)span).Region = Region.FromRectangles(spanRectangles).Inflate(10);
-			}
-		}
-
-		class FontSpan : MetricAffectingSpan
-		{
-			readonly Font _font;
-			readonly IFontManager _fontManager;
-			readonly Context? _context;
-
-			public FontSpan(Font font, IFontManager fontManager, Context? context)
-			{
-				_font = font;
-				_fontManager = fontManager;
-				_context = context;
-			}
-
-			public override void UpdateDrawState(TextPaint? tp)
-			{
-				if (tp != null)
-					Apply(tp);
-			}
-
-			public override void UpdateMeasureState(TextPaint p)
-			{
-				Apply(p);
-			}
-
-			void Apply(TextPaint paint)
-			{
-				paint.SetTypeface(_font.ToTypeface(_fontManager));
-
-				paint.TextSize = TypedValue.ApplyDimension(
-					_font.AutoScalingEnabled ? ComplexUnitType.Sp : ComplexUnitType.Dip,
-					(float)_font.Size,
-					(_context ?? AAplication.Context)?.Resources?.DisplayMetrics);
-			}
-		}
-
-		class LetterSpacingSpan : MetricAffectingSpan
-		{
-			readonly float _letterSpacing;
-
-			public LetterSpacingSpan(double letterSpacing)
-			{
-				_letterSpacing = (float)letterSpacing;
-			}
-
-			public override void UpdateDrawState(TextPaint? tp)
-			{
-				if (tp != null)
-					Apply(tp);
-			}
-
-			public override void UpdateMeasureState(TextPaint p)
-			{
-				Apply(p);
-			}
-
-			void Apply(TextPaint paint)
-			{
-				paint.LetterSpacing = _letterSpacing;
-			}
-		}
-
-		class LineHeightSpan : Java.Lang.Object, ILineHeightSpan
-		{
-			readonly double _relativeLineHeight;
-
-			public LineHeightSpan(double relativeLineHeight)
-			{
-				_relativeLineHeight = relativeLineHeight;
-			}
-
-			public void ChooseHeight(Java.Lang.ICharSequence? text, int start, int end, int spanstartv, int lineHeight, Paint.FontMetricsInt? fm)
-			{
-				if (fm is null)
-					return;
-
-				fm.Ascent = (int)(fm.Top * _relativeLineHeight);
 			}
 		}
 	}

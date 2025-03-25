@@ -19,18 +19,18 @@ namespace Microsoft.Maui.Platform
 
 		public static void SetShadow(this CALayer layer, IShadow? shadow)
 		{
-			if (shadow == null || shadow.Paint?.ToColor() == null)
+			if (shadow?.Paint?.ToColor() is not { } paintColor)
 				return;
 
 			var radius = shadow.Radius;
 			var opacity = shadow.Opacity;
-			var color = shadow.Paint.ToColor()?.ToPlatform();
+			var color = paintColor.ToPlatform();
 
-			var offset = new CGSize((double)shadow.Offset.X, (double)shadow.Offset.Y);
+			var offset = new CGSize(shadow.Offset.X, shadow.Offset.Y);
 
-			layer.ShadowColor = color?.CGColor;
+			layer.ShadowColor = color.CGColor;
 			layer.ShadowOpacity = opacity;
-			layer.ShadowRadius = radius;
+			layer.ShadowRadius = radius / 2;
 			layer.ShadowOffset = offset;
 
 			layer.SetNeedsDisplay();

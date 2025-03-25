@@ -11,7 +11,7 @@ using Java.Lang;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	internal class ShellFragmentStateAdapter : FragmentStateAdapter
+	internal sealed class ShellFragmentStateAdapter : FragmentStateAdapter
 	{
 		bool _disposed;
 		ShellSection _shellSection;

@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.Maui.Controls
 {
@@ -119,8 +118,15 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Bindable property for attached property <c>Route</c>.</summary>
-		public static readonly BindableProperty RouteProperty =
-			BindableProperty.CreateAttached("Route", typeof(string), typeof(Routing), null,
+		public static readonly BindableProperty RouteProperty = CreateRouteProperty();
+
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2111:ReflectionToDynamicallyAccessedMembers",
+			Justification = "The CreateAttached method has a DynamicallyAccessedMembers annotation for all public methods"
+			+ "on the declaring type. This includes the Routing.RegisterRoute(string, Type) method which also has a "
+			+ "DynamicallyAccessedMembers annotation and the trimmer can't guarantee the availability of the requirements"
+			+ "of the method. `BindableProperty` only needs methods starting with `Get`, so `RegisterRoute` is never accessed via reflection.")]
+		private static BindableProperty CreateRouteProperty()
+			=> BindableProperty.CreateAttached("Route", typeof(string), typeof(Routing), null,
 				defaultValueCreator: CreateDefaultRoute);
 
 		static object CreateDefaultRoute(BindableObject bindable)
@@ -218,7 +224,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RegisterRoute'][1]/Docs/*" />
 		public static void RegisterRoute(
 			string route,
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
 		{
 			RegisterRoute(route, new TypeRouteFactory(type));
 		}
@@ -252,11 +258,11 @@ namespace Microsoft.Maui.Controls
 
 		class TypeRouteFactory : RouteFactory
 		{
-			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 			readonly Type _type;
 
 			public TypeRouteFactory(
-				[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
+				[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] Type type)
 			{
 				_type = type;
 			}
@@ -270,7 +276,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (services != null)
 				{
-					return (Element)(services.GetService(_type) ?? Activator.CreateInstance(_type));
+					return (Element)Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance(services, _type);
 				}
 
 				return (Element)Activator.CreateInstance(_type);

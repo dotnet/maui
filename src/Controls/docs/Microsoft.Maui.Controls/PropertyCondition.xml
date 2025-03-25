@@ -67,7 +67,6 @@
       <Parameters />
       <Docs>
         <summary>Initializes a new <see cref="T:Microsoft.Maui.Controls.PropertyCondition" /> instance.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Property">
@@ -89,8 +88,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the property against which the <see cref="P:Microsoft.Maui.Controls.PropertyCondition.Value" /> property will be compared.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Value">
@@ -112,8 +109,6 @@
       </ReturnValue>
       <Docs>
         <summary>The binding value that satisfies the condition.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Xaml.IValueProvider.ProvideValue">
@@ -142,8 +137,6 @@
       <Docs>
         <param name="serviceProvider">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

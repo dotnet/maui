@@ -4,6 +4,7 @@ using Microsoft.Maui.IntegrationTests.Android;
 
 namespace Microsoft.Maui.IntegrationTests
 {
+	[Category(Categories.RunOnAndroid)]
 	public class AndroidTemplateTests : BaseBuildTest
 	{
 		Emulator TestAvd = new Emulator();
@@ -15,14 +16,15 @@ namespace Microsoft.Maui.IntegrationTests
 			if (TestEnvironment.IsMacOS && RuntimeInformation.OSArchitecture == Architecture.Arm64)
 				TestAvd.Abi = "arm64-v8a";
 
-			TestAvd.InstallAvd();
+			Assert.IsTrue(TestAvd.AcceptLicenses(out var licenseOutput), $"Failed to accept SDK licenses.\n{licenseOutput}");
+			Assert.IsTrue(TestAvd.InstallAvd(out var installOutput), $"Failed to install Test AVD.\n{installOutput}");
 		}
 
 		[SetUp]
 		public void AndroidTemplateSetUp()
 		{
 			var emulatorLog = Path.Combine(TestDirectory, $"emulator-launch-{DateTime.UtcNow.ToFileTimeUtc()}.log");
-			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(720, emulatorLog), "Failed to launch Test AVD.");
+			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(600, emulatorLog), "Failed to launch Test AVD.");
 		}
 
 		[OneTimeTearDown]
@@ -47,21 +49,30 @@ namespace Microsoft.Maui.IntegrationTests
 
 
 		[Test]
-		[TestCase("maui", DotNetPrevious, "Debug")]
-		[TestCase("maui", DotNetPrevious, "Release")]
-		[TestCase("maui", DotNetCurrent, "Debug")]
-		[TestCase("maui", DotNetCurrent, "Release")]
-		[TestCase("maui-blazor", DotNetPrevious, "Debug")]
-		[TestCase("maui-blazor", DotNetPrevious, "Release")]
-		[TestCase("maui-blazor", DotNetCurrent, "Debug")]
-		[TestCase("maui-blazor", DotNetCurrent, "Release")]
-		public void RunOnAndroid(string id, string framework, string config)
+		[TestCase("maui", DotNetPrevious, "Debug", null)]
+		[TestCase("maui", DotNetPrevious, "Release", null)]
+		[TestCase("maui", DotNetCurrent, "Debug", null)]
+		[TestCase("maui", DotNetCurrent, "Release", null)]
+		[TestCase("maui", DotNetCurrent, "Release", "full")]
+		[TestCase("maui-blazor", DotNetPrevious, "Debug", null)]
+		[TestCase("maui-blazor", DotNetPrevious, "Release", null)]
+		[TestCase("maui-blazor", DotNetCurrent, "Debug", null)]
+		[TestCase("maui-blazor", DotNetCurrent, "Release", null)]
+		[TestCase("maui-blazor", DotNetCurrent, "Release", "full")]
+		public void RunOnAndroid(string id, string framework, string config, string trimMode)
 		{
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 				$"Unable to create template {id}. Check test output for errors.");
+
+			var buildProps = BuildProps;
+			if (!string.IsNullOrEmpty(trimMode))
+			{
+				buildProps.Add($"TrimMode={trimMode}");
+				buildProps.Add("TrimmerSingleWarn=false");
+			}
 
 			AddInstrumentation(projectDir);
 

@@ -21,12 +21,12 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler<CountedImageHandler>(image);
-				await image.Wait();
+				await image.WaitUntilLoaded();
 				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
 
 				image.Source = new FileImageSourceStub("blue.png");
 				handler.UpdateValue(nameof(IImage.Source));
-				await image.Wait();
+				await image.WaitUntilLoaded();
 				await handler.PlatformView.AssertContainsColor(Colors.Blue, MauiContext);
 			});
 		}
@@ -59,6 +59,18 @@ namespace Microsoft.Maui.DeviceTests
 						Task.Delay(5_000));
 
 					Assert.Equal(TaskStatus.RanToCompletion, secondResultTask.Status);
+
+					// now try without awaiting (Glide cache should return the same drawable immediately)
+					var thirdResultTask = service.LoadDrawableAsync(imageSource, handler.PlatformView);
+					var fourthResultTask = service.LoadDrawableAsync(imageSource, handler.PlatformView);
+
+					// make sure we wait, but only for 5 seconds
+					await Task.WhenAny(
+						Task.WhenAll(thirdResultTask, fourthResultTask),
+						Task.Delay(5_000));
+
+					Assert.Equal(TaskStatus.RanToCompletion, thirdResultTask.Status);
+					Assert.Equal(TaskStatus.RanToCompletion, fourthResultTask.Status);
 				});
 			});
 		}

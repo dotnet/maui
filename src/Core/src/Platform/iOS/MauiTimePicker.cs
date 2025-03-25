@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiTimePicker : NoCaretField
 	{
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		readonly UIDatePicker _picker;
 
 #if !MACCATALYST
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 			_proxy = new(dateSelected);
 #endif
 
-			if (OperatingSystem.IsIOSVersionAtLeast(14))
+			if (OperatingSystem.IsIOSVersionAtLeast(13, 4) || OperatingSystem.IsMacCatalyst())
 			{
 				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}

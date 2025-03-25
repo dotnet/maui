@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public class SwipeItemButton : UIButton
 	{
-		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: SwipeViewTests.ItemsDoNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Proven safe in test: SwipeViewTests.ItemsDoNotLeak")]
 		public event EventHandler? FrameChanged;
 
 		public override CGRect Frame
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Handlers
 					catch (Exception)
 					{
 						// UIImage ctor throws on file not found if MonoTouch.ObjCRuntime.Class.ThrowOnInitFailure is true;
-						Handler.MauiContext?.CreateLogger<SwipeItemMenuItemHandler>()?.LogWarning("Can not load SwipeItem Icon");
+						Handler.MauiContext?.CreateLogger<SwipeItemMenuItemHandler>()?.LogWarning("Cannot load SwipeItem Icon");
 					}
 				}
 			}
@@ -142,12 +142,39 @@ namespace Microsoft.Maui.Handlers
 
 				var width = maxResizeFactor * sourceSize.Width;
 				var height = maxResizeFactor * sourceSize.Height;
-				UIGraphics.BeginImageContextWithOptions(new CGSize((nfloat)width, (nfloat)height), false, 0);
-				sourceImage.Draw(new CGRect(0, 0, (nfloat)width, (nfloat)height));
-				var resultImage = UIGraphics.GetImageFromCurrentImageContext();
-				UIGraphics.EndImageContext();
+				if (!OperatingSystem.IsIOSVersionAtLeast(17))
+				{
+					UIGraphics.BeginImageContextWithOptions(new CGSize((nfloat)width, (nfloat)height), false, 0);
+					sourceImage.Draw(new CGRect(0, 0, (nfloat)width, (nfloat)height));
+					var resultImage = UIGraphics.GetImageFromCurrentImageContext();
+					UIGraphics.EndImageContext();
 
-				return resultImage;
+					return resultImage;
+				}
+
+				var format = new UIGraphicsImageRendererFormat
+				{
+					Opaque = false,
+					Scale = 0
+				};
+
+				using (var renderer = new UIGraphicsImageRenderer(new CGSize(width, height), format))
+				{
+					var resultImage = renderer.CreateImage((UIGraphicsImageRendererContext imageContext) =>
+					{
+						var cgcontext = imageContext.CGContext;
+
+						// The image is drawn upside down because Core Graphics uses a bottom-left origin, 
+						// whereas UIKit uses a top-left origin. Adjust the coordinate system to align with UIKit's top-left origin.
+						cgcontext.TranslateCTM(0, (nfloat)height);
+						cgcontext.ScaleCTM(1, -1);
+						cgcontext.DrawImage(new CGRect(0, 0, (nfloat)width, (nfloat)height), sourceImage.CGImage);
+						cgcontext.ScaleCTM(1, -1);
+						cgcontext.TranslateCTM(0, -(nfloat)height);
+					});
+
+					return resultImage;
+				}
 			}
 		}
 

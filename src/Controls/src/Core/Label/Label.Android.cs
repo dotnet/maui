@@ -33,15 +33,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public static void MapTextType(LabelHandler handler, Label label) => MapTextType((ILabelHandler)handler, label);
 		public static void MapText(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
 		public static void MapLineBreakMode(LabelHandler handler, Label label) => MapLineBreakMode((ILabelHandler)handler, label);
-
-
-		public static void MapTextType(ILabelHandler handler, Label label)
-		{
-			handler.UpdateValue(nameof(ILabel.Text));
-		}
 
 		public static void MapText(ILabelHandler handler, Label label)
 		{
@@ -77,7 +70,7 @@ namespace Microsoft.Maui.Controls
 
 			var spannableString = virtualView.ToSpannableString();
 
-			platformView.RecalculateSpanPositions(virtualView, spannableString, new SizeRequest(new Size(args.Right - args.Left, args.Bottom - args.Top)));
+			platformView.RecalculateSpanPositions(virtualView, spannableString, new Size(args.Right - args.Left, args.Bottom - args.Top));
 		}
 	}
 }

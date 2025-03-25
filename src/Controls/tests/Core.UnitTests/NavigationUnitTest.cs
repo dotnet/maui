@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -556,7 +555,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var current = new BackButtonPage();
 			var navPage = new TestNavigationPage(useMaui, current);
-			navPage.PushAsync(new ContentPage());
+			await navPage.PushAsync(new ContentPage());
 
 			var emitted = false;
 			current.BackPressed += (sender, args) => emitted = true;
@@ -836,7 +835,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var window = new TestWindow(new ContentPage());
 			var contentPage1 = new ContentPage();
 			var navigationPage = new TestNavigationPage(true, contentPage1);
-			Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PopModalAsync());
+			await Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PopModalAsync());
+		}
+
+		[Fact]
+		public async Task InvalidOperationExceptionIsThrownWhenNavigatingOutsideNavigationPage()
+		{
+			var window = new TestWindow(new ContentPage());
+			var contentPage1 = new ContentPage();
+			var contentPage2 = new ContentPage();
+
+			await Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PushAsync(contentPage1));
+			await Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PopAsync());
+			await Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PopToRootAsync());
+			Assert.Throws<InvalidOperationException>(() => window.Navigation.InsertPageBefore(contentPage1, contentPage2));
+			Assert.Throws<InvalidOperationException>(() => window.Navigation.RemovePage(contentPage1));
+		}
+
+		[Fact]
+		public async Task RemoveWrappingIntoNavigationPage()
+		{
+			var window = new TestWindow(new ContentPage());
+			var contentPage1 = new ContentPage();
+			var navigationPage = new TestNavigationPage(true, contentPage1);
+			await Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PushAsync(contentPage1));
 		}
 
 		[Fact]
@@ -912,8 +934,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		protected override bool OnBackButtonPressed()
 		{
-			if (BackPressed != null)
+			if (BackPressed is not null)
+			{
 				BackPressed(this, EventArgs.Empty);
+			}
+
 			return Handle;
 		}
 	}

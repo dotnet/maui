@@ -73,7 +73,7 @@ public static class NativeBindingHelpers
 		BindableProperty bindableProperty = null;
 		propertyChanged ??= target as INotifyPropertyChanged;
 		var propertyType = target.GetType().GetProperty(targetProperty)?.PropertyType;
-		var defaultValue = target.GetType().GetProperty(targetProperty)?.GetMethod.Invoke(target, new object[] { });
+		var defaultValue = target.GetType().GetProperty(targetProperty)?.GetMethod.Invoke(target, Array.Empty<object>());
 		bindableProperty = CreateBindableProperty<TNativeView>(targetProperty, propertyType, defaultValue);
 		if (binding != null && binding.Mode != BindingMode.OneWay && propertyChanged != null)
 			propertyChanged.PropertyChanged += (sender, e) =>
@@ -123,7 +123,7 @@ public static class NativeBindingHelpers
 		BindableObjectProxy<TNativeView> proxy;
 		if (!BindableObjectProxy<TNativeView>.BindableObjectProxies.TryGetValue(target, out proxy))
 			return;
-		SetValueFromRenderer(proxy, bindableProperty, target.GetType().GetProperty(targetProperty)?.GetMethod.Invoke(target, new object[] { }));
+		SetValueFromRenderer(proxy, bindableProperty, target.GetType().GetProperty(targetProperty)?.GetMethod.Invoke(target, Array.Empty<object>()));
 	}
 
 	static void SetValueFromRenderer(BindableObject bindable, BindableProperty property, object value) => bindable.SetValueCore(property, value);

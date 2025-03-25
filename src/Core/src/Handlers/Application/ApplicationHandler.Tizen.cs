@@ -22,5 +22,13 @@ namespace Microsoft.Maui.Handlers
 				(window.Handler?.PlatformView as Window)?.Dispose();
 			}
 		}
+
+		public static partial void MapActivateWindow(ApplicationHandler handler, IApplication application, object? args)
+		{
+			if (args is IWindow window)
+			{
+				// TODO.
+			}
+		}
 	}
 }

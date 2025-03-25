@@ -22,7 +22,7 @@ namespace Maui.Controls.Sample.Pages.ShapesGalleries
 			string pathData = $"M 10,100 C 10,{300 + _counter} {300 + _counter},-200 {300 + _counter},100";
 
 			var pathGeometry = new PathGeometry();
-			PathFigureCollection figures = _pathFigureCollectionConverter.ConvertFromInvariantString(pathData) as PathFigureCollection;
+			var figures = _pathFigureCollectionConverter.ConvertFromInvariantString(pathData) as PathFigureCollection;
 			pathGeometry.Figures = figures;
 
 			Path.Data = pathGeometry;

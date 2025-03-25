@@ -1,6 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -77,10 +80,20 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					await WaitForUIUpdate(frame, collectionView);
 
-					Assert.True(emptyView.Height > 0, "EmptyView should be laid out");
-					Assert.True(header.Height > 0, "Header should be laid out");
-					Assert.True(footer.Height > 0, "Footer should be laid out");
+					Assert.True(emptyView.Height > 0, "EmptyView should be arranged");
+					Assert.True(header.Height > 0, "Header should be arranged");
+					Assert.True(footer.Height > 0, "Footer should be arranged");
 				});
+		}
+
+		Rect GetCollectionViewCellBounds(IView cellContent)
+		{
+			if (!cellContent.ToPlatform().IsLoaded())
+			{
+				throw new System.Exception("The cell is not in the visual tree");
+			}
+
+			return cellContent.ToPlatform().GetParentOfType<ItemContentView>().GetBoundingBox();
 		}
 	}
 }

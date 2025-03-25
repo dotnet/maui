@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace Microsoft.Maui
@@ -21,13 +22,17 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
-		/// 
+		/// Groups elements from an IEnumerable based on a specified key selector function and returns a dictionary
+		/// where keys are the computed keys and values are lists of elements with the same key.
+		/// Used by XAML Hot Reload.
 		/// </summary>
-		/// <typeparam name="TSource"></typeparam>
-		/// <typeparam name="TKey"></typeparam>
-		/// <param name="enumeration"></param>
-		/// <param name="func"></param>
-		/// <returns></returns>
+		/// <typeparam name="TSource">The type of elements in the input enumeration.</typeparam>
+		/// <typeparam name="TKey">The type of keys produced by the key selector function.</typeparam>
+		/// <param name="enumeration">The input IEnumerable of elements to be grouped.</param>
+		/// <param name="func">A function that extracts a key from an element of the input enumeration.</param>
+		/// <returns>A dictionary with keys as computed by the key selector function and values as lists of elements
+		/// that share the same key.</returns>
+		[Obsolete("Legacy API used in previous versions of XAML Hot Reload. Do not use.")]
 		public static IDictionary<TKey, List<TSource>> GroupToDictionary<TSource, TKey>(this IEnumerable<TSource> enumeration, Func<TSource, TKey> func)
 			where TKey : notnull
 		{
@@ -35,10 +40,14 @@ namespace Microsoft.Maui
 			foreach (TSource item in enumeration)
 			{
 				var group = func(item);
-				if (!result.ContainsKey(group))
+				if (!result.TryGetValue(group, out List<TSource>? value))
+				{
 					result.Add(group, new List<TSource> { item });
+				}
 				else
-					result[group].Add(item);
+				{
+					value.Add(item);
+				}
 			}
 			return result;
 		}
@@ -54,13 +63,65 @@ namespace Microsoft.Maui
 		public static int IndexOf<T>(this IEnumerable<T> enumerable, T item)
 		{
 			if (enumerable == null)
+			{
 				throw new ArgumentNullException(nameof(enumerable));
+			}
+
+			if (enumerable is IList<T> list)
+			{
+				return list.IndexOf(item);
+			}
+
+			if (enumerable is T[] array)
+			{
+				return Array.IndexOf(array, item);
+			}
 
 			var i = 0;
 			foreach (T element in enumerable)
 			{
 				if (Equals(element, item))
+				{
 					return i;
+				}
+
+				i++;
+			}
+
+			return -1;
+		}
+
+		/// <summary>
+		/// Find the index of a specific item within the collection.
+		/// </summary>
+		/// <param name="enumerable">The collection in which to look for <paramref name="item"/>.</param>
+		/// <param name="item">The object to be located in this collection.</param>
+		/// <returns>The index of <paramref name="item"/> in the collection or -1 when the item is not found.</returns>
+		/// <exception cref="ArgumentNullException">Throws when <paramref name="enumerable"/> is <see langword="null"/>.</exception>
+		public static int IndexOf(this IEnumerable enumerable, object item)
+		{
+			if (enumerable == null)
+			{
+				throw new ArgumentNullException(nameof(enumerable));
+			}
+
+			if (enumerable is IList list)
+			{
+				return list.IndexOf(item);
+			}
+
+			if (enumerable is Array array)
+			{
+				return Array.IndexOf(array, item);
+			}
+
+			var i = 0;
+			foreach (object element in enumerable)
+			{
+				if (Equals(element, item))
+				{
+					return i;
+				}
 
 				i++;
 			}
@@ -70,6 +131,7 @@ namespace Microsoft.Maui
 
 		/// <summary>
 		/// Find the index for the first occurrence of an item within the collection as matched through the specified predicate.
+		/// Used by XAML Hot Reload.
 		/// </summary>
 		/// <typeparam name="T">The type of object contained in this collection.</typeparam>
 		/// <param name="enumerable">The collection in which to look for the item.</param>
@@ -77,13 +139,33 @@ namespace Microsoft.Maui
 		/// The item currently evaluated of type <typeparamref name="T"/> is provided as an input parameter.
 		/// The resulting value should be a <see cref="bool"/> which is <see langword="true"/> if this is the item to match, otherwise <see langword="false"/>.</param>
 		/// <returns>The index of the first item to match through <paramref name="predicate"/> in the collection or -1 when no match is not found.</returns>
+		[Obsolete("Use IndexOf<T>(IEnumerable<T>, T item) instead.")]
 		public static int IndexOf<T>(this IEnumerable<T> enumerable, Func<T, bool> predicate)
 		{
+			if (enumerable == null)
+			{
+				throw new ArgumentNullException(nameof(enumerable));
+			}
+
+			if (enumerable is List<T> list)
+			{
+				var listPredicate = new Predicate<T>(predicate);
+				return list.FindIndex(listPredicate);
+			}
+
+			if (enumerable is T[] array)
+			{
+				var arrayPredicate = new Predicate<T>(predicate);
+				return Array.FindIndex(array, arrayPredicate);
+			}
+
 			var i = 0;
 			foreach (T element in enumerable)
 			{
 				if (predicate(element))
+				{
 					return i;
+				}
 
 				i++;
 			}

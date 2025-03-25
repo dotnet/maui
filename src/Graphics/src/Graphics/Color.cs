@@ -84,7 +84,11 @@ namespace Microsoft.Maui.Graphics
 
 		public override string ToString()
 		{
-			return $"[Color: Red={Red}, Green={Green}, Blue={Blue}, Alpha={Alpha}]";
+			var r = Red.ToString(CultureInfo.InvariantCulture);
+			var g = Green.ToString(CultureInfo.InvariantCulture);
+			var b = Blue.ToString(CultureInfo.InvariantCulture);
+			var a = Alpha.ToString(CultureInfo.InvariantCulture);
+			return $"[Color: Red={r}, Green={g}, Blue={b}, Alpha={a}]";
 		}
 
 		public override int GetHashCode()
@@ -756,9 +760,7 @@ namespace Microsoft.Maui.Graphics
 			int charsWritten = value.ToLowerInvariant(loweredValue);
 			Debug.Assert(charsWritten == value.Length);
 
-			// this should use the C# feature https://github.com/dotnet/csharplang/issues/1881, when it is available
-			// for now, we need to allocate the lowered string
-			return loweredValue.ToString() switch
+			return loweredValue switch
 			{
 				"default" => default,
 				"aliceblue" => Colors.AliceBlue,

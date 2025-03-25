@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.ApplicationModel;
-using UIKit;
+﻿using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
@@ -17,8 +16,43 @@ namespace Microsoft.Maui.Platform
 		{
 			return new ContentView
 			{
-				CrossPlatformLayout = ((IContentView)view)
+				CrossPlatformLayout = (IContentView)view
 			};
+		}
+
+		public override bool PrefersHomeIndicatorAutoHidden
+			=> CurrentView is IiOSPageSpecifics pageSpecifics && pageSpecifics.IsHomeIndicatorAutoHidden;
+
+		public override bool PrefersStatusBarHidden()
+		{
+			if (CurrentView is IiOSPageSpecifics pageSpecifics)
+			{
+				return pageSpecifics.PrefersStatusBarHiddenMode switch
+				{
+					1 => true,
+					2 => false,
+					_ => base.PrefersStatusBarHidden(),
+				};
+			}
+
+			return base.PrefersStatusBarHidden();
+		}
+
+		public override UIStatusBarAnimation PreferredStatusBarUpdateAnimation
+		{
+			get
+			{
+				if (CurrentView is IiOSPageSpecifics pageSpecifics)
+				{
+					return pageSpecifics.PreferredStatusBarUpdateAnimationMode switch
+					{
+						0 => UIStatusBarAnimation.Fade,
+						1 => UIStatusBarAnimation.Slide,
+						_ => UIStatusBarAnimation.None,
+					};
+				}
+				return base.PreferredStatusBarUpdateAnimation;
+			}
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
@@ -31,7 +65,9 @@ namespace Microsoft.Maui.Platform
 				application?.ThemeChanged();
 			}
 
+#pragma warning disable CA1422 // Validate platform compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
+#pragma warning restore CA1422 // Validate platform compatibility
 		}
 	}
 }

@@ -83,5 +83,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			((ISwipeGestureController)swipe).DetectSwipe(view, SwipeDirection.Up);
 			Assert.False(detected);
 		}
+
+		[Fact]
+		public void SwipedEventDirectionMatchesTotalXTestWithFlags()
+		{
+			var view = new View();
+			var swipe = new SwipeGestureRecognizer();
+
+			SwipeDirection direction = SwipeDirection.Up;
+			swipe.Swiped += (object sender, SwipedEventArgs e) =>
+			{
+				direction = e.Direction;
+			};
+
+			((ISwipeGestureController)swipe).SendSwipe(view, totalX: -150, totalY: 10);
+			((ISwipeGestureController)swipe).DetectSwipe(view, SwipeDirection.Left | SwipeDirection.Right);
+			Assert.Equal(SwipeDirection.Left, direction);
+		}
+
+		[Fact]
+		public void SwipedEventDirectionMatchesTotalYTestWithFlags()
+		{
+			var view = new View();
+			var swipe = new SwipeGestureRecognizer();
+
+			SwipeDirection direction = SwipeDirection.Left;
+			swipe.Swiped += (object sender, SwipedEventArgs e) =>
+			{
+				direction = e.Direction;
+			};
+
+			((ISwipeGestureController)swipe).SendSwipe(view, totalX: 10, totalY: -150);
+			((ISwipeGestureController)swipe).DetectSwipe(view, SwipeDirection.Up | SwipeDirection.Down);
+			Assert.Equal(SwipeDirection.Up, direction);
+		}
 	}
 }

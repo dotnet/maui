@@ -45,10 +45,10 @@ namespace Microsoft.Maui.Controls
 		public void Add(double beginAt, double finishAt, Animation animation)
 		{
 			if (beginAt < 0 || beginAt > 1)
-				throw new ArgumentOutOfRangeException("beginAt");
+				throw new ArgumentOutOfRangeException(nameof(beginAt));
 
 			if (finishAt < 0 || finishAt > 1)
-				throw new ArgumentOutOfRangeException("finishAt");
+				throw new ArgumentOutOfRangeException(nameof(finishAt));
 
 			if (finishAt <= beginAt)
 				throw new ArgumentException("finishAt must be greater than beginAt");

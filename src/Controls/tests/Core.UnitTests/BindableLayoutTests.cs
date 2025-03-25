@@ -7,12 +7,15 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	using StackLayout = Microsoft.Maui.Controls.Compatibility.StackLayout;
-
 
 	public class BindableLayoutTests : BaseTestFixture
 	{
@@ -194,6 +197,109 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ChangingTemplateRecreatesChildren()
+		{
+			var layout = new StackLayout
+			{
+				IsPlatformEnabled = true,
+			};
+
+			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
+			BindableLayout.SetItemsSource(layout, itemsSource);
+
+			BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Label()));
+			Assert.All(layout.Children, c => Assert.IsType<Label>(c));
+
+			BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Button()));
+			Assert.All(layout.Children, c => Assert.IsType<Button>(c));
+		}
+
+		[Fact]
+		public void ChangingItemMaintainingTemplateUpdatesBindingContextOnly()
+		{
+			var layout = new StackLayout
+			{
+				IsPlatformEnabled = true,
+			};
+
+			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
+			BindableLayout.SetItemsSource(layout, itemsSource);
+			BindableLayout.SetItemTemplate(layout, new DataTemplate(() =>
+			{
+				var label = new Label();
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			}));
+
+			var firstChild = layout.Children[0] as Label;
+			Assert.NotNull(firstChild);
+			Assert.Equal("0", firstChild.Text);
+
+			itemsSource[0] = 42;
+			var firstChildAfterChange = layout.Children[0] as Label;
+			Assert.NotNull(firstChildAfterChange);
+			Assert.Equal("42", firstChildAfterChange.Text);
+			Assert.Same(firstChild, firstChildAfterChange);
+		}
+
+		[Fact]
+		public void ChangingItemsMaintainingTemplateUpdatesBindingContextOnly()
+		{
+			var layout = new StackLayout
+			{
+				IsPlatformEnabled = true,
+			};
+
+			var itemsSource = new List<int>(Enumerable.Range(0, 10));
+			BindableLayout.SetItemsSource(layout, itemsSource);
+			BindableLayout.SetItemTemplate(layout, new DataTemplate(() =>
+			{
+				var label = new Label();
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			}));
+
+			var children = layout.Children.Cast<Label>().ToList();
+			BindableLayout.SetItemsSource(layout, new List<int>(Enumerable.Range(10, 10)));
+
+			var childrenAfterChange = layout.Children.Cast<Label>().ToList();
+			for (var i = 0; i < children.Count; i++)
+			{
+				Assert.Same(children[i], childrenAfterChange[i]);
+				Assert.Equal((i + 10).ToString(), childrenAfterChange[i].Text);
+			}
+		}
+
+		[Fact]
+		public void ChangingItemsRemovesExceedingChildren()
+		{
+			var layout = new StackLayout
+			{
+				IsPlatformEnabled = true,
+			};
+
+			var itemsSource = new List<int>(Enumerable.Range(0, 10));
+			BindableLayout.SetItemsSource(layout, itemsSource);
+			BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Label()));
+
+			var children = layout.Children.ToList();
+			BindableLayout.SetItemsSource(layout, new List<int>(Enumerable.Range(0, 5)));
+
+			var childrenAfterChange = layout.Children.ToList();
+			Assert.Equal(5, childrenAfterChange.Count);
+
+			for (int i = 0; i < 5; i++)
+			{
+				Assert.Same(children[i], childrenAfterChange[i]);
+			}
+
+			for (int i = 5; i < 10; i++)
+			{
+				Assert.Null(children[i].BindingContext);
+			}
+		}
+
+		[Fact]
 		public void ContainerIsPassedInSelectTemplate()
 		{
 			var layout = new StackLayout
@@ -344,6 +450,47 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
 		}
 
+		[Fact]
+		public void RemovesEmptyViewWhenAddingTheFirstItem()
+		{
+			var layout = new StackLayout
+			{
+				IsPlatformEnabled = true,
+			};
+
+			var itemsSource = new ObservableCollection<int>();
+
+			var emptyView = new Label();
+			BindableLayout.SetEmptyView(layout, emptyView);
+
+			BindableLayout.SetItemsSource(layout, itemsSource);
+			Assert.Single(layout.Children);
+			Assert.Equal(emptyView, layout[0]);
+
+			itemsSource.Add(0);
+			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
+		}
+
+		[Fact]
+		public void AddsEmptyViewWhenRemovingRemainingItem()
+		{
+			var layout = new StackLayout
+			{
+				IsPlatformEnabled = true,
+			};
+
+			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 1));
+
+			var emptyView = new Label();
+			BindableLayout.SetEmptyView(layout, emptyView);
+
+			BindableLayout.SetItemsSource(layout, itemsSource);
+			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
+
+			itemsSource.RemoveAt(0);
+			Assert.Single(layout.Children);
+			Assert.Equal(emptyView, layout[0]);
+		}
 
 		[Fact]
 		public void ValidateBindableProperties()
@@ -369,7 +516,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 
 			// ItemsSourceProperty
-			IEnumerable itemsSource = new object[0];
+			IEnumerable itemsSource = Array.Empty<object>();
 			BindableLayout.SetItemsSource(layout, itemsSource);
 
 			Assert.Equal(itemsSource, BindableLayout.GetItemsSource(layout));
@@ -389,6 +536,71 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(itemTemplateSelector, BindableLayout.GetItemTemplateSelector(layout));
 			Assert.Equal(itemTemplateSelector, layout.GetValue(BindableLayout.ItemTemplateSelectorProperty));
+		}
+
+		[Fact]
+		public async Task ItemViewBindingContextIsSetToNullOnClear()
+		{
+			var list = new ObservableCollection<string> { "Foo" };
+
+			var layout = new StackLayout { IsPlatformEnabled = true };
+			BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Label()));
+			BindableLayout.SetItemsSource(layout, list);
+
+			// Verify that the item view is bound to collection item
+			var itemView = layout.Children.FirstOrDefault() as Label;
+			Assert.NotNull(itemView);
+			Assert.Equal(list[0], itemView.BindingContext);
+
+			// Clear collection by setting it to null
+			BindableLayout.SetItemsSource(layout, null);
+
+			// Verify item view binding context is null
+			Assert.Null(itemView.BindingContext);
+		}
+
+		[Fact]
+		public async Task ItemViewBindingContextIsSetToNullOnRemove()
+		{
+			var list = new ObservableCollection<string> { "Foo" };
+
+			var layout = new StackLayout { IsPlatformEnabled = true };
+			BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Label()));
+			BindableLayout.SetItemsSource(layout, list);
+
+			// Verify that the item view is bound to collection item
+			var itemView = layout.Children.FirstOrDefault() as Label;
+			Assert.NotNull(itemView);
+			Assert.Equal(list[0], itemView.BindingContext);
+
+			// Remove the item
+			list.RemoveAt(0);
+
+			// Verify item view binding context is null
+			Assert.Null(itemView.BindingContext);
+		}
+
+		[Fact]
+		public async Task EmptyViewTemplateContentInheritsLayoutBindingContext()
+		{
+			var list = new ObservableCollection<string>();
+
+			var bindingContext = "Foo";
+
+			var layout = new StackLayout { IsPlatformEnabled = true, BindingContext = bindingContext };
+			BindableLayout.SetEmptyViewTemplate(layout, new DataTemplate(() => new Label()));
+			BindableLayout.SetItemsSource(layout, list);
+
+			// Verify that the empty view is bound to layout's binding context
+			var emptyView = layout.Children.FirstOrDefault() as Label;
+			Assert.NotNull(emptyView);
+			Assert.Equal(bindingContext, emptyView.BindingContext);
+
+			// Change binding context on layout
+			layout.BindingContext = bindingContext = "Bar";
+
+			// Verify empty view inherited the binding context
+			Assert.Equal(bindingContext, emptyView.BindingContext);
 		}
 
 		[Fact]
@@ -442,6 +654,86 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			list.Add("Baz");
 			Assert.Equal(3, layout.Children.Count);
+		}
+
+		[Fact("BindableLayout disconnects handlers when removing views")]
+		public void DisconnectsHandlersWhenRemovingViews()
+		{
+			var mauiApp = MauiApp.CreateBuilder()
+				.UseMauiApp<ApplicationStub>()
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<ContentPage, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<Button, HandlerStub>())
+				.ConfigureMauiHandlers(handlers => handlers.AddHandler<VerticalStackLayout, BindableLayoutHandlerStub>())
+				.Build();
+
+			MauiContext mauiContext = new MauiContext(mauiApp.Services);
+
+			var bindableLayout = new VerticalStackLayout();
+			var items = new ObservableCollection<int>(Enumerable.Range(0, 10));
+			BindableLayout.SetItemsSource(bindableLayout, items);
+			BindableLayout.SetItemTemplate(bindableLayout, new DataTemplate(() => new Button()));
+			BindableLayout.SetEmptyView(bindableLayout, new Button());
+
+			bindableLayout.ToHandler(mauiContext);
+
+			// Ensure we have the handlers on all elements
+			Assert.All(bindableLayout.Children, c => Assert.NotNull(c.Handler));
+
+			// Test removal of an item
+			var lastChildIndex = items.Count - 1;
+			var lastChild = bindableLayout[lastChildIndex];
+			items.RemoveAt(lastChildIndex);
+			Assert.Null(lastChild.Handler);
+
+			// Test removal of all items
+			var children = bindableLayout.Children.ToList();
+			items.Clear();
+			Assert.All(children, c => Assert.Null(c.Handler));
+
+			// Test removal of empty view
+			var emptyView = bindableLayout.FirstOrDefault() as Button;
+			Assert.NotNull(emptyView);
+			Assert.NotNull(emptyView.Handler);
+			items.Add(1000);
+			Assert.Null(emptyView.Handler);
+
+			// Test replacing the items source with an empty enumerable
+			lastChildIndex = 0;
+			lastChild = bindableLayout[lastChildIndex];
+			BindableLayout.SetItemsSource(bindableLayout, Enumerable.Empty<int>());
+			Assert.Null(lastChild.Handler);
+			Assert.NotNull(emptyView.Handler);
+		}
+
+		class BindableLayoutHandlerStub : HandlerStub
+		{
+			public static CommandMapper<IView, IViewHandler> CommandMapper = new()
+			{
+				[nameof(ILayoutHandler.Add)] = MapCreatePlatformHandler,
+				[nameof(ILayoutHandler.Insert)] = MapCreatePlatformHandler,
+			};
+
+			static void MapCreatePlatformHandler(IViewHandler handler, IView view, object arg)
+			{
+				if (arg is LayoutHandlerUpdate args)
+				{
+					args.View.ToHandler(handler.MauiContext!);
+				}
+			}
+
+			public BindableLayoutHandlerStub() : base(new PropertyMapper<IView>(), CommandMapper)
+			{
+			}
+
+			public override void SetVirtualView(IView view)
+			{
+				base.SetVirtualView(view);
+				var bindableLayout = (IBindableLayout)view;
+				foreach (var child in bindableLayout.Children.OfType<IView>())
+				{
+					child.ToHandler(MauiContext!);
+				}
+			}
 		}
 
 		// Checks if for every item in the items source there's a corresponding view

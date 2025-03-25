@@ -45,7 +45,7 @@
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Get Location</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-  <string>Add Photos</string>
+  	<string>Add Photos</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Pick Photos</string>
 	<key>NSMicrophoneUsageDescription</key>
@@ -58,5 +58,11 @@
 	<array>
 		<string>mailto</string>
 	</array>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Full access to the Calendar is needed to sign you up for parties!</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>Just writing events to the Calendar, nothing to see here.</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>Just so you will remember</string>
 </dict>
 </plist>

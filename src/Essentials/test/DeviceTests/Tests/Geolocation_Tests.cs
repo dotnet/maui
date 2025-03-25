@@ -17,10 +17,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			await MainThread.InvokeOnMainThreadAsync(async () =>
 			{
-				await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+				await Permissions.RequestAsync<Permissions.LocationWhenInUse>().ConfigureAwait(false);
 			});
 
-			var location = await Geolocation.GetLastKnownLocationAsync();
+			var location = await Geolocation.GetLastKnownLocationAsync().ConfigureAwait(false);
 
 			Assert.NotNull(location);
 
@@ -42,10 +42,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			await MainThread.InvokeOnMainThreadAsync(async () =>
 			{
-				await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+				await Permissions.RequestAsync<Permissions.LocationWhenInUse>().ConfigureAwait(false);
 			});
 
-			var location = await Geolocation.GetLocationAsync();
+			var location = await Geolocation.GetLocationAsync().ConfigureAwait(false);
 
 			Assert.NotNull(location);
 
@@ -67,12 +67,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			await MainThread.InvokeOnMainThreadAsync(async () =>
 			{
-				await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+				await Permissions.RequestAsync<Permissions.LocationWhenInUse>().ConfigureAwait(false);
 			});
 
 			var request = new GeolocationRequest(GeolocationAccuracy.Best);
 			request.RequestFullAccuracy = true;
-			var location = await Geolocation.GetLocationAsync(request);
+			var location = await Geolocation.GetLocationAsync(request).ConfigureAwait(false);
 
 			Assert.NotNull(location);
 
@@ -87,6 +87,26 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			// before right now, but after yesterday
 			Assert.True(location.Timestamp < DateTimeOffset.UtcNow);
 			Assert.True(location.Timestamp > DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(1)));
+		}
+
+		[Fact]
+		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
+		public async Task Geolocation_IsListeningForeground()
+		{
+			await MainThread.InvokeOnMainThreadAsync(async () =>
+			{
+				await Permissions.RequestAsync<Permissions.LocationWhenInUse>().ConfigureAwait(false);
+			});
+
+			var request = new GeolocationListeningRequest(GeolocationAccuracy.Best);
+			request.DesiredAccuracy = GeolocationAccuracy.Low;
+			request.MinimumTime = TimeSpan.FromSeconds(5);
+
+			bool hasServiceStarted = await Geolocation.StartListeningForegroundAsync(request);
+
+			bool isListeningForeground = Geolocation.IsListeningForeground;
+
+			Assert.Equal(hasServiceStarted, isListeningForeground);
 		}
 	}
 }

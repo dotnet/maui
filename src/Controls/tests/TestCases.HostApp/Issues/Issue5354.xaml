@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Issues.Issue5354">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <StackLayout Orientation="Vertical" Spacing="5" Grid.Row="0" VerticalOptions="Center">
+            <Label x:Name="Label" LineBreakMode="WordWrap" Text="Switch between linear and grid layouts. If layouts appear as expected with proper spacing between items, the test passes." HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+            <Button AutomationId="Button5354" Text="Switch to grid layout" HorizontalOptions="Center" VerticalOptions="Center" Clicked="ButtonClicked"/>
+        </StackLayout>
+
+        <CollectionView AutomationId="CollectionView5354" Grid.Row="1" ItemsSource="{Binding Items}">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
+            </CollectionView.ItemsLayout>
+            
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <StackLayout Orientation="Vertical" Spacing="10" BackgroundColor="Beige" Padding="10">
+                        <Image Source="{Binding Source}" HeightRequest="100"/>
+                        <Label Text="{Binding Text}" HorizontalTextAlignment="Center" AutomationId="{Binding AutomationId}"/>
+                    </StackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+    </Grid>
+</ContentPage>

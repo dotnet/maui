@@ -20,8 +20,8 @@ namespace Maui.Controls.Sample.Pages
 
 		void ChangeCornerRadius(double delta)
 		{
-			RoundRectangle rr = (RoundRectangle)UpdateStrokeShapeBorder.StrokeShape;
-			double radius = Math.Max(0, rr.CornerRadius.TopLeft + delta);
+			var rr = (RoundRectangle)(UpdateStrokeShapeBorder.StrokeShape!);
+			double radius = Math.Max(0, rr!.CornerRadius.TopLeft + delta);
 			rr.CornerRadius = new CornerRadius(radius);
 			UpdateStrokeShapeInfo.Text = $"Border.StrokeShape is RoundRectangle with {radius} radius";
 		}

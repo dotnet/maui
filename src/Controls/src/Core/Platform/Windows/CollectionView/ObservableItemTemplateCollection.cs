@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class ObservableItemTemplateCollection : ObservableCollection<ItemTemplateContext>
+	internal class ObservableItemTemplateCollection : ObservableCollection<ItemTemplateContext>, IDisposable
 	{
 		readonly IList _itemsSource;
 		readonly DataTemplate _itemTemplate;
@@ -16,10 +16,14 @@ namespace Microsoft.Maui.Controls.Platform
 		readonly double _itemHeight;
 		readonly double _itemWidth;
 		readonly Thickness _itemSpacing;
-		readonly INotifyCollectionChanged _notifyCollectionChanged;
+		readonly NotifyCollectionChangedEventHandler _collectionChanged;
+		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
 		bool _innerCollectionChange = false;
 		bool _observeChanges = true;
+		bool _disposedValue;
+
+		~ObservableItemTemplateCollection() => _proxy.Unsubscribe();
 
 		public ObservableItemTemplateCollection(IList itemsSource, DataTemplate itemTemplate, BindableObject container,
 			double? itemHeight = null, double? itemWidth = null, Thickness? itemSpacing = null, IMauiContext mauiContext = null)
@@ -28,8 +32,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				throw new ArgumentException($"{nameof(itemsSource)} must implement {nameof(INotifyCollectionChanged)}");
 			}
-
-			_notifyCollectionChanged = notifyCollectionChanged;
 
 			_itemsSource = itemsSource;
 			_itemTemplate = itemTemplate;
@@ -52,15 +54,29 @@ namespace Microsoft.Maui.Controls.Platform
 				Add(new ItemTemplateContext(itemTemplate, itemsSource[n], container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
 			}
 
-			_notifyCollectionChanged.CollectionChanged += InnerCollectionChanged;
+			_collectionChanged = InnerCollectionChanged;
+			_proxy.Subscribe(notifyCollectionChanged, _collectionChanged);
 
 			CollectionChanged += TemplateCollectionChanged;
 		}
 
-		public void CleanUp()
+		protected virtual void Dispose(bool disposing)
 		{
-			CollectionChanged -= TemplateCollectionChanged;
-			_notifyCollectionChanged.CollectionChanged -= InnerCollectionChanged;
+			if (!_disposedValue)
+			{
+				if (disposing)
+				{
+					CollectionChanged -= TemplateCollectionChanged;
+					_proxy?.Unsubscribe();
+				}
+				_disposedValue = true;
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
 		}
 
 		void TemplateCollectionChanged(object sender, NotifyCollectionChangedEventArgs args)
@@ -158,13 +174,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void Add(NotifyCollectionChangedEventArgs args)
 		{
-			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
+			var index = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
 
 			var count = args.NewItems.Count;
 
 			for (int n = 0; n < count; n++)
 			{
-				Insert(startIndex, new ItemTemplateContext(_itemTemplate, args.NewItems[n], _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
+				Insert(index, new ItemTemplateContext(_itemTemplate, args.NewItems[n], _container, _itemHeight, _itemWidth, _itemSpacing, _mauiContext));
+				index++;
 			}
 		}
 

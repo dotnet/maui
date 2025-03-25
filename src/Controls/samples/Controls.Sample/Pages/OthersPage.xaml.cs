@@ -4,7 +4,7 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class OthersPage
 	{
-		TestWindowOverlay overlay;
+		TestWindowOverlay? overlay;
 
 		public OthersPage()
 		{

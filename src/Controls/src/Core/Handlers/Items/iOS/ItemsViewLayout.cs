@@ -5,8 +5,6 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Controls.Internals;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -21,9 +19,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		CGSize _currentSize;
 		WeakReference<Func<UICollectionViewCell>> _getPrototype;
 
-		const double ConstraintSizeTolerance = 0.00001;
+		WeakReference<Func<NSIndexPath, UICollectionViewCell>> _getPrototypeForIndexPath;
 
-		Dictionary<object, CGSize> _cellSizeCache = new Dictionary<object, CGSize>();
+		readonly Dictionary<object, CGSize> _cellSizeCache = new();
 
 		public ItemsUpdatingScrollMode ItemsUpdatingScrollMode { get; set; }
 
@@ -33,6 +31,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			get => _getPrototype is not null && _getPrototype.TryGetTarget(out var func) ? func : null;
 			set => _getPrototype = new(value);
+		}
+
+		internal Func<NSIndexPath, UICollectionViewCell> GetPrototypeForIndexPath
+		{
+			get => _getPrototypeForIndexPath is not null && _getPrototypeForIndexPath.TryGetTarget(out var func) ? func : null;
+			set => _getPrototypeForIndexPath = new(value);
 		}
 
 		internal ItemSizingStrategy ItemSizingStrategy { get; private set; }
@@ -100,14 +104,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		internal virtual void UpdateConstraints(CGSize size)
+		internal virtual bool UpdateConstraints(CGSize size, bool forceUpdate = false)
 		{
-			if (!RequiresConstraintUpdate(size, _currentSize))
+			if (size.IsCloseTo(_currentSize) && !forceUpdate)
 			{
-				return;
+				return false;
 			}
 
 			ClearCellSizeCache();
+
+			EstimatedItemSize = CGSize.Empty;
 
 			_currentSize = size;
 
@@ -115,6 +121,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ConstrainTo(newSize);
 
 			UpdateCellConstraints();
+			return true;
 		}
 
 		internal void SetInitialConstraints(CGSize size)
@@ -128,17 +135,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public virtual UIEdgeInsets GetInsetForSection(UICollectionView collectionView, UICollectionViewLayout layout,
 			nint section)
 		{
+			// If we're at the last section, we don't need to add the right inset
+			if (section >= (collectionView.NumberOfSections() - 1))
+			{
+				return UIEdgeInsets.Zero;
+			}
+
 			if (_itemsLayout is GridItemsLayout gridItemsLayout)
 			{
 				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 				{
-					return new UIEdgeInsets(0, 0, 0, new nfloat(gridItemsLayout.HorizontalItemSpacing * collectionView.NumberOfItemsInSection(section)));
+					return new UIEdgeInsets(0, 0, 0, new nfloat(gridItemsLayout.HorizontalItemSpacing));
 				}
 
-				return new UIEdgeInsets(0, 0, new nfloat(gridItemsLayout.VerticalItemSpacing * collectionView.NumberOfItemsInSection(section)), 0);
+				return new UIEdgeInsets(0, 0, new nfloat(gridItemsLayout.VerticalItemSpacing), 0);
 			}
+			else if (_itemsLayout is LinearItemsLayout listViewLayout)
+			{
+				if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
+				{
+					return new UIEdgeInsets(0, 0, 0, new nfloat(listViewLayout.ItemSpacing));
+				}
 
-			return UIEdgeInsets.Zero;
+				return new UIEdgeInsets(0, 0, new nfloat(listViewLayout.ItemSpacing), 0);
+			}
+			else
+			{
+				return UIEdgeInsets.Zero;
+			}
 		}
 
 		public virtual nfloat GetMinimumInteritemSpacingForSection(UICollectionView collectionView,
@@ -247,6 +271,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else
 			{
 				// Autolayout is now enabled, and this is the size used to guess scrollbar size and progress
+				measure = TryFindEstimatedSize(measure);
 				EstimatedItemSize = measure;
 			}
 		}
@@ -568,25 +593,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)
 		{
-			if (newBounds.Size == _currentSize)
+			if (newBounds.Size.IsCloseTo(_currentSize))
 			{
 				return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
-#if TVOS
-				|| OperatingSystem.IsTvOSVersionAtLeast(11)
-#endif
-			)
-			{
-				UpdateConstraints(CollectionView.AdjustedContentInset.InsetRect(newBounds).Size);
-			}
-			else
-			{
-				UpdateConstraints(CollectionView.Bounds.Size);
-			}
-
-			return true;
+			return UpdateConstraints(CollectionView.AdjustedContentInset.InsetRect(newBounds).Size);
 		}
 
 		internal bool TryGetCachedCellSize(object item, out CGSize size)
@@ -611,19 +623,50 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_cellSizeCache.Clear();
 		}
 
-		bool RequiresConstraintUpdate(CGSize newSize, CGSize current)
+		CGSize TryFindEstimatedSize(CGSize existingMeasurement)
 		{
-			if (Math.Abs(newSize.Width - current.Width) > ConstraintSizeTolerance)
+			if (CollectionView == null || GetPrototypeForIndexPath == null)
+				return existingMeasurement;
+
+			//Since this issue only seems to be reproducible on Horizontal scrolling, we only check for that
+			if (ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 			{
-				return true;
+				return FindEstimatedSizeUsingWidth(existingMeasurement);
 			}
 
-			if (Math.Abs(newSize.Height - current.Height) > ConstraintSizeTolerance)
+			return existingMeasurement;
+		}
+
+		CGSize FindEstimatedSizeUsingWidth(CGSize existingMeasurement)
+		{
+			// TODO: Handle grouping
+			var group = 0;
+			var collectionViewWidth = CollectionView.Bounds.Width;
+			var numberOfItemsInGroup = CollectionView.NumberOfItemsInSection(group);
+
+			// Calculate the number of cells that can fit in the viewport
+			var numberOfCellsToCheck = Math.Min((int)(collectionViewWidth / existingMeasurement.Width) + 1, numberOfItemsInGroup);
+
+			// Iterate through the cells and find the one with a wider width
+			for (int i = 1; i < numberOfCellsToCheck; i++)
 			{
-				return true;
+				var indexPath = NSIndexPath.Create(group, i);
+				if (GetPrototypeForIndexPath(indexPath) is ItemsViewCell cellAtIndex)
+				{
+					cellAtIndex.ConstrainTo(ConstrainedDimension);
+					var measureCellAtIndex = cellAtIndex.Measure();
+
+					// Check if the cell has a wider width
+					if (measureCellAtIndex.Width > existingMeasurement.Width)
+					{
+						existingMeasurement = measureCellAtIndex;
+					}
+
+					// TODO: Cache this cell size
+				}
 			}
 
-			return false;
+			return existingMeasurement;
 		}
 	}
 }

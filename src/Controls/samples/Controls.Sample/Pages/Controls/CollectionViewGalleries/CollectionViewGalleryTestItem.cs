@@ -10,11 +10,11 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 	[Preserve(AllMembers = true)]
 	public class CollectionViewGalleryTestItem : INotifyPropertyChanged
 	{
-		string _caption;
+		string? _caption;
 
 		public DateTime Date { get; set; }
 
-		public string Caption
+		public string? Caption
 		{
 			get => _caption;
 			set
@@ -51,14 +51,14 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			});
 		}
 
-		public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler? PropertyChanged;
 
 		public override string ToString()
 		{
 			return $"Item: {Index}";
 		}
 
-		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}

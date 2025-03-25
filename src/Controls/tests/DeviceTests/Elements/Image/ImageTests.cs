@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,39 +44,24 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
-				await image.Wait();
+				await image.WaitUntilLoaded();
 				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
 			});
 		}
 
-		// NOTE: this test is slightly different than MemoryTests.HandlerDoesNotLeak
-		// It sets image.Source and waits for it to load, a valid test case.
-		[Fact("Image Does Not Leak")]
-		public async Task DoesNotLeak()
+		[Fact]
+		[Description("The BackgroundColor of a Image should match with native background color")]
+		public async Task ImageBackgroundColorConsistent()
 		{
-			SetupBuilder();
-			WeakReference platformViewReference = null;
-			WeakReference handlerReference = null;
-
-			await InvokeOnMainThreadAsync(async () =>
+			var expected = Colors.AliceBlue;
+			var image = new Image()
 			{
-				var layout = new VerticalStackLayout();
-				var image = new Image
-				{
-					Background = Colors.Black,
-					Source = "red.png",
-				};
-				layout.Add(image);
+				BackgroundColor = expected,
+				HeightRequest = 100,
+				WidthRequest = 200
+			};
 
-				var handler = CreateHandler<LayoutHandler>(layout);
-				handlerReference = new WeakReference(image.Handler);
-				platformViewReference = new WeakReference(image.Handler.PlatformView);
-				await image.Wait();
-			});
-
-			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);
-			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
-			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
-		}
+			await ValidateHasColor(image, expected, typeof(ImageHandler));
+		}		
 	}
 }

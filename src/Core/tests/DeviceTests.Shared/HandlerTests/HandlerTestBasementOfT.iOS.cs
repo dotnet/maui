@@ -63,9 +63,14 @@ namespace Microsoft.Maui.DeviceTests
 		protected string GetSemanticHint(IViewHandler viewHandler) =>
 			GetAccessiblePlatformView(viewHandler).AccessibilityHint;
 
-		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler) =>
-			GetAccessiblePlatformView(viewHandler).AccessibilityTraits.HasFlag(UIAccessibilityTrait.Header)
-				? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
+		protected SemanticHeadingLevel GetSemanticHeading(IViewHandler viewHandler)
+		{
+			var accessibilityTraits = GetAccessiblePlatformView(viewHandler).AccessibilityTraits;
+
+			var hasHeader = (accessibilityTraits & UIAccessibilityTrait.Header) == UIAccessibilityTrait.Header;
+
+			return hasHeader ? SemanticHeadingLevel.Level1 : SemanticHeadingLevel.None;
+		}
 
 		protected nfloat GetOpacity(IViewHandler viewHandler) =>
 			((UIView)viewHandler.ToPlatform()).Alpha;

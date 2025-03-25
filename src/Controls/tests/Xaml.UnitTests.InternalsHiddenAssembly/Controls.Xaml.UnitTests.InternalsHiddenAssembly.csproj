@@ -4,7 +4,7 @@
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <AssemblyName>Microsoft.Maui.Controls.Xaml.UnitTests.InternalsHiddenAssembly</AssemblyName>
     <IsPackable>false</IsPackable>
-    <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998;4014</NoWarn>
+    <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998</NoWarn>
     <RootNamespace>Microsoft.Maui.Controls.Xaml.UnitTests.InternalsHiddenAssembly</RootNamespace>
   </PropertyGroup>
 

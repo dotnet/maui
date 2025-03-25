@@ -2,6 +2,9 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Maui;
 using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Dispatching;
@@ -19,7 +22,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public class HandlerTestBasement : TestBase, IDisposable
+	public class HandlerTestBasement : TestBase, IAsyncDisposable
 	{
 		MauiApp _mauiApp;
 		IServiceProvider _servicesProvider;
@@ -39,17 +42,23 @@ namespace Microsoft.Maui.DeviceTests
 			var appBuilder = MauiApp.CreateBuilder();
 
 			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
+			appBuilder.Services.AddKeyedSingleton<IDispatcher>(typeof(IApplication), (svc, key) => TestDispatcher.Current);
 			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
 			appBuilder.Services.AddSingleton<IApplication>((_) => new CoreApplicationStub());
 
 			appBuilder = ConfigureBuilder(appBuilder);
 			additionalCreationActions?.Invoke(appBuilder);
 
+			appBuilder.Services.TryAdd(ServiceDescriptor.Singleton<ILoggerFactory, NullLoggerFactory>());
+			appBuilder.Services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(NullLogger<>)));
+
 			_mauiApp = appBuilder.Build();
 			_servicesProvider = _mauiApp.Services;
 
 			_mauiContext = new ContextStub(_servicesProvider);
 		}
+
+		protected ILogger TestRunnerLogger => MauiContext.CreateLogger(this.GetType());
 
 		protected virtual MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
 		{
@@ -166,22 +175,32 @@ namespace Microsoft.Maui.DeviceTests
 			return handler;
 		}
 
-		protected IPlatformViewHandler CreateHandler(IElement view, Type handlerType)
+		protected IPlatformViewHandler CreateHandler(IElement view, Type handlerType) =>
+			CreateHandler(view, handlerType, MauiContext);
+
+		protected IPlatformViewHandler CreateHandler(IElement view, Type handlerType, IMauiContext mauiContext)
 		{
 			if (view.Handler is IPlatformViewHandler t)
 				return t;
 
 			var handler = (IPlatformViewHandler)Activator.CreateInstance(handlerType);
-			InitializeViewHandler(view, handler, MauiContext);
+			InitializeViewHandler(view, handler, mauiContext);
 			return handler;
 
 		}
 
-		protected Task ValidateHasColor(IView view, Color color, Type handlerType, Action action = null, string updatePropertyValue = null, double? tolerance = null)
+		protected Task ValidateHasColor(
+			IView view,
+			Color color,
+			Type handlerType,
+			Action action = null,
+			string updatePropertyValue = null,
+			double? tolerance = null)
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
-				var handler = CreateHandler(view, handlerType);
+				var mauiContext = view?.Handler?.MauiContext ?? MauiContext;
+				var handler = CreateHandler(view, handlerType, mauiContext);
 				var plaformView = handler.ToPlatform();
 				action?.Invoke();
 				if (!string.IsNullOrEmpty(updatePropertyValue))
@@ -189,7 +208,7 @@ namespace Microsoft.Maui.DeviceTests
 					handler.UpdateValue(updatePropertyValue);
 				}
 
-				await plaformView.AssertContainsColor(color, MauiContext, tolerance: tolerance);
+				await plaformView.AssertContainsColor(color, mauiContext, tolerance: tolerance);
 			});
 		}
 
@@ -285,7 +304,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync<RawBitmap>(async () =>
 			{
-				var platformView = CreateHandler(view, handlerType).ToPlatform();
+				var handler = CreateHandler(view, handlerType);
+				var platformView = view.ToPlatform();
 #if WINDOWS
 				return await platformView.AttachAndRun<RawBitmap>(async (window) => await view.AsRawBitmapAsync(), MauiContext);
 #else
@@ -294,9 +314,13 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		public void Dispose()
+		public async ValueTask DisposeAsync()
 		{
-			((IDisposable)_mauiApp)?.Dispose();
+			if (_mauiApp != null)
+			{
+				await ((IAsyncDisposable)_mauiApp).DisposeAsync();
+			}
+
 			_mauiApp = null;
 			_servicesProvider = null;
 			_mauiContext = null;

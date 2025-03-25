@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class StepperHandler : ViewHandler<IStepper, UIStepper>
 	{
+		readonly StepperProxy _proxy = new();
+
 		protected override UIStepper CreatePlatformView()
 		{
 			return new UIStepper(RectangleF.Empty);
@@ -16,14 +18,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
-			platformView.ValueChanged += OnValueChanged;
+			_proxy.Connect(VirtualView, platformView);
 		}
 
 		protected override void DisconnectHandler(UIStepper platformView)
 		{
 			base.DisconnectHandler(platformView);
 
-			platformView.ValueChanged -= OnValueChanged;
+			_proxy.Disconnect(platformView);
 		}
 
 		public static void MapMinimum(IStepperHandler handler, IStepper stepper)
@@ -46,12 +48,28 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateValue(stepper);
 		}
 
-		void OnValueChanged(object? sender, EventArgs e)
+		class StepperProxy
 		{
-			if (PlatformView == null || VirtualView == null)
-				return;
+			WeakReference<IStepper>? _virtualView;
 
-			VirtualView.Value = PlatformView.Value;
+			IStepper? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+
+			public void Connect(IStepper virtualView, UIStepper platformView)
+			{
+				_virtualView = new(virtualView);
+				platformView.ValueChanged += OnValueChanged;
+			}
+
+			public void Disconnect(UIStepper platformView)
+			{
+				platformView.ValueChanged -= OnValueChanged;
+			}
+
+			void OnValueChanged(object? sender, EventArgs e)
+			{
+				if (VirtualView is IStepper virtualView && sender is UIStepper platformView)
+					virtualView.Value = platformView.Value;
+			}
 		}
 	}
 }

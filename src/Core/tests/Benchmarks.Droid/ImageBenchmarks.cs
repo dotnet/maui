@@ -1,12 +1,12 @@
 ﻿using Android.Content;
+using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Bumptech.Glide;
-using Bumptech.Glide.Request.Target;
-using Bumptech.Glide.Request.Transition;
 using Java.Lang;
 using Microsoft.Maui.Storage;
 using AImageView = Android.Widget.ImageView;
+using Path = System.IO.Path;
 
 namespace Benchmarks.Droid;
 
@@ -20,6 +20,7 @@ public class ImageBenchmark
 	Handler? handler;
 	Context? context;
 	string? imageFilename;
+	Typeface? defaultTypeface;
 
 	[GlobalSetup]
 	public void GlobalSetup()
@@ -29,6 +30,7 @@ public class ImageBenchmark
 		imageView = new AImageView(context);
 		glide = Glide.Get(context);
 		handler = new Handler(Looper.MainLooper!);
+		defaultTypeface = Typeface.Default;
 
 		var imageName = "dotnet_bot.png";
 		var cacheDir = FileSystem.CacheDirectory;
@@ -64,6 +66,25 @@ public class ImageBenchmark
 			Microsoft.Maui.PlatformInterop.LoadImageFromFile(
 				context!,
 				imageFilename,
+				callback);
+		});
+
+		await callback.SuccessTask;
+	}
+
+	[Benchmark]
+	public async Task ImageHelperFromFont()
+	{
+		var callback = new Callback();
+
+		handler!.Post(() =>
+		{
+			Microsoft.Maui.PlatformInterop.LoadImageFromFont(
+				context,
+				Color.Aquamarine,
+				"A",
+				defaultTypeface,
+				24,
 				callback);
 		});
 

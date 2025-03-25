@@ -40,12 +40,6 @@ namespace Microsoft.Maui.Storage
 					resultList.Add(file);
 			}
 
-			if (AppInfoUtils.IsPackagedApp)
-			{
-				foreach (var file in resultList)
-					StorageApplicationPermissions.FutureAccessList.Add(file);
-			}
-
 			return resultList.Select(storageFile => new FileResult(storageFile));
 		}
 

@@ -3,7 +3,7 @@ using System;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public sealed class HeightConverter : Microsoft.UI.Xaml.Data.IValueConverter
+	public sealed partial class HeightConverter : Microsoft.UI.Xaml.Data.IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, string language)
 		{

@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var count = args.NewItems.Count;
 			Count += count;
-			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : IndexOf(args.NewItems[0]);
+			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
 
 			// Queue up the updates to the UICollectionView
 			Update(() => CollectionView.InsertItems(CreateIndexesFrom(startIndex, count)), args);
@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (newCount == args.OldItems.Count)
 			{
-				var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : IndexOf(args.NewItems[0]);
+				var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : _itemsSource.IndexOf(args.NewItems[0]);
 
 				// We are replacing one set of items with a set of equal size; we can do a simple item range update
 
@@ -239,22 +239,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			{
 				if (count == index)
 					return item;
-				count++;
-			}
-
-			return -1;
-		}
-
-		internal int IndexOf(object item)
-		{
-			if (_itemsSource is IList list)
-				return list.IndexOf(item);
-
-			int count = 0;
-			foreach (var i in _itemsSource)
-			{
-				if (i == item)
-					return count;
 				count++;
 			}
 

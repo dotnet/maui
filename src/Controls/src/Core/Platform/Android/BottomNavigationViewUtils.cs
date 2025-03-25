@@ -94,16 +94,27 @@ namespace Microsoft.Maui.Controls.Platform
 				else
 				{
 					menuItem = menu.GetItem(i);
-					SetMenuItemTitle(menuItem, item.title);
-					loadTasks.Add(SetMenuItemIcon(menuItem, item.icon, mauiContext));
+					if (menuItem.ItemId != i)
+					{
+						menu.RemoveItem(menuItem.ItemId);
+						loadTasks.Add(SetupMenuItem(item, menu, i, currentIndex, bottomView, mauiContext, out menuItem));
+					}
+					else
+					{
+						SetMenuItemTitle(menuItem, item.title);
+						loadTasks.Add(SetMenuItemIcon(menuItem, item.icon, mauiContext));
+					}
 				}
 
 				menuItems.Add(menuItem);
 			}
 
-			if (showMore)
+			var menuSize = menu.Size();
+			if (showMore && menu.GetItem(menuSize - 1).ItemId != MoreTabId)
 			{
 				var moreString = context.Resources.GetText(Resource.String.overflow_tab_title);
+				if (menuSize == maxBottomItems)
+					menu.RemoveItem(menu.GetItem(menuSize - 1).ItemId);
 				var menuItem = menu.Add(0, MoreTabId, 0, moreString);
 				menuItems.Add(menuItem);
 
@@ -244,12 +255,14 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			try
 			{
+#pragma warning disable XAOBS001 // Obsolete
 				var menuView = bottomNavigationView.GetChildAt(0) as BottomNavigationMenuView;
 				if (menuView is null)
 				{
 					System.Diagnostics.Debug.WriteLine("Unable to find BottomNavigationMenuView");
 					return;
 				}
+#pragma warning restore XAOBS001 // Obsolete
 
 #if __ANDROID_28__
 				if (enableShiftMode)
@@ -266,7 +279,9 @@ namespace Microsoft.Maui.Controls.Platform
 				for (int i = 0; i < menuView.ChildCount; i++)
 				{
 					var child = menuView.GetChildAt(i);
+#pragma warning disable XAOBS001 // Obsolete
 					var item = child as BottomNavigationItemView;
+#pragma warning restore XAOBS001 // Obsolete
 					if (item != null)
 					{
 #if __ANDROID_28__

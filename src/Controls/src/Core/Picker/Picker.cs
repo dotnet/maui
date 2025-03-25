@@ -5,13 +5,17 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml;
+
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="Type[@FullName='Microsoft.Maui.Controls.Picker']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>, IPicker
 	{
 		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
@@ -199,6 +203,7 @@ namespace Microsoft.Maui.Controls
 
 		BindingBase _itemDisplayBinding;
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='ItemDisplayBinding']/Docs/*" />
+		[DoesNotInheritDataType]
 		public BindingBase ItemDisplayBinding
 		{
 			get { return _itemDisplayBinding; }
@@ -243,14 +248,12 @@ namespace Microsoft.Maui.Controls
 
 		void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			var oldIndex = SelectedIndex;
-			var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
-			//FIXME use the specificity of the caller
-			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
-			// If the index has not changed, still need to change the selected item
-			if (newIndex == oldIndex)
-				UpdateSelectedItem(newIndex);
+			// Do not execute when Items is locked because updates to ItemsSource will
+			// take care of it
+			if (((LockableObservableListWrapper)Items).IsLocked)
+				return;
 
+			ClampSelectedIndex();
 			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
 
@@ -278,8 +281,9 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				((LockableObservableListWrapper)Items).InternalClear();
+				// Unlock, then clear, so OnItemsCollectionChanged executes
 				((LockableObservableListWrapper)Items).IsLocked = false;
+				((LockableObservableListWrapper)Items).InternalClear();
 			}
 		}
 
@@ -303,16 +307,39 @@ namespace Microsoft.Maui.Controls
 
 		void AddItems(NotifyCollectionChangedEventArgs e)
 		{
-			int index = e.NewStartingIndex < 0 ? Items.Count : e.NewStartingIndex;
+			int insertIndex = e.NewStartingIndex < 0 ? Items.Count : e.NewStartingIndex;
+			int index = insertIndex;
 			foreach (object newItem in e.NewItems)
 				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
+			if (insertIndex <= SelectedIndex)
+				UpdateSelectedItem(SelectedIndex);
 		}
 
 		void RemoveItems(NotifyCollectionChangedEventArgs e)
 		{
-			int index = e.OldStartingIndex < Items.Count ? e.OldStartingIndex : Items.Count;
+			int removeStart;
+			// Items are removed in reverse order, so index starts at the index of the last item to remove
+			int index;
+
+			if (e.OldStartingIndex < Items.Count)
+			{
+				// Remove e.OldItems.Count items starting at e.OldStartingIndex
+				removeStart = e.OldStartingIndex;
+				index = e.OldStartingIndex + e.OldItems.Count - 1;
+			}
+			else
+			{
+				// Remove e.OldItems.Count items at the end when e.OldStartingIndex is past the end of the Items collection
+				removeStart = Items.Count - e.OldItems.Count;
+				index = Items.Count - 1;
+			}
+
 			foreach (object _ in e.OldItems)
 				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+			if (removeStart <= SelectedIndex)
+			{
+				ClampSelectedIndex();
+			}
 		}
 
 		void ResetItems()
@@ -323,7 +350,8 @@ namespace Microsoft.Maui.Controls
 			foreach (object item in ItemsSource)
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
 			Handler?.UpdateValue(nameof(IPicker.Items));
-			UpdateSelectedItem(SelectedIndex);
+
+			ClampSelectedIndex();
 		}
 
 		static void OnSelectedIndexChanged(object bindable, object oldValue, object newValue)
@@ -337,6 +365,17 @@ namespace Microsoft.Maui.Controls
 		{
 			var picker = (Picker)bindable;
 			picker.UpdateSelectedIndex(newValue);
+		}
+
+		void ClampSelectedIndex()
+		{
+			var oldIndex = SelectedIndex;
+			var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
+			//FIXME use the specificity of the caller
+			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
+			// If the index has not changed, still need to change the selected item
+			if (newIndex == oldIndex)
+				UpdateSelectedItem(newIndex);
 		}
 
 		void UpdateSelectedIndex(object selectedItem)
@@ -423,6 +462,12 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return string.Empty;
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			var selectedItemText = DebuggerDisplayHelpers.GetDebugText(nameof(SelectedItem), SelectedItem);
+			return $"{base.GetDebuggerDisplay()}, Items = {ItemsSource?.Count ?? 0}, {selectedItemText}";
 		}
 	}
 }

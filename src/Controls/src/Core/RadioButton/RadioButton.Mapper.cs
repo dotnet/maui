@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
@@ -7,10 +8,6 @@ namespace Microsoft.Maui.Controls
 	public partial class RadioButton
 	{
 		IMauiContext MauiContext => Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext not set");
-
-		[Obsolete("Use RadioButtonHandler.Mapper instead.")]
-		public static IPropertyMapper<RadioButton, RadioButtonHandler> ControlsRadioButtonMapper =
-			new PropertyMapper<RadioButton, RadioButtonHandler>(RadioButtonHandler.Mapper);
 
 		internal new static void RemapForControls()
 		{

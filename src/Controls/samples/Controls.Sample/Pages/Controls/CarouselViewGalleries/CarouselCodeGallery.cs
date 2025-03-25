@@ -127,7 +127,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			positionControl.UpdatePosition(1);
 		}
 
-		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
+		void CarouselViewScrolled(object? sender, ItemsViewScrolledEventArgs e)
 		{
 			_scrollInfoLabel.Text = $"First item: {e.FirstVisibleItemIndex}, Last item: {e.LastVisibleItemIndex}";
 

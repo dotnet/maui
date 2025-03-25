@@ -7,7 +7,7 @@ namespace Maui.Controls.Sample.Pages
 	public partial class ModalPage
 	{
 		static int s_instanceCount = 0;
-		string _previousTitle;
+		string? _previousTitle;
 		public ModalPage()
 		{
 			InitializeComponent();

@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Border), new Rectangle(),
 				propertyChanging: (bindable, oldvalue, newvalue) =>
 				{
-					if (newvalue is not null)
+					if (oldvalue is not null)
 						(bindable as Border)?.StopNotifyingStrokeShapeChanges();
 				},
 				propertyChanged: (bindable, oldvalue, newvalue) =>
@@ -65,7 +65,14 @@ namespace Microsoft.Maui.Controls
 			if (strokeShape is VisualElement visualElement)
 			{
 				AddLogicalChild(visualElement);
-				_strokeShapeChanged ??= (sender, e) => OnPropertyChanged(nameof(StrokeShape));
+				_strokeShapeChanged ??= (sender, e) =>
+				{
+					if (e.PropertyName != nameof(Window) &&
+						e.PropertyName != nameof(Parent))
+					{
+						OnPropertyChanged(nameof(StrokeShape));
+					}
+				};
 				_strokeShapeProxy ??= new();
 				_strokeShapeProxy.Subscribe(visualElement, _strokeShapeChanged);
 			}
@@ -87,7 +94,7 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Border), null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
 				{
-					if (newvalue is not null)
+					if (oldvalue is not null)
 						(bindable as Border)?.StopNotifyingStrokeChanges();
 				},
 				propertyChanged: (bindable, oldvalue, newvalue) =>
@@ -109,6 +116,9 @@ namespace Microsoft.Maui.Controls
 				_strokeChanged ??= (sender, e) => OnPropertyChanged(nameof(Stroke));
 				_strokeProxy ??= new();
 				_strokeProxy.Subscribe(stroke, _strokeChanged);
+
+				OnParentResourcesChanged(this.GetMergedResources());
+				((IElementDefinition)this).AddResourcesChangedListener(stroke.OnParentResourcesChanged);
 			}
 		}
 
@@ -121,6 +131,8 @@ namespace Microsoft.Maui.Controls
 
 			if (stroke is not null)
 			{
+				((IElementDefinition)this).RemoveResourcesChangedListener(stroke.OnParentResourcesChanged);
+
 				SetInheritedBindingContext(stroke, null);
 				_strokeProxy?.Unsubscribe();
 			}
@@ -297,14 +309,15 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnPropertyChanged(propertyName);
 
-			if (propertyName == HeightProperty.PropertyName ||
-				propertyName == WidthProperty.PropertyName ||
-				propertyName == StrokeShapeProperty.PropertyName)
-				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
-			else if (propertyName == StrokeThicknessProperty.PropertyName)
+			if (propertyName == StrokeThicknessProperty.PropertyName || propertyName == StrokeShapeProperty.PropertyName)
+			{
 				UpdateStrokeShape();
+				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
+			}
 			else if (propertyName == StrokeDashArrayProperty.PropertyName)
+			{
 				Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
+			}
 		}
 
 		void OnStrokeDashArrayChanged(object? sender, NotifyCollectionChangedEventArgs e)

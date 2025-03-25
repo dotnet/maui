@@ -13,6 +13,7 @@
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.VIBRATE" />
 	<uses-permission android:name="android.permission.READ_CONTACTS" />
+  <uses-permission android:name="android.permission.HIGH_SAMPLING_RATE_SENSORS" />
 	<queries>
 		<!-- Email -->
 		<intent>

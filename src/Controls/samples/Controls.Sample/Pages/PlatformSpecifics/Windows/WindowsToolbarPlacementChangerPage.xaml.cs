@@ -41,7 +41,7 @@ namespace Maui.Controls.Sample.Pages
 			{
 				var enumType = typeof(ToolbarPlacement);
 				var instance = element as WindowsToolbarPlacementChangerPage;
-				instance.picker.SelectedIndex = Array.IndexOf(Enum.GetNames(enumType), Enum.GetName(enumType, instance.ParentPage.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().GetToolbarPlacement()));
+				instance!.picker.SelectedIndex = Array.IndexOf(Enum.GetNames(enumType), Enum.GetName(enumType, instance.ParentPage.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().GetToolbarPlacement()));
 			}
 		}
 	}

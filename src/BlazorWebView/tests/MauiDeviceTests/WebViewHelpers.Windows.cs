@@ -6,28 +6,17 @@ using Microsoft.Web.WebView2.Core;
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 {
-	public static class WebViewHelpers
+	public static partial class WebViewHelpers
 	{
-		const int MaxWaitTimes = 30;
-		const int WaitTimeInMS = 250;
-
 		public static async Task WaitForWebViewReady(WebView2 wv2)
 		{
 			CoreWebView2 coreWebView2 = null;
-			for (int i = 0; i < MaxWaitTimes; i++)
+
+			await Retry(() =>
 			{
 				coreWebView2 = wv2.CoreWebView2;
-				if (coreWebView2 != null)
-				{
-					break;
-				}
-				await Task.Delay(WaitTimeInMS);
-			}
-
-			if (coreWebView2 == null)
-			{
-				throw new Exception($"Waited {MaxWaitTimes * WaitTimeInMS}ms but couldn't get CoreWebView2 to be available.");
-			}
+				return Task.FromResult(coreWebView2 != null);
+			}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get CoreWebView2 to be available.")));
 
 			var domLoaded = false;
 			var sem = new SemaphoreSlim(1);
@@ -45,13 +34,14 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 				// It's possible that the DOMContentLoaded event won't fire because it's already loaded by the time we got here. To check
 				// for that, we inspect an arbitrary custom HTML element attribute to see if we can find it. If we can find it, then surely
 				// the DOM content is loaded, so we can continue with the test.
-				var testHtmlLoadedAttributeValue = await wv2.CoreWebView2.ExecuteScriptAsync("(document.head.attributes['testhtmlloaded']?.value === 'true')");
 
-				if (testHtmlLoadedAttributeValue != "true")
+				await Retry(async () =>
 				{
+					var testHtmlLoadedAttributeValue = await wv2.CoreWebView2.ExecuteScriptAsync("(document.head.attributes['testhtmlloaded']?.value === 'true')");
+
 					// If the event didn't fire, AND we couldn't find the custom HTML element attribute, then the test content didn't load
-					throw new Exception($"Waited {MaxWaitTimes * WaitTimeInMS}ms but couldn't get CoreWebView2.DOMContentLoaded to complete.");
-				}
+					return testHtmlLoadedAttributeValue == "true";
+				}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get CoreWebView2.DOMContentLoaded to complete.")));
 			}
 			return;
 		}
@@ -64,17 +54,12 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 		public static async Task WaitForControlDiv(WebView2 webView2, string controlValueToWaitFor)
 		{
 			var quotedExpectedValue = "\"" + controlValueToWaitFor + "\"";
-			for (int i = 0; i < MaxWaitTimes; i++)
+
+			await Retry(async () =>
 			{
 				var controlValue = await ExecuteScriptAsync(webView2, "document.getElementById('controlDiv').innerText");
-				if (controlValue == quotedExpectedValue)
-				{
-					return;
-				}
-				await Task.Delay(WaitTimeInMS);
-			}
-
-			throw new Exception($"Waited {MaxWaitTimes * WaitTimeInMS}ms but couldn't get controlDiv to have value '{controlValueToWaitFor}'.");
+				return controlValue == quotedExpectedValue;
+			}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get controlDiv to have value '{controlValueToWaitFor}'.")));
 		}
 	}
 }

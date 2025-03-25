@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19592"
+             xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
+    <StackLayout>
+        <Label FontAttributes="Bold"
+               Text="Line height: 1.25"/>
+        <Label AutomationId="label"
+               LineBreakMode="WordWrap">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span LineHeight="1.5">Outside, the church's garden was a haven of tranquility, where nature and spirituality intertwined harmoniously. Flowers bloomed in vibrant hues, each petal seemingly capturing a prayer or hope of the visitors who walked among them. The garden, lovingly tended by members of the congregation, reflected the church's commitment to nurturing not just the soul, but also the beauty of the world around it. It was a place where people of all walks of life could find solace, inspiration, and a sense of belonging within the embrace of the church's community.</Span>
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+
+        <Label FontAttributes="Bold"
+               Margin="0,20,0,0"
+               Text="Line height: 2.5"/>
+        <Label LineBreakMode="WordWrap">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span LineHeight="2.5">Outside, the church's garden was a haven of tranquility, where nature and spirituality intertwined harmoniously. Flowers bloomed in vibrant hues, each petal seemingly capturing a prayer or hope of the visitors who walked among them. The garden, lovingly tended by members of the congregation, reflected the church's commitment to nurturing not just the soul, but also the beauty of the world around it. It was a place where people of all walks of life could find solace, inspiration, and a sense of belonging within the embrace of the church's community.</Span>
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+    </StackLayout>
+</ContentPage>

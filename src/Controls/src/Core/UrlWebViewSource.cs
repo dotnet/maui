@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls
 	public class UrlWebViewSource : WebViewSource
 	{
 		/// <summary>Bindable property for <see cref="Url"/>.</summary>
-		public static readonly BindableProperty UrlProperty = BindableProperty.Create("Url", typeof(string), typeof(UrlWebViewSource), default(string),
+		public static readonly BindableProperty UrlProperty = BindableProperty.Create(nameof(Url), typeof(string), typeof(UrlWebViewSource), default(string),
 			propertyChanged: (bindable, oldvalue, newvalue) => ((UrlWebViewSource)bindable).OnSourceChanged());
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/UrlWebViewSource.xml" path="//Member[@MemberName='Url']/Docs/*" />

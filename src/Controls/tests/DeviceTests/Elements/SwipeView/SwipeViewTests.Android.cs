@@ -5,6 +5,8 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -54,17 +56,17 @@ namespace Microsoft.Maui.DeviceTests
 				swipeView.Open(OpenSwipeItem.LeftItems, false);
 
 				// The SwipeView add children dynamically opening it.
-				await AssertionExtensions.Wait(() => platformView.ChildCount > 1);
+				await AssertEventually(() => platformView.ChildCount > 1);
 
 				var actionView = platformView.GetChildAt(1) as ViewGroup;
 				Assert.NotNull(actionView);
 
-				await AssertionExtensions.Wait(() => actionView.ChildCount > 0);
+				await AssertEventually(() => actionView.ChildCount > 0);
 
 				var swipeItem = actionView.GetChildAt(0);
 				Assert.NotNull(swipeItem);
 
-				await AssertionExtensions.Wait(() => swipeItem.Width > 0);
+				await AssertEventually(() => swipeItem.Width > 0);
 				Assert.NotEqual(0, swipeItem.Width);
 			});
 		}
@@ -76,6 +78,25 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return InvokeOnMainThreadAsync(()
 				=> GetPlatformControl(handler).ChildCount != 0);
+		}
+
+		[Fact]
+		[Description("The Opacity property of a SwipeView should match with native Opacity")]
+		public async Task VerifySwipeViewOpacityProperty()
+		{
+			var swipeView = new SwipeView
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = swipeView.Opacity;
+			
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+   			{
+				var nativeOpacityValue = (float)nativeView.Alpha;
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
 		}
 	}
 }

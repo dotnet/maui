@@ -2,9 +2,9 @@
 {
 	public enum ApplicationState
 	{
-		Not_Installed,
+		NotInstalled,
 		Installed,
-		Not_Running,
+		NotRunning,
 		Running,
 		Unknown
 	}

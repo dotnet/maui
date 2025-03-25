@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 		void UpdateStrokeDashArray()
 		{
 			if (Element.StrokeDashArray == null || Element.StrokeDashArray.Count == 0)
-				Control.ShapeLayer.UpdateStrokeDash(new nfloat[0]);
+				Control.ShapeLayer.UpdateStrokeDash(Array.Empty<nfloat>());
 			else
 			{
 				nfloat[] dashArray;

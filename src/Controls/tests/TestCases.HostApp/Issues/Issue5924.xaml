@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Issues.Issue5924"
+    xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
+     <TableView Intent="Settings">
+        <TableRoot>
+            <TableSection Title="Locations">
+                <ViewCell>
+                    <AbsoluteLayout>
+                        <Label AutomationId="label" Text="Enter text into the Entry field and it shouldn't disappear" HorizontalOptions="Start" VerticalOptions="Center" AbsoluteLayout.LayoutBounds="0,0.5" AbsoluteLayout.LayoutFlags="PositionProportional"/>
+                        <Entry AutomationId="entry" HorizontalOptions="End" VerticalOptions="Center" AbsoluteLayout.LayoutBounds="1,0.5" AbsoluteLayout.LayoutFlags="PositionProportional"/>
+                    </AbsoluteLayout>
+                </ViewCell>
+            </TableSection>
+        </TableRoot>
+    </TableView>
+</ContentPage>

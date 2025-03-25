@@ -284,7 +284,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		CookieCollection? GetCookiesFromPlatformStore(string url)
+		static CookieCollection? GetCookiesFromPlatformStore(string url)
 		{
 			CookieContainer existingCookies = new CookieContainer();
 			var cookieManager = CookieManager.Instance;

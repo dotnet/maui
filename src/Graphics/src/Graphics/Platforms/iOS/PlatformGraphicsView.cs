@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -49,7 +48,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				_renderer = value ?? new DirectRenderer();
 
 				_renderer.GraphicsView = this;
-				_renderer.Drawable = _drawable;
+				_renderer.Drawable = Drawable;
 				var bounds = Bounds;
 				_renderer.SizeChanged((float)bounds.Width, (float)bounds.Height);
 			}
@@ -61,31 +60,25 @@ namespace Microsoft.Maui.Graphics.Platform
 			set
 			{
 				_drawable = value;
-				if (_renderer != null)
+				if (Renderer is IGraphicsRenderer renderer)
 				{
-					_renderer.Drawable = _drawable;
-					_renderer.Invalidate();
+					renderer.Drawable = value;
+					renderer.Invalidate();
 				}
 			}
 		}
 
-		public void InvalidateDrawable()
-		{
-			_renderer.Invalidate();
-		}
+		public void InvalidateDrawable() => Renderer?.Invalidate();
 
-		public void InvalidateDrawable(float x, float y, float w, float h)
-		{
-			_renderer.Invalidate(x, y, w, h);
-		}
+		public void InvalidateDrawable(float x, float y, float w, float h) => Renderer?.Invalidate(x, y, w, h);
 
 		public override void WillMoveToSuperview(UIView newSuperview)
 		{
 			base.WillMoveToSuperview(newSuperview);
 
-			if (newSuperview == null)
+			if (newSuperview == null && Renderer is IGraphicsRenderer renderer)
 			{
-				_renderer.Detached();
+				renderer.Detached();
 			}
 		}
 
@@ -107,7 +100,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			coreGraphics.SetStrokeColorSpace(_colorSpace);
 			coreGraphics.SetPatternPhase(PatternPhase);
 
-			_renderer.Draw(coreGraphics, dirtyRect.AsRectangleF());
+			if (Renderer is IGraphicsRenderer renderer)
+			{
+				renderer.Draw(coreGraphics, dirtyRect.AsRectangleF());
+			}
 		}
 
 		public override CGRect Bounds
@@ -120,8 +116,12 @@ namespace Microsoft.Maui.Graphics.Platform
 				if (_lastBounds.Width != newBounds.Width || _lastBounds.Height != newBounds.Height)
 				{
 					base.Bounds = value;
-					_renderer.SizeChanged((float)newBounds.Width, (float)newBounds.Height);
-					_renderer.Invalidate();
+
+					if (Renderer is IGraphicsRenderer renderer)
+					{
+						renderer.SizeChanged((float)newBounds.Width, (float)newBounds.Height);
+						renderer.Invalidate();
+					}
 
 					_lastBounds = newBounds;
 				}

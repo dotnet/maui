@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.DropFileToMauiApp"
+    xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
+    <views:BasePage.Resources>
+    </views:BasePage.Resources>
+    <Grid x:Name="myLayout">
+        <Grid.GestureRecognizers>
+            <DropGestureRecognizer AllowDrop="True" DragOver="DropGestureDragOver" Drop="DropGestureDrop" DragLeave="DropGestureDragLeave"/>
+        </Grid.GestureRecognizers>
+        <Label x:Name="lblPath" HorizontalOptions="Center" VerticalOptions="Center" Text="Drag a file here like a .txt" />
+    </Grid>
+</views:BasePage>

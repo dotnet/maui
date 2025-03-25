@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Graphics
 
 		public PointF Round()
 		{
-			return new PointF((float)Math.Round(X), (float)Math.Round(Y));
+			return new PointF(MathF.Round(X), MathF.Round(Y));
 		}
 
 		public bool IsEmpty => X == 0 && Y == 0;
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Graphics
 
 		public float Distance(PointF other)
 		{
-			return (float)Math.Sqrt(Math.Pow(X - other.X, 2) + Math.Pow(Y - other.Y, 2));
+			return MathF.Sqrt(MathF.Pow(X - other.X, 2) + MathF.Pow(Y - other.Y, 2));
 		}
 
 		public void Deconstruct(out float x, out float y)

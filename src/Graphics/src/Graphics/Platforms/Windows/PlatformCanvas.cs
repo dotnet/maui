@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override bool Antialias
 		{
-			set { }
+			set => _session.Antialiasing = value ? CanvasAntialiasing.Antialiased : CanvasAntialiasing.Aliased;
 		}
 
 		public override BlendMode BlendMode

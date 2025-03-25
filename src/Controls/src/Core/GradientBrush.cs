@@ -29,6 +29,9 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(GradientStopsProperty, value);
 		}
 
+		public override bool IsEmpty =>
+			GradientStops is null || GradientStops.Count == 0;
+
 		static void OnGradientStopsChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			(bindable as GradientBrush)?.UpdateGradientStops(oldValue as GradientStopCollection, newValue as GradientStopCollection);
@@ -62,8 +65,11 @@ namespace Microsoft.Maui.Controls
 
 			foreach (var newStop in newCollection)
 			{
-				newStop.Parent = this;
-				newStop.PropertyChanged += OnGradientStopPropertyChanged;
+				if (newStop is not null)
+				{
+					newStop.Parent = this;
+					newStop.PropertyChanged += OnGradientStopPropertyChanged;
+				}
 			}
 		}
 

@@ -5,9 +5,6 @@
     <RootNamespace>Microsoft.Maui.Resizetizer</RootNamespace>
     <AssemblyName>Microsoft.Maui.Resizetizer</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
-    <PackageId>Microsoft.Maui.Resizetizer</PackageId>
-    <Description>.NET MAUI SDK support for images, fonts, etc. Enabled via &lt;UseMauiAssets&gt;true&lt;/UseMauiAssets&gt;.</Description>
-    <IsPackable>true</IsPackable>
     <!-- Suppresses the warnings about the package not having assemblies in lib/*/.dll.-->
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <!-- Do not include any assemblies from this project as we will do it manually -->
@@ -16,18 +13,44 @@
     <ILRepackBeforePack>true</ILRepackBeforePack>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Resizetizer</PackageId>
+    <Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package contains image, font and raw asset processing tools.</Description>
+  </PropertyGroup>
+
   <ItemGroup>
     <EmbeddedResource Include="Resources\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" Version="15.9.20" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="all" />
   </ItemGroup>
 
   <Import Project="ResizetizerPackages.projitems" />
+
+  <!-- A small task to make sure everything depends on the same version of SkiaSharp -->
+  <ItemGroup>
+    <PackageReference Include="Mono.ApiTools.MSBuildTasks" Version="0.3.0" PrivateAssets="all" />
+  </ItemGroup>
+  <PropertyGroup>
+    <_AdjustmentsAssembly>$(PkgSvg_Skia)\lib\netstandard2.0\Svg.Skia.dll</_AdjustmentsAssembly>
+    <_AdjustmentsReferencedAssembly>$(PkgSkiaSharp)\lib\net462\SkiaSharp.dll</_AdjustmentsReferencedAssembly>
+  </PropertyGroup>
+  <Target Name="_AdjustSkiaSharpVersion" BeforeTargets="Build;AssignTargetPaths"
+          Inputs="$(MSBuildProjectFile);$(_AdjustmentsAssembly);$(_AdjustmentsReferencedAssembly)" Outputs="$(IntermediateOutputPath)adjustments\Svg.Skia.dll">
+    <MakeDir Directories="$(IntermediateOutputPath)adjustments" />
+    <AdjustReferencedAssemblyVersion
+      Assembly="$(_AdjustmentsAssembly)"
+      ReferencedAssembly="$(_AdjustmentsReferencedAssembly)"
+      OutputAssembly="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
+    <ItemGroup>
+      <None Include="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" Visible="false" Pack="true" PackagePath="buildTransitive" />
+      <FileWrites Include="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
+    </ItemGroup>
+  </Target>
 
   <Import Project="$(MauiRootDirectory)eng\ILRepack.targets" />
   <Target Name="AfterILRepack">
@@ -49,6 +72,15 @@
       <_CopyItems Include="@(_ResizetizerFiles)" />
     </ItemGroup>
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)%(_CopyItems.Arch)" ContinueOnError="true" Retries="0" />
+    <MakeDir Directories="$(IntermediateOutputPath)adjustments" />
+    <AdjustReferencedAssemblyVersion
+      Assembly="$(_AdjustmentsAssembly)"
+      ReferencedAssembly="$(_AdjustmentsReferencedAssembly)"
+      OutputAssembly="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
+    <Copy SourceFiles="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" DestinationFiles="$(_MauiBuildTasksLocation)Svg.Skia.dll" ContinueOnError="true" Retries="0" />
+    <ItemGroup>
+      <FileWrites Include="$(IntermediateOutputPath)adjustments\Svg.Skia.dll" />
+    </ItemGroup>
   </Target>
 
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />

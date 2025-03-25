@@ -17,10 +17,12 @@ namespace Microsoft.Maui
 		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
 		internal const string GetConfigurationSelectorName = "application:configurationForConnectingSceneSession:options:";
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IMauiContext is a non-NSObject in MAUI.")]
 		IMauiContext _applicationContext = null!;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IServiceProvider is a non-NSObject from Microsoft.Extensions.DependencyInjection.")]
 		IServiceProvider? _services;
-
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IApplication is a non-NSObject in MAUI.")]
 		IApplication? _application;
 
 		protected MauiUIApplicationDelegate() : base()
@@ -163,7 +165,7 @@ namespace Microsoft.Maui
 			_services?.InvokeLifecycleEvents<iOSLifecycle.PerformFetch>(del => del(application, completionHandler));
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "There can only be one MauiUIApplicationDelegate.")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "There can only be one MauiUIApplicationDelegate.")]
 		public static MauiUIApplicationDelegate Current { get; private set; } = null!;
 
 		[Export("window")]

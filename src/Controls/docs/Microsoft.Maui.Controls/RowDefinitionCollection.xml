@@ -23,7 +23,6 @@
   <Interfaces />
   <Docs>
     <summary>A <see cref="T:Microsoft.Maui.Controls.DefinitionCollection`1" /> for <see cref="T:Microsoft.Maui.Controls.RowDefinition" />s.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -45,7 +44,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new empty <see cref="T:Microsoft.Maui.Controls.RowDefinitionCollection" /> object.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

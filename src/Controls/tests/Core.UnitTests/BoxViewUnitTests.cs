@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			Assert.Equal(new Color(0.2f, 0.3f, 0.4f), box.Color);
-			var request = box.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
+			var request = box.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None).Request;
 			Assert.Equal(20, request.Width);
 			Assert.Equal(30, request.Height);
 		}
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true,
 			};
 
-			var request = box.Measure(double.PositiveInfinity, double.PositiveInfinity).Request;
+			var request = box.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.None).Request;
 			Assert.Equal(40, request.Width);
 			Assert.Equal(40, request.Height);
 		}

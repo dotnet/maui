@@ -89,6 +89,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.Is(VisualElement.FlowDirectionProperty))
 				UpdateFlowDirection();
+			else if (e.Is(Shell.FlyoutIconProperty))
+				UpdateLeftToolbarItems();
 		}
 
 		protected virtual void OnBackButtonBehaviorPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -132,10 +134,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateTabBarVisible()
 		{
-			var tabBarVisible =
-				(Page.FindParentOfType<ShellItem>() as IShellItemController)?.ShowTabs ?? Shell.GetTabBarIsVisible(Page);
+			if (ViewController is null || Page is null)
+			{
+				return;
+			}
 
-			ViewController.HidesBottomBarWhenPushed = !tabBarVisible;
+			var tabBarVisible = (Page.FindParentOfType<ShellItem>() as IShellItemController)?.ShowTabs ?? Shell.GetTabBarIsVisible(Page);
+			// In iOS 18, the tab bar visibility is effectively managed by the TabBarHidden property in ShellItemRenderer.
+			if (!(OperatingSystemMacCatalyst18Workaround.IsMacCatalystVersionAtLeast18() || OperatingSystem.IsIOSVersionAtLeast(18)))
+			{
+				ViewController.HidesBottomBarWhenPushed = !tabBarVisible;
+			}
 		}
 
 		void OnToolbarPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -290,19 +299,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					NavigationItem.RightBarButtonItems[i].Dispose();
 			}
 
+			var shellToolbarItems = _context?.Shell?.ToolbarItems;
 			List<UIBarButtonItem> primaries = null;
-			if (Page.ToolbarItems.Count > 0)
+			if (Page.ToolbarItems.Count > 0) // Display toolbar items defined on the current page
 			{
 				foreach (var item in System.Linq.Enumerable.OrderBy(Page.ToolbarItems, x => x.Priority))
 				{
 					(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(false, true));
 				}
-
-				if (primaries != null)
-					primaries.Reverse();
+			}
+			else if (shellToolbarItems != null && shellToolbarItems.Count > 0) // If the page has no toolbar items use the ones defined for the shell
+			{
+				foreach (var item in System.Linq.Enumerable.OrderBy(shellToolbarItems, x => x.Priority))
+				{
+					(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(false, true));
+				}
 			}
 
-			NavigationItem.SetRightBarButtonItems(primaries == null ? new UIBarButtonItem[0] : primaries.ToArray(), false);
+			if (primaries != null)
+				primaries.Reverse();
+
+			NavigationItem.SetRightBarButtonItems(primaries == null ? Array.Empty<UIBarButtonItem>() : primaries.ToArray(), false);
 
 			UpdateLeftToolbarItems();
 		}
@@ -325,6 +342,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (!IsRootPage)
 			{
 				NavigationItem.HidesBackButton = !backButtonVisible;
+				image = backButtonVisible ? image : null;
 			}
 
 			image.LoadImage(MauiContext, result =>
@@ -356,7 +374,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					if (String.IsNullOrWhiteSpace(image?.AutomationId))
 					{
 						if (IsRootPage)
+						{
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "OK";
+							NavigationItem.LeftBarButtonItem.AccessibilityLabel = "Menu";
+						}
 						else
 							NavigationItem.LeftBarButtonItem.AccessibilityIdentifier = "Back";
 					}
@@ -394,7 +415,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					var previousNavItem = viewControllers[count - 2].NavigationItem;
 					if (previousNavItem != null)
 					{
-						if (!String.IsNullOrWhiteSpace(text))
+						if (text is not null)
 						{
 							var barButtonItem = (previousNavItem.BackBarButtonItem ??= new UIBarButtonItem());
 							barButtonItem.Title = text;
@@ -535,11 +556,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override void LayoutSubviews()
 			{
-				if (Height == null || Height == 0)
-				{
-					UpdateFrame(Superview);
-				}
-
+				UpdateFrame(Superview);
 				base.LayoutSubviews();
 			}
 
@@ -553,9 +570,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (newSuper is not null && newSuper.Bounds != CGRect.Empty)
 				{
-					if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
-						Frame = new CGRect(Frame.X, newSuper.Bounds.Y, Frame.Width, newSuper.Bounds.Height);
-
 					Height = newSuper.Bounds.Height;
 				}
 			}

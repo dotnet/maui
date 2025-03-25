@@ -14,7 +14,6 @@
   </Base>
   <Docs>
     <summary>Enumerates possible gesture states.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Canceled">

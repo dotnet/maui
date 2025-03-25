@@ -91,6 +91,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 					File.WriteAllLines(_categoriesFilePath, categories.ToArray());
 
 					TerminateWithSuccess();
+					return null;
 				}
 
 				await RunAsync();

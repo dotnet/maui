@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	public abstract class TableSectionBase : BindableObject
 	{
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
-		public static readonly BindableProperty TitleProperty = BindableProperty.Create("Title", typeof(string), typeof(TableSectionBase), null);
+		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(TableSectionBase), null);
 		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
 		public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(TableSectionBase), null);
 
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 		protected TableSectionBase(string title)
 		{
 			if (title == null)
-				throw new ArgumentNullException("title");
+				throw new ArgumentNullException(nameof(title));
 
 			Title = title;
 		}

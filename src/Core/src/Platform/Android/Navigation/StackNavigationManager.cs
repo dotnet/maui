@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Platform
 		internal bool? IsPopping { get; private set; }
 		internal bool IsAnimated { get; set; } = true;
 		internal NavigationRequest? ActiveRequestedArgs { get; private set; }
+		internal NavigationRequest? OnResumeRequestedArgs { get; private set; }
 		public IReadOnlyList<IView> NavigationStack { get; private set; } = new List<IView>();
 
 		internal NavHostFragment NavHost =>
@@ -44,6 +45,8 @@ namespace Microsoft.Maui.Platform
 
 		internal NavGraph NavGraph => _navGraph ??
 			throw new InvalidOperationException($"NavGraph cannot be null");
+
+		internal bool HasNavHost => _navHost is not null;
 
 		public IView CurrentPage
 			=> _currentPage ?? throw new InvalidOperationException("CurrentPage cannot be null");
@@ -79,7 +82,7 @@ namespace Microsoft.Maui.Platform
 		 * */
 		void ApplyNavigationRequest(NavigationRequest args)
 		{
-			if (IsNavigating)
+			if (IsNavigating && OnResumeRequestedArgs is null)
 			{
 				// This should really never fire for the developer. Our xplat code should be handling waiting for navigation to
 				// complete before requesting another navigation from Core
@@ -93,6 +96,15 @@ namespace Microsoft.Maui.Platform
 			}
 
 			ActiveRequestedArgs = args;
+
+			if (_fragmentManager?.IsStateSaved == true)
+			{
+				OnResumeRequestedArgs = args;
+				return;
+			}
+
+			OnResumeRequestedArgs = null;
+
 			IReadOnlyList<IView> newPageStack = args.NavigationStack;
 			bool animated = args.Animated;
 			var navController = NavController;
@@ -194,8 +206,10 @@ namespace Microsoft.Maui.Platform
 
 			// If we end up removing the destination that was initially the StartDestination
 			// The Navigation Graph can get really confused
+#pragma warning disable CS0618 // Obsolete
 			if (NavGraph.StartDestination != startId)
 				NavGraph.StartDestination = startId;
+#pragma warning restore CS0618 // Obsolete
 
 			// The NavigationIcon on the toolbar gets set inside the Navigate call so this is the earliest
 			// point in time that we can setup toolbar colors for the incoming page
@@ -529,6 +543,12 @@ namespace Microsoft.Maui.Platform
 			{
 				if (_stackNavigationManager?.VirtualView == null)
 					return;
+
+				if (_stackNavigationManager.OnResumeRequestedArgs is not null)
+				{
+					_stackNavigationManager.ApplyNavigationRequest(_stackNavigationManager.OnResumeRequestedArgs);
+					return;
+				}
 
 				if (f is NavigationViewFragment pf)
 					_stackNavigationManager.OnNavigationViewFragmentResumed(fm, pf);

@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -51,6 +53,8 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(FlyoutPage), typeof(PhoneFlyoutPageRenderer));
 #endif
 
+					handlers.AddHandler<IContentView, ContentViewHandler>();
+
 					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<Entry, EntryHandler>();
 					handlers.AddHandler<Editor, EditorHandler>();
@@ -71,7 +75,10 @@ namespace Microsoft.Maui.DeviceTests
 			if (useAppMainPage)
 			{
 				var app = ApplicationServices.GetService<IApplication>() as ApplicationStub;
-				app.MainPage = rootPage;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+				await InvokeOnMainThreadAsync(() => app.MainPage = rootPage);
+#pragma warning restore CS0618 // Type or member is obsolete
 				window = await InvokeOnMainThreadAsync(() => (app as IApplication).CreateWindow(null));
 
 			}
@@ -199,5 +206,29 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
+		[Fact(DisplayName = "Initial Dispatch from Background Thread Succeeds")]
+		public async Task InitialDispatchFromBackgroundThreadSucceeds()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.Services.RemoveAll<IDispatcher>();
+				builder.ConfigureDispatching();
+			});
+
+			var firstPage = new ContentPage();
+			var window = new Window(firstPage);
+			bool passed = true;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
+			{
+				await Task.Run(async () =>
+				{
+					await firstPage.Handler.MauiContext.Services.GetRequiredService<IDispatcher>()
+						.DispatchAsync(() => passed = true);
+				});
+			});
+
+			Assert.True(passed);
+		}
 	}
 }

@@ -21,22 +21,44 @@ namespace Microsoft.Maui.Handlers
 			throw new InvalidOperationException($"PageViewController.View must be a {nameof(ContentView)}");
 		}
 
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+
+			// Ensure we tag the ContentView as a Page so that InvalidateAncestorsMeasures can stop propagation here
+			PlatformView.IsPage = true;
+		}
+
 		public static void MapBackground(IPageHandler handler, IContentView page)
 		{
-			if (handler is IPlatformViewHandler invh && invh.ViewController is not null)
+			if (handler is IPlatformViewHandler platformViewHandler && platformViewHandler.ViewController is not null)
 			{
-				invh.ViewController.View?.UpdateBackground(page);
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformViewHandler.ViewController.View?.UpdateBackground(page, provider);
+			}
+		}
+
+		internal static void MapHomeIndicatorAutoHidden(IPageHandler handler, IContentView page)
+		{
+			if (handler is IPlatformViewHandler platformViewHandler && platformViewHandler.ViewController is not null)
+			{
+				platformViewHandler.ViewController.SetNeedsUpdateOfHomeIndicatorAutoHidden();
+			}
+		}
+
+		internal static void MapPrefersStatusBarHiddenMode(IPageHandler handler, IContentView page)
+		{
+			if (handler is IPlatformViewHandler platformViewHandler && platformViewHandler.ViewController is not null)
+			{
+				platformViewHandler.ViewController.SetNeedsStatusBarAppearanceUpdate();
 			}
 		}
 
 		public static void MapTitle(IPageHandler handler, IContentView page)
 		{
-			if (handler is IPlatformViewHandler invh && invh.ViewController is not null)
+			if (handler is IPlatformViewHandler platformViewHandler && platformViewHandler.ViewController is not null)
 			{
-				if (page is ITitledElement titled)
-				{
-					invh.ViewController.Title = titled.Title;
-				}
+				platformViewHandler.ViewController.UpdateTitle(page);
 			}
 		}
 	}

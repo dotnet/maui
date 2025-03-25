@@ -25,7 +25,6 @@
   </Attributes>
   <Docs>
     <summary>A <see cref="T:System.ComponentModel.TypeConverter" /> that converts a string to a <see cref="T:Microsoft.Maui.Controls.UrlWebViewSource" />.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -47,7 +46,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.WebViewSourceTypeConverter" /> with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ConvertFromInvariantString">
@@ -70,8 +68,6 @@
       <Docs>
         <param name="value">The value to convert.</param>
         <summary>Returns a web view source for the URL that is contained in <paramref name="value" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

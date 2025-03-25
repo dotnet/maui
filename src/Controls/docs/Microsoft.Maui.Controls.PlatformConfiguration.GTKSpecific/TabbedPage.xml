@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Controls the tab position on tabbed pages on the GTK platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="GetTabPosition">
@@ -38,7 +37,6 @@
         <param name="element">The tabbed page on the GTK platform whose tab position to get.</param>
         <summary>Gets the tab position.</summary>
         <returns>The tab position.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetTabPosition">
@@ -62,7 +60,6 @@
         <param name="config">The platform configuration for the tabbed page on the GTK platform whose tab position to get.</param>
         <summary>Gets the tab position.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetTabPosition">
@@ -87,7 +84,6 @@
         <param name="element">The tabbed page on the GTK platform whose tab position to set.</param>
         <param name="tabPosition">The new tab position.</param>
         <summary>Sets the tab position.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetTabPosition">
@@ -113,7 +109,6 @@
         <param name="value">The new tab position.</param>
         <summary>Sets the tab position.</summary>
         <returns>A fluent object on which the developer may make further method calls.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TabPositionProperty">
@@ -132,7 +127,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the attached property that controls the tab position.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

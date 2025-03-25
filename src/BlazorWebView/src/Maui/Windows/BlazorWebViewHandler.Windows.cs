@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Maui;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using WebView2Control = Microsoft.UI.Xaml.Controls.WebView2;
@@ -30,13 +31,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		{
 			if (_webviewManager != null)
 			{
-				// Dispose this component's contents and block on completion so that user-written disposal logic and
-				// Blazor disposal logic will complete.
-				_webviewManager?
+				// Start the disposal...
+				var disposalTask = _webviewManager?
 					.DisposeAsync()
-					.AsTask()
-					.GetAwaiter()
-					.GetResult();
+					.AsTask()!;
+
+				if (IsBlockingDisposalEnabled)
+				{
+					// If the app is configured to block on dispose via an AppContext switch,
+					// we'll synchronously wait for the disposal to complete. This can cause a deadlock.
+					disposalTask
+						.GetAwaiter()
+						.GetResult();
+				}
+				else
+				{
+					// Otherwise, by default, we'll fire-and-forget the disposal task.
+					disposalTask.FireAndForget();
+				}
 
 				_webviewManager = null;
 			}

@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
+using Android.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -58,8 +61,42 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
-				await image.Wait();
-				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
+				var rootView = handler.ToPlatform();
+
+				await rootView.AttachAndRun(async () =>
+				{
+					await image.WaitUntilLoaded();
+					await rootView.AssertContainsColor(Colors.Red, MauiContext);
+				});
+			});
+		}
+
+		[Fact]
+		[Description("The Opacity property of a image should match with native Opacity")]
+		public async Task VerifyImageOpacityProperty()
+		{
+			var image = new Image
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = image.Opacity;
+
+			var handler = await CreateHandlerAsync<ImageHandler>(image);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var nativeOpacityValue = await GetPlatformOpacity(handler);
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
+		}
+		ImageView GetPlatformImage(ImageHandler imageHandler) =>
+			imageHandler.PlatformView;
+
+		Task<float> GetPlatformOpacity(ImageHandler imageHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformImage(imageHandler);
+				return (float)nativeView.Alpha;
 			});
 		}
 	}

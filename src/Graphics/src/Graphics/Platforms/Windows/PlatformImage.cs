@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
+using Microsoft.IO;
 using Windows.Storage.Streams;
 
 #if MAUI_GRAPHICS_WIN2D
@@ -23,6 +25,8 @@ namespace Microsoft.Maui.Graphics.Platform
 	{
 		private readonly ICanvasResourceCreator _creator;
 		private CanvasBitmap _bitmap;
+
+		private static readonly RecyclableMemoryStreamManager recyclableMemoryStreamManager = new();
 
 #if MAUI_GRAPHICS_WIN2D
 		public W2DImage(
@@ -87,6 +91,17 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public float Height => (float)_bitmap.Size.Height;
 
+		/// <summary>
+		/// Saves the contents of this image to the provided <see cref="Stream"/> object.
+		/// </summary>
+		/// <param name="stream">The destination stream the bytes of this image will be saved to.</param>
+		/// <param name="format">The destination format of the image.</param>
+		/// <param name="quality">The destination quality of the image.</param>
+		/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="quality"/> is less than 0 or more than 1.</exception>
+		/// <remarks>
+		/// <para>Only <see cref="ImageFormat.Png"/> and <see cref="ImageFormat.Jpeg"/> are supported on this platform.</para>
+		/// <para>Setting <paramref name="quality"/> is only supported for images with <see cref="ImageFormat.Jpeg"/>.</para>
+		/// </remarks>
 		public void Save(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (quality < 0 || quality > 1)
@@ -103,6 +118,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
+		/// <inheritdoc cref="Save" />
 		public async Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (quality < 0 || quality > 1)
@@ -141,10 +157,29 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static IImage FromStream(Stream stream, ImageFormat format = ImageFormat.Png)
 		{
 			var creator = PlatformGraphicsService.Creator;
-			if (creator == null)
-				throw new Exception("No resource creator has been registered globally or for this thread.");
 
-			var bitmap = AsyncPump.Run(async () => await CanvasBitmap.LoadAsync(creator, stream.AsRandomAccessStream()));
+			if (creator == null)
+			{
+				throw new Exception("No resource creator has been registered globally or for this thread.");
+			}
+
+			CanvasBitmap bitmap;
+
+			if (stream.CanSeek)
+			{
+				var bitmapAsync = CanvasBitmap.LoadAsync(creator, stream.AsRandomAccessStream());
+				bitmap = bitmapAsync.AsTask().GetAwaiter().GetResult();
+			}
+			else
+			{
+				using var memoryStream = recyclableMemoryStreamManager.GetStream();
+				stream.CopyTo(memoryStream);
+				memoryStream.Seek(0, SeekOrigin.Begin);
+
+				var bitmapAsync = CanvasBitmap.LoadAsync(creator, memoryStream.AsRandomAccessStream());
+				bitmap = bitmapAsync.AsTask().GetAwaiter().GetResult();
+			}
+
 			return new PlatformImage(creator, bitmap);
 		}
 	}

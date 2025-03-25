@@ -1,14 +1,14 @@
 ﻿using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public abstract partial class VisualElementRenderer<TElement> : UIView, IPlatformViewHandler, IElementHandler
+	public abstract partial class VisualElementRenderer<TElement> : UIView, IPlatformViewHandler, IElementHandler, IPlatformMeasureInvalidationController
 		where TElement : Element, IView
 	{
+		bool _invalidateParentWhenMovedToWindow;
 		object? IElementHandler.PlatformView => Subviews.Length > 0 ? Subviews[0] : this;
 
 		public virtual UIViewController? ViewController => null;
@@ -59,7 +59,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				e.PropertyName == VisualElement.IsEnabledProperty.PropertyName ||
 				e.PropertyName == VisualElement.InputTransparentProperty.PropertyName ||
 				e.PropertyName == VisualElement.OpacityProperty.PropertyName ||
-				e.PropertyName == Controls.Compatibility.Layout.CascadeInputTransparentProperty.PropertyName)
+#pragma warning disable CS0618 // Type or member is obsolete
+				e.PropertyName == Controls.Compatibility.Layout.CascadeInputTransparentProperty.PropertyName
+#pragma warning restore CS0618 // Type or member is obsolete
+				)
 			{
 				UpdateNativeWidget();
 			}
@@ -89,6 +92,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void OnSizeChanged(object? sender, EventArgs e)
 		{
 			UpdateNativeWidget();
+		}
+
+		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
+		{
+			_invalidateParentWhenMovedToWindow = true;
+		}
+
+		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating) => SetNeedsLayout();
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			if (_invalidateParentWhenMovedToWindow)
+			{
+				_invalidateParentWhenMovedToWindow = false;
+				this.InvalidateAncestorsMeasures();
+			}
 		}
 	}
 }

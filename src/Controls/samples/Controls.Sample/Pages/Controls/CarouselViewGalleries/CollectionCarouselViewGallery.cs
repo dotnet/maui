@@ -135,10 +135,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 
 				grid.Children.Add(info);
 
-				var frame = new Frame
+				var frame = new Border
 				{
-					Content = grid,
-					HasShadow = false
+					Content = grid
 				};
 
 				frame.SetBinding(BackgroundColorProperty, new Binding("Color"));
@@ -152,14 +151,14 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 	public class CollectionCarouselViewGalleryViewModel : BindableObject
 	{
 		readonly Random _random;
-		ObservableCollection<CarouselData> _items;
+		ObservableCollection<CarouselData>? _items;
 
 		public CollectionCarouselViewGalleryViewModel()
 		{
 			_random = new Random();
 		}
 
-		public ObservableCollection<CarouselData> Items
+		public ObservableCollection<CarouselData>? Items
 		{
 			get { return _items; }
 			set

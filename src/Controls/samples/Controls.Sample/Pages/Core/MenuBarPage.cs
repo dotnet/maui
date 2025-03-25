@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnToggleMenuBarItem(object sender, EventArgs e)
 		{
-			MenuBarItem barItem =
+			var barItem =
 				MenuBarItems.FirstOrDefault(x => x.Text == "Added Menu");
 
 			if (barItem == null)

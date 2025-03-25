@@ -1,9 +1,8 @@
 ﻿using System;
+using System.Linq;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
-using Android.Util;
-using AndroidX.Core.Content;
 using static Android.Graphics.Paint;
 using AColor = Android.Graphics.Color;
 using AContext = Android.Content.Context;
@@ -13,20 +12,30 @@ using GPaint = Microsoft.Maui.Graphics.Paint;
 
 namespace Microsoft.Maui.Graphics
 {
-	public class MauiDrawable : PaintDrawable
+	public class MauiDrawable : PaintDrawable, IPlatformShadowDrawable
 	{
+		static Join? JoinMiter;
+		static Join? JoinBevel;
+		static Join? JoinRound;
+
+		static Cap? CapButt;
+		static Cap? CapSquare;
+		static Cap? CapRound;
+
 		readonly AContext? _context;
 		readonly float _density;
 
 		bool _invalidatePath;
+		bool _isBackgroundSolid;
+		bool _isBorderSolid;
 
 		bool _disposed;
 
-		ARect? _bounds;
 		int _width;
 		int _height;
 
 		Path? _clipPath;
+		Path? _fullClipPath;
 		APaint? _borderPaint;
 
 		IShape? _shape;
@@ -51,6 +60,7 @@ namespace Microsoft.Maui.Graphics
 			_invalidatePath = true;
 
 			_clipPath = new Path();
+			_fullClipPath = new Path();
 
 			_context = context;
 			_density = context.GetDisplayDensity();
@@ -62,6 +72,7 @@ namespace Microsoft.Maui.Graphics
 				return;
 
 			_backgroundColor = backgroundColor;
+			_isBackgroundSolid = backgroundColor?.A is 255;
 
 			InvalidateSelf();
 		}
@@ -88,12 +99,14 @@ namespace Microsoft.Maui.Graphics
 			_backgroundColor = null;
 			_background = null;
 
-			if (solidPaint.Color == null)
+			var color = solidPaint.Color;
+			if (color == null)
 				SetDefaultBackgroundColor();
 			else
 			{
-				var backgroundColor = solidPaint.Color.ToPlatform();
+				var backgroundColor = color.ToPlatform();
 				SetBackgroundColor(backgroundColor);
+				_isBackgroundSolid = color.Alpha == 1;
 			}
 		}
 
@@ -106,6 +119,7 @@ namespace Microsoft.Maui.Graphics
 
 			_backgroundColor = null;
 			_background = linearGradientPaint;
+			_isBackgroundSolid = linearGradientPaint.GradientStops.All(s => s.Color.Alpha == 1);
 
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
@@ -120,6 +134,7 @@ namespace Microsoft.Maui.Graphics
 
 			_backgroundColor = null;
 			_background = radialGradientPaint;
+			_isBackgroundSolid = radialGradientPaint.GradientStops.All(s => s.Color.Alpha == 1);
 
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
@@ -154,7 +169,9 @@ namespace Microsoft.Maui.Graphics
 				return;
 
 			_borderColor = borderColor;
+			_isBorderSolid = borderColor?.A is 255;
 
+			InitializeBorderIfNeeded();
 			InvalidateSelf();
 		}
 
@@ -183,13 +200,14 @@ namespace Microsoft.Maui.Graphics
 		{
 			_invalidatePath = true;
 			_borderColor = null;
+			_borderPaint = null;
 
-			var borderColor = solidPaint.Color == null
-				? (AColor?)null
-				: solidPaint.Color.ToPlatform();
+			var color = solidPaint.Color;
+			var borderColor = color?.ToPlatform();
 
 			_stroke = null;
 			SetBorderColor(borderColor);
+			_isBorderSolid = solidPaint.IsSolid();
 		}
 
 		public void SetBorderBrush(LinearGradientPaint linearGradientPaint)
@@ -201,6 +219,7 @@ namespace Microsoft.Maui.Graphics
 
 			_borderColor = null;
 			_stroke = linearGradientPaint;
+			_isBorderSolid = linearGradientPaint.IsSolid();
 
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
@@ -215,6 +234,7 @@ namespace Microsoft.Maui.Graphics
 
 			_borderColor = null;
 			_stroke = radialGradientPaint;
+			_isBorderSolid = radialGradientPaint.IsSolid();
 
 			InitializeBorderIfNeeded();
 			InvalidateSelf();
@@ -297,20 +317,13 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderLineJoin(LineJoin lineJoin)
 		{
-			Join? aLineJoin = Join.Miter;
-
-			switch (lineJoin)
+			Join? aLineJoin = lineJoin switch
 			{
-				case LineJoin.Miter:
-					aLineJoin = Join.Miter;
-					break;
-				case LineJoin.Bevel:
-					aLineJoin = Join.Bevel;
-					break;
-				case LineJoin.Round:
-					aLineJoin = Join.Round;
-					break;
-			}
+				LineJoin.Miter => JoinMiter ??= Join.Miter,
+				LineJoin.Bevel => JoinBevel ??= Join.Bevel,
+				LineJoin.Round => JoinRound ??= Join.Round,
+				_ => JoinMiter ??= Join.Miter,
+			};
 
 			if (_strokeLineJoin == aLineJoin)
 				return;
@@ -322,20 +335,13 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderLineCap(LineCap lineCap)
 		{
-			Cap? aLineCap = Cap.Butt;
-
-			switch (lineCap)
+			Cap? aLineCap = lineCap switch
 			{
-				case LineCap.Butt:
-					aLineCap = Cap.Butt;
-					break;
-				case LineCap.Square:
-					aLineCap = Cap.Square;
-					break;
-				case LineCap.Round:
-					aLineCap = Cap.Round;
-					break;
-			}
+				LineCap.Butt => CapButt ??= Cap.Butt,
+				LineCap.Square => CapSquare ??= Cap.Square,
+				LineCap.Round => CapRound ??= Cap.Round,
+				_ => CapButt ??= Cap.Butt,
+			};
 
 			if (_strokeLineCap == aLineCap)
 				return;
@@ -347,33 +353,68 @@ namespace Microsoft.Maui.Graphics
 
 		public void InvalidateBorderBounds()
 		{
-			_bounds = null;
-
 			InvalidateSelf();
 		}
 
 		protected override void OnBoundsChange(ARect bounds)
 		{
-			if (_bounds != bounds)
-			{
-				_bounds = bounds;
+			var width = bounds.Width();
+			var height = bounds.Height();
 
-				if (_bounds != null)
-				{
-					var width = _bounds.Width();
-					var height = _bounds.Height();
+			if (_width == width && _height == height)
+				return;
 
-					if (_width == width && _height == height)
-						return;
+			_invalidatePath = true;
 
-					_invalidatePath = true;
-
-					_width = width;
-					_height = height;
-				}
-			}
+			_width = width;
+			_height = height;
 
 			base.OnBoundsChange(bounds);
+		}
+
+		bool IPlatformShadowDrawable.CanDrawShadow()
+		{
+			return _isBackgroundSolid && (_strokeThickness == 0 || _isBorderSolid);
+		}
+
+		void IPlatformShadowDrawable.DrawShadow(Canvas? canvas, APaint? shadowPaint, Path? outerClipPath)
+		{
+			if (_disposed || canvas is null || shadowPaint is null)
+				return;
+
+			Path contentPath;
+
+			if (HasBorder())
+			{
+				if (!TryUpdateClipPath() || _fullClipPath == null)
+				{
+					return;
+				}
+
+				contentPath = _fullClipPath;
+			}
+			else
+			{
+				contentPath = new Path();
+				contentPath.AddRect(0, 0, _width, _height, Path.Direction.Cw!);
+			}
+
+			if (outerClipPath != null)
+			{
+				var clippedPath = new Path();
+				clippedPath.InvokeOp(contentPath, outerClipPath, Path.Op.Intersect!);
+				canvas.DrawPath(clippedPath, shadowPaint);
+				clippedPath.Dispose();
+			}
+			else
+			{
+				canvas.DrawPath(contentPath, shadowPaint);
+			}
+
+			if (contentPath != _fullClipPath)
+			{
+				contentPath.Dispose();
+			}
 		}
 
 		protected override void OnDraw(Shape? shape, Canvas? canvas, APaint? paint)
@@ -401,30 +442,9 @@ namespace Microsoft.Maui.Graphics
 					}
 				}
 
-				if (_invalidatePath)
+				if (!TryUpdateClipPath())
 				{
-					_invalidatePath = false;
-
-					if (_shape != null)
-					{
-						float strokeThickness = _strokeThickness / _density;
-						float w = (_width / _density) - strokeThickness;
-						float h = (_height / _density) - strokeThickness;
-						float x = strokeThickness / 2;
-						float y = strokeThickness / 2;
-
-						var bounds = new Graphics.Rect(x, y, w, h);
-						var clipPath = _shape?.ToPlatform(bounds, strokeThickness, _density);
-
-						if (clipPath == null)
-							return;
-
-						if (_clipPath != null)
-						{
-							_clipPath.Reset();
-							_clipPath.Set(clipPath);
-						}
-					}
+					return;
 				}
 
 				if (canvas == null || _clipPath == null)
@@ -439,6 +459,46 @@ namespace Microsoft.Maui.Graphics
 
 				base.OnDraw(shape, canvas, paint);
 			}
+		}
+
+		bool TryUpdateClipPath()
+		{
+			if (_invalidatePath)
+			{
+				_invalidatePath = false;
+
+				if (_shape != null)
+				{
+					float strokeThickness = _strokeThickness / _density;
+					float fw = _width / _density;
+					float w = fw - strokeThickness;
+					float fh = _height / _density;
+					float h = fh - strokeThickness;
+					float x = strokeThickness / 2;
+					float y = strokeThickness / 2;
+
+					var bounds = new Rect(x, y, w, h);
+					var clipPath = _shape?.ToPlatform(bounds, strokeThickness, _density);
+
+					if (clipPath == null)
+						return false;
+
+					if (_clipPath != null)
+					{
+						_clipPath.Reset();
+						_clipPath.Set(clipPath);
+					}
+
+					var fullClipPath = _shape!.ToPlatform(new Rect(0, 0, fw, fh), 0, _density);
+					if (_fullClipPath != null)
+					{
+						_fullClipPath.Reset();
+						_fullClipPath.Set(fullClipPath);
+					}
+				}
+			}
+
+			return true;
 		}
 
 		protected override void Dispose(bool disposing)
@@ -460,6 +520,12 @@ namespace Microsoft.Maui.Graphics
 				{
 					_clipPath.Dispose();
 					_clipPath = null;
+				}
+
+				if (_fullClipPath != null)
+				{
+					_fullClipPath.Dispose();
+					_fullClipPath = null;
 				}
 			}
 
@@ -507,7 +573,9 @@ namespace Microsoft.Maui.Graphics
 			var color = PlatformInterop.GetWindowBackgroundColor(_context);
 			if (color != -1)
 			{
-				_backgroundColor = new AColor(color);
+				var backgroundColor = new AColor(color);
+				_backgroundColor = backgroundColor;
+				_isBackgroundSolid = backgroundColor.IsSolid();
 			}
 		}
 
@@ -598,7 +666,7 @@ namespace Microsoft.Maui.Graphics
 			platformPaint.SetShader(radialGradient);
 		}
 
-		GradientData GetGradientPaintData(GradientPaint gradientPaint)
+		static GradientData GetGradientPaintData(GradientPaint gradientPaint)
 		{
 			var orderStops = gradientPaint.GradientStops;
 

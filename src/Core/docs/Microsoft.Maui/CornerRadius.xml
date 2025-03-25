@@ -22,7 +22,6 @@
   </Attributes>
   <Docs>
     <summary>Contains methods and properties for specifying corner radiuses.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -42,7 +41,6 @@
       <Docs>
         <param name="uniformRadius">The radius for all four corners.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.CornerRadius" /> such that all four of its corners have the same radius.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -68,7 +66,6 @@
         <param name="bottomLeft">The radius of the bottom left corner.</param>
         <param name="bottomRight">The radius of the bottom right corner.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.CornerRadius" /> such that each of four of its corners have the specified radiuses.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BottomLeft">
@@ -88,7 +85,6 @@
       <Docs>
         <summary>Gets the radius of the top left corner.</summary>
         <value>The radius of the top left corner.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="BottomRight">
@@ -108,7 +104,6 @@
       <Docs>
         <summary>Gets the radius of the bottom right corner.</summary>
         <value>The radius of the bottom right corner.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Deconstruct">
@@ -135,8 +130,6 @@
         <param name="topRight">To be added.</param>
         <param name="bottomLeft">To be added.</param>
         <param name="bottomRight">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Equals">
@@ -161,7 +154,6 @@
         <summary>Compares this corner radius to another.</summary>
         <returns>
           <see langword="true" /> if <paramref name="obj" /> has the same effective corner radius values. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GetHashCode">
@@ -182,7 +174,6 @@
       <Docs>
         <summary>Gets the hashcode for the corner radius.</summary>
         <returns>The hashcode for the corner radius.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Equality">
@@ -209,7 +200,6 @@
         <summary>Compares the <paramref name="left" /> and <paramref name="right" /> corner radius values.</summary>
         <returns>
           <see langword="true" /> if <paramref name="left" /> has the same effective corner radius values as <paramref name="right" />. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Implicit">
@@ -232,8 +222,6 @@
       <Docs>
         <param name="uniformRadius">The uniform radius to convert to a corner radius object.</param>
         <summary>Creates and returns a new <see cref="T:Microsoft.Maui.CornerRadius" /> such that all four of its corners have the same radius.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="op_Inequality">
@@ -260,7 +248,6 @@
         <summary>Compares the <paramref name="left" /> and <paramref name="right" /> corner radius values.</summary>
         <returns>
           <see langword="true" /> if <paramref name="left" /> has different effective corner radius values as <paramref name="right" />. Otherwise, <see langword="false" />.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TopLeft">
@@ -280,7 +267,6 @@
       <Docs>
         <summary>Gets the radius of the top left corner.</summary>
         <value>The radius of the top left corner.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TopRight">
@@ -300,7 +286,6 @@
       <Docs>
         <summary>Gets the radius of the top right corner.</summary>
         <value>The radius of the top right corner.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

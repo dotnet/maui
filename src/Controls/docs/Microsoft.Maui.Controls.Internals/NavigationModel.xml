@@ -19,7 +19,6 @@
   </Attributes>
   <Docs>
     <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -35,7 +34,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Clear">
@@ -55,7 +53,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CurrentPage">
@@ -75,7 +72,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <value>For internal use by the Microsoft.Maui.Controls platform.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="InsertPageBefore">
@@ -100,7 +96,6 @@
         <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="before">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Modals">
@@ -120,7 +115,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <value>For internal use by the Microsoft.Maui.Controls platform.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Pop">
@@ -144,7 +138,6 @@
         <param name="ancestralNav">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopModal">
@@ -165,7 +158,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopTopPage">
@@ -186,7 +178,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PopToRoot">
@@ -209,7 +200,6 @@
       <Docs>
         <param name="ancestralNav">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Push">
@@ -234,7 +224,6 @@
         <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="ancestralNav">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PushModal">
@@ -257,7 +246,6 @@
       <Docs>
         <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RemovePage">
@@ -281,7 +269,6 @@
         <param name="page">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>For internal use by the Microsoft.Maui.Controls platform.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Roots">
@@ -306,7 +293,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <value>For internal use by the Microsoft.Maui.Controls platform.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Tree">
@@ -326,7 +312,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <value>For internal use by the Microsoft.Maui.Controls platform.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

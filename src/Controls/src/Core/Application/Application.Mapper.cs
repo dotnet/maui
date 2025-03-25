@@ -1,14 +1,11 @@
 ﻿#nullable disable
 using System;
+using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
 	public partial class Application
 	{
-		[Obsolete("Use ApplicationHandler.Mapper instead.")]
-		public static IPropertyMapper<IApplication, ApplicationHandler> ControlsApplicationMapper =
-			new PropertyMapper<Application, ApplicationHandler>(ApplicationHandler.Mapper);
-
 		internal static new void RemapForControls()
 		{
 			// Adjust the mappings to preserve Controls.Application legacy behaviors

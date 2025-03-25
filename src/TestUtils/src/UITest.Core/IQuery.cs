@@ -6,5 +6,6 @@
 		IQuery ByName(string name);
 		IQuery ByClass(string className);
 		IQuery ByAccessibilityId(string id);
+		IQuery ByXPath(string xpath);
 	}
 }

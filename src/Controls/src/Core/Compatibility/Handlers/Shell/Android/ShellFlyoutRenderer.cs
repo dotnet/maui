@@ -11,6 +11,7 @@ using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
+using LD = Android.Views.LayoutDirection;
 using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
 
@@ -144,6 +145,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			Shell.PropertyChanged += OnShellPropertyChanged;
 			ShellController.AddAppearanceObserver(this, Shell);
+			UpdateFlowDirection();
 
 			this.DrawerClosed += OnDrawerClosed;
 			this.DrawerSlide += OnDrawerSlide;
@@ -183,9 +185,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				canvas.DrawRect(0, 0, Width, Height, _scrimPaint);
 			}
 
-			if (!FlyoutFirstDrawPassFinished && _flyoutContent != null)
+			if (!FlyoutFirstDrawPassFinished && _flyoutContent is not null)
 			{
-				if (child == _flyoutContent?.AndroidView)
+				// If the AndroidView property which is the DrawerLayout is initialized at this point, the Flyout first draw pass finished.
+				if (_flyoutContent?.AndroidView is not null)
 					FlyoutFirstDrawPassFinished = true;
 
 				if (this.IsDrawerOpen(_flyoutContent.AndroidView) != _shellContext.Shell.FlyoutIsPresented)
@@ -272,6 +275,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UpdateDrawerState();
 			}
+			else if (e.PropertyName == Shell.FlowDirectionProperty.PropertyName)
+			{
+				UpdateFlowDirection();
+			}
 		}
 
 		void UpdateDrawerState()
@@ -287,6 +294,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				CloseDrawers();
 			}
+		}
+
+		void UpdateFlowDirection()
+		{
+			LayoutDirection = _shellContext.Shell.FlowDirection.ToLayoutDirection();
 		}
 
 		void OnDualScreenServiceScreenChanged(object sender, EventArgs e)

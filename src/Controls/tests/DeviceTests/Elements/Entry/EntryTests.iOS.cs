@@ -8,6 +8,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -42,6 +43,15 @@ namespace Microsoft.Maui.DeviceTests
 				return (int)textField.GetOffsetFromPosition(textField.SelectedTextRange.Start, textField.SelectedTextRange.End);
 
 			return -1;
+		}
+		
+		Task<float> GetPlatformOpacity(EntryHandler entryHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(entryHandler);
+				return (float)nativeView.Alpha; 
+			});
 		}
 
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
@@ -263,11 +273,54 @@ namespace Microsoft.Maui.DeviceTests
 				await CreateHandlerAndAddToWindow(rootPage, async () =>
 				{
 					KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform());
-					await AssertionExtensions.Wait(() => entry2.IsFocused);
+					await AssertEventually(() => entry2.IsFocused);
 					isFocused = entry2.IsFocused;
 				});
 
 				Assert.True(isFocused, $"{page} failed to focus the second entry DANG");
+			}
+		}
+
+		[Category(TestCategory.Entry)]
+		public class PlaceholderTests : ControlsHandlerTestBase
+		{
+			[Fact]
+			public async Task PlaceholderFontFamily()
+			{
+				EnsureHandlerCreated(builder =>
+				{
+					builder.ConfigureMauiHandlers(handlers =>
+					{
+						handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
+					});
+				});
+
+				var expectedFontFamily = "Times New Roman";
+
+				var entry = new Entry
+				{
+					FontFamily = expectedFontFamily,
+					Placeholder = "This is a placeholder"
+				};
+
+				ContentPage contentPage = new ContentPage()
+				{
+					Content = new VerticalStackLayout()
+					{
+						entry
+					}
+				};
+
+				await CreateHandlerAndAddToWindow(contentPage, async () =>
+				{
+					await AssertEventually(() => entry.IsVisible);
+					var handler = CreateHandler<EntryHandler>(entry);
+					var platformControl = GetPlatformControl(handler);
+
+					var placeholderLabel = handler.PlatformView.Subviews.OfType<UIKit.UILabel>().FirstOrDefault();
+
+					Assert.Equal(expectedFontFamily, placeholderLabel?.Font?.FamilyName);
+				});
 			}
 		}
 	}

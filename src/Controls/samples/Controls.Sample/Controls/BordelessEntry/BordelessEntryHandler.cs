@@ -15,7 +15,7 @@ namespace Maui.Controls.Sample.Controls
 		{
 		}
 
-		public BordelessEntryHandler(PropertyMapper mapper = null)
+		public BordelessEntryHandler(PropertyMapper? mapper = null)
 			: base(mapper ?? BorderlessEntryMapper)
 		{
 		}

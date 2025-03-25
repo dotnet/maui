@@ -7,7 +7,7 @@ using WRect = Windows.Foundation.Rect;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
-	public class ViewToRendererConverter : ViewToHandlerConverter
+	public partial class ViewToRendererConverter : ViewToHandlerConverter
 	{
 	}
 }

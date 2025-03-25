@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			_editText = _editText ?? Control.GetChildrenOfType<AppCompatAutoCompleteTextView>().FirstOrDefault();
 
-			var currentFilters = new List<IInputFilter>(_editText?.GetFilters() ?? new IInputFilter[0]);
+			var currentFilters = new List<IInputFilter>(_editText?.GetFilters() ?? Array.Empty<IInputFilter>());
 
 			for (var i = 0; i < currentFilters.Count; i++)
 			{

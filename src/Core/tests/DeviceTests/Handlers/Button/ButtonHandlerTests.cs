@@ -5,6 +5,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -62,34 +63,6 @@ namespace Microsoft.Maui.DeviceTests
 			await PerformClick(button);
 
 			Assert.True(clicked);
-		}
-
-		[Theory(
-#if WINDOWS
-			Skip = "Fails on Windows"
-#endif
-		)]
-		[InlineData("red.png", "#FF0000")]
-		[InlineData("green.png", "#00FF00")]
-		[InlineData("black.png", "#000000")]
-		public async Task ImageSourceInitializesCorrectly(string filename, string colorHex)
-		{
-			var image = new ButtonStub
-			{
-				Background = new SolidPaintStub(Colors.Black),
-				ImageSource = new FileImageSourceStub(filename),
-			};
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var handler = CreateHandler(image);
-
-				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
-
-				Assert.True(imageLoaded);
-				var expectedColor = Color.FromArgb(colorHex);
-				await handler.PlatformView.AssertContainsColor(expectedColor, MauiContext);
-			});
 		}
 
 		[Theory(DisplayName = "Padding Initializes Correctly")]

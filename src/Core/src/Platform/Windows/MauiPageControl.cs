@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Platform
 			ItemsSource = _dots;
 		}
 
-		ItemsPanelTemplate GetItemsPanelTemplate()
+		static ItemsPanelTemplate GetItemsPanelTemplate()
 		{
 			var itemsPanelTemplateXaml =
 				$@"<ItemsPanelTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'

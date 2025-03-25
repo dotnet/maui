@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <summary>Provides the functionality for handling stack-based navigation.</summary>
 	public interface INavigation
 	{
 		IReadOnlyList<Page> ModalStack { get; }

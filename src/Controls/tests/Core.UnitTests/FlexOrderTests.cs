@@ -15,10 +15,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestOrderingElements()
 		{
-			var label0 = new Label { IsPlatformEnabled = true };
-			var label1 = new Label { IsPlatformEnabled = true };
-			var label2 = new Label { IsPlatformEnabled = true };
-			var label3 = new Label { IsPlatformEnabled = true };
+			var label0 = MockPlatformSizeService.Sub<Label>();
+			var label1 = MockPlatformSizeService.Sub<Label>();
+			var label2 = MockPlatformSizeService.Sub<Label>();
+			var label3 = MockPlatformSizeService.Sub<Label>();
 
 			FlexLayout.SetOrder(label3, 0);
 			FlexLayout.SetOrder(label2, 1);

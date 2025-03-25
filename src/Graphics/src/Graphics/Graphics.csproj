@@ -1,19 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiGraphicsPlatforms);$(_MauiPreviousDotNetTfm);$(MauiGraphicsPreviousPlatforms)</TargetFrameworks>
-    <!-- Optional: Publish the repository URL in the built .nupkg (in the NuSpec <Repository> element) -->
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiGraphicsPlatforms)</TargetFrameworks>
+    <TargetFrameworks Condition="'$(IncludePreviousTfmsGraphics)' == 'true'">$(TargetFrameworks);$(_MauiPreviousDotNetTfm);$(MauiGraphicsPreviousPlatforms)</TargetFrameworks>
     <!-- Optional: Build symbol package (.snupkg) to distribute the PDB containing Source Link -->
     <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <AssemblyName>Microsoft.Maui.Graphics</AssemblyName>
     <RootNamespace>Microsoft.Maui.Graphics</RootNamespace>
-    <PackageId>Microsoft.Maui.Graphics</PackageId>
     <Product>Microsoft.Maui.Graphics</Product>
     <IsTrimmable>false</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591;RS0026;RS0027;RS0041</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <EnableSingleFileAnalyzer>true</EnableSingleFileAnalyzer>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Graphics</PackageId>
+    <PackageTags>$(DefaultPackageTags);graphics;drawing</PackageTags>
+    <Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package contains a collection of cross-platform graphics and drawing APIs.</Description>
   </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
@@ -24,9 +35,13 @@
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <PackageReference Include="Microsoft.WindowsAppSDK" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <WindowsSdkPackageVersion>10.0.19041.45</WindowsSdkPackageVersion>
+  </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 

@@ -13,7 +13,11 @@ namespace Microsoft.Maui.Controls.Internals
 		NavigationProxy NavigationProxy { get; }
 	}
 
-	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.NavigationProxy']/Docs/*" />
+	/// <summary>Represents an object capable of handling stack-based navigation via proxying.</summary>
+	/// <remarks>
+	///		<para>Elements may use navigation proxies to delegate navigation capabilities to their parents if they themselves can't handle it.</para>
+	///		<para>For internal use for .NET MAUI.</para>
+	///	</remarks>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class NavigationProxy : INavigation
 	{

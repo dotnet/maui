@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
@@ -12,8 +13,11 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 #if ANDROID
 		public static Android.Content.Context CurrentContext => MauiProgramDefaults.DefaultContext;
 #elif WINDOWS
-		public static UI.Xaml.Window DefaultWindow => MauiProgramDefaults.DefaultWindow;
+		public static Microsoft.UI.Xaml.Window CurrentWindow => MauiProgramDefaults.DefaultWindow;
 #endif
+
+		public static IApplication DefaultTestApp => MauiProgramDefaults.DefaultTestApp;
+
 		public static MauiApp CreateMauiApp() =>
 			MauiProgramDefaults.CreateMauiApp(new List<Assembly>()
 			{

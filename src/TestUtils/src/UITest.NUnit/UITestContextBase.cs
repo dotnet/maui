@@ -35,6 +35,8 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
+		public IApp RunningApp => App;
+
 		public abstract IConfig GetTestConfig();
 
 		public void InitialSetup(IServerContext context)
@@ -43,7 +45,7 @@ namespace UITest.Appium.NUnit
 			InitialSetup(context, false);
 		}
 
-		public void Reset()
+		public virtual void Reset()
 		{
 			if (_context == null)
 			{

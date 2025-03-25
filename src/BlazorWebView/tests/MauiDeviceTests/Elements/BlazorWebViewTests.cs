@@ -12,7 +12,7 @@ using Xunit;
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 {
 	[Category(TestCategory.BlazorWebView)]
-	public class BlazorWebViewTests : HandlerTestBase
+	public class BlazorWebViewTests : Microsoft.Maui.DeviceTests.ControlsHandlerTestBase
 	{
 		[Fact]
 		public async Task BasicRazorComponentClick()

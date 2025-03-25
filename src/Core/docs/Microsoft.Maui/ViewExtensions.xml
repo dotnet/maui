@@ -20,7 +20,6 @@
   <Interfaces />
   <Docs>
     <summary>Extension methods for <see cref="T:Microsoft.Maui.Controls.View" />s, providing animatable scaling, rotation, and layout functions.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="CancelAnimations">
@@ -49,7 +48,6 @@
       <Docs>
         <param name="view">The view on which this method operates.</param>
         <summary>Aborts the TranslateTo, LayoutTo, RotateTo, ScaleTo, and FadeTo animations on <paramref name="view" /> element.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FadeTo">
@@ -84,8 +82,6 @@
         <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
         <param name="easing">The easing function to use for the animation.</param>
         <summary>Returns a task that performs the fade that is described by the <paramref name="opacity" />, <paramref name="length" />, and <paramref name="easing" /> parameters.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LayoutTo">
@@ -120,8 +116,6 @@
         <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
         <param name="easing">The easing function to use for the animation.</param>
         <summary>Returns a task that eases the bounds of the <see cref="T:Microsoft.Maui.VisualElement" /> that is specified by the <paramref name="view" /> to the rectangle that is specified by the <paramref name="bounds" /> parameter.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RelRotateTo">
@@ -156,8 +150,6 @@
         <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
         <param name="easing">The easing function to use for the animation.</param>
         <summary>Rotates the <see cref="T:Microsoft.Maui.VisualElement" /> that is specified by <paramref name="view" /> from its current rotation by <paramref name="drotation" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RelScaleTo">
@@ -192,8 +184,6 @@
         <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
         <param name="easing">The easing function to use for the animation.</param>
         <summary>Returns a task that scales the <see cref="T:Microsoft.Maui.VisualElement" /> that is specified by <paramref name="view" /> from its current scale to <paramref name="dscale" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RotateTo">
@@ -228,8 +218,6 @@
         <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
         <param name="easing">The easing function to use for the animation.</param>
         <summary>Returns a task that performs the rotation that is described by the <paramref name="rotation" />, <paramref name="length" />, and <paramref name="easing" /> parameters.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RotateXTo">
@@ -264,8 +252,6 @@
         <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
         <param name="easing">The easing function to use for the animation.</param>
         <summary>Returns a task that skews the Y axis by <paramref name="opacity" />, taking time <paramref name="length" /> and using <paramref name="easing" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RotateYTo">
@@ -300,8 +286,6 @@
         <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
         <param name="easing">The easing function to use for the animation.</param>
         <summary>Returns a task that skews the X axis by <paramref name="opacity" />, taking time <paramref name="length" /> and using <paramref name="easing" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScaleTo">
@@ -336,8 +320,6 @@
         <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
         <param name="easing">The easing function to use for the animation.</param>
         <summary>Returns a task that scales the <see cref="T:Microsoft.Maui.VisualElement" /> that is specified by <paramref name="view" /> to the absolute scale factor <paramref name="scale" />.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScaleXTo">
@@ -364,9 +346,6 @@
         <param name="scale">To be added.</param>
         <param name="length">To be added.</param>
         <param name="easing">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ScaleYTo">
@@ -393,9 +372,6 @@
         <param name="scale">To be added.</param>
         <param name="length">To be added.</param>
         <param name="easing">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TranslateTo">
@@ -431,7 +407,6 @@
         <param name="length">The duration of the animation in milliseconds.</param>
         <param name="easing">The easing of the animation.</param>
         <summary>Animates an elements TranslationX and TranslationY properties from their current values to the new values. This ensures that the input layout is in the same position as the visual layout.</summary>
-        <returns>To be added.</returns>
         <remarks>
           <para>To animate a view that receives user touch input from outside of the screen, the developer must first lay out the view in its final position, then translate the view off screen, and then finally animate the view back to its final position on the screen.</para>
           <para>TranslateTo is useful for animations because it is applied post-layout. Translation animations will not conflict with managed layouts and thus are ideal for doing slide in/out style animations.</para>

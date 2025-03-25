@@ -11,15 +11,18 @@ namespace Microsoft.Maui.Controls
 	[System.ComponentModel.TypeConverter(typeof(ImageSourceConverter))]
 	public abstract partial class ImageSource : Element
 	{
-		readonly object _synchandle = new object();
+		readonly SemaphoreSlim _cancellationTokenSourceLock = new(1, 1);
 		CancellationTokenSource _cancellationTokenSource;
 
 		TaskCompletionSource<bool> _completionSource;
 
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
+		internal readonly MergedStyle _mergedStyle;
+
 		protected ImageSource()
 		{
+			_mergedStyle = new MergedStyle(GetType(), this);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='IsEmpty']/Docs/*" />
@@ -52,16 +55,14 @@ namespace Microsoft.Maui.Controls
 			if (!IsLoading)
 				return Task.FromResult(false);
 
-			var tcs = new TaskCompletionSource<bool>();
-			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, tcs, null);
-			if (original == null)
+			TaskCompletionSource<bool> original = Interlocked.CompareExchange(ref _completionSource, new TaskCompletionSource<bool>(), null);
+			if (original is null)
 			{
 				_cancellationTokenSource.Cancel();
+				return Task.FromResult(false);
 			}
-			else
-				tcs = original;
 
-			return tcs.Task;
+			return original.Task;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ImageSource.xml" path="//Member[@MemberName='FromFile']/Docs/*" />
@@ -120,7 +121,7 @@ namespace Microsoft.Maui.Controls
 			return FromUri(uri);
 		}
 
-		private protected void OnLoadingCompleted(bool cancelled)
+		private protected async Task OnLoadingCompleted(bool cancelled)
 		{
 			if (!IsLoading || _completionSource == null)
 				return;
@@ -129,17 +130,27 @@ namespace Microsoft.Maui.Controls
 			if (tcs != null)
 				tcs.SetResult(cancelled);
 
-			lock (_synchandle)
+			await _cancellationTokenSourceLock.WaitAsync();
+			try
 			{
 				CancellationTokenSource = null;
 			}
+			finally
+			{
+				_cancellationTokenSourceLock.Release();
+			}
 		}
 
-		private protected void OnLoadingStarted()
+		private protected async Task OnLoadingStarted()
 		{
-			lock (_synchandle)
+			await _cancellationTokenSourceLock.WaitAsync();
+			try
 			{
 				CancellationTokenSource = new CancellationTokenSource();
+			}
+			finally
+			{
+				_cancellationTokenSourceLock.Release();
 			}
 		}
 

@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Platform
 		// verify we're using the correct subview for masking (and any other purposes)
 		internal const nint ContentTag = 0x63D2A0;
 
+		internal bool IsPage { get; set; }
+
 		public ContentView()
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
@@ -27,7 +29,6 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 
 			UpdateClip();
-			this.UpdateMauiCALayer();
 		}
 
 		internal IBorderStroke? Clip
@@ -78,7 +79,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			_contentMask ??= new CAShapeLayer();
+			_contentMask ??= new StaticCAShapeLayer();
 
 			var bounds = Bounds;
 
@@ -93,12 +94,6 @@ namespace Microsoft.Maui.Platform
 			var clipBounds = new RectF(0, 0, clipWidth, clipHeight);
 			_contentMask.Path = GetClipPath(clipBounds, strokeThickness);
 
-			// Set the mask on the content, if it isn't already
-			if (content.Layer.Mask != _contentMask)
-			{
-				content.Layer.Mask = _contentMask;
-			}
-
 			// Since the mask is on the content's CALayer, it's anchored to the content. But we need it to be
 			// relative to _this_ container. So we need to compute an adjusted position for it.
 
@@ -112,16 +107,14 @@ namespace Microsoft.Maui.Platform
 
 			CGPoint adjustedMaskPosition = new(clipCenterX - contentOffsetX, clipCenterY - contentOffsetY);
 
-			// Relocating/resizing a layer is animated by default; the mask will slide around as we do things like
-			// resize the content that's being masked. To prevent his, we need to set the animation duration 
-			// to zero during the operation. We'll do that in its own transaction so as not to change the default
-			// animation durations for everything else.
-
-			CATransaction.Begin();
-			CATransaction.AnimationDuration = 0;
 			_contentMask.Bounds = clipBounds;
 			_contentMask.Position = adjustedMaskPosition;
-			CATransaction.Commit();
+
+			// Set the mask on the content, if it isn't already
+			if (content.Layer.Mask != _contentMask)
+			{
+				content.Layer.Mask = _contentMask;
+			}
 		}
 
 		CGPath? GetClipPath(RectF bounds, float strokeThickness)

@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 		// This is a testing class which implements INotifyCollectionChanged and, unlike the regular
 		// ObservableCollection, will actually fire Add and Remove with multiple items at once
 
-		public event NotifyCollectionChangedEventHandler CollectionChanged;
+		public event NotifyCollectionChangedEventHandler? CollectionChanged;
 
 		public void TestAddWithList(IEnumerable<T> newItems, int insertAt)
 		{

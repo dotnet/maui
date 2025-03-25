@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,7 @@ namespace Microsoft.Maui
 {
 	public partial class MauiUIApplicationDelegate
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "There is a single MauiUIApplicationDelegate")]
 		internal IUIMenuBuilder? MenuBuilder { get; private set; }
 
 		[SupportedOSPlatform("ios13.0")]
@@ -27,7 +29,8 @@ namespace Microsoft.Maui
 			MenuBuilder = builder;
 
 			UIWindow? window = null;
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(14))
+
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(14) || OperatingSystem.IsIOSVersionAtLeast(14))
 			{
 				// for iOS 14+ where active apperance is supported
 				var activeWindowScenes = new List<UIWindowScene>();
@@ -46,7 +49,7 @@ namespace Microsoft.Maui
 					// we need to pick the newly created window in this case
 					// the order of window scene returned is not trustable, do not use last
 					// after some manual testing, windowing behaviour that is not ready yet is the newly created window
-					if (activeWindowScenes.Count > 1)
+					if ((OperatingSystem.IsMacCatalystVersionAtLeast(16) || OperatingSystem.IsIOSVersionAtLeast(16)) && activeWindowScenes.Count > 1)
 					{
 						foreach (var ws in activeWindowScenes)
 						{
@@ -57,8 +60,18 @@ namespace Microsoft.Maui
 							}
 						}
 					}
-					else
+					else if (OperatingSystem.IsMacCatalystVersionAtLeast(15) || OperatingSystem.IsIOSVersionAtLeast(15))
+					{
 						window = activeWindowScenes[0].KeyWindow;
+					}
+					else if (activeWindowScenes[0].Windows.Length > 0)
+					{
+						window = activeWindowScenes[0].Windows[0];
+					}
+					else
+					{
+						window = Window ?? this.GetWindow() ?? UIApplication.SharedApplication.GetWindow()?.Handler?.PlatformView as UIWindow;
+					}
 				}
 			}
 			else
@@ -67,6 +80,7 @@ namespace Microsoft.Maui
 				window = Window ?? this.GetWindow() ??
 					UIApplication.SharedApplication.GetWindow()?.Handler?.PlatformView as UIWindow;
 			}
+
 			window?.GetWindow()?.Handler?.UpdateValue(nameof(IMenuBarElement.MenuBar));
 
 			MenuBuilder = null;
@@ -82,7 +96,9 @@ namespace Microsoft.Maui
 
 		[SupportedOSPlatform("ios13.0")]
 		[Export(KeyboardAcceleratorExtensions.MenuItemSelectedSelector)]
+#pragma warning disable CA1822 // Selectors can't be static, or else it won't be found
 		internal void MenuItemSelected(UICommand uiCommand)
+#pragma warning restore CA1822
 		{
 			uiCommand.SendClicked();
 		}
