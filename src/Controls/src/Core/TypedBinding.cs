@@ -335,7 +335,17 @@ namespace Microsoft.Maui.Controls.Internals
 					BindingDiagnostics.SendBindingFailure(this, sourceObject, target, property, "Binding", BindingExpression.CannotConvertTypeErrorMessage, value, typeof(TProperty));
 					return;
 				}
-				_setter((TSource)sourceObject, (TProperty)value);
+
+				try
+				{
+					_setter((TSource)sourceObject, (TProperty)value);
+				}
+				catch (Exception ex) when (ex is NullReferenceException || ex is KeyNotFoundException || ex is IndexOutOfRangeException || ex is ArgumentOutOfRangeException)
+				{
+					// Ignore exceptions that are thrown when the source object is null or the property
+					// cannot be found. This can happen when the source object is a collection and the
+					// property is not found in the collection item.
+				}
 			}
 		}
 

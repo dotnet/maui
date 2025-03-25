@@ -166,22 +166,23 @@ internal struct CompiledBindingMarkup
 					return false; // TODO report diagnostic
 				}
 
-				var memberAccess = new MemberAccess(p, property.Type.IsValueType);
 				// TODO: detect if the type is annotated or not
+				var enabledNullable = true;
 				// var enabledNullable = previousPartType.NullableAnnotation == NullableAnnotation.Annotated
 				// 	|| previousPartType.GetAttributes().Any(a => a.AttributeClass?.ToFQDisplayString() == "global::System.Runtime.CompilerServices.NullableContextAttribute"
 				// 		&& a.ConstructorArguments.Length == 1
 				// 		&& a.ConstructorArguments[0].Value is int nullableContextValue
 				// 		&& nullableContextValue > 0);
-				var enabledNullable = true;
 				var memberIsNullable = property.Type.IsTypeNullable(enabledNullable);
 				isNullable |= memberIsNullable;
 
-				IPathPart nextPart = previousPartIsNullable
-					? new ConditionalAccess(memberAccess)
-					: memberAccess;
+				IPathPart memberAccess = new MemberAccess(p, property.Type.IsValueType);
+				if (previousPartIsNullable)
+				{
+					memberAccess = new ConditionalAccess(memberAccess);
+				}
 
-				bindingPathParts.Add(nextPart);
+				bindingPathParts.Add(memberAccess);
 
 				// TODO: do this only if it is the last part?
 				setterOptions = new SetterOptions(
