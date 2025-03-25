@@ -22,7 +22,10 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.Compone
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
 *REMOVED*~Microsoft.Maui.Controls.Binding.Binding(string path, Microsoft.Maui.Controls.BindingMode mode = Microsoft.Maui.Controls.BindingMode.Default, Microsoft.Maui.Controls.IValueConverter converter = null, object converterParameter = null, string stringFormat = null, object source = null) -> void
+~Microsoft.Maui.Controls.Binding.Binding(string path) -> void
 ~Microsoft.Maui.Controls.Binding.Binding(string path, Microsoft.Maui.Controls.BindingMode mode = Microsoft.Maui.Controls.BindingMode.Default, Microsoft.Maui.Controls.IValueConverter converter = null, object converterParameter = null, System.Globalization.CultureInfo converterCulture = null, string stringFormat = null, object source = null) -> void
+~Microsoft.Maui.Controls.Binding.Binding(string path, Microsoft.Maui.Controls.BindingMode mode) -> void
+~Microsoft.Maui.Controls.Binding.Binding(string path, Microsoft.Maui.Controls.BindingMode mode, Microsoft.Maui.Controls.IValueConverter converter, object converterParameter, string stringFormat, object source) -> void
 ~Microsoft.Maui.Controls.Binding.ConverterCulture.get -> System.Globalization.CultureInfo
 ~Microsoft.Maui.Controls.Binding.ConverterCulture.set -> void
 ~Microsoft.Maui.Controls.Page.DisplayActionSheetAsync(string title, string cancel, string destruction, Microsoft.Maui.FlowDirection flowDirection, params string[] buttons) -> System.Threading.Tasks.Task<string>

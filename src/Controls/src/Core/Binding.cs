@@ -34,6 +34,48 @@ namespace Microsoft.Maui.Controls
 		/// Constructs and initializes a new instance of the <see cref="Binding" /> class.
 		/// </summary>
 		/// <param name="path">The property path.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="path"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown when <paramref name="path"/> is <see langword="null"/> or whitespace.</exception>
+		[EditorBrowsable(EditorBrowsableState.Never)] // We don't really want people to use this, mostly added for backwards compatibility
+		public Binding(string path)
+			: this(path, BindingMode.Default, null, null, null, null, null)
+		{
+		}
+
+		/// <summary>
+		/// Constructs and initializes a new instance of the <see cref="Binding" /> class.
+		/// </summary>
+		/// <param name="path">The property path.</param>
+		/// <param name="mode">The binding mode.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="path"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown when <paramref name="path"/> is <see langword="null"/> or whitespace.</exception>
+		[EditorBrowsable(EditorBrowsableState.Never)] // We don't really want people to use this, mostly added for backwards compatibility
+		public Binding(string path, BindingMode mode)
+			: this(path, mode, null, null, null, null, null)
+		{
+		}
+
+		/// <summary>
+		/// Constructs and initializes a new instance of the <see cref="Binding" /> class.
+		/// </summary>
+		/// <param name="path">The property path.</param>
+		/// <param name="mode">The binding mode.</param>
+		/// <param name="converter">The converter.</param>
+		/// <param name="converterParameter">An user-defined parameter to pass to the converter.</param>
+		/// <param name="stringFormat">A String format.</param>
+		/// <param name="source">An object used as the source for this binding.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="path"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown when <paramref name="path"/> is <see langword="null"/> or whitespace.</exception>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public Binding(string path, BindingMode mode, IValueConverter converter, object converterParameter, string stringFormat, object source)
+			: this(path, mode, converter, converterParameter, null, stringFormat, source)
+		{
+		}
+
+		/// <summary>
+		/// Constructs and initializes a new instance of the <see cref="Binding" /> class.
+		/// </summary>
+		/// <param name="path">The property path.</param>
 		/// <param name="mode">The binding mode. This property is optional. Default is <see cref="BindingMode.Default" />.</param>
 		/// <param name="converter">The converter. This parameter is optional. Default is <see langword="null" />.</param>
 		/// <param name="converterParameter">An user-defined parameter to pass to the converter. This parameter is optional. Default is <see langword="null" />.</param>
