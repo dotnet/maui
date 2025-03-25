@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -2494,14 +2495,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			button.SetBinding(Button.BackgroundColorProperty, new Binding("BackgroundColor", source: this));
 		}
 
-		[Fact]
-		public void BindingConverterCulture()
+		[Theory, InlineData("en-US"), InlineData("pt-PT"), InlineData("tr-TR")]
+		public void BindingConverterCulture(string culture)
 		{
-			var button = new Button { BackgroundColor = Colors.HotPink };
+			// Set current culture to something else so we can really see that we influence the culture in the converter
+			Thread.CurrentThread.CurrentUICulture = new CultureInfo("nl-BE");
 
-			//shouldn't crash
-			button.BackgroundColor = Colors.Coral;
-			button.SetBinding(Button.BackgroundColorProperty, new Binding("BackgroundColor", source: this, converterCulture: new CultureInfo("nl-NL")));
+			var converter = new TestConverterCulture();
+			var vm = new MockViewModel();
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "Bar", BindingMode.OneWayToSource);
+			var bindable = new MockBindable();
+			bindable.SetBinding(property, new Binding("Text", converter: converter, converterCulture: new CultureInfo(culture)));
+			bindable.BindingContext = vm;
+
+			Assert.Equal(culture, vm.Text);
 		}
 
 		private class IdentityLoggerConverter : IValueConverter
