@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(ImageView platformView)
 		{
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
+			platformView.ImportantForAccessibility = ImportantForAccessibility.No;
 		}
 
 		protected override void DisconnectHandler(ImageView platformView)
