@@ -119,6 +119,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0a33e18a0bccc10a0c4646dbf5b0fc70cbb3aa44</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0-preview.3.25171.5" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>0a33e18a0bccc10a0c4646dbf5b0fc70cbb3aa44</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging" Version="10.0.0-preview.3.25171.5" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>0a33e18a0bccc10a0c4646dbf5b0fc70cbb3aa44</Sha>

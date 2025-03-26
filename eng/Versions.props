@@ -44,6 +44,7 @@
     <MicrosoftExtensionsDependencyInjectionVersion>10.0.0-preview.3.25171.5</MicrosoftExtensionsDependencyInjectionVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.0-preview.3.25171.5</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsVersion>10.0.0-preview.3.25171.5</MicrosoftExtensionsFileProvidersAbstractionsVersion>
+    <MicrosoftExtensionsHostingAbstractionsVersion>10.0.0-preview.3.25171.5</MicrosoftExtensionsHostingAbstractionsVersion>
     <MicrosoftExtensionsLoggingAbstractionsVersion>10.0.0-preview.3.25171.5</MicrosoftExtensionsLoggingAbstractionsVersion>
     <MicrosoftExtensionsLoggingVersion>10.0.0-preview.3.25171.5</MicrosoftExtensionsLoggingVersion>
     <MicrosoftExtensionsLoggingConsoleVersion>10.0.0-preview.3.25171.5</MicrosoftExtensionsLoggingConsoleVersion>
