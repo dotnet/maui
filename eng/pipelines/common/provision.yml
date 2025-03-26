@@ -39,7 +39,7 @@ steps:
   - template: agent-cleanser/v1.yml@yaml-templates
     parameters:
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      UninstallMono: false
+      UninstallMono: true
       UninstallXamarinMac: true
       CleanseAgentToolsDotNet: true
       SelfHealPowerShell: false
