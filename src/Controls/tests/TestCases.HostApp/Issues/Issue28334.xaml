@@ -22,6 +22,9 @@
       <Button Text="Add EmptyViewTemplate"
               AutomationId="EmptyViewTemplateButton"
               Clicked="OnEmptyViewTemplateChangedButtonClick"/>
+      <Button Text="ReAdd ItemSource"
+              AutomationId="ReAddItemSourceButton"
+              Clicked="OnReAddItemSourceButtonClick"/>
     </StackLayout>
   </Grid>
 

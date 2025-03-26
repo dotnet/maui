@@ -28,4 +28,13 @@ public class Issue28334 : _IssuesUITest
 		VerifyScreenshot();
 	}
 
+	[Test, Order(3)]
+	[Category(UITestCategories.CollectionView)]
+	public void ReAddItemSourceShouldRenderProperly()
+	{
+		App.WaitForElement("ReAddItemSourceButton");
+		App.Tap("ReAddItemSourceButton");
+		VerifyScreenshot();
+	}
+
 }
