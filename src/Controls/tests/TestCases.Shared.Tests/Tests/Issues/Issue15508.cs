@@ -16,6 +16,7 @@ public class Issue15508 : _IssuesUITest
 	{
 		App.WaitForElement("Button");
 		App.Tap("Button");
+		Thread.Sleep(500);
 		var scrollLabel = App.FindElement("Label");
 		Assert.That(scrollLabel.GetText(), Is.EqualTo("Scroll Completed"));
 	}
