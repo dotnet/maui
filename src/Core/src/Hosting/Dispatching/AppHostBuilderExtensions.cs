@@ -58,8 +58,10 @@ namespace Microsoft.Maui.Hosting
 			foreach (object variableNameObject in environmentVariables.Keys)
 			{
 				string variableName = (string)variableNameObject;
-				if (variablesToInclude.Contains(variableName) || variableName.StartsWith("OTEL_")
-					|| variableName.StartsWith("LOGGING__CONSOLE") || variableName.StartsWith("services__"))
+				if (variablesToInclude.Contains(variableName)
+					|| variableName.StartsWith("OTEL_", StringComparison.OrdinalIgnoreCase)
+					|| variableName.StartsWith("LOGGING__CONSOLE", StringComparison.OrdinalIgnoreCase)
+					|| variableName.StartsWith("services__", StringComparison.OrdinalIgnoreCase))
 				{
 					string value = (string)environmentVariables[variableName]!;
 
