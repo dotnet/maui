@@ -5571,9 +5571,9 @@ Microsoft.Maui.Controls.Internals.TemplatedItemsList<TView, TItem>.GetDescendant
 Microsoft.Maui.Controls.Internals.TemplatedItemsList<TView, TItem>.GetGroupIndexFromGlobal(int globalIndex, out int leftOver) -> int
 Microsoft.Maui.Controls.Internals.TemplatedItemsList<TView, TItem>.GroupedCollectionChanged -> System.Collections.Specialized.NotifyCollectionChangedEventHandler
 Microsoft.Maui.Controls.Internals.TemplatedItemsList<TView, TItem>.IsGroupingEnabled.get -> bool
+Microsoft.Maui.Controls.Internals.TextTransformUtilites
 Microsoft.Maui.Controls.Internals.TypedBinding<TSource, TProperty>
 Microsoft.Maui.Controls.Internals.TypedBindingBase
-Microsoft.Maui.Controls.Internals.TextTransformUtilites
 Microsoft.Maui.Controls.InvalidNavigationException
 Microsoft.Maui.Controls.InvalidNavigationException.InvalidNavigationException() -> void
 Microsoft.Maui.Controls.IPaddingElement
