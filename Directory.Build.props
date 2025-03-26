@@ -151,7 +151,7 @@
     <TvosTargetFrameworkVersionSdkDefault>18.2</TvosTargetFrameworkVersionSdkDefault>
     <MacCatalystTargetFrameworkVersionSdkDefault>18.2</MacCatalystTargetFrameworkVersionSdkDefault>
     <MacosTargetFrameworkVersionSdkDefault>15.2</MacosTargetFrameworkVersionSdkDefault>
-    <AndroidTargetFrameworkVersionSdkDefault>35.0</AndroidTargetFrameworkVersionSdkDefault>
+    <AndroidTargetFrameworkVersionSdkDefault>36.0</AndroidTargetFrameworkVersionSdkDefault>
     <!-- Current .NET -->
     <IosTargetFrameworkVersion>18.2</IosTargetFrameworkVersion>
     <TvosTargetFrameworkVersion>18.2</TvosTargetFrameworkVersion>
