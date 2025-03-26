@@ -104,14 +104,23 @@ namespace Microsoft.Maui.Hosting
 			// source format is `http[s]://localhost:[port]`
 			// tunnel format is `http[s]://exciting-tunnel-[port].devtunnels.ms`
 
-			var replacement = Regex.Replace(
-				uri,
-				@"://localhost\:(\d+)(.*)",
-				$"://{devTunnelId}-$1.devtunnels.ms$2",
-				RegexOptions.Compiled);
+			var tunnel = $"://{devTunnelId}-$1.devtunnels.ms$2";
+
+#if NET7_0_OR_GREATER
+			var replacement = LocalhostRegex().Replace(uri, tunnel);
+#else
+			var replacement = Regex.Replace(uri, LocalhostPattern, tunnel, RegexOptions.Compiled);
+#endif
 
 			return replacement;
 		}
+
+		const string LocalhostPattern = @"://localhost\:(\d+)(.*)";
+
+#if NET7_0_OR_GREATER
+		[GeneratedRegex(LocalhostPattern, RegexOptions.IgnoreCase)]
+		private static partial Regex LocalhostRegex();
+#endif
 
 		internal static IDispatcher GetRequiredApplicationDispatcher(this IServiceProvider provider)
 		{
