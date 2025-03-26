@@ -2667,6 +2667,8 @@
 ~static Microsoft.Maui.Controls.Internals.Registrar.RegisterRenderers(Microsoft.Maui.Controls.HandlerAttribute[] attributes) -> void
 ~static Microsoft.Maui.Controls.Internals.Registrar.RegisterRendererToHandlerShim(System.Func<object, Microsoft.Maui.IViewHandler> handlerShim) -> void
 ~static Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceProvider2.get -> System.Func<Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery, Microsoft.Maui.Controls.Internals.ResourceLoader.ResourceLoadingResponse>
+~static Microsoft.Maui.Controls.Internals.TextTransformUtilites.GetTransformedText(string source, Microsoft.Maui.TextTransform textTransform) -> string
+~static Microsoft.Maui.Controls.Internals.TextTransformUtilites.SetPlainText(Microsoft.Maui.Controls.InputView inputView, string platformText) -> void
 ~static Microsoft.Maui.Controls.KnownColor.Accent.get -> Microsoft.Maui.Graphics.Color
 ~static Microsoft.Maui.Controls.KnownColor.Default.get -> Microsoft.Maui.Graphics.Color
 ~static Microsoft.Maui.Controls.KnownColor.SetAccent(Microsoft.Maui.Graphics.Color value) -> void
@@ -5571,6 +5573,7 @@ Microsoft.Maui.Controls.Internals.TemplatedItemsList<TView, TItem>.GroupedCollec
 Microsoft.Maui.Controls.Internals.TemplatedItemsList<TView, TItem>.IsGroupingEnabled.get -> bool
 Microsoft.Maui.Controls.Internals.TypedBinding<TSource, TProperty>
 Microsoft.Maui.Controls.Internals.TypedBindingBase
+Microsoft.Maui.Controls.Internals.TextTransformUtilites
 Microsoft.Maui.Controls.InvalidNavigationException
 Microsoft.Maui.Controls.InvalidNavigationException.InvalidNavigationException() -> void
 Microsoft.Maui.Controls.IPaddingElement
