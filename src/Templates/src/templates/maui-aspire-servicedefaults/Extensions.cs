@@ -70,9 +70,12 @@ public static class Extensions
     }
 
     /// <summary>
-    /// Disables the security check for development certificates.
+    /// Disables the security check for ASP.NET development certificates.
     /// This should only be used in development environments.
     /// </summary>
+#if !DEBUG
+    [Obsolete("This method should only be used for development purposes.", true)]
+#endif
     public static IHttpClientBuilder DisableDevCertSecurityCheck(this IHttpClientBuilder builder)
     {
         builder.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
@@ -109,6 +112,8 @@ public static class Extensions
             builder.Services.AddOpenTelemetry().UseOtlpExporter();
         }
 
+        // TODO MAUI: this code comes from the Aspire service defaults, we will want to check if this works for us and if yes
+        // how integration works for us because the AspNetCore package cannot be added to a MAUI project and we can't read the connection string like this
         // Uncomment the following lines to enable the Azure Monitor exporter (requires the Azure.Monitor.OpenTelemetry.AspNetCore package)
         //if (!string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
         //{
