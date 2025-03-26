@@ -3272,7 +3272,6 @@ virtual Microsoft.Maui.PropertyMapper.ClearKeyCache() -> void
 virtual Microsoft.Maui.PropertyMapper.GetKeys() -> System.Collections.Generic.IEnumerable<string!>!
 virtual Microsoft.Maui.PropertyMapper.GetProperty(string! key) -> System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>?
 virtual Microsoft.Maui.PropertyMapper.SetPropertyCore(string! key, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>! action) -> void
-virtual Microsoft.Maui.PropertyMapper.UpdateKeys.get -> System.Collections.Generic.IReadOnlyCollection<string!>!
 virtual Microsoft.Maui.PropertyMapper.UpdatePropertyCore(string! key, Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement! virtualView) -> void
 virtual Microsoft.Maui.RectangleAdorner.Contains(Microsoft.Maui.Graphics.Point point) -> bool
 virtual Microsoft.Maui.RectangleAdorner.Draw(Microsoft.Maui.Graphics.ICanvas! canvas, Microsoft.Maui.Graphics.RectF dirtyRect) -> void
