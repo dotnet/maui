@@ -44,7 +44,7 @@ steps:
       displayName: Enable KVM
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))      
 
-  # Provision the variaous SDKs that are needed
+  # Provision the various SDKs that are needed
   - template: provision.yml
     parameters:
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
