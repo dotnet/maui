@@ -8,3 +8,12 @@ Microsoft.Maui.Controls.Embedding.EmbeddingExtensions
 Microsoft.Maui.Controls.Xaml.Internals.ValueTargetProvider
 Microsoft.Maui.Controls.Xaml.Internals.ValueTargetProvider.ValueTargetProvider(object! targetObject, object! targetProperty) -> void
 Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers
+*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.Color.get -> Microsoft.Maui.Graphics.Color
+*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.Color.set -> void
+*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.FontFamily.get -> string
+*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.FontFamily.set -> void
+*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.Glyph.get -> string
+*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.Glyph.set -> void
+*REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.ProvideValue(System.IServiceProvider serviceProvider) -> Microsoft.Maui.Controls.ImageSource
+*REMOVED*Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.get -> double
+*REMOVED*Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.set -> void

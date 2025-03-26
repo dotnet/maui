@@ -7,13 +7,16 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	internal static class CellExtensions
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal static NSIndexPath GetIndexPath(this Cell self)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (self == null)
 				throw new ArgumentNullException(nameof(self));
 
 			NSIndexPath path;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (self.RealParent is ListView)
 			{
 				var section = 0;
@@ -31,6 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else
 				throw new NotSupportedException("Unknown cell parent type");
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return path;
 		}

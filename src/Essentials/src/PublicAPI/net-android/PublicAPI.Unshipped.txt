@@ -1,5 +1,9 @@
 #nullable enable
+Microsoft.Maui.Devices.Sensors.IGeolocation.IsEnabled.get -> bool
+static Microsoft.Maui.Devices.Sensors.Geolocation.IsEnabled.get -> bool
 static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue, string? sharedName) -> System.DateTimeOffset
 static Microsoft.Maui.Storage.Preferences.Get(string! key, System.DateTimeOffset defaultValue) -> System.DateTimeOffset
 static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value, string? sharedName) -> void
 static Microsoft.Maui.Storage.Preferences.Set(string! key, System.DateTimeOffset value) -> void
+Microsoft.Maui.Media.SpeechOptions.Rate.get -> float?
+Microsoft.Maui.Media.SpeechOptions.Rate.set -> void

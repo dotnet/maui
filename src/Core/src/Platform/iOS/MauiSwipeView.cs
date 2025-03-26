@@ -598,7 +598,7 @@ namespace Microsoft.Maui.Platform
 							_contentView.Frame = new CGRect(_originalBounds.X, _originalBounds.Y + offset, _originalBounds.Width, _originalBounds.Height);
 							break;
 					}
-				}, null);
+				}, () => { });
 			}
 
 			if (_swipeTransitionMode == SwipeTransitionMode.Drag)
@@ -631,7 +631,7 @@ namespace Microsoft.Maui.Platform
 							_actionView.Frame = new CGRect(actionBounds.X, -actionSize + Math.Abs(offset), actionBounds.Width, actionBounds.Height);
 							break;
 					}
-				}, null);
+				}, () => { });
 			}
 		}
 

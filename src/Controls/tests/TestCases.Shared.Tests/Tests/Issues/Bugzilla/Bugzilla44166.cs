@@ -14,6 +14,9 @@ public class Bugzilla44166 : _IssuesUITest
 	public override string Issue => "FlyoutPage instances do not get disposed upon GC";
 
 	[Test]
+#if ANDROID
+	[Ignore("Failing on net10 https://github.com/dotnet/maui/issues/27411")]
+#endif
 	[Category(UITestCategories.Performance)]
 	public void Bugzilla44166Test()
 	{

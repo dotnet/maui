@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Loaded -= OnLoaded;
 		}
 
-		internal static void MapBackground(IGraphicsViewHandler handler, IGraphicsView graphicsView)
+		public static void MapBackground(IGraphicsViewHandler handler, IGraphicsView graphicsView)
 		{
 			if (graphicsView.Background is not null)
 			{
