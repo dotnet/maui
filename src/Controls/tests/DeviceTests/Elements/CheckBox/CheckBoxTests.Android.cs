@@ -97,5 +97,21 @@ namespace Microsoft.Maui.DeviceTests
             var platformRotation = await InvokeOnMainThreadAsync(() => PlatformCheckBox.Rotation);
             Assert.Equal(expected, platformRotation);
         }
-    }
+		
+		[Fact("The IsEnabled of a CheckBox should match with native IsEnabled")]
+		public async Task CheckBoxIsEnabled()
+		{
+			var checkBox = new CheckBox();
+			checkBox.IsEnabled = false;
+			var expectedValue = checkBox.IsEnabled;
+
+			var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
+			var nativeView = GetNativeCheckBox(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+				Assert.Equal(expectedValue, isEnabled);
+			});
+		}
+	}
 }
