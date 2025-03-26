@@ -1,7 +1,7 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
 
-	[Issue(IssueTracker.Github, 1583, "WebView fails to load from urlwebviewsource with non-ascii characters (works with Uri)", PlatformAffected.iOS, issueTestNumber: 1, isInternetRequired: true)]
+	[Issue(IssueTracker.Github, 1583, "WebView fails to load from urlwebviewsource with non-ascii characters (works with Uri)", PlatformAffected.iOS, issueTestNumber: 1)]
 	public class Issue1583_1 : TestContentPage
 	{
 		WebView _webview;
