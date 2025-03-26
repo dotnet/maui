@@ -352,24 +352,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 
 		[Test]
-        [Category(UITestCategories.CollectionView)]
-        public void ValidateEmptyViewSize()
-        {
-			App.WaitForElement("EmptyViewButton");
-			App.Tap("EmptyViewButton");
-            App.WaitForElement("Options");
-            App.Tap("Options");
-            App.WaitForElement("EmptyViewCustomSize");
-            App.Tap("EmptyViewCustomSize");
-            App.WaitForElement("Apply");
-            App.Tap("Apply");
-            var emptyViewBounds = App.WaitForElement("TestLabel").GetRect();
-            Assert.That(emptyViewBounds, Is.Not.Null, "EmptyView should be displayed.");
-            Assert.That(emptyViewBounds.Height, Is.EqualTo(200).Within(5), "EmptyView height should be 200.");
-            Assert.That(emptyViewBounds.Width, Is.EqualTo(300).Within(5), "EmptyView width should be 300.");
-       }
- 
-		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateDisplayed_WhenCustomView()
 		{
@@ -560,6 +542,192 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("No Template Items Available(Grid View)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewString_WhenItemsLayout_Is_VerticalList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
+			App.WaitForElement("ItemsLayoutVerticalList");
+			App.Tap("ItemsLayoutVerticalList");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
+			App.WaitForElement("FooterString");
+			App.Tap("FooterString");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(String)");
+			App.WaitForElement("CollectionView Header(String)");
+			App.WaitForElement("CollectionView Footer(String)");
+		}
+        
+
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewString_WhenItemsLayout_Is_HorizontalList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
+			App.WaitForElement("ItemsLayoutHorizontalList");
+			App.Tap("ItemsLayoutHorizontalList");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
+			App.WaitForElement("FooterString");
+			App.Tap("FooterString");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(String)");
+			App.WaitForElement("CollectionView Header(String)");
+			App.WaitForElement("CollectionView Footer(String)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewString_WhenItemsLayout_Is_VerticalGrid()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
+			App.WaitForElement("ItemsLayoutVerticalGrid");
+			App.Tap("ItemsLayoutVerticalGrid");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
+			App.WaitForElement("FooterString");
+			App.Tap("FooterString");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(String)");
+			App.WaitForElement("CollectionView Header(String)");
+			App.WaitForElement("CollectionView Footer(String)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewString_WhenItemsLayout_Is_HorizontalGrid()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
+			App.WaitForElement("ItemsLayoutHorizontalGrid");
+			App.Tap("ItemsLayoutHorizontalGrid");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
+			App.WaitForElement("FooterString");
+			App.Tap("FooterString");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(String)");
+			App.WaitForElement("CollectionView Header(String)");
+			App.WaitForElement("CollectionView Footer(String)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateCustomEmptyViewString_WhenItemsLayout_Is_VerticalList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("ItemsLayoutVerticalList");
+			App.Tap("ItemsLayoutVerticalList");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
+			App.WaitForElement("FooterString");
+			App.Tap("FooterString");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(Grid View)");
+			App.WaitForElement("CollectionView Header(String)");
+			App.WaitForElement("CollectionView Footer(String)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateCustomEmptyViewString_WhenItemsLayout_Is_HorizontalList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("ItemsLayoutHorizontalList");
+			App.Tap("ItemsLayoutHorizontalList");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
+			App.WaitForElement("FooterString");
+			App.Tap("FooterString");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(Grid View)");
+			App.WaitForElement("CollectionView Header(String)");
+			App.WaitForElement("CollectionView Footer(String)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateCustomEmptyViewString_WhenItemsLayout_Is_VerticalGrid()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("ItemsLayoutVerticalGrid");
+			App.Tap("ItemsLayoutVerticalGrid");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
+			App.WaitForElement("FooterString");
+			App.Tap("FooterString");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(Grid View)");
+			App.WaitForElement("CollectionView Header(String)");
+			App.WaitForElement("CollectionView Footer(String)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateCustomEmptyView_WhenItemsLayout_Is_HorizontalGrid()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("ItemsLayoutHorizontalGrid");
+			App.Tap("ItemsLayoutHorizontalGrid");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
+			App.WaitForElement("FooterString");
+			App.Tap("FooterString");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(Grid View)");
+			App.WaitForElement("CollectionView Header(String)");
+			App.WaitForElement("CollectionView Footer(String)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewSize()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewCustomSize");
+			App.Tap("EmptyViewCustomSize");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			var emptyViewBounds = App.WaitForElement("TestLabel").GetRect();
+			Assert.That(emptyViewBounds, Is.Not.Null);
+			Assert.That(emptyViewBounds.Height, Is.EqualTo(200).Within(5));
+			Assert.That(emptyViewBounds.Width, Is.EqualTo(300).Within(5));
 		}
 
 #if TEST_FAILS_ON_ANDROID
