@@ -20,7 +20,7 @@ public class Issue27766 : _IssuesUITest
         App.Tap("Test 3");
         Thread.Sleep(500); // Add some wait for poping up the keyboard to resolve flakiness in CI.
 
-        // CI tests sometimes fail due to keyboard layout mismatching, As this case ensure the editor content is being visible, so keyboard is not needed for ensuring this case.
+        // CI tests sometimes fail due to a keyboard layout mismatch; in this case, the editor content is visible without the keyboard, so no keyboard is needed.
 #if ANDROID || IOS
         VerifyScreenshot(cropBottom: 1200);
 #else
