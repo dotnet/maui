@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue26990"
+             Title="Issue26990">
+    <VerticalStackLayout>
+        <Border Stroke="Black" StrokeThickness="1" Margin="0,0,0,5" Padding="0.5">
+            <VerticalStackLayout>
+                <Label Text="Single Primary Tap" x:Name="SPT">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer
+                            NumberOfTapsRequired="1" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Type: " x:Name="SPT_label"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Stroke="Black" StrokeThickness="1" Margin="0,0,0,5" Padding="0.5">
+            <VerticalStackLayout>
+                <Label Text="Multiple Primary Tap" x:Name="MPT">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer
+                            NumberOfTapsRequired="2" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Type: " x:Name="MPT_label"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Stroke="Black" StrokeThickness="1" Margin="0,0,0,5" Padding="0.5">
+            <VerticalStackLayout>
+                <Label Text="Single Secondary Tap" x:Name="SST">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer
+                            NumberOfTapsRequired="1"
+                            Buttons="Secondary" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Type: " x:Name="SST_label"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Stroke="Black" StrokeThickness="1" Margin="0,0,0,5" Padding="0.5">
+            <VerticalStackLayout>
+                <Label Text="Multiple Secondary Tap" x:Name="MST">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer
+                            NumberOfTapsRequired="2"
+                            Buttons="Secondary" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Type: " x:Name="MST_label"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Stroke="Black" StrokeThickness="1" Margin="0,0,0,5" Padding="0.5">
+            <VerticalStackLayout>
+                <Label Text="Single Either Tap" x:Name="SET">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer x:Name="SETGR"
+                            NumberOfTapsRequired="1" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Type: " x:Name="SET_label"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Stroke="Black" StrokeThickness="1" Margin="0,0,0,5" Padding="0.5">
+            <VerticalStackLayout>
+                <Label Text="Multiple Either Tap" x:Name="MET">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer x:Name="METGR"
+                            NumberOfTapsRequired="2" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Type: " x:Name="MET_label"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Stroke="Black" StrokeThickness="1" Margin="0,0,0,5" Padding="0.5">
+            <VerticalStackLayout>
+                <Label Text="Single Primary Tap" Background="LightBlue" x:Name="SPTB">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer
+                            NumberOfTapsRequired="1" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Type: " x:Name="SPTB_label"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Stroke="Black" StrokeThickness="1" Margin="0,0,0,5" Padding="0.5">
+            <VerticalStackLayout>
+                <Label Text="Multiple Primary Tap" Background="LightBlue" x:Name="MPTB">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer
+                            NumberOfTapsRequired="2" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Type: " x:Name="MPTB_label"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Stroke="Black" StrokeThickness="1" Margin="0,0,0,5" Padding="0.5">
+            <VerticalStackLayout>
+                <Label Text="Single Secondary Tap" Background="LightBlue" x:Name="SSTB">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer
+                            NumberOfTapsRequired="1"
+                            Buttons="Secondary" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Type: " x:Name="SSTB_label"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Stroke="Black" StrokeThickness="1" Margin="0,0,0,5" Padding="0.5">
+            <VerticalStackLayout>
+                <Label Text="Multiple Secondary Tap" Background="LightBlue" x:Name="MSTB">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer
+                            NumberOfTapsRequired="2"
+                            Buttons="Secondary" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Type: " x:Name="MSTB_label"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Stroke="Black" StrokeThickness="1" Margin="0,0,0,5" Padding="0.5">
+            <VerticalStackLayout>
+                <Label Text="Single Either Tap" Background="LightBlue" x:Name="SETB">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer x:Name="SEBTGR"
+                            NumberOfTapsRequired="1" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Type: " x:Name="SETB_label"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Stroke="Black" StrokeThickness="1" Margin="0,0,0,5" Padding="0.5">
+            <VerticalStackLayout>
+                <Label Text="Multiple Either Tap" Background="LightBlue" x:Name="METB">
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer x:Name="MEBTGR"
+                            NumberOfTapsRequired="2" />
+                    </Label.GestureRecognizers>
+                </Label>
+                <Label Text="Type: " x:Name="METB_label"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Stroke="Black" StrokeThickness="1" Margin="0,0,0,5" Padding="0.5">
+            <VerticalStackLayout>
+                <Border x:Name="BNS"
+                    HeightRequest="50"
+                    Background="Red"
+                    WidthRequest="100">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer/>
+                    </Border.GestureRecognizers>
+                </Border>
+                <Label Text="Type: " x:Name="BNS_label"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Border Stroke="Black" StrokeThickness="1" Margin="0,0,0,5" Padding="0.5">
+            <VerticalStackLayout>
+                <Border x:Name="BWS"
+                    HeightRequest="50"
+                    Background="Red"
+                    WidthRequest="100">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer/>
+                    </Border.GestureRecognizers>
+                    <Border.Shadow>
+                        <Shadow Brush="Black"
+                                    Offset="0,3"
+                                    Radius="10"
+                                    Opacity="0.5"/>
+                    </Border.Shadow>
+                </Border>
+                <Label Text="Type: " x:Name="BWS_label"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <Button Text="Reveal Accessibility Types" Clicked="Button_Clicked" AutomationId="RevealButton"/>
+
+    </VerticalStackLayout>
+</ContentPage>
