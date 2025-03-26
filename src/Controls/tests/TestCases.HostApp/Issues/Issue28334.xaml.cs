@@ -38,6 +38,16 @@ public partial class Issue28334 : ContentPage
 			return grid;
 		});
 	}
+
+	private void OnReAddItemSourceButtonClick(object sender, EventArgs e)
+	{
+		_viewModel.ItemsSource = new List<Issue28334ItemModel>
+			{
+				new Issue28334ItemModel { Name = "Item 1", Description = "Description 1" },
+				new Issue28334ItemModel { Name = "Item 2", Description = "Description 2" },
+				new Issue28334ItemModel { Name = "Item 3", Description = "Description 3" }
+			};
+	}
 }
 
 public class Issue28334CollectionViewViewModel : INotifyPropertyChanged
