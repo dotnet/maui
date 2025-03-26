@@ -151,13 +151,13 @@
     <TvosTargetFrameworkVersionSdkDefault>18.2</TvosTargetFrameworkVersionSdkDefault>
     <MacCatalystTargetFrameworkVersionSdkDefault>18.2</MacCatalystTargetFrameworkVersionSdkDefault>
     <MacosTargetFrameworkVersionSdkDefault>15.2</MacosTargetFrameworkVersionSdkDefault>
-    <AndroidTargetFrameworkVersionSdkDefault>35.0</AndroidTargetFrameworkVersionSdkDefault>
+    <AndroidTargetFrameworkVersionSdkDefault>36.0</AndroidTargetFrameworkVersionSdkDefault>
     <!-- Current .NET -->
     <IosTargetFrameworkVersion>18.2</IosTargetFrameworkVersion>
     <TvosTargetFrameworkVersion>18.2</TvosTargetFrameworkVersion>
     <MacCatalystTargetFrameworkVersion>18.2</MacCatalystTargetFrameworkVersion>
     <MacosTargetFrameworkVersion>15.2</MacosTargetFrameworkVersion>
-    <AndroidTargetFrameworkVersion>35.0</AndroidTargetFrameworkVersion>
+    <AndroidTargetFrameworkVersion>36.0</AndroidTargetFrameworkVersion>
     <WindowsTargetFrameworkVersion>10.0.19041.0</WindowsTargetFrameworkVersion>
     <Windows2TargetFrameworkVersion>10.0.20348.0</Windows2TargetFrameworkVersion>
     <TizenTargetFrameworkVersion>7.0</TizenTargetFrameworkVersion>

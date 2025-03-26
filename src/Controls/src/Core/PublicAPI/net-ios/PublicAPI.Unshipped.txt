@@ -14,6 +14,8 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentM
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string accept, string cancel, Microsoft.Maui.FlowDirection flowDirection) -> System.Threading.Tasks.Task<bool>
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string cancel) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string cancel, Microsoft.Maui.FlowDirection flowDirection) -> System.Threading.Tasks.Task
+override Microsoft.Maui.Controls.Handlers.Items.TemplatedCell.LayoutSubviews() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.LayoutSubviews() -> void
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Controls.ViewExtensions.FadeToAsync(this Microsoft.Maui.Controls.VisualElement! view, double opacity, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.LayoutToAsync(this Microsoft.Maui.Controls.VisualElement! view, Microsoft.Maui.Graphics.Rect bounds, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
@@ -405,6 +407,11 @@ Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationSty
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Subscribe<TSender>(object subscriber, string message, System.Action<TSender> callback, TSender source = null) -> void
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
+Microsoft.Maui.Controls.SearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
+Microsoft.Maui.Controls.SearchBar.ReturnType.set -> void
+~static readonly Microsoft.Maui.Controls.SearchBar.ReturnTypeProperty -> Microsoft.Maui.Controls.BindableProperty
+static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributedString(this Microsoft.Maui.Controls.FormattedString! formattedString, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = -1, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> Foundation.NSAttributedString!
+static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributedString(this Microsoft.Maui.Controls.Span! span, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = -1, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> Foundation.NSAttributedString!
 *REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.SetNeedsLayout() -> void
 *REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWindow() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MovedToWindow() -> void
@@ -416,3 +423,5 @@ override Microsoft.Maui.Controls.ListStringTypeConverter.CanConvertFrom(System.C
 override Microsoft.Maui.Controls.ListStringTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
 override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+*REMOVED*static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributedString(this Microsoft.Maui.Controls.FormattedString! formattedString, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = 0, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> Foundation.NSAttributedString!
+*REMOVED*static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributedString(this Microsoft.Maui.Controls.Span! span, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = 0, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> Foundation.NSAttributedString!
