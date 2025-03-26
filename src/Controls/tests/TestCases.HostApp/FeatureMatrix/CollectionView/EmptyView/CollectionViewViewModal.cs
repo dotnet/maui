@@ -36,11 +36,18 @@ namespace Maui.Controls.Sample
         private DataTemplate _emptyViewTemplate;
         private DataTemplate _groupHeaderTemplate;
         private DataTemplate _itemTemplate;
-        private ItemsLayout _itemsLayout;
+        private IItemsLayout _itemsLayout= LinearItemsLayout.Vertical;
         private ItemsSourceType _itemsSourceType = ItemsSourceType.None;
         private bool _isGrouped = false;
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        private ObservableCollection<CollectionViewTestItem> _observableCollection;
+        private ObservableCollection<CollectionViewTestItem> _emptyObservableCollection;
+        private List<Grouping<string, CollectionViewTestItem>> _groupedList;
+        private List<Grouping<string, CollectionViewTestItem>> _emptyGroupedList;
+
+
 
         public CollectionViewViewModel()
         {
@@ -80,11 +87,6 @@ namespace Maui.Controls.Sample
                 return stackLayout;
             });
         }
-
-        private ObservableCollection<CollectionViewTestItem> _observableCollection;
-        private ObservableCollection<CollectionViewTestItem> _emptyObservableCollection;
-        private List<Grouping<string, CollectionViewTestItem>> _groupedList;
-        private List<Grouping<string, CollectionViewTestItem>> _emptyGroupedList;
 
         private void LoadItems()
         {
@@ -194,7 +196,7 @@ namespace Maui.Controls.Sample
             }
         }
 
-        public ItemsLayout ItemsLayout
+        public IItemsLayout ItemsLayout
         {
             get => _itemsLayout;
             set
