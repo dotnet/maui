@@ -114,6 +114,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateKeyboard(searchBar);
 		}
 
+		public static void MapReturnType(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateReturnType(searchBar);
+		}
+
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
 		{
 			if (VirtualView != null)
@@ -128,6 +133,7 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.UpdateCancelButtonColor(VirtualView);
 				PlatformView?.UpdateSearchIconColor(VirtualView);
 				PlatformView?.UpdateKeyboard(VirtualView);
+				PlatformView?.UpdateReturnType(VirtualView);
 			}
 		}
 

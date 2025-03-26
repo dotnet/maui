@@ -290,13 +290,16 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			{
 				CancelThunk = () => cancelled
 			});
+
 			if (longRunningSeconds > 0)
+			{
 				resultsSink = new ExecutionSink(resultsSink, new ExecutionSinkOptions
 				{
 					CancelThunk = () => cancelled,
 					DiagnosticMessageSink = diagSink,
 					LongRunningTestTime = TimeSpan.FromSeconds(longRunningSeconds)
 				});
+			}
 
 			var assm = new XunitProjectAssembly() { AssemblyFilename = runInfo.AssemblyFileName };
 			deviceExecSink.OnMessage(new TestAssemblyExecutionStarting(assm, executionOptions));

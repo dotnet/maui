@@ -30,7 +30,7 @@
 
 			swipeItem.Invoked += (sender, e) =>
 			{
-				DisplayAlert("Issue12079", "Invoked", "Ok");
+				DisplayAlertAsync("Issue12079", "Invoked", "Ok");
 			};
 
 			var swipeItems = new SwipeItems { swipeItem };

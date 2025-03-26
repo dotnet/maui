@@ -1,4 +1,4 @@
-#if ANDROID
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS // Related Issue : https://github.com/dotnet/maui/issues/27955, https://github.com/dotnet/maui/issues/27946
 using Microsoft.Maui.TestCases.Tests;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;

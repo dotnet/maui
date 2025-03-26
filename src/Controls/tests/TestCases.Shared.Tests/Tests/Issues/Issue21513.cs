@@ -14,8 +14,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Button)]
-		[FailsOnIOSWhenRunningOnXamarinUITest("Not generated snapshot for this platform")]
-		[FailsOnMacWhenRunningOnXamarinUITest("VerifyScreenshot method not implemented on macOS")]
 		public void Issue21513Test()
 		{
 			App.WaitForElement("WaitForStubControl");

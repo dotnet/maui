@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -44,6 +45,24 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidateHasColor(boxView, expected, typeof(ShapeViewHandler));
+		}
+
+		[Fact]
+		[Description("The Opacity property of a BoxView should match with native Opacity")]
+		public async Task VerifyBoxViewOpacityProperty()
+		{
+			var boxView = new BoxView
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = boxView.Opacity;
+
+			var handler = await CreateHandlerAsync<ShapeViewHandler>(boxView);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var nativeOpacityValue = await GetPlatformOpacity(handler);
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
 		}
 	}
 }
