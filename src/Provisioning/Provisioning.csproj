@@ -42,6 +42,18 @@
 		<AndroidSdkPackages Include="emulator" />
 	</ItemGroup>
 
+	<!-- If an explicit list of API levels was requested, only include those -->
+	<ItemGroup Condition=" '$(AndroidSdkRequestedApiLevels)' != '' ">
+		<!-- Create a temporary item with each API level from the semicolon-delimited list -->
+		<_RequestedAndroidSdkApiLevels Include="$(AndroidSdkRequestedApiLevels.Split(';'))" />
+
+		<!-- Get the list of API levels to remove by copying the full list but excluding the ones to keep -->
+		<_AndroidSdkApiLevelsToRemove Include="@(AndroidSdkApiLevels)" Exclude="@(_RequestedAndroidSdkApiLevels)" />
+		
+		<!-- Now Remove AndroidSdkApiLevels that aren't the ones requested -->
+		<AndroidSdkApiLevels Remove="@(_AndroidSdkApiLevelsToRemove)" />
+	</ItemGroup>
+	
 	<Target Name="ProvisionAndroidSdkCommonPackages">
 		<Message Text="Provisioning Android SDK Common Packages" />
 
