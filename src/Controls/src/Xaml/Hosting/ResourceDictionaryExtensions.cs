@@ -5,6 +5,12 @@ namespace Microsoft.Maui.Controls.Hosting;
 
 public static class ResourceDictionariesMauiAppBuilderExtensoins
 {
+    /// <summary>
+    /// Configures the <see cref="MauiAppBuilder"/> with resource dictionaries.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="configure"></param>
+    /// <returns></returns>
     public static MauiAppBuilder ConfigureResources(this MauiAppBuilder builder, Action<ResourceDictionaryBuilder> configure)
     {
         var builderInstance = new ResourceDictionaryBuilder();
