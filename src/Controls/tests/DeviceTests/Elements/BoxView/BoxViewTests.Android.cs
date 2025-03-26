@@ -2,10 +2,12 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -96,6 +98,25 @@ namespace Microsoft.Maui.DeviceTests
             var platformRotation = await InvokeOnMainThreadAsync(() => platformBoxView.Rotation);
             Assert.Equal(expected, platformRotation);
         }
+        
+        [Fact]
+		[Description("The IsEnabled property of a BoxView should match with native IsEnabled")]		
+		public async Task VerifyBoxViewIsEnabledProperty()
+		{
+			var boxView = new BoxView
+			{
+				IsEnabled = false
+			};
+			var expectedValue = boxView.IsEnabled;
+
+			var handler = await CreateHandlerAsync<BoxViewHandler>(boxView);
+			var nativeView = GetNativeBoxView(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+				Assert.Equal(expectedValue, isEnabled);
+			});
+		}		
 		
 		Task<bool> GetPlatformIsVisible(ShapeViewHandler boxViewViewHandler)
 		{
