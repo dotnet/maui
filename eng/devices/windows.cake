@@ -283,7 +283,7 @@ Task("testOnly")
 		if (isControlsProjectTestRun)
 		{
 			// Start the app once, this will trigger the discovery of the test categories
-			var startArgsInitial = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"-1\"";
+			var startArgsInitial = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -Verb RunAs -ArgumentList \"" + testResultsFile + "\", \"-1\"";
 			StartProcess("powershell", startArgsInitial);
 
 			Information($"Waiting 10 seconds for process to finish...");
@@ -293,7 +293,7 @@ Task("testOnly")
 
 			for (int i = 0; i <= testCategoriesToRun; i++)
 			{
-				var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"" + i + "\"";
+				var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -Verb RunAs -ArgumentList \"" + testResultsFile + "\", \"" + i + "\"";
 
 				Information(startArgs);
 
@@ -306,7 +306,7 @@ Task("testOnly")
 		}
 		else
 		{
-			var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\"";
+			var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -Verb RunAs -ArgumentList \"" + testResultsFile + "\"";
 
 			Information(startArgs);
 
