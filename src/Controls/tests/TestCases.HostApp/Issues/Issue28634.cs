@@ -1,7 +1,7 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 28634, "[Android] SearchHandler Placeholder Text", PlatformAffected.Android)]
-public partial class Issue28634 : TestShell
+public class Issue28634 : TestShell
 {
 
 	protected override void Init()
