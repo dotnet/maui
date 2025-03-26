@@ -672,7 +672,10 @@ namespace Microsoft.Maui.Platform
 			return uiView.Window != null;
 		}
 
-		internal static IDisposable OnLoaded(this UIView uiView, Action action)
+		internal static IDisposable OnLoaded(this UIView uiView, Action action) =>
+			OnLoaded(uiView, action, uiView as IUIViewLifeCycleEvents);
+
+		internal static IDisposable OnLoaded(this UIView uiView, Action action, IUIViewLifeCycleEvents? lifeCycleEvents)
 		{
 			if (uiView.IsLoaded())
 			{
@@ -695,7 +698,7 @@ namespace Microsoft.Maui.Platform
 			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
 			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.
 
-			if (uiView is IUIViewLifeCycleEvents lifeCycleEvents)
+			if (lifeCycleEvents is not null)
 			{
 				lifeCycleEvents.MovedToWindow += OnLifeCycleEventsMovedToWindow;
 
@@ -726,7 +729,8 @@ namespace Microsoft.Maui.Platform
 			// OnLoaded is called at the point in time where the xplat view knows it's going to be attached to the window.
 			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
 			// to get attached.
-			uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
+			if (lifeCycleEvents is null)
+				uiView.BeginInvokeOnMainThread(() => OnLoadedCheck(null));
 
 			void OnLoadedCheck(NSObservedChange? nSObservedChange = null)
 			{
@@ -754,7 +758,10 @@ namespace Microsoft.Maui.Platform
 			return disposable;
 		}
 
-		internal static IDisposable OnUnloaded(this UIView uiView, Action action)
+		internal static IDisposable OnUnloaded(this UIView uiView, Action action) =>
+			OnUnloaded(uiView, action, uiView as IUIViewLifeCycleEvents);
+
+		internal static IDisposable OnUnloaded(this UIView uiView, Action action, IUIViewLifeCycleEvents? lifeCycleEvents)
 		{
 
 			if (!uiView.IsLoaded())
@@ -778,7 +785,7 @@ namespace Microsoft.Maui.Platform
 			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
 			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.			
 
-			if (uiView is IUIViewLifeCycleEvents lifeCycleEvents)
+			if (lifeCycleEvents is not null)
 			{
 				lifeCycleEvents.MovedToWindow += OnLifeCycleEventsMovedToWindow;
 
@@ -794,12 +801,6 @@ namespace Microsoft.Maui.Platform
 					uiView.BeginInvokeOnMainThread(UnLoadedCheck);
 				}
 			}
-
-
-			// OnUnloaded is called at the point in time where the xplat view knows it's going to be detached from the window.
-			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
-			// to get detached.
-			uiView.BeginInvokeOnMainThread(UnLoadedCheck);
 
 			void UnLoadedCheck()
 			{

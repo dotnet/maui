@@ -204,7 +204,7 @@ namespace Microsoft.Maui.DeviceTests
 
 						if (content is VisualElement vc)
 						{
-							await OnLoadedAsync(vc);
+							await OnLoadedAsync(vc, timeOut);
 
 							if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
 							{

@@ -868,5 +868,123 @@ namespace Microsoft.Maui.Controls
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(BindingContext), BindingContext, nameof(Title), Title);
 			return $"{this.GetType().FullName}: {debugText}";
 		}
+
+#nullable enable
+		IDisposable? _handleNavigatedEventsForRootPage = null!;
+
+		internal void WireUpAsOutgoingPage(Page? outgoingPage, NavigationType navigationType)
+		{
+			_handleNavigatedEventsForRootPage?.Dispose();
+			_handleNavigatedEventsForRootPage = null;
+
+			if (HasNavigatedTo)
+			{
+				SendNavigatingFrom(new NavigatingFromEventArgs());
+			}
+
+			if (IsLoaded)
+			{
+				_handleNavigatedEventsForRootPage = 
+					this.OnUnloaded(() =>
+					{
+						if (HasNavigatedTo)
+						{
+							SendNavigatedFrom(new NavigatedFromEventArgs(outgoingPage, navigationType));
+						}						
+
+						outgoingPage?.DisconnectHandlers();
+						_handleNavigatedEventsForRootPage?.Dispose();
+						_handleNavigatedEventsForRootPage = null;
+						outgoingPage = null;
+					});
+			}
+			else
+			{
+				if (HasNavigatedTo)
+				{
+					SendNavigatedFrom(new NavigatedFromEventArgs(outgoingPage, navigationType));
+				}
+				
+				outgoingPage?.DisconnectHandlers();
+			}
+		}
+
+		internal void WireUpAsIncomingPage(Page? oldPage)
+		{
+			oldPage?.WireUpAsOutgoingPage(this, NavigationType.PageSwap);
+			_handleNavigatedEventsForRootPage?.Dispose();
+			_handleNavigatedEventsForRootPage = null;
+
+			IDisposable? newPageUnloaded = null;
+			IDisposable? newPageLoaded = null;
+			
+			var previousPage = oldPage;
+
+			if (!IsLoaded)
+			{
+				EventHandler onLoaded = (object? sender, EventArgs args) =>
+				{
+					if (sender is Page page)
+					{
+						if(!page.HasNavigatedTo)
+						{
+							page.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
+						}
+
+						previousPage = null;
+
+						// rewire up the events to watch for unloaded
+						WireUpAsIncomingPage(null);
+					}
+				};
+				Loaded += onLoaded;
+				newPageLoaded = new ActionDisposable(() =>
+				{
+					Loaded -= onLoaded;
+					newPageLoaded = null;
+				});
+			}
+			else
+			{
+				if(!HasNavigatedTo)
+				{
+					SendNavigatedTo(new NavigatedToEventArgs(oldPage));
+				}
+
+				// If the Window.Page gets unloaded we'll fire the Navigated events
+				// The idea of Navigated is that we've navigated to the page and it's ready to be interacted with
+				// so if the page is unloaded we have to signify this to the user.
+				EventHandler onUnloaded = (object? sender, EventArgs args) =>
+				{
+					if (sender is Page page && page.HasNavigatedTo)
+					{
+						(sender as Page)?.SendNavigatingFrom(new NavigatingFromEventArgs());
+						(sender as Page)?.SendNavigatedFrom(new NavigatedFromEventArgs(null, NavigationType.PageSwap));
+					}
+
+					// If I'm still part of the root window that means I might come around again
+					if (this.Window is not null)
+					{
+						// rewire up the events to watch for loaded
+						WireUpAsIncomingPage(null);
+					}
+				};
+				
+				Unloaded += onUnloaded;
+				newPageUnloaded = new ActionDisposable(() =>
+				{
+					Unloaded -= onUnloaded;
+					newPageUnloaded = null;
+				});
+			}
+
+			_handleNavigatedEventsForRootPage = new ActionDisposable(() =>
+			{
+				newPageUnloaded?.Dispose();
+				newPageLoaded?.Dispose();
+				newPageUnloaded = null;
+				newPageLoaded = null;
+			});
+		}
 	}
 }
