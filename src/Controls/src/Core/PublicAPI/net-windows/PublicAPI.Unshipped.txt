@@ -12,6 +12,8 @@
 Microsoft.Maui.Controls.GlobalResources
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
+Microsoft.Maui.Controls.Internals.TextTransformUtilities
+*REMOVED*Microsoft.Maui.Controls.Internals.TextTransformUtilites
 override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewHandler<TItemsView>.UpdateItemsLayout() -> void
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
@@ -25,6 +27,10 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.Compone
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
 static Microsoft.Maui.Controls.GlobalResources.Current.get -> Microsoft.Maui.Controls.ResourceDictionary!
+~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.GetTransformedText(string source, Microsoft.Maui.TextTransform textTransform) -> string
+~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.SetPlainText(Microsoft.Maui.Controls.InputView inputView, string platformText) -> void
+*REMOVED*~static Microsoft.Maui.Controls.Internals.TextTransformUtilites.GetTransformedText(string source, Microsoft.Maui.TextTransform textTransform) -> string
+*REMOVED*~static Microsoft.Maui.Controls.Internals.TextTransformUtilites.SetPlainText(Microsoft.Maui.Controls.InputView inputView, string platformText) -> void
 ~Microsoft.Maui.Controls.Page.DisplayActionSheetAsync(string title, string cancel, string destruction, Microsoft.Maui.FlowDirection flowDirection, params string[] buttons) -> System.Threading.Tasks.Task<string>
 ~Microsoft.Maui.Controls.Page.DisplayActionSheetAsync(string title, string cancel, string destruction, params string[] buttons) -> System.Threading.Tasks.Task<string>
 ~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string accept, string cancel) -> System.Threading.Tasks.Task<bool>
