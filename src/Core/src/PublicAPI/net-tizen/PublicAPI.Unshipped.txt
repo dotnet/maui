@@ -1,5 +1,7 @@
 #nullable enable
 Microsoft.Maui.ElementHandlerExtensions
+*REMOVED*Microsoft.Maui.FontManager.GetFontFamily(string? fontFamliy) -> string!
+Microsoft.Maui.FontManager.GetFontFamily(string? fontFamily) -> string!
 Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.HandlerDisconnectPolicy.Automatic = 0 -> Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.HandlerDisconnectPolicy.Manual = 1 -> Microsoft.Maui.HandlerDisconnectPolicy

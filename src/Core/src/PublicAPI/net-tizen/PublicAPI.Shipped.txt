@@ -312,7 +312,6 @@ Microsoft.Maui.FontManager
 Microsoft.Maui.FontManager.DefaultFontSize.get -> double
 Microsoft.Maui.FontManager.FontManager(Microsoft.Maui.IFontRegistrar! fontRegistrar, System.IServiceProvider? serviceProvider = null) -> void
 Microsoft.Maui.FontManager.GetFont(Microsoft.Maui.Font font) -> string!
-Microsoft.Maui.FontManager.GetFontFamily(string? fontFamliy) -> string!
 Microsoft.Maui.FontRegistrar
 Microsoft.Maui.FontRegistrar.FontRegistrar(Microsoft.Maui.IEmbeddedFontLoader! fontLoader, System.IServiceProvider? serviceProvider = null) -> void
 Microsoft.Maui.FontRegistrar.GetFont(string! font) -> string?
