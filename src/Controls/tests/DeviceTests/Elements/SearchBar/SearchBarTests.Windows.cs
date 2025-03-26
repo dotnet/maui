@@ -52,5 +52,14 @@ namespace Microsoft.Maui.DeviceTests
 				return (float)nativeView.Opacity;
 			});
 		}
+
+		Task<bool> GetPlatformIsVisible(SearchBarHandler searchBarHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(searchBarHandler);
+				return nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
+			});
+		}
 	}
 }
