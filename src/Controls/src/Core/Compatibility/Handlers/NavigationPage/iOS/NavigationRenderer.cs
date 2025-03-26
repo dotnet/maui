@@ -282,6 +282,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_secondaryToolbar.RemoveFromSuperview();
 				_secondaryToolbar.Dispose();
 				_secondaryToolbar = null;
+				InteractivePopGestureRecognizer.Delegate = null;
 
 				if (_currentBarBackgroundBrush is GradientBrush gb)
 					gb.InvalidateGradientBrushRequested -= OnBarBackgroundChanged;
