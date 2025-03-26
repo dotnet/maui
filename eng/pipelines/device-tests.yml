@@ -90,11 +90,9 @@ parameters:
   - name: windowsPool
     type: object
     default:
-      pool:
-        name: $(windowsTestsVmPool)
-        image: 1ESPT-Windows2022
-        os: windows
- 
+      name: $(windowsVmPool)
+      vmImage: $(windowsVmImage)
+      
   - name: targetFrameworkVersions
     type: object
     default:
