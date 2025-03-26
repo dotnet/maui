@@ -1,4 +1,5 @@
-﻿#if !WINDOWS // It seems the ClearPlaceholderIcon is not supported on Windows
+﻿#if TEST_FAILS_ON_WINDOWS // On Windows, the ClearPlaceholderIcon is not displayed in the SearchHandler.
+// Issue: https://github.com/dotnet/maui/issues/28619
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{ }
 
 		[Test]
-		[Category(UITestCategories.ActivityIndicator)]
+		[Category(UITestCategories.Shell)]
 		public void VerifySearchHandlerClearPlaceholderIconColor()
 		{
 			App.WaitForElement("label");
