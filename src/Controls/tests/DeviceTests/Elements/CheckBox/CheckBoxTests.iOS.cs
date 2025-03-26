@@ -21,5 +21,14 @@ namespace Microsoft.Maui.DeviceTests
 				return (float)nativeView.Alpha;
 			});
 		}
+
+		Task<bool> GetPlatformIsVisible(CheckBoxHandler checkBoxHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetNativeCheckBox(checkBoxHandler);
+				return !nativeView.Hidden;
+			});
+		}
 	}
 }
