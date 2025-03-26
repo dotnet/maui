@@ -1,4 +1,6 @@
 #nullable enable
+~Microsoft.Maui.Controls.Xaml.BindingExtension.ConverterCulture.get -> System.Globalization.CultureInfo
+~Microsoft.Maui.Controls.Xaml.BindingExtension.ConverterCulture.set -> void
 ~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TypedBinding.get -> Microsoft.Maui.Controls.Internals.TypedBindingBase
 ~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TypedBinding.set -> void
 ~static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.UseMauiEmbeddedApp<TApp>(this Microsoft.Maui.Hosting.MauiAppBuilder builder, System.Func<System.IServiceProvider, TApp> implementationFactory) -> Microsoft.Maui.Hosting.MauiAppBuilder

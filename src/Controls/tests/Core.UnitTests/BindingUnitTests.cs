@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -66,6 +67,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => binding.Path = "path");
 			Assert.Throws<InvalidOperationException>(() => binding.Converter = null);
 			Assert.Throws<InvalidOperationException>(() => binding.ConverterParameter = new object());
+			Assert.Throws<InvalidOperationException>(() => binding.ConverterCulture =CultureInfo.CurrentCulture);
 		}
 
 		[Fact]
@@ -1413,7 +1415,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-#if !WINDOWS_PHONE
 		[Theory, InlineData("en-US"), InlineData("pt-PT"), InlineData("tr-TR")]
 		public void ValueConverterCulture(string culture)
 		{
@@ -1428,7 +1429,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(culture, vm.Text);
 		}
-#endif
 
 		[Fact]
 		public void SelfBindingConverter()
@@ -2059,7 +2059,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("0.9", vm.Text);
 		}
 
-#if !WINDOWS_PHONE
 		[Theory, InlineData("en-US", "0.5", 0.5, 0.9, "0.9")]
 		[InlineData("pt-PT", "0,5", 0.5, 0.9, "0,9")]
 		public void ConvertIsCultureAware(string culture, string sliderSetStringValue, double sliderExpectedDoubleValue, double sliderSetDoubleValue, string sliderExpectedStringValue)
@@ -2077,7 +2076,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(vm.Text, sliderExpectedStringValue);
 		}
-#endif
 
 		[Fact]
 		public void FailToConvert()
@@ -2495,6 +2493,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			button.SetBinding(Button.BackgroundColorProperty, new Binding("BackgroundColor", source: this));
 			button.BackgroundColor = Colors.Coral;
 			button.SetBinding(Button.BackgroundColorProperty, new Binding("BackgroundColor", source: this));
+		}
+
+		[Theory, InlineData("en-US"), InlineData("pt-PT"), InlineData("tr-TR")]
+		public void BindingConverterCulture(string culture)
+		{
+			// Set current culture to something else so we can really see that we influence the culture in the converter
+			Thread.CurrentThread.CurrentUICulture = new CultureInfo("nl-BE");
+
+			var converter = new TestConverterCulture();
+			var vm = new MockViewModel();
+			var property = BindableProperty.Create(nameof(MockBindable.Text), typeof(string), typeof(MockBindable), "Bar", BindingMode.OneWayToSource);
+			var bindable = new MockBindable();
+			bindable.SetBinding(property, new Binding("Text", converter: converter, converterCulture: new CultureInfo(culture)));
+			bindable.BindingContext = vm;
+
+			Assert.Equal(culture, vm.Text);
 		}
 
 		private class IdentityLoggerConverter : IValueConverter
