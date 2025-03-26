@@ -3,7 +3,7 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls.Hosting;
 
-public static class ResourceDictionariesMauiAppBuilderExtensoins
+public static class ResourceDictionariesMauiAppBuilderExtensions
 {
     /// <summary>
     /// Configures the <see cref="MauiAppBuilder"/> with resource dictionaries.
