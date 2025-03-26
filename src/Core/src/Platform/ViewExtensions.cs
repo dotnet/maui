@@ -142,7 +142,13 @@ namespace Microsoft.Maui.Platform
 			{
 #if IOS
 				if (platformViewHandler.ContainerView is IUIViewLifeCycleEvents)
+				{
 					return platformViewHandler.ContainerView.OnUnloaded(action);
+				}
+				else if (platformViewHandler.ViewController is IUIViewLifeCycleEvents controllerLifeCycleEvents)
+				{
+					return platformViewHandler.PlatformView.OnUnloaded(action, controllerLifeCycleEvents);
+				}
 #endif
 				return platformViewHandler.PlatformView.OnUnloaded(action);
 			}
@@ -161,7 +167,13 @@ namespace Microsoft.Maui.Platform
 			{
 #if IOS
 				if (platformViewHandler.ContainerView is IUIViewLifeCycleEvents)
+				{
 					return platformViewHandler.ContainerView.OnLoaded(action);
+				}
+				else if (platformViewHandler.ViewController is IUIViewLifeCycleEvents controllerLifeCycleEvents)
+				{
+					return platformViewHandler.PlatformView.OnLoaded(action, controllerLifeCycleEvents);
+				}
 #endif
 				return platformViewHandler.PlatformView.OnLoaded(action);
 			}
