@@ -162,6 +162,26 @@ namespace Microsoft.Maui.DeviceTests
 			var platformRotation = await InvokeOnMainThreadAsync(() => platformLabel.Rotation);
 			Assert.Equal(expected, platformRotation);
 		}
+
+	    [Fact]
+		[Description("The IsEnabled property of a Label should match with native IsEnabled")]		
+		public async Task VerifyLabelIsEnabledProperty()
+		{
+			var label = new Label
+			{
+				IsEnabled = false
+			};
+			var expectedValue = label.IsEnabled;
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var nativeView = GetPlatformLabel(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+				Assert.Equal(expectedValue, isEnabled);
+			});		
+		}
+
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>
 			labelHandler.PlatformView;
 
