@@ -22,7 +22,8 @@ namespace Microsoft.Maui.Controls.Xaml
 				throw new ArgumentException(null, nameof(serviceProvider));
 
 			if (!TryGetResource(Key, valueProvider.ParentObjects, out var resource, out var resourceDictionary)
-				&& !TryGetApplicationLevelResource(Key, out resource, out resourceDictionary))
+				&& !TryGetApplicationLevelResource(Key, out resource, out resourceDictionary)
+                && !TryGetGlobalResources(Key, out resource, out resourceDictionary))
 			{
 				var xmlLineInfo = serviceProvider.GetService(typeof(IXmlLineInfoProvider)) is IXmlLineInfoProvider xmlLineInfoProvider ? xmlLineInfoProvider.XmlLineInfo : null;
 				throw new XamlParseException($"StaticResource not found for key {Key}", xmlLineInfo);
@@ -76,5 +77,13 @@ namespace Microsoft.Maui.Controls.Xaml
 				&& ((IResourcesProvider)Application.Current).IsResourcesCreated
 				&& Application.Current.Resources.TryGetValueAndSource(key, out resource, out resourceDictionary);
 		}
-	}
+
+        static bool TryGetGlobalResources(string key, out object resource, out ResourceDictionary resourceDictionary)
+        {
+            resource = null;
+            resourceDictionary = null;
+
+            return GlobalResources.Current.TryGetValueAndSource(key, out resource, out resourceDictionary);
+        }
+    }
 }
