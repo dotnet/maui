@@ -59,9 +59,11 @@ steps:
       skipProvisioning:  true
       skipJdk: ${{ ne(parameters.platform, 'android') }}
       skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
-      skipAndroidPlatformApis: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidPlatformApis: true
+      onlyAndroidPlatformDefaultApis: true
       skipAndroidEmulatorImages: ${{ ne(parameters.platform, 'android') }}
-      skipAndroidCreateAvds: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidCreateAvds: true
+      androidEmulatorApiLevel: ${{ parameters.version }}
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if parameters.skipProvisioning }}:
