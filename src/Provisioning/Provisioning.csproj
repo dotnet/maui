@@ -97,7 +97,7 @@
 
 		<!-- Install SDK Packages -->
 		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkEmulatorImagePackages.Identity)&quot;" 
-		 	  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkEmulatorImagePackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
+		 	  Condition=" '@(AndroidSdkEmulatorImagePackages)' != '' " />
 
 		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
@@ -112,7 +112,7 @@
 
 		<!-- Create all the AVD's we need based on the api levels specified -->
 		<Exec Command="dotnet android avd create --name &quot;Emulator_%(AndroidSdkAvdPackages.ApiLevel)&quot; --sdk &quot;%(AndroidSdkAvdPackages.Identity)&quot; --device &quot;%(AndroidSdkAvdPackages.DeviceType)&quot; --force" 
-			  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkAvdPackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
+			  Condition=" '@(AndroidSdkAvdPackages)' != '' " />
 
 		<Exec Command="dotnet android avd list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
