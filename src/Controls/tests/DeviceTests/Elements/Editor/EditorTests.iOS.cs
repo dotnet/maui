@@ -52,6 +52,15 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		Task<bool> GetPlatformIsVisible(EditorHandler editorHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(editorHandler);
+				return !nativeView.Hidden;
+			});
+		}
+
 		[Category(TestCategory.Editor)]
 		public class PlaceholderTests : ControlsHandlerTestBase
 		{
