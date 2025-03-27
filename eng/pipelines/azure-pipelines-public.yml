@@ -43,8 +43,8 @@ parameters:
   - name: VM_IMAGE_HOST
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: $(HostedWindowsImage)
+      name: NetCore-Public
+      image: 1es-windows-2022
       os: windows
 
 stages:
