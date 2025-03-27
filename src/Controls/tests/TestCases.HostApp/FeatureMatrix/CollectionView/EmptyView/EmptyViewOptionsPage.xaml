@@ -63,6 +63,12 @@
                                  CheckedChanged="OnEmptyViewTemplateChanged"
                                  FontSize="11"
                                  AutomationId="EmptyViewTemplateGrid"/>
+                    <RadioButton x:Name="EmptyViewTemplateCustomSize"
+                                 Content="View With Size"
+                                 GroupName="EmptyViewTemplateGroup"
+                                 CheckedChanged="OnEmptyViewTemplateChanged"
+                                 FontSize="11"
+                                 AutomationId="EmptyViewTemplateCustomSize"/>
                 </StackLayout>
                 <!-- Header-->
                 <Label Text="Header:"

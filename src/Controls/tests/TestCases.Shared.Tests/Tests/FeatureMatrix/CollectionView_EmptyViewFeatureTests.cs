@@ -25,7 +25,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test, Order(1)]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenEmptyViewString()
+		public void ValidateEmptyViewStringDisplayed()
 		{
 			App.WaitForElement("EmptyViewButton");
 			App.Tap("EmptyViewButton");
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenCustomView()
+		public void ValidateCustomEmptyViewDisplayed()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_ItemSourceEmptyObservableCollectionSetFirst_AndEmptyViewString()
+		public void ValidateEmptyViewStringDisplayed_AndItemSourceEmptyObservableCollectionSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenEmptyViewStringSetFirst_AndEmptyObservableCollection()
+		public void ValidateEmptyViewstringSetFirst_AndEmptyObservableCollection()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_ItemSourceObservableCollectionSetFirst_AndEmptyViewString()
+		public void ValidateEmptyViewStringDisplayed_AndObservableCollectionSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenEmptyViewStringSetFirst_AndObservableCollection()
+		public void ValidateEmptyViewStringSetFirst_AndObservableCollection()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_ItemSourceEmptyGroupedListSetFirst_AndEmptyViewString()
+		public void ValidateEmptyViewStringDisplayed_AndEmptyGroupedListSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -128,7 +128,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenEmptyViewStringSetFirst_AndItemSourceEmptyGroupedList()
+		public void ValidateEmptyViewStringDisplayedSetFirst_AndItemSourceEmptyGroupedList()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.TestCases.Tests
 	 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_ItemSourceGroupedListSetFirst_AndEmptyViewString()
+		public void ValidateEmptyViewStringDisplayed_GroupedListSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -158,14 +158,14 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenEmptyViewStringSetFirst_AndItemSourceGroupedList()
+		public void ValidateEmptyViewStringDisplayedSetFirst_AndGroupedList()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("EmptyViewString");
 			App.Tap("EmptyViewString");
-			App.WaitForElement("ItemsSourceEmptyGroupedList");
-			App.Tap("ItemsSourceEmptyGroupedList");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForNoElement("No Items Available(String)");
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_ItemSourceEmptyObservableCollectionSetFirst_AndCustomEmptyView()
+		public void ValidateCustomEmptyViewDisplayed_AndEmptyObservableCollectionSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenCustomEmptyViewSetFirst_AndItemSourceEmptyObservableCollection()
+		public void ValidateECustomEmptyViewDisplayedSetFirst_AndEmptyObservableCollection()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -203,7 +203,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_ItemSourceObservableCollectionSetFirst_AndCustomEmptyView()
+		public void ValidateCustomEmptyViewDisplayed_AndObservableCollectionSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -218,7 +218,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenCustomEmptyViewSetFirst_AndItemSourceObservableCollection()
+		public void ValidateCustomEmptyViewDisplayedSetFirst_AndObservableCollection()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_ItemSourceEmptyGroupedListSetFirst_AndCustomEmptyView()
+		public void ValidateCustomEmptyViewDisplayed_EmptyGroupedListSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -248,7 +248,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenCustomEmptyViewSetFirst_AndItemSourceEmptyGroupedList()
+		public void ValidateCustomEmptyViewDisplayedSetFirst_AndEmptyGroupedList()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -263,7 +263,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_ItemSourceGroupedListSetFirst_AndCustomEmptyView()
+		public void ValidateCustomEmptyViewDisplayed_GroupedListSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -278,7 +278,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenCustomEmptyViewSetFirst_AndItemSourceGroupedList()
+		public void ValidateCustomEmptyViewDisplayedSetFirst_AndGroupedList()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -293,7 +293,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndEmptyViewTemplate()
+		public void ValidateEmptyViewStringDisplayed_AndEmptyViewTemplate()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -308,7 +308,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenCustomEmptyView_AndEmptyViewTemplate()
+		public void ValidateCustomEmptyViewDisplayed_AndEmptyViewTemplate()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -323,7 +323,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenBasicItemTemplate_AndEmptyViewString()
+		public void ValidateEmptyViewStringDisplayed_AndBasicItemTemplateSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -338,7 +338,22 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenBaicItemTemplate_AndCustomEmptyView()
+		public void ValidateEmptyViewStringDisplayedSetFirst_AndBasicItemTemplate()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
+			App.WaitForElement("ItemTemplateBasic");
+			App.Tap("ItemTemplateBasic");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(String)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateCustomEmptyViewDisplayed_WhenBaicItemTemplateSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -353,7 +368,22 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenCustomView()
+		public void ValidateCustomEmptyViewDisplayedSetFirst_WhenBaicItemTemplate()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("ItemTemplateBasic");
+			App.Tap("ItemTemplateBasic");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(Grid View)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewTemplateDisplayed()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -366,7 +396,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_ItemSourceEmptyObservableCollectionSetFirst_AndCustomEmptyViewTemplate()
+		public void ValidateEmptyViewTemplateDisplayed_EmptyObservableCollectionSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -381,7 +411,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenCustomEmptyViewTemplateSetFirst_AndItemSourceEmptyObservableCollection()
+		public void ValidateEmptyViewTemplateDisplayedSetFirst_AndEmptyObservableCollection()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -396,7 +426,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_ItemSourceObservableCollectionSetFirst_AndCustomEmptyViewTemplate()
+		public void ValidateEmptyViewTemplateDisplayed_AndeObservableCollectionSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -411,7 +441,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenCustomEmptyViewTemplateSetFirst_AndItemSourceObservableCollection()
+		public void ValidateEmptyViewTemplateDisplayedSetFirst_AndObservableCollection()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -426,7 +456,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_ItemSourceEmptyGroupedListSetFirst_AndCustomEmptyViewTemplate()
+		public void ValidateEmptyViewTemplateDisplayed_AndEmptyGroupedListSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -441,7 +471,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenCustomEmptyViewTemplateSetFirst_AndItemSourceEmptyGroupedList()
+		public void ValidateEmptyViewTemplateDisplayedSetFirst_AndEmptyGroupedList()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -456,7 +486,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_ItemSourceGroupedListSetFirst_AndCustomEmptyViewTemplate()
+		public void ValidateEmptyViewTemplateDisplayed_AndGroupedListSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -471,7 +501,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenCustomEmptyViewTemplateSetFirst_AndItemSourceGroupedList()
+		public void ValidateEmptyViewTemplateDisplayedSetFirst_AndGroupedList()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -486,7 +516,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenEmptyViewTemplate_AndEmptyViewString()
+		public void ValidateEmptyViewTemplateDisplayed_AndEmptyViewString()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -501,7 +531,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenEmptyViewTemplate_AndCustomEmptyView()
+		public void ValidateEmptyViewTemplateDisplayed_AndCustomEmptyView()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -516,7 +546,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenCustomEmptyViewTemplate_AndBaicItemTemplate()
+		public void ValidateEmptyViewTemplateDisplayedSetFirst_AndBaicItemTemplate()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -531,7 +561,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayed_WhenBaicItemTemplate_CustomEmptyViewTemplate()
+		public void ValidateEmptyViewTemplateDisplayed_AndBasicTemplateSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -544,6 +574,192 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("No Template Items Available(Grid View)");
 		}
 
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewSize()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewCustomSize");
+			App.Tap("EmptyViewCustomSize");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			var emptyViewBounds = App.WaitForElement("EmptyViewLabel").GetRect();
+			 
+			double scaleFactorWidth = emptyViewBounds.Width / 300.0;
+			double scaleFactorHeight = emptyViewBounds.Height / 200.0;
+			double expectedWidth = 300 * scaleFactorWidth;
+			double expectedHeight = 200 * scaleFactorHeight;
+			Assert.That(emptyViewBounds, Is.Not.Null);
+			Assert.That(emptyViewBounds.Width, Is.EqualTo(expectedWidth).Within(5));
+			Assert.That(emptyViewBounds.Height, Is.EqualTo(expectedHeight).Within(5));   
+		}
+
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+//When setting HeightRequest and WidthRequest in the EmptyViewTemplate, as the values were not applied, preventing proper resizing. Issue Link: https://github.com/dotnet/maui/issues/28605
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewTemplateSize()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewTemplateCustomSize");
+			App.Tap("EmptyViewTemplateCustomSize");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			var emptyViewBounds = App.WaitForElement("EmptyViewTemplateLabel").GetRect();
+			double scaleFactorWidth = emptyViewBounds.Width / 300.0;
+			double scaleFactorHeight = emptyViewBounds.Height / 200.0;
+			double expectedWidth = 300 * scaleFactorWidth;
+			double expectedHeight = 200 * scaleFactorHeight;
+			Assert.That(emptyViewBounds, Is.Not.Null);
+			Assert.That(emptyViewBounds.Width, Is.EqualTo(expectedWidth).Within(5));
+			Assert.That(emptyViewBounds.Height, Is.EqualTo(expectedHeight).Within(5));  
+		}
+#endif
+
+#if TEST_FAILS_ON_ANDROID
+// CollectionView Footer Becomes Scrollable When EmptyView is Active on Android. Issue Link: https://github.com/dotnet/maui/issues/28350
+// HeaderTemplate and FooterTemplate are not displayed when ItemsSource is initially set to null on Android. Issue Link: https://github.com/dotnet/maui/issues/28337
+// Header and footer are not displayed when emptyview selected first Issue Link: https://github.com/dotnet/maui/issues/28351		
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewStringDisplayed_AndHeaderString()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(String)");
+			App.WaitForElement("CollectionView Header(String)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewStringDisplayed_AndCustomViewHeader()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
+			App.WaitForElement("HeaderGrid");
+			App.Tap("HeaderGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(String)");
+			App.WaitForElement("CollectionView Header(Grid View)");
+		}
+
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS
+////Footer Not Displayed at the Bottom When EmptyView is Active in CV2 Issue Link: https://github.com/dotnet/maui/issues/28604
+        [Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewstringDisplayed_AndFooterString()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
+			App.WaitForElement("FooterString");
+			App.Tap("FooterString");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(String)");
+			App.WaitForElement("CollectionView Footer(String)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewStringDisplayed_AndCustomViewFooter()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewString");
+			App.Tap("EmptyViewString");
+			App.WaitForElement("FooterGrid");
+			App.Tap("FooterGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(String)");
+			App.WaitForElement("CollectionView Footer(Grid View)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateCustomEmptyViewDisplayed_AndFooterString()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("FooterString");
+			App.Tap("FooterString");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(Grid View)");
+			App.WaitForElement("CollectionView Footer(String)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateCustomEmptyViewDisplayed_AndCustomViewFooter()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("FooterGrid");
+			App.Tap("FooterGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(Grid View)");
+			App.WaitForElement("CollectionView Footer(Grid View)");
+		}
+
+//In EmptyView, without explicitly setting HeightRequest and WidthRequest values, the Header and Footer do not appear Issue Link: https://github.com/dotnet/maui/issues/28605
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateCustomEmptyViewDisplayed_AndHeaderString()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(Grid View)");
+			App.WaitForElement("CollectionView Header(String)");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateCustomEmptyViewDisplayed_AndCustomViewHeader()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewGrid");
+			App.Tap("EmptyViewGrid");
+			App.WaitForElement("HeaderGrid");
+			App.Tap("HeaderGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Items Available(Grid View)");
+			App.WaitForElement("CollectionView Header(Grid View)");
+		}
+#endif
+#endif
+
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
+//CollectionView Header and Footer Do Not Align with Horizontal ItemsLayout When EmptyView is Displayed on https://github.com/dotnet/maui/issues/28622
+//ItemsLayout does not change its default value on windows Issue Link: https://github.com/dotnet/maui/issues/27946
+//Footer Not Displayed at the Bottom When EmptyView is Active in CV2 Issue Link: https://github.com/dotnet/maui/issues/28604
+//TargetInvocationException occurs on cv2 when selecting hroizontal list.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewString_WhenItemsLayout_Is_VerticalList()
@@ -565,8 +781,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CollectionView Footer(String)");
 		}
         
-
-
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewString_WhenItemsLayout_Is_HorizontalList()
@@ -674,7 +888,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateCustomEmptyViewString_WhenItemsLayout_Is_VerticalGrid()
+		public void ValidateCustomEmptyView_WhenItemsLayout_Is_VerticalGrid()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -716,150 +930,86 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewSize()
+		public void ValidateEmptyViewTemplate_WhenItemsLayout_Is_VerticalList()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("EmptyViewCustomSize");
-			App.Tap("EmptyViewCustomSize");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			var emptyViewBounds = App.WaitForElement("TestLabel").GetRect();
-			Assert.That(emptyViewBounds, Is.Not.Null);
-			Assert.That(emptyViewBounds.Height, Is.EqualTo(200).Within(5));
-			Assert.That(emptyViewBounds.Width, Is.EqualTo(300).Within(5));
-		}
-
-#if TEST_FAILS_ON_ANDROID
-// CollectionView Footer Positioned Incorrectly on Android. Issue Link: https://github.com/dotnet/maui/issues/28350
-// HeaderTemplate and FooterTemplate are not displayed when ItemsSource is initially set to null on Android. Issue Link: https://github.com/dotnet/maui/issues/28337
-// Header and footer are not displayed when emptyview selected first Issue Link: https://github.com/dotnet/maui/issues/28351
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndFooterString()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("ItemsLayoutVerticalList");
+			App.Tap("ItemsLayoutVerticalList");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
 			App.WaitForElement("FooterString");
 			App.Tap("FooterString");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElement("No Items Available(String)");
+			App.WaitForElement("No Template Items Available(Grid View)");
+			App.WaitForElement("CollectionView Header(String)");
+			App.WaitForElement("CollectionView Footer(String)");
+		}
+        
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void ValidateEmptyViewTemplate_WhenItemsLayout_Is_HorizontalList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("ItemsLayoutHorizontalList");
+			App.Tap("ItemsLayoutHorizontalList");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
+			App.WaitForElement("FooterString");
+			App.Tap("FooterString");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("No Template Items Available(Grid View)");
+			App.WaitForElement("CollectionView Header(String)");
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndCustomViewFooter()
+		public void ValidateEmptyViewTemplate_WhenItemsLayout_Is_VerticalGrid()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
-			App.WaitForElement("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Items Available(String)");
-			App.WaitForElement("CollectionView Footer(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenCustomEmptyView_AndFooterString()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("ItemsLayoutVerticalGrid");
+			App.Tap("ItemsLayoutVerticalGrid");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
 			App.WaitForElement("FooterString");
 			App.Tap("FooterString");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElement("No Items Available(Grid View)");
+			App.WaitForElement("No Template Items Available(Grid View)");
+			App.WaitForElement("CollectionView Header(String)");
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenCustomEmptyView_AndCustomViewFooter()
+		public void ValidateEmptyViewTemplate_WhenItemsLayout_Is_HorizontalGrid()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Items Available(Grid View)");
-			App.WaitForElement("CollectionView Footer(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndHeaderString()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
+			App.WaitForElement("EmptyViewTemplateGrid");
+			App.Tap("EmptyViewTemplateGrid");
+			App.WaitForElement("ItemsLayoutHorizontalGrid");
+			App.Tap("ItemsLayoutHorizontalGrid");
 			App.WaitForElement("HeaderString");
 			App.Tap("HeaderString");
+			App.WaitForElement("FooterString");
+			App.Tap("FooterString");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElement("No Items Available(String)");
+			App.WaitForElement("No Template Items Available(Grid View)");
 			App.WaitForElement("CollectionView Header(String)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenEmptyViewString_AndCustomViewHeader()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewString");
-			App.Tap("EmptyViewString");
-			App.WaitForElement("HeaderGrid");
-			App.Tap("HeaderGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Items Available(String)");
-			App.WaitForElement("CollectionView Header(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenCustomEmptyView_AndHeaderString()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("HeaderString");
-			App.Tap("HeaderString");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Items Available(Grid View)");
-			App.WaitForElement("CollectionView Header(String)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewDisplayed_WhenCustomEmptyView_AndCustomViewHeader()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("EmptyViewGrid");
-			App.Tap("EmptyViewGrid");
-			App.WaitForElement("HeaderGrid");
-			App.Tap("HeaderGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("No Items Available(Grid View)");
-			App.WaitForElement("CollectionView Header(Grid View)");
+			App.WaitForElement("CollectionView Footer(String)");
 		}
 #endif
 	}
