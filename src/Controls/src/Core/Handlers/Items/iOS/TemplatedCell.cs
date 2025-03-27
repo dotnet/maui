@@ -53,6 +53,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		WeakReference<IPlatformViewHandler> _handler;
 		bool _measureInvalidated;
+		bool _needsArrange;
 
 		internal bool MeasureInvalidated => _measureInvalidated;
 
@@ -99,8 +100,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				// Measure this cell (including the Forms element) if there is no constrained size
 				var size = ConstrainedSize == default ? Measure() : ConstrainedSize;
-
 				_size = size.ToSize();
+				_needsArrange = true;
 				_measureInvalidated = false;
 			}
 
@@ -114,19 +115,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void LayoutSubviews()
 		{
+			base.LayoutSubviews();
+
 			if (PlatformHandler?.VirtualView is { } virtualView)
 			{
-				// While the platform view Frame is set via auto-layout constraints,
-				// we have to set the Frame on the virtual view manually.
-				// Subviews will eventually be arranged via LayoutSubviews once the cell comes into play.
-				var frame = new Rect(Point.Zero, Bounds.Size.ToSize());
-				if (virtualView.Frame != frame)
+				var boundsSize = Bounds.Size.ToSize();
+				if (!_needsArrange)
 				{
-					virtualView.Arrange(frame);
+					// While rotating the device, and under other circumstances,
+					// a layout pass is being triggered without going through PreferredLayoutAttributesFittingAttributes first.
+					// In this case we should not trigger an Arrange pass because
+					// the last measurement does not match the new bounds size.
+					return;
 				}
-			}
 
-			base.LayoutSubviews();
+				_needsArrange = false;
+
+				// We now have to apply the new bounds size to the virtual view
+				// which will automatically set the frame on the platform view too.
+				var frame = new Rect(Point.Zero, boundsSize);
+				virtualView.Arrange(frame);
+			}
 		}
 
 		[Obsolete]
@@ -203,7 +212,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			CurrentTemplate = itemTemplate;
-      this.UpdateAccessibilityTraits(itemsView);
+			this.UpdateAccessibilityTraits(itemsView);
 			MarkAsBound();
 		}
 
@@ -222,7 +231,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// Clear out any old views if this cell is being reused
 			ClearSubviews();
 
-			InitializeContentConstraints(platformView);
+			SetupPlatformView(platformView);
 			ContentView.MarkAsCrossPlatformLayoutBacking();
 
 			UpdateVisualStates();
