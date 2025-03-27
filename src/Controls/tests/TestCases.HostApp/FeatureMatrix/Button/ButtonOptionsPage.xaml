@@ -13,8 +13,7 @@
              Padding="1"
              RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
              ColumnDefinitions="Auto,Auto"
-             HorizontalOptions="Center"
-             VerticalOptions="Center">
+             HorizontalOptions="Center">
 
               <!-- BorderColor -->
               <Label Grid.Row="0"

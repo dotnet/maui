@@ -124,6 +124,7 @@ public class ButtonFeatureTests : UITest
         App.ClearText("CharacterSpacingEntry");
         App.EnterText("CharacterSpacingEntry", "5");
         App.WaitForElement("FontSizeEntry");
+        App.ClearText("FontSizeEntry");
         App.EnterText("FontSizeEntry", "20");
         App.WaitForElement("TextEntry");
         App.EnterText("TextEntry", "ButtonText");
