@@ -36,13 +36,14 @@ steps:
   ##################################################
 
   # Provisioning macOS - Agent cleanser
-  - template: agent-cleanser/v1.yml@yaml-templates
-    parameters:
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      UninstallMono: false
-      UninstallXamarinMac: true
-      CleanseAgentToolsDotNet: true
-      SelfHealPowerShell: false
+  - ${{ if ne(parameters.skipProvisionator, true) }}:
+    - template: agent-cleanser/v1.yml@yaml-templates
+      parameters:
+        condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+        UninstallMono: false
+        UninstallXamarinMac: true
+        CleanseAgentToolsDotNet: true
+        SelfHealPowerShell: false
           
   # Provisioning macOS - Xcode
   - ${{ if ne(parameters.skipXcode, 'true') }}:
