@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.NavigateToGallery(HeaderFooterFeatureMatrix);
 		}
 
-
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //In CV2 related issue: https://github.com/dotnet/maui/issues/28504
 		[Test, Order(1)]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderString_FirstSetItemsSourceList_AndItemsSourceList()
@@ -215,8 +215,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In windows While tap the IsGrouped, the app is crashing.
-		//In CV2, Group header/footer template is not visible, but header string/view is visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderStringWhenGroupHeaderTemplateView()
@@ -227,6 +225,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderString");
 			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
+			App.WaitForElementTillPageNavigationSettled("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElementTillPageNavigationSettled("GroupHeaderTemplateGrid");
 			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("Apply");
@@ -245,6 +245,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderGrid");
 			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
+			App.WaitForElementTillPageNavigationSettled("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElementTillPageNavigationSettled("GroupHeaderTemplateGrid");
 			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("Apply");
@@ -263,6 +265,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderString");
 			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
+			App.WaitForElementTillPageNavigationSettled("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElementTillPageNavigationSettled("GroupFooterTemplateGrid");
 			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("Apply");
@@ -281,6 +285,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderGrid");
 			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
+			App.WaitForElementTillPageNavigationSettled("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElementTillPageNavigationSettled("GroupFooterTemplateGrid");
 			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("Apply");
@@ -288,7 +294,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("HeaderViewLabel");
 			App.WaitForElementTillPageNavigationSettled("GroupFooterTemplateLabel");
 		}
-#endif
 
 #if TEST_FAILS_ON_WINDOWS  //InCV2 and Windows Header String/View is visible not Header Template.
 		[Test]
@@ -326,7 +331,6 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 
 
-#if TEST_FAILS_ON_WINDOWS //While tap the IsGrouped, the app is crashing.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderStringWhenIsGroupedTrueOrFalse()
@@ -374,7 +378,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("HeaderViewLabel");
 		}
-#endif
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
@@ -393,7 +396,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("cover1.jpg, 0");
 			App.WaitForElementTillPageNavigationSettled("oasis.jpg, 1");
 			App.WaitForElementTillPageNavigationSettled("photo.jpg, 2");
-			App.WaitForElementTillPageNavigationSettled("Vegetables.jpg, 3");
 		}
 
 		[Test]
@@ -413,7 +415,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("cover1.jpg, 0");
 			App.WaitForElementTillPageNavigationSettled("oasis.jpg, 1");
 			App.WaitForElementTillPageNavigationSettled("photo.jpg, 2");
-			App.WaitForElementTillPageNavigationSettled("Vegetables.jpg, 3");
 		}
 
 		[Test]
@@ -538,8 +539,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In windows While tap the IsGrouped, the app is crashing.
-		//In CV2, Group header/footer template is not visible, but header string/view is visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWhenGroupFooterTemplate()
@@ -550,6 +549,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
+			App.WaitForElementTillPageNavigationSettled("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElementTillPageNavigationSettled("GroupFooterTemplateGrid");
 			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("Apply");
@@ -568,6 +569,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("HeaderTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
+			App.WaitForElementTillPageNavigationSettled("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElementTillPageNavigationSettled("GroupHeaderTemplateGrid");
 			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("Apply");
@@ -575,7 +578,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
 			App.WaitForElementTillPageNavigationSettled("GroupHeaderTemplateLabel");
 		}
-#endif
 
 #if TEST_FAILS_ON_WINDOWS  //In CV2 and Windows, Heder template is not visible, Header String/View is visible.
 		[Test]
@@ -611,7 +613,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID //In windows While tap the IsGrouped, the app is crashing. In android, when IsGrouped Set False Header template is not visible.
+#if TEST_FAILS_ON_ANDROID //In android, when IsGrouped Set False Header template is not visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWhenIsGroupedTrueOrFalse()
@@ -655,7 +657,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("cover1.jpg, 0");
 			App.WaitForElementTillPageNavigationSettled("oasis.jpg, 1");
 			App.WaitForElementTillPageNavigationSettled("photo.jpg, 2");
-			App.WaitForElementTillPageNavigationSettled("Vegetables.jpg, 3");
 		}
 
 		[Test]
@@ -822,8 +823,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 #endif
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In Windows While tap the IsGrouped, the app is crashing.
-//In CV2, Group header/footer template is not visible, but header string/view is visible.
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In CV2 groupHeader/Footer template is not visible, related issues:https://github.com/dotnet/maui/issues/28509
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterStringWhenGroupFooterTemplateView()
@@ -834,6 +834,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("FooterString");
 			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
+			App.WaitForElementTillPageNavigationSettled("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElementTillPageNavigationSettled("GroupFooterTemplateGrid");
 			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("Apply");
@@ -852,6 +854,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("FooterGrid");
 			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
+			App.WaitForElementTillPageNavigationSettled("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElementTillPageNavigationSettled("GroupFooterTemplateGrid");
 			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("Apply");
@@ -870,6 +874,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("FooterString");
 			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
+			App.WaitForElementTillPageNavigationSettled("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElementTillPageNavigationSettled("GroupHeaderTemplateGrid");
 			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("Apply");
@@ -888,6 +894,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("FooterGrid");
 			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
+			App.WaitForElementTillPageNavigationSettled("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElementTillPageNavigationSettled("GroupHeaderTemplateGrid");
 			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("Apply");
@@ -991,7 +999,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_WINDOWS //In Windows While tap the IsGrouped, the app is crashing.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterStringWhenIsGroupedTrueOrFalse()
@@ -1021,7 +1028,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
 		}
-#endif
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
@@ -1041,7 +1047,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("cover1.jpg, 0");
 			App.WaitForElementTillPageNavigationSettled("oasis.jpg, 1");
 			App.WaitForElementTillPageNavigationSettled("photo.jpg, 2");
-			App.WaitForElementTillPageNavigationSettled("Vegetables.jpg, 3");
 		}
 
 		[Test]
@@ -1062,7 +1067,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("cover1.jpg, 0");
 			App.WaitForElementTillPageNavigationSettled("oasis.jpg, 1");
 			App.WaitForElementTillPageNavigationSettled("photo.jpg, 2");
-			App.WaitForElementTillPageNavigationSettled("Vegetables.jpg, 3");
 		}
 
 		[Test]
@@ -1165,8 +1169,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In Windows While tap the IsGrouped, the app is crashing.
-//In CV2, Group header/footer template is not visible, but header string/view is visible.
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //IN CV2 groupHeader/Footer template is not visible, related issues: https://github.com/dotnet/maui/issues/28509
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWhenGroupFooterTemplateView()
@@ -1177,6 +1180,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("FooterTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
+			App.WaitForElementTillPageNavigationSettled("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElementTillPageNavigationSettled("GroupFooterTemplateGrid");
 			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("Apply");
@@ -1195,6 +1200,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("FooterTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
+			App.WaitForElementTillPageNavigationSettled("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
 			App.WaitForElementTillPageNavigationSettled("GroupHeaderTemplateGrid");
 			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElementTillPageNavigationSettled("Apply");
@@ -1253,7 +1260,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID //In Windows While tap the IsGrouped, the app is crashing. In android when IsGrouped Set False Footer template is not visible.
+#if TEST_FAILS_ON_ANDROID //In android when IsGrouped Set False Footer template is not visible.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWhenIsGroupedTrueOrFalse()
@@ -1297,7 +1304,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("cover1.jpg, 0");
 			App.WaitForElementTillPageNavigationSettled("oasis.jpg, 1");
 			App.WaitForElementTillPageNavigationSettled("photo.jpg, 2");
-			App.WaitForElementTillPageNavigationSettled("Vegetables.jpg, 3");
 		}
+#endif
 	}
+
 }

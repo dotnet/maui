@@ -342,6 +342,8 @@ namespace Maui.Controls.Sample
             // Set ItemsSourceType based on selection
             if (radioButton == ItemsSourceList)
                 _viewModel.ItemsSourceType = ItemsSourceType.ListT;
+            else if (radioButton == ItemsSourceGroupedList)
+                _viewModel.ItemsSourceType = ItemsSourceType.GroupedListT;
             else if (radioButton == ItemsSourceNone)
                 _viewModel.ItemsSourceType = ItemsSourceType.None;
         }

@@ -43,7 +43,12 @@ namespace Maui.Controls.Sample
         private DataTemplate _groupFooterTemplate;
         private DataTemplate _itemTemplate;
         private ItemsSourceType _itemsSourceType = ItemsSourceType.None;
-        private bool _isGrouped;
+        private bool _isGrouped = false;
+        private List<CollectionViewTestItem> _flatList;
+        private List<CollectionViewTestItem> _emptyList;
+        private ObservableCollection<CollectionViewTestItem> _observableCollection;
+        private List<Grouping<string, CollectionViewTestItem>> _groupedList;
+        private List<Grouping<string, CollectionViewTestItem>> _emptyGroupedList;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -51,35 +56,23 @@ namespace Maui.Controls.Sample
         {
             LoadItems();
             ItemTemplate = ExampleTemplates.PhotoTemplate();
-        }
-
-        private List<CollectionViewTestItem> _flatList;
-        private List<CollectionViewTestItem> _emptyList;
-        private ObservableCollection<CollectionViewTestItem> _observableCollection;
-        private List<Grouping<string, CollectionViewTestItem>> _groupedList;
-        private List<Grouping<string, CollectionViewTestItem>> _emptyGroupedList;
-
-        private void LoadItems()
-        {
-            // Initialize non-grouped lists
-            _flatList = new List<CollectionViewTestItem>();
-            AddItems(_flatList, 4);
-
-            _emptyList = new List<CollectionViewTestItem>();
-            _observableCollection = new ObservableCollection<CollectionViewTestItem>(_flatList);
-
-            // Initialize grouped lists
-            _groupedList = new List<Grouping<string, CollectionViewTestItem>>
+            GroupHeaderTemplate = new DataTemplate(() =>
             {
-                new Grouping<string, CollectionViewTestItem>("Group A", new List<CollectionViewTestItem>()),
-                new Grouping<string, CollectionViewTestItem>("Group B", new List<CollectionViewTestItem>())
-            };
-            AddItems(_groupedList[0], 2);
-            AddItems(_groupedList[1], 2);
-
-            _emptyGroupedList = new List<Grouping<string, CollectionViewTestItem>>();
+                var stackLayout = new StackLayout
+                {
+                    BackgroundColor = Colors.LightGray
+                };
+                var label = new Label
+                {
+                    FontAttributes = FontAttributes.Bold,
+                    FontSize = 18
+                };
+                label.SetBinding(Label.TextProperty, "Key");
+                stackLayout.Children.Add(label);
+                return stackLayout;
+            });
         }
-
+        
         public object EmptyView
         {
             get => _emptyView;
@@ -157,7 +150,6 @@ namespace Maui.Controls.Sample
                 {
                     _isGrouped = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(ItemsSource)); // Refresh ItemsSource when grouped changes
                 }
             }
         }
@@ -170,9 +162,9 @@ namespace Maui.Controls.Sample
                 {
                     return ItemsSourceType switch
                     {
-                        ItemsSourceType.GroupedListT => _groupedList,
-                        ItemsSourceType.EmptyGroupedListT => _emptyGroupedList,
-                        _ => _groupedList // Default to grouped list
+                        ItemsSourceType.GroupedListT => _groupedList ?? new List<Grouping<string, CollectionViewTestItem>>(),
+                        ItemsSourceType.EmptyGroupedListT => _emptyGroupedList ?? new List<Grouping<string, CollectionViewTestItem>>(),
+                        _ => new List<Grouping<string, CollectionViewTestItem>>()
                     };
                 }
                 else
@@ -184,15 +176,31 @@ namespace Maui.Controls.Sample
                         ItemsSourceType.ObservableCollectionT => _observableCollection,
                         ItemsSourceType.IEnumerableT => _flatList.AsEnumerable(),
                         ItemsSourceType.None => null,
-                        _ => _flatList // Default to flat list
+                        _ => null
                     };
                 }
             }
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private void LoadItems()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            // Initialize non-grouped lists
+            _flatList = new List<CollectionViewTestItem>();
+            AddItems(_flatList, 3);
+
+            _emptyList = new List<CollectionViewTestItem>();
+            _observableCollection = new ObservableCollection<CollectionViewTestItem>(_flatList);
+
+            // Initialize grouped lists
+            _groupedList = new List<Grouping<string, CollectionViewTestItem>>
+            {
+                new Grouping<string, CollectionViewTestItem>("Group A", new List<CollectionViewTestItem>()),
+                new Grouping<string, CollectionViewTestItem>("Group B", new List<CollectionViewTestItem>())
+            };
+            AddItems(_groupedList[0], 2);
+            AddItems(_groupedList[1], 2);
+
+            _emptyGroupedList = new List<Grouping<string, CollectionViewTestItem>>();
         }
 
         private void AddItems(IList<CollectionViewTestItem> list, int count)
@@ -215,6 +223,16 @@ namespace Maui.Controls.Sample
             }
         }
 
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            if (propertyName == nameof(IsGrouped))
+            {
+                OnPropertyChanged(nameof(ItemsSource));
+            }
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         public class CustomDataTemplateSelector : DataTemplateSelector
         {
             public DataTemplate Template1 { get; set; }
@@ -222,7 +240,6 @@ namespace Maui.Controls.Sample
 
             protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
             {
-                // Implement your logic to select the appropriate template
                 if (item is CollectionViewTestItem testItem)
                 {
                     return testItem.Index % 2 == 0 ? Template1 : Template2;
@@ -231,19 +248,19 @@ namespace Maui.Controls.Sample
                 return Template1;
             }
         }
-    }
 
-    public class CollectionViewTestItem
-    {
-        public string Caption { get; set; }
-        public string Image { get; set; }
-        public int Index { get; set; }
-
-        public CollectionViewTestItem(string caption, string image, int index)
+        public class CollectionViewTestItem
         {
-            Caption = caption;
-            Image = image;
-            Index = index;
+            public string Caption { get; set; }
+            public string Image { get; set; }
+            public int Index { get; set; }
+
+            public CollectionViewTestItem(string caption, string image, int index)
+            {
+                Caption = caption;
+                Image = image;
+                Index = index;
+            }
         }
     }
 }

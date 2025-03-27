@@ -252,6 +252,12 @@
                                      GroupName="ItemsSourceGroup"
                                      CheckedChanged="OnItemsSourceChanged"
                                      AutomationId="ItemsSourceNone"/>
+                                     <RadioButton x:Name="ItemsSourceGroupedList"
+                                        Content="GroupedList"
+                                        FontSize="10"
+                                        GroupName="ItemsSourceGroup"
+                                        CheckedChanged="OnItemsSourceChanged"
+                                        AutomationId="ItemsSourceGroupedList"/>
                     </HorizontalStackLayout>
                 </VerticalStackLayout>
             </StackLayout>
