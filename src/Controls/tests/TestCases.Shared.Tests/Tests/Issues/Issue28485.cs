@@ -24,7 +24,7 @@ public class Issue28485 : _IssuesUITest
 		App.Click("GotoPage3");
 		App.WaitForElement("Page3Label");
 		App.Click("Page3Label");
-		App.InteractivePopGesture();
+		App.SwipeBackNavigation();
 		App.WaitForElement("Page2Label");
 		App.WaitForNoElement("GotoPage2");
 	}
