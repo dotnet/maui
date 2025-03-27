@@ -1,6 +1,5 @@
 parameters:
   androidPool: { }
-  androidLinuxPool: { }
   iosPool: { }
   windowsPool: { }
   windowsBuildPool: { }
@@ -109,7 +108,7 @@ stages:
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
-                pool: ${{ parameters.androidLinuxPool }}
+                pool: ${{ parameters.androidPool }}
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
