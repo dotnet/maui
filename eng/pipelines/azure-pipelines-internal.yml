@@ -77,7 +77,7 @@ extends:
     - template: /eng/pipelines/arcade/stage-pack.yml@self
       parameters:
         pool: ${{ parameters.VM_IMAGE_HOST }}
-        enableSourceIndex: true
+        enableSourceIndex: false
         runAsPublic: false
         sourceIndexParams:
           sourceIndexBuildCommand: build.cmd -restore -build -ci /bl:$(Build.Arcade.LogsPath)sourceIndexBuild.binlog /p:OfficialBuildId=$(_BuildOfficalId) /p:_SkipUpdateBuildNumber=true
