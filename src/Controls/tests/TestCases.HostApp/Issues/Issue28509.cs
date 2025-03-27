@@ -250,7 +250,7 @@ public class Issue28509TemplatedHeaderFooter : TestContentPage
 			}),
 			HeaderTemplate = new DataTemplate(() =>
 			{
-				return new Entry
+				return new Label
 				{
 					Text = "Header(added)",
 					HeightRequest = 100,
@@ -259,7 +259,7 @@ public class Issue28509TemplatedHeaderFooter : TestContentPage
 			}),
 			FooterTemplate = new DataTemplate(() =>
 			{
-				return new Entry
+				return new Label
 				{
 					Text = "Footer(added)",
 					HeightRequest = 100,
@@ -276,7 +276,7 @@ public class Issue28509TemplatedHeaderFooter : TestContentPage
 	{
 		collectionView.FooterTemplate = new DataTemplate(() =>
 		{
-			return new Entry
+			return new Label
 			{
 				Text = "FooterTemplate Changed",
 				HeightRequest = 100,
@@ -289,7 +289,7 @@ public class Issue28509TemplatedHeaderFooter : TestContentPage
 	{
 		collectionView.HeaderTemplate = new DataTemplate(() =>
 		{
-			return new Entry
+			return new Label
 			{
 				Text = "HeaderTemplate Changed",
 				HeightRequest = 100,
@@ -359,14 +359,14 @@ public class Issue28509ItemsViewHeaderFooter : TestContentPage
 			}),
 
 			Header =
-				new Entry
+				new Label
 				{
 					Text = "Header (added)",
 					HeightRequest = 100,
 					BackgroundColor = Colors.Red
 				},
 
-			Footer = new Entry
+			Footer = new Label
 			{
 				Text = "Footer (added)",
 				HeightRequest = 100,
@@ -382,7 +382,7 @@ public class Issue28509ItemsViewHeaderFooter : TestContentPage
 
 	private void ToggleFooter(object sender, EventArgs e)
 	{
-		collectionView.Footer = new Entry
+		collectionView.Footer = new Label
 		{
 			Text = "Footer Changed",
 			HeightRequest = 100,
@@ -392,7 +392,7 @@ public class Issue28509ItemsViewHeaderFooter : TestContentPage
 
 	private void ToggleHeader(object sender, EventArgs e)
 	{
-		collectionView.Header = new Entry
+		collectionView.Header = new Label
 		{
 			Text = "Header Changed",
 			HeightRequest = 100,
