@@ -24,13 +24,21 @@ class Issue15806 : ContentPage
 								new VisualState
 								{
 									Name = "Normal",
-									Setters = { new Setter { Property = RadioButton.BorderColorProperty, Value = Colors.Red } }
+									Setters =
+									{
+										new Setter { Property = RadioButton.BorderColorProperty, Value = Colors.Red },
+										new Setter { Property = RadioButton.BorderWidthProperty, Value = 2 } 
+									}
 								},
 
 								new VisualState
 								{
 									Name = "Focused",
-									Setters = { new Setter { Property = RadioButton.BorderColorProperty, Value = Colors.DarkCyan } }
+									Setters = 
+									{
+										new Setter { Property = RadioButton.BorderColorProperty, Value = Colors.DarkCyan },
+										new Setter { Property = RadioButton.BorderWidthProperty, Value = 2 }
+									}
 								}
 							}
 						}
