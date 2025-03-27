@@ -3,7 +3,6 @@ using Xunit;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
-using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -77,7 +76,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The IsVisible property of a RadioButton should match with native IsVisible")]		
+		[Description("The IsVisible property of a RadioButton should match with native IsVisible")]
 		public async Task VerifyRadioButtonIsVisibleProperty()
 		{
 			var radioButton = new RadioButton();
@@ -90,6 +89,7 @@ namespace Microsoft.Maui.DeviceTests
    			{
 				var isVisible = nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
 				Assert.Equal(expectedValue, isVisible);
-			});	
+			});
 		}
 	}
+}
