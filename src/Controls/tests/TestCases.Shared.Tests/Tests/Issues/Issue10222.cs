@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_ANDROID // More information: https://github.com/dotnet/maui/issues/28640
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -22,4 +21,3 @@ public class Issue10222 : _IssuesUITest
 		App.WaitForElement("goTo", timeout: TimeSpan.FromSeconds(2));
 	}
 }
-#endif
