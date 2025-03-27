@@ -98,7 +98,7 @@ steps:
 
   - pwsh: |
       $skipAppiumDoctor = if ($IsMacOS) { "true" } else { "false" }
-      dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
+      dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -p:AndroidSdkRequestedApiLevels="${{ parameters.version }}" -bl:"$(LogDirectory)/provision-appium.binlog"
     displayName: "Install Appium"
     continueOnError: false
     retryCountOnTaskFailure: 1
