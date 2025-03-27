@@ -1,4 +1,4 @@
-﻿#if WINDOWS
+﻿#if TEST_FAILS_ON_ANDROID // Skipping test: Unable to retrieve the native refresh color on Android.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
