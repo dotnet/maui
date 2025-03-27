@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Storage
 			// return mimeTypes?.Length > 0 ? mimeTypes[0] : null;
 
 			var uti = UniformTypeIdentifiers.UTType.GetType(extension, UniformTypeIdentifiers.UTTagClass.FilenameExtension, null);
-			extension = uti?.PreferredMimeType;
+			extension = uti?.PreferredMimeType ?? extension;
 
 			return extension;
 		}
