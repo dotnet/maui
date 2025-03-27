@@ -8,7 +8,7 @@ public class Issue23293 : ContentPage
 	public Issue23293()
 	{
 		CreateAnimalsCollection();
-	
+
 		var collectionViewWithoutDataTemplate = new CollectionView
 		{
 			AutomationId = "CollectionViewWithoutDataTemplate",
@@ -17,11 +17,10 @@ public class Issue23293 : ContentPage
 		};
 
 		var grid = new Grid();
-		grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 		grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 
-		grid.Add(collectionViewWithoutDataTemplate, 0, 1);
-		
+		grid.Add(collectionViewWithoutDataTemplate, 0, 0);
+
 		Content = grid;
 	}
 
