@@ -4,6 +4,7 @@ using System.Drawing;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android.Enums;
 using OpenQA.Selenium.Appium.Interfaces;
+using OpenQA.Selenium.Support.UI;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -235,6 +236,36 @@ namespace UITest.Appium
 			return (bool)responseValue;
 		}
 
+		/// <summary>
+		/// Waits until the keyboard becomes visible within the specified timeout.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="timeoutInSeconds">The maximum time to wait for the keyboard to appear.</param>
+		public static void WaitUntilKeyboardIsVisible(this IApp app, int timeoutInSeconds = 5)
+		{
+			var wait = new DefaultWait<IApp>(app)
+			{
+				Timeout = TimeSpan.FromSeconds(timeoutInSeconds),
+				PollingInterval = TimeSpan.FromMilliseconds(500)
+			};
+			wait.Until(app => app.IsKeyboardShown());
+		}
+
+		/// <summary>
+		/// Waits until the  keyboard is dismissed (hidden) within the specified timeout.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="timeoutInSeconds">The maximum time to wait for the keyboard to disappear.</param>
+		public static void WaitUntilKeyboardIsHidden(this IApp app, int timeoutInSeconds = 5)
+		{
+			var wait = new DefaultWait<IApp>(app)
+			{
+				Timeout = TimeSpan.FromSeconds(timeoutInSeconds),
+				PollingInterval = TimeSpan.FromMilliseconds(500)
+			};
+			wait.Until(app => !app.IsKeyboardShown());
+		}
+		
 		/// <summary>
 		/// (Android Only) Sends a device key event with meta state.
 		/// </summary>
