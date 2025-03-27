@@ -237,33 +237,39 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
-		/// Waits until the keyboard becomes visible within the specified timeout.
+		/// Waits until the keyboard becomes visible within the specified timeout (Android & iOS).
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="timeoutInSeconds">The maximum time to wait for the keyboard to appear.</param>
 		public static void WaitUntilKeyboardIsVisible(this IApp app, int timeoutInSeconds = 5)
 		{
-			var wait = new DefaultWait<IApp>(app)
+			if(app is AppiumAndroidApp || app is AppiumIOSApp)
 			{
-				Timeout = TimeSpan.FromSeconds(timeoutInSeconds),
-				PollingInterval = TimeSpan.FromMilliseconds(500)
-			};
-			wait.Until(app => app.IsKeyboardShown());
+				var wait = new DefaultWait<IApp>(app)
+				{
+					Timeout = TimeSpan.FromSeconds(timeoutInSeconds),
+					PollingInterval = TimeSpan.FromMilliseconds(500)
+				};
+				wait.Until(app => app.IsKeyboardShown());
+			}
 		}
 
 		/// <summary>
-		/// Waits until the  keyboard is dismissed (hidden) within the specified timeout.
+		/// Waits until the  keyboard is dismissed (hidden) within the specified timeout (Android & iOS).
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="timeoutInSeconds">The maximum time to wait for the keyboard to disappear.</param>
 		public static void WaitUntilKeyboardIsHidden(this IApp app, int timeoutInSeconds = 5)
 		{
-			var wait = new DefaultWait<IApp>(app)
+			if(app is AppiumAndroidApp || app is AppiumIOSApp)
 			{
-				Timeout = TimeSpan.FromSeconds(timeoutInSeconds),
-				PollingInterval = TimeSpan.FromMilliseconds(500)
-			};
-			wait.Until(app => !app.IsKeyboardShown());
+				var wait = new DefaultWait<IApp>(app)
+				{
+					Timeout = TimeSpan.FromSeconds(timeoutInSeconds),
+					PollingInterval = TimeSpan.FromMilliseconds(500)
+				};
+				wait.Until(app => !app.IsKeyboardShown());
+			}
 		}
 		
 		/// <summary>
