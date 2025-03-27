@@ -53,7 +53,7 @@ namespace Maui.Controls.Sample
                 {
                     BackgroundColor = Colors.LightBlue,
                     HeightRequest = 200,
-                    AutomationId= "TestLabel",
+                    AutomationId= "EmptyViewLabel",
                     WidthRequest = 300,
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
@@ -145,6 +145,29 @@ namespace Maui.Controls.Sample
                         TextColor = Colors.Blue
                     });
                     return grid;
+                });
+            }
+             else if (EmptyViewTemplateCustomSize.IsChecked)
+            {
+                _viewModel.EmptyViewTemplate = new DataTemplate(() =>
+                {
+                    Frame customView = new Frame
+                    {
+                        BackgroundColor = Colors.LightBlue,
+                        HeightRequest = 200,
+                        BorderColor = Colors.Green,
+                        AutomationId = "EmptyViewTemplateLabel",
+                        WidthRequest = 300,
+                        HorizontalOptions = LayoutOptions.Center,
+                        VerticalOptions = LayoutOptions.Center,
+                        Content = new Label
+                        {
+                            Text = "Custom EmptyTemplate View (Sized)",
+                            HorizontalOptions = LayoutOptions.Center,
+                            VerticalOptions = LayoutOptions.Center,
+                        }
+                    };
+                    return customView;
                 });
             }
         }
