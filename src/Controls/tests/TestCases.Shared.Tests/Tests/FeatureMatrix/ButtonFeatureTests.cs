@@ -29,6 +29,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("BorderColorRedButton");
         App.Tap("BorderColorRedButton");
         App.WaitForElement("BorderWidthEntry");
+        App.ClearText("BorderWidthEntry");  
         App.EnterText("BorderWidthEntry", "5");
         App.WaitForElement("TextColorGreenButton");
         App.Tap("TextColorGreenButton");
@@ -46,8 +47,10 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("BorderWidthEntry");
+        App.ClearText("BorderWidthEntry");
         App.EnterText("BorderWidthEntry", "5");
         App.WaitForElement("FontSizeEntry");
+        App.ClearText("FontSizeEntry");
         App.EnterText("FontSizeEntry", "20");
         App.WaitForElement("TextEntry");
         App.EnterText("TextEntry", "Button Text");
@@ -63,6 +66,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("BorderWidthEntry");
+        App.ClearText("BorderWidthEntry");
         App.EnterText("BorderWidthEntry", "20");
         App.WaitForElement("LineBreakModeCharacterWrapButton");
         App.Tap("LineBreakModeCharacterWrapButton");
@@ -81,6 +85,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("CharacterSpacingEntry");
+        App.ClearText("CharacterSpacingEntry");
         App.EnterText("CharacterSpacingEntry", "5");
         App.WaitForElement("FontAttributesBoldButton");
         App.Tap("FontAttributesBoldButton");
@@ -98,6 +103,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("CharacterSpacingEntry");
+        App.ClearText("CharacterSpacingEntry");
         App.EnterText("CharacterSpacingEntry", "5");
         App.WaitForElement("FontFamilyCourierNewButton");
         App.Tap("FontFamilyCourierNewButton");
@@ -115,6 +121,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("CharacterSpacingEntry");
+        App.ClearText("CharacterSpacingEntry");
         App.EnterText("CharacterSpacingEntry", "5");
         App.WaitForElement("FontSizeEntry");
         App.EnterText("FontSizeEntry", "20");
@@ -132,6 +139,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("CharacterSpacingEntry");
+        App.ClearText("CharacterSpacingEntry");
         App.EnterText("CharacterSpacingEntry", "5");
         App.WaitForElement("LineBreakModeCharacterWrapButton");
         App.Tap("LineBreakModeCharacterWrapButton");
@@ -150,6 +158,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("CharacterSpacingEntry");
+        App.ClearText("CharacterSpacingEntry");
         App.EnterText("CharacterSpacingEntry", "5");
         App.WaitForElement("TextEntry");
         App.EnterText("TextEntry", "ButtonText");
@@ -165,6 +174,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("CharacterSpacingEntry");
+        App.ClearText("CharacterSpacingEntry");
         App.EnterText("CharacterSpacingEntry", "5");
         App.WaitForElement("TextTransformUppercaseButton");
         App.Tap("TextTransformUppercaseButton");
@@ -182,8 +192,10 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("CornerRadiusEntry");
+        App.ClearText("CornerRadiusEntry");
         App.EnterText("CornerRadiusEntry", "20");
         App.WaitForElement("BorderWidthEntry");
+        App.ClearText("BorderWidthEntry");
         App.EnterText("BorderWidthEntry", "5");
         App.WaitForElement("TextEntry");
         App.EnterText("TextEntry", "Button Text");
@@ -199,10 +211,13 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("CornerRadiusEntry");
+        App.ClearText("CornerRadiusEntry");
         App.EnterText("CornerRadiusEntry", "5");
         App.WaitForElement("PaddingEntry");
+        App.ClearText("PaddingEntry");
         App.EnterText("PaddingEntry", "5");
         App.WaitForElement("BorderWidthEntry");
+        App.ClearText("BorderWidthEntry");
         App.EnterText("BorderWidthEntry", "5");
         App.WaitForElement("BorderColorRedButton");
         App.Tap("BorderColorRedButton");
@@ -239,6 +254,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("FontAttributesBoldButton");
         App.Tap("FontAttributesBoldButton");
         App.WaitForElement("FontSizeEntry");
+        App.ClearText("FontSizeEntry");
         App.EnterText("FontSizeEntry", "20");
         App.WaitForElement("TextEntry");
         App.EnterText("TextEntry", "Button Text");
@@ -274,8 +290,10 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("FontAttributesBoldButton");
         App.Tap("FontAttributesBoldButton");
         App.WaitForElement("PaddingEntry");
+        App.ClearText("PaddingEntry");
         App.EnterText("PaddingEntry", "5");
         App.WaitForElement("BorderWidthEntry");
+        App.ClearText("BorderWidthEntry");
         App.EnterText("BorderWidthEntry", "5");
         App.WaitForElement("BorderColorRedButton");
         App.Tap("BorderColorRedButton");
@@ -327,6 +345,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("FontFamilyCourierNewButton");
         App.Tap("FontFamilyCourierNewButton");
         App.WaitForElement("FontSizeEntry");
+        App.ClearText("FontSizeEntry");
         App.EnterText("FontSizeEntry", "20");
         App.WaitForElement("TextEntry");
         App.EnterText("TextEntry", "Button Text");
@@ -362,8 +381,10 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("FontFamilyCourierNewButton");
         App.Tap("FontFamilyCourierNewButton");
         App.WaitForElement("PaddingEntry");
+        App.ClearText("PaddingEntry");
         App.EnterText("PaddingEntry", "5");
         App.WaitForElement("BorderWidthEntry");
+        App.ClearText("BorderWidthEntry");
         App.EnterText("BorderWidthEntry", "5");
         App.WaitForElement("BorderColorRedButton");
         App.Tap("BorderColorRedButton");
@@ -413,6 +434,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("FontSizeEntry");
+        App.ClearText("FontSizeEntry");
         App.EnterText("FontSizeEntry", "20");
         App.WaitForElement("LineBreakModeCharacterWrapButton");
         App.Tap("LineBreakModeCharacterWrapButton");
@@ -431,10 +453,13 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("FontSizeEntry");
+        App.ClearText("FontSizeEntry");
         App.EnterText("FontSizeEntry", "20");
         App.WaitForElement("PaddingEntry");
+        App.ClearText("PaddingEntry");
         App.EnterText("PaddingEntry", "5");
         App.WaitForElement("BorderWidthEntry");
+        App.ClearText("BorderWidthEntry");
         App.EnterText("BorderWidthEntry", "5");
         App.WaitForElement("BorderColorRedButton");
         App.Tap("BorderColorRedButton");
@@ -452,6 +477,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("FontSizeEntry");
+        App.ClearText("FontSizeEntry");
         App.EnterText("FontSizeEntry", "20");
         App.WaitForElement("TextEntry");
         App.EnterText("TextEntry", "Button Text");
@@ -467,6 +493,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("FontSizeEntry");
+        App.ClearText("FontSizeEntry");
         App.EnterText("FontSizeEntry", "20");
         App.WaitForElement("TextTransformUppercaseButton");
         App.Tap("TextTransformUppercaseButton");
@@ -517,8 +544,10 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("PaddingEntry");
+        App.ClearText("PaddingEntry");
         App.EnterText("PaddingEntry", "5");
         App.WaitForElement("BorderWidthEntry");
+        App.ClearText("BorderWidthEntry");
         App.EnterText("BorderWidthEntry", "5");
         App.WaitForElement("BorderColorGreenButton");
         App.Tap("BorderColorGreenButton");
