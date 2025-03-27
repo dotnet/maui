@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.ButtonControlMainPage"
+             Title="ButtonControlPage">
+  <ContentPage.ToolbarItems>
+    <ToolbarItem Text="Options"
+                 Clicked="NavigateToOptionsPage_Clicked"
+                 AutomationId="Options"/>
+  </ContentPage.ToolbarItems>
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <Button Grid.Row="0"
+            HeightRequest="100"
+            Margin="0,50,0,0"
+            WidthRequest="200"
+            VerticalOptions="Center"
+            AutomationId="ButtonControl"
+            BorderColor="{Binding BorderColor}"
+            BorderWidth="{Binding BorderWidth}"
+            CharacterSpacing="{Binding CharacterSpacing}"
+            CornerRadius="{Binding CornerRadius}"
+            FontAttributes="{Binding FontAttributes}"
+            FontFamily="{Binding FontFamily}"
+            FontSize="{Binding FontSize}"
+            LineBreakMode="{Binding LineBreakMode}"
+            Padding="{Binding Padding}"
+            Text="{Binding Text}"
+            TextColor="{Binding TextColor}"
+            TextTransform="{Binding TextTransform}"/>
+  </Grid>
+</ContentPage>
