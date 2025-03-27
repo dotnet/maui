@@ -36,15 +36,6 @@ steps:
       displayName: 'Clean bot'
       continueOnError: true
       timeoutInMinutes: 60
-  
-  # Enable KVM for Android builds on Linux
-  - ${{ if and(ne(parameters.buildType, 'buildOnly'), eq(parameters.platform, 'android')) }}:
-    - bash: |
-        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-        sudo udevadm control --reload-rules
-        sudo udevadm trigger --name-match=kvm
-      displayName: Enable KVM
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))      
 
   - ${{ if eq(parameters.platform, 'catalyst')}}:
         - bash: |
@@ -59,11 +50,9 @@ steps:
       skipProvisioning:  true
       skipJdk: ${{ ne(parameters.platform, 'android') }}
       skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
-      skipAndroidPlatformApis: true
-      onlyAndroidPlatformDefaultApis: true
+      skipAndroidPlatformApis: ${{ ne(parameters.platform, 'android') }}
       skipAndroidEmulatorImages: ${{ ne(parameters.platform, 'android') }}
-      skipAndroidCreateAvds: true
-      androidEmulatorApiLevel: ${{ parameters.version }}
+      skipAndroidCreateAvds: ${{ ne(parameters.platform, 'android') }}
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if parameters.skipProvisioning }}:
@@ -73,7 +62,7 @@ steps:
         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
 
   - task: PowerShell@2
-    condition: and(ne('${{ parameters.platform }}', 'windows'), ne('${{ parameters.platform }}', 'android'))
+    condition: ne('${{ parameters.platform }}' , 'windows')
     inputs:
       targetType: 'inline'
       script: |
