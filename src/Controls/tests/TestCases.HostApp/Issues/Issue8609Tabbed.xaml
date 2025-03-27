@@ -4,10 +4,15 @@
             ios:TabbedPage.AutoResizeIcons="True"
             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
             x:Class="Maui.Controls.Sample.Issues.Issue8609Tabbed">
-    <ContentPage IconImageSource="groceries.png"
-                 Title="Tab1"/>
-    <ContentPage IconImageSource="coffee.png"
-                 Title="Tab2"/>
-    <ContentPage IconImageSource="seth.png"
-                 Title="Tab3"/>
+        <ContentPage IconImageSource="groceries.png"
+                     Title="Tab1">
+                <Label Text="Tab1"
+                       AutomationId="Tab1"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
+        </ContentPage>
+        <ContentPage IconImageSource="coffee.png"
+                     Title="Tab2"/>
+        <ContentPage IconImageSource="seth.png"
+                     Title="Tab3"/>
 </TabbedPage>
