@@ -14,11 +14,14 @@ namespace Microsoft.Maui.Handlers
 
 		protected override RefreshContainer CreatePlatformView()
 		{
-			return new RefreshContainer
+			var refreshControl = new RefreshContainer
 			{
 				PullDirection = RefreshPullDirection.TopToBottom,
 				Content = new ContentPanel()
 			};
+
+			SetRefreshColorCallback(refreshControl);
+			return refreshControl;
 		}
 
 		protected override void ConnectHandler(RefreshContainer nativeView)
@@ -148,6 +151,20 @@ namespace Microsoft.Maui.Handlers
 				_refreshCompletionDeferral.Dispose();
 				_refreshCompletionDeferral = null;
 			}
+		}
+
+		void SetRefreshColorCallback(RefreshContainer refreshControl)
+		{
+			long callbackToken = 0;
+			callbackToken = refreshControl.RegisterPropertyChangedCallback(RefreshContainer.VisualizerProperty,
+				(_, __) =>
+				{
+					if (refreshControl?.Visualizer == null)
+						return;
+
+					UpdateRefreshColor(this);
+					refreshControl.UnregisterPropertyChangedCallback(RefreshContainer.VisualizerProperty, callbackToken);
+				});
 		}
 	}
 }
