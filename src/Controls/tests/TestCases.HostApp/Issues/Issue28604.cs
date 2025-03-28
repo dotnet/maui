@@ -20,6 +20,7 @@ public class Issue28604 : ContentPage
             EmptyView = "EmptyView",
             Header = new StackLayout
             {
+                BackgroundColor = Colors.Red,
                 Children =
                     {
                         new Label
@@ -31,6 +32,7 @@ public class Issue28604 : ContentPage
             },
             Footer = new StackLayout
             {
+                BackgroundColor = Colors.Yellow,
                 Children =
                     {
                         new Label
