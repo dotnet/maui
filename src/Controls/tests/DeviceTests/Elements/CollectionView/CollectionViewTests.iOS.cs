@@ -103,6 +103,8 @@ namespace Microsoft.Maui.DeviceTests
 				// Get the first cell's content
 				var firstCellContent = collectionView.GetVisualTreeDescendants().OfType<Border>().FirstOrDefault();
 
+				Assert.NotNull(firstCellContent);
+
 				var frame = firstCellContent.Frame;
 
 				Assert.True(frame.Width == 200 && frame.Height == 300);
