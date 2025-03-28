@@ -52,7 +52,9 @@ namespace Microsoft.Maui
 					imagesize.Width,
 					imagesize.Height));
 
-			}).ImageWithRenderingMode(UIImageRenderingMode.Automatic);
+      // Using UIRenderingMode.Automatic when the FontImageSource color is null (where 'Automatic' adapts based on the context and properly applies color) 
+			// and UIRenderingMode.AlwaysOriginal when the FontImageSource color is specified ensures the given color is applied correctly
+			}).ImageWithRenderingMode(imageSource.Color == null ? UIImageRenderingMode.Automatic : UIImageRenderingMode.AlwaysOriginal);
 		}
 
 		internal static UIImage? GetPlatformImage(this IFileImageSource imageSource)
