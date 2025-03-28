@@ -58,6 +58,10 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			var dirtyRect = new RectF(0, 0, _width, _height);
 
+			// To draw within the canvas bounds
+			androidCanvas.Save();
+			androidCanvas.ClipRect(androidCanvas.ClipBounds);
+
 			_canvas.Canvas = androidCanvas;
 			if (_backgroundColor != null)
 			{
@@ -72,6 +76,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			dirtyRect.Height /= _scale;
 			dirtyRect.Width /= _scale;
 			_drawable.Draw(_scalingCanvas, dirtyRect);
+
+			androidCanvas.Restore();
 			_canvas.Canvas = null;
 		}
 
