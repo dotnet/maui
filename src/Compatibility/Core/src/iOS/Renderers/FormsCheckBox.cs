@@ -178,8 +178,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 		{
 			var renderer = new UIGraphicsImageRenderer(new CGSize(_defaultSize, _defaultSize), new UIGraphicsImageRendererFormat()
 			{
-				boxPath.Fill();
-				check.Draw(new CGPoint(0, 0), CGBlendMode.DestinationOut, 1);
 				Opaque = false,
 				Scale = 0,
 			});
@@ -187,7 +185,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return renderer.CreateImage((context) =>
 			{
 				context.CGContext.SaveState();
-
+				
 				var checkedColor = CheckBoxTintUIColor;
 				checkedColor.SetFill();
 				checkedColor.SetStroke();
@@ -197,12 +195,12 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var diameter = _defaultSize - _lineWidth;
 
 				var backgroundRect = new CGRect(hPadding, vPadding, diameter, diameter);
-				var boxPath = CreateBoxPath(backgroundRect);
-
+				
+				check.Draw(new CGPoint(0, 0), CGBlendMode.DestinationOut, 1);
 				boxPath.LineWidth = _lineWidth;
 				boxPath.Stroke();
 
-				if (check != null)
+				if (check is not null)
 				{
 					boxPath.Fill();
 					check.Draw(new CGPoint(0, 0), CGBlendMode.DestinationOut, 1);
