@@ -39,8 +39,6 @@ public class FlyoutpageViewModel : INotifyPropertyChanged
 
         public void Activate()
         {
-            // Android : ok 
-            // iOS: freezes and crashes after a while
             Counter = Counter + 1;
         }
     }
