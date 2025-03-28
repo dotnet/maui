@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		Size _cachedConstraints;
 
 		internal bool MeasureInvalidated => _measureInvalidated;
+		internal bool isHeaderOrFooterChanged = false;
 
 		public DataTemplate CurrentTemplate
 		{
@@ -157,7 +158,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			var oldElement = PlatformHandler?.VirtualView as View;
 
-			if (oldElement is not null && oldElement != virtualView)
+			if (oldElement is not null && oldElement != virtualView && isHeaderOrFooterChanged)
 			{
 				oldElement.BindingContext = null;
 				itemsView.RemoveLogicalChild(oldElement);
