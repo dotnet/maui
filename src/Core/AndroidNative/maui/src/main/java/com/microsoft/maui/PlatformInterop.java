@@ -296,7 +296,7 @@ public class PlatformInterop {
         }
     }
 
-    private static void prepare(RequestBuilder<Drawable> builder, MauiTarget target, boolean cachingEnabled, ImageLoaderCallback callback) {
+    private static void prepare(RequestBuilder<Drawable> builder, MauiTarget target, boolean cachingEnabled, DisplayMetrics display, ImageLoaderCallback callback) {
         // A special value to work around https://github.com/dotnet/maui/issues/6783 where targets
         // are actually re-used if all the variables are the same.
         // Adding this "error image" that will always load a null image makes each request unique,
@@ -310,6 +310,9 @@ public class PlatformInterop {
                 .skipMemoryCache(true);
         }
 
+        builder = builder
+            .transform(new ClampBoundsToDisplayMetricsTransformation(display));
+
         target.load(builder);
     }
 
@@ -319,12 +322,14 @@ public class PlatformInterop {
 
     private static void loadInto(RequestBuilder<Drawable> builder, ImageView imageView, boolean cachingEnabled, ImageLoaderCallback callback, Object model) {
         MauiCustomViewTarget target = new MauiCustomViewTarget(imageView, callback, model);
-        prepare(builder, target, cachingEnabled, callback);
+        DisplayMetrics display = imageView.getContext().getResources().getDisplayMetrics ();
+        prepare(builder, target, cachingEnabled, display, callback);
     }
 
     private static void load(RequestBuilder<Drawable> builder, Context context, boolean cachingEnabled, ImageLoaderCallback callback, Object model) {
         MauiCustomTarget target = new MauiCustomTarget(context, callback, model);
-        prepare(builder, target, cachingEnabled, callback);
+        DisplayMetrics display = context.getResources().getDisplayMetrics ();
+        prepare(builder, target, cachingEnabled, display, callback);
     }
 
     public static void loadImageFromFile(ImageView imageView, String file, ImageLoaderCallback callback) {
