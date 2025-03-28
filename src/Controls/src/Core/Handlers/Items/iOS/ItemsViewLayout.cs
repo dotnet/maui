@@ -108,6 +108,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (size.IsCloseTo(_currentSize) && !forceUpdate)
 			{
+				// Need to update the constraints when dynamically adding items of different sizes
+				ConstrainTo(_currentSize);
 				return false;
 			}
 
