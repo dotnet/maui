@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+    xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+    x:Class="Maui.Controls.Sample.Issues.Issue26015">
+    <RefreshView>
+        <ScrollView>
+            <Grid RowDefinitions="*,*">
+                <ListView Grid.Row="0"
+                          ItemsSource="{Binding Data}"
+                          IsGroupingEnabled="True"
+                          HasUnevenRows="True">
+                    <ListView.GroupHeaderTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                <Label Text="{Binding Name}"/>
+                            </ViewCell>
+                        </DataTemplate>
+                    </ListView.GroupHeaderTemplate>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                <Grid>
+                                    <Label Text="{Binding Detail}"/>
+                                    <Button Text="Remove"
+                                            AutomationId="{Binding Detail}"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:Issue26015ViewModel}}, Path=RemoveItemCommand}"
+                                            CommandParameter="{Binding .}"/>
+                                </Grid>
+                            </ViewCell>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                <ListView
+                    Grid.Row="1"
+                    ItemsSource="{Binding Data}"
+                    IsGroupingEnabled="True"
+                    HasUnevenRows="True">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                <Grid>
+                                    <Label Text="{Binding Detail}"/>
+                                    <Button
+                                        Text="Remove"
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type local:Issue26015ViewModel}}, Path=RemoveItemCommand}"
+                                        CommandParameter="{Binding .}"/>
+                                </Grid>
+                            </ViewCell>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>
