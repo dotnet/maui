@@ -1,4 +1,3 @@
-#if IOS // Flyout icon and content page title disappeared when focus on the search handler in iOS platform alone
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -18,9 +17,10 @@ public class Issue22060 : _IssuesUITest
 	[Category(UITestCategories.SearchBar)]
 	public void ShouldAppearFlyoutIconAndContentPageTitle()
 	{
-		App.EnterText(AppiumQuery.ByXPath("//XCUIElementTypeSearchField"), "Hello");
+		App.EnterTextInShellSearchHandler("Hello");
+#if IOS // When the search handler is focused, the Cancel button is displayed on the right side of the search bar only on the iOS platform.
 		App.Tap("Cancel");
+#endif
 		VerifyScreenshot();
 	}
 }
-#endif
