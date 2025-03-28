@@ -1754,6 +1754,32 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Triggers the SwipeBackNavigation, simulating the default swipe-back navigation.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// /// <exception cref="InvalidOperationException">SwipeBackNavigation is only supported on <see cref="AppiumIOSApp"/> and <see cref="AppiumAndroidApp"/>.</exception>
+		public static void SwipeBackNavigation(this IApp app)
+		{
+			if (app is not AppiumIOSApp && app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"Interactive Pop Gesture is only supported on AppiumIOSAppp and AppiumAndroidApp");
+			}
+
+			if (app is AppiumIOSApp)
+			{
+				app.CommandExecutor.Execute("interactivePopGesture", ImmutableDictionary<string, object>.Empty);
+			}
+			else if (app is AppiumAndroidApp)
+			{
+				var response = app.CommandExecutor.Execute("checkIfGestureNavigationIsEnabled", new Dictionary<string, object>());
+				if (response?.Value is bool gestureNavigationIsEnabled && gestureNavigationIsEnabled)
+					SwipeLeftToRight(app);
+				else
+					Back(app);
+			}
+		}
+
+		/// <summary>
 		/// Start recording screen.
 		/// Functionality that's only available on Android, iOS and Windows.
 		/// </summary>
