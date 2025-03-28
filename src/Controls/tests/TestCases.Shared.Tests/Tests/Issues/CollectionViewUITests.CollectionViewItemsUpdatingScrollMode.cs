@@ -26,7 +26,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			for (int n = 0; n < 25; n++)
 			{
-				App.Click("AddItemAbove");
+				App.WaitForElement("AddItemAbove");
+				App.Tap("AddItemAbove");
 			}
 
 			App.WaitForNoElement("Vegetables.jpg, 10");
