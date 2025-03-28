@@ -24,7 +24,7 @@ public partial class Issue28497 : Shell
 
 public class FlyoutpageViewModel : INotifyPropertyChanged
     {
-		private int myVar;
+		int myVar;
 		public int Counter
 		{
 			get { return myVar; }
