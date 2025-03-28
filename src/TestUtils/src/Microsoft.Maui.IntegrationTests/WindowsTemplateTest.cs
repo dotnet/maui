@@ -22,7 +22,9 @@ public class WindowsTemplateTest : BaseTemplateTests
 
 		// TODO: remove this if as we should be able to build tizen net8
 		if (framework != DotNetPrevious)
+		{
 			EnableTizen(projectFile);
+		}
 
 		if (framework == DotNetPrevious)
 		{
@@ -54,7 +56,9 @@ public class WindowsTemplateTest : BaseTemplateTests
 	public void BuildWindowsAppSDKSelfContained(string id, bool wasdkself, bool netself, string packageType)
 	{
 		if (TestEnvironment.IsMacOS)
+		{
 			Assert.Ignore("This test is designed for testing a windows build.");
+		}
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -82,10 +86,12 @@ public class WindowsTemplateTest : BaseTemplateTests
 	[TestCase("maui", true, "MSIX")]
 	[TestCase("maui", false, "None")]
 	[TestCase("maui", false, "MSIX")]
-	public void BuildWindowsRidGraph(string id, bool useridgraph, string packageType)
+	public void BuildWindowsRidGraph(string id, bool useRidGraph, string packageType)
 	{
 		if (TestEnvironment.IsMacOS)
+		{
 			Assert.Ignore("This test is designed for testing a windows build.");
+		}
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -96,7 +102,7 @@ public class WindowsTemplateTest : BaseTemplateTests
 		FileUtilities.ReplaceInFile(projectFile,
 			"<WindowsPackageType>None</WindowsPackageType>",
 			$"""
-			<UseRidGraph>{useridgraph}</UseRidGraph>
+			<UseRidGraph>{useRidGraph}</UseRidGraph>
 			<WindowsPackageType>{packageType}</WindowsPackageType>
 			""");
 
@@ -115,7 +121,9 @@ public class WindowsTemplateTest : BaseTemplateTests
 	public void PublishUnpackaged(string id, string framework, string config)
 	{
 		if (!TestEnvironment.IsWindows)
+		{
 			Assert.Ignore("Running Windows templates is only supported on Windows.");
+		}
 
 		var projectDir = TestDirectory;
 		var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -164,7 +172,9 @@ public class WindowsTemplateTest : BaseTemplateTests
 	public void PublishPackaged(string id, string framework, string config)
 	{
 		if (!TestEnvironment.IsWindows)
+		{
 			Assert.Ignore("Running Windows templates is only supported on Windows.");
+		}
 
 		var projectDir = TestDirectory;
 		var name = Path.GetFileName(projectDir);
