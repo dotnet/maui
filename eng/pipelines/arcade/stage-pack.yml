@@ -81,7 +81,6 @@ stages:
           - script: $(_buildScript)
                     -restore -pack
                     -sign $(_SignArgs)
-                    -publish $(_PublishArgs)
                     -configuration $(_BuildConfig)
                     /bl:$(Build.Arcade.LogsPath)pack.binlog
                     $(_OfficialBuildIdArgs)
