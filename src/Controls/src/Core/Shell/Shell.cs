@@ -137,6 +137,19 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TabBarIsVisibleProperty =
 			BindableProperty.CreateAttached("TabBarIsVisible", typeof(bool), typeof(Shell), true);
 
+
+#pragma warning disable RS0016
+//todo remove this when changing PR from draft to ready
+		/// <summary>
+		/// Determines whether the navigation stack should be reset to the root when the currently selected tab is reselected.
+		/// </summary>
+		/// <remarks>
+		/// This applies to Android only. On iOS, this behavior is always enabled by default.
+		/// </remarks>
+		public static readonly BindableProperty PopToRootOnTabReselectProperty =
+			BindableProperty.CreateAttached("PopToRootOnTabReselect", typeof(bool), typeof(Shell), false);
+
+
 		/// <summary>
 		/// Enables any <see cref = "View" /> to be displayed in the navigation bar.
 		/// </summary>
@@ -327,6 +340,26 @@ namespace Microsoft.Maui.Controls
 		/// <param name="obj">The object that modifies the tabs visibility.</param>
 		/// <param name="value"><see langword="true"/> to set the tab bar as visible; otherwise, <see langword="false"/>.</param>
 		public static void SetTabBarIsVisible(BindableObject obj, bool value) => obj.SetValue(TabBarIsVisibleProperty, value);
+
+		/// <summary>
+		/// Gets a value indicating whether the navigation stack should be reset to the root when the currently selected tab is reselected.
+		/// </summary>
+		/// <remarks>
+		/// This applies to Android only. On iOS, this behavior is always enabled by default.
+		/// </remarks>
+		/// <param name="obj">The object that controls tab navigation behavior.</param>
+		/// <returns><see langword="true"/> if the navigation stack should reset to the root on tab reselection; otherwise, <see langword="false"/>.</returns>
+		public static bool GetPopToRootOnTabReselect(BindableObject obj) => (bool)obj.GetValue(PopToRootOnTabReselectProperty);
+
+		/// <summary>
+		/// Sets a value indicating whether the navigation stack should be reset to the root when the currently selected tab is reselected.
+		/// </summary>
+		/// <remarks>
+		/// This applies to Android only. On iOS, this behavior is always enabled by default.
+		/// </remarks>
+		/// <param name="obj">The object that controls tab navigation behavior.</param>
+		/// <param name="value"><see langword="true"/> to reset the navigation stack to the root on tab reselection; otherwise, <see langword="false"/>.</param>
+		public static void SetPopToRootOnTabReselect(BindableObject obj, bool value) => obj.SetValue(PopToRootOnTabReselectProperty, value);
 
 		/// <summary>
 		/// Gets any <see cref = "View" /> to be displayed in the navigation bar when the given <paramref name="obj"/> is active.
