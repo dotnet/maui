@@ -70,6 +70,7 @@ Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) ->
 ~Microsoft.Maui.Controls.Xaml.IXamlTypeResolver.Resolve(string qualifiedTypeName, System.IServiceProvider serviceProvider = null, bool expandToExtension = true) -> System.Type
 ~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.RequireServiceAttribute(System.Type[] serviceTypes) -> void
+~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewController.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.ServiceTypes.get -> System.Type[]
 ~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.CreateDelegator() -> UIKit.UICollectionViewDelegateFlowLayout
 ~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.CreateItemsViewSource() -> Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource
