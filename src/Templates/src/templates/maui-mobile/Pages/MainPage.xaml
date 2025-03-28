@@ -8,16 +8,20 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="MauiApp._1.Pages.MainPage"
              x:DataType="pageModels:MainPageModel"
+             x:Name="OverviewPage"
              Title="{Binding Today}">
 
     <ContentPage.Behaviors>
         <toolkit:EventToCommandBehavior
+                BindingContext="{Binding Path=BindingContext, Source={x:Reference OverviewPage}, x:DataType=ContentPage}"
                 EventName="NavigatedTo"
                 Command="{Binding NavigatedToCommand}" />
         <toolkit:EventToCommandBehavior
+                BindingContext="{Binding Path=BindingContext, Source={x:Reference OverviewPage}, x:DataType=ContentPage}"
                 EventName="NavigatedFrom"
                 Command="{Binding NavigatedFromCommand}" />
         <toolkit:EventToCommandBehavior
+                BindingContext="{Binding Path=BindingContext, Source={x:Reference OverviewPage}, x:DataType=ContentPage}"
                 EventName="Appearing"                
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
