@@ -49,22 +49,48 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage Downsize(float maxWidthOrHeight, bool disposeOriginal = false)
 		{
-			if (Width > maxWidthOrHeight || Height > maxWidthOrHeight)
+			if (Width <= maxWidthOrHeight && Height <= maxWidthOrHeight)
 			{
-				using (var memoryStream = new InMemoryRandomAccessStream())
+				return this;
+			}
+
+			// Calculate new dimensions while maintaining aspect ratio
+			float scaleFactor = Math.Min(
+				maxWidthOrHeight / Width,
+				maxWidthOrHeight / Height
+			);
+
+			int newWidth = (int)(Width * scaleFactor);
+			int newHeight = (int)(Height * scaleFactor);
+
+			using (var memoryStream = new InMemoryRandomAccessStream())
+			{
+				Save(memoryStream.AsStreamForWrite());
+				memoryStream.Seek(0);
+
+				// Load original bitmap
+				var originalBitmap = AsyncPump.Run(async () =>
+					await CanvasBitmap.LoadAsync(_creator, memoryStream, 96));
+
+				// Create render target with new dimensions
+				using (var renderTarget = new CanvasRenderTarget(_creator, newWidth, newHeight, 96))
 				{
-					Save(memoryStream.AsStreamForWrite());
-					memoryStream.Seek(0);
-
-					// ReSharper disable once AccessToDisposedClosure
-					var newBitmap = AsyncPump.Run(async () => await CanvasBitmap.LoadAsync(_creator, memoryStream, 96));
-					using (var memoryStream2 = new InMemoryRandomAccessStream())
+					using (var drawingSession = renderTarget.CreateDrawingSession())
 					{
-						// ReSharper disable once AccessToDisposedClosure
-						AsyncPump.Run(async () => await newBitmap.SaveAsync(memoryStream2, CanvasBitmapFileFormat.Png));
+						// Draw the original bitmap scaled to new dimensions
+						drawingSession.DrawImage(originalBitmap,
+							new global::Windows.Foundation.Rect(0, 0, newWidth, newHeight));
+					}
 
-						memoryStream2.Seek(0);
-						var newImage = FromStream(memoryStream2.AsStreamForRead());
+					// Save resized image to a new memory stream
+					using (var resizedStream = new InMemoryRandomAccessStream())
+					{
+						AsyncPump.Run(async () =>
+							await renderTarget.SaveAsync(resizedStream, CanvasBitmapFileFormat.Png));
+
+						resizedStream.Seek(0);
+						var newImage = FromStream(resizedStream.AsStreamForRead());
+
 						if (disposeOriginal)
 							_bitmap.Dispose();
 
@@ -72,8 +98,6 @@ namespace Microsoft.Maui.Graphics.Platform
 					}
 				}
 			}
-
-			return this;
 		}
 
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
@@ -158,7 +182,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			var creator = PlatformGraphicsService.Creator;
 
-			if (creator == null)
+			if (creator is null)
 			{
 				throw new Exception("No resource creator has been registered globally or for this thread.");
 			}

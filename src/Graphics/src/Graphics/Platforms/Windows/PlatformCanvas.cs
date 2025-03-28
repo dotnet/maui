@@ -376,7 +376,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void SetFillPaint(Paint paint, RectF rectangle)
 		{
-			if (paint == null)
+			if (paint is null)
 			{
 				CurrentState.FillColor = Colors.White;
 				return;
@@ -390,7 +390,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			if (paint is ImagePaint imagePaint)
 			{
-				if (imagePaint.Image is PlatformImage image)
+				if (imagePaint.Image is Microsoft.Maui.Graphics.Platform.PlatformImage image)
 				{
 					var bitmapBrush = new CanvasImageBrush(_session, image.PlatformRepresentation)
 					{
@@ -409,7 +409,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (paint is PatternPaint patternPaint)
 			{
 				var pattern = patternPaint.Pattern;
-				if (pattern == null)
+				if (pattern is null)
 				{
 					CurrentState.FillColor = Colors.White;
 					return;
@@ -418,7 +418,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				if (_bitmapPatternFills)
 				{
 					var bitmap = CreatePatternBitmap(pattern);
-					if (bitmap != null)
+					if (bitmap is not null)
 					{
 						var bitmapBrush = new CanvasImageBrush(_session, bitmap)
 						{
@@ -435,7 +435,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				else
 				{
 					var commandList = CreatePatternCommandList(pattern);
-					if (commandList != null)
+					if (commandList is not null)
 					{
 						var imageBrush = new CanvasImageBrush(_session, commandList)
 						{
@@ -509,7 +509,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		private CanvasBitmap CreatePatternBitmap(IPattern pattern)
 		{
 			var context = GetOrCreatePatternContext(new global::Windows.Foundation.Size(pattern.Width, pattern.Height));
-			if (context != null)
+			if (context is not null)
 			{
 				using (var imageSession = context.CreateDrawingSession())
 				{
@@ -659,7 +659,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			var geometry = path.PlatformPath as CanvasGeometry;
 
-			if (geometry == null)
+			if (geometry is null)
 			{
 				geometry = path.AsPath(_session, fillMode);
 				path.PlatformPath = geometry;
@@ -670,7 +670,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		protected override void PlatformDrawPath(PathF path)
 		{
-			if (path == null)
+			if (path is null)
 				return;
 
 			var geometry = GetPath(path);
@@ -721,7 +721,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		protected override void StateRestored(PlatformCanvasState state)
 		{
-			if (_session != null)
+			if (_session is not null)
 			{
 				state?.RestoreRenderTargetState();
 			}
@@ -746,7 +746,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		private CanvasRenderTarget GetOrCreatePatternContext(global::Windows.Foundation.Size patternSize)
 		{
-			if (_patternContext != null)
+			if (_patternContext is not null)
 			{
 				// If the effect bitmap size does not equal the size of our render target, then dispose of it
 				// and create a new one.
@@ -767,7 +767,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		private CanvasRenderTarget GetOrCreateEffectContext()
 		{
-			if (_effectContext != null)
+			if (_effectContext is not null)
 			{
 				// If the effect bitmap size does not equal the size of our render target, then dispose of it
 				// and create a new one.
@@ -776,13 +776,13 @@ namespace Microsoft.Maui.Graphics.Platform
 					_effectContext.Dispose();
 					_effectContext = null;
 
-					if (_shadowEffect != null)
+					if (_shadowEffect is not null)
 					{
 						_shadowEffect.Dispose();
 						_shadowEffect = null;
 					}
 
-					if (_blurEffect != null)
+					if (_blurEffect is not null)
 					{
 						_blurEffect.Dispose();
 						_blurEffect = null;
@@ -801,7 +801,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		private void DrawShadow(Action<CanvasDrawingSession> drawingAction)
 		{
 			var context = GetOrCreateEffectContext();
-			if (context != null)
+			if (context is not null)
 			{
 				using (var imageSession = context.CreateDrawingSession())
 				{
@@ -810,7 +810,7 @@ namespace Microsoft.Maui.Graphics.Platform
 					drawingAction(imageSession);
 				}
 
-				if (_shadowEffect == null)
+				if (_shadowEffect is null)
 					_shadowEffect = new ShadowEffect();
 
 				_shadowEffect.Source = context;
@@ -826,7 +826,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		private void DrawBlurred(Action<CanvasDrawingSession> drawingAction)
 		{
 			var context = GetOrCreateEffectContext();
-			if (context != null)
+			if (context is not null)
 			{
 				using (var imageSession = context.CreateDrawingSession())
 				{
@@ -835,7 +835,7 @@ namespace Microsoft.Maui.Graphics.Platform
 					drawingAction(imageSession);
 				}
 
-				if (_blurEffect == null)
+				if (_blurEffect is null)
 					_blurEffect = new GaussianBlurEffect();
 
 				_blurEffect.Source = context;
