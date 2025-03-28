@@ -93,6 +93,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			base.ViewWillLayoutSubviews();
+			// This updates the positions of the header view and footer view as their sizes change dynamically
+			UpdatePositions();
 		}
 
 		internal void UpdateFooterView()
