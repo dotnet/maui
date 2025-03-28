@@ -22,17 +22,17 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 			var rect = new CGRect(0, 0, 100, 100);
 
-			UIGraphics.BeginImageContextWithOptions(rect.Size, false, 1);
-			var context = UIGraphics.GetCurrentContext();
+			var renderer = new UIGraphicsImageRenderer(rect.Size, new UIGraphicsImageRendererFormat()
+			{
+				Opaque = false,
+				Scale = 1,
+			});
 
-			color.ToPlatform().SetFill();
-			context.FillRect(rect);
-
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-
-			UIGraphics.EndImageContext();
-
-			image = image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+			var image = renderer.CreateImage((context) =>
+			{
+				color.ToPlatform().SetFill();
+				context.FillRect(rect);
+			}).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
 			_cache[color] = (image, 1);
 
