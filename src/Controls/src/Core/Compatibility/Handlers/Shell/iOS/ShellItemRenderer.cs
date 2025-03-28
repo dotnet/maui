@@ -99,6 +99,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateMoreCellsEnabled();
 		}
 
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			if (previousTraitCollection.VerticalSizeClass == TraitCollection.VerticalSizeClass)
+				return;
+
+			if (Shell.GetAutoResizeTabBarIcons(ShellItem))
+			{
+				foreach (var item in TabBar.Items)
+				{
+					item.Image = TabbedViewExtensions.AutoResizeTabBarImage(TraitCollection, item.Image);
+				}
+			}
+		}
+
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
