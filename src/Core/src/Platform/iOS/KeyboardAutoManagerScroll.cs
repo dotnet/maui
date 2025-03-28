@@ -41,6 +41,7 @@ public static class KeyboardAutoManagerScroll
 	internal static bool ShouldDisconnectLifecycle;
 	internal static bool ShouldIgnoreSafeAreaAdjustment;
 	internal static bool ShouldScrollAgain;
+	internal static bool IgnoreContentInsetAdjustment;
 
 	/// <summary>
 	/// Enables automatic scrolling with keyboard interactions on iOS devices.
@@ -785,6 +786,12 @@ public static class KeyboardAutoManagerScroll
 	static void ApplyContentInset(UIScrollView? scrolledView, UIScrollView? lastScrollView, bool didMove, bool isInnerEditor)
 	{
 		if (scrolledView is null || lastScrollView is null || ContainerView is null)
+		{
+			return;
+		}
+
+		// if the editor has VerticalTextAlignment as Center or End, we won't want to adjust the contentInset or there will be a bounce when focusing the editor
+		if (scrolledView is UITextView editor && IgnoreContentInsetAdjustment)
 		{
 			return;
 		}
