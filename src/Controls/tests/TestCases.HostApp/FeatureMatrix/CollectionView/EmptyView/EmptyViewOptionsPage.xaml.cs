@@ -162,7 +162,7 @@ namespace Maui.Controls.Sample
                         VerticalOptions = LayoutOptions.Center,
                         Content = new Label
                         {
-                            Text = "Custom EmptyTemplate View (Sized)",
+                            Text = "Custom EmptyViewTemplate (Sized)",
                             HorizontalOptions = LayoutOptions.Center,
                             VerticalOptions = LayoutOptions.Center,
                         }
