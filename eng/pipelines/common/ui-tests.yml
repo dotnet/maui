@@ -127,6 +127,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       testFilter: $(CATEGORYGROUP)
+                      headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: ios_ui_tests_mono
@@ -169,6 +170,7 @@ stages:
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       runtimeVariant : "Mono"
                       testFilter: $(CATEGORYGROUP)
+                      headless: ${{ parameters.headless }}
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: ios_ui_tests_mono_cv2
@@ -206,6 +208,7 @@ stages:
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                       runtimeVariant : "Mono"
                       testFilter: "CollectionView"
+                      headless: ${{ parameters.headless }}
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 
@@ -250,6 +253,7 @@ stages:
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
                         runtimeVariant : "NativeAOT"
                         testFilter: $(CATEGORYGROUP)
+                        headless: ${{ parameters.headless }}
                         skipProvisioning: ${{ parameters.skipProvisioning }}
 
   - stage: winui_ui_tests
