@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void UpdateIsFocused(bool isFocused)
+		private protected void UpdateIsFocused(bool isFocused)
 		{
 			if (VirtualView is not { } virtualView)
 			{
