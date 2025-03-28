@@ -17,11 +17,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public override UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			Performance.Start(out string reference);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewCell = (ViewCell)item;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var cell = reusableCell as ViewTableCell;
 			if (cell == null)
@@ -43,7 +47,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			IMauiContext MauiContext => ViewCell?.FindMauiContext();
 			WeakReference<IPlatformViewHandler> _rendererRef;
+#pragma warning disable CS0618 // Type or member is obsolete
 			WeakReference<ViewCell> _viewCell;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			Element INativeElementView.Element => ViewCell;
 			internal bool SupressSeparator { get; set; }
@@ -53,7 +59,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			public ViewCell ViewCell
+#pragma warning restore CS0618 // Type or member is obsolete
 			{
 				get => _viewCell?.GetTargetOrDefault();
 				set
@@ -78,11 +86,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			void ViewCellPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				var viewCell = (ViewCell)sender;
+#pragma warning restore CS0618 // Type or member is obsolete
 				var realCell = (ViewTableCell)GetRealCell(viewCell);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (e.PropertyName == Cell.IsEnabledProperty.PropertyName)
 					UpdateIsEnabled(viewCell.IsEnabled);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			public override void LayoutSubviews()
@@ -95,7 +107,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				//TODO: Determine how best to hide the separator line when there is an accessory on the cell
 				if (SupressSeparator && Accessory == UITableViewCellAccessory.None)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					var oldFrame = Frame;
+#pragma warning restore CS0618 // Type or member is obsolete
 					ContentView.Bounds = new RectangleF(oldFrame.Location, new SizeF(oldFrame.Width, oldFrame.Height + 0.5f));
 				}
 
@@ -149,12 +163,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						_rendererRef = null;
 					}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 					if (ViewCell is ViewCell viewCell)
 					{
 						viewCell.PropertyChanged -= ViewCellPropertyChanged;
 						viewCell.View.MeasureInvalidated -= OnMeasureInvalidated;
 						SetRealCell(viewCell, null);
 					}
+#pragma warning restore CS0618 // Type or member is obsolete
 					_viewCell = null;
 				}
 
@@ -165,8 +181,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			IPlatformViewHandler GetNewRenderer()
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (ViewCell is not ViewCell viewCell || viewCell.View == null)
 					throw new InvalidOperationException($"ViewCell must have a {nameof(viewCell.View)}");
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				var newRenderer = viewCell.View.ToHandler(viewCell.View.FindMauiContext());
 				_rendererRef = new WeakReference<IPlatformViewHandler>(newRenderer);
@@ -175,16 +193,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return (IPlatformViewHandler)newRenderer;
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			void UpdateCell(ViewCell cell)
+#pragma warning restore CS0618 // Type or member is obsolete
 			{
 				Performance.Start(out string reference);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (ViewCell is ViewCell oldCell)
 				{
 					BeginInvokeOnMainThread(oldCell.SendDisappearing);
 					oldCell.PropertyChanged -= ViewCellPropertyChanged;
 					oldCell.View.MeasureInvalidated -= OnMeasureInvalidated;
 				}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				if (cell is null)
 				{

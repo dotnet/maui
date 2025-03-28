@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/EntryCell.xml" path="Type[@FullName='Microsoft.Maui.Controls.EntryCell']/Docs/*" />
+	[Obsolete("The controls which use EntryCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
 	public class EntryCell : Cell, ITextAlignmentElement, IEntryCellController, ITextAlignment
 	{
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>

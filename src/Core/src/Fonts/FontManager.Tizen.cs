@@ -38,12 +38,12 @@ namespace Microsoft.Maui
 		}
 
 		/// <inheritdoc/>
-		public string GetFontFamily(string? fontFamliy) //TODO: this is a misspelling in public ABI; consider changing in NET8
+		public string GetFontFamily(string? fontFamily)
 		{
-			if (string.IsNullOrEmpty(fontFamliy))
+			if (string.IsNullOrEmpty(fontFamily))
 				return "";
 
-			var cleansedFont = CleanseFontName(fontFamliy ?? string.Empty);
+			var cleansedFont = CleanseFontName(fontFamily ?? string.Empty);
 			if (cleansedFont == null)
 				return "";
 

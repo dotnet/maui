@@ -8,12 +8,9 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class iOSTranslucentNavigationBarPage : ContentPage
 	{
-		ICommand _returnToPlatformSpecificsPage;
-
-		public iOSTranslucentNavigationBarPage(ICommand restore)
+		public iOSTranslucentNavigationBarPage()
 		{
 			InitializeComponent();
-			_returnToPlatformSpecificsPage = restore;
 		}
 
 		void OnTranslucentNavigationBarButtonClicked(object sender, EventArgs e)
@@ -23,7 +20,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnReturnButtonClicked(object sender, EventArgs e)
 		{
-			_returnToPlatformSpecificsPage.Execute(null);
+			Navigation.PopAsync();
 		}
 	}
 }

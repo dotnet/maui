@@ -24,14 +24,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return false;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal void ApplyTouchListenersToSpecialCells(Cell item)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			DescendantFocusability = DescendantFocusability.BlockDescendants;
 
 			global::Android.Views.View aView = GetChildAt(0);
 			(aView as EntryCellView)?.EditText.SetOnTouchListener(this);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var viewCell = item as ViewCell;
+#pragma warning restore CS0618 // Type or member is obsolete
 			if (viewCell?.View == null)
 				return;
 

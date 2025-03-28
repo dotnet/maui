@@ -49,6 +49,15 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		Task<bool> GetPlatformIsVisible(EditorHandler editorHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(editorHandler);
+				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+			});
+		}
+
 		[Fact]
 		public async Task CursorPositionPreservedWhenTextTransformPresent()
 		{

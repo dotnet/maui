@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.Pages
 		void OnSelectedIndexChanged(object sender, EventArgs e)
 		{
 			string selectedCountry = (string)((Picker)sender).SelectedItem;
-			DisplayAlert("SelectedIndexChanged", selectedCountry, "Ok");
+			DisplayAlertAsync("SelectedIndexChanged", selectedCountry, "Ok");
 		}
 
 		public string[] PickerItems { get; } =

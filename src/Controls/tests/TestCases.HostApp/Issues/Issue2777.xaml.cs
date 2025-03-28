@@ -21,7 +21,7 @@ namespace Maui.Controls.Sample.Issues
 		internal void OnItemTapped(object sender, ItemTappedEventArgs ea)
 		{
 			var listItem = (ListItemValue)ea.Item;
-			DisplayAlert(listItem.Name, "You tapped " + listItem.Name, "OK", "Cancel");
+			DisplayAlertAsync(listItem.Name, "You tapped " + listItem.Name, "OK", "Cancel");
 		}
 
 		ObservableCollection<ListItemCollection> SetupList()

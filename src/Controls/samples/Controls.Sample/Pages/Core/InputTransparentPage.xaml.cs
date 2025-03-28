@@ -14,13 +14,13 @@ namespace Maui.Controls.Sample.Pages
 		void ClickFail(object sender, EventArgs e)
 		{
 			Debug.WriteLine("Failure; You shouldn't have been able to interact with that.");
-			DisplayAlert("Failure", "You shouldn't have been able to interact with that.", "OK");
+			DisplayAlertAsync("Failure", "You shouldn't have been able to interact with that.", "OK");
 		}
 
 		void ClickSuccess(object sender, EventArgs e)
 		{
 			Debug.WriteLine("Success; That should have worked, and it did!");
-			DisplayAlert("Success", "That should have worked, and it did!", "OK");
+			DisplayAlertAsync("Success", "That should have worked, and it did!", "OK");
 		}
 	}
 }

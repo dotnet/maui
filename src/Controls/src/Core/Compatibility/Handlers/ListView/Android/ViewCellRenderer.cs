@@ -14,10 +14,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class ViewCellRenderer : CellRenderer
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected override AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			Performance.Start(out string reference, "GetCellCore");
+#pragma warning disable CS0618 // Type or member is obsolete
 			var cell = (ViewCell)item;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var container = convertView as ViewCellContainer;
 			if (container is not null)
@@ -85,7 +89,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			readonly BindableProperty _rowHeight;
 			readonly BindableProperty _unevenRows;
 			IPlatformViewHandler _viewHandler;
+#pragma warning disable CS0618 // Type or member is obsolete
 			ViewCell _viewCell;
+#pragma warning restore CS0618 // Type or member is obsolete
 			GestureDetector _tapGestureDetector;
 			GestureDetector _longPressGestureDetector;
 			ListViewRenderer _listViewRenderer;
@@ -101,7 +107,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						return _listViewRenderer;
 					}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 					var listView = _parent as ListView;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 					if (listView == null)
 					{
@@ -147,7 +155,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// Added default constructor to prevent crash when accessing selected row in ListViewAdapter.Dispose
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			public ViewCellContainer(Context context, IPlatformViewHandler view, ViewCell viewCell, View parent,
+#pragma warning restore CS0618 // Type or member is obsolete
 				BindableProperty unevenRows, BindableProperty rowHeight) : base(context)
 			{
 				_viewHandler = (IPlatformViewHandler)view;
@@ -196,7 +206,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return handled;
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			public void Update(ViewCell cell)
+#pragma warning restore CS0618 // Type or member is obsolete
 			{
 				// This cell could have a handler that was used for the measure pass for the ListView height calculations
 				//cell.View.Handler.DisconnectHandler();

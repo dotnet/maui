@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Platform
 							platformLabel.AttributedText = null;
 						}
 
-						platformLabel.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+						platformLabel.Text = TextTransformUtilities.GetTransformedText(label.Text, label.TextTransform);
 					}
 					break;
 			}
