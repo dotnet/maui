@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public const int FooterTag = 222;
 
 		bool _disposed;
+		bool _needsHeaderFooterPositioning = true;
 
 		UIView _headerUIView;
 		VisualElement _headerViewFormsElement;
@@ -76,7 +77,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void ViewWillLayoutSubviews()
 		{
-			var hasHeaderOrFooter = _footerViewFormsElement is not null || _headerViewFormsElement is not null;
+			var hasHeaderOrFooter = _headerViewFormsElement is not null || _footerViewFormsElement is not null;
 			if (hasHeaderOrFooter && CollectionView is MauiCollectionView { NeedsCellLayout: true } collectionView)
 			{
 				if (_headerViewFormsElement is not null)
@@ -89,6 +90,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					RemeasureLayout(_footerViewFormsElement);
 				}
 
+				_needsHeaderFooterPositioning = true;
+			}
+
+			if (_needsHeaderFooterPositioning)
+			{
+				_needsHeaderFooterPositioning = false;
 				UpdateHeaderFooterPosition();
 			}
 
