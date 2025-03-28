@@ -2,4 +2,34 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+
+             <ScrollView>
+        <VerticalStackLayout
+            Spacing="20"
+            Padding="20"
+            VerticalOptions="Start">
+
+            <Button
+                Text="Request Sensor"
+                Clicked="OnSensorRequested"
+                HorizontalOptions="Center" />
+
+            <Button
+                Text="Request Camera"
+                Clicked="OnCameraRequested"
+                HorizontalOptions="Center" />
+
+            <Button
+                Text="Request Location"
+                Clicked="OnLocationRequested"
+                HorizontalOptions="Center" />
+
+            <Label
+                x:Name="debugText"
+                FontSize="20" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
 </ContentPage>
