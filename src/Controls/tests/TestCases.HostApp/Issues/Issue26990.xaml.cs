@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 26990, "Accessibility only gets set on WrapperView", PlatformAffected.iOS & PlatformAffected.macOS)]
+[Issue(IssueTracker.Github, 26990, "Accessibility only gets set on WrapperView", PlatformAffected.iOS & PlatformAffected.macOS & PlatformAffected.Android)]
 public partial class Issue26990 : ContentPage
 {
 	public Issue26990()
