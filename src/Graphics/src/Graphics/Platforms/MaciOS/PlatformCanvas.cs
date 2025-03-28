@@ -81,15 +81,15 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			set
 			{
-				if (value is LineCap.Butt)
+				if (value == LineCap.Butt)
 				{
 					_context.SetLineCap(CGLineCap.Butt);
 				}
-				else if (value is LineCap.Round)
+				else if (value == LineCap.Round)
 				{
 					_context.SetLineCap(CGLineCap.Round);
 				}
-				else if (value is LineCap.Square)
+				else if (value == LineCap.Square)
 				{
 					_context.SetLineCap(CGLineCap.Square);
 				}
@@ -100,15 +100,15 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			set
 			{
-				if (value is LineJoin.Miter)
+				if (value == LineJoin.Miter)
 				{
 					_context.SetLineJoin(CGLineJoin.Miter);
 				}
-				else if (value is LineJoin.Round)
+				else if (value == LineJoin.Round)
 				{
 					_context.SetLineJoin(CGLineJoin.Round);
 				}
-				else if (value is LineJoin.Bevel)
+				else if (value == LineJoin.Bevel)
 				{
 					_context.SetLineJoin(CGLineJoin.Bevel);
 				}
@@ -612,7 +612,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 				float radius = (float)radialGradientPaint.Radius * Math.Max(_gradientRectangle.Height, _gradientRectangle.Width);
 
-				if (radius is 0)
+				if (radius == 0)
 				{
 					CGPoint point1 = new CGPoint(_gradientRectangle.Left, _gradientRectangle.Top);
 					CGPoint point2 = new CGPoint(_gradientRectangle.Right, _gradientRectangle.Bottom);
@@ -1156,12 +1156,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			if (frame is not null)
 			{
-				if (verticalAlignment is not VerticalAlignment.Top)
+				if (verticalAlignment != VerticalAlignment.Top)
 				{
 					var textFrameSize = PlatformStringSizeService.GetTextSize(frame);
 					if (textFrameSize.Height > 0)
 					{
-						if (verticalAlignment is VerticalAlignment.Bottom)
+						if (verticalAlignment == VerticalAlignment.Bottom)
 						{
 							var dy = rect.Height - textFrameSize.Height + iy;
 							context.TranslateCTM(-ix, -dy);
@@ -1244,12 +1244,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			if (frame is not null)
 			{
-				if (verticalAlignment is not VerticalAlignment.Top)
+				if (verticalAlignment != VerticalAlignment.Top)
 				{
 					var textSize = PlatformStringSizeService.GetTextSize(frame);
 					if (textSize.Height > 0)
 					{
-						if (verticalAlignment is VerticalAlignment.Bottom)
+						if (verticalAlignment == VerticalAlignment.Bottom)
 						{
 							var dy = rect.Height - textSize.Height + iy;
 							context.TranslateCTM(-ix, -dy);
