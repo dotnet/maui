@@ -99,23 +99,24 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
 		[Fact]
-		[Description("The IsVisible property of a SwipeView should match with native IsVisible")]		
-		public async Task VerifySwipeViewIsVisibleProperty()
+		[Description("The Translation property of a SwipeView should match with native Translation")]
+		public async Task SwipeViewTranslationConsistent()
 		{
-			var swipeView = new SwipeView
+			var swipeView = new SwipeView()
 			{
-				IsVisible = false
+				TranslationX = 50,
+				TranslationY = -20
 			};
-			var expectedValue = swipeView.IsVisible;
 
 			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
 			var nativeView = GetPlatformControl(handler);
 			await InvokeOnMainThreadAsync(() =>
-   			{
-				var isVisible = nativeView.Visibility == Android.Views.ViewStates.Visible;
-				Assert.Equal(expectedValue, isVisible);
-			});	
+			{
+				AssertTranslationMatches(nativeView, swipeView.TranslationX, swipeView.TranslationY);
+			});
 		}
+
 	}
 }

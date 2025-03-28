@@ -3,6 +3,7 @@ using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -74,6 +75,26 @@ namespace Microsoft.Maui.DeviceTests
 			await SetValueAsync<string, EditorHandler>(editor, "TEsT", SetPlatformText);
 
 			Assert.Equal(2, editor.CursorPosition);
+		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a Editor should match with native Translation")]
+		public async Task EditorTranslationConsistent()
+		{
+			var editor = new Editor()
+			{
+				Text = "Editor Test",
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<EditorHandler>(editor);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				AssertTranslationMatches(nativeView, editor.TranslationX, editor.TranslationY);
+			});
 		}
 	}
 }

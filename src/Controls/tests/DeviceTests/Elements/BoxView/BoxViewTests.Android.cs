@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -19,13 +22,25 @@ namespace Microsoft.Maui.DeviceTests
 				return nativeView.Alpha;
 			});
 		}
-		
-		Task<bool> GetPlatformIsVisible(ShapeViewHandler boxViewViewHandler)
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a BoxView should match with native Translation")]
+		public async Task BoxViewTranslationConsistent()
 		{
-			return InvokeOnMainThreadAsync(() =>
+			var boxView = new BoxView()
 			{
-				var nativeView = GetNativeBoxView(boxViewViewHandler);
-				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+				HeightRequest = 100,
+				WidthRequest = 200,
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<ShapeViewHandler>(boxView);
+			var nativeView = GetNativeBoxView(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				AssertTranslationMatches(nativeView, boxView.TranslationX, boxView.TranslationY);
 			});
 		}
 	}
