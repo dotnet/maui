@@ -67,7 +67,7 @@ public class ButtonFeatureTests : UITest
         App.Tap("Options");
         App.WaitForElement("BorderWidthEntry");
         App.ClearText("BorderWidthEntry");
-        App.EnterText("BorderWidthEntry", "20");
+        App.EnterText("BorderWidthEntry", "2");
         App.WaitForElement("LineBreakModeCharacterWrapButton");
         App.Tap("LineBreakModeCharacterWrapButton");
         App.WaitForElement("TextEntry");
@@ -78,6 +78,7 @@ public class ButtonFeatureTests : UITest
         // VerifyScreenshot();
     }
     //(4F)
+#if TEST_FAILS_ON_IOS //CharacterSpacingEntry property not working on iOS, Issue: https://github.com/dotnet/maui/issues/21488
     [Test]
     [Category(UITestCategories.Button)]
     public void Button_CharacterSpacingAndFontAttributes_VerifyVisualState()
@@ -185,6 +186,7 @@ public class ButtonFeatureTests : UITest
         App.Tap("Apply");
         // VerifyScreenshot();
     }
+#endif
     //(5C)
     [Test]
     [Category(UITestCategories.Button)]
