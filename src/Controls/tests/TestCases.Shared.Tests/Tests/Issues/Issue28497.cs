@@ -14,7 +14,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Shell)]
-		public void FlyoutItemTextShouldDisplayProperly()
+		public void FlyoutItemShouldVisible()
 		{
 			var buttonElement = App.WaitForElement("Button");
 			var buttonRect = buttonElement.GetRect();
