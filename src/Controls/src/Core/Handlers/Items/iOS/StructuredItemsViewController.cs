@@ -227,5 +227,42 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var size = base.GetSize();
 			return new Size(size.Value.Width, size.Value.Height + (_headerUIView?.Frame.Height ?? 0) + (_footerUIView?.Frame.Height ?? 0));
 		}
+
+		bool NeedsUpdate(UIView view, UIView emptyView, nfloat contentSize, bool isHorizontal)
+		{
+			if (view is null || view.Frame.IsEmpty)
+				return false;
+
+			nfloat viewFramePos = isHorizontal ? view.Frame.X : view.Frame.Y;
+			nfloat viewFrameSize = isHorizontal ? view.Frame.Width : view.Frame.Height;
+			nfloat emptyViewFramePos = isHorizontal ? emptyView?.Frame.X ?? float.MaxValue
+													: (emptyView?.Frame.Y + emptyView?.Frame.Height) ?? float.MaxValue;
+
+			return viewFramePos != contentSize ||
+				viewFramePos < emptyViewFramePos ||
+				viewFramePos != viewFrameSize;
+		}
+
+		void UpdatePositions()
+		{
+			var emptyView = CollectionView.ViewWithTag(EmptyTag);
+
+			if (IsHorizontal)
+			{
+				if (NeedsUpdate(_headerUIView, emptyView, ItemsViewLayout.CollectionViewContentSize.Width, true)
+					|| NeedsUpdate(_footerUIView, emptyView, ItemsViewLayout.CollectionViewContentSize.Width, true))
+				{
+					UpdateHeaderFooterPosition();
+				}
+			}
+			else
+			{
+				if (NeedsUpdate(_headerUIView, emptyView, ItemsViewLayout.CollectionViewContentSize.Height, false)
+					|| NeedsUpdate(_footerUIView, emptyView, ItemsViewLayout.CollectionViewContentSize.Height, false))
+				{
+					UpdateHeaderFooterPosition();
+				}
+			}
+		}
 	}
 }
