@@ -88,9 +88,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					RemeasureLayout(_footerViewFormsElement);
 				}
-
-				UpdateHeaderFooterPosition();
 			}
+			UpdateHeaderFooterPosition();
 
 			base.ViewWillLayoutSubviews();
 		}
