@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdatePicker(this MauiPicker platformPicker, IPicker picker, int? newSelectedIndex = null)
 		{
 			var selectedIndex = newSelectedIndex ?? picker.SelectedIndex;
-
+			
 			// Revert to placeholder/title if nothing selected
 			platformPicker.Text = selectedIndex == -1
 				? (picker.Title ?? string.Empty)
@@ -61,6 +61,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			pickerView?.Select(Math.Max(selectedIndex, 0), 0, true);
+
+			picker.InvalidateMeasure();
 		}
 	}
 }
