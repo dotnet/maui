@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		 typeof(IValueConverterProvider),
 		 typeof(IXmlLineInfoProvider),
 		 typeof(IConverterOptions)])]
-	internal class OnIdiomExtension<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] T> : IMarkupExtension<T>
+	internal class OnIdiomExtension<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] T> : IMarkupExtension
 	{
 		// See Device.Idiom
 
@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public object ConverterParameter { get; set; }
 
-		public T ProvideValue(IServiceProvider serviceProvider)
+		public object ProvideValue(IServiceProvider serviceProvider)
 		{
 			if (Default == null
 				&& Phone == null
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				return Activator.CreateInstance<T>();
 
 			if (Converter != null)
-				return (T)Converter.Convert(value, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);
+				return Converter.Convert(value, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);
 
 			var converterProvider = serviceProvider?.GetService<IValueConverterProvider>();
 			if (converterProvider != null)
@@ -206,15 +206,15 @@ namespace Microsoft.Maui.Controls.Xaml
 					}
 				}
 
-				return (T)converterProvider.Convert(value, propertyType, minforetriever, serviceProvider);
+				return converterProvider.Convert(value, propertyType, minforetriever, serviceProvider);
 			}
 			if (converterProvider != null)
-				return (T)converterProvider.Convert(value, propertyType, () => pi, serviceProvider);
+				return converterProvider.Convert(value, propertyType, () => pi, serviceProvider);
 
 			var ret = value.ConvertTo(propertyType, () => pi, serviceProvider, out Exception exception);
 			if (exception != null)
 				throw exception;
-			return (T)ret;
+			return ret;
 		}
 
 		object GetValue()
@@ -231,8 +231,5 @@ namespace Microsoft.Maui.Controls.Xaml
 				return Watch ?? Default;
 			return Default;
 		}
-
-		object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider) =>
-			((IMarkupExtension<T>)this).ProvideValue(serviceProvider);
 	}
 }
