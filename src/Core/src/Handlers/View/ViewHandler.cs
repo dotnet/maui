@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
@@ -20,10 +23,228 @@ namespace Microsoft.Maui.Handlers
 	/// Handlers are also responsible for instantiating the underlying platform view, and mapping the cross-platform control API to the platform view API. </remarks>
 	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
+		class ViewHandlerPropertyMapper : IPropertyMapper<IView, IViewHandler>, ICanUpdate
+		{
+			static IPropertyMapper Base => ElementHandler.ElementMapper;
+
+			public void Add(string key, Action<IViewHandler, IView> action)
+			{
+				throw new NotImplementedException();
+			}
+
+			string[]? _keys;
+
+			public IEnumerable<string> GetKeys() => (_keys ??= new[]
+			{
+				// This property is a special one and needs to be set before other properties.
+				nameof(IViewHandler.ContainerView),
+				nameof(IView.AutomationId),
+				nameof(IView.Clip),
+				nameof(IView.Shadow),
+				nameof(IView.Visibility),
+				nameof(IView.Background),
+				nameof(IView.FlowDirection),
+				nameof(IView.Width),
+				nameof(IView.Height),
+				nameof(IView.MinimumHeight),
+				nameof(IView.MaximumHeight),
+				nameof(IView.MinimumWidth),
+				nameof(IView.MaximumWidth),
+				nameof(IView.IsEnabled),
+				nameof(IView.Opacity),
+				nameof(IView.Semantics),
+				nameof(IView.TranslationX),
+				nameof(IView.TranslationY),
+				nameof(IView.Scale),
+				nameof(IView.ScaleX),
+				nameof(IView.ScaleY),
+				nameof(IView.Rotation),
+				nameof(IView.RotationX),
+				nameof(IView.RotationY),
+				nameof(IView.AnchorX),
+				nameof(IView.AnchorY),
+#pragma warning disable CS0618 // Type or member is obsolete
+				nameof(IBorder.Border),
+#pragma warning restore CS0618 // Type or member is obsolete
+#if ANDROID || WINDOWS || TIZEN
+				nameof(IToolbarElement.Toolbar),
+#endif
+				nameof(IView.InputTransparent),
+				nameof(IToolTipElement.ToolTip),
+#if WINDOWS || MACCATALYST
+				nameof(IContextFlyoutElement.ContextFlyout)
+#endif
+			}).Union(Base.GetKeys());
+
+			public Action<IElementHandler, IElement>? GetProperty(string key) => throw new NotImplementedException();
+	// 		{
+	// 			Action<IViewHandler, IView>? property = key switch
+	// 			{
+					
+	// 				// This property is a special one and needs to be set before other properties.
+	// 				nameof(IViewHandler.ContainerView) => MapContainerView,
+	// 				nameof(IView.AutomationId) => MapAutomationId,
+	// 				nameof(IView.Clip) => MapClip,
+	// 				nameof(IView.Shadow) => MapShadow,
+	// 				nameof(IView.Visibility) => MapVisibility,
+	// 				nameof(IView.Background) => MapBackground,
+	// 				nameof(IView.FlowDirection) => MapFlowDirection,
+	// 				nameof(IView.Width) => MapWidth,
+	// 				nameof(IView.Height) => MapHeight,
+	// 				nameof(IView.MinimumHeight) => MapMinimumHeight,
+	// 				nameof(IView.MaximumHeight) => MapMaximumHeight,
+	// 				nameof(IView.MinimumWidth) => MapMinimumWidth,
+	// 				nameof(IView.MaximumWidth) => MapMaximumWidth,
+	// 				nameof(IView.IsEnabled) => MapIsEnabled,
+	// 				nameof(IView.Opacity) => MapOpacity,
+	// 				nameof(IView.Semantics) => MapSemantics,
+	// 				nameof(IView.TranslationX) => MapTranslationX,
+	// 				nameof(IView.TranslationY) => MapTranslationY,
+	// 				nameof(IView.Scale) => MapScale,
+	// 				nameof(IView.ScaleX) => MapScaleX,
+	// 				nameof(IView.ScaleY) => MapScaleY,
+	// 				nameof(IView.Rotation) => MapRotation,
+	// 				nameof(IView.RotationX) => MapRotationX,
+	// 				nameof(IView.RotationY) => MapRotationY,
+	// 				nameof(IView.AnchorX) => MapAnchorX,
+	// 				nameof(IView.AnchorY) => MapAnchorY,
+	// #pragma warning disable CS0618 // Type or member is obsolete
+	// 				nameof(IBorder.Border) => MapBorderView,
+	// #pragma warning restore CS0618 // Type or member is obsolete
+	// #if ANDROID || WINDOWS || TIZEN
+	// 				nameof(IToolbarElement.Toolbar) => MapToolbar,
+	// #endif
+	// 				nameof(IView.InputTransparent) => MapInputTransparent,
+	// 				nameof(IToolTipElement.ToolTip) => MapToolTip,
+	// #if WINDOWS || MACCATALYST
+	// 				nameof(IContextFlyoutElement.ContextFlyout) => MapContextFlyout,
+	// #endif
+	// 				_ => null
+	// 			};
+	// 			return property is null ? null : new((a, b) => property((IViewHandler)a, (IView)b));
+	// 		}
+
+			public void UpdateProperties(IElementHandler elementHandler, IElement virtualView)
+			{
+				if (elementHandler is not IViewHandler viewHandler || virtualView is not IView view)
+					return;
+
+				// This property is a special one and needs to be set before other properties.
+				MapContainerView(viewHandler, view);
+				MapAutomationId(viewHandler, view);
+				MapClip(viewHandler, view);
+				MapShadow(viewHandler, view);
+				MapVisibility(viewHandler, view);
+				MapBackground(viewHandler, view);
+				MapFlowDirection(viewHandler, view);
+				MapWidth(viewHandler, view);
+				MapHeight(viewHandler, view);
+				MapMinimumHeight(viewHandler, view);
+				MapMaximumHeight(viewHandler, view);
+				MapMinimumWidth(viewHandler, view);
+				MapMaximumWidth(viewHandler, view);
+				MapIsEnabled(viewHandler, view);
+				MapOpacity(viewHandler, view);
+				MapSemantics(viewHandler, view);
+				MapTranslationX(viewHandler, view);
+				MapTranslationY(viewHandler, view);
+				MapScale(viewHandler, view);
+				MapScaleX(viewHandler, view);
+				MapScaleY(viewHandler, view);
+				MapRotation(viewHandler, view);
+				MapRotationX(viewHandler, view);
+				MapRotationY(viewHandler, view);
+				MapAnchorX(viewHandler, view);
+				MapAnchorY(viewHandler, view);
+#pragma warning disable CS0618 // Type or member is obsolete
+				MapBorderView(viewHandler, view);
+#pragma warning restore CS0618 // Type or member is obsolete
+#if ANDROID || WINDOWS || TIZEN
+				MapToolbar(viewHandler, view);
+#endif
+				MapInputTransparent(viewHandler, view);
+				MapToolTip(viewHandler, view);
+#if WINDOWS || MACCATALYST
+				MapContextFlyout(viewHandler, view);
+#endif
+
+				Base.UpdateProperties(elementHandler, virtualView);
+			}
+
+			public void UpdateProperty(IElementHandler elementHandler, IElement virtualView, string property)
+			{
+				TryUpdateProperty(elementHandler, virtualView, property);
+			}
+
+			public bool TryUpdateProperty(IElementHandler elementHandler, IElement virtualView, string property)
+			{
+				if (elementHandler is IViewHandler viewHandler && virtualView is IView view)
+				{
+					switch (property)
+					{
+						// This property is a special one and needs to be set before other properties.
+						case nameof(IViewHandler.ContainerView): MapContainerView(viewHandler, view); return true;
+						case nameof(IView.AutomationId): MapAutomationId(viewHandler, view); return true;
+						case nameof(IView.Clip): MapClip(viewHandler, view); return true;
+						case nameof(IView.Shadow): MapShadow(viewHandler, view); return true;
+						case nameof(IView.Visibility): MapVisibility(viewHandler, view); return true;
+						case nameof(IView.Background): MapBackground(viewHandler, view); return true;
+						case nameof(IView.FlowDirection): MapFlowDirection(viewHandler, view); return true;
+						case nameof(IView.Width): MapWidth(viewHandler, view); return true;
+						case nameof(IView.Height): MapHeight(viewHandler, view); return true;
+						case nameof(IView.MinimumHeight): MapMinimumHeight(viewHandler, view); return true;
+						case nameof(IView.MaximumHeight): MapMaximumHeight(viewHandler, view); return true;
+						case nameof(IView.MinimumWidth): MapMinimumWidth(viewHandler, view); return true;
+						case nameof(IView.MaximumWidth): MapMaximumWidth(viewHandler, view); return true;
+						case nameof(IView.IsEnabled): MapIsEnabled(viewHandler, view); return true;
+						case nameof(IView.Opacity): MapOpacity(viewHandler, view); return true;
+						case nameof(IView.Semantics): MapSemantics(viewHandler, view); return true;
+						case nameof(IView.TranslationX): MapTranslationX(viewHandler, view); return true;
+						case nameof(IView.TranslationY): MapTranslationY(viewHandler, view); return true;
+						case nameof(IView.Scale): MapScale(viewHandler, view); return true;
+						case nameof(IView.ScaleX): MapScaleX(viewHandler, view); return true;
+						case nameof(IView.ScaleY): MapScaleY(viewHandler, view); return true;
+						case nameof(IView.Rotation): MapRotation(viewHandler, view); return true;
+						case nameof(IView.RotationX): MapRotationX(viewHandler, view); return true;
+						case nameof(IView.RotationY): MapRotationY(viewHandler, view); return true;
+						case nameof(IView.AnchorX): MapAnchorX(viewHandler, view); return true;
+						case nameof(IView.AnchorY): MapAnchorY(viewHandler, view); return true;
+		#pragma warning disable CS0618 // Type or member is obsolete
+						case nameof(IBorder.Border): MapBorderView(viewHandler, view); return true;
+		#pragma warning restore CS0618 // Type or member is obsolete
+		#if ANDROID || WINDOWS || TIZEN
+						case nameof(IToolbarElement.Toolbar): MapToolbar(viewHandler, view); return true;
+		#endif
+						case nameof(IView.InputTransparent): MapInputTransparent(viewHandler, view); return true;
+						case nameof(IToolTipElement.ToolTip): MapToolTip(viewHandler, view); return true;
+		#if WINDOWS || MACCATALYST
+						case nameof(IContextFlyoutElement.ContextFlyout): MapContextFlyout(viewHandler, view); return true;
+		#endif
+						default: break;
+					}
+				}
+
+				if (Base is ICanUpdate can)
+				{
+					return can.TryUpdateProperty(elementHandler, virtualView, property);
+				}
+
+				if (Base.GetProperty(property) is {} prop)
+				{
+					prop.Invoke(elementHandler, virtualView);
+					return true;
+				}
+
+				return false;
+			}
+		}
+
 		/// <summary>
 		/// A dictionary that maps the virtual view properties to their platform view counterparts.
 		/// </summary>
-		public static IPropertyMapper<IView, IViewHandler> ViewMapper =
+		public static IPropertyMapper<IView, IViewHandler> ViewMapper = 
+			new ViewHandlerPropertyMapper();
+/*
 #if ANDROID
 			// Use a custom mapper for Android which knows how to batch the initial property sets
 			new AndroidBatchPropertyMapper<IView, IViewHandler>(ElementHandler.ElementMapper)
@@ -74,6 +295,7 @@ namespace Microsoft.Maui.Handlers
 				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
 #endif
 			};
+// */
 
 		/// <summary>
 		/// A dictionary that maps the virtual view commands to their platform view counterparts.
