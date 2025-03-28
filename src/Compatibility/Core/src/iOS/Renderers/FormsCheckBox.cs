@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			return renderer.CreateImage((context) =>
 			{
 				context.CGContext.SaveState();
-				
+
 				var checkedColor = CheckBoxTintUIColor;
 				checkedColor.SetFill();
 				checkedColor.SetStroke();
@@ -195,8 +195,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				var diameter = _defaultSize - _lineWidth;
 
 				var backgroundRect = new CGRect(hPadding, vPadding, diameter, diameter);
-				
-				check.Draw(new CGPoint(0, 0), CGBlendMode.DestinationOut, 1);
+				var boxPath = CreateBoxPath(backgroundRect);
+
 				boxPath.LineWidth = _lineWidth;
 				boxPath.Stroke();
 
