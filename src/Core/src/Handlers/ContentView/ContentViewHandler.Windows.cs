@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -37,7 +38,8 @@ namespace Microsoft.Maui.Handlers
 
 			var view = new ContentPanel
 			{
-				CrossPlatformLayout = VirtualView
+				CrossPlatformLayout = VirtualView,
+				IsHitTestVisible = true
 			};
 
 			return view;
@@ -54,6 +56,17 @@ namespace Microsoft.Maui.Handlers
 			platformView.CachedChildren?.Clear();
 
 			base.DisconnectHandler(platformView);
+		}
+
+		static UI.Xaml.FrameworkElement? CreateContent(IView content, IMauiContext mauiContext)
+		{
+			var platformContent = content.ToPlatform(mauiContext);
+
+			var defaultBrush = new UI.Xaml.Media.SolidColorBrush(Colors.Transparent.ToWindowsColor());
+			platformContent.UpdatePlatformViewBackground(content, defaultBrush);
+			
+			return platformContent;
+
 		}
 	}
 }
