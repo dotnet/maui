@@ -65,6 +65,7 @@ public class Issue7678_2 : TestContentPage
 			};
 
 			info.SetBinding(Label.TextProperty, new Binding("Name"));
+			info.SetBinding(Label.AutomationIdProperty, new Binding("Name"));
 
 			grid.Children.Add(info);
 
