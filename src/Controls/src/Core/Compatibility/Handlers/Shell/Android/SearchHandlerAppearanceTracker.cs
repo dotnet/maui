@@ -54,6 +54,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateTextTransform();
 			}
+			else if (e.Is(SearchHandler.PlaceholderProperty))
+			{
+				UpdatePlaceholder();
+			}
 			else if (e.Is(SearchHandler.PlaceholderColorProperty))
 			{
 				UpdatePlaceholderColor();
@@ -113,6 +117,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_editText.Typeface = fontManager.GetTypeface(font);
 			_editText.SetTextSize(ComplexUnitType.Sp, (float)_searchHandler.FontSize);
+		}
+
+		void UpdatePlaceholder()
+		{
+			_editText.Hint = _searchHandler.Placeholder;
 		}
 
 		void UpdatePlaceholderColor()
