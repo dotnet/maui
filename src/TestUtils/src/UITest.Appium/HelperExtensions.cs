@@ -2445,5 +2445,38 @@ namespace UITest.Appium
 			startupArg.Add(key, value);
 			config.SetProperty("TestConfigurationArgs", startupArg);
 		}
+
+		/// <summary>
+		/// Gets the search handler element for the shell.
+		/// This method is used to find the search handler element in the app.
+		/// It uses different queries based on the app type (Android, iOS, Catalyst, or Windows).
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <returns>The search handler element for the shell.</returns>
+		public static IUIElement GetShellSearchHandler(this IApp app)
+		{
+			IUIElement? element = null;
+
+			if (app is AppiumAndroidApp)
+			{
+				element = app.WaitForElement(AppiumQuery.ByXPath("//android.widget.EditText"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				element = app.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				element = app.WaitForElement("TextBox");
+			}
+
+			// Ensure the element is not null before returning
+			if (element is null)
+			{
+				throw new InvalidOperationException("SearchHandler element not found.");
+			}
+
+			return element;
+		}
 	}
 }
