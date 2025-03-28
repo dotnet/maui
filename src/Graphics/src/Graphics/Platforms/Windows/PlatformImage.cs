@@ -51,15 +51,13 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage Downsize(float maxWidthOrHeight, bool disposeOriginal = false)
 		{
-			if (Width > maxWidthOrHeight || Height > maxWidthOrHeight)
+			if (Width <= maxWidthOrHeight && Height <= maxWidthOrHeight)
 			{
 				float factor = Width > Height ? maxWidthOrHeight / Width : maxWidthOrHeight / Height;
 				var targetWidth = factor * Width;
 				var targetHeight = factor * Height;
 				return ResizeInternal(targetWidth, targetHeight, 0, 0, targetWidth, targetHeight, disposeOriginal);
 			}
-
-			return this;
 		}
 
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
@@ -225,7 +223,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			var creator = PlatformGraphicsService.Creator;
 
-			if (creator == null)
+			if (creator is null)
 			{
 				throw new Exception("No resource creator has been registered globally or for this thread.");
 			}
