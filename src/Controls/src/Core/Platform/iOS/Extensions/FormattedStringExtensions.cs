@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var transform = span.TextTransform != TextTransform.Default ? span.TextTransform : defaultTextTransform;
 
-			var text = TextTransformUtilites.GetTransformedText(span.Text, transform);
+			var text = TextTransformUtilities.GetTransformedText(span.Text, transform);
 			if (text is null)
 				return new NSAttributedString(string.Empty);
 
