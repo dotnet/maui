@@ -1495,7 +1495,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (disposing)
 				{
-					if (!_list.TryGetTarget(out var list))
+					if (_list.TryGetTarget(out var list))
 					{
 						list.ItemSelected -= OnItemSelected;
 						WatchShortNameCollection(false);
