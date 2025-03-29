@@ -20,7 +20,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		UIView _footerUIView;
 		VisualElement _footerViewFormsElement;
-		bool _needsHeaderFooterLayout = true;
 
 		public StructuredItemsViewController(TItemsView structuredItemsView, ItemsViewLayout layout)
 			: base(structuredItemsView, layout)
@@ -75,33 +74,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				Math.Abs(CollectionView.Frame.Height - (headerHeight + footerHeight)));
 		}
 
-		public override void ViewWillLayoutSubviews()
+		private protected override void MeasureSupplementaryViews()
 		{
-			var hasHeaderOrFooter = _headerViewFormsElement is not null || _footerViewFormsElement is not null;
-			var needsCellLayout = CollectionView is MauiCollectionView { NeedsCellLayout: true };
+			base.MeasureSupplementaryViews();
 
-			base.ViewWillLayoutSubviews();
+			RemeasureLayout(_headerViewFormsElement, _headerUIView);
+			RemeasureLayout(_footerViewFormsElement, _footerUIView);
+		}
 
-			if (hasHeaderOrFooter && needsCellLayout)
-			{
-				if (_headerViewFormsElement is not null)
-				{
-					RemeasureLayout(_headerViewFormsElement);
-				}
-
-				if (_footerViewFormsElement is not null)
-				{
-					RemeasureLayout(_footerViewFormsElement);
-				}
-
-				_needsHeaderFooterLayout = true;
-			}
-
-			if (_needsHeaderFooterLayout)
-			{
-				_needsHeaderFooterLayout = false;
-				UpdateHeaderFooterPosition();
-			}
+		private protected override void LayoutSupplementaryViews()
+		{
+			base.LayoutSupplementaryViews();
+			UpdateHeaderFooterPosition();
 		}
 
 		internal void UpdateFooterView()
@@ -140,14 +124,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				ItemsView.AddLogicalChild(formsElement);
 			}
 
-			if (formsElement != null)
-			{
-				RemeasureLayout(formsElement);
-			}
-			else
-			{
-				uiView?.SizeToFit();
-			}
+			RemeasureLayout(formsElement, uiView);
 		}
 
 		void UpdateHeaderFooterPosition()
@@ -162,7 +139,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				nfloat footerWidth = ((ItemsView?.Footer is View) ? _footerViewFormsElement?.ToPlatform() : _footerUIView)?.Frame.Width ?? 0f;
 				nfloat emptyWidth = emptyView?.Frame.Width ?? 0f;
 
-				if (_headerUIView != null && _headerUIView.Frame.X != headerWidth)
+				if (_headerUIView != null && _headerUIView.Frame.X != -headerWidth)
 				{
 					_headerUIView.Frame = new CoreGraphics.CGRect(-headerWidth, 0, headerWidth, CollectionView.Frame.Height);
 				}
@@ -225,11 +202,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (IsViewLoaded && View.Window != null)
 				{
 					height = ItemsViewLayout.CollectionViewContentSize.Height;
-				}
 
-				if (_footerUIView != null && (_footerUIView.Frame.Y != height || emptyHeight > 0 || _footerUIView.Frame.Height != footerHeight))
-				{
-					_footerUIView.Frame = new CoreGraphics.CGRect(0, height + emptyHeight, CollectionView.Frame.Width, footerHeight);
+					if (_footerUIView != null && (_footerUIView.Frame.Y != height || emptyHeight > 0 || _footerUIView.Frame.Height != footerHeight))
+					{
+						_footerUIView.Frame = new CoreGraphics.CGRect(0, height + emptyHeight, CollectionView.Frame.Width, footerHeight);
+					}
 				}
 			}
 		}

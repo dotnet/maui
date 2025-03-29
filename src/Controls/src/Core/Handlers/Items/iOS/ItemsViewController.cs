@@ -200,17 +200,35 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			ConstrainItemsToBounds();
 
-			if (CollectionView is Items.MauiCollectionView { NeedsCellLayout: true } collectionView)
+			var mauiCollectionView = CollectionView as MauiCollectionView;
+			var needsCellLayout = mauiCollectionView?.NeedsCellLayout is true;
+			if (needsCellLayout)
 			{
 				InvalidateLayoutIfItemsMeasureChanged();
-				collectionView.NeedsCellLayout = false;
+				mauiCollectionView.NeedsCellLayout = false;
 			}
 
 			base.ViewWillLayoutSubviews();
+
+			if (needsCellLayout || !_laidOut)
+			{
+				MeasureSupplementaryViews();
+				LayoutSupplementaryViews();
+			}
+
 			InvalidateMeasureIfContentSizeChanged();
-			LayoutEmptyView();
 
 			_laidOut = true;
+		}
+
+		private protected virtual void MeasureSupplementaryViews()
+		{
+			RemeasureLayout(_emptyViewFormsElement, _emptyUIView);
+		}
+
+		private protected virtual void LayoutSupplementaryViews()
+		{
+			LayoutEmptyView();
 		}
 
 		void InvalidateLayoutIfItemsMeasureChanged()
@@ -549,15 +567,51 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected void RemeasureLayout(VisualElement formsElement)
 		{
+			Rect size;
 			if (IsHorizontal)
 			{
 				var request = formsElement.Measure(double.PositiveInfinity, CollectionView.Frame.Height);
-				formsElement.Arrange(new Rect(0, 0, request.Width, CollectionView.Frame.Height));
+				size = new Rect(0, 0, request.Width, CollectionView.Frame.Height);
 			}
 			else
 			{
 				var request = formsElement.Measure(CollectionView.Frame.Width, double.PositiveInfinity);
-				formsElement.Arrange(new Rect(0, 0, CollectionView.Frame.Width, request.Height));
+				size = new Rect(0, 0, CollectionView.Frame.Width, request.Height);
+			}
+
+			if (formsElement.ToPlatform().Superview is GeneralWrapperView generalWrapperView)
+			{
+				generalWrapperView.Frame = size;
+			}
+
+			formsElement.Arrange(size);
+		}
+
+		void RemeasureLayout(UIView nativeView)
+		{
+			if (IsHorizontal)
+			{
+				var constraints = new CGSize(double.PositiveInfinity, CollectionView.Frame.Height);
+				var size = nativeView.SizeThatFits(constraints);
+				nativeView.Frame = new CGRect(0, 0, size.Width, CollectionView.Frame.Height);
+			}
+			else
+			{
+				var constraints = new CGSize(CollectionView.Frame.Width, double.PositiveInfinity);
+				var size = nativeView.SizeThatFits(constraints);
+				nativeView.Frame = new CGRect(0, 0, CollectionView.Frame.Width, size.Height);
+			}
+		}
+
+		private protected void RemeasureLayout(VisualElement formsElement, UIView nativeElement)
+		{
+			if (formsElement is not null)
+			{
+				RemeasureLayout(formsElement);
+			}
+			else if (nativeElement is not null)
+			{
+				RemeasureLayout(nativeElement);
 			}
 		}
 
@@ -684,7 +738,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				ItemsView.AddLogicalChild(_emptyViewFormsElement);
 			}
 
-			LayoutEmptyView();
+			_emptyUIView.InvalidateMeasure();
 
 			AlignEmptyView();
 			_emptyViewDisplayed = true;
@@ -723,9 +777,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var frame = DetermineEmptyViewFrame();
 
 			_emptyUIView.Frame = frame;
-
-			if (_emptyViewFormsElement != null && ((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) != -1)
-				_emptyViewFormsElement.Layout(frame.ToRectangle());
+			_emptyViewFormsElement?.Arrange(frame.ToRectangle());
 		}
 
 		TemplatedCell CreateAppropriateCellForLayout()

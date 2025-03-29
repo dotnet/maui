@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void MarkAsBound()
 		{
 			_bound = true;
-			((IPlatformMeasureInvalidationController)this).InvalidateMeasure();
+			this.InvalidateMeasure();
 		}
 
 		void SetRenderer(IPlatformViewHandler renderer)
