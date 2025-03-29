@@ -31,7 +31,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		private protected void SetupPlatformView(UIView platformView, bool autoLayout = false)
 		{
 			ContentView.TranslatesAutoresizingMaskIntoConstraints = false;
-			platformView.TranslatesAutoresizingMaskIntoConstraints = false;
 
 			ContentView.AddSubview(platformView);
 
@@ -44,6 +43,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (autoLayout)
 			{
 				// And we want the ContentView to be the same size as the root renderer for the Forms element
+				platformView.TranslatesAutoresizingMaskIntoConstraints = false;
 				ContentView.TopAnchor.ConstraintEqualTo(platformView.TopAnchor).Active = true;
 				ContentView.BottomAnchor.ConstraintEqualTo(platformView.BottomAnchor).Active = true;
 				ContentView.LeadingAnchor.ConstraintEqualTo(platformView.LeadingAnchor).Active = true;

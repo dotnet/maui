@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 
 				PlatformHandler = virtualView.Handler as IPlatformViewHandler;
-				InitializeContentConstraints(PlatformView);
+				SetupPlatformView(PlatformView);
 				ContentView.MarkAsCrossPlatformLayoutBacking();
 
 				virtualView.BindingContext = bindingContext;
