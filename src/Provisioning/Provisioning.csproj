@@ -117,6 +117,20 @@
 		<Exec Command="dotnet android avd list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 
+	<Target Name="InstallAndroidSdk">
+		<Message Text="Installing Android SDK" />
+
+		<PropertyGroup>
+			<AndroidSdkVersion Condition=" '$(AndroidSdkVersion)' == '' ">$(AndroidSdkCmdLineToolsVersion)</AndroidSdkVersion>
+			<AndroidSdkVersion Condition=" '$(AndroidSdkVersion)' == '' ">13.0</AndroidSdkVersion>
+		</PropertyGroup>
+
+		<!-- Download SDK Common Packages -->
+		<Exec Command="sdk download --home=&quot;$(AndroidSdkHome)&quot; --version=&quot;$(AndroidSdkVersion)&quot;" ConsoleToMSBuild="True" />
+
+		<Exec Command="sdk dotnet-prefer --home=&quot;$(AndroidSdkHome)&quot; list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+	</Target>
+
 	<Target Name="ProvisionAndroidSdk" DependsOnTargets="ProvisionAndroidSdkCommonPackages;ProvisionAndroidSdkPlatformApiPackages;ProvisionAndroidSdkEmulatorImagePackages;ProvisionAndroidSdkAvdCreateAvds">
 		<Error
 			Condition=" '$(MSBuildRuntimeType)' != 'Core' "
