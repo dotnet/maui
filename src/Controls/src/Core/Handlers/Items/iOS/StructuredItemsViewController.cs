@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					CollectionView.ContentOffset = new CoreGraphics.CGPoint(CollectionView.ContentOffset.X, yOffset);
 				}
 
-				if (_headerUIView != null && _headerUIView.Frame.Y != headerHeight)
+				if (_headerUIView != null && (_headerUIView.Frame.Y != headerHeight || _headerUIView.Frame.Width != CollectionView.Frame.Width))
 				{
 					_headerUIView.Frame = new CoreGraphics.CGRect(0, -headerHeight, CollectionView.Frame.Width, headerHeight);
 				}
