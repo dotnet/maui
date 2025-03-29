@@ -14,7 +14,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public const int FooterTag = 222;
 
 		bool _disposed;
-		bool _needsHeaderFooterPositioning = true;
 
 		UIView _headerUIView;
 		VisualElement _headerViewFormsElement;
@@ -78,7 +77,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void ViewWillLayoutSubviews()
 		{
 			var hasHeaderOrFooter = _headerViewFormsElement is not null || _footerViewFormsElement is not null;
-			if (hasHeaderOrFooter && CollectionView is MauiCollectionView { NeedsCellLayout: true } collectionView)
+			var needsCellLayout = CollectionView is MauiCollectionView { NeedsCellLayout: true };
+
+			base.ViewWillLayoutSubviews();
+
+			if (hasHeaderOrFooter && needsCellLayout)
 			{
 				if (_headerViewFormsElement is not null)
 				{
@@ -90,16 +93,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					RemeasureLayout(_footerViewFormsElement);
 				}
 
-				_needsHeaderFooterPositioning = true;
-			}
-
-			if (_needsHeaderFooterPositioning)
-			{
-				_needsHeaderFooterPositioning = false;
 				UpdateHeaderFooterPosition();
 			}
+		}
 
-			base.ViewWillLayoutSubviews();
+		private protected override void AttachingToWindow()
+		{
+			base.AttachingToWindow();
+			UpdateHeaderFooterPosition();
 		}
 
 		internal void UpdateFooterView()
@@ -213,7 +214,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					}
 				}
 
-				if (_headerUIView != null && _headerUIView.Frame.Y != headerHeight)
+				if (_headerUIView != null && _headerUIView.Frame.Y != -headerHeight)
 				{
 					_headerUIView.Frame = new CoreGraphics.CGRect(0, -headerHeight, CollectionView.Frame.Width, headerHeight);
 				}

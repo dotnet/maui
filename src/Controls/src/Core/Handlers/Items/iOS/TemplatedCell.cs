@@ -96,19 +96,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var preferredAttributes = base.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
 
-			if (_measureInvalidated || !AttributesConsistentWithConstrainedDimension(preferredAttributes))
+			if (_measureInvalidated ||
+			    !AttributesConsistentWithConstrainedDimension(preferredAttributes) ||
+			    !preferredAttributes.Frame.Size.IsCloseTo(_size))
 			{
 				// Measure this cell (including the Forms element) if there is no constrained size
 				var size = ConstrainedSize == default ? Measure() : ConstrainedSize;
 				_size = size.ToSize();
 				_needsArrange = true;
 				_measureInvalidated = false;
+				preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, _size);
+				// Ensure we get a layout pass to arrange the virtual view.
+				// This is not happening sometimes due to the way we update constraints on visible cells.
+				SetNeedsLayout();
+				OnLayoutAttributesChanged(preferredAttributes);
 			}
-
-			// Adjust the preferred attributes to include space for the Forms element
-			preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, _size);
-
-			OnLayoutAttributesChanged(preferredAttributes);
 
 			return preferredAttributes;
 		}
