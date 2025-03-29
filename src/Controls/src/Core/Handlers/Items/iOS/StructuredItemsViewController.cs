@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		UIView _footerUIView;
 		VisualElement _footerViewFormsElement;
+		bool _needsHeaderFooterLayout = true;
 
 		public StructuredItemsViewController(TItemsView structuredItemsView, ItemsViewLayout layout)
 			: base(structuredItemsView, layout)
@@ -93,14 +94,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					RemeasureLayout(_footerViewFormsElement);
 				}
 
+				_needsHeaderFooterLayout = true;
+			}
+
+			if (_needsHeaderFooterLayout)
+			{
+				_needsHeaderFooterLayout = false;
 				UpdateHeaderFooterPosition();
 			}
-		}
-
-		private protected override void AttachingToWindow()
-		{
-			base.AttachingToWindow();
-			UpdateHeaderFooterPosition();
 		}
 
 		internal void UpdateFooterView()
