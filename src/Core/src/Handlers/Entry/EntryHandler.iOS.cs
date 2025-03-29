@@ -165,7 +165,12 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)
 				{
-					platformView.UpdateSelectionLength(virtualView);
+					if (virtualView.SelectionLength > 0) {
+						platformView.UpdateSelectionLength(virtualView);
+					}
+					else {
+						platformView.UpdateCursorPosition(virtualView);
+					}
 					virtualView.IsFocused = true;
 				}
 			}
