@@ -131,7 +131,7 @@
 	<Target Name="ProvisionAppiumDrivers" DependsOnTargets="InstallAppium">
 
 		<!-- Get a json output list of the installed appium drivers with their version info -->
-		<Exec Command="appium driver list --installed --json" ConsoleToMSBuild="True" IgnoreExitCode="True">
+		<Exec Command="node appium driver list --installed --json" ConsoleToMSBuild="True" IgnoreExitCode="True">
 			<Output TaskParameter="ConsoleOutput" ItemName="_AppiumDriverListInstalledJsonLines" />
 		</Exec>
 
@@ -153,22 +153,27 @@
 
 
 		<!-- Update any drivers needing an update (if any) -->
-		<Exec Command="appium driver update %(AppiumDriversToUpdate.Identity)" Condition=" '@(AppiumDriversToUpdate)' != '' " />
+		<Exec Command="node appium driver update %(AppiumDriversToUpdate.Identity)" Condition=" '@(AppiumDriversToUpdate)' != '' " />
 
 		<!-- Install any drivers not yet installed (if any) -->
-		<Exec Command="appium driver install %(AppiumDriversToInstall.Identity)@%(AppiumDriversToInstall.Version)" Condition=" '@(AppiumDriversToInstall)' != '' " />
+		<Exec Command="node appium driver install %(AppiumDriversToInstall.Identity)@%(AppiumDriversToInstall.Version)" Condition=" '@(AppiumDriversToInstall)' != '' " />
 
 		<!-- Run doctor command just so we have some output -->
-		<Exec Command="appium driver doctor %(AppiumDrivers.Identity)" ContinueOnError="true" Condition=" '$(SkipAppiumDoctor)' != 'True' " />
+		<Exec Command="node appium driver doctor %(AppiumDrivers.Identity)" ContinueOnError="true" Condition=" '$(SkipAppiumDoctor)' != 'True' " />
 
 		<!-- Run driver list again for our records -->
-		<Exec Command="appium driver list --installed" ContinueOnError="true" />
+		<Exec Command="node appium driver list --installed" ContinueOnError="true" />
 	</Target>
 
 	<Target Name="InstallAppium">
+
+		<PropertyGroup>
+			<AppiumNpmInstallLocation Condition=" '$(AppiumNpmInstallLocation)' == '' ">global</AppiumNpmInstallLocation>
+		</PropertyGroup>
+
 		<!-- Get the NPM package version for appium if installed -->
 		<!-- this uses loglevel error to prevent extra noise in the console output that isn't json -->
-		<Exec Command="npm list -g appium --json --depth 1 --loglevel error" ConsoleToMSBuild="True" IgnoreExitCode="True">
+		<Exec Command="npm list --location=$(AppiumNpmInstallLocation) appium --json --depth 1 --loglevel error" ConsoleToMSBuild="True" IgnoreExitCode="True">
 			<Output TaskParameter="ConsoleOutput" ItemName="_AppiumNpmListOutputLines" />
 		</Exec>
 
@@ -183,7 +188,7 @@
 		</JsonPeek>
 
 		<!-- Install appium at the specified version if necessary -->
-		<Exec Command="npm i --location=global appium@$(AppiumVersion)" Condition=" '$(_AppiumNpmListVersion)' != '$(AppiumVersion)' " />
+		<Exec Command="npm i --location=$(AppiumNpmInstallLocation) appium@$(AppiumVersion)" Condition=" '$(_AppiumNpmListVersion)' != '$(AppiumVersion)' " />
 	</Target>
 
 	<Target Name="ProvisionAppium" DependsOnTargets="InstallAppium;ProvisionAppiumDrivers">
