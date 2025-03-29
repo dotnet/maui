@@ -1,8 +1,8 @@
 ﻿using System;
 using Android.Content;
-using AndroidX.AppCompat.Widget;
 using Android.Text;
 using Android.Views;
+using AndroidX.AppCompat.Widget;
 
 namespace Microsoft.Maui.Platform
 {

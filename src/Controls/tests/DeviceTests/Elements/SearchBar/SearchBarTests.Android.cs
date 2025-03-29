@@ -42,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 				return nativeView.Alpha;
 			});
 		}
-		
+
 		[Fact]
 		[Description("The ScaleX property of a SearchBar should match with native ScaleX")]
 		public async Task ScaleXConsistent()

@@ -4,9 +4,9 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using UIKit;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -203,7 +203,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			CurrentTemplate = itemTemplate;
-      this.UpdateAccessibilityTraits(itemsView);
+			this.UpdateAccessibilityTraits(itemsView);
 			MarkAsBound();
 		}
 
