@@ -144,8 +144,13 @@
 
 	<Target Name="ProvisionAppiumDrivers" DependsOnTargets="InstallAppium">
 
+		<PropertyGroup>
+			<AppiumCommand>appium</AppiumCommand>
+			<AppiumCommand Condition=" '$(AppiumNpmInstallLocation)' != 'global' ">node ./node_modules/.bin/appium</AppiumCommand>
+		</PropertyGroup>
+
 		<!-- Get a json output list of the installed appium drivers with their version info -->
-		<Exec Command="node appium driver list --installed --json" ConsoleToMSBuild="True" IgnoreExitCode="True">
+		<Exec Command="$(AppiumCommand) driver list --installed --json" ConsoleToMSBuild="True" IgnoreExitCode="True">
 			<Output TaskParameter="ConsoleOutput" ItemName="_AppiumDriverListInstalledJsonLines" />
 		</Exec>
 
@@ -167,16 +172,16 @@
 
 
 		<!-- Update any drivers needing an update (if any) -->
-		<Exec Command="node appium driver update %(AppiumDriversToUpdate.Identity)" Condition=" '@(AppiumDriversToUpdate)' != '' " />
+		<Exec Command="$(AppiumCommand) driver update %(AppiumDriversToUpdate.Identity)" Condition=" '@(AppiumDriversToUpdate)' != '' " />
 
 		<!-- Install any drivers not yet installed (if any) -->
-		<Exec Command="node appium driver install %(AppiumDriversToInstall.Identity)@%(AppiumDriversToInstall.Version)" Condition=" '@(AppiumDriversToInstall)' != '' " />
+		<Exec Command="$(AppiumCommand) driver install %(AppiumDriversToInstall.Identity)@%(AppiumDriversToInstall.Version)" Condition=" '@(AppiumDriversToInstall)' != '' " />
 
 		<!-- Run doctor command just so we have some output -->
-		<Exec Command="node appium driver doctor %(AppiumDrivers.Identity)" ContinueOnError="true" Condition=" '$(SkipAppiumDoctor)' != 'True' " />
+		<Exec Command="$(AppiumCommand) driver doctor %(AppiumDrivers.Identity)" ContinueOnError="true" Condition=" '$(SkipAppiumDoctor)' != 'True' " />
 
 		<!-- Run driver list again for our records -->
-		<Exec Command="node appium driver list --installed" ContinueOnError="true" />
+		<Exec Command="$(AppiumCommand) driver list --installed" ContinueOnError="true" />
 	</Target>
 
 	<Target Name="InstallAppium">
