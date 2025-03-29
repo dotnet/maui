@@ -146,7 +146,8 @@
 
 		<PropertyGroup>
 			<AppiumCommand>appium</AppiumCommand>
-			<AppiumCommand Condition=" '$(AppiumNpmInstallLocation)' != 'global' ">node ./node_modules/.bin/appium</AppiumCommand>
+			<AppiumCommand Condition=" '$(AppiumNpmInstallLocation)' != 'global' ">./node_modules/.bin/appium</AppiumCommand>
+			<AppiumCommand Condition="$(IsWindows)">$(AppiumCommand).exe</AppiumCommand>
 		</PropertyGroup>
 
 		<!-- Get a json output list of the installed appium drivers with their version info -->
