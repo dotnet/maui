@@ -19,7 +19,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("button");
 			App.Click("button");
-			App.InteractivePopGesture();
+			App.SwipeBackNavigation();
 			App.WaitForElement("NavigatedTo event triggers count: 2");
 		}
 	}
