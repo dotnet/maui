@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIContainerView _headerView;
 		UIContainerView _footerView;
 		View _footer;
+		View _header;
 		ShellTableViewController _tableViewController;
 		ShellFlyoutLayoutManager _shellFlyoutContentManager;
 		UIView[] _uIViews;
@@ -96,8 +97,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_headerView.Dispose();
 			}
 
+			if (_header is not null)
+			{
+				_header.MeasureInvalidated += OnHeaderMeasureInvalidated;
+			}
+
+			_header = header;
+
 			if (header is not null)
+			{
 				_headerView = new ShellFlyoutHeaderContainer(((IShellController)_shellContext.Shell).FlyoutHeader);
+				_header.MeasureInvalidated += OnHeaderMeasureInvalidated;
+			}
 			else
 				_headerView = null;
 
@@ -122,6 +133,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				var oldRenderer = (IPlatformViewHandler)_footer.Handler;
 				var oldFooterView = _footerView;
 				_tableViewController.FooterView = null;
+				_footer.MeasureInvalidated -= OnFooterMeasureInvalidated;
 				_footerView?.Disconnect();
 				_footerView = null;
 				_uIViews[FooterIndex] = null;
@@ -184,6 +196,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			View.AddSubview(newView);
+		}
+
+		void OnHeaderMeasureInvalidated(object sender, System.EventArgs e)
+		{
+			var size = _headerView?.SizeThatFits(new CGSize(View.Frame.Width, double.PositiveInfinity));
+			if (size is not null)
+				_headerView.Frame = new CoreGraphics.CGRect(_headerView.Frame.X, _headerView.Frame.Y, size.Value.Width, size.Value.Height);
 		}
 
 		void OnFooterMeasureInvalidated(object sender, System.EventArgs e)
