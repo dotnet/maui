@@ -128,7 +128,7 @@
 		<!-- Download SDK Common Packages -->
 		<Exec Command="dotnet android sdk download --home=&quot;$(AndroidSdkHome)&quot; --version=&quot;$(AndroidSdkVersion)&quot;" ConsoleToMSBuild="True" />
 
-		<Exec Command="dotnet android sdk dotnet-prefer --home=&quot;$(AndroidSdkHome)&quot; list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+		<Exec Command="dotnet android sdk dotnet-prefer --home=&quot;$(AndroidSdkHome)&quot;" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 
 	<Target Name="ProvisionAndroidSdk" DependsOnTargets="ProvisionAndroidSdkCommonPackages;ProvisionAndroidSdkPlatformApiPackages;ProvisionAndroidSdkEmulatorImagePackages;ProvisionAndroidSdkAvdCreateAvds">
