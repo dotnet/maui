@@ -7,6 +7,8 @@ using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using System.ComponentModel;
+using Microsoft.Maui.Controls.Handlers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -20,7 +22,16 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetNativeBoxView(handler);
-				return (float)nativeView.Alpha; 
+				return (float)nativeView.Alpha;
+			});
+		}
+		
+		Task<bool> GetPlatformIsVisible(ShapeViewHandler boxViewHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetNativeBoxView(boxViewHandler);
+				return !nativeView.Hidden;
 			});
 		}
 
