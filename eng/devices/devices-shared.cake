@@ -1,6 +1,6 @@
 //This assumes that this is always running from a mac with global workloads
 const string DotnetToolPathDefault = "/usr/local/share/dotnet/dotnet";
-string DotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net9.0");
+string DotnetVersion = Argument("targetFrameworkVersion", EnvironmentVariable("TARGET_FRAMEWORK_VERSION") ?? "net10.0");
 const string TestFramework = "net472";
 
 // Map project types to specific subdirectories under artifacts
@@ -195,19 +195,18 @@ void LogSetupInfo(string toolPath)
 string GetDotnetToolPath()
 {
     var isLocalDotnet = GetBuildVariable("workloads", "local") == "local";
-    string toolPath;
-    
-    
-    if(IsRunningOnWindows())
+
+    string toolPath = null;
+
+    if (isLocalDotnet)
     {
-        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../.dotnet/")).ToString()}/dotnet.exe" : null;
-    }
-    else
-    {
-        toolPath = isLocalDotnet ? $"{MakeAbsolute(Directory("../../.dotnet/")).ToString()}/dotnet" : DotnetToolPathDefault;
+        var ext = IsRunningOnWindows() ? ".exe" : "";
+        var dir = MakeAbsolute(Directory("../../.dotnet/"));
+        toolPath = dir.CombineWithFilePath($"dotnet{ext}").FullPath;
     }
 
-    Information(isLocalDotnet ? "Using local dotnet" : "Using system dotnet");
+    Information($"Using {(isLocalDotnet ? "local" : "system")} dotnet: {toolPath ?? "<null>"}");
+    
     return toolPath;
 }
 

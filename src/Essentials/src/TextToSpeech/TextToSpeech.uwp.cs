@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Media
 		{
 			var volume = "default";
 			var pitch = "default";
-			var rate = "default";
+			var rate = "medium";
 
 			// Look for the specified language, otherwise the default voice
 			var locale = options?.Locale?.Language ?? SpeechSynthesizer.DefaultVoice.Language;
@@ -81,6 +81,9 @@ namespace Microsoft.Maui.Media
 
 			if (options?.Pitch.HasValue ?? false)
 				pitch = ProsodyPitch(options.Pitch);
+
+			if (options?.Rate.HasValue ?? false)
+				rate = (options.Rate.Value * 100f).ToString(CultureInfo.InvariantCulture)+"%";
 
 			// SSML generation
 			var ssml = new StringBuilder();

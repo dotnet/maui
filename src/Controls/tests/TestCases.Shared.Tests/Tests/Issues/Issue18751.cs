@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID //related issues: https://github.com/dotnet/maui/issues/15994
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,9 +16,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		[FailsOnAndroidWhenRunningOnXamarinUITest("Currently fails on Android; see https://github.com/dotnet/maui/issues/15994")]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("Currently fails on Windows; see https://github.com/dotnet/maui/issues/15994")]
 		public async Task Issue18751Test()
 		{
+			VerifyInternetConnectivity();
+			
 			App.WaitForElement("WaitForStubControl");
 
 			// Load images.
@@ -28,3 +30,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

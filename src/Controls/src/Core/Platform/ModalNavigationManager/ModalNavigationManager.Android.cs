@@ -256,6 +256,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 				dialog.Window.SetBackgroundDrawable(TransparentColorDrawable);
 
+				var attributes = Context?.GetActivity()?.Window?.Attributes;
+
+				if (attributes is not null)
+				{
+					dialog.Window.SetSoftInputMode(attributes.SoftInputMode);
+				}
+
 				return dialog;
 			}
 

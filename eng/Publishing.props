@@ -2,13 +2,14 @@
    <PropertyGroup>
       <PublishingVersion>3</PublishingVersion>
       <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
+      <!-- <PublishDependsOnTargets>$(PublishDependsOnTargets);_PublishBlobItems</PublishDependsOnTargets> -->
    </PropertyGroup>
 
    <ItemGroup>
     <_InstallerManifestFilesToPublish Include="$(ArtifactsShippingPackagesDir)\**\*.zip" />
   </ItemGroup>
 
-   <Target Name="_PublishBlobItems">
+   <!-- <Target Name="_PublishBlobItems">
     <ItemGroup>
       <ItemsToPushToBlobFeed Include="@(_InstallerManifestFilesToPublish)">
         <IsShipping>true</IsShipping>
@@ -16,5 +17,5 @@
         <RelativeBlobPath>$(_UploadPathRoot)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
       </ItemsToPushToBlobFeed>
     </ItemGroup>
-  </Target>
+  </Target> -->
 </Project>

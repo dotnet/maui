@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+using System.Reflection;
+using ImageMagick;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Appium.NUnit;
@@ -19,6 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 	public abstract class UITest : UITestBase
 	{
+		string _defaultiOSVersion = "18.0";
+
 		protected const int SetupMaxRetries = 1;
 		readonly VisualRegressionTester _visualRegressionTester;
 		readonly IImageEditorFactory _imageEditorFactory;
@@ -43,7 +46,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public override IConfig GetTestConfig()
 		{
-			var frameworkVersion = "net9.0";
+			var frameworkVersion = "net10.0";
 #if DEBUG
 			var configuration = "Debug";
 #else
@@ -62,14 +65,14 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.0");
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? _defaultiOSVersion);
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
 					var windowsExe = "Controls.TestCases.HostApp.exe";
-					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win10-x64\\{windowsExe}");
-					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win10-x64\\{windowsExe}");
+					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win-x64\\{windowsExe}");
+					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win-x64\\{windowsExe}");
 
 					if (!File.Exists(windowsExePath) && File.Exists(windowsExePath19041))
 					{
@@ -103,7 +106,54 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ResetApp();
 		}
 
-		public void VerifyScreenshot(string? name = null, TimeSpan? retryDelay = null)
+		/// <summary>
+		/// Verifies the screenshots and returns an exception in case of failure.
+		/// </summary>
+		/// <remarks>
+		/// This is especially useful when capturing multiple screenshots in a single UI test.
+		/// </remarks>
+		/// <example>
+		/// <code>
+		/// Exception? exception = null;
+		/// VerifyScreenshotOrSetException(ref exception, "MyScreenshotName");
+		/// VerifyScreenshotOrSetException(ref exception, "MyOtherScreenshotName");
+		/// if (exception is not null) throw exception;
+		/// </code>
+		/// </example>
+		public void VerifyScreenshotOrSetException(
+			ref Exception? exception,
+			string? name = null,
+			TimeSpan? retryDelay = null,
+			int cropTop = 0,
+			int cropBottom = 0
+#if MACUITEST || WINTEST
+			, bool includeTitleBar = false
+#endif
+			)
+		{
+			try
+			{
+				VerifyScreenshot(name, retryDelay, cropTop, cropBottom
+#if MACUITEST || WINTEST
+				, includeTitleBar
+#endif
+				);
+			}
+			catch (Exception ex)
+			{
+				exception ??= ex;
+			}
+		}
+
+		public void VerifyScreenshot(
+			string? name = null,
+			TimeSpan? retryDelay = null,
+			int cropTop = 0,
+			int cropBottom = 0
+#if MACUITEST || WINTEST
+			, bool includeTitleBar = false
+#endif
+		)
 		{
 			retryDelay ??= TimeSpan.FromMilliseconds(500);
 			// Retry the verification once in case the app is in a transient state
@@ -120,6 +170,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			void Verify(string? name)
 			{
 				string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
+
 
 				// Remove the XHarness suffix if present
 				deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
@@ -154,7 +205,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
 						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
 
-						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
+						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == _defaultiOSVersion)
 						{
 							environmentName = "ios";
 						}
@@ -168,7 +219,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						}
 						else
 						{
-							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
+							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS {_defaultiOSVersion}) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}' '{platformVersion}'. Follow the steps on the MAUI UI testing wiki.");
 						}
 						break;
 
@@ -209,8 +260,16 @@ namespace Microsoft.Maui.TestCases.Tests
 					TestDevice.Android => 60,
 					TestDevice.iOS => environmentName == "ios-iphonex" ? 90 : 110,
 					TestDevice.Windows => 32,
+					TestDevice.Mac => 29,
 					_ => 0,
 				};
+
+#if MACUITEST || WINTEST
+				if (includeTitleBar)
+				{
+					cropFromTop = 0;
+				}
+#endif
 
 				// For Android also crop the 3 button nav from the bottom, since it's not part of the
 				// app itself and the button color can vary (the buttons change clear briefly when tapped).
@@ -221,6 +280,9 @@ namespace Microsoft.Maui.TestCases.Tests
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
+
+				cropFromTop = cropTop > 0 ? cropTop : cropFromTop;
+				cropFromBottom = cropBottom > 0 ? cropBottom : cropFromBottom;
 
 				if (cropFromTop > 0 || cropFromBottom > 0)
 				{
@@ -233,6 +295,19 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 
 				_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+			}
+		}
+
+		protected void VerifyInternetConnectivity()
+		{
+			try
+			{
+				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(30));
+				Assert.Inconclusive("This device doesn't have internet access");
+			}
+			catch (TimeoutException)
+			{
+				// Continue with the test
 			}
 		}
 
@@ -260,22 +335,30 @@ namespace Microsoft.Maui.TestCases.Tests
 		byte[] TakeScreenshot()
 		{
 			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
-			// we are going to maximize the App before take the screenshot.
-			App.EnterFullScreen();
+			// we are going to crop the screenshot to the app window bounds, including rounded corners.
+			var windowBounds = App.FindElement(AppiumQuery.ByXPath("//XCUIElementTypeWindow")).GetRect();
 
-			// The app might not be ready to take the screenshot.
-			// Wait a little bit to complete the system animation moving the App Window to FullScreen.
-			Thread.Sleep(500);
+			var x = windowBounds.X;
+			var y = windowBounds.Y;
+			var width = windowBounds.Width;
+			var height = windowBounds.Height;
+			const int cornerRadius = 12;
 
-			byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+			// Take the screenshot
+			var bytes = App.Screenshot();
 
-			// TODO: After take the screenshot, restore the App Window to the previous state.
-			App.ExitFullScreen();
+			// Draw a rounded rectangle with the app window bounds as mask
+			using var surface = new MagickImage(MagickColors.Transparent, width, height);
+			new Drawables()
+				.RoundRectangle(0, 0, width, height, cornerRadius, cornerRadius)
+				.FillColor(MagickColors.Black)
+				.Draw(surface);
 
-			// Wait a little bit to complete the system animation moving the App Window to previous state.
-			Thread.Sleep(500);
+			// Composite the screenshot with the mask
+			using var image = new MagickImage(bytes);
+			surface.Composite(image, -x, -y, CompositeOperator.SrcAtop);
 
-			return screenshotPngBytes;
+			return surface.ToByteArray(MagickFormat.Png);
 		}
 #endif
 	}

@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls
 			_ = args ?? throw new ArgumentNullException(nameof(args));
 
 			DropCompletedCommand?.Execute(DropCompletedCommandParameter);
-			DropCompleted?.Invoke(this, args);
+			DropCompleted?.Invoke(Parent ?? this, args);
 		}
 
 		internal DragStartingEventArgs SendDragStarting(View element, Func<IElement?, Point?>? getPosition = null, PlatformDragStartingEventArgs? platformArgs = null)
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls
 			var args = new DragStartingEventArgs(getPosition, platformArgs);
 
 			DragStartingCommand?.Execute(DragStartingCommandParameter);
-			DragStarting?.Invoke(this, args);
+			DragStarting?.Invoke(element, args);
 
 #pragma warning disable CS0618 // Type or member is obsolete
 			if (!args.Handled)

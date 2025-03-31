@@ -46,7 +46,7 @@ namespace Maui.Controls.Sample.Pages
 
 		async void OnOpenDialogClicked(object sender, EventArgs e)
 		{
-			await DisplayAlert("Information", "The dialog should open by Window.", "Ok");
+			await DisplayAlertAsync("Information", "The dialog should open by Window.", "Ok");
 		}
 
 		void OnSetMaxSize(object sender, EventArgs e)

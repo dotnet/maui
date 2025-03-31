@@ -12,7 +12,9 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplateSelector.xml" path="//Member[@MemberName='SelectTemplate']/Docs/*" />
 		public DataTemplate SelectTemplate(object item, BindableObject container)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var listView = container as ListView;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var recycle = listView == null ? false :
 				(listView.CachingStrategy & ListViewCachingStrategy.RecycleElementAndDataTemplate) ==

@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if ANDROID //This test case verifies "that the KeyListener is being set to handle numeric keyboard" exclusively on Android platform
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -21,7 +21,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("SearchEntry");
 			Thread.Sleep(500); // Add some wait for poping up the keyboard to resolve flakiness in CI.
 
+			// CI tests sometimes fail due to color inconsistency between the keyboard and bottom navigation bar.
+#if ANDROID
+			VerifyScreenshot(cropTop: 63, cropBottom: 126);
+#else
 			VerifyScreenshot();
+#endif
 		}
 
 		[Test, Order(2)]

@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Platform
 						{
 							platformControl.TextHighlighters.Clear();
 						}
-						platformControl.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+						platformControl.Text = TextTransformUtilities.GetTransformedText(label.Text, label.TextTransform);
 					}
 					break;
 			}

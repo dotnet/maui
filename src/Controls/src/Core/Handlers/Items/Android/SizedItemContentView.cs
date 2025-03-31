@@ -29,10 +29,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			double targetHeight = _height();
 
 			if (!double.IsInfinity(targetWidth))
-				targetWidth = (int)Context.FromPixels(targetWidth);
+				targetWidth = Context.FromPixels(targetWidth);
 
 			if (!double.IsInfinity(targetHeight))
-				targetHeight = (int)Context.FromPixels(targetHeight);
+				targetHeight = Context.FromPixels(targetHeight);
 
 			if (Content.VirtualView.Handler is IPlatformViewHandler pvh)
 			{

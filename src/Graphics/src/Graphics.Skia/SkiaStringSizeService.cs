@@ -9,13 +9,12 @@ namespace Microsoft.Maui.Graphics.Skia
 			if (string.IsNullOrEmpty(value))
 				return new SizeF();
 
-			var paint = new SKPaint
+			using var skiaFont = new SKFont
 			{
 				Typeface = font?.ToSKTypeface() ?? SKTypeface.Default,
-				TextSize = fontSize
+				Size = fontSize
 			};
-			var width = paint.MeasureText(value);
-			paint.Dispose();
+			var width = skiaFont.MeasureText(value);
 			return new SizeF(width, fontSize);
 		}
 
@@ -24,13 +23,12 @@ namespace Microsoft.Maui.Graphics.Skia
 			if (string.IsNullOrEmpty(value))
 				return new SizeF();
 
-			var paint = new SKPaint
+			using var skiaFont = new SKFont
 			{
-				TextSize = fontSize,
+				Size = fontSize,
 				Typeface = font?.ToSKTypeface() ?? SKTypeface.Default
 			};
-			var width = paint.MeasureText(value);
-			paint.Dispose();
+			var width = skiaFont.MeasureText(value);
 			return new SizeF(width, fontSize);
 		}
 	}

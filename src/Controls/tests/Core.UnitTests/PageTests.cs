@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -295,13 +296,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void BusySentWhenBusyPageAppears()
+		public async Task BusySentWhenBusyPageAppears()
 		{
+			TaskCompletionSource tcs = new TaskCompletionSource();
 			var sent = false;
 			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) =>
 			{
 				Assert.True(b);
 				sent = true;
+				tcs.SetResult();
 			});
 
 			var page = new ContentPage { IsBusy = true, IsPlatformEnabled = true };
@@ -310,12 +313,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			_ = new TestWindow(page);
 
+			await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
 			Assert.True(sent, "Busy message not sent when visible");
 		}
 
 		[Fact]
-		public void BusySentWhenBusyPageDisappears()
+		public async Task BusySentWhenBusyPageDisappears()
 		{
+			TaskCompletionSource tcs = new TaskCompletionSource();
 			var page = new ContentPage { IsBusy = true };
 			_ = new TestWindow(page);
 			((IPageController)page).SendAppearing();
@@ -325,18 +331,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Assert.False(b);
 				sent = true;
+				tcs.SetResult();
 			});
 
 			((IPageController)page).SendDisappearing();
+
+			await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
 			Assert.True(sent, "Busy message not sent when visible");
 		}
 
 		[Fact]
-		public void BusySentWhenVisiblePageSetToBusy()
+		public async Task BusySentWhenVisiblePageSetToBusy()
 		{
 			var sent = false;
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) => sent = true);
+			TaskCompletionSource tcs = new TaskCompletionSource();
+			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) =>
+			{
+				sent = true;
+				tcs.SetResult();
+			});
 
 			var page = new ContentPage();
 			_ = new TestWindow(page);
@@ -346,18 +360,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			page.IsBusy = true;
 
+			await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
 			Assert.True(sent, "Busy message not sent when visible");
 		}
 
 		[Fact]
-		public void DisplayAlert()
+		public void DisplayAlertAsync()
 		{
 			var page = new ContentPage() { IsPlatformEnabled = true };
 
 			AlertArguments args = null;
 			MessagingCenter.Subscribe(this, Page.AlertSignalName, (Page sender, AlertArguments e) => args = e);
 
-			var task = page.DisplayAlert("Title", "Message", "Accept", "Cancel");
+			var task = page.DisplayAlertAsync("Title", "Message", "Accept", "Cancel");
 
 			Assert.Equal("Title", args.Title);
 			Assert.Equal("Message", args.Message);
@@ -373,14 +389,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void DisplayActionSheet()
+		public void DisplayActionSheetAsync()
 		{
 			var page = new ContentPage() { IsPlatformEnabled = true };
 
 			ActionSheetArguments args = null;
 			MessagingCenter.Subscribe(this, Page.ActionSheetSignalName, (Page sender, ActionSheetArguments e) => args = e);
 
-			var task = page.DisplayActionSheet("Title", "Cancel", "Destruction", "Other 1", "Other 2");
+			var task = page.DisplayActionSheetAsync("Title", "Cancel", "Destruction", "Other 1", "Other 2");
 
 			Assert.Equal("Title", args.Title);
 			Assert.Equal("Destruction", args.Destruction);

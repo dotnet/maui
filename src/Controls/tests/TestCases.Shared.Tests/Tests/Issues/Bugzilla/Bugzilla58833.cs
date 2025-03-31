@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //ContextActions Menu Items Not Accessible via Automation on iOS and Catalyst Platforms. 
+//For more information see Issue Link: https://github.com/dotnet/maui/issues/27394
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -12,35 +14,28 @@ public class Bugzilla58833 : _IssuesUITest
 
 	public override string Issue => "ListView SelectedItem Binding does not fire";
 
-	// 	[Test]
-	// 	[Category(UITestCategories.ListView)]
-	// 	[Ignore("Failing without explanation on XTC, please run manually")]
-	// 	public void Bugzilla58833Test()
-	// 	{
-	// 		// Item #1 should not have a tap gesture, so it should be selectable
-	// 		App.WaitForElement(q => q.Marked("Item #1"));
-	// 		App.Tap(q => q.Marked("Item #1"));
-	// 		App.WaitForElement(q => q.Marked(ItemSelectedSuccess));
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void Bugzilla58833Test()
+	{
+		// Item #1 should not have a tap gesture, so it should be selectable
+		App.WaitForElement("Item #1");
+		App.Tap("Item #1");
+		App.WaitForElement("ItemSelected Success");
 
-	// 		// Item #2 should have a tap gesture
-	// 		App.WaitForElement(q => q.Marked("Item #2"));
-	// 		App.Tap(q => q.Marked("Item #2"));
-	// 		App.WaitForElement(q => q.Marked(TapGestureSucess));
+		// Item #2 should have a tap gesture
+		App.WaitForElement("Item #2");
+		App.Tap("Item #2");
+		App.WaitForElement("TapGesture Fired");
 
-	// 		// Both items should allow access to the context menu
-	// 		App.ActivateContextMenu("Item #2");
-	// 		App.WaitForElement("2 Action");
-	// #if __ANDROID__
-	// 		App.Back();
-	// #else
-	// 		App.Tap(q => q.Marked("Item #3"));
+		// Both items should allow access to the context menu
+		App.ActivateContextMenu("Item #2");
+		App.WaitForElement("2 Action");
+		App.DismissContextMenu();
 
-
-	// 		App.ActivateContextMenu("Item #1");
-	// 		App.WaitForElement("1 Action");
-	// #if __ANDROID__
-	// 		App.Back();
-	// #else
-	// 		App.Tap(q => q.Marked("Item #3"));
-	// 	}
+		App.ActivateContextMenu("Item #1");
+		App.WaitForElement("1 Action");
+		App.DismissContextMenu();
+	}
 }
+#endif

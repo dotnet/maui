@@ -139,10 +139,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			var tabBarVisible =
-				(Page.FindParentOfType<ShellItem>() as IShellItemController)?.ShowTabs ?? Shell.GetTabBarIsVisible(Page);
-
-			ViewController.HidesBottomBarWhenPushed = !tabBarVisible;
+			var tabBarVisible = (Page.FindParentOfType<ShellItem>() as IShellItemController)?.ShowTabs ?? Shell.GetTabBarIsVisible(Page);
+			// In iOS 18, the tab bar visibility is effectively managed by the TabBarHidden property in ShellItemRenderer.
+			if (!(OperatingSystemMacCatalyst18Workaround.IsMacCatalystVersionAtLeast18() || OperatingSystem.IsIOSVersionAtLeast(18)))
+			{
+				ViewController.HidesBottomBarWhenPushed = !tabBarVisible;
+			}
 		}
 
 		void OnToolbarPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -386,8 +388,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					if (image != null)
 					{
+#pragma warning disable CS0618 // Type or member is obsolete
 						NavigationItem.LeftBarButtonItem.SetAccessibilityHint(image);
 						NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(image);
+#pragma warning restore CS0618 // Type or member is obsolete
 					}
 				}
 			});
@@ -482,7 +486,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			img = UIGraphics.GetImageFromCurrentImageContext();
 			UIGraphics.EndImageContext();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			_nSCache.SetObjectforKey(img, (NSString)hamburgerKey);
+#pragma warning restore CS0618 // Type or member is obsolete
 			return img;
 		}
 

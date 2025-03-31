@@ -38,7 +38,7 @@ public partial class Maui27121
 		public void XNameAreTrimmed([Values] bool useCompiledXaml)
 		{
 			var page = new Maui27121(useCompiledXaml);
-            Assert.That(page.label0, Is.Not.Null);
+			Assert.That(page.label0, Is.Not.Null);
 		}
 	}
 }

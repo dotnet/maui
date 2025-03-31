@@ -10,7 +10,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class TableViewModelRenderer : UITableViewSource
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 		readonly Dictionary<nint, Cell> _headerCells = new Dictionary<nint, Cell>();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		protected bool HasBoundGestures;
 
@@ -23,7 +27,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected TableView View;
 
 		WeakReference<UITableView> _platformView;
+#pragma warning disable CS0618 // Type or member is obsolete
 		WeakReference<TableView> _tableView;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		UITableView PlatformView
 		{
@@ -31,13 +37,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			set => _platformView = value is not null ? new(value) : null;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal TableView TableView
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			get => _tableView is not null && _tableView.TryGetTarget(out var t) ? t : null;
 			set => _tableView = value is not null ? new(value) : null;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public TableViewModelRenderer(TableView model)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			TableView = model;
 			model.ModelChanged += (s, e) => PlatformView?.ReloadData();
@@ -48,8 +58,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (TableView is not TableView table)
 				return null;
+#pragma warning restore CS0618 // Type or member is obsolete
 			var cell = table.Model.GetCell(indexPath.Section, indexPath.Row);
 			var nativeCell = CellTableViewCell.GetPlatformCell(tableView, cell);
 
@@ -58,8 +70,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override nfloat GetHeightForHeader(UITableView tableView, nint section)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (TableView is not TableView table)
 				return 0;
+#pragma warning restore CS0618 // Type or member is obsolete
 			if (!_headerCells.ContainsKey((int)section))
 				_headerCells[section] = table.Model.GetHeaderCell((int)section);
 
@@ -70,8 +84,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override UIView GetViewForHeader(UITableView tableView, nint section)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (TableView is not TableView table)
 				return null;
+#pragma warning restore CS0618 // Type or member is obsolete
 			if (!_headerCells.ContainsKey((int)section))
 				_headerCells[section] = table.Model.GetHeaderCell((int)section);
 
@@ -93,6 +109,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void WillDisplayHeaderView(UITableView tableView, UIView headerView, nint section)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (headerView is UITableViewHeaderFooterView header && TableView is TableView table)
 			{
 				var sectionHeaderTextColor = table.Model.GetSectionTextColor((int)section);
@@ -106,6 +123,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning restore CA1416, CA1422
 				}
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		public void LongPress(UILongPressGestureRecognizer gesture)
@@ -175,24 +193,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 	public class UnEvenTableViewModelRenderer : TableViewModelRenderer
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
 		public UnEvenTableViewModelRenderer(TableView model) : base(model)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 		}
 
 		public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (TableView is not TableView table)
 				return 0;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var cell = table.Model.GetCell(indexPath.Section, indexPath.Row);
 			var h = cell.Height;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (table.RowHeight == -1 && h == -1 && cell is ViewCell)
 			{
 				return UITableView.AutomaticDimension;
 			}
 			else if (h == -1)
 				return tableView.RowHeight;
+#pragma warning restore CS0618 // Type or member is obsolete
 			return (nfloat)h;
 		}
 	}

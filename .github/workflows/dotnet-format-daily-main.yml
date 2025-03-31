@@ -33,7 +33,7 @@ jobs:
           git commit -a -m 'Automated dotnet-format update'
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: dotnet/actions-create-pull-request@v4
         with:
           title: '[housekeeping] Automated PR to fix formatting errors'
           body: |

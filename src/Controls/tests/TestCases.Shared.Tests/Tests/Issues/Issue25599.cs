@@ -7,7 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue25599 : _IssuesUITest
 	{
-		public Issue25599(TestDevice testDevice) : base(testDevice){ }
+		public Issue25599(TestDevice testDevice) : base(testDevice) { }
 
 		public override string Issue => "OnNavigating wrong target when tapping the same tab";
 

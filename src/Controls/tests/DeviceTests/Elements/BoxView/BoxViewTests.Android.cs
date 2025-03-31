@@ -10,5 +10,23 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		MauiShapeView GetNativeBoxView(ShapeViewHandler boxViewViewHandler) =>
 			boxViewViewHandler.PlatformView;
+
+		Task<float> GetPlatformOpacity(ShapeViewHandler handler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetNativeBoxView(handler);
+				return nativeView.Alpha;
+			});
+		}
+		
+		Task<bool> GetPlatformIsVisible(ShapeViewHandler boxViewViewHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetNativeBoxView(boxViewViewHandler);
+				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+			});
+		}
 	}
 }

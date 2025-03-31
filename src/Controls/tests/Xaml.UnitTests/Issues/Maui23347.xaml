@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui23347">
+    <StackLayout>
+        <Button x:Name="button0"
+            Text="Comment" 
+            Background="Transparent" 
+            TextColor="{AppThemeBinding Light=Black, Dark=White}" 
+            ImageSource="{FontImageSource Glyph=MyGlyph, Color={AppThemeBinding Light=Black, Dark=White}, FontFamily=FontAwesome, Size=18}" />
+        <Button x:Name="button1"
+            Text="Comment" 
+            Background="Transparent" 
+            TextColor="{AppThemeBinding Light=Black, Dark=White}" >
+            <Button.ImageSource>
+                <FontImageSource Glyph="MyGlyph" 
+                    Color="{AppThemeBinding Light=Black, Dark=White}" 
+                    FontFamily="FontAwesome" 
+                    Size="18" />
+            </Button.ImageSource>
+        </Button>
+    </StackLayout>
+
+</ContentPage>

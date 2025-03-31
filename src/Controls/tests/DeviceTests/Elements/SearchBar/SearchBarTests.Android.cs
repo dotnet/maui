@@ -30,5 +30,23 @@ namespace Microsoft.Maui.DeviceTests
 			var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
 			return editText.SelectionStart;
 		}
+
+		Task<float> GetPlatformOpacity(SearchBarHandler searchBarHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(searchBarHandler);
+				return nativeView.Alpha;
+			});
+		}
+
+		Task<bool> GetPlatformIsVisible(SearchBarHandler searchBarHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(searchBarHandler);
+				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+			});
+		}
 	}
 }

@@ -4,7 +4,7 @@ namespace Maui.Controls.Sample.Issues
 {
 
 	[Issue(IssueTracker.Github, 12134, "[iOS] WkWebView does not handle cookies consistently",
-		PlatformAffected.iOS)]
+		PlatformAffected.iOS, isInternetRequired: true)]
 	public class Issue12134 : TestContentPage
 	{
 		Button button;
@@ -43,7 +43,7 @@ namespace Maui.Controls.Sample.Issues
 		private async void DisplayCookies()
 		{
 			var result = await (Content as StackLayout).Children.OfType<WebView>().Last().EvaluateJavaScriptAsync("document.cookie");
-			await DisplayAlert("Cookies", result, "Ok");
+			await DisplayAlertAsync("Cookies", result, "Ok");
 		}
 
 		private async void WebViewOnNavigated(object sender, WebNavigatedEventArgs e)

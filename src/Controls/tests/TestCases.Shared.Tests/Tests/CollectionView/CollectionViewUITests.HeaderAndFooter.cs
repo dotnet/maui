@@ -4,33 +4,31 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-#if IOS
-    public class CollectionViewHeaderAndFooterTests : CollectionViewUITests
-    {
 
-        protected override bool ResetAfterEachTest => true;
+	public class CollectionViewHeaderAndFooterTests : CollectionViewUITests
+	{
 
-        public CollectionViewHeaderAndFooterTests(TestDevice device)
-            : base(device)
-        {
-        }
+		protected override bool ResetAfterEachTest => true;
 
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Header not rendering issue: https://github.com/dotnet/maui/issues/27177
+		public CollectionViewHeaderAndFooterTests(TestDevice device)
+			: base(device)
+		{
+		}
+
 		[Test]
-        [Category(UITestCategories.CollectionView)]
-        public void HeaderFooterStringWorks()
-        {
-            // Navigate to the selection galleries
-            VisitInitialGallery("Header Footer");
+		[Category(UITestCategories.CollectionView)]
+		public void HeaderFooterStringWorks()
+		{
+			// Navigate to the selection galleries
+			VisitInitialGallery("Header Footer");
 
-            // Navigate to the specific sample inside selection galleries
-            VisitSubGallery("Header/Footer (String)");
+			// Navigate to the specific sample inside selection galleries
+			VisitSubGallery("Header/Footer (String)");
 
-            App.WaitForElement("Just a string as a header");
-            App.WaitForElement("This footer is also a string");
-        }
-#endif
-
+			App.WaitForElement("Just a string as a header");
+			App.WaitForElement("This footer is also a string");
+		}
+#if IOS
 		[Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterViewWorks()
@@ -96,6 +94,6 @@ namespace Microsoft.Maui.TestCases.Tests
             VerifyScreenshot();
         }
 #endif
-    }
 #endif
+	}
 }
