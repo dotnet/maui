@@ -1,21 +1,21 @@
 <Project>
-   <PropertyGroup>
-      <PublishingVersion>3</PublishingVersion>
-      <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
-      <!-- <PublishDependsOnTargets>$(PublishDependsOnTargets);_PublishBlobItems</PublishDependsOnTargets> -->
-   </PropertyGroup>
+  <PropertyGroup>
+    <PublishingVersion>3</PublishingVersion>
+    <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
+  </PropertyGroup>
 
-   <ItemGroup>
-    <_InstallerManifestFilesToPublish Include="$(ArtifactsShippingPackagesDir)\**\*.zip" />
+  <ItemGroup>
+    <_InstallersToPublish Include="$(ArtifactsShippingPackagesDir)\**\*.zip" />
   </ItemGroup>
 
-   <!-- <Target Name="_PublishBlobItems">
-    <ItemGroup>
-      <ItemsToPushToBlobFeed Include="@(_InstallerManifestFilesToPublish)">
-        <IsShipping>true</IsShipping>
-        <PublishFlatContainer>true</PublishFlatContainer>
-        <RelativeBlobPath>$(_UploadPathRoot)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
-      </ItemsToPushToBlobFeed>
-    </ItemGroup>
-  </Target> -->
+  <PropertyGroup>
+    <_UploadPathRoot>maui-sdk</_UploadPathRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Artifact Include="@(_InstallersToPublish)" Kind="Blob" RelativeBlobPath="@(_UploadPathRoot)/%(Filename)%(Extension)">
+      <IsShipping>true</IsShipping>
+      <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
+    </Artifact>
+  </ItemGroup>
 </Project>
