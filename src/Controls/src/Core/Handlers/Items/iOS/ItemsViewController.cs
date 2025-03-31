@@ -575,39 +575,49 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected void RemeasureLayout(VisualElement formsElement)
 		{
-			Rect size;
+			Size size;
 			if (IsHorizontal)
 			{
 				var request = formsElement.Measure(double.PositiveInfinity, CollectionView.Frame.Height);
-				size = new Rect(0, 0, request.Width, CollectionView.Frame.Height);
+				size = new Size(request.Width, CollectionView.Frame.Height);
 			}
 			else
 			{
 				var request = formsElement.Measure(CollectionView.Frame.Width, double.PositiveInfinity);
-				size = new Rect(0, 0, CollectionView.Frame.Width, request.Height);
+				size = new Size(CollectionView.Frame.Width, request.Height);
 			}
 
-			if (formsElement.ToPlatform().Superview is GeneralWrapperView generalWrapperView)
+			var platformView = formsElement.ToPlatform();
+			Rect rect;
+			if (platformView.Superview is GeneralWrapperView generalWrapperView)
 			{
-				generalWrapperView.Frame = size;
+				rect = new Rect(Point.Zero, size);
+				var originalFrame = generalWrapperView.Frame;
+				generalWrapperView.Frame = new CGRect(originalFrame.X, originalFrame.Y, (nfloat)size.Width, (nfloat)size.Height);
+			}
+			else
+			{
+				rect = new Rect(platformView.Frame.X, platformView.Frame.Y, size.Width, size.Height);
 			}
 
-			formsElement.Arrange(size);
+			formsElement.Arrange(rect);
 		}
 
 		void RemeasureLayout(UIView nativeView)
 		{
+			var originalFrame = nativeView.Frame;
+
 			if (IsHorizontal)
 			{
 				var constraints = new CGSize(double.PositiveInfinity, CollectionView.Frame.Height);
 				var size = nativeView.SizeThatFits(constraints);
-				nativeView.Frame = new CGRect(0, 0, size.Width, CollectionView.Frame.Height);
+				nativeView.Frame = new CGRect(originalFrame.X, originalFrame.Y, size.Width, CollectionView.Frame.Height);
 			}
 			else
 			{
 				var constraints = new CGSize(CollectionView.Frame.Width, double.PositiveInfinity);
 				var size = nativeView.SizeThatFits(constraints);
-				nativeView.Frame = new CGRect(0, 0, CollectionView.Frame.Width, size.Height);
+				nativeView.Frame = new CGRect(originalFrame.X, originalFrame.Y, CollectionView.Frame.Width, size.Height);
 			}
 		}
 

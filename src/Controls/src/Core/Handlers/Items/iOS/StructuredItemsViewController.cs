@@ -203,9 +203,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				{
 					height = ItemsViewLayout.CollectionViewContentSize.Height;
 
-					if (_footerUIView != null && (_footerUIView.Frame.Y != height || emptyHeight > 0 || _footerUIView.Frame.Height != footerHeight))
+					var footerY = height + emptyHeight;
+					if (_footerUIView != null && (_footerUIView.Frame.Y != footerY || _footerUIView.Frame.Height != footerHeight))
 					{
-						_footerUIView.Frame = new CoreGraphics.CGRect(0, height + emptyHeight, CollectionView.Frame.Width, footerHeight);
+						_footerUIView.Frame = new CoreGraphics.CGRect(0, footerY, CollectionView.Frame.Width, footerHeight);
 					}
 				}
 			}
