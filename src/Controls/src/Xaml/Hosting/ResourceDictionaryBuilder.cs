@@ -25,8 +25,5 @@ public class ResourceDictionaryBuilder
         GlobalResources.Current.MergedDictionaries.Add(dict);   
     }
 
-
-    public void Add(string key, object value) => _dict.Add(key, value);
-
     public ResourceDictionary Build() => _dict;
 }
