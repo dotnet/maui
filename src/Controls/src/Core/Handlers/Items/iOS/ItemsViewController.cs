@@ -1,8 +1,8 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
@@ -212,8 +212,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (needsCellLayout || !_laidOut)
 			{
-				MeasureSupplementaryViews();
-				LayoutSupplementaryViews();
+				var isRefreshing = CollectionView.Subviews
+					.OfType<UIRefreshControl>()
+					.FirstOrDefault()?.Refreshing ?? false;
+
+				// We don't want to mess up with ContentOffset while refreshing.
+				if (!isRefreshing)
+				{
+					MeasureSupplementaryViews();
+					LayoutSupplementaryViews();
+				}
 			}
 
 			InvalidateMeasureIfContentSizeChanged();
