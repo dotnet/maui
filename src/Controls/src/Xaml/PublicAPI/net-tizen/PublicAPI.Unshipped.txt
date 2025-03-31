@@ -3,7 +3,7 @@ Microsoft.Maui.Controls.Hosting.ResourceDictionariesMauiAppBuilderExtensions
 Microsoft.Maui.Controls.Hosting.ResourceDictionaryBuilder
 Microsoft.Maui.Controls.Hosting.ResourceDictionaryBuilder.ResourceDictionaryBuilder() -> void
 ~Microsoft.Maui.Controls.Hosting.ResourceDictionaryBuilder.Add(string key, object value) -> void
-~Microsoft.Maui.Controls.Hosting.ResourceDictionaryBuilder.AddXaml(string xamlPath) -> void
+~Microsoft.Maui.Controls.Hosting.ResourceDictionaryBuilder.AddDictionary(string xamlPath) -> void
 ~Microsoft.Maui.Controls.Hosting.ResourceDictionaryBuilder.Build() -> Microsoft.Maui.Controls.ResourceDictionary
 ~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TypedBinding.get -> Microsoft.Maui.Controls.Internals.TypedBindingBase
 ~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TypedBinding.set -> void

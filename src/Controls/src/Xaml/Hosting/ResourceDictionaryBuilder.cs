@@ -8,7 +8,7 @@ public class ResourceDictionaryBuilder
 {
     private readonly ResourceDictionary _dict = new();
 
-    public void AddXaml(string xamlPath)
+    public void AddDictionary(string xamlPath)
     {
         var dict = new ResourceDictionary();
         var uri = new Uri(xamlPath, UriKind.Relative);
@@ -22,7 +22,7 @@ public class ResourceDictionaryBuilder
 
         _dict.MergedDictionaries.Add(dict);
 
-        GlobalResources.Current.MergedDictionaries.Add(dict);
+        GlobalResources.Current.MergedDictionaries.Add(dict);   
     }
 
 
