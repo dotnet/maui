@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
-			=> TextTransformUtilites.GetTransformedText(source, textTransform);
+			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='CancelButtonColor']/Docs/*" />
 		public Color CancelButtonColor

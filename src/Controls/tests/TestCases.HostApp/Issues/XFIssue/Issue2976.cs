@@ -277,7 +277,7 @@ public class NativeListViewPage2 : ContentPage
 		nativeListView2.ItemSelected += async (sender, e) =>
 		{
 			//await Navigation.PushModalAsync (new DetailPage(e.SelectedItem));
-			await DisplayAlert("clicked", "one of the rows was clicked", "ok");
+			await DisplayAlertAsync("clicked", "one of the rows was clicked", "ok");
 		};
 
 		// The root page of your application

@@ -94,12 +94,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				foreach (object item in e.AddedItems)
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					if (item is Cell cell)
 					{
 						if (cell.IsEnabled)
 							Element.Model.RowSelected(cell);
 						break;
 					}
+#pragma warning restore CS0618 // Type or member is obsolete
 				}
 			}
 

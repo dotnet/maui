@@ -16,13 +16,23 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class ListViewRenderer : ViewRenderer<ListView, AListView>
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static PropertyMapper<ListView, ListViewRenderer> Mapper =
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			new PropertyMapper<ListView, ListViewRenderer>(VisualElementRendererMapper);
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static CommandMapper<ListView, ListViewRenderer> CommandMapper =
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			new CommandMapper<ListView, ListViewRenderer>(VisualElementRendererCommandMapper);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		ListViewAdapter _adapter;
 		IPlatformViewHandler _headerRenderer;
@@ -35,7 +45,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		SwipeRefreshLayout _refresh;
 		IListViewController Controller => Element;
+#pragma warning disable CS0618 // Type or member is obsolete
 		ITemplatedItemsView<Cell> TemplatedItemsView => Element;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		ScrollBarVisibility _defaultHorizontalScrollVisibility = 0;
 		ScrollBarVisibility _defaultVerticalScrollVisibility = 0;
@@ -120,7 +132,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		//		oldParent?.AddView(ContainerView);
 		//}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			base.OnElementChanged(e);
 
@@ -221,16 +235,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateHeader();
 			else if (e.PropertyName == "FooterElement")
 				UpdateFooter();
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == "RefreshAllowed")
 				UpdateIsSwipeToRefreshEnabled();
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == ListView.IsPullToRefreshEnabledProperty.PropertyName)
 				UpdateIsSwipeToRefreshEnabled();
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == ListView.IsRefreshingProperty.PropertyName)
 				UpdateIsRefreshing();
 			else if (e.PropertyName == ListView.SeparatorColorProperty.PropertyName || e.PropertyName == ListView.SeparatorVisibilityProperty.PropertyName)
 				_adapter.NotifyDataSetChanged();
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == PlatformConfiguration.AndroidSpecific.ListView.IsFastScrollEnabledProperty.PropertyName)
 				UpdateFastScrollEnabled();
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (e.PropertyName == ListView.SelectionModeProperty.PropertyName)
 				UpdateSelectionMode();
 			else if (e.PropertyName == ListView.RefreshControlColorProperty.PropertyName)
@@ -239,6 +259,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateHorizontalScrollBarVisibility();
 			else if (e.PropertyName == ScrollView.VerticalScrollBarVisibilityProperty.PropertyName)
 				UpdateVerticalScrollBarVisibility();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		/*
@@ -319,7 +345,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			Cell cell;
+#pragma warning restore CS0618 // Type or member is obsolete
 			int scrollPosition;
 			var scrollArgs = (ITemplatedItemsListScrollToRequestedEventArgs)e;
 
@@ -727,7 +755,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			readonly ListView _element;
+#pragma warning restore CS0618 // Type or member is obsolete
 			readonly float _density;
 			int _contentOffset;
 

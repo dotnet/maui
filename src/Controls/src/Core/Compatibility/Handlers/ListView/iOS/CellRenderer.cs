@@ -7,17 +7,29 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class CellRenderer : ElementHandler<Cell, UITableViewCell>, IRegisterable
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
 		static readonly BindableProperty RealCellProperty = BindableProperty.CreateAttached("RealCell", typeof(UITableViewCell), typeof(Cell), null);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		readonly UIColor _defaultCellBgColor = (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)) ? UIColor.Clear : UIColor.White;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static PropertyMapper<Cell, CellRenderer> Mapper =
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 				new PropertyMapper<Cell, CellRenderer>(ElementHandler.ElementMapper);
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static CommandMapper<Cell, CellRenderer> CommandMapper =
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			new CommandMapper<Cell, CellRenderer>(ElementHandler.ElementCommandMapper);
+#pragma warning restore CS0618 // Type or member is obsolete
 		WeakReference<UITableView>? _tableView;
 
 		private protected event PropertyChangedEventHandler? CellPropertyChanged;
@@ -35,7 +47,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return GetCell(VirtualView, reusableCell, tv);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			_tableView = new(tv);
 			Performance.Start(out string reference);
@@ -62,7 +76,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return tvc;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public virtual void SetAccessibility(UITableViewCell tableViewCell, Cell cell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (cell.IsSet(AutomationProperties.IsInAccessibleTreeProperty))
 				tableViewCell.IsAccessibilityElement = cell.GetValue(AutomationProperties.IsInAccessibleTreeProperty).Equals(true);
@@ -88,7 +104,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public virtual void SetBackgroundColor(UITableViewCell tableViewCell, Cell cell, UIColor color)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(14))
 			{
@@ -104,7 +122,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			tableViewCell.BackgroundColor = color;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected void UpdateBackground(UITableViewCell tableViewCell, Cell cell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			var uiBgColor = UITableView.Appearance.BackgroundColor ?? _defaultCellBgColor;
 
@@ -119,6 +139,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
 				{
 					uiBgColor = Microsoft.Maui.Platform.ColorExtensions.GroupedBackground;
@@ -128,6 +150,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (cell.RealParent is VisualElement element && element.BackgroundColor != null)
 						uiBgColor = element.BackgroundColor.ToPlatform();
 				}
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			SetBackgroundColor(tableViewCell, cell, uiBgColor);
@@ -178,10 +202,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_tableView.TryGetTarget(out var tableView))
 			{
 				var index = tableView.IndexPathForCell(ctv);
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (index == null && VirtualView is Cell c)
 				{
 					index = Controls.Compatibility.Platform.iOS.CellExtensions.GetIndexPath(c);
 				}
+#pragma warning restore CS0618 // Type or member is obsolete
 				if (index != null)
 					tableView.ReloadRows(new[] { index }, UITableViewRowAnimation.None);
 			}

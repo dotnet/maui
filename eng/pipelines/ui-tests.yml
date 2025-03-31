@@ -73,6 +73,14 @@ parameters:
       demands:
         - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
+  
+  - name: androidPoolLinux
+    type: object
+    default:
+      name: $(1ESPTPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - ImageOverride -equals 1ESPT-Ubuntu22.04
 
   - name: iosPool
     type: object
@@ -132,6 +140,7 @@ stages:
   - template: common/ui-tests.yml
     parameters:
       androidPool: ${{ parameters.androidPool }}
+      androidLinuxPool: ${{ parameters.androidPoolLinux }}
       iosPool: ${{ parameters.iosPool }}
       windowsPool: ${{ parameters.windowsPool }}
       windowsBuildPool: ${{ parameters.windowsBuildPool }}

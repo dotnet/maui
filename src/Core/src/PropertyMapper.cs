@@ -16,8 +16,7 @@ namespace Microsoft.Maui
 {
 	public abstract class PropertyMapper : IPropertyMapper
 	{
-		// TODO: Make this private in .NET10
-		protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new(StringComparer.Ordinal);
+		private protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new(StringComparer.Ordinal);
 		IPropertyMapper[]? _chained;
 
 		List<string>? _updatePropertiesKeys;
@@ -41,7 +40,7 @@ namespace Microsoft.Maui
 		{
 			_mapper[key] = action;
 
-			ClearKeyCache();
+			ClearMergedMappers();
 		}
 
 		protected virtual void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
@@ -134,20 +133,16 @@ namespace Microsoft.Maui
 			set
 			{
 				_chained = value;
-				ClearKeyCache();
+				ClearMergedMappers();
 			}
 		}
 
-		// TODO: Make private in .NET10 with a new name: ClearMergedMappers
-		protected virtual void ClearKeyCache()
+		void ClearMergedMappers()
 		{
 			_updatePropertiesMappers = null;
 			_updatePropertiesKeys = null;
 			_cachedMappers = null;
 		}
-
-		// TODO: Remove in .NET10
-		public virtual IReadOnlyCollection<string> UpdateKeys => UpdatePropertiesKeys;
 
 		public virtual IEnumerable<string> GetKeys()
 		{

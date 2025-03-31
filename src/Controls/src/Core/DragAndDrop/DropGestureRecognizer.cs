@@ -94,13 +94,13 @@ namespace Microsoft.Maui.Controls
 		public void SendDragOver(DragEventArgs args)
 		{
 			DragOverCommand?.Execute(DragOverCommandParameter);
-			DragOver?.Invoke(this, args);
+			DragOver?.Invoke(Parent ?? this, args);
 		}
 
 		internal void SendDragLeave(DragEventArgs args)
 		{
 			DragLeaveCommand?.Execute(DragLeaveCommandParameter);
-			DragLeave?.Invoke(this, args);
+			DragLeave?.Invoke(Parent ?? this, args);
 		}
 
 		internal async Task SendDrop(DropEventArgs args)
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			DropCommand?.Execute(DropCommandParameter);
-			Drop?.Invoke(this, args);
+			Drop?.Invoke(Parent ?? this, args);
 
 			if (!args.Handled)
 			{
