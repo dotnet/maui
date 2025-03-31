@@ -94,6 +94,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected virtual void UpdateLayout()
 		{
 			_layout = SelectLayout();
+			MapItemsUpdatingScrollMode(this, ItemsView);
 			Controller?.UpdateLayout(_layout);
 		}
 
