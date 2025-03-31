@@ -1,8 +1,8 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.NET.Sdk" Version="10.0.100-preview.3.25178.6">
+    <Dependency Name="Microsoft.NET.Sdk" Version="10.0.100-preview.3.25180.4">
       <Uri>https://github.com/dotnet/sdk</Uri>
-      <Sha>f1136b96aa547132927220cea7207e22ce0f59e1</Sha>
+      <Sha>1cbddce673399a67f5df1b10859df13e6894c9ad</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-preview.3.25171.5" CoherentParentDependency="Microsoft.NET.Sdk">
       <Uri>https://github.com/dotnet/runtime</Uri>
