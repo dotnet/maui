@@ -8,9 +8,11 @@ namespace Microsoft.Maui.Controls.Internals;
 [EditorBrowsable(EditorBrowsableState.Never)]
 public static class TextTransformUtilites
 {
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static string GetTransformedText(string source, TextTransform textTransform)
 		=> TextTransformUtilities.GetTransformedText(source, textTransform);
-
+	
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static void SetPlainText(InputView inputView, string platformText)
 		=> TextTransformUtilities.SetPlainText(inputView, platformText);
 }
@@ -18,6 +20,7 @@ public static class TextTransformUtilites
 /// <summary>
 /// A utilities class for text transformations.
 /// </summary>
+[EditorBrowsable(EditorBrowsableState.Never)]
 public static class TextTransformUtilities
 {
 	/// <summary>
@@ -26,6 +29,7 @@ public static class TextTransformUtilities
 	/// <param name="source">The text to transform.</param>
 	/// <param name="textTransform">The transform to apply to <paramref name="source"/>.</param>
 	/// <returns>The transformed text.</returns>]
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static string GetTransformedText(string source, TextTransform textTransform)
 	{
 		if (string.IsNullOrEmpty(source))
@@ -50,6 +54,7 @@ public static class TextTransformUtilities
 	/// </summary>
 	/// <param name="inputView">The view that will receive the text value.</param>
 	/// <param name="platformText">The text that will be applied to the view.</param>
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static void SetPlainText(InputView inputView, string platformText)
 	{
 		if (inputView is null)
