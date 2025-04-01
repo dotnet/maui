@@ -903,7 +903,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			var platformPath = GetPlatformPath(path);
 			_context.AddPath(platformPath);
 
-			if (windingMode is WindingMode.EvenOdd)
+			if (windingMode == WindingMode.EvenOdd)
 			{
 				_context.EOClip();
 			}
@@ -938,7 +938,7 @@ namespace Microsoft.Maui.Graphics.Platform
 					() =>
 					{
 						_context.AddPath(platformPath);
-						if (windingMode is WindingMode.EvenOdd)
+						if (windingMode == WindingMode.EvenOdd)
 						{
 							_context.EOClip();
 							return false;
@@ -954,7 +954,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				var y = boundingBox.Top;
 
 				_context.AddPath(platformPath);
-				if (windingMode is WindingMode.EvenOdd)
+				if (windingMode == WindingMode.EvenOdd)
 				{
 					FillWithPattern(x, y, _context.EOFillPath);
 				}
@@ -970,7 +970,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				var y = boundingBox.Top;
 
 				_context.AddPath(platformPath);
-				if (windingMode is WindingMode.EvenOdd)
+				if (windingMode == WindingMode.EvenOdd)
 				{
 					FillWithImage(x, y, _context.EOFillPath);
 				}
@@ -982,7 +982,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			else
 			{
 				_context.AddPath(platformPath);
-				if (windingMode is WindingMode.EvenOdd)
+				if (windingMode == WindingMode.EvenOdd)
 				{
 					_context.EOFillPath();
 				}
@@ -999,11 +999,11 @@ namespace Microsoft.Maui.Graphics.Platform
 			float y,
 			HorizontalAlignment horizontalAlignment)
 		{
-			if (horizontalAlignment is HorizontalAlignment.Left)
+			if (horizontalAlignment == HorizontalAlignment.Left)
 			{
 				DrawString(value, x, y);
 			}
-			else if (horizontalAlignment is HorizontalAlignment.Right)
+			else if (horizontalAlignment == HorizontalAlignment.Right)
 			{
 				var size = GetStringSize(value, _font, _fontSize);
 				x -= size.Width;
@@ -1042,7 +1042,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			TextFlow textFlow = TextFlow.ClipBounds,
 			float lineSpacingAdjustment = 0)
 		{
-			if (width is 0 || height is 0 || string.IsNullOrEmpty(value))
+			if (width == 0 || height == 0 || string.IsNullOrEmpty(value))
 			{
 				return;
 			}
@@ -1115,11 +1115,11 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (ctFont is not null && ctFont.Handle != IntPtr.Zero)
 				attributes.Font = ctFont;
 
-			if (verticalAlignment is VerticalAlignment.Center)
+			if (verticalAlignment == VerticalAlignment.Center)
 			{
 				iy += -(float)(ctFont.DescentMetric / 2);
 			}
-			else if (verticalAlignment is VerticalAlignment.Bottom)
+			else if (verticalAlignment == VerticalAlignment.Bottom)
 			{
 				iy += -(float)(ctFont.DescentMetric);
 			}
