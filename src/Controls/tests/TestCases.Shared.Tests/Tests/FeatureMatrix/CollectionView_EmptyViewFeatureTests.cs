@@ -81,7 +81,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewstringSetFirst_AndEmptyObservableCollection()
+		public void ValidateEmptyViewStringSetFirst_AndEmptyObservableCollection()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateECustomEmptyViewDisplayedSetFirst_AndEmptyObservableCollection()
+		public void ValidateCustomEmptyViewDisplayedSetFirst_AndEmptyObservableCollection()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -321,7 +321,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateECustomEmptyViewSizeDisplayedSetFirst_AndEmptyObservableCollection()
+		public void ValidateCustomEmptyViewSizeDisplayedSetFirst_AndEmptyObservableCollection()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -516,7 +516,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateCustomEmptyViewDisplayed_WhenBaicItemTemplateSetFirst()
+		public void ValidateCustomEmptyViewDisplayed_WhenBasicItemTemplateSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -531,7 +531,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateCustomEmptyViewDisplayedSetFirst_WhenBaicItemTemplate()
+		public void ValidateCustomEmptyViewDisplayedSetFirst_WhenBasicItemTemplate()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -546,7 +546,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateCustomEmptyViewSizeDisplayed_WhenBaicItemTemplateSetFirst()
+		public void ValidateCustomEmptyViewSizeDisplayed_WhenBasicItemTemplateSetFirst()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -561,7 +561,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateCustomEmptyViewSizeDisplayedSetFirst_WhenBaicItemTemplate()
+		public void ValidateCustomEmptyViewSizeDisplayedSetFirst_WhenBasicItemTemplate()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -917,7 +917,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewTemplateDisplayedSetFirst_AndBaicItemTemplate()
+		public void ValidateEmptyViewTemplateDisplayedSetFirst_AndBasicItemTemplate()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -947,7 +947,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateCustomSizeEmptyViewTemplateDisplayedSetFirst_AndBaicItemTemplate()
+		public void ValidateCustomSizeEmptyViewTemplateDisplayedSetFirst_AndBasicItemTemplate()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -1099,9 +1099,9 @@ namespace Microsoft.Maui.TestCases.Tests
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 //Footer Not Displayed at the Bottom When EmptyView is Active in CV2 Issue Link: https://github.com/dotnet/maui/issues/28604
-        [Test]
+		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewstringDisplayed_AndFooterString()
+		public void ValidateEmptyViewStringDisplayed_AndFooterString()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -1258,7 +1258,7 @@ namespace Microsoft.Maui.TestCases.Tests
         
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void ValidateEmptyViewString_WithHeaderFooterString_WehnHorizontalList()
+		public void ValidateEmptyViewString_WithHeaderFooterString_WhenHorizontalList()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
