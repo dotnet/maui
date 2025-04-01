@@ -135,21 +135,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				var currentInset = CollectionView.ContentInset;
 
-				nfloat headerWidth = ((ItemsView?.Header is View) ? _headerViewFormsElement?.ToPlatform() : _headerUIView)?.Frame.Width ?? 0f;
-				nfloat footerWidth = ((ItemsView?.Footer is View) ? _footerViewFormsElement?.ToPlatform() : _footerUIView)?.Frame.Width ?? 0f;
+				nfloat headerWidth = _headerUIView?.Frame.Width ?? 0f;
+				nfloat footerWidth = _footerUIView?.Frame.Width ?? 0f;
 				nfloat emptyWidth = emptyView?.Frame.Width ?? 0f;
-
-				if (_headerUIView != null && _headerUIView.Frame.X != -headerWidth)
-				{
-					_headerUIView.Frame = new CoreGraphics.CGRect(-headerWidth, 0, headerWidth, CollectionView.Frame.Height);
-				}
-
-				if (_footerUIView != null && (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width || emptyWidth > 0))
-				{
-					_footerUIView.Frame = new CoreGraphics.CGRect(
-						ItemsViewLayout.CollectionViewContentSize.Width + emptyWidth, 0, footerWidth,
-						CollectionView.Frame.Height);
-				}
 
 				if (CollectionView.ContentInset.Left != headerWidth || CollectionView.ContentInset.Right != footerWidth)
 				{
@@ -163,14 +151,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 					// if the header grows it will scroll off the screen because if you change the content inset iOS adjusts the content offset so the list doesn't move
 					// this changes the offset of the list by however much the header size has changed
-					CollectionView.ContentOffset = new CoreGraphics.CGPoint(xOffset, CollectionView.ContentOffset.Y);
+					CollectionView.ContentOffset = new CGPoint(xOffset, CollectionView.ContentOffset.Y);
+				}
+
+				if (_headerUIView != null && _headerUIView.Frame.X != -headerWidth)
+				{
+					_headerUIView.Frame = new CGRect(-headerWidth, 0, headerWidth, CollectionView.Frame.Height);
+				}
+
+				if (_footerUIView != null && IsViewLoaded && View.Window != null)
+				{
+					var width = ItemsViewLayout.CollectionViewContentSize.Height;
+					var footerX = width + emptyWidth;
+					var currentFrame = _footerUIView.Frame;
+
+					if (currentFrame.X != footerX)
+					{
+						_footerUIView.Frame = new CGRect(footerX, 0, footerWidth, CollectionView.Frame.Height);
+					}
 				}
 			}
 			else
 			{
 				var currentInset = CollectionView.ContentInset;
-				nfloat headerHeight = ((ItemsView?.Header is View) ? _headerViewFormsElement?.ToPlatform() : _headerUIView)?.Frame.Height ?? 0f;
-				nfloat footerHeight = ((ItemsView?.Footer is View) ? _footerViewFormsElement?.ToPlatform() : _footerUIView)?.Frame.Height ?? 0f;
+				nfloat headerHeight = _headerUIView?.Frame.Height ?? 0f;
+				nfloat footerHeight = _footerUIView?.Frame.Height ?? 0f;
 				nfloat emptyHeight = emptyView?.Frame.Height ?? 0f;
 
 				if (CollectionView.ContentInset.Top != headerHeight || CollectionView.ContentInset.Bottom != footerHeight)
@@ -188,25 +193,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 					if (currentOffset.Y.Value < headerHeight)
 					{
-						CollectionView.ContentOffset = new CoreGraphics.CGPoint(CollectionView.ContentOffset.X, yOffset);
+						CollectionView.ContentOffset = new CGPoint(CollectionView.ContentOffset.X, yOffset);
 					}
 				}
 
 				if (_headerUIView != null && _headerUIView.Frame.Y != -headerHeight)
 				{
-					_headerUIView.Frame = new CoreGraphics.CGRect(0, -headerHeight, CollectionView.Frame.Width, headerHeight);
+					_headerUIView.Frame = new CGRect(0, -headerHeight, CollectionView.Frame.Width, headerHeight);
 				}
 
-				nfloat height = 0;
-
-				if (IsViewLoaded && View.Window != null)
+				if (_footerUIView != null && IsViewLoaded && View.Window != null)
 				{
-					height = ItemsViewLayout.CollectionViewContentSize.Height;
-
+					var height = ItemsViewLayout.CollectionViewContentSize.Height;
 					var footerY = height + emptyHeight;
-					if (_footerUIView != null && (_footerUIView.Frame.Y != footerY || _footerUIView.Frame.Height != footerHeight))
+					var currentFrame = _footerUIView.Frame;
+
+					if (currentFrame.Y != footerY)
 					{
-						_footerUIView.Frame = new CoreGraphics.CGRect(0, footerY, CollectionView.Frame.Width, footerHeight);
+						_footerUIView.Frame = new CGRect(0, footerY, CollectionView.Frame.Width, footerHeight);
 					}
 				}
 			}

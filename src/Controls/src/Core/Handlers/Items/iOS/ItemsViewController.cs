@@ -600,19 +600,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var platformView = formsElement.ToPlatform();
-			Rect rect;
 			if (platformView.Superview is GeneralWrapperView generalWrapperView)
 			{
-				rect = new Rect(Point.Zero, size);
 				var originalFrame = generalWrapperView.Frame;
 				generalWrapperView.Frame = new CGRect(originalFrame.X, originalFrame.Y, (nfloat)size.Width, (nfloat)size.Height);
 			}
 			else
 			{
-				rect = new Rect(platformView.Frame.X, platformView.Frame.Y, size.Width, size.Height);
+				var frame = new Rect(platformView.Frame.X, platformView.Frame.Y, size.Width, size.Height);
+				formsElement.Arrange(frame);
 			}
-
-			formsElement.Arrange(rect);
 		}
 
 		void RemeasureLayout(UIView nativeView)
