@@ -1,6 +1,21 @@
 <Project>
-   <PropertyGroup>
-      <PublishingVersion>3</PublishingVersion>
-      <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
-   </PropertyGroup>
+  <PropertyGroup>
+    <PublishingVersion>3</PublishingVersion>
+    <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <_InstallersToPublish Include="$(ArtifactsShippingPackagesDir)\**\*.zip" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <_UploadPathRoot>maui-sdk</_UploadPathRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Artifact Include="@(_InstallersToPublish)" Kind="Blob" RelativeBlobPath="@(_UploadPathRoot)/%(Filename)%(Extension)">
+      <IsShipping>true</IsShipping>
+      <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
+    </Artifact>
+  </ItemGroup>
 </Project>
