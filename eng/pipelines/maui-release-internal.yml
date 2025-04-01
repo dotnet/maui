@@ -17,6 +17,11 @@ parameters:
   type: string
   default: skip
 
+- name: barId
+  displayName: BarID for maestro
+  type: string
+  default: skip
+
 - name: VM_IMAGE_HOST
   type: object
   default:
@@ -26,6 +31,8 @@ parameters:
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
+# - template: /eng/pipelines/common/variables.yml@self
+# - template: /eng/pipelines/arcade/variables.yml@self
 - group: DotNetBuilds storage account read tokens
 - group: AzureDevOps-Artifact-Feeds-Pats
 
@@ -77,6 +84,9 @@ extends:
           - script: |
               echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
             displayName: Set COMMIT
+
+          - pwsh: 'gci env: | format-table -autosize -wrap'
+            displayName: Print environment variables
 
           - task: AzureCLI@2
             displayName: Add build to workload set channel
