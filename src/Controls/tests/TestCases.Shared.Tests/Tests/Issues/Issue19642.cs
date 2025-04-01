@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS //Issue link - https://github.com/dotnet/maui/issues/28725
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,3 +21,4 @@ public class Issue19642 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
