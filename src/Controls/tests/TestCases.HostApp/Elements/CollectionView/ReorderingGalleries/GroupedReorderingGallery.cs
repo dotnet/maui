@@ -1,9 +1,4 @@
-﻿using System;
-using Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Devices;
-using Microsoft.Maui.Graphics;
+﻿using Maui.Controls.Sample.CollectionViewGalleries.GroupingGalleries;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.ReorderingGalleries
 {

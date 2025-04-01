@@ -22,17 +22,22 @@ namespace Microsoft.Maui.Platform
 			var titleBar = platformWindow.GetAppWindow()?.TitleBar;
 			if (titleBar is not null)
 			{
-				SetTitleBarVisibility(platformWindow, titleBar.ExtendsContentIntoTitleBar);
+				SetTitleBarVisibility(titleBar.ExtendsContentIntoTitleBar);
 			}
 		}
 
-		internal void SetTitleBarVisibility(Window platformWindow, bool isVisible)
+		internal void SetTitleBarVisibility(bool isVisible)
 		{
+			var platformWindow = _platformWindow.GetTargetOrDefault();
+			if (platformWindow is null)
+				return;
+
 			// https://learn.microsoft.com/en-us/windows/apps/design/basics/titlebar-design
 			// Standard title bar height is 32px
 			// This should always get set by the code after but
 			// we are setting it just in case
 			var appbarHeight = isVisible ? 32 : 0;
+			var titlebarMargins = new UI.Xaml.Thickness(0, 0, 0, 0);
 			if (isVisible && UI.Windowing.AppWindowTitleBar.IsCustomizationSupported())
 			{
 				var titleBar = platformWindow.GetAppWindow()?.TitleBar;
@@ -40,13 +45,15 @@ namespace Microsoft.Maui.Platform
 				{
 					var density = platformWindow.GetDisplayDensity();
 					appbarHeight = (int)(titleBar.Height / density);
+					titlebarMargins = new UI.Xaml.Thickness(titleBar.LeftInset, 0, titleBar.RightInset, 0);
 				}
 			}
 
 			_rootView.UpdateAppTitleBar(
 					appbarHeight,
 					UI.Windowing.AppWindowTitleBar.IsCustomizationSupported() &&
-					isVisible
+					isVisible,
+					titlebarMargins
 				);
 		}
 
@@ -75,7 +82,33 @@ namespace Microsoft.Maui.Platform
 		internal MauiToolbar? Toolbar => _rootView.Toolbar;
 		public FrameworkElement RootView => _rootView;
 
-		public virtual void Connect(UIElement platformView)
+		internal void Connect(IWindowHandler handler)
+		{
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
+			var platformWindow = _platformWindow.GetTargetOrDefault();
+			if (platformWindow is null)
+			{
+				return;
+			}
+
+			var previousRootView = RootView;
+
+			Disconnect();
+			Connect(handler.VirtualView.Content?.ToPlatform(handler.MauiContext));
+
+			if (platformWindow.Content is WindowRootViewContainer container)
+			{
+				if (previousRootView is not null && previousRootView != RootView)
+				{
+					container.RemovePage(previousRootView);
+				}
+
+				container.AddPage(RootView);
+			}
+		}
+
+		public virtual void Connect(UIElement? platformView)
 		{
 			if (_rootView.Content != null)
 			{
@@ -106,10 +139,12 @@ namespace Microsoft.Maui.Platform
 		public virtual void Disconnect()
 		{
 			_rootView.OnWindowTitleBarContentSizeChanged -= WindowRootViewOnWindowTitleBarContentSizeChanged;
+
 			if (_platformWindow.TryGetTarget(out var platformWindow))
 			{
 				platformWindow.Activated -= OnWindowActivated;
 			}
+
 			SetToolbar(null);
 
 			if (_rootView.Content is RootNavigationView navView)
@@ -137,6 +172,15 @@ namespace Microsoft.Maui.Platform
 
 		internal void SetTitle(string? title) =>
 			_rootView.WindowTitle = title;
+
+		internal void SetTitleBar(ITitleBar? titlebar, IMauiContext? mauiContext)
+		{
+			if (_platformWindow.TryGetTarget(out var window))
+			{
+				_rootView.AppWindowId = window.GetAppWindow()?.Id;
+				_rootView.SetTitleBar(titlebar, mauiContext);
+			}
+		}
 
 		void OnWindowActivated(object sender, WindowActivatedEventArgs e)
 		{

@@ -113,8 +113,10 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 #elif ANDROID
 		private static async Task<RawBitmap> CaptureView(Android.Views.View view)
 		{
+#pragma warning disable CS0618 // Obsolete			
 			while (!AndroidX.Core.View.ViewCompat.IsLaidOut(view))
 				await Task.Delay(10); // Wait for Android to render the view
+#pragma warning restore CS0618 // Obsolete				
 			var bitmap = Android.Graphics.Bitmap.CreateBitmap(view.Width, view.Height, Android.Graphics.Bitmap.Config.Argb8888);
 			Android.Graphics.Canvas canvas = new (bitmap);
 			view.Draw(canvas);

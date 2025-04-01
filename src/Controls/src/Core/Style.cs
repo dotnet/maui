@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls
 		void ApplyCore(BindableObject bindable, Style basedOn, SetterSpecificity specificity)
 		{
 			if (basedOn != null)
-				((IStyle)basedOn).Apply(bindable, new SetterSpecificity(specificity.Style - 1, 0, 0, 0));
+				((IStyle)basedOn).Apply(bindable, specificity.AsBaseStyle());
 
 #if NETSTANDARD2_0
 			specificities.Remove(bindable);

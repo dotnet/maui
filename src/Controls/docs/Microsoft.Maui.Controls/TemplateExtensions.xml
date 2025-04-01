@@ -20,7 +20,6 @@
   <Interfaces />
   <Docs>
     <summary>Extension class for DataTemplate, providing a string-based shortcut method for defining a Binding.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="SetBinding">
@@ -53,7 +52,6 @@
         <param name="targetProperty">The target property of the binding.</param>
         <param name="path">The path to the binding.</param>
         <summary>Binds the <paramref name="self" /> object's <paramref name="targetProperty" /> to a new <see cref="T:Microsoft.Maui.Controls.Binding" /> instance that was created with <paramref name="path" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

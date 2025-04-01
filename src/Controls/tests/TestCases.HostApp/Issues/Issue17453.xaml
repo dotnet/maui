@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue17453">
-    <Grid RowDefinitions="Auto,*"
+    <Grid RowDefinitions="Auto,Auto,*"
           Padding="10,10">
         <VerticalStackLayout FlowDirection="LeftToRight"
                              Spacing="10">
@@ -46,5 +46,16 @@
                        Text="Simple Text" />
             </Border>
         </VerticalStackLayout>
+
+        <VerticalStackLayout Grid.Row="2">
+            <Label Text="#25225 (Entry with margin):"/>
+            <VerticalStackLayout Margin="0,30">
+                <Entry
+                    Text="Simple text"
+                    AutomationId="EntryWithMargin"
+                    ClearButtonVisibility="WhileEditing"/>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+
     </Grid>
 </ContentPage>

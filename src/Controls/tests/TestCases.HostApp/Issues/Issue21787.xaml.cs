@@ -1,8 +1,4 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.None, 21787, "[Windows] Remove workaround for label text decorations", PlatformAffected.UWP)]
 	public partial class Issue21787 : ContentPage

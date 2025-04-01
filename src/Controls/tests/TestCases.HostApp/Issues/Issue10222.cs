@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 10222, "[CollectionView] ObjectDisposedException if the page is closed during scrolling", PlatformAffected.iOS)]
 	public class Issue10222 : NavigationPage
 	{
@@ -48,6 +41,7 @@ namespace Maui.Controls.Sample.Issues
 								Margin = new Thickness(0, 100)
 							};
 							label.SetBinding(Label.TextProperty, new Binding("."));
+							label.SetBinding(Label.AutomationIdProperty, new Binding("."));
 							return label;
 						})
 					};

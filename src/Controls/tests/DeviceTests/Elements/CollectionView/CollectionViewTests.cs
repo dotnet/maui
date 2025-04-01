@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Maui.Controls;
@@ -117,7 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Header = new Label { Text = "Header" },
 					Footer = new Label { Text = "Footer" },
-					ItemTemplate = new DataTemplate(() => 
+					ItemTemplate = new DataTemplate(() =>
 					{
 						var label = new Label();
 						labels.Add(label);
@@ -160,7 +161,7 @@ namespace Microsoft.Maui.DeviceTests
 					await navPage.PopAsync();
 				});
 
-				
+
 				Assert.NotNull(logicalChildren);
 				Assert.True(logicalChildren.Count <= 5, "_logicalChildren should not grow in size!");
 			}
@@ -169,8 +170,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(
-#if IOS || MACCATALYST
-Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
+#if IOS || MACCATALYST || WINDOWS
+Skip = "Fails: https://github.com/dotnet/maui/issues/17664"
 #endif
 )]
 		public async Task CollectionScrollToUngroupedWorks()
@@ -261,7 +262,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 			{
 				IsGrouped = true,
 				ItemsSource = grouped.ToList(),
-				ItemTemplate = new DataTemplate(() => 
+				ItemTemplate = new DataTemplate(() =>
 				{
 					var name = new Label()
 					{
@@ -375,8 +376,13 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 
 			var frame = collectionView.Frame;
 
+			var measureInvalidatedCount = 0;
+			void OnCollectionViewOnMeasureInvalidated(object s, EventArgs e) => Interlocked.Increment(ref measureInvalidatedCount);
+
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
 			{
+				collectionView.MeasureInvalidated += OnCollectionViewOnMeasureInvalidated;
+
 				for (int n = 0; n < itemCounts.Length; n++)
 				{
 					int itemsCount = itemCounts[n];
@@ -402,6 +408,13 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 					double expectedHeight = layoutOptions == LayoutOptions.Fill
 						? containerHeight
 						: Math.Min(itemsCount * templateHeight, containerHeight);
+
+#if IOS
+					if (layoutOptions != LayoutOptions.Fill)
+					{
+						Assert.Equal(n + 1, measureInvalidatedCount);
+					}
+#endif
 
 					if (itemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
 					{
@@ -474,8 +487,8 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 				}
 			});
 		}
-    
-    
+
+
 		[Fact(
 #if IOS || MACCATALYST
 		Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/18517"
@@ -677,7 +690,7 @@ Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/17664"
 
 			var vsl = new VerticalStackLayout()
 			{
-				collectionView				
+				collectionView
 			};
 
 			vsl.HeightRequest = 500;

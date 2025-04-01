@@ -1,29 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Github, 2354, "ListView, ImageCell and disabled source cache and same image url", PlatformAffected.iOS | PlatformAffected.Android)]
+
+	[Issue(IssueTracker.Github, 2354, "ListView, ImageCell and disabled source cache and same image url", PlatformAffected.iOS | PlatformAffected.Android, isInternetRequired: true)]
 	public class Issue2354 : TestContentPage
 	{
 		protected override void Init()
 		{
 			var presidents = new List<President>();
 
-			presidents.Add(new President($"Presidente 44", 1, $"https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/Fruits.jpg?raw=true"));
-			presidents.Add(new President($"Presidente 43", 2, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/person.png?raw=true"));
-			presidents.Add(new President($"Presidente 42", 3, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/photo.jpg?raw=true"));
-			presidents.Add(new President($"Presidente 41", 4, $"https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/FlowerBuds.jpg?raw=true"));
-			presidents.Add(new President($"Presidente 40", 5, $"https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/games.png?raw=true"));
-			presidents.Add(new President($"Presidente 39", 6, $"https://github.com/xamarin/Xamarin.Forms/blob/17881ec93d6b3fb0ee5e1a2be46d7eeadef23529/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/gear.png?raw=true"));
-			presidents.Add(new President($"Presidente 38", 7, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/xamarinlogo.png?raw=true"));
-			presidents.Add(new President($"Presidente 37", 8, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/xamarinstore.jpg?raw=true"));
-			presidents.Add(new President($"Presidente 36", 9, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/oasis.jpg?raw=true"));
-			presidents.Add(new President($"Presidente 35", 10, $"https://github.com/xamarin/Xamarin.Forms/blob/5.0.0/Microsoft.Maui.Controls.ControlGallery.Android/Resources/drawable/Vegetables.jpg?raw=true"));
+			presidents.Add(new President($"Presidente 44", 1, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/avatar.png?raw=true"));
+			presidents.Add(new President($"Presidente 43", 2, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/oasis.jpg?raw=true"));
+			presidents.Add(new President($"Presidente 42", 3, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/photo21314.jpg?raw=true"));
+			presidents.Add(new President($"Presidente 41", 4, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/groceries.png?raw=true"));
+			presidents.Add(new President($"Presidente 40", 5, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/avatar.png?raw=true"));
+			presidents.Add(new President($"Presidente 39", 6, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/oasis.jpg?raw=true"));
+			presidents.Add(new President($"Presidente 38", 7, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/photo21314.jpg?raw=true"));
+			presidents.Add(new President($"Presidente 37", 8, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/groceries.png?raw=true"));
+			presidents.Add(new President($"Presidente 36", 9, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/avatar.png?raw=true"));
+			presidents.Add(new President($"Presidente 35", 10, $"https://github.com/dotnet/maui/blob/main/src/Controls/tests/TestCases.HostApp/Resources/Images/oasis.jpg?raw=true"));
 
 			var header = new Label
 			{
@@ -51,7 +45,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class President
 		{
 			public President(string name, int position, string image)
@@ -69,7 +63,7 @@ namespace Maui.Controls.Sample.Issues
 		}
 
 
-		[Preserve(AllMembers = true)]
+
 		public class CustomCell : ViewCell
 		{
 			public CustomCell()
@@ -95,7 +89,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class UriConverter : IValueConverter
 		{
 

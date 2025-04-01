@@ -5,9 +5,7 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/BindingCondition.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindingCondition']/Docs/*" />
-	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.PassthroughValueProvider")]
-	[AcceptEmptyServiceProvider]
-	public sealed class BindingCondition : Condition, IValueProvider
+	public sealed class BindingCondition : Condition
 	{
 		readonly BindableProperty _boundProperty;
 
@@ -48,12 +46,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
-		{
-			//This is no longer required
-			return this;
-		}
-
 		internal override bool GetState(BindableObject bindable)
 		{
 			object newValue = bindable.GetValue(_boundProperty);
@@ -69,7 +61,7 @@ namespace Microsoft.Maui.Controls
 		internal override void TearDown(BindableObject bindable)
 		{
 			bindable.RemoveBinding(_boundProperty);
-			bindable.ClearValue(_boundProperty);
+			bindable.ClearValue(_boundProperty, SetterSpecificity.FromBinding);
 		}
 
 		static IValueConverterProvider s_valueConverter = DependencyService.Get<IValueConverterProvider>();

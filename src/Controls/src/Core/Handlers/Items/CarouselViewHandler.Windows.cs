@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		ScrollViewer _scrollViewer;
 		WScrollBarVisibility? _horizontalScrollBarVisibilityWithoutLoop;
 		WScrollBarVisibility? _verticalScrollBarVisibilityWithoutLoop;
-		Size _currentSize; 
+		Size _currentSize;
 		bool _isCarouselViewReady;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void ConnectHandler(ListViewBase platformView)
 		{
 			ItemsView.Scrolled += CarouselScrolled;
-			ListViewBase.SizeChanged += OnListViewSizeChanged;
+			platformView.SizeChanged += OnListViewSizeChanged;
 
 			UpdateScrollBarVisibilityForLoop();
 
@@ -50,9 +50,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView != null)
 				ItemsView.Scrolled -= CarouselScrolled;
 
-			if (ListViewBase != null)
+			if (platformView != null)
 			{
-				ListViewBase.SizeChanged -= OnListViewSizeChanged;
+				platformView.SizeChanged -= OnListViewSizeChanged;
 				_proxy.Unsubscribe();
 			}
 
@@ -195,7 +195,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				handler.UpdatePosition();
 			}
-			
+
 		}
 
 		public static void MapIsBounceEnabled(CarouselViewHandler handler, CarouselView carouselView)
@@ -588,9 +588,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				item.ItemHeight = itemHeight;
 				item.ItemWidth = itemWidth;
-
-				item.InvalidateMeasure();
 			}
+			ListViewBase.InvalidateMeasure();
 		}
 	}
 }

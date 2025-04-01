@@ -40,10 +40,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			switch (permission)
 			{
 				case "Battery":
-					status = await Permissions.CheckStatusAsync<Permissions.Battery>();
+					status = await Permissions.CheckStatusAsync<Permissions.Battery>().ConfigureAwait(false);
 					break;
 				case "NetworkState":
-					status = await Permissions.CheckStatusAsync<Permissions.NetworkState>();
+					status = await Permissions.CheckStatusAsync<Permissions.NetworkState>().ConfigureAwait(false);
 					break;
 			}
 
@@ -59,10 +59,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			switch (permission)
 			{
 				case "Battery":
-					status = await Permissions.RequestAsync<Permissions.Battery>();
+					status = await Permissions.RequestAsync<Permissions.Battery>().ConfigureAwait(false);
 					break;
 				case "NetworkState":
-					status = await Permissions.RequestAsync<Permissions.NetworkState>();
+					status = await Permissions.RequestAsync<Permissions.NetworkState>().ConfigureAwait(false);
 					break;
 			}
 
@@ -75,8 +75,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			await Task.Run(async () =>
 			{
-				await Assert.ThrowsAsync<PermissionException>(async () => await Permissions.RequestAsync<Permissions.LocationWhenInUse>());
-			});
+				await Assert.ThrowsAsync<PermissionException>(async () => await Permissions.RequestAsync<Permissions.LocationWhenInUse>()).ConfigureAwait(false);
+			}).ConfigureAwait(false);
 		}
 
 		[Fact
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				var status = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
 				Assert.Equal(PermissionStatus.Granted, status);
 
-				status = await Permissions.CheckStatusAsync<Permissions.StorageWrite>();
+				status = await Permissions.CheckStatusAsync<Permissions.StorageWrite>().ConfigureAwait(false);
 				Assert.Equal(PermissionStatus.Granted, status);
 			}
 			else // Android < API 33, we didn't request these, so status denied
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				var status = await Permissions.CheckStatusAsync<Permissions.StorageRead>();
 				Assert.Equal(PermissionStatus.Denied, status);
 
-				status = await Permissions.CheckStatusAsync<Permissions.StorageWrite>();
+				status = await Permissions.CheckStatusAsync<Permissions.StorageWrite>().ConfigureAwait(false);
 				Assert.Equal(PermissionStatus.Denied, status);
 			}
 		}

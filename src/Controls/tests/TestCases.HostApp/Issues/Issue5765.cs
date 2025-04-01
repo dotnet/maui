@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Layouts;
+﻿using Microsoft.Maui.Layouts;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5765, "[Frame, CollectionView, Android]The Label.Text is invisible on Android if DataTemplate have frame as layout",
 		PlatformAffected.Android)]
 	class Issue5765 : TestNavigationPage

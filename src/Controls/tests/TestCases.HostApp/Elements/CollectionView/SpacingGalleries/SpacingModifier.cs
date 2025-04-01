@@ -1,8 +1,4 @@
-﻿using System;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries.SpacingGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries.SpacingGalleries
 {
 	internal class SpacingModifier : ContentView
 	{

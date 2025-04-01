@@ -13,7 +13,7 @@ namespace Microsoft.Maui
 	public static class VisualDiagnostics
 	{
 		static ConditionalWeakTable<object, SourceInfo> sourceInfos = new ConditionalWeakTable<object, SourceInfo>();
-		static Lazy<bool> isVisualDiagnosticsEnvVarSet  = new Lazy<bool>(() => Environment.GetEnvironmentVariable("ENABLE_XAML_DIAGNOSTICS_SOURCE_INFO") is { } value && value == "1");
+		static Lazy<bool> isVisualDiagnosticsEnvVarSet = new Lazy<bool>(() => Environment.GetEnvironmentVariable("ENABLE_XAML_DIAGNOSTICS_SOURCE_INFO") is { } value && value == "1");
 
 		static internal bool IsEnabled => DebuggerHelper.DebuggerIsAttached || isVisualDiagnosticsEnvVarSet.Value;
 

@@ -1,11 +1,7 @@
-﻿using System;
-using System.ComponentModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
+﻿using System.ComponentModel;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 12211, "[Android] BoxView Opacity not working", PlatformAffected.Android)]
 	public partial class Issue12211 : ContentPage
 	{

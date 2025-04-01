@@ -1,14 +1,17 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
+
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="Type[@FullName='Microsoft.Maui.Controls.RadioButton']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class RadioButton : TemplatedView, IElementConfiguration<RadioButton>, ITextElement, IFontElement, IBorderElement, IRadioButton
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='CheckedVisualState']/Docs/*" />
@@ -289,17 +292,12 @@ namespace Microsoft.Maui.Controls
 			base.ChangeVisualState();
 		}
 
-		IPlatformSizeService _platformSizeService;
-
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (ControlTemplate == null)
 			{
-				if (Handler != null)
-					return new SizeRequest(Handler.GetDesiredSize(widthConstraint, heightConstraint));
-
-				_platformSizeService ??= DependencyService.Get<IPlatformSizeService>();
-				return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
+				return Handler?.GetDesiredSize(widthConstraint, heightConstraint) ?? new();
 			}
 
 			return base.OnMeasure(widthConstraint, heightConstraint);
@@ -443,15 +441,6 @@ namespace Microsoft.Maui.Controls
 			SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
 		}
 
-		static void BindToTemplatedParent(BindableObject bindableObject, params BindableProperty[] properties)
-		{
-			foreach (var property in properties)
-			{
-				bindableObject.SetBinding(property, new Binding(property.PropertyName,
-					source: RelativeBindingSource.TemplatedParent));
-			}
-		}
-
 		static View BuildDefaultTemplate()
 		{
 			Border border = new Border()
@@ -459,21 +448,12 @@ namespace Microsoft.Maui.Controls
 				Padding = 6
 			};
 
-			BindToTemplatedParent(border, BackgroundColorProperty, HorizontalOptionsProperty,
-				MarginProperty, OpacityProperty, RotationProperty, ScaleProperty, ScaleXProperty, ScaleYProperty,
-				TranslationYProperty, TranslationXProperty, VerticalOptionsProperty);
+			border.SetBinding(HorizontalOptionsProperty, static (RadioButton rb) => rb.HorizontalOptions, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(VerticalOptionsProperty, static (RadioButton rb) => rb.VerticalOptions, source: RelativeBindingSource.TemplatedParent);
 
-			border.SetBinding(Border.StrokeProperty,
-				new Binding(BorderColorProperty.PropertyName,
-							source: RelativeBindingSource.TemplatedParent));
-
-			border.SetBinding(Border.StrokeShapeProperty,
-				new Binding(CornerRadiusProperty.PropertyName, converter: new CornerRadiusToShape(),
-							source: RelativeBindingSource.TemplatedParent));
-
-			border.SetBinding(Border.StrokeThicknessProperty,
-				new Binding(BorderWidthProperty.PropertyName,
-							source: RelativeBindingSource.TemplatedParent));
+			border.SetBinding(Border.StrokeProperty, static (RadioButton rb) => rb.BorderColor, source: RelativeBindingSource.TemplatedParent);
+			border.SetBinding(Border.StrokeShapeProperty, static (RadioButton rb) => rb.CornerRadius, source: RelativeBindingSource.TemplatedParent, converter: new CornerRadiusToShape());
+			border.SetBinding(Border.StrokeThicknessProperty, static (RadioButton rb) => rb.BorderWidth, source: RelativeBindingSource.TemplatedParent);
 
 			var grid = new Grid
 			{
@@ -572,9 +552,8 @@ namespace Microsoft.Maui.Controls
 					out checkMarkFillVisualStateDark);
 			}
 
-			contentPresenter.SetBinding(MarginProperty, new Binding("Padding", source: RelativeBindingSource.TemplatedParent));
-			contentPresenter.SetBinding(BackgroundColorProperty, new Binding(BackgroundColorProperty.PropertyName,
-				source: RelativeBindingSource.TemplatedParent));
+			contentPresenter.SetBinding(MarginProperty, static (RadioButton radio) => radio.Padding, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
+			contentPresenter.SetBinding(BackgroundColorProperty, static (RadioButton radio) => radio.BackgroundColor, BindingMode.OneWay, source: RelativeBindingSource.TemplatedParent);
 
 			grid.Add(normalEllipse);
 			grid.Add(checkMark);
@@ -659,7 +638,16 @@ namespace Microsoft.Maui.Controls
 		Font ITextStyle.Font => this.ToFont();
 
 #if ANDROID
-		object IContentView.Content => ContentAsString();
+		object IContentView.Content 
+		{
+			get
+			{
+				if (ResolveControlTemplate() == null)
+					return ContentAsString();
+
+				return Content;
+			}
+		}
 #endif
 
 		IView IContentView.PresentedContent => ((this as IControlTemplated).TemplateRoot as IView) ?? (Content as IView);
@@ -674,6 +662,12 @@ namespace Microsoft.Maui.Controls
 		{
 			get => IsChecked;
 			set => SetValue(IsCheckedProperty, value, SetterSpecificity.FromHandler);
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Value), Value, nameof(IsChecked), IsChecked);
+			return $"{base.GetDebuggerDisplay()},{debugText}";
 		}
 
 		private protected override Semantics UpdateSemantics()

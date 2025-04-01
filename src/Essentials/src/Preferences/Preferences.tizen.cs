@@ -58,6 +58,10 @@ namespace Microsoft.Maui.Storage
 				{
 					Preference.Set(fullKey, dt.ToBinary());
 				}
+				else if (value is DateTimeOffset dto)
+				{
+					Preference.Set(fullKey, dto.ToString("O"));
+				}
 				else
 					Preference.Set(fullKey, value);
 			}
@@ -84,6 +88,13 @@ namespace Microsoft.Maui.Storage
 						case DateTime dt:
 							var encodedValue = Preference.Get<long>(fullKey);
 							value = (T)(object)DateTime.FromBinary(encodedValue);
+							break;
+						case DateTimeOffset dt:
+							var savedDateTimeOffset = Preference.Get<string>(fullKey);
+							if (DateTimeOffset.TryParse(savedDateTimeOffset, out var dateTimeOffset))
+							{
+								value = (T)(object)dateTimeOffset;
+							}
 							break;
 						default:
 							// the case when the string is null

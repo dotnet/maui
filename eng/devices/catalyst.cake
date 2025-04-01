@@ -16,6 +16,7 @@ var deviceCleanupEnabled = Argument("cleanup", true);
 // Directory setup
 var binlogDirectory = DetermineBinlogDirectory(projectPath, binlogArg).FullPath;
 var dotnetToolPath = GetDotnetToolPath();
+LogSetupInfo(dotnetToolPath);
 
 Information($"Project File: {projectPath}");
 Information($"Build Binary Log (binlog): {binlogDirectory}");
@@ -25,29 +26,30 @@ Information($"Build Target Framework: {targetFramework}");
 Information($"Test Device: {testDevice}");
 Information($"Test Results Path: {testResultsPath}");
 
-Setup(context =>
-{
-	LogSetupInfo(dotnetToolPath);
-	PerformCleanupIfNeeded(deviceCleanupEnabled);
-});
-
-Teardown(context => PerformCleanupIfNeeded(deviceCleanupEnabled));
-
-Task("Cleanup");
-
-Task("Build")
+Task("buildOnly")
 	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
 		ExecuteBuild(projectPath, binlogDirectory, configuration, runtimeIdentifier, targetFramework, dotnetToolPath);
 	});
 
-Task("Test")
-	.IsDependentOn("Build")
+Task("testOnly")
+	.WithCriteria(!string.IsNullOrEmpty(projectPath))
 	.Does(() =>
 	{
 		ExecuteTests(projectPath, testDevice, testResultsPath, configuration, targetFramework, runtimeIdentifier, dotnetToolPath);
 	});
+
+Task("build")
+	.IsDependentOn("buildOnly");
+
+Task("test")
+	.IsDependentOn("buildOnly")
+	.IsDependentOn("testOnly");
+
+Task("buildAndTest")
+	.IsDependentOn("buildOnly")
+	.IsDependentOn("testOnly");
 
 Task("uitest-build")
 	.Does(() =>
@@ -140,8 +142,8 @@ void ExecuteUITests(string project, string app, string device, string resultsDir
 
 	var name = System.IO.Path.GetFileNameWithoutExtension(project);
 	var binlog = $"{binDir}/{name}-{config}-mac.binlog";
-	var appiumLog = $"{binDir}/appium_mac.log";
 	var resultsFileName = SanitizeTestResultsFilename($"{name}-{config}-catalyst-{testFilter}");
+	var appiumLog = $"{binDir}/appium_mac_{resultsFileName}.log";
 
 	DotNetBuild(project, new DotNetBuildSettings
 	{
@@ -171,7 +173,6 @@ void ExecuteBuildUITestApp(string appProject, string binDir, string config, stri
 		Framework = tfm,
 		ToolPath = toolPath,
 		ArgumentCustomization = args => args
-			.Append("/t:Restore;Build")
 			.Append($"/bl:{binlog}")
 	});
 
@@ -179,15 +180,6 @@ void ExecuteBuildUITestApp(string appProject, string binDir, string config, stri
 }
 
 // Helper methods
-
-void PerformCleanupIfNeeded(bool cleanupEnabled)
-{
-	if (cleanupEnabled)
-	{
-		// Add cleanup logic, possibly deleting temporary files, directories, etc.
-		Information("Cleaning up...");
-	}
-}
 
 string GetDefaultRuntimeIdentifier()
 {

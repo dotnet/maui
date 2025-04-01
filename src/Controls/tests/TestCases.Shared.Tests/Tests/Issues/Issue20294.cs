@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -23,4 +22,3 @@ public class Issue20294 : _IssuesUITest
 		App.ScrollDown("theCollectionView", ScrollStrategy.Gesture, 0.5);
 	}
 }
-#endif

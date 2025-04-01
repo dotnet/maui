@@ -1,14 +1,6 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 2617, "Error on binding ListView with duplicated items", PlatformAffected.UWP)]
 	public class Issue2617 : TestContentPage
 	{
@@ -18,7 +10,7 @@ namespace Maui.Controls.Sample.Issues
 		public ListView listView { get; private set; }
 		public ListView listViewIsGrouped { get; private set; }
 
-		[Preserve(AllMembers = true)]
+
 		class MyHeaderViewCell : ViewCell
 		{
 			public MyHeaderViewCell()
@@ -30,7 +22,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		[Preserve(AllMembers = true)]
+
 		class GroupedItem : List<string>
 		{
 			public GroupedItem()
@@ -51,7 +43,7 @@ namespace Maui.Controls.Sample.Issues
 					nameLabel.SetBinding(Label.TextProperty, new Binding("."));
 					var cell = new ViewCell
 					{
-						View = new Frame()
+						View = new Border()
 						{
 							Content = nameLabel
 						},
@@ -71,7 +63,7 @@ namespace Maui.Controls.Sample.Issues
 					nameLabel.SetBinding(Label.TextProperty, new Binding("."));
 					var cell = new ViewCell
 					{
-						View = new Frame()
+						View = new Border()
 						{
 							Content = nameLabel
 						},

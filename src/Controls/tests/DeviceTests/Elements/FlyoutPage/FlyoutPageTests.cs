@@ -40,28 +40,9 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 #endif
 					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Frame, FrameRenderer>();
+					handlers.AddHandler<Border, BorderHandler>();
 					handlers.AddHandler<Controls.Window, WindowHandlerStub>();
 				});
-			});
-		}
-
-		[Theory]
-		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
-		public async Task PoppingFlyoutPageDoesntCrash(Type flyoutPageType)
-		{
-			SetupBuilder();
-			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
-			{
-				var flyoutPage = CreateFlyoutPage(
-					flyoutPageType,
-					new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }),
-					new ContentPage() { Title = "Flyout" });
-
-				await navPage.PushAsync(flyoutPage);
-				await navPage.PopAsync();
 			});
 		}
 
@@ -71,23 +52,26 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var flyoutPage = CreateFlyoutPage(
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var flyoutPage = CreateFlyoutPage(
 					flyoutPageType,
-					new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }),
+					new NavigationPage(new ContentPage() { Content = new Border(), Title = "Detail" }),
 					new ContentPage() { Title = "Flyout" });
 
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), async (handler) =>
-			{
-				var currentDetailPage = flyoutPage.Detail;
+				await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), async (handler) =>
+				{
+					var currentDetailPage = flyoutPage.Detail;
 
-				// Set with new page
-				var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
-				flyoutPage.Detail = navPage;
-				await OnNavigatedToAsync(navPage);
+					// Set with new page
+					var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
+					flyoutPage.Detail = navPage;
+					await OnNavigatedToAsync(navPage);
 
-				// Set back to previous page
-				flyoutPage.Detail = currentDetailPage;
-				await OnNavigatedToAsync(currentDetailPage);
+					// Set back to previous page
+					flyoutPage.Detail = currentDetailPage;
+					await OnNavigatedToAsync(currentDetailPage);
+				});
 			});
 		}
 

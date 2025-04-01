@@ -1,7 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 17694, "Circle view not rotating from center", PlatformAffected.UWP)]
 	public class Issue17694 : TestContentPage
@@ -20,7 +17,7 @@ namespace Maui.Controls.Sample.Issues
 				AutomationId = "Spin",
 				Text = "Spin",
 			};
-			button.Clicked += (s, e) => 
+			button.Clicked += (s, e) =>
 			{
 				circleView.Rotation = 180;
 			};

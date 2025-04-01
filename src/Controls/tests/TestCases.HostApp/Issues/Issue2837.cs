@@ -1,9 +1,6 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 2837, "Exception thrown during NavigationPage.Navigation.PopAsync", PlatformAffected.Android)]
 	public class Issue2837 : NavigationPage
 	{

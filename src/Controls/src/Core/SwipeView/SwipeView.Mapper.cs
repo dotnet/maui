@@ -5,10 +5,6 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class SwipeView
 	{
-		[Obsolete("Use SwipeViewHandler.Mapper instead.")]
-		internal static IPropertyMapper<ISwipeView, ISwipeViewHandler> ControlsSwipeMapper =
-			new ControlsMapper<SwipeView, SwipeViewHandler>(SwipeViewHandler.Mapper);
-
 		internal static new void RemapForControls()
 		{
 			// Adjusted the mapping to preserve SwipeView.Entry legacy behavior

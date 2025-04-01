@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -20,6 +22,8 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellSection']/Docs/*" />
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
+	[TypeConverter(typeof(ShellSectionTypeConverter))]
+	[DebuggerTypeProxy(typeof(ShellSectionDebugView))]
 	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement, IStackNavigation
 	{
 		#region PropertyKeys
@@ -291,9 +295,9 @@ namespace Microsoft.Maui.Controls
 
 			shellSection.Items.Add(shellContent);
 
-			shellSection.SetBinding(TitleProperty, new Binding(nameof(Title), BindingMode.OneWay, source: shellContent));
-			shellSection.SetBinding(IconProperty, new Binding(nameof(Icon), BindingMode.OneWay, source: shellContent));
-			shellSection.SetBinding(FlyoutIconProperty, new Binding(nameof(FlyoutIcon), BindingMode.OneWay, source: shellContent));
+			shellSection.SetBinding(TitleProperty, static (BaseShellItem item) => item.Title, BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(IconProperty, static (BaseShellItem item) => item.Icon, BindingMode.OneWay, source: shellContent);
+			shellSection.SetBinding(FlyoutIconProperty, static (BaseShellItem item) => item.FlyoutIcon, BindingMode.OneWay, source: shellContent);
 
 			return shellSection;
 		}
@@ -408,16 +412,27 @@ namespace Microsoft.Maui.Controls
 								continue;
 						}
 
-						// This is the page that we will eventually get to once we've finished
-						// modifying the existing navigation stack
-						// So we want to fire appearing on it						
-						navPage.SendAppearing();
-
+						// We use this inside ModalNavigationManager to indicate that we're going to be popping multiple
+						// modal pages so we don't want it to fire any appearing events
 						IsPoppingModalStack = true;
 
 						while (navStack.Count > popCount && Navigation.ModalStack.Count > 0)
 						{
 							bool isAnimated = animate ?? IsNavigationAnimated(navStack[navStack.Count - 1]);
+
+							var nextModalPageToPopIndex = navStack.Count - 2;
+							// Check if we've reached the last modal page to pop before revealing the target modal page.
+							// The IsPoppingModalStack flag instructs ModalNavigationManager to suppress lifecycle events
+							// during a bulk pop operation.
+							// This approach is required because the standard modal APIs do not support popping multiple
+							// pages at once, while Shell URI navigation does.
+							// Ideally, this logic would be refactored into ModalNavigationManager to expose batch popping
+							// via the INavigation APIs.
+							if (nextModalPageToPopIndex >= 0 && navStack[nextModalPageToPopIndex] == navPage)
+							{
+								IsPoppingModalStack = false;
+							}
+
 							if (Navigation.ModalStack.Contains(navStack[navStack.Count - 1]))
 							{
 								await PopModalAsync(isAnimated);
@@ -1242,5 +1257,33 @@ namespace Microsoft.Maui.Controls
 		}
 #nullable disable
 
+		private sealed class ShellSectionTypeConverter : TypeConverter
+		{
+			public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) => false;
+			public override object ConvertTo(ITypeDescriptorContext context, CultureInfo cultureInfo, object value, Type destinationType) => throw new NotSupportedException();
+
+			public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+				=> sourceType == typeof(ShellContent) || sourceType == typeof(TemplatedPage);
+			public override object ConvertFrom(ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value)
+				=> value switch
+				{
+					ShellContent shellContent => (ShellSection)shellContent,
+					TemplatedPage page => (ShellSection)page,
+					_ => throw new NotSupportedException(),
+				};
+		}
+
+		/// <summary>
+		/// Provides a debug view for the <see cref="ShellSection"/> class.
+		/// </summary>
+		/// <param name="section">The <see cref="ShellSection"/> instance to debug.</param>
+		private sealed class ShellSectionDebugView(ShellSection section)
+		{
+			public ShellSection CurrentItem => section.CurrentItem;
+
+			public IList<ShellContent> Items => section.Items;
+
+			public IReadOnlyList<Page> Stack => section.Stack;
+		}
 	}
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 14829, "DisplayActionSheet still not working on Windows", PlatformAffected.UWP)]
 	public class Issue14829 : TestContentPage
@@ -19,7 +15,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		public partial class MainPage : ContentPage
+		public class MainPage : ContentPage
 		{
 			protected override void OnAppearing()
 			{

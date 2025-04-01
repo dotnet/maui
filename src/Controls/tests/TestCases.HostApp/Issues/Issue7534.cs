@@ -1,10 +1,5 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 7534, "Span with tail truncation and paragraph breaks with Java.Lang.IndexOutOfBoundsException", PlatformAffected.Android)]
 	public partial class Issue7534 : TestContentPage
 	{
@@ -35,7 +30,8 @@ namespace Maui.Controls.Sample.Issues
 			var labelDescription = new Label
 			{
 				Text = "If you opened this page, the app didn't crash and you can read three lines in the label above, this test has passed",
-				VerticalOptions = LayoutOptions.StartAndExpand
+				VerticalOptions = LayoutOptions.StartAndExpand,
+				AutomationId = "Success"
 			};
 #pragma warning restore CS0618 // Type or member is obsolete
 

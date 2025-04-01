@@ -1,14 +1,6 @@
-﻿using System;
-using System.ComponentModel;
-using System.Linq;
-using Microsoft.Maui.Controls;
-using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 1747, "Binding to Switch.IsEnabled has no effect", PlatformAffected.WinPhone)]
 	public partial class Issue1747 : TestContentPage
 	{

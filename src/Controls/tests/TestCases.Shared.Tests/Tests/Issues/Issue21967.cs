@@ -35,22 +35,25 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var itemSize = App.WaitForElement("Item1").GetRect();
 			ClassicAssert.Greater(200, itemSize.Height);
 		}
-
+#if IOS || ANDROID //The test fails on Windows and MacCatalyst because the SetOrientation method, which is intended to change the device orientation, is only supported on mobile platforms iOS and Android.
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[FailsOnMac("This test is failing, likely due to product issue")]
-		[FailsOnWindows("This test is failing, likely due to product issue")]
-		public void CollectionViewWorksWhenRotatingDevice()
+		[FailsOnMacWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		public async Task CollectionViewWorksWhenRotatingDevice()
 		{
 			try
 			{
 				App.WaitForElement("FullSize");
 				App.Tap("FullSize");
 				App.SetOrientationPortrait();
+				await Task.Delay(300);
 				var itemSizePortrait = App.WaitForElement("Item1").GetRect();
 				App.SetOrientationLandscape();
+				await Task.Delay(300);
 				var itemSizeLandscape = App.WaitForElement("Item1").GetRect();
 				App.SetOrientationPortrait();
+				await Task.Delay(300);
 				var itemSizePortrait2 = App.WaitForElement("Item1").GetRect();
 
 				ClassicAssert.Greater(itemSizeLandscape.Width, itemSizePortrait.Width);
@@ -61,5 +64,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.SetOrientationPortrait();
 			}
 		}
+#endif
 	}
 }

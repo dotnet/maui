@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 17347, "Setting a new TitleView on an already created page crashes iOS", PlatformAffected.iOS)]
 	public class Issue17347 : NavigationPage
@@ -37,7 +34,7 @@ namespace Maui.Controls.Sample.Issues
 			}
 		}
 
-		public partial class TestPage : ContentPage
+		public class TestPage : ContentPage
 		{
 			Label TopView;
 			static int i = 0;

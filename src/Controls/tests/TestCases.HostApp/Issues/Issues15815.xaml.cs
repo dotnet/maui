@@ -1,13 +1,8 @@
-using System;
 using System.Collections.ObjectModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
 
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 15815, "Horizontal CollectionView does not show the last element under some condition", PlatformAffected.iOS)]
 	public partial class Issues15815 : ContentPage
 	{

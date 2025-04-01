@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.EmptyViewGalleries
 {
-	[Preserve(AllMembers = true)]
+
 	public class EmptyViewGalleryFilterInfo : INotifyPropertyChanged
 	{
 		string _filter;

@@ -34,90 +34,6 @@
     <summary>A <see cref="T:Microsoft.Maui.Controls.View" /> control for picking an element in a list.</summary>
     <remarks>
       <para>The visual representation of a Picker is similar to a <see cref="T:Microsoft.Maui.Controls.Entry" />, but a picker control appears in place of a keyboard.</para>
-      <para>The following example shows the creation of a Picker.</para>
-      <example>
-        <code lang="csharp lang-csharp"><![CDATA[using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-    
-namespace FormsGallery
-{
-    class PickerDemoPage : ContentPage
-    {
-        // Dictionary to get Color from color name.
-        Dictionary<string, Color> nameToColor = new Dictionary<string, Color>
-        {
-            { "Aqua", Color.Aqua }, { "Black", Color.Black },
-            { "Blue", Color.Blue }, { "Fuchsia", Color.Fuchsia },
-            { "Gray", Color.Gray }, { "Green", Color.Green },
-            { "Lime", Color.Lime }, { "Maroon", Color.Maroon },
-            { "Navy", Color.Navy }, { "Olive", Color.Olive },
-            { "Purple", Color.Purple }, { "Red", Color.Red },
-            { "Silver", Color.Silver }, { "Teal", Color.Teal },
-            { "White", Color.White }, { "Yellow", Color.Yellow }
-        };
-    
-        public PickerDemoPage()
-        {
-            Label header = new Label
-            {
-                Text = "Picker",
-                FontSize = Device.GetNamedSize (NamedSize.Large, typeof(Label)),
-                HorizontalOptions = LayoutOptions.Center
-            };
-    
-            Picker picker = new Picker
-            {
-                Title = "Color",
-                VerticalOptions = LayoutOptions.CenterAndExpand
-            };
-    
-            foreach (string colorName in nameToColor.Keys)
-            {
-                picker.Items.Add(colorName);
-            }
-    
-            // Create BoxView for displaying picked Color
-            BoxView boxView = new BoxView
-            {
-                WidthRequest = 150,
-                HeightRequest = 150,
-                HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.CenterAndExpand
-            };
-    
-            picker.SelectedIndexChanged += (sender, args) =>
-                {
-                    if (picker.SelectedIndex == -1)
-                    {
-                        boxView.Color = Color.Default;
-                    }
-                    else
-                    {
-                        string colorName = picker.Items[picker.SelectedIndex];
-                        boxView.Color = nameToColor[colorName];
-                    }
-                };
-    
-            // Accomodate iPhone status bar.
-            this.Padding = new Thickness(10, Device.OnPlatform(20, 0, 0), 10, 5);
-    
-            // Build the page.
-            this.Content = new StackLayout
-            {
-                Children =
-                {
-                    header,
-                    picker,
-                    boxView
-                }
-            };
-    
-        }
-    }
-}
-]]></code>
-      </example>
       <para>
         <img href="~/xml/Microsoft.Maui.Controls/_images/Picker.TripleScreenShot.png" />
       </para>
@@ -161,9 +77,6 @@ namespace FormsGallery
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CharacterSpacingProperty">
@@ -180,8 +93,6 @@ namespace FormsGallery
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontAttributes">
@@ -200,8 +111,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Gets a value that indicates whether the font for the searchbar text is bold, italic, or neither.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontAttributesProperty">
@@ -220,7 +129,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.FontAttributes" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontFamily">
@@ -239,8 +147,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the font family for the picker text.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontFamilyProperty">
@@ -259,7 +165,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.FontFamily" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontSize">
@@ -284,7 +189,6 @@ namespace FormsGallery
       <Docs>
         <summary>Gets or sets the size of the font for the text in the picker.</summary>
         <value>A <see langword="double" /> that indicates the size of the font.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontSizeProperty">
@@ -303,7 +207,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.FontSize" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HorizontalTextAlignment">
@@ -320,9 +223,6 @@ namespace FormsGallery
         <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="HorizontalTextAlignmentProperty">
@@ -339,8 +239,6 @@ namespace FormsGallery
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ItemDisplayBinding">
@@ -359,8 +257,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Gets or sets a binding that selects the property that will be displayed for each object in the list of items.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Items">
@@ -405,8 +301,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the source list of items to template and display.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ItemsSourceProperty">
@@ -425,7 +319,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.ItemsSource" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="On&lt;T&gt;">
@@ -456,8 +349,6 @@ namespace FormsGallery
       <Docs>
         <typeparam name="T">To be added.</typeparam>
         <summary>Returns the platform-specific instance of this <see cref="T:Microsoft.Maui.Controls.Picker" />, on which a platform-specific method may be called.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectedIndex">
@@ -508,7 +399,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Raised when the value of the SelectIndex property has changed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectedIndexProperty">
@@ -553,8 +443,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the selected item.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SelectedItemProperty">
@@ -573,7 +461,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.SelectedItem" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextColor">
@@ -592,8 +479,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the text color.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextColorProperty">
@@ -612,7 +497,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.TextColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextTransform">
@@ -629,9 +513,6 @@ namespace FormsGallery
         <ReturnType>Microsoft.Maui.Controls.TextTransform</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TextTransformProperty">
@@ -648,8 +529,6 @@ namespace FormsGallery
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Title">
@@ -692,9 +571,6 @@ namespace FormsGallery
         <ReturnType>Microsoft.Maui.Graphics.Color</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TitleColorProperty">
@@ -712,7 +588,6 @@ namespace FormsGallery
       </ReturnValue>
       <Docs>
         <summary>The backing store for the <see cref="P:Microsoft.Maui.Controls.Picker.TitleColor" /> field.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TitleProperty">
@@ -761,9 +636,6 @@ namespace FormsGallery
       <Docs>
         <param name="source">To be added.</param>
         <param name="textTransform">To be added.</param>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="VerticalTextAlignment">
@@ -780,9 +652,6 @@ namespace FormsGallery
         <ReturnType>Microsoft.Maui.TextAlignment</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="VerticalTextAlignmentProperty">
@@ -799,8 +668,6 @@ namespace FormsGallery
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.FontSizeDefaultValueCreator">
@@ -823,8 +690,6 @@ namespace FormsGallery
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontAttributesChanged">
@@ -852,7 +717,6 @@ namespace FormsGallery
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontChanged">
@@ -880,7 +744,6 @@ namespace FormsGallery
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontFamilyChanged">
@@ -908,7 +771,6 @@ namespace FormsGallery
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.IFontElement.OnFontSizeChanged">
@@ -936,7 +798,6 @@ namespace FormsGallery
         <param name="oldValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <param name="newValue">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

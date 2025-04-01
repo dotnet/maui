@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Platform;
+﻿using Microsoft.Maui.Platform;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -62,7 +58,7 @@ namespace Maui.Controls.Sample.Issues
 					return;
 				}
 
-				var mainWindowHandle = (Application.Current.MainPage.Window.Handler.PlatformView as MauiWinUIWindow).GetWindowHandle();
+				var mainWindowHandle = (Application.Current.Windows[0].Handler.PlatformView as MauiWinUIWindow).GetWindowHandle();
 				var childWindowHandle = (Handler.PlatformView as MauiWinUIWindow).GetWindowHandle();
 
 				Platform.PlatformMethods.SetParent(childWindowHandle, mainWindowHandle);

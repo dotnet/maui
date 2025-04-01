@@ -88,41 +88,6 @@ steps:
     - ${{ each pair in step }}:
         ${{ pair.key }}: ${{ pair.value }}
 
-  - pwsh: |
-      if ($env:JAVA_HOME_11_X64) {
-        $env:JAVA_HOME = $env:JAVA_HOME_11_X64
-      } else {
-        $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-11.*\bin\java.exe) | Select-Object -First 1
-        if ($path -and (Test-Path $path)) {
-          $env:JAVA_HOME = $path.Directory.Parent.FullName
-        }
-      }
-      if ($env:JAVA_HOME) {
-        echo "##vso[task.setvariable variable=JAVA_HOME]$env:JAVA_HOME"
-        echo "JAVA_HOME set to '$env:JAVA_HOME'"
-      } else {
-        echo "Unable to set JAVA_HOME"
-      }
-    displayName: 'Setup JDK Paths'
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-
-  - pwsh: |
-      if ($env:ANDROID_SDK_ROOT) {
-        echo "ANDROID_SDK_ROOT already set to '$env:ANDROID_SDK_ROOT'"
-      } else {
-        if ((Test-Path "${env:ProgramFiles(x86)}\Android\android-sdk")) {
-          $env:ANDROID_SDK_ROOT = "${env:ProgramFiles(x86)}\Android\android-sdk"
-        }
-        if ($env:ANDROID_SDK_ROOT) {
-          echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$env:ANDROID_SDK_ROOT"
-          echo "ANDROID_SDK_ROOT set to '$env:ANDROID_SDK_ROOT'"
-        } else {
-          echo "Unable to set ANDROID_SDK_ROOT"
-        }
-      }
-    displayName: 'Setup ANDROID_SDK_ROOT Paths'
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.buildConfiguration }}" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
@@ -150,7 +115,7 @@ steps:
       condition: succeeded()
       inputs:
         Contents: |
-          ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.Nuget/${{ parameters.buildConfiguration }}/**/*.dll
+          ${{ parameters.checkoutDirectory }}/artifacts/bin/Controls.Nuget/${{ parameters.buildConfiguration }}/**/Microsoft.Maui*.dll
         TargetFolder: ${{ parameters.checkoutDirectory }}/artifacts/binaries
         flattenFolders: false
 
@@ -165,6 +130,7 @@ steps:
         ${{ parameters.checkoutDirectory }}/artifacts/**/vs-workload.props
         ${{ parameters.checkoutDirectory }}/eng/automation/SignList.xml
         ${{ parameters.checkoutDirectory }}/eng/automation/SignVerifyIgnore.txt
+        ${{ parameters.checkoutDirectory }}/eng/automation/guardian/**
         !${{ parameters.checkoutDirectory}}/artifacts/docs-packs/**
         !${{ parameters.checkoutDirectory}}/artifacts/binaries/**
         !${{ parameters.checkoutDirectory}}/artifacts/**/res.zip

@@ -4,6 +4,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -75,6 +76,42 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		[Fact]
+		[Description("The Opacity property of a SearchBar should match with native Opacity")]
+		public async Task VerifySearchBarOpacityProperty()
+		{
+			var searchBar = new SearchBar
+			{
+				Opacity = 0.35f
+			};
+			var expectedValue = searchBar.Opacity;
+			
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var nativeOpacityValue = await GetPlatformOpacity(handler);
+				Assert.Equal(expectedValue, nativeOpacityValue);
+			});
+		}
+
+		[Fact]
+		[Description("The IsVisible property of a SearchBar should match with native IsVisible")]		
+		public async Task VerifySearchBarIsVisibleProperty()
+		{
+			var searchBar = new SearchBar
+			{
+				IsVisible = false
+			};
+			var expectedValue = searchBar.IsVisible;
+
+			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
+			await InvokeOnMainThreadAsync(async () =>
+   			{
+				var isVisible = await GetPlatformIsVisible(handler);
+				Assert.Equal(expectedValue, isVisible);
+			});
+		}
 
 #if false
 		// TODO: The search bar controls are composite controls and need to be attached to the UI to run

@@ -40,8 +40,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, WKWebView webview, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string contentRootRelativeToAppRoot, string hostPageRelativePath, ILogger logger)
 			: base(provider, dispatcher, BlazorWebViewHandler.AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 		{
-			ArgumentNullException.ThrowIfNull(nameof(blazorMauiWebViewHandler));
-			ArgumentNullException.ThrowIfNull(nameof(webview));
+			ArgumentNullException.ThrowIfNull(blazorMauiWebViewHandler);
+			ArgumentNullException.ThrowIfNull(webview);
 
 			if (provider.GetService<MauiBlazorMarkerService>() is null)
 			{
@@ -104,7 +104,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			{
 				_webView = webView ?? throw new ArgumentNullException(nameof(webView));
 			}
-
 
 			public override void RunJavaScriptAlertPanel(WKWebView webView, string message, WKFrameInfo frame, Action completionHandler)
 			{
@@ -246,9 +245,13 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				{
 					_webView.Logger.LaunchExternalBrowser(uri);
 
-#pragma warning disable CA1416, CA1422 // TODO: OpenUrl(...) has [UnsupportedOSPlatform("ios10.0")]
-					UIApplication.SharedApplication.OpenUrl(requestUrl);
-#pragma warning restore CA1416, CA1422
+					UIApplication.SharedApplication.OpenUrl(requestUrl, new UIApplicationOpenUrlOptions(), (success) =>
+					{
+						if (!success)
+						{
+							_webView.Logger.LogError($"There was an error trying to open URL: {requestUrl}");
+						}
+					});
 				}
 
 				if (strategy != UrlLoadingStrategy.OpenInWebView)

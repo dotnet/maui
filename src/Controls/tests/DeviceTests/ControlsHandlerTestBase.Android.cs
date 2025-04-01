@@ -90,7 +90,9 @@ namespace Microsoft.Maui.DeviceTests
 				var primaryCommand = menu.GetItem(i);
 				Assert.Equal(toolbarItem.Text, $"{primaryCommand.TitleFormatted}");
 
+#pragma warning disable XAOBS001 // Obsolete
 				if (primaryCommand is MenuItemImpl menuItemImpl)
+#pragma warning restore XAOBS001 // Obsolete
 				{
 					if (toolbarItem.Order != ToolbarItemOrder.Secondary)
 					{
@@ -246,7 +248,9 @@ namespace Microsoft.Maui.DeviceTests
 				FakeActivityRootView = new FakeActivityRootView(ScopedMauiContext.Context);
 				FakeActivityRootView.LayoutParameters = new LinearLayoutCompat.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 				FakeActivityRootView.AddView(handler.PlatformViewUnderTest);
+#pragma warning disable XAOBS001 // Obsolete
 				handler.PlatformViewUnderTest.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
+#pragma warning restore XAOBS001 // Obsolete
 
 				if (_window is Window window)
 				{
@@ -284,7 +288,9 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+#pragma warning disable XAOBS001 // Obsolete
 		public class FakeActivityRootView : FitWindowsFrameLayout
+#pragma warning restore XAOBS001 // Obsolete
 		{
 			public FakeActivityRootView(Context context) : base(context)
 			{

@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 16499, "Crash when using NavigationPage.TitleView and Restarting App", PlatformAffected.Android)]
 	public class Issue16499 : NavigationPage

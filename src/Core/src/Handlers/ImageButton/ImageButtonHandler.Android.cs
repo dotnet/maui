@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override ShapeableImageView CreatePlatformView()
 		{
-			var platformView = new ShapeableImageView(Context);
+			var platformView = new MauiShapeableImageView(Context);
 
 			// These set the defaults so visually it matches up with other platforms
 			platformView.SetPadding(0, 0, 0, 0);
@@ -53,11 +53,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapStrokeThickness(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
 			handler.PlatformView?.UpdateStrokeThickness(buttonStroke);
+			handler.UpdateValue(nameof(IImageButton.Padding));
 		}
 
 		public static void MapCornerRadius(IImageButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.PlatformView.UpdateCornerRadius(buttonStroke);
+			handler.PlatformView?.UpdateCornerRadius(buttonStroke);
+			handler.UpdateValue(nameof(IImageButton.Padding));
 		}
 
 		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton)

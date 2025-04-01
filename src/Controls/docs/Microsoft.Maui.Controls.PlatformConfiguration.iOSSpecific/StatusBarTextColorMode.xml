@@ -13,7 +13,6 @@
   </Base>
   <Docs>
     <summary>Enumerates text color adjustment options for the status bar.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="DoNotAdjust">

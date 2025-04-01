@@ -174,11 +174,11 @@ namespace Microsoft.Maui.Layouts.Flex
 	enum Wrap
 	{
 		/// <summary>
-		/// Whether items are laid out in a single line.
+		/// Whether items are arranged in a single line.
 		/// </summary>
 		NoWrap = 0,
 		/// <summary>
-		/// Whether items are laid out in multiple lines if needed.
+		/// Whether items are arranged in multiple lines if needed.
 		/// </summary>
 		Wrap = 1,
 		/// <summary>
@@ -241,7 +241,7 @@ namespace Microsoft.Maui.Layouts.Flex
 		public Item? Parent { get; private set; }
 		bool ShouldOrderChildren { get; set; }
 
-		///<summary>This property defines how the layout engine will distribute space between and around child items that have been laid out on multiple lines. This property is ignored if the root item does not have its <see cref="P:Microsoft.Maui.Controls.Flex.Item.Wrap" /> property set to Wrap or WrapReverse.</summary>
+		///<summary>This property defines how the layout engine will distribute space between and around child items that have been arranged on multiple lines. This property is ignored if the root item does not have its <see cref="P:Microsoft.Maui.Controls.Flex.Item.Wrap" /> property set to Wrap or WrapReverse.</summary>
 		///<remarks>The default value for this property is Stretch.</remarks>
 		/// <value>The content of the align.</value>
 		public AlignContent AlignContent { get; set; } = AlignContent.Stretch;
@@ -314,7 +314,7 @@ namespace Microsoft.Maui.Layouts.Flex
 
 		int order;
 
-		/// <summary>This property specifies whether this item should be laid out before or after other items in the container.Items are laid out based on the ascending value of this property.Items that have the same value for this property will be laid out in the order they were inserted.</summary>
+		/// <summary>This property specifies whether this item should be arranged before or after other items in the container.Items are arranged based on the ascending value of this property.Items that have the same value for this property will be arranged in the order they were inserted.</summary>
 		/// <value>The item order (can be a negative, 0, or positive value).</value>
 		/// <remarks>The default value for this property is 0.</remarks>
 		public int Order
@@ -368,7 +368,7 @@ namespace Microsoft.Maui.Layouts.Flex
 		/// <remarks>The default value for this property is NaN.</remarks>
 		public float Width { get; set; } = float.NaN;
 
-		/// <summary>This property defines whether child items should be laid out in a single line(NoWrap) or multiple lines(Wrap or WrapReverse). If this property is set to Wrap or WrapReverse, <see cref = "P:Microsoft.Maui.Controls.Flex.Item.AlignContent" /> can then be used to specify how the lines should be distributed.</summary>
+		/// <summary>This property defines whether child items should be arranged in a single line(NoWrap) or multiple lines(Wrap or WrapReverse). If this property is set to Wrap or WrapReverse, <see cref = "P:Microsoft.Maui.Controls.Flex.Item.AlignContent" /> can then be used to specify how the lines should be distributed.</summary>
 		/// <value>Any value part of the<see cref="T:Microsoft.Maui.Controls.Flex.Wrap" /> enumeration.</value>
 		/// <remarks>The default value for this property is NoWrap.</remarks>
 		public Wrap Wrap { get; set; } = Wrap.NoWrap;
@@ -426,7 +426,7 @@ namespace Microsoft.Maui.Layouts.Flex
 			}
 		}
 
-		public void Layout()
+		public void Layout(bool inMeasureMode)
 		{
 			if (Parent != null)
 				throw new InvalidOperationException("Layout() must be called on a root item (that hasn't been added to another item)");
@@ -434,10 +434,10 @@ namespace Microsoft.Maui.Layouts.Flex
 				throw new InvalidOperationException("Layout() must be called on an item that has proper values for the Width and Height properties");
 			if (SelfSizing != null)
 				throw new InvalidOperationException("Layout() cannot be called on an item that has the SelfSizing property set");
-			layout_item(this, Width, Height);
+			layout_item(this, Width, Height, inMeasureMode);
 		}
 
-		public delegate void SelfSizingDelegate(Item item, ref float width, ref float height);
+		public delegate void SelfSizingDelegate(Item item, ref float width, ref float height, bool inMeasureMode);
 
 		public SelfSizingDelegate? SelfSizing { get; set; }
 
@@ -449,7 +449,7 @@ namespace Microsoft.Maui.Layouts.Flex
 				throw new ArgumentException("child already has a parent");
 		}
 
-		static void layout_item(Item item, float width, float height)
+		static void layout_item(Item item, float width, float height, bool inMeasureMode)
 		{
 			if (item == null || item.Count == 0)
 				return;
@@ -476,7 +476,7 @@ namespace Microsoft.Maui.Layouts.Flex
 					child.Frame[1] = absolute_pos(child.Top, child.Bottom, child.Frame[3], height);
 
 					// Now that the item has a frame, we can layout its children.
-					layout_item(child, child.Frame[2], child.Frame[3]);
+					layout_item(child, child.Frame[2], child.Frame[3], inMeasureMode);
 					continue;
 				}
 
@@ -507,7 +507,7 @@ namespace Microsoft.Maui.Layouts.Flex
 				{
 					float[] size = { child.Frame[2], child.Frame[3] };
 
-					child.SelfSizing(child, ref size[0], ref size[1]);
+					child.SelfSizing(child, ref size[0], ref size[1], inMeasureMode);
 
 					for (int j = 0; j < 2; j++)
 					{
@@ -540,7 +540,7 @@ namespace Microsoft.Maui.Layouts.Flex
 					{
 						// Not enough space for this child on this line, layout the
 						// remaining items and move it to a new line.
-						layout_items(item, last_layout_child, i, relative_children_count, ref layout);
+						layout_items(item, last_layout_child, i, relative_children_count, ref layout, inMeasureMode);
 
 						layout.reset();
 						last_layout_child = i;
@@ -578,7 +578,7 @@ namespace Microsoft.Maui.Layouts.Flex
 			}
 
 			// Layout remaining items in wrap mode, or everything otherwise.
-			layout_items(item, last_layout_child, item.Count, relative_children_count, ref layout);
+			layout_items(item, last_layout_child, item.Count, relative_children_count, ref layout, inMeasureMode);
 
 			// In wrap mode we may need to tweak the position of each line according to
 			// the align_content property as well as the cross-axis size of items that
@@ -729,7 +729,7 @@ namespace Microsoft.Maui.Layouts.Flex
 			}
 		}
 
-		static void layout_items(Item item, int child_begin, int child_end, int children_count, ref flex_layout layout)
+		static void layout_items(Item item, int child_begin, int child_end, int children_count, ref flex_layout layout, bool inMeasureMode)
 		{
 			if (children_count > (child_end - child_begin))
 				throw new ArgumentException($"The {children_count} must not be smaller than the requested range between {child_begin} and {child_end}", nameof(children_count));
@@ -850,7 +850,7 @@ namespace Microsoft.Maui.Layouts.Flex
 				}
 
 				// Now that the item has a frame, we can layout its children.
-				layout_item(child, child.Frame[2], child.Frame[3]);
+				layout_item(child, child.Frame[2], child.Frame[3], inMeasureMode);
 			}
 
 			if (layout.wrap && !layout.reverse2)

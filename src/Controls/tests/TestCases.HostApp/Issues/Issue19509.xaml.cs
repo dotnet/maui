@@ -1,11 +1,6 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
-	[Issue(IssueTracker.Github, 19509, "Entry TextColor property not working when the Text value is bound after some time", PlatformAffected.iOS)]
+	[Issue(IssueTracker.Github, 19509, "The entry text color property not working when the text value is bound after some time", PlatformAffected.iOS)]
 	public partial class Issue19509 : ContentPage
 	{
 		string _text;

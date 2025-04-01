@@ -1,5 +1,3 @@
-using Microsoft.Maui.Controls;
-
 namespace Maui.Controls.Sample
 {
 	public class SingleTapGallery : Microsoft.Maui.Controls.ContentView
@@ -10,7 +8,7 @@ namespace Maui.Controls.Sample
 
 			var layout = new VerticalStackLayout { Margin = 10, Spacing = 10 };
 
-			var singleTapResults = new Label { AutomationId = "SingleTapGestureResults", Text = "Should succeed."};
+			var singleTapResults = new Label { AutomationId = "SingleTapGestureResults", Text = "Should succeed." };
 			var singleTapSurface = new Grid()
 			{
 				HeightRequest = 100,
@@ -25,8 +23,8 @@ namespace Maui.Controls.Sample
 
 			layout.Add(singleTapSurface);
 			layout.Add(singleTapResults);
-			
-			
+
+
 			// Now add a tap surface that is disabled and a results label that should not change when the surface is tapped
 			var disabledTapResults = new Label { AutomationId = "DisabledTapGestureResults", Text = "Should not change when tapped" };
 			var disabledTapSurface = new Grid()

@@ -2,7 +2,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Foundation;
 using UIKit;
-#if !(MACCATALYST || MACOS)
+#if !(MACOS)
 using MessageUI;
 #endif
 
@@ -11,7 +11,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 	partial class EmailImplementation : IEmail
 	{
 		public bool IsComposeSupported =>
-#if !(MACCATALYST || MACOS)
+#if !(MACOS)
 			MFMailComposeViewController.CanSendMail ||
 			MainThread.InvokeOnMainThread(() => UIApplication.SharedApplication.CanOpenUrl(NSUrl.FromString("mailto:")));
 #else
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 		Task PlatformComposeAsync(EmailMessage message)
 		{
-#if !(MACCATALYST || MACOS)
+#if !(MACOS)
 			if (MFMailComposeViewController.CanSendMail)
 				return ComposeWithMailCompose(message);
 			else
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.ApplicationModel.Communication
 
 		Task ComposeWithMailCompose(EmailMessage message)
 		{
-#if !(MACCATALYST || MACOS)
+#if !(MACOS)
 			// do this first so we can throw as early as possible
 			var parentController = WindowStateManager.Default.GetCurrentUIViewController(true);
 

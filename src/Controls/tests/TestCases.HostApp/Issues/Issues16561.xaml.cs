@@ -1,10 +1,7 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Platform;
+﻿using Microsoft.Maui.Platform;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 16561, "Quick single taps on Android have wrong second tap location", PlatformAffected.Android)]
 	public partial class Issue16561 : ContentPage
 	{

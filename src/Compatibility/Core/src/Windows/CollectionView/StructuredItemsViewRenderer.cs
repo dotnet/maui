@@ -13,7 +13,7 @@ using WThickness = Microsoft.UI.Xaml.Thickness;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[System.Obsolete(Compatibility.Hosting.MauiAppBuilderExtensions.UseMapperInstead)]
-	public class StructuredItemsViewRenderer<TItemsView> : ItemsViewRenderer<TItemsView>
+	public partial class StructuredItemsViewRenderer<TItemsView> : ItemsViewRenderer<TItemsView>
 		where TItemsView : StructuredItemsView
 	{
 		View _currentHeader;

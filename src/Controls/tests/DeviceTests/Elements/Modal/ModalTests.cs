@@ -187,7 +187,8 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
 				async (_) =>
 				{
-					await windowPage.Navigation.PushAsync(new ContentPage() { Title = "Second Page on PushingNavigationPageModallyWithShellShowsToolbarCorrectly" });
+					var secondPage = new ContentPage() { Title = "Second Page on PushingNavigationPageModallyWithShellShowsToolbarCorrectly" };
+					await windowPage.Navigation.PushAsync(secondPage);
 					await windowPage.Navigation.PushModalAsync(modalPage);
 
 					// Navigation Bar is visible
@@ -203,8 +204,8 @@ namespace Microsoft.Maui.DeviceTests
 					// Remove the modal page and validate the root window pages toolbar is still setup correctly
 					await modalPage.Navigation.PopModalAsync();
 
-					await AssertEventually(() => IsNavigationBarVisible(windowPage.Handler));
-					await AssertEventually(() => IsBackButtonVisible(windowPage.Handler));
+					await AssertEventually(() => IsNavigationBarVisible(secondPage.Handler));
+					await AssertEventually(() => IsBackButtonVisible(secondPage.Handler));
 				});
 		}
 
@@ -530,6 +531,29 @@ namespace Microsoft.Maui.DeviceTests
 
 
 			Assert.Empty(rootPage.GetCurrentPage().Navigation.ModalStack);
+		}
+
+		[Fact]
+		public async Task DismissModalIfNotAnimated()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+
+			var modalPage = new ContentPage()
+			{
+				Content = new Label() { Text = "Page with no animation" }
+			};
+
+			var window = new Window(page);
+
+			await CreateHandlerAndAddToWindow(window, async () =>
+			{
+				await page.Navigation.PushModalAsync(modalPage, false);
+				await OnLoadedAsync(modalPage);
+				await modalPage.Navigation.PopModalAsync(false);
+				await OnUnloadedAsync(modalPage);
+
+			});
 		}
 
 		class PageTypes : IEnumerable<object[]>

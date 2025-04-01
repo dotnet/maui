@@ -8,7 +8,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellNavigationViewItem : NavigationViewItem
+	public partial class ShellNavigationViewItem : NavigationViewItem
 	{
 		protected override AutomationPeer OnCreateAutomationPeer()
 		{
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 	}
 
-	public class ShellNavigationViewItemAutomationPeer : NavigationViewItemAutomationPeer
+	public partial class ShellNavigationViewItemAutomationPeer : NavigationViewItemAutomationPeer
 	{
 		readonly ShellNavigationViewItem _owner;
 

@@ -14,7 +14,6 @@
   <Interfaces />
   <Docs>
     <summary>Event arguments for a click event.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -36,7 +35,6 @@
         <param name="buttons">The button or buttons that were pressed.</param>
         <param name="commandParameter">The command parameter.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.ClickedEventArgs" /> with the specified values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Buttons">
@@ -56,7 +54,6 @@
       <Docs>
         <summary>Gets the button or buttons that were pressed.</summary>
         <value>The button or buttons that were pressed.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Parameter">
@@ -76,7 +73,6 @@
       <Docs>
         <summary>Gets the command parameter.</summary>
         <value>The command parameter.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

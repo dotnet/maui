@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	public class ShellFlyoutTemplateSelector : Microsoft.UI.Xaml.Controls.DataTemplateSelector
+	public partial class ShellFlyoutTemplateSelector : Microsoft.UI.Xaml.Controls.DataTemplateSelector
 	{
 		Microsoft.UI.Xaml.DataTemplate BaseShellItemTemplate { get; }
 		Microsoft.UI.Xaml.DataTemplate MenuItemTemplate { get; }

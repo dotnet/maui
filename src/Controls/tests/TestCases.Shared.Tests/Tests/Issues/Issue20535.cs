@@ -12,14 +12,14 @@ public class Issue20535 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Switch)]
-	public async Task SwitchTrackColorTest()
+	public void SwitchTrackColorTest()
 	{
 		App.WaitForElement("WaitForStubControl");
 
 		// 1. Update the state of the Switch by updating the OnColor property.
 		// In this way, we validate the initial value but also the update.
-		App.Click("UpdateOnColorSwitch");
-		await Task.Delay(500); // Wait for the Thumb animation to complete
+		App.Tap("UpdateOnColorSwitch");
+		App.WaitForElement("Update OnColor"); // Wait for the Thumb animation to complete
 
 		// 2. Verify the result.
 		VerifyScreenshot();

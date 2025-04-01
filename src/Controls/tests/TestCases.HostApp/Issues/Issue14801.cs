@@ -11,12 +11,12 @@
 				Title = "Initial",
 				Route = "initial"
 			};
-			
+
 			Items.Add(mainContent);
 			Routing.RegisterRoute("Issue14801_child", typeof(ChildPage));
 		}
 	}
-	
+
 	file class InitialPage : ContentPage
 	{
 		public InitialPage()
@@ -26,12 +26,11 @@
 			{
 				Text = "Go to child page",
 				AutomationId = "goToChildPage",
-				VerticalOptions = LayoutOptions.Start,
 				Command = new Command(() => Shell.Current.GoToAsync("Issue14801_child"))
 			};
 		}
 	}
-	
+
 	file class ChildPage : ContentPage
 	{
 		public ChildPage()
@@ -47,23 +46,22 @@
 						{
 							await Task.Delay(60);
 						}
-						
+
 						// Give it time to finish the navigation
 						await Task.Delay(200);
-						
+
 						// Return the image
 						var imageBytes = Convert.FromBase64String(IconB64);
 						return new MemoryStream(imageBytes);
 					}
 				}
 			});
-			
+
 			Padding = 24;
 			Content = new Button
 			{
 				Text = "Go back",
 				AutomationId = "goBack",
-				VerticalOptions = LayoutOptions.Start,
 				Command = new Command(() => Shell.Current.GoToAsync(".."))
 			};
 		}

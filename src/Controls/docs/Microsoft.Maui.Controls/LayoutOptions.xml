@@ -25,7 +25,6 @@
   </Attributes>
   <Docs>
     <summary>A struct whose static members define various alignment and expansion options.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -53,7 +52,6 @@
         <param name="alignment">An alignment value.</param>
         <param name="expands">Whether or not an element will expand to fill available space in its parent.</param>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.LayoutOptions" /> object with <paramref name="alignment" /> and <paramref name="expands" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Alignment">
@@ -79,7 +77,6 @@
       <Docs>
         <summary>Gets or sets a value that indicates how an element will be aligned.</summary>
         <value>The <see cref="T:Microsoft.Maui.Controls.LayoutAlignment" /> flags that describe the behavior of an element.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Center">
@@ -104,7 +101,6 @@
       </ReturnValue>
       <Docs>
         <summary>A <see cref="T:Microsoft.Maui.Controls.LayoutOptions" /> structure that describes an element that is centered and does not expand.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CenterAndExpand">
@@ -129,7 +125,6 @@
       </ReturnValue>
       <Docs>
         <summary>A <see cref="T:Microsoft.Maui.Controls.LayoutOptions" /> structure that describes an element that is centered and expands.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="End">
@@ -154,7 +149,6 @@
       </ReturnValue>
       <Docs>
         <summary>A <see cref="T:Microsoft.Maui.Controls.LayoutOptions" /> structure that describes an element that appears at the end of its parent and does not expand.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="EndAndExpand">
@@ -179,7 +173,6 @@
       </ReturnValue>
       <Docs>
         <summary>A <see cref="T:Microsoft.Maui.Controls.LayoutOptions" /> object that describes an element that appears at the end of its parent and expands.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Expands">
@@ -205,7 +198,6 @@
       <Docs>
         <summary>Gets or sets a value that indicates whether or not the element that is described by this <see cref="T:Microsoft.Maui.Controls.LayoutOptions" /> structure will occupy the largest space that its parent will give to it.</summary>
         <value>Whether or not the element that is described by this <see cref="T:Microsoft.Maui.Controls.LayoutOptions" /> structure will occupy the largest space that its parent will give it. <see langword="true" /> if the element will occupy the largest space the parent will give to it. <see langword="false" /> if the element will be as compact as it can be.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Fill">
@@ -230,7 +222,6 @@
       </ReturnValue>
       <Docs>
         <summary>A <see cref="T:Microsoft.Maui.Controls.LayoutOptions" /> stucture that describes an element that has no padding around itself and does not expand.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FillAndExpand">
@@ -255,7 +246,6 @@
       </ReturnValue>
       <Docs>
         <summary>A <see cref="T:Microsoft.Maui.Controls.LayoutOptions" /> structure that describes an element that has no padding around itself and expands.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Start">
@@ -280,7 +270,6 @@
       </ReturnValue>
       <Docs>
         <summary>A <see cref="T:Microsoft.Maui.Controls.LayoutOptions" /> structure that describes an element that appears at the start of its parent and does not expand.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="StartAndExpand">
@@ -305,7 +294,6 @@
       </ReturnValue>
       <Docs>
         <summary>A <see cref="T:Microsoft.Maui.Controls.LayoutOptions" /> structure that describes an element that appears at the start of its parent and expands.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

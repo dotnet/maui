@@ -26,14 +26,6 @@
   />
 
   <!--
-      Previous versions of the .NET MAUI SDK used Microsoft.Maui.Resizetizer.Sdk, but the new version uses a NuGet.
-  -->
-  <Import
-      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_PREVIOUS_DOTNET_VERSION@'))) and ('$(SkipMauiWorkloadManifest)' != 'true') "
-      Project="Sdk.targets" Sdk="Microsoft.Maui.Resizetizer.Sdk"
-  />
-
-  <!--
       Previous versions of the .NET MAUI SDK used **FromWorkload**, so replace with explicit versions.
       The BundledVersions.targets that is imported is from the previous SDK, so all the other values are correct.
   -->

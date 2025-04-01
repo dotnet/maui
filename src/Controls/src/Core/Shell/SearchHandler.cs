@@ -361,9 +361,11 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(SearchHandler), null, BindingMode.OneTime,
 				propertyChanged: OnCommandChanged);
 
+#pragma warning disable CS0618
 		/// <summary>Bindable property for <see cref="DisplayMemberName"/>.</summary>
 		public static readonly BindableProperty DisplayMemberNameProperty =
 			BindableProperty.Create(nameof(DisplayMemberName), typeof(string), typeof(SearchHandler), null, BindingMode.OneTime);
+#pragma warning restore CS0618
 
 		/// <summary>Bindable property for <see cref="IsSearchEnabled"/>.</summary>
 		public static readonly BindableProperty IsSearchEnabledProperty =
@@ -498,6 +500,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/SearchHandler.xml" path="//Member[@MemberName='DisplayMemberName']/Docs/*" />
+		[Obsolete("Use ItemTemplate instead.")]
 		public string DisplayMemberName
 		{
 			get { return (string)GetValue(DisplayMemberNameProperty); }

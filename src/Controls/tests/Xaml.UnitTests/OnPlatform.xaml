@@ -33,7 +33,7 @@
             </Style>
 		</ResourceDictionary>
 	</ContentPage.Resources>
-	<StackLayout>
+  <StackLayout Spacing="{OnPlatform iOS={OnIdiom Default=35, Phone=25}, WinUI=25, Android={OnIdiom Default=45, Phone=25}}">
 		<Label x:Name="label0" FontAttributes="{StaticResource fontAttributes}" FontSize="{StaticResource fontSize}">
 			<Label.IsVisible>
 				<OnPlatform x:TypeArguments="x:Boolean">

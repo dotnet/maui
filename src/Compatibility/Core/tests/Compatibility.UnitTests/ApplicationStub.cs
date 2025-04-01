@@ -32,6 +32,8 @@ namespace Microsoft.Maui.Compatibility.Core.UnitTests
 			_windows.Remove(window);
 		}
 
+		public void ActivateWindow(IWindow window) { }
+
 		public void ThemeChanged() { }
 	}
 }

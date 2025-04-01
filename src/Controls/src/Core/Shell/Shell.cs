@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shell']/Docs/*" />
 	[ContentProperty(nameof(Items))]
+	[DebuggerTypeProxy(typeof(ShellDebugView))]
 	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>, IFlyoutView
 	{
 		/// <summary>
@@ -37,10 +39,10 @@ namespace Microsoft.Maui.Controls
 
 		static void OnBackButonBehaviorPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (oldValue is BackButtonBehavior oldHandlerBehavior)
-				SetInheritedBindingContext(oldHandlerBehavior, null);
-			if (newValue is BackButtonBehavior newHandlerBehavior)
-				SetInheritedBindingContext(newHandlerBehavior, bindable.BindingContext);
+			if (oldValue is BackButtonBehavior oldHandlerProperties)
+				SetInheritedBindingContext(oldHandlerProperties, null);
+			if (newValue is BackButtonBehavior newHandlerProperties)
+				SetInheritedBindingContext(newHandlerProperties, bindable.BindingContext);
 		}
 
 		/// <summary>
@@ -121,6 +123,9 @@ namespace Microsoft.Maui.Controls
 				element
 					.FindParentOfType<Shell>()
 					?.SendFlyoutItemsChanged();
+
+			if (bindable is BaseShellItem baseShellItem && baseShellItem.FlyoutItemIsVisible != (bool)newValue)
+				baseShellItem.FlyoutItemIsVisible = (bool)newValue;
 		}
 
 		/// <summary>
@@ -501,10 +506,10 @@ namespace Microsoft.Maui.Controls
 		public static void SetTabBarBackgroundColor(BindableObject obj, Color value) => obj.SetValue(TabBarBackgroundColorProperty, value);
 
 		/// <summary>
-		/// Gets the background color for the tab bar. 
+		/// Gets the color of the tab bar when it's disabled. 
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
-		/// <returns>The background color for the tab bar.</returns>
+		/// <returns>The disabled color for the tab bar.</returns>
 		public static Color GetTabBarDisabledColor(BindableObject obj) => (Color)obj.GetValue(TabBarDisabledColorProperty);
 
 		/// <summary>
@@ -516,10 +521,10 @@ namespace Microsoft.Maui.Controls
 		public static void SetTabBarDisabledColor(BindableObject obj, Color value) => obj.SetValue(TabBarDisabledColorProperty, value);
 
 		/// <summary>
-		/// Gets the color of the tab bar when its disabled. 
+		/// Gets the foreground color for the tab bar. 
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
-		/// <returns>The disabled color for the tab bar.</returns>
+		/// <returns>The foreground color for the tab bar.</returns>
 		public static Color GetTabBarForegroundColor(BindableObject obj) => (Color)obj.GetValue(TabBarForegroundColorProperty);
 
 		/// <summary>
@@ -531,10 +536,10 @@ namespace Microsoft.Maui.Controls
 		public static void SetTabBarForegroundColor(BindableObject obj, Color value) => obj.SetValue(TabBarForegroundColorProperty, value);
 
 		/// <summary>
-		/// Gets the foreground color for the tab bar. 
+		/// Gets the title color for the tab bar. 
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
-		/// <returns>The foreground color for the tab bar.</returns>
+		/// <returns>The title color for the tab bar.</returns>
 		public static Color GetTabBarTitleColor(BindableObject obj) => (Color)obj.GetValue(TabBarTitleColorProperty);
 
 		/// <summary>
@@ -546,10 +551,10 @@ namespace Microsoft.Maui.Controls
 		public static void SetTabBarTitleColor(BindableObject obj, Color value) => obj.SetValue(TabBarTitleColorProperty, value);
 
 		/// <summary>
-		/// Gets the title color for the tab bar. 
+		/// Gets the unselected color for the tab bar. 
+		/// If the property is unset, the UnselectedColor property value is used.
 		/// </summary>
 		/// <param name="obj">The object to which the color is set.</param>
-		/// <returns>The title color for the tab bar.</returns>
 		public static Color GetTabBarUnselectedColor(BindableObject obj) => (Color)obj.GetValue(TabBarUnselectedColorProperty);
 
 		/// <summary>
@@ -589,10 +594,10 @@ namespace Microsoft.Maui.Controls
 		public static void SetUnselectedColor(BindableObject obj, Color value) => obj.SetValue(UnselectedColorProperty, value);
 
 		/// <summary>
-		/// Gets the color for unselected text and icons in the Shell chrome.
+		/// Gets the backdrop of the flyout, which is the appearance of the flyout overlay.
 		/// </summary>
-		/// <param name="obj">The object to which the color is set.</param>
-		/// <returns>The color for unselected text and icons in the Shell chrome.</returns>
+		/// <param name="obj">The object to which the backdrop brush is set.</param>
+		/// <returns>The brush for the backdrop of the flyout, which is the appearance of the flyout overlay.</returns>
 		public static Brush GetFlyoutBackdrop(BindableObject obj) => (Brush)obj.GetValue(FlyoutBackdropProperty);
 
 		/// <summary>
@@ -643,23 +648,8 @@ namespace Microsoft.Maui.Controls
 
 		DataTemplate IShellController.GetFlyoutItemDataTemplate(BindableObject bo)
 		{
-			BindableProperty bp = null;
-			string textBinding;
-			string iconBinding;
+			BindableProperty bp = bo is IMenuItemController ? MenuItemTemplateProperty : ItemTemplateProperty;
 			var bindableObjectWithTemplate = GetBindableObjectWithFlyoutItemTemplate(bo);
-
-			if (bo is IMenuItemController)
-			{
-				bp = MenuItemTemplateProperty;
-				textBinding = "Text";
-				iconBinding = "Icon";
-			}
-			else
-			{
-				bp = ItemTemplateProperty;
-				textBinding = "Title";
-				iconBinding = "FlyoutIcon";
-			}
 
 			if (bindableObjectWithTemplate.IsSet(bp))
 			{
@@ -671,7 +661,7 @@ namespace Microsoft.Maui.Controls
 				return (DataTemplate)GetValue(bp);
 			}
 
-			return BaseShellItem.CreateDefaultFlyoutItemCell(textBinding, iconBinding);
+			return BaseShellItem.CreateDefaultFlyoutItemCell(bo);
 		}
 
 		event EventHandler IShellController.StructureChanged
@@ -965,14 +955,51 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (Application.Current == null)
+				if (Application.Current is null || Application.Current.Windows.Count == 0)
 					return null;
 
-				foreach (var window in Application.Current.Windows)
-					if (window is Window && window.IsActivated && window.Page is Shell shell)
-						return shell;
+				if (Application.Current.Windows.Count == 1)
+				{
+					return Application.Current.Windows[0].Page as Shell;
+				}
 
-				return Application.Current?.MainPage as Shell;
+				// Check if shell is activated
+				Shell currentShell = null;
+				Shell returnIfThereIsJustOneShell = null;
+				bool tooManyShells = false;
+				foreach (var window in Application.Current.Windows)
+				{
+					if (window.Page is Shell shell)
+					{
+						if (window.IsActivated)
+						{
+							if (currentShell is not null)
+							{
+								currentShell = null;
+								break;
+							}
+
+							currentShell = shell;
+						}
+
+						if (returnIfThereIsJustOneShell is not null)
+						{
+							tooManyShells = true;
+						}
+					}
+				}
+
+				if (currentShell is not null)
+				{
+					return currentShell;
+				}
+
+				if (!tooManyShells && returnIfThereIsJustOneShell is not null)
+				{
+					return returnIfThereIsJustOneShell;
+				}
+
+				throw new InvalidOperationException($"Unable to determine the current Shell instance you want to use. Please access Shell via the Windows property on {Application.Current.GetType()}.");
 			}
 		}
 
@@ -1541,7 +1568,34 @@ namespace Microsoft.Maui.Controls
 			if (_previousPage != null)
 				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
 
-			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
+			NavigationType navigationType = NavigationType.PageSwap;
+
+			switch (args.Source)
+			{
+				case ShellNavigationSource.Pop:
+					navigationType = NavigationType.Pop;
+					break;
+				case ShellNavigationSource.ShellItemChanged:
+					navigationType = NavigationType.PageSwap;
+					break;
+				case ShellNavigationSource.ShellSectionChanged:
+					navigationType = NavigationType.PageSwap;
+					break;
+				case ShellNavigationSource.ShellContentChanged:
+					navigationType = NavigationType.PageSwap;
+					break;
+				case ShellNavigationSource.Push:
+					navigationType = NavigationType.Push;
+					break;
+				case ShellNavigationSource.PopToRoot:
+					navigationType = NavigationType.PopToRoot;
+					break;
+				case ShellNavigationSource.Insert:
+					navigationType = NavigationType.Insert;
+					break;
+			}
+
+			_previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage, navigationType));
 			CurrentPage?.SendNavigatedTo(new NavigatedToEventArgs(_previousPage));
 			_previousPage = null;
 
@@ -1585,7 +1639,17 @@ namespace Microsoft.Maui.Controls
 		static void OnCurrentItemChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (oldValue is ShellItem oldShellItem)
+			{
 				oldShellItem.SendDisappearing();
+
+				foreach (var section in oldShellItem.Items)
+				{
+					foreach (var content in section.Items)
+					{
+						content.EvaluateDisconnect();
+					}
+				}
+			}
 
 			if (newValue == null)
 				return;
@@ -1798,7 +1862,7 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
-		void NotifyFlyoutBehaviorObservers()
+		internal void NotifyFlyoutBehaviorObservers()
 		{
 			if (CurrentItem == null || GetVisiblePage() == null)
 				return;
@@ -1910,6 +1974,7 @@ namespace Microsoft.Maui.Controls
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
+		[Obsolete("Use ArrangeOverride instead")]
 		protected override void LayoutChildren(double x, double y, double width, double height)
 		{
 			// Page by default tries to layout all logical children
@@ -2086,6 +2151,26 @@ namespace Microsoft.Maui.Controls
 
 				protected override Task OnPushModal(Page modal, bool animated) => _shellProxy.PushModalAsync(modal, animated);
 			}
+		}
+
+
+		/// <summary>
+		/// Provides a debug view for the Shell class.
+		/// </summary>
+		/// <param name="shell">The Shell instance to debug.</param>
+		private sealed class ShellDebugView(Shell shell)
+		{
+			public Page CurrentPage => shell.CurrentPage;
+
+			public ShellNavigationState CurrentState => shell.CurrentState;
+
+			public Uri AbsoluteUrl => shell.CurrentState.FullLocation;
+
+			public FlyoutBehavior FlyoutBehavior => shell.FlyoutBehavior;
+
+			public IEnumerable FlyoutItems => shell.FlyoutItems;
+
+			public Window Windows => shell.Window;
 		}
 	}
 }

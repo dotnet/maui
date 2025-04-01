@@ -32,7 +32,7 @@ The `Orientation` property of `IScrollView` can be one of four values (in the `S
  - `Both` - the content scrolls horizontally if it's wider than the viewport, and vertically if it's taller than the viewport
  - `Neither` - scrolling is disabled in both directions
  
-The `Orientation` value affects how the ScrollView's `Content` is measured and laid out. If the value is `Vertical`, the measurement height is unconstrained (i.e., `Double.Infinity`). If the value is `Horizontal`, the measurement width is unconstrained. `Both` results in measurement being unconstrained in all directions, and `Neither` constrains the measurement to the width and height of the viewport.
+The `Orientation` value affects how the ScrollView's `Content` is measured and arranged. If the value is `Vertical`, the measurement height is unconstrained (i.e., `Double.Infinity`). If the value is `Horizontal`, the measurement width is unconstrained. `Both` results in measurement being unconstrained in all directions, and `Neither` constrains the measurement to the width and height of the viewport.
 
 ## ContentSize
 
@@ -72,7 +72,7 @@ Our Android implementation of ScrollView is backed by MauiScrollView, which is a
 	- Android treats `Padding` as space around the scrollable area, rather than inside of it. 
 	- Android's native measurements will not account for our virtual `Margin` when measuring ScrollView content. 
 	
-So again, we insert an intermediate `ContentViewGroup` to handle these problems. The `ContentViewGroup` is laid out at (0, 0) in the MauiScrollView; it handles the `Padding` and `Margin` behaviors for us, and initiates `CrossPlatformMeasure()` and `CrossPlatformArrange()` for its `Content`. 
+So again, we insert an intermediate `ContentViewGroup` to handle these problems. The `ContentViewGroup` is arranged at (0, 0) in the MauiScrollView; it handles the `Padding` and `Margin` behaviors for us, and initiates `CrossPlatformMeasure()` and `CrossPlatformArrange()` for its `Content`. 
 
 Another note: the content of an Android ScrollView does not stretch to fill the viewport by default. That is, if you have a ScrollView which fills the screen and the content of the ScrollView is smaller than the screen, by default that content will not expand to take up the entire viewport (the behavior we expect for .NET MAUI). On Android, we can achieve the behavior we expect by setting the `FillViewport` property to `true` for the native ScrollView. This is all handled automatically by the Android ScrollViewHandler; I note it here because this causes an extra measure pass when the content is smaller than the ScrollView's viewport and the virtual ScrollView has layout alignment set to `Fill`. This is all explained in the comments for the ScrollViewHandler's `GetDesiredSize()` override, but I'm calling it out here as well in case anyone is investigating the number of measure calls being made. 
 

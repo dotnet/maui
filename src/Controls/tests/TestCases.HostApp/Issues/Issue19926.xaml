@@ -32,5 +32,17 @@
             <Label HorizontalTextAlignment="Center" Text="Scale X"/>
             <BoxView ScaleX="1.5"/>
         </StackLayout>
+
+        <StackLayout>
+            <Button
+                Text="Click to show a BoxView"
+                Clicked="Button_Clicked"
+                AutomationId="button"/>
+            <BoxView
+                x:Name="boxView"
+                AutomationId="boxView2"
+                HorizontalOptions="Center"
+                IsVisible="False"/>
+        </StackLayout>
     </StackLayout>
 </ContentPage>

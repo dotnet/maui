@@ -43,6 +43,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		bool ShouldPassThroughElement()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (_element is Layout layout)
 			{
 				if (!layout.InputTransparent)
@@ -61,6 +62,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				// This event isn't being bubbled up by a non-InputTransparent child layout
 				return true;
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (_element.InputTransparent)
 			{

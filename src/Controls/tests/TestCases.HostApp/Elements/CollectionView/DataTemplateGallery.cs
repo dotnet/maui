@@ -1,7 +1,5 @@
-﻿using Maui.Controls.Sample.CollectionViewGalleries.DataTemplateSelectorGalleries;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Controls.Sample.UITests;
+﻿using Controls.Sample.UITests;
+using Maui.Controls.Sample.CollectionViewGalleries.DataTemplateSelectorGalleries;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries
 {

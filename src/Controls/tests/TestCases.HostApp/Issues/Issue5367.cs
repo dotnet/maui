@@ -1,15 +1,10 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5367, "[Bug] Editor with MaxLength", PlatformAffected.Android)]
 	public class Issue5367 : TestContentPage
 	{
-		const string MaxLengthEditor = "MaxLength Editor";
-		const string ForceBigStringButton = "Force Big String Button";
+		const string MaxLengthEditor = "MaxLengthEditor";
+		const string ForceBigStringButton = "StringButton";
 
 		protected override void Init()
 		{

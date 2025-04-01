@@ -1,6 +1,4 @@
-﻿using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries
 {
 	public class CarouselData
 	{

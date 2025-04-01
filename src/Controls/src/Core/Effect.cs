@@ -32,9 +32,9 @@ namespace Microsoft.Maui.Controls
 		public static Effect Resolve(string name)
 		{
 			Effect result = null;
-			if (Internals.Registrar.Effects.TryGetValue(name, out Type effectType))
+			if (Internals.Registrar.Effects.TryGetValue(name, out var effectType))
 			{
-				result = (Effect)DependencyResolver.ResolveOrCreate(effectType);
+				result = (Effect)DependencyResolver.ResolveOrCreate(effectType.Type);
 			}
 
 			if (result == null)

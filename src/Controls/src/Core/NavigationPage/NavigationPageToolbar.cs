@@ -33,7 +33,6 @@ namespace Microsoft.Maui.Controls
 			_toolbarTracker.CollectionChanged += OnToolbarItemsChanged;
 			RootPage = rootPage;
 			_toolbarTracker.PageAppearing += OnPageAppearing;
-			_toolbarTracker.PagePropertyChanged += OnPagePropertyChanged;
 			_toolbarTracker.Target = RootPage;
 		}
 
@@ -71,6 +70,19 @@ namespace Microsoft.Maui.Controls
 			if (sender is not ContentPage cp)
 				return;
 
+			var pages = cp.GetParentPages();
+			Page previous = null;
+			foreach (var page in pages)
+			{
+				if (page is FlyoutPage fp)
+				{
+					if (fp.Flyout == cp || previous == fp.Flyout)
+						return;
+				}
+				previous = page;
+			}
+
+			_toolbarTracker.PagePropertyChanged -= OnPagePropertyChanged;
 			_currentPage = cp;
 			_currentNavigationPage = _currentPage.FindParentOfType<NavigationPage>();
 
@@ -112,6 +124,7 @@ namespace Microsoft.Maui.Controls
 			_hasAppeared = true;
 
 			ApplyChanges(_currentNavigationPage);
+			_toolbarTracker.PagePropertyChanged += OnPagePropertyChanged;
 		}
 
 		// This is to catch scenarios where the user
@@ -273,7 +286,7 @@ namespace Microsoft.Maui.Controls
 				return string.Empty;
 			}
 
-			return _currentNavigationPage?.CurrentPage?.Title;
+			return _currentNavigationPage?.CurrentPage?.Title ?? _currentNavigationPage?.Title;
 		}
 
 		VisualElement GetTitleView()

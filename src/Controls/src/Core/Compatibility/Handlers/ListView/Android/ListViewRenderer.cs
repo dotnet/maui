@@ -252,7 +252,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		 * This will most likely cause the user to be frustrated that the ListView doesn't scroll :-) but at least now
 		 * it's consistent between platforms and for cases where it doesn't need to scroll (TableView).
 		 * */
+#pragma warning disable CS0618 // Type or member is obsolete
 		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (double.IsInfinity(heightConstraint))
 			{
@@ -556,6 +558,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			IPlatformViewHandler _child;
 
+			AView _platformView => _child?.ToPlatform() ?? _child?.PlatformView;
+
 			public Container(Context context) : base(context)
 			{
 			}
@@ -565,35 +569,35 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				set
 				{
 					if (_child != null)
-						RemoveView(_child.PlatformView);
+						RemoveView(_platformView);
 
 					_child = value;
 
 					if (value != null)
-						AddView(value.PlatformView);
+						AddView(_platformView);
 				}
 			}
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				if (_child?.PlatformView == null)
+				if (_platformView == null)
 				{
 					return;
 				}
 
-				_child.PlatformView.Layout(0, 0, r - l, b - t);
+				_platformView.Layout(0, 0, r - l, b - t);
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 			{
-				if (_child?.PlatformView == null)
+				if (_platformView == null)
 				{
 					SetMeasuredDimension(0, 0);
 					return;
 				}
 
-				_child.PlatformView.Measure(widthMeasureSpec, heightMeasureSpec);
-				SetMeasuredDimension(_child.PlatformView.MeasuredWidth, _child.PlatformView.MeasuredHeight);
+				_platformView.Measure(widthMeasureSpec, heightMeasureSpec);
+				SetMeasuredDimension(_platformView.MeasuredWidth, _platformView.MeasuredHeight);
 			}
 		}
 

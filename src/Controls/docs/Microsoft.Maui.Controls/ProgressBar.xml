@@ -102,8 +102,6 @@ Debug.WriteLine ("Animation completed");
       <Docs>
         <typeparam name="T">To be added.</typeparam>
         <summary>Returns the platform-specific instance of this <see cref="T:Microsoft.Maui.Controls.ProgressBar" />, on which a platform-specific method may be called.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Progress">
@@ -149,7 +147,6 @@ Debug.WriteLine ("Animation completed");
       <Docs>
         <summary>Get or sets the color of the progress bar.</summary>
         <value>The color of the progress bar.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ProgressColorProperty">
@@ -168,7 +165,6 @@ Debug.WriteLine ("Animation completed");
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.ProgressBar.ProgressColor" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ProgressProperty">
@@ -247,9 +243,6 @@ Debug.WriteLine ("Animation completed");
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

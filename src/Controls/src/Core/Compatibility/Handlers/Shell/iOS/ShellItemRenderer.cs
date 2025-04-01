@@ -59,6 +59,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public ShellItemRenderer(IShellContext context)
 		{
+			this.DisableiOS18ToolbarTabs();
 			_context = context;
 		}
 
@@ -74,7 +75,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					ShellItem.SetValueFromRenderer(ShellItem.CurrentItemProperty, renderer.ShellSection);
 					CurrentRenderer = renderer;
-					MoreNavigationController?.PopToRootViewController(false);
 				}
 
 				if (ReferenceEquals(value, MoreNavigationController))
@@ -345,7 +345,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			UITableViewCell[] GetMoreNavigationCells()
 			{
-				if (MoreNavigationController.TopViewController.View is UITableView uITableView)
+				if (MoreNavigationController.TopViewController.View is UITableView uITableView && uITableView.Window is not null)
 					return uITableView.VisibleCells;
 
 				return EmptyUITableViewCellArray;
@@ -438,7 +438,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (ShellItemController == null)
 				return;
 
-			TabBar.Hidden = !ShellItemController.ShowTabs;
+			if (OperatingSystemMacCatalyst18Workaround.IsMacCatalystVersionAtLeast18() || OperatingSystem.IsIOSVersionAtLeast(18))
+			{
+				TabBarHidden = !ShellItemController.ShowTabs;
+			}
+			else
+			{
+				TabBar.Hidden = !ShellItemController.ShowTabs;
+			}
 		}
 	}
 }

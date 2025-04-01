@@ -21,7 +21,6 @@
   </Interfaces>
   <Docs>
     <summary>An element that can respond to gestures.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -37,7 +36,6 @@
       <Parameters />
       <Docs>
         <summary>Creates a new <see cref="T:Microsoft.Maui.Controls.GestureElement" /> object with default values.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="GestureRecognizers">
@@ -60,7 +58,6 @@
       <Docs>
         <summary>Gets the list of recognizers that belong to the element.</summary>
         <value>The list of recognizers that belong to the element.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.Internals.ISpatialElement.Region">
@@ -83,7 +80,6 @@
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <value>For internal use by the Microsoft.Maui.Controls platform.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

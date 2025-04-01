@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	[Issue(IssueTracker.Github, 17283, "[Android] CarouselView doesn't scroll to the right Position after changing the ItemSource with Loop enabled", PlatformAffected.Android)]
 	public partial class Issue17283 : ContentPage
 	{

@@ -12,15 +12,15 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
-using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -305,8 +305,10 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Shell.SetTitleView(shell, shellTitleView);
 
-				shell.CurrentItem = new ContentPage(){
-					Content = new VerticalStackLayout {
+				shell.CurrentItem = new ContentPage()
+				{
+					Content = new VerticalStackLayout
+					{
 						Background = Colors.Gray,
 						Children = { label }
 					}
@@ -331,7 +333,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		class CustomShellHandler : ShellRenderer
 		{
-			protected override IShellNavBarAppearanceTracker CreateNavBarAppearanceTracker() => new CustomShellNavBarAppearanceTracker(this, base.CreateNavBarAppearanceTracker()) {handler = this};
+			protected override IShellNavBarAppearanceTracker CreateNavBarAppearanceTracker() => new CustomShellNavBarAppearanceTracker(this, base.CreateNavBarAppearanceTracker()) { handler = this };
 
 			public CGRect PreviousFrame { get; set; }
 		}

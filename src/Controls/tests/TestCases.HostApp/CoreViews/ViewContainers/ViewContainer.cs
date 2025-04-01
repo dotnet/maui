@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.Sample
 {
 	internal class ViewContainer<T> : IViewContainer<T>
 		where T : View

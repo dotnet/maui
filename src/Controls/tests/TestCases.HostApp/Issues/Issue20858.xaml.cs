@@ -1,9 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Devices;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 20858, "FlyoutPage Android app crashing on orientation change when flyout is open", PlatformAffected.Android)]
 	public partial class Issue20858 : FlyoutPage, IFlyoutPageController

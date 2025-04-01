@@ -16,7 +16,6 @@
   </Base>
   <Docs>
     <summary>Contains values that indicate why a navigation event was raised.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="Back">

@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls
 
 			var spannableString = virtualView.ToSpannableString();
 
-			platformView.RecalculateSpanPositions(virtualView, spannableString, new SizeRequest(new Size(args.Right - args.Left, args.Bottom - args.Top)));
+			platformView.RecalculateSpanPositions(virtualView, spannableString, new Size(args.Right - args.Left, args.Bottom - args.Top));
 		}
 	}
 }

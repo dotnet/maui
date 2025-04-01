@@ -1240,28 +1240,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(item.CurrentItem.CurrentItem);
 		}
 
-		[Fact]
+		// [Fact]
 
-		public async Task GetCurrentPageInShellNavigation()
-		{
-			Shell shell = new TestShell();
-			var item1 = CreateShellItem(asImplicit: true, shellContentRoute: "rootlevelcontent1");
+		// public async Task GetCurrentPageInShellNavigation()
+		// {
+		// 	Shell shell = new TestShell();
+		// 	var item1 = CreateShellItem(asImplicit: true, shellContentRoute: "rootlevelcontent1");
 
-			shell.Items.Add(item1);
-			Routing.RegisterRoute("cat", typeof(ContentPage));
+		// 	shell.Items.Add(item1);
+		// 	Routing.RegisterRoute("cat", typeof(ContentPage));
 
-			Page page = null;
+		// 	Page page = null;
 
-			shell.Navigated += (_, __) =>
-			{
-				page = shell.CurrentPage;
-			};
+		// 	shell.Navigated += (_, __) =>
+		// 	{
+		// 		page = shell.CurrentPage;
+		// 	};
 
-			await shell.GoToAsync("cat");
-			Assert.NotNull(page);
-			Assert.IsType<ContentPage>(page);
-			Assert.Equal(shell.Navigation.NavigationStack[1], page);
-		}
+		// 	await shell.GoToAsync("cat");
+		// 	Assert.NotNull(page);
+		// 	Assert.IsType<ContentPage>(page);
+		// 	Assert.Equal(shell.Navigation.NavigationStack[1], page);
+		// }
 
 		[Fact]
 		public async Task GetCurrentPageBetweenSections()

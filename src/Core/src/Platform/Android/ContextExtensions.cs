@@ -1,8 +1,8 @@
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using Android.Content;
 using Android.Content.Res;
-using Android.OS;
 using Android.Util;
 using Android.Views;
 using Android.Views.InputMethods;
@@ -34,15 +34,21 @@ namespace Microsoft.Maui.Platform
 
 		internal static double FromPixels(this View view, double pixels)
 		{
-			if (s_displayDensity != float.MinValue)
-				return pixels / s_displayDensity;
-			return view.Context.FromPixels(pixels);
+			EnsureMetrics(view);
+
+			return FromPixelsUsingMetrics(pixels);
 		}
 
 		public static double FromPixels(this Context? self, double pixels)
 		{
 			EnsureMetrics(self);
 
+			return FromPixelsUsingMetrics(pixels);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static double FromPixelsUsingMetrics(double pixels)
+		{
 			return pixels / s_displayDensity;
 		}
 
@@ -93,16 +99,27 @@ namespace Microsoft.Maui.Platform
 
 		internal static float ToPixels(this View view, double dp)
 		{
-			if (s_displayDensity != float.MinValue)
-				return (float)Math.Ceiling(dp * s_displayDensity);
-			return view.Context.ToPixels(dp);
+			EnsureMetrics(view);
+
+			return ToPixelsUsingMetrics(dp);
 		}
 
 		public static float ToPixels(this Context? self, double dp)
 		{
 			EnsureMetrics(self);
 
-			return (float)Math.Ceiling(dp * s_displayDensity);
+			return ToPixelsUsingMetrics(dp);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static float ToPixelsUsingMetrics(double dp)
+		{
+			// Layout arrangement in DP can cause rounding issues when converting to pixels.
+			// While rounding up ensures the content is fully displayed, we must avoid rounding up unnecessarily, 
+			// especially for values very close to the lower integer.
+			// For example 112.00000000000001dp * 2.625 = 294.000000000000026px incorrectly rounded to 295px. 
+			// To address this, we subtract a small Epsilon 0.0000000001px before ceiling.
+			return (float)Math.Ceiling((dp * s_displayDensity) - GeometryUtil.Epsilon);
 		}
 
 		public static (int left, int top, int right, int bottom) ToPixels(this Context context, Graphics.Rect rectangle)
@@ -235,6 +252,15 @@ namespace Microsoft.Maui.Platform
 
 			using (DisplayMetrics? metrics = context.Resources?.DisplayMetrics)
 				s_displayDensity = metrics != null ? metrics.Density : 1;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		static void EnsureMetrics(View view)
+		{
+			if (s_displayDensity != float.MinValue)
+				return;
+
+			EnsureMetrics(view.Context);
 		}
 
 		public static AActivity? GetActivity(this Context context)
@@ -378,7 +404,7 @@ namespace Microsoft.Maui.Platform
 			return _navigationBarHeight ?? 0;
 		}
 
-		internal static int CreateMeasureSpec(this Context context, double constraint, double explicitSize, double maximumSize)
+		internal static int CreateMeasureSpec(this Context context, double constraint, double explicitSize, double minimumSize, double maximumSize)
 		{
 			var mode = MeasureSpecMode.AtMost;
 
@@ -386,7 +412,14 @@ namespace Microsoft.Maui.Platform
 			{
 				// We have a set value (i.e., a Width or Height)
 				mode = MeasureSpecMode.Exactly;
-				constraint = explicitSize;
+
+				// Since the mode is "Exactly", we have to return the exact final value clamped to the minimum/maximum.
+				constraint = Math.Max(explicitSize, ResolveMinimum(minimumSize));
+
+				if (IsMaximumSet(maximumSize))
+				{
+					constraint = Math.Min(constraint, maximumSize);
+				}
 			}
 			else if (IsMaximumSet(maximumSize) && maximumSize < constraint)
 			{

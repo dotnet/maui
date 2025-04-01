@@ -22,6 +22,11 @@ namespace Microsoft.Maui.DeviceTests
 		public static MauiApp CreateMauiApp(List<Assembly> testAssemblies)
 		{
 			var appBuilder = MauiApp.CreateBuilder();
+
+#if DEBUG
+			appBuilder.Services.AddHybridWebViewDeveloperTools();
+#endif
+
 			appBuilder
 				.ConfigureLifecycleEvents(life =>
 				{
@@ -66,6 +71,16 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				RequiresUIContext = true,
 			});
+#endif
+
+#if IOS || MACCATALYST
+
+			appBuilder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
+					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+				});
+
 #endif
 			appBuilder.UseVisualRunner();
 

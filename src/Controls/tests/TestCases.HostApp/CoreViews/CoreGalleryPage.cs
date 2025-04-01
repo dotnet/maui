@@ -1,7 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.Sample
 {
 	internal class CoreGalleryPage<T> : CoreGalleryBasePage<T>
 		where T : View, new()

@@ -5,7 +5,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-	public class GestureRecognizerUITests : UITest
+	public class GestureRecognizerUITests : CoreGalleryBasePageTest
 	{
 		const string GestureRecognizerGallery = "Gesture Recognizer Gallery";
 		public GestureRecognizerUITests(TestDevice device)
@@ -13,16 +13,13 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 		}
 
-		protected override void FixtureSetup()
+		protected override void NavigateToGallery()
 		{
-			base.FixtureSetup();
 			App.NavigateToGallery(GestureRecognizerGallery);
 		}
 
 		[Test]
 		[Category(UITestCategories.Gestures)]
-		[FailsOnAndroid("PointerGestureRecognizer doesn't work with mouse in Android")]
-		[FailsOnIOS("PointerGestureRecognizer doesn't work with mouse in iOS")]
 		public void PointerGestureTest()
 		{
 			App.WaitForElement("TargetView");
@@ -33,9 +30,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			// using Tap in place of moving mouse for now
 			App.Tap("primaryLabel");
 			App.Tap("secondaryLabel");
-
+			App.WaitForElement("secondaryLabel");
 			var secondaryLabelText = App.FindElement("secondaryLabel").GetText();
-			ClassicAssert.IsNotEmpty(secondaryLabelText);
+			Assert.That(secondaryLabelText, Is.Not.Null);
 		}
 
 		[Test]
@@ -52,7 +49,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var result = App.FindElement("DoubleTapResults").GetText();
 			ClassicAssert.AreEqual("Success", result);
 		}
-		
+
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void SingleTap()
@@ -67,7 +64,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			var result = App.FindElement("SingleTapGestureResults").GetText();
 			ClassicAssert.AreEqual("Success", result);
 		}
-		
+
 		[Test]
 		[Category(UITestCategories.Gestures)]
 		public void DisabledSingleTap()

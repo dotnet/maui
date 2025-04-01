@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Controls.Sample.UITests;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
+﻿using Controls.Sample.UITests;
 using Maui.Controls.Sample.CollectionViewGalleries;
 
 namespace Maui.Controls.Sample
 {
-	[Preserve(AllMembers = true)]
 	internal class CorePageView : ListView
 	{
-		[Preserve(AllMembers = true)]
 		internal class GalleryPageFactory
 		{
 			public GalleryPageFactory(Func<Page> create, string title)
@@ -48,6 +40,7 @@ namespace Maui.Controls.Sample
 			// Concepts & Abstracts
 			new GalleryPageFactory(() => new BorderGallery(), "Border Gallery"),
 			new GalleryPageFactory(() => new DragAndDropGallery(), "Drag and Drop Gallery"),
+			new GalleryPageFactory(() => new FontsGalleryPage(), "Fonts Gallery"),
 			new GalleryPageFactory(() => new GestureRecognizerGallery(), "Gesture Recognizer Gallery"),
 			new GalleryPageFactory(() => new InputTransparencyGalleryPage(), "Input Transparency Gallery"),
 			new GalleryPageFactory(() => new ImageLoadingGalleryPage(), "Image Loading Gallery"),
@@ -83,6 +76,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new SwipeViewCoreGalleryPage(), "SwipeView Gallery"),
 			new GalleryPageFactory(() => new TimePickerCoreGalleryPage(), "Time Picker Gallery"),
 			new GalleryPageFactory(() => new WebViewCoreGalleryPage(), "WebView Gallery"),
+			new GalleryPageFactory(() => new SliderControlPage(), "Slider Feature Matrix"),
 		};
 
 		public CorePageView(Page rootPage)
@@ -119,11 +113,10 @@ namespace Maui.Controls.Sample
 			template.SetBinding(TextCell.TextProperty, "Title");
 			template.SetBinding(TextCell.AutomationIdProperty, "TitleAutomationId");
 
-			BindingContext = _pages;
 			ItemTemplate = template;
 			ItemsSource = _pages;
 
-			ItemSelected += async (sender, args) =>
+			ItemSelected += (sender, args) =>
 			{
 				if (SelectedItem == null)
 				{
@@ -134,14 +127,8 @@ namespace Maui.Controls.Sample
 				if (item is GalleryPageFactory page)
 				{
 					var realize = page.Realize();
-					if (realize is Shell)
-					{
-						Application.Current.MainPage = realize;
-					}
-					else
-					{
-						await PushPage(realize);
-					}
+
+					Application.Current.MainPage = realize;
 				}
 
 				SelectedItem = null;

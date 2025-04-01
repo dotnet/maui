@@ -1,6 +1,4 @@
-﻿using System;
-using System.Reflection;
-using Microsoft.Maui.Controls;
+﻿using System.Reflection;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.ScrollModeGalleries
 {

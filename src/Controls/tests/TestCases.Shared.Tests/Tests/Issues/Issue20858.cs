@@ -1,4 +1,4 @@
-#if ANDROID || IOS
+#if ANDROID || IOS //This test case verifies "SetOrientationPotrait and Landscape works" exclusively on the Android and IOS platforms
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -7,7 +7,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue20858 : _IssuesUITest
 {
-	public Issue20858(TestDevice device) 
+	public Issue20858(TestDevice device)
 		: base(device)
 	{ }
 

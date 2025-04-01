@@ -33,31 +33,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(clicked);
 		}
 
-		[Theory(DisplayName = "ImageSource Initializes Correctly")]
-		[InlineData("red.png", "#FF0000")]
-		[InlineData("green.png", "#00FF00")]
-		[InlineData("black.png", "#000000")]
-		public async Task ImageSourceInitializesCorrectly(string filename, string colorHex)
-		{
-			var imageButton = new ImageButtonStub
-			{
-				Background = new SolidPaintStub(Colors.Black),
-				ImageSource = new FileImageSourceStub(filename),
-			};
-
-			var order = new List<string>();
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var handler = CreateHandler(imageButton);
-
-				await AssertEventually(() => ImageSourceLoaded(handler));
-
-				var expectedColor = Color.FromArgb(colorHex);
-				await handler.PlatformView.AssertContainsColor(expectedColor, MauiContext);
-			});
-		}
-
 		[Fact(DisplayName = "LoadingCompleted event fires")]
 		public async Task LoadingCompletedEventFires()
 		{

@@ -76,6 +76,16 @@ namespace Microsoft.Maui.Platform
 				_viewPagerParent = Control.Parent.GetParentOfType<SwipeViewPager>();
 		}
 
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+		{
+				base.OnLayout(changed, left, top, right, bottom);
+
+				if (_contentView is null || _actionView is null || GetNativeSwipeItems() is not {Count: > 0} swipeItems)
+					return;
+
+				LayoutSwipeItems(swipeItems);
+		}
+
 		public override bool OnTouchEvent(MotionEvent? e)
 		{
 			base.OnTouchEvent(e);
@@ -526,7 +536,7 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateSwipeItems()
 		{
-			if (_contentView == null || _actionView != null)
+			if (_contentView == null || _contentView.IsDisposed() || _actionView != null)
 				return;
 
 			ISwipeItems? items = GetSwipeItemsByDirection();
@@ -545,22 +555,25 @@ namespace Microsoft.Maui.Platform
 
 			foreach (var item in items)
 			{
-				AView swipeItem = item.ToPlatform(MauiContext);
+				AView? swipeItem = item?.ToPlatform(MauiContext);
 
-				if (item is ISwipeItemView formsSwipeItemView)
+				if (swipeItem is not null)
 				{
-					_actionView.AddView(swipeItem);
-					UpdateSwipeItemViewLayout(formsSwipeItemView);
-					_swipeItems.Add(formsSwipeItemView, swipeItem);
-				}
-				else if (item is ISwipeItemMenuItem menuItem)
-				{
-					_actionView.AddView(swipeItem);
-					_swipeItems.Add(item, swipeItem);
-				}
+					if (item is ISwipeItemView formsSwipeItemView)
+					{
+						_actionView.AddView(swipeItem);
+						UpdateSwipeItemViewLayout(formsSwipeItemView);
+						_swipeItems.Add(formsSwipeItemView, swipeItem);
+					}
+					else if (item is ISwipeItemMenuItem menuItem)
+					{
+						_actionView.AddView(swipeItem);
+						_swipeItems.Add(item, swipeItem);
+					}
 
-				if (swipeItem != null)
-					swipeItems.Add(swipeItem);
+					if (swipeItem != null)
+						swipeItems.Add(swipeItem);
+				}
 			}
 
 			AddView(_actionView);

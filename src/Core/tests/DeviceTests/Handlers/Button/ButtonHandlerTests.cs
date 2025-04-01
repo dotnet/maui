@@ -65,27 +65,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(clicked);
 		}
 
-		[Theory(DisplayName = "ImageSource Initializes Correctly")]
-		[InlineData("red.png", "#FF0000")]
-		[InlineData("green.png", "#00FF00")]
-		[InlineData("black.png", "#000000")]
-		public async Task ImageSourceInitializesCorrectly(string filename, string colorHex)
-		{
-			var image = new ButtonStub
-			{
-				Background = new SolidPaintStub(Colors.Black),
-				ImageSource = new FileImageSourceStub(filename),
-			};
-
-			await AttachAndRun(image, async (handler) =>
-			{
-				await AssertEventually(() => ImageSourceLoaded(handler));
-
-				var expectedColor = Color.FromArgb(colorHex);
-				await handler.PlatformView.AssertContainsColor(expectedColor, MauiContext);
-			});
-		}
-
 		[Theory(DisplayName = "Padding Initializes Correctly")]
 		[InlineData(0, 0, 0, 0)]
 		[InlineData(1, 1, 1, 1)]

@@ -65,7 +65,9 @@ namespace Microsoft.Maui.Controls
 				for (int i = 0; i < gradientStopCollection.Count; i++)
 				{
 					var gs = gradientStopCollection[i];
-					gradientStops[i] = new GraphicsGradientStop(gs.Offset, gs.Color);
+
+					if (gs is not null)
+						gradientStops[i] = new GraphicsGradientStop(gs.Offset, gs.Color);
 				}
 
 				if (gradientBrush is LinearGradientBrush linearGradientBrush)
@@ -189,6 +191,8 @@ namespace Microsoft.Maui.Controls
 		static ImmutableBrush darkGray;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkGray"/>.</summary>
 		public static SolidColorBrush DarkGray => darkGray ??= new(Colors.DarkGray);
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkGrey"/>.</summary>
+		public static SolidColorBrush DarkGrey => DarkGray;
 		static ImmutableBrush darkGreen;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkGreen"/>.</summary>
 		public static SolidColorBrush DarkGreen => darkGreen ??= new(Colors.DarkGreen);
@@ -222,6 +226,8 @@ namespace Microsoft.Maui.Controls
 		static ImmutableBrush darkSlateGray;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkSlateGray"/>.</summary>
 		public static SolidColorBrush DarkSlateGray => darkSlateGray ??= new(Colors.DarkSlateGray);
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkSlateGrey"/>.</summary>
+		public static SolidColorBrush DarkSlateGrey => DarkSlateGray;
 		static ImmutableBrush darkTurquoise;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkTurquoise"/>.</summary>
 		public static SolidColorBrush DarkTurquoise => darkTurquoise ??= new(Colors.DarkTurquoise);
@@ -237,6 +243,8 @@ namespace Microsoft.Maui.Controls
 		static ImmutableBrush dimGray;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DimGray"/>.</summary>
 		public static SolidColorBrush DimGray => dimGray ??= new(Colors.DimGray);
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DimGrey"/>.</summary>
+		public static SolidColorBrush DimGrey => DimGray;
 		static ImmutableBrush dodgerBlue;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DodgerBlue"/>.</summary>
 		public static SolidColorBrush DodgerBlue => dodgerBlue ??= new(Colors.DodgerBlue);
@@ -267,6 +275,8 @@ namespace Microsoft.Maui.Controls
 		static ImmutableBrush gray;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Gray"/>.</summary>
 		public static SolidColorBrush Gray => gray ??= new(Colors.Gray);
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Grey"/>.</summary>
+		public static SolidColorBrush Grey => Gray;
 		static ImmutableBrush green;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Green"/>.</summary>
 		public static SolidColorBrush Green => green ??= new(Colors.Green);
@@ -318,6 +328,8 @@ namespace Microsoft.Maui.Controls
 		static ImmutableBrush lightGray;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightGray"/>.</summary>
 		public static SolidColorBrush LightGray => lightGray ??= new(Colors.LightGray);
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightGrey"/>.</summary>
+		public static SolidColorBrush LightGrey => LightGray;
 		static ImmutableBrush lightGreen;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightGreen"/>.</summary>
 		public static SolidColorBrush LightGreen => lightGreen ??= new(Colors.LightGreen);
@@ -336,6 +348,8 @@ namespace Microsoft.Maui.Controls
 		static ImmutableBrush lightSlateGray;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightSlateGray"/>.</summary>
 		public static SolidColorBrush LightSlateGray => lightSlateGray ??= new(Colors.LightSlateGray);
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightSlateGrey"/>.</summary>
+		public static SolidColorBrush LightSlateGrey => LightSlateGray;
 		static ImmutableBrush lightSteelBlue;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightSteelBlue"/>.</summary>
 		public static SolidColorBrush LightSteelBlue => lightSteelBlue ??= new(Colors.LightSteelBlue);
@@ -492,6 +506,8 @@ namespace Microsoft.Maui.Controls
 		static ImmutableBrush slateGray;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.SlateGray"/>.</summary>
 		public static SolidColorBrush SlateGray => slateGray ??= new(Colors.SlateGray);
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.SlateGrey"/>.</summary>
+		public static SolidColorBrush SlateGrey => SlateGray;
 		static ImmutableBrush snow;
 		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Snow"/>.</summary>
 		public static SolidColorBrush Snow => snow ??= new(Colors.Snow);

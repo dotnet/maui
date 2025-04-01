@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public  class Issue10454 : _IssuesUITest
+	public class Issue10454 : _IssuesUITest
 	{
 		const string Success = "Success";
 
@@ -16,12 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
-		[FailsOnMac]
 		public void ChildAddedShouldFire()
 		{
-			App.WaitForNoElement(Success);
+			App.WaitForElement(Success);
 		}
 	}
 }

@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Microsoft.Maui.Controls.Hosting.CompatibilityCheck.UseCompatibility();
 			_defaultCulture = System.Threading.Thread.CurrentThread.CurrentCulture;
 			_defaultUICulture = System.Threading.Thread.CurrentThread.CurrentUICulture;
-			MockPlatformSizeService.Current?.Reset();
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			DeviceDisplay.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);
@@ -32,7 +31,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 		public virtual void TearDown()
 		{
-			MockPlatformSizeService.Current?.Reset();
 			AppInfo.SetCurrent(null);
 			DeviceDisplay.SetCurrent(null);
 			DeviceInfo.SetCurrent(null);

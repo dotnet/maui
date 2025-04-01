@@ -725,6 +725,14 @@ public static class Test
 		IsBounceEnabled
 	}
 
+	public enum Fonts
+	{
+		FromBundle_Label,
+		FromBundle_Image,
+		FromEmbedded_Label,
+		FromEmbedded_Image,
+	}
+
 	public enum ImageLoading
 	{
 		FromBundleSvg,

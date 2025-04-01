@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapVerticalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
-			(handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateHorizontalScrollBarVisibility();
+			(handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateVerticalScrollBarVisibility();
 		}
 
 		public static void MapItemTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)

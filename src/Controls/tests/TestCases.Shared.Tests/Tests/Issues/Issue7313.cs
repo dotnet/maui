@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,14 +14,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOS]
 		public void RefreshControlTurnsOffSuccessfully()
 		{
-			App.WaitForNoElement("If you see the refresh circle this test has failed");
+			App.WaitForElement("If you see the refresh circle this test has failed");
 
 			App.WaitForNoElement("RefreshControl");
 		}
 	}
 }
-#endif

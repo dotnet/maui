@@ -55,7 +55,6 @@
       <Parameters />
       <Docs>
         <summary>Intitializes a new <see cref="T:Microsoft.Maui.Controls.Layout" /> instance.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CascadeInputTransparent">
@@ -76,7 +75,6 @@
         <summary>Gets or sets a value that controls whether child elements inherit the input transparency of <see langword="this" /> layout when the tranparency is <see langword="true" />.</summary>
         <value>
           <see langword="true" /> to cause child elements to inherit the input transparency of <see langword="this" /> layout, when <see langword="this" /> layout's <see cref="P:Microsoft.Maui.Controls.VisualElement.InputTransparent" /> is true. <see langword="false" /> to cause child elements to ignore the input tranparency of <see langword="this" /> layout.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="CascadeInputTransparentProperty">
@@ -95,7 +93,6 @@
       </ReturnValue>
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.Layout.CascadeInputTransparent" /> property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Children">
@@ -122,8 +119,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ForceLayout">
@@ -246,7 +241,6 @@
         <summary>Gets or sets a value which determines if the Layout should clip its children to its bounds.</summary>
         <value>
           <see langword="true" /> if the Layout is clipped; otherwise, <see langword="false" />. The default value is <see langword="false" />.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsClippedToBoundsProperty">
@@ -271,7 +265,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the <see cref="P:Microsoft.Maui.Controls.Layout.IsClippedToBounds" /> bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LayoutChanged">
@@ -419,7 +412,6 @@
       <Parameters />
       <Docs>
         <summary>Invoked whenever a child of the layout has emitted <see cref="E:Microsoft.Maui.Controls.VisualElement.MeasureInvalidated" />. Implement this method to add class handling for this event.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnChildMeasureInvalidated">
@@ -550,7 +542,6 @@
       </ReturnValue>
       <Docs>
         <summary>Identifies the Padding bindable property.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RaiseChild">
@@ -597,8 +588,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ShouldInvalidateOnChildAdded">
@@ -624,8 +613,6 @@
       <Docs>
         <param name="child">The child for which to specify whether or not to track invalidation.</param>
         <summary>When implemented, should return <see langword="true" /> if <paramref name="child" /> should call <see cref="M:Microsoft.Maui.Controls.VisualElement.InvalidateMeasure" />, and to return <see langword="false" /> if it should not.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ShouldInvalidateOnChildRemoved">
@@ -651,8 +638,6 @@
       <Docs>
         <param name="child">The child for which to specify whether or not to track invalidation.</param>
         <summary>When implemented, should return <see langword="true" /> if <paramref name="child" /> should call <see cref="M:Microsoft.Maui.Controls.VisualElement.InvalidateMeasure" /> when it is removed, and to return <see langword="false" /> if it should not.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UpdateChildrenLayout">

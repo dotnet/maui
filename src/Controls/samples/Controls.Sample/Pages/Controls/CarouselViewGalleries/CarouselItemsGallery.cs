@@ -196,10 +196,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 
 				grid.Children.Add(info);
 
-				var frame = new Frame
+				var frame = new Border
 				{
-					Content = grid,
-					HasShadow = false
+					Content = grid
 				};
 
 				frame.SetBinding(BackgroundColorProperty, new Binding("Color"));

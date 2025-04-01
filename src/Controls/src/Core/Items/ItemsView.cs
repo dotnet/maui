@@ -3,15 +3,18 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
+
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ItemsView']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public abstract class ItemsView : View
 	{
 
@@ -189,6 +192,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler RemainingItemsThresholdReached;
 
+		[Obsolete("Use MeasureOverride instead")]
 		protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			// TODO hartez 2018-05-22 05:04 PM This 40,40 is what LV1 does; can we come up with something less arbitrary?
@@ -223,6 +227,12 @@ namespace Microsoft.Maui.Controls
 			base.OnBindingContextChanged();
 			if (InternalItemsLayout is BindableObject bo)
 				SetInheritedBindingContext(bo, BindingContext);
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			var itemsSourceText = DebuggerDisplayHelpers.GetDebugText(nameof(ItemsSource), ItemsSource);
+			return $"{base.GetDebuggerDisplay()}, {itemsSourceText}";
 		}
 	}
 }

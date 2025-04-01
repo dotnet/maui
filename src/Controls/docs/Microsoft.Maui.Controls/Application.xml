@@ -47,7 +47,6 @@
       <Parameters />
       <Docs>
         <summary>Initializes a new <see cref="T:Microsoft.Maui.Controls.Application" /> instance.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="AppLinks">
@@ -85,8 +84,6 @@
       </ReturnValue>
       <Parameters />
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ClearCurrent">
@@ -111,7 +108,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Current">
@@ -134,8 +130,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets the current application.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Dispatcher">
@@ -152,9 +146,6 @@
         <ReturnType>Microsoft.Maui.Controls.IDispatcher</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="IsApplicationOrNull">
@@ -182,8 +173,6 @@
       <Docs>
         <param name="element">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LogWarningsToApplicationOutput">
@@ -206,8 +195,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets whether runtime warnings are sent to the application's output.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="MainPage">
@@ -253,7 +240,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised after a view has been popped modally.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ModalPopping">
@@ -275,7 +261,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when a view is modally popped.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ModalPushed">
@@ -297,7 +282,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised after a view has been pushed modally.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ModalPushing">
@@ -319,7 +303,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when a view is modally pushed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="NavigationProxy">
@@ -343,8 +326,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="On&lt;T&gt;">
@@ -375,8 +356,6 @@
       <Docs>
         <typeparam name="T">The platform configuration for which to retrieve the application instance.</typeparam>
         <summary>Returns the platform-specific instance of this <see cref="T:Microsoft.Maui.Controls.Application" />, on which a platform-specific method may be called.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnAppLinkRequestReceived">
@@ -399,7 +378,6 @@
       <Docs>
         <param name="uri">The URI for the request.</param>
         <summary>App developers override this method to respond when the user initiates an app link request.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnParentSet">
@@ -423,7 +401,6 @@
       <Parameters />
       <Docs>
         <summary>Throws <see cref="T:System.InvalidOperationException" />.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnResume">
@@ -447,7 +424,6 @@
       <Parameters />
       <Docs>
         <summary>Application developers override this method to perform actions when the application resumes from a sleeping state.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnSleep">
@@ -471,7 +447,6 @@
       <Parameters />
       <Docs>
         <summary>Application developers override this method to perform actions when the application enters the sleeping state.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="OnStart">
@@ -495,7 +470,6 @@
       <Parameters />
       <Docs>
         <summary>Application developers override this method to perform actions when the application starts.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PageAppearing">
@@ -514,7 +488,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when a page is about to appear on the screen.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PageDisappearing">
@@ -533,7 +506,6 @@
       </ReturnValue>
       <Docs>
         <summary>Event that is raised when a page is about to disappear from the screen.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="PanGestureId">
@@ -557,8 +529,6 @@
       </ReturnValue>
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Properties">
@@ -604,7 +574,6 @@
       <Parameters />
       <Docs>
         <summary>Quits the application.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RequestedTheme">
@@ -621,9 +590,6 @@
         <ReturnType>Microsoft.Maui.Controls.OSAppTheme</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="RequestedThemeChanged">
@@ -640,8 +606,6 @@
         <ReturnType>System.EventHandler&lt;Microsoft.Maui.Controls.AppThemeChangedEventArgs&gt;</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Resources">
@@ -664,8 +628,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the resource dictionary for this <see cref="T:Microsoft.Maui.Controls.Application" /> object.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SavePropertiesAsync">
@@ -719,7 +681,6 @@
       <Docs>
         <param name="uri">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendResume">
@@ -744,7 +705,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendSleep">
@@ -769,7 +729,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendSleepAsync">
@@ -794,8 +753,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SendStart">
@@ -820,7 +777,6 @@
       <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetAppIndexingProvider">
@@ -851,7 +807,6 @@
       <Docs>
         <param name="provider">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="SetCurrentApplication">
@@ -879,7 +834,6 @@
       <Docs>
         <param name="value">For internal use by the Microsoft.Maui.Controls platform.</param>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="TriggerThemeChanged">
@@ -905,8 +859,6 @@
       </Parameters>
       <Docs>
         <param name="args">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="UserAppTheme">
@@ -923,9 +875,6 @@
         <ReturnType>Microsoft.Maui.Controls.OSAppTheme</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

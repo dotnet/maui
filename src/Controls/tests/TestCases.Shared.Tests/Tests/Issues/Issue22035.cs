@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS //his test is failing, likely due to product issue. More information: https://github.com/dotnet/maui/issues/22287.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,9 +15,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "[Android] CarouselView: VirtualView cannot be null here, when clearing and adding items on second navigation";
 
 		[Test]
-		[FailsOnIOS("This test is failing, likely due to product issue. More information: https://github.com/dotnet/maui/issues/22287")]
-		[FailsOnMac("This test is failing, likely due to product issue. More information: https://github.com/dotnet/maui/issues/22287")]
-		[FailsOnWindows("This test is failing, likely due to product issue. More information: https://github.com/dotnet/maui/issues/22287")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issue. More information: https://github.com/dotnet/maui/issues/22287")]
 		public void CarouselViewVirtualViewNotNull()
 		{
 			for (int i = 0; i < 2; i++)
@@ -26,10 +25,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				App.WaitForElement("TestLoadButton");
 				App.Tap("TestLoadButton");
 				App.WaitForElement("Item1");
-				App.Back();
+				App.TapBackArrow();
 			}
 
 			// Without exceptions, the test has passed.
 		}
 	}
 }
+#endif

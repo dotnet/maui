@@ -1,8 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
 	// MeasuringEmptyScrollViewDoesNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue1538.cs)
 	[Issue(IssueTracker.None, 1538, "Crash measuring empty ScrollView", PlatformAffected.Android | PlatformAffected.UWP)]

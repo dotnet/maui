@@ -20,7 +20,6 @@
   <Interfaces />
   <Docs>
     <summary>An abstract class that provides a <see cref="T:Microsoft.Maui.Controls.BindingMode" /> and a formatting option.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName="DisableCollectionSynchronization">
@@ -105,7 +104,6 @@
       <Docs>
         <summary>Gets or sets the value to use instead of the default value for the property, if no specified value exists.</summary>
         <value>The value to use instead of the default value for the property, if no specified value exists</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Mode">
@@ -130,8 +128,6 @@
       </ReturnValue>
       <Docs>
         <summary>Gets or sets the mode for this binding.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="StringFormat">
@@ -200,7 +196,6 @@ label.AddBinding (new Binding (Label.TextProperty, "Price") {
       <Docs>
         <summary>Gets or sets the value to supply for a bound property when the target of the binding is <see langword="null" />.</summary>
         <value>The value to supply for a bound property when the target of the binding is <see langword="null" />.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ThrowIfApplied">
@@ -227,7 +222,7 @@ label.AddBinding (new Binding (Label.TextProperty, "Price") {
       <Docs>
         <summary>Throws an <see cref="T:System.InvalidOperationException" /> if the binding has been applied.</summary>
         <remarks>
-          <para>Use this method in property setters as bindings can not be changed once applied.</para>
+          <para>Use this method in property setters as bindings cannot be changed once applied.</para>
         </remarks>
       </Docs>
     </Member>

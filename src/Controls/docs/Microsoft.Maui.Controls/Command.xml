@@ -76,7 +76,6 @@ var button = new Button {
       <Docs>
         <param name="execute">An Action to execute when the Command is executed.</param>
         <summary>Initializes a new instance of the Command class.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName=".ctor">
@@ -223,7 +222,6 @@ var button = new Button {
       </ReturnValue>
       <Docs>
         <summary>Occurs when the target of the Command should reevaluate whether or not the Command can be executed.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ChangeCanExecute">
@@ -249,7 +247,6 @@ var button = new Button {
       <Parameters />
       <Docs>
         <summary>Send a <see cref="E:System.Windows.Input.ICommand.CanExecuteChanged" /></summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Execute">

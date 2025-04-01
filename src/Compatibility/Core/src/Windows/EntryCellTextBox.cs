@@ -6,7 +6,7 @@ using Windows.System;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {
 	[Obsolete("Use Microsoft.Maui.Controls.Platform.Compatibility.EntryCellTextBox instead")]
-	public class EntryCellTextBox : TextBox
+	public partial class EntryCellTextBox : TextBox
 	{
 		protected override void OnKeyUp(KeyRoutedEventArgs e)
 		{

@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Runtime.CompilerServices;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -8,6 +10,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class TestElement
 		: Element
 	{
+		/// <summary>Bindable property for <see cref="ClassId"/>.</summary>
+		public static readonly BindableProperty TrackPropertyChangedDelegateProperty = BindableProperty.Create(nameof(TestElement), typeof(int), typeof(Element), 0, propertyChanged: OnTrackPropertyChangedDelegate);
+
+
 		public TestElement()
 		{
 			internalChildren.CollectionChanged += OnChildrenChanged;
@@ -37,12 +43,88 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			=> internalChildren;
 
 		readonly ObservableCollection<Element> internalChildren = new ObservableCollection<Element>();
-	}
 
+
+		public int TrackPropertyChangedDelegate
+		{
+			get => (int)GetValue(TrackPropertyChangedDelegateProperty);
+			set => SetValue(TrackPropertyChangedDelegateProperty, value);
+		}
+
+		public event EventHandler TrackPropertyChanged;
+		public int TrackPropertyChangedDelegateCount { get; private set; }
+		public int TrackPropertyChangedOnPropertyChangedCount { get; private set; }
+		public int TrackPropertyChangedUpdateHandlerValueCount { get; private set; }
+
+		private static void OnTrackPropertyChangedDelegate(BindableObject bindable, object oldValue, object newValue)
+		{
+			((TestElement)bindable).TrackPropertyChangedDelegateCount++;
+			((TestElement)bindable).TrackPropertyChanged?.Invoke(bindable, EventArgs.Empty);
+		}
+
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			if (propertyName == TrackPropertyChangedDelegateProperty.PropertyName)
+			{
+				TrackPropertyChangedOnPropertyChangedCount++;
+				TrackPropertyChanged?.Invoke(this, EventArgs.Empty);
+			}
+
+			base.OnPropertyChanged(propertyName);
+		}
+
+		private protected override void UpdateHandlerValue(string propertyName, bool valueChanged)
+		{
+			if (propertyName == TrackPropertyChangedDelegateProperty.PropertyName)
+			{
+				TrackPropertyChangedUpdateHandlerValueCount++;
+				TrackPropertyChanged?.Invoke(this, EventArgs.Empty);
+			}
+
+			base.UpdateHandlerValue(propertyName, valueChanged);
+		}
+	}
 
 	public class ElementTests
 		: BaseTestFixture
 	{
+
+		[Fact]
+		public void ValidateHandleUpdatesHappenAfterPropertyChangedDelegate()
+		{
+			var element = new TestElement();
+
+			element.TrackPropertyChanged += (_, _) =>
+			{
+				Assert.True(element.TrackPropertyChangedUpdateHandlerValueCount <= element.TrackPropertyChangedOnPropertyChangedCount);
+				Assert.True(element.TrackPropertyChangedUpdateHandlerValueCount <= element.TrackPropertyChangedDelegateCount);
+			};
+
+			element.TrackPropertyChangedDelegate = 1;
+		}
+
+		[Fact]
+		public void ValidateChangingBindablePropertyDuringOnPropertyChangedStillPropagatesHandlerUpdateLater()
+		{
+			var element = new TestElement();
+
+
+			element.PropertyChanged += (_, _) =>
+			{
+				if (element.TrackPropertyChangedDelegate == 1)
+					element.TrackPropertyChangedDelegate = 2;
+			};
+
+			element.TrackPropertyChanged += (_, _) =>
+			{
+				Assert.True(element.TrackPropertyChangedUpdateHandlerValueCount <= element.TrackPropertyChangedOnPropertyChangedCount);
+				Assert.True(element.TrackPropertyChangedUpdateHandlerValueCount <= element.TrackPropertyChangedDelegateCount);
+			};
+
+			element.TrackPropertyChangedDelegate = 1;
+			Assert.Equal(2, element.TrackPropertyChangedUpdateHandlerValueCount);
+		}
+
 		[Fact]
 		public void DescendantAddedLevel1()
 		{

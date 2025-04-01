@@ -5,11 +5,6 @@
     <AssemblyName>Microsoft.Maui.Controls.Core.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
     <NoWarn>0114;0672;0108;0067;0168;0169;0219;0612;0618;1998</NoWarn>
-    <!--
-      NOTE: Keep this project on C# 9 to avoid changes in overload resolution:
-      src/Controls/tests/Core.UnitTests/TemplatedItemsListTests.cs(543,11): error CS0121: The call is ambiguous between the following methods or properties: 'Assert.That(TestDelegate, IResolveConstraint)' and 'Assert.That<TActual>(TActual, IResolveConstraint)'
-    -->
-    <LangVersion>9.0</LangVersion>
     <RootNamespace>Microsoft.Maui.Controls.Core.UnitTests</RootNamespace>
   </PropertyGroup>
 
@@ -28,6 +23,16 @@
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.Maui.Controls.Generated</InterceptorsPreviewNamespaces>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference
+      Include="..\..\..\Controls\src\BindingSourceGen\Controls.BindingSourceGen.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

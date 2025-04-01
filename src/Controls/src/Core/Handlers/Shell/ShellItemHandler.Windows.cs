@@ -84,7 +84,17 @@ namespace Microsoft.Maui.Controls.Handlers
 			base.DisconnectHandler(platformView);
 
 			if (platformView is MauiNavigationView mnv)
+			{
 				mnv.SelectionChanged -= OnNavigationTabChanged;
+				if (mnv.AutoSuggestBox is { } autoSuggestBox)
+				{
+					autoSuggestBox.TextChanged -= OnSearchBoxTextChanged;
+					autoSuggestBox.QuerySubmitted -= OnSearchBoxQuerySubmitted;
+					autoSuggestBox.SuggestionChosen -= OnSearchBoxSuggestionChosen;
+					autoSuggestBox.GotFocus -= OnSearchBoxGotFocus;
+					autoSuggestBox.LostFocus -= OnSearchBoxLostFocus;
+				}
+			}
 
 			platformView.Loaded -= OnNavigationViewLoaded;
 
@@ -141,8 +151,22 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			var selectedItem = (NavigationViewItemViewModel)args.SelectedItem;
 
-			if (selectedItem.Data is ShellSection shellSection)
+			if (selectedItem.Data is ShellSection shellSection && VirtualView.Parent is Shell shell)
 			{
+				NavigationViewItemViewModel? currentItem = null;
+				foreach (var item in _mainLevelTabs)
+				{
+					if (shell.CurrentItem?.CurrentItem is not null && item.Data == shell.CurrentItem.CurrentItem)
+					{
+						currentItem = item;
+						break;
+					}
+				}
+				if (PlatformView is NavigationView navView && navView?.SelectedItem is not null && navView.SelectedItem != currentItem)
+				{
+					((IShellItemController)shell.CurrentItem!).ProposeSection(shellSection);
+				}
+
 				((Shell)VirtualView.Parent).CurrentItem = shellSection;
 			}
 			else if (selectedItem.Data is ShellContent shellContent)
@@ -151,7 +175,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		void MapMenuItems()
+		internal void MapMenuItems()
 		{
 			IShellItemController shellItemController = VirtualView;
 			var items = new List<BaseShellItem>();
@@ -261,13 +285,15 @@ namespace Microsoft.Maui.Controls.Handlers
 						autoSuggestBox.TextChanged += OnSearchBoxTextChanged;
 						autoSuggestBox.QuerySubmitted += OnSearchBoxQuerySubmitted;
 						autoSuggestBox.SuggestionChosen += OnSearchBoxSuggestionChosen;
+						autoSuggestBox.GotFocus += OnSearchBoxGotFocus;
+						autoSuggestBox.LostFocus += OnSearchBoxLostFocus;
 						mauiNavView.AutoSuggestBox = autoSuggestBox;
 					}
 
 					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
 					autoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
 					autoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
-					autoSuggestBox.ItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["SearchHandlerItemTemplate"];
+					autoSuggestBox.ItemTemplate = _currentSearchHandler.ItemTemplate is null ? null : (UI.Xaml.DataTemplate)WApp.Current.Resources["SearchHandlerItemTemplate"];
 					autoSuggestBox.Text = _currentSearchHandler.Query;
 					autoSuggestBox.UpdateTextOnSelect = false;
 
@@ -294,6 +320,16 @@ namespace Microsoft.Maui.Controls.Handlers
 					autoSuggestBox.Visibility = UI.Xaml.Visibility.Collapsed;
 				}
 			}
+		}
+
+		void OnSearchBoxGotFocus(object sender, RoutedEventArgs e)
+		{
+			_currentSearchHandler?.SetIsFocused(true);
+		}
+
+		void OnSearchBoxLostFocus(object sender, RoutedEventArgs e)
+		{
+			_currentSearchHandler?.SetIsFocused(false);
 		}
 
 		void OnSearchBoxTextChanged(Microsoft.UI.Xaml.Controls.AutoSuggestBox sender, Microsoft.UI.Xaml.Controls.AutoSuggestBoxTextChangedEventArgs args)
@@ -338,11 +374,18 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_currentSearchHandler == null)
 				return null;
 
-			if (_currentSearchHandler.ItemsSource == null)
-				return _currentSearchHandler.ItemsSource;
+			var itemsSource = _currentSearchHandler.ItemsSource;
+			var itemTemplate = _currentSearchHandler.ItemTemplate;
 
-			return TemplatedItemSourceFactory.Create(_currentSearchHandler.ItemsSource, _currentSearchHandler.ItemTemplate, _currentSearchHandler,
+			if (itemTemplate is not null && itemsSource is not null)
+			{
+				return TemplatedItemSourceFactory.Create(itemsSource, itemTemplate, _currentSearchHandler,
 				null, null, null, MauiContext);
+			}
+			else
+			{
+				return itemsSource;
+			}
 		}
 
 		void OnCurrentSearchHandlerPropertyChanged(object? sender, PropertyChangedEventArgs e)

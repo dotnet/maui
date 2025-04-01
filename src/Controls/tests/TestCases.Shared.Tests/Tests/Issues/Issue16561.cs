@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿#if TEST_FAILS_ON_CATALYST //related issue: https://github.com/dotnet/maui/issues/17435
+using System.Drawing;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using OpenQA.Selenium.Appium.Interactions;
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Label)]
-		[FailsOnMac("https://github.com/dotnet/maui/issues/17435")]
+		[FailsOnMacWhenRunningOnXamarinUITest("https://github.com/dotnet/maui/issues/17435")]
 		public void TapTwoPlacesQuickly()
 		{
 			if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
@@ -86,3 +87,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

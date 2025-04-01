@@ -64,7 +64,6 @@ class Bindable : BindableObject
       <Docs>
         <summary>Gets the BindableProperty.</summary>
         <value>A BindableProperty used for read access.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

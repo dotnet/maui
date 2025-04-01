@@ -1,5 +1,5 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
@@ -12,18 +12,15 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Span with tail truncation and paragraph breaks with Java.Lang.IndexOutOfBoundsException";
 
-		// Crash after navigation
-		/*
+
 		[Test]
 		[Category(UITestCategories.Label)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroid]
 		public void ExpectingPageNotToBreak()
 		{
-			App.Screenshot("Test passed, label is showing as it should!");
+			App.WaitForElement("Success");
 			//if it doesn't crash, we're good.
 		}
-		*/
+
 	}
 }
-#endif

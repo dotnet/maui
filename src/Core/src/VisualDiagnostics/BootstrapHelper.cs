@@ -21,7 +21,7 @@ namespace Microsoft.Maui
 	static class VisualDiagnosticsBootstrapHelper
 #endif
 	{
-		// Do not overload this method. ICLRRuntimeHost2::CreateDelegate can not resolve overloaded methods.
+		// Do not overload this method. ICLRRuntimeHost2::CreateDelegate cannot resolve overloaded methods.
 		[PreserveSig]
 		[RequiresUnreferencedCode("The assembly, type, or method may have been trimmed if it wasn't preserved another way.")]
 		private static int Bootstrap(

@@ -12,9 +12,8 @@ public class Issue20156 : _IssuesUITest
 		: base(device)
 	{ }
 
-    [Test]
+	[Test]
 	[Category(UITestCategories.Border)]
-	[FailsOnMac("VerifyScreenshot method not implemented on macOS")]
 	public void BorderShouldHaveNoThickness()
 	{
 		_ = App.WaitForElement("WaitForStubControl");

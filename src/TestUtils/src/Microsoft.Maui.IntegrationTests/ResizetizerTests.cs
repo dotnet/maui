@@ -1,7 +1,6 @@
-using Microsoft.Maui.IntegrationTests.Apple;
-
 namespace Microsoft.Maui.IntegrationTests;
 
+[Category(Categories.Build)]
 public class ResizetizerTests : BaseBuildTest
 {
 	const string BlankSvgContents =
@@ -14,17 +13,21 @@ public class ResizetizerTests : BaseBuildTest
 
 	[Test]
 	// windows unpackaged/exe
-	[TestCase("maui", "classlib", true)] // net8.0
-	[TestCase("maui", "mauilib", true)] // net8.0-xxx
-	[TestCase("maui-blazor", "classlib", true)] // net8.0
-	[TestCase("maui-blazor", "mauilib", true)] // net8.0-xxx
+	[TestCase("maui", "classlib", true)] // net9.0
+	[TestCase("maui", "mauilib", true)] // net9.0-xxx
+	[TestCase("maui-blazor", "classlib", true)] // net9.0
+	[TestCase("maui-blazor", "mauilib", true)] // net9.0-xxx
 											   // windows packaged/msix
-	[TestCase("maui", "classlib", false)] // net8.0
-	[TestCase("maui", "mauilib", false)] // net8.0-xxx
-	[TestCase("maui-blazor", "classlib", false)] // net8.0
-	[TestCase("maui-blazor", "mauilib", false)] // net8.0-xxx
+	[TestCase("maui", "classlib", false)] // net9.0
+	[TestCase("maui", "mauilib", false)] // net9.0-xxx
+	[TestCase("maui-blazor", "classlib", false)] // net9.0
+	[TestCase("maui-blazor", "mauilib", false)] // net9.0-xxx
 	public void CollectsAssets(string id, string libid, bool unpackaged)
 	{
+		// TODO: fix the tests as they have been disabled too long!
+		if (!TestEnvironment.IsWindows)
+			Assert.Ignore("Running Windows templates is only supported on Windows.");
+
 		// new app
 		var appDir = Path.Combine(TestDirectory, "theapp");
 		var appFile = Path.Combine(appDir, $"{Path.GetFileName(appDir)}.csproj");

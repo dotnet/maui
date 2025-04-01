@@ -1,10 +1,5 @@
-﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
-
-namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3385, "[iOS] Entry's TextChanged event is fired on Unfocus even when no text changed", PlatformAffected.iOS)]
 	public class Issue3385 : TestContentPage
 	{

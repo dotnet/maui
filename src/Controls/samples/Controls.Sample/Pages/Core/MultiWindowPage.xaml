@@ -28,6 +28,9 @@
             <Button
                 Clicked="OnCloseWindowClicked"
                 Text="Close this Window" />
+            <Label Text="Activate Window:" />
+            <Entry x:Name="windowToActivateEntry" Text="1" />
+            <Button Text="Activate Selected Window" Clicked="ActivateWindowClicked"/>
             <Label 
                 Text="Dialogs:" />
             <Button

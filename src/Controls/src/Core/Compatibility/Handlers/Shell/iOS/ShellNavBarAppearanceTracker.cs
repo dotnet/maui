@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 			{
 				if (background != null)
-				navBar.BarTintColor = background.ToPlatform();
+					navBar.BarTintColor = background.ToPlatform();
 				if (foreground != null)
 					navBar.TintColor = foreground.ToPlatform();
 			}

@@ -98,13 +98,18 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public static Maui.Graphics.Rect GetCaptionButtonsBound(IntPtr hWnd)
 		{
-			DwmGetWindowAttribute(hWnd, DwmWindowAttribute.DWMWA_CAPTION_BUTTON_BOUNDS, out RECT value, Marshal.SizeOf(typeof(RECT)));
+			DwmGetWindowAttribute(hWnd, DwmWindowAttribute.DWMWA_CAPTION_BUTTON_BOUNDS, out RECT value, Marshal.SizeOf<RECT>());
 			var density = GetDpiForWindow(hWnd) / 96f;
 			return new Graphics.Rect(
 				value.Left / density,
 				value.Top / density,
 				value.Right / density,
 				value.Bottom / density);
+		}
+
+		public static bool HasStyle(uint currentStyle, WindowStyles styleMask)
+		{
+			return (currentStyle & (uint)styleMask) == (uint)styleMask;
 		}
 
 		public enum WindowLongFlags : int
@@ -176,6 +181,7 @@ namespace Microsoft.Maui.ApplicationModel
 			WS_MINIMIZEBOX = 0x00020000,
 			WS_MAXIMIZEBOX = 0x00020000,
 			WS_OVERLAPPED = 0x00000000,
+			WS_CAPTIONANDSYSTEMMENU = WS_CAPTION | WS_SYSMENU,
 			WS_OVERLAPPEDWINDOW = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
 		}
 

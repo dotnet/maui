@@ -1,10 +1,5 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Xaml;
-
-namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
+﻿namespace Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class HeaderFooterGrid : ContentPage
 	{
 		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(10);

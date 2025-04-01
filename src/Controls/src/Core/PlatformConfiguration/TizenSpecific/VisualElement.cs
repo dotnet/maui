@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		/// Sets the focus participation value for a visual element.
 		/// </summary>
 		/// <param name="element">The element whose focus participation value to set.</param>
-        /// <param name="value">The new focus participation value.</param>
+		/// <param name="value">The new focus participation value.</param>
 		public static void SetFocusAllowed(BindableObject element, bool value)
 		{
 			element.SetValue(IsFocusAllowedProperty, value);

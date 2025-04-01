@@ -1,9 +1,4 @@
-﻿using System;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Layouts;
-
-namespace Maui.Controls.Sample
+﻿namespace Maui.Controls.Sample
 {
 	internal class LayeredViewContainer<T> : ViewContainer<T> where T : View
 	{

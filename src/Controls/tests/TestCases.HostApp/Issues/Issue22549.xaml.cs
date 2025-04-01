@@ -1,11 +1,6 @@
-using Microsoft.Maui;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Issues;
-
-[XamlCompilation(XamlCompilationOptions.Compile)]
 [Issue(IssueTracker.Github, 22549, "Binding Border.StrokeShape not working", PlatformAffected.All)]
 
 public partial class Issue22549 : ContentPage

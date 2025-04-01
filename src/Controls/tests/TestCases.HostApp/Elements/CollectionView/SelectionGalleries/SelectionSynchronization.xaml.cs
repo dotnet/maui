@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Controls.Xaml;
+﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class SelectionSynchronization : ContentPage
 	{
 		public SelectionSynchronization()
@@ -27,7 +17,6 @@ namespace Maui.Controls.Sample.CollectionViewGalleries.SelectionGalleries
 		}
 	}
 
-	[Preserve(AllMembers = true)]
 	public class SelectionSyncModel
 	{
 		public SelectionSyncModel()

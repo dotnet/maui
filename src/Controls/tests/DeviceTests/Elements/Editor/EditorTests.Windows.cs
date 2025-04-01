@@ -15,6 +15,15 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() => GetPlatformControl(handler).Text);
 		}
 
+		Task<float> GetPlatformOpacity(EditorHandler editorHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(editorHandler);
+				return (float)nativeView.Opacity;
+			});
+		}
+
 		static void SetPlatformText(EditorHandler editorHandler, string text) =>
 			GetPlatformControl(editorHandler).Text = text;
 
@@ -23,5 +32,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		static int GetPlatformSelectionLength(EditorHandler editorHandler) =>
 			GetPlatformControl(editorHandler).SelectionLength;
+
+		Task<bool> GetPlatformIsVisible(EditorHandler editorHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(editorHandler);
+				return nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
+			});
+		}
 	}
 }

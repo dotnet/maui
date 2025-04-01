@@ -17,7 +17,6 @@
   <Interfaces />
   <Docs>
     <summary>Internal use only. Contains arguments for the event that is raised when a back button is pressed.</summary>
-    <remarks>To be added.</remarks>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -36,7 +35,6 @@
       <Parameters />
       <Docs>
         <summary>Internal use only. Initializes a new <see cref="T:Microsoft.Maui.Controls.BackButtonPressedEventArgs" /> instance.</summary>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Handled">
@@ -58,8 +56,6 @@
       </ReturnValue>
       <Docs>
         <summary>Internal use only. Gets or sets a value that indicates whether the back button event has already been handled.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
       </Docs>
     </Member>
   </Members>

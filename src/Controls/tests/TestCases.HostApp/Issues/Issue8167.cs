@@ -1,12 +1,8 @@
 ﻿using System.ComponentModel;
-using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
+
 	[Issue(IssueTracker.Github, 8167, "[Bug] XF 4.3 UWP Crash - Element not found", PlatformAffected.UWP)]
 	public class Issue8167 : TestContentPage
 	{
@@ -51,7 +47,7 @@ namespace Maui.Controls.Sample.Issues
 			BindingContext = model;
 		}
 
-		[Preserve(AllMembers = true)]
+
 		public class _8167ViewModel : INotifyPropertyChanged
 		{
 			string _text;
