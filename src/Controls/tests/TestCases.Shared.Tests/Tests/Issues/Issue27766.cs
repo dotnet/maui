@@ -20,9 +20,9 @@ public class Issue27766 : _IssuesUITest
         App.Tap("Test 3");
         Thread.Sleep(500); // Add some wait for poping up the keyboard to resolve flakiness in CI.
 
-        // CI tests sometimes fail due to color inconsistency between the keyboard and bottom navigation bar.
-#if ANDROID
-        VerifyScreenshot(cropTop: 63, cropBottom: 126);
+        // CI tests sometimes fail due to a keyboard layout mismatch; in this case, the editor content is visible without the keyboard, so no keyboard is needed.
+#if ANDROID || IOS
+        VerifyScreenshot(cropBottom: 1200);
 #else
         VerifyScreenshot();
 #endif

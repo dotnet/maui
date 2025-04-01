@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(LineBreakMode.TailTruncation.ToPlatform(), GetPlatformLineBreakMode(handler));
 			}));
 		}
-
+		
 		UILabel GetPlatformLabel(LabelHandler labelHandler) =>
 			(UILabel)labelHandler.PlatformView;
 
@@ -44,6 +44,15 @@ namespace Microsoft.Maui.DeviceTests
 			var attributedText = GetPlatformLabel(labelHandler).AttributedText;
 			var characterSpacing = attributedText.GetCharacterSpacing();
 			return characterSpacing;
+		}
+
+		Task<bool> GetPlatformIsVisible(LabelHandler labelHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformLabel(labelHandler);
+				return !nativeView.Hidden;
+			});
 		}
 
 		double GetPlatformLineHeight(LabelHandler labelHandler)
