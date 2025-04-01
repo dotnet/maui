@@ -212,12 +212,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (needsCellLayout || !_laidOut)
 			{
-				var isRefreshing = CollectionView.Subviews
-					.OfType<UIRefreshControl>()
-					.FirstOrDefault()?.Refreshing ?? false;
-
-				// We don't want to mess up with ContentOffset while refreshing.
-				if (!isRefreshing)
+				// We don't want to mess up with ContentOffset while refreshing, given that's also gonna cause
+				// a change in the content's offset Y.
+				if (!IsRefreshing())
 				{
 					MeasureSupplementaryViews();
 					LayoutSupplementaryViews();
@@ -261,6 +258,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				layoutInvalidationContext.InvalidateItems(invalidatedPaths.ToArray());
 				CollectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
 			}
+		}
+
+		bool IsRefreshing()
+		{
+			var subviews = CollectionView.Subviews;
+			var subviewsLength = subviews.Length;
+			for (int i = 0; i < subviewsLength; i++)
+			{
+				if (subviews[i] is UIRefreshControl { Refreshing: true })
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		void MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
