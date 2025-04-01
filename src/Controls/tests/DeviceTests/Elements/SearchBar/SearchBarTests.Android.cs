@@ -8,7 +8,6 @@ using Microsoft.Maui.Platform;
 using Xunit;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
-
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarTests
