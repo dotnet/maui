@@ -95,11 +95,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateHeaderFooterPosition();
 		}
 
-		// private protected override void LayoutSupplementaryViews()
-		// {
-		// 	base.LayoutSupplementaryViews();
-		// 	UpdateHeaderFooterPosition();
-		// }
 		internal void UpdateHeaderView()
 		{
 			UpdateSubview(ItemsView?.Header, ItemsView?.HeaderTemplate, HeaderTag,

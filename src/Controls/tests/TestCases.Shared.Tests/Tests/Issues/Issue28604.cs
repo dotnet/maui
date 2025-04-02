@@ -1,3 +1,4 @@
+#if IOS || MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,3 +20,4 @@ public class Issue28604 : _IssuesUITest
         VerifyScreenshot();
     }
 }
+#endif
