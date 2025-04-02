@@ -22,7 +22,7 @@
 		<AppiumDrivers Include="xcuitest" Version="$(AppiumXCUITestDriverVersion)" Condition=" '$(IsMacOS)' == 'True' AND '$(AppiumXCUITestDriverVersion)' != '' " />
 	</ItemGroup>
 
-	<PropertyGroup>
+	<PropertyGroup Condition=" '$(AndroidSdkHostAbi)' == '' ">
 		<!-- Get the right ABI string for android avd's based on host os this is running on -->
 		<AndroidSdkHostAbi Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">x86_64</AndroidSdkHostAbi>
 		<AndroidSdkHostAbi Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'X64' ">arm64-v8a</AndroidSdkHostAbi>
