@@ -11,6 +11,17 @@
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
+Microsoft.Maui.Controls.NavigatedFromEventArgs.NavigationType.get -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigatedToEventArgs.NavigationType.get -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigatingFromEventArgs.NavigationType.get -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.Initialize = 6 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.Insert = 3 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.PageSwap = 5 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.Pop = 1 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.PopToRoot = 2 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.Push = 0 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.Remove = 4 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.Internals.TextTransformUtilities
 *REMOVED*Microsoft.Maui.Controls.Internals.TextTransformUtilites
 Microsoft.Maui.Controls.ShadowTypeConverter
@@ -22,6 +33,9 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertFrom(System.Compo
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
+~Microsoft.Maui.Controls.NavigatedFromEventArgs.DestinationPage.get -> Microsoft.Maui.Controls.Page
+~Microsoft.Maui.Controls.NavigatedToEventArgs.PreviousPage.get -> Microsoft.Maui.Controls.Page
+~Microsoft.Maui.Controls.NavigatingFromEventArgs.DestinationPage.get -> Microsoft.Maui.Controls.Page
 *REMOVED*~static Microsoft.Maui.Controls.Internals.TextTransformUtilites.GetTransformedText(string source, Microsoft.Maui.TextTransform textTransform) -> string
 *REMOVED*~static Microsoft.Maui.Controls.Internals.TextTransformUtilites.SetPlainText(Microsoft.Maui.Controls.InputView inputView, string platformText) -> void
 ~Microsoft.Maui.Controls.Page.DisplayActionSheetAsync(string title, string cancel, string destruction, Microsoft.Maui.FlowDirection flowDirection, params string[] buttons) -> System.Threading.Tasks.Task<string>
