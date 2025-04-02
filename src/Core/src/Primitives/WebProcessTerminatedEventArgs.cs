@@ -1,16 +1,21 @@
-﻿namespace Microsoft.Maui
+﻿#if ANDROID
+using Android.Views;
+using Android.Webkit;
+#endif
+
+namespace Microsoft.Maui
 {
 	public class WebProcessTerminatedEventArgs
 	{
 #if ANDROID
-		internal WebProcessTerminatedEventArgs(Android.Views.View? sender, Android.Webkit.RenderProcessGoneDetail? renderProcessGoneDetail)
+		internal WebProcessTerminatedEventArgs(View? sender, RenderProcessGoneDetail? renderProcessGoneDetail)
 		{
 			Sender = sender;
 			RenderProcessGoneDetail = renderProcessGoneDetail;
 		}
 
-		public Android.Views.View? Sender { get; }
-		public Android.Webkit.RenderProcessGoneDetail? RenderProcessGoneDetail { get; }
+		public View? Sender { get; }
+		public RenderProcessGoneDetail? RenderProcessGoneDetail { get; }
 #elif IOS || MACCATALYST
 		internal WebProcessTerminatedEventArgs(WebKit.WKWebView sender)
 		{
