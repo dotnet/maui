@@ -50,4 +50,63 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.Build(solutionFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
 			$"Solution {name} failed to build. Check test output/attachments for errors.");
 	}
+
+	[Test]
+	[TestCase("--android")]
+	[TestCase("--ios")]
+	[TestCase("--windows")]
+	[TestCase("--macos")]
+	[TestCase("")] // no platform arg means all platforms
+	// https://github.com/dotnet/maui/issues/28695
+	public void VerifyIncludedPlatformsInSln(string platformArg)
+	{
+		var projectDir = TestDirectory;
+		var name = Path.GetFileName(projectDir);
+		var solutionFile = Path.Combine(projectDir, $"{name}.sln");
+
+		Assert.IsTrue(DotnetInternal.New($"maui-multiproject {platformArg}", projectDir, DotNetCurrent),
+			$"Unable to create template maui-multiproject. Check test output for errors.");
+
+		var slnListOutput = DotnetInternal.RunForOutput("sln", $"{solutionFile} list", out int exitCode);
+
+		// Asserts the process completed successfully
+		Assert.AreEqual(0, exitCode, $"Unable to list projects in solution. Check test output for errors.");
+
+		// Asserts if the shared project is included in the solution, this should always be the case
+		Assert.IsTrue(slnListOutput.Contains($"{name}.csproj", StringComparison.OrdinalIgnoreCase),
+			$"Expected shared project (with name {name}.csproj) to be included in the solution.");
+
+		var expectedCsprojFiles = new List<string> { "Droid.csproj", "iOS.csproj", "Mac.csproj", "WinUI.csproj" };
+
+		switch (platformArg)
+		{
+			case "--android":
+				expectedCsprojFiles.Remove("iOS.csproj");
+				expectedCsprojFiles.Remove("WinUI.csproj");
+				expectedCsprojFiles.Remove("Mac.csproj");
+				break;
+			case "--ios":
+				expectedCsprojFiles.Remove("Droid.csproj");
+				expectedCsprojFiles.Remove("WinUI.csproj");
+				expectedCsprojFiles.Remove("Mac.csproj");
+				break;
+			case "--windows":
+				expectedCsprojFiles.Remove("Droid.csproj");
+				expectedCsprojFiles.Remove("iOS.csproj");
+				expectedCsprojFiles.Remove("Mac.csproj");
+				break;
+			case "--macos":
+				expectedCsprojFiles.Remove("Droid.csproj");
+				expectedCsprojFiles.Remove("iOS.csproj");
+				expectedCsprojFiles.Remove("WinUI.csproj");
+				break;
+		}
+		
+		// Depending on the platform argument, we assert if the expected projects are included in the solution
+		foreach (var platformCsproj in expectedCsprojFiles)
+		{
+			Assert.IsTrue(slnListOutput.Contains(platformCsproj, StringComparison.Ordinal),
+				$"Expected {platformCsproj} to be included in the solution.");
+		}
+	}
 }
