@@ -31,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.Tap(Button1Id);
 
-			App.WaitForElement("Don't click me");
+			App.WaitForElement("Click outside ActionSheet instead");
 
 			// Tap outside ActionSheet to dismiss it
 			App.TapCoordinates(skipLabelRect.CenterX(), skipLabelRect.CenterY());
