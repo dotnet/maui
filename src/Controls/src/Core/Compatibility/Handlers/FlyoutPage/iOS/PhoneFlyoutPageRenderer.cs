@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		UIView _clickOffView;
 		UIViewController _detailController;
-		VisualElement _element;
+		WeakReference<VisualElement> element;
+		VisualElement _element => element?.GetTargetOrDefault();
 		bool _disposed;
 
 		UIViewController _flyoutController;
@@ -100,7 +101,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_clickOffView = new UIView();
 			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToPlatform();
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
-			_element = element;
+			this.element = new(element);
 
 			if (_intialLayoutFinished)
 			{
@@ -269,9 +270,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				EmptyContainers();
-
-				Page.SendDisappearing();
-
+			    element = null;
 				_disposed = true;
 			}
 
