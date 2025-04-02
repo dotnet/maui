@@ -18,7 +18,8 @@
 				{
 					VerticalOptions = LayoutOptions.Center,
 					HorizontalTextAlignment = TextAlignment.Center,
-					Text = "Page 1"
+					Text = "Page 1",
+					AutomationId = "MauiLabel"
 				});
 
 				Content = stack;
@@ -60,12 +61,12 @@
 			{
 				public Page2()
 				{
-					Flyout = new Page()
+					Flyout = new ContentPage
 					{
 						Title = "Flyout",
 						IconImageSource = "Icon.png"
 					};
-					Detail = new Page() { Title = "Detail" };
+					Detail = new ContentPage() { Title = "Detail" };
 				}
 
 				protected override async void OnAppearing()
@@ -74,6 +75,10 @@
 
 					await Task.Delay(1000);
 					await Navigation.PopModalAsync();
+				}
+				protected override void OnDisappearing()
+				{
+					base.OnDisappearing();
 				}
 			}
 		}
