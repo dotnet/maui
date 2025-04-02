@@ -18,7 +18,8 @@ public class Issue28604 : ContentPage
             AutomationId = "CollectionView",
             ItemsSource = ViewModel.ItemList,
             EmptyView = "EmptyView",
-            Header = new StackLayout
+            Background = Colors.AliceBlue,
+            Header = new VerticalStackLayout
             {
                 BackgroundColor = Colors.Red,
                 Children =
@@ -30,7 +31,7 @@ public class Issue28604 : ContentPage
                         }
                     }
             },
-            Footer = new StackLayout
+            Footer = new VerticalStackLayout
             {
                 BackgroundColor = Colors.Yellow,
                 Children =
