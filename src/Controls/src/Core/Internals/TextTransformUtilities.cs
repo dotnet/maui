@@ -28,7 +28,7 @@ public static class TextTransformUtilities
 	/// </summary>
 	/// <param name="source">The text to transform.</param>
 	/// <param name="textTransform">The transform to apply to <paramref name="source"/>.</param>
-	/// <returns>The transformed text.</returns>]
+	/// <returns>The transformed text.</returns>
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static string GetTransformedText(string source, TextTransform textTransform)
 	{
