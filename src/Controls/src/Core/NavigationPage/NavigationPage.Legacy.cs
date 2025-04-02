@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 			bool isLastPage = InternalChildren.Last() == page;
 			RemoveFromInnerChildren(page);
 
-			if (isLastPage)
+			if (isLastPage && NavigationPageController.StackDepth >= 2)
 			{
 				FireAppearing((Page)InternalChildren[NavigationPageController.StackDepth - 2]);
 			}
