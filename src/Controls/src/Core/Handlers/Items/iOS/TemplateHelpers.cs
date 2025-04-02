@@ -2,6 +2,7 @@
 using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Devices;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -27,6 +28,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static (UIView PlatformView, VisualElement FormsElement) RealizeView(object view, DataTemplate viewTemplate, ItemsView itemsView)
 		{
+			if (view is OnPlatform<View> onPlatformView && onPlatformView.Platforms.Count > 0)
+			{
+				var platform = DeviceInfo.Current.Platform;
+				foreach (var platformView in onPlatformView.Platforms)
+				{
+					if (platformView.Platform.Contains(platform.ToString()))
+					{
+						view = platformView.Value;
+						break;
+					}
+				}
+			}
+
 			if (viewTemplate != null)
 			{
 				// Run this through the extension method in case it's really a DataTemplateSelector
