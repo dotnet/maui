@@ -40,6 +40,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIViewPropertyAnimator _pageAnimation;
 		UIEdgeInsets _additionalSafeArea = UIEdgeInsets.Zero;
 
+#if MACCATALYST
+		CGRect _previousFrameHeader;
+#endif
+
 		ShellSection ShellSection
 		{
 			get;
@@ -569,14 +573,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				_blurView.Frame = frame;
 				_header.ViewController.View.Frame = frame;
 #if MACCATALYST
-				if (_header.ViewController is UICollectionViewController collectionViewController)
+				if (frame.Width != _previousFrameHeader.Width || frame.Height != _previousFrameHeader.Height)
 				{
-					var layout = collectionViewController.CollectionView.CollectionViewLayout;
-					var layoutIfNeed = layout.ShouldInvalidateLayoutForBoundsChange(frame);
-					if (layoutIfNeed)
-					{
-						layout.InvalidateLayout();
-					}
+					_previousFrameHeader = frame;
+					(_header.ViewController as ShellSectionRootHeader).CollectionView.CollectionViewLayout.InvalidateLayout();
 				}
 #endif
 			}
