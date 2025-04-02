@@ -51,7 +51,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			}
 #endif
 
-#if IOS //Inconsistent keyboard visibility issue in iOS CI environments can cause test flakiness. As this test validate the clear button visibility only, so the keyboard is not mandotory.
+#if IOS //Inconsistent keyboard visibility issue in iOS CI environments can cause test flakiness. As this test validate the clear button visibility only, so the keyboard is not mandatory.
 			VerifyScreenshot(cropBottom: 1200);
 #else
 			VerifyScreenshot();
