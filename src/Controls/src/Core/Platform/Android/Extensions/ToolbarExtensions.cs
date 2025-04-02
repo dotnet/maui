@@ -232,8 +232,19 @@ namespace Microsoft.Maui.Controls.Platform
 			if (sortedToolbarItems == null || previousMenuItems == null)
 				return;
 
-			var context = mauiContext.Context;
 			var menu = toolbar.Menu;
+
+			// menu items can be deleted by Android after switching activities, removing outdated menu items first
+			if (menu != null)
+			{
+				var clonedPreviousMenuItems = previousMenuItems.ToArray();
+				foreach (var previousMenuItem in clonedPreviousMenuItems)
+				{
+					var item = menu.FindItem(previousMenuItem.ItemId);
+					if (item == null)
+						previousMenuItems.Remove(previousMenuItem);
+				}
+			}
 
 			foreach (var toolbarItem in previousToolBarItems)
 				toolbarItem.PropertyChanged -= toolbarItemChanged;
