@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue22987">
+  <ContentPage.Resources>
+    <Style TargetType="DatePicker">
+      <Setter Property="VisualStateManager.VisualStateGroups">
+        <VisualStateGroupList>
+          <VisualStateGroup Name="CommonStates">
+            <VisualState Name="Normal">
+              <VisualState.Setters>
+                <Setter Property="TextColor" Value="white" />
+              </VisualState.Setters>
+            </VisualState>
+
+            <VisualState Name="PointerOver">
+             <VisualState.Setters>
+               <Setter Property="TextColor" Value="yellow" />
+             </VisualState.Setters>
+           </VisualState>
+          </VisualStateGroup>
+        </VisualStateGroupList>
+      </Setter>
+    </Style>
+  </ContentPage.Resources>
+
+  <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
+    <Label Text="DatePicker" AutomationId="Label"/>
+    <DatePicker BackgroundColor="Black" Date="01/15/2025"  />
+  </VerticalStackLayout>
+</ContentPage>
