@@ -667,10 +667,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Control.EndUpdates();
 			});
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (Element.OnThisPlatform().RowAnimationsEnabled())
 				action.Invoke();
 			else
 				PerformWithoutAnimation(() => { action.Invoke(); });
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void DeleteRows(int oldStartingIndex, int oldItemsCount, int section)
@@ -682,10 +684,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Control.EndUpdates();
 			});
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (Element.OnThisPlatform().RowAnimationsEnabled())
 				action.Invoke();
 			else
 				PerformWithoutAnimation(() => { action.Invoke(); });
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void MoveRows(int newStartingIndex, int oldStartingIndex, int oldItemsCount, int section)
@@ -709,10 +713,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Control.EndUpdates();
 			});
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (Element.OnThisPlatform().RowAnimationsEnabled())
 				action.Invoke();
 			else
 				PerformWithoutAnimation(() => { action.Invoke(); });
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void ReloadRows(int oldStartingIndex, int oldItemsCount, int section)
@@ -724,18 +730,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Control.EndUpdates();
 			});
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (Element.OnThisPlatform().RowAnimationsEnabled())
 				action.Invoke();
 			else
 				PerformWithoutAnimation(() => { action.Invoke(); });
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void ReloadData()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (Element.OnThisPlatform().RowAnimationsEnabled())
 				Control.ReloadData();
 			else
 				PerformWithoutAnimation(() => { Control.ReloadData(); });
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void InvalidateCellCache()
@@ -1174,6 +1184,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				SetupSelection(platformCell, tableView);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (list.IsSet(Specifics.SeparatorStyleProperty))
 				{
 					if (list.OnThisPlatform().GetSeparatorStyle() == SeparatorStyle.FullWidth)
@@ -1183,6 +1194,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						platformCell.PreservesSuperviewLayoutMargins = false;
 					}
 				}
+#pragma warning restore CS0618 // Type or member is obsolete
 				var bgColor = tableView.IndexPathForSelectedRow != null && tableView.IndexPathForSelectedRow.Equals(indexPath) ? UIColor.Clear : DefaultBackgroundColor;
 				SetCellBackgroundColor(platformCell, bgColor);
 				PreserveActivityIndicatorState(cell);
@@ -1411,10 +1423,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (!_list.TryGetTarget(out var list))
 					return;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (list.OnThisPlatform().RowAnimationsEnabled())
 					uiTableView.ReloadData();
 				else
 					PerformWithoutAnimation(uiTableView.ReloadData);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			public void DetermineEstimatedRowHeight()
@@ -1497,10 +1511,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 				if (!_list.TryGetTarget(out var list))
 					return;
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (list.OnThisPlatform().RowAnimationsEnabled())
 					uiTableView.ReloadSectionIndexTitles();
 				else
 					PerformWithoutAnimation(uiTableView.ReloadSectionIndexTitles);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			static void SetCellBackgroundColor(UITableViewCell cell, UIColor color)
@@ -1664,12 +1680,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 #pragma warning disable CS0618 // Type or member is obsolete
 		public FormsUITableViewController(ListView element, bool usingLargeTitles)
-#pragma warning restore CS0618 // Type or member is obsolete
 		: base(element.OnThisPlatform().GetGroupHeaderStyle() == GroupHeaderStyle.Plain
 			? UITableViewStyle.Plain
 			  : UITableViewStyle.Grouped)
 		{
-#pragma warning disable CS0618 // Type or member is obsolete
 			TableView.CellLayoutMarginsFollowReadableWidth = false;
 #pragma warning restore CS0618 // Type or member is obsolete
 

@@ -19,15 +19,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 #pragma warning disable CS0618 // Type or member is obsolete
 		public static PropertyMapper<Cell, CellRenderer> Mapper =
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
 				new PropertyMapper<Cell, CellRenderer>(ElementHandler.ElementMapper);
 #pragma warning restore CS0618 // Type or member is obsolete
 
 #pragma warning disable CS0618 // Type or member is obsolete
 		public static CommandMapper<Cell, CellRenderer> CommandMapper =
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
 			new CommandMapper<Cell, CellRenderer>(ElementHandler.ElementCommandMapper);
 #pragma warning restore CS0618 // Type or member is obsolete
 		WeakReference<UITableView>? _tableView;
@@ -129,7 +125,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var uiBgColor = UITableView.Appearance.BackgroundColor ?? _defaultCellBgColor;
 
 #if __MOBILE__
+#pragma warning disable CS0618 // Type or member is obsolete
 			var defaultBgColor = cell.On<PlatformConfiguration.iOS>().DefaultBackgroundColor();
+#pragma warning restore CS0618 // Type or member is obsolete
 #else
 			var defaultBgColor = cell.On<PlatformConfiguration.macOS>().DefaultBackgroundColor();
 #endif
@@ -140,7 +138,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 			{
 #pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
 				if (cell.GetIsGroupHeader<ItemsView<Cell>, Cell>())
 				{
 					uiBgColor = Microsoft.Maui.Platform.ColorExtensions.GroupedBackground;
@@ -150,7 +147,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (cell.RealParent is VisualElement element && element.BackgroundColor != null)
 						uiBgColor = element.BackgroundColor.ToPlatform();
 				}
-#pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
