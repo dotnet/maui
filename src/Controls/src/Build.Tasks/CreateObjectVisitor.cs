@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				// Change typeref to OnIdiomExtension<T>
 				if (targetType is not null)
 				{
-					var onIdiomExtensionType = Module.ImportReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "OnIdiomExtension`1"));
+					var onIdiomExtensionType = Module.ImportReference(Context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml.Internals", "OnIdiomExtension`1"));
 					typeref = onIdiomExtensionType.MakeGenericInstanceType(targetType);
 				}
 			}

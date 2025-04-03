@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
@@ -121,8 +122,12 @@ namespace Microsoft.Maui.Controls.Xaml
 			return Default;
 		}
 	}
+}
 
-	// NOTE: currently internal, to be used by XamlC compiler
+// NOTE: currently in *.Internals, to be used by XamlC compiler
+namespace Microsoft.Maui.Controls.Xaml.Internals
+{
+	[EditorBrowsable(EditorBrowsableState.Never)]
 	[ContentProperty(nameof(Default))]
 	[RequireService(
 		[typeof(IProvideValueTarget),
