@@ -1,5 +1,12 @@
 ﻿using System;
 
+#if ANDROID
+using Android.Content;
+using Android.Views;
+using DragShadowBuilder = Android.Views.View.DragShadowBuilder;
+using AView = Android.Views.View;
+#endif
+
 namespace Microsoft.Maui.Controls;
 
 /// <summary>
@@ -91,19 +98,19 @@ public class PlatformDragStartingEventArgs
 	/// <summary>
 	/// Gets the native view attached to the event.
 	/// </summary>
-	public Android.Views.View Sender { get; }
+	public AView Sender { get; }
 
 	/// <summary>
 	/// Gets the event containing information for drag and drop status.
 	/// </summary>
-	public Android.Views.MotionEvent MotionEvent { get; }
+	public MotionEvent MotionEvent { get; }
 
-	internal Android.Views.View.DragShadowBuilder? DragShadowBuilder { get; private set; }
-	internal Android.Content.ClipData? ClipData { get; private set; }
+	internal DragShadowBuilder? DragShadowBuilder { get; private set; }
+	internal ClipData? ClipData { get; private set; }
 	internal Java.Lang.Object? LocalData { get; private set; }
-	internal Android.Views.DragFlags? DragFlags { get; private set; }
+	internal DragFlags? DragFlags { get; private set; }
 
-	internal PlatformDragStartingEventArgs(Android.Views.View sender, Android.Views.MotionEvent motionEvent)
+	internal PlatformDragStartingEventArgs(AView sender, MotionEvent motionEvent)
 	{
 		Sender = sender;
 		MotionEvent = motionEvent;
@@ -113,7 +120,7 @@ public class PlatformDragStartingEventArgs
 	/// Sets the drag shadow when dragging begins.
 	/// </summary>
 	/// <param name="dragShadowBuilder">The custom drag shadow builder to use.</param>
-	public void SetDragShadowBuilder(Android.Views.View.DragShadowBuilder dragShadowBuilder)
+	public void SetDragShadowBuilder(DragShadowBuilder dragShadowBuilder)
 	{
 		DragShadowBuilder = dragShadowBuilder;
 	}
@@ -122,7 +129,7 @@ public class PlatformDragStartingEventArgs
 	/// Sets the clip data when dragging begins.
 	/// </summary>
 	/// <param name="clipData">The custom clip data to use.</param>
-	public void SetClipData(Android.Content.ClipData clipData)
+	public void SetClipData(ClipData clipData)
 	{
 		ClipData = clipData;
 	}
@@ -140,7 +147,7 @@ public class PlatformDragStartingEventArgs
 	/// Sets the drag flags when dragging begins.
 	/// </summary>
 	/// <param name="dragFlags">The custom drag flags to use.</param>
-	public void SetDragFlags(Android.Views.DragFlags dragFlags)
+	public void SetDragFlags(DragFlags dragFlags)
 	{
 		DragFlags = dragFlags;
 	}

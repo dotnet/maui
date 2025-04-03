@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 {
 	class BlazorWebChromeClient : WebChromeClient
 	{
-		public override bool OnCreateWindow(Android.Webkit.WebView? view, bool isDialog, bool isUserGesture, Message? resultMsg)
+		public override bool OnCreateWindow(global::Android.Webkit.WebView? view, bool isDialog, bool isUserGesture, Message? resultMsg)
 		{
 			if (view?.Context is not null)
 			{
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return false;
 		}
 
-		public override bool OnShowFileChooser(Android.Webkit.WebView? view, IValueCallback? filePathCallback, FileChooserParams? fileChooserParams)
+		public override bool OnShowFileChooser(global::Android.Webkit.WebView? view, IValueCallback? filePathCallback, FileChooserParams? fileChooserParams)
 		{
 			if (filePathCallback is null)
 			{

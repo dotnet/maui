@@ -32,11 +32,11 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		public MauiScrollView(Context context, Android.Util.IAttributeSet attrs) : base(context, attrs)
+		public MauiScrollView(Context context, IAttributeSet attrs) : base(context, attrs)
 		{
 		}
 
-		public MauiScrollView(Context context, Android.Util.IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
+		public MauiScrollView(Context context, IAttributeSet attrs, int defStyleAttr) : base(context, attrs, defStyleAttr)
 		{
 		}
 
