@@ -28,7 +28,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Just a string as a header");
 			App.WaitForElement("This footer is also a string");
 		}
-#if IOS
+#if IOS || ANDROID
 		[Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterViewWorks()
@@ -67,7 +67,11 @@ namespace Microsoft.Maui.TestCases.Tests
             VisitSubGallery("Header/Footer (Grid)");
 
             App.WaitForElement("This Is A Header");
+#if !ANDROID
+			// Android screen is too small to show this label
+			// but we can check for the footer via screenshot
             App.WaitForElement("This Is A Footer");
+#endif
 
             VerifyScreenshot();
         }

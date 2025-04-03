@@ -5,6 +5,7 @@ override Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.LayoutSubviews()
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 ~abstract Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.CreateController(TItemsView newElement, UIKit.UICollectionViewLayout layout) -> Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>
 ~abstract Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.SelectLayout() -> UIKit.UICollectionViewLayout
+*REMOVED*override Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewController<TItemsView>.ViewWillLayoutSubviews() -> void
 *REMOVED*~Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.ShellScrollViewTracker(Microsoft.Maui.IPlatformViewHandler renderer) -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.CarouselViewController2(Microsoft.Maui.Controls.CarouselView itemsView, UIKit.UICollectionViewLayout layout) -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.CarouselViewDelegator2.CarouselViewDelegator2(UIKit.UICollectionViewLayout itemsViewLayout, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2 ItemsViewController2) -> void
