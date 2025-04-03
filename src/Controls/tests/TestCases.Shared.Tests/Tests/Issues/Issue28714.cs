@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS // The transparent background color is not working on Windows, refer to https://github.com/microsoft/microsoft-ui-xaml/issues/6527
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,3 +21,4 @@ public class Issue28714 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
