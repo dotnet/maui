@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiPageControl : ItemsControl
 	{
 		IIndicatorView? _indicatorView;
+		ITemplatedIndicatorView? _itemTemplate;
 		const int DefaultPadding = 4;
 		WBrush? _selectedColor;
 		WBrush? _fillColor;
@@ -29,6 +30,7 @@ namespace Microsoft.Maui.Platform
 		public void SetIndicatorView(IIndicatorView indicatorView)
 		{
 			_indicatorView = indicatorView;
+			_itemTemplate = indicatorView as ITemplatedIndicatorView;
 
 			if (indicatorView == null)
 				Items.Clear();
@@ -36,7 +38,7 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateIndicatorsColor()
 		{
-			if (_indicatorView == null)
+			if (_indicatorView == null || _itemTemplate?.IndicatorsLayoutOverride is not null)
 				return;
 
 			if (_indicatorView.IndicatorColor is SolidPaint solidPaint)
@@ -54,7 +56,7 @@ namespace Microsoft.Maui.Platform
 
 		internal void CreateIndicators()
 		{
-			if (_indicatorView == null)
+			if (_indicatorView == null || _itemTemplate?.IndicatorsLayoutOverride is not null)
 				return;
 
 			var position = GetIndexFromPosition();
