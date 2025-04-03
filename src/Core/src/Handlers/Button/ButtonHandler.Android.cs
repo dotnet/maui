@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 			MaterialButton platformButton = new MauiMaterialButton(Context)
 			{
 				IconGravity = MaterialButton.IconGravityTextStart,
-				IconTintMode = Android.Graphics.PorterDuff.Mode.Add,
+				IconTintMode = global::Android.Graphics.PorterDuff.Mode.Add,
 				IconTint = TransparentColorStateList,
 				SoundEffectsEnabled = false
 			};

@@ -22,15 +22,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 #pragma warning disable CS0618 // Type or member is obsolete
 		public static PropertyMapper<ListView, ListViewRenderer> Mapper =
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
 			new PropertyMapper<ListView, ListViewRenderer>(VisualElementRendererMapper);
 #pragma warning restore CS0618 // Type or member is obsolete
 
 #pragma warning disable CS0618 // Type or member is obsolete
 		public static CommandMapper<ListView, ListViewRenderer> CommandMapper =
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
 			new CommandMapper<ListView, ListViewRenderer>(VisualElementRendererCommandMapper);
 #pragma warning restore CS0618 // Type or member is obsolete
 
@@ -179,7 +175,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				nativeListView.DividerHeight = 0;
 				nativeListView.Focusable = false;
 				nativeListView.DescendantFocusability = DescendantFocusability.AfterDescendants;
+#pragma warning disable CS0618 // Type or member is obsolete
 				nativeListView.Adapter = _adapter = e.NewElement.IsGroupingEnabled && e.NewElement.OnThisPlatform().IsFastScrollEnabled() ? new GroupedListViewAdapter(Context, nativeListView, e.NewElement) : new ListViewAdapter(Context, nativeListView, e.NewElement);
+#pragma warning restore CS0618 // Type or member is obsolete
 				_adapter.HeaderView = _headerView;
 				_adapter.FooterView = _footerView;
 				_adapter.IsAttachedToWindow = _isAttached;
@@ -526,7 +524,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (Control != null)
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				Control.FastScrollEnabled = Element.OnThisPlatform().IsFastScrollEnabled();
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
 

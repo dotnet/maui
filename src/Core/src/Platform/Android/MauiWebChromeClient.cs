@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.Views;
 using Android.Webkit;
 using Android.Widget;
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Platform
 		List<int> _requestCodes;
 		View _customView;
 		ICustomViewCallback _videoViewCallback;
-		Android.Content.PM.ScreenOrientation _originalOrientation;
+		ScreenOrientation _originalOrientation;
 		WindowInsetsControllerCompat _windowInsetsController;
 		bool _isSystemBarVisible;
 
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Platform
 		{
 			_ = handler ?? throw new ArgumentNullException(nameof(handler));
 
-			_originalOrientation = Android.Content.PM.ScreenOrientation.Unspecified;
+			_originalOrientation = ScreenOrientation.Unspecified;
 
 			SetContext(handler);
 		}
@@ -103,9 +104,9 @@ namespace Microsoft.Maui.Platform
 			_videoViewCallback = callback;
 
 			_customView = view;
-			_customView.SetBackgroundColor(Android.Graphics.Color.White);
+			_customView.SetBackgroundColor(global::Android.Graphics.Color.White);
 
-			context.RequestedOrientation = Android.Content.PM.ScreenOrientation.Landscape;
+			context.RequestedOrientation = ScreenOrientation.Landscape;
 
 			// Handle system UI visibility based on Android version
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
