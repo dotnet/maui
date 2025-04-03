@@ -185,12 +185,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var currentInset = CollectionView.ContentInset;
 				nfloat headerHeight = ((ItemsView?.Header is View) ? _headerViewFormsElement?.ToPlatform() : _headerUIView)?.Frame.Height ?? 0f;
 				nfloat footerHeight = ((ItemsView?.Footer is View) ? _footerViewFormsElement?.ToPlatform() : _footerUIView)?.Frame.Height ?? 0f;
-				nfloat emptyHeight = emptyView?.Frame.Height ?? 0f;
-
-				if (CollectionView.ContentInset.Top != headerHeight || CollectionView.ContentInset.Bottom != footerHeight)
+				nfloat emptyHeight = ((ItemsView?.EmptyView is View _emptyViewFormsElement) ? _emptyViewFormsElement?.ToPlatform() : emptyView)?.Frame.Height ?? 0f;
+				emptyHeight = (nfloat)Math.Max(emptyHeight, emptyView?.Frame.Height ?? 0f);
+				
+				if (CollectionView.ContentInset.Top != headerHeight || CollectionView.ContentInset.Bottom != footerHeight + emptyHeight)
 				{
 					var currentOffset = CollectionView.ContentOffset;
-					CollectionView.ContentInset = new UIEdgeInsets(headerHeight, 0, footerHeight, 0);
+					CollectionView.ContentInset = new UIEdgeInsets(headerHeight, 0, footerHeight + emptyHeight, 0);
 
 					// if the header grows it will scroll off the screen because if you change the content inset iOS adjusts the content offset so the list doesn't move
 					// this changes the offset of the list by however much the header size has changed
