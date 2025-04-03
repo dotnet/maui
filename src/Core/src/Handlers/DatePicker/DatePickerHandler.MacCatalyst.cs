@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 			_proxy.Connect(this, VirtualView, platformView);
 
 			var date = VirtualView?.Date;
-			if (date is DateTime dt)
+			if (date is not null && date is DateTime dt)
 			{
 				platformView.Date = dt.ToNSDate();
 			}
@@ -77,10 +77,12 @@ namespace Microsoft.Maui.Handlers
 
 		void SetVirtualViewDate()
 		{
-			if (VirtualView == null)
+			if (VirtualView is null)
+			{
 				return;
+			}
 
-			VirtualView.Date = PlatformView.Date.ToDateTime().Date;
+			VirtualView.Date = PlatformView.Date.ToDateTime();
 		}
 
 		class UIDatePickerProxy
