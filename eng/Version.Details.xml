@@ -140,6 +140,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>7cc32192cbb4894bfebbb09a903215993207a3c0</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0-preview.4.25180.1" CoherentParentDependency="Microsoft.AspNetCore.Authorization">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>7cc32192cbb4894bfebbb09a903215993207a3c0</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.DotNet.XHarness.TestRunners.Common" Version="10.0.0-prerelease.25167.4">
       <Uri>https://github.com/dotnet/xharness</Uri>
       <Sha>132fdfbd9c8f09f8c51179c1e7742f048f94734c</Sha>
