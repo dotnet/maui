@@ -1,11 +1,12 @@
 ﻿#nullable disable
 using System;
 using System.ComponentModel;
+using CoreGraphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class ShellFlyoutContentRenderer : UIViewController, IShellFlyoutContentRenderer
+	public class ShellFlyoutContentRenderer : UIViewController, IShellFlyoutContentRenderer, IPlatformMeasureInvalidationController
 	{
 		UIVisualEffectView _blurView;
 		UIImageView _bgImage;
@@ -24,6 +25,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		const short ContentIndex = 2;
 		const short BlurIndex = 3;
 		const short BackgroundImageIndex = 4;
+		double _widthConstraint = double.NaN;
 
 		public ShellFlyoutContentRenderer(IShellContext context)
 		{
@@ -32,7 +34,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_tableViewController = CreateShellTableViewController();
 			_shellFlyoutContentManager = _tableViewController?.ShellFlyoutContentManager;
 			AddChildViewController(_tableViewController);
-
 			context.Shell.PropertyChanged += HandleShellPropertyChanged;
 		}
 
@@ -131,7 +132,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_footer is not null)
 			{
-				_footerView = new ShellFlyoutFooterContainer(_footer);
+				_footerView = new UIContainerView(_footer);
 				_uIViews[FooterIndex] = _footerView;
 				AddViewInCorrectOrder(_footerView, previousIndex);
 
@@ -186,6 +187,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewWillLayoutSubviews();
 			_tableViewController.LayoutParallax();
 			UpdateFlyoutContent();
+			ReMeasureFooter();
+		}
+
+		void ReMeasureFooter()
+		{
+			if (_footerView is not null && View.Bounds.Width != _widthConstraint)
+			{
+				var measure = _footerView?.SizeThatFits(new CGSize(View.Bounds.Width, double.PositiveInfinity));
+				var footerHeight = measure?.Height ?? 0;
+				_footerView!.Frame = new CGRect(0, View.Bounds.Height - footerHeight, View.Bounds.Width, footerHeight);
+			}
 		}
 
 		protected virtual void UpdateBackground()
@@ -338,5 +350,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			((IShellController)_shellContext.Shell).OnFlyoutItemSelected(element);
 		}
+
+		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow() { }
+
+		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		{
+			_widthConstraint = double.NaN;
+		}
+
 	}
 }
