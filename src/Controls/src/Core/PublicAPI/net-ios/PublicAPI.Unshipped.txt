@@ -2,11 +2,35 @@
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
 Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.Style?
+Microsoft.Maui.Controls.VisualElement.IsVisibleCore.get -> bool
+Microsoft.Maui.Controls.VisualElement.RefreshIsVisibleProperty() -> void
+Microsoft.Maui.Controls.Internals.TextTransformUtilities
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
+~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.GetTransformedText(string source, Microsoft.Maui.TextTransform textTransform) -> string
+~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.SetPlainText(Microsoft.Maui.Controls.InputView inputView, string platformText) -> void
+~Microsoft.Maui.Controls.Page.DisplayActionSheetAsync(string title, string cancel, string destruction, Microsoft.Maui.FlowDirection flowDirection, params string[] buttons) -> System.Threading.Tasks.Task<string>
+~Microsoft.Maui.Controls.Page.DisplayActionSheetAsync(string title, string cancel, string destruction, params string[] buttons) -> System.Threading.Tasks.Task<string>
+~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string accept, string cancel) -> System.Threading.Tasks.Task<bool>
+~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string accept, string cancel, Microsoft.Maui.FlowDirection flowDirection) -> System.Threading.Tasks.Task<bool>
+~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string cancel) -> System.Threading.Tasks.Task
+~Microsoft.Maui.Controls.Page.DisplayAlertAsync(string title, string message, string cancel, Microsoft.Maui.FlowDirection flowDirection) -> System.Threading.Tasks.Task
+override Microsoft.Maui.Controls.Handlers.Items.TemplatedCell.LayoutSubviews() -> void
+override Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.LayoutSubviews() -> void
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+static Microsoft.Maui.Controls.ViewExtensions.FadeToAsync(this Microsoft.Maui.Controls.VisualElement! view, double opacity, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Controls.ViewExtensions.LayoutToAsync(this Microsoft.Maui.Controls.VisualElement! view, Microsoft.Maui.Graphics.Rect bounds, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Controls.ViewExtensions.RelRotateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double drotation, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Controls.ViewExtensions.RelScaleToAsync(this Microsoft.Maui.Controls.VisualElement! view, double dscale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Controls.ViewExtensions.RotateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double rotation, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Controls.ViewExtensions.RotateXToAsync(this Microsoft.Maui.Controls.VisualElement! view, double rotation, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Controls.ViewExtensions.RotateYToAsync(this Microsoft.Maui.Controls.VisualElement! view, double rotation, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Controls.ViewExtensions.ScaleXToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double x, double y, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 ~abstract Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.CreateController(TItemsView newElement, UIKit.UICollectionViewLayout layout) -> Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>
 ~abstract Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.SelectLayout() -> UIKit.UICollectionViewLayout
 *REMOVED*~Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.ShellScrollViewTracker(Microsoft.Maui.IPlatformViewHandler renderer) -> void
@@ -386,6 +410,17 @@ Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationSty
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Subscribe<TSender>(object subscriber, string message, System.Action<TSender> callback, TSender source = null) -> void
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
+Microsoft.Maui.Controls.SearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
+Microsoft.Maui.Controls.SearchBar.ReturnType.set -> void
+~static readonly Microsoft.Maui.Controls.SearchBar.ReturnTypeProperty -> Microsoft.Maui.Controls.BindableProperty
+static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributedString(this Microsoft.Maui.Controls.FormattedString! formattedString, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = -1, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> Foundation.NSAttributedString!
+static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributedString(this Microsoft.Maui.Controls.Span! span, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = -1, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> Foundation.NSAttributedString!
 *REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.SetNeedsLayout() -> void
 *REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWindow() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MovedToWindow() -> void
+override Microsoft.Maui.Controls.ListStringTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
+override Microsoft.Maui.Controls.ListStringTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?
+override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type! destinationType) -> object?
+*REMOVED*static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributedString(this Microsoft.Maui.Controls.FormattedString! formattedString, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = 0, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> Foundation.NSAttributedString!
+*REMOVED*static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToNSAttributedString(this Microsoft.Maui.Controls.Span! span, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = 0, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> Foundation.NSAttributedString!

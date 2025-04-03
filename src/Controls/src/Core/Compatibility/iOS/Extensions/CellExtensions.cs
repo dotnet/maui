@@ -7,7 +7,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 {
 	internal static class CellExtensions
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal static NSIndexPath GetIndexPath(this Cell self)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (self == null)
 				throw new ArgumentNullException(nameof(self));

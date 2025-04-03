@@ -66,18 +66,36 @@ internal class MauiNavigationBar : UINavigationBar
             var currentSafeAreaTop = SafeAreaInsets.Top;
             var titleBarHeight = controller._contentWrapperTopConstraint?.Constant ?? 0;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             if (currentSafeAreaTop > 0 && Frame.Y < originalSafeAreaConstant && titleBarHeight == 0)
             {
                 controller.IsFirstLayout = false;
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
                 Frame = new CGRect(Frame.X, originalSafeAreaConstant, Frame.Width, Frame.Height);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
                 TitleBarNeedsRefresh = true;
             }
             else if (controller.IsFirstLayout)
             {
                 controller.IsFirstLayout = false;
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
                 Frame = new CGRect(Frame.X, Math.Max(originalSafeAreaConstant - titleBarHeight, 0), Frame.Width, Frame.Height);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
                 TitleBarNeedsRefresh = true;
             }
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 #endif

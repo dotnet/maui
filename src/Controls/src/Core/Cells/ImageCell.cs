@@ -4,6 +4,7 @@ using System;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ImageCell.xml" path="Type[@FullName='Microsoft.Maui.Controls.ImageCell']/Docs/*" />
+	[Obsolete("The controls which use ImageCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
 	public class ImageCell : TextCell
 	{
 		/// <summary>Bindable property for <see cref="ImageSource"/>.</summary>

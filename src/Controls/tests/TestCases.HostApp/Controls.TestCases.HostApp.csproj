@@ -23,7 +23,7 @@
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
     <WindowsPackageType>None</WindowsPackageType>
     <!-- TODO: remove these obsolete nowarns and fix it in code -->
-    <NoWarn>$(NoWarn);CS0618;CS0672</NoWarn>
+    <NoWarn>$(NoWarn);CS0618;CS0672;XC0618</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(_UseNativeAot)' == 'true' ">

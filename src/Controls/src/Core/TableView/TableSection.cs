@@ -162,7 +162,9 @@ namespace Microsoft.Maui.Controls
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/TableSection.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableSection']/Docs/*" />
+#pragma warning disable CS0618 // Type or member is obsolete
 	public sealed class TableSection : TableSectionBase<Cell>
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/TableSection.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public TableSection()

@@ -10,7 +10,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class TableViewModelRenderer : UITableViewSource
 	{
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 		readonly Dictionary<nint, Cell> _headerCells = new Dictionary<nint, Cell>();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		protected bool HasBoundGestures;
 
@@ -205,12 +209,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var cell = table.Model.GetCell(indexPath.Section, indexPath.Row);
 			var h = cell.Height;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (table.RowHeight == -1 && h == -1 && cell is ViewCell)
 			{
 				return UITableView.AutomaticDimension;
 			}
 			else if (h == -1)
 				return tableView.RowHeight;
+#pragma warning restore CS0618 // Type or member is obsolete
 			return (nfloat)h;
 		}
 	}

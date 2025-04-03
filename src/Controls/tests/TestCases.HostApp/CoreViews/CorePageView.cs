@@ -94,7 +94,7 @@ namespace Maui.Controls.Sample
 					Command = new Command(async () =>
 					{
 						var buttons = typeof(VisualMarker).GetProperties().Select(p => p.Name);
-						var selection = await rootPage.DisplayActionSheet("Select Visual", "Cancel", null, buttons.ToArray());
+						var selection = await rootPage.DisplayActionSheetAsync("Select Visual", "Cancel", null, buttons.ToArray());
 						if (cell.BindingContext is GalleryPageFactory pageFactory)
 						{
 							var page = pageFactory.Realize();
