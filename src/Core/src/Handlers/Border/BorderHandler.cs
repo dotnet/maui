@@ -11,6 +11,7 @@ using PlatformView = Microsoft.Maui.Platform.ContentViewGroup;
 using PlatformView = System.Object;
 #endif
 
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Handlers
@@ -86,6 +87,17 @@ namespace Microsoft.Maui.Handlers
 			((PlatformView?)handler.PlatformView)?.UpdateBackground(border);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static bool ShouldSkipStrokeMappings(IBorderHandler handler) {
+#if __IOS__ || MACCATALYST || ANDROID
+			// During the initial connection, the `MapBackground` takes care of updating the stroke properties
+			// so we can skip the stroke mappings to avoid repetitive and useless updates.
+			return handler.IsConnectingHandler();
+#else
+			return false;
+#endif
+		}
+
 		/// <summary>
 		/// Maps the abstract <see cref="IBorderStroke.Shape"/> property to the platform-specific implementations.
 		/// </summary>
@@ -93,6 +105,11 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="border">The associated <see cref="IBorderView"/> instance.</param>
 		public static void MapStrokeShape(IBorderHandler handler, IBorderView border)
 		{
+			if (ShouldSkipStrokeMappings(handler))
+			{
+				return;
+			}
+
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeShape(border);
 			MapBackground(handler, border);
 		}
@@ -104,6 +121,11 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="border">The associated <see cref="IBorderView"/> instance.</param>
 		public static void MapStroke(IBorderHandler handler, IBorderView border)
 		{
+			if (ShouldSkipStrokeMappings(handler))
+			{
+				return;
+			}
+
 			((PlatformView?)handler.PlatformView)?.UpdateStroke(border);
 			MapBackground(handler, border);
 		}
@@ -115,6 +137,11 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="border">The associated <see cref="IBorderView"/> instance.</param>
 		public static void MapStrokeThickness(IBorderHandler handler, IBorderView border)
 		{
+			if (ShouldSkipStrokeMappings(handler))
+			{
+				return;
+			}
+
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeThickness(border);
 			MapBackground(handler, border);
 		}
@@ -126,6 +153,11 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="border">The associated <see cref="IBorderView"/> instance.</param>
 		public static void MapStrokeLineCap(IBorderHandler handler, IBorderView border)
 		{
+			if (ShouldSkipStrokeMappings(handler))
+			{
+				return;
+			}
+
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeLineCap(border);
 		}
 
@@ -136,6 +168,11 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="border">The associated <see cref="IBorderView"/> instance.</param>
 		public static void MapStrokeLineJoin(IBorderHandler handler, IBorderView border)
 		{
+			if (ShouldSkipStrokeMappings(handler))
+			{
+				return;
+			}
+
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeLineJoin(border);
 		}
 
@@ -146,6 +183,11 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="border">The associated <see cref="IBorderView"/> instance.</param>
 		public static void MapStrokeDashPattern(IBorderHandler handler, IBorderView border)
 		{
+			if (ShouldSkipStrokeMappings(handler))
+			{
+				return;
+			}
+
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeDashPattern(border);
 		}
 
@@ -156,6 +198,11 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="border">The associated <see cref="IBorderView"/> instance.</param>
 		public static void MapStrokeDashOffset(IBorderHandler handler, IBorderView border)
 		{
+			if (ShouldSkipStrokeMappings(handler))
+			{
+				return;
+			}
+
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeDashOffset(border);
 		}
 
@@ -166,6 +213,11 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="border">The associated <see cref="IBorderView"/> instance.</param>
 		public static void MapStrokeMiterLimit(IBorderHandler handler, IBorderView border)
 		{
+			if (ShouldSkipStrokeMappings(handler))
+			{
+				return;
+			}
+
 			((PlatformView?)handler.PlatformView)?.UpdateStrokeMiterLimit(border);
 		}
 
