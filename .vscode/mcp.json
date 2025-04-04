@@ -1,0 +1,64 @@
+{
+    "inputs": [
+        {
+            "type": "promptString",
+            "id": "github-key",
+            "password": true, // Encrypted at-rest
+            "description": "GitHub PAT"
+        },
+        {
+            "type": "promptString",
+            "id": "azdo-key",
+            "password": true, // Encrypted at-rest
+            "description": "AZDO PAT"
+        }
+    ],
+    "servers": {
+        "time": {
+            "command": "docker",
+            "args": [
+                "run",
+                "-i",
+                "--rm",
+                "mcp/time"
+            ]
+        },
+        "github": {
+            "command": "docker",
+            "args": [
+                "run",
+                "-i",
+                "--rm",
+                "-e",
+                "GITHUB_PERSONAL_ACCESS_TOKEN",
+                "mcp/github"
+            ],
+            "env": {
+                "GITHUB_PERSONAL_ACCESS_TOKEN": "${input:github-key}"
+            }
+        },
+        "git": {
+            "command": "docker",
+            "args": [
+                "run",
+                "--rm",
+                "-i",
+                "--mount", "type=bind,src=/Users/ruimarinho/dotnet/maui,dst=/projects/dotnet/maui",
+                "mcp/git"
+            ]
+        }
+        // "azdoserver": {
+        //     "type": "stdio",
+        //     "command": "dotnet",
+        //     "args": [
+        //         "run",
+        //         "--project",
+        //         "/Users/ruimarinho/AzdoMCP/AzdoMCP/AzdoMCP.csproj"
+        //     ],
+        //     "env": {
+        //         "AZDO_PAT": "${input:azdo-key}",
+        //         "GITHUB_PAT": "${input:github-key}"
+        //     }
+        // }
+    }
+}
