@@ -105,7 +105,7 @@
             ]
           },
           {
-            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+            "condition": "(HostIdentifier == \"vs\")",
             "exclude": [
               "*.sln"
             ]
