@@ -12,12 +12,21 @@ public class Issue28714 : _IssuesUITest
 	: base(device)
 	{ }
 
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.WebView)]
 	public void VerifyWebViewBackgroundColor()
 	{
 		VerifyInternetConnectivity();
-		App.WaitForElement("label");
+		App.WaitForElement("button");
+		VerifyScreenshot();
+	}
+
+	[Test, Order(2)]
+	[Category(UITestCategories.WebView)]
+	public void VerifyWebViewDynamicBackgroundColor()
+	{
+		App.WaitForElement("button");
+		App.Tap("button");
 		VerifyScreenshot();
 	}
 }

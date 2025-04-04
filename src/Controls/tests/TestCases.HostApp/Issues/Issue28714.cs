@@ -28,14 +28,20 @@ public partial class Issue28714 : ContentPage
 
 		};
 
-		var label = new Label
+		var button = new Button
 		{
-			Text = "WebView BackgroundColor",
-			AutomationId = "label"
+			Text = "Change WebView BackgroundColor",
+			AutomationId = "button"
+		};
+		button.Clicked += (s, e) =>
+		{
+			webView.BackgroundColor = Colors.Red;
 		};
 
-		verticalStackLayout.Add(label);
+		verticalStackLayout.Add(button);
 		verticalStackLayout.Add(webView);
+
+
 
 		Content = verticalStackLayout;
 	}
