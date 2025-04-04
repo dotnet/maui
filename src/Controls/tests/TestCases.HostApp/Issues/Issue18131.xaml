@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue18131">
+    <VerticalStackLayout>
+
+        <HorizontalStackLayout
+            Padding="24,12"
+            Spacing="6">
+            <HorizontalStackLayout.Resources>
+                <ResourceDictionary>
+                    <Style TargetType="CheckBox">
+                        <Setter Property="VerticalOptions" Value="Center" />
+                    </Style>
+                    <Style TargetType="Label">
+                        <Setter Property="VerticalOptions" Value="Center" />
+                        <Setter Property="VerticalTextAlignment" Value="Center" />
+                    </Style>
+                </ResourceDictionary>
+            </HorizontalStackLayout.Resources>
+
+            <CheckBox AutomationId="ToggleBackgroundColor" CheckedChanged="OnBackgroundColorChecked" />
+            <Label Text="BackgroundColor" Margin="0,0,12,0" />
+            <CheckBox AutomationId="ToggleBackground" CheckedChanged="OnBackgroundChecked" />
+            <Label Text="Background" Margin="0,0,12,0" />
+            <CheckBox AutomationId="ToggleFill" CheckedChanged="OnFillChecked" />
+            <Label Text="Fill" />
+        </HorizontalStackLayout>
+
+        <Grid
+            x:Name="shapesGrid"
+            Padding="24,12"
+            ColumnDefinitions="*,*"
+            RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+            ColumnSpacing="12"
+            RowSpacing="12"
+            HorizontalOptions="Start">
+            <Grid.Resources>
+                <ResourceDictionary>
+                    <Style TargetType="Shape" ApplyToDerivedTypes="True">
+                        <Setter Property="WidthRequest" Value="60" />
+                        <Setter Property="HeightRequest" Value="60" />
+                    </Style>
+                </ResourceDictionary>
+            </Grid.Resources>
+
+            <Label Text="Starts with nothing set" Grid.ColumnSpan="2" />
+            <Ellipse Grid.Row="1" />
+            <Rectangle Grid.Row="1" />
+
+            <Label Text="Initial: BackgroundColor" Grid.ColumnSpan="2" Grid.Row="2" />
+            <Ellipse BackgroundColor="Red" Grid.Row="3" />
+            <Rectangle BackgroundColor="Red" Grid.Column="1" Grid.Row="3" />
+
+            <Label Text="Initial: Background" Grid.ColumnSpan="2" Grid.Row="4" />
+            <Ellipse Background="Blue" Grid.Row="5" />
+            <Rectangle Background="Blue" Grid.Column="1" Grid.Row="5" />
+
+            <Label Text="Initial: Fill" Grid.ColumnSpan="2" Grid.Row="6" />
+            <Ellipse Fill="Green" Grid.Row="7" />
+            <Rectangle Fill="Green" Grid.Column="1" Grid.Row="7" />
+
+            <Label Text="Initial: Fill + BackgroundColor" Grid.ColumnSpan="2" Grid.Row="8" />
+            <Ellipse BackgroundColor="Red" Fill="Green" Grid.Row="9" />
+            <Rectangle BackgroundColor="Red" Fill="Green" Grid.Column="1" Grid.Row="9" />
+
+            <Label Text="Initial: Fill + Background" Grid.ColumnSpan="2" Grid.Row="10" />
+            <Ellipse Background="Blue" Fill="Green" Grid.Row="11" />
+            <Rectangle Background="Blue" Fill="Green" Grid.Column="1" Grid.Row="11" />
+
+        </Grid>
+
+    </VerticalStackLayout>
+</ContentPage>
