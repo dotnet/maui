@@ -142,6 +142,11 @@ namespace Microsoft.Maui.Controls.Handlers
 		private void OnItemsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
 			MapMenuItems();
+
+			if (_shellAppearanceElement is not null)
+			{
+				UpdateAppearance(_shellAppearanceElement);
+			}
 		}
 
 		private void OnNavigationTabChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -516,21 +521,14 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (PlatformView is not MauiNavigationView mauiNavView)
 				return;
 
-			var paneDisplayMode = GetNavigationViewPaneDisplayMode(item);
-			mauiNavView.PaneDisplayMode = paneDisplayMode;
-			mauiNavView.PinPaneDisplayModeTo = paneDisplayMode;
+			mauiNavView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+			mauiNavView.PinPaneDisplayModeTo = NavigationViewPaneDisplayMode.Top;
+			mauiNavView.IsPaneVisible = item.ShowTabs;
 		}
 
 		public static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
 		{
 			handler.UpdateTabBarVisibility(item);
-		}
-
-		NavigationViewPaneDisplayMode GetNavigationViewPaneDisplayMode(IShellItemController shellItemController)
-		{
-			return shellItemController.ShowTabs || _currentSearchHandler is not null ?
-				NavigationViewPaneDisplayMode.Top :
-				NavigationViewPaneDisplayMode.LeftMinimal;
 		}
 
 		public static void MapTitle(ShellItemHandler handler, ShellItem item)
