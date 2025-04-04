@@ -1254,3 +1254,4 @@ static readonly Microsoft.Maui.Storage.FilePickerFileType.Pdf -> Microsoft.Maui.
 static readonly Microsoft.Maui.Storage.FilePickerFileType.Png -> Microsoft.Maui.Storage.FilePickerFileType!
 static readonly Microsoft.Maui.Storage.FilePickerFileType.Videos -> Microsoft.Maui.Storage.FilePickerFileType!
 virtual Microsoft.Maui.Storage.FilePickerFileType.GetPlatformFileType(Microsoft.Maui.Devices.DevicePlatform platform) -> System.Collections.Generic.IEnumerable<string!>!
+
