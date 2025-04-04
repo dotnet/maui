@@ -23,7 +23,8 @@ namespace Microsoft.Maui.Controls.Platform
 				label.ToFont(),
 				label.TextColor,
 				label.TextTransform,
-				label.TextDecorations);
+				label.TextDecorations,
+				label.FontAttributes);
 
 		// TODO: NET8 this overload must be removed in net8.0 and replaced with the one below
 		public static SpannableString ToSpannableString(
@@ -44,7 +45,8 @@ namespace Microsoft.Maui.Controls.Platform
 				defaultFont,
 				defaultColor,
 				defaultTextTransform,
-				TextDecorations.None);
+				TextDecorations.None,
+				FontAttributes.None);
 
 		internal static SpannableString ToSpannableStringNewWay(
 			this FormattedString formattedString,
@@ -55,7 +57,8 @@ namespace Microsoft.Maui.Controls.Platform
 			Font? defaultFont = null,
 			Graphics.Color? defaultColor = null,
 			TextTransform defaultTextTransform = TextTransform.Default,
-			TextDecorations defaultTextDecorations = TextDecorations.None)
+			TextDecorations defaultTextDecorations = TextDecorations.None,
+			FontAttributes defaultFontAttributes = FontAttributes.None)
 		{
 			if (formattedString == null)
 				return new SpannableString(string.Empty);
@@ -126,6 +129,15 @@ namespace Microsoft.Maui.Controls.Platform
 					spannable.SetSpan(new StrikethroughSpan(), start, end, SpanTypes.InclusiveInclusive);
 				if (textDecorations.HasFlag(TextDecorations.Underline))
 					spannable.SetSpan(new UnderlineSpan(), start, end, SpanTypes.InclusiveInclusive);
+
+				// FontAttributes
+				var fontAttributes = span.IsSet(Span.FontAttributesProperty)
+					? span.FontAttributes
+					: defaultFontAttributes;
+				if (fontAttributes.HasFlag(FontAttributes.Bold))
+					spannable.SetSpan(new StyleSpan(TypefaceStyle.Bold), start, end, SpanTypes.InclusiveInclusive);
+				if (fontAttributes.HasFlag(FontAttributes.Italic))
+					spannable.SetSpan(new StyleSpan(TypefaceStyle.Italic), start, end, SpanTypes.InclusiveInclusive);
 			}
 
 			return spannable;
