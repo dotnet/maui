@@ -2445,5 +2445,29 @@ namespace UITest.Appium
 			startupArg.Add(key, value);
 			config.SetProperty("TestConfigurationArgs", startupArg);
 		}
+
+		public static void EnterTextInShellSearchHandler(this IApp app, string text)
+		{
+			if (app is AppiumWindowsApp)
+			{
+				app.WaitForElement("TextBox");
+				app.EnterText("TextBox", text);
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumAndroidApp)
+			{
+				IQuery query;
+				if (app is AppiumAndroidApp)
+				{
+					query = AppiumQuery.ByXPath("//android.widget.EditText");
+				}
+				else
+				{
+					query = AppiumQuery.ByXPath("//XCUIElementTypeSearchField");
+				}
+
+				app.WaitForElement(query);
+				app.EnterText(query, text);
+			}
+		}
 	}
 }
