@@ -29,6 +29,26 @@ namespace Microsoft.Maui.Platform
 			_refreshControlParent = this;
 		}
 
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			if (IsRefreshing)
+			{
+				CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
+				{
+					if (Window is not null)
+					{
+						_refreshControl.BeginRefreshing();
+						TryOffsetRefresh(this, true);
+					}
+					else if (Window is null)
+					{
+						_refreshControl.EndRefreshing();
+					}
+				});
+			}
+		}
+
 		public bool IsRefreshing
 		{
 			get { return _isRefreshing; }
@@ -132,7 +152,7 @@ namespace Microsoft.Maui.Platform
 
 		bool TryInsertRefresh(UIView view, int index = 0)
 		{
-			if(!_refreshControl.Enabled)
+			if (!_refreshControl.Enabled)
 			{
 				return false;
 			}
