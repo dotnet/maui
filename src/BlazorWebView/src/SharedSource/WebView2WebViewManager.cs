@@ -28,7 +28,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Components.WebView.Wpf;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Web.WebView2.Core;
-using WebView2Control = Microsoft.Web.WebView2.Wpf.WebView2;
+using WebView2Control = Microsoft.Web.WebView2.Wpf.IWebView2;
 using System.Reflection;
 #elif WEBVIEW2_MAUI
 using Microsoft.AspNetCore.Components.WebView.Maui;
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 		private protected CoreWebView2Environment? _coreWebView2Environment;
 		private readonly Action<UrlLoadingEventArgs> _urlLoading;
 		private readonly Action<BlazorWebViewInitializingEventArgs> _blazorWebViewInitializing;
-		private readonly Action<BlazorWebViewInitializedEventArgs> _blazorWebViewInitialized;
+		private readonly Action<IBlazorWebViewInitializedEventArgs<WebView2Control>> _blazorWebViewInitialized;
 		private readonly BlazorWebViewDeveloperTools _developerTools;
 
 		/// <summary>
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			string hostPagePathWithinFileProvider,
 			Action<UrlLoadingEventArgs> urlLoading,
 			Action<BlazorWebViewInitializingEventArgs> blazorWebViewInitializing,
-			Action<BlazorWebViewInitializedEventArgs> blazorWebViewInitialized,
+			Action<IBlazorWebViewInitializedEventArgs<WebView2Control>> blazorWebViewInitialized,
 			ILogger logger)
 			: base(services, dispatcher, AppOriginUri, fileProvider, jsComponents, hostPagePathWithinFileProvider)
 
@@ -252,11 +252,26 @@ namespace Microsoft.AspNetCore.Components.WebView.WebView2
 			{
 				WebView = _webview,
 			});
-#elif WEBVIEW2_WINFORMS || WEBVIEW2_WPF
+#elif WEBVIEW2_WINFORMS
 			_blazorWebViewInitialized?.Invoke(new BlazorWebViewInitializedEventArgs
 			{
 				WebView = _webview,
 			});
+#elif WEBVIEW2_WPF
+			if (_webview is Microsoft.Web.WebView2.Wpf.WebView2CompositionControl webView2CompositionControl)
+			{
+				_blazorWebViewInitialized?.Invoke(new BlazorWebViewCompositionControlInitializedEventArgs
+				{
+					WebView = webView2CompositionControl
+				});
+			}
+			else
+			{
+				_blazorWebViewInitialized?.Invoke(new BlazorWebViewInitializedEventArgs
+				{
+					WebView = (Microsoft.Web.WebView2.Wpf.WebView2)_webview
+				});
+			}
 #endif
 
 			_webview.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
