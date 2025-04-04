@@ -273,17 +273,13 @@ namespace Microsoft.Maui.DeviceTests
 					Detail = new ContentPage { Title = "Detail" }
 				};
 
-				flyoutPage.Appearing += async (_, __) =>
-				{
-					await Task.Delay(100);
-					await flyoutPage.Navigation.PopModalAsync();
-				};
+				await launcherPage.Navigation.PushModalAsync(flyoutPage, true);
 
 				references.Add(new WeakReference(flyoutPage));
 				references.Add(new WeakReference(flyoutPage.Flyout));
 				references.Add(new WeakReference(flyoutPage.Detail));
-				await launcherPage.Navigation.PushModalAsync(flyoutPage, true);
-				await OnUnloadedAsync(flyoutPage);
+
+				await launcherPage.Navigation.PopModalAsync();
 			});
 
 			await AssertionExtensions.WaitForGC(references.ToArray());
