@@ -63,10 +63,10 @@
                                     <toolkit:TextValidationBehavior 
                                         InvalidStyle="{StaticResource InvalidEntryStyle}"
 <!--#if (Framework == "net8.0") -->
-                                        Flags="ValidateOnUnfocused"
+                                        Flags="ValidateOnUnfocusing"
 <!--#endif -->
 <!--#if (Framework == "net9.0") -->
-                                        Flags="ValidateOnUnfocusing"
+                                        Flags="ValidateOnUnfocused"
 <!--#endif -->
                                         RegexPattern="^#(?:[0-9a-fA-F]{3}){1,2}$" />
                                 </Entry.Behaviors>
@@ -110,10 +110,10 @@
                                     <toolkit:TextValidationBehavior 
                                         InvalidStyle="{StaticResource InvalidEntryStyle}"
 <!--#if (Framework == "net8.0") -->
-                                        Flags="ValidateOnUnfocused"
+                                        Flags="ValidateOnUnfocusing"
 <!--#endif -->
 <!--#if (Framework == "net9.0") -->
-                                        Flags="ValidateOnUnfocusing"
+                                        Flags="ValidateOnUnfocused"
 <!--#endif -->
                                         RegexPattern="^#(?:[0-9a-fA-F]{3}){1,2}$" />
                                 </Entry.Behaviors>
