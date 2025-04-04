@@ -3,5 +3,5 @@ namespace Microsoft.Maui.Platform;
 internal interface IPlatformMeasureInvalidationController
 {
 	void InvalidateAncestorsMeasuresWhenMovedToWindow();
-	void InvalidateMeasure(bool isPropagating = false);
+	bool InvalidateMeasure(bool isPropagating = false);
 }
