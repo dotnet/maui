@@ -16,7 +16,6 @@ public class Issue28714 : _IssuesUITest
 	[Category(UITestCategories.WebView)]
 	public void VerifyWebViewBackgroundColor()
 	{
-		VerifyInternetConnectivity();
 		App.WaitForElement("button");
 		VerifyScreenshot();
 	}

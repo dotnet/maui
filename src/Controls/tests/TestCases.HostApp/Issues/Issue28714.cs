@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 28714, "[iOS] WebView BackgroundColor is not setting correctly", PlatformAffected.iOS, isInternetRequired: true)]
+[Issue(IssueTracker.Github, 28714, "[iOS] WebView BackgroundColor is not setting correctly", PlatformAffected.iOS)]
 public partial class Issue28714 : ContentPage
 {
 	public Issue28714()
