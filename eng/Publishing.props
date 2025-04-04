@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Artifact Include="@(_InstallersToPublish)" Kind="Blob" RelativeBlobPath="$(_UploadPathRoot)/$(_PackageVersion)/%(Filename)%(Extension)">
+    <Artifact Include="@(_InstallersToPublish)" Kind="Blob" RelativeBlobPath="$(_UploadPathRoot)/$(OfficialBuildId)/%(Filename)%(Extension)">
       <IsShipping>true</IsShipping>
       <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
       <PublishFlatContainer>true</PublishFlatContainer>
