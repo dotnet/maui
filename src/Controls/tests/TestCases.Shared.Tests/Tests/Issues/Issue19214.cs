@@ -1,4 +1,4 @@
-﻿#if IOS || (ANDROID && TEST_FAILS_ON_ANDROID)//android related issue: https://github.com/dotnet/maui/issues/27951
+#if (IOS && TEST_FAILS_ON_IOS) || (ANDROID && TEST_FAILS_ON_ANDROID) // Android related issue: https://github.com/dotnet/maui/issues/27951, iOS related issue: https://github.com/dotnet/maui/issues/28760
 //The test is applicable only to mobile platforms like iOS and Android.
 using System.Drawing;
 using NUnit.Framework;
