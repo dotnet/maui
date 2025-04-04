@@ -20,14 +20,14 @@ When asked to create release notes for a particular branch, follow these steps:
 
 ### 1. Finding the Commits to Compare
 
+
 * When user specifies two branches or commits, use these for comparison
-* If only one branch/commit is provided, you'll need to determine the previous release point
-* Use MCP tools (preferably `git_log` or other available git tools) to get commit information
-* If needed, ask the user for the comparison points
+* If only one branch/commit is provided, you'll need to determine the previous release point, ask the user to tell you what is the previous release branch you can try something like `git branch -a | grep -E "release/10.0.*preview"` 
+* If needed, ask the user for the comparison point or the previous branch
 
 ### 2. Retrieving the Commit Log
 
-* Use `git_log` or equivalent to get the git log between the two commits/branches
+* Use `git log` or equivalent to get the commits between the two commits/branches and save it to a file like this exmaple `git log --pretty=format:"%h - %s (%an) #%cd [%an]" --date=short release/10.0.1xx-preview2..release/10.0.1xx-preview3 > release_notes_commits.txt`
 * Ensure you capture all commits within the specified range
 * Pay attention to merge commits that might indicate important feature merges
 
@@ -49,7 +49,7 @@ Apply these classification rules:
 * **Docs**:
   - Has tag [docs] or contains terms like "documentation", "docs", "sample", "example"
   - README updates, API documentation, code comments
-  - New samples or sample updates
+  - No other commits should belong here
 
 * **Dependency Updates**:
   - Updates to package references, dependencies, or SDKs
@@ -62,26 +62,29 @@ Apply these classification rules:
   - Build system modifications, tooling updates
   - Refactoring with no functional changes
   - Any commit that doesn't clearly fit other categories
+  - Merging a branch to another
+
 
 ### 4. Organizing for the Response
 
 * Group commits by category
-* Within each category, list in order of significance (if determinable)
-* Format PR numbers as clickable GitHub links 
+* Within each category, list in order of the PR number (if determinable)
+* Format PR numbers as clickable GitHub links, PR numbers are always only 5 digits
 * Ensure contributor names are correctly attributed
+* Save it the results to a markdown file like docs/release_notes_{releasename}.md
 
 ### 5. Special Cases & Edge Cases
 
 * **Reverts**: Classify reverted commits to the same category as the original commit
-* **Automated PRs**: Place automation-driven changes (like dependency updates) in appropriate categories
+* **Automated PRs**: Place automation-driven changes (like dependency updates) in appropriate categories like Dependency Updates
 * **Cross-cutting changes**: When a commit spans multiple categories, prioritize based on the primary focus
-* **Release branch merges**: Note these specifically at the beginning of your summary
 * **Breaking changes**: Highlight any breaking changes prominently in the summary
 * **New contributors**: Include a separate section acknowledging first-time contributors
 
 ## Response Format
 
-Structure your release notes exactly as follows:
+Structure your release notes exactly as follows, and write them to a file like docs/release_notes_{releasename}.md
+
 
 ```
 ## What's Changed
