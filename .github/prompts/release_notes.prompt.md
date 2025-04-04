@@ -20,7 +20,6 @@ When asked to create release notes for a particular branch, follow these steps:
 
 ### 1. Finding the Commits to Compare
 
-
 * When user specifies two branches or commits, use these for comparison
 * If only one branch/commit is provided, you'll need to determine the previous release point, ask the user to tell you what is the previous release branch you can try something like `git branch -a | grep -E "release/10.0.*preview"` 
 * If needed, ask the user for the comparison point or the previous branch
@@ -31,7 +30,11 @@ When asked to create release notes for a particular branch, follow these steps:
 * Ensure you capture all commits within the specified range
 * Pay attention to merge commits that might indicate important feature merges
 
-### 3. Classifying the Commits
+### 3. Replace the Commit usernames with GitHub Usernames
+
+* For each commit on the list check the username that created the commit and replace it for the respective Github username
+
+### 4. Classifying the Commits
 
 To help when doing your category analizing use lower case of the commit messages
 Apply these classification rules:
@@ -70,17 +73,18 @@ Apply these classification rules:
   - Has tag [ci]
 
 
-### 4. Organizing for the Response
+### 5. Organizing for the Response
 
 * Group commits by category
 * Within each category, list in order descending of the PR number (if determinable)
 * Format PR numbers as clickable GitHub links, PR numbers are always only 5 digits, and prefix them with the '#'
-* Ensure contributor names are correctly attributed and with an '@' beforet the username
+* Ensure you use contributor GitHub username are correctly attributed and with an '@' before the username
 * Save it the results to a markdown file like docs/release_notes_{releasename}.md
 
-### 5. Special Cases & Edge Cases
+### 6. Special Cases & Edge Cases
 
 * **Reverts**: Classify reverted commits to the same category as the original commit
+
 * **Automated PRs**: Place automation-driven changes (like dependency updates) in appropriate categories like Dependency Updates
 * **Cross-cutting changes**: When a commit spans multiple categories, prioritize based on the primary focus
 * **Breaking changes**: Highlight any breaking changes prominently in the summary
@@ -395,4 +399,4 @@ Here's a shortened example of properly formatted release notes:
 * @Dhivya-SF4094 made their first contribution in https://github.com/dotnet/maui/pull/27451
 * @mohsenbgi made their first contribution in https://github.com/dotnet/maui/pull/23473
 
-**Full Changelog**: https://github.com/dotnet/maui/compare/10.0.0-preview.1.25122.6...10.0.0-preview.2.25165.1
+**Full Changelog**: https://github.com/dotnet/maui/compare/{branch}..{previous branch}
