@@ -11,6 +11,16 @@ namespace Microsoft.Maui.Maps.Platform
 
 		public static void Add(MauiMKMapView mapView) => Instance.Maps.Enqueue(mapView);
 
-		public static MauiMKMapView? Get() => Instance.Maps.TryDequeue(out MauiMKMapView? mapView) ? mapView : null;
+		public static MauiMKMapView? Get(IMapHandler mapHandler)
+    	{
+        	var hasInstance = Instance.Maps.TryDequeue(out MauiMKMapView? mapView);
+
+        	if (hasInstance)
+        	{
+           		mapView.Handler = mapHandler;
+        	}
+        
+        	return hasInstance ? mapView : null;
+    	}
 	}
 }
