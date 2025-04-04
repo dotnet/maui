@@ -86,7 +86,7 @@
 		<PackageReference Include="CommunityToolkit.Maui" Version="9.1.0" />
 <!--#endif-->
 <!--#if (Framework == "net9.0") -->
-		<PackageReference Include="CommunityToolkit.Maui" Version="11.1.0" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="11.1.1" />
 <!--#endif-->
 		<PackageReference Include="Microsoft.Data.Sqlite.Core" Version="8.0.8" />
 		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.10" />

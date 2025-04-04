@@ -62,7 +62,12 @@
                                 <Entry.Behaviors>
                                     <toolkit:TextValidationBehavior 
                                         InvalidStyle="{StaticResource InvalidEntryStyle}"
+<!--#if (Framework == "net8.0") -->
                                         Flags="ValidateOnUnfocused"
+<!--#endif -->
+<!--#if (Framework == "net9.0") -->
+                                        Flags="ValidateOnUnfocusing"
+<!--#endif -->
                                         RegexPattern="^#(?:[0-9a-fA-F]{3}){1,2}$" />
                                 </Entry.Behaviors>
                             </Entry>
@@ -104,7 +109,12 @@
                                 <Entry.Behaviors>
                                     <toolkit:TextValidationBehavior 
                                         InvalidStyle="{StaticResource InvalidEntryStyle}"
+<!--#if (Framework == "net8.0") -->
                                         Flags="ValidateOnUnfocused"
+<!--#endif -->
+<!--#if (Framework == "net9.0") -->
+                                        Flags="ValidateOnUnfocusing"
+<!--#endif -->
                                         RegexPattern="^#(?:[0-9a-fA-F]{3}){1,2}$" />
                                 </Entry.Behaviors>
                             </Entry>
