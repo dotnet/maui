@@ -310,7 +310,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The IsVisible property of a Editor should match with native IsVisible")]		
+		[Description("The IsVisible property of a Editor should match with native IsVisible")]
 		public async Task VerifyEditorIsVisibleProperty()
 		{
 			var editor = new Editor();

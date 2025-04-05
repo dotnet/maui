@@ -78,12 +78,12 @@ namespace Microsoft.Maui.Platform
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
-				base.OnLayout(changed, left, top, right, bottom);
+			base.OnLayout(changed, left, top, right, bottom);
 
-				if (_contentView is null || _actionView is null || GetNativeSwipeItems() is not {Count: > 0} swipeItems)
-					return;
+			if (_contentView is null || _actionView is null || GetNativeSwipeItems() is not { Count: > 0 } swipeItems)
+				return;
 
-				LayoutSwipeItems(swipeItems);
+			LayoutSwipeItems(swipeItems);
 		}
 
 		public override bool OnTouchEvent(MotionEvent? e)

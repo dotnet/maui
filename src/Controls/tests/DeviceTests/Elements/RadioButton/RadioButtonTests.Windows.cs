@@ -28,13 +28,13 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = GetNativeRadioButton(handler);
 			await InvokeOnMainThreadAsync(() =>
    			{
-				var nativeOpacityValue = (float)nativeView.Opacity;
-				Assert.Equal(expectedValue, nativeOpacityValue);
-			});
+				   var nativeOpacityValue = (float)nativeView.Opacity;
+				   Assert.Equal(expectedValue, nativeOpacityValue);
+			   });
 		}
 
 		[Fact]
-		[Description("The IsVisible property of a RadioButton should match with native IsVisible")]		
+		[Description("The IsVisible property of a RadioButton should match with native IsVisible")]
 		public async Task VerifyRadioButtonIsVisibleProperty()
 		{
 			var radioButton = new RadioButton();
@@ -45,9 +45,9 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = GetNativeRadioButton(handler);
 			await InvokeOnMainThreadAsync(() =>
    			{
-				var isVisible = nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
-				Assert.Equal(expectedValue, isVisible);
-			});	
+				   var isVisible = nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
+				   Assert.Equal(expectedValue, isVisible);
+			   });
 		}
 	}
 }

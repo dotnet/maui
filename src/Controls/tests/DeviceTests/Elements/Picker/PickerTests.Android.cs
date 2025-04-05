@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 				return (float)nativeView.Alpha;
 			});
 		}
-		
+
 		[Fact]
 		[Description("The ScaleX property of a Picker should match with native ScaleX")]
 		public async Task ScaleXConsistent()

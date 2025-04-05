@@ -2,11 +2,11 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
-using Microsoft.Maui.Controls.Handlers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -64,9 +64,9 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
-		
+
 		[Fact]
-		[Description("The IsVisible property of a BoxView should match with native IsVisible")]		
+		[Description("The IsVisible property of a BoxView should match with native IsVisible")]
 		public async Task VerifyBoxViewIsVisibleProperty()
 		{
 			var boxView = new BoxView();
@@ -74,11 +74,11 @@ namespace Microsoft.Maui.DeviceTests
 			var expectedValue = boxView.IsVisible;
 
 			var handler = await CreateHandlerAsync<BoxViewHandler>(boxView);
-			await InvokeOnMainThreadAsync( async () =>
+			await InvokeOnMainThreadAsync(async () =>
    			{
-				var isVisible = await GetPlatformIsVisible(handler);
-				Assert.Equal(expectedValue, isVisible);
-			});	
+				   var isVisible = await GetPlatformIsVisible(handler);
+				   Assert.Equal(expectedValue, isVisible);
+			   });
 		}
 	}
 }
