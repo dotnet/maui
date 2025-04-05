@@ -415,12 +415,12 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					WeakReference<CustomComponentDialog> _customComponentDialog;
 
-					private ModalNavigationManager? _modalNavigationManager;
+					private WeakReference<ModalNavigationManager?> _modalNavigationManager;
 
 					public CallBack(bool enabled, CustomComponentDialog customComponentDialog, ModalNavigationManager? modalNavigationManager) : base(enabled)
 					{
 						_customComponentDialog = new(customComponentDialog);
-						_modalNavigationManager = modalNavigationManager;
+						_modalNavigationManager = new(modalNavigationManager);
 					}
 
 					public override void HandleOnBackPressed()
@@ -456,9 +456,11 @@ namespace Microsoft.Maui.Controls.Platform
 							}
 						}
 
-						if (!preventBackPropagation)
+						if (!preventBackPropagation && _modalNavigationManager.TryGetTarget(out var mnm))
 						{
-							_ = _modalNavigationManager?.PopModalAsync(true);
+							{
+								_ = mnm.PopModalAsync(true);
+							}
 						}
 
 						eventHandler = null;
