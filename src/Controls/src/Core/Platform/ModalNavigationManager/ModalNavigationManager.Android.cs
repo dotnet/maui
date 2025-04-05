@@ -197,7 +197,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var dialogFragment = new ModalFragment(WindowMauiContext, modal)
 			{
 				Cancelable = false,
-				IsAnimated = animated
+				IsAnimated = animated,
+				modalNavigationManager = this
 			};
 
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
@@ -236,6 +237,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public event EventHandler? AnimationEnded;
 
+			public ModalNavigationManager? modalNavigationManager { get; internal set; }
 
 			public bool IsAnimated { get; internal set; }
 
@@ -249,7 +251,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public override global::Android.App.Dialog OnCreateDialog(Bundle? savedInstanceState)
 			{
-				var dialog = new CustomComponentDialog(RequireContext(), Theme);
+				var dialog = new CustomComponentDialog(RequireContext(), Theme, modalNavigationManager);
 
 				if (dialog is null || dialog.Window is null)
 					throw new InvalidOperationException($"{dialog} or {dialog?.Window} is null, and it's invalid");
@@ -404,18 +406,21 @@ namespace Microsoft.Maui.Controls.Platform
 
 			sealed class CustomComponentDialog : ComponentDialog
 			{
-				public CustomComponentDialog(Context context, int themeResId) : base(context, themeResId)
+				public CustomComponentDialog(Context context, int themeResId, ModalNavigationManager? modalNavigationManager) : base(context, themeResId)
 				{
-					this.OnBackPressedDispatcher.AddCallback(new CallBack(true, this));
+					this.OnBackPressedDispatcher.AddCallback(new CallBack(true, this, modalNavigationManager));
 				}
 
 				sealed class CallBack : OnBackPressedCallback
 				{
 					WeakReference<CustomComponentDialog> _customComponentDialog;
 
-					public CallBack(bool enabled, CustomComponentDialog customComponentDialog) : base(enabled)
+					private ModalNavigationManager? _modalNavigationManager;
+
+					public CallBack(bool enabled, CustomComponentDialog customComponentDialog, ModalNavigationManager? modalNavigationManager) : base(enabled)
 					{
 						_customComponentDialog = new(customComponentDialog);
+						_modalNavigationManager = modalNavigationManager;
 					}
 
 					public override void HandleOnBackPressed()
@@ -453,7 +458,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 						if (!preventBackPropagation)
 						{
-							customComponentDialog.OnBackPressedDispatcher.OnBackPressed();
+							_ = _modalNavigationManager?.PopModalAsync(true);
 						}
 
 						eventHandler = null;
