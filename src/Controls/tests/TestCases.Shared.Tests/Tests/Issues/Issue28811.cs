@@ -1,8 +1,10 @@
-﻿using NUnit.Framework;
+﻿#if ANDROID
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
+
 public class Issue28811 : _IssuesUITest
 {
 	public Issue28811(TestDevice testDevice) : base(testDevice)
@@ -22,3 +24,4 @@ public class Issue28811 : _IssuesUITest
 		App.WaitForElement("NavigateToDetailPage");
 	}
 }
+#endif
