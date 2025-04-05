@@ -113,7 +113,20 @@ namespace Microsoft.Maui.Handlers
 			_dialog = null;
 		}
 
-		bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(PlatformView?.Context)
-			&& VirtualView.Format == "t" || (VirtualView.Format.StartsWith("HH", StringComparison.OrdinalIgnoreCase) && VirtualView.Format.EndsWith("mm", StringComparison.OrdinalIgnoreCase)));
+		bool Use24HourView
+		{
+			get
+			{
+				if (VirtualView is null || string.IsNullOrEmpty(VirtualView.Format))
+					return false;
+
+				bool isSystem24Hour = DateFormat.Is24HourFormat(PlatformView?.Context) && VirtualView.Format == "t";
+
+				bool isCustom24Hour = VirtualView.Format.StartsWith("HH", StringComparison.OrdinalIgnoreCase)
+									  && VirtualView.Format.EndsWith("mm", StringComparison.OrdinalIgnoreCase);
+
+				return isSystem24Hour || isCustom24Hour;
+			}
+		}
 	}
 }
