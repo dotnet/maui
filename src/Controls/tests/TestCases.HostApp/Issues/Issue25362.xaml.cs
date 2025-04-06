@@ -17,7 +17,7 @@ public partial class Issue25362 : ContentPage
 	public Issue25362()
 	{
 		InitializeComponent();
-		ItemList = new() { "Item1", "Item2", "Itme3" };
+		ItemList = new() { "Item1", "Item2", "Item3" };
 		ItemListHeader = new() { "HeaderItem1" };
 		BindingContext = this;
 	}
