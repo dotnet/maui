@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using Microsoft.Maui.Maps.Handlers;
 
 namespace Microsoft.Maui.Maps.Platform
 {
@@ -15,10 +16,10 @@ namespace Microsoft.Maui.Maps.Platform
     	{
         	var hasInstance = Instance.Maps.TryDequeue(out MauiMKMapView? mapView);
 
-        	if (hasInstance)
-        	{
-           		mapView.Handler = mapHandler;
-        	}
+        	if (hasInstance && mapView != null)
+	        {
+		        mapView.Handler = mapHandler;
+	        }
         
         	return hasInstance ? mapView : null;
     	}
