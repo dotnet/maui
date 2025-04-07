@@ -39,7 +39,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("CollectionView Header(String)");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
-			App.ScrollDown("CollectionViewControl");
+			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 5000);
 			App.WaitForElementTillPageNavigationSettled("Onion");
 			App.WaitForNoElement("CollectionView Header(String)");
 		}
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("HeaderViewLabel");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
-			App.ScrollDown("CollectionViewControl");
+			App.ScrollDown("CollectionViewControl",ScrollStrategy.Gesture, 0.9, 5000);
 			App.WaitForElementTillPageNavigationSettled("Onion");
 			App.WaitForNoElement("HeaderViewLabel");
 		}
@@ -165,6 +165,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("No Items Available(String)");
 		}
 #endif
+
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderStringWithFooterString()
@@ -499,6 +500,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("HeaderViewLabel");
 		}
 
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST &&TEST_FAILS_ON_IOS //In windows, related issue: https://github.com/dotnet/maui/issues/27946 and In CV2, related issue: https://github.com/dotnet/maui/issues/28678
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderStringWithItemsLayoutVerticalGrid()
@@ -550,7 +552,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("CollectionView Header(String)");
 			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.ScrollRight("ItemsSourceObservableCollection5");
+			App.ScrollRight("CollectionViewControl");
 			App.WaitForElementTillPageNavigationSettled("Blueberry");
 		}
 
@@ -567,7 +569,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("HeaderViewLabel");
-			App.ScrollRight("ItemsSourceObservableCollection5");
+			App.ScrollRight("CollectionViewControl");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Blueberry");
 		}
@@ -585,7 +587,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("HeaderViewLabel");
-			App.ScrollRight("ItemsSourceObservableCollection5");
+			App.ScrollRight("CollectionViewControl");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Blueberry");
 		}
@@ -604,9 +606,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("CollectionView Header(String)");
 			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.ScrollRight("ItemsSourceObservableCollection5");
+			App.ScrollRight("CollectionViewControl");
 			App.WaitForElementTillPageNavigationSettled("Blueberry");
 		}
+#endif
 #endif
 
 #if TEST_FAILS_ON_ANDROID //related issue: https://github.com/dotnet/maui/issues/28337
@@ -641,7 +644,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
-			App.ScrollDown("CollectionViewControl");
+			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 5000);
 			App.WaitForElementTillPageNavigationSettled("Onion");
 			App.WaitForNoElement("HeaderTemplateLabel");
 		}
@@ -829,7 +832,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
 			App.WaitForElementTillPageNavigationSettled("Blueberry");
 		}
-#if TEST_FAILS_ON_ANDROID //related issue:https://github.com/dotnet/maui/issues/28337
+
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST &&TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID //In windows, related issue: https://github.com/dotnet/maui/issues/27946, In CV2, related issue: https://github.com/dotnet/maui/issues/28678 and In android related issue:https://github.com/dotnet/maui/issues/28337
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWithItemsLayoutVerticalGrid()
@@ -847,7 +851,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
 			App.WaitForElementTillPageNavigationSettled("Blueberry");
 		}
-#endif
 
 #if TEST_FAILS_ON_ANDROID //related issue: https://github.com/dotnet/maui/issues/28622
 		[Test]
@@ -863,7 +866,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-			App.ScrollRight("ItemsSourceObservableCollection5");
+			App.ScrollRight("CollectionViewControl");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
 		}
@@ -881,10 +884,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-			App.ScrollRight("ItemsSourceObservableCollection5");
+			App.ScrollRight("CollectionViewControl");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
 		}
+#endif
 #endif
 
 		[Test]
@@ -934,7 +938,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("CollectionView Footer(String)");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
-			App.ScrollDown("CollectionViewControl");
+			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 5000);
 			App.WaitForElementTillPageNavigationSettled("Onion");
 			App.WaitForElement("CollectionView Footer(String)");
 		}
@@ -970,7 +974,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("FooterViewLabel");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
-			App.ScrollDown("CollectionViewControl");
+			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 5000);
 			App.WaitForElementTillPageNavigationSettled("Onion");
 			App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
 		}
@@ -990,7 +994,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
 		}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS //In android related issue:https://github.com/dotnet/maui/issues/28622 and In windows related issue:https://github.com/dotnet/maui/issues/28022
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In android related issue:https://github.com/dotnet/maui/issues/28622, In windows related issue:https://github.com/dotnet/maui/issues/28022 and In CV2, related issue: https://github.com/dotnet/maui/issues/28604
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterStringWhenEmptyViewString()
@@ -1362,6 +1366,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
 		}
 
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST &&TEST_FAILS_ON_IOS //In windows, related issue: https://github.com/dotnet/maui/issues/27946 and In CV2, related issue: https://github.com/dotnet/maui/issues/28678
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterStringWithItemsLayoutVerticalGrid()
@@ -1410,7 +1415,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
-			App.ScrollRight("ItemsSourceObservableCollection5");
+			App.ScrollRight("CollectionViewControl");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
 		}
@@ -1428,7 +1433,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
-			App.ScrollRight("ItemsSourceObservableCollection5");
+			App.ScrollRight("CollectionViewControl");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
 		}
@@ -1446,7 +1451,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
-			App.ScrollRight("ItemsSourceObservableCollection5");
+			App.ScrollRight("CollectionViewControl");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
 		}
@@ -1464,10 +1469,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
-			App.ScrollRight("ItemsSourceObservableCollection5");
+			App.ScrollRight("CollectionViewControl");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
 		}
+#endif
 #endif
 
 #if TEST_FAILS_ON_ANDROID //related issue: https://github.com/dotnet/maui/issues/28337
@@ -1501,7 +1507,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("FooterTemplateLabel");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
-			App.ScrollDown("CollectionViewControl");
+			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 5000);
 			App.WaitForElementTillPageNavigationSettled("Onion");
 			App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
 		}
@@ -1520,7 +1526,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
 		}
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID //In windows related issue:https://github.com/dotnet/maui/issues/28022 and In android: https://github.com/dotnet/maui/issues/28101
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In windows related issue:https://github.com/dotnet/maui/issues/28022, In android: https://github.com/dotnet/maui/issues/28101 and In CV2, related issue: https://github.com/dotnet/maui/issues/28604
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWhenEmptyViewString()
@@ -1727,7 +1733,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
 		}
-#if TEST_FAILS_ON_ANDROID //related issue: https://github.com/dotnet/maui/issues/28337
+
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST &&TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID//In windows, related issue: https://github.com/dotnet/maui/issues/27946, In CV2, related issue: https://github.com/dotnet/maui/issues/28678, In android related issue: https://github.com/dotnet/maui/issues/28337
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWithItemsLayoutVerticalGrid()
@@ -1744,7 +1751,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
 			App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
 		}
-#endif
 
 #if TEST_FAILS_ON_ANDROID //related issue:https://github.com/dotnet/maui/issues/28622
 		[Test]
@@ -1760,8 +1766,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.ScrollRight("ItemsSourceObservableCollection5");
-			App.WaitForElementTillPageNavigationSettled("Bluberry");
+			App.ScrollRight("CollectionViewControl");
+			App.WaitForElementTillPageNavigationSettled("Blueberry");
 			App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
 		}
 
@@ -1778,11 +1784,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Apply");
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.ScrollRight("ItemsSourceObservableCollection5");
-			App.WaitForElementTillPageNavigationSettled("Bluberry");
+			App.ScrollRight("CollectionViewControl");
+			App.WaitForElementTillPageNavigationSettled("Blueberry");
 			App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
 
 		}
+#endif
 #endif
 #endif
 	}

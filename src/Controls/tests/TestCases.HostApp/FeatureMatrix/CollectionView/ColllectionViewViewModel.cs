@@ -213,11 +213,11 @@ namespace Maui.Controls.Sample
             AddItems(_observableCollection25, 15, "Fruits");
             AddItems(_observableCollection25, 15, "Vegetables");
 #elif WINDOWS
-            AddItems(_observableCollection25, 30, "Fruits");
-            AddItems(_observableCollection25, 30, "Vegetables");
+            AddItems(_observableCollection25, 18, "Fruits");
+            AddItems(_observableCollection25, 18, "Vegetables");
 #else
-            AddItems(_observableCollection25, 20, "Fruits");
-            AddItems(_observableCollection25, 20, "Vegetables");
+            AddItems(_observableCollection25, 13, "Fruits");
+            AddItems(_observableCollection25, 13, "Vegetables");
 #endif
             _emptyObservableCollection = new ObservableCollection<CollectionViewTestItem>();
 
