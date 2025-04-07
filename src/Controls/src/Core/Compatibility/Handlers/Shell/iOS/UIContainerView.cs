@@ -7,15 +7,17 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class UIContainerView : UIView
+	public class UIContainerView : UIView, IPlatformMeasureInvalidationController
 	{
 		readonly View _view;
+		bool _invalidateParentWhenMovedToWindow;
+		bool _measureInvalidated;
 		IPlatformViewHandler _renderer;
 		UIView _platformView;
 		bool _disposed;
 		double _measuredHeight;
 
-		internal event EventHandler HeaderSizeChanged;
+		internal event EventHandler PlatformMeasureInvalidated;
 
 		public UIContainerView(View view)
 		{
@@ -78,9 +80,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			get;
 		}
 
-		private protected void OnHeaderSizeChanged()
+		private protected void OnPlatformMeasureInvalidated()
 		{
-			HeaderSizeChanged?.Invoke(this, EventArgs.Empty);
+			PlatformMeasureInvalidated?.Invoke(this, EventArgs.Empty);
 		}
 
 		public override CGSize SizeThatFits(CGSize size)
@@ -155,6 +157,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			base.Dispose(disposing);
+		}
+
+		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
+		{
+			_invalidateParentWhenMovedToWindow = true;
+		}
+
+		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		{
+			_measureInvalidated = true;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			if (_invalidateParentWhenMovedToWindow)
+			{
+				_invalidateParentWhenMovedToWindow = false;
+				this.InvalidateAncestorsMeasures();
+			}
+		}
+
+		internal void NotifyMeasureInvalidated()
+		{
+			if (_measureInvalidated)
+			{
+				_measureInvalidated = false;
+				OnPlatformMeasureInvalidated();
+			}
 		}
 	}
 }

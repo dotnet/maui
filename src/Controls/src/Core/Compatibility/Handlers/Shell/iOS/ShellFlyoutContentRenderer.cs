@@ -1,6 +1,10 @@
 ﻿#nullable disable
 using System;
 using System.ComponentModel;
+using CoreGraphics;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
@@ -131,11 +135,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_footer is not null)
 			{
-				_footerView = new ShellFlyoutFooterContainer(_footer);
+				_footerView = new UIContainerView(_footer);
 				_uIViews[FooterIndex] = _footerView;
 				AddViewInCorrectOrder(_footerView, previousIndex);
 
 				_footerView.ClipsToBounds = true;
+				_footerView.PlatformMeasureInvalidated += OnFooterMeasureInvalidated;
 			}
 
 			_tableViewController.FooterView = _footerView;
@@ -181,10 +186,45 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			View.AddSubview(newView);
 		}
 
+		void OnFooterMeasureInvalidated(object sender, System.EventArgs e)
+		{
+			ReMeasureFooter();
+		}
+
+		void ReMeasureFooter()
+		{
+			var size = _footerView?.SizeThatFits(new CGSize(View.Frame.Width, double.PositiveInfinity));
+			if (size is not null)
+				UpdateFooterPosition(size.Value.Height);
+		}
+
+		void UpdateFooterPosition()
+		{
+			if (_footerView is null)
+				return;
+
+			if (double.IsNaN(_footerView.MeasuredHeight))
+				ReMeasureFooter();
+			else
+				UpdateFooterPosition((nfloat)_footerView.MeasuredHeight);
+		}
+
+		void UpdateFooterPosition(nfloat footerHeight)
+		{
+			if (_footerView is null && !nfloat.IsNaN(footerHeight))
+				return;
+
+			var footerWidth = View.Frame.Width;
+
+			_footerView.Frame = new CoreGraphics.CGRect(0, View.Frame.Height - footerHeight, footerWidth, footerHeight);
+
+			_tableViewController.LayoutParallax();
+		}
+
 		public override void ViewWillLayoutSubviews()
 		{
 			base.ViewWillLayoutSubviews();
-			_tableViewController.LayoutParallax();
+			UpdateFooterPosition();
 			UpdateFlyoutContent();
 		}
 
@@ -273,6 +313,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_bgImage.Frame = View.Bounds;
 		}
 
+		public override void LoadView()
+		{
+			View = new UIContainerViewContainer();
+		}
+
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
@@ -317,7 +362,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_uIViews[ContentIndex] = _shellFlyoutContentManager.ContentView;
 			AddViewInCorrectOrder(_uIViews[ContentIndex], previousIndex);
-			_shellFlyoutContentManager.UpdateHeaderSize();
+			_shellFlyoutContentManager.UpdateLayout();
 		}
 
 		public override void ViewWillAppear(bool animated)
