@@ -22,7 +22,7 @@
                 "--rm",
                 "-e",
                 "GITHUB_PERSONAL_ACCESS_TOKEN",
-                "mcp/github"
+                "ghcr.io/github/github-mcp-server"
             ],
             "env": {
                 "GITHUB_PERSONAL_ACCESS_TOKEN": "${input:github-key}"

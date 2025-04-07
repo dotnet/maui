@@ -26,13 +26,15 @@ When asked to create release notes for a particular branch, follow these steps:
 
 ### 2. Retrieving the Commit Log
 
-* Use `git log` or equivalent to get the commits between the two commits/branches and save it to a file like this exmaple `git log --pretty=format:"%h - %s (%an) #%cd [%an]" --date=short release/10.0.1xx-preview2..release/10.0.1xx-preview3 > release_notes_commits.txt`
+* Use `git log` or equivalent to get the commits between the two commits/branches and save it to a file like this exmaple `git log --pretty=format:"%h - %s - #%cd (%an - %ae)" --date=short release/10.0.1xx-preview2..release/10.0.1xx-preview3 > release_notes_commits.txt`
 * Ensure you capture all commits within the specified range
 * Pay attention to merge commits that might indicate important feature merges
 
-### 3. Replace the Commit usernames with GitHub Usernames
+### 3. Find the correct Github username for each commit
 
 * For each commit on the list check the username that created the commit and replace it for the respective Github username
+* you can use the github tool to search_users to search for a user on github
+* or using the pull request information and get information of the specific pull request from github using get_pull_request tool
 
 ### 4. Classifying the Commits
 
