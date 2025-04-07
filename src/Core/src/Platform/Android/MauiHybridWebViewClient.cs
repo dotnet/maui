@@ -214,7 +214,9 @@ namespace Microsoft.Maui.Platform
 
 					// the stream or handler may be disposed after the method completes
 					if(_isDisposed || Handler is null)
-						return Task.CompletedTask;
+					{
+						return;
+					}
 
 					// copy the data into the pipe
 					if (data is not null && data.Length > 0)
