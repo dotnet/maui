@@ -32,14 +32,28 @@ namespace Microsoft.Maui.Platform
 
 		public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
 		{
-			var response = GetResponseStream(view, request);
-
-			if (response is not null)
+			try
 			{
-				return response;
-			}
+				var response = GetResponseStream(view, request);
 
-			return base.ShouldInterceptRequest(view, request);
+				if (response is not null)
+				{
+					return response;
+				}
+
+				return base.ShouldInterceptRequest(view, request);
+			}
+			catch(Exception ex)
+			{
+				if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
+				{
+					return null;
+				}
+				
+				Handler.MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "Error invoking ShouldInterceptRequest: {ErrorMessage}", ex.Message);
+				throw;
+			}
+		
 		}
 
 		private WebResourceResponse? GetResponseStream(AWebView? view, IWebResourceRequest? request)
@@ -189,18 +203,18 @@ namespace Microsoft.Maui.Platform
 					resumeWriterThreshold: ResumeThreshold,
 					useSynchronizationContext: false));
 
-				InvokeMethodAndWriteBytes();
+				Task.Run(InvokeMethodAndWriteBytes);
 			}
 
-			private async void InvokeMethodAndWriteBytes()
+			private async Task InvokeMethodAndWriteBytes()
 			{
 				try
 				{
 					var data = await _task;
 
 					// the stream or handler may be disposed after the method completes
-					ObjectDisposedException.ThrowIf(_isDisposed, nameof(DotNetInvokeAsyncStream));
-					ArgumentNullException.ThrowIfNull(Handler, nameof(Handler));
+					if(_isDisposed || Handler is null)
+						return Task.CompletedTask;
 
 					// copy the data into the pipe
 					if (data is not null && data.Length > 0)
@@ -210,13 +224,13 @@ namespace Microsoft.Maui.Platform
 						_pipe.Writer.Advance(data.Length);
 					}
 
-					_pipe.Writer.Complete();
+					await _pipe.Writer.CompleteAsync().ConfigureAwait(false);
 				}
 				catch (Exception ex)
 				{
 					Handler?.MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "Error invoking .NET method from JavaScript: {ErrorMessage}", ex.Message);
 
-					_pipe.Writer.Complete(ex);
+					await _pipe.Writer.CompleteAsync().ConfigureAwait(false);
 				}
 			}
 
