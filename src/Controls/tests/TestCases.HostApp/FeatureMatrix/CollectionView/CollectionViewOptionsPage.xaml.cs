@@ -2,25 +2,25 @@ using System;
 using Microsoft.Maui.Controls;
 using System.Collections.ObjectModel;
 using Maui.Controls.Sample.CollectionViewGalleries;
- 
+
 namespace Maui.Controls.Sample
 {
     public partial class CollectionViewOptionsPage : ContentPage
     {
         private CollectionViewViewModel _viewModel;
- 
+
         public CollectionViewOptionsPage(CollectionViewViewModel viewModel)
         {
             InitializeComponent();
             _viewModel = viewModel;
             BindingContext = _viewModel;
         }
- 
+
         private void ApplyButton_Clicked(object sender, EventArgs e)
         {
             Navigation.PopAsync();
         }
- 
+
         private void OnEmptyViewChanged(object sender, CheckedChangedEventArgs e)
         {
             if (EmptyViewNone.IsChecked)
@@ -31,26 +31,8 @@ namespace Maui.Controls.Sample
             {
                 _viewModel.EmptyView = "No Items Available(String)";
             }
-            else if (EmptyViewGrid.IsChecked)
-            {
-                Grid grid = new Grid
-                {
-                    BackgroundColor = Colors.LightGray,
-                    Padding = new Thickness(10)
-                };
-                grid.Children.Add(new Label
-                {
-                    Text = "No Items Available(Grid View)",
-                    HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center,
-                    FontSize = 18,
-                    TextColor = Colors.Blue,
-                    AutomationId = "EmptyViewLabel"
-                });
-                _viewModel.EmptyView = grid;
-            }
         }
- 
+
         private void OnHeaderChanged(object sender, CheckedChangedEventArgs e)
         {
             if (HeaderNone.IsChecked)
@@ -80,7 +62,7 @@ namespace Maui.Controls.Sample
                 _viewModel.Header = grid;
             }
         }
- 
+
         private void OnFooterChanged(object sender, CheckedChangedEventArgs e)
         {
             if (FooterNone.IsChecked)
@@ -110,36 +92,7 @@ namespace Maui.Controls.Sample
                 _viewModel.Footer = grid;
             }
         }
- 
-        private void OnEmptyViewTemplateChanged(object sender, CheckedChangedEventArgs e)
-        {
-            if (EmptyViewTemplateNone.IsChecked)
-            {
-                _viewModel.EmptyViewTemplate = null;
-            }
-            else if (EmptyViewTemplateGrid.IsChecked)
-            {
-                _viewModel.EmptyViewTemplate = new DataTemplate(() =>
-                {
-                    Grid grid = new Grid
-                    {
-                        BackgroundColor = Colors.LightGray,
-                        Padding = new Thickness(10)
-                    };
-                    grid.Children.Add(new Label
-                    {
-                        Text = "No Template Items Available(Grid View)",
-                        HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center,
-                        FontSize = 18,
-                        TextColor = Colors.Blue,
-                        AutomationId = "EmptyViewTemplateLabel"
-                    });
-                    return grid;
-                });
-            }
-        }
- 
+
         private void OnHeaderTemplateChanged(object sender, CheckedChangedEventArgs e)
         {
             if (HeaderTemplateNone.IsChecked)
@@ -169,7 +122,7 @@ namespace Maui.Controls.Sample
                 });
             }
         }
- 
+
         private void OnFooterTemplateChanged(object sender, CheckedChangedEventArgs e)
         {
             if (FooterTemplateNone.IsChecked)
@@ -199,7 +152,7 @@ namespace Maui.Controls.Sample
                 });
             }
         }
- 
+
         private void OnGroupHeaderTemplateChanged(object sender, CheckedChangedEventArgs e)
         {
             if (GroupHeaderTemplateNone.IsChecked)
@@ -269,7 +222,7 @@ namespace Maui.Controls.Sample
                 _viewModel.IsGrouped = true;
             }
         }
- 
+
         private void OnItemTemplateChanged(object sender, CheckedChangedEventArgs e)
         {
             if (ItemTemplateNone.IsChecked)
@@ -280,68 +233,42 @@ namespace Maui.Controls.Sample
             {
                 _viewModel.ItemTemplate = new DataTemplate(() =>
                 {
-                     var label = new Label();
-                     label.SetBinding(Label.TextProperty, new Binding("Caption"));
- 
+                    var label = new Label();
+                    label.SetBinding(Label.TextProperty, new Binding("Caption"));
+
                     return label;
                 });
-            }
-            else if (ItemTemplateGrid.IsChecked)
-            {
-                _viewModel.ItemTemplate = ExampleTemplates.PhotoTemplate();
-            }
-            else if (ItemTemplateSelector.IsChecked)
-            {
-                // DataTemplateSelector
-                var template1 = new DataTemplate(() =>
-                {
-                    var label = new Label
-                    {
-                        Text = "Template 1",
-                        FontSize = 18,
-                        FontAttributes = FontAttributes.Bold,
-                        HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center,
-                        TextColor = Colors.Black,
-                        BackgroundColor = Colors.LightGray,
-                        Padding = new Thickness(10)
-                    };
- 
-                    return label;
-                });
- 
-                var template2 = new DataTemplate(() =>
-                {
-                    var label = new Label
-                    {
-                        Text = "Template 2",
-                        FontSize = 18,
-                        FontAttributes = FontAttributes.Bold,
-                        HorizontalOptions = LayoutOptions.Center,
-                        VerticalOptions = LayoutOptions.Center,
-                        TextColor = Colors.Black,
-                        BackgroundColor = Colors.LightGray,
-                        Padding = new Thickness(10)
-                    };
- 
-                    return label;
-                });
- 
-                _viewModel.ItemTemplate = new CollectionViewViewModel.CustomDataTemplateSelector
-                {
-                    Template1 = template1,
-                    Template2 = template2
-                };
             }
         }
- 
+
+        private void OnItemsLayoutChanged(object sender, CheckedChangedEventArgs e)
+        {
+            if (ItemsLayoutVerticalList.IsChecked)
+            {
+                _viewModel.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
+            }
+            else if (ItemsLayoutHorizontalList.IsChecked)
+            {
+                _viewModel.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
+            }
+            else if (ItemsLayoutVerticalGrid.IsChecked)
+            {
+                _viewModel.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical); // 2 columns
+            }
+            else if (ItemsLayoutHorizontalGrid.IsChecked)
+            {
+                _viewModel.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Horizontal); // 2 rows
+            }
+        }
+
         private void OnItemsSourceChanged(object sender, CheckedChangedEventArgs e)
         {
             if (!(sender is RadioButton radioButton) || !e.Value)
                 return;
-            // Set ItemsSourceType based on selection
-            if (radioButton == ItemsSourceList)
-                _viewModel.ItemsSourceType = ItemsSourceType.ListT;
+            if (radioButton == ItemsSourceObservableCollection25)
+                _viewModel.ItemsSourceType = ItemsSourceType.ObservableCollection25T;
+            else if (radioButton == ItemsSourceObservableCollection5)
+                _viewModel.ItemsSourceType = ItemsSourceType.ObservableCollection5T;
             else if (radioButton == ItemsSourceGroupedList)
                 _viewModel.ItemsSourceType = ItemsSourceType.GroupedListT;
             else if (radioButton == ItemsSourceNone)

@@ -21,6 +21,7 @@
             GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
             GroupFooterTemplate="{Binding GroupFooterTemplate}"
             ItemTemplate="{Binding ItemTemplate}"
+            ItemsLayout="{Binding ItemsLayout}"
             IsGrouped="{Binding IsGrouped}"
             AutomationId="CollectionViewControl">
         </local:CollectionView2>
