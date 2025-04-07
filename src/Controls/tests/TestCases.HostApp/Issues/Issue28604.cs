@@ -13,7 +13,7 @@ public class Issue28604 : ContentPage
 
         var grid = new Grid();
 
-        var collectionView = new CollectionView
+        var collectionView = new CollectionView2
         {
             AutomationId = "CollectionView",
             ItemsSource = ViewModel.ItemList,
