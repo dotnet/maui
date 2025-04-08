@@ -367,25 +367,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.FlyoutPage.ApplyShadowProperty.PropertyName)
 				UpdateApplyShadow(((FlyoutPage)Element).OnThisPlatform().GetApplyShadow());
 			else if (e.PropertyName == Microsoft.Maui.Controls.FlyoutPage.FlyoutLayoutBehaviorProperty.PropertyName) 
-			{
-				var flyoutPage = (FlyoutPage)Element;
-				bool isPresented = flyoutPage.IsPresented;
-
-				LayoutChildren(true);
-
-				bool shouldPresent = FlyoutPageController.ShouldShowSplitMode;
-
-				if (FlyoutPage.FlyoutLayoutBehavior == FlyoutLayoutBehavior.Popover || FlyoutPage.FlyoutLayoutBehavior == FlyoutLayoutBehavior.Default)
-				{
-					shouldPresent = false;
-				}
-
-				if (shouldPresent != isPresented)
-				{
-					((IElementController)Element).SetValueFromRenderer(FlyoutPage.IsPresentedProperty, shouldPresent);
-					UpdateLeftBarButton();
-				}
-			}
+				UpdateFlyoutLayoutBehavior();				
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName ||
 					 e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName)
 				UpdatePageSpecifics();
@@ -494,6 +476,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (Presented)
 				UpdateClickOffViewFrame();
+		}
+
+		void UpdateFlyoutLayoutBehavior()
+		{
+			var flyoutPage = (FlyoutPage)Element;
+				bool isPresented = flyoutPage.IsPresented;
+
+				LayoutChildren(true);
+
+				bool shouldPresent = FlyoutPageController.ShouldShowSplitMode;
+
+				if (FlyoutPage.FlyoutLayoutBehavior == FlyoutLayoutBehavior.Popover || FlyoutPage.FlyoutLayoutBehavior == FlyoutLayoutBehavior.Default)
+				{
+					shouldPresent = false;
+				}
+
+				if (shouldPresent != isPresented)
+				{
+					((IElementController)Element).SetValueFromRenderer(FlyoutPage.IsPresentedProperty, shouldPresent);
+					UpdateLeftBarButton();
+				}
 		}
 
 		void PackContainers()
