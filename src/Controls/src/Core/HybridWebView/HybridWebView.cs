@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable RS0016 // Add public types and members to the declared API
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Controls
 	/// A <see cref="View"/> that presents local HTML content in a web view and allows JavaScript and C# code to
 	/// communicate by using messages and by invoking methods.
 	/// </summary>
-	public class HybridWebView : View, IHybridWebView
+	public class HybridWebView : View, IHybridWebView, IHybridWebView2
 	{
 		/// <summary>Bindable property for <see cref="DefaultFile"/>.</summary>
 		public static readonly BindableProperty DefaultFileProperty =
@@ -65,6 +66,13 @@ namespace Microsoft.Maui.Controls
 		/// Raised when a raw message is received from the web view. Raw messages are strings that have no additional processing.
 		/// </summary>
 		public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
+
+		void IHybridWebView2.OnAboutToSendRequest(HybridWebViewAboutToSendRequestEventArgs args)
+		{
+			AboutToSendRequest?.Invoke(this, args);
+		}
+
+		public event EventHandler<HybridWebViewAboutToSendRequestEventArgs>? AboutToSendRequest;
 
 		/// <summary>
 		/// Sends a raw message to the code running in the web view. Raw messages have no additional processing.

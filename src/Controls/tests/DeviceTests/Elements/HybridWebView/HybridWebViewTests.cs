@@ -471,6 +471,29 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(ex.InnerException.StackTrace);
 		}
 
+		[Fact]
+		public Task RequestsCanBeInterceptedAndHeadersAdded() =>
+			RunTest(async (hybridWebView) =>
+			{
+				const string ExpectedHeaderValue = "My Header Value";
+
+				hybridWebView.AboutToSendRequest += (sender, e) =>
+				{
+#if WINDOWS
+					var req = e.PlatformArgs.WebResourceRequestedEventArgs.Request;
+					req.Headers.SetHeader("X-Request-Header", ExpectedHeaderValue);
+#endif
+				};
+
+				var headerValue = await hybridWebView.InvokeJavaScriptAsync<Dictionary<string, string>>(
+					"RequestsCanBeInterceptedAndHeadersAdded",
+					HybridWebViewTestContext.Default.DictionaryStringString);
+
+				Assert.NotNull(headerValue);
+				Assert.True(headerValue.TryGetValue("X-Request-Header", out var actualHeaderValue));
+				Assert.Equal(ExpectedHeaderValue, actualHeaderValue);
+			});
+
 		async Task<Exception> RunExceptionTest(string method, int errorType)
 		{
 			Exception exception = null;
