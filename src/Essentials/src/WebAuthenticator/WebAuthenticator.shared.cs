@@ -5,6 +5,9 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
+#if ANDROID
+using Android.Content;
+#endif
 
 namespace Microsoft.Maui.Authentication
 {
@@ -58,9 +61,9 @@ namespace Microsoft.Maui.Authentication
 		/// <summary>
 		/// The event that is triggered when an authentication flow calls back into the Android application.
 		/// </summary>
-		/// <param name="intent">An <see cref="Android.Content.Intent"/> object containing additional data about this resume operation.</param>
+		/// <param name="intent">An <see cref="Intent"/> object containing additional data about this resume operation.</param>
 		/// <returns><see langword="true"/> when the callback can be processed, otherwise <see langword="false"/>.</returns>
-		bool OnResumeCallback(Android.Content.Intent intent);
+		bool OnResumeCallback(Intent intent);
 #endif
 	}
 
@@ -204,8 +207,8 @@ namespace Microsoft.Maui.Authentication
 		}
 
 #elif ANDROID
-		/// <inheritdoc cref="IPlatformWebAuthenticatorCallback.OnResumeCallback(Android.Content.Intent)"/>
-		public static bool OnResume(this IWebAuthenticator webAuthenticator, Android.Content.Intent intent) =>
+		/// <inheritdoc cref="IPlatformWebAuthenticatorCallback.OnResumeCallback(Intent)"/>
+		public static bool OnResume(this IWebAuthenticator webAuthenticator, Intent intent) =>
 			webAuthenticator.AsPlatformCallback().OnResumeCallback(intent);
 #endif
 	}

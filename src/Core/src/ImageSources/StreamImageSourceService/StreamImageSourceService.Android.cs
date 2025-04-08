@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.Runtime;
+using Android.Widget;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui
 {
 	public partial class StreamImageSourceService
 	{
-		public override async Task<IImageSourceServiceResult?> LoadDrawableAsync(IImageSource imageSource, Android.Widget.ImageView imageView, CancellationToken cancellationToken = default)
+		public override async Task<IImageSourceServiceResult?> LoadDrawableAsync(IImageSource imageSource, ImageView imageView, CancellationToken cancellationToken = default)
 		{
 			var streamImageSource = (IStreamImageSource)imageSource;
 

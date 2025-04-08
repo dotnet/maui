@@ -4,6 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Authentication;
 using Microsoft.Maui.Devices.Sensors;
+#if ANDROID
+using Android.App;
+using Android.Content;
+using Android.Content.PM;
+#endif
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -25,14 +30,14 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		/// <summary>
-		/// Gets the <see cref="Android.Content.Context"/> object that represents the current application context.
+		/// Gets the <see cref="Context"/> object that represents the current application context.
 		/// </summary>
-		public static Android.Content.Context AppContext => Android.App.Application.Context;
+		public static Context AppContext => Application.Context;
 
 		// ActivityStateManager
 
 		/// <inheritdoc cref="IActivityStateManager.GetCurrentActivity"/>
-		public static Android.App.Activity? CurrentActivity =>
+		public static Activity? CurrentActivity =>
 			ActivityStateManager.Default.GetCurrentActivity();
 
 
@@ -44,15 +49,15 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		/// <inheritdoc cref="IActivityStateManager.WaitForActivityAsync(CancellationToken)"/>
-		public static Task<Android.App.Activity> WaitForActivityAsync(CancellationToken cancelToken = default) =>
+		public static Task<Activity> WaitForActivityAsync(CancellationToken cancelToken = default) =>
 			ActivityStateManager.Default.WaitForActivityAsync(cancelToken);
 
-		/// <inheritdoc cref="IActivityStateManager.Init(Android.App.Application)"/>
-		public static void Init(Android.App.Application application) =>
+		/// <inheritdoc cref="IActivityStateManager.Init(Application)"/>
+		public static void Init(Application application) =>
 			ActivityStateManager.Default.Init(application);
 
-		/// <inheritdoc cref="IActivityStateManager.Init(Android.App.Activity, Android.OS.Bundle?)"/>
-		public static void Init(Android.App.Activity activity, Android.OS.Bundle? bundle) =>
+		/// <inheritdoc cref="IActivityStateManager.Init(Activity, global::Android.OS.Bundle?)"/>
+		public static void Init(Activity activity, global::Android.OS.Bundle? bundle) =>
 			ActivityStateManager.Default.Init(activity, bundle);
 
 		// Permissions
@@ -63,23 +68,23 @@ namespace Microsoft.Maui.ApplicationModel
 		/// <param name="requestCode">The requestCode from the corresponding overridden method in an activity.</param>
 		/// <param name="permissions">The permissions from the corresponding overridden method in an activity.</param>
 		/// <param name="grantResults">The grantResults from the corresponding overridden method in an activity.</param>
-		public static void OnRequestPermissionsResult(int requestCode, string[] permissions, Android.Content.PM.Permission[] grantResults) =>
+		public static void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults) =>
 			Permissions.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
 		// AppActions
 
 		/// <summary>
-		/// Called when a new <see cref="Android.Content.Intent"/> was created as part of invoking an app action.
+		/// Called when a new <see cref="Intent"/> was created as part of invoking an app action.
 		/// </summary>
-		/// <param name="intent">The <see cref="Android.Content.Intent"/> that is created.</param>
-		public static void OnNewIntent(Android.Content.Intent? intent) =>
+		/// <param name="intent">The <see cref="Intent"/> that is created.</param>
+		public static void OnNewIntent(global::Android.Content.Intent? intent) =>
 			AppActions.Current.OnNewIntent(intent);
 
 		/// <summary>
-		/// Called when a <see cref="Android.App.Activity"/> is resumed as part of invoking an app action.
+		/// Called when a <see cref="Activity"/> is resumed as part of invoking an app action.
 		/// </summary>
-		/// <param name="activity">The <see cref="Android.App.Activity"/> that is resumed.</param>
-		public static void OnResume(Android.App.Activity? activity = null) =>
+		/// <param name="activity">The <see cref="Activity"/> that is resumed.</param>
+		public static void OnResume(Activity? activity = null) =>
 			AppActions.Current.OnResume(activity?.Intent);
 
 #elif IOS || MACCATALYST

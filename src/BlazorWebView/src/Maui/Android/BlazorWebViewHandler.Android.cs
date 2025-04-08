@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Android.Webkit;
+using Android.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var blazorAndroidWebView = new BlazorAndroidWebView(Context!)
 			{
 #pragma warning disable 618 // This can probably be replaced with LinearLayout(LayoutParams.MatchParent, LayoutParams.MatchParent); just need to test that theory
-				LayoutParameters = new Android.Widget.AbsoluteLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent, 0, 0)
+				LayoutParameters = new AbsoluteLayout.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent, 0, 0)
 #pragma warning restore 618
 			};
 #pragma warning restore CA1416, CA1412, CA1422 // Validate platform compatibility

@@ -91,10 +91,10 @@ namespace Microsoft.Maui.Devices.Sensors
 			var allProviders = LocationManager.GetProviders(false);
 
 			var providers = new List<string>();
-			if (allProviders.Contains(Android.Locations.LocationManager.GpsProvider))
-				providers.Add(Android.Locations.LocationManager.GpsProvider);
-			if (allProviders.Contains(Android.Locations.LocationManager.NetworkProvider))
-				providers.Add(Android.Locations.LocationManager.NetworkProvider);
+			if (allProviders.Contains(LocationManager.GpsProvider))
+				providers.Add(LocationManager.GpsProvider);
+			if (allProviders.Contains(LocationManager.NetworkProvider))
+				providers.Add(LocationManager.NetworkProvider);
 
 			if (providers.Count == 0)
 				providers.Add(providerInfo.Provider);
@@ -181,10 +181,10 @@ namespace Microsoft.Maui.Devices.Sensors
 			var allProviders = LocationManager.GetProviders(false);
 
 			listeningProviders = new List<string>();
-			if (allProviders.Contains(Android.Locations.LocationManager.GpsProvider))
-				listeningProviders.Add(Android.Locations.LocationManager.GpsProvider);
-			if (allProviders.Contains(Android.Locations.LocationManager.NetworkProvider))
-				listeningProviders.Add(Android.Locations.LocationManager.NetworkProvider);
+			if (allProviders.Contains(LocationManager.GpsProvider))
+				listeningProviders.Add(LocationManager.GpsProvider);
+			if (allProviders.Contains(LocationManager.NetworkProvider))
+				listeningProviders.Add(LocationManager.NetworkProvider);
 
 			if (listeningProviders.Count == 0)
 				listeningProviders.Add(providerInfo.Provider);

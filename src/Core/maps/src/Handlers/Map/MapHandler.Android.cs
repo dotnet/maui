@@ -7,6 +7,7 @@ using Android.Gms.Common.Apis;
 using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
 using Android.OS;
+using Android.Views;
 using Java.Lang;
 using Java.Util.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -316,7 +317,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			VirtualView.VisibleRegion = new MapSpan(new Devices.Sensors.Location(pos.Latitude, pos.Longitude), dlat, dlong);
 		}
 
-		void MapViewLayoutChange(object? sender, Android.Views.View.LayoutChangeEventArgs e)
+		void MapViewLayoutChange(object? sender, View.LayoutChangeEventArgs e)
 		{
 			InitialUpdate();
 		}

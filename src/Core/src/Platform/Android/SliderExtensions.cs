@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Platform
 				if (slider.ThumbColor is null && context.Theme is not null)
 				{
 					using var value = new TypedValue();
-					context.Theme.ResolveAttribute(Android.Resource.Attribute.ColorAccent, value, true);
+					context.Theme.ResolveAttribute(global::Android.Resource.Attribute.ColorAccent, value, true);
 					var color = new Color(value.Data);
 					seekBar.Thumb?.SetColorFilter(color, FilterMode.SrcIn);
 				}

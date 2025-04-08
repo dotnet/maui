@@ -524,7 +524,7 @@ namespace Microsoft.Maui.Platform
 				return new Rect();
 
 			var context = platformView.Context;
-			var rect = new Android.Graphics.Rect();
+			var rect = new global::Android.Graphics.Rect();
 			platformView.GetGlobalVisibleRect(rect);
 
 			return new Rect(

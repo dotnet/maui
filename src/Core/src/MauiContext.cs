@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
+#if ANDROID
+using Android.Content;
+#endif
 
 namespace Microsoft.Maui
 {
@@ -10,11 +13,11 @@ namespace Microsoft.Maui
 		readonly Lazy<IMauiHandlersFactory> _handlers;
 
 #if ANDROID
-		readonly Lazy<Android.Content.Context?> _context;
+		readonly Lazy<Context?> _context;
 
-		public Android.Content.Context? Context => _context.Value;
+		public Context? Context => _context.Value;
 
-		public MauiContext(IServiceProvider services, Android.Content.Context context)
+		public MauiContext(IServiceProvider services, Context context)
 			: this(services)
 		{
 			AddWeakSpecific(context);
@@ -30,7 +33,7 @@ namespace Microsoft.Maui
 
 			_handlers = new Lazy<IMauiHandlersFactory>(() => _services.GetRequiredService<IMauiHandlersFactory>());
 #if ANDROID
-			_context = new Lazy<Android.Content.Context?>(() => _services.GetService<Android.Content.Context>());
+			_context = new Lazy<Context?>(() => _services.GetService<Context>());
 #endif
 		}
 

@@ -14,9 +14,9 @@ namespace Microsoft.Maui.ApplicationModel
 	public interface IActivityStateManager
 	{
 		/// <summary>
-		/// Initializes the <see cref="ActivityStateManager"/> for the given <see cref="Android.App.Application"/>.
+		/// Initializes the <see cref="ActivityStateManager"/> for the given <see cref="global::Android.App.Application"/>.
 		/// </summary>
-		/// <param name="application">The <see cref="Android.App.Application"/> to use for initialization.</param>
+		/// <param name="application">The <see cref="global::Android.App.Application"/> to use for initialization.</param>
 		void Init(Application application);
 
 		/// <summary>

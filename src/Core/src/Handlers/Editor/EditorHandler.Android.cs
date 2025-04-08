@@ -1,4 +1,5 @@
 ﻿using System;
+using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Microsoft.Maui.Graphics;
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				ImeOptions = ImeAction.Done,
 				Gravity = GravityFlags.Top,
-				TextAlignment = Android.Views.TextAlignment.ViewStart,
+				TextAlignment = global::Android.Views.TextAlignment.ViewStart,
 			};
 
 			editText.SetSingleLine(false);
@@ -113,7 +114,7 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView.Focus(request);
 		}
 
-		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e)
+		void OnTextChanged(object? sender, TextChangedEventArgs e)
 		{
 			// Let the mapping know that the update is coming from changes to the platform control
 			DataFlowDirection = DataFlowDirection.FromPlatform;

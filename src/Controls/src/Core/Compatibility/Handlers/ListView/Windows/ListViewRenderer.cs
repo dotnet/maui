@@ -505,6 +505,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateWindowsSpecificSelectionMode()
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (Element.OnThisPlatform().GetSelectionMode() == PlatformConfiguration.WindowsSpecific.ListViewSelectionMode.Accessible)
 			{
 				// Using Tapped will disable the ability to use the Enter key
@@ -539,6 +540,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					List.ItemClick -= OnListItemClicked;
 				}
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void UpdateVerticalScrollBarVisibility()
