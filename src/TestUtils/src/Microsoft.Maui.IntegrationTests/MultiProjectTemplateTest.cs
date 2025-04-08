@@ -23,6 +23,9 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 				$"Unable to remove WinUI project from solution. Check test output for errors.");
 		}
 
+		// TODO, we should not need this but hitting: https://github.com/dotnet/maui/issues/19840
+		BuildProps.Add("ResizetizerErrorOnDuplicateOutputFilename=false");
+
 		Assert.IsTrue(DotnetInternal.Build(solutionFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
 			$"Solution {name} failed to build. Check test output/attachments for errors.");
 	}
