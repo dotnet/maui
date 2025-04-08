@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var tv = VirtualView.TableView;
 			VirtualView.ReusableCell = null;
 			VirtualView.TableView = null;
+			_tableView = new(tv);
 			return GetCell(VirtualView, reusableCell, tv);
 		}
 
@@ -47,7 +48,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public virtual UITableViewCell GetCell(Cell item, UITableViewCell reusableCell, UITableView tv)
 #pragma warning restore CS0618 // Type or member is obsolete
 		{
-			_tableView = new(tv);
 			Performance.Start(out string reference);
 
 			var tvc = reusableCell as CellTableViewCell ?? new CellTableViewCell(UITableViewCellStyle.Default, item.GetType().FullName);
