@@ -205,7 +205,7 @@ namespace Maui.Controls.Sample
         {
             _observableCollection25 = new ObservableCollection<CollectionViewTestItem>();
             _observableCollection5 = new ObservableCollection<CollectionViewTestItem>();
-            AddItems(_observableCollection5, 8, "Fruits");
+            AddItems(_observableCollection5, 5, "Fruits");
             AddItems(_observableCollection25, 10, "Fruits");
             AddItems(_observableCollection25, 10, "Vegetables");
 
