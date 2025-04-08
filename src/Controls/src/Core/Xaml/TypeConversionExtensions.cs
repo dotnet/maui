@@ -216,7 +216,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 			}
 
-			if (value != null && !toType.IsAssignableFrom(value.GetType()))
+			if ((value != null && !toType.IsAssignableFrom(value.GetType())) || (value != null && toType.IsAssignableFrom(typeof(View))))
 			{
 				if (TypeConversionHelper.TryConvert(value, toType, out var convertedValue))
 				{

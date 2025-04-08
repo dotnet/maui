@@ -9,7 +9,6 @@ using WListView = Microsoft.UI.Xaml.Controls.ListView;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using WSetter = Microsoft.UI.Xaml.Setter;
 using WStyle = Microsoft.UI.Xaml.Style;
-using Microsoft.Maui.Devices;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -140,21 +139,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						ListViewBase.HeaderTemplate = ItemsViewTemplate;
 						ListViewBase.Header = new ItemTemplateContext(headerTemplate, header, Element, mauiContext: MauiContext);
 					}
-					else if (ItemsView.Header is OnPlatform<View> platformView && platformView.Platforms.Count > 0)
-					{
-						var platform = DeviceInfo.Current.Platform;
-						foreach (var view in platformView.Platforms)
-						{
-							if (view.Platform.Contains(platform.ToString()))
-							{
-								ListViewBase.HeaderTemplate = ViewTemplate;
-								_currentHeader = (View)view.Value;
-								Element.AddLogicalChild(_currentHeader);
-								ListViewBase.Header = view.Value;
-								break;
-							}
-						}
-					}
 					else
 					{
 						ListViewBase.HeaderTemplate = null;
@@ -203,21 +187,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					{
 						ListViewBase.FooterTemplate = ItemsViewTemplate;
 						ListViewBase.Footer = new ItemTemplateContext(footerTemplate, footer, Element, mauiContext: MauiContext);
-					}
-					else if (ItemsView.Footer is OnPlatform<View> platformView && platformView.Platforms.Count > 0)
-					{
-						var platform = DeviceInfo.Current.Platform;
-						foreach (var view in platformView.Platforms)
-						{
-							if (view.Platform.Contains(platform.ToString()))
-							{
-								ListViewBase.FooterTemplate = ViewTemplate;
-								_currentFooter = (View)view.Value;
-								Element.AddLogicalChild(_currentFooter);
-								ListViewBase.Footer = (View)view.Value;
-								break;
-							}
-						}
 					}
 					else
 					{
