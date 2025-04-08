@@ -206,19 +206,9 @@ namespace Maui.Controls.Sample
             _observableCollection25 = new ObservableCollection<CollectionViewTestItem>();
             _observableCollection5 = new ObservableCollection<CollectionViewTestItem>();
             AddItems(_observableCollection5, 8, "Fruits");
-#if ANDROID
-            AddItems(_observableCollection25, 8, "Fruits");
-            AddItems(_observableCollection25, 8, "Vegetables");
-#elif IOS
-            AddItems(_observableCollection25, 15, "Fruits");
-            AddItems(_observableCollection25, 15, "Vegetables");
-#elif WINDOWS
-            AddItems(_observableCollection25, 18, "Fruits");
-            AddItems(_observableCollection25, 18, "Vegetables");
-#else
-            AddItems(_observableCollection25, 13, "Fruits");
-            AddItems(_observableCollection25, 13, "Vegetables");
-#endif
+            AddItems(_observableCollection25, 10, "Fruits");
+            AddItems(_observableCollection25, 10, "Vegetables");
+
             _emptyObservableCollection = new ObservableCollection<CollectionViewTestItem>();
 
             _groupedList = new List<Grouping<string, CollectionViewTestItem>>

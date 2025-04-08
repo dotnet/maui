@@ -39,8 +39,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("CollectionView Header(String)");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
-			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 5000);
-			App.WaitForElementTillPageNavigationSettled("Onion");
+			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+			App.WaitForElementTillPageNavigationSettled("Pepper");
 			App.WaitForNoElement("CollectionView Header(String)");
 		}
 
@@ -90,8 +90,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("HeaderViewLabel");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
-			App.ScrollDown("CollectionViewControl",ScrollStrategy.Gesture, 0.9, 5000);
-			App.WaitForElementTillPageNavigationSettled("Onion");
+			App.ScrollDown("CollectionViewControl",ScrollStrategy.Gesture, 0.9, 500);
+			App.WaitForElementTillPageNavigationSettled("Pepper");
 			App.WaitForNoElement("HeaderViewLabel");
 		}
 
@@ -644,8 +644,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
-			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 5000);
-			App.WaitForElementTillPageNavigationSettled("Onion");
+			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+			App.WaitForElementTillPageNavigationSettled("Pepper");
 			App.WaitForNoElement("HeaderTemplateLabel");
 		}
 
@@ -938,8 +938,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("CollectionView Footer(String)");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
-			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 5000);
-			App.WaitForElementTillPageNavigationSettled("Onion");
+			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+			App.WaitForElementTillPageNavigationSettled("Pepper");
 			App.WaitForElement("CollectionView Footer(String)");
 		}
 
@@ -974,8 +974,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("FooterViewLabel");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
-			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 5000);
-			App.WaitForElementTillPageNavigationSettled("Onion");
+			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+			App.WaitForElementTillPageNavigationSettled("Pepper");
 			App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
 		}
 
@@ -1507,8 +1507,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForNoElement("FooterTemplateLabel");
 			App.WaitForElementTillPageNavigationSettled("Apple");
 			App.WaitForElementTillPageNavigationSettled("Strawberry");
-			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 5000);
-			App.WaitForElementTillPageNavigationSettled("Onion");
+			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+			App.WaitForElementTillPageNavigationSettled("Pepper");
 			App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
 		}
 		[Test]
