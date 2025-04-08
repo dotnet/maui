@@ -3,7 +3,6 @@ using System;
 using System.ComponentModel;
 using Android.Content;
 using AndroidX.RecyclerView.Widget;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using ViewGroup = Android.Views.ViewGroup;
 
@@ -19,8 +18,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// I don't want this action to get GC'd
 		Action<Size> _reportMeasure;
 		Func<Size?> _retrieveStaticSize;
-
-		object view;
 
 		protected internal StructuredItemsViewAdapter(TItemsView itemsView,
 			Func<View, Context, ItemContentView> createItemContentView = null) : base(itemsView, createItemContentView)
@@ -69,14 +66,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (viewType == ItemViewType.Header)
 			{
-				GetViewFromOnPlatformView(ItemsView.Header);
-				return CreateHeaderFooterViewHolder(view, ItemsView.HeaderTemplate, context);
+				return CreateHeaderFooterViewHolder(ItemsView.Header, ItemsView.HeaderTemplate, context);
 			}
 
 			if (viewType == ItemViewType.Footer)
 			{
-				GetViewFromOnPlatformView(ItemsView.Footer);
-				return CreateHeaderFooterViewHolder(view, ItemsView.FooterTemplate, context);
+				return CreateHeaderFooterViewHolder(ItemsView.Footer, ItemsView.FooterTemplate, context);
 			}
 
 			return base.OnCreateViewHolder(parent, viewType);
@@ -172,27 +167,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void SetStaticSize(Size size)
 		{
 			_size = size;
-		}
-
-		void GetViewFromOnPlatformView(object value)
-		{
-			if (value is OnPlatform<View> onPlatformView && onPlatformView.Platforms.Count > 0)
-			{
-				var platform = DeviceInfo.Current.Platform;
-				foreach (var platformView in onPlatformView.Platforms)
-				{
-					if (platformView.Platform.Contains(platform.ToString()))
-					{
-						// We have a platform-specific view; use that
-						view = platformView.Value;
-						break;
-					}
-				}
-			}
-			else
-			{
-				view = value;
-			}
 		}
 	}
 }
