@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,15 @@ namespace Microsoft.Maui.Controls.Internals
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PropertyPropagationExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.PropertyPropagationExtensions']/Docs/*" />
 	public static class PropertyPropagationExtensions
 	{
+		[Obsolete]
+		internal static void PropagatePropertyChanged(string propertyName, Element element, IEnumerable children)
+		{
+			if (children == null)
+				return;
+
+			PropagatePropertyChanged(propertyName, element, children.OfType<IVisualTreeElement>().ToList());
+		}
+
 		internal static void PropagatePropertyChanged(string propertyName, Element element, IReadOnlyList<IVisualTreeElement> children)
 		{
 			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)

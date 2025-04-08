@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.None, 24147, "Test Handlers for Memory Leaks", PlatformAffected.All, isInternetRequired: true)]
+	[Issue(IssueTracker.None, 24147, "Test Handlers for Memory Leaks", PlatformAffected.All)]
 	public class MemoryTests : NavigationPage
 	{
 		public class MemoryTestPage : ContentPage
@@ -57,6 +57,17 @@ namespace Maui.Controls.Sample.Issues
 							{
 								HeightRequest = 500, // NOTE: non-zero size required for Windows
 								Source = new HtmlWebViewSource { Html = "<p>hi</p>" },
+							};
+						});
+						break;
+					case "Image":
+						this.Navigation.RunMemoryTest(() =>
+						{
+							return new Image
+							{
+								AutomationId = "Image",
+								Source = "red.png",
+								Background = Colors.Black
 							};
 						});
 						break;
