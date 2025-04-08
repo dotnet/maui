@@ -266,7 +266,7 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
-		Android.Views.TextAlignment GetNativeTextAlignment(SearchBarHandler searchBarHandler)
+		global::Android.Views.TextAlignment GetNativeTextAlignment(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().First();

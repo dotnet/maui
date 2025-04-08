@@ -113,7 +113,7 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = GetPlatformControl(handler);
 			await InvokeOnMainThreadAsync(() =>
    			{
-				var isVisible = nativeView.Visibility == Android.Views.ViewStates.Visible;
+				var isVisible = nativeView.Visibility == global::Android.Views.ViewStates.Visible;
 				Assert.Equal(expectedValue, isVisible);
 			});	
 		}
