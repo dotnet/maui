@@ -67,10 +67,6 @@ namespace Microsoft.Maui.Storage
 			// ios does not like the extensions
 			extension = extension?.TrimStart('.');
 
-			// var id = UTType.CreatePreferredIdentifier(UTType.TagClassFilenameExtension, extension, null);
-			// var mimeTypes = UTType.CopyAllTags(id, UniformTypeIdentifiers.UTTagClass.MimeType.ToString());
-			// return mimeTypes?.Length > 0 ? mimeTypes[0] : null;
-
 			var uti = UniformTypeIdentifiers.UTType.GetType(extension, UniformTypeIdentifiers.UTTagClass.FilenameExtension, null);
 			extension = uti?.PreferredMimeType ?? extension;
 
