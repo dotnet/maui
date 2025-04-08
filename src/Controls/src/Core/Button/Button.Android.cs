@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 			handler.PlatformView?.UpdateLineBreakMode(button);
 		}
 
-		internal static void MapRippleColor(IButtonHandler handler, Button button)
+		public static void MapRippleColor(IButtonHandler handler, Button button)
 		{
 			var color = button?.OnThisPlatform()?.GetRippleColor();
 			handler.PlatformView?.UpdateRippleColor(color);

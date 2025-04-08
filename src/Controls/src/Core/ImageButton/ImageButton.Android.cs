@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class ImageButton
 	{
-		internal static void MapRippleColor(IImageButtonHandler handler, ImageButton imageButton)
+		public static void MapRippleColor(IImageButtonHandler handler, ImageButton imageButton)
 		{
 			var color = imageButton.OnThisPlatform().GetRippleColor();
 			handler.PlatformView?.UpdateRippleColor(color);

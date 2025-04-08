@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Platform
 				});
 		}
 
-		internal static void UpdateRippleColor(this ShapeableImageView platformView, Color rippleColor)
+		public static void UpdateRippleColor(this ShapeableImageView platformView, Color rippleColor)
 		{
 			if (platformView.Background is Android.Graphics.Drawables.RippleDrawable ripple)
 			{
