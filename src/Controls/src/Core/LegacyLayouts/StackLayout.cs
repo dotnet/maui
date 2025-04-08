@@ -92,18 +92,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			return result;
 		}
 
-		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
-		{
-			_layoutInformation = new LayoutInformation();
-			base.OnChildMeasureInvalidated(child, trigger);
-		}
-
 		internal override void ComputeConstraintForView(View view)
 		{
 			ComputeConstraintForView(view, false);
 		}
 
-		internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
+		internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
 		{
 			_layoutInformation = new LayoutInformation();
 			base.InvalidateMeasureInternal(trigger);

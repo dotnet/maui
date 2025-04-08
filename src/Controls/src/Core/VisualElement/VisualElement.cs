@@ -1384,7 +1384,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// TODO: .NET10 this should be made public so whoever implements a custom layout can leverage this
 		internal virtual void ComputeConstraintForView(View view) => view.ComputedConstraint = LayoutConstraint.None;
 
 		/// <summary>
@@ -1409,25 +1408,23 @@ namespace Microsoft.Maui.Controls
 			InvalidateMeasureInternal(trigger);
 		}
 
-		internal virtual void InvalidateMeasureInternal(InvalidationTrigger trigger)
+		internal void InvalidateMeasureInternal(InvalidationTrigger trigger)
 		{
-			InvalidateMeasureCache();
+			InvalidateMeasureInternal(new InvalidationEventArgs(trigger, 0));
+		}
 
+		internal virtual void InvalidateMeasureInternal(InvalidationEventArgs eventArgs)
+		{
+			_measureCache.Clear();
 
-			switch (trigger)
+			// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 
+			// VerticalOptionsChanged will need to call ParentView.InvalidateArrange() instead
+
+			switch (eventArgs.Trigger)
 			{
 				case InvalidationTrigger.MarginChanged:
-					ParentView?.InvalidateMeasure();
-					break;
 				case InvalidationTrigger.HorizontalOptionsChanged:
 				case InvalidationTrigger.VerticalOptionsChanged:
-					if (this is View thisView && Parent is VisualElement visualParent)
-					{
-						visualParent.ComputeConstraintForView(thisView);
-					}
-
-					// TODO ezhart Once we get InvalidateArrange sorted, HorizontalOptionsChanged and 
-					// VerticalOptionsChanged will need to call ParentView.InvalidateArrange() instead
 					ParentView?.InvalidateMeasure();
 					break;
 				default:
@@ -1435,47 +1432,50 @@ namespace Microsoft.Maui.Controls
 					break;
 			}
 
-			InvokeMeasureInvalidated(trigger);
-#pragma warning disable CS0618 // Type or member is obsolete
-			(Parent as VisualElement)?.OnChildMeasureInvalidated(this, trigger);
-#pragma warning restore CS0618 // Type or member is obsolete
+			FireMeasureChanged(eventArgs);
 		}
 
-		private protected void InvokeMeasureInvalidated(InvalidationTrigger trigger)
+		private protected void FireMeasureChanged(InvalidationTrigger trigger, int depth)
 		{
-			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
+			FireMeasureChanged(new InvalidationEventArgs(trigger, depth));
 		}
 
-		/// <summary>
-        /// A flag that determines whether the measure invalidated event should not be propagated up the visual tree.
-        /// </summary>
-        /// <remarks>
-        /// Propagation will still occur within legacy layout subtrees.
-        /// </remarks>
-        internal static bool SkipMeasureInvalidatedPropagation { get; set /* for testing purpose */; } =
-        	AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.SkipMeasureInvalidatedPropagation", out var enabled) && enabled;
 
-		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
+		private protected void FireMeasureChanged(InvalidationEventArgs args)
 		{
-			if (SkipMeasureInvalidatedPropagation)
+			var depth = args.CurrentInvalidationDepth;
+			MeasureInvalidated?.Invoke(this, args);
+			(Parent as VisualElement)?.OnChildMeasureInvalidatedInternal(this, args.Trigger, ++depth);
+		}
+
+		// We don't want to change the execution path of Page or Layout when they are calling "InvalidationMeasure"
+		// If you look at page it calls OnChildMeasureInvalidated from OnChildMeasureInvalidatedInternal
+		// Because OnChildMeasureInvalidated is public API and the user might override it, we need to keep it as is
+		//private protected int CurrentInvalidationDepth { get; set; }
+
+		internal virtual void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger, int depth)
+		{
+			switch (trigger)
 			{
-				return;
+				case InvalidationTrigger.VerticalOptionsChanged:
+				case InvalidationTrigger.HorizontalOptionsChanged:
+					// When a child changes its HorizontalOptions or VerticalOptions
+					// the size of the parent won't change, so we don't have to invalidate the measure
+					return;
+				case InvalidationTrigger.RendererReady:
+				// Undefined happens in many cases, including when `IsVisible` changes
+				case InvalidationTrigger.Undefined:
+					FireMeasureChanged(trigger, depth);
+					return;
+				default:
+					// When visibility changes `InvalidationTrigger.Undefined` is used,
+					// so here we're sure that visibility didn't change
+					if (child.IsVisible)
+					{
+						FireMeasureChanged(InvalidationTrigger.MeasureChanged, depth);
+					}
+					return;
 			}
-
-			var propagatedTrigger = GetPropagatedTrigger(trigger);
-			InvokeMeasureInvalidated(propagatedTrigger);
-			(Parent as VisualElement)?.OnChildMeasureInvalidated(this, propagatedTrigger);
-		}
-
-		private protected static InvalidationTrigger GetPropagatedTrigger(InvalidationTrigger trigger)
-		{
-			var propagatedTrigger = trigger == InvalidationTrigger.RendererReady ? trigger : InvalidationTrigger.MeasureChanged;
-			return propagatedTrigger;
-		}
-
-		private protected void InvalidateMeasureCache()
-		{
-			_measureCache.Clear();
 		}
 
 		/// <inheritdoc/>
