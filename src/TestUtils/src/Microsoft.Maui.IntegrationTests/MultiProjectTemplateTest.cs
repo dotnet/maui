@@ -24,9 +24,10 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		}
 
 		// TODO, we should not need this but hitting: https://github.com/dotnet/maui/issues/19840
-		BuildProps.Add("ResizetizerErrorOnDuplicateOutputFilename=false");
+		var buildProps = BuildProps;
+		buildProps.Add("ResizetizerErrorOnDuplicateOutputFilename=false");
 
-		Assert.IsTrue(DotnetInternal.Build(solutionFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
+		Assert.IsTrue(DotnetInternal.Build(solutionFile, config, properties: buildProps, msbuildWarningsAsErrors: true),
 			$"Solution {name} failed to build. Check test output/attachments for errors.");
 	}
 
