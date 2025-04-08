@@ -51,20 +51,33 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			if (Width > maxWidthOrHeight || Height > maxWidthOrHeight)
 			{
-				using (var memoryStream = new InMemoryRandomAccessStream())
+				float factor;
+				if (Width > Height)
 				{
-					Save(memoryStream.AsStreamForWrite());
-					memoryStream.Seek(0);
+					factor = maxWidthOrHeight / Width;
+				}
+				else
+				{
+					factor = maxWidthOrHeight / Height;
+				}
 
-					// ReSharper disable once AccessToDisposedClosure
-					var newBitmap = AsyncPump.Run(async () => await CanvasBitmap.LoadAsync(_creator, memoryStream, 96));
-					using (var memoryStream2 = new InMemoryRandomAccessStream())
+				var w = factor * Width;
+				var h = factor * Height;
+				using (var target = new CanvasRenderTarget(_creator, w, h, 96))
+				{
+					using (var drawingSession = target.CreateDrawingSession())
 					{
-						// ReSharper disable once AccessToDisposedClosure
-						AsyncPump.Run(async () => await newBitmap.SaveAsync(memoryStream2, CanvasBitmapFileFormat.Png));
+						drawingSession.DrawImage(_bitmap, new global::Windows.Foundation.Rect(0, 0, w, h));
+					}
 
-						memoryStream2.Seek(0);
-						var newImage = FromStream(memoryStream2.AsStreamForRead());
+
+					using (var resizedStream = new InMemoryRandomAccessStream())
+					{
+						AsyncPump.Run(async () => await target.SaveAsync(resizedStream, CanvasBitmapFileFormat.Png));
+						resizedStream.Seek(0);
+
+						var newImage = FromStream(resizedStream.AsStreamForRead());
+
 						if (disposeOriginal)
 							_bitmap.Dispose();
 
@@ -78,7 +91,29 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
-			throw new NotImplementedException();
+			//throw new NotImplementedException();
+			using (var target = new CanvasRenderTarget(_creator, maxWidth, maxHeight, 96))
+			{
+				using (var drawingSession = target.CreateDrawingSession())
+				{
+					drawingSession.DrawImage(_bitmap, new global::Windows.Foundation.Rect(0, 0, maxWidth, maxHeight));
+				}
+
+
+				using (var resizedStream = new InMemoryRandomAccessStream())
+				{
+					AsyncPump.Run(async () => await target.SaveAsync(resizedStream, CanvasBitmapFileFormat.Png));
+					resizedStream.Seek(0);
+
+					var newImage = FromStream(resizedStream.AsStreamForRead());
+
+					if (disposeOriginal)
+						_bitmap.Dispose();
+
+					return newImage;
+				}
+			}
+
 		}
 
 		public IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit,
