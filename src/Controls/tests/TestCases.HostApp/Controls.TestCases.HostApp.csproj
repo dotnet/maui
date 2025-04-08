@@ -66,13 +66,11 @@
     <MauiFont Include="Resources\Fonts\**" />
     <MauiFont Remove="Resources\Fonts\Dokdo-Regular.ttf" />
     <EmbeddedResource Include="Resources\Fonts\Dokdo-Regular.ttf" />
-    <EmbeddedResource Include="Resources\Images\groceries.png" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\CustomAttributes\*.cs" />
-    <MauiImage Remove="Resources\Images\groceries.png" />
     <Using Include="Microsoft.Maui.Controls.CustomAttributes" />
   </ItemGroup>
 
