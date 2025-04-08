@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable RS0016 // Add public types and members to the declared API
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
@@ -66,4 +67,60 @@ namespace Microsoft.Maui
 			object?[]? paramValues = null,
 			JsonTypeInfo?[]? paramJsonTypeInfos = null);
 	}
+
+	internal interface IHybridWebView2 : IHybridWebView
+	{
+		void OnAboutToSendRequest(HybridWebViewAboutToSendRequestEventArgs args);
+	}
+
+
+	public class HybridWebViewAboutToSendRequestEventArgs
+	{
+		internal HybridWebViewAboutToSendRequestEventArgs(HybridWebViewPlatformAboutToSendRequestEventArgs platformArgs)
+		{
+			PlatformArgs = platformArgs;
+		}
+		
+		public HybridWebViewPlatformAboutToSendRequestEventArgs PlatformArgs { get; }
+		
+		public bool Cancel { get; set; }
+	}
+
+
+	public class HybridWebViewPlatformAboutToSendRequestEventArgs
+	{
+#if WINDOWS
+		/// <summary>
+		/// Gets the native view attached to the event.
+		/// </summary>
+		public Microsoft.Web.WebView2.Core.CoreWebView2 Sender { get; }
+
+		/// <summary>
+		/// Gets data for drag and drop events.
+		/// </summary>
+		public Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs WebResourceRequestedEventArgs { get; }
+
+		/// <summary>
+		/// Gets or sets a value that indicates whether the DragEventArgs are changed.
+		/// </summary>
+		/// <remarks>
+		/// Set the value of this property to true when changing the DragEventArgs so the system does not override the changes.
+		/// </remarks>
+		public bool Handled { get; set; }
+
+		internal HybridWebViewPlatformAboutToSendRequestEventArgs(
+			Microsoft.Web.WebView2.Core.CoreWebView2 sender,
+			Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs eventArgs)
+		{
+			Sender = sender;
+			WebResourceRequestedEventArgs = eventArgs;
+		}
+
+#else
+		internal HybridWebViewPlatformAboutToSendRequestEventArgs()
+		{
+		}
+#endif
+	}
 }
+
