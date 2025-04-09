@@ -20,6 +20,7 @@ public class Issue18158 : _IssuesUITest
 		App.WaitForElement("Button");
 		App.Tap("Button");
 		App.WaitForElement("Label");
+		App.WaitForNoElement("Button");
 	}
 }
 
