@@ -30,13 +30,25 @@ public class Issue28678 : ContentPage
 		{
 			collectionView.Header = "Header";
 		};
+
+		var button2 = new Button
+		{
+			Text = "Add Footer",
+			AutomationId = "FooterButton"
+		};
+		button2.Clicked += (s, e) =>
+		{
+			collectionView.Footer = "Footer";
+		};
+
 		Content = new VerticalStackLayout
 		{
 			Children =
 			{
 				collectionView,
 				button,
-				button1
+				button1,
+				button2
 			}
 		};
 	}

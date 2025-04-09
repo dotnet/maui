@@ -11,11 +11,12 @@ public class Issue28678 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void CollectionView2ShouldNotCrash()
+	public void HeaderFooterSelectionAfterItemsLayoutChangeShouldNotCrash()
 	{
 		App.WaitForElement("Button");
 		App.Tap("Button");
 		App.Tap("HeaderButton");
+		App.Tap("FooterButton");
 		App.WaitForElement("Button");
 	}
 }
