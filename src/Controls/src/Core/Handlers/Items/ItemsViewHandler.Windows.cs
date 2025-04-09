@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			VirtualView.ScrollToRequested -= ScrollToRequested;
 			CleanUpCollectionViewSource(platformView);
+			_formsEmptyView?.Handler?.DisconnectHandler();
 			base.DisconnectHandler(platformView);
 		}
 
