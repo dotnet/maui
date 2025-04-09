@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.FlyoutPage.ApplyShadowProperty.PropertyName)
 				UpdateApplyShadow(((FlyoutPage)Element).OnThisPlatform().GetApplyShadow());
 			else if (e.PropertyName == Microsoft.Maui.Controls.FlyoutPage.FlyoutLayoutBehaviorProperty.PropertyName) 
-				UpdateFlyoutLayoutBehavior();				
+				UpdateFlyoutLayoutBehaviorChanges();				
 			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersHomeIndicatorAutoHiddenProperty.PropertyName ||
 					 e.PropertyName == PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty.PropertyName)
 				UpdatePageSpecifics();
@@ -478,25 +478,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdateClickOffViewFrame();
 		}
 
-		void UpdateFlyoutLayoutBehavior()
+		void UpdateFlyoutLayoutBehaviorChanges()
 		{
-			var flyoutPage = (FlyoutPage)Element;
-				bool isPresented = flyoutPage.IsPresented;
-
-				LayoutChildren(true);
-
-				bool shouldPresent = FlyoutPageController.ShouldShowSplitMode;
-
-				if (FlyoutPage.FlyoutLayoutBehavior == FlyoutLayoutBehavior.Popover || FlyoutPage.FlyoutLayoutBehavior == FlyoutLayoutBehavior.Default)
-				{
-					shouldPresent = false;
-				}
-
-				if (shouldPresent != isPresented)
-				{
-					((IElementController)Element).SetValueFromRenderer(FlyoutPage.IsPresentedProperty, shouldPresent);
-					UpdateLeftBarButton();
-				}
+			LayoutChildren(true);
+            FlyoutPage flyoutPage = (FlyoutPage)Element;
+            FlyoutLayoutBehavior flyoutBehavior = FlyoutPage.FlyoutLayoutBehavior;
+            bool shouldPresent = FlyoutPageController.ShouldShowSplitMode;
+            if (flyoutBehavior == FlyoutLayoutBehavior.Popover || flyoutBehavior == FlyoutLayoutBehavior.Default)
+            {
+                shouldPresent = false;
+            }
+ 
+            if (shouldPresent != flyoutPage.IsPresented)
+            {
+                ((IElementController)Element).SetValueFromRenderer(FlyoutPage.IsPresentedProperty, shouldPresent);
+                UpdateLeftBarButton();
+            }
 		}
 
 		void PackContainers()
