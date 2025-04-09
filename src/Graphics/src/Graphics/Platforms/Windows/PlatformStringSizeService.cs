@@ -1,4 +1,5 @@
-﻿using Microsoft.Graphics.Canvas;
+﻿using System;
+using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
 using Windows.UI.Text;
 
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				FontFamily = font.Name,
 				FontSize = textSize,
-				FontWeight = new FontWeight { Weight = (ushort)font.Weight },
+				FontWeight = new FontWeight { Weight = (ushort)Math.Clamp(font.Weight, 1, 999) },
 				FontStyle = font.StyleType.ToFontStyle(),
 				WordWrapping = CanvasWordWrapping.NoWrap
 			};
