@@ -105,7 +105,60 @@ namespace Microsoft.Maui.Graphics.Platform
 		public IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit,
 			bool disposeOriginal = false)
 		{
-			throw new NotImplementedException();
+			// Calculate scaling factors
+			float scaleX = width / Width;
+			float scaleY = height / Height;
+
+			float targetWidth = Width;
+			float targetHeight = Height;
+			float offsetX = 0;
+			float offsetY = 0;
+
+			// Adjust dimensions based on the resize mode
+			if (resizeMode == ResizeMode.Fit)
+			{
+				float scale = Math.Min(scaleX, scaleY);
+				targetWidth *= scale;
+				targetHeight *= scale;
+				offsetX = (width - targetWidth) / 2;
+				offsetY = (height - targetHeight) / 2;
+			}
+			else if (resizeMode == ResizeMode.Bleed)
+			{
+				float scale = Math.Max(scaleX, scaleY);
+				targetWidth *= scale;
+				targetHeight *= scale;
+				offsetX = (width - targetWidth) / 2;
+				offsetY = (height - targetHeight) / 2;
+			}
+			else
+			{
+				targetWidth = width;
+				targetHeight = height;
+			}
+
+			// Create a new CanvasRenderTarget with the desired dimensions
+			using var renderTarget = new CanvasRenderTarget(_creator, width, height, _bitmap.Dpi);
+
+			// Draw the original image onto the render target
+			using (var drawingSession = renderTarget.CreateDrawingSession())
+			{
+				drawingSession.DrawImage(_bitmap, new global::Windows.Foundation.Rect(offsetX, offsetY, targetWidth, targetHeight));
+			}
+
+			// Create a new PlatformImage from the resized bitmap
+			using (var resizedStream = new InMemoryRandomAccessStream())
+			{
+				AsyncPump.Run(async () => await renderTarget.SaveAsync(resizedStream, CanvasBitmapFileFormat.Png));
+				resizedStream.Seek(0);
+
+				var newImage = FromStream(resizedStream.AsStreamForRead());
+
+				if (disposeOriginal)
+					_bitmap.Dispose();
+
+				return newImage;
+			}
 		}
 
 		public float Width => (float)_bitmap.Size.Width;
