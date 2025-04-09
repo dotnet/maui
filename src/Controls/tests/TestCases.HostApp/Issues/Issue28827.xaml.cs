@@ -12,7 +12,6 @@ public partial class Issue28827 : ContentPage
 	{
 		InitializeComponent();
 		BindingContext = _viewModel = new Issue28827CollectionViewViewModel();
-
 	}
 
 	void OnGroupHeaderTemplateChanged(object sender, CheckedChangedEventArgs e)
@@ -88,22 +87,6 @@ public partial class Issue28827 : ContentPage
 			_viewModel.IsGrouped = true;
 		}
 	}
-
-	void OnItemsSourceChanged(object sender, CheckedChangedEventArgs e)
-	{
-		if (!(sender is RadioButton radioButton) || !e.Value)
-			return;
-
-		if (radioButton == ItemsSourceGroupedList)
-		{
-			_viewModel.ItemsSourceType = ItemsSourceType.GroupedListT;
-		}
-		else if (radioButton == ItemsSourceObservableCollection)
-		{
-			_viewModel.ItemsSourceType = ItemsSourceType.ObservableCollectionT;
-		}
-
-	}
 }
 
 public class Issue28827CollectionViewViewModel : INotifyPropertyChanged
@@ -112,8 +95,6 @@ public class Issue28827CollectionViewViewModel : INotifyPropertyChanged
 	DataTemplate _groupFooterTemplate;
 	DataTemplate _itemTemplate;
 	bool _isGrouped = false;
-	ItemsSourceType _itemsSourceType = ItemsSourceType.ObservableCollectionT;
-	List<Issue28827Grouping<string, Issue28827ItemModel>> _groupedList;
 	ObservableCollection<Issue28827ItemModel> _observableCollection;
 
 	public event PropertyChangedEventHandler PropertyChanged;
@@ -165,21 +146,6 @@ public class Issue28827CollectionViewViewModel : INotifyPropertyChanged
 				new Issue28827ItemModel { Caption = "Item 2" },
 				new Issue28827ItemModel { Caption = "Item 3" }
 			};
-
-		// Create a grouped list with sample data
-		_groupedList = new List<Issue28827Grouping<string, Issue28827ItemModel>>
-			{
-				new Issue28827Grouping<string, Issue28827ItemModel>("Group A", new List<Issue28827ItemModel>
-				{
-					new Issue28827ItemModel { Caption = "Group A - Item 1" },
-					new Issue28827ItemModel { Caption = "Group A - Item 2" }
-				}),
-				new Issue28827Grouping<string, Issue28827ItemModel>("Group B", new List<Issue28827ItemModel>
-				{
-					new Issue28827ItemModel { Caption = "Group B - Item 1" },
-					new Issue28827ItemModel { Caption = "Group B - Item 2" }
-				})
-			};
 	}
 
 	public DataTemplate GroupHeaderTemplate
@@ -206,31 +172,9 @@ public class Issue28827CollectionViewViewModel : INotifyPropertyChanged
 		set { _isGrouped = value; OnPropertyChanged(); }
 	}
 
-	public ItemsSourceType ItemsSourceType
-	{
-		get => _itemsSourceType;
-		set
-		{
-			if (_itemsSourceType != value)
-			{
-				_itemsSourceType = value;
-				OnPropertyChanged();
-				OnPropertyChanged(nameof(ItemsSource));
-			}
-		}
-	}
-
 	public object ItemsSource
 	{
-		get
-		{
-			return ItemsSourceType switch
-			{
-				ItemsSourceType.GroupedListT => _groupedList,
-				ItemsSourceType.ObservableCollectionT => _observableCollection,
-				_ => null
-			};
-		}
+		get => _observableCollection;
 	}
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -267,12 +211,4 @@ internal class Issue28827ItemModel
 	{
 		return !string.IsNullOrEmpty(Caption) ? Caption : base.ToString();
 	}
-}
-
-public enum ItemsSourceType
-{
-	None,
-	ListT,
-	ObservableCollectionT,
-	GroupedListT
 }

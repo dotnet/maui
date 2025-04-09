@@ -75,27 +75,6 @@
                        FontSize="11"
                        AutomationId="IsGroupedTrue"/>
         </StackLayout>
-
-        <Label Text="ItemsSource:"
-               FontAttributes="Bold"
-               FontSize="11"/>
-        <VerticalStackLayout>
-          <HorizontalStackLayout Spacing="10">
-            <RadioButton x:Name="ItemsSourceGroupedList"
-                         Content="Grouped List"
-                         FontSize="10"
-                         GroupName="ItemsSourceGroup"
-                         CheckedChanged="OnItemsSourceChanged"
-                         AutomationId="ItemsSourceGroupedList"/>
-            <RadioButton x:Name="ItemsSourceObservableCollection"
-                         Content="ObservableCollection"
-                         FontSize="10"
-                         IsChecked="True"
-                         GroupName="ItemsSourceGroup"
-                         CheckedChanged="OnItemsSourceChanged"
-                         AutomationId="ItemsSourceObservableCollection"/>
-          </HorizontalStackLayout>
-        </VerticalStackLayout>
       </StackLayout>
     </ScrollView>
   </Grid>
