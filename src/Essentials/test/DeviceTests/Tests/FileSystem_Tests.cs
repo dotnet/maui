@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			await Assert.ThrowsAsync<FileNotFoundException>(() => FileSystem.OpenAppPackageFileAsync("MissingFile.txt")).ConfigureAwait(false);
 		}
 
-#if __MACCATALYST__
+#if MACCATALYST
 		[Fact]
 		public async Task ValidateMIMEFormat()
 		{
@@ -52,7 +52,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			await File.WriteAllTextAsync(filePath, "File Content type is text/plain");
 
 			FileResult fileResult = new FileResult(filePath);
-
 			Assert.Equal("text/plain", fileResult.ContentType);
 
 			File.Delete(filePath);
