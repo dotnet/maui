@@ -33,12 +33,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.ItemsViewPropertyChanged(sender, property);
 
-			if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.HeaderProperty))
+			if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.HeaderProperty) || property.Is(Microsoft.Maui.Controls.StructuredItemsView.HeaderTemplateProperty))
 			{
 				UpdateHasHeader();
 				NotifyDataSetChanged();
 			}
-			else if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterProperty))
+			else if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterProperty) ||
+				property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterTemplateProperty))
 			{
 				UpdateHasFooter();
 				NotifyDataSetChanged();
@@ -138,9 +139,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			else
 			{
 				TemplatedItemViewHolder viewHolder;
-				if (context == ItemsView.HeaderTemplate || context == ItemsView.FooterTemplate)
+				if (context == ItemsView.HeaderTemplate)
 				{
-					viewHolder = new TemplatedItemViewHolder(templatedItemViewHolder.ItemView as ItemContentView, ItemsView.HeaderTemplate ?? ItemsView.FooterTemplate, isSelectionEnabled: false);
+					viewHolder = new TemplatedItemViewHolder(templatedItemViewHolder.ItemView as ItemContentView, ItemsView.HeaderTemplate, isSelectionEnabled: false);
+				}
+				else if (context == ItemsView.FooterTemplate)
+				{
+					viewHolder = new TemplatedItemViewHolder(templatedItemViewHolder.ItemView as ItemContentView, ItemsView.FooterTemplate, isSelectionEnabled: false);
 				}
 				else
 				{
