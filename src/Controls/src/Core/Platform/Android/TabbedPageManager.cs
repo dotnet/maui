@@ -621,7 +621,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_newTabTextColors is not null)
 				return _newTabTextColors;
 
-			int? checkedColor = null;
+			int checkedColor;
 
 			// The new default color to use may have a color if BarItemColor is not null or the original colors for text
 			// are not null either. If it does not happens, this variable will be null and the ColorStateList of the
@@ -636,28 +636,20 @@ namespace Microsoft.Maui.Controls.Handlers
 			else
 			{
 				// UnSelected tabs TextColor
-				if (barItemColor is not null)
-				{
-					defaultColor = barItemColor.ToPlatform().ToArgb();
-				}
-				else if (_originalTabTextColors is not null)
-				{
-					defaultColor = _originalTabTextColors.DefaultColor;
-				}
+				defaultColor = GetItemTextColor(barItemColor, _originalTabTextColors);
+
 				// Selected tabs TextColor
-				if (barSelectedItemColor is not null)
-				{
-					checkedColor = barSelectedItemColor.ToPlatform().ToArgb();
-				}
-				else if (_originalTabTextColors is not null)
-				{
-					checkedColor = _originalTabTextColors.DefaultColor;
-				}
+				checkedColor = GetItemTextColor(barSelectedItemColor, _originalTabTextColors);
 			}
 
-			_newTabTextColors = GetColorStateList(defaultColor.Value, checkedColor.Value);
+			_newTabTextColors = GetColorStateList(defaultColor.Value, checkedColor);
 
 			return _newTabTextColors;
+		}
+
+		int GetItemTextColor(Color customColor, ColorStateList originalColors)
+		{
+			return customColor?.ToPlatform().ToArgb() ?? originalColors?.DefaultColor ?? 0;
 		}
 
 		protected virtual ColorStateList GetItemIconTintColorState()
