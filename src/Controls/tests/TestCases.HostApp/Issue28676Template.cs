@@ -110,7 +110,7 @@ namespace Maui.Controls.Sample.Issues
 
 		private void OnChangeHeaderTemplate(object sender, EventArgs e)
 		{
-			collectionView.HeaderTemplate = new DataTemplate(() =>
+			DataTemplate UpdatedHeaderTemplate = new DataTemplate(() =>
 			{
 				var stack = new StackLayout
 				{
@@ -125,11 +125,12 @@ namespace Maui.Controls.Sample.Issues
 				stack.Children.Add(label);
 				return stack;
 			});
+			collectionView.HeaderTemplate = UpdatedHeaderTemplate;
 		}
 
 		private void OnChangeFooterTemplate(object sender, EventArgs e)
 		{
-			collectionView.FooterTemplate = new DataTemplate(() =>
+			DataTemplate UpdatedFooterTemplate = new DataTemplate(() =>
 			{
 				var stack = new StackLayout
 				{
@@ -144,6 +145,7 @@ namespace Maui.Controls.Sample.Issues
 				stack.Children.Add(label);
 				return stack;
 			});
+			collectionView.FooterTemplate = UpdatedFooterTemplate;
 		}
 	}
 }

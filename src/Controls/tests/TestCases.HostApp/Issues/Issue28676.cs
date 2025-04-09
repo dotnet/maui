@@ -140,6 +140,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 
 			newHeaderGrid.Add(headerLabel, 0, 0);
+			collectionView.Header = newHeaderGrid;
 		}
 
 		private void OnChangeFooterView(object sender, EventArgs e)
@@ -170,6 +171,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 
 			newHeaderGrid.Add(headerLabel, 0, 0);
+			collectionView.Footer = newHeaderGrid;
 		}
 	}
 }
