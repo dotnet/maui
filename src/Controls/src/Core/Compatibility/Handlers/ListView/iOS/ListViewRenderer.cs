@@ -1064,6 +1064,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning disable CS0618 // Type or member is obsolete
 			protected readonly WeakReference<ListView> _list;
 #pragma warning restore CS0618 // Type or member is obsolete
+			readonly HashSet<ContextActionsCell> _contextActionsCells = new();
 			bool _isDragging;
 			bool _setupSelection;
 			bool _selectionFromNative;
@@ -1199,6 +1200,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				SetCellBackgroundColor(platformCell, bgColor);
 				PreserveActivityIndicatorState(cell);
 				Performance.Stop(reference);
+
+				if(platformCell is ContextActionsCell contextActionsCell)
+					_contextActionsCells.Add(contextActionsCell);
+
 				return platformCell;
 			}
 
@@ -1601,11 +1606,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				if (disposing)
 				{
-					if (!_list.TryGetTarget(out var list))
+					if (_list.TryGetTarget(out var list))
 					{
 						list.ItemSelected -= OnItemSelected;
 						WatchShortNameCollection(false);
 					}
+
+					foreach (var cell in _contextActionsCells)
+						cell.Dispose();
+					_contextActionsCells.Clear();
 
 					_templateToId = null;
 				}

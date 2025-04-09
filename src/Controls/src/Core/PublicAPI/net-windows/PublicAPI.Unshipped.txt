@@ -18,8 +18,6 @@ Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
 Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.Style?
 static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToRunAndColorsTuples(this Microsoft.Maui.Controls.FormattedString! formattedString, Microsoft.Maui.IFontManager! fontManager, double defaultLineHeight = -1, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> System.Collections.Generic.IEnumerable<System.Tuple<Microsoft.UI.Xaml.Documents.Run!, Microsoft.Maui.Graphics.Color!, Microsoft.Maui.Graphics.Color!>!>!
 static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.UpdateInlines(this Microsoft.UI.Xaml.Controls.TextBlock! textBlock, Microsoft.Maui.IFontManager! fontManager, Microsoft.Maui.Controls.FormattedString! formattedString, double defaultLineHeight = -1, Microsoft.Maui.TextAlignment defaultHorizontalAlignment = Microsoft.Maui.TextAlignment.Start, Microsoft.Maui.Font? defaultFont = null, Microsoft.Maui.Graphics.Color? defaultColor = null, Microsoft.Maui.TextTransform defaultTextTransform = Microsoft.Maui.TextTransform.Default) -> void
-Microsoft.Maui.Controls.VisualElement.IsVisibleCore.get -> bool
-Microsoft.Maui.Controls.VisualElement.RefreshIsVisibleProperty() -> void
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
@@ -101,6 +99,7 @@ const Microsoft.Maui.Controls.TitleBar.TrailingHiddenState = "TrailingContentCol
 const Microsoft.Maui.Controls.TitleBar.TrailingVisibleState = "TrailingContentVisible" -> string!
 Microsoft.Maui.Controls.Embedding.EmbeddingExtensions
 Microsoft.Maui.Controls.HandlerProperties
+*REMOVED*override Microsoft.Maui.Controls.Compatibility.Layout.InvalidateMeasureOverride() -> void
 Microsoft.Maui.Controls.HybridWebView
 Microsoft.Maui.Controls.HybridWebView.DefaultFile.get -> string?
 Microsoft.Maui.Controls.HybridWebView.DefaultFile.set -> void
