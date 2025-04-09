@@ -29,24 +29,6 @@ namespace Maui.Controls.Sample
 			{
 				_viewModel.Header = "CollectionView Header(String)";
 			}
-			else if (HeaderGrid.IsChecked)
-			{
-				Grid grid = new Grid
-				{
-					BackgroundColor = Colors.LightGray,
-					Padding = new Thickness(10)
-				};
-				grid.Children.Add(new Label
-				{
-					Text = "CollectionView Header(Grid View)",
-					FontSize = 18,
-
-					HorizontalOptions = LayoutOptions.Center,
-					VerticalOptions = LayoutOptions.Center,
-					TextColor = Colors.Blue
-				});
-				_viewModel.Header = grid;
-			}
 		}
 
 		private void OnFooterChanged(object sender, CheckedChangedEventArgs e)
@@ -58,82 +40,6 @@ namespace Maui.Controls.Sample
 			else if (FooterString.IsChecked)
 			{
 				_viewModel.Footer = "CollectionView Footer(String)";
-			}
-			else if (FooterGrid.IsChecked)
-			{
-				Grid grid = new Grid
-				{
-					BackgroundColor = Colors.LightGray,
-					Padding = new Thickness(10)
-				};
-				grid.Children.Add(new Label
-				{
-					Text = "CollectionView Footer(Grid View)",
-					FontSize = 18,
-
-					HorizontalOptions = LayoutOptions.Center,
-					VerticalOptions = LayoutOptions.Center,
-					TextColor = Colors.Red
-				});
-				_viewModel.Footer = grid;
-			}
-		}
-
-		private void OnHeaderTemplateChanged(object sender, CheckedChangedEventArgs e)
-		{
-			if (HeaderTemplateNone.IsChecked)
-			{
-				_viewModel.HeaderTemplate = null;
-			}
-			else if (HeaderTemplateGrid.IsChecked)
-			{
-				_viewModel.HeaderTemplate = new DataTemplate(() =>
-				{
-					Grid grid = new Grid
-					{
-						BackgroundColor = Colors.LightGray,
-						Padding = new Thickness(10)
-					};
-					grid.Children.Add(new Label
-					{
-						Text = "Header Template(Grid View)",
-						FontSize = 18,
-						FontAttributes = FontAttributes.Bold,
-						HorizontalOptions = LayoutOptions.Center,
-						VerticalOptions = LayoutOptions.Center,
-						TextColor = Colors.Blue
-					});
-					return grid;
-				});
-			}
-		}
-
-		private void OnFooterTemplateChanged(object sender, CheckedChangedEventArgs e)
-		{
-			if (FooterTemplateNone.IsChecked)
-			{
-				_viewModel.FooterTemplate = null;
-			}
-			else if (FooterTemplateGrid.IsChecked)
-			{
-				_viewModel.FooterTemplate = new DataTemplate(() =>
-				{
-					Grid grid = new Grid
-					{
-						BackgroundColor = Colors.LightGray,
-						Padding = new Thickness(10)
-					};
-					grid.Children.Add(new Label
-					{
-						Text = "Footer Template(Grid View)",
-						FontSize = 18,
-						FontAttributes = FontAttributes.Bold,
-						HorizontalOptions = LayoutOptions.Center,
-						VerticalOptions = LayoutOptions.Center,
-						TextColor = Colors.Green
-					});
-					return grid;
-				});
 			}
 		}
 
@@ -154,7 +60,7 @@ namespace Maui.Controls.Sample
 					};
 					grid.Children.Add(new Label
 					{
-						Text = "Group Header Template(Grid View)",
+						Text = "GroupHeaderTemplate",
 						FontSize = 18,
 						FontAttributes = FontAttributes.Bold,
 						HorizontalOptions = LayoutOptions.Center,
@@ -183,7 +89,7 @@ namespace Maui.Controls.Sample
 					};
 					grid.Children.Add(new Label
 					{
-						Text = "Group Footer Template(Grid View)",
+						Text = "GroupFooterTemplate",
 						FontSize = 18,
 						FontAttributes = FontAttributes.Bold,
 						HorizontalOptions = LayoutOptions.Center,
@@ -222,57 +128,14 @@ namespace Maui.Controls.Sample
 					return label;
 				});
 			}
-			else if (ItemTemplateGrid.IsChecked)
-			{
-				_viewModel.ItemTemplate = ExampleTemplates.PhotoTemplate();
-			}
-			else if (ItemTemplateSelector.IsChecked)
-			{
-				// DataTemplateSelector
-				var template1 = new DataTemplate(() =>
-				{
-					var label = new Label
-					{
-						Text = "Template 1",
-						FontSize = 18,
-						FontAttributes = FontAttributes.Bold,
-						TextColor = Colors.Black,
-						BackgroundColor = Colors.LightGray,
-						Padding = new Thickness(10)
-					};
-
-					return label;
-				});
-
-				var template2 = new DataTemplate(() =>
-				{
-					var label = new Label
-					{
-						Text = "Template 2",
-						FontSize = 18,
-						FontAttributes = FontAttributes.Bold,
-						TextColor = Colors.Black,
-						BackgroundColor = Colors.LightGray,
-						Padding = new Thickness(10)
-					};
-
-					return label;
-				});
-
-				_viewModel.ItemTemplate = new CollectionViewViewModel.CustomDataTemplateSelector
-				{
-					Template1 = template1,
-					Template2 = template2
-				};
-			}
 		}
 
 		private void OnItemsSourceChanged(object sender, CheckedChangedEventArgs e)
 		{
 			if (!(sender is RadioButton radioButton) || !e.Value)
 				return;
-			if (radioButton == ItemsSourceList)
-				_viewModel.ItemsSourceType = ItemsSourceType.ListT;
+			if (radioButton == ItemsSourceObservableCollection)
+				_viewModel.ItemsSourceType = ItemsSourceType.ObservableCollectionT;
 			else if (radioButton == ItemsSourceGroupedList)
 				_viewModel.ItemsSourceType = ItemsSourceType.GroupedListT;
 			else if (radioButton == ItemsSourceNone)
@@ -300,6 +163,26 @@ namespace Maui.Controls.Sample
 			else if (CanReorderItemsFalse.IsChecked)
 			{
 				_viewModel.CanReorderItems = false;
+			}
+		}
+
+		private void OnItemsLayoutChanged(object sender, CheckedChangedEventArgs e)
+		{
+			if (ItemsLayoutVerticalList.IsChecked)
+			{
+				_viewModel.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
+			}
+			else if (ItemsLayoutHorizontalList.IsChecked)
+			{
+				_viewModel.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
+			}
+			else if (ItemsLayoutVerticalGrid.IsChecked)
+			{
+				_viewModel.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical); // 2 columns
+			}
+			else if (ItemsLayoutHorizontalGrid.IsChecked)
+			{
+				_viewModel.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Horizontal); // 2 rows
 			}
 		}
 	}

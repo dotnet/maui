@@ -13,18 +13,15 @@
     <local:CollectionView2
         x:Name="collectionView"
         ItemsSource="{Binding ItemsSource}"
-        EmptyView="{Binding EmptyView}"
         Header="{Binding Header}"
         Footer="{Binding Footer}"
-        EmptyViewTemplate="{Binding EmptyViewTemplate}"
-        HeaderTemplate="{Binding HeaderTemplate}"
-        FooterTemplate="{Binding FooterTemplate}"
         GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
         GroupFooterTemplate="{Binding GroupFooterTemplate}"
         ItemTemplate="{Binding ItemTemplate}"
         IsGrouped="{Binding IsGrouped}"
         CanMixGroups="{Binding CanMixGroups}"
         CanReorderItems="{Binding CanReorderItems}"
+        ItemsLayout="{Binding ItemsLayout}"
         AutomationId="CollectionViewControl">
     </local:CollectionView2>
 
