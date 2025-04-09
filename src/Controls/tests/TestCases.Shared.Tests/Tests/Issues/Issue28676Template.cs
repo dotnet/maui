@@ -12,6 +12,7 @@ public class Issue28676Template : _IssuesUITest
 	{
 	}
 
+	[Test]
 	public void CollectionViewHeaderTemplateShouldChangeDynamically()
 	{
 		App.WaitForElement("Issue28676TemplateHeader");
@@ -19,6 +20,8 @@ public class Issue28676Template : _IssuesUITest
 		App.Tap("Issue28676ChangeHeaderTemplate");
 		App.WaitForElement("Issue28676ChangedHeaderTemplate");
 	}
+
+	[Test]
 	public void CollectionViewFooterTemplateShouldChangeDynamically()
 	{
 		App.WaitForElement("Issue28676TemplateFooter");
