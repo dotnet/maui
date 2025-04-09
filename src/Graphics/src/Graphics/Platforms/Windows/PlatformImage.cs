@@ -63,27 +63,8 @@ namespace Microsoft.Maui.Graphics.Platform
 
 				var w = factor * Width;
 				var h = factor * Height;
-				using (var target = new CanvasRenderTarget(_creator, w, h, 96))
-				{
-					using (var drawingSession = target.CreateDrawingSession())
-					{
-						drawingSession.DrawImage(_bitmap, new global::Windows.Foundation.Rect(0, 0, w, h));
-					}
 
-
-					using (var resizedStream = new InMemoryRandomAccessStream())
-					{
-						AsyncPump.Run(async () => await target.SaveAsync(resizedStream, CanvasBitmapFileFormat.Png));
-						resizedStream.Seek(0);
-
-						var newImage = FromStream(resizedStream.AsStreamForRead());
-
-						if (disposeOriginal)
-							_bitmap.Dispose();
-
-						return newImage;
-					}
-				}
+				return CreateResizedImage(w, h, disposeOriginal);
 			}
 
 			return this;
@@ -91,29 +72,34 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
-			//throw new NotImplementedException();
-			using (var target = new CanvasRenderTarget(_creator, maxWidth, maxHeight, 96))
+			return CreateResizedImage(maxWidth, maxHeight, disposeOriginal);
+		}
+
+		IImage CreateResizedImage(float targetWidth, float targetHeight, bool disposeOriginal)
+		{
+			using (var target = new CanvasRenderTarget(_creator, targetWidth, targetHeight, 96))
 			{
 				using (var drawingSession = target.CreateDrawingSession())
 				{
-					drawingSession.DrawImage(_bitmap, new global::Windows.Foundation.Rect(0, 0, maxWidth, maxHeight));
+					drawingSession.DrawImage(_bitmap, new global::Windows.Foundation.Rect(0, 0, targetWidth, targetHeight));
 				}
-
 
 				using (var resizedStream = new InMemoryRandomAccessStream())
 				{
-					AsyncPump.Run(async () => await target.SaveAsync(resizedStream, CanvasBitmapFileFormat.Png));
-					resizedStream.Seek(0);
+					AsyncPump.Run(async () =>
+						await target.SaveAsync(resizedStream, CanvasBitmapFileFormat.Png));
 
+					resizedStream.Seek(0);
 					var newImage = FromStream(resizedStream.AsStreamForRead());
 
 					if (disposeOriginal)
+					{
 						_bitmap.Dispose();
-
+					}
+						
 					return newImage;
 				}
 			}
-
 		}
 
 		public IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit,
