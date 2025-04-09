@@ -2,8 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
-    <OutputType>Exe</OutputType>
     <AssemblyName>Microsoft.Maui.UnitTests</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
     <IsPackable>false</IsPackable>
     <MauiTestProject>true</MauiTestProject>
     <!--
