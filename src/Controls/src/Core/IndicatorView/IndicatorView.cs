@@ -149,8 +149,13 @@ namespace Microsoft.Maui.Controls
 
 		static void UpdateIndicatorLayout(IndicatorView indicatorView, object newValue)
 		{
-			if (newValue != null)
+			if (newValue is not null)
 			{
+				if (indicatorView.IndicatorLayout is IndicatorStackLayout oldIndicatorStackLayout)
+				{
+					oldIndicatorStackLayout.TemplateSizeChanged -= OnTemplateSizeChanged;
+				}
+
 				IndicatorStackLayout indicatorStackLayout = new IndicatorStackLayout(indicatorView) { Spacing = DefaultPadding };
 				indicatorView.IndicatorLayout = indicatorStackLayout;
 				indicatorStackLayout.TemplateSizeChanged += OnTemplateSizeChanged;
