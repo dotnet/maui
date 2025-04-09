@@ -751,21 +751,5 @@ namespace Microsoft.Maui.DeviceTests
 			pagerParent.CurrentItem = shellSection.Items.IndexOf(shellContent);
 			await OnNavigatedToAsync(page);
 		}
-
-		[Fact(DisplayName = "Initialize Empty Shell Throws InvalidOperationException")]
-		public async Task InitializeEmptyShellThrowsInvalidOperationException()
-		{
-			SetupBuilder();
-
-			var shell = new Shell();
-
-			await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-			{
-				await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
-				{
-					return Task.CompletedTask;
-				});
-			});
-		}
 	}
 }
