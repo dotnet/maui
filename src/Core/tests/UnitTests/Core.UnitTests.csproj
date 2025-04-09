@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <OutputType>Exe</OutputType>
     <AssemblyName>Microsoft.Maui.UnitTests</AssemblyName>
     <IsPackable>false</IsPackable>
     <MauiTestProject>true</MauiTestProject>
@@ -26,12 +27,17 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorPackageVersion)"/>
     <PackageReference Include="NSubstitute" Version="$(NSubstitutePackageVersion)" />
-    <PackageReference Include="xunit" Version="$(XunitPackageVersion)"/>
+    <PackageReference Include="xunit.v3" Version="2.0.0"/>
+    <PackageReference Include="xunit.v3.core" Version="2.0.0"/>
+
+    <!-- Explicitly exclude the auto-referenced XUnit 2.x packages -->
+    <PackageReference Include="xunit.core" Version="$(XunitPackageVersion)" ExcludeAssets="All" />
+    <PackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" ExcludeAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
-    <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
+    <!-- <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" /> -->
     <ProjectReference Include="..\..\src\Core.csproj" />
 
     <EmbeddedResource Include="..\..\..\Controls\src\Core\Compatibility\iOS\Resources\StringResources.resx" Link="Resources\StringResources.resx" />
