@@ -17,7 +17,11 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New("maui-multiproject", projectDir, DotNetCurrent),
 			$"Unable to create template maui-multiproject. Check test output for errors.");
 
-		if (!TestEnvironment.IsWindows)
+		// Always remove WinUI project if the project name contains special characters that cause WinRT source generator issues
+		// See: https://github.com/microsoft/CsWinRT/issues/1809 (under "Special characters in assembly name" section)
+		bool containsSpecialChars = projectName.IndexOfAny(new[] { '@', '&', '+', '%', '!', '#', '$', '^', '*', ' ', '-' }) >= 0;
+		
+		if (!TestEnvironment.IsWindows || containsSpecialChars)
 		{
 			Assert.IsTrue(DotnetInternal.Run("sln", $"\"{solutionFile}\" remove \"{projectDir}/{name}.WinUI/{name}.WinUI.csproj\""),
 				$"Unable to remove WinUI project from solution. Check test output for errors.");
