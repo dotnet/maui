@@ -34,8 +34,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Footer(String)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
+			App.WaitForNoElement("GroupFooterTemplate");
+			App.WaitForNoElement("GroupFooterTemplate");
 		}
 
 		[Test]
@@ -51,46 +51,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Header(String)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
+			App.WaitForNoElement("GroupFooterTemplate");
+			App.WaitForNoElement("GroupFooterTemplate");
 		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupFooterTemplate_WithDataTemplateSelectorItemTemplate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElement("ItemTemplateSelector");
-			App.Tap("ItemTemplateSelector");
-			App.WaitForElement("ItemsSourceList");
-			App.Tap("ItemsSourceList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Template 1");
-			App.WaitForElement("Template 2");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupFooterTemplate_WithIsGroupedFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElement("IsGroupedFalse");
-			App.Tap("IsGroupedFalse");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-		}
-
+ 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyGroupFooterTemplate_WithBasicItemTemplate()
@@ -101,15 +65,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElement("ItemTemplateBasic");
 			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("ItemsSourceList");
-			App.Tap("ItemsSourceList");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElement("cover1.jpg, 0");
-			App.WaitForElement("oasis.jpg, 1");
-			App.WaitForElement("photo.jpg, 2");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Banana");
+			App.WaitForNoElement("GroupFooterTemplate");
+			App.WaitForNoElement("GroupFooterTemplate");
 		}
 
 		[Test]
@@ -125,8 +86,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Footer(String)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
+			App.WaitForNoElement("GroupHeaderTemplate");
+			App.WaitForNoElement("GroupHeaderTemplate");
 		}
 
 		[Test]
@@ -142,24 +103,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Header(String)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupHeaderTemplate_WithIsGroupedFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElement("IsGroupedFalse");
-			App.Tap("IsGroupedFalse");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
+			App.WaitForNoElement("GroupHeaderTemplate");
+			App.WaitForNoElement("GroupHeaderTemplate");
 		}
 
 		[Test]
@@ -172,123 +117,94 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElement("ItemTemplateBasic");
 			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("ItemsSourceList");
-			App.Tap("ItemsSourceList");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElement("cover1.jpg, 0");
-			App.WaitForElement("oasis.jpg, 1");
-			App.WaitForElement("photo.jpg, 2");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Banana");
+			App.WaitForNoElement("GroupHeaderTemplate");
+			App.WaitForNoElement("GroupHeaderTemplate");
 		}
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupHeaderTemplate_WithDataTemplateSelectorItemTemplate()
+		public void VerifyGroupHeaderAndFooterTemplate_WithObservableCollection()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("GroupHeaderTemplateGrid");
 			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElement("ItemTemplateSelector");
-			App.Tap("ItemTemplateSelector");
-			App.WaitForElement("ItemsSourceList");
-			App.Tap("ItemsSourceList");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElement("Template 1");
-			App.WaitForElement("Template 2");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
+			App.WaitForNoElement("GroupHeaderTemplate");
+			App.WaitForNoElement("GroupHeaderTemplate");
+		}
+ 
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyGroupHeaderAndFooterTemplate_WithItemSourceNull()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("ItemsSourceNone");
+			App.Tap("ItemsSourceNone");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("GroupHeaderTemplate");
+			App.WaitForNoElement("GroupFooterTemplate");
 		}
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_IsGroupedTrueSetFirst_AndItemSourceList()
+		public void VerifyIsGroupedFalse_WithItemSourceObservableCollection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Banana");
+			App.WaitForNoElement("Fruits");
+			App.WaitForNoElement("Vegetables");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGroupedTrue_WithItemSourceNull()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("IsGroupedTrue");
 			App.Tap("IsGroupedTrue");
-			App.WaitForElement("ItemsSourceList");
-			App.Tap("ItemsSourceList");
+			App.WaitForElement("ItemsSourceNone");
+			App.Tap("ItemsSourceNone");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForNoElement("Group A");
-			App.WaitForNoElement("Group B");
+			App.WaitForNoElement("Apple");
+			App.WaitForNoElement("Banana");
+			App.WaitForNoElement("Fruits");
+			App.WaitForNoElement("Vegetables");
 		}
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_ItemSourceListSetFirst_AndIsGroupedTrue()
+		public void VerifyIsGroupedFalse_WithItemSourceNull()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceList");
-			App.Tap("ItemsSourceList");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
+			App.WaitForElement("ItemsSourceNone");
+			App.Tap("ItemsSourceNone");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForNoElement("Group A");
-			App.WaitForNoElement("Group B");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_IsGroupedFalseSetFirst_AndItemSourceGroupedList()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("Group A");
-			App.WaitForNoElement("Group B");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_ItemSourceGroupedListSetFirst_AndIsGroupedFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("Group A");
-			App.WaitForNoElement("Group B");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_IsGroupedFalseSetFirst_AndItemSourceList()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceList");
-			App.Tap("ItemsSourceList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("Group A");
-			App.WaitForNoElement("Group B");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_ItemSourceListSetFirst_AndIsGroupedFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceList");
-			App.Tap("ItemsSourceList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("Group A");
-			App.WaitForNoElement("Group B");
+			App.WaitForNoElement("Apple");
+			App.WaitForNoElement("Banana");
+			App.WaitForNoElement("Fruits");
+			App.WaitForNoElement("Vegetables");
 		}
 
 		[Test]
@@ -308,7 +224,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_withHeaderString()
+		public void VerifyIsGrouped_WithHeaderString()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -319,69 +235,528 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Header(String)");
-		}
+		} 
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithGroupHeaderTemplateWhenIsGroupedFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithGroupFooterTemplateWhenIsGroupedFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_withHeaderStringWhenIsGroupedFalse()
+		public void VerifyIsGroupedFalse_WithHeaderAndFooterString()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("HeaderString");
 			App.Tap("HeaderString");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Header(String)");
-			App.WaitForNoElement("Group A");
-			App.WaitForNoElement("Group B");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithFooterStringWhenIsGroupedFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
 			App.WaitForElement("FooterString");
 			App.Tap("FooterString");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
+			App.WaitForElement("CollectionView Header(String)");
 			App.WaitForElement("CollectionView Footer(String)");
+		} 
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGroupedFalse_WithBasicItemTemplate()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemTemplateBasic");
+			App.Tap("ItemTemplateBasic");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Banana");
+		} 
+	
+ #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
+ //Test fails on CV2 , GroupHeader and GroupFooter template is not visible  Issue Link: https://github.com/dotnet/maui/issues/28509
+ //Test fails on CV2 , ItemsLayout does not change Issue Link: https://github.com/dotnet/maui/issues/28656
+
+        [Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyGroupHeaderAndFooterTemplate_WithHorizontalListAndObservableCollection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("ItemsLayoutHorizontalList");
+			App.Tap("ItemsLayoutHorizontalList");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("GroupHeaderTemplate");
+			App.WaitForElement("Apple");
+			App.ScrollRight("CollectionViewControl");
+			App.WaitForElement("Carrot");
+			App.WaitForNoElement("GroupFooterTemplate");
 		}
 
-		
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyGroupHeaderAndFooterTemplate_WithHorizontalGridAndObservableCollection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("ItemsLayoutHorizontalGrid");
+			App.Tap("ItemsLayoutHorizontalGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("GroupHeaderTemplate");
+			App.WaitForElement("Apple");
+			App.ScrollRight("CollectionViewControl");
+			App.WaitForElement("Carrot");
+			App.WaitForNoElement("GroupFooterTemplate");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyGroupHeaderAndFooterTemplate_WithVerticalGridAndObservableCollection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("ItemsLayoutVerticalGrid");
+			App.Tap("ItemsLayoutVerticalGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("GroupHeaderTemplate");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Carrot");
+			App.WaitForNoElement("GroupFooterTemplate");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyGroupHeaderAndFooterTemplate_WithVerticalListAndObservableCollection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("GroupHeaderTemplate");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Carrot");
+			App.WaitForNoElement("GroupFooterTemplate");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGrouped_WithHorizontalListAndGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsLayoutHorizontalList");
+			App.Tap("ItemsLayoutHorizontalList");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");	
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Fruits");
+			App.WaitForElement("Apple");
+			App.ScrollRight("CollectionViewControl");
+			App.WaitForElement("Carrot");
+			App.WaitForElement("Vegetables");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGrouped_WithHorizontalGridAndGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsLayoutHorizontalGrid");
+			App.Tap("ItemsLayoutHorizontalGrid");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");	
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Fruits");
+			App.WaitForElement("Apple");
+			App.ScrollRight("CollectionViewControl");
+			App.WaitForElement("Carrot");
+			App.WaitForElement("Vegetables");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyGroupHeaderAndFooterTemplate_WithGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("GroupHeaderTemplate");
+			App.WaitForElement("GroupFooterTemplate");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyGroupHeaderAndFooterTemplate_WithHorizontalListAndGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("ItemsLayoutHorizontalList");
+			App.Tap("ItemsLayoutHorizontalList");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");	
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("GroupHeaderTemplate");
+			App.WaitForElement("Apple");
+			App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+			App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+			App.WaitForElement("Carrot");
+			App.WaitForElement("GroupFooterTemplate");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyGroupHeaderAndFooterTemplate_WithHorizontalGridAndGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("ItemsLayoutHorizontalGrid");
+			App.Tap("ItemsLayoutHorizontalGrid");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");	
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("GroupHeaderTemplate");
+			App.WaitForElement("Apple");
+			App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+			App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
+			App.WaitForElement("Carrot");
+			App.WaitForElement("GroupFooterTemplate");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyGroupHeaderAndFooterTemplate_WithVerticalGridAndGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("ItemsLayoutVerticalGrid");
+			App.Tap("ItemsLayoutVerticalGrid");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");	
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("GroupHeaderTemplate");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Carrot");
+			App.WaitForElement("GroupFooterTemplate");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyGroupHeaderAndFooterTemplate_WithVerticalListAndGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("GroupHeaderTemplate");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Carrot");
+			App.WaitForElement("GroupFooterTemplate");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGrouped_WithGroupHeaderAndGroupFooterTemplate()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("GroupHeaderTemplate");
+			App.WaitForElement("GroupFooterTemplate");
+			App.WaitForElement("GroupHeaderTemplate");
+			App.WaitForElement("GroupFooterTemplate");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGroupedTrue_WithItemSourceGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Fruits");
+			App.WaitForElement("Vegetables");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGrouped_WithVerticalGridAndGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsLayoutVerticalGrid");
+			App.Tap("ItemsLayoutVerticalGrid");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");	
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Fruits");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Carrot");
+			App.WaitForElement("Vegetables");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGrouped_WithVerticalListAndGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Fruits");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Carrot");
+			App.WaitForElement("Vegetables");
+		}
+        
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGroupedTrue_WithBasicTemplateWhenGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("ItemTemplateBasic");
+			App.Tap("ItemTemplateBasic");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");	
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Banana");
+			App.WaitForElement("Fruits");
+			App.WaitForElement("Vegetables");
+		}
+#endif
+
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST 
+//CollectionView Displays Blank UI When Changing IsGrouped and ItemsSourceType Issue Link: https://github.com/dotnet/maui/issues/28826
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGroupedTrue_WithItemSourceObservableCollection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Banana");
+			App.WaitForNoElement("Fruits");
+			App.WaitForNoElement("Vegetables");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGroupedFalse_WithItemSourceGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("Fruits");
+			App.WaitForNoElement("Vegetables");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGroupedTrue_WithBasicTemplateWhenObservableCollection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("ItemTemplateBasic");
+			App.Tap("ItemTemplateBasic");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Banana");
+			App.WaitForNoElement("Fruits");
+			App.WaitForNoElement("Vegetables");
+		}
+	   
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGrouped_WithHorizontalListAndObservableCollection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsLayoutHorizontalList");
+			App.Tap("ItemsLayoutHorizontalList");
+			App.WaitForElement("IsGroupedTrue");	
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("Fruits");
+			App.WaitForElement("Apple");
+			App.ScrollRight("CollectionViewControl");
+			App.WaitForElement("Carrot");
+			App.WaitForNoElement("Vegetables");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGrouped_WithHorizontalGridAndObservableCollection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsLayoutHorizontalGrid");
+			App.Tap("ItemsLayoutHorizontalGrid");
+			App.WaitForElement("IsGroupedTrue");	
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("Fruits");
+			App.WaitForElement("Apple");
+			App.ScrollRight("CollectionViewControl");
+			App.WaitForElement("Carrot");
+			App.WaitForNoElement("Vegetables");
+		}
+ 
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGrouped_WithVerticalGridAndObservableCollection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsGroupedTrue");	
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("ItemsLayoutVerticalGrid");
+			App.Tap("ItemsLayoutVerticalGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("Fruits");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Carrot");
+			App.WaitForNoElement("Vegetables");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGrouped_WithVerticalListAndObservableCollection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsGroupedTrue");	
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("Fruits");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Carrot");
+			App.WaitForNoElement("Vegetables");
+		}
+
+// [Android] Group Header/Footer Repeated for All Items When IsGrouped is True for ObservableCollection Issue Link: https://github.com/dotnet/maui/issues/28827
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGrouped_WithGroupHeaderAndFooterTemplateAndObservableCollection()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("IsGroupedTrue");	
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("GroupHeaderTemplate");
+			App.WaitForNoElement("GroupFooterTemplate");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Carrot");
+		}
+#endif
+			
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS
 //CanMixGroups Set to False Still Allows Reordering Between Groups in CollectionView on Catalyst Issue Link : https://github.com/dotnet/maui/issues/28530
-//Test fails on CV2 . GroupHeader template is not visible  Issue Link: https://github.com/dotnet/maui/issues/28509
+//Test fails on CV2 . GroupHeader and GroupFooter template is not visible  Issue Link: https://github.com/dotnet/maui/issues/28509
 //.NET MAUI CollectionView does not reorder when grouped on windows Issue Link:  https://github.com/dotnet/maui/issues/13027
 		[Test]
 		[Category(UITestCategories.CollectionView)]
@@ -397,7 +772,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.DragAndDrop("cover1.jpg, 0", "oasis.jpg, 1");
+			App.DragAndDrop("Apple", "Potato");
 			VerifyScreenshot();
 		}
 
@@ -417,7 +792,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.DragAndDrop("cover1.jpg, 0", "oasis.jpg, 1");
+			App.DragAndDrop("Apple", "Potato");
 			VerifyScreenshot();
 		}
 
@@ -437,7 +812,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.DragAndDrop("cover1.jpg, 0", "oasis.jpg, 1");
+			App.DragAndDrop("Apple", "Potato");
 			VerifyScreenshot();
 		}
 
@@ -455,446 +830,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.DragAndDrop("cover1.jpg, 0", "oasis.jpg, 1");
+			App.DragAndDrop("Apple", "Potato");
 			VerifyScreenshot();
 		}
-#endif
-
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
-//Test fails on CV2 . GroupHeader/Footer template is not visible  Issue Link: https://github.com/dotnet/maui/issues/28509
-//Header/Footer Template and View Synchronization Issue in .NET MAUI CollectionView (CV2) Issue Link : https://github.com/dotnet/maui/issues/28504
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupHeaderTemplate_WithFooterView()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElement("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Footer(Grid View)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupFooterTemplate_WithHeaderView()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElement("HeaderGrid");
-			App.Tap("HeaderGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Header(Grid View)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupFooterTemplate_WithFooterView()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElement("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Footer(Grid View)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupHeaderTemplate_WithHeaderView()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElement("HeaderGrid");
-			App.Tap("HeaderGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Header(Grid View)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithFooterView()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Footer(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithHeaderView()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("HeaderGrid");
-			App.Tap("HeaderGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Header(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithFooterViewWhenIsGroupedFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Footer(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithHeaderViewWhenIsGroupedFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("HeaderGrid");
-			App.Tap("HeaderGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("CollectionView Header(Grid View)");
-			App.WaitForNoElement("Group A");
-			App.WaitForNoElement("Group B");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupFooterTemplate_GroupFooterTemplateSetFirst_AndItemSourceGroupedList()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Group Footer Template(Grid View)");
-			App.WaitForElement("Group Footer Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupFooterTemplate_ItemSourceGroupedListSetFirst_AndGroupFooterTemplate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Group Footer Template(Grid View)");
-			App.WaitForElement("Group Footer Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupFooterTemplate_WithIsGroupedTrue()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Group Footer Template(Grid View)");
-			App.WaitForElement("Group Footer Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupHeaderTemplate_GroupHeaderTemplateSetFirst_AndItemSourceGroupedList()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Group Header Template(Grid View)");
-			App.WaitForElement("Group Header Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupHeaderTemplate_ItemSourceGroupedListSetFirst_AndGroupHeaderTemplate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Group Header Template(Grid View)");
-			App.WaitForElement("Group Header Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupHeaderTemplate_WithIsGroupedTrue()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Group Header Template(Grid View)");
-			App.WaitForElement("Group Header Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithGroupHeaderTemplate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Group Header Template(Grid View)");
-			App.WaitForElement("Group Header Template(Grid View)");
-
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithGroupFooterTemplate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Group Footer Template(Grid View)");
-			App.WaitForElement("Group Footer Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_IsGroupedTrueSetFirst_AndItemSourceGroupedList()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Group A");
-			App.WaitForElement("Group B");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_ItemSourceGroupedListSetFirst_AndIsGroupedTrue()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Group A");
-			App.WaitForElement("Group B");
-		}
-
-#if TEST_FAILS_ON_ANDROID  // Header and footer template is not visible on Android Issue Link: https://github.com/dotnet/maui/issues/28337
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupFooterTemplate_WithHeaderTemplate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElement("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Header Template(Grid View)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupFooterTemplate_WithFooterTemplate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElement("FooterTemplateGrid");
-			App.Tap("FooterTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Footer Template(Grid View)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-			App.WaitForNoElement("Group Footer Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupHeaderTemplate_WithFooterTemplate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElement("FooterTemplateGrid");
-			App.Tap("FooterTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Footer Template(Grid View)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupHeaderTemplate_WithHeaderTemplate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElement("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Header Template(Grid View)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-			App.WaitForNoElement("Group Header Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithFooterTemplate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("FooterTemplateGrid");
-			App.Tap("FooterTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Footer Template(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithHeaderTemplate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Header Template(Grid View)");
-		}
-        
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithFooterTemplateWhenIsGroupedFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("FooterTemplateGrid");
-			App.Tap("FooterTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Footer Template(Grid View)");
-			App.WaitForNoElement("Group A");
-			App.WaitForNoElement("Group B");
-		}
- 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithHeaderTemplateWhenIsGroupedFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Header Template(Grid View)");
-			App.WaitForNoElement("Group A");
-			App.WaitForNoElement("Group B");
-		}
-#endif
 #endif
 	}
 }
