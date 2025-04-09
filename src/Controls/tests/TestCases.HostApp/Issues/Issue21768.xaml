@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue21768"
+             Title="Issue21768">
+    <Grid RowDefinitions="Auto,Auto" >
+        <Grid Grid.Row="0" RowDefinitions="Auto,Auto" ColumnDefinitions="5,*">
+
+            <BoxView
+                Grid.Row="0"
+                Grid.RowSpan="2"
+                WidthRequest="5"
+                BackgroundColor="Red"/>
+
+            <Label Grid.Row="0" Grid.Column="1" Text="This is row 1" AutomationId="row1">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="TapGestureRecognizer_OnTapped1"/>
+                </Label.GestureRecognizers>
+            </Label>
+
+            <BoxView
+                x:Name="BottomBox1"
+                Grid.Row="1"
+                Grid.Column="1"
+                BackgroundColor="Blue"
+                WidthRequest="150"
+                HeightRequest="150"/>
+        </Grid>
+
+        <Grid Grid.Row="1" RowDefinitions="Auto,Auto">
+
+            <Label Text="This is row 2"/>
+
+            <BoxView
+                x:Name="BottomBox2"
+                Grid.Row="1"
+                BackgroundColor="Green"
+                WidthRequest="150"
+                HeightRequest="150"/>
+        </Grid>
+    </Grid>
+</ContentPage>
