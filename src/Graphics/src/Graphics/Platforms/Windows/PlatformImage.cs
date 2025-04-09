@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				var w = factor * Width;
 				var h = factor * Height;
 
-				return CreateResizedImage(w, h, disposeOriginal);
+				return ResizeInternal(w, h, 0, 0, w, h, disposeOriginal);
 			}
 
 			return this;
@@ -72,33 +72,32 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
-			return CreateResizedImage(maxWidth, maxHeight, disposeOriginal);
+			return ResizeInternal(maxWidth, maxHeight, 0, 0, maxWidth, maxHeight, disposeOriginal);
 		}
 
-		IImage CreateResizedImage(float targetWidth, float targetHeight, bool disposeOriginal)
-		{
-			using (var target = new CanvasRenderTarget(_creator, targetWidth, targetHeight, 96))
+		
+		IImage ResizeInternal(float canvasWidth, float canvasHeight, float drawX, float drawY, float drawWidth, float drawHeight, bool disposeOriginal)
+		{ 
+			using var renderTarget = new CanvasRenderTarget(_creator, canvasWidth, canvasHeight, _bitmap.Dpi);
+
+			using (var drawingSession = renderTarget.CreateDrawingSession())
 			{
-				using (var drawingSession = target.CreateDrawingSession())
+				drawingSession.DrawImage(_bitmap, new global::Windows.Foundation.Rect(drawX, drawY, drawWidth, drawHeight));
+			}
+
+			using (var resizedStream = new InMemoryRandomAccessStream())
+			{
+				AsyncPump.Run(async () => await renderTarget.SaveAsync(resizedStream, CanvasBitmapFileFormat.Png));
+				resizedStream.Seek(0);
+
+				var newImage = FromStream(resizedStream.AsStreamForRead());
+
+				if (disposeOriginal)
 				{
-					drawingSession.DrawImage(_bitmap, new global::Windows.Foundation.Rect(0, 0, targetWidth, targetHeight));
+					_bitmap.Dispose();
 				}
 
-				using (var resizedStream = new InMemoryRandomAccessStream())
-				{
-					AsyncPump.Run(async () =>
-						await target.SaveAsync(resizedStream, CanvasBitmapFileFormat.Png));
-
-					resizedStream.Seek(0);
-					var newImage = FromStream(resizedStream.AsStreamForRead());
-
-					if (disposeOriginal)
-					{
-						_bitmap.Dispose();
-					}
-						
-					return newImage;
-				}
+				return newImage;
 			}
 		}
 
@@ -137,28 +136,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				targetHeight = height;
 			}
 
-			// Create a new CanvasRenderTarget with the desired dimensions
-			using var renderTarget = new CanvasRenderTarget(_creator, width, height, _bitmap.Dpi);
-
-			// Draw the original image onto the render target
-			using (var drawingSession = renderTarget.CreateDrawingSession())
-			{
-				drawingSession.DrawImage(_bitmap, new global::Windows.Foundation.Rect(offsetX, offsetY, targetWidth, targetHeight));
-			}
-
-			// Create a new PlatformImage from the resized bitmap
-			using (var resizedStream = new InMemoryRandomAccessStream())
-			{
-				AsyncPump.Run(async () => await renderTarget.SaveAsync(resizedStream, CanvasBitmapFileFormat.Png));
-				resizedStream.Seek(0);
-
-				var newImage = FromStream(resizedStream.AsStreamForRead());
-
-				if (disposeOriginal)
-					_bitmap.Dispose();
-
-				return newImage;
-			}
+			return ResizeInternal(width, height, offsetX, offsetY, targetWidth, targetHeight, disposeOriginal);
 		}
 
 		public float Width => (float)_bitmap.Size.Width;
