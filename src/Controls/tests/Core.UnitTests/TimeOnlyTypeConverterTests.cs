@@ -4,12 +4,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests;
 
 using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using Xunit;
 
 public class TimeOnlyTypeConverterTests : BaseTestFixture
 {
 	[Fact]
-	public void TestSucceeds()
+	public void TimeOnlyToStringCanConvertToTimeSpan()
 	{
 		var converter = new TimeOnlyToTimeSpanConverter();
 
@@ -22,12 +23,13 @@ public class TimeOnlyTypeConverterTests : BaseTestFixture
 	}
 
 	[Fact]
-    public void TestConvertToInvariantStringThrowsNotSupportedException()
+    public async Task ConvertToInvariantStringThrowsNotSupportedException()
     {
         var converter = new TimeOnlyToTimeSpanConverter();
 
-        var stringValue = "Not a DateOnly string";
+        var stringValue = "Not a TimeOnly string";
 
-        Assert.Throws<NotSupportedException>(() => converter.ConvertToInvariantString(stringValue));
+        await Assert.ThrowsAsync<NotSupportedException>(async () => converter.ConvertToInvariantString(stringValue));
     }
 }
+#endif
