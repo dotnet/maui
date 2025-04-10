@@ -28,7 +28,7 @@ public class Issue28676 : _IssuesUITest
 		App.Tap("Issue28676UpdateFooterButton");
 		App.WaitForElement("UpdatedCollectionViewFooter");
 	}
-#if ANDROID
+
 	[Test, Order(3)]
 	public void CollectionViewHeaderViewShouldChangeDynamically()
 	{
@@ -46,5 +46,5 @@ public class Issue28676 : _IssuesUITest
 		App.Tap("Issue28676ChangeFooterView");
 		App.WaitForElement("Updated FooterView");
 	}
-#endif
+
 }
