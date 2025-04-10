@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		bool _isDisposed;
 		static WeakReference<UIScrollView> s_scrollViewBeingScrolled;
-		bool _wasPositive;
+		bool _draggingEnded;
 		UITableView _table;
 
 		public ContextScrollViewDelegate(UIView container, List<UIButton> buttons, bool isOpen)
@@ -91,6 +91,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				RemoveHighlight(scrollView);
 		}
 
+		public override void DraggingEnded(UIScrollView scrollView, bool willDecelerate)
+		{
+			_draggingEnded = true;
+		}
+
 		public void PrepareForDeselect(UIScrollView scrollView)
 		{
 			RestoreHighlight(scrollView);
@@ -105,9 +110,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var count = _buttons.Count;
 			var ioffset = scrollView.ContentOffset.X / (float)count;
 
-			if (ioffset > 0f)
-				_wasPositive = true;
-
 			if (ioffset > width)
 				width = ioffset + 1;
 
@@ -118,14 +120,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				b.Frame = new RectangleF(scrollView.Frame.Width + (count - (i + 1)) * ioffset, 0, width, rect.Height);
 			}
 
-			if (_wasPositive && scrollView.ContentOffset.X == 0)
+			if (_draggingEnded && scrollView.ContentOffset.X == 0)
 			{
 				IsOpen = false;
 				SetButtonsShowing(false);
 				RestoreHighlight(scrollView);
 
 				s_scrollViewBeingScrolled = null;
-				_wasPositive = false;
+				_draggingEnded = false;
 				ClearCloserRecognizer(GetContextCell(scrollView));
 				ClosedCallback?.Invoke();
 			}
