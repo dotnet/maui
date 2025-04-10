@@ -481,7 +481,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateFlyoutLayoutBehaviorChanges()
 		{
 			LayoutChildren(true);
-            FlyoutPage flyoutPage = (FlyoutPage)Element;
+            FlyoutPage flyoutPage = Element as FlyoutPage;
+			if (flyoutPage == null) 
+				return;
             FlyoutLayoutBehavior flyoutBehavior = FlyoutPage.FlyoutLayoutBehavior;
             bool shouldPresent = FlyoutPageController.ShouldShowSplitMode;
             if (flyoutBehavior == FlyoutLayoutBehavior.Popover || flyoutBehavior == FlyoutLayoutBehavior.Default)
