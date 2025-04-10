@@ -5,7 +5,7 @@ namespace Controls.TestCases.HostApp.Issues;
 [Issue(IssueTracker.Github, 7144, "IndicatorView using templated icons not working", PlatformAffected.UWP)]
 public class Issue7144 : ContentPage
 {
-	public ObservableCollection<Monkey> Monkeys { get; set; } = new ObservableCollection<Monkey>();
+	public ObservableCollection<Issue7144Monkey> Monkeys { get; set; } = new ObservableCollection<Issue7144Monkey>();
 
 	public Issue7144()
 	{
@@ -88,13 +88,13 @@ public class Issue7144 : ContentPage
 
 	void CreateMonkeyCollection()
 	{
-		Monkeys.Add(new Monkey
+		Monkeys.Add(new Issue7144Monkey
 		{
 			Name = "Baboon",
 			Image = "dotnet_bot.png"
 		});
 
-		Monkeys.Add(new Monkey
+		Monkeys.Add(new Issue7144Monkey
 		{
 			Name = "Capuchin Monkey",
 			Image = "dotnet_bot.png"
@@ -102,7 +102,7 @@ public class Issue7144 : ContentPage
 	}
 }
 
-public class Monkey
+public class Issue7144Monkey
 {
 	public string Name { get; set; }
 
