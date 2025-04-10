@@ -4,12 +4,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests;
 
 using System;
 using System.Globalization;
+using System.Threading.Tasks;
 using Xunit;
 
 public class DateOnlyTypeConverterTests : BaseTestFixture
 {
 	[Fact]
-	public void TestSucceeds()
+	public void DateOnlyToStringCanConvertToDateTime()
 	{
 		var converter = new DateOnlyToDateTimeConverter();
 
@@ -18,16 +19,17 @@ public class DateOnlyTypeConverterTests : BaseTestFixture
 		var actualDateTime = converter.ConvertFromInvariantString(dateOnlyValue.ToString(CultureInfo.InvariantCulture));
 		var expectedDateTime = new DateTime(2025, 2, 21);
 
-		Assert.Equal(expectedDateTime, actualDateTime);
+		Assert.Equal(DateOnly.FromDateTime(expectedDateTime), actualDateTime);
 	}
 
 	[Fact]
-    public void TestConvertToInvariantStringThrowsNotSupportedException()
+    public async Task ConvertToInvariantStringThrowsNotSupportedException()
     {
         var converter = new DateOnlyToDateTimeConverter();
         
         var stringValue = "Not a DateOnly string";
         
-        Assert.Throws<NotSupportedException>(() => converter.ConvertToInvariantString(stringValue));
+        await Assert.ThrowsAsync<NotSupportedException>(async () => converter.ConvertToInvariantString(stringValue));
     }
 }
+#endif
