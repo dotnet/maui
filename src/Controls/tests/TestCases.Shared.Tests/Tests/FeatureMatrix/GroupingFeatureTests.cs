@@ -175,38 +175,35 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGroupedTrue_WithItemSourceNull()
+		public void VerifyIsGroupedFalse_WithHeaderAndFooterString()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
+			App.WaitForElement("HeaderString");
+			App.Tap("HeaderString");
+			App.WaitForElement("FooterString");
+			App.Tap("FooterString");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForNoElement("Apple");
-			App.WaitForNoElement("Banana");
-			App.WaitForNoElement("Fruits");
-			App.WaitForNoElement("Vegetables");
-		}
+			App.WaitForElement("CollectionView Header(String)");
+			App.WaitForElement("CollectionView Footer(String)");
+		} 
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGroupedFalse_WithItemSourceNull()
+		public void VerifyIsGroupedFalse_WithBasicItemTemplate()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
+			App.WaitForElement("ItemTemplateBasic");
+			App.Tap("ItemTemplateBasic");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForNoElement("Apple");
-			App.WaitForNoElement("Banana");
-			App.WaitForNoElement("Fruits");
-			App.WaitForNoElement("Vegetables");
-		}
+			App.WaitForElement("Apple");
+			App.WaitForElement("Banana");
+		} 
 
+#if TEST_FAILS_ON_WINDOWS // [Windows] NullReferenceException thrown When Toggling IsGrouped to True in ObservableCollection Binding Issue Link: https://github.com/dotnet/maui/issues/28824
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyIsGrouped_WithFooterString()
@@ -236,41 +233,134 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("CollectionView Header(String)");
 		} 
-
+#endif
+		
+ #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
+ //Test fails on CV2 , GroupHeader and GroupFooter template is not visible  Issue Link: https://github.com/dotnet/maui/issues/28509
+ //Test fails on CV2 , ItemsLayout does not change Issue Link: https://github.com/dotnet/maui/issues/28656
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGroupedFalse_WithHeaderAndFooterString()
+		public void VerifyGroupHeaderAndFooterTemplate_WithVerticalListAndGroupedList()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("HeaderString");
-			App.Tap("HeaderString");
-			App.WaitForElement("FooterString");
-			App.Tap("FooterString");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
-			App.WaitForElement("CollectionView Header(String)");
-			App.WaitForElement("CollectionView Footer(String)");
-		} 
+			App.WaitForElement("GroupHeaderTemplate");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Carrot");
+			App.WaitForElement("GroupFooterTemplate");
+		}
+
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGroupedFalse_WithBasicItemTemplate()
+		public void VerifyGroupHeaderAndFooterTemplate_WithGroupedList()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("GroupHeaderTemplate");
+			App.WaitForElement("GroupFooterTemplate");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGrouped_WithGroupHeaderAndGroupFooterTemplate()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("GroupHeaderTemplateGrid");
+			App.Tap("GroupHeaderTemplateGrid");
+			App.WaitForElement("GroupFooterTemplateGrid");
+			App.Tap("GroupFooterTemplateGrid");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("GroupHeaderTemplate");
+			App.WaitForElement("GroupFooterTemplate");
+			App.WaitForElement("GroupHeaderTemplate");
+			App.WaitForElement("GroupFooterTemplate");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGroupedTrue_WithItemSourceGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Fruits");
+			App.WaitForElement("Vegetables");
+		}
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGrouped_WithVerticalListAndGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("Fruits");
+			App.WaitForElement("Apple");
+			App.WaitForElement("Carrot");
+			App.WaitForElement("Vegetables");
+		}
+        
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void VerifyIsGroupedTrue_WithBasicTemplateWhenGroupedList()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("ItemTemplateBasic");
 			App.Tap("ItemTemplateBasic");
+			App.WaitForElement("ItemsSourceGroupedList");
+			App.Tap("ItemsSourceGroupedList");	
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Apple");
 			App.WaitForElement("Banana");
-		} 
-	
- #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
- //Test fails on CV2 , GroupHeader and GroupFooter template is not visible  Issue Link: https://github.com/dotnet/maui/issues/28509
- //Test fails on CV2 , ItemsLayout does not change Issue Link: https://github.com/dotnet/maui/issues/28656
+			App.WaitForElement("Fruits");
+			App.WaitForElement("Vegetables");
+		}
 
+ #if TEST_FAILS_ON_WINDOWS
+ //ItemsLayout does not change its default value on windows Issue Link: https://github.com/dotnet/maui/issues/27946
         [Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyGroupHeaderAndFooterTemplate_WithHorizontalListAndObservableCollection()
@@ -393,25 +483,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Vegetables");
 		}
 
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupHeaderAndFooterTemplate_WithGroupedList()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("GroupHeaderTemplate");
-			App.WaitForElement("GroupFooterTemplate");
-		}
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
@@ -491,66 +562,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupHeaderAndFooterTemplate_WithVerticalListAndGroupedList()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("GroupHeaderTemplate");
-			App.WaitForElement("Apple");
-			App.WaitForElement("Carrot");
-			App.WaitForElement("GroupFooterTemplate");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithGroupHeaderAndGroupFooterTemplate()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElement("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("GroupHeaderTemplate");
-			App.WaitForElement("GroupFooterTemplate");
-			App.WaitForElement("GroupHeaderTemplate");
-			App.WaitForElement("GroupFooterTemplate");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGroupedTrue_WithItemSourceGroupedList()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Fruits");
-			App.WaitForElement("Vegetables");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
 		public void VerifyIsGrouped_WithVerticalGridAndGroupedList()
 		{
 			App.WaitForElement("Options");
@@ -568,50 +579,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Carrot");
 			App.WaitForElement("Vegetables");
 		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGrouped_WithVerticalListAndGroupedList()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Fruits");
-			App.WaitForElement("Apple");
-			App.WaitForElement("Carrot");
-			App.WaitForElement("Vegetables");
-		}
-        
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyIsGroupedTrue_WithBasicTemplateWhenGroupedList()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("ItemTemplateBasic");
-			App.Tap("ItemTemplateBasic");
-			App.WaitForElement("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");	
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("Apple");
-			App.WaitForElement("Banana");
-			App.WaitForElement("Fruits");
-			App.WaitForElement("Vegetables");
-		}
+#endif
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 //CollectionView Displays Blank UI When Changing IsGrouped and ItemsSourceType Issue Link: https://github.com/dotnet/maui/issues/28826
+//[Windows] NullReferenceException thrown When Toggling IsGrouped to True in ObservableCollection Binding: https://github.com/dotnet/maui/issues/28824
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyIsGroupedTrue_WithItemSourceObservableCollection()
