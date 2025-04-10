@@ -67,7 +67,11 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapOrientation(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.PlatformView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollView.HorizontalScrollBarVisibility);
+			var scrollBarVisibility = scrollView.Orientation == ScrollOrientation.Horizontal
+					? scrollView.HorizontalScrollBarVisibility
+					: scrollView.VerticalScrollBarVisibility;
+
+			handler.PlatformView?.UpdateScrollBarVisibility(scrollView.Orientation, scrollBarVisibility);
 		}
 
 		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
