@@ -32,9 +32,18 @@ When asked to create release notes for a particular branch, follow these steps:
 
 ### 3. Find the correct Github username for each commit
 
-* For each commit on the list check the username that created the commit and replace it for the respective Github username
-* you can use the github tool to search_users to search for a user on github
-* or using the pull request information and get information of the specific pull request from github using get_pull_request tool
+* For each commit on the list, look up the corresponding GitHub username from the actual GitHub PR, not just the commit author email
+* Use the `get_pull_request` tool if available to fetch the actual PR information including the correct GitHub username that created the PR
+* Use the [text](contributors.json) file to help map commit authors to GitHub usernames
+* When encountering an email address in a commit author, check if it exists in the contributors.json file and use the corresponding GitHub login
+* Verify all usernames are consistent with GitHub's format (e.g., @jsuarezruiz instead of @javiersuarezruiz)
+* Some common username transformations to check for:
+  - Internal usernames may differ from GitHub usernames 
+  - Email addresses should be converted to GitHub handles
+  - Employee IDs or numbers in usernames should be included if they are part of the GitHub username (e.g., @HarishKumarSF4517 not @harish.kumar)
+* Keep the '@' prefix for all usernames to maintain consistency
+* For "Anonymous" type contributors in [text](contributors.json), use their name as shown but try to find their corresponding GitHub username if possible
+* For automated systems like dependabot or github-actions, use the standard bot usernames (@dependabot[bot], @github-actions[bot], etc.)
 
 ### 4. Classifying the Commits
 
@@ -77,16 +86,21 @@ Apply these classification rules:
 
 ### 5. Organizing for the Response
 
-* Group commits by category
-* Within each category, list in order descending of the PR number (if determinable)
-* Format PR numbers as clickable GitHub links, PR numbers are always only 5 digits, and prefix them with the '#'
-* Ensure you use contributor GitHub username are correctly attributed and with an '@' before the username
-* Save it the results to a markdown file like docs/release_notes_{releasename}.md
+* Group commits by category as defined in section 1
+* Within each category, list in descending order by PR number (newest PRs first)
+* For PR numbers:
+  - Ensure they are formatted as '#XXXXX' (e.g., #28804)
+  - When creating GitHub links, use full URLs: https://github.com/dotnet/maui/pull/XXXXX
+* For contributor attribution:
+  - Use ONLY the GitHub username that appears in the PR, not the commit author
+  - Always prefix usernames with '@' (e.g., @kubaflo)
+  - Be especially careful with usernames that have employee IDs or numbers at the end
+  - For automated actions, use @github-actions or @dotnet-bot as appropriate
+* Save the results to a markdown file like docs/release_notes_{releasename}.md
 
 ### 6. Special Cases & Edge Cases
 
 * **Reverts**: Classify reverted commits to the same category as the original commit
-
 * **Automated PRs**: Place automation-driven changes (like dependency updates) in appropriate categories like Dependency Updates
 * **Cross-cutting changes**: When a commit spans multiple categories, prioritize based on the primary focus
 * **Breaking changes**: Highlight any breaking changes prominently in the summary
@@ -94,39 +108,40 @@ Apply these classification rules:
 
 ## Response Format
 
-Structure your release notes exactly as follows, and write them to a file like docs/release_notes_{releasename}.md
+Structure your release notes in the following categorized format, and save them to a file like docs/release_notes_{releasename}.md:
 
-
-```
-## What's Changed
-[Brief summary of the key changes in this release, highlighting major features/fixes]
-
+```markdown
 ### MAUI Product Fixes
-* [Commit title] by @[username] in #[PR number]
+* [Commit title] by @[correct-github-username] in https://github.com/dotnet/maui/pull/[PR number]
 * ...
 
 ### Testing
-* [Commit title] by @[username] in #[PR number]
+* [Commit title] by @[correct-github-username] in https://github.com/dotnet/maui/pull/[PR number]
 * ...
 
 ### Dependency Updates
-* [Commit title] by @[username] in #[PR number]
+* [Commit title] by @[correct-github-username] in https://github.com/dotnet/maui/pull/[PR number]
 * ...
 
 ### Docs
-* [Commit title] by @[username] in #[PR number]
+* [Commit title] by @[correct-github-username] in https://github.com/dotnet/maui/pull/[PR number]
 * ...
 
 ### Housekeeping
-* [Commit title] by @[username] in #[PR number]
+* [Commit title] by @[correct-github-username] in https://github.com/dotnet/maui/pull/[PR number]
 * ...
 
 ## New Contributors
-* @[username] made their first contribution in [PR link]
+* @[correct-github-username] made their first contribution in https://github.com/dotnet/maui/pull/[PR number]
 * ...
 
-**Full Changelog**: [GitHub compare link between the two references]
+**Full Changelog**: https://github.com/dotnet/maui/compare/[previous-branch]...[current-branch]
 ```
+
+## Contributors list
+
+[text](contributors.json)
+
 
 ## Example
 
