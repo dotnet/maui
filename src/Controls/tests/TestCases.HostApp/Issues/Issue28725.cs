@@ -61,9 +61,17 @@ public class Issue28725_1 : TestContentPage, IDrawable
 			Text = "The test should pass if the image is displayed and resized correctly. If the image is not displayed or not resized correctly, the test has failed.",
 		};
 
+		Button button = new Button
+		{
+			Text = "Back",
+			AutomationId = "BackButton"
+		};
+		button.Clicked += (s, e) => Navigation.PopAsync();
+
 		graphicsView.Drawable = this;
 		rootLayout.Add(graphicsView);
 		rootLayout.Add(label);
+		rootLayout.Add(button);
 		Content = rootLayout;
 	}
 

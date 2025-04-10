@@ -6,42 +6,39 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Issue28725 : _IssuesUITest
 {
-	public Issue28725(TestDevice testDevice) : base(testDevice)
+	public Issue28725(TestDevice testDevice) : base(testDevice) 
 	{
 	}
 
 	public override string Issue => "ImagePaint is not rendering in View";
-	protected override bool ResetAfterEachTest =>  true;
 
-	const string Label = "Label";
-	
-	[Test, Order(1)]
+	[Test]
 	[Category(UITestCategories.GraphicsView)]
-	public void ImagePaintResizeFit()
+	public void ImagePaintShouldRenderProperly()
 	{
-		NavigateAndVerify("FitButton");
+		Exception? fitException = null;
+		Exception? bleedException = null;
+		Exception? stretchException = null;
+
+		TestResizeMode("FitButton", "ImagePaintWithResizeModeFit", ref fitException);
+		TestResizeMode("BleedButton", "ImagePaintWithResizeModeBleed", ref bleedException);
+		TestResizeMode("StretchButton", "ImagePaintWithResizeModeStretch", ref stretchException);
+
+		if (fitException != null)
+			throw fitException;
+		if (bleedException != null)
+			throw bleedException;
+		if (stretchException != null)
+			throw stretchException;
 	}
 
-	[Test, Order(2)]
-	[Category(UITestCategories.GraphicsView)]
-	public void ImagePaintResizeBleed()
-	{
-		NavigateAndVerify("BleedButton");
-	}
-
-	[Test, Order(3)]
-	[Category(UITestCategories.GraphicsView)]
-	public void ImagePaintResizeStretch()
-	{
-		NavigateAndVerify("StretchButton");
-	}
-
-	void NavigateAndVerify(string buttonId)
+	void TestResizeMode(string buttonId, string screenshotName, ref Exception? exception)
 	{
 		App.WaitForElement(buttonId);
 		App.Click(buttonId);
 		App.WaitForElement("Label");
-		VerifyScreenshot();
+		VerifyScreenshotOrSetException(ref exception, screenshotName);
+		App.Click("Back");
 	}
 }
 #endif
