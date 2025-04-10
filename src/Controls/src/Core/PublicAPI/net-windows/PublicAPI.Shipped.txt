@@ -4510,6 +4510,9 @@ Microsoft.Maui.Controls.DataTemplateSelector
 Microsoft.Maui.Controls.DataTemplateSelector.DataTemplateSelector() -> void
 Microsoft.Maui.Controls.DataTrigger
 Microsoft.Maui.Controls.DateChangedEventArgs
+Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime oldDate, System.DateTime newDate) -> void
+Microsoft.Maui.Controls.DateChangedEventArgs.NewDate.get -> System.DateTime
+Microsoft.Maui.Controls.DateChangedEventArgs.OldDate.get -> System.DateTime
 Microsoft.Maui.Controls.DatePicker
 Microsoft.Maui.Controls.DatePicker.CharacterSpacing.get -> double
 Microsoft.Maui.Controls.DatePicker.CharacterSpacing.set -> void
@@ -4523,7 +4526,9 @@ Microsoft.Maui.Controls.DatePicker.FontAutoScalingEnabled.get -> bool
 Microsoft.Maui.Controls.DatePicker.FontAutoScalingEnabled.set -> void
 Microsoft.Maui.Controls.DatePicker.FontSize.get -> double
 Microsoft.Maui.Controls.DatePicker.FontSize.set -> void
+Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime
 Microsoft.Maui.Controls.DatePicker.MaximumDate.set -> void
+Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.Controls.DatePicker.MinimumDate.set -> void
 Microsoft.Maui.Controls.DefinitionCollection<T>.Add(T item) -> void
 Microsoft.Maui.Controls.DefinitionCollection<T>.Clear() -> void

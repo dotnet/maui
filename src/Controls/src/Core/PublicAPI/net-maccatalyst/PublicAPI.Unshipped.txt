@@ -8,6 +8,7 @@ Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime?
 Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime oldDate, System.DateTime newDate) -> void
 Microsoft.Maui.Controls.DateChangedEventArgs.DateChangedEventArgs(System.DateTime? oldDate, System.DateTime? newDate) -> void
+*REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.NewDate.get -> System.DateTime
 Microsoft.Maui.Controls.DateChangedEventArgs.NewDate.get -> System.DateTime?
 *REMOVED*Microsoft.Maui.Controls.DateChangedEventArgs.OldDate.get -> System.DateTime
 Microsoft.Maui.Controls.DateChangedEventArgs.OldDate.get -> System.DateTime?
