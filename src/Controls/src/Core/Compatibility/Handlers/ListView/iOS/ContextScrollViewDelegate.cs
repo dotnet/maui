@@ -48,6 +48,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		bool _isDisposed;
 		static WeakReference<UIScrollView> s_scrollViewBeingScrolled;
+		bool _wasPositive;
 		UITableView _table;
 
 		public ContextScrollViewDelegate(UIView container, List<UIButton> buttons, bool isOpen)
@@ -104,6 +105,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var count = _buttons.Count;
 			var ioffset = scrollView.ContentOffset.X / (float)count;
 
+			if (ioffset > 0f)
+				_wasPositive = true;
+
 			if (ioffset > width)
 				width = ioffset + 1;
 
@@ -114,13 +118,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				b.Frame = new RectangleF(scrollView.Frame.Width + (count - (i + 1)) * ioffset, 0, width, rect.Height);
 			}
 
-			if (scrollView.ContentOffset.X == 0)
+			if (_wasPositive && scrollView.ContentOffset.X == 0)
 			{
 				IsOpen = false;
 				SetButtonsShowing(false);
 				RestoreHighlight(scrollView);
 
 				s_scrollViewBeingScrolled = null;
+				_wasPositive = false;
 				ClearCloserRecognizer(GetContextCell(scrollView));
 				ClosedCallback?.Invoke();
 			}
