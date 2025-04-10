@@ -287,10 +287,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
 			App.WaitForElement("ItemsSourceGroupedList");
 			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("GroupHeaderTemplateGrid");
 			App.Tap("GroupHeaderTemplateGrid");
 			App.WaitForElement("GroupFooterTemplateGrid");
@@ -309,10 +309,10 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
 			App.WaitForElement("ItemsSourceGroupedList");
 			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("Fruits");
@@ -343,8 +343,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
 			App.WaitForElement("ItemTemplateBasic");
 			App.Tap("ItemTemplateBasic");
 			App.WaitForElement("ItemsSourceGroupedList");
