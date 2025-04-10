@@ -75,7 +75,7 @@ public class Issue28725_1 : TestContentPage, IDrawable
 		{
 			image = PlatformImage.FromStream(stream);
 		}
-		if (image != null)
+		if (image is not null)
 		{
 			float spacing = 20;
 			float currentY = 0;
