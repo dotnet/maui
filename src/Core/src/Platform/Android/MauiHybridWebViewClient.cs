@@ -32,17 +32,51 @@ namespace Microsoft.Maui.Platform
 
 		public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
 		{
-			var response = GetResponseStream(view, request);
-
-			if (response is not null)
+			if (view is not null && request is not null)
 			{
-				return response;
+				// 1. Check if the app wants to modify or override the request
+				var response = TryInterceptResponseStream(view, request);
+				if (response is not null)
+				{
+					return response;
+				}
+
+				// 2. Check if the request is for a local resource
+				response = GetResponseStream(view, request);
+				if (response is not null)
+				{
+					return response;
+				}
 			}
 
+			// 3. Otherwise, we let the request go through as is
 			return base.ShouldInterceptRequest(view, request);
 		}
 
-		private WebResourceResponse? GetResponseStream(AWebView? view, IWebResourceRequest? request)
+		private WebResourceResponse? TryInterceptResponseStream(AWebView view, IWebResourceRequest request)
+		{
+			if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
+			{
+				return null;
+			}
+
+			// 1. First, create the event args
+			var platformArgs = new HybridWebViewPlatformAboutToSendRequestEventArgs(view, request);
+			var args = new HybridWebViewAboutToSendRequestEventArgs(platformArgs);
+
+			// 2. Trigger the event for the app
+			Handler.VirtualView.OnAboutToSendRequest(args);
+
+			// 3. If the app reported that it completed the request, then we do nothing more
+			if (args.Handled)
+			{
+				return platformArgs.Response;
+			}
+
+			return null;
+		}
+
+		private WebResourceResponse? GetResponseStream(AWebView view, IWebResourceRequest request)
 		{
 			if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
 			{
@@ -64,7 +98,7 @@ namespace Microsoft.Maui.Platform
 				var fullUri = new Uri(fullUrl!);
 				var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
 				var contentBytesTask = Handler.InvokeDotNetAsync(invokeQueryString);
-				var responseStream = new DotNetInvokeAsyncStream(contentBytesTask, Handler);
+				var responseStream = new InvokeAsyncStream(contentBytesTask, Handler);
 				return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), responseStream);
 			}
 
@@ -152,7 +186,7 @@ namespace Microsoft.Maui.Platform
 			_handler.SetTarget(null);
 		}
 
-		private class DotNetInvokeAsyncStream : Stream
+		private class InvokeAsyncStream : Stream
 		{
 			private const int PauseThreshold = 32 * 1024;
 			private const int ResumeThreshold = 16 * 1024;
@@ -179,7 +213,7 @@ namespace Microsoft.Maui.Platform
 				set => throw new NotSupportedException();
 			}
 
-			public DotNetInvokeAsyncStream(Task<byte[]?> invokeTask, HybridWebViewHandler handler)
+			public InvokeAsyncStream(Task<byte[]?> invokeTask, HybridWebViewHandler handler)
 			{
 				_task = invokeTask;
 				_handler = new(handler);
@@ -199,7 +233,7 @@ namespace Microsoft.Maui.Platform
 					var data = await _task;
 
 					// the stream or handler may be disposed after the method completes
-					ObjectDisposedException.ThrowIf(_isDisposed, nameof(DotNetInvokeAsyncStream));
+					ObjectDisposedException.ThrowIf(_isDisposed, nameof(InvokeAsyncStream));
 					ArgumentNullException.ThrowIfNull(Handler, nameof(Handler));
 
 					// copy the data into the pipe
@@ -229,7 +263,7 @@ namespace Microsoft.Maui.Platform
 				ArgumentOutOfRangeException.ThrowIfNegative(offset, nameof(offset));
 				ArgumentOutOfRangeException.ThrowIfNegative(count, nameof(count));
 				ArgumentOutOfRangeException.ThrowIfGreaterThan(offset + count, buffer.Length, nameof(count));
-				ObjectDisposedException.ThrowIf(_isDisposed, nameof(DotNetInvokeAsyncStream));
+				ObjectDisposedException.ThrowIf(_isDisposed, nameof(InvokeAsyncStream));
 
 				// this is a blocking read, so we need to wait for data to be available
 				var readResult = _pipe.Reader.ReadAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
