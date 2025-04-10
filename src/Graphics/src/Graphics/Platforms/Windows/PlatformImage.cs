@@ -61,10 +61,10 @@ namespace Microsoft.Maui.Graphics.Platform
 					factor = maxWidthOrHeight / Height;
 				}
 
-				var w = factor * Width;
-				var h = factor * Height;
+				var targetWidth = factor * Width;
+				var targetHeight = factor * Height;
 
-				return ResizeInternal(w, h, 0, 0, w, h, disposeOriginal);
+				return ResizeInternal(targetWidth, targetHeight, 0, 0, targetWidth, targetHeight, disposeOriginal);
 			}
 
 			return this;
