@@ -125,6 +125,11 @@ namespace Microsoft.Maui.Controls.Handlers
 				!Brush.IsNullOrEmpty(view.FlyoutBackground) ?
 					view.FlyoutBackground :
 					view.FlyoutBackgroundColor?.AsPaint());
+			if(view.FlyoutBackgroundImage is not null)
+			{
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				handler.PlatformView.UpdateBackgroundImageSourceAsync(view.FlyoutBackgroundImage, provider, view.FlyoutBackgroundImageAspect).FireAndForget();
+			}
 		}
 
 		public static void MapFlyoutIcon(ShellHandler handler, Shell view)
