@@ -104,18 +104,23 @@ namespace Microsoft.Maui.Handlers
 
 		private async void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
-			if (VirtualView is IHybridWebView2 hwv2)
+			// 1. Check if the app wants to modify or override the request
 			{
-				var args = new HybridWebViewAboutToSendRequestEventArgs(new(sender, eventArgs));
+				// 1.a. First, create the event args
+				var platformArgs = new HybridWebViewPlatformAboutToSendRequestEventArgs(sender, eventArgs);
+				var args = new HybridWebViewAboutToSendRequestEventArgs(platformArgs);
 
-				hwv2.OnAboutToSendRequest(args);
+				// 1.b. Trigger the event for the app
+				VirtualView.OnAboutToSendRequest(args);
 
-				if (args.Cancel)
+				// 1.c. If the app reported that it completed the request, then we do nothing more
+				if (args.Handled)
 				{
 					return;
 				}
 			}
 
+			// 2. Check if the request is for a local resource
 			if (new Uri(eventArgs.Request.Uri) is Uri uri && AppOriginUri.IsBaseOf(uri))
 			{
 				// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
@@ -137,7 +142,11 @@ namespace Microsoft.Maui.Handlers
 
 				// Notify WebView2 that the deferred (async) operation is complete and we set a response.
 				deferral.Complete();
+
+				return;
 			}
+
+			// 3. Otherwise, we let the request go through as is
 		}
 
 		private async Task<(IRandomAccessStream Stream, string ContentType, int StatusCode, string Reason)> GetResponseStreamAsync(string url)

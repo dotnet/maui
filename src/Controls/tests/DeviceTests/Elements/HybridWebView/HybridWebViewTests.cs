@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -479,19 +480,88 @@ namespace Microsoft.Maui.DeviceTests
 
 				hybridWebView.AboutToSendRequest += (sender, e) =>
 				{
+					if (new Uri("https://echo.free.beeceptor.com").IsBaseOf(e.RequestUri))
+					{
 #if WINDOWS
-					var req = e.PlatformArgs.WebResourceRequestedEventArgs.Request;
-					req.Headers.SetHeader("X-Request-Header", ExpectedHeaderValue);
+						// Add the desired header for Windows by modifying the request
+						var request = e.PlatformArgs.Request;
+						request.Headers.SetHeader("X-Request-Header", ExpectedHeaderValue);
+#elif ANDROID
+						// Intercept the request and add the desired header to a new request
+						var request = e.PlatformArgs.Request;
+						var headers = new Dictionary<string, string>(request.RequestHeaders)
+						{
+							["X-Request-Header"] = ExpectedHeaderValue
+						};
+
+						// Forward the request to the remote server with the modified headers
+						var url = new Java.Net.URL(request.Url.ToString());
+						var connection = (Java.Net.HttpURLConnection)url.OpenConnection();
+						foreach (var header in headers)
+						{
+							connection.SetRequestProperty(header.Key, header.Value);
+						}
+
+						// Set the response property
+						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
+							connection.ContentType,
+							connection.ContentEncoding ?? "UTF-8",
+							(int)connection.ResponseCode,
+							connection.ResponseMessage,
+							new Dictionary<string, string>
+							{
+								["Access-Control-Allow-Origin"] = "*",
+								["Access-Control-Allow-Headers"] = "*",
+								["Access-Control-Allow-Methods"] = "GET",
+							},
+							connection.InputStream);
+						e.Handled = true;
 #endif
+					}
 				};
 
-				var headerValue = await hybridWebView.InvokeJavaScriptAsync<Dictionary<string, string>>(
-					"RequestsCanBeInterceptedAndHeadersAdded",
-					HybridWebViewTestContext.Default.DictionaryStringString);
+				var responseObject = await hybridWebView.InvokeJavaScriptAsync<ResponseObject>(
+					"RequestsCanBeIntercepted",
+					HybridWebViewTestContext.Default.ResponseObject);
 
-				Assert.NotNull(headerValue);
-				Assert.True(headerValue.TryGetValue("X-Request-Header", out var actualHeaderValue));
+				Assert.NotNull(responseObject);
+				Assert.NotNull(responseObject.headers);
+				Assert.True(responseObject.headers.TryGetValue("X-Request-Header", out var actualHeaderValue));
 				Assert.Equal(ExpectedHeaderValue, actualHeaderValue);
+			});
+
+		[Fact]
+		public Task RequestsCanBeInterceptedAndCancelled() =>
+			RunTest(async (hybridWebView) =>
+			{
+				hybridWebView.AboutToSendRequest += (sender, e) =>
+				{
+					if (new Uri("https://echo.free.beeceptor.com").IsBaseOf(e.RequestUri))
+					{
+#if WINDOWS
+						e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
+							new global::Windows.Storage.Streams.InMemoryRandomAccessStream(),
+							403,
+							"Forbidden",
+							"Content-Type: text/plain");
+						e.Handled = true;
+#elif ANDROID
+						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
+							"application/json",
+							"UTF-8",
+							403,
+							"Forbidden",
+							new Dictionary<string, string>(),
+							new global::System.IO.MemoryStream());
+						e.Handled = true;
+#endif
+					}
+				};
+
+				await Assert.ThrowsAsync<HybridWebViewInvokeJavaScriptException>(() =>
+					hybridWebView.InvokeJavaScriptAsync<ResponseObject>(
+						"RequestsCanBeIntercepted",
+						HybridWebViewTestContext.Default.ResponseObject));
 			});
 
 		async Task<Exception> RunExceptionTest(string method, int errorType)
@@ -686,8 +756,20 @@ namespace Microsoft.Maui.DeviceTests
 			public string operationName { get; set; }
 		}
 
+		public class ResponseObject
+		{
+			public string method { get; set; }
+			public string protocol { get; set; }
+			public string host { get; set; }
+			public string path { get; set; }
+			public string ip { get; set; }
+			public Dictionary<string, string> headers { get; set; }
+			public Dictionary<string, string> parsedQueryParams { get; set; }
+		}
+
 		[JsonSourceGenerationOptions(WriteIndented = true)]
 		[JsonSerializable(typeof(ComputationResult))]
+		[JsonSerializable(typeof(ResponseObject))]
 		[JsonSerializable(typeof(int))]
 		[JsonSerializable(typeof(decimal))]
 		[JsonSerializable(typeof(bool))]

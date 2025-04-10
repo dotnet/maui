@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 	/// A <see cref="View"/> that presents local HTML content in a web view and allows JavaScript and C# code to
 	/// communicate by using messages and by invoking methods.
 	/// </summary>
-	public class HybridWebView : View, IHybridWebView, IHybridWebView2
+	public class HybridWebView : View, IHybridWebView
 	{
 		/// <summary>Bindable property for <see cref="DefaultFile"/>.</summary>
 		public static readonly BindableProperty DefaultFileProperty =
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
 
-		void IHybridWebView2.OnAboutToSendRequest(HybridWebViewAboutToSendRequestEventArgs args)
+		void IHybridWebView.OnAboutToSendRequest(HybridWebViewAboutToSendRequestEventArgs args)
 		{
 			AboutToSendRequest?.Invoke(this, args);
 		}

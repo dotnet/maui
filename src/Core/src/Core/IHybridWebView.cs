@@ -66,60 +66,104 @@ namespace Microsoft.Maui
 			JsonTypeInfo<TReturnType> returnTypeJsonTypeInfo,
 			object?[]? paramValues = null,
 			JsonTypeInfo?[]? paramJsonTypeInfos = null);
-	}
 
-	internal interface IHybridWebView2 : IHybridWebView
-	{
+#if NETSTANDARD
 		void OnAboutToSendRequest(HybridWebViewAboutToSendRequestEventArgs args);
+#else
+		void OnAboutToSendRequest(HybridWebViewAboutToSendRequestEventArgs args) { }
+#endif
 	}
-
 
 	public class HybridWebViewAboutToSendRequestEventArgs
 	{
+#if WINDOWS
 		internal HybridWebViewAboutToSendRequestEventArgs(HybridWebViewPlatformAboutToSendRequestEventArgs platformArgs)
+			: this(platformArgs.Request.Uri)
 		{
 			PlatformArgs = platformArgs;
 		}
-		
-		public HybridWebViewPlatformAboutToSendRequestEventArgs PlatformArgs { get; }
-		
-		public bool Cancel { get; set; }
-	}
+#elif ANDROID
+		internal HybridWebViewAboutToSendRequestEventArgs(HybridWebViewPlatformAboutToSendRequestEventArgs platformArgs)
+			: this(platformArgs.Request.Url!.ToString()!)
+		{
+			PlatformArgs = platformArgs;
+		}
+#endif
 
+		public HybridWebViewAboutToSendRequestEventArgs(string uri)
+			: this(new Uri(uri))
+		{
+		}
+
+		public HybridWebViewAboutToSendRequestEventArgs(Uri uri)
+		{
+			RequestUri = uri;
+		}
+
+		public HybridWebViewPlatformAboutToSendRequestEventArgs? PlatformArgs { get; }
+
+		public Uri RequestUri { get; }
+
+		public bool Handled { get; set; }
+	}
 
 	public class HybridWebViewPlatformAboutToSendRequestEventArgs
 	{
 #if WINDOWS
+		internal HybridWebViewPlatformAboutToSendRequestEventArgs(
+			global::Microsoft.Web.WebView2.Core.CoreWebView2 sender,
+			global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs eventArgs)
+		{
+			Sender = sender;
+			RequestEventArgs = eventArgs;
+		}
+
 		/// <summary>
 		/// Gets the native view attached to the event.
 		/// </summary>
-		public Microsoft.Web.WebView2.Core.CoreWebView2 Sender { get; }
+		public global::Microsoft.Web.WebView2.Core.CoreWebView2 Sender { get; }
 
 		/// <summary>
-		/// Gets data for drag and drop events.
+		/// 
 		/// </summary>
-		public Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs WebResourceRequestedEventArgs { get; }
+		public global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs RequestEventArgs { get; }
 
-		/// <summary>
-		/// Gets or sets a value that indicates whether the DragEventArgs are changed.
-		/// </summary>
-		/// <remarks>
-		/// Set the value of this property to true when changing the DragEventArgs so the system does not override the changes.
-		/// </remarks>
-		public bool Handled { get; set; }
+		public global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequest Request => RequestEventArgs.Request;
 
-		internal HybridWebViewPlatformAboutToSendRequestEventArgs(
-			Microsoft.Web.WebView2.Core.CoreWebView2 sender,
-			Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs eventArgs)
+		public global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceResponse? Response
 		{
-			Sender = sender;
-			WebResourceRequestedEventArgs = eventArgs;
+			get => RequestEventArgs.Response;
+			set => RequestEventArgs.Response = value;
 		}
 
+#elif ANDROID
+
+		public HybridWebViewPlatformAboutToSendRequestEventArgs(
+			global::Android.Webkit.WebView sender,
+			global::Android.Webkit.IWebResourceRequest request)
+		{
+			Sender = sender;
+			Request = request;
+		}
+
+		/// <summary>
+		/// Gets the native view attached to the event.
+		/// </summary>
+		public global::Android.Webkit.WebView Sender { get; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public global::Android.Webkit.IWebResourceRequest Request { get; }
+
+		public global::Android.Webkit.WebResourceResponse? Response { get; set; }
+
 #else
+
 		internal HybridWebViewPlatformAboutToSendRequestEventArgs()
 		{
 		}
+
 #endif
 	}
 }
