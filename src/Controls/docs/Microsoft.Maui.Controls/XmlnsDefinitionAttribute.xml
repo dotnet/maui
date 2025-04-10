@@ -77,7 +77,7 @@
     <Member MemberName="Target">
       <MemberSignature Language="C#" Value="public string Target { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance string Target" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.XmlnsDefinitionAttribute.ClrNamespace" />
+      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target" />
       <MemberSignature Language="F#" Value="member this.ClrNamespace : string" Usage="Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target" />
       <MemberType>Property</MemberType>
       <AssemblyInfo>

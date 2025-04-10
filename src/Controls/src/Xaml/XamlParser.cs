@@ -336,7 +336,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		static void GatherXmlnsDefinitionAttributes(Assembly currentAssembly)
 		{
 			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
+			s_xmlnsDefinitions = [];
 
 			foreach (var assembly in assemblies)
 			{
@@ -348,8 +348,19 @@ namespace Microsoft.Maui.Controls.Xaml
 						if (attribute.XmlNamespace == XamlParser.MauiGlobal
 							&& assembly != currentAssembly)
 							continue;
+
+						attribute.AssemblyName ??= assembly.FullName;
+						//maui, and x: xmlns are protected
+						if (attribute.XmlNamespace != XamlParser.MauiGlobal
+							&& attribute.XmlNamespace.StartsWith("http://schemas.microsoft.com/", StringComparison.Ordinal)
+							&& !attribute.AssemblyName.StartsWith("Microsoft", StringComparison.Ordinal)
+							&& !attribute.AssemblyName.StartsWith("System", StringComparison.Ordinal)
+							&& !attribute.AssemblyName.StartsWith("mscorlib", StringComparison.Ordinal))
+						{
+							Debug.WriteLine($"Can not overloadxmlns {attribute.XmlNamespace}. cause it's protected.");
+							continue;
+						}
 						s_xmlnsDefinitions.Add(attribute);
-						attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
 					}
 				}
 				catch (Exception ex)

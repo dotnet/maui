@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
@@ -30,7 +31,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 			else
 			{
-				// Use standard XF assemblies
+				// Use standard MAUI assemblies
 				// (Should only happen in unit tests)
 				var requiredAssemblies = new[] {
 					typeof(XamlLoader).Assembly,
@@ -39,7 +40,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				foreach (var assembly in requiredAssemblies)
 					foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute), false))
 					{
-						attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
+						attribute.AssemblyName ??= assembly.FullName;
+						//maui, and x: xmlns are protected
+						if (attribute.XmlNamespace != XamlParser.MauiGlobal
+							&& attribute.XmlNamespace.StartsWith("http://schemas.microsoft.com/", StringComparison.OrdinalIgnoreCase)
+							&& !attribute.AssemblyName.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase)
+							&& !attribute.AssemblyName.StartsWith("System", StringComparison.OrdinalIgnoreCase)
+							&& !attribute.AssemblyName.StartsWith("mscorlib", StringComparison.OrdinalIgnoreCase))
+						{
+							throw new BuildException(BuildExceptionCode.InvalidXaml, null, null,
+								$"Protected Xmlns {attribute.XmlNamespace}. Can't add assembly  {attribute.AssemblyName}.");
+						}
+
 						xmlnsDefinitions.Add(attribute);
 					}
 			}
@@ -58,6 +70,15 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					if (attr.XmlNamespace == XamlParser.MauiGlobal
 						&& asmDef != currentAssembly)
 						continue;
+					if (attr.XmlNamespace != XamlParser.MauiGlobal
+						&& attr.XmlNamespace.StartsWith("http://schemas.microsoft.com/", StringComparison.OrdinalIgnoreCase)
+						&& !attr.AssemblyName.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase)
+						&& !attr.AssemblyName.StartsWith("System", StringComparison.OrdinalIgnoreCase)
+						&& !attr.AssemblyName.StartsWith("mscorlib", StringComparison.OrdinalIgnoreCase))
+					{
+						throw new BuildException(BuildExceptionCode.InvalidXaml, null, null,
+							$"Protected Xmlns {attr.XmlNamespace}. Can't add assembly  {attr.AssemblyName}.");
+					}
 					xmlnsDefinitions.Add(attr);
 				}
 			}
