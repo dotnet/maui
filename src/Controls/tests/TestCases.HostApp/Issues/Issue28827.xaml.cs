@@ -34,6 +34,7 @@ public partial class Issue28827 : ContentPage
 							{
 								Text = "Group Header Template (Grid View)",
 								FontSize = 18,
+								AutomationId = "GroupHeaderTemplate",
 								FontAttributes = FontAttributes.Bold,
 								HorizontalOptions = LayoutOptions.Center,
 								VerticalOptions = LayoutOptions.Center,
@@ -65,6 +66,7 @@ public partial class Issue28827 : ContentPage
 							{
 								Text = "Group Footer Template (Grid View)",
 								FontSize = 18,
+								AutomationId = "GroupFooterTemplate",
 								FontAttributes = FontAttributes.Bold,
 								HorizontalOptions = LayoutOptions.Center,
 								VerticalOptions = LayoutOptions.Center,

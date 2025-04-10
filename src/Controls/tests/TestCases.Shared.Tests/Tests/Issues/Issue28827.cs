@@ -21,8 +21,8 @@ public class Issue28827 : _IssuesUITest
 		App.Tap("IsGroupedTrue");
 		App.Tap("GroupHeaderTemplateGrid");
 		App.Tap("GroupFooterTemplateGrid");
-
-		VerifyScreenshot();
+		App.WaitForNoElement("GroupHeaderTemplate");
+		App.WaitForNoElement("GroupFooterTemplate");
 	}
 }
 #endif
