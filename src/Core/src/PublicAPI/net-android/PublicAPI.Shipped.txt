@@ -891,6 +891,8 @@ Microsoft.Maui.IDatePicker.Date.get -> System.DateTime
 Microsoft.Maui.IDatePicker.Date.set -> void
 Microsoft.Maui.IDatePicker.Format.get -> string!
 Microsoft.Maui.IDatePicker.Format.set -> void
+Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime
+Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
 Microsoft.Maui.IEditor
 Microsoft.Maui.IEditor.Completed() -> void
 Microsoft.Maui.IElement
