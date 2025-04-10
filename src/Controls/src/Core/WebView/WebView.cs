@@ -126,7 +126,8 @@ namespace Microsoft.Maui.Controls
 			if (DeviceInfo.Platform != DevicePlatform.Android)
 			{
 				script = EscapeJsString(script);
-
+				script = Regex.Replace(script, @"\r\n|\r|\n", " ");
+				
 				if (DeviceInfo.Platform != DevicePlatform.WinUI)
 				{
 					// Use JSON.stringify() method to converts a JavaScript value to a JSON string
