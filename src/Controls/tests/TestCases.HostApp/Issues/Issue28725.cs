@@ -49,7 +49,11 @@ public class Issue28725_1 : TestContentPage, IDrawable
 	protected override void Init()
 	{
 		var rootLayout = new VerticalStackLayout();
-		GraphicsView graphicsView = new GraphicsView() { HeightRequest = 500, WidthRequest = 400 };
+		GraphicsView graphicsView = new GraphicsView()
+		{
+			HeightRequest = 500, 
+			WidthRequest = 400
+		};
 
 		Label label = new Label
 		{
