@@ -5,12 +5,10 @@ namespace Controls.TestCases.HostApp.Issues;
 [Issue(IssueTracker.Github, 7144, "IndicatorView using templated icons not working", PlatformAffected.UWP)]
 public class Issue7144 : ContentPage
 {
-	public ObservableCollection<Issue7144Monkey> Monkeys { get; set; } = new ObservableCollection<Issue7144Monkey>();
+	ObservableCollection<string> Items { get; set; } = new ObservableCollection<string>() { "Item1", "Item2" };
 
 	public Issue7144()
 	{
-		CreateMonkeyCollection();
-
 		Grid grid = new Grid();
 		grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
 		grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -35,35 +33,25 @@ public class Issue7144 : ContentPage
 			return image;
 		});
 
-		CarouselView carouselViewWithIndicatorView = new CarouselView
+		CarouselView carouselView = new CarouselView
 		{
-			ItemsSource = Monkeys,
+			ItemsSource = Items,
 			Loop = false,
 			IndicatorView = indicatorViewWithDataTemplate,
 			ItemTemplate = new DataTemplate(() =>
 			{
 				StackLayout stackLayout = new StackLayout();
 
-				Label nameLabel = new Label
+				Label label = new Label
 				{
 					FontAttributes = FontAttributes.Bold,
 					FontSize = 24,
 					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.Center
 				};
-				nameLabel.SetBinding(Label.TextProperty, "Name");
+				label.SetBinding(Label.TextProperty, ".");;
 
-				Image image = new Image
-				{
-					Aspect = Aspect.Fill,
-					HeightRequest = 150,
-					WidthRequest = 150,
-					HorizontalOptions = LayoutOptions.Center
-				};
-				image.SetBinding(Image.SourceProperty, "Image");
-
-				stackLayout.Children.Add(nameLabel);
-				stackLayout.Children.Add(image);
+				stackLayout.Children.Add(label);
 
 				return stackLayout;
 			})
@@ -71,7 +59,7 @@ public class Issue7144 : ContentPage
 
 		Label label = new Label
 		{
-			AutomationId = "IndicatorViewWithDataTemplate",
+			AutomationId = "descriptionLabel",
 			Text = "The test case fails if the IndicatorView DataTemplate is not displayed",
 			FontAttributes = FontAttributes.Bold,
 			FontSize = 24,
@@ -79,34 +67,12 @@ public class Issue7144 : ContentPage
 			VerticalOptions = LayoutOptions.Center
 		};
 
-		grid.Add(carouselViewWithIndicatorView, 0, 0);
+		grid.Add(carouselView, 0, 0);
 		grid.Add(indicatorViewWithDataTemplate, 0, 1);
 		grid.Add(label, 0, 2);
 
 		Content = grid;
 	}
-
-	void CreateMonkeyCollection()
-	{
-		Monkeys.Add(new Issue7144Monkey
-		{
-			Name = "Baboon",
-			Image = "dotnet_bot.png"
-		});
-
-		Monkeys.Add(new Issue7144Monkey
-		{
-			Name = "Capuchin Monkey",
-			Image = "dotnet_bot.png"
-		});
-	}
-}
-
-public class Issue7144Monkey
-{
-	public string Name { get; set; }
-
-	public string Image { get; set; }
 }
 
 

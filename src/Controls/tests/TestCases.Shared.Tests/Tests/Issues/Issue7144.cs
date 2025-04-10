@@ -16,7 +16,7 @@ public class Issue7144 : _IssuesUITest
 	[Category(UITestCategories.IndicatorView)]
 	public void IndicatorViewWithTemplatedIcon()
 	{
-		App.WaitForElement("IndicatorViewWithDataTemplate");
+		App.WaitForElement("descriptionLabel");
 		VerifyScreenshot();
 	}
 }
