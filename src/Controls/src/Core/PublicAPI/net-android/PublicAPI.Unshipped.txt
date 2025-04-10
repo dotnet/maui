@@ -73,6 +73,10 @@ Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpa
 ~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
+Microsoft.Maui.Controls.DateOnlyToDateTimeConverter
+Microsoft.Maui.Controls.DateOnlyToDateTimeConverter.DateOnlyToDateTimeConverter() -> void
+Microsoft.Maui.Controls.TimeOnlyToTimeSpanConverter
+Microsoft.Maui.Controls.TimeOnlyToTimeSpanConverter.TimeOnlyToTimeSpanConverter() -> void
 Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.Style?
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
@@ -92,6 +96,14 @@ static Microsoft.Maui.Controls.ImageButton.MapRippleColor(Microsoft.Maui.Handler
 ~override Microsoft.Maui.Controls.TemplatedView.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.VerticalStackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~static Microsoft.Maui.Controls.Button.MapRippleColor(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
+override Microsoft.Maui.Controls.DateOnlyToDateTimeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType) -> bool
+override Microsoft.Maui.Controls.DateOnlyToDateTimeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.DateOnlyToDateTimeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
+override Microsoft.Maui.Controls.DateOnlyToDateTimeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
+override Microsoft.Maui.Controls.TimeOnlyToTimeSpanConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType) -> bool
+override Microsoft.Maui.Controls.TimeOnlyToTimeSpanConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.TimeOnlyToTimeSpanConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
+override Microsoft.Maui.Controls.TimeOnlyToTimeSpanConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
 ~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.GetTransformedText(string source, Microsoft.Maui.TextTransform textTransform) -> string
 ~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.SetPlainText(Microsoft.Maui.Controls.InputView inputView, string platformText) -> void
 ~Microsoft.Maui.Controls.Page.DisplayActionSheetAsync(string title, string cancel, string destruction, Microsoft.Maui.FlowDirection flowDirection, params string[] buttons) -> System.Threading.Tasks.Task<string>
