@@ -783,6 +783,7 @@ namespace Microsoft.Maui.Controls
 				await Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						Owner.FireDisappearing(currentPage);
 						Owner.RemoveFromInnerChildren(currentPage);
 						Owner.CurrentPage = newCurrentPage;
 						if (currentPage.TitleView != null)
@@ -793,7 +794,6 @@ namespace Microsoft.Maui.Controls
 					() =>
 					{
 						Owner.SendNavigating(currentPage);
-						Owner.FireDisappearing(currentPage);
 						Owner.FireAppearing(newCurrentPage);
 					},
 					() =>
