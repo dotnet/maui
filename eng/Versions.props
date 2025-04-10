@@ -29,7 +29,7 @@
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
     <MicrosoftMauiPreviousDotNetReleasedVersion>9.0.14</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
-    <MicrosoftNETSdkPackageVersion>10.0.100-preview.4.25209.42</MicrosoftNETSdkPackageVersion>
+    <MicrosoftNETSdkPackageVersion>10.0.100-preview.4.25210.8</MicrosoftNETSdkPackageVersion>
     <MicrosoftDotnetSdkInternalPackageVersion>$(MicrosoftNETSdkPackageVersion)</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>10.0.0-preview.4.25209.9</MicrosoftNETCoreAppRefPackageVersion>
@@ -51,7 +51,7 @@
     <MicrosoftExtensionsPrimitivesVersion>10.0.0-preview.4.25206.1</MicrosoftExtensionsPrimitivesVersion>
     <MicrosoftExtensionsHostingAbstractionsVersion>10.0.0-preview.4.25206.1</MicrosoftExtensionsHostingAbstractionsVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>36.0.0-ci.main.31</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>36.0.0-ci.main.32</MicrosoftAndroidSdkWindowsPackageVersion>
     <MicrosoftNETSdkAndroidManifest90100PackageVersion>35.0.61</MicrosoftNETSdkAndroidManifest90100PackageVersion>
     <AndroidNetPreviousVersion>$(MicrosoftNETSdkAndroidManifest90100PackageVersion)</AndroidNetPreviousVersion>
     <!-- xamarin/xamarin-macios -->
