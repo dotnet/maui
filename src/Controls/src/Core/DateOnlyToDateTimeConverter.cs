@@ -3,53 +3,52 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 
-namespace Microsoft.Maui.Controls
+namespace Microsoft.Maui.Controls;
+    
+public class DateOnlyToDateTimeConverter : TypeConverter, IExtendedTypeConverter
 {
-    internal class DateOnlyToDateTimeConverter : TypeConverter, IExtendedTypeConverter
+    public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? sourceType)
+        => sourceType == typeof(string) || sourceType == typeof(DateTime);
+
+    public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
+        => destinationType == typeof(string) || destinationType == typeof(DateTime);
+
+    object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
     {
-        public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
-            => sourceType == typeof(string) || sourceType == typeof(DateTime);
-
-        public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
-            => destinationType == typeof(string) || destinationType == typeof(DateTime);
-
-        object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
+        if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
         {
-            if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
-            {
-                return DateOnly.FromDateTime(result);
-            }
-            throw new NotSupportedException($"Cannot convert \"{value}\" into {typeof(DateOnly)}");
+            return DateOnly.FromDateTime(result);
         }
+        throw new NotSupportedException($"Cannot convert \"{value}\" into {typeof(DateOnly)}");
+    }
 
-        public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
+    public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
+    {
+        if (value is DateTime dateTime)
         {
-            if (value is DateTime dateTime)
-            {
-                return DateOnly.FromDateTime(dateTime);
-            }
-            if (value is string stringValue && DateTime.TryParse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
-            {
-                return DateOnly.FromDateTime(result);
-            }
-            throw new NotSupportedException($"Cannot convert \"{value}\" into {typeof(DateOnly)}");
+            return DateOnly.FromDateTime(dateTime);
         }
+        if (value is string stringValue && DateTime.TryParse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
+        {
+            return DateOnly.FromDateTime(result);
+        }
+        throw new NotSupportedException($"Cannot convert \"{value}\" into {typeof(DateOnly)}");
+    }
 
-        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+    public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type? destinationType)
+    {
+        if (value is DateOnly dateOnly)
         {
-            if (value is DateOnly dateOnly)
+            if (destinationType == typeof(string))
             {
-                if (destinationType == typeof(string))
-                {
-                    return dateOnly.ToString(culture);
-                }
-                if (destinationType == typeof(DateTime))
-                {
-                    return dateOnly.ToDateTime(TimeOnly.MinValue);
-                }
+                return dateOnly.ToString(culture);
             }
-            throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
+            if (destinationType == typeof(DateTime))
+            {
+                return dateOnly.ToDateTime(TimeOnly.MinValue);
+            }
         }
+        throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
     }
 }
 #endif
