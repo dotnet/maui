@@ -16,20 +16,17 @@ public class Issue28725 : _IssuesUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void ImagePaintShouldRenderProperly()
 	{
-		Exception? fitException = null;
-		Exception? bleedException = null;
-		Exception? stretchException = null;
+		Exception? exception = null;
+	
+		TestResizeMode("FitButton", "ImagePaintWithResizeModeFit", ref exception);
+		TestResizeMode("BleedButton", "ImagePaintWithResizeModeBleed", ref exception);
+		TestResizeMode("StretchButton", "ImagePaintWithResizeModeStretch", ref exception);
 
-		TestResizeMode("FitButton", "ImagePaintWithResizeModeFit", ref fitException);
-		TestResizeMode("BleedButton", "ImagePaintWithResizeModeBleed", ref bleedException);
-		TestResizeMode("StretchButton", "ImagePaintWithResizeModeStretch", ref stretchException);
+		if(exception != null)
+		{
+			throw exception;
+		}
 
-		if (fitException != null)
-			throw fitException;
-		if (bleedException != null)
-			throw bleedException;
-		if (stretchException != null)
-			throw stretchException;
 	}
 
 	void TestResizeMode(string buttonId, string screenshotName, ref Exception? exception)

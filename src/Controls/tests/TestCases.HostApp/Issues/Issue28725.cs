@@ -33,15 +33,15 @@ public class Issue28725 : TestNavigationPage
 			AutomationId = $"{resizeMode}Button",
 			Text = resizeMode.ToString(),
 		};
-		button.Clicked += (s, e) => Navigation.PushAsync(new Issue28725_1(resizeMode));
+		button.Clicked += (s, e) => Navigation.PushAsync(new Issue28725_ContentPage(resizeMode));
 		return button;
 	}
 }
 
-public class Issue28725_1 : TestContentPage, IDrawable
+public class Issue28725_ContentPage : TestContentPage, IDrawable
 {
 	ResizeMode _resizeMode;
-	public Issue28725_1(ResizeMode resizeMode)
+	public Issue28725_ContentPage(ResizeMode resizeMode)
 	{
 		_resizeMode = resizeMode;
 	}
