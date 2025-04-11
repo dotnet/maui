@@ -88,14 +88,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_menuBarForeground = brush;
-
-			// Update the overflow icon foreground
-			if (commandBar != null)
-			{
-				commandBar.Resources["CommandBarOverflowButtonForeground"] = brush;
-				commandBar.Resources["CommandBarOverflowButtonForegroundPointerOver"] = brush;
-				commandBar.Resources["CommandBarOverflowButtonForegroundPressed"] = brush;
-			}
 			UpdateMenuBarForeground();
 		}
 

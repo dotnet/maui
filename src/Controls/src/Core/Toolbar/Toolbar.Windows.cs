@@ -65,7 +65,6 @@ namespace Microsoft.Maui.Controls
 				button.SetAutomationPropertiesName(item);
 				button.SetAutomationPropertiesAccessibilityView(item);
 				button.SetAutomationPropertiesHelpText(item);
-
 				button.SetAutomationPropertiesLabeledBy(item, null);
 
 				ToolbarItemOrder order = item.Order == ToolbarItemOrder.Default ? ToolbarItemOrder.Primary : item.Order;
