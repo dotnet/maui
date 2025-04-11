@@ -64,9 +64,7 @@
 
 					cv.ScrollTo(items.Count - 1);
 
-					//give the cv time to scroll
-					var rand = new Random();
-					await Task.Delay(rand.Next(10, 200));
+					await Task.Delay(200);
 
 					await Navigation.PopAsync(false);
 
