@@ -32,7 +32,6 @@ namespace Microsoft.Maui.Handlers
 			if (OperatingSystem.IsAndroidVersionAtLeast(23) && Context?.ApplicationInfo?.Flags.HasFlag(Android.Content.PM.ApplicationInfoFlags.HardwareAccelerated) == false)
 			{
 				platformView.SetLayerType(Android.Views.LayerType.Software, null);
-				platformView.Elevation = -1f;
 			}
 
 			return platformView;
