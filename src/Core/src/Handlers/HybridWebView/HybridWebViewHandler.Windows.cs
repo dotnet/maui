@@ -104,25 +104,49 @@ namespace Microsoft.Maui.Handlers
 
 		private async void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
-			// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
-			using var deferral = eventArgs.GetDeferral();
+			// 1. Check if the app wants to modify or override the request
+			{
+				// 1.a. First, create the event args
+				var platformArgs = new HybridWebViewPlatformAboutToSendRequestEventArgs(sender, eventArgs);
+				var args = new HybridWebViewAboutToSendRequestEventArgs(platformArgs);
 
-			var (stream, contentType, statusCode, reason) = await GetResponseStreamAsync(eventArgs.Request.Uri);
-			var contentLength = stream?.Size ?? 0;
-			var headers =
-				$"""
-				Content-Type: {contentType}
-				Content-Length: {contentLength}
-				""";
+				// 1.b. Trigger the event for the app
+				VirtualView.OnAboutToSendRequest(args);
 
-			eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
-				Content: stream,
-				StatusCode: statusCode,
-				ReasonPhrase: reason,
-				Headers: headers);
+				// 1.c. If the app reported that it completed the request, then we do nothing more
+				if (args.Handled)
+				{
+					return;
+				}
+			}
 
-			// Notify WebView2 that the deferred (async) operation is complete and we set a response.
-			deferral.Complete();
+			// 2. Check if the request is for a local resource
+			if (new Uri(eventArgs.Request.Uri) is Uri uri && AppOriginUri.IsBaseOf(uri))
+			{
+				// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
+				using var deferral = eventArgs.GetDeferral();
+
+				var (stream, contentType, statusCode, reason) = await GetResponseStreamAsync(eventArgs.Request.Uri);
+				var contentLength = stream?.Size ?? 0;
+				var headers =
+					$"""
+					Content-Type: {contentType}
+					Content-Length: {contentLength}
+					""";
+
+				eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
+					Content: stream,
+					StatusCode: statusCode,
+					ReasonPhrase: reason,
+					Headers: headers);
+
+				// Notify WebView2 that the deferred (async) operation is complete and we set a response.
+				deferral.Complete();
+
+				return;
+			}
+
+			// 3. Otherwise, we let the request go through as is
 		}
 
 		private async Task<(IRandomAccessStream Stream, string ContentType, int StatusCode, string Reason)> GetResponseStreamAsync(string url)
@@ -223,7 +247,7 @@ namespace Microsoft.Maui.Handlers
 
 				webView.CoreWebView2.Settings.AreDevToolsEnabled = Handler?.DeveloperTools.Enabled ?? false;
 				webView.CoreWebView2.Settings.IsWebMessageEnabled = true;
-				webView.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
+				webView.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
 
 				webView.WebMessageReceived += OnWebMessageReceived;
 				webView.CoreWebView2.WebResourceRequested += OnWebResourceRequested;

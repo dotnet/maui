@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable RS0016 // Add public types and members to the declared API
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
@@ -65,5 +66,105 @@ namespace Microsoft.Maui
 			JsonTypeInfo<TReturnType> returnTypeJsonTypeInfo,
 			object?[]? paramValues = null,
 			JsonTypeInfo?[]? paramJsonTypeInfos = null);
+
+#if NETSTANDARD
+		void OnAboutToSendRequest(HybridWebViewAboutToSendRequestEventArgs args);
+#else
+		void OnAboutToSendRequest(HybridWebViewAboutToSendRequestEventArgs args) { }
+#endif
+	}
+
+	public class HybridWebViewAboutToSendRequestEventArgs
+	{
+#if WINDOWS
+		internal HybridWebViewAboutToSendRequestEventArgs(HybridWebViewPlatformAboutToSendRequestEventArgs platformArgs)
+			: this(platformArgs.Request.Uri)
+		{
+			PlatformArgs = platformArgs;
+		}
+#elif ANDROID
+		internal HybridWebViewAboutToSendRequestEventArgs(HybridWebViewPlatformAboutToSendRequestEventArgs platformArgs)
+			: this(platformArgs.Request.Url!.ToString()!)
+		{
+			PlatformArgs = platformArgs;
+		}
+#endif
+
+		public HybridWebViewAboutToSendRequestEventArgs(string uri)
+			: this(new Uri(uri))
+		{
+		}
+
+		public HybridWebViewAboutToSendRequestEventArgs(Uri uri)
+		{
+			RequestUri = uri;
+		}
+
+		public HybridWebViewPlatformAboutToSendRequestEventArgs? PlatformArgs { get; }
+
+		public Uri RequestUri { get; }
+
+		public bool Handled { get; set; }
+	}
+
+	public class HybridWebViewPlatformAboutToSendRequestEventArgs
+	{
+#if WINDOWS
+		internal HybridWebViewPlatformAboutToSendRequestEventArgs(
+			global::Microsoft.Web.WebView2.Core.CoreWebView2 sender,
+			global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs eventArgs)
+		{
+			Sender = sender;
+			RequestEventArgs = eventArgs;
+		}
+
+		/// <summary>
+		/// Gets the native view attached to the event.
+		/// </summary>
+		public global::Microsoft.Web.WebView2.Core.CoreWebView2 Sender { get; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs RequestEventArgs { get; }
+
+		public global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequest Request => RequestEventArgs.Request;
+
+		public global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceResponse? Response
+		{
+			get => RequestEventArgs.Response;
+			set => RequestEventArgs.Response = value;
+		}
+
+#elif ANDROID
+
+		public HybridWebViewPlatformAboutToSendRequestEventArgs(
+			global::Android.Webkit.WebView sender,
+			global::Android.Webkit.IWebResourceRequest request)
+		{
+			Sender = sender;
+			Request = request;
+		}
+
+		/// <summary>
+		/// Gets the native view attached to the event.
+		/// </summary>
+		public global::Android.Webkit.WebView Sender { get; }
+
+		/// <summary>
+		/// 
+		/// </summary>
+		public global::Android.Webkit.IWebResourceRequest Request { get; }
+
+		public global::Android.Webkit.WebResourceResponse? Response { get; set; }
+
+#else
+
+		internal HybridWebViewPlatformAboutToSendRequestEventArgs()
+		{
+		}
+
+#endif
 	}
 }
+
