@@ -1983,6 +1983,7 @@ namespace Microsoft.Maui.Controls
 
 		IView IFlyoutView.Flyout => this.FlyoutContentView;
 		IView IFlyoutView.Detail => null;
+		IImageSource IFlyoutView.FlyoutIcon => IconImageSource;
 
 		bool IFlyoutView.IsPresented { get => FlyoutIsPresented; set => FlyoutIsPresented = value; }
 
