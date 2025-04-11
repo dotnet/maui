@@ -36,8 +36,10 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateIndicatorsColor()
 		{
-			if (_indicatorView == null)
+			if (_indicatorView is null || (_indicatorView is ITemplatedIndicatorView templatedView && templatedView.IndicatorsLayoutOverride is not null))
+			{
 				return;
+			}
 
 			if (_indicatorView.IndicatorColor is SolidPaint solidPaint)
 				_fillColor = solidPaint?.ToPlatform();
@@ -54,8 +56,10 @@ namespace Microsoft.Maui.Platform
 
 		internal void CreateIndicators()
 		{
-			if (_indicatorView == null)
+			if (_indicatorView is null || (_indicatorView is ITemplatedIndicatorView templatedView && templatedView.IndicatorsLayoutOverride is not null))
+			{
 				return;
+			}
 
 			var position = GetIndexFromPosition();
 			var indicators = new List<WShape>();
