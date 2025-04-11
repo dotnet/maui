@@ -75,20 +75,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		private protected virtual void RegisterSupplementaryViews(UICollectionElementKindSection kind)
 		{
-			if (IsHorizontal)
-			{
-				CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalSupplementaryView2),
-					kind, HorizontalSupplementaryView2.ReuseId);
-				CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalDefaultSupplementalView2),
-					kind, HorizontalDefaultSupplementalView2.ReuseId);
-			}
-			else
-			{
-				CollectionView.RegisterClassForSupplementaryView(typeof(VerticalSupplementaryView2),
-					kind, VerticalSupplementaryView2.ReuseId);
-				CollectionView.RegisterClassForSupplementaryView(typeof(VerticalDefaultSupplementalView2),
-					kind, VerticalDefaultSupplementalView2.ReuseId);
-			}
+			CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalSupplementaryView2),
+				kind, HorizontalSupplementaryView2.ReuseId);
+			CollectionView.RegisterClassForSupplementaryView(typeof(HorizontalDefaultSupplementalView2),
+				kind, HorizontalDefaultSupplementalView2.ReuseId);
+			CollectionView.RegisterClassForSupplementaryView(typeof(VerticalSupplementaryView2),
+				kind, VerticalSupplementaryView2.ReuseId);
+			CollectionView.RegisterClassForSupplementaryView(typeof(VerticalDefaultSupplementalView2),
+				kind, VerticalDefaultSupplementalView2.ReuseId);
 		}
 
 		string DetermineViewReuseId(NSString elementKind)
