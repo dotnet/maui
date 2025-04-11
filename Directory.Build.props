@@ -3,6 +3,9 @@
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
 
   <PropertyGroup>
+    <EnableNUnitRunner>true</EnableNUnitRunner>
+    <TestingPlatformShowTestsFailure>true</TestingPlatformShowTestsFailure>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
