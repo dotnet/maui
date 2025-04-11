@@ -181,21 +181,35 @@ namespace Microsoft.Maui.Handlers
 
 		static async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
 		{
-			var ras = new InMemoryRandomAccessStream();
-			var stream = ras.AsStreamForWrite(); // do not dispose as this stream IS the IMRAS
-			await content.CopyToAsync(stream);
-			await stream.FlushAsync();
-			ras.Seek(0);
-			return ras;
+			var result = await CopyToRandomAccessStreamAsync(async ras =>
+			{
+				var streamForWrite = ras.AsStreamForWrite(); // Do not dispose as this stream IS the IMRAS
+				await content.CopyToAsync(streamForWrite);
+				await streamForWrite.FlushAsync();
+			});
+
+			return result;
 		}
 
 		static async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(IBuffer content)
 		{
-			var ras = new InMemoryRandomAccessStream();
-			await ras.WriteAsync(content);
-			await ras.FlushAsync();
-			ras.Seek(0);
-			return ras;
+			var result = await CopyToRandomAccessStreamAsync(async ras =>
+			{
+				await ras.WriteAsync(content);
+			});
+
+			return result;
+		}
+
+		private static async Task<IRandomAccessStream> CopyToRandomAccessStreamAsync(Func<IRandomAccessStream, Task> copyContentAsync)
+		{
+			var randomAccessStream = new InMemoryRandomAccessStream();
+
+			await copyContentAsync(randomAccessStream);
+			await randomAccessStream.FlushAsync();
+			randomAccessStream.Seek(0);
+
+			return randomAccessStream;
 		}
 
 		[RequiresUnreferencedCode(DynamicFeatures)]
