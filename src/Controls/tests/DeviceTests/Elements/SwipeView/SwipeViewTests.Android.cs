@@ -189,5 +189,25 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, isVisible);
 			});	
 		}
+
+		//src/Compatibility/Core/tests/Android/TranslationTests.cs
+		[Fact]
+		[Description("The Translation property of a SwipeView should match with native Translation")]
+		public async Task SwipeViewTranslationConsistent()
+		{
+			var swipeView = new SwipeView()
+			{
+				TranslationX = 50,
+				TranslationY = -20
+			};
+
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				AssertTranslationMatches(nativeView, swipeView.TranslationX, swipeView.TranslationY);
+			});
+		}
+
 	}
 }
