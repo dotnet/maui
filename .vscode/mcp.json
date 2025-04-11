@@ -5,12 +5,6 @@
             "id": "github-key",
             "password": true, // Encrypted at-rest
             "description": "GitHub PAT"
-        },
-        {
-            "type": "promptString",
-            "id": "azdo-key",
-            "password": true, // Encrypted at-rest
-            "description": "AZDO PAT"
         }
     ],
     "servers": {
