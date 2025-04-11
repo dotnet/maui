@@ -269,6 +269,7 @@ public static partial class AppHostBuilderExtensions
 		Label.RemapForControls();
 		Button.RemapForControls();
 		CheckBox.RemapForControls();
+		CollectionView.RemapForControls();
 		DatePicker.RemapForControls();
 		RadioButton.RemapForControls();
 		FlyoutPage.RemapForControls();
