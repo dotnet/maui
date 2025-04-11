@@ -75,6 +75,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					ItemsView.SelectedItems.Add(GetItemAtIndex(indexPath));
 					break;
 			}
+
+			CollectionView.CellForItem(indexPath)?.UpdateSelected(true);
 		}
 
 		void FormsDeselectItem(NSIndexPath indexPath)
@@ -91,6 +93,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					ItemsView.SelectedItems.Remove(GetItemAtIndex(indexPath));
 					break;
 			}
+
+			CollectionView.CellForItem(indexPath)?.UpdateSelected(false);
 		}
 
 		internal void UpdatePlatformSelection()

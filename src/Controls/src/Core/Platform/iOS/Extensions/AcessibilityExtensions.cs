@@ -4,6 +4,23 @@ namespace Microsoft.Maui.Controls.Platform;
 
 internal static class AcessibilityExtensions
 {
+	internal static void UpdateSelected(this UICollectionViewCell cell, bool selected)
+	{
+		if (cell.ContentView is not null && cell.ContentView.Subviews.Length > 0)
+		{
+			var firstChild = cell.ContentView.Subviews[0];
+
+			if (selected)
+			{
+				firstChild.AccessibilityTraits |= UIAccessibilityTrait.Selected;
+			}
+			else
+			{
+				firstChild.AccessibilityTraits &= ~UIAccessibilityTrait.Selected;
+			}
+		}
+	}
+
 	internal static void UpdateAccessibilityTraits(this UICollectionView collectionView, SelectableItemsView itemsView)
 	{
 		foreach (var subview in collectionView.Subviews)
