@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Handlers
 
 			// VerticalAlignment only works when the child's Height is Auto
 			PlatformView.Height = double.NaN;
+			PlatformView.MinHeight = 0;
 
 			MapHeight(this, VirtualView);
 		}
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 			base.RemoveContainer();
 
 			MapHeight(this, VirtualView);
+			MapMinimumHeight(this, VirtualView);
 		}
 
 		public static void MapHeight(ILabelHandler handler, ILabel view) =>
