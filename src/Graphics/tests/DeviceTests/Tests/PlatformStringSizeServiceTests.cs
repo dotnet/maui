@@ -1,50 +1,42 @@
-﻿using System;
-using Microsoft.Maui.Graphics.Platform;
+﻿using Microsoft.Maui.Graphics.Platform;
 using Xunit;
 
-namespace Microsoft.Maui.Graphics.DeviceTests.Tests;
+namespace Microsoft.Maui.Graphics.DeviceTests;
 
 public class PlatformStringSizeServiceTests
 {
-	[Fact]
-	public void GetStringSize_FontWeightOutOfRange_ThrowsArgumentException()
-	{
-		// Arrange
-		var service = new PlatformStringSizeService();
+#if WINDOWS
+	[Theory]
+	[InlineData(0)]
+	[InlineData(1)]
+	[InlineData(500)]
+	[InlineData(999)]
+	[InlineData(1000)]
+    public void GetStringSize_FontWeight(int fontWeight)
+    {
+        // Arrange
+        var service = new PlatformStringSizeService();
+        var font = new Font("Arial", fontWeight, FontStyleType.Normal);
 
-		// Invalid weight, out of range
-		var font = new Font("Arial", 1000, FontStyleType.Normal);
+        //string textString = "Test";
+        float textSize = 32.0f;
 
-		string testString = "Test";
-		float textSize = 32.0f;
+        // Act
+        var canvasTextFormat = service.CreateCanvasTextFormat(font, textSize);
 
-		// Act & Assert
-		Assert.Throws<ArgumentException>(() =>
+        // Assert
+		if(fontWeight == 0)
 		{
-			service.GetStringSize(testString, font, textSize);
-		});
-	}
-
-	[Fact]
-	public void GetStringSize_FontWeightWithinRange_DoesNotThrow()
-	{
-		// Arrange
-		var service = new PlatformStringSizeService();
-
-		var font = new Font
-		(
-			 "Arial",
-			 500, // Valid weight, within range
-			FontStyleType.Normal
-		);
-		string testString = "Test";
-		float textSize = 32.0f;
-
-		// Act
-		var size = service.GetStringSize(testString, font, textSize);
-
-		// Assert
-		Assert.True(size.Width > 0);
-		Assert.True(size.Height > 0);
-	}
+			Assert.Equal(1, canvasTextFormat.FontWeight.Weight);
+		}
+		else if (fontWeight == 1000)
+		{
+			Assert.Equal(999, canvasTextFormat.FontWeight.Weight);
+		}
+		else
+		{
+			Assert.Equal(fontWeight, canvasTextFormat.FontWeight.Weight);
+		}
+    }
+#endif
 }
