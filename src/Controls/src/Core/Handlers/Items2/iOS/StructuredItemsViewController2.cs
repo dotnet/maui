@@ -106,6 +106,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		void UpdateTemplatedSupplementaryView(TemplatedCell2 cell, NSString elementKind)
 		{
 			bool isHeader = elementKind == UICollectionElementKindSectionKey.Header;
+			cell.isHeaderOrFooterChanged = true;
 
 			if (isHeader)
 			{
@@ -131,6 +132,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 				cell.Tag = FooterTag;
 			}
+
+			cell.isHeaderOrFooterChanged = false;
 		}
 
 		string DetermineViewReuseId(DataTemplate template, object item)
