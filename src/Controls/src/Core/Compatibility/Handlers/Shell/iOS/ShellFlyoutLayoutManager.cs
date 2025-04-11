@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIView _contentView;
 		UIScrollView ScrollView { get; set; }
 		UIContainerView _headerView;
-		UIView _footerView;
+		UIContainerView _footerView;
 		double _headerSize;
 		readonly IShellContext _context;
 		Action removeScrolledEvent;
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					ScrollView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
 				}
 
-				UpdateHeaderSize();
+				UpdateLayout();
 			}
 		}
 
@@ -155,18 +155,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					return;
 
 				if (_headerView is not null)
-					_headerView.HeaderSizeChanged -= OnHeaderViewMeasureChanged;
+					_headerView.PlatformMeasureInvalidated -= OnHeaderViewMeasureChanged;
 
 				_headerView = value;
 
 				if (_headerView is not null)
-					_headerView.HeaderSizeChanged += OnHeaderViewMeasureChanged;
+					_headerView.PlatformMeasureInvalidated += OnHeaderViewMeasureChanged;
 
-				UpdateHeaderSize();
+				UpdateLayout();
 			}
 		}
 
-		public virtual UIView FooterView
+		public virtual UIContainerView FooterView
 		{
 			get => _footerView;
 			set
@@ -174,9 +174,30 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_footerView == value)
 					return;
 
+				if (_footerView is not null)
+					_footerView.PlatformMeasureInvalidated -= OnFooterViewMeasureChanged;
+
 				_footerView = value;
-				UpdateHeaderSize();
+
+				if (_footerView is not null)
+					_footerView.PlatformMeasureInvalidated += OnFooterViewMeasureChanged;
+
+				UpdateLayout();
 			}
+		}
+
+		void OnFooterViewMeasureChanged(object sender, EventArgs e)
+		{
+			if (FooterView is null || ContentView?.Superview is not { } flyoutView)
+				return;
+
+			var flyoutFrame = flyoutView.Frame;
+			var widthConstraint = flyoutFrame.Width;
+			var heightConstraint = flyoutFrame.Height;
+			var size = FooterView.SizeThatFits(new CGSize(widthConstraint, double.PositiveInfinity));
+			FooterView.Frame = new CGRect(0, heightConstraint - size.Height, widthConstraint, size.Height);
+			
+			UpdateLayout();
 		}
 
 		void OnHeaderViewMeasureChanged(object sender, EventArgs e)
@@ -185,10 +206,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			HeaderView.SizeThatFits(new CGSize(ContentView.Superview.Frame.Width, double.PositiveInfinity));
-			UpdateHeaderSize();
+			UpdateLayout();
 		}
 
-		internal void UpdateHeaderSize()
+		internal void UpdateLayout()
 		{
 			if (HeaderView is null || ContentView?.Superview is null)
 				return;
@@ -365,7 +386,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public void ViewDidLoad()
 		{
-			UpdateHeaderSize();
+			UpdateLayout();
 		}
 
 		public void OnScrolled(nfloat contentOffsetY)
