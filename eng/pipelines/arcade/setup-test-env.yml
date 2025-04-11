@@ -11,6 +11,18 @@ steps:
   fetchDepth: 1
   clean: true
 
+- template: /eng/pipelines/common/provision.yml@self
+  parameters:
+    checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+    skipJdk: false
+    skipAndroidCommonSdks: false
+    skipAndroidPlatformApis: false
+    onlyAndroidPlatformDefaultApis: true
+    skipAndroidEmulatorImages: true
+    skipAndroidCreateAvds: true
+    skipProvisioning: true
+    skipXcode: true
+
 - script: |
     sudo xcode-select -s /Applications/Xcode_$(REQUIRED_XCODE).app
     xcrun xcode-select --print-path

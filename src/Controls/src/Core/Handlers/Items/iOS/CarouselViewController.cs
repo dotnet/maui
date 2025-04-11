@@ -334,6 +334,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CollectionViewUpdated(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			int targetPosition;
 			if (_positionAfterUpdate == -1)
 			{
 				return;
@@ -341,7 +342,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_gotoPosition = -1;
 
-			var targetPosition = _positionAfterUpdate;
+			// We need to update the position while modifying the collection.
+			targetPosition = GetTargetPosition();
+
 			_positionAfterUpdate = -1;
 
 			SetPosition(targetPosition);
@@ -352,6 +355,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			//If we are adding a new item make sure to maintain the CurrentItemPosition
 			return currentItemPosition != -1 ? currentItemPosition : carouselPosition;
+		}
+
+		private int GetTargetPosition()
+		{
+
+			if (ItemsSource.ItemCount == 0)
+			{
+				return 0;
+			}
+
+			return ItemsView.ItemsUpdatingScrollMode switch
+			{
+				ItemsUpdatingScrollMode.KeepItemsInView => 0,
+				ItemsUpdatingScrollMode.KeepLastItemInView => ItemsSource.ItemCount - 1,
+				_ => _positionAfterUpdate
+			};
 		}
 
 		int GetPositionWhenResetItems()

@@ -41,6 +41,11 @@ namespace Microsoft.Maui.Handlers
 			{
 				return;
 			}
+
+			// Note: On Windows, the SwipeView control leverages the underlying SwipeControl from WinUI.
+			// Unlike other platforms, SwipeControl does not provide a method to programmatically open or reveal its content.
+			// As a result, programmatic triggering of the swipe functionality is not supported.
+			// https://learn.microsoft.com/en-us/windows/winui/api/microsoft.ui.xaml.controls.swipecontrol.close?view=winui-2.8
 		}
 
 		public static void MapRequestClose(ISwipeViewHandler handler, ISwipeView swipeView, object? args)

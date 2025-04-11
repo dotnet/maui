@@ -31,16 +31,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.Disconnect();
 
-			if (_headerViewFormsElement is not null)
-			{
-				_headerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
-			}
-
-			if (_footerViewFormsElement is not null)
-			{
-				_footerViewFormsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
-			}
-
 			_headerUIView = null;
 			_headerViewFormsElement = null;
 			_footerUIView = null;
@@ -84,29 +74,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				Math.Abs(CollectionView.Frame.Height - (headerHeight + footerHeight)));
 		}
 
-		public override void ViewWillLayoutSubviews()
+		private protected override void MeasureSupplementaryViews()
 		{
-			base.ViewWillLayoutSubviews();
+			base.MeasureSupplementaryViews();
 
-			// This update is only relevant if you have a footer view because it's used to place the footer view
-			// based on the ContentSize so we just update the positions if the ContentSize has changed
-			if (_footerUIView != null)
-			{
-				var emptyView = CollectionView.ViewWithTag(EmptyTag);
+			RemeasureLayout(_headerViewFormsElement, _headerUIView);
+			RemeasureLayout(_footerViewFormsElement, _footerUIView);
+		}
 
-				if (IsHorizontal)
-				{
-					if (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width ||
-						_footerUIView.Frame.X < emptyView?.Frame.X)
-						UpdateHeaderFooterPosition();
-				}
-				else
-				{
-					if (_footerUIView.Frame.Y != ItemsViewLayout.CollectionViewContentSize.Height ||
-						_footerUIView.Frame.Y < (emptyView?.Frame.Y + emptyView?.Frame.Height))
-						UpdateHeaderFooterPosition();
-				}
-			}
+		private protected override void LayoutSupplementaryViews()
+		{
+			base.LayoutSupplementaryViews();
+			UpdateHeaderFooterPosition();
 		}
 
 		internal void UpdateFooterView()
@@ -123,7 +102,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateHeaderFooterPosition();
 		}
 
-
 		internal void UpdateSubview(object view, DataTemplate viewTemplate, nint viewTag, ref UIView uiView, ref VisualElement formsElement)
 		{
 			uiView?.RemoveFromSuperview();
@@ -131,7 +109,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (formsElement != null)
 			{
 				ItemsView.RemoveLogicalChild(formsElement);
-				formsElement.MeasureInvalidated -= OnFormsElementMeasureInvalidated;
 			}
 
 			UpdateView(view, viewTemplate, ref uiView, ref formsElement);
@@ -147,15 +124,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				ItemsView.AddLogicalChild(formsElement);
 			}
 
-			if (formsElement != null)
-			{
-				RemeasureLayout(formsElement);
-				formsElement.MeasureInvalidated += OnFormsElementMeasureInvalidated;
-			}
-			else
-			{
-				uiView?.SizeToFit();
-			}
+			RemeasureLayout(formsElement, uiView);
 		}
 
 		void UpdateHeaderFooterPosition()
@@ -166,17 +135,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				var currentInset = CollectionView.ContentInset;
 
-				nfloat headerWidth = ((ItemsView?.Header is View) ? _headerViewFormsElement?.ToPlatform() : _headerUIView)?.Frame.Width ?? 0f;
-				nfloat footerWidth = ((ItemsView?.Footer is View) ? _footerViewFormsElement?.ToPlatform() : _footerUIView)?.Frame.Width ?? 0f;
+				nfloat headerWidth = _headerUIView?.Frame.Width ?? 0f;
+				nfloat footerWidth = _footerUIView?.Frame.Width ?? 0f;
 				nfloat emptyWidth = emptyView?.Frame.Width ?? 0f;
-
-				if (_headerUIView != null && _headerUIView.Frame.X != headerWidth)
-				{
-					_headerUIView.Frame = new CoreGraphics.CGRect(-headerWidth, 0, headerWidth, CollectionView.Frame.Height);
-				}
-
-				if (_footerUIView != null && (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width || emptyWidth > 0))
-					_footerUIView.Frame = new CoreGraphics.CGRect(ItemsViewLayout.CollectionViewContentSize.Width + emptyWidth, 0, footerWidth, CollectionView.Frame.Height);
 
 				if (CollectionView.ContentInset.Left != headerWidth || CollectionView.ContentInset.Right != footerWidth)
 				{
@@ -190,14 +151,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 					// if the header grows it will scroll off the screen because if you change the content inset iOS adjusts the content offset so the list doesn't move
 					// this changes the offset of the list by however much the header size has changed
-					CollectionView.ContentOffset = new CoreGraphics.CGPoint(xOffset, CollectionView.ContentOffset.Y);
+					CollectionView.ContentOffset = new CGPoint(xOffset, CollectionView.ContentOffset.Y);
+				}
+
+				if (_headerUIView != null && _headerUIView.Frame.X != -headerWidth)
+				{
+					_headerUIView.Frame = new CGRect(-headerWidth, 0, headerWidth, CollectionView.Frame.Height);
+				}
+
+				if (_footerUIView != null && IsViewLoaded && View.Window != null)
+				{
+					var width = ItemsViewLayout.CollectionViewContentSize.Width;
+					var footerX = width + emptyWidth;
+					var currentFrame = _footerUIView.Frame;
+
+					if (currentFrame.X != footerX)
+					{
+						_footerUIView.Frame = new CGRect(footerX, 0, footerWidth, CollectionView.Frame.Height);
+					}
 				}
 			}
 			else
 			{
 				var currentInset = CollectionView.ContentInset;
-				nfloat headerHeight = ((ItemsView?.Header is View) ? _headerViewFormsElement?.ToPlatform() : _headerUIView)?.Frame.Height ?? 0f;
-				nfloat footerHeight = ((ItemsView?.Footer is View) ? _footerViewFormsElement?.ToPlatform() : _footerUIView)?.Frame.Height ?? 0f;
+				nfloat headerHeight = _headerUIView?.Frame.Height ?? 0f;
+				nfloat footerHeight = _footerUIView?.Frame.Height ?? 0f;
 				nfloat emptyHeight = emptyView?.Frame.Height ?? 0f;
 
 				if (CollectionView.ContentInset.Top != headerHeight || CollectionView.ContentInset.Bottom != footerHeight)
@@ -215,25 +193,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 					if (currentOffset.Y.Value < headerHeight)
 					{
-						CollectionView.ContentOffset = new CoreGraphics.CGPoint(CollectionView.ContentOffset.X, yOffset);
+						CollectionView.ContentOffset = new CGPoint(CollectionView.ContentOffset.X, yOffset);
 					}
 				}
 
-				if (_headerUIView != null && _headerUIView.Frame.Y != headerHeight)
+				if (_headerUIView != null && _headerUIView.Frame.Y != -headerHeight)
 				{
-					_headerUIView.Frame = new CoreGraphics.CGRect(0, -headerHeight, CollectionView.Frame.Width, headerHeight);
+					_headerUIView.Frame = new CGRect(0, -headerHeight, CollectionView.Frame.Width, headerHeight);
 				}
 
-				nfloat height = 0;
-
-				if (IsViewLoaded && View.Window != null)
+				if (_footerUIView != null && IsViewLoaded && View.Window != null)
 				{
-					height = ItemsViewLayout.CollectionViewContentSize.Height;
-				}
+					var height = ItemsViewLayout.CollectionViewContentSize.Height;
+					var footerY = height + emptyHeight;
+					var currentFrame = _footerUIView.Frame;
 
-				if (_footerUIView != null && (_footerUIView.Frame.Y != height || emptyHeight > 0 || _footerUIView.Frame.Height != footerHeight))
-				{
-					_footerUIView.Frame = new CoreGraphics.CGRect(0, height + emptyHeight, CollectionView.Frame.Width, footerHeight);
+					if (currentFrame.Y != footerY)
+					{
+						_footerUIView.Frame = new CGRect(0, footerY, CollectionView.Frame.Width, footerHeight);
+					}
 				}
 			}
 		}
@@ -248,15 +226,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var size = base.GetSize();
 			return new Size(size.Value.Width, size.Value.Height + (_headerUIView?.Frame.Height ?? 0) + (_footerUIView?.Frame.Height ?? 0));
-		}
-
-		internal void UpdateLayoutMeasurements()
-		{
-			if (_headerViewFormsElement != null)
-				HandleFormsElementMeasureInvalidated(_headerViewFormsElement);
-
-			if (_footerViewFormsElement != null)
-				HandleFormsElementMeasureInvalidated(_footerViewFormsElement);
 		}
 	}
 }
