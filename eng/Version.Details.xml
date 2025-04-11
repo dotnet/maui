@@ -36,10 +36,6 @@
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-10.0.100.Transport" Version="10.0.0-preview.4.25209.5">
-      <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>6e6c9ffed81b622a13277f584c8b0ebe76732985</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="10.0.0-preview.4.25209.3" CoherentParentDependency="Microsoft.NET.Sdk">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>b3399b82c5f13e3f4ad164656083d37b5c04ea85</Sha>
