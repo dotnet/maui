@@ -1,0 +1,3233 @@
+[
+  {
+    "id": 4227721667,
+    "node_id": "MDU6TGFiZWw0MjI3NzIxNjY3",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/:watch:%20Not%20Triaged",
+    "name": ":watch: Not Triaged",
+    "color": "f78fb2",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 4080910898,
+    "node_id": "LA_kwDOD6PVWM7zPcIy",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/a11y-resolved",
+    "name": "a11y-resolved",
+    "color": "408F8F",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 3493233599,
+    "node_id": "LA_kwDOD6PVWM7QNoO_",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/a11y/recipes-app",
+    "name": "a11y/recipes-app",
+    "color": "c5def5",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7803207469,
+    "node_id": "LA_kwDOD6PVWM8AAAAB0Rt_LQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/a11y/sf-template-app",
+    "name": "a11y/sf-template-app",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 7274053195,
+    "node_id": "LA_kwDOD6PVWM8AAAABsZE-Sw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Announcement",
+    "name": "Announcement",
+    "color": "CECF5D",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 8141285261,
+    "node_id": "LA_kwDOD6PVWM8AAAAB5UInjQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-ai",
+    "name": "area-ai",
+    "color": "e99695",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 2077518609,
+    "node_id": "MDU6TGFiZWwyMDc3NTE4NjA5",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-animation",
+    "name": "area-animation",
+    "color": "bfdadc",
+    "default": false,
+    "description": "Animation, Transitions, Transforms"
+  },
+  {
+    "id": 3522426435,
+    "node_id": "LA_kwDOD6PVWM7R8_ZD",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-architecture",
+    "name": "area-architecture",
+    "color": "f9d0c4",
+    "default": false,
+    "description": "Issues with code structure, SDK structure, implementation details"
+  },
+  {
+    "id": 2082237259,
+    "node_id": "MDU6TGFiZWwyMDgyMjM3MjU5",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-blazor",
+    "name": "area-blazor",
+    "color": "c2e0c6",
+    "default": false,
+    "description": "Blazor Hybrid / Desktop, BlazorWebView"
+  },
+  {
+    "id": 7023523665,
+    "node_id": "LA_kwDOD6PVWM8AAAABoqJ3UQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-compatibility",
+    "name": "area-compatibility",
+    "color": "B8B8EA",
+    "default": false,
+    "description": "Issues related to features in the Compatibility Nuget"
+  },
+  {
+    "id": 3823523803,
+    "node_id": "LA_kwDOD6PVWM7j5lfb",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-activityindicator",
+    "name": "area-controls-activityindicator",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "ActivityIndicator"
+  },
+  {
+    "id": 3823581105,
+    "node_id": "LA_kwDOD6PVWM7j5zex",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-border",
+    "name": "area-controls-border",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Border"
+  },
+  {
+    "id": 3823504478,
+    "node_id": "LA_kwDOD6PVWM7j5gxe",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-button",
+    "name": "area-controls-button",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Button, ImageButton"
+  },
+  {
+    "id": 3823509565,
+    "node_id": "LA_kwDOD6PVWM7j5iA9",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-checkbox",
+    "name": "area-controls-checkbox",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "CheckBox"
+  },
+  {
+    "id": 3373093142,
+    "node_id": "MDU6TGFiZWwzMzczMDkzMTQy",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-collectionview",
+    "name": "area-controls-collectionview",
+    "color": "fbca04",
+    "default": false,
+    "description": "CollectionView, CarouselView, IndicatorView"
+  },
+  {
+    "id": 4483933277,
+    "node_id": "LA_kwDOD6PVWM8AAAABC0NkXQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-contextmenu",
+    "name": "area-controls-contextmenu",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "ContextMenu"
+  },
+  {
+    "id": 3823505817,
+    "node_id": "LA_kwDOD6PVWM7j5hGZ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-datetimepicker",
+    "name": "area-controls-datetimepicker",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "DatePicker, TimePicker"
+  },
+  {
+    "id": 5720598587,
+    "node_id": "LA_kwDOD6PVWM8AAAABVPloOw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-dialog",
+    "name": "area-controls-dialog",
+    "color": "FEF2C0",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 3823603848,
+    "node_id": "LA_kwDOD6PVWM7j55CI",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-dialogalert",
+    "name": "area-controls-dialogalert",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "DisplayAlert, dialog"
+  },
+  {
+    "id": 5720454720,
+    "node_id": "LA_kwDOD6PVWM8AAAABVPc2QA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-editor",
+    "name": "area-controls-editor",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Editor"
+  },
+  {
+    "id": 3823504059,
+    "node_id": "LA_kwDOD6PVWM7j5gq7",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-entry",
+    "name": "area-controls-entry",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Entry"
+  },
+  {
+    "id": 3955178604,
+    "node_id": "LA_kwDOD6PVWM7rvzxs",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-flyout",
+    "name": "area-controls-flyout",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Flyout"
+  },
+  {
+    "id": 3521726430,
+    "node_id": "LA_kwDOD6PVWM7R6Ufe",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-flyoutpage",
+    "name": "area-controls-flyoutpage",
+    "color": "fbca04",
+    "default": false,
+    "description": "FlyoutPage"
+  },
+  {
+    "id": 3823574727,
+    "node_id": "LA_kwDOD6PVWM7j5x7H",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-frame",
+    "name": "area-controls-frame",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Frame"
+  },
+  {
+    "id": 3823521745,
+    "node_id": "LA_kwDOD6PVWM7j5k_R",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-general",
+    "name": "area-controls-general",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "General issues that span multiple controls, or common base classes such as View or Element"
+  },
+  {
+    "id": 6926519202,
+    "node_id": "LA_kwDOD6PVWM8AAAABnNpLog",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-hybridwebview",
+    "name": "area-controls-hybridwebview",
+    "color": "D160DC",
+    "default": false,
+    "description": "HybridWebView control"
+  },
+  {
+    "id": 3823578792,
+    "node_id": "LA_kwDOD6PVWM7j5y6o",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-image",
+    "name": "area-controls-image",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Image control"
+  },
+  {
+    "id": 3823505440,
+    "node_id": "LA_kwDOD6PVWM7j5hAg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-label",
+    "name": "area-controls-label",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Label, Span"
+  },
+  {
+    "id": 3708469415,
+    "node_id": "LA_kwDOD6PVWM7dCsCn",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-listview",
+    "name": "area-controls-listview",
+    "color": "0E7B06",
+    "default": false,
+    "description": "ListView and TableView"
+  },
+  {
+    "id": 3823757836,
+    "node_id": "LA_kwDOD6PVWM7j6eoM",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-map",
+    "name": "area-controls-map",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Map / Maps"
+  },
+  {
+    "id": 3938453477,
+    "node_id": "LA_kwDOD6PVWM7qwAfl",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-menubar",
+    "name": "area-controls-menubar",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Desktop MenuBarItems"
+  },
+  {
+    "id": 3702274133,
+    "node_id": "LA_kwDOD6PVWM7crDhV",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-modal",
+    "name": "area-controls-modal",
+    "color": "6858EE",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 3823564008,
+    "node_id": "LA_kwDOD6PVWM7j5vTo",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-newcontrol",
+    "name": "area-controls-newcontrol",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Request to add a new control"
+  },
+  {
+    "id": 3823582329,
+    "node_id": "LA_kwDOD6PVWM7j5zx5",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-pages",
+    "name": "area-controls-pages",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Page types"
+  },
+  {
+    "id": 3823535748,
+    "node_id": "LA_kwDOD6PVWM7j5oaE",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-picker",
+    "name": "area-controls-picker",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Picker"
+  },
+  {
+    "id": 3823540337,
+    "node_id": "LA_kwDOD6PVWM7j5phx",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-progressbar",
+    "name": "area-controls-progressbar",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "ProgressBar"
+  },
+  {
+    "id": 3823519339,
+    "node_id": "LA_kwDOD6PVWM7j5kZr",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-radiobutton",
+    "name": "area-controls-radiobutton",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "RadioButton, RadioButtonGroup"
+  },
+  {
+    "id": 3823555197,
+    "node_id": "LA_kwDOD6PVWM7j5tJ9",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-refreshview",
+    "name": "area-controls-refreshview",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "RefreshView"
+  },
+  {
+    "id": 4641573011,
+    "node_id": "LA_kwDOD6PVWM8AAAABFKjIkw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-scrollview",
+    "name": "area-controls-scrollview",
+    "color": "6D17C0",
+    "default": false,
+    "description": "ScrollView"
+  },
+  {
+    "id": 6538603525,
+    "node_id": "LA_kwDOD6PVWM8AAAABhbssBQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-searchbar",
+    "name": "area-controls-searchbar",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "SearchBar control"
+  },
+  {
+    "id": 3158076570,
+    "node_id": "MDU6TGFiZWwzMTU4MDc2NTcw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-shell",
+    "name": "area-controls-shell",
+    "color": "57F90B",
+    "default": false,
+    "description": "Shell Navigation, Routes, Tabs, Flyout"
+  },
+  {
+    "id": 3823537437,
+    "node_id": "LA_kwDOD6PVWM7j5o0d",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-slider",
+    "name": "area-controls-slider",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Slider"
+  },
+  {
+    "id": 3823509814,
+    "node_id": "LA_kwDOD6PVWM7j5iE2",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-stepper",
+    "name": "area-controls-stepper",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Stepper"
+  },
+  {
+    "id": 3705217970,
+    "node_id": "LA_kwDOD6PVWM7c2SOy",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-swipeview",
+    "name": "area-controls-swipeview",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "SwipeView"
+  },
+  {
+    "id": 3823549531,
+    "node_id": "LA_kwDOD6PVWM7j5rxb",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-switch",
+    "name": "area-controls-switch",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Switch"
+  },
+  {
+    "id": 3521691753,
+    "node_id": "LA_kwDOD6PVWM7R6MBp",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-tabbedpage",
+    "name": "area-controls-tabbedpage",
+    "color": "1d76db",
+    "default": false,
+    "description": "TabbedPage"
+  },
+  {
+    "id": 7311593721,
+    "node_id": "LA_kwDOD6PVWM8AAAABs84Q-Q",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-titlebar",
+    "name": "area-controls-titlebar",
+    "color": "39AA15",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 4681550538,
+    "node_id": "LA_kwDOD6PVWM8AAAABFwrKyg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-titleview",
+    "name": "area-controls-titleview",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "TitleView"
+  },
+  {
+    "id": 4663788178,
+    "node_id": "LA_kwDOD6PVWM8AAAABFfvCkg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-toolbar",
+    "name": "area-controls-toolbar",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "ToolBar"
+  },
+  {
+    "id": 4781665984,
+    "node_id": "LA_kwDOD6PVWM8AAAABHQJuwA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-twopaneview",
+    "name": "area-controls-twopaneview",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "TwoPaneView / DualScreen"
+  },
+  {
+    "id": 3823504789,
+    "node_id": "LA_kwDOD6PVWM7j5g2V",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-webview",
+    "name": "area-controls-webview",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "WebView"
+  },
+  {
+    "id": 4863679421,
+    "node_id": "LA_kwDOD6PVWM8AAAABIeXbvQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-controls-window",
+    "name": "area-controls-window",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Window"
+  },
+  {
+    "id": 3966162346,
+    "node_id": "LA_kwDOD6PVWM7sZtWq",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-core-dispatching",
+    "name": "area-core-dispatching",
+    "color": "03DE6B",
+    "default": false,
+    "description": "Main/UI threads, IDispatcher, IDispatcherTimer"
+  },
+  {
+    "id": 3386275770,
+    "node_id": "LA_kwDOD6PVWM7J1ne6",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-core-hosting",
+    "name": "area-core-hosting",
+    "color": "78FD5A",
+    "default": false,
+    "description": "Extensions / Hosting / AppBuilder / Startup"
+  },
+  {
+    "id": 2077647737,
+    "node_id": "MDU6TGFiZWwyMDc3NjQ3NzM3",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-core-lifecycle",
+    "name": "area-core-lifecycle",
+    "color": "d7bbf7",
+    "default": false,
+    "description": "XPlat and Native UIApplicationDelegate/Activity/Window lifecycle events"
+  },
+  {
+    "id": 5061673341,
+    "node_id": "LA_kwDOD6PVWM8AAAABLbMBfQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-core-platform",
+    "name": "area-core-platform",
+    "color": "3A6203",
+    "default": false,
+    "description": "Integration with platforms"
+  },
+  {
+    "id": 2046783029,
+    "node_id": "MDU6TGFiZWwyMDQ2NzgzMDI5",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-docs",
+    "name": "area-docs",
+    "color": "0075ca",
+    "default": false,
+    "description": "Conceptual docs, API docs, Samples"
+  },
+  {
+    "id": 2088208746,
+    "node_id": "MDU6TGFiZWwyMDg4MjA4NzQ2",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-drawing",
+    "name": "area-drawing",
+    "color": "efbeae",
+    "default": false,
+    "description": "Shapes, Borders, Shadows, Graphics, BoxView, custom drawing"
+  },
+  {
+    "id": 7023815861,
+    "node_id": "LA_kwDOD6PVWM8AAAABoqbstQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-epic",
+    "name": "area-epic",
+    "color": "52CCB2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 3161978348,
+    "node_id": "MDU6TGFiZWwzMTYxOTc4MzQ4",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-essentials",
+    "name": "area-essentials",
+    "color": "D4C5F9",
+    "default": false,
+    "description": "Essentials: Device, Display, Connectivity, Secure Storage, Sensors, App Info"
+  },
+  {
+    "id": 3233068187,
+    "node_id": "MDU6TGFiZWwzMjMzMDY4MTg3",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-fonts",
+    "name": "area-fonts",
+    "color": "0e8a16",
+    "default": false,
+    "description": "Custom fonts and Font related API's"
+  },
+  {
+    "id": 4564997117,
+    "node_id": "LA_kwDOD6PVWM8AAAABEBhT_Q",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-gestures",
+    "name": "area-gestures",
+    "color": "9087F3",
+    "default": false,
+    "description": "Gesture types"
+  },
+  {
+    "id": 2104775704,
+    "node_id": "MDU6TGFiZWwyMTA0Nzc1NzA0",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-image",
+    "name": "area-image",
+    "color": "fccf97",
+    "default": false,
+    "description": "Image loading, sources, caching"
+  },
+  {
+    "id": 3386272191,
+    "node_id": "LA_kwDOD6PVWM7J1mm_",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-infrastructure",
+    "name": "area-infrastructure",
+    "color": "c5def5",
+    "default": false,
+    "description": "CI, Maestro / Coherency, upstream dependencies/versions"
+  },
+  {
+    "id": 4663781755,
+    "node_id": "LA_kwDOD6PVWM8AAAABFfupew",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-keyboard",
+    "name": "area-keyboard",
+    "color": "5FFB40",
+    "default": false,
+    "description": "Keyboard, soft keyboard"
+  },
+  {
+    "id": 2077610562,
+    "node_id": "MDU6TGFiZWwyMDc3NjEwNTYy",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-layout",
+    "name": "area-layout",
+    "color": "b2ce37",
+    "default": false,
+    "description": "StackLayout, GridLayout, ContentView, AbsoluteLayout, FlexLayout, ContentPresenter"
+  },
+  {
+    "id": 3522432013,
+    "node_id": "LA_kwDOD6PVWM7R9AwN",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-localization",
+    "name": "area-localization",
+    "color": "476B82",
+    "default": false,
+    "description": "Localization and globalization issues"
+  },
+  {
+    "id": 2077623666,
+    "node_id": "MDU6TGFiZWwyMDc3NjIzNjY2",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-navigation",
+    "name": "area-navigation",
+    "color": "4149bf",
+    "default": false,
+    "description": "NavigationPage"
+  },
+  {
+    "id": 7392474503,
+    "node_id": "LA_kwDOD6PVWM8AAAABuKA1hw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-onboarding",
+    "name": "area-onboarding",
+    "color": "1CF2BF",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 3394871334,
+    "node_id": "LA_kwDOD6PVWM7KWaAm",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-publishing",
+    "name": "area-publishing",
+    "color": "2AB32B",
+    "default": false,
+    "description": "Issues with the app packaging/publishing process (ipk/apk/msix/trimming)"
+  },
+  {
+    "id": 7384302482,
+    "node_id": "LA_kwDOD6PVWM8AAAABuCODkg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-refreshview",
+    "name": "area-refreshview",
+    "color": "ededed",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 3361002109,
+    "node_id": "MDU6TGFiZWwzMzYxMDAyMTA5",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-setup",
+    "name": "area-setup",
+    "color": "5E9DF6",
+    "default": false,
+    "description": "Installation, setup, requirements, maui-check, workloads, platform support"
+  },
+  {
+    "id": 7807766268,
+    "node_id": "LA_kwDOD6PVWM8AAAAB0WEO_A",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-sfi",
+    "name": "area-sfi",
+    "color": "d4c5f9",
+    "default": false,
+    "description": "Issues related with SFI work"
+  },
+  {
+    "id": 2077602467,
+    "node_id": "MDU6TGFiZWwyMDc3NjAyNDY3",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-single-project",
+    "name": "area-single-project",
+    "color": "dcea59",
+    "default": false,
+    "description": "Splash Screen, Multi-Targeting, MauiFont, MauiImage, MauiAsset, Resizetizer"
+  },
+  {
+    "id": 3361004632,
+    "node_id": "MDU6TGFiZWwzMzYxMDA0NjMy",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-templates",
+    "name": "area-templates",
+    "color": "9B3588",
+    "default": false,
+    "description": "Project templates, Item Templates for Blazor and MAUI"
+  },
+  {
+    "id": 3521694842,
+    "node_id": "LA_kwDOD6PVWM7R6Mx6",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-testing",
+    "name": "area-testing",
+    "color": "3D6C4F",
+    "default": false,
+    "description": "Unit tests, device tests"
+  },
+  {
+    "id": 4859500488,
+    "node_id": "LA_kwDOD6PVWM8AAAABIaYXyA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-theme",
+    "name": "area-theme",
+    "color": "B8777C",
+    "default": false,
+    "description": "Themes, theming"
+  },
+  {
+    "id": 2077644855,
+    "node_id": "MDU6TGFiZWwyMDc3NjQ0ODU1",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-tooling",
+    "name": "area-tooling",
+    "color": "f7996a",
+    "default": false,
+    "description": "XAML & C# Hot Reload, XAML Editor, Live Visual Tree, Live Preview, Debugging"
+  },
+  {
+    "id": 2077600639,
+    "node_id": "MDU6TGFiZWwyMDc3NjAwNjM5",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area-xaml",
+    "name": "area-xaml",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "XAML, CSS, Triggers, Behaviors"
+  },
+  {
+    "id": 8388057083,
+    "node_id": "LA_kwDOD6PVWM8AAAAB8_eX-w",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/area/infrastructure%20%F0%9F%8F%97%EF%B8%8F",
+    "name": "area/infrastructure 🏗️",
+    "color": "ededed",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 5131553151,
+    "node_id": "LA_kwDOD6PVWM8AAAABMd1Jfw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/backport/approved",
+    "name": "backport/approved",
+    "color": "B60205",
+    "default": false,
+    "description": "After some discussion or review, this PR or change was approved to be backported."
+  },
+  {
+    "id": 5131548269,
+    "node_id": "LA_kwDOD6PVWM8AAAABMd02bQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/backport/NO",
+    "name": "backport/NO",
+    "color": "B60205",
+    "default": false,
+    "description": "This change should not be backported. It may break customers."
+  },
+  {
+    "id": 4652503608,
+    "node_id": "LA_kwDOD6PVWM8AAAABFU-SOA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/backport/suggested",
+    "name": "backport/suggested",
+    "color": "B60205",
+    "default": false,
+    "description": "The PR author or issue review has suggested that the change should be backported."
+  },
+  {
+    "id": 4476151411,
+    "node_id": "LA_kwDOD6PVWM8AAAABCsymcw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Blazor%20%E2%9D%A4%EF%B8%8F%20MAUI",
+    "name": "Blazor ❤️ MAUI",
+    "color": "E99695",
+    "default": false,
+    "description": "Issues in MAUI functionality that affect Blazor, but are not bugs in Blazor itself"
+  },
+  {
+    "id": 3595716806,
+    "node_id": "LA_kwDOD6PVWM7WUkjG",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/blocked",
+    "name": "blocked",
+    "color": "e99695",
+    "default": false,
+    "description": "Work that is currently blocked"
+  },
+  {
+    "id": 2350813615,
+    "node_id": "MDU6TGFiZWwyMzUwODEzNjE1",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/blocker",
+    "name": "blocker",
+    "color": "b60205",
+    "default": false,
+    "description": "This issue/PR is currently blocking other issues/PRs"
+  },
+  {
+    "id": 7799404524,
+    "node_id": "LA_kwDOD6PVWM8AAAAB0OF37A",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/collectionview-cv2",
+    "name": "collectionview-cv2",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 3555009277,
+    "node_id": "LA_kwDOD6PVWM7T5SL9",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/community%20%E2%9C%A8",
+    "name": "community ✨",
+    "color": "75E91A",
+    "default": false,
+    "description": "Community Contribution"
+  },
+  {
+    "id": 3563464641,
+    "node_id": "LA_kwDOD6PVWM7UZifB",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Cost:L",
+    "name": "Cost:L",
+    "color": "009900",
+    "default": false,
+    "description": "Work that requires one engineer up to 4 weeks"
+  },
+  {
+    "id": 3563464651,
+    "node_id": "LA_kwDOD6PVWM7UZifL",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Cost:M",
+    "name": "Cost:M",
+    "color": "00AA00",
+    "default": false,
+    "description": "Work that requires one engineer up to 2 weeks"
+  },
+  {
+    "id": 3563464661,
+    "node_id": "LA_kwDOD6PVWM7UZifV",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Cost:S",
+    "name": "Cost:S",
+    "color": "00CC00",
+    "default": false,
+    "description": "Work that requires one engineer up to 1 week"
+  },
+  {
+    "id": 3563464671,
+    "node_id": "LA_kwDOD6PVWM7UZiff",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Cost:XL",
+    "name": "Cost:XL",
+    "color": "007700",
+    "default": false,
+    "description": "Work that requires one engineer more than 4 weeks"
+  },
+  {
+    "id": 6006249157,
+    "node_id": "LA_kwDOD6PVWM8AAAABZgAWxQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/csi-new",
+    "name": "csi-new",
+    "color": "0052cc",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 5913024843,
+    "node_id": "LA_kwDOD6PVWM8AAAABYHGZSw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/custom-handler",
+    "name": "custom-handler",
+    "color": "2A1A7A",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 3963247969,
+    "node_id": "LA_kwDOD6PVWM7sOl1h",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/delighter",
+    "name": "delighter",
+    "color": "E6809F",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7044298281,
+    "node_id": "LA_kwDOD6PVWM8AAAABo992KQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/delighter-sc",
+    "name": "delighter-sc",
+    "color": "08372F",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 4052205376,
+    "node_id": "LA_kwDOD6PVWM7xh79A",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/dependencies",
+    "name": "dependencies",
+    "color": "0366d6",
+    "default": false,
+    "description": "Pull requests that update a dependency file"
+  },
+  {
+    "id": 4054243903,
+    "node_id": "LA_kwDOD6PVWM7xpto_",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/discussed",
+    "name": "discussed",
+    "color": "848269",
+    "default": false,
+    "description": "Created by mkArtakMSFT to help with planning temporarily. It will be removed after planning is done."
+  },
+  {
+    "id": 3167678323,
+    "node_id": "MDU6TGFiZWwzMTY3Njc4MzIz",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/do-not-merge",
+    "name": "do-not-merge",
+    "color": "B60205",
+    "default": false,
+    "description": "Don't merge this PR"
+  },
+  {
+    "id": 3151507222,
+    "node_id": "MDU6TGFiZWwzMTUxNTA3MjIy",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Epic",
+    "name": "Epic",
+    "color": "c6415a",
+    "default": false,
+    "description": "Groups multiple user stories. Can be grouped under a theme."
+  },
+  {
+    "id": 7969071123,
+    "node_id": "LA_kwDOD6PVWM8AAAAB2v5gEw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/essentials-device-display",
+    "name": "essentials-device-display",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 7969078446,
+    "node_id": "LA_kwDOD6PVWM8AAAAB2v58rg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/essentials-file-picker",
+    "name": "essentials-file-picker",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8178577270,
+    "node_id": "LA_kwDOD6PVWM8AAAAB53svdg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/essentials-geolocation",
+    "name": "essentials-geolocation",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 7969077311,
+    "node_id": "LA_kwDOD6PVWM8AAAAB2v54Pw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/essentials-haptic-feedback",
+    "name": "essentials-haptic-feedback",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8198088377,
+    "node_id": "LA_kwDOD6PVWM8AAAAB6KTmuQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/essentials-mediapicker",
+    "name": "essentials-mediapicker",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 7969079349,
+    "node_id": "LA_kwDOD6PVWM8AAAAB2v6ANQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/essentials-preferences",
+    "name": "essentials-preferences",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8129797327,
+    "node_id": "LA_kwDOD6PVWM8AAAAB5JLczw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/essentials-request-permissions",
+    "name": "essentials-request-permissions",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8190267092,
+    "node_id": "LA_kwDOD6PVWM8AAAAB6C2O1A",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/essentials-secure-storage",
+    "name": "essentials-secure-storage",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8129345690,
+    "node_id": "LA_kwDOD6PVWM8AAAAB5Iv4mg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/essentials-share",
+    "name": "essentials-share",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 7969062851,
+    "node_id": "LA_kwDOD6PVWM8AAAAB2v4_ww",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/essentials-text-to-speech",
+    "name": "essentials-text-to-speech",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 7969059960,
+    "node_id": "LA_kwDOD6PVWM8AAAAB2v40eA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/essentials-webauth",
+    "name": "essentials-webauth",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 3975538856,
+    "node_id": "LA_kwDOD6PVWM7s9eio",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/external",
+    "name": "external",
+    "color": "6AC3FC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 3575853998,
+    "node_id": "LA_kwDOD6PVWM7VIzOu",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/feature-blazor-auth",
+    "name": "feature-blazor-auth",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Issues related to auth in Blazor"
+  },
+  {
+    "id": 3574558734,
+    "node_id": "LA_kwDOD6PVWM7VD3AO",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/feature-blazor-maui",
+    "name": "feature-blazor-maui",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Issues in Blazor in .NET MAUI"
+  },
+  {
+    "id": 3595140461,
+    "node_id": "LA_kwDOD6PVWM7WSX1t",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/feature-blazor-sdk",
+    "name": "feature-blazor-sdk",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Issues related to Blazor and various other SDKs (Razor, iOS, Android, etc.)"
+  },
+  {
+    "id": 3574559553,
+    "node_id": "LA_kwDOD6PVWM7VD3NB",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/feature-blazor-windesktop",
+    "name": "feature-blazor-windesktop",
+    "color": "FEF2C0",
+    "default": false,
+    "description": "Issues in Blazor in WPF or WinForms"
+  },
+  {
+    "id": 5757828564,
+    "node_id": "LA_kwDOD6PVWM8AAAABVzF91A",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.100-preview.2.2",
+    "name": "fixed-in-6.0.100-preview.2.2",
+    "color": "8EA976",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 5164729630,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9eFHg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.100-preview.2.3",
+    "name": "fixed-in-6.0.100-preview.2.3",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.100-preview.2.3!"
+  },
+  {
+    "id": 5757827775,
+    "node_id": "LA_kwDOD6PVWM8AAAABVzF6vw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.100-preview.3.2",
+    "name": "fixed-in-6.0.100-preview.3.2",
+    "color": "8EA976",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7282576822,
+    "node_id": "LA_kwDOD6PVWM8AAAABshNNtg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.100-preview.3.3",
+    "name": "fixed-in-6.0.100-preview.3.3",
+    "color": "8EA976",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7282577254,
+    "node_id": "LA_kwDOD6PVWM8AAAABshNPZg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.100-preview.3.5",
+    "name": "fixed-in-6.0.100-preview.3.5",
+    "color": "8EA976",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 5164729314,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9eD4g",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.100-preview.4",
+    "name": "fixed-in-6.0.100-preview.4",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.100-preview.4!"
+  },
+  {
+    "id": 7282589462,
+    "node_id": "LA_kwDOD6PVWM8AAAABshN_Fg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.100-preview.4.1",
+    "name": "fixed-in-6.0.100-preview.4.1",
+    "color": "8EA976",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7282589886,
+    "node_id": "LA_kwDOD6PVWM8AAAABshOAvg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.100-preview.4.2",
+    "name": "fixed-in-6.0.100-preview.4.2",
+    "color": "8EA976",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 5757823986,
+    "node_id": "LA_kwDOD6PVWM8AAAABVzFr8g",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.100-preview.4.3",
+    "name": "fixed-in-6.0.100-preview.4.3",
+    "color": "8EA976",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7282590517,
+    "node_id": "LA_kwDOD6PVWM8AAAABshODNQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.100-preview.4.4",
+    "name": "fixed-in-6.0.100-preview.4.4",
+    "color": "8EA976",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 5164728917,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9eCVQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.100-preview.5",
+    "name": "fixed-in-6.0.100-preview.5",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.100-preview.5!"
+  },
+  {
+    "id": 5164728645,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9eBRQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.100-preview.6",
+    "name": "fixed-in-6.0.100-preview.6",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.100-preview.6!"
+  },
+  {
+    "id": 5164728433,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9eAcQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.100-preview.7.3",
+    "name": "fixed-in-6.0.100-preview.7.3",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.100-preview.7.3!"
+  },
+  {
+    "id": 5164728105,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9d_KQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.100-rc.1.7",
+    "name": "fixed-in-6.0.100-rc.1.7",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.100-rc.1.7!"
+  },
+  {
+    "id": 5164727838,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9d-Hg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.101-preview.10",
+    "name": "fixed-in-6.0.101-preview.10",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.101-preview.10!"
+  },
+  {
+    "id": 5164727469,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9d8rQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.101-preview.11.3",
+    "name": "fixed-in-6.0.101-preview.11.3",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.101-preview.11.3!"
+  },
+  {
+    "id": 5164727252,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9d71A",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.200-preview.12",
+    "name": "fixed-in-6.0.200-preview.12",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.200-preview.12!"
+  },
+  {
+    "id": 5164727029,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9d69Q",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.200-preview.13.2",
+    "name": "fixed-in-6.0.200-preview.13.2",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.200-preview.13.2!"
+  },
+  {
+    "id": 5164726839,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9d6Nw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.200-preview.14.2",
+    "name": "fixed-in-6.0.200-preview.14.2",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.200-preview.14.2!"
+  },
+  {
+    "id": 5164726603,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9d5Sw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.300-rc.1",
+    "name": "fixed-in-6.0.300-rc.1",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.300-rc.1!"
+  },
+  {
+    "id": 5164726252,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9d37A",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.300-rc.2",
+    "name": "fixed-in-6.0.300-rc.2",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.300-rc.2!"
+  },
+  {
+    "id": 5164716655,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9dSbw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.300-rc.3",
+    "name": "fixed-in-6.0.300-rc.3",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.300-rc.3!"
+  },
+  {
+    "id": 5164725641,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9d1iQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.312",
+    "name": "fixed-in-6.0.312",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.312!"
+  },
+  {
+    "id": 5164725460,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9d01A",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.400",
+    "name": "fixed-in-6.0.400",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.400!"
+  },
+  {
+    "id": 5164725317,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9d0RQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.408",
+    "name": "fixed-in-6.0.408",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.408!"
+  },
+  {
+    "id": 5164725076,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9dzVA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.419",
+    "name": "fixed-in-6.0.419",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.419!"
+  },
+  {
+    "id": 7282676439,
+    "node_id": "LA_kwDOD6PVWM8AAAABshTS1w",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.424",
+    "name": "fixed-in-6.0.424",
+    "color": "8EA976",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 5164724731,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9dx-w",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.486",
+    "name": "fixed-in-6.0.486",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.486 SR4!"
+  },
+  {
+    "id": 5164724375,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9dwlw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.536",
+    "name": "fixed-in-6.0.536",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.536 SR4.1!"
+  },
+  {
+    "id": 5164724055,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9dvVw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.540",
+    "name": "fixed-in-6.0.540",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.540 SR5!"
+  },
+  {
+    "id": 5164715642,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9dOeg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.541",
+    "name": "fixed-in-6.0.541",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.541 SR6!"
+  },
+  {
+    "id": 5164714939,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9dLuw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.547",
+    "name": "fixed-in-6.0.547",
+    "color": "8EA976",
+    "default": false,
+    "description": "Look for this fix in 6.0.547 SR7!"
+  },
+  {
+    "id": 7282603171,
+    "node_id": "LA_kwDOD6PVWM8AAAABshO0ow",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.548",
+    "name": "fixed-in-6.0.548",
+    "color": "8EA976",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7282603479,
+    "node_id": "LA_kwDOD6PVWM8AAAABshO11w",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.550",
+    "name": "fixed-in-6.0.550",
+    "color": "8EA976",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7282603744,
+    "node_id": "LA_kwDOD6PVWM8AAAABshO24A",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.552",
+    "name": "fixed-in-6.0.552",
+    "color": "8EA976",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7282604095,
+    "node_id": "LA_kwDOD6PVWM8AAAABshO4Pw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-6.0.553",
+    "name": "fixed-in-6.0.553",
+    "color": "8EA976",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6501409346,
+    "node_id": "LA_kwDOD6PVWM8AAAABg4OiQg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-7.0.0-rc.1.6683",
+    "name": "fixed-in-7.0.0-rc.1.6683",
+    "color": "6FC2D9",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 5164453079,
+    "node_id": "LA_kwDOD6PVWM8AAAABM9NM1w",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-7.0.0-rc.2.6866",
+    "name": "fixed-in-7.0.0-rc.2.6866",
+    "color": "6FC2D9",
+    "default": false,
+    "description": "Look for this fix in 7.0.0-rc.2.6866!"
+  },
+  {
+    "id": 6344140496,
+    "node_id": "LA_kwDOD6PVWM8AAAABeiPm0A",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-7.0.100",
+    "name": "fixed-in-7.0.100",
+    "color": "6FC2D9",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6501408333,
+    "node_id": "LA_kwDOD6PVWM8AAAABg4OeTQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-7.0.101",
+    "name": "fixed-in-7.0.101",
+    "color": "6FC2D9",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 5163174430,
+    "node_id": "LA_kwDOD6PVWM8AAAABM7_KHg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-7.0.49",
+    "name": "fixed-in-7.0.49",
+    "color": "6FC2D9",
+    "default": false,
+    "description": "Look for this fix in 7.0.49 GA!"
+  },
+  {
+    "id": 5163165753,
+    "node_id": "LA_kwDOD6PVWM8AAAABM7-oOQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-7.0.52",
+    "name": "fixed-in-7.0.52",
+    "color": "6FC2D9",
+    "default": false,
+    "description": "Look for this fix in 7.0.52 SR1.1!"
+  },
+  {
+    "id": 5160332643,
+    "node_id": "LA_kwDOD6PVWM8AAAABM5RtYw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-7.0.58",
+    "name": "fixed-in-7.0.58",
+    "color": "6FC2D9",
+    "default": false,
+    "description": "Look for this fix in 7.0.58!"
+  },
+  {
+    "id": 5160320818,
+    "node_id": "LA_kwDOD6PVWM8AAAABM5Q_Mg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-7.0.59",
+    "name": "fixed-in-7.0.59",
+    "color": "6FC2D9",
+    "default": false,
+    "description": "Look for this fix in 7.0.59!"
+  },
+  {
+    "id": 5381654967,
+    "node_id": "LA_kwDOD6PVWM8AAAABQMWJtw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-7.0.81",
+    "name": "fixed-in-7.0.81",
+    "color": "6FC2D9",
+    "default": false,
+    "description": "Look for this fix in 7.0.81!"
+  },
+  {
+    "id": 5488335257,
+    "node_id": "LA_kwDOD6PVWM8AAAABRyFZmQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-7.0.86",
+    "name": "fixed-in-7.0.86",
+    "color": "6FC2D9",
+    "default": false,
+    "description": "Look for this fix in 7.0.86!"
+  },
+  {
+    "id": 5724966274,
+    "node_id": "LA_kwDOD6PVWM8AAAABVTwNgg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-7.0.92",
+    "name": "fixed-in-7.0.92",
+    "color": "6FC2D9",
+    "default": false,
+    "description": "Look for this fix in 7.0.92!"
+  },
+  {
+    "id": 6068017676,
+    "node_id": "LA_kwDOD6PVWM8AAAABaa6aDA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-7.0.96",
+    "name": "fixed-in-7.0.96",
+    "color": "6FC2D9",
+    "default": false,
+    "description": "Look for this fix in 7.0.96 SR8!"
+  },
+  {
+    "id": 5183076493,
+    "node_id": "LA_kwDOD6PVWM8AAAABNO94jQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.0-preview.1.7762",
+    "name": "fixed-in-8.0.0-preview.1.7762",
+    "color": "9777A2",
+    "default": false,
+    "description": "Look for this fix in 8.0.0-preview.1.7762!"
+  },
+  {
+    "id": 5275576919,
+    "node_id": "LA_kwDOD6PVWM8AAAABOnLqVw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.0-preview.2.7871",
+    "name": "fixed-in-8.0.0-preview.2.7871",
+    "color": "9777A2",
+    "default": false,
+    "description": "Look for this fix in 8.0.0-preview.2.7871!"
+  },
+  {
+    "id": 5381659141,
+    "node_id": "LA_kwDOD6PVWM8AAAABQMWaBQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.0-preview.3.8149",
+    "name": "fixed-in-8.0.0-preview.3.8149",
+    "color": "9777A2",
+    "default": false,
+    "description": "Look for this fix in 8.0.0-preview.3.8149!"
+  },
+  {
+    "id": 5597269085,
+    "node_id": "LA_kwDOD6PVWM8AAAABTZ-MXQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.0-preview.4.8333",
+    "name": "fixed-in-8.0.0-preview.4.8333",
+    "color": "9777A2",
+    "default": false,
+    "description": "Look for this fix in 8.0.0-preview.4.8333!"
+  },
+  {
+    "id": 5649246779,
+    "node_id": "LA_kwDOD6PVWM8AAAABULiqOw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.0-preview.5.8529",
+    "name": "fixed-in-8.0.0-preview.5.8529",
+    "color": "9777A2",
+    "default": false,
+    "description": "Look for this fix in 8.0.0-preview.5.8529!"
+  },
+  {
+    "id": 5724958742,
+    "node_id": "LA_kwDOD6PVWM8AAAABVTvwFg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.0-preview.6.8686",
+    "name": "fixed-in-8.0.0-preview.6.8686",
+    "color": "9777A2",
+    "default": false,
+    "description": "Look for this fix in 8.0.0-preview.6.8686!"
+  },
+  {
+    "id": 5824256298,
+    "node_id": "LA_kwDOD6PVWM8AAAABWycZKg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.0-preview.7.8842",
+    "name": "fixed-in-8.0.0-preview.7.8842",
+    "color": "9777A2",
+    "default": false,
+    "description": "Look for this fix in 8.0.0-preview.7.8842!"
+  },
+  {
+    "id": 5954605149,
+    "node_id": "LA_kwDOD6PVWM8AAAABYuwQXQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.0-rc.1.9171",
+    "name": "fixed-in-8.0.0-rc.1.9171",
+    "color": "9777A2",
+    "default": false,
+    "description": "Look for this fix in 8.0.0-rc.1.9171"
+  },
+  {
+    "id": 6068014451,
+    "node_id": "LA_kwDOD6PVWM8AAAABaa6Ncw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.0-rc.2.9373",
+    "name": "fixed-in-8.0.0-rc.2.9373",
+    "color": "9777A2",
+    "default": false,
+    "description": "Look for this fix in 8.0.0-rc.2.9373!"
+  },
+  {
+    "id": 6344139413,
+    "node_id": "LA_kwDOD6PVWM8AAAABeiPilQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.0-rc.2.9511",
+    "name": "fixed-in-8.0.0-rc.2.9511",
+    "color": "9777A2",
+    "default": false,
+    "description": "Look for this fix in 8.0.0-rc.2.9511"
+  },
+  {
+    "id": 6778638439,
+    "node_id": "LA_kwDOD6PVWM8AAAABlAnQZw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.10",
+    "name": "fixed-in-8.0.10",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7892480452,
+    "node_id": "LA_kwDOD6PVWM8AAAAB1m2xxA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.100",
+    "name": "fixed-in-8.0.100",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6344138851,
+    "node_id": "LA_kwDOD6PVWM8AAAABeiPgYw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.100-rc.2.9530",
+    "name": "fixed-in-8.0.100-rc.2.9530",
+    "color": "9777A2",
+    "default": false,
+    "description": "Look for this fix in 8.0.100-rc.2.9530"
+  },
+  {
+    "id": 6778637586,
+    "node_id": "LA_kwDOD6PVWM8AAAABlAnNEg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.14",
+    "name": "fixed-in-8.0.14",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6955954138,
+    "node_id": "LA_kwDOD6PVWM8AAAABnptv2g",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.20",
+    "name": "fixed-in-8.0.20",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6955952935,
+    "node_id": "LA_kwDOD6PVWM8AAAABnptrJw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.21",
+    "name": "fixed-in-8.0.21",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6313582365,
+    "node_id": "LA_kwDOD6PVWM8AAAABeFGfHQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.3",
+    "name": "fixed-in-8.0.3",
+    "color": "9777A2",
+    "default": false,
+    "description": "Look for this fix in 8.0.3"
+  },
+  {
+    "id": 6955949735,
+    "node_id": "LA_kwDOD6PVWM8AAAABnptepw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.40",
+    "name": "fixed-in-8.0.40",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6501133477,
+    "node_id": "LA_kwDOD6PVWM8AAAABg39spQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.6",
+    "name": "fixed-in-8.0.6",
+    "color": "9777A2",
+    "default": false,
+    "description": "Look for this fix in 8.0.6 SR1!"
+  },
+  {
+    "id": 7151079216,
+    "node_id": "LA_kwDOD6PVWM8AAAABqjzPMA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.60",
+    "name": "fixed-in-8.0.60",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7151078717,
+    "node_id": "LA_kwDOD6PVWM8AAAABqjzNPQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.61",
+    "name": "fixed-in-8.0.61",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6620629496,
+    "node_id": "LA_kwDOD6PVWM8AAAABip7J-A",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.7",
+    "name": "fixed-in-8.0.7",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7269364465,
+    "node_id": "LA_kwDOD6PVWM8AAAABsUmy8Q",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.70",
+    "name": "fixed-in-8.0.70",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7282548576,
+    "node_id": "LA_kwDOD6PVWM8AAAABshLfYA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.71",
+    "name": "fixed-in-8.0.71",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7382470213,
+    "node_id": "LA_kwDOD6PVWM8AAAABuAeORQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.72",
+    "name": "fixed-in-8.0.72",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7307215838,
+    "node_id": "LA_kwDOD6PVWM8AAAABs4tD3g",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.80",
+    "name": "fixed-in-8.0.80",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7425089572,
+    "node_id": "LA_kwDOD6PVWM8AAAABupHgJA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.82",
+    "name": "fixed-in-8.0.82",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7892481866,
+    "node_id": "LA_kwDOD6PVWM8AAAAB1m23Sg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.83",
+    "name": "fixed-in-8.0.83",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7494523061,
+    "node_id": "LA_kwDOD6PVWM8AAAABvrVYtQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.90",
+    "name": "fixed-in-8.0.90",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7545236023,
+    "node_id": "LA_kwDOD6PVWM8AAAABwbsqNw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.91",
+    "name": "fixed-in-8.0.91",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7624715447,
+    "node_id": "LA_kwDOD6PVWM8AAAABxnfstw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.92",
+    "name": "fixed-in-8.0.92",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7892481111,
+    "node_id": "LA_kwDOD6PVWM8AAAAB1m20Vw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-8.0.93",
+    "name": "fixed-in-8.0.93",
+    "color": "9777A2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7892479224,
+    "node_id": "LA_kwDOD6PVWM8AAAAB1m2s-A",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.0",
+    "name": "fixed-in-9.0.0",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7283165693,
+    "node_id": "LA_kwDOD6PVWM8AAAABshxJ_Q",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.0-preview.2.10247",
+    "name": "fixed-in-9.0.0-preview.2.10247",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6778560609,
+    "node_id": "LA_kwDOD6PVWM8AAAABlAigYQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.0-preview.2.10293",
+    "name": "fixed-in-9.0.0-preview.2.10293",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6955947654,
+    "node_id": "LA_kwDOD6PVWM8AAAABnptWhg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.0-preview.3.10457",
+    "name": "fixed-in-9.0.0-preview.3.10457",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7151077937,
+    "node_id": "LA_kwDOD6PVWM8AAAABqjzKMQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.0-preview.4.10690",
+    "name": "fixed-in-9.0.0-preview.4.10690",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7151077540,
+    "node_id": "LA_kwDOD6PVWM8AAAABqjzIpA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.0-preview.5.24307.10",
+    "name": "fixed-in-9.0.0-preview.5.24307.10",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7269372633,
+    "node_id": "LA_kwDOD6PVWM8AAAABsUnS2Q",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.0-preview.6.24327.7",
+    "name": "fixed-in-9.0.0-preview.6.24327.7",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7382463961,
+    "node_id": "LA_kwDOD6PVWM8AAAABuAd12Q",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.0-preview.7.24407.4",
+    "name": "fixed-in-9.0.0-preview.7.24407.4",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7494521234,
+    "node_id": "LA_kwDOD6PVWM8AAAABvrVRkg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.0-rc.1.24453.9",
+    "name": "fixed-in-9.0.0-rc.1.24453.9",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7603505418,
+    "node_id": "LA_kwDOD6PVWM8AAAABxTRJCg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.0-rc.2.24503.2",
+    "name": "fixed-in-9.0.0-rc.2.24503.2",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7892487999,
+    "node_id": "LA_kwDOD6PVWM8AAAAB1m3PPw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.10",
+    "name": "fixed-in-9.0.10",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6620632642,
+    "node_id": "LA_kwDOD6PVWM8AAAABip7WQg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.100-preview.1.9973",
+    "name": "fixed-in-9.0.100-preview.1.9973",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7892489957,
+    "node_id": "LA_kwDOD6PVWM8AAAAB1m3W5Q",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.12",
+    "name": "fixed-in-9.0.12",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7892490422,
+    "node_id": "LA_kwDOD6PVWM8AAAAB1m3Ytg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.14",
+    "name": "fixed-in-9.0.14",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7892491889,
+    "node_id": "LA_kwDOD6PVWM8AAAAB1m3ecQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-9.0.21",
+    "name": "fixed-in-9.0.21",
+    "color": "C105AC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7283320863,
+    "node_id": "LA_kwDOD6PVWM8AAAABsh6oHw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-net6.0-nightly",
+    "name": "fixed-in-net6.0-nightly",
+    "color": "EF9D38",
+    "default": false,
+    "description": "This may be available in a nightly release!"
+  },
+  {
+    "id": 7283320058,
+    "node_id": "LA_kwDOD6PVWM8AAAABsh6k-g",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-net7.0-nightly",
+    "name": "fixed-in-net7.0-nightly",
+    "color": "EF9D38",
+    "default": false,
+    "description": "This may be available in a nightly release!"
+  },
+  {
+    "id": 7283319162,
+    "node_id": "LA_kwDOD6PVWM8AAAABsh6heg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-net8.0-nightly",
+    "name": "fixed-in-net8.0-nightly",
+    "color": "EF9D38",
+    "default": false,
+    "description": "This may be available in a nightly release!"
+  },
+  {
+    "id": 7283317168,
+    "node_id": "LA_kwDOD6PVWM8AAAABsh6ZsA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/fixed-in-net9.0-nightly",
+    "name": "fixed-in-net9.0-nightly",
+    "color": "EF9D38",
+    "default": false,
+    "description": "This may be available in a nightly release!"
+  },
+  {
+    "id": 2046783044,
+    "node_id": "MDU6TGFiZWwyMDQ2NzgzMDQ0",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/good%20first%20issue",
+    "name": "good first issue",
+    "color": "7057ff",
+    "default": true,
+    "description": "Good for newcomers"
+  },
+  {
+    "id": 3395068235,
+    "node_id": "LA_kwDOD6PVWM7KXKFL",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/hacktoberfest",
+    "name": "hacktoberfest",
+    "color": "FF8200",
+    "default": false,
+    "description": "Hacktoberfest"
+  },
+  {
+    "id": 6783622471,
+    "node_id": "LA_kwDOD6PVWM8AAAABlFXdRw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/has-workaround",
+    "name": "has-workaround",
+    "color": "BC2DAC",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 2046783049,
+    "node_id": "MDU6TGFiZWwyMDQ2NzgzMDQ5",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/help%20wanted",
+    "name": "help wanted",
+    "color": "008672",
+    "default": true,
+    "description": "[up-for-grabs] Good issue for external contributors"
+  },
+  {
+    "id": 3749172276,
+    "node_id": "LA_kwDOD6PVWM7fd9Q0",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/high",
+    "name": "high",
+    "color": "F66E34",
+    "default": false,
+    "description": "It doesn't work at all, crashes or has a big impact."
+  },
+  {
+    "id": 4386405407,
+    "node_id": "LA_kwDOD6PVWM8AAAABBXM8Hw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/i/great-reporter",
+    "name": "i/great-reporter",
+    "color": "fbca04",
+    "default": false,
+    "description": "This issue is opened by an author who is known to open high-quality issues"
+  },
+  {
+    "id": 4234715801,
+    "node_id": "LA_kwDOD6PVWM78aKKZ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/i/regression",
+    "name": "i/regression",
+    "color": "D93F0B",
+    "default": false,
+    "description": "This issue described a confirmed regression on a currently supported version"
+  },
+  {
+    "id": 3840514582,
+    "node_id": "LA_kwDOD6PVWM7k6ZoW",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/INTERNAL:%20Debug",
+    "name": "INTERNAL: Debug",
+    "color": "D4C5F9",
+    "default": false,
+    "description": "For FabricBot issue automation testing only!"
+  },
+  {
+    "id": 3856513041,
+    "node_id": "LA_kwDOD6PVWM7l3bgR",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/investigate",
+    "name": "investigate",
+    "color": "DAA5B2",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6934477081,
+    "node_id": "LA_kwDOD6PVWM8AAAABnVO5GQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/labs-candidate",
+    "name": "labs-candidate",
+    "color": "006b75",
+    "default": false,
+    "description": "Issues that could be done as independent experiments"
+  },
+  {
+    "id": 4641536410,
+    "node_id": "LA_kwDOD6PVWM8AAAABFKg5mg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/layout-absolute",
+    "name": "layout-absolute",
+    "color": "9F7A26",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 4641529510,
+    "node_id": "LA_kwDOD6PVWM8AAAABFKgepg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/layout-flex",
+    "name": "layout-flex",
+    "color": "c2e0c6",
+    "default": false,
+    "description": "FlexLayout issues"
+  },
+  {
+    "id": 4641535831,
+    "node_id": "LA_kwDOD6PVWM8AAAABFKg3Vw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/layout-grid",
+    "name": "layout-grid",
+    "color": "02F1CB",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 5021427018,
+    "node_id": "LA_kwDOD6PVWM8AAAABK0zlSg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/layout-relative",
+    "name": "layout-relative",
+    "color": "9D5D41",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 4641536056,
+    "node_id": "LA_kwDOD6PVWM8AAAABFKg4OA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/layout-stack",
+    "name": "layout-stack",
+    "color": "8AC6DA",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 3033673024,
+    "node_id": "MDU6TGFiZWwzMDMzNjczMDI0",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/legacy-area-a11y",
+    "name": "legacy-area-a11y",
+    "color": "000000",
+    "default": false,
+    "description": "Relates to accessibility"
+  },
+  {
+    "id": 3373099632,
+    "node_id": "MDU6TGFiZWwzMzczMDk5NjMy",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/legacy-area-controls",
+    "name": "legacy-area-controls",
+    "color": "5AECD5",
+    "default": false,
+    "description": "Label, Button, CheckBox, Slider, Stepper, Switch, Picker, Entry, Editor"
+  },
+  {
+    "id": 3230247959,
+    "node_id": "MDU6TGFiZWwzMjMwMjQ3OTU5",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/legacy-area-desktop",
+    "name": "legacy-area-desktop",
+    "color": "3D278F",
+    "default": false,
+    "description": "Windows / WinUI / Project Reunion & Mac Catalyst / macOS specifics (Menus & other Controls))"
+  },
+  {
+    "id": 3232905118,
+    "node_id": "MDU6TGFiZWwzMjMyOTA1MTE4",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/legacy-area-perf",
+    "name": "legacy-area-perf",
+    "color": "EDA4F7",
+    "default": false,
+    "description": "Startup / Runtime performance"
+  },
+  {
+    "id": 5807053589,
+    "node_id": "LA_kwDOD6PVWM8AAAABWiCbFQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/linker",
+    "name": "linker",
+    "color": "F7AAA7",
+    "default": false,
+    "description": "issues with objects being trimmed inappropriately (sub: perf)"
+  },
+  {
+    "id": 6526430881,
+    "node_id": "LA_kwDOD6PVWM8AAAABhQFuoQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/megapipeline/main",
+    "name": "megapipeline/main",
+    "color": "597D04",
+    "default": false,
+    "description": "Tags a fix needed in a scouting branch in the megapipeline"
+  },
+  {
+    "id": 6603047864,
+    "node_id": "LA_kwDOD6PVWM8AAAABiZKDuA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/megapipeline/net9.0",
+    "name": "megapipeline/net9.0",
+    "color": "D656DB",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 5728134961,
+    "node_id": "LA_kwDOD6PVWM8AAAABVWxnMQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/memory-leak%20%F0%9F%92%A6",
+    "name": "memory-leak 💦",
+    "color": "865F46",
+    "default": false,
+    "description": "Memory usage grows / objects live forever (sub: perf)"
+  },
+  {
+    "id": 4615030846,
+    "node_id": "LA_kwDOD6PVWM8AAAABExPIPg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/migration-compatibility",
+    "name": "migration-compatibility",
+    "color": "D4C5F9",
+    "default": false,
+    "description": "Xamarin.Forms to .NET MAUI Migration, Upgrade Assistant, Try-Convert"
+  },
+  {
+    "id": 7866077789,
+    "node_id": "LA_kwDOD6PVWM8AAAAB1NrSXQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/needs-area-label",
+    "name": "needs-area-label",
+    "color": "A8F937",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 4781225422,
+    "node_id": "LA_kwDOD6PVWM8AAAABHPu1zg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/needs-breaking-change-doc-created",
+    "name": "needs-breaking-change-doc-created",
+    "color": "6E7905",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 4758021025,
+    "node_id": "LA_kwDOD6PVWM8AAAABG5mjoQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/needs-prototype",
+    "name": "needs-prototype",
+    "color": "000000",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 5160799213,
+    "node_id": "LA_kwDOD6PVWM8AAAABM5uL7Q",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/not-regression",
+    "name": "not-regression",
+    "color": "ededed",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 4052883440,
+    "node_id": "LA_kwDOD6PVWM7xkhfw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/nuget",
+    "name": "nuget",
+    "color": "bfdadc",
+    "default": false,
+    "description": "Bumps for nuget packages"
+  },
+  {
+    "id": 2890090313,
+    "node_id": "MDU6TGFiZWwyODkwMDkwMzEz",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/p/0",
+    "name": "p/0",
+    "color": "B60205",
+    "default": false,
+    "description": "Work that we can't release without"
+  },
+  {
+    "id": 2890090878,
+    "node_id": "MDU6TGFiZWwyODkwMDkwODc4",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/p/1",
+    "name": "p/1",
+    "color": "D93F0B",
+    "default": false,
+    "description": "Work that is important, and has been scheduled for release in this or an upcoming sprint"
+  },
+  {
+    "id": 2890091257,
+    "node_id": "MDU6TGFiZWwyODkwMDkxMjU3",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/p/2",
+    "name": "p/2",
+    "color": "E99695",
+    "default": false,
+    "description": "Work that is important, but is currently not scheduled for release"
+  },
+  {
+    "id": 2890091774,
+    "node_id": "MDU6TGFiZWwyODkwMDkxNzc0",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/p/3",
+    "name": "p/3",
+    "color": "F9D0C4",
+    "default": false,
+    "description": "Work that is nice to have"
+  },
+  {
+    "id": 2849514389,
+    "node_id": "MDU6TGFiZWwyODQ5NTE0Mzg5",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner",
+    "name": "partner",
+    "color": "9DFCAF",
+    "default": false,
+    "description": "Issue or Request from a partner team"
+  },
+  {
+    "id": 3955360943,
+    "node_id": "LA_kwDOD6PVWM7rwgSv",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner/android",
+    "name": "partner/android",
+    "color": "9DFCAF",
+    "default": false,
+    "description": "Issues for the Android SDK"
+  },
+  {
+    "id": 3236421897,
+    "node_id": "MDU6TGFiZWwzMjM2NDIxODk3",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner/cat%20%F0%9F%98%BB",
+    "name": "partner/cat 😻",
+    "color": "9DFCAF",
+    "default": false,
+    "description": "this is an issue that impacts one of our partners or a customer our advisory team is engaged with"
+  },
+  {
+    "id": 4721415031,
+    "node_id": "LA_kwDOD6PVWM8AAAABGWsTdw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner/hot-reload-xaml",
+    "name": "partner/hot-reload-xaml",
+    "color": "9DFCAF",
+    "default": false,
+    "description": "Issues impacting XAML Hot Reload experiences"
+  },
+  {
+    "id": 7040982138,
+    "node_id": "LA_kwDOD6PVWM8AAAABo6zceg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner/hot-reload-xaml-full-page-fixed",
+    "name": "partner/hot-reload-xaml-full-page-fixed",
+    "color": "B3D348",
+    "default": false,
+    "description": "Issues with XAML incremental hot reload that are fixed after a full page hot reload"
+  },
+  {
+    "id": 4069636339,
+    "node_id": "LA_kwDOD6PVWM7ykbjz",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner/ide",
+    "name": "partner/ide",
+    "color": "9DFCAF",
+    "default": false,
+    "description": "IDE Related Partner issues"
+  },
+  {
+    "id": 3955360405,
+    "node_id": "LA_kwDOD6PVWM7rwgKV",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner/macios",
+    "name": "partner/macios",
+    "color": "9DFCAF",
+    "default": false,
+    "description": "Issues for the Mac / iOS SDK"
+  },
+  {
+    "id": 5124084349,
+    "node_id": "LA_kwDOD6PVWM8AAAABMWtSfQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner/mono",
+    "name": "partner/mono",
+    "color": "C13700",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 4414176994,
+    "node_id": "LA_kwDOD6PVWM8AAAABBxr-4g",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner/platform-tools",
+    "name": "partner/platform-tools",
+    "color": "9DFCAF",
+    "default": false,
+    "description": "Client Experiences Platform Tools"
+  },
+  {
+    "id": 7834922026,
+    "node_id": "LA_kwDOD6PVWM8AAAAB0v9sKg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner/syncfusion",
+    "name": "partner/syncfusion",
+    "color": "9DFCAF",
+    "default": false,
+    "description": "Issues / PR's with Syncfusion collaboration"
+  },
+  {
+    "id": 8130497186,
+    "node_id": "LA_kwDOD6PVWM8AAAAB5J2Kog",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner/syncfusion/review",
+    "name": "partner/syncfusion/review",
+    "color": "D3BD76",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 4042651714,
+    "node_id": "LA_kwDOD6PVWM7w9fhC",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner/tizen",
+    "name": "partner/tizen",
+    "color": "9DFCAF",
+    "default": false,
+    "description": "Samsung Tizen Team"
+  },
+  {
+    "id": 2849519984,
+    "node_id": "MDU6TGFiZWwyODQ5NTE5OTg0",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner/ui-tools",
+    "name": "partner/ui-tools",
+    "color": "9DFCAF",
+    "default": false,
+    "description": ".NET UI Tools"
+  },
+  {
+    "id": 3364723875,
+    "node_id": "MDU6TGFiZWwzMzY0NzIzODc1",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner/webview2",
+    "name": "partner/webview2",
+    "color": "9DFCAF",
+    "default": false,
+    "description": "Issues depending on Edge WebView2"
+  },
+  {
+    "id": 3066028449,
+    "node_id": "MDU6TGFiZWwzMDY2MDI4NDQ5",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/partner/winui",
+    "name": "partner/winui",
+    "color": "9DFCAF",
+    "default": false,
+    "description": "WinUI / Project Reunion"
+  },
+  {
+    "id": 2077612462,
+    "node_id": "MDU6TGFiZWwyMDc3NjEyNDYy",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/platform/android%20%F0%9F%A4%96",
+    "name": "platform/android 🤖",
+    "color": "02E17C",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 2091071706,
+    "node_id": "MDU6TGFiZWwyMDkxMDcxNzA2",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/platform/iOS%20%F0%9F%8D%8E",
+    "name": "platform/iOS 🍎",
+    "color": "02E17C",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 2077554995,
+    "node_id": "MDU6TGFiZWwyMDc3NTU0OTk1",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/platform/linux%20%F0%9F%90%A7",
+    "name": "platform/linux 🐧",
+    "color": "02E17C",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 2077596252,
+    "node_id": "MDU6TGFiZWwyMDc3NTk2MjUy",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/platform/macOS%20%F0%9F%8D%8F",
+    "name": "platform/macOS 🍏",
+    "color": "02E17C",
+    "default": false,
+    "description": "macOS / Mac Catalyst"
+  },
+  {
+    "id": 4042646245,
+    "node_id": "LA_kwDOD6PVWM7w9eLl",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/platform/tizen",
+    "name": "platform/tizen",
+    "color": "02E17C",
+    "default": false,
+    "description": "Samsung Tizen Devices (TV)"
+  },
+  {
+    "id": 2077608252,
+    "node_id": "MDU6TGFiZWwyMDc3NjA4MjUy",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/platform/windows%20%F0%9F%AA%9F",
+    "name": "platform/windows 🪟",
+    "color": "02E17C",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 5926990784,
+    "node_id": "LA_kwDOD6PVWM8AAAABYUazwA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/potential-regression",
+    "name": "potential-regression",
+    "color": "FBCA04",
+    "default": false,
+    "description": "This issue described a possible regression on a currently supported version., verification pending"
+  },
+  {
+    "id": 7406835373,
+    "node_id": "LA_kwDOD6PVWM8AAAABuXtWrQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/potential-regression-net7",
+    "name": "potential-regression-net7",
+    "color": "6BB59C",
+    "default": false,
+    "description": "This issue described a possible regression on .NET 7, verification pending"
+  },
+  {
+    "id": 4227721654,
+    "node_id": "MDU6TGFiZWw0MjI3NzIxNjU0",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Pri3",
+    "name": "Pri3",
+    "color": "0E8A16",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 4807618894,
+    "node_id": "LA_kwDOD6PVWM8AAAABHo5xTg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Priority:%202",
+    "name": "Priority: 2",
+    "color": "112D88",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 5279130656,
+    "node_id": "LA_kwDOD6PVWM8AAAABOqkkIA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Priority:0",
+    "name": "Priority:0",
+    "color": "4213F4",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 4125012139,
+    "node_id": "LA_kwDOD6PVWM713rCr",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Priority:1",
+    "name": "Priority:1",
+    "color": "88975F",
+    "default": false,
+    "description": "Created by mkArtakMSFT"
+  },
+  {
+    "id": 2072553040,
+    "node_id": "MDU6TGFiZWwyMDcyNTUzMDQw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/proposal/accepted",
+    "name": "proposal/accepted",
+    "color": "0436a0",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 4688788927,
+    "node_id": "LA_kwDOD6PVWM8AAAABF3k9vw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/proposal/not-planned",
+    "name": "proposal/not-planned",
+    "color": "A0CB95",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 2072552031,
+    "node_id": "MDU6TGFiZWwyMDcyNTUyMDMx",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/proposal/open",
+    "name": "proposal/open",
+    "color": "ccf79e",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 8423130919,
+    "node_id": "LA_kwDOD6PVWM8AAAAB9g7HJw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/proposal/underconsideration",
+    "name": "proposal/underconsideration",
+    "color": "ccf79e",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 8106446181,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4y6NZQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-10-preview1",
+    "name": "regressed-in-10-preview1",
+    "color": "aaaaaa",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 8106448008,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4y6UiA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-10-preview2",
+    "name": "regressed-in-10-preview2",
+    "color": "aaaaaa",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 8067247934,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4NhvPg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-8.0.100",
+    "name": "regressed-in-8.0.100",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8067310071,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4Nlh9w",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-8.0.20",
+    "name": "regressed-in-8.0.20",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8067529057,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4Ny5YQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-8.0.3",
+    "name": "regressed-in-8.0.3",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8248269712,
+    "node_id": "LA_kwDOD6PVWM8AAAAB66KbkA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-8.0.40",
+    "name": "regressed-in-8.0.40",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8067253652,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4NiFlA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-8.0.60",
+    "name": "regressed-in-8.0.60",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8067322518,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4NmSlg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-8.0.70",
+    "name": "regressed-in-8.0.70",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8067320271,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4NmJzw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-8.0.82",
+    "name": "regressed-in-8.0.82",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8067520429,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4NyXrQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-8.0.90",
+    "name": "regressed-in-8.0.90",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8067220546,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4NgEQg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-9.0.0",
+    "name": "regressed-in-9.0.0",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8067232138,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4Ngxig",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-9.0.10",
+    "name": "regressed-in-9.0.10",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8067294187,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4Nkj6w",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-9.0.12",
+    "name": "regressed-in-9.0.12",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8067243829,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4NhfNQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-9.0.21",
+    "name": "regressed-in-9.0.21",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8067266147,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4Ni2Yw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-9.0.30",
+    "name": "regressed-in-9.0.30",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8067227087,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4Ngdzw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-9.0.40",
+    "name": "regressed-in-9.0.40",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8169728502,
+    "node_id": "LA_kwDOD6PVWM8AAAAB5vQp9g",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-9.0.50",
+    "name": "regressed-in-9.0.50",
+    "color": "aaaaaa",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 8169731106,
+    "node_id": "LA_kwDOD6PVWM8AAAAB5vQ0Ig",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-9.0.60",
+    "name": "regressed-in-9.0.60",
+    "color": "aaaaaa",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 8169732017,
+    "node_id": "LA_kwDOD6PVWM8AAAAB5vQ3sQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regressed-in-9.0.70",
+    "name": "regressed-in-9.0.70",
+    "color": "aaaaaa",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 8067522861,
+    "node_id": "LA_kwDOD6PVWM8AAAAB4NyhLQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/regresssed-in-8.0.7",
+    "name": "regresssed-in-8.0.7",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 6006361554,
+    "node_id": "LA_kwDOD6PVWM8AAAABZgHN0g",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/reverted",
+    "name": "reverted",
+    "color": "D4A4EF",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 4080929115,
+    "node_id": "LA_kwDOD6PVWM7zPglb",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/a11y-researching",
+    "name": "s/a11y-researching",
+    "color": "C1C7EB",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 2046783036,
+    "node_id": "MDU6TGFiZWwyMDQ2NzgzMDM2",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/duplicate%202%EF%B8%8F%E2%83%A3",
+    "name": "s/duplicate 2️⃣",
+    "color": "cfd3d7",
+    "default": false,
+    "description": "This issue or pull request already exists"
+  },
+  {
+    "id": 4274675643,
+    "node_id": "LA_kwDOD6PVWM7-yl-7",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/move-to-vs-feedback",
+    "name": "s/move-to-vs-feedback",
+    "color": "e99695",
+    "default": false,
+    "description": "Tells automation to ask the person to use VS Feedback to report the issue"
+  },
+  {
+    "id": 3836557137,
+    "node_id": "LA_kwDOD6PVWM7krTdR",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/needs-attention",
+    "name": "s/needs-attention",
+    "color": "DFDA06",
+    "default": false,
+    "description": "Issue has more information and needs another look"
+  },
+  {
+    "id": 3078109910,
+    "node_id": "MDU6TGFiZWwzMDc4MTA5OTEw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/needs-info",
+    "name": "s/needs-info",
+    "color": "ffff66",
+    "default": false,
+    "description": "Issue needs more info from the author"
+  },
+  {
+    "id": 3840648855,
+    "node_id": "LA_kwDOD6PVWM7k66aX",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/needs-repro",
+    "name": "s/needs-repro",
+    "color": "CDE395",
+    "default": false,
+    "description": "Attach a solution or code which reproduces the issue"
+  },
+  {
+    "id": 3902846187,
+    "node_id": "LA_kwDOD6PVWM7ooLTr",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/needs-verification",
+    "name": "s/needs-verification",
+    "color": "B323BE",
+    "default": false,
+    "description": "Indicates that this issue needs initial verification before further triage will happen"
+  },
+  {
+    "id": 3839932585,
+    "node_id": "LA_kwDOD6PVWM7k4Lip",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/no-recent-activity",
+    "name": "s/no-recent-activity",
+    "color": "fef2c0",
+    "default": false,
+    "description": "Issue has had no recent activity"
+  },
+  {
+    "id": 5496703808,
+    "node_id": "LA_kwDOD6PVWM8AAAABR6ELQA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/no-repro",
+    "name": "s/no-repro",
+    "color": "41AA14",
+    "default": false,
+    "description": "Can no longer be reproduced on latest"
+  },
+  {
+    "id": 2046783063,
+    "node_id": "MDU6TGFiZWwyMDQ2NzgzMDYz",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/not%20on%20roadmap",
+    "name": "s/not on roadmap",
+    "color": "ffffff",
+    "default": false,
+    "description": "This will not be worked on"
+  },
+  {
+    "id": 2046783054,
+    "node_id": "MDU6TGFiZWwyMDQ2NzgzMDU0",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/not-a-bug",
+    "name": "s/not-a-bug",
+    "color": "e4e669",
+    "default": false,
+    "description": "This isn't actually a bug, or is working as expected"
+  },
+  {
+    "id": 3839956834,
+    "node_id": "LA_kwDOD6PVWM7k4Rdi",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/pr-needs-author-input",
+    "name": "s/pr-needs-author-input",
+    "color": "FBCA04",
+    "default": false,
+    "description": "PR needs an update from the author"
+  },
+  {
+    "id": 2046783059,
+    "node_id": "MDU6TGFiZWwyMDQ2NzgzMDU5",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/question%20?",
+    "name": "s/question ?",
+    "color": "d876e3",
+    "default": false,
+    "description": "Further information is requested"
+  },
+  {
+    "id": 3833189786,
+    "node_id": "LA_kwDOD6PVWM7kedWa",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/triaged",
+    "name": "s/triaged",
+    "color": "2C25C0",
+    "default": false,
+    "description": "Issue has been reviewed"
+  },
+  {
+    "id": 4386412193,
+    "node_id": "LA_kwDOD6PVWM8AAAABBXNWoQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/try-latest-version",
+    "name": "s/try-latest-version",
+    "color": "7EB40D",
+    "default": false,
+    "description": "Please try to reproduce the potential issue on the latest public version"
+  },
+  {
+    "id": 3795907168,
+    "node_id": "LA_kwDOD6PVWM7iQPJg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/s/verified",
+    "name": "s/verified",
+    "color": "F82368",
+    "default": false,
+    "description": "Verified / Reproducible Issue ready for Engineering Triage"
+  },
+  {
+    "id": 4877172001,
+    "node_id": "LA_kwDOD6PVWM8AAAABIrO9IQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/scenario-day",
+    "name": "scenario-day",
+    "color": "AEA579",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 4386604868,
+    "node_id": "LA_kwDOD6PVWM8AAAABBXZHRA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/stale",
+    "name": "stale",
+    "color": "D20B63",
+    "default": false,
+    "description": "Indicates a stale issue/pr and will be closed soon"
+  },
+  {
+    "id": 3563464694,
+    "node_id": "LA_kwDOD6PVWM7UZif2",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Status:Committed",
+    "name": "Status:Committed",
+    "color": "1D76DB",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 3563464704,
+    "node_id": "LA_kwDOD6PVWM7UZigA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Status:Completed",
+    "name": "Status:Completed",
+    "color": "1D76DB",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 3563464716,
+    "node_id": "LA_kwDOD6PVWM7UZigM",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Status:Cut",
+    "name": "Status:Cut",
+    "color": "1D76DB",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 3563464724,
+    "node_id": "LA_kwDOD6PVWM7UZigU",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Status:InProgress",
+    "name": "Status:InProgress",
+    "color": "1D76DB",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 3563464725,
+    "node_id": "LA_kwDOD6PVWM7UZigV",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Status:Proposed",
+    "name": "Status:Proposed",
+    "color": "1D76DB",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6934433332,
+    "node_id": "LA_kwDOD6PVWM8AAAABnVMONA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/t/a11y",
+    "name": "t/a11y",
+    "color": "000000",
+    "default": false,
+    "description": "Relates to accessibility"
+  },
+  {
+    "id": 3232904810,
+    "node_id": "MDU6TGFiZWwzMjMyOTA0ODEw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/t/app-size",
+    "name": "t/app-size",
+    "color": "fbca04",
+    "default": false,
+    "description": "Application Size / Trimming (sub: perf)"
+  },
+  {
+    "id": 2071263192,
+    "node_id": "MDU6TGFiZWwyMDcxMjYzMTky",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/t/breaking%20%F0%9F%92%A5",
+    "name": "t/breaking 💥",
+    "color": "dda775",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 2046783025,
+    "node_id": "MDU6TGFiZWwyMDQ2NzgzMDI1",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/t/bug",
+    "name": "t/bug",
+    "color": "d73a4a",
+    "default": false,
+    "description": "Something isn't working"
+  },
+  {
+    "id": 6934505398,
+    "node_id": "LA_kwDOD6PVWM8AAAABnVQntg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/t/desktop",
+    "name": "t/desktop",
+    "color": "e99695",
+    "default": false,
+    "description": "The issue relates to desktop scenarios (MacOS/MacCatalyst/Windows/WinUI/WinAppSDK)"
+  },
+  {
+    "id": 3700943549,
+    "node_id": "LA_kwDOD6PVWM7cl-q9",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/t/docs%20%F0%9F%93%9D",
+    "name": "t/docs 📝",
+    "color": "ABC15F",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 2046783040,
+    "node_id": "MDU6TGFiZWwyMDQ2NzgzMDQw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/t/enhancement%20%E2%98%80%EF%B8%8F",
+    "name": "t/enhancement ☀️",
+    "color": "a2eeef",
+    "default": false,
+    "description": "New feature or request"
+  },
+  {
+    "id": 2393097488,
+    "node_id": "MDU6TGFiZWwyMzkzMDk3NDg4",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/t/housekeeping%20%E2%99%BB%EF%B8%8E",
+    "name": "t/housekeeping ♻︎",
+    "color": "ededed",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 3520809760,
+    "node_id": "LA_kwDOD6PVWM7R20sg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/t/native-embedding",
+    "name": "t/native-embedding",
+    "color": "094440",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6935290020,
+    "node_id": "LA_kwDOD6PVWM8AAAABnWAgpA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/t/perf",
+    "name": "t/perf",
+    "color": "1d76db",
+    "default": false,
+    "description": "The issue affects performance (runtime speed, memory usage, startup time, etc.) (sub: perf)"
+  },
+  {
+    "id": 8136027546,
+    "node_id": "LA_kwDOD6PVWM8AAAAB5PHtmg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/t/perf/9.0.40",
+    "name": "t/perf/9.0.40",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 3365172232,
+    "node_id": "MDU6TGFiZWwzMzY1MTcyMjMy",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/t/use-newer-native-api",
+    "name": "t/use-newer-native-api",
+    "color": "DCC993",
+    "default": false,
+    "description": "Switch to use newer native API's"
+  },
+  {
+    "id": 5795675318,
+    "node_id": "LA_kwDOD6PVWM8AAAABWXL8tg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Task",
+    "name": "Task",
+    "color": "fbca04",
+    "default": false,
+    "description": "neither bug nor feature but something that needs to be done in support of either"
+  },
+  {
+    "id": 8284731541,
+    "node_id": "LA_kwDOD6PVWM8AAAAB7c74lQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/test-flight",
+    "name": "test-flight",
+    "color": "0e8a16",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6322710003,
+    "node_id": "LA_kwDOD6PVWM8AAAABeNzl8w",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/testing-categories",
+    "name": "testing-categories",
+    "color": "D93F0B",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6208828635,
+    "node_id": "LA_kwDOD6PVWM8AAAABchM02w",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/testing-flakiness",
+    "name": "testing-flakiness",
+    "color": "771013",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6322700488,
+    "node_id": "LA_kwDOD6PVWM8AAAABeNzAyA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/testing-green-ci",
+    "name": "testing-green-ci",
+    "color": "B60205",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6322695469,
+    "node_id": "LA_kwDOD6PVWM8AAAABeNytLQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/testing-infrastructure",
+    "name": "testing-infrastructure",
+    "color": "0E8A16",
+    "default": false,
+    "description": "Issue relating to testing infrastructure"
+  },
+  {
+    "id": 6261402854,
+    "node_id": "LA_kwDOD6PVWM8AAAABdTVs5g",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/testing-legacy-ui-tests",
+    "name": "testing-legacy-ui-tests",
+    "color": "D93F0B",
+    "default": false,
+    "description": "Issues/PRs that are associated with transitioning our legacy UI Tests to Appium"
+  },
+  {
+    "id": 6322718409,
+    "node_id": "LA_kwDOD6PVWM8AAAABeN0GyQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/testing-manual",
+    "name": "testing-manual",
+    "color": "0E8A16",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6322765241,
+    "node_id": "LA_kwDOD6PVWM8AAAABeN29uQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/testing-missing-tests",
+    "name": "testing-missing-tests",
+    "color": "D93F0B",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6322697319,
+    "node_id": "LA_kwDOD6PVWM8AAAABeNy0Zw",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/testing-reenable",
+    "name": "testing-reenable",
+    "color": "B60205",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 3563464726,
+    "node_id": "LA_kwDOD6PVWM7UZigW",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/Theme",
+    "name": "Theme",
+    "color": "800080",
+    "default": false,
+    "description": "Groups multiple epics."
+  },
+  {
+    "id": 4141826062,
+    "node_id": "LA_kwDOD6PVWM7230AO",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/tutorials",
+    "name": "tutorials",
+    "color": "0e8a16",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 4080814303,
+    "node_id": "MDU6TGFiZWw0MDgwODE0MzAz",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/untriaged",
+    "name": "untriaged",
+    "color": "bfdadc",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 3563464736,
+    "node_id": "LA_kwDOD6PVWM7UZigg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/User%20Story",
+    "name": "User Story",
+    "color": "0e8a16",
+    "default": false,
+    "description": "A single user-facing feature. Can be grouped under an epic."
+  },
+  {
+    "id": 4593510554,
+    "node_id": "LA_kwDOD6PVWM8AAAABEctomg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/version/android-12",
+    "name": "version/android-12",
+    "color": "AE52BF",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 4781024198,
+    "node_id": "LA_kwDOD6PVWM8AAAABHPijxg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/version/android-13",
+    "name": "version/android-13",
+    "color": "50D28A",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6256661662,
+    "node_id": "LA_kwDOD6PVWM8AAAABdO0Ung",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/version/android-14",
+    "name": "version/android-14",
+    "color": "94D6E9",
+    "default": false,
+    "description": "Issues/PRs that are specific to Android 14 / API 34"
+  },
+  {
+    "id": 7962257056,
+    "node_id": "LA_kwDOD6PVWM8AAAAB2pZmoA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/version/android-15",
+    "name": "version/android-15",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 4593527789,
+    "node_id": "LA_kwDOD6PVWM8AAAABEcur7Q",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/version/android-samsung",
+    "name": "version/android-samsung",
+    "color": "91E891",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 4593504024,
+    "node_id": "LA_kwDOD6PVWM8AAAABEctPGA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/version/ios-16",
+    "name": "version/ios-16",
+    "color": "AE52BF",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 7766381324,
+    "node_id": "LA_kwDOD6PVWM8AAAABzumTDA",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/version/ios-18",
+    "name": "version/ios-18",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 8010294297,
+    "node_id": "LA_kwDOD6PVWM8AAAAB3XNkGQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/version/windows-arm",
+    "name": "version/windows-arm",
+    "color": "aaaaaa",
+    "default": false,
+    "description": null
+  },
+  {
+    "id": 7586606614,
+    "node_id": "LA_kwDOD6PVWM8AAAABxDJuFg",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/wasdk-oct-updates",
+    "name": "wasdk-oct-updates",
+    "color": "c5def5",
+    "default": false,
+    "description": ""
+  },
+  {
+    "id": 6423470269,
+    "node_id": "LA_kwDOD6PVWM8AAAABft5gvQ",
+    "url": "https://api.github.com/repos/dotnet/maui/labels/xharness",
+    "name": "xharness",
+    "color": "042FFA",
+    "default": false,
+    "description": ""
+  }
+]
