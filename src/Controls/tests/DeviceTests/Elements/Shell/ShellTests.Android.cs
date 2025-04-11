@@ -511,7 +511,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				if (background is ColorChangeRevealDrawable changeRevealDrawable)
 				{
-					Assert.Equal(Android.Graphics.Color.White, changeRevealDrawable.EndColor);
+					Assert.Equal(global::Android.Graphics.Color.White, changeRevealDrawable.EndColor);
 				}
 			});
 		}
