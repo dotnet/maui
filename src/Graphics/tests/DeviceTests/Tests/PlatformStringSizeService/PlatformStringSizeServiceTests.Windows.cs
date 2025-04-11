@@ -3,9 +3,8 @@ using Xunit;
 
 namespace Microsoft.Maui.Graphics.DeviceTests;
 
-public class PlatformStringSizeServiceTests
+public partial class PlatfrormStringSizeSerivceTest
 {
-#if WINDOWS
 	[Theory]
 	[InlineData(0, 1)]    // Edge case: 0 should become 1
 	[InlineData(1, 1)]    // Normal case: 1 stays 1
@@ -18,12 +17,11 @@ public class PlatformStringSizeServiceTests
 		var service = new PlatformStringSizeService();
 		var font = new Font("Arial", inputWeight, FontStyleType.Normal);
 		float textSize = 32.0f;
-    
+
 		// Act
 		var canvasTextFormat = service.CreateCanvasTextFormat(font, textSize);
-    
+
 		// Assert
 		Assert.Equal(expectedWeight, canvasTextFormat.FontWeight.Weight);
 	}
-#endif
 }
