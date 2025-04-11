@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls.Xaml
 							  ?? throw new InvalidOperationException("Cannot determine property to provide the value for.");
 
 			var value = GetValue();
+
 			if (value == null)
 			{
 				if (bp != null)
@@ -67,12 +68,20 @@ namespace Microsoft.Maui.Controls.Xaml
 					object targetObject = valueProvider.TargetObject;
 
 					if (targetObject is Setter)
+					{
 						return null;
+					}
 					else
+					{
 						return bp.GetDefaultValue(targetObject as BindableObject);
+					}
 				}
+
 				if (propertyType.IsValueType)
+				{
 					return Activator.CreateInstance(propertyType);
+				}
+
 				return null;
 			}
 
