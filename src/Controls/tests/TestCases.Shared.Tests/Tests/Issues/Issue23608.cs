@@ -4,8 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST
 	public class Issue23608 : _IssuesUITest
 	{
 		public Issue23608(TestDevice device) : base(device)
@@ -23,5 +21,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 	}
-#endif
 }
