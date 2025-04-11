@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 20177, "Shell TitleColor changes not only the color of the title, but also the color of the secondary ToolbarItem's titles", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 20177, "Shell TitleColor changes the secondary ToolbarItems TextColor", PlatformAffected.UWP)]
 public class Issue20177 : TestShell
 {
 	protected override void Init()

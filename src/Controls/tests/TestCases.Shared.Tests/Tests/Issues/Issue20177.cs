@@ -8,7 +8,7 @@ internal class Issue20177 : _IssuesUITest
 {
 	public Issue20177(TestDevice device) : base(device) { }
 
-	public override string Issue => "Shell TitleColor changes not only the color of the title, but also the color of the secondary ToolbarItem's titles";
+	public override string Issue => "Shell TitleColor changes the secondary ToolbarItems TextColor";
 
 	[Test]
 	[Category(UITestCategories.ToolbarItem)]
