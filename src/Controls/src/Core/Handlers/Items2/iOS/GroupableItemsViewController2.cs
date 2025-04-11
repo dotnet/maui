@@ -127,7 +127,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			var bindingContext = ItemsSource.Group(indexPath);
 
+			cell.isHeaderOrFooterChanged = true;
 			cell.Bind(template, bindingContext, ItemsView);
+			cell.isHeaderOrFooterChanged = false;
 
 			// if (cell is ItemsViewCell2)
 			// {
