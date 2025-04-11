@@ -610,6 +610,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override UIViewController PopViewController(bool animated)
 		{
+			_popRequested = true;
 			_pendingViewControllers = null;
 			if (IsInMoreTab && ParentViewController is UITabBarController tabBarController)
 			{

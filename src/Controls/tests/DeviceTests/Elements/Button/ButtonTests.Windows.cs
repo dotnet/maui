@@ -31,6 +31,15 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		Task<bool> GetPlatformIsVisible(ButtonHandler buttonHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformButton(buttonHandler);
+				return nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
+			});
+		}
+
 		[Fact]
 		[Description("The Opacity property of a Button should match with native Opacity")]
 		public async Task VerifyButtonOpacityProperty()
@@ -48,5 +57,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
+		
 	}
 }

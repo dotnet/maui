@@ -69,6 +69,7 @@ const Microsoft.Maui.Controls.TitleBar.TrailingHiddenState = "TrailingContentCol
 const Microsoft.Maui.Controls.TitleBar.TrailingVisibleState = "TrailingContentVisible" -> string!
 Microsoft.Maui.Controls.Embedding.EmbeddingExtensions
 Microsoft.Maui.Controls.HandlerProperties
+*REMOVED*override Microsoft.Maui.Controls.Compatibility.Layout.InvalidateMeasureOverride() -> void
 Microsoft.Maui.Controls.HybridWebView
 Microsoft.Maui.Controls.HybridWebView.DefaultFile.get -> string?
 Microsoft.Maui.Controls.HybridWebView.DefaultFile.set -> void

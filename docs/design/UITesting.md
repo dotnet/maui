@@ -26,6 +26,25 @@ This will be the majority of new tests added which will be primarily for testing
 You will need to create some kind of UI to test against, which will go in the Controls.TestCases.HostApp project. This will be an actual MAUI app under test and has no dependency on Appium. Create a new class within `src/Controls/tests/TestCases.HostApp/Issues` and attribute it with `[Issue]`. Create it like any normal page you would make in app to reproduce the issue. This could be just in XAML or just code, along with a screenshot.
 This project requires a rebuild after making changes because the `Controls.TestCases.Shared.Tests` is loosely coupled to this project. It initiates a previously compiled executable from `src/Controls/tests/TestCases.HostApp`.
 
+When working on a single test case it may be convenient to start the app by using the issue page as the main one.
+This can be easily achieved by creating a `MauiProgram.user.cs` file in the `src/Controls/tests/TestCases.HostApp` folder and adding the following code:
+
+```csharp
+using Controls.TestCases.HostApp.Issues;
+
+namespace Maui.Controls.Sample;
+
+public partial class MauiProgram
+{
+	static partial void OverrideMainPage(ref Page mainPage)
+	{
+		mainPage = new Issue99999(); // My issue number here
+	}
+}
+```
+
+That file is not tracked by git, so it won't be committed by mistake.
+
 ## Adding a Test to Interact with the Reproduction
 
 Next you will need to create the appium test in the `Controls.TestCases.Shared.Tests` project, which is a library project that runs NUnit tests via Appium. Add a new class with the same name as the Reproduction within this folder: `src/Controls/tests/TestCases.Shared.Tests/Tests/Issues`. Have the class derive from `_IssuesUITest` and add your test(s) as methods.

@@ -22,6 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[FailsOnWindowsWhenRunningOnXamarinUITest("Currently fails on Windows; see https://github.com/dotnet/maui/issues/15994")]
 		public void Issue18896Test()
 		{
+			VerifyInternetConnectivity();
 			App.WaitForElement("WaitForStubControl");
 
 			App.ScrollDown(ListView);
