@@ -1,1 +1,35 @@
 #nullable enable
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewCompositionControlInitializedEventArgs
+Microsoft.AspNetCore.Components.WebView.BlazorWebViewCompositionControlInitializedEventArgs.BlazorWebViewCompositionControlInitializedEventArgs() -> void
+Microsoft.AspNetCore.Components.WebView.IBlazorWebViewInitializedEventArgs<WebView2Control>
+Microsoft.AspNetCore.Components.WebView.IBlazorWebViewInitializedEventArgs<WebView2Control>.WebView.get -> WebView2Control
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.BlazorWebViewCompositionControl() -> void
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.BlazorWebViewInitialized.get -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.BlazorWebViewCompositionControlInitializedEventArgs!>!
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.BlazorWebViewInitialized.set -> void
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.BlazorWebViewInitializing.get -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.BlazorWebViewInitializingEventArgs!>!
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.BlazorWebViewInitializing.set -> void
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.HostPage.get -> string!
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.HostPage.set -> void
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.RootComponents.get -> Microsoft.AspNetCore.Components.WebView.Wpf.RootComponentsCollection!
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.Services.get -> System.IServiceProvider!
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.Services.set -> void
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.StartPath.get -> string!
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.StartPath.set -> void
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.UrlLoading.get -> System.EventHandler<Microsoft.AspNetCore.Components.WebView.UrlLoadingEventArgs!>!
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.UrlLoading.set -> void
+Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.WebView.get -> Microsoft.Web.WebView2.Wpf.WebView2CompositionControl!
+override Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.OnApplyTemplate() -> void
+override Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.OnInitialized(System.EventArgs! e) -> void
+static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.BlazorWebViewInitializedProperty -> System.Windows.DependencyProperty!
+static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.BlazorWebViewInitializingProperty -> System.Windows.DependencyProperty!
+static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.HostPageProperty -> System.Windows.DependencyProperty!
+static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.RootComponentsProperty -> System.Windows.DependencyProperty!
+static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.ServicesProperty -> System.Windows.DependencyProperty!
+static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.StartPathProperty -> System.Windows.DependencyProperty!
+static readonly Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.UrlLoadingProperty -> System.Windows.DependencyProperty!
+virtual Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.CreateFileProvider(string! contentRootDir) -> Microsoft.Extensions.FileProviders.IFileProvider!
+virtual Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.DisposeAsyncCore() -> System.Threading.Tasks.ValueTask
+virtual Microsoft.AspNetCore.Components.WebView.Wpf.BlazorWebViewCompositionControl.TryDispatchAsync(System.Action<System.IServiceProvider!>! workItem) -> System.Threading.Tasks.Task<bool>!
+~Microsoft.AspNetCore.Components.WebView.BlazorWebViewCompositionControlInitializedEventArgs.WebView.get -> Microsoft.Web.WebView2.Wpf.WebView2CompositionControl
