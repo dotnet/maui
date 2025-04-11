@@ -1,61 +1,58 @@
-﻿namespace Maui.Controls.Sample.Issues
+﻿namespace Maui.Controls.Sample.Issues;
+
+[Issue(IssueTracker.Github, 20177, "Shell TitleColor changes not only the color of the title, but also the color of the secondary ToolbarItem's titles", PlatformAffected.UWP)]
+public class Issue20177 : TestShell
 {
-
-	[Issue(IssueTracker.Github, 20177, "Shell TitleColor changes not only the color of the title, but also the color of the secondary ToolbarItem's titles", PlatformAffected.UWP)]
-	public class Issue20177 : TestShell
+	protected override void Init()
 	{
-		protected override void Init()
-		{
-			Shell.SetTitleColor(this, Colors.White);
-			AddContentPage(CreateContentPage());
-		}
+		Shell.SetTitleColor(this, Colors.White);
+		AddContentPage(CreateContentPage());
+	}
 
-		ContentPage CreateContentPage()
-		{
-			var page = new ContentPage();
-			PopulateToolBarItems(page);
-			page.Content = CreateGrid();
-			return page;
-		}
+	ContentPage CreateContentPage()
+	{
+		var page = new ContentPage();
+		PopulateToolBarItems(page);
+		page.Content = CreateGrid();
+		return page;
+	}
 
-		Grid CreateGrid()
-		{
-			Grid grid = new Grid()
+	Grid CreateGrid()
+	{
+		Grid grid = new Grid()
 			{
-				new Label() 
-				{ 
-					HorizontalOptions = LayoutOptions.Center, 
-					VerticalOptions= LayoutOptions.Center, 
+				new Label()
+				{
+					HorizontalOptions = LayoutOptions.Center,
+					VerticalOptions= LayoutOptions.Center,
 					Text = "Secondary ToolBar Items should not use BarTextColor",
 					AutomationId = "DescriptionLabel"
 				}
 			};
-			return grid;
-		}
+		return grid;
+	}
 
-		void PopulateToolBarItems(ContentPage page)
+	void PopulateToolBarItems(ContentPage page)
+	{
+		page.ToolbarItems.Add(new()
 		{
-			page.ToolbarItems.Add(new()
-			{
-				Text = "Menu item",
-				Order = ToolbarItemOrder.Primary
-			});
-			page.ToolbarItems.Add(new()
-			{
-				Text = "Menu item 1",
-				Order = ToolbarItemOrder.Secondary
-			});
-			page.ToolbarItems.Add(new()
-			{
-				Text = "Menu item 2",
-				Order = ToolbarItemOrder.Secondary
-			});
-			page.ToolbarItems.Add(new()
-			{
-				Text = "Menu item 3",
-				Order = ToolbarItemOrder.Secondary
-			});
-		}
+			Text = "Menu item",
+			Order = ToolbarItemOrder.Primary
+		});
+		page.ToolbarItems.Add(new()
+		{
+			Text = "Menu item 1",
+			Order = ToolbarItemOrder.Secondary
+		});
+		page.ToolbarItems.Add(new()
+		{
+			Text = "Menu item 2",
+			Order = ToolbarItemOrder.Secondary
+		});
+		page.ToolbarItems.Add(new()
+		{
+			Text = "Menu item 3",
+			Order = ToolbarItemOrder.Secondary
+		});
 	}
 }
-
