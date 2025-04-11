@@ -33,12 +33,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.ItemsViewPropertyChanged(sender, property);
 
-			if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.HeaderProperty))
+			if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.HeaderProperty) || property.Is(Microsoft.Maui.Controls.StructuredItemsView.HeaderTemplateProperty))
 			{
 				UpdateHasHeader();
 				NotifyDataSetChanged();
 			}
-			else if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterProperty))
+			else if (property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterProperty) ||
+				property.Is(Microsoft.Maui.Controls.StructuredItemsView.FooterTemplateProperty))
 			{
 				UpdateHasFooter();
 				NotifyDataSetChanged();
@@ -83,7 +84,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (holder is TemplatedItemViewHolder templatedItemViewHolder)
 				{
-					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsView.Header);
+					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsView.HeaderTemplate);
+				}
+				else if (holder is SimpleViewHolder simpleViewHolder)
+				{
+					if (simpleViewHolder.ItemView is Android.Widget.TextView textView && ItemsView.Header is string headerString)
+					{
+						textView.Text = headerString;
+					}
+					else
+					{
+						simpleViewHolder.ItemView = CreateHeaderFooterViewHolder(ItemsView.Header, ItemsView.HeaderTemplate, holder.ItemView.Context).ItemView;
+					}
 				}
 
 				return;
@@ -93,7 +105,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (holder is TemplatedItemViewHolder templatedItemViewHolder)
 				{
-					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsView.Footer);
+					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsView.FooterTemplate);
+				}
+				else if (holder is SimpleViewHolder simpleViewHolder)
+				{
+					if (simpleViewHolder.ItemView is Android.Widget.TextView textView && ItemsView.Footer is string footerString)
+					{
+						textView.Text = footerString;
+					}
+					else
+					{
+						simpleViewHolder.ItemView = CreateHeaderFooterViewHolder(ItemsView.Footer, ItemsView.FooterTemplate, holder.ItemView.Context).ItemView;
+					}
 				}
 
 				return;
@@ -115,7 +138,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else
 			{
-				base.BindTemplatedItemViewHolder(templatedItemViewHolder, context);
+				TemplatedItemViewHolder viewHolder;
+				if (context == ItemsView.HeaderTemplate)
+				{
+					viewHolder = new TemplatedItemViewHolder(templatedItemViewHolder.ItemView as ItemContentView, ItemsView.HeaderTemplate, isSelectionEnabled: false);
+				}
+				else if (context == ItemsView.FooterTemplate)
+				{
+					viewHolder = new TemplatedItemViewHolder(templatedItemViewHolder.ItemView as ItemContentView, ItemsView.FooterTemplate, isSelectionEnabled: false);
+				}
+				else
+				{
+					viewHolder = templatedItemViewHolder;
+				}
+
+				base.BindTemplatedItemViewHolder(viewHolder, context);
 			}
 		}
 
