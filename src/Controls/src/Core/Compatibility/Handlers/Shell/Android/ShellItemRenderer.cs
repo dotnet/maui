@@ -420,6 +420,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void OnTabReselected(ShellSection shellSection)
 		{
+			if (Shell.GetPopToRootOnTabReselect(ShellItem) && shellSection.Navigation.NavigationStack.Count > 1)
+			{
+				shellSection.Navigation.PopToRootAsync();
+			}
 		}
 
 		protected virtual void ResetAppearance() => _appearanceTracker.ResetAppearance(_bottomView);
