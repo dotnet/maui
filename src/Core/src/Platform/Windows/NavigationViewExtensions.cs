@@ -260,7 +260,9 @@ namespace Microsoft.Maui.Platform
 		{
 			var paneContentGrid = navigationView.PaneContentGrid;
 			if (paneContentGrid is null)
+			{ 
 				return;
+			}
 
 			if (provider is not null && imageSource is not null)
 			{ 
