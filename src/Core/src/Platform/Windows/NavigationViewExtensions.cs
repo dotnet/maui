@@ -256,7 +256,8 @@ namespace Microsoft.Maui.Platform
 			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;
 		}
 
-		public static async Task UpdateBackgroundImageSourceAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider, Aspect aspect)
+		//TODO: Make this method public in Net10
+		internal static async Task UpdateBackgroundImageSourceAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider, Aspect aspect)
 		{
 			var paneContentGrid = navigationView.PaneContentGrid;
 			if (paneContentGrid is null)
