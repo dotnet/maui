@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.Is(VisualElement.FlowDirectionProperty))
 				UpdateFlowDirection();
-			else if (e.Is(Shell.FlyoutIconProperty))
+			else if (e.Is(Shell.FlyoutIconProperty) || e.Is(Shell.ForegroundColorProperty))
 				UpdateLeftToolbarItems();
 		}
 
@@ -352,6 +352,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (image != null)
 				{
 					icon = result?.Value;
+
+					var foregroundColor = _context.Shell.GetValue(Shell.ForegroundColorProperty);
+					if (foregroundColor is null)
+					{
+						icon = icon.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+					}
 				}
 				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
 				{
