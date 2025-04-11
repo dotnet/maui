@@ -105,24 +105,38 @@ namespace Microsoft.Maui.Platform
 		{
 			try
 			{
-				var uri = new Uri(url ?? string.Empty);
-				var safeHostUri = new Uri($"{uri.Scheme}://{uri.Authority}", UriKind.Absolute);
-				var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
-				var safeFullUri = new Uri(safeHostUri, safeRelativeUri);
-				NSUrlRequest request = new NSUrlRequest(new NSUrl(safeFullUri.AbsoluteUri));
-
-				if (_handler.TryGetTarget(out var handler))
+				var localPath = url ?? string.Empty;
+				if (!string.IsNullOrEmpty(localPath))
 				{
-					if (handler.HasCookiesToLoad(safeFullUri.AbsoluteUri) &&
-						!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+					var uri = new Uri(localPath);
+					Uri safeHostUri;
+					Uri safeFullUri;
+					if (localPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
 					{
-						return;
+						safeHostUri = new Uri($"{uri.Scheme}://{uri.Authority}", UriKind.Absolute);
+						var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
+						safeFullUri = new Uri(safeHostUri, safeRelativeUri);
+						NSUrlRequest request = new NSUrlRequest(new NSUrl(safeFullUri.AbsoluteUri));
+						if (_handler.TryGetTarget(out var handler))
+						{
+							if (handler.HasCookiesToLoad(safeFullUri.AbsoluteUri) &&
+								!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+							{
+								return;
+							}
+							await handler.SyncPlatformCookiesAsync(safeFullUri.AbsoluteUri);
+							LoadRequest(request);
+						}
 					}
-
-					await handler.SyncPlatformCookiesAsync(safeFullUri.AbsoluteUri);
+					else
+					{
+						safeHostUri = new Uri($"file://{uri.AbsolutePath}", UriKind.Absolute);
+						safeFullUri = new Uri(safeHostUri, uri.PathAndQuery);
+						NSUrlRequest request = new NSUrlRequest(new NSUrl(safeFullUri.AbsoluteUri));
+						LoadFile(localPath);
+					}
 				}
 
-				LoadRequest(request);
 			}
 			catch (UriFormatException formatException)
 			{
@@ -191,7 +205,18 @@ namespace Microsoft.Maui.Platform
 
 				if (nsUrl == null)
 				{
-					return false;
+					var filePath = url ?? string.Empty;
+					// Check if the file exists on the file system
+					if (File.Exists(filePath))
+					{
+						// Create an NSUrl from the external file path
+						nsUrl = new NSUrl(filePath, true);
+					}
+					else
+					{
+						// If the file doesn't exist at all (bundle or external), return false
+						return false;
+					}
 				}
 
 				LoadFileUrl(nsUrl, nsUrl);
