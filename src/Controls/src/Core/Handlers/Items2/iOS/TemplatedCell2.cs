@@ -160,6 +160,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (PlatformHandler is null && virtualView is not null)
 			{
 				var mauiContext = itemsView.FindMauiContext()!;
+				virtualView.BindingContext = bindingContext;
+				itemsView.AddLogicalChild(virtualView);
 				var nativeView = virtualView.ToPlatform(mauiContext);
 
 				if (needsContainer)
@@ -174,9 +176,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				PlatformHandler = virtualView.Handler as IPlatformViewHandler;
 				SetupPlatformView(PlatformView, needsContainer);
 				ContentView.MarkAsCrossPlatformLayoutBacking();
-
-				virtualView.BindingContext = bindingContext;
-				itemsView.AddLogicalChild(virtualView);
 			}
 
 			if (PlatformHandler?.VirtualView is View view)
