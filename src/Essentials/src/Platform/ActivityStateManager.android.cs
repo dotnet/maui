@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.OS;
+using AndroidX.Activity;
+using Microsoft.Maui.Media;
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -79,6 +81,9 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			if (activity.Application is not Application application)
 				throw new InvalidOperationException("Activity was not attached to an application.");
+
+			if (activity is ComponentActivity componentActivity && MediaPickerImplementation.IsPhotoPickerAvailable)
+				PickVisualMediaForResult.Instance.Register(componentActivity);
 
 			Init(application);
 			lifecycleListener!.Activity = activity;
