@@ -216,12 +216,23 @@ namespace Microsoft.Maui.Controls.Xaml
 				}
 			}
 
-			if ((value != null && !toType.IsAssignableFrom(value.GetType())) || (value is IWrappedValue && toType != typeof(BindingBase)))
+			if (value != null && !toType.IsAssignableFrom(value.GetType()))
 			{
 				if (TypeConversionHelper.TryConvert(value, toType, out var convertedValue))
 				{
 					return convertedValue;
 				}
+			}
+
+			// When toType is object and value is OnPlatform<T>, we need to return the wrapped value from IWrappedView
+			if (toType is object && value is IWrappedValue { Value: var wrappedValue })
+			{
+				if (wrappedValue is null)
+				{
+					return value;
+				}
+
+				return wrappedValue;
 			}
 
 			var platformValueConverterService = DependencyService.Get<INativeValueConverterService>();
