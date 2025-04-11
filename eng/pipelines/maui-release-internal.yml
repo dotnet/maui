@@ -1,0 +1,125 @@
+trigger: none
+pr: none
+
+parameters:
+- name: ghRepo
+  displayName: GitHub repository name
+  type: string
+  default: maui
+
+- name: ghOwner
+  displayName: GitHub repository owner
+  type: string
+  default: dotnet
+
+- name: commitHash
+  displayName: Commit hash to download nupkgs from
+  type: string
+  default: skip
+
+- name: VM_IMAGE_HOST
+  type: object
+  default:
+    name: NetCore1ESPool-Internal
+    image: 1es-windows-2022
+    os: windows
+
+variables:
+- template: /eng/common/templates/variables/pool-providers.yml@self
+- group: DotNetBuilds storage account read tokens
+- group: AzureDevOps-Artifact-Feeds-Pats
+
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+extends:
+  ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+    template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  ${{ else }}:
+    template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool: ${{ parameters.VM_IMAGE_HOST }}
+    sdl:
+      binskim:
+        scanOutputDirectoryOnly: true
+      codeql:
+        runSourceLanguagesInSourceAnalysis: true
+      policheck:
+        enabled: true
+      spotBugs:
+        enabled: false
+        justification: 'Failing with "Could not successfully find the java tool launcher"'
+      sourceRepositoriesToScan:
+        exclude:
+        - repository: yaml-templates
+      suppression:
+        suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
+    stages:
+    - stage: publish_maestro
+      displayName: Publish to Workload Set channel
+      dependsOn: []
+      jobs:
+      - job: publish_maestro
+        displayName: Publish to Workload Set channel
+        pool: ${{ parameters.VM_IMAGE_HOST }}
+        timeoutInMinutes: 240
+        workspace:
+          clean: all
+        steps:
+        - ${{ if eq(parameters.commitHash, 'skip') }}:
+          - script: echo parameters.commitHash was not set, skipping...
+            displayName: Skip push
+        - ${{ else }}:
+          - script: |
+              echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
+            displayName: Set COMMIT
+
+          - task: AzureCLI@2
+            displayName: Add build to workload set channel
+            inputs:
+              azureSubscription: "Darc: Maestro Production"
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                Write-Host "Getting BAR ID for commit: $(COMMIT)"
+                . $(Build.SourcesDirectory)\eng\common\tools.ps1
+                $darc = Get-Darc
+                $buildJson = & $darc get-build --ci --repo "${{ parameters.ghRepo }}" --commit "$(COMMIT)" --output-format json --azdev-pat $(System.AccessToken)
+                Write-Host "`n$buildJson`n"
+                $barId = $buildJson | ConvertFrom-Json | Select-Object -ExpandProperty "id" -First 1
+                Write-Host "Got the Bar ID: $barId for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
+                if ($barId -eq $null) {
+                  Write-Error "Could not find a build for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
+                  exit 1
+                }
+                Write-Host "Getting drop for Bar ID: $barId"
+                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose
+                Write-Host "List downloaded artifacts"
+                Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
+                $manifestPack = Get-ChildItem -Path "$(Build.StagingDirectory)\nupkgs\shipping\packages\" -Filter "*.Manifest-*.nupkg" | Select-Object -First 1
+                $workloadSetsChannel = ""
+                $workloadSetsFeed = ""
+                if ($manifestPack -like "*.Manifest-8.0*") {
+                    $workloadSetsChannel = ".NET 8 Workload Release"
+                    $workloadSetsFeed = "dotnet8-workloads"
+                }
+                if ($manifestPack -like "*.Manifest-9.0*") {
+                  $workloadSetsChannel = ".NET 9 Workload Release"
+                  $workloadSetsFeed = "dotnet9-workloads"
+                }
+                if ($manifestPack -like "*.Manifest-10.0*") {
+                  $workloadSetsChannel = ".NET 10 Workload Release"
+                  $workloadSetsFeed = "dotnet10-workloads"
+                }
+                if (!$workloadSetsChannel -or !$workloadSetsFeed) {
+                  Write-Error "Could not determine the workload sets channel or feed for the manifest pack '$manifestPack'"
+                  exit 1
+                }
+                Write-Host "##vso[task.setvariable variable=WorkloadSetsFeedName;]$workloadSetsFeed"
+                Write-Host "Adding build ID '$barId' to channel '$workloadSetsChannel' and feed '$workloadSetsFeed'"
+                & $darc add-build-to-channel --ci --channel "$workloadSetsChannel" --id "$barId" --skip-assets-publishing --azdev-pat $(System.AccessToken) --verbose
+            

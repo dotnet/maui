@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		bool _bound;
 		bool _measureInvalidated;
+		bool _needsArrange;
 		Size _measuredSize;
 		Size _cachedConstraints;
 
@@ -94,6 +95,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					var measure = virtualView.Measure(constraints.Width, constraints.Height);
 					_cachedConstraints = constraints;
 					_measuredSize = measure;
+					_needsArrange = true;
 				}
 
 				var size = ScrollDirection == UICollectionViewScrollDirection.Vertical
@@ -111,19 +113,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void LayoutSubviews()
 		{
+			base.LayoutSubviews();
+
 			if (PlatformHandler?.VirtualView is { } virtualView)
 			{
-				// While the platform view Frame is set via auto-layout constraints,
-				// we have to set the Frame on the virtual view manually.
-				// Subviews will eventually be arranged via LayoutSubviews once the cell comes into play.
-				var frame = new Rect(Point.Zero, Bounds.Size.ToSize());
-				if (virtualView.Frame != frame)
+				var boundsSize = Bounds.Size.ToSize();
+				if (!_needsArrange)
 				{
-					virtualView.Arrange(frame);
+					// While rotating the device, and under other circumstances,
+					// a layout pass is being triggered without going through PreferredLayoutAttributesFittingAttributes first.
+					// In this case we should not trigger an Arrange pass because
+					// the last measurement does not match the new bounds size.
+					return;
 				}
-			}
 
-			base.LayoutSubviews();
+				_needsArrange = false;
+
+				// We now have to apply the new bounds size to the virtual view
+				// which will automatically set the frame on the platform view too.
+				var frame = new Rect(Point.Zero, boundsSize);
+				virtualView.Arrange(frame);
+			}
 		}
 
 		public override void PrepareForReuse()
@@ -162,7 +172,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				}
 
 				PlatformHandler = virtualView.Handler as IPlatformViewHandler;
-				InitializeContentConstraints(PlatformView);
+				SetupPlatformView(PlatformView, needsContainer);
 				ContentView.MarkAsCrossPlatformLayoutBacking();
 
 				virtualView.BindingContext = bindingContext;

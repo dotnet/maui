@@ -11,6 +11,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		const string Button1Id = "button1";
 		const string Button2Id = "button2";
 		const string Success = "Success";
+		const string Skip = "skip";
 
 		public Issue3049(TestDevice testDevice) : base(testDevice)
 		{
@@ -22,16 +23,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.DisplayAlert)]
 		[Category(UITestCategories.Compatibility)]
 		[FailsOnIOSWhenRunningOnXamarinUITest("Skip this test -- as it is not applicable since the host app is not run on iPad in CI")]
-		public async Task Issue3049Test()
+		public void Issue3049Test()
 		{
 			App.WaitForElement(Button1Id);
 
+			var skipLabelRect = App.WaitForElement(Skip).GetRect();
+
 			App.Tap(Button1Id);
 
-			await Task.Delay(500);
+			App.WaitForElement("Click outside ActionSheet instead");
 
 			// Tap outside ActionSheet to dismiss it
-			App.TapCoordinates(50, 100);
+			App.TapCoordinates(skipLabelRect.CenterX(), skipLabelRect.CenterY());
 
 			App.WaitForElement(Button2Id);
 			App.Tap(Button2Id);

@@ -282,6 +282,11 @@ namespace Microsoft.Maui.Platform
 		/// </remarks>
 		public static void InvalidateMeasure(this UIView platformView, IView view)
 		{
+			InvalidateMeasure(platformView);
+		}
+
+		internal static void InvalidateMeasure(this UIView platformView)
+		{
 			if (platformView is IPlatformMeasureInvalidationController mauiPlatformView)
 			{
 				mauiPlatformView.InvalidateMeasure();

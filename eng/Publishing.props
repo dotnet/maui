@@ -9,11 +9,11 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <_UploadPathRoot>maui-sdk</_UploadPathRoot>
+    <_UploadPathRoot>maui</_UploadPathRoot>
   </PropertyGroup>
 
   <ItemGroup>
-    <Artifact Include="@(_InstallersToPublish)" Kind="Blob" RelativeBlobPath="@(_UploadPathRoot)/%(Filename)%(Extension)">
+    <Artifact Include="@(_InstallersToPublish)" Kind="Blob" RelativeBlobPath="$(_UploadPathRoot)/%(Filename)%(Extension)">
       <IsShipping>true</IsShipping>
       <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
     </Artifact>
