@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				if (cell is TemplatedCell templatedCell)
 				{
+					templatedCell.IsCarouselViewCell = true;
 					UpdateTemplatedCell(templatedCell, correctedIndexPath);
 				}
 			}
