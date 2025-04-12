@@ -330,10 +330,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				var dataTemplate = ItemsView.ItemTemplate.SelectDataTemplate(item, ItemsView);
 
-				var cellType = typeof(TemplatedCell2);
-
 				var orientation = ScrollDirection == UICollectionViewScrollDirection.Horizontal ? "Horizontal" : "Vertical";
-				var reuseId = $"{TemplatedCell2.ReuseId}.{orientation}.{dataTemplate.Id}";
+				(Type cellType, var cellTypeReuseId) = DetermineTemplatedCellType();
+				var reuseId = $"{cellTypeReuseId}.{orientation}.{dataTemplate.Id}";
 
 				if (!_cellReuseIds.Contains(reuseId))
 				{
@@ -346,6 +345,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			return ScrollDirection == UICollectionViewScrollDirection.Horizontal ? HorizontalDefaultCell2.ReuseId : VerticalDefaultCell2.ReuseId;
 		}
+
+		private protected virtual (Type CellType, string CellTypeReuseId) DetermineTemplatedCellType()
+			=> (typeof(TemplatedCell2), TemplatedCell2.ReuseId);
 
 		protected virtual void RegisterViewTypes()
 		{

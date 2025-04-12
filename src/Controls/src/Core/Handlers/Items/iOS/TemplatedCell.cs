@@ -26,8 +26,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			remove => _weakEventManager.RemoveEventHandler(value);
 		}
 
-		internal bool IsCarouselViewCell;
-
 		protected CGSize ConstrainedSize;
 
 		protected nfloat ConstrainedDimension;
@@ -106,13 +104,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var size = ConstrainedSize == default ? Measure() : ConstrainedSize;
 				_size = size.ToSize();
 				_needsArrange = true;
-
-				if (IsCarouselViewCell && PlatformHandler?.VirtualView is { } virtualView)
-				{
-					var constraints = new Size(preferredAttributes.Size.Width, double.PositiveInfinity);
-					_size = virtualView.Measure(constraints.Width, constraints.Height);
-				}
-				
 				_measureInvalidated = false;
 				preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, _size);
 				// Ensure we get a layout pass to arrange the virtual view.

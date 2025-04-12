@@ -60,7 +60,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				if (cell is TemplatedCell templatedCell)
 				{
-					templatedCell.IsCarouselViewCell = true;
 					UpdateTemplatedCell(templatedCell, correctedIndexPath);
 				}
 			}
@@ -185,6 +184,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemIndex = GetIndexFromIndexPath(indexPath);
 			return base.DetermineCellReuseId(NSIndexPath.FromItemSection(itemIndex, 0));
 		}
+
+		private protected override (Type CellType, string CellTypeReuseId) DetermineTemplatedCellType()
+			=> (typeof(CarouselTemplatedCell), "maui_carousel");
 
 		protected override void RegisterViewTypes()
 		{
