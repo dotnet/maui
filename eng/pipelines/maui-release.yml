@@ -27,6 +27,7 @@ schedules:
   branches:
     include:
     - main
+    - inflight/current
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
