@@ -16,6 +16,9 @@ public class Issue2809 : _IssuesUITest
 	[Category(UITestCategories.ToolbarItem)]
 	public void TestPageDoesntCrash()
 	{
+#if ANDROID
+		App.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc=\"More options\"]"));
+#endif
 		App.TapMoreButton();
 		App.Tap("Item 1");
 	}
