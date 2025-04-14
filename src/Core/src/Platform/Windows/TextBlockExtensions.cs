@@ -5,6 +5,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Resolvers;
 using Microsoft.UI.Xaml.Controls;
+using WThickness = Microsoft.UI.Xaml.Thickness;
 using Microsoft.UI.Xaml.Documents;
 
 namespace Microsoft.Maui.Platform
@@ -31,8 +32,15 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this TextBlock platformControl, ITextStyle text) =>
 			platformControl.UpdateProperty(TextBlock.ForegroundProperty, text.TextColor);
 
-		public static void UpdatePadding(this TextBlock platformControl, ILabel label) =>
-			platformControl.UpdateProperty(TextBlock.PaddingProperty, label.Padding.ToPlatform());
+		public static void UpdatePadding(this TextBlock platformControl, ILabel label)
+		{
+			platformControl.UpdateProperty(TextBlock.PaddingProperty, new WThickness(
+				label.Padding.Left < 0 ? 0 : label.Padding.Left,
+				label.Padding.Top < 0 ? 0 : label.Padding.Top,
+				label.Padding.Right < 0 ? 0 : label.Padding.Right,
+				label.Padding.Bottom < 0 ? 0 : label.Padding.Bottom
+			));
+		}
 
 		public static void UpdateCharacterSpacing(this TextBlock platformControl, ITextStyle label)
 		{
