@@ -2281,6 +2281,27 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Waits for the "More" button in the app, with platform-specific logic for Android and Windows.
+		/// This method does not currently support iOS and macOS platforms, where the "More" button is not shown.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void WaitForMoreButton(this IApp app)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc=\"More options\"]"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				app.WaitForElement(AppiumQuery.ByAccessibilityId("MoreButton"));
+			}
+			else
+			{
+				Debug.WriteLine("WaitForMoreButton is not supported on this platform.");
+			}
+		}
+
+		/// <summary>
 		/// Taps the "More" button in the app, with platform-specific logic for Android and Windows.
 		/// This method does not currently support iOS and macOS platforms, where the "More" button is not shown.
 		/// </summary>
