@@ -9,7 +9,7 @@
                            Clicked="ApplyButton_Clicked"/>
        </ContentPage.ToolbarItems>
        <Grid ColumnSpacing="0"
-             RowSpacing="1"
+             RowSpacing="5"
              Padding="1"
              RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
              ColumnDefinitions="Auto,Auto"
@@ -28,7 +28,7 @@
                      HorizontalOptions="Start"
                      Text="{Binding CharacterSpacing}"
                      VerticalOptions="Center"
-                     WidthRequest="200"/>
+                     WidthRequest="100"/>
 
               <!-- Date -->
 
@@ -36,14 +36,19 @@
                      Grid.Column="0"
                      Text="Date:"
                      VerticalOptions="Center"/>
-              <Entry Grid.Row="1"
-                     Grid.Column="1"
-                     AutomationId="DateEntry"
-                     HeightRequest="37"
-                     HorizontalOptions="Start"
-                     Text="{Binding Date}"
-                     VerticalOptions="Center"
-                     WidthRequest="200"/>
+              <HorizontalStackLayout Grid.Row="1"
+                                     Grid.Column="1">
+                     <Entry x:Name="Date"
+                            AutomationId="DateEntry"
+                            HeightRequest="37"
+                            HorizontalOptions="Start"
+                            Text="01/01/2025"
+                            VerticalOptions="Center"
+                            WidthRequest="100"/>
+                     <Button AutomationId="SetDateButton"
+                             Text="Set Date"
+                             Clicked="SetDateButton_Clicked"/>
+              </HorizontalStackLayout>
 
               <!-- Font Attributes -->
 
@@ -108,7 +113,7 @@
                      HorizontalOptions="Start"
                      Text="{Binding FontSize}"
                      VerticalOptions="Center"
-                     WidthRequest="200"/>
+                     WidthRequest="100"/>
 
               <!-- Format -->
 
@@ -123,37 +128,47 @@
                      HorizontalOptions="Start"
                      Text="{Binding Format}"
                      VerticalOptions="Center"
-                     WidthRequest="200"/>
-
-              <!-- MaximumDate -->
-
-              <Label Grid.Row="6"
-                     Grid.Column="0"
-                     Text="MaximumDate:"
-                     VerticalOptions="Center"/>
-              <Entry Grid.Row="6"
-                     Grid.Column="1"
-                     AutomationId="MaximumDateEntry"
-                     HeightRequest="37"
-                     HorizontalOptions="Start"
-                     Text="{Binding MaximumDate}"
-                     VerticalOptions="Center"
-                     WidthRequest="200"/>
+                     WidthRequest="100"/>
 
               <!-- MinimumDate -->
 
-              <Label Grid.Row="7"
+              <Label Grid.Row="6"
                      Grid.Column="0"
                      Text="MinimumDate:"
                      VerticalOptions="Center"/>
-              <Entry Grid.Row="7"
-                     Grid.Column="1"
-                     AutomationId="MinimumDateEntry"
-                     HeightRequest="37"
-                     HorizontalOptions="Start"
-                     Text="{Binding MinimumDate}"
-                     VerticalOptions="Center"
-                     WidthRequest="200"/>
+              <HorizontalStackLayout Grid.Row="6"
+                                     Grid.Column="1">
+                     <Entry x:Name="MinimumDate"
+                            AutomationId="MinimumDateEntry"
+                            HeightRequest="37"
+                            HorizontalOptions="Start"
+                            Text="01/01/2025"
+                            VerticalOptions="Center"
+                            WidthRequest="100"/>
+                     <Button AutomationId="SetMinimumDateButton"
+                             Text="Set Minimum Date"
+                             Clicked="SetMinimumDateButton_Clicked"/>
+              </HorizontalStackLayout>
+
+              <!-- MaximumDate -->
+
+              <Label Grid.Row="7"
+                     Grid.Column="0"
+                     Text="MaximumDate:"
+                     VerticalOptions="Center"/>
+              <HorizontalStackLayout Grid.Row="7"
+                                     Grid.Column="1">
+                     <Entry x:Name="MaximumDate"
+                            AutomationId="MaximumDateEntry"
+                            HeightRequest="37"
+                            HorizontalOptions="Start"
+                            Text="01/01/2027"
+                            VerticalOptions="Center"
+                            WidthRequest="100"/>
+                     <Button AutomationId="SetMaximumDateButton"
+                             Text="Set Maximum Date"
+                             Clicked="SetMaximumDateButton_Clicked"/>
+              </HorizontalStackLayout>
 
               <!-- Text Color -->
 
