@@ -2,32 +2,33 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Issues.Issue28530">
 
     <VerticalStackLayout Padding="10">
-        <CollectionView
+        <local:CollectionView2
             ItemsSource="{Binding GroupedItems}"
             IsGrouped="true"
             CanReorderItems="true"
             CanMixGroups="false"
             AutomationId="CollectionViewControl">
-            <CollectionView.GroupHeaderTemplate>
+            <local:CollectionView2.GroupHeaderTemplate>
                 <DataTemplate>
                     <Label Text="{Binding GroupHeaderName}"
                            FontAttributes="Bold"
                            FontSize="14"
                            Padding="5"/>
                 </DataTemplate>
-            </CollectionView.GroupHeaderTemplate>
-            <CollectionView.ItemTemplate>
+            </local:CollectionView2.GroupHeaderTemplate>
+            <local:CollectionView2.ItemTemplate>
                 <DataTemplate>
                     <Label Text="{Binding Name}"
                            AutomationId="{Binding .}"
                            FontSize="12"
                            Padding="5"/>
                 </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+            </local:CollectionView2.ItemTemplate>
+        </local:CollectionView2>
     </VerticalStackLayout>
 
 </ContentPage>
