@@ -25,7 +25,15 @@ namespace Microsoft.Maui.Handlers
 		public static void MapWKUIDelegate(IWebViewHandler handler, IWebView webView)
 		{
 			if (handler is WebViewHandler platformHandler)
+			{
 				handler.PlatformView.UIDelegate = platformHandler._delegate ??= new MauiWebViewUIDelegate(handler);
+			}
+		}
+
+		static void MapBackground(IWebViewHandler handler, IWebView webView)
+		{
+			handler.PlatformView.Opaque = webView.Background is null;
+			handler.PlatformView.UpdateBackground(webView);
 		}
 
 		public static void MapSource(IWebViewHandler handler, IWebView webView)
