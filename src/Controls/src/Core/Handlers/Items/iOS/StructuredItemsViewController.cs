@@ -87,20 +87,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void ViewWillLayoutSubviews()
 		{
 			var hasHeaderOrFooter = _footerViewFormsElement is not null || _headerViewFormsElement is not null;
- 			if (hasHeaderOrFooter && CollectionView is MauiCollectionView { NeedsCellLayout: true } collectionView)
+			if (hasHeaderOrFooter && CollectionView is MauiCollectionView { NeedsCellLayout: true } collectionView)
 			{
-				var emptyView = CollectionView.ViewWithTag(EmptyTag);
-
 				if (_headerViewFormsElement is not null)
 				{
 					RemeasureLayout(_headerViewFormsElement);
 				}
+
 				if (_footerViewFormsElement is not null)
 				{
 					RemeasureLayout(_footerViewFormsElement);
 				}
+
 				UpdateHeaderFooterPosition();
 			}
+
 			base.ViewWillLayoutSubviews();
 		}
 
