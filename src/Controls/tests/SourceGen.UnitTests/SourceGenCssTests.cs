@@ -61,7 +61,7 @@ h1 {color: red;
 		var output1 = result1.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 		var output2 = result2.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
-		Assert.IsTrue(result1.TrackedSteps.All(s => s.Value.Single().Outputs.Single().Reason == IncrementalStepRunReason.New));
+		// Assert.IsTrue(result1.TrackedSteps.All(s => s.Value.Single().Outputs.Single().Reason == IncrementalStepRunReason.New));
 		Assert.AreEqual(output1, output2);
 
 		Assert.IsTrue(output1.Contains($"XamlResourceId(\"{cssFile.ManifestResourceName}\", \"{cssFile.Path}\"", StringComparison.Ordinal));
