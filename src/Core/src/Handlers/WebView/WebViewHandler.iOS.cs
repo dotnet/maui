@@ -104,8 +104,8 @@ namespace Microsoft.Maui.Handlers
 
 			var set = false;
 
-			var width = widthConstraint;
-			var height = heightConstraint;
+			var width = size.Width;
+			var height = size.Height;
 
 			if (size.Width == 0)
 			{
