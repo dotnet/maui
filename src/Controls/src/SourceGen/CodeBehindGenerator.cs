@@ -231,6 +231,13 @@ public class CodeBehindGenerator : IIncrementalGenerator
 					{
 						xmlnsDef.AssemblyName = assembly.Name;
 					}
+					
+					//only add globalxmlns definition from the current assembly
+					if (   xmlnsDef.XmlNamespace == XamlParser.MauiGlobal 
+						&& !SymbolEqualityComparer.Default.Equals(assembly, compilation.Assembly))
+					{
+						continue;	
+					}
 
 					xmlnsDefinitions.Add(xmlnsDef);
 				}
@@ -258,7 +265,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 			}
 		}
 
-		return new AssemblyCaches(xmlnsDefinitions, internalsVisible);
+		return new AssemblyCaches([.. xmlnsDefinitions.Distinct()], internalsVisible);
 	}
 
 	static IDictionary<XmlType, string> GetTypeCache(Compilation compilation, CancellationToken cancellationToken)

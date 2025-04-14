@@ -20,12 +20,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				// Search for the attribute in the assemblies being
 				// referenced.
-				GatherXmlnsDefinitionAttributes(xmlnsDefinitions, module.Assembly);
+				GatherXmlnsDefinitionAttributes(xmlnsDefinitions, module.Assembly, module.Assembly);
 
 				foreach (var asmRef in module.AssemblyReferences)
 				{
 					var asmDef = module.AssemblyResolver.Resolve(asmRef);
-					GatherXmlnsDefinitionAttributes(xmlnsDefinitions, asmDef);
+					GatherXmlnsDefinitionAttributes(xmlnsDefinitions, asmDef, module.Assembly);
 				}
 			}
 			else
@@ -59,13 +59,17 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return xmlnsDefinitions;
 		}
 
-		static void GatherXmlnsDefinitionAttributes(List<XmlnsDefinitionAttribute> xmlnsDefinitions, AssemblyDefinition asmDef)
+		static void GatherXmlnsDefinitionAttributes(List<XmlnsDefinitionAttribute> xmlnsDefinitions, AssemblyDefinition asmDef, AssemblyDefinition currentAssembly)
 		{
 			foreach (var ca in asmDef.CustomAttributes)
 			{
 				if (ca.AttributeType.FullName == _xmlnsDefinitionName)
 				{
 					var attr = GetXmlnsDefinition(ca, asmDef);
+					//only add globalxmlns definition from the current assembly
+					if (   attr.XmlNamespace == XamlParser.MauiGlobal
+						&& asmDef != currentAssembly)
+						continue;
 					xmlnsDefinitions.Add(attr);
 				}
 			}
