@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.DatePickerOptionsPage"
+             Title="DatePickerOptionsPage">
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Apply"
+                           AutomationId="Apply"
+                           Clicked="ApplyButton_Clicked"/>
+       </ContentPage.ToolbarItems>
+       <Grid ColumnSpacing="0"
+             RowSpacing="1"
+             Padding="1"
+             RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+             ColumnDefinitions="Auto,Auto"
+             HorizontalOptions="Center">
+
+              <!-- CharacterSpacing -->
+
+              <Label Grid.Row="0"
+                     Grid.Column="0"
+                     Text="CharacterSpacing:"
+                     VerticalOptions="Center"/>
+              <Entry Grid.Row="0"
+                     Grid.Column="1"
+                     AutomationId="CharacterSpacingEntry"
+                     HeightRequest="37"
+                     HorizontalOptions="Start"
+                     Text="{Binding CharacterSpacing}"
+                     VerticalOptions="Center"
+                     WidthRequest="200"/>
+
+              <!-- Date -->
+
+              <Label Grid.Row="1"
+                     Grid.Column="0"
+                     Text="Date:"
+                     VerticalOptions="Center"/>
+              <Entry Grid.Row="1"
+                     Grid.Column="1"
+                     AutomationId="DateEntry"
+                     HeightRequest="37"
+                     HorizontalOptions="Start"
+                     Text="{Binding Date}"
+                     VerticalOptions="Center"
+                     WidthRequest="200"/>
+
+              <!-- Font Attributes -->
+
+              <Label Grid.Row="2"
+                     Grid.Column="0"
+                     Text="FontAttributes:"
+                     VerticalOptions="Center"/>
+              <StackLayout Grid.Row="2"
+                           Grid.Column="1"
+                           Orientation="Horizontal"
+                           Spacing="10"
+                           VerticalOptions="Center">
+                     <RadioButton GroupName="FontAttributes"
+                                  AutomationId="FontAttributesItalicButton"
+                                  Content="Italic"
+                                  CheckedChanged="OnFontAttributesRadioButtonCheckedChanged"/>
+
+                     <RadioButton GroupName="FontAttributes"
+                                  AutomationId="FontAttributesBoldButton"
+                                  Content="Bold"
+                                  CheckedChanged="OnFontAttributesRadioButtonCheckedChanged"/>
+
+                     <RadioButton GroupName="FontAttributes"
+                                  AutomationId="FontAttributesNoneButton"
+                                  Content="None"
+                                  CheckedChanged="OnFontAttributesRadioButtonCheckedChanged"/>
+              </StackLayout>
+
+              <!-- Font Family -->
+
+              <Label Grid.Row="3"
+                     Grid.Column="0"
+                     Text="FontFamily:"
+                     VerticalOptions="Center"/>
+              <StackLayout Grid.Row="3"
+                           Grid.Column="1"
+                           Orientation="Horizontal"
+                           Spacing="10"
+                           VerticalOptions="Center">
+                     <RadioButton GroupName="FontFamily"
+                                  AutomationId="FontFamilyDokdoButton"
+                                  Content="Dokdo"
+                                  CheckedChanged="OnFontFamilyRadioButtonCheckedChanged"/>
+
+                     <RadioButton GroupName="FontFamily"
+                                  AutomationId="FontFamilyMontserratBoldButton"
+                                  Content="MontserratBold"
+                                  CheckedChanged="OnFontFamilyRadioButtonCheckedChanged"/>
+              </StackLayout>
+
+
+              <!-- Font Size -->
+
+              <Label Grid.Row="4"
+                     Grid.Column="0"
+                     Text="FontSize:"
+                     VerticalOptions="Center"/>
+              <Entry Grid.Row="4"
+                     Grid.Column="1"
+                     AutomationId="FontSizeEntry"
+                     HeightRequest="37"
+                     HorizontalOptions="Start"
+                     Text="{Binding FontSize}"
+                     VerticalOptions="Center"
+                     WidthRequest="200"/>
+
+              <!-- Format -->
+
+              <Label Grid.Row="5"
+                     Grid.Column="0"
+                     Text="Format:"
+                     VerticalOptions="Center"/>
+              <Entry Grid.Row="5"
+                     Grid.Column="1"
+                     AutomationId="FormatEntry"
+                     HeightRequest="37"
+                     HorizontalOptions="Start"
+                     Text="{Binding Format}"
+                     VerticalOptions="Center"
+                     WidthRequest="200"/>
+
+              <!-- MaximumDate -->
+
+              <Label Grid.Row="6"
+                     Grid.Column="0"
+                     Text="MaximumDate:"
+                     VerticalOptions="Center"/>
+              <Entry Grid.Row="6"
+                     Grid.Column="1"
+                     AutomationId="MaximumDateEntry"
+                     HeightRequest="37"
+                     HorizontalOptions="Start"
+                     Text="{Binding MaximumDate}"
+                     VerticalOptions="Center"
+                     WidthRequest="200"/>
+
+              <!-- MinimumDate -->
+
+              <Label Grid.Row="7"
+                     Grid.Column="0"
+                     Text="MinimumDate:"
+                     VerticalOptions="Center"/>
+              <Entry Grid.Row="7"
+                     Grid.Column="1"
+                     AutomationId="MinimumDateEntry"
+                     HeightRequest="37"
+                     HorizontalOptions="Start"
+                     Text="{Binding MinimumDate}"
+                     VerticalOptions="Center"
+                     WidthRequest="200"/>
+
+              <!-- Text Color -->
+
+              <Label Grid.Row="8"
+                     Grid.Column="0"
+                     Text="TextColor:"
+                     VerticalOptions="Center"/>
+              <StackLayout Grid.Row="8"
+                           Grid.Column="1"
+                           Orientation="Horizontal"
+                           Spacing="10"
+                           VerticalOptions="Center">
+                     <RadioButton GroupName="TextColor"
+                                  AutomationId="TextColorRedButton"
+                                  Content="Red"
+                                  CheckedChanged="OnTextColorRadioButtonCheckedChanged"/>
+
+                     <RadioButton GroupName="TextColor"
+                                  AutomationId="TextColorGreenButton"
+                                  Content="Green"
+                                  CheckedChanged="OnTextColorRadioButtonCheckedChanged"/>
+              </StackLayout>
+       </Grid>
+
+</ContentPage>
