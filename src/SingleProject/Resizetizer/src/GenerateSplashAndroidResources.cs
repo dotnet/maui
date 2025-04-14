@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Resizetizer
 			}
 			catch (Exception ex)
 			{
-				Log.LogError(null, "MAUI0000", null, null, 0, 0, 0, 0, ex.ToString());
+				Log.LogError("Android Resource Processing", "MAUIR0004", null, null, 0, 0, 0, 0, $"Error occurred in processing Android-specific image resources. {ex.ToString()}");
 				return false;
 			}
 		}
