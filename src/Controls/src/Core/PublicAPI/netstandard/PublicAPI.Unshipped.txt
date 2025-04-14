@@ -17,6 +17,7 @@ Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.St
 ~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.RequireServiceAttribute(System.Type[] serviceTypes) -> void
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.ServiceTypes.get -> System.Type[]
+~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.Target.get -> string
 ~override Microsoft.Maui.Controls.ShellContent.OnPropertyChanged(string propertyName = null) -> void
 *REMOVED*~static Microsoft.Maui.Controls.Application.ControlsApplicationMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IApplication, Microsoft.Maui.Handlers.ApplicationHandler>
 ~static Microsoft.Maui.Controls.Brush.DarkGrey.get -> Microsoft.Maui.Controls.SolidColorBrush

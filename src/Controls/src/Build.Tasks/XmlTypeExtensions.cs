@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 {
 	static class XmlTypeExtensions
 	{
+		static readonly string _xmlnsDefinitionName = typeof(XmlnsDefinitionAttribute).FullName;
+
 		static IList<XmlnsDefinitionAttribute> GatherXmlnsDefinitionAttributes(ModuleDefinition module)
 		{
 			var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
@@ -18,17 +20,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				// Search for the attribute in the assemblies being
 				// referenced.
+				GatherXmlnsDefinitionAttributes(xmlnsDefinitions, module.Assembly);
+
 				foreach (var asmRef in module.AssemblyReferences)
 				{
 					var asmDef = module.AssemblyResolver.Resolve(asmRef);
-					foreach (var ca in asmDef.CustomAttributes)
-					{
-						if (ca.AttributeType.FullName == typeof(XmlnsDefinitionAttribute).FullName)
-						{
-							var attr = GetXmlnsDefinition(ca, asmDef);
-							xmlnsDefinitions.Add(attr);
-						}
-					}
+					GatherXmlnsDefinitionAttributes(xmlnsDefinitions, asmDef);
 				}
 			}
 			else
@@ -47,7 +44,31 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					}
 			}
 
+			var globalXmlns = xmlnsDefinitions.Where(x => x.XmlNamespace == XamlParser.MauiGlobal).ToList();
+			foreach (var global in globalXmlns)
+			{
+				var pointedXmlns = xmlnsDefinitions.Where(x => x.XmlNamespace == global.Target).ToList();
+				foreach (var pointed in pointedXmlns)
+				{
+					xmlnsDefinitions.Add (new XmlnsDefinitionAttribute(global.XmlNamespace, pointed.Target)
+					{
+						AssemblyName = pointed.AssemblyName
+					});
+				}
+			}
 			return xmlnsDefinitions;
+		}
+
+		static void GatherXmlnsDefinitionAttributes(List<XmlnsDefinitionAttribute> xmlnsDefinitions, AssemblyDefinition asmDef)
+		{
+			foreach (var ca in asmDef.CustomAttributes)
+			{
+				if (ca.AttributeType.FullName == _xmlnsDefinitionName)
+				{
+					var attr = GetXmlnsDefinition(ca, asmDef);
+					xmlnsDefinitions.Add(attr);
+				}
+			}
 		}
 
 		public static TypeReference GetTypeReference(XamlCache cache, string typeName, ModuleDefinition module, BaseNode node, bool expandToExtension = true)
@@ -76,6 +97,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			TypeReference type = xmlType.GetTypeReference(xmlnsDefinitions, module.Assembly.Name.Name, (typeInfo) =>
 			{
+				if (typeInfo.clrNamespace.StartsWith("http")) //aggregated xmlns, might result in a typeload exception
+					return null;
 				string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
 				var type = module.GetTypeDefinition(cache, (typeInfo.assemblyName, typeInfo.clrNamespace, typeName));
 				if (type is not null && type.IsPublicOrVisibleInternal(module))
@@ -97,7 +120,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			throw new BuildException(BuildExceptionCode.TypeResolution, xmlInfo, null, $"{xmlType.NamespaceUri}:{xmlType.Name}");
 		}
 
-		public static XmlnsDefinitionAttribute GetXmlnsDefinition(this CustomAttribute ca, AssemblyDefinition asmDef)
+		static XmlnsDefinitionAttribute GetXmlnsDefinition(this CustomAttribute ca, AssemblyDefinition asmDef)
 		{
 			var attr = new XmlnsDefinitionAttribute(
 							ca.ConstructorArguments[0].Value as string,
