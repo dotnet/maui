@@ -65,16 +65,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				if (bp != null)
 				{
-					object targetObject = valueProvider.TargetObject;
-
-					if (targetObject is Setter)
-					{
-						return null;
-					}
-					else
-					{
-						return bp.GetDefaultValue(targetObject as BindableObject);
-					}
+					return bp.GetDefaultValue(valueProvider.TargetObject as BindableObject);
 				}
 
 				if (propertyType.IsValueType)
