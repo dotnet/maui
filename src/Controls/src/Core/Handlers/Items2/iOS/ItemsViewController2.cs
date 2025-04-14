@@ -61,6 +61,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (newLayout is UICollectionViewCompositionalLayout compositionalLayout)
 			{
+				// Note: on carousel layout, the scroll direction is always vertical
 				ScrollDirection = compositionalLayout.Configuration.ScrollDirection;
 			}
 

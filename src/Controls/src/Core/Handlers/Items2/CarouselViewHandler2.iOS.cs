@@ -39,7 +39,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		protected override UICollectionViewLayout SelectLayout()
 		{
 			bool isHorizontal = VirtualView.ItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
-			UICollectionViewScrollDirection scrollDirection = isHorizontal ? UICollectionViewScrollDirection.Horizontal : UICollectionViewScrollDirection.Vertical;
 
 			NSCollectionLayoutDimension itemWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 			NSCollectionLayoutDimension itemHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
@@ -47,11 +46,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			NSCollectionLayoutDimension groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
 			nfloat itemSpacing = 0;
 			NSCollectionLayoutGroup group = null;
-			
-			var layoutConfiguration = new UICollectionViewCompositionalLayoutConfiguration
-			{
-				ScrollDirection = scrollDirection
-			};
 
 			var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
 			{
@@ -157,7 +151,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				};
 				return section;
-			}, layoutConfiguration);
+			});
 
 			return layout;
 		}

@@ -18,5 +18,9 @@ public class Issue28930 : _IssuesUITest
 		App.WaitForElement("dotnetbot2");
 		App.WaitForElement("dotnetbot3");
 		App.WaitForElement("dotnetbot4");
+		
+		App.ScrollRight("MyCarousel", swipePercentage: 0.7, swipeSpeed: 200);
+
+		App.WaitForTextToBePresentInElement("ItemLabel", "Item 2");
 	}
 }
