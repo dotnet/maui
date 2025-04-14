@@ -22,9 +22,9 @@ namespace Microsoft.Maui.Platform
 		{
 			base.Draw(rect);
 
-			if (IsRunning)
+			if (IsRunning && !Hidden)
 				StartAnimating();
-			else
+			else if(IsAnimating)
 				StopAnimating();
 		}
 
@@ -32,9 +32,9 @@ namespace Microsoft.Maui.Platform
 		{
 			base.LayoutSubviews();
 
-			if (IsRunning)
+			if (IsRunning && !Hidden)
 				StartAnimating();
-			else
+			else if(IsAnimating)
 				StopAnimating();
 		}
 
