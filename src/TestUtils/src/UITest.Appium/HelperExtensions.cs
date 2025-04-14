@@ -2297,7 +2297,7 @@ namespace UITest.Appium
 			}
 			else
 			{
-				 throw new InvalidOperationException($"WaitForMoreButton is not supported on this platform.");
+				throw new InvalidOperationException($"WaitForMoreButton is not supported on this platform.");
 			}
 		}
 
