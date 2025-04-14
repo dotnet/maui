@@ -8,7 +8,7 @@ namespace Microsoft.Maui.TestCases.Tests;
 public class DatePickerFeatureTests : UITest
 {
     public const string DatePickerFeatureMatrix = "Date Picker Feature Matrix";
-    
+
     public DatePickerFeatureTests(TestDevice testDevice) : base(testDevice)
     {
     }
@@ -81,9 +81,10 @@ public class DatePickerFeatureTests : UITest
         App.Tap("Options");
         App.WaitForElement("FormatEntry");
         App.ClearText("FormatEntry");
-        App.EnterText("FormatEntry", "MM/dd/yyyy");
+        App.EnterText("FormatEntry", "D");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        Task.Delay(2000).Wait();
         // VerifyScreenshot();
     }
 
@@ -141,7 +142,7 @@ public class DatePickerFeatureTests : UITest
         App.Tap("FontAttributesItalicButton");
         App.WaitForElement("FormatEntry");
         App.ClearText("FormatEntry");
-        App.EnterText("FormatEntry", "MM/dd/yyyy");
+        App.EnterText("FormatEntry", "D");
         App.WaitForElement("Apply");
         App.Tap("Apply");
         // VerifyScreenshot();
@@ -173,7 +174,7 @@ public class DatePickerFeatureTests : UITest
         App.Tap("FontFamilyDokdoButton");
         App.WaitForElement("FormatEntry");
         App.ClearText("FormatEntry");
-        App.EnterText("FormatEntry", "MM/dd/yyyy");
+        App.EnterText("FormatEntry", "D");
         App.WaitForElement("Apply");
         App.Tap("Apply");
         // VerifyScreenshot();
@@ -189,51 +190,160 @@ public class DatePickerFeatureTests : UITest
         App.EnterText("FontSizeEntry", "20");
         App.WaitForElement("FormatEntry");
         App.ClearText("FormatEntry");
-        App.EnterText("FormatEntry", "MM/dd/yyyy");
+        App.EnterText("FormatEntry", "D");
         App.WaitForElement("Apply");
         App.Tap("Apply");
         // VerifyScreenshot();
     }
 
-    // [Test]
-    // [Category(UITestCategories.DatePicker)]
-    // public void DatePicker_SetMinimumDateAndDateVerify()
-    // {
-    //     App.WaitForElement("Options");
-    //     App.Tap("Options");
-    //     App.WaitForElement("MinimumDateEntry");
-    //     App.ClearText("MinimumDateEntry");
-    //     App.EnterText("MinimumDateEntry", DateTime.Now.AddYears(-1).ToString("MM/dd/yyyy hh:mm:ss tt"));
-    //     App.WaitForElement("Apply");
-    //     App.Tap("Apply");
-    //     App.WaitForElement("DatePickerControl");
-    //     App.Tap("DatePickerControl");
-    //     App.EnterText("DatePickerControl", DateTime.Now.AddYears(-2).ToString("MM/dd/yyyy hh:mm:ss tt"));
-    //     App.DismissKeyboard();
-    //     Task.Delay(2000).Wait();
-    //     var selectedDate = App.Query("DatePickerControl").FirstOrDefault()?.Text;
-    //     // Assert.AreNotEqual("04/10/2024", selectedDate, "DatePicker allowed a date below MinimumDate!");
-    //     // VerifyScreenshot();
-    // }
+    [Test]
+    [Category(UITestCategories.DatePicker)]
+    public void DatePicker_SetMinimumDateAndDateVerify()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("MinimumDateEntry");
+        App.ClearText("MinimumDateEntry");
+        App.EnterText("MinimumDateEntry", "01/01/2024");
+        App.WaitForElement("SetMinimumDateButton");
+        App.Tap("SetMinimumDateButton");
+        App.WaitForElement("DateEntry");
+        App.ClearText("DateEntry");
+        App.EnterText("DateEntry", "01/01/2023");
+        App.WaitForElement("SetDateButton");
+        App.Tap("SetDateButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        Task.Delay(2000).Wait();
+        // VerifyScreenshot();
+    }
 
-    // [Test]
-    // [Category(UITestCategories.DatePicker)]
-    // public void DatePicker_SetMaximumDateAndDateVerify()
-    // {
-    //     App.WaitForElement("Options");
-    //     App.Tap("Options");
-    //     App.WaitForElement("MaximumDateEntry");
-    //     App.ClearText("MaximumDateEntry");
-    //     App.EnterText("MaximumDateEntry", DateTime.Now.AddYears(1).ToString("MM/dd/yyyy hh:mm:ss tt"));
-    //     App.WaitForElement("Apply");
-    //     App.Tap("Apply");
-    //     App.WaitForElement("DatePickerControl");
-    //     App.Tap("DatePickerControl");
-    //     App.EnterText("DatePickerControl", DateTime.Now.AddYears(2).ToString("MM/dd/yyyy hh:mm:ss tt"));
-    //     App.DismissKeyboard();
-    //     // var selectedDate = App.Query("DatePickerControl").FirstOrDefault()?.Text;
-    //     // Assert.AreNotEqual("04/10/2024", selectedDate, "DatePicker allowed a date below MinimumDate!");
-    //     // VerifyScreenshot();
-    //     // VerifyScreenshot();
-    // }
+    [Test]
+    [Category(UITestCategories.DatePicker)]
+    public void DatePicker_SetMaximumDateAndDateVerify()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("MaximumDateEntry");
+        App.ClearText("MaximumDateEntry");
+        App.EnterText("MaximumDateEntry", "01/01/2027");
+        App.WaitForElement("SetMaximumDateButton");
+        App.Tap("SetMaximumDateButton");
+        App.WaitForElement("DateEntry");
+        App.ClearText("DateEntry");
+        App.EnterText("DateEntry", "01/01/2028");
+        App.WaitForElement("SetDateButton");
+        App.Tap("SetDateButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        Task.Delay(2000).Wait();
+        // VerifyScreenshot();
+    }
+
+    //MinimumDate and MaximumDate are same date. Try to set Date is less than MinimumDate
+    [Test]
+    [Category(UITestCategories.DatePicker)]
+    public void DatePicker_SetMinimumDateAndMaximumDateVerify()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("MinimumDateEntry");
+        App.ClearText("MinimumDateEntry");
+        App.EnterText("MinimumDateEntry", "01/01/2025");
+        App.WaitForElement("SetMinimumDateButton");
+        App.Tap("SetMinimumDateButton");
+        App.WaitForElement("MaximumDateEntry");
+        App.ClearText("MaximumDateEntry");
+        App.EnterText("MaximumDateEntry", "01/01/2025");
+        App.WaitForElement("SetMaximumDateButton");
+        App.Tap("SetMaximumDateButton");
+        App.WaitForElement("DateEntry");
+        App.ClearText("DateEntry");
+        App.EnterText("DateEntry", "01/01/2024");
+        App.WaitForElement("SetDateButton");
+        App.Tap("SetDateButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        // VerifyScreenshot();
+    }
+
+    //MinimumDate and MaximumDate are same date. Try to set Date is greater than MaximumDate
+    [Test]
+    [Category(UITestCategories.DatePicker)]
+    public void DatePicker_SetMaximumDateAndMinimumDateVerify()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("MinimumDateEntry");
+        App.ClearText("MinimumDateEntry");
+        App.EnterText("MinimumDateEntry", "01/01/2025");
+        App.WaitForElement("SetMinimumDateButton");
+        App.Tap("SetMinimumDateButton");
+        App.WaitForElement("MaximumDateEntry");
+        App.ClearText("MaximumDateEntry");
+        App.EnterText("MaximumDateEntry", "01/01/2025");
+        App.WaitForElement("SetMaximumDateButton");
+        App.Tap("SetMaximumDateButton");
+        App.WaitForElement("DateEntry");
+        App.ClearText("DateEntry");
+        App.EnterText("DateEntry", "01/01/2026");
+        App.WaitForElement("SetDateButton");
+        App.Tap("SetDateButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        // VerifyScreenshot();
+    }
+
+    //MinimumDate greater than MaximumDate
+    [Test]
+    [Category(UITestCategories.DatePicker)]
+    public void DatePicker_SetMinimumDateAndMaximumDateVerify1()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("MinimumDateEntry");
+        App.ClearText("MinimumDateEntry");
+        App.EnterText("MinimumDateEntry", "01/01/2026");
+        App.WaitForElement("SetMinimumDateButton");
+        App.Tap("SetMinimumDateButton");
+        App.WaitForElement("MaximumDateEntry");
+        App.ClearText("MaximumDateEntry");
+        App.EnterText("MaximumDateEntry", "01/01/2025");
+        App.WaitForElement("SetMaximumDateButton");
+        App.Tap("SetMaximumDateButton");
+        App.WaitForElement("DateEntry");
+        App.ClearText("DateEntry");
+        App.EnterText("DateEntry", "01/01/2027"); //Maximum date property not works and not revent setting date higher than maximum date
+        App.WaitForElement("SetDateButton");
+        App.Tap("SetDateButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        // VerifyScreenshot();
+    }
+    //MaximumDate less than MinimumDate
+    [Test]
+    [Category(UITestCategories.DatePicker)]
+    public void DatePicker_SetMaximumDateAndMinimumDateVerify1()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("MinimumDateEntry");
+        App.ClearText("MinimumDateEntry");
+        App.EnterText("MinimumDateEntry", "01/01/2025");
+        App.WaitForElement("SetMinimumDateButton");
+        App.Tap("SetMinimumDateButton");
+        App.WaitForElement("MaximumDateEntry");
+        App.ClearText("MaximumDateEntry");
+        App.EnterText("MaximumDateEntry", "01/01/2023");
+        App.WaitForElement("SetMaximumDateButton");
+        App.Tap("SetMaximumDateButton");
+        App.WaitForElement("DateEntry");
+        App.ClearText("DateEntry");
+        App.EnterText("DateEntry", "01/01/2022");
+        App.WaitForElement("SetDateButton");
+        App.Tap("SetDateButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        // VerifyScreenshot();
+    }
 }

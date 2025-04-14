@@ -7,13 +7,13 @@ namespace Maui.Controls.Sample;
 public class DatePickerViewModal : INotifyPropertyChanged
 {
     private double _characterSpacing = default;
-    private string _date = DateTime.Today.ToString("d");
+    private DateTime _date = DateTime.ParseExact("01/01/2025", "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture);
     private FontAttributes _fontAttributes = default;
     private string _fontFamily = default;
     private double _fontSize = default;
-    private string _format = "d";
-    private string _maxDate = DateTime.Today.AddYears(1).ToString("d");
-    private string _minDate = DateTime.Today.AddYears(-1).ToString("d");
+    private string _format = "MM/dd/yyyy";
+    private DateTime _minDate = DateTime.ParseExact("01/01/2025", "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+    private DateTime _maxDate = DateTime.ParseExact("01/01/2027", "MM/dd/yyyy", System.Globalization.CultureInfo.InvariantCulture);
     private Color _textColor = Colors.Black;
 
     public double CharacterSpacing
@@ -28,7 +28,7 @@ public class DatePickerViewModal : INotifyPropertyChanged
             }
         }
     }
-    public string Date
+    public DateTime Date
     {
         get => _date;
         set
@@ -88,7 +88,7 @@ public class DatePickerViewModal : INotifyPropertyChanged
             }
         }
     }
-    public string MaximumDate
+    public DateTime MaximumDate
     {
         get => _maxDate;
         set
@@ -100,7 +100,7 @@ public class DatePickerViewModal : INotifyPropertyChanged
             }
         }
     }
-    public string MinimumDate
+    public DateTime MinimumDate
     {
         get => _minDate;
         set
