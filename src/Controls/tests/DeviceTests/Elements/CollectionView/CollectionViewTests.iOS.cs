@@ -16,7 +16,6 @@ using UIKit;
 using Xunit;
 using Xunit.Sdk;
 using Foundation;
-using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.DeviceTests
 {
