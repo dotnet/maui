@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "android allows type into hidden Entry control";
 
-		[Test]
+		[Test, Order(1)]
 		[Category(UITestCategories.Entry)]
 		public void VerifyEntryKeyboardVisibilityToggle()
 		{
@@ -24,9 +24,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("ToggleEntryVisibilityButton");
 			var keyboardVisible = App.IsKeyboardShown();
 			Assert.That(keyboardVisible, Is.False);
+			VerifyScreenshot("VerifyEditorsNotVisible");
 		}
 
-		[Test]
+		[Test, Order(2)]
 		[Category(UITestCategories.Editor)]
 		public void VerifyEditorKeyboardVisibilityToggle()
 		{
@@ -37,6 +38,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("ToggleEditorVisibilityButton");
 			var keyboardVisible = App.IsKeyboardShown();
 			Assert.That(keyboardVisible, Is.False);
+			VerifyScreenshot("VerifyEditorsNotVisible");
 		}
 	}
 }
