@@ -11,5 +11,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		public const string X2006Uri = "http://schemas.microsoft.com/winfx/2006/xaml";
 		public const string X2009Uri = "http://schemas.microsoft.com/winfx/2009/xaml";
 		public const string McUri = "http://schemas.openxmlformats.org/markup-compatibility/2006";
+		public const string MauiGlobal = "http://schemas.microsoft.com/dotnet/maui/global";
 	}
 }

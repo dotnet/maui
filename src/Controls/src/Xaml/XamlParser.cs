@@ -333,7 +333,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
 
-		static void GatherXmlnsDefinitionAttributes()
+		static void GatherXmlnsDefinitionAttributes(Assembly currentAssembly)
 		{
 			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
@@ -344,6 +344,10 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute)))
 					{
+						// Only add global xmlns definition from the current assembly
+						if (attribute.XmlNamespace == XamlParser.MauiGlobal
+							&& assembly != currentAssembly)
+							continue;
 						s_xmlnsDefinitions.Add(attribute);
 						attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
 					}
@@ -368,7 +372,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		retry:
 			if (s_xmlnsDefinitions == null)
-				GatherXmlnsDefinitionAttributes();
+				GatherXmlnsDefinitionAttributes(currentAssembly);
 
 			Type type = xmlType.GetTypeReference(
 				s_xmlnsDefinitions,

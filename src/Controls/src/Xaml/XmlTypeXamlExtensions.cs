@@ -82,13 +82,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				foreach (XmlnsDefinitionAttribute xmlnsDefinitionAttribute in lookupAssemblies)
 				{
-					potentialTypes.Add(new(typeName, xmlnsDefinitionAttribute.ClrNamespace, xmlnsDefinitionAttribute.AssemblyName));
+					potentialTypes.Add(new(typeName, xmlnsDefinitionAttribute.Target, xmlnsDefinitionAttribute.AssemblyName));
 
 					// As a fallback, for assembly=mscorlib try assembly=System.Private.CoreLib
 					if (xmlnsDefinitionAttribute.AssemblyName is string assemblyName &&
 						(assemblyName == "mscorlib" || assemblyName.StartsWith("mscorlib,", StringComparison.Ordinal)))
 					{
-						potentialTypes.Add(new(typeName, xmlnsDefinitionAttribute.ClrNamespace, "System.Private.CoreLib"));
+						potentialTypes.Add(new(typeName, xmlnsDefinitionAttribute.Target, "System.Private.CoreLib"));
 					}
 				}
 			}
