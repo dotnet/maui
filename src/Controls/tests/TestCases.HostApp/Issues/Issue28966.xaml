@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Maui.Controls.Sample.Issues.Issue28966"
+			 xmlns:local="clr-namespace:Maui.Controls.Sample"
+			 xmlns:ns="clr-namespace:Maui.Controls.Sample.Issues">
+	<VerticalStackLayout Spacing="10">
+<ImageButton
+	Source="dotnet_bot.png"
+	WidthRequest="100"
+	HeightRequest="100"
+	HorizontalOptions="Center"
+	BorderWidth="1"
+	BorderColor="Red"
+	AutomationId="ImageButton"
+	Aspect="AspectFit"/>
+		<ImageButton
+			Source="dotnet_bot.png"
+			WidthRequest="100"
+			HeightRequest="100"
+			HorizontalOptions="Center"
+			BorderWidth="2"
+			Padding="8"
+			CornerRadius="30"
+			BorderColor="Blue"
+			Aspect="Fill"/>
+		<ImageButton
+			Source="dotnet_bot.png"
+			WidthRequest="100"
+			HeightRequest="100"
+			HorizontalOptions="Center"
+			BorderWidth="3"
+			Padding="13"
+			CornerRadius="30"
+			BorderColor="Green"
+			Aspect="AspectFill"/>
+	</VerticalStackLayout>
+</ContentPage>

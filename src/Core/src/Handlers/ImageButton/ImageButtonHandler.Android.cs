@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Google.Android.Material.ImageView;
@@ -65,6 +66,29 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton)
 		{
 			handler.PlatformView?.UpdatePadding(imageButton);
+		}
+
+		internal static void MapAspect(IImageButtonHandler handler, IImage image)
+		{
+			handler.PlatformView?.UpdateAspect(image);
+			handler.UpdateValue(nameof(IImageButton.StrokeThickness));
+		}
+
+		internal static void MapSource(IImageHandler handler, IImage image) =>
+			MapSourceAsync(handler, image).FireAndForget(handler);
+
+		internal static async Task MapSourceAsync(IImageHandler handler, IImage image)
+		{
+			await ImageHandler.MapSourceAsync(handler, image);
+
+			if (handler.IsConnected())
+			{
+				// Yielding here ensures that the UI thread has a chance to process the updated image source
+				// before updating the aspect. This prevents potential race conditions or visual glitches
+				// when the image source is updated in quick succession like loading from file instead of URL
+				await Task.Yield();
+				handler.UpdateValue(nameof(IImage.Aspect));
+			}
 		}
 
 		void OnFocusChange(object? sender, View.FocusChangeEventArgs e)

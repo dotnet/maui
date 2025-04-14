@@ -36,6 +36,10 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID || WINDOWS
 			[nameof(IImageButton.Background)] = MapBackground,
 #endif
+#if ANDROID
+			[nameof(IImage.Aspect)] = MapAspect,
+			[nameof(IImage.Source)] = MapSource,
+#endif
 		};
 
 		public static CommandMapper<IImageButton, IImageButtonHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
