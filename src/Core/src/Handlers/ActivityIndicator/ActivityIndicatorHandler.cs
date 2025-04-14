@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			[nameof(IActivityIndicator.Color)] = MapColor,
 			[nameof(IActivityIndicator.IsRunning)] = MapIsRunning,
-#if __ANDROID__
+#if __ANDROID__ || IOS || MACCATALYST
 			// Android does not have the concept of IsRunning, so we are leveraging the Visibility
 			[nameof(IActivityIndicator.Visibility)] = MapIsRunning,
 #endif
