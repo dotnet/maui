@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Maui.Controls.SourceGen;
 using NUnit.Framework;
 
@@ -35,6 +36,37 @@ public class SourceGenXamlTests : SourceGenTestsBase
 		var generated = result.Results.Single().GeneratedSources.Single().SourceText.ToString();
 
 		Assert.IsTrue(generated.Contains("Microsoft.Maui.Controls.Button MyButton", StringComparison.Ordinal));
+	}
+
+	[Test]
+	public void TestCodeBehindGenerator_AggregatedXmlns()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/maui/global"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+	<Label x:Name="label" Text="Hello MAUI!" />
+</ContentPage>
+""";
+
+var code =
+"""
+using Microsoft.Maui.Controls;
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "http://schemas.microsoft.com/dotnet/2021/maui")]
+""";
+		var compilation = CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+		var result = RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+
+		Assert.IsFalse(result.Diagnostics.Any());
+
+		var generated = result.Results.Single().GeneratedSources.Single().SourceText.ToString();
+
+		Assert.IsTrue(generated.Contains("Microsoft.Maui.Controls.ContentPage", StringComparison.Ordinal));
+		Assert.IsTrue(generated.Contains("global::Microsoft.Maui.Controls.Label label", StringComparison.Ordinal));
 	}
 
 	[Test]

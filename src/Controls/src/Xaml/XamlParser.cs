@@ -355,6 +355,19 @@ namespace Microsoft.Maui.Controls.Xaml
 					Debug.WriteLine($"Failed to parse Assembly Attribute: {ex.ToString()}");
 				}
 			}
+
+			var globalXmlns = s_xmlnsDefinitions.Where(x => x.XmlNamespace == XamlParser.MauiGlobal).ToList();
+			foreach (var global in globalXmlns)
+			{
+				var pointedXmlns = s_xmlnsDefinitions.Where(x => x.XmlNamespace == global.Target).ToList();
+				foreach (var pointed in pointedXmlns)
+				{
+					s_xmlnsDefinitions.Add (new XmlnsDefinitionAttribute(global.XmlNamespace, pointed.Target)
+					{
+						AssemblyName = pointed.AssemblyName
+					});
+				}
+			}
 		}
 
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
