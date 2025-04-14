@@ -10,7 +10,9 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IP
 	bool _invalidateParentWhenMovedToWindow;
 
 	WeakReference<ICustomMauiCollectionViewDelegate>? _customDelegate;
+
 	internal bool NeedsCellLayout { get; set; }
+	
 	public MauiCollectionView(CGRect frame, UICollectionViewLayout layout) : base(frame, layout)
 	{
 	}
