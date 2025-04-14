@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
@@ -473,6 +476,156 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public Task RequestsCanBeInterceptedAndCustomDataReturnedForCustomSchemes() =>
+			RunTest(async (hybridWebView) =>
+			{
+				hybridWebView.AboutToSendRequest += (sender, e) =>
+				{
+					if (new Uri("app://echoservice/").IsBaseOf(e.RequestUri))
+					{
+						// 1. Get the request from the platform args
+#if WINDOWS
+						var request = e.PlatformArgs.Request;
+						var name = request.Headers["X-Echo-Name"];
+#elif IOS || MACCATALYST
+						var request = e.PlatformArgs.Request;
+						var name = request.Headers["X-Echo-Name"].ToString();
+#elif ANDROID
+						var request = e.PlatformArgs.Request;
+						var name = request.RequestHeaders["X-Echo-Name"];
+#endif
+
+						// 2. Create the response data
+						var response = new EchoResponseObject
+						{
+							message = $"Hello {name}",
+						};
+						var responseData = JsonSerializer.SerializeToUtf8Bytes(response);
+						var responseLength = responseData.Length.ToString(CultureInfo.InvariantCulture);
+
+						// 3. Create the response
+#if WINDOWS
+						e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
+							new global::Windows.Storage.Streams.InMemoryRandomAccessStream(responseData),
+							200,
+							"OK",
+							$"""
+							Content-Type: application/json
+							Content-Length: {responseLength}
+							""");
+						e.Handled = true;
+#elif IOS || MACCATALYST
+						var task = e.PlatformArgs.UrlSchemeTask;
+						task.DidReceiveResponse(new NSHttpUrlResponse(
+							request.Url,
+							200,
+							"HTTP/1.1",
+							new NSMutableDictionary<NSString, NSString>
+							{
+								[(NSString)"Content-Type"] = (NSString)"application/json",
+								[(NSString)"Content-Length"] = (NSString)responseLength,
+								[(NSString)"Access-Control-Allow-Origin"] = (NSString)"*",
+								[(NSString)"Access-Control-Allow-Headers"] = (NSString)"*",
+								[(NSString)"Access-Control-Allow-Methods"] = (NSString)"GET",
+							}));
+
+						task.DidReceiveData(NSData.FromArray(responseData));
+						task.DidFinish();
+						e.Handled = true;
+#elif ANDROID
+						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
+							"application/json",
+							"UTF-8",
+							200,
+							"OK",
+							new Dictionary<string, string>
+							{
+								["Content-Length"] = responseLength,
+								["Access-Control-Allow-Origin"] = "*",
+								["Access-Control-Allow-Headers"] = "*",
+								["Access-Control-Allow-Methods"] = "GET",
+							},
+							new MemoryStream(responseData));
+						e.Handled = true;
+#endif
+					}
+				};
+
+				var responseObject = await hybridWebView.InvokeJavaScriptAsync<EchoResponseObject>(
+					"RequestsWithCustomSchemeCanBeIntercepted",
+					HybridWebViewTestContext.Default.EchoResponseObject);
+
+				Assert.NotNull(responseObject);
+				Assert.Equal("Hello Matthew", responseObject.message);
+			});
+
+#if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
+		[Fact]
+		public Task RequestsCanBeInterceptedAndCustomDataReturned() =>
+			RunTest(async (hybridWebView) =>
+			{
+				hybridWebView.AboutToSendRequest += (sender, e) =>
+				{
+					if (new Uri("https://echo.free.beeceptor.com").IsBaseOf(e.RequestUri))
+					{
+						// 1. Get the request from the platform args
+#if WINDOWS
+						var request = e.PlatformArgs.Request;
+						var name = request.Headers["X-Echo-Name"];
+#elif ANDROID
+						var request = e.PlatformArgs.Request;
+						var name = request.RequestHeaders["X-Echo-Name"];
+#endif
+
+						// 2. Create the response data
+						var response = new EchoResponseObject
+						{
+							message = $"Hello {name}",
+						};
+						var responseData = JsonSerializer.SerializeToUtf8Bytes(response);
+						var responseLength = responseData.Length.ToString(CultureInfo.InvariantCulture);
+
+						// 3. Create the response
+#if WINDOWS
+						e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
+							new global::Windows.Storage.Streams.InMemoryRandomAccessStream(responseData),
+							200,
+							"OK",
+							$"""
+							Content-Type: application/json
+							Content-Length: {responseLength}
+							""");
+						e.Handled = true;
+#elif ANDROID
+						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
+							"application/json",
+							"UTF-8",
+							200,
+							"OK",
+							new Dictionary<string, string>
+							{
+								["Content-Length"] = responseLength,
+								["Access-Control-Allow-Origin"] = "*",
+								["Access-Control-Allow-Headers"] = "*",
+								["Access-Control-Allow-Methods"] = "GET",
+							},
+							new MemoryStream(responseData));
+						e.Handled = true;
+#endif
+					}
+				};
+
+				var responseObject = await hybridWebView.InvokeJavaScriptAsync<EchoResponseObject>(
+					"RequestsCanBeIntercepted",
+					HybridWebViewTestContext.Default.EchoResponseObject);
+
+				Assert.NotNull(responseObject);
+				Assert.Equal("Hello Matthew", responseObject.message);
+			});
+#endif
+
+#if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
+		[Fact]
 		public Task RequestsCanBeInterceptedAndHeadersAdded() =>
 			RunTest(async (hybridWebView) =>
 			{
@@ -529,7 +682,54 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(responseObject.headers.TryGetValue("X-Request-Header", out var actualHeaderValue));
 				Assert.Equal(ExpectedHeaderValue, actualHeaderValue);
 			});
+#endif
 
+		[Fact]
+		public Task RequestsCanBeInterceptedAndCancelledForCustomSchemes() =>
+			RunTest(async (hybridWebView) =>
+			{
+				hybridWebView.AboutToSendRequest += (sender, e) =>
+				{
+					if (new Uri("app://echoservice/").IsBaseOf(e.RequestUri))
+					{
+#if WINDOWS
+						e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
+							new global::Windows.Storage.Streams.InMemoryRandomAccessStream(),
+							403,
+							"Forbidden",
+							"Content-Type: text/plain");
+						e.Handled = true;
+#elif IOS || MACCATALYST
+						e.PlatformArgs.UrlSchemeTask.DidReceiveResponse(new NSHttpUrlResponse(
+							e.PlatformArgs.Request.Url,
+							403,
+							"HTTP/1.1",
+							new NSMutableDictionary<NSString, NSString>
+							{
+								[(NSString)"Content-Type"] = (NSString)"text/plain",
+							}));
+						e.PlatformArgs.UrlSchemeTask.DidFinish();
+						e.Handled = true;
+#elif ANDROID
+						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
+							"application/json",
+							"UTF-8",
+							403,
+							"Forbidden",
+							new Dictionary<string, string>(),
+							new global::System.IO.MemoryStream());
+						e.Handled = true;
+#endif
+					}
+				};
+
+				await Assert.ThrowsAsync<HybridWebViewInvokeJavaScriptException>(() =>
+					hybridWebView.InvokeJavaScriptAsync<ResponseObject>(
+						"RequestsWithCustomSchemeCanBeIntercepted",
+						HybridWebViewTestContext.Default.ResponseObject));
+			});
+
+#if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
 		[Fact]
 		public Task RequestsCanBeInterceptedAndCancelled() =>
 			RunTest(async (hybridWebView) =>
@@ -563,6 +763,7 @@ namespace Microsoft.Maui.DeviceTests
 						"RequestsCanBeIntercepted",
 						HybridWebViewTestContext.Default.ResponseObject));
 			});
+#endif
 
 		async Task<Exception> RunExceptionTest(string method, int errorType)
 		{
@@ -614,7 +815,7 @@ namespace Microsoft.Maui.DeviceTests
 				await WebViewHelpers.WaitForHybridWebViewLoaded(hybridWebView);
 
 				// This is randomly failing on iOS, so let's add a timeout to avoid device tests running for hours
-				await test(hybridWebView).WaitAsync(TimeSpan.FromSeconds(5));
+				await test(hybridWebView);
 			});
 		}
 
@@ -767,9 +968,15 @@ namespace Microsoft.Maui.DeviceTests
 			public Dictionary<string, string> parsedQueryParams { get; set; }
 		}
 
+		public class EchoResponseObject
+		{
+			public string message { get; set; }
+		}
+
 		[JsonSourceGenerationOptions(WriteIndented = true)]
 		[JsonSerializable(typeof(ComputationResult))]
 		[JsonSerializable(typeof(ResponseObject))]
+		[JsonSerializable(typeof(EchoResponseObject))]
 		[JsonSerializable(typeof(int))]
 		[JsonSerializable(typeof(decimal))]
 		[JsonSerializable(typeof(bool))]

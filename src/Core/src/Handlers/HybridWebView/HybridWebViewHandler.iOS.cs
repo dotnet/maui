@@ -151,26 +151,46 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
-				var url = urlSchemeTask.Request.Url?.AbsoluteString ?? "";
+				// 1. First check if the app wants to modify or override the request
+				{
+					// 1.a. First, create the event args
+					var platformArgs = new HybridWebViewPlatformAboutToSendRequestEventArgs(webView, urlSchemeTask);
+					var args = new HybridWebViewAboutToSendRequestEventArgs(platformArgs);
 
-				var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url);
+					// 1.b. Trigger the event for the app
+					Handler.VirtualView.OnAboutToSendRequest(args);
 
-					using (var dic = new NSMutableDictionary<NSString, NSString>())
+					// 1.c. If the app reported that it completed the request, then we do nothing more
+					if (args.Handled)
 					{
-						dic.Add((NSString)"Content-Length", (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture));
-						dic.Add((NSString)"Content-Type", (NSString)contentType);
-						// Disable local caching. This will prevent user scripts from executing correctly.
-						dic.Add((NSString)"Cache-Control", (NSString)"no-cache, max-age=0, must-revalidate, no-store");
-
-						if (urlSchemeTask.Request.Url != null)
-						{
-							using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
-							urlSchemeTask.DidReceiveResponse(response);
-						}
+						return;
 					}
+				}
 
+				// 2. Then assume the request is for a local resource
+				{
+					// 2.a. Check if the request is for a local resource
+					var url = urlSchemeTask.Request.Url.AbsoluteString ?? "";
+					var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url);
+
+					// 2.b. Return the response header
+					using var dic = new NSMutableDictionary<NSString, NSString>
+					{
+						[(NSString)"Content-Length"] = (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture),
+						[(NSString)"Content-Type"] = (NSString)contentType,
+						// Disable local caching which would otherwise prevent user scripts from executing correctly.
+						[(NSString)"Cache-Control"] = (NSString)"no-cache, max-age=0, must-revalidate, no-store",
+					};
+
+					using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
+					urlSchemeTask.DidReceiveResponse(response);
+
+					// 2.c. Return the body
 					urlSchemeTask.DidReceiveData(NSData.FromArray(bytes));
+
+					// 2.d. Finish the task
 					urlSchemeTask.DidFinish();
+				}
 			}
 
 			private async Task<(byte[] ResponseBytes, string ContentType, int StatusCode)> GetResponseBytesAsync(string? url)

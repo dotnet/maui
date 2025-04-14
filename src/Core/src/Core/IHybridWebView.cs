@@ -82,6 +82,12 @@ namespace Microsoft.Maui
 		{
 			PlatformArgs = platformArgs;
 		}
+#elif IOS || MACCATALYST
+		internal HybridWebViewAboutToSendRequestEventArgs(HybridWebViewPlatformAboutToSendRequestEventArgs platformArgs)
+			: this(platformArgs.Request.Url!.AbsoluteString!)
+		{
+			PlatformArgs = platformArgs;
+		}
 #elif ANDROID
 		internal HybridWebViewAboutToSendRequestEventArgs(HybridWebViewPlatformAboutToSendRequestEventArgs platformArgs)
 			: this(platformArgs.Request.Url!.ToString()!)
@@ -135,6 +141,25 @@ namespace Microsoft.Maui
 			get => RequestEventArgs.Response;
 			set => RequestEventArgs.Response = value;
 		}
+
+#elif IOS || MACCATALYST
+
+		public HybridWebViewPlatformAboutToSendRequestEventArgs(
+			global::WebKit.WKWebView sender,
+			global::WebKit.IWKUrlSchemeTask urlSchemeTask)
+		{
+			Sender = sender;
+			UrlSchemeTask = urlSchemeTask;
+		}
+
+		/// <summary>
+		/// Gets the native view attached to the event.
+		/// </summary>
+		public global::WebKit.WKWebView Sender { get; }
+
+		public global::WebKit.IWKUrlSchemeTask UrlSchemeTask { get; }
+
+		public global::Foundation.NSUrlRequest Request => UrlSchemeTask.Request;
 
 #elif ANDROID
 

@@ -98,7 +98,21 @@
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Test-Header': 'Test Value'
+                    'X-Test-Header': 'Test Value',
+                    'X-Echo-Name': 'Matthew'
+                }
+            });
+            const jsonData = await response.json();
+            return jsonData;
+        }
+
+        async function RequestsWithCustomSchemeCanBeIntercepted() {
+            const response = await fetch('app://echoservice/', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Test-Header': 'Test Value',
+                    'X-Echo-Name': 'Matthew'
                 }
             });
             const jsonData = await response.json();
