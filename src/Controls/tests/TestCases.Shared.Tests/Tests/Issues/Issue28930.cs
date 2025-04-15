@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS
+
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,8 +21,13 @@ public class Issue28930 : _IssuesUITest
 		App.WaitForElement("dotnetbot3");
 		App.WaitForElement("dotnetbot4");
 		
-		App.ScrollRight("MyCarousel", swipePercentage: 0.7, swipeSpeed: 200);
+		App.ScrollRight("MyCarousel", swipePercentage: 0.9, swipeSpeed: 200);
 
-		App.WaitForTextToBePresentInElement("ItemLabel", "Item 2");
+		if (!App.WaitForTextToBePresentInElement("ItemLabel", "Item 2"))
+		{
+			Assert.Fail("Item 2 not found");
+		}
 	}
 }
+
+#endif

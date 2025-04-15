@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android.Enums;
@@ -89,6 +90,20 @@ namespace UITest.Appium
 				{ "element", element },
 			});
 			return (string?)response.Value;
+		}
+
+		public static bool TryGetText(this IUIElement element, [NotNullWhen(true)] out string? text)
+		{
+			try
+			{
+				text = GetText(element);
+				return text != null;
+			}
+			catch
+			{
+				text = null;
+				return false;
+			}
 		}
 
 		public static string? ReadText(this IUIElement element)
@@ -799,7 +814,8 @@ namespace UITest.Appium
 			while (true)
 			{
 				var element = app.FindElements(automationId).FirstOrDefault();
-				if (element != null && (element.GetText()?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false))
+				
+				if (element != null && element.TryGetText(out var s) && s.Contains(text, StringComparison.OrdinalIgnoreCase))
 				{
 					return true;
 				}
