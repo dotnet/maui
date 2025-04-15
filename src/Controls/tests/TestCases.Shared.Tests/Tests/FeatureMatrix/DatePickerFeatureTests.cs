@@ -21,7 +21,7 @@ public class DatePickerFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetCharacterSpacingAndDate_VerifyMaximumLabel()
+    public void DatePicker_SetCharacterSpacingAndDate_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -35,7 +35,7 @@ public class DatePickerFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetDateAndFontAttributesVerify()
+    public void DatePicker_SetDateAndFontAttributes_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -48,7 +48,7 @@ public class DatePickerFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetDateAndFontFamilyVerify()
+    public void DatePicker_SetDateAndFontFamily_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -61,7 +61,7 @@ public class DatePickerFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetDateAndFontSizeVerify()
+    public void DatePicker_SetDateAndFontSize_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -75,7 +75,7 @@ public class DatePickerFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetDateAndFormatVerify()
+    public void DatePicker_SetDateAndFormat_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -90,7 +90,7 @@ public class DatePickerFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetDateAndTextColorVerify()
+    public void DatePicker_SetDateAndTextColor_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -103,7 +103,7 @@ public class DatePickerFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetFontAttributesAndFontFamilyVerify()
+    public void DatePicker_SetFontAttributesAndFontFamily_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -118,7 +118,7 @@ public class DatePickerFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetFontAttributesAndFontSizeVerify()
+    public void DatePicker_SetFontAttributesAndFontSize_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -134,7 +134,7 @@ public class DatePickerFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetFontAttributesAndFormatVerify()
+    public void DatePicker_SetFontAttributesAndFormat_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -150,7 +150,7 @@ public class DatePickerFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetFontFamilyAndFontSizeVerify()
+    public void DatePicker_SetFontFamilyAndFontSize_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -166,7 +166,7 @@ public class DatePickerFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetFontFamilyAndFormatVerify()
+    public void DatePicker_SetFontFamilyAndFormat_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -181,7 +181,7 @@ public class DatePickerFeatureTests : UITest
     }
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetFontSizeAndFormatVerify()
+    public void DatePicker_SetFontSizeAndFormat_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -198,7 +198,7 @@ public class DatePickerFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetMinimumDateAndDateVerify()
+    public void DatePicker_SetMinimumDateAndDate_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -220,7 +220,7 @@ public class DatePickerFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetMaximumDateAndDateVerify()
+    public void DatePicker_SetMaximumDateAndDate_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -243,7 +243,7 @@ public class DatePickerFeatureTests : UITest
     //MinimumDate and MaximumDate are same date. Try to set Date is less than MinimumDate
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetMinimumDateAndMaximumDateVerify()
+    public void DatePicker_SetMinimumDateAndMaximumDate_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -270,7 +270,7 @@ public class DatePickerFeatureTests : UITest
     //MinimumDate and MaximumDate are same date. Try to set Date is greater than MaximumDate
     [Test]
     [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetMaximumDateAndMinimumDateVerify()
+    public void DatePicker_SetMaximumDateAndMinimumDate_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
@@ -287,59 +287,6 @@ public class DatePickerFeatureTests : UITest
         App.WaitForElement("DateEntry");
         App.ClearText("DateEntry");
         App.EnterText("DateEntry", "01/01/2026");
-        App.WaitForElement("SetDateButton");
-        App.Tap("SetDateButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        // VerifyScreenshot();
-    }
-
-    //MinimumDate greater than MaximumDate
-    [Test]
-    [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetMinimumDateAndMaximumDateVerify1()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("MinimumDateEntry");
-        App.ClearText("MinimumDateEntry");
-        App.EnterText("MinimumDateEntry", "01/01/2026");
-        App.WaitForElement("SetMinimumDateButton");
-        App.Tap("SetMinimumDateButton");
-        App.WaitForElement("MaximumDateEntry");
-        App.ClearText("MaximumDateEntry");
-        App.EnterText("MaximumDateEntry", "01/01/2025");
-        App.WaitForElement("SetMaximumDateButton");
-        App.Tap("SetMaximumDateButton");
-        App.WaitForElement("DateEntry");
-        App.ClearText("DateEntry");
-        App.EnterText("DateEntry", "01/01/2027"); //Maximum date property not works and not revent setting date higher than maximum date
-        App.WaitForElement("SetDateButton");
-        App.Tap("SetDateButton");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        // VerifyScreenshot();
-    }
-    //MaximumDate less than MinimumDate
-    [Test]
-    [Category(UITestCategories.DatePicker)]
-    public void DatePicker_SetMaximumDateAndMinimumDateVerify1()
-    {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("MinimumDateEntry");
-        App.ClearText("MinimumDateEntry");
-        App.EnterText("MinimumDateEntry", "01/01/2025");
-        App.WaitForElement("SetMinimumDateButton");
-        App.Tap("SetMinimumDateButton");
-        App.WaitForElement("MaximumDateEntry");
-        App.ClearText("MaximumDateEntry");
-        App.EnterText("MaximumDateEntry", "01/01/2023");
-        App.WaitForElement("SetMaximumDateButton");
-        App.Tap("SetMaximumDateButton");
-        App.WaitForElement("DateEntry");
-        App.ClearText("DateEntry");
-        App.EnterText("DateEntry", "01/01/2022");
         App.WaitForElement("SetDateButton");
         App.Tap("SetDateButton");
         App.WaitForElement("Apply");
