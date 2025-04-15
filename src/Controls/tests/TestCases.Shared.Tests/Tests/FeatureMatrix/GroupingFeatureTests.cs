@@ -92,7 +92,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void VerifyGroupHeaderTemplate_withHeaderString()
+		public void VerifyGroupHeaderTemplate_WithHeaderString()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
@@ -259,7 +259,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Carrot");
 			App.WaitForElement("GroupFooterTemplate");
 		}
-
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
@@ -480,7 +479,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Carrot");
 			App.WaitForElement("Vegetables");
 		}
-
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
