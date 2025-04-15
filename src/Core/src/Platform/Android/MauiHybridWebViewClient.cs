@@ -61,14 +61,13 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// 1. First, create the event args
-			var platformArgs = new HybridWebViewPlatformAboutToSendRequestEventArgs(view, request);
-			var args = new HybridWebViewAboutToSendRequestEventArgs(platformArgs);
+			var platformArgs = new WebResourceRequestedEventArgs(view, request);
 
 			// 2. Trigger the event for the app
-			Handler.VirtualView.OnAboutToSendRequest(args);
+			var handled = Handler.VirtualView.WebResourceRequested(platformArgs);
 
 			// 3. If the app reported that it completed the request, then we do nothing more
-			if (args.Handled)
+			if (handled)
 			{
 				return platformArgs.Response;
 			}

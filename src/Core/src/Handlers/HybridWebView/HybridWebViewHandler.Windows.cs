@@ -107,14 +107,13 @@ namespace Microsoft.Maui.Handlers
 			// 1. First check if the app wants to modify or override the request
 			{
 				// 1.a. First, create the event args
-				var platformArgs = new HybridWebViewPlatformAboutToSendRequestEventArgs(sender, eventArgs);
-				var args = new HybridWebViewAboutToSendRequestEventArgs(platformArgs);
+				var platformArgs = new WebResourceRequestedEventArgs(sender, eventArgs);
 
 				// 1.b. Trigger the event for the app
-				VirtualView.OnAboutToSendRequest(args);
+				var handled = VirtualView.WebResourceRequested(platformArgs);
 
 				// 1.c. If the app reported that it completed the request, then we do nothing more
-				if (args.Handled)
+				if (handled)
 				{
 					return;
 				}
