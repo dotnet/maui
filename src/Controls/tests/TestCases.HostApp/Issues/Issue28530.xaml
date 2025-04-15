@@ -6,29 +6,27 @@
     x:Class="Maui.Controls.Sample.Issues.Issue28530">
 
     <VerticalStackLayout Padding="10">
-        <local:CollectionView2
+        <CollectionView
             ItemsSource="{Binding GroupedItems}"
             IsGrouped="true"
             CanReorderItems="true"
             CanMixGroups="false"
             AutomationId="CollectionViewControl">
-            <local:CollectionView2.GroupHeaderTemplate>
+            <CollectionView.GroupHeaderTemplate>
                 <DataTemplate>
                     <Label Text="{Binding GroupHeaderName}"
                            FontAttributes="Bold"
-                           FontSize="14"
                            Padding="5"/>
                 </DataTemplate>
-            </local:CollectionView2.GroupHeaderTemplate>
-            <local:CollectionView2.ItemTemplate>
+            </CollectionView.GroupHeaderTemplate>
+            <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Label Text="{Binding Name}"
                            AutomationId="{Binding .}"
-                           FontSize="12"
                            Padding="5"/>
                 </DataTemplate>
-            </local:CollectionView2.ItemTemplate>
-        </local:CollectionView2>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
     </VerticalStackLayout>
 
 </ContentPage>
