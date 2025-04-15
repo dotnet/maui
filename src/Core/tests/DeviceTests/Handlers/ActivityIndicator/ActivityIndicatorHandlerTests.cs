@@ -7,6 +7,35 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.ActivityIndicator)]
 	public partial class ActivityIndicatorHandlerTests : CoreHandlerTestBase<ActivityIndicatorHandler, ActivityIndicatorStub>
 	{
+
+		[Theory(DisplayName = "IsRunning Should Respect IsVisible")]
+		[InlineData(true,true)]
+		[InlineData(true,false)]
+		[InlineData(false,true)]
+		[InlineData(false,false)]
+		public async  Task IsRunningShouldRespectIsVisible(bool _isRunning,bool _isVisible)
+		{
+			var activityIndicator = new ActivityIndicatorStub
+			{
+				IsRunning = _isRunning,
+				Visibility = _isVisible  ? Visibility.Visible :Visibility.Hidden
+			};
+
+			bool isAnimating = false;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(activityIndicator);
+				isAnimating = GetNativeIsRunning(handler);
+			});
+
+			if (_isVisible && _isRunning)
+            	Assert.True(isAnimating);
+    		else
+        		Assert.False(isAnimating);
+
+		}
+
 		[Theory(DisplayName = "IsRunning Initializes Correctly")]
 		[InlineData(true)]
 		[InlineData(false)]
