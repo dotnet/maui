@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample.Pages
 
 			hwv.SetInvokeJavaScriptTarget<DotNetMethods>(new DotNetMethods(this));
 
-			hwv.AboutToSendRequest += (sender, e) =>
+			hwv.WebResourceRequested += (sender, e) =>
 			{
 #if WINDOWS
 				if (e.PlatformArgs.WebResourceRequestedEventArgs.Request.Uri.Contains("badthing", StringComparison.InvariantCultureIgnoreCase))
