@@ -597,7 +597,7 @@ void PrepareDevice(bool waitForBoot)
 	{
 		Information("Waiting for the emulator to finish booting...");
 
-		// wait for it to finish booting
+		// Wait for it to finish booting
 		var waited = 0;
 		var total = EmulatorBootTimeoutSeconds;
 		while (AdbShell("getprop sys.boot_completed", settings).FirstOrDefault() != "1")
@@ -610,8 +610,8 @@ void PrepareDevice(bool waitForBoot)
 				throw new Exception("The emulator did not finish booting in time.");
 			}
 
-			// something may be wrong with ADB, so restart every 30 seconds just in case
-			if (waited % 30 == 0 && IsCIBuild())
+			// Something may be wrong with ADB, so restart every 60 seconds just in case
+			if (waited % 60 == 0 && IsCIBuild())
 			{
                 // Ensure adbkey and adbkey.pub are in place in CI builds
                 Information("Ensuring ADB keys are correctly configured for CI environment...");
@@ -632,6 +632,14 @@ void PrepareDevice(bool waitForBoot)
                     AdbStartServer(settings);
 
                     Information("ADB keys have been successfully regenerated.");
+
+                    // Manually Authorize the Emulator
+                    AdbShell("adb shell settings put global adb_enabled 1", settings);
+
+                    // Ensure the emulator has USB Debugging enabled
+                    AdbShell("adb shell settings put global development_settings_enabled 1", settings);
+
+                    Information("Emulator authorized successfully.");
                 }
                 catch (Exception ex)
                 {
