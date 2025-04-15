@@ -6,8 +6,9 @@ internal static class AcessibilityExtensions
 {
 	internal static void UpdateSelectedAccessibility(this UICollectionViewCell cell, bool selected)
 	{
-		// Catalyst applies/removes the selected trait to the cell automatically.
-		// iOS does not and the VoiceOver on iOS only announces when the selected trait is applied to the first child of the cell.
+		// Catalyst and iOS Simulators applies/removes the 'Selected' trait to the cell automatically.
+		// iOS Devices do not apply the 'Selected' trait automatically to the cell unless VoiceOver is on.
+		// On iOS, the 'Selected' trait needs to be applied to the first child of the cell for VoiceOver to announce it.
 #if IOS
 		if (cell.ContentView is not null && cell.ContentView.Subviews.Length > 0)
 		{
@@ -27,8 +28,9 @@ internal static class AcessibilityExtensions
 
 	internal static void ClearSelectedAccessibilityTraits(this UICollectionView collectionView, Foundation.NSIndexPath[] indices)
 	{
-		// Catalyst applies/removes the selected trait to the cell automatically.
-		// iOS does not and the VoiceOver on iOS only announces when the selected trait is applied to the first child of the cell.
+		// Catalyst and iOS Simulators applies/removes the 'Selected' trait to the cell automatically.
+		// iOS Devices do not apply the 'Selected' trait automatically to the cell unless VoiceOver is on.
+		// On iOS, the 'Selected' trait needs to be applied to the first child of the cell for VoiceOver to announce it.
 #if IOS
 		foreach (var index in indices)
 		{

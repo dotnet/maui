@@ -2,21 +2,4 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
-
-    <VerticalStackLayout>
-        <CollectionView ItemsSource="{Binding Items}" SelectionMode="Single" x:Name="collectionView">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <StackLayout Padding="10" SemanticProperties.Description="{Binding Name}">
-                        <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="16"/>
-                        <Label Text="{Binding Description}" FontSize="14"/>
-                    </StackLayout>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        <Label Margin="0,100,0,0" Text="SelectionMode" />
-        <Button Text="None" Clicked="NoneSelectionMode" x:Name="noneButton"/>
-        <Button Text="Single" Clicked="SingleSelectionMode" />
-        <Button Text="Multiple" Clicked="MultipleSelectionMode" />
-    </VerticalStackLayout>
 </ContentPage>
