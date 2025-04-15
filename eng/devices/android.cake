@@ -593,33 +593,6 @@ void PrepareDevice(bool waitForBoot)
 		settings.Serial = DEVICE_UDID;
 	}
 
-    // Ensure adbkey and adbkey.pub are in place in CI builds
-    if (IsCIBuild())
-    {
-        Information("Ensuring ADB keys are correctly configured for CI environment...");
-        try
-        {
-            var adbKeyPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".android");
-            var adbKeyFile = System.IO.Path.Combine(adbKeyPath, "adbkey");
-            var adbKeyPubFile = System.IO.Path.Combine(adbKeyPath, "adbkey.pub");
-
-            // Deletes existing adbkey and adbkey.pub files in the ~/.android directory to ensure no stale keys remain
-            if (System.IO.File.Exists(adbKeyFile)) System.IO.File.Delete(adbKeyFile);
-            if (System.IO.File.Exists(adbKeyPubFile)) System.IO.File.Delete(adbKeyPubFile);
-
-            // Regenerates ADB keys using AdbKillServer and AdbStartServer
-            Information("Regenerating ADB keys...");
-            AdbKillServer(settings);
-            AdbStartServer(settings);
-
-            Information("ADB keys have been successfully regenerated.");
-        }
-        catch (Exception ex)
-        {
-            Warning($"Error ensuring ADB keys: {ex.Message}");
-        }
-    }
-
 	if (waitForBoot)
 	{
 		Information("Waiting for the emulator to finish booting...");
@@ -640,8 +613,30 @@ void PrepareDevice(bool waitForBoot)
 			// something may be wrong with ADB, so restart every 30 seconds just in case
 			if (waited % 30 == 0 && IsCIBuild())
 			{
-				Information("Trying to restart ADB just in case...");
-				AdbKillServer(adbSettings);
+                // Ensure adbkey and adbkey.pub are in place in CI builds
+                Information("Ensuring ADB keys are correctly configured for CI environment...");
+
+                try
+                {
+                    var adbKeyPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".android");
+                    var adbKeyFile = System.IO.Path.Combine(adbKeyPath, "adbkey");
+                    var adbKeyPubFile = System.IO.Path.Combine(adbKeyPath, "adbkey.pub");
+
+                    // Deletes existing adbkey and adbkey.pub files in the ~/.android directory to ensure no stale keys remain
+                    if (System.IO.File.Exists(adbKeyFile)) System.IO.File.Delete(adbKeyFile);
+                    if (System.IO.File.Exists(adbKeyPubFile)) System.IO.File.Delete(adbKeyPubFile);
+
+                    // Regenerates ADB keys using AdbKillServer and AdbStartServer
+                    Information("Trying to restart ADB just in case...");
+                    AdbKillServer(settings);
+                    AdbStartServer(settings);
+
+                    Information("ADB keys have been successfully regenerated.");
+                }
+                catch (Exception ex)
+                {
+                    Warning($"Error ensuring ADB keys: {ex.Message}");
+                }
 			}
 		}
 
