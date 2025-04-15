@@ -7,7 +7,6 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
@@ -475,6 +474,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(ex.InnerException.StackTrace);
 		}
 
+#if !ANDROID // Custom schemes are not supported on Android
+#if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
 		[Fact]
 		public Task RequestsCanBeInterceptedAndCustomDataReturnedForCustomSchemes() =>
 			RunTest(async (hybridWebView) =>
@@ -486,13 +487,10 @@ namespace Microsoft.Maui.DeviceTests
 						// 1. Get the request from the platform args
 #if WINDOWS
 						var request = e.PlatformArgs.Request;
-						var name = request.Headers["X-Echo-Name"];
+						var name = request.Headers.GetHeader("X-Echo-Name");
 #elif IOS || MACCATALYST
 						var request = e.PlatformArgs.Request;
 						var name = request.Headers["X-Echo-Name"].ToString();
-#elif ANDROID
-						var request = e.PlatformArgs.Request;
-						var name = request.RequestHeaders["X-Echo-Name"];
 #endif
 
 						// 2. Create the response data
@@ -506,48 +504,33 @@ namespace Microsoft.Maui.DeviceTests
 						// 3. Create the response
 #if WINDOWS
 						e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
-							new global::Windows.Storage.Streams.InMemoryRandomAccessStream(responseData),
+							new MemoryStream(responseData).AsRandomAccessStream(),
 							200,
 							"OK",
 							$"""
 							Content-Type: application/json
 							Content-Length: {responseLength}
 							""");
-						e.Handled = true;
 #elif IOS || MACCATALYST
 						var task = e.PlatformArgs.UrlSchemeTask;
-						task.DidReceiveResponse(new NSHttpUrlResponse(
+						task.DidReceiveResponse(new Foundation.NSHttpUrlResponse(
 							request.Url,
 							200,
 							"HTTP/1.1",
-							new NSMutableDictionary<NSString, NSString>
+							new Foundation.NSMutableDictionary<Foundation.NSString, Foundation.NSString>
 							{
-								[(NSString)"Content-Type"] = (NSString)"application/json",
-								[(NSString)"Content-Length"] = (NSString)responseLength,
-								[(NSString)"Access-Control-Allow-Origin"] = (NSString)"*",
-								[(NSString)"Access-Control-Allow-Headers"] = (NSString)"*",
-								[(NSString)"Access-Control-Allow-Methods"] = (NSString)"GET",
+								[(Foundation.NSString)"Content-Type"] = (Foundation.NSString)"application/json",
+								[(Foundation.NSString)"Content-Length"] = (Foundation.NSString)responseLength,
+								[(Foundation.NSString)"Access-Control-Allow-Origin"] = (Foundation.NSString)"*",
+								[(Foundation.NSString)"Access-Control-Allow-Headers"] = (Foundation.NSString)"*",
+								[(Foundation.NSString)"Access-Control-Allow-Methods"] = (Foundation.NSString)"GET",
 							}));
 
-						task.DidReceiveData(NSData.FromArray(responseData));
+						task.DidReceiveData(Foundation.NSData.FromArray(responseData));
 						task.DidFinish();
-						e.Handled = true;
-#elif ANDROID
-						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
-							"application/json",
-							"UTF-8",
-							200,
-							"OK",
-							new Dictionary<string, string>
-							{
-								["Content-Length"] = responseLength,
-								["Access-Control-Allow-Origin"] = "*",
-								["Access-Control-Allow-Headers"] = "*",
-								["Access-Control-Allow-Methods"] = "GET",
-							},
-							new MemoryStream(responseData));
-						e.Handled = true;
 #endif
+
+						e.Handled = true;
 					}
 				};
 
@@ -558,6 +541,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotNull(responseObject);
 				Assert.Equal("Hello Matthew", responseObject.message);
 			});
+#endif
+#endif
 
 #if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
 		[Fact]
@@ -568,10 +553,44 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					if (new Uri("https://echo.free.beeceptor.com").IsBaseOf(e.RequestUri))
 					{
+						// Handle OPTIONS requests
+						if (e.PlatformArgs.Request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
+						{
+#if WINDOWS
+							e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
+								new global::Windows.Storage.Streams.InMemoryRandomAccessStream(),
+								200,
+								"OK",
+								$"""
+								Content-Type: text/plain
+								Content-Length: 0
+								Access-Control-Allow-Origin: *
+								Access-Control-Allow-Headers: *
+								Access-Control-Allow-Methods: GET
+								""");
+#elif ANDROID
+							e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
+								"text/plain",
+								"UTF-8",
+								200,
+								"OK",
+								new Dictionary<string, string>
+								{
+									["Access-Control-Allow-Origin"] = "*",
+									["Access-Control-Allow-Headers"] = "*",
+									["Access-Control-Allow-Methods"] = "GET",
+								},
+								new MemoryStream());
+#endif
+
+							e.Handled = true;
+							return;
+						}
+
 						// 1. Get the request from the platform args
 #if WINDOWS
 						var request = e.PlatformArgs.Request;
-						var name = request.Headers["X-Echo-Name"];
+						var name = request.Headers.GetHeader("X-Echo-Name");
 #elif ANDROID
 						var request = e.PlatformArgs.Request;
 						var name = request.RequestHeaders["X-Echo-Name"];
@@ -588,14 +607,16 @@ namespace Microsoft.Maui.DeviceTests
 						// 3. Create the response
 #if WINDOWS
 						e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
-							new global::Windows.Storage.Streams.InMemoryRandomAccessStream(responseData),
+							new MemoryStream(responseData).AsRandomAccessStream(),
 							200,
 							"OK",
 							$"""
 							Content-Type: application/json
 							Content-Length: {responseLength}
+							Access-Control-Allow-Origin: *
+							Access-Control-Allow-Headers: *
+							Access-Control-Allow-Methods: GET
 							""");
-						e.Handled = true;
 #elif ANDROID
 						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
 							"application/json",
@@ -610,8 +631,9 @@ namespace Microsoft.Maui.DeviceTests
 								["Access-Control-Allow-Methods"] = "GET",
 							},
 							new MemoryStream(responseData));
-						e.Handled = true;
 #endif
+
+						e.Handled = true;
 					}
 				};
 
@@ -635,6 +657,40 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					if (new Uri("https://echo.free.beeceptor.com").IsBaseOf(e.RequestUri))
 					{
+						// Handle OPTIONS requests
+						if (e.PlatformArgs.Request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
+						{
+#if WINDOWS
+							e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
+								new global::Windows.Storage.Streams.InMemoryRandomAccessStream(),
+								200,
+								"OK",
+								$"""
+								Content-Type: text/plain
+								Content-Length: 0
+								Access-Control-Allow-Origin: *
+								Access-Control-Allow-Headers: *
+								Access-Control-Allow-Methods: GET
+								""");
+#elif ANDROID
+							e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
+								"text/plain",
+								"UTF-8",
+								200,
+								"OK",
+								new Dictionary<string, string>
+								{
+									["Access-Control-Allow-Origin"] = "*",
+									["Access-Control-Allow-Headers"] = "*",
+									["Access-Control-Allow-Methods"] = "GET",
+								},
+								new MemoryStream());
+#endif
+
+							e.Handled = true;
+							return;
+						}
+
 #if WINDOWS
 						// Add the desired header for Windows by modifying the request
 						var request = e.PlatformArgs.Request;
@@ -684,6 +740,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 #endif
 
+#if !ANDROID // Custom schemes are not supported on Android
+#if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
 		[Fact]
 		public Task RequestsCanBeInterceptedAndCancelledForCustomSchemes() =>
 			RunTest(async (hybridWebView) =>
@@ -698,28 +756,19 @@ namespace Microsoft.Maui.DeviceTests
 							403,
 							"Forbidden",
 							"Content-Type: text/plain");
-						e.Handled = true;
 #elif IOS || MACCATALYST
-						e.PlatformArgs.UrlSchemeTask.DidReceiveResponse(new NSHttpUrlResponse(
+						e.PlatformArgs.UrlSchemeTask.DidReceiveResponse(new Foundation.NSHttpUrlResponse(
 							e.PlatformArgs.Request.Url,
 							403,
 							"HTTP/1.1",
-							new NSMutableDictionary<NSString, NSString>
+							new Foundation.NSMutableDictionary<Foundation.NSString, Foundation.NSString>
 							{
-								[(NSString)"Content-Type"] = (NSString)"text/plain",
+								[(Foundation.NSString)"Content-Type"] = (Foundation.NSString)"text/plain",
 							}));
 						e.PlatformArgs.UrlSchemeTask.DidFinish();
-						e.Handled = true;
-#elif ANDROID
-						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
-							"application/json",
-							"UTF-8",
-							403,
-							"Forbidden",
-							new Dictionary<string, string>(),
-							new global::System.IO.MemoryStream());
-						e.Handled = true;
 #endif
+
+						e.Handled = true;
 					}
 				};
 
@@ -728,6 +777,8 @@ namespace Microsoft.Maui.DeviceTests
 						"RequestsWithCustomSchemeCanBeIntercepted",
 						HybridWebViewTestContext.Default.ResponseObject));
 			});
+#endif
+#endif
 
 #if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
 		[Fact]
@@ -744,7 +795,6 @@ namespace Microsoft.Maui.DeviceTests
 							403,
 							"Forbidden",
 							"Content-Type: text/plain");
-						e.Handled = true;
 #elif ANDROID
 						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
 							"application/json",
@@ -752,9 +802,10 @@ namespace Microsoft.Maui.DeviceTests
 							403,
 							"Forbidden",
 							new Dictionary<string, string>(),
-							new global::System.IO.MemoryStream());
-						e.Handled = true;
+							new MemoryStream());
 #endif
+
+						e.Handled = true;
 					}
 				};
 
