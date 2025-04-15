@@ -15,13 +15,15 @@ namespace Microsoft.Maui.Platform
 		}
 
 		private static bool GetActivityIndicatorVisibility(IActivityIndicator activityIndicator)
-		{
+		{		
 			if (activityIndicator.Visibility == Visibility.Visible)
 			{
+				// If visibility is set to Visible, hide the native control when it's not running.
 				return !activityIndicator.IsRunning;
 			}
 			else
 			{
+				// If the ActivityIndicator is not visible, always hide the native control.
 				return true;
 			}
 		}
