@@ -89,9 +89,6 @@ jobs:
     pool:
       name: $(POOL_NAME)
       vmImage: $(POOL_VIMAGE)
-      demands:
-        - macOS.Name -equals Sequoia
-        - macOS.Architecture -equals arm64
     steps:
       - template: maui-templates-steps.yml
         parameters:
@@ -112,7 +109,6 @@ jobs:
     pool:
       name: ${{ RunPlatform.name }}
       vmImage: ${{ RunPlatform.vmImage }}
-      demands: ${{ RunPlatform.demands }}
     steps:
 
     - ${{ each step in parameters.prepareSteps }}:

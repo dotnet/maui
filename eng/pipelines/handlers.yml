@@ -75,7 +75,7 @@ parameters:
            - Agent.OS -equals Windows_NT        
         artifact: build-windows
       - name: macOS
-        poolName: $(macOSXVmPool)
+        poolName: AcesShared
         vmImage: $(macOSXVmImage)
         demands:
           - macOS.Name -equals Sequoia
@@ -102,7 +102,7 @@ parameters:
           - Agent.OS -equals Windows_NT
         artifact: build-windows
       - name: macOS
-        poolName: $(macOSXVmPool)
+        poolName: AcesShared
         vmImage: $(macOSXVmImage)
         demands:
           - macOS.Name -equals Sequoia
@@ -112,14 +112,14 @@ parameters:
   - name: RunTemplatePlatforms
     type: object
     default:
-    - name: $(androidTestsVmPool)
+    - name: $AcesShared
       vmImage: $(androidTestsVmImage)
       demands:
         - macOS.Name -equals Sequoia
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
-    - name: $(iosTestsVmPool)
+    - name: AcesShared
       vmImage: $(iosTestsVmImage)
       demands:
         - macOS.Name -equals Sequoia
@@ -130,7 +130,7 @@ parameters:
   - name: MacTemplatePool
     type: object
     default:
-      name: $(androidTestsVmPool)
+      name: BuildPlatforms
       vmImage: $(androidTestsVmImage)
       demands:
         - macOS.Name -equals Sequoia
@@ -172,7 +172,6 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              demands: ${{ BuildPlatform.demands }}
             steps:
               - template: common/provision.yml
                 parameters:
@@ -281,8 +280,7 @@ stages:
           timeoutInMinutes: 120
           pool:
             name: ${{ BuildPlatform.poolName }}
-            vmImage: ${{ BuildPlatform.vmImage }}
-            demands: ${{ BuildPlatform.demands }}     
+            vmImage: ${{ BuildPlatform.vmImage }}     
           steps:
             - template: common/provision.yml
               parameters:
