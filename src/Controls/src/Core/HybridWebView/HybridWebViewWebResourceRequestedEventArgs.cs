@@ -8,7 +8,7 @@ public class HybridWebViewWebResourceRequestedEventArgs
 	internal HybridWebViewWebResourceRequestedEventArgs(PlatformHybridWebViewWebResourceRequestedEventArgs platformArgs)
 	{
 		PlatformArgs = platformArgs;
-		RequestUri = platformArgs.GetRequestUri() is string uri ? new Uri(uri) : null;
+		RequestUri = platformArgs.GetRequestUri() is string uri ? new Uri(uri) : throw new InvalidOperationException("Platform web request did not have a request URI.");
 	}
 
 	public HybridWebViewWebResourceRequestedEventArgs(string uri)
@@ -23,7 +23,7 @@ public class HybridWebViewWebResourceRequestedEventArgs
 
 	public PlatformHybridWebViewWebResourceRequestedEventArgs? PlatformArgs { get; }
 
-	public Uri? RequestUri { get; }
+	public Uri RequestUri { get; }
 
 	public bool Handled { get; set; }
 }

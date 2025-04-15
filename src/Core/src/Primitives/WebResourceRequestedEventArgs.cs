@@ -25,7 +25,7 @@ public class WebResourceRequestedEventArgs
 
 #elif IOS || MACCATALYST
 
-	public WebResourceRequestedEventArgs(
+	internal WebResourceRequestedEventArgs(
 		global::WebKit.WKWebView sender,
 		global::WebKit.IWKUrlSchemeTask urlSchemeTask)
 	{
@@ -42,7 +42,7 @@ public class WebResourceRequestedEventArgs
 
 #elif ANDROID
 
-	public WebResourceRequestedEventArgs(
+	internal WebResourceRequestedEventArgs(
 		global::Android.Webkit.WebView sender,
 		global::Android.Webkit.IWebResourceRequest request)
 	{

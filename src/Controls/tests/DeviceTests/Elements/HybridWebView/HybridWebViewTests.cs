@@ -480,7 +480,7 @@ namespace Microsoft.Maui.DeviceTests
 		public Task RequestsCanBeInterceptedAndCustomDataReturnedForCustomSchemes() =>
 			RunTest(async (hybridWebView) =>
 			{
-				hybridWebView.AboutToSendRequest += (sender, e) =>
+				hybridWebView.HybridWebViewWebResourceRequestedEventArgs += (sender, e) =>
 				{
 					if (new Uri("app://echoservice/").IsBaseOf(e.RequestUri))
 					{
@@ -549,7 +549,7 @@ namespace Microsoft.Maui.DeviceTests
 		public Task RequestsCanBeInterceptedAndCustomDataReturned() =>
 			RunTest(async (hybridWebView) =>
 			{
-				hybridWebView.AboutToSendRequest += (sender, e) =>
+				hybridWebView.HybridWebViewWebResourceRequestedEventArgs += (sender, e) =>
 				{
 					if (new Uri("https://echo.free.beeceptor.com").IsBaseOf(e.RequestUri))
 					{
@@ -653,7 +653,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				const string ExpectedHeaderValue = "My Header Value";
 
-				hybridWebView.AboutToSendRequest += (sender, e) =>
+				hybridWebView.HybridWebViewWebResourceRequestedEventArgs += (sender, e) =>
 				{
 					if (new Uri("https://echo.free.beeceptor.com").IsBaseOf(e.RequestUri))
 					{
@@ -746,7 +746,7 @@ namespace Microsoft.Maui.DeviceTests
 		public Task RequestsCanBeInterceptedAndCancelledForCustomSchemes() =>
 			RunTest(async (hybridWebView) =>
 			{
-				hybridWebView.AboutToSendRequest += (sender, e) =>
+				hybridWebView.HybridWebViewWebResourceRequestedEventArgs += (sender, e) =>
 				{
 					if (new Uri("app://echoservice/").IsBaseOf(e.RequestUri))
 					{
@@ -785,7 +785,7 @@ namespace Microsoft.Maui.DeviceTests
 		public Task RequestsCanBeInterceptedAndCancelled() =>
 			RunTest(async (hybridWebView) =>
 			{
-				hybridWebView.AboutToSendRequest += (sender, e) =>
+				hybridWebView.HybridWebViewWebResourceRequestedEventArgs += (sender, e) =>
 				{
 					if (new Uri("https://echo.free.beeceptor.com").IsBaseOf(e.RequestUri))
 					{

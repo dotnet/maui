@@ -39,7 +39,7 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 
 #elif IOS || MACCATALYST
 
-	public PlatformHybridWebViewWebResourceRequestedEventArgs(
+	internal PlatformHybridWebViewWebResourceRequestedEventArgs(
 		global::WebKit.WKWebView sender,
 		global::WebKit.IWKUrlSchemeTask urlSchemeTask)
 	{
@@ -65,7 +65,7 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 
 #elif ANDROID
 
-	public PlatformHybridWebViewWebResourceRequestedEventArgs(
+	internal PlatformHybridWebViewWebResourceRequestedEventArgs(
 		global::Android.Webkit.WebView sender,
 		global::Android.Webkit.IWebResourceRequest request)
 	{
