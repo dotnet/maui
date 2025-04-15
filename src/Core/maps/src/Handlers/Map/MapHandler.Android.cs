@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Android.Gms.Common.Apis;
 using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
 using Android.OS;
 using Java.Lang;
-using Java.Util.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
@@ -58,7 +54,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			base.DisconnectHandler(platformView);
 			platformView.LayoutChange -= MapViewLayoutChange;
 
-			if (Map != null)
+			if (Map is not null)
 			{
 				Map.SetOnCameraMoveListener(null);
 				Map.MarkerClick -= OnMarkerClick;
@@ -71,6 +67,9 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		protected override MapView CreatePlatformView()
 		{
+			// Make sure to use the latest renderer, must be called before creating the MapView
+			MapsInitializer.Initialize(Context, MapsInitializer.Renderer.Latest, _mapReady);
+
 			MapView mapView = new MapView(Context);
 			mapView.OnCreate(s_bundle);
 			mapView.OnResume();
@@ -110,8 +109,10 @@ namespace Microsoft.Maui.Maps.Handlers
 		public static void MapMoveToRegion(IMapHandler handler, IMap map, object? arg)
 		{
 			MapSpan? newRegion = arg as MapSpan;
-			if (newRegion != null)
+			if (newRegion is not null)
+			{
 				(handler as MapHandler)?.MoveToRegion(newRegion, true);
+			}
 		}
 
 		public void UpdateMapElement(IMapElement element)
@@ -142,14 +143,20 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			var nativePolygon = GetNativePolygon(mauiPolygon);
 
-			if (nativePolygon == null)
+			if (nativePolygon is null)
+			{
 				return;
+			}
 
 			if (mauiPolygon.Stroke is SolidPaint solidPaint)
+			{
 				nativePolygon.StrokeColor = solidPaint.Color.AsColor();
+			}
 
 			if ((mauiPolygon as IFilledMapElement)?.Fill is SolidPaint solidFillPaint)
+			{
 				nativePolygon.FillColor = solidFillPaint.Color.AsColor();
+			}
 
 			nativePolygon.StrokeWidth = (float)mauiPolygon.StrokeThickness;
 			nativePolygon.Points = mauiPolygon.Select(position => new LatLng(position.Latitude, position.Longitude)).ToList();
@@ -159,11 +166,15 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			var nativePolyline = GetNativePolyline(mauiPolyline);
 
-			if (nativePolyline == null)
+			if (nativePolyline is null)
+			{
 				return;
+			}
 
 			if (mauiPolyline.Stroke is SolidPaint solidPaint)
+			{
 				nativePolyline.Color = solidPaint.Color.AsColor();
+			}
 
 			nativePolyline.Width = (float)mauiPolyline.StrokeThickness;
 			nativePolyline.Points = mauiPolyline.Select(position => new LatLng(position.Latitude, position.Longitude)).ToList();
@@ -174,15 +185,20 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			var nativeCircle = GetNativeCircle(mauiCircle);
 
-			if (nativeCircle == null)
+			if (nativeCircle is null)
+			{
 				return;
-
+			}
 
 			if (mauiCircle.Stroke is SolidPaint solidPaint)
+			{
 				nativeCircle.FillColor = solidPaint.Color.AsColor();
+			}
 
 			if (mauiCircle.Fill is SolidPaint solidFillPaint)
+			{
 				nativeCircle.FillColor = solidFillPaint.Color.AsColor();
+			}
 
 			nativeCircle.Center = new LatLng(mauiCircle.Center.Latitude, mauiCircle.Center.Longitude);
 			nativeCircle.Radius = mauiCircle.Radius.Meters;
@@ -194,7 +210,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			APolyline? targetPolyline = null;
 
-			if (_polylines != null && polyline.MapElementId is string)
+			if (_polylines is not null && polyline.MapElementId is string)
 			{
 				for (int i = 0; i < _polylines.Count; i++)
 				{
@@ -214,7 +230,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			ACircle? targetCircle = null;
 
-			if (_circles != null && circle.MapElementId is string)
+			if (_circles is not null && circle.MapElementId is string)
 			{
 				for (int i = 0; i < _circles.Count; i++)
 				{
@@ -234,7 +250,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			APolygon? targetPolygon = null;
 
-			if (_polygons != null && polygon.MapElementId is string)
+			if (_polygons is not null && polygon.MapElementId is string)
 			{
 				for (int i = 0; i < _polygons.Count; i++)
 				{
@@ -254,10 +270,12 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			if (handler is MapHandler mapHandler)
 			{
-				if (mapHandler._markers != null)
+				if (mapHandler._markers is not null)
 				{
 					for (int i = 0; i < mapHandler._markers.Count; i++)
+					{
 						mapHandler._markers[i].Remove();
+					}
 
 					mapHandler._markers = null;
 				}
@@ -274,7 +292,7 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		internal void OnMapReady(GoogleMap map)
 		{
-			if (map == null)
+			if (map is null)
 			{
 				return;
 			}
@@ -287,7 +305,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			map.InfoWindowClick += OnInfoWindowClick;
 			map.MapClick += OnMapClick;
 
-			if (VirtualView != null)
+			if (VirtualView is not null)
 			{
 				map.UpdateMapType(VirtualView);
 				map.UpdateIsShowingUser(VirtualView, MauiContext);
@@ -301,8 +319,10 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		internal void UpdateVisibleRegion(LatLng pos)
 		{
-			if (Map == null)
+			if (Map is null)
+			{
 				return;
+			}
 
 			Projection projection = Map.Projection;
 			int width = PlatformView.Width;
@@ -323,16 +343,24 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void InitialUpdate()
 		{
-			if (Map == null)
+			if (Map is null)
+			{
 				return;
+			}
 
-			if (_init && _lastMoveToRegion != null)
+			if (_init && _lastMoveToRegion is not null)
 			{
 				MoveToRegion(_lastMoveToRegion, false);
-				if (_pins != null)
+				if (_pins is not null)
+				{
 					AddPins(_pins);
-				if (_elements != null)
+				}
+
+				if (_elements is not null)
+				{
 					AddMapElements(_elements);
+				}
+
 				_init = false;
 			}
 
@@ -342,8 +370,10 @@ namespace Microsoft.Maui.Maps.Handlers
 		void MoveToRegion(MapSpan span, bool animate)
 		{
 			_lastMoveToRegion = span;
-			if (Map == null)
+			if (Map is null)
+			{
 				return;
+			}
 
 			var ne = new LatLng(span.Center.Latitude + span.LatitudeDegrees / 2,
 				span.Center.Longitude + span.LongitudeDegrees / 2);
@@ -372,7 +402,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			var pin = GetPinForMarker(e.Marker);
 
-			if (pin == null)
+			if (pin is null)
 			{
 				return;
 			}
@@ -388,7 +418,7 @@ namespace Microsoft.Maui.Maps.Handlers
 			var marker = e.Marker;
 			var pin = GetPinForMarker(marker);
 
-			if (pin == null)
+			if (pin is null)
 			{
 				return;
 			}
@@ -410,11 +440,15 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			//Mapper could be called before we have a Map ready 
 			_pins = pins;
-			if (Map == null || MauiContext == null)
+			if (Map is null || MauiContext is null)
+			{
 				return;
+			}
 
-			if (_markers == null)
+			if (_markers is null)
+			{
 				_markers = new List<Marker>();
+			}
 
 			foreach (var p in pins)
 			{
@@ -425,7 +459,7 @@ namespace Microsoft.Maui.Maps.Handlers
 				if (pinHandler is IMapPinHandler iMapPinHandler)
 				{
 					marker = Map.AddMarker(iMapPinHandler.PlatformView);
-					if (marker == null)
+					if (marker is null)
 					{
 						throw new System.Exception("Map.AddMarker returned null");
 					}
@@ -460,26 +494,32 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void ClearMapElements()
 		{
-			if (_polylines != null)
+			if (_polylines is not null)
 			{
 				for (int i = 0; i < _polylines.Count; i++)
+				{
 					_polylines[i].Remove();
+				}
 
 				_polylines = null;
 			}
 
-			if (_polygons != null)
+			if (_polygons is not null)
 			{
 				for (int i = 0; i < _polygons.Count; i++)
+				{
 					_polygons[i].Remove();
+				}
 
 				_polygons = null;
 			}
 
-			if (_circles != null)
+			if (_circles is not null)
 			{
 				for (int i = 0; i < _circles.Count; i++)
+				{
 					_circles[i].Remove();
+				}
 
 				_circles = null;
 			}
@@ -489,8 +529,10 @@ namespace Microsoft.Maui.Maps.Handlers
 		{
 			_elements = mapElements;
 
-			if (Map == null || MauiContext == null)
+			if (Map is null || MauiContext is null)
+			{
 				return;
+			}
 
 			foreach (var element in mapElements)
 			{
@@ -516,14 +558,18 @@ namespace Microsoft.Maui.Maps.Handlers
 		void AddPolyline(IGeoPathMapElement polyline)
 		{
 			var map = Map;
-			if (map == null)
+			if (map is null)
+			{
 				return;
+			}
 
-			if (_polylines == null)
+			if (_polylines is null)
+			{
 				_polylines = new List<APolyline>();
+			}
 
 			var options = polyline.ToHandler(MauiContext!)?.PlatformView as PolylineOptions;
-			if (options != null)
+			if (options is not null)
 			{
 				var nativePolyline = map.AddPolyline(options);
 
@@ -536,11 +582,15 @@ namespace Microsoft.Maui.Maps.Handlers
 		void AddPolygon(IGeoPathMapElement polygon)
 		{
 			var map = Map;
-			if (map == null)
+			if (map is null)
+			{
 				return;
+			}
 
-			if (_polygons == null)
+			if (_polygons is null)
+			{
 				_polygons = new List<APolygon>();
+			}
 
 			var options = polygon.ToHandler(MauiContext!)?.PlatformView as PolygonOptions;
 			if (options is null)
@@ -557,11 +607,15 @@ namespace Microsoft.Maui.Maps.Handlers
 		void AddCircle(ICircleMapElement circle)
 		{
 			var map = Map;
-			if (map == null)
+			if (map is null)
+			{
 				return;
+			}
 
-			if (_circles == null)
+			if (_circles is null)
+			{
 				_circles = new List<ACircle>();
+			}
 
 			var options = circle.ToHandler(MauiContext!)?.PlatformView as CircleOptions;
 			if (options is null)
@@ -576,7 +630,7 @@ namespace Microsoft.Maui.Maps.Handlers
 		}
 	}
 
-	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback
+	class MapCallbackHandler : Java.Lang.Object, GoogleMap.IOnCameraMoveListener, IOnMapReadyCallback, IOnMapsSdkInitializedCallback
 	{
 		MapHandler? _handler;
 		GoogleMap? _googleMap;
@@ -594,15 +648,17 @@ namespace Microsoft.Maui.Maps.Handlers
 
 		void GoogleMap.IOnCameraMoveListener.OnCameraMove()
 		{
-			if (_googleMap == null)
+			if (_googleMap is null)
+			{
 				return;
+			}
 
 			_handler?.UpdateVisibleRegion(_googleMap.CameraPosition.Target);
 		}
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && _handler != null)
+			if (disposing && _handler is not null)
 			{
 				_handler = null;
 				_googleMap = null;
@@ -610,6 +666,13 @@ namespace Microsoft.Maui.Maps.Handlers
 
 			base.Dispose(disposing);
 		}
-	}
 
+		public void OnMapsSdkInitialized(MapsInitializer.Renderer p0)
+		{
+			if (p0 != MapsInitializer.Renderer.Latest)
+			{
+				_handler?.MauiContext?.Services.GetService<ILogger<MapHandler>>()?.LogWarning("Not using latest maps renderer!");
+			}
+		}
+	}
 }
