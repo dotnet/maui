@@ -4,8 +4,11 @@ namespace Microsoft.Maui.Controls.Platform;
 
 internal static class AcessibilityExtensions
 {
-	internal static void UpdateSelected(this UICollectionViewCell cell, bool selected)
+	internal static void UpdateSelectedAccessibility(this UICollectionViewCell cell, bool selected)
 	{
+		// Catalyst applies/removes the selected trait to the cell automatically.
+		// iOS does not and the VoiceOver on iOS only announces when the selected trait is applied to the first child of the cell.
+#if IOS
 		if (cell.ContentView is not null && cell.ContentView.Subviews.Length > 0)
 		{
 			var firstChild = cell.ContentView.Subviews[0];
@@ -19,6 +22,24 @@ internal static class AcessibilityExtensions
 				firstChild.AccessibilityTraits &= ~UIAccessibilityTrait.Selected;
 			}
 		}
+#endif
+	}
+
+	internal static void ClearSelectedAccessibilityTraits(this UICollectionView collectionView, Foundation.NSIndexPath[] indices)
+	{
+		// Catalyst applies/removes the selected trait to the cell automatically.
+		// iOS does not and the VoiceOver on iOS only announces when the selected trait is applied to the first child of the cell.
+#if IOS
+		foreach (var index in indices)
+		{
+			var cell = collectionView.CellForItem(index);
+			if (cell?.ContentView is not null && cell.ContentView.Subviews.Length > 0)
+			{
+				var firstChild = cell.ContentView.Subviews[0];
+				firstChild.AccessibilityTraits &= ~UIAccessibilityTrait.Selected;
+			}
+		}
+#endif
 	}
 
 	internal static void UpdateAccessibilityTraits(this UICollectionView collectionView, SelectableItemsView itemsView)

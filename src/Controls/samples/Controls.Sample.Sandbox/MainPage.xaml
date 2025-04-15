@@ -7,7 +7,7 @@
         <CollectionView ItemsSource="{Binding Items}" SelectionMode="Single" x:Name="collectionView">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <StackLayout Padding="10" SemanticProperties.Description="Item">
+                    <StackLayout Padding="10" SemanticProperties.Description="{Binding Name}">
                         <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="16"/>
                         <Label Text="{Binding Description}" FontSize="14"/>
                     </StackLayout>
