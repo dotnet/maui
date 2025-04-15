@@ -15,7 +15,6 @@
                 <DataTemplate>
                     <Label Text="{Binding GroupHeaderName}"
                            FontAttributes="Bold"
-                           FontSize="14"
                            Padding="5"/>
                 </DataTemplate>
             </CollectionView.GroupHeaderTemplate>
@@ -23,7 +22,6 @@
                 <DataTemplate>
                     <Label Text="{Binding Name}"
                            AutomationId="{Binding .}"
-                           FontSize="12"
                            Padding="5"/>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
