@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 			[Theory]
 			[InlineData("link_out.svg")]
-			public void BadImagesReportErrorCode(string image)
+			public void ImageProcessingErrorCode(string image)
 			{
 				var items = new[]
 				{
