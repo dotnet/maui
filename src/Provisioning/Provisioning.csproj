@@ -22,7 +22,7 @@
 		<AppiumDrivers Include="xcuitest" Version="$(AppiumXCUITestDriverVersion)" Condition=" '$(IsMacOS)' == 'True' AND '$(AppiumXCUITestDriverVersion)' != '' " />
 	</ItemGroup>
 
-	<PropertyGroup>
+	<PropertyGroup Condition=" '$(AndroidSdkHostAbi)' == '' ">
 		<!-- Get the right ABI string for android avd's based on host os this is running on -->
 		<AndroidSdkHostAbi Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'X64' ">x86_64</AndroidSdkHostAbi>
 		<AndroidSdkHostAbi Condition=" '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' != 'X64' ">arm64-v8a</AndroidSdkHostAbi>
@@ -42,6 +42,18 @@
 		<AndroidSdkPackages Include="emulator" />
 	</ItemGroup>
 
+	<!-- If an explicit list of API levels was requested, only include those -->
+	<ItemGroup Condition=" '$(AndroidSdkRequestedApiLevels)' != '' ">
+		<!-- Create a temporary item with each API level from the semicolon-delimited list -->
+		<_RequestedAndroidSdkApiLevels Include="$(AndroidSdkRequestedApiLevels.Split(';'))" />
+
+		<!-- Get the list of API levels to remove by copying the full list but excluding the ones to keep -->
+		<_AndroidSdkApiLevelsToRemove Include="@(AndroidSdkApiLevels)" Exclude="@(_RequestedAndroidSdkApiLevels)" />
+		
+		<!-- Now Remove AndroidSdkApiLevels that aren't the ones requested -->
+		<AndroidSdkApiLevels Remove="@(_AndroidSdkApiLevelsToRemove)" />
+	</ItemGroup>
+	
 	<Target Name="ProvisionAndroidSdkCommonPackages">
 		<Message Text="Provisioning Android SDK Common Packages" />
 
@@ -85,7 +97,7 @@
 
 		<!-- Install SDK Packages -->
 		<Exec Command="dotnet android sdk install --package &quot;%(AndroidSdkEmulatorImagePackages.Identity)&quot;" 
-		 	  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkEmulatorImagePackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
+		 	  Condition=" '@(AndroidSdkEmulatorImagePackages)' != '' " />
 
 		<Exec Command="dotnet android sdk list --installed" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
@@ -100,9 +112,23 @@
 
 		<!-- Create all the AVD's we need based on the api levels specified -->
 		<Exec Command="dotnet android avd create --name &quot;Emulator_%(AndroidSdkAvdPackages.ApiLevel)&quot; --sdk &quot;%(AndroidSdkAvdPackages.Identity)&quot; --device &quot;%(AndroidSdkAvdPackages.DeviceType)&quot; --force" 
-			  Condition="'$(AndroidSdkProvisionApiLevel)' == '' or '%(AndroidSdkAvdPackages.ApiLevel)' == '$(AndroidSdkProvisionApiLevel)'" />
+			  Condition=" '@(AndroidSdkAvdPackages)' != '' " />
 
 		<Exec Command="dotnet android avd list" ConsoleToMSBuild="True" IgnoreExitCode="True" />
+	</Target>
+
+	<Target Name="InstallAndroidSdk">
+		<Message Text="Installing Android SDK" />
+
+		<PropertyGroup>
+			<AndroidSdkVersion Condition=" '$(AndroidSdkVersion)' == '' ">$(AndroidSdkCmdLineToolsVersion)</AndroidSdkVersion>
+			<AndroidSdkVersion Condition=" '$(AndroidSdkVersion)' == '' ">13.0</AndroidSdkVersion>
+		</PropertyGroup>
+
+		<!-- Download SDK Common Packages -->
+		<Exec Command="dotnet android sdk download --home=&quot;$(AndroidSdkHome)&quot; --version=&quot;$(AndroidSdkVersion)&quot;" ConsoleToMSBuild="True" />
+
+		<Exec Command="dotnet android sdk dotnet-prefer --home=&quot;$(AndroidSdkHome)&quot;" ConsoleToMSBuild="True" IgnoreExitCode="True" />
 	</Target>
 
 	<Target Name="ProvisionAndroidSdk" DependsOnTargets="ProvisionAndroidSdkCommonPackages;ProvisionAndroidSdkPlatformApiPackages;ProvisionAndroidSdkEmulatorImagePackages;ProvisionAndroidSdkAvdCreateAvds">
@@ -118,8 +144,14 @@
 
 	<Target Name="ProvisionAppiumDrivers" DependsOnTargets="InstallAppium">
 
+		<PropertyGroup>
+			<AppiumCommand>appium</AppiumCommand>
+			<AppiumCommand Condition=" '$(AppiumNpmInstallLocation)' != 'global' ">./node_modules/.bin/appium</AppiumCommand>
+			<AppiumCommand Condition="$(IsWindows)">$(AppiumCommand).exe</AppiumCommand>
+		</PropertyGroup>
+
 		<!-- Get a json output list of the installed appium drivers with their version info -->
-		<Exec Command="appium driver list --installed --json" ConsoleToMSBuild="True" IgnoreExitCode="True">
+		<Exec Command="$(AppiumCommand) driver list --installed --json" ConsoleToMSBuild="True" IgnoreExitCode="True">
 			<Output TaskParameter="ConsoleOutput" ItemName="_AppiumDriverListInstalledJsonLines" />
 		</Exec>
 
@@ -141,22 +173,27 @@
 
 
 		<!-- Update any drivers needing an update (if any) -->
-		<Exec Command="appium driver update %(AppiumDriversToUpdate.Identity)" Condition=" '@(AppiumDriversToUpdate)' != '' " />
+		<Exec Command="$(AppiumCommand) driver update %(AppiumDriversToUpdate.Identity)" Condition=" '@(AppiumDriversToUpdate)' != '' " />
 
 		<!-- Install any drivers not yet installed (if any) -->
-		<Exec Command="appium driver install %(AppiumDriversToInstall.Identity)@%(AppiumDriversToInstall.Version)" Condition=" '@(AppiumDriversToInstall)' != '' " />
+		<Exec Command="$(AppiumCommand) driver install %(AppiumDriversToInstall.Identity)@%(AppiumDriversToInstall.Version)" Condition=" '@(AppiumDriversToInstall)' != '' " />
 
 		<!-- Run doctor command just so we have some output -->
-		<Exec Command="appium driver doctor %(AppiumDrivers.Identity)" ContinueOnError="true" Condition=" '$(SkipAppiumDoctor)' != 'True' " />
+		<Exec Command="$(AppiumCommand) driver doctor %(AppiumDrivers.Identity)" ContinueOnError="true" Condition=" '$(SkipAppiumDoctor)' != 'True' " />
 
 		<!-- Run driver list again for our records -->
-		<Exec Command="appium driver list --installed" ContinueOnError="true" />
+		<Exec Command="$(AppiumCommand) driver list --installed" ContinueOnError="true" />
 	</Target>
 
 	<Target Name="InstallAppium">
+
+		<PropertyGroup>
+			<AppiumNpmInstallLocation Condition=" '$(AppiumNpmInstallLocation)' == '' ">global</AppiumNpmInstallLocation>
+		</PropertyGroup>
+
 		<!-- Get the NPM package version for appium if installed -->
 		<!-- this uses loglevel error to prevent extra noise in the console output that isn't json -->
-		<Exec Command="npm list -g appium --json --depth 1 --loglevel error" ConsoleToMSBuild="True" IgnoreExitCode="True">
+		<Exec Command="npm list --location=$(AppiumNpmInstallLocation) appium --json --depth 1 --loglevel error" ConsoleToMSBuild="True" IgnoreExitCode="True">
 			<Output TaskParameter="ConsoleOutput" ItemName="_AppiumNpmListOutputLines" />
 		</Exec>
 
@@ -171,7 +208,7 @@
 		</JsonPeek>
 
 		<!-- Install appium at the specified version if necessary -->
-		<Exec Command="npm i --location=global appium@$(AppiumVersion)" Condition=" '$(_AppiumNpmListVersion)' != '$(AppiumVersion)' " />
+		<Exec Command="npm i --location=$(AppiumNpmInstallLocation) appium@$(AppiumVersion)" Condition=" '$(_AppiumNpmListVersion)' != '$(AppiumVersion)' " />
 	</Target>
 
 	<Target Name="ProvisionAppium" DependsOnTargets="InstallAppium;ProvisionAppiumDrivers">
