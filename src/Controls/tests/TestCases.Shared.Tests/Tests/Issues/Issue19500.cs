@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_CATALYST // Since this test verifies the scrolling behavior in the editor control and the App.ScrollDown function is inconsistent, relying on screenshot verification causes flakiness in CI. It needs to be validated using an alternative approach, or else it would be better to consider this for manual testing.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,13 +20,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			_ = App.WaitForElement("editor");
 			App.ScrollDown("editor");
 
-#if MACCATALYST // In Catalyst scroll down is not effective so here we retry one more time to address the flakyness.
-			Thread.Sleep(500);
-			App.ScrollDown("editor");
-#endif
-
 			// The test passes if the text inside the editor scrolls down
 			VerifyScreenshot();
 		}
 	}
 }
+#endif
