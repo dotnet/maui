@@ -16,6 +16,7 @@ parameters:
   # Provisionator / Xcode
   skipProvisionator: true
   checkoutDirectory: $(System.DefaultWorkingDirectory)
+  provisionatorPath: $(provisionator.path)
   provisionatorXCodePath: $(provisionator.xcode)
   provisionatorChannel: 'latest'
   provisionatorExtraArguments: $(provisionator.extraArguments)
@@ -35,13 +36,14 @@ steps:
   ##################################################
 
   # Provisioning macOS - Agent cleanser
-  - template: agent-cleanser/v1.yml@yaml-templates
-    parameters:
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      UninstallMono: false
-      UninstallXamarinMac: true
-      CleanseAgentToolsDotNet: true
-      SelfHealPowerShell: false
+  - ${{ if ne(parameters.skipProvisionator, true) }}:
+    - template: agent-cleanser/v1.yml@yaml-templates
+      parameters:
+        condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+        UninstallMono: false
+        UninstallXamarinMac: true
+        CleanseAgentToolsDotNet: true
+        SelfHealPowerShell: false
           
   # Provisioning macOS - Xcode
   - ${{ if ne(parameters.skipXcode, 'true') }}:
@@ -79,6 +81,20 @@ steps:
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       timeoutInMinutes: 30
 
+  # Provision Additional Software
+  - ${{ if ne(parameters.skipProvisionator, true) }}:
+    # Prepare macOS
+    - task: xamops.azdevex.provisionator-task.provisionator@3
+      displayName: 'Provision Additional Software'
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      continueOnError: true
+      inputs:
+        provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
+        provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+        github_token: ${{ parameters.gitHubToken }}
+      env:
+        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+        AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
 
   ##################################################
   #              Provisioning Windows              #

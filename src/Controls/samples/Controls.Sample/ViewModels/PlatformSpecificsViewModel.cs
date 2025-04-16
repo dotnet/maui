@@ -111,7 +111,7 @@ namespace Maui.Controls.Sample.ViewModels
 				new SectionModel(typeof(iOSTranslucentNavigationBarPage), "NavigationPage Translucent TabBar",
 					"This iOS platform-specific is used to set the translucency mode of the tab bar on a NavigationPage."),
 
-				new SectionModel(typeof(MainPage), "TabbedPage Translucent TabBar",
+				new SectionModel(typeof(iOSTranslucentTabbedPage), "TabbedPage Translucent TabBar",
 					"This iOS platform-specific is used to set the translucency mode of the tab bar on a TabbedPage."),
 
 #if MACCATALYST

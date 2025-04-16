@@ -1643,11 +1643,6 @@ namespace UITest.Appium
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		public static void SetLightTheme(this IApp app)
 		{
-			if (app is AppiumCatalystApp)
-			{
-				throw new InvalidOperationException($"SetLightTheme is not supported");
-			}
-
 			app.CommandExecutor.Execute("setLightTheme", ImmutableDictionary<string, object>.Empty);
 		}
 
@@ -1657,11 +1652,6 @@ namespace UITest.Appium
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		public static void SetDarkTheme(this IApp app)
 		{
-			if (app is AppiumCatalystApp)
-			{
-				throw new InvalidOperationException($"SetDarkTheme is not supported");
-			}
-
 			app.CommandExecutor.Execute("setDarkTheme", ImmutableDictionary<string, object>.Empty);
 		}
 
@@ -1761,6 +1751,32 @@ namespace UITest.Appium
 			}
 
 			app.CommandExecutor.Execute("shake", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Triggers the SwipeBackNavigation, simulating the default swipe-back navigation.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// /// <exception cref="InvalidOperationException">SwipeBackNavigation is only supported on <see cref="AppiumIOSApp"/> and <see cref="AppiumAndroidApp"/>.</exception>
+		public static void SwipeBackNavigation(this IApp app)
+		{
+			if (app is not AppiumIOSApp && app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"Interactive Pop Gesture is only supported on AppiumIOSAppp and AppiumAndroidApp");
+			}
+
+			if (app is AppiumIOSApp)
+			{
+				app.CommandExecutor.Execute("interactivePopGesture", ImmutableDictionary<string, object>.Empty);
+			}
+			else if (app is AppiumAndroidApp)
+			{
+				var response = app.CommandExecutor.Execute("checkIfGestureNavigationIsEnabled", new Dictionary<string, object>());
+				if (response?.Value is bool gestureNavigationIsEnabled && gestureNavigationIsEnabled)
+					SwipeLeftToRight(app);
+				else
+					Back(app);
+			}
 		}
 
 		/// <summary>
@@ -2249,6 +2265,42 @@ namespace UITest.Appium
 			app.TapInFlyout(flyoutItem, false);
 		}
 
+
+		/// <summary>
+		/// Toggles the visibility of secondary toolbar items.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void ToggleSecondaryToolbarItems(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumWindowsApp)
+			{
+				throw new InvalidOperationException($"ToggleSecondaryToolbarItems is not supported");
+			}
+
+			app.CommandExecutor.Execute("toggleSecondaryToolbarItems", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Waits for the "More" button in the app, with platform-specific logic for Android and Windows.
+		/// This method does not currently support iOS and macOS platforms, where the "More" button is not shown.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void WaitForMoreButton(this IApp app)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc=\"More options\"]"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				app.WaitForElement(AppiumQuery.ByAccessibilityId("MoreButton"));
+			}
+			else
+			{
+				throw new InvalidOperationException($"WaitForMoreButton is not supported on this platform.");
+			}
+		}
+
 		/// <summary>
 		/// Taps the "More" button in the app, with platform-specific logic for Android and Windows.
 		/// This method does not currently support iOS and macOS platforms, where the "More" button is not shown.
@@ -2413,6 +2465,39 @@ namespace UITest.Appium
 			var startupArg = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
 			startupArg.Add(key, value);
 			config.SetProperty("TestConfigurationArgs", startupArg);
+		}
+
+		/// <summary>
+		/// Gets the search handler element for the shell.
+		/// This method is used to find the search handler element in the app.
+		/// It uses different queries based on the app type (Android, iOS, Catalyst, or Windows).
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <returns>The search handler element for the shell.</returns>
+		public static IUIElement GetShellSearchHandler(this IApp app)
+		{
+			IUIElement? element = null;
+
+			if (app is AppiumAndroidApp)
+			{
+				element = app.WaitForElement(AppiumQuery.ByXPath("//android.widget.EditText"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				element = app.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				element = app.WaitForElement("TextBox");
+			}
+
+			// Ensure the element is not null before returning
+			if (element is null)
+			{
+				throw new InvalidOperationException("SearchHandler element not found.");
+			}
+
+			return element;
 		}
 	}
 }

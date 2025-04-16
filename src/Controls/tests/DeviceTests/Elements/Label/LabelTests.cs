@@ -11,6 +11,7 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using System.Diagnostics;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -667,16 +668,12 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 #else
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(layout, (handler) =>
 			{
-				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
-				await contentViewHandler.PlatformView.AttachAndRun(() =>
-				{
-					Assert.Equal(double.Round(labelStart.Width, 5), double.Round(layout.Width, 5));
-					Assert.Equal(double.Round(labelCenter.Width, 5), double.Round(layout.Width, 5));
-					Assert.Equal(double.Round(labelEnd.Width, 5), double.Round(layout.Width, 5));
-					Assert.Equal(double.Round(labelFill.Width, 5), double.Round(layout.Width, 5));
-				});
+				Assert.Equal(double.Round(labelStart.Width, 5), double.Round(layout.Width, 5));
+				Assert.Equal(double.Round(labelCenter.Width, 5), double.Round(layout.Width, 5));
+				Assert.Equal(double.Round(labelEnd.Width, 5), double.Round(layout.Width, 5));
+				Assert.Equal(double.Round(labelFill.Width, 5), double.Round(layout.Width, 5));
 			});
 #endif
 		}
@@ -759,7 +756,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
-
 		Color TextColor(LabelHandler handler)
 		{
 #if __IOS__
@@ -784,7 +780,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(targetFontSize, platformTypeface.PointSize);
 #elif __ANDROID__
 			var targetTypeface = fontManager.GetTypeface(font);
-			var targetFontSize = handler.MauiContext.Context.ToPixels(fontManager.GetFontSize(font).Value);		
+			var targetFontSize = handler.MauiContext.Context.ToPixels(fontManager.GetFontSize(font).Value);
 			var platformTypeface = handler.PlatformView.Typeface;
 			var platformFontSize = handler.PlatformView.TextSize;
 
@@ -799,6 +795,22 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(targetFontStyle, platformFontStyle);
 			Assert.Equal(targetFontWeight, platformFontWeight);
 #endif
+		}
+
+		[Fact]
+		[Description("The IsVisible property of a Label should match with native IsVisible")]
+		public async Task VerifyLabelIsVisibleProperty()
+		{
+			var label = new Label();
+			label.IsVisible = false;
+			var expectedValue = label.IsVisible;
+
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var isVisible = await GetPlatformIsVisible(handler);
+				Assert.Equal(expectedValue, isVisible);
+			});
 		}
 	}
 }

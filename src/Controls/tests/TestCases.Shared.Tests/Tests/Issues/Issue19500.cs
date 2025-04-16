@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,6 +18,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			_ = App.WaitForElement("editor");
 			App.ScrollDown("editor");
+
+#if MACCATALYST // In Catalyst scroll down is not effective so here we retry one more time to address the flakyness.
+			Thread.Sleep(500);
+			App.ScrollDown("editor");
+#endif
 
 			// The test passes if the text inside the editor scrolls down
 			VerifyScreenshot();

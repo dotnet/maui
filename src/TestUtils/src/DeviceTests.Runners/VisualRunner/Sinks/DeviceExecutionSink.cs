@@ -59,7 +59,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 
 			if (test.TestCase.Traits.TryGetValue("Category", out var categories) && categories.Count > 0)
 			{
-				displayName = $"[{categories[0]}] {displayName}";
+				displayName = $"[{string.Join(", ", categories)}] {displayName}";
 			}
 
 			_logger.LogTestStart(displayName);
