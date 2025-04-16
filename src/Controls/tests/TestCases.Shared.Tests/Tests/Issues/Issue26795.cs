@@ -11,7 +11,7 @@ public class Issue26795 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.WebView)]
-    public void WebViewShouldNotCrash()
+    public void WebViewShouldNotCrashWithHeightRequest()
     {
         App.WaitForElement("Label");
     }
