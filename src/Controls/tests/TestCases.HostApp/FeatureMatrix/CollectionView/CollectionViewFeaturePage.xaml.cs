@@ -20,6 +20,11 @@ public partial class CollectionViewFeatureMainPage : ContentPage
 
 	private async void OnGroupingButtonClicked(object sender, EventArgs e)
 	{
-		await Navigation.PushAsync(new CollectionViewControlPage());
+		await Navigation.PushAsync(new CollectionViewGroupingPage());
+	}
+
+	private async void OnHeaderFooterViewButtonClicked(object sender, EventArgs e)
+	{
+		await Navigation.PushAsync(new CollectionViewHeaderPage());
 	}
 }
