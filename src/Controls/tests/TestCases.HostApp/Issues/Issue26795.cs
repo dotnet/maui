@@ -11,7 +11,6 @@ public class Issue26795 : ContentPage
         {
             Source = "https://en.m.wikipedia.org/wiki",
             HeightRequest = 1000,
-            AutomationId = "WebView"
         };
 
         var label = new Label
