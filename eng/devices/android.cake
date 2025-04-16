@@ -652,7 +652,8 @@ void PrepareDevice(bool waitForBoot)
                     }
                     else
                     {
-                        Information($"ADB keys were not found {adbKeyPath}. Please check the ADB installation.");
+                        Information($"ADB keys were not found {adbKeyPath}. Trying to restart ADB just in case...");
+                        AdbKillServer(adbSettings);
                     }
                 }
                 catch (Exception ex)
