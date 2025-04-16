@@ -43,7 +43,8 @@ public class CollectionViewViewModel : INotifyPropertyChanged
     private bool _isGrouped = false;
     private bool _canReorderItems = false;
     private bool _canMixGroups = false;
-
+    private ObservableCollection<CollectionViewTestItem> _observableCollection;
+    private List<Grouping<string, CollectionViewTestItem>> _groupedList;
     public event PropertyChangedEventHandler PropertyChanged;
 
     public CollectionViewViewModel()
@@ -84,10 +85,6 @@ public class CollectionViewViewModel : INotifyPropertyChanged
             return stackLayout;
         });
     }
-
-    private ObservableCollection<CollectionViewTestItem> _observableCollection;
-    private List<Grouping<string, CollectionViewTestItem>> _groupedList;
-
 
     private void LoadItems()
     {
