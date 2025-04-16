@@ -306,14 +306,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// This is a no-op
 		}
 
-		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
+		bool IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
 			// If the cell is not bound (or getting unbounded), we don't want to measure it
 			// and cause a useless and harming InvalidateLayout on the collection view layout
 			if (!_measureInvalidated && _bound)
 			{
 				_measureInvalidated = true;
+				return true;
 			}
+
+			return false;
 		}
 	}
 }
