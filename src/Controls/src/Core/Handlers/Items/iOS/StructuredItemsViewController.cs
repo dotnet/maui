@@ -86,27 +86,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void ViewWillLayoutSubviews()
 		{
-			base.ViewWillLayoutSubviews();
-
-			// This update is only relevant if you have a footer view because it's used to place the footer view
-			// based on the ContentSize so we just update the positions if the ContentSize has changed
-			if (_footerUIView != null)
+			var hasHeaderOrFooter = _footerViewFormsElement is not null || _headerViewFormsElement is not null;
+			if (hasHeaderOrFooter && CollectionView is MauiCollectionView { NeedsCellLayout: true } collectionView)
 			{
-				var emptyView = CollectionView.ViewWithTag(EmptyTag);
+				if (_headerViewFormsElement is not null)
+				{
+					RemeasureLayout(_headerViewFormsElement);
+				}
 
-				if (IsHorizontal)
+				if (_footerViewFormsElement is not null)
 				{
-					if (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width ||
-						_footerUIView.Frame.X < emptyView?.Frame.X)
-						UpdateHeaderFooterPosition();
+					RemeasureLayout(_footerViewFormsElement);
 				}
-				else
-				{
-					if (_footerUIView.Frame.Y != ItemsViewLayout.CollectionViewContentSize.Height ||
-						_footerUIView.Frame.Y < (emptyView?.Frame.Y + emptyView?.Frame.Height))
-						UpdateHeaderFooterPosition();
-				}
+
+				UpdateHeaderFooterPosition();
 			}
+
+			base.ViewWillLayoutSubviews();
 		}
 
 		internal void UpdateFooterView()
