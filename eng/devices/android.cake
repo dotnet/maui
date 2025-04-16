@@ -597,70 +597,24 @@ void PrepareDevice(bool waitForBoot)
 	{
 		Information("Waiting for the emulator to finish booting...");
 
-		// Wait for it to finish booting
-		var waited = 0;
-		var total = EmulatorBootTimeoutSeconds;
-		while (AdbShell("getprop sys.boot_completed", settings).FirstOrDefault() != "1")
+        // Wait for the emulator to finish booting
+        var waited = 0;
+        var total = EmulatorBootTimeoutSeconds;
+        while (AdbShell("getprop sys.boot_completed", settings).FirstOrDefault() != "1")
 		{
-			System.Threading.Thread.Sleep(1000);
+		    System.Threading.Thread.Sleep(1000);
 
-			Information("Waiting {0}/{1} seconds for the emulator to boot up.", waited, total);
-			if (waited++ > total)
-			{
-				throw new Exception("The emulator did not finish booting in time.");
-			}
+            Information("Waiting {0}/{1} seconds for the emulator to boot up.", waited, total);
+            if (waited++ > total)
+            {
+                throw new Exception("The emulator did not finish booting in time.");
+            }
 
-			// Something may be wrong with ADB, so restart every 60 seconds just in case
-			if (waited % 60 == 0 && IsCIBuild())
-			{
-                // Ensure adbkey and adbkey.pub are in place in CI builds
-                Information("Ensuring ADB keys are correctly configured for CI environment...");
-
-                try
-                {
-                    var adbKeyPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".android");
-                    var adbKeyFile = System.IO.Path.Combine(adbKeyPath, "adbkey");
-                    var adbKeyPubFile = System.IO.Path.Combine(adbKeyPath, "adbkey.pub");
-
-                    // Deletes existing adbkey and adbkey.pub files in the ~/.android directory to ensure no stale keys remain
-                    if (System.IO.File.Exists(adbKeyFile)) System.IO.File.Delete(adbKeyFile);
-                    if (System.IO.File.Exists(adbKeyPubFile)) System.IO.File.Delete(adbKeyPubFile);
-
-                    // Regenerates ADB keys using AdbKillServer and AdbStartServer
-                    Information("Trying to restart ADB just in case...");
-                    AdbKillServer(settings);
-                    AdbStartServer(settings);
-
-                    bool adbKeyExists = System.IO.File.Exists(adbKeyFile);
-
-                    if(adbKeyExists)
-                    {
-                        Information("ADB keys have been successfully regenerated.");
-
-                        // Ensure that the ~/.android directory has the correct permissions
-                        StartProcess("chmod", $"700 {adbKeyPath}");
-                        StartProcess("chmod", $"600 {adbKeyFile}");
-                        StartProcess("chmod", $"600 {adbKeyPubFile}");
-                        
-                        // Manually Authorize the Emulator
-                        AdbShell("adb shell settings put global adb_enabled 1", settings);
-
-                        // Ensure the emulator has USB Debugging enabled
-                        AdbShell("adb shell settings put global development_settings_enabled 1", settings);
-
-                        Information("Emulator authorized successfully.");
-                    }
-                    else
-                    {
-                        Information($"ADB keys were not found {adbKeyPath}. Trying to restart ADB just in case...");
-                        AdbKillServer(adbSettings);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Warning($"Error ensuring ADB keys: {ex.Message}");
-                }
-			}
+            if (waited % 60 == 0 && IsCIBuild())
+            {
+                // Ensure ADB keys are configured
+                EnsureAdbKeys(settings);
+            }
 		}
 
 		Information("Waited {0} seconds for the emulator to boot up.", waited);
@@ -686,4 +640,55 @@ void PrepareDevice(bool waitForBoot)
 	Information("{0}", string.Join("\n", lines));
 
 	Information("Finished setting ADB properties.");
+}
+
+void EnsureAdbKeys(AdbToolSettings settings)
+{
+    Information("Ensuring ADB keys are correctly configured...");
+
+    try
+    {
+        var adbKeyPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".android");
+        var adbKeyFile = System.IO.Path.Combine(adbKeyPath, "adbkey");
+        var adbKeyPubFile = System.IO.Path.Combine(adbKeyPath, "adbkey.pub");
+
+        // Delete existing ADB keys to avoid stale data
+        if (System.IO.File.Exists(adbKeyFile)) System.IO.File.Delete(adbKeyFile);
+        if (System.IO.File.Exists(adbKeyPubFile)) System.IO.File.Delete(adbKeyPubFile);
+
+        // Restart ADB to regenerate keys
+        AdbKillServer(settings);
+        AdbStartServer(settings);
+
+        // Verify ADB keys exist
+        if (!System.IO.File.Exists(adbKeyFile) || !System.IO.File.Exists(adbKeyPubFile))
+        {
+            throw new Exception("Failed to regenerate ADB keys.");
+        }
+
+        Information($"ADB keys have been successfully regenerated at {adbKeyPath}.");
+
+        // Set correct permissions for ADB keys
+        Information("Set correct permissions for ADB keys.");
+        StartProcess("chmod", $"700 {adbKeyPath}");
+        StartProcess("chmod", $"600 {adbKeyFile}");
+        StartProcess("chmod", $"600 {adbKeyPubFile}");
+
+        // Manually authorize the emulator
+        Information("Manually authorize the emulator with the generated ADB keys.");
+        AdbShell("adb push ~/.android/adbkey.pub /data/misc/adb/adb_keys", settings);
+        AdbShell("adb shell chmod 600 /data/misc/adb/adb_keys", settings);
+        AdbShell("adb shell stop adbd", settings);
+        AdbShell("adb shell start adbd", settings);
+
+        Information("Emulator authorized successfully.");
+    }
+    catch (Exception ex)
+    {
+        Warning($"Error ensuring ADB keys: {ex.Message}");
+
+        Information("Trying to restart ADB just in case...");
+        
+        AdbKillServer(adbSettings);
+    }
 }
