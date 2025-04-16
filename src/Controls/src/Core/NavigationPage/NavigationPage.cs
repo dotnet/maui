@@ -817,6 +817,7 @@ namespace Microsoft.Maui.Controls
 				return Owner.SendHandlerUpdateAsync(animated,
 					() =>
 					{
+						Owner.FireDisappearing(previousPage);
 						var lastIndex = NavigationStack.Count - 1;
 						while (lastIndex > 0)
 						{
@@ -830,7 +831,6 @@ namespace Microsoft.Maui.Controls
 					() =>
 					{
 						Owner.SendNavigating(previousPage);
-						Owner.FireDisappearing(previousPage);
 						Owner.FireAppearing(newPage);
 					},
 					() =>
