@@ -212,5 +212,17 @@ namespace Microsoft.Maui.Platform
 				this.InvalidateAncestorsMeasures();
 			}
 		}
+
+		public override bool CanBecomeFocused => true;
+
+		public override void DidUpdateFocus(UIFocusUpdateContext context, UIFocusAnimationCoordinator coordinator)
+		{
+			base.DidUpdateFocus(context, coordinator);
+
+			if (View is not null)
+			{
+				View.IsFocused = context.NextFocusedView == this;
+			}
+		}
 	}
 }
