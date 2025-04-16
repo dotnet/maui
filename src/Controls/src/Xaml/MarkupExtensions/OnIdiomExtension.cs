@@ -60,14 +60,12 @@ namespace Microsoft.Maui.Controls.Xaml
 							  ?? throw new InvalidOperationException("Cannot determine property to provide the value for.");
 
 			var value = GetValue();
-			// The value returns null when a property value is specified only for Desktop in OnIdiom, and 
-			// the application is run on the Android platform without specifying a default value.
+			// The value returns null when no value is specified for the OnIdiom.
 			if (value == null)
 			{
 				if (bp != null)
 				{
 					object targetObject = valueProvider.TargetObject;
-					// If the target object is a Setter, we don't want to retrieve the default value.
 					if (targetObject is Setter)
 					{
 						return null;
