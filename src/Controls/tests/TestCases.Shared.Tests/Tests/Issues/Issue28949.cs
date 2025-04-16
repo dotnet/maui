@@ -14,7 +14,7 @@ public class Issue28949 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.Label)]
-    public void GestureRecognizersOnSpan()
+    public void GestureRecognizersOnLabelSpanShouldWork()
     {
         App.WaitForElement("ToggleButton");
         App.Tap("ToggleButton");
