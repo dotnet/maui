@@ -10,6 +10,8 @@ using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
 using Xunit.Sdk;
+using Foundation;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -123,6 +125,73 @@ namespace Microsoft.Maui.DeviceTests
 #if !MACCATALYST
 			await AssertionExtensions.WaitForGC(labels.ToArray());
 #endif
+		}
+
+		//src/Compatibility/Core/tests/iOS/ObservableItemsSourceTests.cs
+		[Fact(DisplayName = "IndexPath Range Generation Is Correct")]
+		public void GenerateIndexPathRange()
+		{
+			SetupBuilder();
+
+			var result = IndexPathHelpers.GenerateIndexPathRange(0, 0, 5);
+
+			Assert.Equal(5, result.Length);
+
+			Assert.Equal(0, result[0].Section);
+			Assert.Equal(0, (int)result[0].Item);
+
+			Assert.Equal(0, result[4].Section);
+			Assert.Equal(4, (int)result[4].Item);
+		}
+
+		//src/Compatibility/Core/tests/iOS/ObservableItemsSourceTests.cs
+		[Fact(DisplayName = "IndexPath Range Generation For Loops Is Correct")]
+		public void GenerateIndexPathRangeForLoop()
+		{
+			SetupBuilder();
+
+			var result = IndexPathHelpers.GenerateLoopedIndexPathRange(0, 15, 3, 2, 3);
+
+			Assert.Equal(9, result.Length);
+
+			for (int i = 0; i < result.Length; i++)
+			{
+				Assert.Equal(0, result[i].Section);
+			}
+
+			Assert.Equal(2, (int)result[0].Item);
+			Assert.Equal(3, (int)result[1].Item);
+			Assert.Equal(4, (int)result[2].Item);
+
+			Assert.Equal(7, (int)result[3].Item);
+			Assert.Equal(8, (int)result[4].Item);
+			Assert.Equal(9, (int)result[5].Item);
+
+			Assert.Equal(12, (int)result[6].Item);
+			Assert.Equal(13, (int)result[7].Item);
+			Assert.Equal(14, (int)result[8].Item);
+		}
+
+		//src/Compatibility/Core/tests/iOS/ObservableItemsSourceTests.cs
+		[Fact(DisplayName = "IndexPath Validity Check Is Correct")]
+		public void IndexPathValidTest()
+		{
+			var list = new List<string>
+			{
+				"one",
+				"two",
+				"three"
+			};
+
+			var source = new ListSource((IEnumerable<object>)list);
+
+			var valid = NSIndexPath.FromItemSection(2, 0);
+			var invalidItem = NSIndexPath.FromItemSection(7, 0);
+			var invalidSection = NSIndexPath.FromItemSection(1, 9);
+
+			Assert.True(source.IsIndexPathValid(valid));
+			Assert.False(source.IsIndexPathValid(invalidItem));
+			Assert.False(source.IsIndexPathValid(invalidSection));
 		}
 
 		/// <summary>

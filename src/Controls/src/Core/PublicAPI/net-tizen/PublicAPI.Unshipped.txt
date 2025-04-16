@@ -68,6 +68,7 @@ const Microsoft.Maui.Controls.TitleBar.TitleVisibleState = "TitleVisible" -> str
 const Microsoft.Maui.Controls.TitleBar.TrailingHiddenState = "TrailingContentCollapsed" -> string!
 const Microsoft.Maui.Controls.TitleBar.TrailingVisibleState = "TrailingContentVisible" -> string!
 Microsoft.Maui.Controls.HandlerProperties
+*REMOVED*override Microsoft.Maui.Controls.Compatibility.Layout.InvalidateMeasureOverride() -> void
 Microsoft.Maui.Controls.HybridWebView
 Microsoft.Maui.Controls.HybridWebView.DefaultFile.get -> string?
 Microsoft.Maui.Controls.HybridWebView.DefaultFile.set -> void
