@@ -24,20 +24,26 @@ public class Issue21375 : _IssuesUITest
 
         App.TapCoordinates(centerX, firstItemY);
         App.WaitForElement("calculateButton").Tap();
-        VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_one");
+        VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_single");
 
         App.WaitForElement("multipleButton").Tap();
         App.TapCoordinates(centerX, secondItemY);
         App.TapCoordinates(centerX, thirdItemY);
         App.WaitForElement("calculateButton").Tap();
-        VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_two");
+        VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_multiple");
 
         App.WaitForElement("noneButton").Tap();
         App.WaitForElement("calculateButton").Tap();
-        VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_three");
+        VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_none");
 
         App.WaitForElement("singleButton").Tap();
         App.WaitForElement("calculateButton").Tap();
-        VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_one");
+#if !WINDOWS // Windows clears out the selected items when we switch selection mode back to single
+        VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_single");
+#endif
+
+        App.WaitForElement("multipleButton").Tap();
+        App.WaitForElement("calculateButton").Tap();
+        VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_multiple");
     }
 }

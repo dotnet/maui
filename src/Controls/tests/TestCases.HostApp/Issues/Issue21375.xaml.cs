@@ -79,6 +79,19 @@ public partial class Issue21375 : ContentPage
 				sb.AppendLine($"Item{position} Cell: {viewHolder.Selected}");
 			}
 		}
+#elif WINDOWS
+		var plat = collectionView.Handler?.PlatformView;
+		if (plat is Microsoft.UI.Xaml.Controls.ListView listView)
+		{
+			foreach (var item in listView.Items)
+			{
+				var container = listView.ContainerFromItem(item) as Microsoft.UI.Xaml.Controls.ListViewItem;
+				if (container != null)
+				{
+					sb.AppendLine($"Item: {item} IsSelected: {container.IsSelected}");
+				}
+			}
+		}
 #endif
 		Output.Text = sb.ToString();
 	}
