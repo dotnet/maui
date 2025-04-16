@@ -61,20 +61,6 @@
     <ProjectReference Include="..\..\..\Graphics\src\Graphics.Win2D\Graphics.Win2D.csproj" />
   </ItemGroup>
 
-  <!-- include/exclude the *.<platform>.cs files -->
-  <ItemGroup>
-    <None Include="@(Compile)" />
-  </ItemGroup>
-  <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
-    <Compile Remove="**\*.Android.cs" />
-  </ItemGroup>
-  <ItemGroup Condition="!$(TargetFramework.Contains('-ios')) and !$(TargetFramework.Contains('-maccatalyst'))">
-    <Compile Remove="**\*.iOS.cs" />
-  </ItemGroup>
-  <ItemGroup Condition="!$(TargetFramework.Contains('-windows'))">
-    <Compile Remove="**\*.Windows.cs" />
-  </ItemGroup>
-
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

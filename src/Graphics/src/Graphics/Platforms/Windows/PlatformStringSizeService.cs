@@ -25,7 +25,14 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public SizeF GetStringSize(string value, IFont font, float textSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
 		{
-			var format = CreateCanvasTextFormat(font, textSize);
+			var format = new CanvasTextFormat
+			{
+				FontFamily = font.Name,
+				FontSize = textSize,
+				FontWeight = new FontWeight { Weight = (ushort)Math.Clamp(font.Weight, 1, 999) },
+				FontStyle = font.StyleType.ToFontStyle(),
+				WordWrapping = CanvasWordWrapping.NoWrap
+			};
 
 			var device = CanvasDevice.GetSharedDevice();
 			var textLayout = new CanvasTextLayout(device, value, format, 0.0f, 0.0f);
@@ -46,18 +53,6 @@ namespace Microsoft.Maui.Graphics.Platform
 			};
 
 			return new SizeF((float)textLayout.DrawBounds.Width, (float)textLayout.DrawBounds.Height);
-		}
-
-		internal CanvasTextFormat CreateCanvasTextFormat(IFont font, float textSize)
-		{
-			return new CanvasTextFormat
-			{
-				FontFamily = font.Name,
-				FontSize = textSize,
-				FontWeight = new FontWeight { Weight = (ushort)Math.Clamp(font.Weight, 1, 999) },
-				FontStyle = font.StyleType.ToFontStyle(),
-				WordWrapping = CanvasWordWrapping.NoWrap
-			};
 		}
 	}
 }

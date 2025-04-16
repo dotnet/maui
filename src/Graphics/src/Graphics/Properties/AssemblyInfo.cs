@@ -13,6 +13,3 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Devices.Sensors")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Essentials")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.Graphics.Skia")]
-[assembly: InternalsVisibleTo("Microsoft.Maui.Graphics.DeviceTests")]
-
-
