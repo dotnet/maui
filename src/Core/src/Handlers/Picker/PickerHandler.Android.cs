@@ -152,10 +152,14 @@ namespace Microsoft.Maui.Handlers
 
 				_dialog.SetCanceledOnTouchOutside(true);
 
-				_dialog.DismissEvent += (sender, args) =>
+				_dialog.DismissEvent += OnDismiss;
+
+				void OnDismiss(object? s, EventArgs e)
 				{
+					_dialog.DismissEvent -= OnDismiss;
+					PlatformView?.ClearFocus();
 					_dialog = null;
-				};
+				}
 
 				_dialog.Show();
 			}
