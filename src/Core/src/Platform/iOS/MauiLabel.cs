@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Platform
 		RectangleF AlignVertical(RectangleF rect)
 		{
 			var frameSize = Frame.Size;
-			var height = Lines == 1 ? Font.LineHeight : SizeThatFits(frameSize).Height;
+			var height = Lines == 1 ? Font.LineHeight : SizeThatFitsWithinInsets(frameSize).Height;
 
 			if (height < frameSize.Height)
 			{
@@ -69,16 +69,22 @@ namespace Microsoft.Maui.Platform
 		public override SizeF SizeThatFits(SizeF size)
 		{
 			// Prior to calculating the text size, reduce the padding, and then add the padding back in the AddInsets method.
-			var adjustedWidth = size.Width - TextInsets.Left - TextInsets.Right;
-			var adjustedHeight = size.Height - TextInsets.Top - TextInsets.Bottom;
-			var requestedSize = base.SizeThatFits(new SizeF(adjustedWidth, adjustedHeight));
+			SizeF requestedSize = SizeThatFitsWithinInsets(size);
 
 			// Let's be sure the label is not larger than the container
-			return AddInsets(new Size()
+			return AddInsets(new Size
 			{
 				Width = nfloat.Min(requestedSize.Width, size.Width),
 				Height = nfloat.Min(requestedSize.Height, size.Height),
 			});
+		}
+
+		SizeF SizeThatFitsWithinInsets(SizeF size)
+		{
+			var adjustedWidth = size.Width - TextInsets.Left - TextInsets.Right;
+			var adjustedHeight = size.Height - TextInsets.Top - TextInsets.Bottom;
+			var requestedSize = base.SizeThatFits(new SizeF(adjustedWidth, adjustedHeight));
+			return requestedSize;
 		}
 
 		SizeF AddInsets(SizeF size) => new SizeF(
