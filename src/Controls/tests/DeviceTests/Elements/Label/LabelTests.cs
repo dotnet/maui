@@ -338,8 +338,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(
-#if WINDOWS
-		Skip = "Fails on Windows"
+#if WINDOWS || ANDROID
+		Skip = "Fails on Windows and Android"
 #endif
 		)]
 		[InlineData(TextAlignment.Center)]

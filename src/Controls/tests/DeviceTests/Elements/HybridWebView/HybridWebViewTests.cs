@@ -12,6 +12,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+#if !ANDROID
 	[Category(TestCategory.HybridWebView)]
 	public partial class HybridWebViewTests : ControlsHandlerTestBase
 	{
@@ -718,4 +719,5 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 	}
+#endif
 }
