@@ -121,7 +121,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void VerifyScreenshotOrSetException(
 			ref Exception? exception,
 			string? name = null,
-			TimeSpan? retryDelay = null
+			TimeSpan? retryDelay = null,
+			int cropTop = 0,
+			int cropBottom = 0
 #if MACUITEST || WINTEST
 			, bool includeTitleBar = false
 #endif
@@ -129,7 +131,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			try
 			{
-				VerifyScreenshot(name, retryDelay
+				VerifyScreenshot(name, retryDelay, cropTop, cropBottom
 #if MACUITEST || WINTEST
 				, includeTitleBar
 #endif
@@ -143,7 +145,9 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public void VerifyScreenshot(
 			string? name = null,
-			TimeSpan? retryDelay = null
+			TimeSpan? retryDelay = null,
+			int cropTop = 0,
+			int cropBottom = 0
 #if MACUITEST || WINTEST
 			, bool includeTitleBar = false
 #endif
@@ -273,6 +277,9 @@ namespace Microsoft.Maui.TestCases.Tests
 					TestDevice.iOS => 40,
 					_ => 0,
 				};
+
+				cropFromTop = cropTop > 0 ? cropTop : cropFromTop;
+				cropFromBottom = cropBottom > 0 ? cropBottom : cropFromBottom;
 
 				if (cropFromTop > 0 || cropFromBottom > 0)
 				{

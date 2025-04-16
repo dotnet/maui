@@ -36,6 +36,15 @@ steps:
       displayName: 'Clean bot'
       continueOnError: true
       timeoutInMinutes: 60
+  
+  # Enable KVM for Android builds on Linux
+  - ${{ if and(ne(parameters.buildType, 'buildOnly'), eq(parameters.platform, 'android')) }}:
+    - bash: |
+        echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+        sudo udevadm control --reload-rules
+        sudo udevadm trigger --name-match=kvm
+      displayName: Enable KVM
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))      
 
   - ${{ if eq(parameters.platform, 'catalyst')}}:
         - bash: |
@@ -50,9 +59,11 @@ steps:
       skipProvisioning:  true
       skipJdk: ${{ ne(parameters.platform, 'android') }}
       skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
-      skipAndroidPlatformApis: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidPlatformApis: true
+      onlyAndroidPlatformDefaultApis: true
       skipAndroidEmulatorImages: ${{ ne(parameters.platform, 'android') }}
-      skipAndroidCreateAvds: ${{ ne(parameters.platform, 'android') }}
+      skipAndroidCreateAvds: true
+      androidEmulatorApiLevel: ${{ parameters.version }}
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if parameters.skipProvisioning }}:
@@ -62,7 +73,7 @@ steps:
         gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
 
   - task: PowerShell@2
-    condition: ne('${{ parameters.platform }}' , 'windows')
+    condition: and(ne('${{ parameters.platform }}', 'windows'), ne('${{ parameters.platform }}', 'android'))
     inputs:
       targetType: 'inline'
       script: |
@@ -97,11 +108,11 @@ steps:
     displayName: "Install node"
 
   - pwsh: |
-      $skipAppiumDoctor = if ($IsMacOS) { "true" } else { "false" }
+      $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
       dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
     displayName: "Install Appium"
     continueOnError: false
-    retryCountOnTaskFailure: 1
+    retryCountOnTaskFailure: 2
     timeoutInMinutes: 10
     env:
       APPIUM_HOME: $(APPIUM_HOME)
