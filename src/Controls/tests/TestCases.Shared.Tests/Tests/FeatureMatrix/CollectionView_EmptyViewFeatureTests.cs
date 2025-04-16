@@ -162,6 +162,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("ItemsSourceGroupedList");
 			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("EmptyViewString");
 			App.Tap("EmptyViewString");
 			App.WaitForElement("Apply");
@@ -179,6 +181,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewString");
 			App.WaitForElement("ItemsSourceGroupedList");
 			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForNoElement("No Items Available(String)");
@@ -282,6 +286,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("ItemsSourceGroupedList");
 			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("EmptyViewGrid");
 			App.Tap("EmptyViewGrid");
 			App.WaitForElement("Apply");
@@ -299,6 +305,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewGrid");
 			App.WaitForElement("ItemsSourceGroupedList");
 			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForNoElement("No Items Available(Grid View)");
@@ -698,6 +706,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("ItemsSourceGroupedList");
 			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("EmptyViewTemplateGrid");
 			App.Tap("EmptyViewTemplateGrid");
 			App.WaitForElement("Apply");
@@ -715,6 +725,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewTemplateGrid");
 			App.WaitForElement("ItemsSourceGroupedList");
 			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForNoElement("No Template Items Available(Grid View)");
@@ -818,6 +830,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Options");
 			App.WaitForElement("ItemsSourceGroupedList");
 			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("EmptyViewTemplateCustomSize");
 			App.Tap("EmptyViewTemplateCustomSize");
 			App.WaitForElement("Apply");
@@ -835,6 +849,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("EmptyViewTemplateCustomSize");
 			App.WaitForElement("ItemsSourceGroupedList");
 			App.Tap("ItemsSourceGroupedList");
+			App.WaitForElement("IsGroupedTrue");
+			App.Tap("IsGroupedTrue");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForNoElement("Custom EmptyViewTemplate (Sized)");

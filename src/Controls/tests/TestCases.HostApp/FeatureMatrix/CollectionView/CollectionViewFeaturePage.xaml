@@ -10,6 +10,12 @@
         <Button Text="EmptyView/EmptyViewTemplate"
                 Clicked="OnEmptyViewButtonClicked"
                 HorizontalOptions="Center"
-                AutomationId="EmptyViewButton"/>
+                AutomationId="EmptyViewButton"
+                WidthRequest="400"/>
+         <Button Text="Header/FooterViewTemplate"
+                Clicked="OnHeaderFooterViewButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="HeaderFooterViewButton"
+                WidthRequest="400"/>
     </VerticalStackLayout>
 </ContentPage>

@@ -20,7 +20,12 @@ namespace Maui.Controls.Sample
 
 		private async void OnEmptyViewButtonClicked(object sender, EventArgs e)
 		{
-			await Navigation.PushAsync(new CollectionViewControlPage());
+			await Navigation.PushAsync(new CollectionViewEmptyViewPage());
+		}
+
+		private async void OnHeaderFooterViewButtonClicked(object sender, EventArgs e)
+		{
+			await Navigation.PushAsync(new CollectionViewHeaderPage());
 		}
 	}
 }

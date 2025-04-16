@@ -4,12 +4,12 @@ using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample
 {
-	public partial class CollectionViewControlPage : ContentPage
+	public partial class CollectionViewEmptyViewPage : ContentPage
 	{
 
 		private CollectionViewViewModel _viewModel;
 
-		public CollectionViewControlPage()
+		public CollectionViewEmptyViewPage()
 		{
 			InitializeComponent();
 			_viewModel = new CollectionViewViewModel();

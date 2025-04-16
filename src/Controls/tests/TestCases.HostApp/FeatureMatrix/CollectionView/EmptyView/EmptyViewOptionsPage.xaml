@@ -182,6 +182,23 @@
                                  CheckedChanged="OnItemTemplateChanged"
                                  AutomationId="ItemTemplateGrid"/>
                 </StackLayout>
+                <!--IsGrouped-->
+                <Label Text="IsGrouped:"
+                       FontSize="12"
+                       FontAttributes="Bold"/>
+                <StackLayout Orientation="Horizontal">
+                    <RadioButton x:Name="IsGroupedTrue"
+                                 Content="True"
+                                 CheckedChanged="OnIsGroupedChanged"
+                                 FontSize="11"
+                                 AutomationId="IsGroupedTrue"/>
+                    <RadioButton x:Name="IsGroupedFalse"
+                                 Content="False"
+                                 IsChecked="True"
+                                 CheckedChanged="OnIsGroupedChanged"
+                                 FontSize="11"
+                                 AutomationId="IsGroupedFalse"/>
+                </StackLayout>
                 <!-- ItemsSource Selection -->
                 <Label Text="ItemsSource:"
                        FontAttributes="Bold"
@@ -196,7 +213,7 @@
                                      GroupName="ItemsSourceGroup"
                                      CheckedChanged="OnItemsSourceChanged"
                                      AutomationId="ItemsSourceNone"/>
-                        <RadioButton x:Name="ItemsSourceObservableCollection"
+                        <RadioButton x:Name="ItemsSourceObservableCollection5"
                                      Content="ObservableCollection"
                                      FontSize="10"
                                      GroupName="ItemsSourceGroup"

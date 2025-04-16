@@ -53,7 +53,7 @@ namespace Maui.Controls.Sample
                 {
                     BackgroundColor = Colors.LightBlue,
                     HeightRequest = 200,
-                    AutomationId= "EmptyViewLabel",
+                    AutomationId = "EmptyViewLabel",
                     WidthRequest = 300,
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center,
@@ -147,7 +147,7 @@ namespace Maui.Controls.Sample
                     return grid;
                 });
             }
-             else if (EmptyViewTemplateCustomSize.IsChecked)
+            else if (EmptyViewTemplateCustomSize.IsChecked)
             {
                 _viewModel.EmptyViewTemplate = new DataTemplate(() =>
                 {
@@ -200,7 +200,7 @@ namespace Maui.Controls.Sample
                         },
                         Padding = new Thickness(10),
                         BackgroundColor = Colors.LightBlue
-                        
+
                     };
 
                     var label1 = new Label
@@ -208,7 +208,7 @@ namespace Maui.Controls.Sample
                         VerticalOptions = LayoutOptions.Center,
                         HorizontalOptions = LayoutOptions.Start,
                         FontAttributes = FontAttributes.Bold,
-                        TextColor= Colors.Green
+                        TextColor = Colors.Green
                     };
                     label1.SetBinding(Label.TextProperty, "Caption");
                     grid.Children.Add(label1);
@@ -217,22 +217,26 @@ namespace Maui.Controls.Sample
             }
         }
 
+        private void OnIsGroupedChanged(object sender, CheckedChangedEventArgs e)
+        {
+            if (IsGroupedFalse.IsChecked)
+            {
+                _viewModel.IsGrouped = false;
+            }
+            else if (IsGroupedTrue.IsChecked)
+            {
+                _viewModel.IsGrouped = true;
+            }
+        }
+
         private void OnItemsSourceChanged(object sender, CheckedChangedEventArgs e)
         {
             if (!(sender is RadioButton radioButton) || !e.Value)
                 return;
             // Set IsGrouped based on selection
-            if (radioButton == ItemsSourceGroupedList || radioButton == ItemsSourceEmptyGroupedList)
-            {
-                _viewModel.IsGrouped = true;
-            }
-            else
-            {
-                _viewModel.IsGrouped = false;
-            }
 
-            if (radioButton == ItemsSourceObservableCollection)
-                _viewModel.ItemsSourceType = ItemsSourceType.ObservableCollectionT;
+            if (radioButton == ItemsSourceObservableCollection5)
+                _viewModel.ItemsSourceType = ItemsSourceType.ObservableCollection5T;
             else if (radioButton == ItemsSourceEmptyObservableCollection)
                 _viewModel.ItemsSourceType = ItemsSourceType.EmptyObservableCollectionT;
             else if (radioButton == ItemsSourceGroupedList)
@@ -243,7 +247,7 @@ namespace Maui.Controls.Sample
                 _viewModel.ItemsSourceType = ItemsSourceType.None;
         }
 
-         private void OnItemsLayoutChanged(object sender, CheckedChangedEventArgs e)
+        private void OnItemsLayoutChanged(object sender, CheckedChangedEventArgs e)
         {
             if (ItemsLayoutVerticalList.IsChecked)
             {
