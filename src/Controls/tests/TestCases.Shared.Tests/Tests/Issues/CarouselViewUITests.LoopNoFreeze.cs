@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS // related issue: https://github.com/dotnet/maui/issues/24482
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // Related issue for windows: https://github.com/dotnet/maui/issues/24482 and For Android, see : https://github.com/dotnet/maui/issues/28760
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -28,19 +28,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("0 item");
 
 			App.WaitForElement(_carouselAutomationId);
-			App.ScrollRight(_carouselAutomationId);
+			App.ScrollRight(_carouselAutomationId, ScrollStrategy.Gesture, 0.99);
 
 			App.WaitForElement("1 item");
-			App.ScrollRight(_carouselAutomationId);
+			App.ScrollRight(_carouselAutomationId, ScrollStrategy.Gesture, 0.99);
 
 
 			App.WaitForElement("2 item");
-
-			App.Click(_btnRemoveAutomationId);
+			App.WaitForElement(_btnRemoveAutomationId);
+			App.Tap(_btnRemoveAutomationId);
 
 			App.WaitForElement("1 item");
 
-			App.ScrollRight(_carouselAutomationId);
+			App.ScrollRight(_carouselAutomationId, ScrollStrategy.Gesture, 0.99);
 
 			App.WaitForElement("0 item");
 		}

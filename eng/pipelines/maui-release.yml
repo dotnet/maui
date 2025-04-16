@@ -3,6 +3,7 @@ trigger:
     include:
     - main
     - net9.0
+    - net10.0
     - release/*
   tags:
     include:
@@ -26,6 +27,7 @@ schedules:
   branches:
     include:
     - main
+    - inflight/current
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
