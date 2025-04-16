@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateIsRunning(this UIActivityIndicatorView activityIndicatorView, IActivityIndicator activityIndicator)
 		{
-			activityIndicatorView.Hidden = GetActivityIndicatorVisibility(activityIndicator);
+			activityIndicatorView.UpdateActivityIndicatorVisibility(activityIndicator);
 
 			if (activityIndicator.IsRunning && !activityIndicatorView.Hidden)
 				activityIndicatorView.StartAnimating();
@@ -14,17 +14,22 @@ namespace Microsoft.Maui.Platform
 				activityIndicatorView.StopAnimating();
 		}
 
-		private static bool GetActivityIndicatorVisibility(IActivityIndicator activityIndicator)
+		internal static void UpdateActivityIndicatorVisibility(this UIActivityIndicatorView platformView,IActivityIndicator activityIndicator)
 		{		
-			if (activityIndicator.Visibility == Visibility.Visible)
+			switch(activityIndicator.Visibility)
 			{
-				// If visibility is set to Visible, hide the native control when it's not running.
-				return !activityIndicator.IsRunning;
-			}
-			else
-			{
-				// If the ActivityIndicator is not visible, always hide the native control.
-				return true;
+				case Visibility.Visible:
+					platformView.Inflate();
+					platformView.Hidden = !activityIndicator.IsRunning;
+					break;
+				case Visibility.Hidden:
+					platformView.Inflate();
+					platformView.Hidden = true;
+					break;
+				case Visibility.Collapsed:
+					platformView.Hidden = true;
+					platformView.Collapse();
+					break;
 			}
 		}
 
