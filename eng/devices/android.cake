@@ -631,15 +631,29 @@ void PrepareDevice(bool waitForBoot)
                     AdbKillServer(settings);
                     AdbStartServer(settings);
 
-                    Information("ADB keys have been successfully regenerated.");
+                    bool adbKeyExists = System.IO.File.Exists(adbKeyFile);
 
-                    // Manually Authorize the Emulator
-                    AdbShell("adb shell settings put global adb_enabled 1", settings);
+                    if(adbKeyExists)
+                    {
+                        Information("ADB keys have been successfully regenerated.");
 
-                    // Ensure the emulator has USB Debugging enabled
-                    AdbShell("adb shell settings put global development_settings_enabled 1", settings);
+                        // Ensure that the ~/.android directory has the correct permissions
+                        StartProcess("chmod", $"700 {adbKeyPath}");
+                        StartProcess("chmod", $"600 {adbKeyFile}");
+                        StartProcess("chmod", $"600 {adbKeyPubFile}");
+                        
+                        // Manually Authorize the Emulator
+                        AdbShell("adb shell settings put global adb_enabled 1", settings);
 
-                    Information("Emulator authorized successfully.");
+                        // Ensure the emulator has USB Debugging enabled
+                        AdbShell("adb shell settings put global development_settings_enabled 1", settings);
+
+                        Information("Emulator authorized successfully.");
+                    }
+                    else
+                    {
+                        Information($"ADB keys were not found {adbKeyPath}. Please check the ADB installation.");
+                    }
                 }
                 catch (Exception ex)
                 {
