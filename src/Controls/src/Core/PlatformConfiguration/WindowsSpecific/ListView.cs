@@ -6,22 +6,26 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	using FormsElement = Maui.Controls.ListView;
 
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.ListView']/Docs/*" />
+	[Obsolete("With the deprecation of ListView, this class is obsolete. Please use CollectionView instead.")]
 	public static class ListView
 	{
 		#region SelectionMode
 
 		/// <summary>Bindable property for <see cref="SelectionMode"/>.</summary>
+		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static readonly BindableProperty SelectionModeProperty =
 			BindableProperty.CreateAttached("WindowsSelectionMode", typeof(ListViewSelectionMode),
 				typeof(ListView), ListViewSelectionMode.Accessible);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="//Member[@MemberName='GetSelectionMode'][1]/Docs/*" />
+		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static ListViewSelectionMode GetSelectionMode(BindableObject element)
 		{
 			return (ListViewSelectionMode)element.GetValue(SelectionModeProperty);
 		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="//Member[@MemberName='SetSelectionMode'][1]/Docs/*" />
+		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static void SetSelectionMode(BindableObject element, ListViewSelectionMode value)
 		{
 			element.SetValue(SelectionModeProperty, value);
@@ -29,6 +33,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="//Member[@MemberName='GetSelectionMode'][2]/Docs/*" />
 #pragma warning disable CS0618 // Type or member is obsolete
+		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static ListViewSelectionMode GetSelectionMode(this IPlatformElementConfiguration<Windows, FormsElement> config)
 #pragma warning restore CS0618 // Type or member is obsolete
 		{
@@ -37,6 +42,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="//Member[@MemberName='SetSelectionMode'][2]/Docs/*" />
 #pragma warning disable CS0618 // Type or member is obsolete
+		[Obsolete("With the deprecation of ListView, this property is obsolete. Please use CollectionView instead.")]
 		public static IPlatformElementConfiguration<Windows, FormsElement> SetSelectionMode(
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -51,6 +57,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	}
 
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListViewSelectionMode.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.ListViewSelectionMode']/Docs/*" />
+	[Obsolete("With the deprecation of ListView, this enum is obsolete. Please use CollectionView instead.")]
 	public enum ListViewSelectionMode
 	{
 		/// <summary>

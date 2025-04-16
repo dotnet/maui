@@ -145,7 +145,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return;
 
-			void OnLayoutChanged(object sender, Android.Views.View.LayoutChangeEventArgs e)
+			void OnLayoutChanged(object sender, global::Android.Views.View.LayoutChangeEventArgs e)
 			{
 				if (drawerLayout.IsDrawerOpen(flyout) == desiredState)
 				{
@@ -381,8 +381,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(menuItem1, menu.GetItem(0));
 				Assert.Equal(menuItem2, menu.GetItem(1));
 
-				menuItem1.Icon.AssertColorAtCenter(Android.Graphics.Color.Blue);
-				menuItem2.Icon.AssertColorAtCenter(Android.Graphics.Color.Blue);
+				menuItem1.Icon.AssertColorAtCenter(global::Android.Graphics.Color.Blue);
+				menuItem2.Icon.AssertColorAtCenter(global::Android.Graphics.Color.Blue);
 
 				Assert.NotEqual(icon1, menuItem1.Icon);
 				Assert.NotEqual(icon2, menuItem2.Icon);
@@ -449,8 +449,70 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(menuItem1, menu.GetItem(0));
 				Assert.Equal(menuItem2, menu.GetItem(1));
 
-				menu.GetItem(1).Icon.AssertColorAtCenter(Android.Graphics.Color.Green);
-				menu.GetItem(2).Icon.AssertColorAtCenter(Android.Graphics.Color.Red);
+				menu.GetItem(1).Icon.AssertColorAtCenter(global::Android.Graphics.Color.Green);
+				menu.GetItem(2).Icon.AssertColorAtCenter(global::Android.Graphics.Color.Red);
+			});
+		}
+
+		//src/Compatibility/Core/tests/Android/ShellTests.cs
+		[Fact(DisplayName = "Flyout Header Changes When Updated")]
+		public async Task FlyoutHeaderReactsToChanges()
+		{
+			SetupBuilder();
+
+			var initialHeader = new Label() { Text = "Hello" };
+			var newHeader = new Label() { Text = "Hello Part 2" };
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new FlyoutItem() { Items = { new ContentPage() }, Title = "Flyout Item" };
+				shell.FlyoutHeader = initialHeader;
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{				
+				var initialHeaderPlatformView = initialHeader.ToPlatform();
+				Assert.NotNull(initialHeaderPlatformView);
+				Assert.NotNull(initialHeader.Handler);
+
+				shell.FlyoutHeader = newHeader;
+
+				var newHeaderPlatformView = newHeader.ToPlatform();
+				Assert.NotNull(newHeaderPlatformView);
+				Assert.NotNull(newHeader.Handler);
+
+				Assert.Null(initialHeader.Handler);
+
+				await OpenFlyout(handler);
+
+				var appBar = newHeaderPlatformView.GetParentOfType<AppBarLayout>();
+				Assert.NotNull(appBar);
+			});
+		}
+
+		//src/Compatibility/Core/tests/Android/ShellTests.cs
+		[Fact(DisplayName = "Ensure Default Colors are White for BottomNavigationView")]
+		public async Task ShellTabColorsDefaultToWhite()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell => 
+			{
+				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1" });
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, (handler) =>
+			{
+				var bottomNavigationView = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>();
+				Assert.NotNull(bottomNavigationView);
+
+				var background = bottomNavigationView.Background;
+				Assert.NotNull(background);
+
+				if (background is ColorChangeRevealDrawable changeRevealDrawable)
+				{
+					Assert.Equal(global::Android.Graphics.Color.White, changeRevealDrawable.EndColor);
+				}
 			});
 		}
 

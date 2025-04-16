@@ -22,6 +22,15 @@ namespace Microsoft.Maui.DeviceTests
 		UILineBreakMode GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
 			GetPlatformButton(buttonHandler).TitleLabel.LineBreakMode;
 
+		Task<bool> GetPlatformIsVisible(ButtonHandler buttonHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformButton(buttonHandler);
+				return !nativeView.Hidden;
+			});
+		}
+
 		[Fact("Clicked works after GC")]
 		public async Task ClickedWorksAfterGC()
 		{
