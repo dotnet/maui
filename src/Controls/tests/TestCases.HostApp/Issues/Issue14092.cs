@@ -14,9 +14,14 @@ public class Issue14092 : NavigationPage
 
 	private void Current_PageDisappearing(object sender, Page e)
 	{
-		if (e is Issue14092SecondPage)
+		switch (e)
 		{
-			_firstPage.UpdateStatusLabel("Disappearing triggered when pop");
+			case Issue14092SecondPage:
+				_firstPage.UpdateStatusLabel("Disappearing triggered when pop");
+				break;
+			case Issue14092ThirdPage:
+				_firstPage.UpdateStatusLabel("Disappearing triggered when PopToRoot");
+				break;
 		}
 	}
 }
@@ -36,14 +41,14 @@ public class Issue14092FirstPage : ContentPage
 			VerticalOptions = LayoutOptions.Center
 		};
 
-		var counterBtn = new Button
+		var button = new Button
 		{
-			Text = "Click me",
+			Text = "Go To Page2",
 			AutomationId = "firstPageButton",
 			HorizontalOptions = LayoutOptions.Fill
 		};
 
-		counterBtn.Clicked += OnCounterClicked;
+		button.Clicked += OnCounterClicked;
 
 		Content = new VerticalStackLayout
 		{
@@ -52,7 +57,7 @@ public class Issue14092FirstPage : ContentPage
 			Children =
 			{
 				_label,
-				counterBtn
+				button
 			}
 		};
 	}
@@ -74,10 +79,47 @@ public class Issue14092SecondPage : ContentPage
 	{
 		Title = "Second Page";
 
-		var button = new Button
+		var popButton = new Button
 		{
 			Text = "Go Back",
 			AutomationId = "secondPageButton",
+		};
+		popButton.Clicked += OnButtonClicked;
+
+		var pushButton = new Button
+		{
+			Text = "Go To Page3",
+			AutomationId = "secondPagePushButton",
+		};
+		pushButton.Clicked += OnPushButtonClicked;
+
+		Content = new StackLayout
+		{
+			Children = { popButton, pushButton }
+		};
+	}
+
+	private void OnPushButtonClicked(object sender, EventArgs e)
+	{
+		Navigation.PushAsync(new Issue14092ThirdPage());
+	}
+
+	private void OnButtonClicked(object sender, EventArgs e)
+	{
+		Navigation.PopAsync();
+	}
+}
+
+public class Issue14092ThirdPage : ContentPage
+{
+	public Issue14092ThirdPage()
+	{
+		Title = "Third Page";
+
+		var button = new Button
+		{
+			Text = "PopToRoot",
+			AutomationId = "thirdPageButton",
 		};
 		button.Clicked += OnButtonClicked;
 
@@ -89,6 +131,6 @@ public class Issue14092SecondPage : ContentPage
 
 	private void OnButtonClicked(object sender, EventArgs e)
 	{
-		Navigation.PopAsync();
+		Navigation.PopToRootAsync();
 	}
 }
