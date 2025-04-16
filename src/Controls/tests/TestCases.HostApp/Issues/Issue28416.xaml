@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue28416">
+  <VerticalStackLayout x:Name="stackLayout" AutomationId="StackLayout">
+    <Rectangle x:Name="dragObject" AutomationId="DragObject" Stroke="Red" Fill="DarkBlue" StrokeThickness="4" HeightRequest="200" WidthRequest="200">
+      <Rectangle.GestureRecognizers>
+        <DragGestureRecognizer DropCompleted="DragGestureRecognizer_DropCompleted" />
+      </Rectangle.GestureRecognizers>
+    </Rectangle>
+
+    <Image x:Name="dragTarget" AutomationId="DragTarget" BackgroundColor="Silver" HeightRequest="300" WidthRequest="250">
+      <Image.GestureRecognizers>
+        <DropGestureRecognizer Drop="DropGestureRecognizer_Drop" />
+      </Image.GestureRecognizers>
+    </Image>
+    <Label AutomationId="InstructionsLabel" Text="Drag the blue square onto the silver element" />
+  </VerticalStackLayout>
+</ContentPage>
