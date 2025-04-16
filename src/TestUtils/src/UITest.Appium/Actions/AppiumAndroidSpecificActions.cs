@@ -14,6 +14,7 @@ namespace UITest.Appium
 		const string ToggleSystemAnimationsCommand = "toggleSystemAnimations";
 		const string GetSystemBarsCommand = "getSystemBars";
 		const string ToggleSecondaryToolbarItemsCommand = "toggleSecondaryToolbarItems";
+		const string CheckIfGestureNavigationIsEnabledCommand = "checkIfGestureNavigationIsEnabled";
 
 		readonly AppiumApp _appiumApp;
 
@@ -26,6 +27,7 @@ namespace UITest.Appium
 			ToggleSystemAnimationsCommand,
 			GetSystemBarsCommand,
 			ToggleSecondaryToolbarItemsCommand,
+			CheckIfGestureNavigationIsEnabledCommand,
 		};
 
 		public AppiumAndroidSpecificActions(AppiumApp appiumApp)
@@ -49,6 +51,7 @@ namespace UITest.Appium
 				ToggleSystemAnimationsCommand => ToggleSystemAnimations(parameters),
 				GetSystemBarsCommand => GetSystemBars(parameters),
 				ToggleSecondaryToolbarItemsCommand => ToggleSecondaryToolbarItems(parameters),
+				CheckIfGestureNavigationIsEnabledCommand => CheckIfGestureNavigationIsEnabled(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -86,6 +89,18 @@ namespace UITest.Appium
 				androidDriver.ToggleWifi();
 
 				return CommandResponse.SuccessEmptyResponse;
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+
+		CommandResponse CheckIfGestureNavigationIsEnabled(IDictionary<string, object> parameters)
+		{
+			if (_appiumApp.Driver is AndroidDriver androidDriver)
+			{
+				var result = ShellHelper.ExecuteShellCommandWithOutput("adb shell cmd overlay list");
+				var isEnabled = result.Contains("[x] com.android.internal.systemui.navbar.gestural", StringComparison.OrdinalIgnoreCase);
+				return new CommandResponse(isEnabled, CommandResponseResult.Success);
 			}
 
 			return CommandResponse.FailedEmptyResponse;

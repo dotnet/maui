@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 	/// <remarks><see cref = "Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="Page"/> class are most prominently used as the top level UI element in .NET MAUI applications. In addition to their role as the main pages of applications, <see cref="Page"/> objects and their descendants can be used with navigation classes, such as <see cref="NavigationPage"/> or <see cref="FlyoutPage"/>, among others, to provide rich user experiences that conform to the expected behaviors on each platform.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement
+	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement, IConstrainedView
 #if IOS
 	,IiOSPageSpecifics
 #endif
@@ -211,6 +211,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc/>
 		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
+
+		bool IConstrainedView.HasFixedConstraints => true;
 
 #if IOS
 		/// <inheritdoc/>
@@ -506,10 +508,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger, int depth)
+		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
-			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
-			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger, depth));
+			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+			var propagatedTrigger = GetPropagatedTrigger(trigger);
+			InvokeMeasureInvalidated(propagatedTrigger);
 		}
 
 		/// <summary>
@@ -519,19 +522,6 @@ namespace Microsoft.Maui.Controls
 		/// <param name="e">The event arguments.</param>
 		protected virtual void OnChildMeasureInvalidated(object sender, EventArgs e)
 		{
-			var depth = 0;
-			InvalidationTrigger trigger;
-			if (e is InvalidationEventArgs args)
-			{
-				trigger = args.Trigger;
-				depth = args.CurrentInvalidationDepth;
-			}
-			else
-			{
-				trigger = InvalidationTrigger.Undefined;
-			}
-
-			OnChildMeasureInvalidated((VisualElement)sender, trigger, depth);
 		}
 
 		/// <summary>
@@ -607,36 +597,6 @@ namespace Microsoft.Maui.Controls
 						return;
 					}
 				}
-			}
-		}
-
-		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger, int depth)
-		{
-			var container = this as IPageContainer<Page>;
-			if (container != null)
-			{
-				Page page = container.CurrentPage;
-				if (page != null && page.IsVisible && (!page.IsPlatformEnabled || !page.IsPlatformStateConsistent))
-					return;
-			}
-			else
-			{
-				var logicalChildren = this.InternalChildren;
-				for (var i = 0; i < logicalChildren.Count; i++)
-				{
-					var v = logicalChildren[i] as VisualElement;
-					if (v != null && v.IsVisible && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
-						return;
-				}
-			}
-
-			if (depth <= 1)
-			{
-				InvalidateMeasureInternal(new InvalidationEventArgs(InvalidationTrigger.MeasureChanged, depth));
-			}
-			else
-			{
-				FireMeasureChanged(trigger, depth);
 			}
 		}
 

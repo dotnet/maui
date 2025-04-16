@@ -27,7 +27,9 @@ public class Issue10608 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void ShellWithTopTabsFreezesWhenNavigatingFlyoutItems()
 	{
+		App.WaitForElement(FlyoutItem6);
 		App.Tap(FlyoutItem6);
+		App.WaitForElement("FlyoutItem0");
 		App.Tap("FlyoutItem0");
 		for (int i = 0; i < 5; i++)
 		{
