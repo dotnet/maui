@@ -41,8 +41,20 @@ namespace Microsoft.Maui.Controls
 			ToolbarItems = _toolbarTracker.ToolbarItems;
 		}
 
+#if ANDROID
+		Devices.DisplayOrientation lastOrientation = Devices.DisplayOrientation.Unknown;
+#endif
+
 		void OnPagePropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
+#if ANDROID
+			if ((e.PropertyName == "Height") && (Parent is FlyoutPage) && (lastOrientation != Devices.DeviceDisplay.MainDisplayInfo.Orientation))
+			{
+				if (lastOrientation != Devices.DisplayOrientation.Unknown)
+					UpdateBackButton();
+				lastOrientation = Devices.DeviceDisplay.MainDisplayInfo.Orientation;
+			}
+#endif
 			if (e.IsOneOf(NavigationPage.HasNavigationBarProperty,
 				NavigationPage.HasBackButtonProperty,
 				NavigationPage.TitleIconImageSourceProperty,
