@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, MauiDatePicker>
 	{
 		DatePickerDialog? _dialog;
+		(int year, int month, int day) _selectedDate;
 
 		protected override MauiDatePicker CreatePlatformView()
 		{
@@ -52,6 +53,11 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog != null)
 			{
+				_dialog.DismissEvent -= OnDismissEvent;
+				_dialog.ShowEvent -= OnShowEvent;
+				if (OperatingSystem.IsAndroidVersionAtLeast(24))
+					_dialog.DateSet -= OnDateSet;
+
 				_dialog.Hide();
 				_dialog.Dispose();
 				_dialog = null;
@@ -66,14 +72,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected virtual DatePickerDialog CreateDatePickerDialog(int year, int month, int day)
 		{
-			var dialog = new DatePickerDialog(Context!, (o, e) =>
-			{
-				if (VirtualView != null)
-				{
-					VirtualView.Date = e.Date;
-				}
-			}, year, month, day);
-
+			var dialog = new DatePickerDialog(Context!, OnDateSet, year, month, day);
 			return dialog;
 		}
 
@@ -130,6 +129,7 @@ namespace Microsoft.Maui.Handlers
 			if (_dialog != null && _dialog.IsShowing)
 				return;
 
+			VirtualView.IsFocused = true;
 			var date = VirtualView.Date;
 			ShowPickerDialog(date.Year, date.Month - 1, date.Day);
 		}
@@ -140,12 +140,40 @@ namespace Microsoft.Maui.Handlers
 				_dialog = CreateDatePickerDialog(year, month, day);
 			else
 			{
-				EventHandler? setDateLater = null;
-				setDateLater = (sender, e) => { _dialog!.UpdateDate(year, month, day); _dialog.ShowEvent -= setDateLater; };
-				_dialog.ShowEvent += setDateLater;
+				_selectedDate = (year, month, day);
+				_dialog.ShowEvent += OnShowEvent;
+				_dialog.DismissEvent += OnDismissEvent;
 			}
 
 			_dialog.Show();
+		}
+
+		void OnDismissEvent(object? sender, EventArgs e)
+		{
+			if (VirtualView != null)
+			{
+				VirtualView.IsFocused = false;
+			}
+
+			if (_dialog != null)
+			{
+				_dialog.DismissEvent -= OnDismissEvent;
+			}
+		}
+
+		void OnShowEvent(object? sender, EventArgs e)
+		{
+			_dialog!.UpdateDate(_selectedDate.year, _selectedDate.month, _selectedDate.day);
+			_dialog.ShowEvent -= OnShowEvent;
+		}
+
+		void OnDateSet(object? obj, DatePickerDialog.DateSetEventArgs e)
+		{
+			if (VirtualView != null)
+			{
+				VirtualView.Date = e.Date;
+				VirtualView.IsFocused = false;
+			}
 		}
 
 		void HidePickerDialog()
