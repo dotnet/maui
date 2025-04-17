@@ -106,3 +106,5 @@ static Microsoft.Maui.Handlers.SearchBarHandler.MapReturnType(Microsoft.Maui.Han
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateReturnType(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
 *REMOVED*static Microsoft.Maui.Platform.ScrollViewerExtensions.UpdateScrollBarVisibility(this Microsoft.UI.Xaml.Controls.ScrollViewer! scrollViewer, Microsoft.Maui.ScrollOrientation orientation, Microsoft.Maui.ScrollBarVisibility horizontalScrollBarVisibility) -> void
 static Microsoft.Maui.Platform.ScrollViewerExtensions.UpdateScrollBarVisibility(this Microsoft.UI.Xaml.Controls.ScrollViewer! scrollViewer, Microsoft.Maui.ScrollOrientation orientation, Microsoft.Maui.ScrollBarVisibility visibility) -> void
+*REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
+Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
