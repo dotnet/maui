@@ -60,7 +60,7 @@ public class Issue29051 : ContentPage
 
 				return itemGrid;
 			}),
-			ItemsSource = Enumerable.Range(0, 20).Select(i => new { Name = $"Item {i}", AutomationId = $"Item{i}" }).ToList(),
+			ItemsSource = Enumerable.Range(0, 5).Select(i => new { Name = $"Item {i}", AutomationId = $"Item{i}" }).ToList(),
 		};
 
 		Grid.SetRow(collectionView, 1);

@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		UIView _footerUIView;
 		VisualElement _footerViewFormsElement;
+		bool _headerFooterPositionNeedLayoutUpdate;
 
 		public StructuredItemsViewController(TItemsView structuredItemsView, ItemsViewLayout layout)
 			: base(structuredItemsView, layout)
@@ -86,25 +87,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void ViewWillLayoutSubviews()
 		{
-			base.ViewWillLayoutSubviews();
-
-			// This update is only relevant if you have a footer view because it's used to place the footer view
-			// based on the ContentSize so we just update the positions if the ContentSize has changed
-			if (_footerUIView != null)
+			if (_headerFooterPositionNeedLayoutUpdate)
 			{
-				var emptyView = CollectionView.ViewWithTag(EmptyTag);
+				UpdateHeaderFooterPosition();
+				base.ViewWillLayoutSubviews();
+			}
+			else
+			{
+				base.ViewWillLayoutSubviews();
+				// This update is only relevant if you have a footer view because it's used to place the footer view
+				// based on the ContentSize so we just update the positions if the ContentSize has changed
+				if (_footerUIView != null)
+				{
+					var emptyView = CollectionView.ViewWithTag(EmptyTag);
 
-				if (IsHorizontal)
-				{
-					if (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width ||
-						_footerUIView.Frame.X < emptyView?.Frame.X)
-						UpdateHeaderFooterPosition();
-				}
-				else
-				{
-					if (_footerUIView.Frame.Y != ItemsViewLayout.CollectionViewContentSize.Height ||
-						_footerUIView.Frame.Y < (emptyView?.Frame.Y + emptyView?.Frame.Height))
-						UpdateHeaderFooterPosition();
+					if (IsHorizontal)
+					{
+						if (_footerUIView.Frame.X != ItemsViewLayout.CollectionViewContentSize.Width ||
+							_footerUIView.Frame.X < emptyView?.Frame.X)
+							UpdateHeaderFooterPosition();
+					}
+					else
+					{
+						if (_footerUIView.Frame.Y != ItemsViewLayout.CollectionViewContentSize.Height ||
+							_footerUIView.Frame.Y < (emptyView?.Frame.Y + emptyView?.Frame.Height))
+							UpdateHeaderFooterPosition();
+					}
 				}
 			}
 		}
@@ -158,8 +166,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+
 		void UpdateHeaderFooterPosition()
 		{
+			// The Frame values for `CollectionView` aren't valid until the `CollectionView` has been added to the window
+			// The initial frame is always just some default value that we will need to update once the CollectionView is added to the window
+			if (CollectionView?.Window is null)
+			{
+				_headerFooterPositionNeedLayoutUpdate = true;
+				return;
+			}
+
+			_headerFooterPositionNeedLayoutUpdate = false;
+
 			var emptyView = CollectionView.ViewWithTag(EmptyTag);
 
 			if (IsHorizontal)

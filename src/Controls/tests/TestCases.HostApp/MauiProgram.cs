@@ -72,7 +72,7 @@ namespace Maui.Controls.Sample
 
 		public Page CreateDefaultMainPage()
 		{
-			return new Issue29051();
+			return new CoreNavigationPage();
 		}
 
 		protected override void OnAppLinkRequestReceived(Uri uri)
