@@ -5,23 +5,6 @@ public class Issue28949 : ContentPage
 {
     public Issue28949()
     {
-        var labelStyle = new Style(typeof(Label))
-        {
-            Setters =
-            {
-                new Setter
-                {
-                    Property = Label.BackgroundColorProperty,
-                    Value = Colors.Transparent
-                }
-            }
-        };
-
-        Resources = new ResourceDictionary
-        {
-            labelStyle
-        };
-
         var toggleButton = new Button
         {
             Text = "Toggle Visibility",
@@ -31,6 +14,7 @@ public class Issue28949 : ContentPage
         var label = new Label
         {
             FormattedText = formattedString,
+            BackgroundColor = Colors.Transparent,
             AutomationId = "Label"
         };
         var grid = new Grid
