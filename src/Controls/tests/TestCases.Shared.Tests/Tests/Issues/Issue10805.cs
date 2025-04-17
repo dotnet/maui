@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST  //The Format property is not supported on the Mac platform; it always displays the default format.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -13,9 +14,10 @@ public class Issue10805 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.DatePicker)]
-	public void VerifyDatePickerDateFormat()
+	public void VerifyDatePickerDotBasedDateFormat()
 	{
-		App.WaitForElement("DatePickerLabel");
+		App.WaitForElement("Label");
 		VerifyScreenshot();
 	}
 }
+#endif

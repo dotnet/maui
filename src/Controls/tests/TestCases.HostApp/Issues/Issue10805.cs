@@ -8,7 +8,7 @@ public class Issue10805 : ContentPage
 		var label = new Label
 		{
 			Text = "Verify DatePicker DateFormat",
-			AutomationId = "DatePickerLabel",
+			AutomationId = "Label",
 		};
 
 		var datePicker = new DatePicker
