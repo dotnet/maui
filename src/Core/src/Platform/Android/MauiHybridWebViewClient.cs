@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.IO.Pipelines;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using Android.Webkit;
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Platform
 				var fullUri = new Uri(fullUrl!);
 				var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
 				var contentBytesTask = Handler.InvokeDotNetAsync(invokeQueryString);
-				var responseStream = new InvokeAsyncStream(contentBytesTask, Handler);
+				var responseStream = new AsyncStream(contentBytesTask, Handler);
 				return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), responseStream);
 			}
 
@@ -185,18 +185,76 @@ namespace Microsoft.Maui.Platform
 			_handler.SetTarget(null);
 		}
 
-		private class InvokeAsyncStream : Stream
+		class AsyncStream : Stream
 		{
-			private const int PauseThreshold = 32 * 1024;
-			private const int ResumeThreshold = 16 * 1024;
+			readonly Task<Stream> _streamTask;
+			readonly WeakReference<HybridWebViewHandler> _handler;
+			Stream? _stream;
+			bool _isDisposed;
 
-			private readonly Task<byte[]?> _task;
-			private readonly WeakReference<HybridWebViewHandler> _handler;
-			private readonly Pipe _pipe;
+			public AsyncStream(Task<byte[]?> byteArrayTask, HybridWebViewHandler handler)
+				: this(AsStreamTask(byteArrayTask), handler)
+			{
+			}
 
-			private bool _isDisposed;
+			public AsyncStream(Task<Stream> streamTask, HybridWebViewHandler handler)
+			{
+				_streamTask = streamTask ?? throw new ArgumentNullException(nameof(streamTask));
+				_handler = new WeakReference<HybridWebViewHandler>(handler ?? throw new ArgumentNullException(nameof(handler)));
+			}
 
-			private HybridWebViewHandler? Handler => _handler?.GetTargetOrDefault();
+			HybridWebViewHandler? Handler => _handler?.GetTargetOrDefault();
+
+			static async Task<Stream> AsStreamTask(Task<byte[]?> task)
+			{
+				var bytes = await task;
+				if (bytes is null)
+					return Stream.Null;
+				return new MemoryStream(bytes);
+			}
+
+			async Task<Stream> GetStreamAsync(CancellationToken cancellationToken = default)
+			{
+				ObjectDisposedException.ThrowIf(_isDisposed, nameof(AsyncStream));
+
+				if (_stream != null)
+					return _stream;
+
+				_stream = await _streamTask.ConfigureAwait(false);
+				return _stream;
+			}
+
+			public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+			{
+				try
+				{
+					var stream = await GetStreamAsync(cancellationToken).ConfigureAwait(false);
+					return await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+				}
+				catch (Exception ex)
+				{
+					Handler?.MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "Error invoking .NET method from JavaScript: {ErrorMessage}", ex.Message);
+					throw;
+				}
+			}
+
+			public override int Read(byte[] buffer, int offset, int count)
+			{
+				try
+				{
+					var stream = GetStreamAsync().GetAwaiter().GetResult();
+					return stream.Read(buffer, offset, count);
+				}
+				catch (Exception ex)
+				{
+					Handler?.MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "Error invoking .NET method from JavaScript: {ErrorMessage}", ex.Message);
+					throw;
+				}
+			}
+
+			public override void Flush() => throw new NotSupportedException();
+
+			public override Task FlushAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
 
 			public override bool CanRead => !_isDisposed;
 
@@ -212,94 +270,34 @@ namespace Microsoft.Maui.Platform
 				set => throw new NotSupportedException();
 			}
 
-			public InvokeAsyncStream(Task<byte[]?> invokeTask, HybridWebViewHandler handler)
-			{
-				_task = invokeTask;
-				_handler = new(handler);
+			public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
 
-				_pipe = new Pipe(new PipeOptions(
-					pauseWriterThreshold: PauseThreshold,
-					resumeWriterThreshold: ResumeThreshold,
-					useSynchronizationContext: false));
+			public override void SetLength(long value) => throw new NotSupportedException();
 
-				InvokeMethodAndWriteBytes();
-			}
-
-			private async void InvokeMethodAndWriteBytes()
-			{
-				try
-				{
-					var data = await _task;
-
-					// the stream or handler may be disposed after the method completes
-					ObjectDisposedException.ThrowIf(_isDisposed, nameof(InvokeAsyncStream));
-					ArgumentNullException.ThrowIfNull(Handler, nameof(Handler));
-
-					// copy the data into the pipe
-					if (data is not null && data.Length > 0)
-					{
-						var memory = _pipe.Writer.GetMemory(data.Length);
-						data.CopyTo(memory);
-						_pipe.Writer.Advance(data.Length);
-					}
-
-					_pipe.Writer.Complete();
-				}
-				catch (Exception ex)
-				{
-					Handler?.MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "Error invoking .NET method from JavaScript: {ErrorMessage}", ex.Message);
-
-					_pipe.Writer.Complete(ex);
-				}
-			}
-
-			public override void Flush() =>
-				throw new NotSupportedException();
-
-			public override int Read(byte[] buffer, int offset, int count)
-			{
-				ArgumentNullException.ThrowIfNull(buffer, nameof(buffer));
-				ArgumentOutOfRangeException.ThrowIfNegative(offset, nameof(offset));
-				ArgumentOutOfRangeException.ThrowIfNegative(count, nameof(count));
-				ArgumentOutOfRangeException.ThrowIfGreaterThan(offset + count, buffer.Length, nameof(count));
-				ObjectDisposedException.ThrowIf(_isDisposed, nameof(InvokeAsyncStream));
-
-				// this is a blocking read, so we need to wait for data to be available
-				var readResult = _pipe.Reader.ReadAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
-				var slice = readResult.Buffer.Slice(0, Math.Min(count, readResult.Buffer.Length));
-
-				var bytesRead = 0;
-				foreach (var span in slice)
-				{
-					var bytesToCopy = Math.Min(count, span.Length);
-					span.CopyTo(new Memory<byte>(buffer, offset, bytesToCopy));
-					offset += bytesToCopy;
-					count -= bytesToCopy;
-					bytesRead += bytesToCopy;
-				}
-
-				_pipe.Reader.AdvanceTo(slice.End);
-
-				return bytesRead;
-			}
-
-			public override long Seek(long offset, SeekOrigin origin) =>
-				throw new NotSupportedException();
-
-			public override void SetLength(long value) =>
-				throw new NotSupportedException();
-
-			public override void Write(byte[] buffer, int offset, int count) =>
-				throw new NotSupportedException();
+			public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
 
 			protected override void Dispose(bool disposing)
 			{
+				if (_isDisposed)
+					return;
+
+				if (disposing)
+					_stream?.Dispose();
+
 				_isDisposed = true;
-
-				_pipe.Writer.Complete();
-				_pipe.Reader.Complete();
-
 				base.Dispose(disposing);
+			}
+
+			public override async ValueTask DisposeAsync()
+			{
+				if (_isDisposed)
+					return;
+
+				if (_stream != null)
+					await _stream.DisposeAsync().ConfigureAwait(false);
+
+				_isDisposed = true;
+				await base.DisposeAsync().ConfigureAwait(false);
 			}
 		}
 	}

@@ -3,11 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -474,34 +477,20 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(ex.InnerException.StackTrace);
 		}
 
-#if !ANDROID // Custom schemes are not supported on Android
-#if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
 		[Fact]
-		public Task RequestsCanBeInterceptedAndCustomDataReturnedForCustomSchemes() =>
+		public Task RequestsCanBeInterceptedAndCustomDataReturned() =>
 			RunTest(async (hybridWebView) =>
 			{
 				hybridWebView.WebResourceRequested += (sender, e) =>
 				{
-					if (new Uri("app://echoservice/").IsBaseOf(e.RequestUri))
+					if (e.Uri.Host == "0.0.0.1")
 					{
-						// 1. Get the request from the platform args
-#if WINDOWS
-						var request = e.PlatformArgs.Request;
-						var name = request.Headers.GetHeader("X-Echo-Name");
-#elif IOS || MACCATALYST
-						var request = e.PlatformArgs.Request;
-						var name = request.Headers["X-Echo-Name"].ToString();
-#endif
-
-						// 2. Create the response data
-						var response = new EchoResponseObject
-						{
-							message = $"Hello {name}",
-						};
+						// 1. Create the response data
+						var response = new EchoResponseObject { message = "Hello real endpoint" };
 						var responseData = JsonSerializer.SerializeToUtf8Bytes(response);
 						var responseLength = responseData.Length.ToString(CultureInfo.InvariantCulture);
 
-						// 3. Create the response
+						// 2. Create the response
 #if WINDOWS
 						e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
 							new MemoryStream(responseData).AsRandomAccessStream(),
@@ -514,87 +503,138 @@ namespace Microsoft.Maui.DeviceTests
 #elif IOS || MACCATALYST
 						var task = e.PlatformArgs.UrlSchemeTask;
 						task.DidReceiveResponse(new Foundation.NSHttpUrlResponse(
-							request.Url,
+							e.PlatformArgs.Request.Url,
 							200,
 							"HTTP/1.1",
 							new Foundation.NSMutableDictionary<Foundation.NSString, Foundation.NSString>
 							{
 								[(Foundation.NSString)"Content-Type"] = (Foundation.NSString)"application/json",
 								[(Foundation.NSString)"Content-Length"] = (Foundation.NSString)responseLength,
-								[(Foundation.NSString)"Access-Control-Allow-Origin"] = (Foundation.NSString)"*",
-								[(Foundation.NSString)"Access-Control-Allow-Headers"] = (Foundation.NSString)"*",
-								[(Foundation.NSString)"Access-Control-Allow-Methods"] = (Foundation.NSString)"GET",
 							}));
-
 						task.DidReceiveData(Foundation.NSData.FromArray(responseData));
 						task.DidFinish();
+#elif ANDROID
+						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
+							"application/json",
+							"UTF-8",
+							200,
+							"OK",
+							new Dictionary<string, string>
+							{
+								["Content-Length"] = responseLength,
+							},
+							new MemoryStream(responseData));
 #endif
 
+						// 3. Let the app know it is done
 						e.Handled = true;
 					}
 				};
 
 				var responseObject = await hybridWebView.InvokeJavaScriptAsync<EchoResponseObject>(
-					"RequestsWithCustomSchemeCanBeIntercepted",
+					"RequestsWithAppUriCanBeIntercepted",
 					HybridWebViewTestContext.Default.EchoResponseObject);
 
 				Assert.NotNull(responseObject);
-				Assert.Equal("Hello Matthew", responseObject.message);
+				Assert.Equal("Hello real endpoint", responseObject.message);
 			});
-#endif
-#endif
 
-#if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
 		[Fact]
-		public Task RequestsCanBeInterceptedAndCustomDataReturned() =>
+		public Task RequestsCanBeInterceptedAndAsyncCustomDataReturned() =>
+			RunTest(async (hybridWebView) =>
+			{
+#pragma warning disable CS1998 // Android does not allow awaiting tasks in the event
+				hybridWebView.WebResourceRequested += async (sender, e) =>
+#pragma warning restore CS1998
+				{
+					if (e.Uri.Host == "0.0.0.1")
+					{
+						// Let the app know that we are handing it... sometime
+						e.Handled = true;
+
+#if WINDOWS
+						// Windows uses a deferral to let the webview know that we are going to be async
+						using var deferral = e.PlatformArgs.RequestEventArgs.GetDeferral();
+						var data = await GetDataAsync();
+						e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
+							data.AsRandomAccessStream(),
+							200,
+							"OK",
+							$"""
+							Content-Type: application/json
+							""");
+						await Task.Delay(1_000);
+						deferral.Complete();
+#elif IOS || MACCATALYST
+						// iOS and MacCatalyst will just wait until DidFinish is called
+						var task = e.PlatformArgs.UrlSchemeTask;
+						await Task.Delay(1_000);
+						task.DidReceiveResponse(new Foundation.NSHttpUrlResponse(
+							e.PlatformArgs.Request.Url,
+							200,
+							"HTTP/1.1",
+							new Foundation.NSMutableDictionary<Foundation.NSString, Foundation.NSString>
+							{
+								[(Foundation.NSString)"Content-Type"] = (Foundation.NSString)"application/json",
+							}));
+						var data = await GetDataAsync();
+						task.DidReceiveData(Foundation.NSData.FromStream(data));
+						await Task.Delay(1_000);
+						task.DidFinish();
+#elif ANDROID
+						// Android requires that we return immediately, even if the data is coming later
+						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
+							"application/json",
+							"UTF-8",
+							200,
+							"OK",
+							new Dictionary<string, string>
+							{
+							},
+							new AsyncStream(GetDataAsync()));
+#endif
+					}
+				};
+
+				var responseObject = await hybridWebView.InvokeJavaScriptAsync<EchoResponseObject>(
+					"RequestsWithAppUriCanBeIntercepted",
+					HybridWebViewTestContext.Default.EchoResponseObject);
+
+				Assert.NotNull(responseObject);
+				Assert.Equal("Hello real endpoint", responseObject.message);
+
+				static async Task<Stream> GetDataAsync()
+				{
+					var response = new EchoResponseObject { message = "Hello real endpoint" };
+					
+					var ms = new MemoryStream();
+
+					await Task.Delay(1000);
+					await JsonSerializer.SerializeAsync(ms, response);
+					await Task.Delay(1000);
+
+					return ms;
+				}
+			});
+
+		[Theory]
+#if !ANDROID // Custom schemes are not supported on Android
+#if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
+		[InlineData("app://echoservice/", "RequestsWithCustomSchemeCanBeIntercepted")]
+#endif
+#endif
+#if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
+		[InlineData("https://echo.free.beeceptor.com/", "RequestsCanBeIntercepted")]
+#endif
+		public Task RequestsCanBeInterceptedAndCustomDataReturnedForDifferentHosts(string uriBase, string function) =>
 			RunTest(async (hybridWebView) =>
 			{
 				hybridWebView.WebResourceRequested += (sender, e) =>
 				{
-					if (new Uri("https://echo.free.beeceptor.com").IsBaseOf(e.RequestUri))
+					if (new Uri(uriBase).IsBaseOf(e.Uri) && !e.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
 					{
-						// Handle OPTIONS requests
-						if (e.PlatformArgs.Request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
-						{
-#if WINDOWS
-							e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
-								new global::Windows.Storage.Streams.InMemoryRandomAccessStream(),
-								200,
-								"OK",
-								$"""
-								Content-Type: text/plain
-								Content-Length: 0
-								Access-Control-Allow-Origin: *
-								Access-Control-Allow-Headers: *
-								Access-Control-Allow-Methods: GET
-								""");
-#elif ANDROID
-							e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
-								"text/plain",
-								"UTF-8",
-								200,
-								"OK",
-								new Dictionary<string, string>
-								{
-									["Access-Control-Allow-Origin"] = "*",
-									["Access-Control-Allow-Headers"] = "*",
-									["Access-Control-Allow-Methods"] = "GET",
-								},
-								new MemoryStream());
-#endif
-
-							e.Handled = true;
-							return;
-						}
-
 						// 1. Get the request from the platform args
-#if WINDOWS
-						var request = e.PlatformArgs.Request;
-						var name = request.Headers.GetHeader("X-Echo-Name");
-#elif ANDROID
-						var request = e.PlatformArgs.Request;
-						var name = request.RequestHeaders["X-Echo-Name"];
-#endif
+						var name = e.Headers["X-Echo-Name"];
 
 						// 2. Create the response data
 						var response = new EchoResponseObject
@@ -617,6 +657,22 @@ namespace Microsoft.Maui.DeviceTests
 							Access-Control-Allow-Headers: *
 							Access-Control-Allow-Methods: GET
 							""");
+#elif IOS || MACCATALYST
+						var task = e.PlatformArgs.UrlSchemeTask;
+						task.DidReceiveResponse(new Foundation.NSHttpUrlResponse(
+							e.PlatformArgs.Request.Url,
+							200,
+							"HTTP/1.1",
+							new Foundation.NSMutableDictionary<Foundation.NSString, Foundation.NSString>
+							{
+								[(Foundation.NSString)"Content-Type"] = (Foundation.NSString)"application/json",
+								[(Foundation.NSString)"Content-Length"] = (Foundation.NSString)responseLength,
+								[(Foundation.NSString)"Access-Control-Allow-Origin"] = (Foundation.NSString)"*",
+								[(Foundation.NSString)"Access-Control-Allow-Headers"] = (Foundation.NSString)"*",
+								[(Foundation.NSString)"Access-Control-Allow-Methods"] = (Foundation.NSString)"GET",
+							}));
+						task.DidReceiveData(Foundation.NSData.FromArray(responseData));
+						task.DidFinish();
 #elif ANDROID
 						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
 							"application/json",
@@ -638,63 +694,34 @@ namespace Microsoft.Maui.DeviceTests
 				};
 
 				var responseObject = await hybridWebView.InvokeJavaScriptAsync<EchoResponseObject>(
-					"RequestsCanBeIntercepted",
+					function,
 					HybridWebViewTestContext.Default.EchoResponseObject);
 
 				Assert.NotNull(responseObject);
 				Assert.Equal("Hello Matthew", responseObject.message);
 			});
-#endif
 
+		[Theory]
+#if !ANDROID // Custom schemes are not supported on Android
+#if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
+		[InlineData("app://echoservice/", "RequestsWithCustomSchemeCanBeIntercepted")]
+#endif
+#endif
 #if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
-		[Fact]
-		public Task RequestsCanBeInterceptedAndHeadersAdded() =>
+		[InlineData("https://echo.free.beeceptor.com/", "RequestsCanBeIntercepted")]
+#endif
+		public Task RequestsCanBeInterceptedAndHeadersAddedForDifferentHosts(string uriBase, string function) =>
 			RunTest(async (hybridWebView) =>
 			{
 				const string ExpectedHeaderValue = "My Header Value";
 
 				hybridWebView.WebResourceRequested += (sender, e) =>
 				{
-					if (new Uri("https://echo.free.beeceptor.com").IsBaseOf(e.RequestUri))
+					if (new Uri(uriBase).IsBaseOf(e.Uri))
 					{
-						// Handle OPTIONS requests
-						if (e.PlatformArgs.Request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
-						{
-#if WINDOWS
-							e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
-								new global::Windows.Storage.Streams.InMemoryRandomAccessStream(),
-								200,
-								"OK",
-								$"""
-								Content-Type: text/plain
-								Content-Length: 0
-								Access-Control-Allow-Origin: *
-								Access-Control-Allow-Headers: *
-								Access-Control-Allow-Methods: GET
-								""");
-#elif ANDROID
-							e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
-								"text/plain",
-								"UTF-8",
-								200,
-								"OK",
-								new Dictionary<string, string>
-								{
-									["Access-Control-Allow-Origin"] = "*",
-									["Access-Control-Allow-Headers"] = "*",
-									["Access-Control-Allow-Methods"] = "GET",
-								},
-								new MemoryStream());
-#endif
-
-							e.Handled = true;
-							return;
-						}
-
 #if WINDOWS
 						// Add the desired header for Windows by modifying the request
-						var request = e.PlatformArgs.Request;
-						request.Headers.SetHeader("X-Request-Header", ExpectedHeaderValue);
+						e.PlatformArgs.Request.Headers.SetHeader("X-Request-Header", ExpectedHeaderValue);
 #elif ANDROID
 						// Intercept the request and add the desired header to a new request
 						var request = e.PlatformArgs.Request;
@@ -730,7 +757,7 @@ namespace Microsoft.Maui.DeviceTests
 				};
 
 				var responseObject = await hybridWebView.InvokeJavaScriptAsync<ResponseObject>(
-					"RequestsCanBeIntercepted",
+					function,
 					HybridWebViewTestContext.Default.ResponseObject);
 
 				Assert.NotNull(responseObject);
@@ -738,71 +765,44 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(responseObject.headers.TryGetValue("X-Request-Header", out var actualHeaderValue));
 				Assert.Equal(ExpectedHeaderValue, actualHeaderValue);
 			});
-#endif
 
+		[Theory]
 #if !ANDROID // Custom schemes are not supported on Android
 #if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
-		[Fact]
-		public Task RequestsCanBeInterceptedAndCancelledForCustomSchemes() =>
+		[InlineData("app://echoservice/", "RequestsWithCustomSchemeCanBeIntercepted")]
+#endif
+#endif
+#if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
+		[InlineData("https://echo.free.beeceptor.com/", "RequestsCanBeIntercepted")]
+#endif
+		public Task RequestsCanBeInterceptedAndCancelledForDifferentHosts(string uriBase, string function) =>
 			RunTest(async (hybridWebView) =>
 			{
 				hybridWebView.WebResourceRequested += (sender, e) =>
 				{
-					if (new Uri("app://echoservice/").IsBaseOf(e.RequestUri))
+					if (new Uri(uriBase).IsBaseOf(e.Uri))
 					{
 #if WINDOWS
 						e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
-							new global::Windows.Storage.Streams.InMemoryRandomAccessStream(),
+							null,
 							403,
 							"Forbidden",
-							"Content-Type: text/plain");
+							null);
 #elif IOS || MACCATALYST
 						e.PlatformArgs.UrlSchemeTask.DidReceiveResponse(new Foundation.NSHttpUrlResponse(
 							e.PlatformArgs.Request.Url,
 							403,
 							"HTTP/1.1",
-							new Foundation.NSMutableDictionary<Foundation.NSString, Foundation.NSString>
-							{
-								[(Foundation.NSString)"Content-Type"] = (Foundation.NSString)"text/plain",
-							}));
+							null));
 						e.PlatformArgs.UrlSchemeTask.DidFinish();
-#endif
-
-						e.Handled = true;
-					}
-				};
-
-				await Assert.ThrowsAsync<HybridWebViewInvokeJavaScriptException>(() =>
-					hybridWebView.InvokeJavaScriptAsync<ResponseObject>(
-						"RequestsWithCustomSchemeCanBeIntercepted",
-						HybridWebViewTestContext.Default.ResponseObject));
-			});
-#endif
-#endif
-
-#if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
-		[Fact]
-		public Task RequestsCanBeInterceptedAndCancelled() =>
-			RunTest(async (hybridWebView) =>
-			{
-				hybridWebView.WebResourceRequested += (sender, e) =>
-				{
-					if (new Uri("https://echo.free.beeceptor.com").IsBaseOf(e.RequestUri))
-					{
-#if WINDOWS
-						e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
-							new global::Windows.Storage.Streams.InMemoryRandomAccessStream(),
-							403,
-							"Forbidden",
-							"Content-Type: text/plain");
 #elif ANDROID
 						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
-							"application/json",
-							"UTF-8",
+							null,
+							null,
 							403,
 							"Forbidden",
-							new Dictionary<string, string>(),
-							new MemoryStream());
+							null,
+							null);
 #endif
 
 						e.Handled = true;
@@ -811,10 +811,9 @@ namespace Microsoft.Maui.DeviceTests
 
 				await Assert.ThrowsAsync<HybridWebViewInvokeJavaScriptException>(() =>
 					hybridWebView.InvokeJavaScriptAsync<ResponseObject>(
-						"RequestsCanBeIntercepted",
+						function,
 						HybridWebViewTestContext.Default.ResponseObject));
 			});
-#endif
 
 		async Task<Exception> RunExceptionTest(string method, int errorType)
 		{
@@ -1078,6 +1077,89 @@ namespace Microsoft.Maui.DeviceTests
 					var controlValue = await hybridWebView.EvaluateJavaScriptAsync("document.getElementById('status').innerText");
 					return !string.IsNullOrEmpty(controlValue);
 				}, createExceptionWithTimeoutMS: (int timeoutInMS) => Task.FromResult(new Exception($"Waited {timeoutInMS}ms but couldn't get status element to have a non-empty value.")));
+			}
+		}
+
+		class AsyncStream : Stream
+		{
+			readonly Task<Stream> _streamTask;
+			Stream _stream;
+			bool _isDisposed;
+
+			public AsyncStream(Task<Stream> streamTask)
+			{
+				_streamTask = streamTask ?? throw new ArgumentNullException(nameof(streamTask));
+			}
+
+			async Task<Stream> GetStreamAsync(CancellationToken cancellationToken = default)
+			{
+				ObjectDisposedException.ThrowIf(_isDisposed, nameof(AsyncStream));
+
+				if (_stream != null)
+					return _stream;
+
+				_stream = await _streamTask.ConfigureAwait(false);
+				return _stream;
+			}
+
+			public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+			{
+				var stream = await GetStreamAsync(cancellationToken).ConfigureAwait(false);
+				return await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+			}
+
+			public override int Read(byte[] buffer, int offset, int count)
+			{
+				var stream = GetStreamAsync().GetAwaiter().GetResult();
+				return stream.Read(buffer, offset, count);
+			}
+
+			public override void Flush() => throw new NotSupportedException();
+
+			public override Task FlushAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
+
+			public override bool CanRead => !_isDisposed;
+
+			public override bool CanSeek => false;
+
+			public override bool CanWrite => false;
+
+			public override long Length => throw new NotSupportedException();
+
+			public override long Position
+			{
+				get => throw new NotSupportedException();
+				set => throw new NotSupportedException();
+			}
+
+			public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+			public override void SetLength(long value) => throw new NotSupportedException();
+
+			public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+			protected override void Dispose(bool disposing)
+			{
+				if (_isDisposed)
+					return;
+
+				if (disposing)
+					_stream?.Dispose();
+
+				_isDisposed = true;
+				base.Dispose(disposing);
+			}
+
+			public override async ValueTask DisposeAsync()
+			{
+				if (_isDisposed)
+					return;
+
+				if (_stream != null)
+					await _stream.DisposeAsync().ConfigureAwait(false);
+
+				_isDisposed = true;
+				await base.DisposeAsync().ConfigureAwait(false);
 			}
 		}
 	}

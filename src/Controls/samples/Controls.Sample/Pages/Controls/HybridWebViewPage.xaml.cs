@@ -15,19 +15,6 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 
 			hwv.SetInvokeJavaScriptTarget<DotNetMethods>(new DotNetMethods(this));
-
-			hwv.WebResourceRequested += (sender, e) =>
-			{
-#if WINDOWS
-				if (e.PlatformArgs.WebResourceRequestedEventArgs.Request.Uri.Contains("badthing", StringComparison.InvariantCultureIgnoreCase))
-				{
-					e.Cancel = true;
-					return;
-				}
-
-				e.PlatformArgs.WebResourceRequestedEventArgs.Request.Headers.SetHeader("X-Request-Header", "ExpectedHeaderValue");
-#endif
-			};
 		}
 
 		int count;

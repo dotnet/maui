@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Handlers
 
 		private async void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
-			// 1. First check if the app wants to modify or override the request
+			// 1. First check if the app wants to modify or override the request.
 			{
 				// 1.a. First, create the event args
 				var platformArgs = new WebResourceRequestedEventArgs(sender, eventArgs);
@@ -119,7 +119,8 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			// 2. Then assume the request is for a local resource
+			// 2. If this is an app request, then assume the request is for a local resource.
+			if (new Uri(eventArgs.Request.Uri) is Uri uri && AppOriginUri.IsBaseOf(uri))
 			{
 				// 2.a. Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
 				using var deferral = eventArgs.GetDeferral();
@@ -143,6 +144,10 @@ namespace Microsoft.Maui.Handlers
 				// 2.d. Notify WebView2 that the deferred (async) operation is complete and we set a response.
 				deferral.Complete();
 			}
+
+			// 3. If the request is not handled by the app nor is it a local source, then we let the WebView2
+			//    handle the request as it would normally do. This means that it will try to load the resource
+			//    from the internet or from the local cache.
 		}
 
 		private async Task<(IRandomAccessStream Stream, string ContentType, int StatusCode, string Reason)> GetResponseStreamAsync(string url)
