@@ -10,6 +10,7 @@
     <Nullable>enable</Nullable>
     <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
     <DisableArcadeTestFramework>true</DisableArcadeTestFramework>
+    <NoWarn>$(NoWarn);XC0022;XC0023</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

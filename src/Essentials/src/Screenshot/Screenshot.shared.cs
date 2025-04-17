@@ -3,6 +3,10 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
+#if ANDROID
+using Android.App;
+using Android.Views;
+#endif
 
 namespace Microsoft.Maui.Media
 {
@@ -34,14 +38,14 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="activity">The activity to capture.</param>
 		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
-		Task<IScreenshotResult> CaptureAsync(Android.App.Activity activity);
+		Task<IScreenshotResult> CaptureAsync(Activity activity);
 
 		/// <summary>
 		/// Captures a screenshot of the specified view.
 		/// </summary>
 		/// <param name="view">The view to capture.</param>
 		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
-		Task<IScreenshotResult?> CaptureAsync(Android.Views.View view);
+		Task<IScreenshotResult?> CaptureAsync(View view);
 #elif IOS || MACCATALYST
 		/// <summary>
 		/// Captures a screenshot of the specified window.
@@ -185,7 +189,7 @@ namespace Microsoft.Maui.Media
 		/// <param name="screenshot">The object this method is invoked on.</param>
 		/// <param name="activity">The activity to capture.</param>
 		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Android.App.Activity activity) =>
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Activity activity) =>
 			screenshot.AsPlatform().CaptureAsync(activity);
 
 		/// <summary>
@@ -194,7 +198,7 @@ namespace Microsoft.Maui.Media
 		/// <param name="screenshot">The object this method is invoked on.</param>
 		/// <param name="view">The view to capture.</param>
 		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
-		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, Android.Views.View view) =>
+		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, View view) =>
 			screenshot.AsPlatform().CaptureAsync(view);
 
 #elif IOS || MACCATALYST
