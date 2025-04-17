@@ -42,6 +42,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal bool MeasureInvalidated => _measureInvalidated;
 
+		// Flags changes confined to the header/footer, preventing unnecessary recycling and revalidation of templated cells.
+		internal bool isHeaderOrFooterChanged = false;
+
 		public DataTemplate CurrentTemplate
 		{
 			get => _currentTemplate is not null && _currentTemplate.TryGetTarget(out var target) ? target : null;
@@ -144,8 +147,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
 		{
-			var virtualView = PlatformHandler?.VirtualView as View ?? 
-			                  template.CreateContent(bindingContext, itemsView) as View;
+			View virtualView = null;
+			if (CurrentTemplate != template)
+			{
+				CurrentTemplate = template;
+				virtualView = template.CreateContent(bindingContext, itemsView) as View;
+			}
+			else if (PlatformHandler?.VirtualView is View existingView)
+			{
+				virtualView = existingView;
+			}
 
 			BindVirtualView(virtualView, bindingContext, itemsView, false);
 		}
@@ -157,6 +168,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		void BindVirtualView(View virtualView, object bindingContext, ItemsView itemsView, bool needsContainer)
 		{
+			var oldElement = PlatformHandler?.VirtualView as View;
+
+			if (oldElement is not null && oldElement != virtualView && isHeaderOrFooterChanged)
+			{
+				oldElement.BindingContext = null;
+				itemsView.RemoveLogicalChild(oldElement);
+				PlatformHandler = null;
+				PlatformView?.RemoveFromSuperview();
+			}
+
 			if (PlatformHandler is null && virtualView is not null)
 			{
 				var mauiContext = itemsView.FindMauiContext()!;

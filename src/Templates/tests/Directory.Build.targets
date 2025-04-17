@@ -4,4 +4,7 @@
     <Error Text="The build did not make use of the BuildTools package but instead ran the fallback target '_GetMakeAppxToolPath' to try and locate the tool." />
   </Target>
 
+  <!-- we flip things around in the templates -->
+  <Target Name="VerifyLaunchSettings" />
+
 </Project>
