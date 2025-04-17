@@ -785,18 +785,18 @@ namespace Microsoft.Maui.DeviceTests
 
 						// Intercept the request and add the desired header to a new request
 						var request = e.PlatformArgs.Request;
-						var headers = new Dictionary<string, string>(request.RequestHeaders)
-						{
-							["X-Request-Header"] = ExpectedHeaderValue
-						};
 
-						// Forward the request to the remote server with the modified headers
+						// Copy the request
 						var url = new Java.Net.URL(request.Url.ToString());
 						var connection = (Java.Net.HttpURLConnection)url.OpenConnection();
-						foreach (var header in headers)
+						connection.RequestMethod = request.Method;
+						foreach (var header in request.RequestHeaders)
 						{
 							connection.SetRequestProperty(header.Key, header.Value);
 						}
+
+						// Add our custom header
+						connection.SetRequestProperty("X-Request-Header", ExpectedHeaderValue);
 
 						// Set the response property
 						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(

@@ -130,7 +130,6 @@ namespace Microsoft.Maui.Handlers
 		private class SchemeHandler : NSObject, IWKUrlSchemeHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
-			private readonly Lazy<byte[]> _404MessageBytes = new(() => Encoding.UTF8.GetBytes("Resource not found (404)"));
 
 			public SchemeHandler(HybridWebViewHandler webViewHandler)
 			{
@@ -151,7 +150,7 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
-				// 1. First check if the app wants to modify or override the request
+				// 1. First check if the app wants to modify or override the request.
 				{
 					// 1.a. First, create the event args
 					var platformArgs = new WebResourceRequestedEventArgs(webView, urlSchemeTask);
@@ -166,37 +165,49 @@ namespace Microsoft.Maui.Handlers
 					}
 				}
 
-				// 2. Then assume the request is for a local resource
+				// 2. If this is an app request, then assume the request is for a local resource.
+				var url = urlSchemeTask.Request.Url.AbsoluteString ?? "";
+				if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
 				{
 					// 2.a. Check if the request is for a local resource
-					var url = urlSchemeTask.Request.Url.AbsoluteString ?? "";
 					var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url);
 
 					// 2.b. Return the response header
-					using var dic = new NSMutableDictionary<NSString, NSString>
+					using var dic = new NSMutableDictionary<NSString, NSString>();
+					if (contentType is not null)
 					{
-						[(NSString)"Content-Length"] = (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture),
-						[(NSString)"Content-Type"] = (NSString)contentType,
+						dic[(NSString)"Content-Type"] = (NSString)contentType;
+					}
+					if (bytes?.Length > 0)
+					{
 						// Disable local caching which would otherwise prevent user scripts from executing correctly.
-						[(NSString)"Cache-Control"] = (NSString)"no-cache, max-age=0, must-revalidate, no-store",
-					};
+						dic[(NSString)"Cache-Control"] = (NSString)"no-cache, max-age=0, must-revalidate, no-store";
+						dic[(NSString)"Content-Length"] = (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture);
+					}
 
 					using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
 					urlSchemeTask.DidReceiveResponse(response);
 
 					// 2.c. Return the body
-					urlSchemeTask.DidReceiveData(NSData.FromArray(bytes));
+					if (bytes?.Length > 0)
+					{
+						urlSchemeTask.DidReceiveData(NSData.FromArray(bytes));
+					}
 
 					// 2.d. Finish the task
 					urlSchemeTask.DidFinish();
 				}
+
+				// 3. If the request is not handled by the app nor is it a local source, then we let the WKWebView
+				//    handle the request as it would normally do. This means that it will try to load the resource
+				//    from the internet or from the local cache.
 			}
 
-			private async Task<(byte[] ResponseBytes, string ContentType, int StatusCode)> GetResponseBytesAsync(string? url)
+			private async Task<(byte[]? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string? url)
 			{
 				if (Handler is null)
 				{
-					return (_404MessageBytes.Value, ContentType: "text/plain", StatusCode: 404);
+					return (null, ContentType: null, StatusCode: 404);
 				}
 
 				var fullUrl = url;
@@ -245,7 +256,7 @@ namespace Microsoft.Maui.Handlers
 					}
 				}
 
-				return (_404MessageBytes.Value, ContentType: "text/plain", StatusCode: 404);
+				return (null, ContentType: null, StatusCode: 404);
 			}
 
 			[Export("webView:stopURLSchemeTask:")]

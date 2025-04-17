@@ -130,12 +130,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// 3.b. Otherwise, return a 404
-			var notFoundContent = "Resource not found (404)";
-
-			var notFoundByteArray = Encoding.UTF8.GetBytes(notFoundContent);
-			var notFoundContentStream = new MemoryStream(notFoundByteArray);
-
-			return new WebResourceResponse("text/plain", "UTF-8", 404, "Not Found", GetHeaders("text/plain"), notFoundContentStream);
+			return new WebResourceResponse(null, "UTF-8", 404, "Not Found", null, null);
 		}
 
 		private Stream? PlatformOpenAppPackageFile(string filename)

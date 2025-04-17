@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Handlers
 	public partial class HybridWebViewHandler : ViewHandler<IHybridWebView, WebView2>
 	{
 		private readonly HybridWebView2Proxy _proxy = new();
-		private readonly Lazy<IBuffer> _404MessageBuffer = new(() => Encoding.UTF8.GetBytes("Resource not found (404)").AsBuffer());
 
 		protected override WebView2 CreatePlatformView()
 		{
@@ -127,21 +126,35 @@ namespace Microsoft.Maui.Handlers
 
 				// 2.b. Check if the request is for a local resource
 				var (stream, contentType, statusCode, reason) = await GetResponseStreamAsync(eventArgs.Request.Uri);
-				var contentLength = stream?.Size ?? 0;
-				var headers =
-					$"""
-					Content-Type: {contentType}
-					Content-Length: {contentLength}
-					""";
 
-				// 2.c. If something was found, return the content
+				// 2.c. Create the response header
+				string? headers = null;
+				if (stream?.Size > 0)
+				{
+					var contentLength = stream?.Size ?? 0;
+					headers ??= "";
+					headers +=
+						$"""
+						Content-Length: {contentLength}
+						""";
+				}
+				if (contentType is not null)
+				{
+					headers ??= "";
+					headers +=
+						$"""
+						Content-Type: {contentType}
+						""";
+				}
+
+				// 2.d. If something was found, return the content
 				eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
 					Content: stream,
 					StatusCode: statusCode,
 					ReasonPhrase: reason,
 					Headers: headers);
 
-				// 2.d. Notify WebView2 that the deferred (async) operation is complete and we set a response.
+				// 2.e. Notify WebView2 that the deferred (async) operation is complete and we set a response.
 				deferral.Complete();
 			}
 
@@ -150,7 +163,7 @@ namespace Microsoft.Maui.Handlers
 			//    from the internet or from the local cache.
 		}
 
-		private async Task<(IRandomAccessStream Stream, string ContentType, int StatusCode, string Reason)> GetResponseStreamAsync(string url)
+		private async Task<(IRandomAccessStream? Stream, string? ContentType, int StatusCode, string Reason)> GetResponseStreamAsync(string url)
 		{
 			var requestUri = HybridWebViewQueryStringHelper.RemovePossibleQueryString(url);
 
@@ -200,8 +213,7 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			// 3.b. Otherwise, return a 404
-			var ras404 = await CopyContentToRandomAccessStreamAsync(_404MessageBuffer.Value);
-			return (Stream: ras404, ContentType: "text/plain", StatusCode: 404, Reason: "Not Found");
+			return (Stream: null, ContentType: null, StatusCode: 404, Reason: "Not Found");
 		}
 
 		static async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
