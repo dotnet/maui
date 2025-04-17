@@ -7,7 +7,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.ActivityIndicator)]
 	public partial class ActivityIndicatorHandlerTests : CoreHandlerTestBase<ActivityIndicatorHandler, ActivityIndicatorStub>
 	{
-
+#if !WINDOWS // On Windows, the platform control will return IsActive as true even when the control is not visible.
 		[Theory(DisplayName = "IsRunning Should Respect IsVisible")]
 		[InlineData(true,true)]
 		[InlineData(true,false)]
@@ -35,6 +35,7 @@ namespace Microsoft.Maui.DeviceTests
         		Assert.False(isAnimating);
 
 		}
+#endif
 
 		[Theory(DisplayName = "IsRunning Initializes Correctly")]
 		[InlineData(true)]
