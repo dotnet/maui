@@ -143,7 +143,8 @@ namespace Microsoft.Maui.Controls.Platform
 					Input = arguments.InitialValue ?? string.Empty,
 					Placeholder = arguments.Placeholder ?? string.Empty,
 					MaxLength = arguments.MaxLength >= 0 ? arguments.MaxLength : 0,
-					InputScope = arguments.Keyboard.ToInputScope()
+					InputScope = arguments.Keyboard.ToInputScope(),
+					DefaultButton = ContentDialogButton.Primary
 				};
 
 				if (arguments.Cancel != null)
