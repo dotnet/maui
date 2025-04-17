@@ -22,9 +22,9 @@ namespace Microsoft.Maui.Resizetizer
 				// This blocks on AsyncTask.Execute, until Complete is called
 				return base.Execute();
 			}
-			catch (Exception exc)
+			catch (Exception ex)
 			{
-				LogCodedError("MAUI0000", exc.ToString());
+				LogCodedError("MAUIR0003", "General Resource Processing", $"Unknown error occurred while processing resources. {ex.ToString()}");
 				return false;
 			}
 			finally

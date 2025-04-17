@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Resizetizer
 			}
 			catch (Exception ex)
 			{
-				Log.LogError(null, "MAUI0000", null, null, 0, 0, 0, 0, ex.ToString());
+				Log.LogError("Apple Resource Processing", "MAUIR0005", null, null, 0, 0, 0, 0, $"Error occurred in processing Apple-specific storyboard resources. {ex.ToString()}");
 				return false;
 			}
 		}
