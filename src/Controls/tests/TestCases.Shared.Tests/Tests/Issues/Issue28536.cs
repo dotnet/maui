@@ -18,6 +18,7 @@ public class Issue28536 : _IssuesUITest
 	{
 		App.WaitForElement("VisualStatePicker");
 		App.Tap(Switch);
+		App.WaitForElement("NavigateButton");
 		App.Tap("NavigateButton");
 		App.WaitForElement("Next Page");
 		App.TapBackArrow();
