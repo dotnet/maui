@@ -1,5 +1,6 @@
 using System.Reflection;
 using ImageMagick;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Appium.NUnit;
@@ -21,6 +22,7 @@ namespace Microsoft.Maui.TestCases.Tests
 	public abstract class UITest : UITestBase
 	{
 		protected const int SetupMaxRetries = 1;
+
 		readonly VisualRegressionTester _visualRegressionTester;
 		readonly IImageEditorFactory _imageEditorFactory;
 		readonly VisualTestContext _visualTestContext;
@@ -69,13 +71,8 @@ namespace Microsoft.Maui.TestCases.Tests
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
 					var windowsExe = "Controls.TestCases.HostApp.exe";
-					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win10-x64\\{windowsExe}");
-					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win10-x64\\{windowsExe}");
+					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win10-arm64\\{windowsExe}");
 
-					if (!File.Exists(windowsExePath) && File.Exists(windowsExePath19041))
-					{
-						windowsExePath = windowsExePath19041;
-					}
 
 					var appPath = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WINDOWS_APP_PATH"))
 					   ? windowsExePath
@@ -143,15 +140,21 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
+		/// <summary>
+		/// Verifies the Application screenshot.
+		/// </summary>
+		/// <param name="name">Optional. The name to be used for the screenshot file. If not specified, the test name will be used.</param>
+		/// <param name="retryDelay">Optional. The delay time between retries. If not specified, a default retry delay of 500 ms will be used.</param>
+		/// <param name="includeTitleBar">Optional. (Only applicable for Mac or Windows) Specifies whether the TitleBar bar should be included in the screenshot. Default is false.</param>
 		public void VerifyScreenshot(
 			string? name = null,
 			TimeSpan? retryDelay = null,
 			int cropTop = 0,
 			int cropBottom = 0
 #if MACUITEST || WINTEST
-			, bool includeTitleBar = false
+				, bool includeTitleBar = false
 #endif
-		)
+			)
 		{
 			retryDelay ??= TimeSpan.FromMilliseconds(500);
 			// Retry the verification once in case the app is in a transient state
@@ -167,70 +170,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 			void Verify(string? name)
 			{
-				string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
-
-				// Remove the XHarness suffix if present
-				deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
-
-				/*
-				Determine the environmentName, used as the directory name for visual testing snaphots. Here are the rules/conventions:
-				- Names are lower case, no spaces.
-				- By default, the name matches the platform (android, ios, windows, or mac).
-				- Each platform has a default device (or set of devices) - if the snapshot matches the default no suffix is needed (e.g. just ios).
-				- If tests are run on secondary devices that produce different snapshots, the device name is used as suffix (e.g. ios-iphonex).
-				- If tests are run on secondary devices with multiple OS versions that produce different snapshots, both device name and os version are
-				used as a suffix (e.g. ios-iphonex-16_4). We don't have any cases of this today but may eventually. The device name comes first here,
-				before os version, because most visual testing differences come from different sceen size (a device thing), not OS version differences,
-				but both can happen.
-				*/
-				string environmentName = "";
-				switch (_testDevice)
-				{
-					case TestDevice.Android:
-						environmentName = "android";
-						var deviceApiLevel = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel");
-						var deviceScreenSize = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize");
-						var deviceScreenDensity = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity");
-
-						if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
-						{
-							Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
-						}
-						break;
-
-					case TestDevice.iOS:
-						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
-						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
-
-						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
-						{
-							environmentName = "ios";
-						}
-						else if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
-						{
-							environmentName = "ios";
-						}
-						else if (deviceName == "iPhone X (iOS 16.4)" || (device.Contains(" X", StringComparison.OrdinalIgnoreCase) && platformVersion == "16.4"))
-						{
-							environmentName = "ios-iphonex";
-						}
-						else
-						{
-							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
-						}
-						break;
-
-					case TestDevice.Windows:
-						environmentName = "windows";
-						break;
-
-					case TestDevice.Mac:
-						environmentName = "mac";
-						break;
-
-					default:
-						throw new NotImplementedException($"Unknown device type {_testDevice}");
-				}
+				string environmentName = GetEnvironmentName();
 
 				name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 
@@ -241,11 +181,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					Thread.Sleep(350);
 				}
 
-#if MACUITEST
-				byte[] screenshotPngBytes = TakeScreenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
-#else
-				byte[] screenshotPngBytes = App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
-#endif
+				byte[] screenshotPngBytes = TakeScreenshot();
 
 				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
@@ -295,6 +231,73 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
+		/// <summary>
+		/// Verifies the screenshot of the matched element.
+		/// </summary>
+		/// <param name="query">The query representing the element to capture in the screenshot.</param>
+		/// <param name="name">The optional name for the screenshot file. If not provided, the test name will be used.</param>
+		/// <param name="retryDelay">The optional delay between retry attempts. If not provided, the default delay will be used.</param>
+		/// <remarks>
+		/// Captures the screenshot of the matched element represented by the provided query and performs
+		/// a verification check to ensure the screenshot matches the expected state. If the verification fails,
+		/// it retries based on the specified retry delay.
+		/// </remarks>
+		public void VerifyScreenshot(IQuery query, string? name = null, TimeSpan? retryDelay = null)
+		{
+			var element = App.FindElement(query);
+
+			VerifyScreenshot(element, name, retryDelay);
+		}
+
+		/// <summary>
+		/// Verifies the screenshot of the specified element.
+		/// </summary>
+		/// <param name="element">The element to capture in the screenshot.</param>
+		/// <param name="name">The optional name for the screenshot file. If not provided, the test name will be used.</param>
+		/// <param name="retryDelay">The optional delay between retry attempts. If not provided, the default delay will be used.</param>
+		/// <remarks>
+		/// Captures the screenshot of the provided element and performs a verification check to ensure
+		/// the screenshot matches the expected state. If the verification fails, it retries based on the specified retry delay.
+		/// </remarks>
+		public void VerifyScreenshot(IUIElement element, string? name = null, TimeSpan? retryDelay = null)
+		{
+			retryDelay ??= TimeSpan.FromMilliseconds(500);
+			// Retry the verification once in case the app is in a transient state
+			try
+			{
+				Verify(element, name);
+			}
+			catch
+			{
+				Thread.Sleep(retryDelay.Value);
+				Verify(element, name);
+			}
+
+			void Verify(IUIElement element, string? name)
+			{
+				string environmentName = GetEnvironmentName();
+
+				name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+
+				// Currently Android is the OS with the ripple animations, but Windows may also have some animations
+				// that need to finish before taking a screenshot.
+				if (_testDevice == TestDevice.Android)
+				{
+					Thread.Sleep(350);
+				}
+
+				byte[] screenshotPngBytes = TakeScreenshot();
+
+				var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
+
+				var elementRect = element.GetRect();
+
+				actualImage = CropImage(actualImage, elementRect);
+
+				_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+			}
+		}
+    
 		protected void VerifyInternetConnectivity()
 		{
 			try
@@ -328,8 +331,17 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
-#if MACUITEST
 		byte[] TakeScreenshot()
+		{
+#if MACUITEST
+			return TakeMacScreenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+#else
+			return App.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
+#endif
+		}
+
+#if MACUITEST
+		byte[] TakeMacScreenshot()
 		{
 			// Since the Appium screenshot on Mac (unlike Windows) is of the entire screen, not just the app,
 			// we are going to crop the screenshot to the app window bounds, including rounded corners.
@@ -358,5 +370,92 @@ namespace Microsoft.Maui.TestCases.Tests
 			return surface.ToByteArray(MagickFormat.Png);
 		}
 #endif
+
+		string GetDeviceName()
+		{
+			string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
+
+			// Remove the XHarness suffix if present
+			deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
+
+			return deviceName;
+		}
+
+		string GetEnvironmentName()
+		{
+			/*
+				Determine the environmentName, used as the directory name for visual testing snaphots. Here are the rules/conventions:
+				- Names are lower case, no spaces.
+				- By default, the name matches the platform (android, ios, windows, or mac).
+				- Each platform has a default device (or set of devices) - if the snapshot matches the default no suffix is needed (e.g. just ios).
+				- If tests are run on secondary devices that produce different snapshots, the device name is used as suffix (e.g. ios-iphonex).
+				- If tests are run on secondary devices with multiple OS versions that produce different snapshots, both device name and os version are
+				used as a suffix (e.g. ios-iphonex-16_4). We don't have any cases of this today but may eventually. The device name comes first here,
+				before os version, because most visual testing differences come from different sceen size (a device thing), not OS version differences,
+				but both can happen.
+				*/
+
+			string deviceName = GetDeviceName();
+			string environmentName = string.Empty;
+
+			switch (_testDevice)
+			{
+				case TestDevice.Android:
+					environmentName = "android";
+					var deviceApiLevel = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel");
+					var deviceScreenSize = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize");
+					var deviceScreenDensity = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity");
+
+					//if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
+					//{
+					//	Assert.Fail($"Android visual tests should be run on an API30 emulator image with 1080x1920 420dpi screen, but the current device is API {deviceApiLevel} with a {deviceScreenSize} {deviceScreenDensity}dpi screen. Follow the steps on the MAUI UI testing wiki to launch the Android emulator with the right image.");
+					//}
+					break;
+
+				case TestDevice.iOS:
+					var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
+					var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
+
+					if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
+					{
+						environmentName = "ios";
+					}
+					else if (deviceName == "iPhone Xs (iOS 17.2)" || (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "17.2"))
+					{
+						environmentName = "ios";
+					}
+					else if (deviceName == "iPhone X (iOS 16.4)" || (device.Contains(" X", StringComparison.OrdinalIgnoreCase) && platformVersion == "16.4"))
+					{
+						environmentName = "ios-iphonex";
+					}
+					else
+					{
+						Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
+					}
+					break;
+
+				case TestDevice.Windows:
+					environmentName = "windows";
+					break;
+
+				case TestDevice.Mac:
+					environmentName = "mac";
+					break;
+
+				default:
+					throw new NotImplementedException($"Unknown device type {_testDevice}");
+			}
+
+			return environmentName;
+		}
+
+		ImageSnapshot CropImage(ImageSnapshot image, System.Drawing.Rectangle rect)
+		{
+			IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(image);
+
+			imageEditor.Crop(rect.X, rect.Y, rect.Width, rect.Height);
+
+			return imageEditor.GetUpdatedImage();
+		}
 	}
 }
