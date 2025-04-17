@@ -8,9 +8,6 @@
     <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.net7.Manifest-$(DotNetVersionBand)"   Version="[$(MicrosoftDotnetSdkInternalPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Workload.Mono.ToolChain.net8.Manifest-$(DotNetVersionBand)"   Version="[$(MicrosoftDotnetSdkInternalPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Workload.Emscripten.Current.Manifest-$(DotNetVersionBand)" Version="[$(MicrosoftDotnetSdkInternalPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net6.Manifest-$(DotNetVersionBand)" Version="[$(MicrosoftDotnetSdkInternalPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net7.Manifest-$(DotNetVersionBand)" Version="[$(MicrosoftDotnetSdkInternalPackageVersion)]" />
-    <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net8.Manifest-$(DotNetVersionBand)" Version="[$(MicrosoftDotnetSdkInternalPackageVersion)]" /> 
     <PackageDownload Include="Microsoft.NET.Workload.Emscripten.net9.Manifest-$(DotNetVersionBand)" Version="[$(MicrosoftDotnetSdkInternalPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.Android.Manifest-$(DotNetAndroidManifestVersionBand)"    Version="[$(MicrosoftAndroidSdkWindowsPackageVersion)]" />
     <PackageDownload Include="Microsoft.NET.Sdk.MacCatalyst.Manifest-$(DotNetMaciOSManifestVersionBand)" Version="[$(MicrosoftMacCatalystSdkPackageVersion)]" />
