@@ -481,8 +481,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdateFlyoutLayoutBehaviorChanges()
 		{
 			LayoutChildren(true);
-            FlyoutPage flyoutPage = Element as FlyoutPage;
-			if (flyoutPage == null) 
+			if (FlyoutPage == null) 
 				return;
             FlyoutLayoutBehavior flyoutBehavior = FlyoutPage.FlyoutLayoutBehavior;
             bool shouldPresent = FlyoutPageController.ShouldShowSplitMode;
@@ -491,7 +490,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
                 shouldPresent = false;
             }
  
-            if (shouldPresent != flyoutPage.IsPresented)
+            if (shouldPresent != FlyoutPage.IsPresented)
             {
                 ((IElementController)Element).SetValueFromRenderer(FlyoutPage.IsPresentedProperty, shouldPresent);
                 UpdateLeftBarButton();
