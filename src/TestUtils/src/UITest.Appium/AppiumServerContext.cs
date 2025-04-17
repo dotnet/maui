@@ -14,6 +14,8 @@ namespace UITest.Appium
 		readonly object _serverLock = new object();
 		AppiumLocalService? _server;
 
+		bool IServerContext.IsServerRunning => _server is not null;
+
 		public IUIClientContext CreateUIClientContext(IConfig config)
 		{
 			lock (_serverLock)
@@ -24,7 +26,7 @@ namespace UITest.Appium
 					CreateAndStartServer();
 				}
 			}
-
+			
 			int retries = 0;
 
 			var testDevice = config.GetProperty<TestDevice>("TestDevice");
@@ -34,7 +36,6 @@ namespace UITest.Appium
 			{
 				try
 				{
-					// TODO: Create these IApp instances should not be hardcoded types
 					IApp app = testDevice switch
 					{
 						TestDevice.Mac => new AppiumCatalystApp(driverUri, config),
