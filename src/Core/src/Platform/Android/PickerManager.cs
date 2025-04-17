@@ -18,25 +18,14 @@ namespace Microsoft.Maui.Platform
 		public static void Init(EditText editText)
 		{
 			editText.Focusable = true;
+			editText.FocusableInTouchMode= false;
 			editText.Clickable = true;
 			editText.InputType = InputTypes.Null;
 
 			editText.KeyPress += OnKeyPress;
 		}
 
-		public static void OnTouchEvent(EditText sender, MotionEvent? e)
-		{
-			if (e != null && e.Action == MotionEventActions.Up && !sender.IsFocused)
-			{
-				sender.RequestFocus();
-			}
-		}
 
-		public static void OnFocusChanged(bool gainFocus, EditText sender)
-		{
-			if (gainFocus)
-				sender.CallOnClick();
-		}
 
 		static void OnKeyPress(object? sender, AView.KeyEventArgs e)
 		{
