@@ -199,17 +199,25 @@ public class CodeBehindGenerator : IIncrementalGenerator
 
 		internalsVisible.Add(compilation.Assembly);
 
-		// load from references
+		IList<IAssemblySymbol> assemblies = new List<IAssemblySymbol>();
+		assemblies.Add(compilation.Assembly);
 		foreach (var reference in compilation.References)
 		{
-			cancellationToken.ThrowIfCancellationRequested();
+			cancellationToken.ThrowIfCancellationRequested();			
 
-			if (compilation.GetAssemblyOrModuleSymbol(reference) is not IAssemblySymbol symbol)
+			var assembly = compilation.GetAssemblyOrModuleSymbol(reference);
+			if (assembly is IAssemblySymbol assemblySymbol)
 			{
-				continue;
+				assemblies.Add(assemblySymbol);
 			}
+		}
 
-			foreach (var attr in symbol.GetAttributes())
+		// load from references
+		foreach (var assembly in assemblies)
+		{
+			cancellationToken.ThrowIfCancellationRequested();			
+
+			foreach (var attr in assembly.GetAttributes())
 			{
 				if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, xmlnsDefinitonAttribute))
 				{
@@ -221,7 +229,14 @@ public class CodeBehindGenerator : IIncrementalGenerator
 					}
 					else
 					{
-						xmlnsDef.AssemblyName = symbol.Name;
+						xmlnsDef.AssemblyName = assembly.Name;
+					}
+					
+					//only add globalxmlns definition from the current assembly
+					if (   xmlnsDef.XmlNamespace == XamlParser.MauiGlobal 
+						&& !SymbolEqualityComparer.Default.Equals(assembly, compilation.Assembly))
+					{
+						continue;	
 					}
 
 					xmlnsDefinitions.Add(xmlnsDef);
@@ -231,12 +246,26 @@ public class CodeBehindGenerator : IIncrementalGenerator
 					// [assembly: InternalsVisibleTo]
 					if (attr.ConstructorArguments[0].Value is string assemblyName && new AssemblyName(assemblyName).Name == compilation.Assembly.Identity.Name)
 					{
-						internalsVisible.Add(symbol);
+						internalsVisible.Add(assembly);
 					}
 				}
 			}
 		}
-		return new AssemblyCaches(xmlnsDefinitions, internalsVisible);
+
+		var globalXmlns = xmlnsDefinitions.Where(x => x.XmlNamespace == XamlParser.MauiGlobal).ToList();
+		foreach (var global in globalXmlns)
+		{
+			var pointedXmlns = xmlnsDefinitions.Where(x => x.XmlNamespace == global.Target).ToList();
+			foreach (var pointed in pointedXmlns)
+			{
+				xmlnsDefinitions.Add (new XmlnsDefinitionAttribute(global.XmlNamespace, pointed.Target)
+				{
+					AssemblyName = pointed.AssemblyName
+				});
+			}
+		}
+
+		return new AssemblyCaches([.. xmlnsDefinitions.Distinct()], internalsVisible);
 	}
 
 	static IDictionary<XmlType, string> GetTypeCache(Compilation compilation, CancellationToken cancellationToken)

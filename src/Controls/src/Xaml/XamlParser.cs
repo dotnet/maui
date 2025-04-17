@@ -333,7 +333,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
 
-		static void GatherXmlnsDefinitionAttributes()
+		static void GatherXmlnsDefinitionAttributes(Assembly currentAssembly)
 		{
 			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
 			s_xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
@@ -344,6 +344,10 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute)))
 					{
+						// Only add global xmlns definition from the current assembly
+						if (   attribute.XmlNamespace == XamlParser.MauiGlobal 
+							&& assembly != currentAssembly)
+							continue;
 						s_xmlnsDefinitions.Add(attribute);
 						attribute.AssemblyName = attribute.AssemblyName ?? assembly.FullName;
 					}
@@ -353,6 +357,19 @@ namespace Microsoft.Maui.Controls.Xaml
 					// If we can't load the custom attribute for whatever reason from the assembly,
 					// We can ignore it and keep going.
 					Debug.WriteLine($"Failed to parse Assembly Attribute: {ex.ToString()}");
+				}
+			}
+
+			var globalXmlns = s_xmlnsDefinitions.Where(x => x.XmlNamespace == XamlParser.MauiGlobal).ToList();
+			foreach (var global in globalXmlns)
+			{
+				var pointedXmlns = s_xmlnsDefinitions.Where(x => x.XmlNamespace == global.Target).ToList();
+				foreach (var pointed in pointedXmlns)
+				{
+					s_xmlnsDefinitions.Add (new XmlnsDefinitionAttribute(global.XmlNamespace, pointed.Target)
+					{
+						AssemblyName = pointed.AssemblyName
+					});
 				}
 			}
 		}
@@ -368,7 +385,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		retry:
 			if (s_xmlnsDefinitions == null)
-				GatherXmlnsDefinitionAttributes();
+				GatherXmlnsDefinitionAttributes(currentAssembly);
 
 			Type type = xmlType.GetTypeReference(
 				s_xmlnsDefinitions,
