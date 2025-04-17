@@ -92,3 +92,7 @@ virtual Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! c
 *REMOVED*~override Microsoft.Maui.Platform.WrapperView.DrawShadow(Android.Graphics.Canvas canvas, int viewWidth, int viewHeight) -> void
 *REMOVED*abstract Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! p0, int p1, int p2) -> void
 override Microsoft.Maui.Platform.MauiTextView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
+*REMOVED*Microsoft.Maui.Platform.MauiPicker.ShowPopupOnFocus.get -> bool
+*REMOVED*Microsoft.Maui.Platform.MauiPicker.ShowPopupOnFocus.set -> void
+*REMOVED*override Microsoft.Maui.Platform.MauiPicker.OnFocusChanged(bool gainFocus, Android.Views.FocusSearchDirection direction, Android.Graphics.Rect? previouslyFocusedRect) -> void
+*REMOVED*override Microsoft.Maui.Platform.MauiPicker.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
