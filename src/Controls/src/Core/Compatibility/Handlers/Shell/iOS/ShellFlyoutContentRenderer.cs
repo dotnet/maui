@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				AddViewInCorrectOrder(_footerView, previousIndex);
 
 				_footerView.ClipsToBounds = true;
-				_footer.MeasureInvalidated += OnFooterMeasureInvalidated;
+				_footerView.PlatformMeasureInvalidated += OnFooterMeasureInvalidated;
 			}
 
 			_tableViewController.FooterView = _footerView;
@@ -313,6 +313,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_bgImage.Frame = View.Bounds;
 		}
 
+		public override void LoadView()
+		{
+			View = new UIContainerViewContainer();
+		}
+
 		public override void ViewDidLoad()
 		{
 			base.ViewDidLoad();
@@ -357,7 +362,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_uIViews[ContentIndex] = _shellFlyoutContentManager.ContentView;
 			AddViewInCorrectOrder(_uIViews[ContentIndex], previousIndex);
-			_shellFlyoutContentManager.UpdateHeaderSize();
+			_shellFlyoutContentManager.UpdateLayout();
 		}
 
 		public override void ViewWillAppear(bool animated)

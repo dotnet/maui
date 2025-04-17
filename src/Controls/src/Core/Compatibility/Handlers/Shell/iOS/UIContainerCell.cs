@@ -6,19 +6,17 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
 {
-	public class UIContainerCell : UITableViewCell
+	public class UIContainerCell : UITableViewCell, IPlatformMeasureInvalidationController
 	{
 		IPlatformViewHandler _renderer;
 		object _bindingContext;
 
-		internal Action<UIContainerCell> ViewMeasureInvalidated { get; set; }
 		internal NSIndexPath IndexPath { get; set; }
 		internal UITableView TableView { get; set; }
 
 		internal UIContainerCell(string cellId, View view, Shell shell, object context) : base(UITableViewCellStyle.Default, cellId)
 		{
 			View = view;
-			View.MeasureInvalidated += MeasureInvalidated;
 			SelectionStyle = UITableViewCellSelectionStyle.None;
 
 			_renderer = (IPlatformViewHandler)view.Handler;
@@ -43,16 +41,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				shell.AddLogicalChild(View);
 		}
 
-		public UIContainerCell(string cellId, View view) : this(cellId, view, null, null)
+		void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
 		{
 		}
 
-		void MeasureInvalidated(object sender, System.EventArgs e)
+		void IPlatformMeasureInvalidationController.InvalidateMeasure(bool isPropagating)
 		{
-			if (View == null || TableView == null)
-				return;
+			if (isPropagating)
+			{
+				ReloadRow();
+			}
+		}
 
-			ViewMeasureInvalidated?.Invoke(this);
+		public UIContainerCell(string cellId, View view) : this(cellId, view, null, null)
+		{
 		}
 
 		internal void ReloadRow()
@@ -62,8 +64,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect(Shell shell = null, bool keepRenderer = false)
 		{
-			ViewMeasureInvalidated = null;
-			View.MeasureInvalidated -= MeasureInvalidated;
 			if (_bindingContext != null && _bindingContext is BaseShellItem baseShell)
 				baseShell.PropertyChanged -= OnElementPropertyChanged;
 
