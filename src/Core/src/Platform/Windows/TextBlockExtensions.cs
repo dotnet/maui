@@ -34,12 +34,14 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePadding(this TextBlock platformControl, ILabel label)
 		{
-			platformControl.UpdateProperty(TextBlock.PaddingProperty, new WThickness(
-				label.Padding.Left < 0 ? 0 : label.Padding.Left,
-				label.Padding.Top < 0 ? 0 : label.Padding.Top,
-				label.Padding.Right < 0 ? 0 : label.Padding.Right,
-				label.Padding.Bottom < 0 ? 0 : label.Padding.Bottom
-			));
+			var padding = new WThickness(
+				Math.Max(0, label.Padding.Left),
+				Math.Max(0, label.Padding.Top),
+				Math.Max(0, label.Padding.Right),
+				Math.Max(0, label.Padding.Bottom)
+			);
+
+			platformControl.UpdateProperty(TextBlock.PaddingProperty, padding);
 		}
 
 		public static void UpdateCharacterSpacing(this TextBlock platformControl, ITextStyle label)
