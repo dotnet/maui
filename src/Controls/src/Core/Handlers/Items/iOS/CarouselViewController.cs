@@ -199,6 +199,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return base.DetermineCellReuseId(NSIndexPath.FromItemSection(itemIndex, 0));
 		}
 
+		private protected override (Type CellType, string CellTypeReuseId) DetermineTemplatedCellType()
+			=> (typeof(CarouselTemplatedCell), "maui_carousel");
+
 		protected override void RegisterViewTypes()
 		{
 			CollectionView.RegisterClassForCell(typeof(CarouselTemplatedCell), CarouselTemplatedCell.ReuseId);
