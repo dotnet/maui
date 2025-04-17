@@ -12,14 +12,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		readonly WeakReference<UICollectionViewController> _collectionViewController;
 		UICollectionView _collectionView => _collectionViewController.TryGetTarget(out var controller) ? controller.CollectionView : null;
-		readonly IList _groupSource;
+		readonly IList _groupSource = new List<object>();
 		bool _disposed;
 		List<ObservableItemsSource> _groups = new List<ObservableItemsSource>();
 
 		public ObservableGroupedSource(IEnumerable groupSource, UICollectionViewController collectionViewController)
 		{
 			_collectionViewController = new(collectionViewController);
-			_groupSource = groupSource as IList ?? new ListSource(groupSource);
+			var groupList = groupSource as IList ?? new ListSource(groupSource);
+
+			foreach (var group in groupList)
+			{
+				if (group is IEnumerable enumerable)
+				{
+					_groupSource.Add(enumerable);
+				}
+			}
 
 			if (_groupSource is INotifyCollectionChanged incc)
 			{
