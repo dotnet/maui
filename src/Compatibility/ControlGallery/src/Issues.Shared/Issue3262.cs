@@ -1,13 +1,24 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Text.RegularExpressions;
+using Microsoft.Maui.Controls.CustomAttributes;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-using Label = Microsoft.Maui.Controls.Label;
-using WebView = Microsoft.Maui.Controls.WebView;
 
-namespace Maui.Controls.Sample.Issues
+#if UITEST
+using Microsoft.Maui.Controls.Compatibility.UITests;
+using Xamarin.UITest;
+using NUnit.Framework;
+#endif
+
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
-	[Issue(IssueTracker.Github, 3262, "Adding Cookies ability to a WebView...", isInternetRequired: true)]
+#if UITEST
+	[Category(UITestCategories.WebView)]
+#endif
+	[Preserve(AllMembers = true)]
+	[Issue(IssueTracker.Github, 3262, "Adding Cookies ability to a WebView...")]
 	public class Issue3262 : TestContentPage // or TestFlyoutPage, etc ...
 	{
 		string _currentCookieValue;
@@ -17,13 +28,14 @@ namespace Maui.Controls.Sample.Issues
 			Label header = new Label
 			{
 				Text = "Cookies...",
+				FontSize = Device.GetNamedSize(NamedSize.Medium, typeof(Label)),
 				HorizontalOptions = LayoutOptions.Center
 			};
 
 			try
 			{
 				CookieContainer cookieContainer = new CookieContainer();
-				string url = "https://dotnet.microsoft.com/apps/maui";
+				string url = "https://dotnet.microsoft.com/apps/xamarin";
 				Uri uri = new Uri(url, UriKind.RelativeOrAbsolute);
 
 				Cookie cookie = new Cookie
@@ -40,38 +52,30 @@ namespace Maui.Controls.Sample.Issues
 				WebView webView = new WebView
 				{
 					Source = url,
-					HeightRequest = 200,
-					WidthRequest = 300,
+					HorizontalOptions = LayoutOptions.FillAndExpand,
+					VerticalOptions = LayoutOptions.FillAndExpand,
 					Cookies = cookieContainer
 				};
-
-#if WINDOWS
-				webView.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().SetIsJavaScriptAlertEnabled(true);
-#endif
+				webView.On<Windows>().SetIsJavaScriptAlertEnabled(true);
 
 				Action<string> cookieExpectation = null;
 				var cookieResult = new Label()
 				{
 					Text = "Loading",
+					AutomationId = "CookieResult"
 				};
 
-				var successfullPageLoadLabel = new Label()
+				webView.Navigating += (_, __) =>
 				{
-					IsVisible = false,
-					Text = "Page was loaded",
-					AutomationId = "SuccessfullPageLoadLabel"
-				};
-
-				var successCookiesLabel = new Label()
-				{
-					IsVisible = false,
-					Text = "Success",
-					AutomationId = "SuccessCookiesLabel"
+					if (cookieExpectation != null)
+						cookieResult.Text = "Navigating";
 				};
 
 				webView.Navigated += async (_, __) =>
 				{
-					successfullPageLoadLabel.IsVisible = true;
+					if (cookieResult.Text == "Loading")
+						cookieResult.Text = "Loaded";
+
 					_currentCookieValue = await webView.EvaluateJavaScriptAsync("document.cookie");
 					cookieExpectation?.Invoke(_currentCookieValue);
 					cookieExpectation = null;
@@ -88,12 +92,7 @@ namespace Maui.Controls.Sample.Issues
 						{
 							Text = "Modify the Cookie Container"
 						},
-						new HorizontalStackLayout()
-						{
-							cookieResult,
-							successfullPageLoadLabel,
-							successCookiesLabel
-						},
+						cookieResult,
 						new StackLayout()
 						{
 							Orientation = StackOrientation.Horizontal,
@@ -106,17 +105,16 @@ namespace Maui.Controls.Sample.Issues
 									Command = new Command(() =>
 									{
 										webView.Cookies = cookieContainer;
-										cookieResult.Text = string.Empty;
-										successCookiesLabel.IsVisible = false;
+										cookieResult.Text = String.Empty;
 										cookieExpectation = (cookieValue) =>
 										{
-											if(cookieValue.Contains("TestCookie", StringComparison.OrdinalIgnoreCase))
+											if(cookieValue.Contains("TestCookie"))
 											{
 												cookieResult.Text = "Test Cookie Was not correctly cleared";
 											}
 											else
 											{
-												successCookiesLabel.IsVisible = true;
+												cookieResult.Text = "Success";
 											}
 										};
 
@@ -144,7 +142,7 @@ namespace Maui.Controls.Sample.Issues
 											}
 											else
 											{
-												successCookiesLabel.IsVisible = true;
+												cookieResult.Text = "Success";
 											}
 										};
 
@@ -159,7 +157,6 @@ namespace Maui.Controls.Sample.Issues
 									Command = new Command(() =>
 									{
 										cookieResult.Text = String.Empty;
-										successCookiesLabel.IsVisible = false;
 										cookieExpectation = (cookieValue) =>
 										{
 											if(RegexHelper.TestCookieRegex.Matches(cookieValue).Count > 1)
@@ -168,7 +165,7 @@ namespace Maui.Controls.Sample.Issues
 											}
 											else
 											{
-												successCookiesLabel.IsVisible = true;
+												cookieResult.Text = "Success";
 											}
 										};
 
@@ -201,7 +198,6 @@ namespace Maui.Controls.Sample.Issues
 									{
 										webView.Cookies = cookieContainer;
 										cookieResult.Text = String.Empty;
-										successCookiesLabel.IsVisible = false;
 										cookieContainer.Add(new Cookie
 										{
 											Name = $"TestCookie{cookieContainer.Count}",
@@ -224,7 +220,7 @@ namespace Maui.Controls.Sample.Issues
 											}
 											else
 											{
-												successCookiesLabel.IsVisible = true;
+												cookieResult.Text = "Success";
 											}
 										};
 
@@ -254,16 +250,15 @@ namespace Maui.Controls.Sample.Issues
 										};
 
 										cookieResult.Text = String.Empty;
-										successCookiesLabel.IsVisible = false;
 										cookieExpectation = (cookieValue) =>
 										{
-											if(cookieValue.Contains(cookieToAdd.Name, StringComparison.OrdinalIgnoreCase))
+											if(cookieValue.Contains(cookieToAdd.Name))
 											{
 												cookieResult.Text = "Cookie not added during navigating";
 											}
 											else
 											{
-												successCookiesLabel.IsVisible = true;
+												cookieResult.Text = "Success";
 											}
 										};
 
@@ -288,13 +283,8 @@ namespace Maui.Controls.Sample.Issues
 							AutomationId = "PageWithoutCookies",
 							Command = new Command(() =>
 							{
-								var previousCookies = webView.Cookies;
 								webView.Cookies = null;
 								webView.Source = "file:///android_asset/googlemapsearch.html";
-
-								//Restore to the previous state
-								webView.Cookies = previousCookies;
-								webView.Source = url;
 							})
 						}
 					}
@@ -306,6 +296,96 @@ namespace Maui.Controls.Sample.Issues
 				throw;
 			}
 		}
+
+#if UITEST
+
+		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
+		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
+		{
+			RunningApp.Tap("PageWithoutCookies");
+			RunningApp.WaitForElement("PageWithoutCookies");
+		}
+
+		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
+		[Compatibility.UITests.FailsOnMauiAndroid]
+		public void ChangeDuringNavigating()
+		{
+			RunningApp.WaitForElement("Loaded");
+			// add a couple cookies
+			RunningApp.Tap("ChangeDuringNavigating");
+			ValidateSuccess();
+			RunningApp.Tap("ChangeDuringNavigating");
+			ValidateSuccess();
+		}
+
+		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
+		public void AddAdditionalCookieToWebView()
+		{
+			RunningApp.WaitForElement("Loaded");
+			// add a couple cookies
+			RunningApp.Tap("AdditionalCookie");
+			ValidateSuccess();
+			RunningApp.Tap("AdditionalCookie");
+			ValidateSuccess();
+		}
+
+		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
+		[Compatibility.UITests.FailsOnMauiAndroid]
+		public void SetToOneCookie()
+		{
+			RunningApp.WaitForElement("Loaded");
+			RunningApp.Tap("OneCookie");
+			ValidateSuccess();
+		}
+
+		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
+		[Compatibility.UITests.FailsOnMauiAndroid]
+		public void SetCookieContainerToNullDisablesCookieManagement()
+		{
+			RunningApp.WaitForElement("Loaded");
+			// add a cookie to verify said cookie remains
+			RunningApp.Tap("AdditionalCookie");
+			ValidateSuccess();
+			RunningApp.Tap("NullAllCookies");
+			ValidateSuccess();
+		}
+
+		[Test]
+		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
+		public void RemoveAllTheCookiesIAdded()
+		{
+			RunningApp.WaitForElement("Loaded");
+			// add a cookie so you can remove a cookie
+			RunningApp.Tap("AdditionalCookie");
+			ValidateSuccess();
+			RunningApp.Tap("EmptyAllCookies");
+			ValidateSuccess();
+		}
+
+		void ValidateSuccess()
+		{
+			try
+			{
+				RunningApp.WaitForElement("Success");
+			}
+			catch
+			{
+				RunningApp.Tap("DisplayAllCookies");
+				throw;
+			}
+		}
+#endif
 	}
 
 	internal static partial class RegexHelper
@@ -325,4 +405,5 @@ namespace Maui.Controls.Sample.Issues
 											);
 		#endif
 	}
+
 }
