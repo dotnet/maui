@@ -3016,6 +3016,34 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view1, new Rect(0, view1ExpectedX, widths, viewHeight));
 		}
 
+		[Theory, Category(GridStarSizing)]
+		[InlineData(80, 60)]
+		[InlineData(100, 60)]
+		[InlineData(100, 70)]
+		[InlineData(100, 80)]
+		[InlineData(100, 90)]
+		public void StarColumnsCalculateCorrectlyWhenArrangeIsNotInSyncWithMeasure(double widthConstraint, double arrangeWidth)
+		{
+			var heights = 100;
+
+			var grid = CreateGridLayout(rows: "*,*", columns: "*,*");
+
+			var view0 = CreateTestView(new Size(50, heights));
+			var view2 = CreateTestView(new Size(90, heights));
+
+			SubstituteChildren(grid, view0, view2);
+			SetLocation(grid, view0, col: 0);
+			SetLocation(grid, view2, row: 1, colSpan: 2);
+
+			var manager = new GridLayoutManager(grid);
+			manager.Measure(widthConstraint, heights * 2);
+
+			var arrangeSize = new Size(arrangeWidth, heights * 2);
+			manager.ArrangeChildren(new Rect(Point.Zero, arrangeSize));
+
+			AssertArranged(view2, new Rect(0, heights, arrangeWidth, heights));
+		}
+
 
 		[Fact]
 		public void StarRowExpansionWorksWithDifferingScalars()

@@ -503,9 +503,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var dataTemplate = ItemsView.ItemTemplate.SelectDataTemplate(item, ItemsView);
 
 				var cellOrientation = ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Vertical ? "v" : "h";
-				var cellType = ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Vertical ? typeof(VerticalCell) : typeof(HorizontalCell);
+				(Type cellType, var cellTypeReuseId) = DetermineTemplatedCellType();
 
-				var reuseId = $"_maui_{cellOrientation}_{dataTemplate.Id}";
+				var reuseId = $"_{cellTypeReuseId}_{cellOrientation}_{dataTemplate.Id}";
 
 				if (!_cellReuseIds.Contains(reuseId))
 				{
@@ -519,6 +519,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal
 				? HorizontalDefaultCell.ReuseId
 				: VerticalDefaultCell.ReuseId;
+		}
+
+		private protected virtual (Type CellType, string CellTypeReuseId) DetermineTemplatedCellType()
+		{
+			return (ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Vertical ? typeof(VerticalCell) : typeof(HorizontalCell), "maui");
 		}
 
 		[Obsolete("Use DetermineCellReuseId(NSIndexPath indexPath) instead.")]
