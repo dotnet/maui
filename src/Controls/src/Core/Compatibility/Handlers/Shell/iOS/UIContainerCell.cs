@@ -29,8 +29,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			var platformView = view.ToPlatform();
+			platformView.TranslatesAutoresizingMaskIntoConstraints = false;
 			ContentView.AddSubview(platformView);
 			platformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
+
+			platformView.LeadingAnchor.ConstraintEqualTo(ContentView.LeadingAnchor).Active = true;
+			platformView.TrailingAnchor.ConstraintEqualTo(ContentView.TrailingAnchor).Active = true;
+			platformView.TopAnchor.ConstraintEqualTo(ContentView.TopAnchor).Active = true;
+			platformView.BottomAnchor.ConstraintEqualTo(ContentView.BottomAnchor).Active = true;
 
 			_renderer.PlatformView.ClipsToBounds = true;
 			ContentView.ClipsToBounds = true;
