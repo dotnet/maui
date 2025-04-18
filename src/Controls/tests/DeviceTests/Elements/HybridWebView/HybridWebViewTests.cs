@@ -486,13 +486,13 @@ namespace Microsoft.Maui.DeviceTests
 					if (e.Uri.Host == "0.0.0.1")
 					{
 						// 1. Create the response data
-						var response = new EchoResponseObject { message = "Hello real endpoint" };
+						var response = new EchoResponseObject { message = $"Hello real endpoint (param1={e.QueryParameters["param1"]}, param2={e.QueryParameters["param2"]})" };
 						var responseData = JsonSerializer.SerializeToUtf8Bytes(response);
 						var responseLength = responseData.Length.ToString(CultureInfo.InvariantCulture);
 
 						// 2. Create the response
 #if WINDOWS
-						e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
+						e.PlatformArgs.RequestEventArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
 							new MemoryStream(responseData).AsRandomAccessStream(),
 							200,
 							"OK",
@@ -536,7 +536,7 @@ namespace Microsoft.Maui.DeviceTests
 					HybridWebViewTestContext.Default.EchoResponseObject);
 
 				Assert.NotNull(responseObject);
-				Assert.Equal("Hello real endpoint", responseObject.message);
+				Assert.Equal("Hello real endpoint (param1=value1, param2=value2)", responseObject.message);
 			});
 
 		[Fact]
@@ -555,8 +555,8 @@ namespace Microsoft.Maui.DeviceTests
 #if WINDOWS
 						// Windows uses a deferral to let the webview know that we are going to be async
 						using var deferral = e.PlatformArgs.RequestEventArgs.GetDeferral();
-						var data = await GetDataAsync();
-						e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
+						var data = await GetDataAsync(e.QueryParameters);
+						e.PlatformArgs.RequestEventArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
 							data.AsRandomAccessStream(),
 							200,
 							"OK",
@@ -577,7 +577,7 @@ namespace Microsoft.Maui.DeviceTests
 							{
 								[(Foundation.NSString)"Content-Type"] = (Foundation.NSString)"application/json",
 							}));
-						var data = await GetDataAsync();
+						var data = await GetDataAsync(e.QueryParameters);
 						task.DidReceiveData(Foundation.NSData.FromStream(data));
 						await Task.Delay(1_000);
 						task.DidFinish();
@@ -591,7 +591,7 @@ namespace Microsoft.Maui.DeviceTests
 							new Dictionary<string, string>
 							{
 							},
-							new AsyncStream(GetDataAsync()));
+							new AsyncStream(GetDataAsync(e.QueryParameters)));
 #endif
 					}
 				};
@@ -601,12 +601,12 @@ namespace Microsoft.Maui.DeviceTests
 					HybridWebViewTestContext.Default.EchoResponseObject);
 
 				Assert.NotNull(responseObject);
-				Assert.Equal("Hello real endpoint", responseObject.message);
+				Assert.Equal("Hello real endpoint (param1=value1, param2=value2)", responseObject.message);
 
-				static async Task<Stream> GetDataAsync()
+				static async Task<Stream> GetDataAsync(IReadOnlyDictionary<string, string> queryParams)
 				{
-					var response = new EchoResponseObject { message = "Hello real endpoint" };
-					
+					var response = new EchoResponseObject { message = $"Hello real endpoint (param1={queryParams["param1"]}, param2={queryParams["param2"]})" };
+
 					var ms = new MemoryStream();
 
 					await Task.Delay(1000);
@@ -641,14 +641,14 @@ namespace Microsoft.Maui.DeviceTests
 						// 2. Create the response data
 						var response = new EchoResponseObject
 						{
-							message = $"Hello {name}",
+							message = $"Hello {name} (param1={e.QueryParameters["param1"]}, param2={e.QueryParameters["param2"]})",
 						};
 						var responseData = JsonSerializer.SerializeToUtf8Bytes(response);
 						var responseLength = responseData.Length.ToString(CultureInfo.InvariantCulture);
 
 						// 3. Create the response
 #if WINDOWS
-						e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
+						e.PlatformArgs.RequestEventArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
 							new MemoryStream(responseData).AsRandomAccessStream(),
 							200,
 							"OK",
@@ -700,7 +700,7 @@ namespace Microsoft.Maui.DeviceTests
 					HybridWebViewTestContext.Default.EchoResponseObject);
 
 				Assert.NotNull(responseObject);
-				Assert.Equal("Hello Matthew", responseObject.message);
+				Assert.Equal("Hello Matthew (param1=value1, param2=value2)", responseObject.message);
 			});
 
 		[Theory]
@@ -842,7 +842,7 @@ namespace Microsoft.Maui.DeviceTests
 					if (new Uri(uriBase).IsBaseOf(e.Uri))
 					{
 #if WINDOWS
-						e.PlatformArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
+						e.PlatformArgs.RequestEventArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
 							null,
 							403,
 							"Forbidden",

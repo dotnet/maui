@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Controls;
 public class HybridWebViewWebResourceRequestedEventArgs
 {
 	IReadOnlyDictionary<string, string>? _headers;
+	IReadOnlyDictionary<string, string>? _queryParams;
 
 	internal HybridWebViewWebResourceRequestedEventArgs(PlatformHybridWebViewWebResourceRequestedEventArgs platformArgs)
 	{
@@ -29,6 +30,9 @@ public class HybridWebViewWebResourceRequestedEventArgs
 
 	public IReadOnlyDictionary<string, string> Headers =>
 		_headers ??= PlatformArgs?.GetRequestHeaders() ?? new Dictionary<string, string>();
+
+	public IReadOnlyDictionary<string, string> QueryParameters =>
+		_queryParams ??= WebUtils.ParseQueryString(Uri, false) ?? new Dictionary<string, string>();
 
 	public bool Handled { get; set; }
 }

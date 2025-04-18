@@ -211,7 +211,7 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				var fullUrl = url;
-				url = HybridWebViewQueryStringHelper.RemovePossibleQueryString(url);
+				url = WebUtils.RemovePossibleQueryString(url);
 
 				if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
 				{

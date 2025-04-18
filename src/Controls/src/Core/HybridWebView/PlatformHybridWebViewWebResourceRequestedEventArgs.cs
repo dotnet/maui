@@ -1,4 +1,5 @@
 ﻿#pragma warning disable RS0016 // Add public types and members to the declared API
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,12 +33,6 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 	public global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs RequestEventArgs { get; }
 
 	public global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequest Request => RequestEventArgs.Request;
-
-	public global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceResponse? Response
-	{
-		get => RequestEventArgs.Response;
-		set => RequestEventArgs.Response = value;
-	}
 
 	internal string? GetRequestUri() => Request.Uri;
 
@@ -166,16 +161,21 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 
 #elif ANDROID
 
+	Action<global::Android.Webkit.WebResourceResponse?> _setResponse;
+	private global::Android.Webkit.WebResourceResponse? _response;
+
 	internal PlatformHybridWebViewWebResourceRequestedEventArgs(
 		global::Android.Webkit.WebView sender,
-		global::Android.Webkit.IWebResourceRequest request)
+		global::Android.Webkit.IWebResourceRequest request,
+		Action<global::Android.Webkit.WebResourceResponse?> setResponse)
 	{
 		Sender = sender;
 		Request = request;
+		_setResponse = setResponse;
 	}
 
 	internal PlatformHybridWebViewWebResourceRequestedEventArgs(WebResourceRequestedEventArgs args)
-		: this(args.Sender, args.Request)
+		: this(args.Sender, args.Request, (response) => args.Response = response)
 	{
 	}
 
@@ -189,7 +189,15 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 	/// </summary>
 	public global::Android.Webkit.IWebResourceRequest Request { get; }
 
-	public global::Android.Webkit.WebResourceResponse? Response { get; set; }
+	public global::Android.Webkit.WebResourceResponse? Response
+	{
+		get => _response;
+		set
+		{
+			_response = value;
+			_setResponse(value);
+		}
+	}
 
 	internal string? GetRequestUri() => Request.Url?.ToString();
 

@@ -165,7 +165,7 @@ namespace Microsoft.Maui.Handlers
 
 		private async Task<(IRandomAccessStream? Stream, string? ContentType, int StatusCode, string Reason)> GetResponseStreamAsync(string url)
 		{
-			var requestUri = HybridWebViewQueryStringHelper.RemovePossibleQueryString(url);
+			var requestUri = WebUtils.RemovePossibleQueryString(url);
 
 			if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
 			{

@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var fullUrl = request?.Url?.ToString();
-			var requestUri = HybridWebViewQueryStringHelper.RemovePossibleQueryString(fullUrl);
+			var requestUri = WebUtils.RemovePossibleQueryString(fullUrl);
 			if (new Uri(requestUri) is not Uri uri || !HybridWebViewHandler.AppOriginUri.IsBaseOf(uri))
 			{
 				return null;
