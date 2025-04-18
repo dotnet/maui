@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Versioning;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Foundation;
@@ -150,6 +149,12 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
+				var url = urlSchemeTask.Request.Url.AbsoluteString ?? "";
+
+				var logger = Handler.MauiContext?.CreateLogger<HybridWebViewHandler>();
+
+				logger?.LogDebug("Intercepting request for {Url}.", url);
+
 				// 1. First check if the app wants to modify or override the request.
 				{
 					// 1.a. First, create the event args
@@ -161,16 +166,19 @@ namespace Microsoft.Maui.Handlers
 					// 1.c. If the app reported that it completed the request, then we do nothing more
 					if (handled)
 					{
+						logger?.LogDebug("Request for {Url} was handled by the user.", url);
+
 						return;
 					}
 				}
 
 				// 2. If this is an app request, then assume the request is for a local resource.
-				var url = urlSchemeTask.Request.Url.AbsoluteString ?? "";
 				if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
 				{
+					logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", url);
+
 					// 2.a. Check if the request is for a local resource
-					var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url);
+					var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url, logger);
 
 					// 2.b. Return the response header
 					using var dic = new NSMutableDictionary<NSString, NSString>();
@@ -201,9 +209,11 @@ namespace Microsoft.Maui.Handlers
 				// 3. If the request is not handled by the app nor is it a local source, then we let the WKWebView
 				//    handle the request as it would normally do. This means that it will try to load the resource
 				//    from the internet or from the local cache.
+
+				logger?.LogDebug("Request for {Url} was not handled.", url);
 			}
 
-			private async Task<(byte[]? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string? url)
+			private async Task<(byte[]? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string? url, ILogger? logger)
 			{
 				if (Handler is null)
 				{
@@ -222,6 +232,8 @@ namespace Microsoft.Maui.Handlers
 					// 1. Try special InvokeDotNet path
 					if (relativePath == InvokeDotNetPath)
 					{
+						logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", url);
+
 						var fullUri = new Uri(fullUrl!);
 						var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
 						var contentBytes = await Handler.InvokeDotNetAsync(invokeQueryString);
@@ -243,8 +255,8 @@ namespace Microsoft.Maui.Handlers
 					{
 						if (!ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
 						{
-							// TODO: Log this
 							contentType = "text/plain";
+							logger?.LogWarning("Could not determine content type for '{relativePath}'", relativePath);
 						}
 					}
 
@@ -252,10 +264,15 @@ namespace Microsoft.Maui.Handlers
 
 					if (File.Exists(assetPath))
 					{
+						// 2.a. If something was found, return the content
+						logger?.LogDebug("Request for {Url} will return an app package file.", url);
+
 						return (File.ReadAllBytes(assetPath), contentType, StatusCode: 200);
 					}
 				}
 
+				// 2.b. Otherwise, return a 404
+				logger?.LogDebug("Request for {Url} could not be fulfilled.", url);
 				return (null, ContentType: null, StatusCode: 404);
 			}
 

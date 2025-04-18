@@ -6,10 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Web;
 using Android.Webkit;
+using Java.Net;
 using Microsoft.Extensions.Logging;
 using AWebView = Android.Webkit.WebView;
 
@@ -32,17 +31,23 @@ namespace Microsoft.Maui.Platform
 
 		public override WebResourceResponse? ShouldInterceptRequest(AWebView? view, IWebResourceRequest? request)
 		{
+			var url = request?.Url?.ToString();
+
+			var logger = Handler?.MauiContext?.CreateLogger<MauiHybridWebViewClient>();
+
+			logger?.LogDebug("Intercepting request for {Url}.", url);
+
 			if (view is not null && request is not null)
 			{
 				// 1. Check if the app wants to modify or override the request
-				var response = TryInterceptResponseStream(view, request);
+				var response = TryInterceptResponseStream(view, request, url, logger);
 				if (response is not null)
 				{
 					return response;
 				}
 
 				// 2. Check if the request is for a local resource
-				response = GetResponseStream(view, request);
+				response = GetResponseStream(view, request, url, logger);
 				if (response is not null)
 				{
 					return response;
@@ -50,10 +55,12 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// 3. Otherwise, we let the request go through as is
+			logger?.LogDebug("Request for {Url} was not handled.", url);
+
 			return base.ShouldInterceptRequest(view, request);
 		}
 
-		private WebResourceResponse? TryInterceptResponseStream(AWebView view, IWebResourceRequest request)
+		private WebResourceResponse? TryInterceptResponseStream(AWebView view, IWebResourceRequest request, string? url, ILogger? logger)
 		{
 			if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
 			{
@@ -69,35 +76,40 @@ namespace Microsoft.Maui.Platform
 			// 3. If the app reported that it completed the request, then we do nothing more
 			if (handled)
 			{
+				logger?.LogDebug("Request for {Url} was handled by the user.", url);
+
 				return platformArgs.Response;
 			}
 
 			return null;
 		}
 
-		private WebResourceResponse? GetResponseStream(AWebView view, IWebResourceRequest request)
+		private WebResourceResponse? GetResponseStream(AWebView view, IWebResourceRequest request, string? fullUrl, ILogger? logger)
 		{
 			if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
 			{
 				return null;
 			}
 
-			var fullUrl = request?.Url?.ToString();
 			var requestUri = WebUtils.RemovePossibleQueryString(fullUrl);
 			if (new Uri(requestUri) is not Uri uri || !HybridWebViewHandler.AppOriginUri.IsBaseOf(uri))
 			{
 				return null;
 			}
 
+			logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", fullUrl);
+
 			var relativePath = HybridWebViewHandler.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
 
 			// 1. Try special InvokeDotNet path
 			if (relativePath == HybridWebViewHandler.InvokeDotNetPath)
 			{
+				logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", fullUrl);
+
 				var fullUri = new Uri(fullUrl!);
 				var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
 				var contentBytesTask = Handler.InvokeDotNetAsync(invokeQueryString);
-				var responseStream = new AsyncStream(contentBytesTask, Handler);
+				var responseStream = new AsyncStream(contentBytesTask, logger);
 				return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), responseStream);
 			}
 
@@ -113,7 +125,7 @@ namespace Microsoft.Maui.Platform
 				if (!HybridWebViewHandler.ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
 				{
 					contentType = "text/plain";
-					Handler.MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogWarning("Could not determine content type for '{relativePath}'", relativePath);
+					logger?.LogWarning("Could not determine content type for '{relativePath}'", relativePath);
 				}
 			}
 
@@ -123,6 +135,7 @@ namespace Microsoft.Maui.Platform
 			if (contentStream is not null)
 			{
 				// 3.a. If something was found, return the content
+				logger?.LogDebug("Request for {Url} will return an app package file.", fullUrl);
 
 				// TODO: We don't know the content length because Android doesn't tell us. Seems to work without it!
 
@@ -130,6 +143,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			// 3.b. Otherwise, return a 404
+			logger?.LogDebug("Request for {Url} could not be fulfilled.", fullUrl);
 			return new WebResourceResponse(null, "UTF-8", 404, "Not Found", null, null);
 		}
 
@@ -178,122 +192,6 @@ namespace Microsoft.Maui.Platform
 		internal void Disconnect()
 		{
 			_handler.SetTarget(null);
-		}
-
-		class AsyncStream : Stream
-		{
-			readonly Task<Stream> _streamTask;
-			readonly WeakReference<HybridWebViewHandler> _handler;
-			Stream? _stream;
-			bool _isDisposed;
-
-			public AsyncStream(Task<byte[]?> byteArrayTask, HybridWebViewHandler handler)
-				: this(AsStreamTask(byteArrayTask), handler)
-			{
-			}
-
-			public AsyncStream(Task<Stream> streamTask, HybridWebViewHandler handler)
-			{
-				_streamTask = streamTask ?? throw new ArgumentNullException(nameof(streamTask));
-				_handler = new WeakReference<HybridWebViewHandler>(handler ?? throw new ArgumentNullException(nameof(handler)));
-			}
-
-			HybridWebViewHandler? Handler => _handler?.GetTargetOrDefault();
-
-			static async Task<Stream> AsStreamTask(Task<byte[]?> task)
-			{
-				var bytes = await task;
-				if (bytes is null)
-					return Stream.Null;
-				return new MemoryStream(bytes);
-			}
-
-			async Task<Stream> GetStreamAsync(CancellationToken cancellationToken = default)
-			{
-				ObjectDisposedException.ThrowIf(_isDisposed, nameof(AsyncStream));
-
-				if (_stream != null)
-					return _stream;
-
-				_stream = await _streamTask.ConfigureAwait(false);
-				return _stream;
-			}
-
-			public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
-			{
-				try
-				{
-					var stream = await GetStreamAsync(cancellationToken).ConfigureAwait(false);
-					return await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
-				}
-				catch (Exception ex)
-				{
-					Handler?.MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "Error invoking .NET method from JavaScript: {ErrorMessage}", ex.Message);
-					throw;
-				}
-			}
-
-			public override int Read(byte[] buffer, int offset, int count)
-			{
-				try
-				{
-					var stream = GetStreamAsync().GetAwaiter().GetResult();
-					return stream.Read(buffer, offset, count);
-				}
-				catch (Exception ex)
-				{
-					Handler?.MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "Error invoking .NET method from JavaScript: {ErrorMessage}", ex.Message);
-					throw;
-				}
-			}
-
-			public override void Flush() => throw new NotSupportedException();
-
-			public override Task FlushAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
-
-			public override bool CanRead => !_isDisposed;
-
-			public override bool CanSeek => false;
-
-			public override bool CanWrite => false;
-
-			public override long Length => throw new NotSupportedException();
-
-			public override long Position
-			{
-				get => throw new NotSupportedException();
-				set => throw new NotSupportedException();
-			}
-
-			public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
-
-			public override void SetLength(long value) => throw new NotSupportedException();
-
-			public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-
-			protected override void Dispose(bool disposing)
-			{
-				if (_isDisposed)
-					return;
-
-				if (disposing)
-					_stream?.Dispose();
-
-				_isDisposed = true;
-				base.Dispose(disposing);
-			}
-
-			public override async ValueTask DisposeAsync()
-			{
-				if (_isDisposed)
-					return;
-
-				if (_stream != null)
-					await _stream.DisposeAsync().ConfigureAwait(false);
-
-				_isDisposed = true;
-				await base.DisposeAsync().ConfigureAwait(false);
-			}
 		}
 	}
 }

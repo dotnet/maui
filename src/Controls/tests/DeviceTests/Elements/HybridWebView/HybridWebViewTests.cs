@@ -491,42 +491,9 @@ namespace Microsoft.Maui.DeviceTests
 						var responseLength = responseData.Length.ToString(CultureInfo.InvariantCulture);
 
 						// 2. Create the response
-#if WINDOWS
-						e.PlatformArgs.RequestEventArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
-							new MemoryStream(responseData).AsRandomAccessStream(),
-							200,
-							"OK",
-							$"""
-							Content-Type: application/json
-							Content-Length: {responseLength}
-							""");
-#elif IOS || MACCATALYST
-						var task = e.PlatformArgs.UrlSchemeTask;
-						task.DidReceiveResponse(new Foundation.NSHttpUrlResponse(
-							e.PlatformArgs.Request.Url,
-							200,
-							"HTTP/1.1",
-							new Foundation.NSMutableDictionary<Foundation.NSString, Foundation.NSString>
-							{
-								[(Foundation.NSString)"Content-Type"] = (Foundation.NSString)"application/json",
-								[(Foundation.NSString)"Content-Length"] = (Foundation.NSString)responseLength,
-							}));
-						task.DidReceiveData(Foundation.NSData.FromArray(responseData));
-						task.DidFinish();
-#elif ANDROID
-						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
-							"application/json",
-							"UTF-8",
-							200,
-							"OK",
-							new Dictionary<string, string>
-							{
-								["Content-Length"] = responseLength,
-							},
-							new MemoryStream(responseData));
-#endif
+						e.SetResponse(200, "OK", "application/json", responseData);
 
-						// 3. Let the app know it is done
+						// 3. Let the app know we are handling it entirely
 						e.Handled = true;
 					}
 				};
@@ -543,56 +510,15 @@ namespace Microsoft.Maui.DeviceTests
 		public Task RequestsCanBeInterceptedAndAsyncCustomDataReturned() =>
 			RunTest(async (hybridWebView) =>
 			{
-#pragma warning disable CS1998 // Android does not allow awaiting tasks in the event
-				hybridWebView.WebResourceRequested += async (sender, e) =>
-#pragma warning restore CS1998
+				hybridWebView.WebResourceRequested += (sender, e) =>
 				{
 					if (e.Uri.Host == "0.0.0.1")
 					{
-						// Let the app know that we are handing it... sometime
-						e.Handled = true;
+						// 1. Create the response
+						e.SetResponse(200, "OK", "application/json", GetDataAsync(e.QueryParameters));
 
-#if WINDOWS
-						// Windows uses a deferral to let the webview know that we are going to be async
-						using var deferral = e.PlatformArgs.RequestEventArgs.GetDeferral();
-						var data = await GetDataAsync(e.QueryParameters);
-						e.PlatformArgs.RequestEventArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
-							data.AsRandomAccessStream(),
-							200,
-							"OK",
-							$"""
-							Content-Type: application/json
-							""");
-						await Task.Delay(1_000);
-						deferral.Complete();
-#elif IOS || MACCATALYST
-						// iOS and MacCatalyst will just wait until DidFinish is called
-						var task = e.PlatformArgs.UrlSchemeTask;
-						await Task.Delay(1_000);
-						task.DidReceiveResponse(new Foundation.NSHttpUrlResponse(
-							e.PlatformArgs.Request.Url,
-							200,
-							"HTTP/1.1",
-							new Foundation.NSMutableDictionary<Foundation.NSString, Foundation.NSString>
-							{
-								[(Foundation.NSString)"Content-Type"] = (Foundation.NSString)"application/json",
-							}));
-						var data = await GetDataAsync(e.QueryParameters);
-						task.DidReceiveData(Foundation.NSData.FromStream(data));
-						await Task.Delay(1_000);
-						task.DidFinish();
-#elif ANDROID
-						// Android requires that we return immediately, even if the data is coming later
-						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
-							"application/json",
-							"UTF-8",
-							200,
-							"OK",
-							new Dictionary<string, string>
-							{
-							},
-							new AsyncStream(GetDataAsync(e.QueryParameters)));
-#endif
+						// 2. Let the app know we are handling it entirely
+						e.Handled = true;
 					}
 				};
 
@@ -647,50 +573,16 @@ namespace Microsoft.Maui.DeviceTests
 						var responseLength = responseData.Length.ToString(CultureInfo.InvariantCulture);
 
 						// 3. Create the response
-#if WINDOWS
-						e.PlatformArgs.RequestEventArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
-							new MemoryStream(responseData).AsRandomAccessStream(),
-							200,
-							"OK",
-							$"""
-							Content-Type: application/json
-							Content-Length: {responseLength}
-							Access-Control-Allow-Origin: *
-							Access-Control-Allow-Headers: *
-							Access-Control-Allow-Methods: GET
-							""");
-#elif IOS || MACCATALYST
-						var task = e.PlatformArgs.UrlSchemeTask;
-						task.DidReceiveResponse(new Foundation.NSHttpUrlResponse(
-							e.PlatformArgs.Request.Url,
-							200,
-							"HTTP/1.1",
-							new Foundation.NSMutableDictionary<Foundation.NSString, Foundation.NSString>
-							{
-								[(Foundation.NSString)"Content-Type"] = (Foundation.NSString)"application/json",
-								[(Foundation.NSString)"Content-Length"] = (Foundation.NSString)responseLength,
-								[(Foundation.NSString)"Access-Control-Allow-Origin"] = (Foundation.NSString)"*",
-								[(Foundation.NSString)"Access-Control-Allow-Headers"] = (Foundation.NSString)"*",
-								[(Foundation.NSString)"Access-Control-Allow-Methods"] = (Foundation.NSString)"GET",
-							}));
-						task.DidReceiveData(Foundation.NSData.FromArray(responseData));
-						task.DidFinish();
-#elif ANDROID
-						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
-							"application/json",
-							"UTF-8",
-							200,
-							"OK",
-							new Dictionary<string, string>
-							{
-								["Content-Length"] = responseLength,
-								["Access-Control-Allow-Origin"] = "*",
-								["Access-Control-Allow-Headers"] = "*",
-								["Access-Control-Allow-Methods"] = "GET",
-							},
-							new MemoryStream(responseData));
-#endif
+						var headers = new Dictionary<string, string>
+						{
+							["Content-Length"] = responseLength,
+							["Access-Control-Allow-Origin"] = "*",
+							["Access-Control-Allow-Headers"] = "*",
+							["Access-Control-Allow-Methods"] = "GET",
+						};
+						e.SetResponse(200, "OK", headers, responseData);
 
+						// 4. Let the app know we are handling it entirely
 						e.Handled = true;
 					}
 				};
@@ -841,29 +733,10 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					if (new Uri(uriBase).IsBaseOf(e.Uri))
 					{
-#if WINDOWS
-						e.PlatformArgs.RequestEventArgs.Response = e.PlatformArgs.Sender.Environment.CreateWebResourceResponse(
-							null,
-							403,
-							"Forbidden",
-							null);
-#elif IOS || MACCATALYST
-						e.PlatformArgs.UrlSchemeTask.DidReceiveResponse(new Foundation.NSHttpUrlResponse(
-							e.PlatformArgs.Request.Url,
-							403,
-							"HTTP/1.1",
-							null));
-						e.PlatformArgs.UrlSchemeTask.DidFinish();
-#elif ANDROID
-						e.PlatformArgs.Response = new global::Android.Webkit.WebResourceResponse(
-							null,
-							null,
-							403,
-							"Forbidden",
-							null,
-							null);
-#endif
+						// 1. Create the response
+						e.SetResponse(403, "Forbidden");
 
+						// 2. Let the app know we are handling it entirely
 						e.Handled = true;
 					}
 				};
