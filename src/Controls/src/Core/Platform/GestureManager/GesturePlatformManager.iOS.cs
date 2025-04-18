@@ -527,7 +527,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				NumberOfTapsRequired = (uint)tapGesture.NumberOfTapsRequired,
 				ShouldRecognizeSimultaneously = ShouldRecognizeTapsTogether,
-				//CancelsTouchesInView = false
 			};
 
 			// For whatever reason the secondary mask doesn't work on catalyst
