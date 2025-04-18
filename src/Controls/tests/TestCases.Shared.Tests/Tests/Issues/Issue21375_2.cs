@@ -25,24 +25,24 @@ public class Issue21375_2 : _IssuesUITest
 
         App.TapCoordinates(centerX, firstItemY);
         App.WaitForElement("calculateButton").Tap();
-        VerifyScreenshot(Issue21375.TestContext.Test.SelectedItemsShowSelected.MethodName + "_single");
+        VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_single");
 
         App.WaitForElement("multipleButton").Tap();
         App.TapCoordinates(centerX, secondItemY);
         App.TapCoordinates(centerX, thirdItemY);
         App.WaitForElement("calculateButton").Tap();
-        VerifyScreenshot(Issue21375.TestContext.Test.SelectedItemsShowSelected.MethodName + "_multiple");
+        VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_multiple");
 
         App.WaitForElement("noneButton").Tap();
         App.WaitForElement("calculateButton").Tap();
-        VerifyScreenshot(Issue21375.TestContext.Test.SelectedItemsShowSelected.MethodName + "_none");
+        VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_none");
 
         App.WaitForElement("singleButton").Tap();
         App.WaitForElement("calculateButton").Tap();
 
         App.WaitForElement("multipleButton").Tap();
         App.WaitForElement("calculateButton").Tap();
-        VerifyScreenshot(Issue21375.TestContext.Test.SelectedItemsShowSelected.MethodName + "_multiple");
+        VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_multiple");
     }
 }
 #endif
