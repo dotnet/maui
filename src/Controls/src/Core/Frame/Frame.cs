@@ -111,22 +111,27 @@ namespace Microsoft.Maui.Controls
 		// this code and Border into LayoutExtensions
 		Size ICrossPlatformLayout.CrossPlatformArrange(Graphics.Rect bounds)
 		{
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformArrangeStart);
 #if !WINDOWS
 			if (BorderColor is not null)
 				bounds = bounds.Inset(((IBorderElement)this).BorderWidth); // Windows' implementation would cause an incorrect double-counting of the inset
 #endif
 			this.ArrangeContent(bounds);
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformArrangeEnd);
 			return bounds.Size;
 		}
 
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureStart);
 			var inset = Padding;
 #if !WINDOWS
 			if (BorderColor is not null)
 				inset += ((IBorderElement)this).BorderWidth; // Windows' implementation would cause an incorrect double-counting of the inset
 #endif
-			return this.MeasureContent(inset, widthConstraint, heightConstraint);
+			var size = this.MeasureContent(inset, widthConstraint, heightConstraint);
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureEnd);
+			return size;
 		}
 	}
 

@@ -261,15 +261,20 @@ namespace Microsoft.Maui.Controls
 
 		public Size CrossPlatformArrange(Graphics.Rect bounds)
 		{
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformArrangeStart);
 			var inset = bounds.Inset(StrokeThickness);
 			this.ArrangeContent(inset);
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformArrangeEnd);
 			return bounds.Size;
 		}
 
 		public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureStart);
 			var inset = Padding + StrokeThickness;
-			return this.MeasureContent(inset, widthConstraint, heightConstraint);
+			var size = this.MeasureContent(inset, widthConstraint, heightConstraint);
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureEnd);
+			return size;
 		}
 
 		public static void ContentChanged(BindableObject bindable, object oldValue, object newValue)
