@@ -138,6 +138,16 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		protected override void OnHandlerChanged()
+		{
+			base.OnHandlerChanged();
+			if (Handler is null)
+			{
+				StopNotifyingStrokeShapeChanges();
+				StopNotifyingStrokeChanges();
+			}
+		}
+
 		/// <summary>Bindable property for <see cref="StrokeThickness"/>.</summary>
 		public static readonly BindableProperty StrokeThicknessProperty =
 			BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Border), 1.0, propertyChanged: StrokeThicknessChanged);
