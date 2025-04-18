@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable RS0016 // Add public types and members to the declared API
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
@@ -65,6 +66,16 @@ namespace Microsoft.Maui.Controls
 		/// Raised when a raw message is received from the web view. Raw messages are strings that have no additional processing.
 		/// </summary>
 		public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
+
+		bool IHybridWebView.WebResourceRequested(WebResourceRequestedEventArgs args)
+		{
+			var platformArgs = new PlatformHybridWebViewWebResourceRequestedEventArgs(args);
+			var e = new HybridWebViewWebResourceRequestedEventArgs(platformArgs);
+			WebResourceRequested?.Invoke(this, e);
+			return e.Handled;
+		}
+
+		public event EventHandler<HybridWebViewWebResourceRequestedEventArgs>? WebResourceRequested;
 
 		/// <summary>
 		/// Sends a raw message to the code running in the web view. Raw messages have no additional processing.

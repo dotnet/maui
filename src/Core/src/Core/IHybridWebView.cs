@@ -1,4 +1,5 @@
-﻿using System;
+﻿#pragma warning disable RS0016 // Add public types and members to the declared API
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
@@ -65,5 +66,11 @@ namespace Microsoft.Maui
 			JsonTypeInfo<TReturnType> returnTypeJsonTypeInfo,
 			object?[]? paramValues = null,
 			JsonTypeInfo?[]? paramJsonTypeInfos = null);
+
+#if NETSTANDARD
+		bool WebResourceRequested(WebResourceRequestedEventArgs args);
+#else
+		bool WebResourceRequested(WebResourceRequestedEventArgs args) => false;
+#endif
 	}
 }
