@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Controls.TestCases.HostApp.Issues.Issue27831"
              Title="Issue27831">
-    <VerticalStackLayout VerticalOptions="Start">
+    <VerticalStackLayout VerticalOptions="Center">
         <Editor AutomationId="MauiEditor" Placeholder="Enter...">
             <Editor.GestureRecognizers>
                 <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped" />

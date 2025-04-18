@@ -1,4 +1,4 @@
-using System;
+#if TEST_FAILS_ON_CATALYST // Swipe Action not support on with Appium on Maccatalyst
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -28,3 +28,4 @@ public class Issue16203 : _IssuesUITest
         Assert.That(text2,Is.EqualTo("Swiped"));
 	}
 }
+#endif
