@@ -86,7 +86,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElementTillPageNavigationSettled("HeaderViewLabel");
 			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.ScrollDown("CollectionViewControl",ScrollStrategy.Gesture, 0.9, 500);
+			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
 			App.WaitForElementTillPageNavigationSettled("Pepper");
 			App.WaitForNoElement("CollectionView Header(Grid View)");
 		}
@@ -487,7 +487,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("HeaderViewLabel");
 		}
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST &&TEST_FAILS_ON_IOS //In windows, related issue: https://github.com/dotnet/maui/issues/27946 and In CV2, related issue: https://github.com/dotnet/maui/issues/28678
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In windows, related issue: https://github.com/dotnet/maui/issues/27946 and In CV2, related issue: https://github.com/dotnet/maui/issues/28678
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderStringWithItemsLayoutVerticalGrid()
@@ -733,7 +733,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		}
 #endif
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS  //In CV2, unintended synchronization between the HeaderTemplate/FooterTemplate and Header/Footer views, related issue: https://github.com/dotnet/maui/issues/28504
-//In windows, related issue: https://github.com/dotnet/maui/issues/28337
+		//In windows, related issue: https://github.com/dotnet/maui/issues/28337
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWhenHeaderString()
@@ -814,7 +814,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Mango");
 		}
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST &&TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID //In windows, related issue: https://github.com/dotnet/maui/issues/27946, In CV2, related issue: https://github.com/dotnet/maui/issues/28678 and In android related issue:https://github.com/dotnet/maui/issues/28337
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID //In windows, related issue: https://github.com/dotnet/maui/issues/27946, In CV2, related issue: https://github.com/dotnet/maui/issues/28678 and In android related issue:https://github.com/dotnet/maui/issues/28337
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWithItemsLayoutVerticalGrid()
@@ -1338,7 +1338,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Apple");
 		}
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST &&TEST_FAILS_ON_IOS //In windows, related issue: https://github.com/dotnet/maui/issues/27946 and In CV2, related issue: https://github.com/dotnet/maui/issues/28678
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In windows, related issue: https://github.com/dotnet/maui/issues/27946 and In CV2, related issue: https://github.com/dotnet/maui/issues/28678
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterStringWithItemsLayoutVerticalGrid()
@@ -1703,7 +1703,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElementTillPageNavigationSettled("Apple");
 		}
 
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST &&TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID //In windows, related issue: https://github.com/dotnet/maui/issues/27946, In CV2, related issue: https://github.com/dotnet/maui/issues/28678, In android related issue: https://github.com/dotnet/maui/issues/28337
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID //In windows, related issue: https://github.com/dotnet/maui/issues/27946, In CV2, related issue: https://github.com/dotnet/maui/issues/28678, In android related issue: https://github.com/dotnet/maui/issues/28337
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyFooterTemplateWithItemsLayoutVerticalGrid()
