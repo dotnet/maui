@@ -153,13 +153,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(selected);
 		}
 
-		public static object[] DateTimes = {
+		readonly static object[] DateTimes = {
 			new object[] { new DateTime (2006, 12, 20), new DateTime (2011, 11, 30) },
 			new object[] { new DateTime (1900, 1, 1), new DateTime (1999, 01, 15) }, // Minimum Date
 			new object[] { new DateTime (2006, 12, 20), new DateTime (2100, 12, 31) }, // Maximum Date
 			new object[] { new DateTime (2006, 12, 20), null },
 			new object[] { null, new DateTime (2006, 12, 20) },
-			new object[] { null, null },
 		};
 
 		public static IEnumerable<object[]> DateTimesData()
@@ -171,7 +170,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Theory, MemberData(nameof(DateTimesData))]
-		public void DatePickerSelectedEventArgs(DateTime initialDate, DateTime finalDate)
+		public void DatePickerSelectedEventArgs(DateTime? initialDate, DateTime? finalDate)
 		{
 			var datePicker = new DatePicker();
 			datePicker.Date = initialDate;
@@ -192,6 +191,45 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(datePicker, pickerFromSender);
 			Assert.Equal(initialDate, oldDate);
 			Assert.Equal(finalDate, newDate);
+		}
+
+		readonly static object[] DateTimesForSelectedTrigger = [
+			new object[] { new DateTime (2006, 12, 20), new DateTime (2011, 11, 30), true },
+			new object[] { new DateTime (1900, 1, 1), new DateTime (1999, 01, 15), true }, // Minimum Date
+			new object[] { new DateTime (2006, 12, 20), new DateTime (2100, 12, 31), true }, // Maximum Date
+			new object[] { new DateTime (2006, 12, 20), null, true },
+			new object[] { null, new DateTime (2006, 12, 20), true },
+			new object[] { new DateTime(2006, 12, 20), new DateTime (2006, 12, 20), false },
+			new object[] { null, null, false },
+		];
+
+		public static IEnumerable<object[]> DateTimesForSelectedTriggerData()
+		{
+			foreach (var o in DateTimesForSelectedTrigger)
+			{
+				yield return o as object[];
+			}
+		}
+
+		[Theory, MemberData(nameof(DateTimesForSelectedTriggerData))]
+		public void DatePickerSelectedEventTriggered(DateTime? initialDate, DateTime? finalDate, bool shouldDateSelectedTrigger)
+		{
+			bool isDateSelectedTriggered = false;
+
+			var datePicker = new DatePicker();
+			datePicker.Date = initialDate;
+
+			DateTime? oldDate = new DateTime();
+			DateTime? newDate = new DateTime();
+
+			datePicker.DateSelected += (s, e) =>
+			{
+				isDateSelectedTriggered = true;
+			};
+
+			datePicker.Date = finalDate;
+
+			Assert.Equal(shouldDateSelectedTrigger, isDateSelectedTriggered);
 		}
 
 		[Fact]
