@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIDatePicker? picker)
 		{
-			if (picker != null && picker.Date.ToDateTime() != datePicker.Date)
+			if (picker != null && picker.Date != NSDate.DistantPast && picker.Date.ToDateTime() != datePicker.Date)
 			{
 				picker.SetDate(datePicker.Date?.ToNSDate() ?? NSDate.DistantPast, false);
 			}
