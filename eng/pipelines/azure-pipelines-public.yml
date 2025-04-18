@@ -43,8 +43,8 @@ parameters:
   - name: VM_IMAGE_HOST
     type: object
     default:
-      name: Azure Pipelines
-      vmImage: $(HostedWindowsImage)
+      name: NetCore-Public
+      image: 1es-windows-2022
       os: windows
 
 stages:
@@ -53,6 +53,18 @@ stages:
   parameters:
     pool: ${{ parameters.VM_IMAGE_HOST }}
     runAsPublic: true
+    prepareSteps:
+      - template: /eng/pipelines/common/provision.yml@self
+        parameters:
+          checkoutDirectory: '$(System.DefaultWorkingDirectory)'
+          skipJdk: false
+          skipAndroidCommonSdks: false
+          skipAndroidPlatformApis: false
+          onlyAndroidPlatformDefaultApis: true
+          skipAndroidEmulatorImages: true
+          skipAndroidCreateAvds: true
+          skipProvisioning: true
+          skipXcode: true
 
 - template: /eng/pipelines/arcade/stage-unit-tests.yml@self
   parameters:

@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+#if TEST_FAILS_ON_CATALYST // Since this test verifies the scrolling behavior in the editor control and the App.ScrollDown function is inconsistent, relying on screenshot verification causes flakiness in CI. It needs to be validated using an alternative approach, or else it would be better to consider this for manual testing.
+// Issue for reenable: https://github.com/dotnet/maui/issues/29025
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -24,3 +26,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
