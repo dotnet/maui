@@ -18,6 +18,6 @@ public class Issue14497 : _IssuesUITest
 		App.WaitForElement(ChangeSearchText);
 		App.Tap(ChangeSearchText);
 		var searchHandlerString = App.GetShellSearchHandler().GetText();
-		Assert.That(searchHandlerString, Is.EqualTo("Hello World")); 
+		Assert.That(searchHandlerString, Is.EqualTo("Hello World"));
 	}
 }
