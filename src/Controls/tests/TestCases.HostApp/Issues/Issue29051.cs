@@ -27,7 +27,7 @@ public class Issue29051 : ContentPage
 		Grid.SetRow(instructionsStack, 0);
 		mainGrid.Children.Add(instructionsStack);
 
-		var collectionView = new CollectionView
+		var collectionView = new CollectionView1
 		{
 			Header = "Monkeys",
 			Footer = "2019",
