@@ -1000,6 +1000,14 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		internal event EventHandler PlatformEnabledChanged;
 
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		internal event EventHandler<LayoutPassEvent> LayoutPassEvent;
+
+		private protected void TriggerLayoutPassEvent(LayoutPassEvent layoutPassEvent)
+		{
+			LayoutPassEvent?.Invoke(this, layoutPassEvent);
+		}
+
 		/// <summary>
 		/// Gets or sets a value that indicates whether this elements's platform equivalent element is enabled.
 		/// </summary>
@@ -1187,7 +1195,7 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>If the minimum size that the element needs in order to be displayed on the device is larger than can be accommodated by <paramref name="widthConstraint" /> and <paramref name="heightConstraint" />, the return value may represent a rectangle that is larger in either one or both of those parameters.</remarks>
 		public Size Measure(double widthConstraint, double heightConstraint)
 		{
-			var result = (this as IView).Measure(widthConstraint, heightConstraint);
+			var result = ((IView)this).Measure(widthConstraint, heightConstraint);
 			return result;
 		}
 
@@ -1904,13 +1912,16 @@ namespace Microsoft.Maui.Controls
 		/// </remarks>
 		public void Arrange(Rect bounds)
 		{
-			ArrangeOverride(bounds);
+			((IView)this).Arrange(bounds);
 		}
 
 		/// <inheritdoc/>
 		Size IView.Arrange(Rect bounds)
 		{
-			return ArrangeOverride(bounds);
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.ArrangeStart);
+			var size = ArrangeOverride(bounds);
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.ArrangeEnd);
+			return size;
 		}
 
 		/// <summary>
@@ -1955,7 +1966,9 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.MeasureStart);
 			DesiredSize = MeasureOverride(widthConstraint, heightConstraint);
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.MeasureEnd);
 			return DesiredSize;
 		}
 
