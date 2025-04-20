@@ -352,6 +352,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (image != null)
 				{
 					icon = result?.Value;
+					if (AppContext.TryGetSwitch("iOSResizeFlyoutIconToSystemDefault", out bool resize))
+					{
+						icon = FlyoutViewExtensions.AutoResizeFlyoutIcon(icon);
+					}
 				}
 				else if (String.IsNullOrWhiteSpace(text) && IsRootPage && _flyoutBehavior == FlyoutBehavior.Flyout)
 				{
