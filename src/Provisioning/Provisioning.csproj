@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.Build.NoTargets">
+﻿<Project Sdk="Microsoft.Build.NoTargets">
 
 	<!-- Imports all the Provisioning versions -->
 	<Import Project="../../eng/Versions.props" />
@@ -118,66 +118,167 @@
 
 	<Target Name="ProvisionAppiumDrivers" DependsOnTargets="InstallAppium">
 
-		<!-- Get a json output list of the installed appium drivers with their version info -->
-		<Exec Command="appium driver list --installed --json" ConsoleToMSBuild="True" IgnoreExitCode="True">
-			<Output TaskParameter="ConsoleOutput" ItemName="_AppiumDriverListInstalledJsonLines" />
-		</Exec>
+    <!-- Create a temp file for JSON output to avoid string concatenation issues -->
+    <PropertyGroup>
+      <AppiumDriverListJsonFile>$(MSBuildThisFileDirectory)obj\appium-drivers.json</AppiumDriverListJsonFile>
+    </PropertyGroup>
+    
+    <!-- Ensure output directory exists -->
+    <MakeDir Directories="$(MSBuildThisFileDirectory)obj" Condition="!Exists('$(MSBuildThisFileDirectory)obj')" />
 
-		<!-- Concatenate the item group console output lines into one single property string -->
-		<PropertyGroup>
-			<_AppiumDriverListInstalledJson>@(_AppiumDriverListInstalledJsonLines->'%(Identity)', ' ')</_AppiumDriverListInstalledJson>
-		</PropertyGroup>
+    <!-- Get JSON output list of installed appium drivers with their version info -->
+    <Exec
+        Command="appium driver list --installed --json > &quot;$(AppiumDriverListJsonFile)&quot;" StandardOutputImportance="low" StandardErrorImportance="high" ContinueOnError="true">
+      <Output TaskParameter="ExitCode" PropertyName="AppiumDriverListExitCode" />
+    </Exec>
 
-		<!-- Get the version of each driver from the JSON output and put it in a property -->
-		<JsonPeek Content="$(_AppiumDriverListInstalledJson)" Query="$.%(AppiumDrivers.Identity).version">
-			<Output TaskParameter="Result" PropertyName="_AppiumVersion_%(AppiumDrivers.Identity)" />
-		</JsonPeek>
+    <!-- Alert if driver list command failed -->
+    <Warning
+        Text="Failed to get Appium driver list (exit code: $(AppiumDriverListExitCode)). Will try to install all drivers."
+        Condition="'$(AppiumDriverListExitCode)' != '0'" />
 
-		<!-- Get the groups of drivers to install vs update based on the versions resolved and expected -->
-		<ItemGroup>
-			<AppiumDriversToInstall Include="@(AppiumDrivers)" KeepMetadata="Version" Condition=" '$(_AppiumVersion_%(AppiumDrivers.Identity))' == '' " />
-			<AppiumDriversToUpdate Include="@(AppiumDrivers)" KeepMetadata="Version" Condition=" '$(_AppiumVersion_%(AppiumDrivers.Identity))' != '' AND '$(_AppiumVersion_%(AppiumDrivers.Identity))' != '%(AppiumDrivers.Version)' " />
-		</ItemGroup>
+    <!-- Read the JSON file content if it exists -->
+    <ReadLinesFromFile File="$(AppiumDriverListJsonFile)" Condition="Exists('$(AppiumDriverListJsonFile)')">
+      <Output TaskParameter="Lines" ItemName="_AppiumDriverListJsonLines" />
+    </ReadLinesFromFile>
 
+    <!-- Join lines properly to create valid JSON -->
+    <PropertyGroup>
+      <_AppiumDriverListJson>@(_AppiumDriverListJsonLines, '')</_AppiumDriverListJson>
+    </PropertyGroup>
+    
+    <!-- Get the version of each driver from the JSON output and put it in a property -->
+    <JsonPeek
+        Content="$(_AppiumDriverListJson)" Query="$.%(AppiumDrivers.Identity).version" Condition="'$(_AppiumDriverListJson)' != ''">
+      <Output TaskParameter="Result" PropertyName="_AppiumVersion_%(AppiumDrivers.Identity)" />
+    </JsonPeek>
 
-		<!-- Update any drivers needing an update (if any) -->
-		<Exec Command="appium driver update %(AppiumDriversToUpdate.Identity)" Condition=" '@(AppiumDriversToUpdate)' != '' " />
+    <!-- Get the groups of drivers to install vs update based on the versions resolved and expected -->
+    <ItemGroup>
+      <AppiumDriversToInstall Include="@(AppiumDrivers)" KeepMetadata="Version"
+                             Condition=" '$(_AppiumVersion_%(AppiumDrivers.Identity))' == '' " />
+      <AppiumDriversToUpdate Include="@(AppiumDrivers)" KeepMetadata="Version"
+                            Condition=" '$(_AppiumVersion_%(AppiumDrivers.Identity))' != '' AND 
+                                         '$(_AppiumVersion_%(AppiumDrivers.Identity))' != '%(AppiumDrivers.Version)' " />
+    </ItemGroup>
 
-		<!-- Install any drivers not yet installed (if any) -->
-		<Exec Command="appium driver install %(AppiumDriversToInstall.Identity)@%(AppiumDriversToInstall.Version)" Condition=" '@(AppiumDriversToInstall)' != '' " />
+    <!-- Log what we're going to do -->
+    <Message Text="Appium drivers to update: @(AppiumDriversToUpdate->'%(Identity) ($(AppiumVersion_%(Identity)) → %(Version))', ', ')"
+             Importance="high"
+             Condition="'@(AppiumDriversToUpdate)' != ''" />
+    <Message Text="Appium drivers to install: @(AppiumDriversToInstall->'%(Identity)@%(Version)', ', ')"
+             Importance="high"
+             Condition="'@(AppiumDriversToInstall)' != ''" />
+    <Message Text="All Appium drivers are up-to-date."
+             Importance="normal"
+             Condition="'@(AppiumDriversToUpdate)' == '' AND '@(AppiumDriversToInstall)' == ''" />
 
-		<!-- Run doctor command just so we have some output -->
-		<Exec Command="appium driver doctor %(AppiumDrivers.Identity)" ContinueOnError="true" Condition=" '$(SkipAppiumDoctor)' != 'True' " />
+    <!-- Update any drivers needing an update (if any) with timeout -->
+    <Exec
+        Command="appium driver update %(AppiumDriversToUpdate.Identity)"
+        Condition="'@(AppiumDriversToUpdate)' != ''"
+        Timeout="300000"
+        StandardOutputImportance="normal"
+        StandardErrorImportance="high">
+      <Output TaskParameter="ExitCode" PropertyName="_UpdateExitCode_%(AppiumDriversToUpdate.Identity)" />
+    </Exec>
+
+    <!-- Install any drivers not yet installed (if any) with timeout -->
+    <Exec
+        Command="appium driver install %(AppiumDriversToInstall.Identity)@%(AppiumDriversToInstall.Version)"
+        Condition="'@(AppiumDriversToInstall)' != ''"
+        Timeout="300000"
+        StandardOutputImportance="normal"
+        StandardErrorImportance="high">
+      <Output TaskParameter="ExitCode" PropertyName="_InstallExitCode_%(AppiumDriversToInstall.Identity)" />
+    </Exec>
+
+    <!-- Run doctor command just as a batch for all drivers rather than one by one -->
+    <PropertyGroup>
+      <_AppiumDriversString>@(AppiumDrivers->'%(Identity)', ' ')</_AppiumDriversString>
+    </PropertyGroup>
+
+    <Exec
+        Command="appium driver doctor $(_AppiumDriversString)"
+        ContinueOnError="true"
+        Condition="'$(SkipAppiumDoctor)' != 'True'"
+        StandardOutputImportance="normal"
+        StandardErrorImportance="high"
+        Timeout="120000" /> " />
 
 		<!-- Run driver list again for our records -->
-		<Exec Command="appium driver list --installed" ContinueOnError="true" />
+		<Exec Command="appium driver list --installed" ContinueOnError="true" StandardOutputImportance="normal" />
 	</Target>
 
 	<Target Name="InstallAppium">
-		<!-- Get the NPM package version for appium if installed -->
-		<!-- this uses loglevel error to prevent extra noise in the console output that isn't json -->
-		<Exec Command="npm list -g appium --json --depth 1 --loglevel error" ConsoleToMSBuild="True" IgnoreExitCode="True">
-			<Output TaskParameter="ConsoleOutput" ItemName="_AppiumNpmListOutputLines" />
-		</Exec>
+    <!-- Create a temp file for the npm list output -->
+    <PropertyGroup>
+      <NpmListJsonFile>$(MSBuildThisFileDirectory)obj\npm-list.json</NpmListJsonFile>
+    </PropertyGroup>
+    
+		<!-- Ensure output directory exists -->
+    <MakeDir Directories="$(MSBuildThisFileDirectory)obj" Condition="!Exists('$(MSBuildThisFileDirectory)obj')" />
 
-		<!-- Concat the console output lines into a single property -->
-		<PropertyGroup>
-			<_AppiumNpmListOutput>@(_AppiumNpmListOutputLines->'%(Identity)', ' ')</_AppiumNpmListOutput>
-		</PropertyGroup>
+    <!-- Get the NPM package version for appium if installed, redirect to file to avoid console output issues -->
+    <Exec 
+        Command="npm list -g appium --json --depth 1 --loglevel error > &quot;$(NpmListJsonFile)&quot;" 
+        ContinueOnError="true"
+        StandardErrorImportance="high">
+        <Output TaskParameter="ExitCode" PropertyName="NpmListExitCode" />
+    </Exec>
 
-		<!-- Peek the appium version info from the json output -->
-		<JsonPeek Content="$(_AppiumNpmListOutput)" Query="$.dependencies.appium.version">
+    <!-- Read the file content if npm list command was successful -->
+    <ReadLinesFromFile
+        File="$(NpmListJsonFile)"
+        Condition="Exists('$(NpmListJsonFile)') AND '$(NpmListExitCode)' == '0'">
+      <Output TaskParameter="Lines" ItemName="_AppiumNpmListJsonLines" />
+    </ReadLinesFromFile>
+
+    <!-- Concat the file lines into a single property -->
+    <PropertyGroup>
+      <_AppiumNpmListJson>@(_AppiumNpmListJsonLines, '')</_AppiumNpmListJson>
+    </PropertyGroup>
+
+    <!-- Peek the appium version info from the json output -->
+    <JsonPeek
+        Content="$(_AppiumNpmListJson)"
+        Query="$.dependencies.appium.version"
+        Condition="'$(_AppiumNpmListJson)' != ''">
 			<Output TaskParameter="Result" PropertyName="_AppiumNpmListVersion" />
 		</JsonPeek>
 
-		<!-- Install appium at the specified version if necessary -->
-		<Exec Command="npm i --location=global appium@$(AppiumVersion)" Condition=" '$(_AppiumNpmListVersion)' != '$(AppiumVersion)' " />
+    <!-- Log what we're going to do -->
+    <Message
+        Text="Installing Appium $(AppiumVersion) (current version: $(_AppiumNpmListVersion))"
+        Importance="high"
+        Condition="'$(_AppiumNpmListVersion)' != '$(AppiumVersion)'" />
+    <Message
+        Text="Appium is already at the required version $(AppiumVersion)"
+        Importance="normal"
+        Condition="'$(_AppiumNpmListVersion)' == '$(AppiumVersion)'" />
+
+    <!-- Install appium at the specified version if necessary with timeout -->
+    <Exec
+        Command="npm i --location=global appium@$(AppiumVersion)"
+        Condition="'$(_AppiumNpmListVersion)' != '$(AppiumVersion)'"
+        Timeout="600000"
+        StandardOutputImportance="normal"
+        StandardErrorImportance="high" />
 	</Target>
 
 	<Target Name="ProvisionAppium" DependsOnTargets="InstallAppium;ProvisionAppiumDrivers">
 		<Error
 			Condition=" '$(MSBuildRuntimeType)' != 'Core' "
 			Text="You should only run this target with 'dotnet build'." />
+    
+    <!-- Final validation to confirm all drivers are installed correctly -->
+    <Exec
+        Command="appium driver list --installed --json > &quot;$(MSBuildThisFileDirectory)obj\final-appium-drivers.json&quot;"
+        ContinueOnError="true"
+        StandardOutputImportance="low"
+        StandardErrorImportance="high" />
+
+    <Message Text="Appium provisioning completed successfully." Importance="high" />
 	</Target>
 
 	<!-- ******************************************** -->
