@@ -19,15 +19,15 @@ public class Issue21980ViewModel : INotifyPropertyChanged
     private readonly IReadOnlyList<string> _images1 = new List<string>
     {
         "dotnet_bot.png",
-        "dotnet_bot.png",
+        "groceries.png",
     };
     
     private readonly IReadOnlyList<string> _images2 = new List<string>()
     {
         "dotnet_bot.png",
-        "dotnet_bot.png",
-        "dotnet_bot.png",
-        "dotnet_bot.png",
+        "coffee.png",
+        "avatar.png",
+        "oasis.png",
     };
 
     private IReadOnlyList<string> _images = [];
