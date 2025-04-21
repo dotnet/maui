@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		private CollectionViewSource CreateGroupedCollectionViewSource(IEnumerable itemsSource, DataTemplate itemTemplate)
+		CollectionViewSource CreateGroupedCollectionViewSource(IEnumerable itemsSource, DataTemplate itemTemplate)
 		{
 			return new CollectionViewSource
 			{
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		// Creates and returns a grouped CollectionViewSource using itemsSource as the data source when an itemTemplate is not defined.
-		private CollectionViewSource CreateDefaultGroupedCollectionViewSource(IEnumerable itemsSource)
+		CollectionViewSource CreateDefaultGroupedCollectionViewSource(IEnumerable itemsSource)
 		{
 			return new CollectionViewSource
 			{
