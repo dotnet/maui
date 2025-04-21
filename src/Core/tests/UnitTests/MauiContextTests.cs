@@ -50,7 +50,7 @@ namespace Microsoft.Maui.UnitTests
 
 			DoAdd(context);
 
-			GC.Collect();
+			GC.Collect(2);
 			GC.WaitForPendingFinalizers();
 
 			Assert.NotNull(context.Services.GetService<TestThing>());
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.UnitTests
 
 			DoAdd(context);
 
-			GC.Collect();
+			GC.Collect(2);
 			GC.WaitForPendingFinalizers();
 
 			Assert.Null(context.Services.GetService<TestThing>());
