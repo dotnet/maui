@@ -129,7 +129,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			for (var i = 0; i < GCCollectRetries; i++)
 			{
-				GC.Collect();
+				GC.Collect(2);
 
 				// TODO: implement a "native" caching system everywhere on ios and update this
 			}
