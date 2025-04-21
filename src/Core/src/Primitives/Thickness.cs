@@ -167,6 +167,11 @@ namespace Microsoft.Maui
 			return Left.Equals(other.Left) && Top.Equals(other.Top) && Right.Equals(other.Right) && Bottom.Equals(other.Bottom);
 		}
 
+		/// <summary>
+		/// Determines whether this instance and a specified object have the same values.
+		/// </summary>
+		/// <param name="obj">The object to compare with this instance.</param>
+		/// <returns><see langword="true"/> if <paramref name="obj"/> is a <see cref="Thickness"/> equal to this instance; otherwise, <see langword="false"/>.</returns>
 		public override bool Equals(object? obj)
 		{
 			if (obj is null)
@@ -174,6 +179,10 @@ namespace Microsoft.Maui
 			return obj is Thickness && Equals((Thickness)obj);
 		}
 
+		/// <summary>
+		/// Returns the hash code for this <see cref="Thickness"/>.
+		/// </summary>
+		/// <returns>A 32-bit signed integer hash code.</returns>
 		public override int GetHashCode()
 		{
 			unchecked
