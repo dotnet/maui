@@ -256,21 +256,16 @@
         Importance="normal"
         Condition="'$(_AppiumNpmListVersion)' == '$(AppiumVersion)'" />
 
-    <!-- Install appium at the specified version if necessary with timeout and privilege handling -->
-    <Choose>
-      <When Condition="'$(OS)' == 'Windows_NT'">
-        <!-- Windows privilege elevation -->
-        <PropertyGroup>
-          <ElevatedNpmCommand>powershell -ExecutionPolicy Bypass -Command "Start-Process cmd -ArgumentList '/c npm i --location=global appium@$(AppiumVersion)' -Verb RunAs -Wait"</ElevatedNpmCommand>
-        </PropertyGroup>
-      </When>
-      <Otherwise>
-        <!-- macOS/Linux privilege elevation -->
-        <PropertyGroup>
-          <ElevatedNpmCommand>sudo npm i --location=global appium@$(AppiumVersion)</ElevatedNpmCommand>
-        </PropertyGroup>
-      </Otherwise>
-    </Choose>
+    <!-- Install Appium at the specified version if necessary with timeout and privilege handling -->
+    <PropertyGroup Condition=" '$(IsMacOS)' == 'True' ">
+      <!-- macOS/Linux privilege elevation -->
+      <ElevatedNpmCommand>sudo -E npm i --location=global appium@$(AppiumVersion)</ElevatedNpmCommand>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(IsMacOS)' != 'True' ">
+      <!-- Windows privilege elevation -->
+      <ElevatedNpmCommand>powershell -ExecutionPolicy Bypass -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c npm i --location=global appium@$(AppiumVersion)' -Verb RunAs -Wait"</ElevatedNpmCommand>
+    </PropertyGroup>
 
     <!-- Try normal install first -->
     <Exec
