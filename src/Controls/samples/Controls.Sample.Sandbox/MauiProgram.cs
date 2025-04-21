@@ -22,13 +22,5 @@ public static class MauiProgram
 				fonts.AddFont("SegoeUI-Italic.ttf", "Segoe UI Italic");
 				fonts.AddFont("SegoeUI-Bold-Italic.ttf", "Segoe UI Bold Italic");
 			})
-
-#if IOS || MACCATALYST
-		 .ConfigureMauiHandlers(handlers =>
-			 {
-				 handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
-				 handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
-			 })
-#endif
 			.Build();
 }
