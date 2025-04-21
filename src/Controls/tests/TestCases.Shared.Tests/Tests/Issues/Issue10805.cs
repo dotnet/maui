@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_CATALYST  //The Format property is not supported on the Mac platform; it always displays the default format.
+﻿#if TEST_FAILS_ON_CATALYST  //More Info: https://github.com/dotnet/maui/issues/29099
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
