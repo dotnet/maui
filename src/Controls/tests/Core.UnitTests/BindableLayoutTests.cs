@@ -627,13 +627,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			// First GC
 			await Task.Yield();
-			GC.Collect();
+			GC.Collect(2);
 			GC.WaitForPendingFinalizers();
 			Assert.False(controllerRef.IsAlive, "BindableLayoutController should not be alive!");
 
 			// Second GC
 			await Task.Yield();
-			GC.Collect();
+			GC.Collect(2);
 			GC.WaitForPendingFinalizers();
 			Assert.False(proxyRef.IsAlive, "WeakCollectionChangedProxy should not be alive!");
 		}
@@ -649,7 +649,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, layout.Children.Count);
 
 			await Task.Yield();
-			GC.Collect();
+			GC.Collect(2);
 			GC.WaitForPendingFinalizers();
 
 			list.Add("Baz");
