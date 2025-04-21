@@ -98,12 +98,28 @@ namespace Microsoft.Maui.DeviceTests
             Assert.Equal(expected, platformRotation);
         }
 		
+		[Fact("The IsEnabled of a CheckBox should match with native IsEnabled")]
+		public async Task CheckBoxIsEnabled()
+		{
+			var checkBox = new CheckBox();
+			checkBox.IsEnabled = false;
+			var expectedValue = checkBox.IsEnabled;
+
+			var handler = await CreateHandlerAsync<CheckBoxHandler>(checkBox);
+			var nativeView = GetNativeCheckBox(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+				Assert.Equal(expectedValue, isEnabled);
+			});
+		}
+
 		Task<bool> GetPlatformIsVisible(CheckBoxHandler checkBoxHandler)
 		{
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetNativeCheckBox(checkBoxHandler);
-				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+				return nativeView.Visibility == global::Android.Views.ViewStates.Visible;
 			});
 		}
 	}

@@ -98,6 +98,7 @@ Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) ->
 ~Microsoft.Maui.Controls.Xaml.IXamlTypeResolver.Resolve(string qualifiedTypeName, System.IServiceProvider serviceProvider = null, bool expandToExtension = true) -> System.Type
 ~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.RequireServiceAttribute(System.Type[] serviceTypes) -> void
+~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewController.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.ServiceTypes.get -> System.Type[]
 ~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.CreateDelegator() -> UIKit.UICollectionViewDelegateFlowLayout
 ~override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.CreateItemsViewSource() -> Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource
@@ -434,3 +435,5 @@ override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertTo(System.Compon
 ~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetRippleColor(Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Graphics.Color value) -> void
 ~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.SetRippleColor(Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Graphics.Color value) -> void
 ~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetRippleColor(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton> config, Microsoft.Maui.Graphics.Color value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton>
+*REMOVED*Microsoft.Maui.Controls.TimePicker.Time.get -> System.TimeSpan
+Microsoft.Maui.Controls.TimePicker.Time.get -> System.TimeSpan?

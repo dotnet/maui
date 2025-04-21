@@ -145,7 +145,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return;
 
-			void OnLayoutChanged(object sender, Android.Views.View.LayoutChangeEventArgs e)
+			void OnLayoutChanged(object sender, global::Android.Views.View.LayoutChangeEventArgs e)
 			{
 				if (drawerLayout.IsDrawerOpen(flyout) == desiredState)
 				{
@@ -381,8 +381,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(menuItem1, menu.GetItem(0));
 				Assert.Equal(menuItem2, menu.GetItem(1));
 
-				menuItem1.Icon.AssertColorAtCenter(Android.Graphics.Color.Blue);
-				menuItem2.Icon.AssertColorAtCenter(Android.Graphics.Color.Blue);
+				menuItem1.Icon.AssertColorAtCenter(global::Android.Graphics.Color.Blue);
+				menuItem2.Icon.AssertColorAtCenter(global::Android.Graphics.Color.Blue);
 
 				Assert.NotEqual(icon1, menuItem1.Icon);
 				Assert.NotEqual(icon2, menuItem2.Icon);
@@ -449,8 +449,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(menuItem1, menu.GetItem(0));
 				Assert.Equal(menuItem2, menu.GetItem(1));
 
-				menu.GetItem(1).Icon.AssertColorAtCenter(Android.Graphics.Color.Green);
-				menu.GetItem(2).Icon.AssertColorAtCenter(Android.Graphics.Color.Red);
+				menu.GetItem(1).Icon.AssertColorAtCenter(global::Android.Graphics.Color.Green);
+				menu.GetItem(2).Icon.AssertColorAtCenter(global::Android.Graphics.Color.Red);
 			});
 		}
 
@@ -511,7 +511,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				if (background is ColorChangeRevealDrawable changeRevealDrawable)
 				{
-					Assert.Equal(Android.Graphics.Color.White, changeRevealDrawable.EndColor);
+					Assert.Equal(global::Android.Graphics.Color.White, changeRevealDrawable.EndColor);
 				}
 			});
 		}

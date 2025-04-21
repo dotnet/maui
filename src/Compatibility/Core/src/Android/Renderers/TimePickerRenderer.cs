@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			TimePicker view = Element;
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 
-			_dialog = CreateTimePickerDialog(view.Time.Hours, view.Time.Minutes);
+			_dialog = CreateTimePickerDialog(view.Time?.Hours ?? 0, view.Time?.Minutes ?? 0);
 			_dialog.Show();
 		}
 
@@ -159,17 +159,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		}
 
 		[PortHandler]
-		void SetTime(TimeSpan time)
+		void SetTime(TimeSpan? time)
 		{
 			if (String.IsNullOrEmpty(Element.Format))
 			{
 				var timeFormat = "t";
-				EditText.Text = DateTime.Today.Add(time).ToString(timeFormat);
+				EditText.Text = DateTime.Today.Add(time ?? TimeSpan.Zero).ToString(timeFormat);
 			}
 			else
 			{
 				var timeFormat = Element.Format;
-				EditText.Text = DateTime.Today.Add(time).ToString(timeFormat);
+				EditText.Text = DateTime.Today.Add(time ?? TimeSpan.Zero).ToString(timeFormat);
 			}
 
 			Element.InvalidateMeasureNonVirtual(Internals.InvalidationTrigger.MeasureChanged);

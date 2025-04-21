@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).Text);
 		}
 
-		Android.Text.TextUtils.TruncateAt? GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
+		global::Android.Text.TextUtils.TruncateAt? GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
 			GetPlatformButton(buttonHandler).Ellipsize;
 
 		Task<float> GetPlatformOpacity(ButtonHandler buttonHandler)
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformButton(buttonHandler);
-				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+				return nativeView.Visibility == global::Android.Views.ViewStates.Visible;
 			});
 		}
 

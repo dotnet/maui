@@ -62,7 +62,7 @@ namespace Microsoft.Maui.DeviceTests
 				HorizontalTextAlignment = xplatHorizontalTextAlignment
 			};
 
-			Android.Views.TextAlignment expectedValue = Android.Views.TextAlignment.ViewEnd;
+			global::Android.Views.TextAlignment expectedValue = global::Android.Views.TextAlignment.ViewEnd;
 
 			var values = await GetValueAsync(searchBarStub, (handler) =>
 			{
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.DeviceTests
 				VerticalTextAlignment = xplatVerticalTextAlignment
 			};
 
-			Android.Views.GravityFlags expectedValue = Android.Views.GravityFlags.Bottom;
+			global::Android.Views.GravityFlags expectedValue = global::Android.Views.GravityFlags.Bottom;
 
 			var values = await GetValueAsync(searchBarStub, (handler) =>
 			{
@@ -221,14 +221,14 @@ namespace Microsoft.Maui.DeviceTests
 			return Colors.Transparent;
 		}
 
-		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(SearchBarHandler searchBarHandler)
+		global::Android.Views.TextAlignment GetNativeHorizontalTextAlignment(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().First();
 			return editText.TextAlignment;
 		}
 
-		Android.Views.GravityFlags GetNativeVerticalTextAlignment(SearchBarHandler searchBarHandler)
+		global::Android.Views.GravityFlags GetNativeVerticalTextAlignment(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().First();
@@ -266,7 +266,7 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
-		Android.Views.TextAlignment GetNativeTextAlignment(SearchBarHandler searchBarHandler)
+		global::Android.Views.TextAlignment GetNativeTextAlignment(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().First();

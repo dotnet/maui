@@ -226,3 +226,5 @@ override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertTo(System.Compon
 ~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetRippleColor(Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Graphics.Color value) -> void
 ~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Button.SetRippleColor(Microsoft.Maui.Controls.BindableObject element, Microsoft.Maui.Graphics.Color value) -> void
 ~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetRippleColor(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton> config, Microsoft.Maui.Graphics.Color value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton>
+*REMOVED*Microsoft.Maui.Controls.TimePicker.Time.get -> System.TimeSpan
+Microsoft.Maui.Controls.TimePicker.Time.get -> System.TimeSpan?

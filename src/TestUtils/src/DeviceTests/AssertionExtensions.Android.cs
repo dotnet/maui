@@ -344,7 +344,7 @@ namespace Microsoft.Maui.DeviceTests
 				view.SetMinimumHeight(40);
 
 				var act = context.GetActivity()!;
-				var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content)!;
+				var rootView = act.FindViewById<FrameLayout>(global::Android.Resource.Id.Content)!;
 
 				view.Id = AView.GenerateViewId();
 				layout.Id = AView.GenerateViewId();
