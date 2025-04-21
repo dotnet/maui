@@ -1,9 +1,16 @@
 <Project>
+  
+  <Import Project="Versions.targets" />
+  
   <PropertyGroup>
     <PublishingVersion>3</PublishingVersion>
     <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <PublishDependsOnTargets>SetVersionsOnArtifacts;$(PublishDependsOnTargets)</PublishDependsOnTargets>
+  </PropertyGroup>
+  
   <ItemGroup>
     <_InstallersToPublish Include="$(ArtifactsShippingPackagesDir)\**\*.zip" />
   </ItemGroup>
@@ -12,10 +19,16 @@
     <_UploadPathRoot>maui</_UploadPathRoot>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Artifact Include="@(_InstallersToPublish)" Kind="Blob" RelativeBlobPath="$(_UploadPathRoot)/%(Filename)%(Extension)">
-      <IsShipping>true</IsShipping>
-      <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
-    </Artifact>
-  </ItemGroup>
+  <Target Name="SetVersionsOnArtifacts" DependsOnTargets="SetVersions">
+
+    <ItemGroup>
+      <Artifact Include="@(_InstallersToPublish)" Kind="Blob" RelativeBlobPath="$(_UploadPathRoot)/$(VSComponentVersion)/%(Filename)%(Extension)">
+        <IsShipping>true</IsShipping>
+        <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
+        <PublishFlatContainer>true</PublishFlatContainer>
+      </Artifact>
+    </ItemGroup>
+
+  </Target>
+
 </Project>

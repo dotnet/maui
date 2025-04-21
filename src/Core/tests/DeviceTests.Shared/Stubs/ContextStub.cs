@@ -17,7 +17,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		NavigationRootManager _windowManager;
 #endif
 #if ANDROID
-		Android.Content.Context _androidContext;
+		global::Android.Content.Context _androidContext;
 		IFontManager _fontManager;
 #endif
 
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			if (serviceType == typeof(IFontManager))
 				return _fontManager ??= _services.GetRequiredService<IFontManager>();
 
-			if (serviceType == typeof(Android.Content.Context))
+			if (serviceType == typeof(global::Android.Content.Context))
 				return MauiProgramDefaults.DefaultContext;
 
 			if (serviceType == typeof(NavigationRootManager))
@@ -111,9 +111,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			Services.GetRequiredService<IMauiHandlersFactory>();
 
 #if __ANDROID__
-		public Android.Content.Context Context
+		public global::Android.Content.Context Context
 		{
-			get => Services.GetRequiredService<Android.Content.Context>();
+			get => Services.GetRequiredService<global::Android.Content.Context>();
 			set => _androidContext = value;
 		}
 #endif
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			var returnValue = new ContextStub(mauiContext.Services);
 #if ANDROID
 			var activity = returnValue.GetActivity();
-			returnValue.Context = new Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
+			returnValue.Context = new global::Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
 #endif
 			return returnValue;
 		}

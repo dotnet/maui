@@ -41,10 +41,8 @@
       <_VersionsToReplace Include="MicrosoftMacCatalystSdkPackageVersion" />
       <_VersionsToReplace Include="MicrosoftmacOSSdkPackageVersion" />
       <_VersionsToReplace Include="MicrosofttvOSSdkPackageVersion" />
-      <_VersionsToReplace Include="MicrosoftNETWorkloadEmscriptenPackageVersion" />
+      <_VersionsToReplace Include="DotNetVersionBand" />
       <_VersionsToReplace Include="DotNetMauiManifestVersionBand" />
-      <_VersionsToReplace Include="DotNetMonoManifestVersionBand" />
-      <_VersionsToReplace Include="DotNetEmscriptenManifestVersionBand" />
       <_VersionsToReplace Include="DotNetAndroidManifestVersionBand" />
       <_VersionsToReplace Include="DotNetMaciOSManifestVersionBand" />
       <_VersionsToReplace Include="MicrosoftAspNetCoreAuthorizationPackageVersion" />

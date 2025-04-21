@@ -4,6 +4,7 @@
 		<TargetFramework>DOTNET_TFM</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+		<IsAspireSharedProject>true</IsAspireSharedProject>
 	</PropertyGroup>
 
 	<ItemGroup>

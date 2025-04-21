@@ -9,7 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	public static class MauiProgram
 	{
 #if ANDROID
-		public static Android.Content.Context DefaultContext => MauiProgramDefaults.DefaultContext;
+		public static global::Android.Content.Context DefaultContext => MauiProgramDefaults.DefaultContext;
 #elif WINDOWS
 		public static UI.Xaml.Window DefaultWindow => MauiProgramDefaults.DefaultWindow;
 #endif

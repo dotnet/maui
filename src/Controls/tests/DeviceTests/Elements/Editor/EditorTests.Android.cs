@@ -55,7 +55,7 @@ namespace Microsoft.Maui.DeviceTests
 			return InvokeOnMainThreadAsync(() =>
 			{
 				var nativeView = GetPlatformControl(editorHandler);
-				return nativeView.Visibility == Android.Views.ViewStates.Visible;
+				return nativeView.Visibility == global::Android.Views.ViewStates.Visible;
 			});
 		}
 
@@ -150,5 +150,25 @@ namespace Microsoft.Maui.DeviceTests
 			var platformRotation = await InvokeOnMainThreadAsync(() => PlatformEditor.Rotation);
 			Assert.Equal(expected, platformRotation);
 		}
+
+		[Fact]
+		[Description("The IsEnabled property of a Editor should match with native IsEnabled")]		
+		public async Task VerifyEditorIsEnabledProperty()
+		{
+			var editor = new Editor
+			{
+				IsEnabled = false
+			};
+			var expectedValue = editor.IsEnabled;
+
+			var handler = await CreateHandlerAsync<EditorHandler>(editor);
+			var nativeView = GetPlatformControl(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var isEnabled = nativeView.Enabled;
+
+				Assert.Equal(expectedValue, isEnabled);
+			});		
+		}		
 	}
 }

@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		{
 #if ANDROID
-			public LegacyComponentRenderer(Android.Content.Context context) : base(context)
+			public LegacyComponentRenderer(global::Android.Content.Context context) : base(context)
 			{
 				
 			}

@@ -105,8 +105,8 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(menuItem1, menu.GetItem(0));
 				Assert.Equal(menuItem2, menu.GetItem(1));
 
-				menuItem1.Icon.AssertColorAtCenter(Android.Graphics.Color.Blue);
-				menuItem2.Icon.AssertColorAtCenter(Android.Graphics.Color.Blue);
+				menuItem1.Icon.AssertColorAtCenter(global::Android.Graphics.Color.Blue);
+				menuItem2.Icon.AssertColorAtCenter(global::Android.Graphics.Color.Blue);
 
 				Assert.NotEqual(icon1, menuItem1.Icon);
 				Assert.NotEqual(icon2, menuItem2.Icon);

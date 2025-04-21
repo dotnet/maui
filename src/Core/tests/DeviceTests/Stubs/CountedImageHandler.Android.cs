@@ -47,7 +47,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				Log(resId);
 			}
 
-			public override void SetImageURI(Android.Net.Uri uri)
+			public override void SetImageURI(global::Android.Net.Uri uri)
 			{
 				base.SetImageURI(uri);
 				Log(uri);
