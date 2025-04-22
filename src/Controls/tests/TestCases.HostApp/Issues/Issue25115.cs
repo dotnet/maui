@@ -1,11 +1,11 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 25115, "The color was not applied properly to the Tab Chevron icon", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 25115, "[Windows] The color was not applied properly to the Tab Chevron icon", PlatformAffected.UWP)]
 public class Issue25115 : TestShell
 {
 	protected override void Init()
 	{
-	    SetValue(Shell.TabBarUnselectedColorProperty, Colors.Blue);
+		SetValue(Shell.TabBarUnselectedColorProperty, Colors.Blue);
 		SetValue(Shell.TabBarTitleColorProperty, Colors.Red);
 
 		var tabBar = new TabBar();
