@@ -30,7 +30,7 @@ public class Issue25115 : TestShell
 			Content = new ContentPage
 			{
 				Title = title,
-				Content = new Label { Text = content }
+				Content = new Label { Text = content, AutomationId = "label" },
 			}
 		};
 	}
