@@ -13,8 +13,8 @@ public class Issue23834 : _IssuesUITest
 	[Category(UITestCategories.FlyoutPage)]
 	public void Issue23834FlyoutMisbehavior()
 	{
-		App.WaitForElement("FirstFlyoutItem");
-		App.Tap("FirstFlyoutItem");
+		App.WaitForElement("button");
+		App.Tap("button");
 		App.ShowFlyout();
 		VerifyScreenshot();
 	}
