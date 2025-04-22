@@ -203,7 +203,7 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = await CreateHandlerAsync<ButtonHandler>(button);
 			var platformButton = GetPlatformButton(handler);
 
-			if (platformButton.Background is Android.Graphics.Drawables.RippleDrawable rippleDrawable)
+			if (platformButton.Background is global::Android.Graphics.Drawables.RippleDrawable rippleDrawable)
 			{
 				var constantState = rippleDrawable.GetConstantState();
 				if (constantState is not null)
