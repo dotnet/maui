@@ -702,8 +702,14 @@ void EnsureAdbKeys(AdbToolSettings settings)
 
         // Manually authorize the emulator
         Information("Manually authorize the emulator with the generated ADB keys.");
+
+        // Push ADB Keys to the device
         AdbShell($"adb push {adbKeyPubFile} /data/misc/adb/adb_keys"", settings);
+
+        // Ensure correct permissions on the device
         AdbShell("adb shell chmod 600 /data/misc/adb/adb_keys", settings);
+
+        // Manually Restart ADB Daemon on the device
         AdbShell("adb shell stop adbd", settings);
         AdbShell("adb shell start adbd", settings);
 
