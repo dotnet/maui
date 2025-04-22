@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			((IElementController)view).SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 
 			var year = view.Date?.Year ?? DateTime.Today.Year;
-			var month = view.Date?.Month ?? DateTime.Today.Month - 1;
+			var month = (view.Date?.Month ?? DateTime.Today.Month) - 1;
 			var day = view.Date?.Day ?? DateTime.Today.Day;
 
 			ShowPickerDialog(year, month, day);
