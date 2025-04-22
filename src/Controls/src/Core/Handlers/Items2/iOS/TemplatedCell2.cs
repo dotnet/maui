@@ -89,9 +89,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (PlatformHandler?.VirtualView is { } virtualView)
 			{
-				var constraints = ScrollDirection == UICollectionViewScrollDirection.Vertical
-					? new Size(preferredAttributes.Size.Width, double.PositiveInfinity)
-					: new Size(double.PositiveInfinity, preferredAttributes.Size.Height);
+				var constraints = GetMeasureConstraints(preferredAttributes);
 
 				if (_measureInvalidated || _cachedConstraints != constraints)
 				{
@@ -101,9 +99,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					_needsArrange = true;
 				}
 
-				var size = ScrollDirection == UICollectionViewScrollDirection.Vertical
-					? new Size(preferredAttributes.Size.Width, _measuredSize.Height)
-					: new Size(_measuredSize.Width, preferredAttributes.Size.Height);
+				var preferredSize = preferredAttributes.Size;
+				// Use measured size only when unconstrained
+				var size = new Size(
+					double.IsPositiveInfinity(constraints.Width) ? _measuredSize.Width : preferredSize.Width,
+					double.IsPositiveInfinity(constraints.Height) ? _measuredSize.Height : preferredSize.Height
+				);
 
 				preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
 				preferredAttributes.ZIndex = 2;
@@ -112,6 +113,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			return preferredAttributes;
+		}
+
+		private protected virtual Size GetMeasureConstraints(UICollectionViewLayoutAttributes preferredAttributes)
+		{
+			var constraints = ScrollDirection == UICollectionViewScrollDirection.Vertical
+				? new Size(preferredAttributes.Size.Width, double.PositiveInfinity)
+				: new Size(double.PositiveInfinity, preferredAttributes.Size.Height);
+			return constraints;
 		}
 
 		public override void LayoutSubviews()
