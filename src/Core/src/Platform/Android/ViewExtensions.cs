@@ -26,6 +26,11 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void Initialize(this AView platformView, IView view)
 		{
+			if (platformView.Parent is WrapperView wrapperView)
+			{
+				platformView = wrapperView;
+			}
+
 			var pivotX = (float)(view.AnchorX * platformView.ToPixels(view.Frame.Width));
 			var pivotY = (float)(view.AnchorY * platformView.ToPixels(view.Frame.Height));
 			int visibility;
