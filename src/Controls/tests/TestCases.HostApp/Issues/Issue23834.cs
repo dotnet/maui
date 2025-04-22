@@ -36,22 +36,19 @@ public class Issue23834SamplePage : ContentPage
 	public Issue23834SamplePage()
 	{
 		var layout = new StackLayout();
-		var ChangeButton = new Button
+		var changeButton = new Button
 		{
 			Text = "Change First Item's IsVisible",
-			AutomationId = "FirstFlyoutItem",
-			Command = new Command(ChangeFlyoutItem)
+			AutomationId = "button"
 		};
 
-		layout.Children.Add(ChangeButton);
+		changeButton.Clicked += (s, e) =>
+		{
+			Shell.Current.Items[0].IsVisible = true;
+		};
+
+		layout.Children.Add(changeButton);
 
 		Content = layout;
-	}
-
-	private void ChangeFlyoutItem()
-	{
-		var shell = Application.Current.MainPage as TestShell;
-		var FlyoutItem = shell.Items[0] as FlyoutItem;
-		FlyoutItem.IsVisible = true;
 	}
 }
