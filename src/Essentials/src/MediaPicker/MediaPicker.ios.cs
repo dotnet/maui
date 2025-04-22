@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Media
 			}
 
 			// Check if picking existing or not and ensure permission accordingly as they can be set independently from each other
-            if (pickExisting && !OperatingSystem.IsIOSVersionAtLeast(11, 0)) // TODO Mac Catalyst?!
+			if (pickExisting && !OperatingSystem.IsIOSVersionAtLeast(11, 0))
 			{
 				await Permissions.EnsureGrantedAsync<Permissions.Photos>();
 			}
@@ -94,12 +94,12 @@ namespace Microsoft.Maui.Media
 				}
 
 				var sourceType = pickExisting
-                    ? UIImagePickerControllerSourceType.PhotoLibrary
-                    : UIImagePickerControllerSourceType.Camera;
+					? UIImagePickerControllerSourceType.PhotoLibrary
+					: UIImagePickerControllerSourceType.Camera;
 
 				var mediaType = photo ? UTType.Image : UTType.Movie;
 
-                if (!UIImagePickerController.IsSourceTypeAvailable(sourceType))
+				if (!UIImagePickerController.IsSourceTypeAvailable(sourceType))
 				{
 					throw new FeatureNotSupportedException();
 				}
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Media
 					MediaTypes = [mediaType],
 					AllowsEditing = false
 				};
-				
+
 				if (!photo && !pickExisting)
 				{
 					picker.CameraCaptureMode = UIImagePickerControllerCameraCaptureMode.Video;
@@ -124,13 +124,13 @@ namespace Microsoft.Maui.Media
 				pickerRef = picker;
 
 				picker.Delegate = new PhotoPickerDelegate
-                {
+				{
 					CompletedHandler = async info =>
 					{
 						GetFileResult(info, tcs);
 						await vc.DismissViewControllerAsync(true);
 					}
-                };
+				};
 			}
 
 			if (!string.IsNullOrWhiteSpace(options?.Title))
@@ -144,31 +144,31 @@ namespace Microsoft.Maui.Media
 			}
 
 			if (pickerRef.PresentationController is not null)
-            {
-                pickerRef.PresentationController.Delegate = new PhotoPickerPresentationControllerDelegate
-                {
-                    Handler = () => tcs.TrySetResult(null)
-                };
-            }
+			{
+				pickerRef.PresentationController.Delegate = new PhotoPickerPresentationControllerDelegate
+				{
+					Handler = () => tcs.TrySetResult(null)
+				};
+			}
 
 			await vc.PresentViewControllerAsync(pickerRef, true);
 
 			var result = await tcs.Task;
 
 			pickerRef?.Dispose();
-            pickerRef = null;
+			pickerRef = null;
 
 			return result;
 		}
 
 		static FileResult PickerResultsToMediaFile(PHPickerResult[] results)
-        {
-            var file = results?.FirstOrDefault();
+		{
+			var file = results?.FirstOrDefault();
 
-            return file == null
-                ? null
-                : new PHPickerFileResult(file.ItemProvider);
-        }
+			return file == null
+				? null
+				: new PHPickerFileResult(file.ItemProvider);
+		}
 
 		static void GetFileResult(NSDictionary info, TaskCompletionSource<FileResult> tcs)
 		{
@@ -291,33 +291,33 @@ namespace Microsoft.Maui.Media
 	}
 
 	class PHPickerFileResult : FileResult
-    {
-        readonly string _identifier;
-        readonly NSItemProvider _provider;
+	{
+		readonly string _identifier;
+		readonly NSItemProvider _provider;
 
-        internal PHPickerFileResult(NSItemProvider provider)
-        {
-            this._provider = provider;
-            var identifiers = provider?.RegisteredTypeIdentifiers;
+		internal PHPickerFileResult(NSItemProvider provider)
+		{
+			this._provider = provider;
+			var identifiers = provider?.RegisteredTypeIdentifiers;
 
-            _identifier = (identifiers?.Any(i => i.StartsWith(UTType.LivePhoto)) ?? false)
-                && (identifiers?.Contains(UTType.JPEG) ?? false)
-                ? identifiers?.FirstOrDefault(i => i == UTType.JPEG)
-                : identifiers?.FirstOrDefault();
+			_identifier = (identifiers?.Any(i => i.StartsWith(UTType.LivePhoto)) ?? false)
+				&& (identifiers?.Contains(UTType.JPEG) ?? false)
+				? identifiers?.FirstOrDefault(i => i == UTType.JPEG)
+				: identifiers?.FirstOrDefault();
 
-            if (string.IsNullOrWhiteSpace(_identifier))
+			if (string.IsNullOrWhiteSpace(_identifier))
 			{
 				return;
 			}
 
 			FileName = FullPath
-                = $"{provider?.SuggestedName}.{GetTag(_identifier, UTType.TagClassFilenameExtension)}";
-        }
+				= $"{provider?.SuggestedName}.{GetTag(_identifier, UTType.TagClassFilenameExtension)}";
+		}
 
-        internal override async Task<Stream> PlatformOpenReadAsync()
-            => (await _provider?.LoadDataRepresentationAsync(_identifier))?.AsStream();
+		internal override async Task<Stream> PlatformOpenReadAsync()
+			=> (await _provider?.LoadDataRepresentationAsync(_identifier))?.AsStream();
 
 		protected internal static string GetTag(string identifier, string tagClass)
-           	=> UTType.CopyAllTags(identifier, tagClass)?.FirstOrDefault();
-    }
+			   => UTType.CopyAllTags(identifier, tagClass)?.FirstOrDefault();
+	}
 }
