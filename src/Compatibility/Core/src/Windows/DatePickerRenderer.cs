@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			if (Element == null)
 				return;
 
-			if (Element.Date?.CompareTo(e.NewDate.Date) != 0)
+			if (Element.Date == null || Element.Date.CompareTo(e.NewDate.Date) != 0)
 			{
 				var date = e.NewDate.Date.Clamp(Element.MinimumDate ?? DateTime.MinValue, Element.MaximumDate ?? DateTime.MaxValue);
 				Element.Date = date;

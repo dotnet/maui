@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Handlers
 		void ShowPickerDialog(DateTime? date)
 		{
 			var year = date?.Year ?? DateTime.Today.Year;
-			var month = date?.Month ?? DateTime.Today.Month - 1;
+			var month = (date?.Month ?? DateTime.Today.Month) - 1;
 			var day = date?.Day ?? DateTime.Today.Day;
 
 			if (_dialog is null)
