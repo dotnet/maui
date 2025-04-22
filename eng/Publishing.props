@@ -1,21 +1,34 @@
 <Project>
-   <PropertyGroup>
-      <PublishingVersion>3</PublishingVersion>
-      <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
-      <PublishDependsOnTargets>$(PublishDependsOnTargets);_PublishBlobItems</PublishDependsOnTargets>
-   </PropertyGroup>
+  
+  <Import Project="Versions.targets" />
+  
+  <PropertyGroup>
+    <PublishingVersion>3</PublishingVersion>
+    <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
+  </PropertyGroup>
 
-   <ItemGroup>
-    <_InstallerManifestFilesToPublish Include="$(ArtifactsShippingPackagesDir)\**\*.zip" />
+  <PropertyGroup>
+    <PublishDependsOnTargets>SetVersionsOnArtifacts;$(PublishDependsOnTargets)</PublishDependsOnTargets>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <_InstallersToPublish Include="$(ArtifactsShippingPackagesDir)\**\*.zip" />
   </ItemGroup>
 
-   <Target Name="_PublishBlobItems">
+  <PropertyGroup>
+    <_UploadPathRoot>maui</_UploadPathRoot>
+  </PropertyGroup>
+
+  <Target Name="SetVersionsOnArtifacts" DependsOnTargets="SetVersions">
+
     <ItemGroup>
-      <ItemsToPushToBlobFeed Include="@(_InstallerManifestFilesToPublish)">
+      <Artifact Include="@(_InstallersToPublish)" Kind="Blob" RelativeBlobPath="$(_UploadPathRoot)/$(VSComponentVersion)/%(Filename)%(Extension)">
         <IsShipping>true</IsShipping>
+        <IsShipping Condition="$([System.String]::Copy('%(RecursiveDir)').StartsWith('NonShipping'))">false</IsShipping>
         <PublishFlatContainer>true</PublishFlatContainer>
-        <RelativeBlobPath>$(_UploadPathRoot)/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
-      </ItemsToPushToBlobFeed>
+      </Artifact>
     </ItemGroup>
+
   </Target>
+
 </Project>

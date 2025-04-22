@@ -21,6 +21,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// For some reason it only seemed to work when the CollectionView was inside the Flyout section of a FlyoutPage.
 			// The UILongPressGestureRecognizer is simple enough to set up so let's just add our own.
 			InstallsStandardGestureForInteractiveMovement = false;
+#if MACCATALYST
+			// On Mac Catalyst, the default normal press and drag interactions occur, causing the CanMixGroups = false logic to not work. 
+			// Since all reordering logic is handled exclusively by UILongPressGestureRecognizer, we can set DragInteractionEnabled to false, ensuring that only the long press gesture is used.
+			CollectionView.DragInteractionEnabled = false;
+#endif
 		}
 
 		public override bool CanMoveItem(UICollectionView collectionView, NSIndexPath indexPath)

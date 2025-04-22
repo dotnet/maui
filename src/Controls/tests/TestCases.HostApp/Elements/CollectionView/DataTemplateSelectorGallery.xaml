@@ -7,7 +7,7 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <DataTemplate x:Key="DefaultTemplate">
-                <Grid HeightRequest="50" RowDefinitions="Auto,Auto">
+                <Grid HeightRequest="50" RowDefinitions="*,Auto">
                     
                     <Image Source="coffee.png" AutomationId="weekday"/>
 
@@ -15,7 +15,7 @@
                 </Grid>
             </DataTemplate>
             <DataTemplate x:Key="WeekendTemplate">
-                <Grid HeightRequest="50" RowDefinitions="Auto,Auto">
+                <Grid HeightRequest="50" RowDefinitions="*,Auto">
                     
                     <Image Source="oasis.jpg" AutomationId="weekend"/>
 

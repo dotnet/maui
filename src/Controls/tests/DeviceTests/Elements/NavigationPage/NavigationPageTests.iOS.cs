@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -64,6 +66,30 @@ namespace Microsoft.Maui.DeviceTests
 
 			var translucent = await GetValueAsync(navPage, (handler) => (handler.ViewController as UINavigationController).NavigationBar.Translucent);
 			Assert.Equal(enabled, translucent);
+		}
+
+		//src/Compatibility/Core/tests/iOS/NavigationTests.cs
+		[Fact]
+		[Description("Multiple calls to NavigationRenderer.Dispose shouldn't crash")]
+		public async Task NavigationRendererDoubleDisposal()
+		{
+			SetupBuilder();
+
+			var root = new ContentPage()
+			{
+				Title = "root",
+				Content = new Label { Text = "Hello" }
+			};
+
+			await root.Dispatcher.DispatchAsync(() =>
+			{
+				var navPage = new NavigationPage(root);
+				var handler = CreateHandler(navPage);
+
+				// Calling Dispose more than once should be fine
+				(handler as NavigationRenderer).Dispose();
+				(handler as NavigationRenderer).Dispose();
+			});
 		}
 	}
 }

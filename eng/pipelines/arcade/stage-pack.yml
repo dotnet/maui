@@ -1,5 +1,11 @@
 # Template for build + pack on dnceng
 parameters:
+- name: prepareSteps
+  type: stepList
+  default: []
+- name: postSteps
+  type: stepList
+  default: []
 - name: pool
   type: object
 - name: enableSourceBuild
@@ -44,7 +50,12 @@ stages:
         - checkout: self
           fetchDepth: 1
           clean: true
-        steps:            
+        
+        steps:
+        - ${{ each step in parameters.prepareSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}         
+
         - script: $(_buildScript)
                   -restore -build
                   -configuration $(_BuildConfig)
@@ -70,11 +81,10 @@ stages:
           - script: $(_buildScript)
                     -restore -pack
                     -sign $(_SignArgs)
-                    -publish $(_PublishArgs)
                     -configuration $(_BuildConfig)
                     /bl:$(Build.Arcade.LogsPath)pack.binlog
                     $(_OfficialBuildIdArgs)
-            displayName: Pack, Sign & Publish
+            displayName: Pack, Sign
           
           # only for workloads
           - script: $(_buildScript)
@@ -85,10 +95,4 @@ stages:
               /bl:$(Build.Arcade.LogsPath)/build-workloads.binlog
               -projects src/Workload/workloads.csproj
               $(_OfficialBuildIdArgs)
-            displayName: Build Workloads
-
-          - task: 1ES.PublishPipelineArtifact@1
-            displayName: Publish VSDrop MSIs
-            inputs:
-              targetPath: '$(Build.SourcesDirectory)/artifacts/VSSetup/$(_BuildConfig)'
-              artifactName: VSDropInsertion
+            displayName: Build Workloads, Sign & Publish
