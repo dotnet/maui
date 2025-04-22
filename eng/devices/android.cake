@@ -648,22 +648,48 @@ void EnsureAdbKeys(AdbToolSettings settings)
 
     try
     {
-        var adbKeyPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".android");
+        var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var adbKeyPath = System.IO.Path.Combine(homeDir, ".android");
         var adbKeyFile = System.IO.Path.Combine(adbKeyPath, "adbkey");
         var adbKeyPubFile = System.IO.Path.Combine(adbKeyPath, "adbkey.pub");
 
+        // Create directory if it doesn't exist
+        if (!System.IO.Directory.Exists(adbKeyPath))
+        {
+            System.IO.Directory.CreateDirectory(adbKeyPath);
+            Information($"Created ADB directory at {adbKeyPath}");
+        }
+
         // Delete existing ADB keys to avoid stale data
-        if (System.IO.File.Exists(adbKeyFile)) System.IO.File.Delete(adbKeyFile);
-        if (System.IO.File.Exists(adbKeyPubFile)) System.IO.File.Delete(adbKeyPubFile);
+        if (System.IO.File.Exists(adbKeyFile)) 
+        {
+            System.IO.File.Delete(adbKeyFile);
+            Information("Removed existing private key");
+        }
+        
+        if (System.IO.File.Exists(adbKeyPubFile)) 
+        {
+            System.IO.File.Delete(adbKeyPubFile);
+            Information("Removed existing public key");
+        }
 
         // Restart ADB to regenerate keys
+        Information("Restarting ADB server to regenerate keys...");
         AdbKillServer(settings);
         AdbStartServer(settings);
 
-        // Verify ADB keys exist
+        // Wait for keys to be generated
+        Information("Waiting for ADB keys generation...");
+        int keyWaited = 0;
+        while ((!System.IO.File.Exists(adbKeyFile) || !System.IO.File.Exists(adbKeyPubFile)) && keyWaited < 30)
+        {
+            System.Threading.Thread.Sleep(500);
+            keyWaited++;
+        }
+
         if (!System.IO.File.Exists(adbKeyFile) || !System.IO.File.Exists(adbKeyPubFile))
         {
-            throw new Exception("Failed to regenerate ADB keys.");
+            throw new Exception("Failed to generate ADB keys after 15 seconds.");
         }
 
         Information($"ADB keys have been successfully regenerated at {adbKeyPath}.");
@@ -676,7 +702,7 @@ void EnsureAdbKeys(AdbToolSettings settings)
 
         // Manually authorize the emulator
         Information("Manually authorize the emulator with the generated ADB keys.");
-        AdbShell("adb push ~/.android/adbkey.pub /data/misc/adb/adb_keys", settings);
+        AdbShell($"adb push {adbKeyPubFile} /data/misc/adb/adb_keys"", settings);
         AdbShell("adb shell chmod 600 /data/misc/adb/adb_keys", settings);
         AdbShell("adb shell stop adbd", settings);
         AdbShell("adb shell start adbd", settings);
@@ -689,6 +715,8 @@ void EnsureAdbKeys(AdbToolSettings settings)
 
         Information("Trying to restart ADB just in case...");
         
-        AdbKillServer(adbSettings);
+        AdbKillServer(settings);
+        System.Threading.Thread.Sleep(1000);
+        AdbStartServer(settings);
     }
 }
