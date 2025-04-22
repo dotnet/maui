@@ -653,7 +653,9 @@ void EnsureAdbKeys(AdbToolSettings settings)
         var adbKeyFile = System.IO.Path.Combine(adbKeyPath, "adbkey");
         var adbKeyPubFile = System.IO.Path.Combine(adbKeyPath, "adbkey.pub");
 
+
         // Delete existing ADB keys to avoid stale data
+        Information("Cleaning up old ADB keys...");
         if (System.IO.File.Exists(adbKeyFile)) 
         {
             System.IO.File.Delete(adbKeyFile);
@@ -667,6 +669,7 @@ void EnsureAdbKeys(AdbToolSettings settings)
         }
 
         // Create directory if it doesn't exist
+        Information("Ensuring ADB key directory exists...");
         if (!System.IO.Directory.Exists(adbKeyPath))
         {
             System.IO.Directory.CreateDirectory(adbKeyPath);
@@ -674,6 +677,7 @@ void EnsureAdbKeys(AdbToolSettings settings)
         }
 
         // Set correct permissions for ADB keys directory
+        Information("Setting correct permissions for ADB directory...");
         StartProcess("chmod", $"700 {adbKeyPath}");
 
         // Restart ADB server AFTER ensuring valid keys directory exists
@@ -696,14 +700,13 @@ void EnsureAdbKeys(AdbToolSettings settings)
             throw new Exception("Failed to generate ADB keys after 15 seconds.");
         }
 
-        Information("ADB keys successfully regenerated.");
-
         // Set correct file permissions for ADB keys
+        Information("Setting correct permissions for ADB keys...");
         StartProcess("chmod", $"600 {adbKeyFile}");
         StartProcess("chmod", $"600 {adbKeyPubFile}");
 
          // Set ADB_VENDOR_KEYS environment variable BEFORE restarting ADB
-        Information("Setting ADB_VENDOR_KEYS...");
+        Information("Exporting ADB_VENDOR_KEYS...");
         StartProcess("sh", new ProcessSettings {
             Arguments = new ProcessArgumentBuilder()
                 .Append("-c")
@@ -711,9 +714,39 @@ void EnsureAdbKeys(AdbToolSettings settings)
             RedirectStandardOutput = true
         });
 
-        // Push ADB keys to the device AFTER setting environment variable
+        var adbVendorKeys = StartProcess("sh", new ProcessSettings {
+            Arguments = new ProcessArgumentBuilder()
+            .Append("-c")
+            .AppendQuoted("echo $ADB_VENDOR_KEYS"),
+            RedirectStandardOutput = true
+        });
+
+        Information($"Verified ADB_VENDOR_KEYS: {adbVendorKeys.Trim()}");
+
         Information("Pushing ADB keys to the device...");
-        AdbShell($"adb push {adbKeyPubFile} /data/misc/adb/adb_keys", settings);
+        int retries = 0;
+        while (retries < 3)
+        {
+            var pushResult = StartProcess("adb", new ProcessSettings {
+                Arguments = new ProcessArgumentBuilder().Append("push").AppendQuoted(adbKeyPubFile).AppendQuoted("/data/misc/adb/adb_keys"),
+                RedirectStandardOutput = true
+            });
+
+            if (!string.IsNullOrEmpty(pushResult.Trim()))
+            {
+                Information("ADB key successfully pushed.");
+                break;
+            }
+
+            retries++;
+            System.Threading.Thread.Sleep(1000);
+        }
+
+        if (retries == 3)
+        {
+            throw new Exception("Failed to push ADB keys after multiple attempts.");
+        }
+
         AdbShell("adb shell chmod 600 /data/misc/adb/adb_keys", settings);
 
         // Restart ADB Daemon on the device to apply changes
@@ -726,7 +759,6 @@ void EnsureAdbKeys(AdbToolSettings settings)
     catch (Exception ex)
     {
         Warning($"Error ensuring ADB keys: {ex.Message}");
-
         Information("Trying to restart ADB just in case...");
         
         AdbKillServer(settings);
