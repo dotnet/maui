@@ -89,20 +89,6 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.ClipBounds = null;
 			}
 
-			// Handle scaling when a container view is present (e.g., when image has a background)
-			if (ContainerView is not null && VirtualView is not null)
-			{
-				// Apply scaling to the container view which wraps the image
-				// This maintains proper layout hierarchy and ensures backgrounds scale correctly
-				ContainerView.ScaleX = (float)VirtualView.Scale;
-				ContainerView.ScaleY = (float)VirtualView.Scale;
-				// We must reset the platform view's scale to default to prevent double-scaling
-				// since the container's scale transformation will already be applied.
-				PlatformView.ScaleX = 1.0f;
-				PlatformView.ScaleY = 1.0f;
-
-			}
-
 			base.PlatformArrange(frame);
 		}
 
