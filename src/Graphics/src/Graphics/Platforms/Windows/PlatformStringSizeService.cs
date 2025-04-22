@@ -25,16 +25,8 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public SizeF GetStringSize(string value, IFont font, float textSize, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment)
 		{
-			var format = new CanvasTextFormat
-			{
-				FontFamily = font.Name,
-				FontSize = textSize,
-				// Ensure font weight stays within the valid range (1–999) to avoid runtime errors
-				FontWeight = new FontWeight { Weight = (ushort)Math.Clamp(font.Weight, 1, 999) },
-				FontStyle = font.StyleType.ToFontStyle(),
-				WordWrapping = CanvasWordWrapping.NoWrap
-			};
-
+			var format = font.ToCanvasTextFormat(textSize);
+			
 			var device = CanvasDevice.GetSharedDevice();
 			var textLayout = new CanvasTextLayout(device, value, format, 0.0f, 0.0f);
 			textLayout.VerticalAlignment = verticalAlignment switch
