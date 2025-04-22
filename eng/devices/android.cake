@@ -682,7 +682,7 @@ void EnsureAdbKeys(AdbToolSettings settings)
         System.Threading.Thread.Sleep(1000);
         AdbStartServer(settings);
 
-        // Wait for ADB key generation (with exponential backoff)
+        // Wait for ADB key generation
         Information("Waiting for ADB keys generation...");
         int keyWaited = 0;
         while ((!System.IO.File.Exists(adbKeyFile) || !System.IO.File.Exists(adbKeyPubFile)) && keyWaited < 30)
