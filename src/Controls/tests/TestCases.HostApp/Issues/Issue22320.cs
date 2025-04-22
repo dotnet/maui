@@ -15,7 +15,6 @@ public class Issue22320 : ContentPage
 		collectionView.AutomationId = "CollectionView";
 		collectionView.SelectionMode = SelectionMode.Single;
 
-
 		collectionView.ItemTemplate = new DataTemplate(() =>
 		{
 			var border = new Border

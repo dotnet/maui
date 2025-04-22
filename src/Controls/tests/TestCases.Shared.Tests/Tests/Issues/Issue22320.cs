@@ -14,7 +14,7 @@ public class Issue22320 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void ShouldHighlightGroupedItemsCorrectly()
+	public void SelectionShouldNotMovedToTopWithGroupedCollection()
 	{
 		App.WaitForElement("CollectionView");
 		App.Tap("Grapes");
