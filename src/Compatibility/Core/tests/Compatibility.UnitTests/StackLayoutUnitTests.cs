@@ -341,7 +341,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			var handler = Substitute.For<IViewHandler>();
-			stack.Handler = handler;
+			child1.Handler = handler;
 
 			stack.Layout(new Rect(0, 0, 100, 100));
 
@@ -352,8 +352,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			child1.IsVisible = false;
 
-			// Verify that the visibility change invalidated the layout, and simulate a native layout update 
+			// Verify that the visibility change invalidated the child
+			// which will propagate the invalidation up through the platform tree.
 			AssertInvalidated(handler);
+
+			// Then simulate a native layout update 
 			stack.ForceLayout();
 
 			Assert.False(child1.IsVisible);
@@ -661,14 +664,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 
 			var handler = Substitute.For<IViewHandler>();
-			outerLayout.Handler = handler;
+			innerStack.Handler = handler;
 
 			outerLayout.Layout(new Rect(0, 0, 100, 100));
 			var beforeSize = innerStack.Bounds.Size;
 			innerStack.Padding = new Thickness(30);
 
-			// Verify that the Padding change invalidated the layout, and simulate a native layout update 
+			// Verify that the padding change invalidated the inner stack
+			// which will propagate the invalidation up through the platform tree.
 			AssertInvalidated(handler);
+			// Now simulate a native layout update 
 			outerLayout.ForceLayout();
 
 			var afterSize = innerStack.Bounds.Size;

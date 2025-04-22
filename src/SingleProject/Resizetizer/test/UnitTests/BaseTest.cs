@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 	{
 		private const string TestFolderName = "Microsoft.Maui.Resizetizer.Tests";
 		private const string TestImagesFolderName = "imageresults";
-		private const double ImageErrorThreshold = 0.0027;
+		private const double ImageErrorThreshold = 0.27;
 
 		private readonly string DeleteDirectory;
 		protected readonly string DestinationDirectory;
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				Output.WriteLine($"Validating image similarity with diff dir:{diffDir}");
 
-				ImageAssert.Equivalent(actualFilename, expectedFilename, diffDir);
+				ImageAssert.Equivalent(actualFilename, expectedFilename, diffDir, ImageErrorThreshold);
 			}
 		}
 

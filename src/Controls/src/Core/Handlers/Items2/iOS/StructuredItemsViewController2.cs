@@ -1,8 +1,8 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Controls.Handlers.Items;
 using ObjCRuntime;
 using UIKit;
 
@@ -181,7 +181,47 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void ViewWillLayoutSubviews()
 		{
+			if (CollectionView is Items.MauiCollectionView { NeedsCellLayout: true })
+			{
+				InvalidateLayoutIfItemsMeasureChanged();
+			}
+
 			base.ViewWillLayoutSubviews();
+		}
+
+		void InvalidateLayoutIfItemsMeasureChanged()
+		{
+			// If the header or footer is a view, we need to check if the measure has changed.
+			// We could then invalidate the layout for supplementary cell only `collectionView.IndexPathForCell(headerCell)` like we do on standard cells,
+			// but that causes other cells to oddly collapse (see Issue25362 UITest), so in this case we have to stick with `InvalidateLayout`.
+			var collectionView = CollectionView;
+			
+			if (ItemsView.Header is not null || ItemsView.HeaderTemplate is not null)
+			{
+				var visibleHeaders = collectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Header);
+				foreach (var header in visibleHeaders)
+				{
+					if (header is TemplatedCell2 { MeasureInvalidated: true })
+					{
+						collectionView.CollectionViewLayout.InvalidateLayout();
+						return;
+					}
+				}
+			}
+
+
+			if (ItemsView.Footer is not null || ItemsView.FooterTemplate is not null)
+			{
+				var visibleFooters = collectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Footer);
+				foreach (var footer in visibleFooters)
+				{
+					if (footer is TemplatedCell2 { MeasureInvalidated: true })
+					{
+						collectionView.CollectionViewLayout.InvalidateLayout();
+						return;
+					}
+				}
+			}
 		}
 	}
 }

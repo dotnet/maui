@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Handlers
 				// the view size in some dimension. So we need to clip to the view's bounds.
 
 				var (left, top, right, bottom) = PlatformView.Context!.ToPixels(frame);
-				var clipRect = new Android.Graphics.Rect(0, 0, right - left, bottom - top);
+				var clipRect = new global::Android.Graphics.Rect(0, 0, right - left, bottom - top);
 				PlatformView.ClipBounds = clipRect;
 			}
 			else

@@ -14,8 +14,8 @@ namespace Maui.Controls.Sample.Issues
 			{
 				var btn = new Button
 				{
-					AutomationId = "Close",
-					Text = "Close",
+					AutomationId = "CloseMe",
+					Text = "CloseMe",
 					TextColor = Colors.White,
 					BackgroundColor = Colors.Red,
 					VerticalOptions = LayoutOptions.End
@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				Navigation.PopModalAsync();
 #pragma warning disable CS0618 // Type or member is obsolete
-				MessagingCenter.Instance.Send<Page>(this, "Delete");
+				MessagingCenter.Instance.Send<Page>(this, "DeleteMe");
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
@@ -65,6 +65,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 			_carousel.CurrentItemChanged += Carousel_CurrentItemChanged;
 			_carousel.PositionChanged += Carousel_PositionChanged;
+			_carousel.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
 
 			Grid.SetColumnSpan(_carousel, 2);
 
@@ -83,15 +84,15 @@ namespace Maui.Controls.Sample.Issues
 
 			var btn = new Button
 			{
-				AutomationId = "Delete",
-				Text = "Delete",
+				AutomationId = "DeleteMe",
+				Text = "DeleteMe",
 				BackgroundColor = Colors.Red,
 				TextColor = Colors.White
 			};
 			var btnAdd = new Button
 			{
-				AutomationId = "Add",
-				Text = "Add",
+				AutomationId = "AddMe",
+				Text = "AddMe",
 				BackgroundColor = Colors.Red,
 				TextColor = Colors.White
 			};
@@ -108,7 +109,7 @@ namespace Maui.Controls.Sample.Issues
 			grd.Children.Add(btnAdd);
 			Content = grd;
 #pragma warning disable CS0618 // Type or member is obsolete
-			MessagingCenter.Instance.Subscribe<Page>(this, "Delete", Callback);
+			MessagingCenter.Instance.Subscribe<Page>(this, "DeleteMe", Callback);
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 
@@ -125,10 +126,10 @@ namespace Maui.Controls.Sample.Issues
 		void Callback(Page page)
 		{
 			var index = Items.IndexOf(_carousel.CurrentItem as ModelCarouselViewRemoveAt);
-			System.Diagnostics.Debug.WriteLine($"Delete {index}");
+			System.Diagnostics.Debug.WriteLine($"DeleteMe {index}");
 			Items.RemoveAt(index);
 #pragma warning disable CS0618 // Type or member is obsolete
-			MessagingCenter.Instance.Unsubscribe<Page>(this, "Delete");
+			MessagingCenter.Instance.Unsubscribe<Page>(this, "DeleteMe");
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 

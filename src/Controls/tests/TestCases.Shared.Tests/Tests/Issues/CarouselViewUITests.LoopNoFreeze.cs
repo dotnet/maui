@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // Related issue for windows: https://github.com/dotnet/maui/issues/24482 and For Android, see : https://github.com/dotnet/maui/issues/28760
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,38 +22,32 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		// Issue12574 (src\ControlGallery\src\Issues.Shared\Issue12574.cs
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnMacWhenRunningOnXamarinUITest("DragCoordinates methods not implemented")]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("DragCoordinates methods not implemented")]
-		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issue")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("https://github.com/dotnet/maui/issues/24482")]
 		public void Issue12574Test()
 		{
 			App.WaitForElement("0 item");
 
-			var rect = App.FindElement(_carouselAutomationId).GetRect();
-			var centerX = rect.CenterX();
-			var rightX = rect.X - 5;
-			App.DragCoordinates(centerX + 40, rect.CenterY(), rightX, rect.CenterY());
+			App.WaitForElement(_carouselAutomationId);
+			App.ScrollRight(_carouselAutomationId, ScrollStrategy.Gesture, 0.99);
 
 			App.WaitForElement("1 item");
+			App.ScrollRight(_carouselAutomationId, ScrollStrategy.Gesture, 0.99);
 
-			App.DragCoordinates(centerX + 40, rect.CenterY(), rightX, rect.CenterY());
 
 			App.WaitForElement("2 item");
-
-			App.Click(_btnRemoveAutomationId);
+			App.WaitForElement(_btnRemoveAutomationId);
+			App.Tap(_btnRemoveAutomationId);
 
 			App.WaitForElement("1 item");
 
-			rightX = rect.X + rect.Width - 1;
-			App.DragCoordinates(rect.X, rect.CenterY(), rightX, rect.CenterY());
+			App.ScrollRight(_carouselAutomationId, ScrollStrategy.Gesture, 0.99);
 
 			App.WaitForElement("0 item");
 		}
 
 		[Test]
 		[Category(UITestCategories.CarouselView)]
-		[FailsOnWindowsWhenRunningOnXamarinUITest("This test is failing, likely due to product issu")]
-		[FailsOnAndroidWhenRunningOnXamarinUITest("This test is failing, likely due to product issu")]
+		[FailsOnWindowsWhenRunningOnXamarinUITest("https://github.com/dotnet/maui/issues/24482")]
 		public void RemoveItemsQuickly()
 		{
 			App.WaitForElement("0 item");
@@ -64,3 +59,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif

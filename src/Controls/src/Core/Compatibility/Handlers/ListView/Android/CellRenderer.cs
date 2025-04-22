@@ -11,15 +11,25 @@ using Object = Java.Lang.Object;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	public class CellRenderer : ElementHandler<Cell, AView>, IRegisterable
+#pragma warning restore CS0618 // Type or member is obsolete
 	{
 		static readonly PropertyChangedEventHandler PropertyChangedHandler = OnGlobalCellPropertyChanged;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static PropertyMapper<Cell, CellRenderer> Mapper =
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 				new PropertyMapper<Cell, CellRenderer>(ElementHandler.ElementMapper);
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public static CommandMapper<Cell, CellRenderer> CommandMapper =
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			new CommandMapper<Cell, CellRenderer>(ElementHandler.ElementCommandMapper);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		public CellRenderer() : base(Mapper, CommandMapper)
 		{
@@ -27,7 +37,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public View ParentView { get; set; }
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected Cell Cell { get; set; }
+#pragma warning restore CS0618 // Type or member is obsolete
 
 		protected override AView CreatePlatformElement()
 		{
@@ -36,7 +48,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return GetCell(VirtualView, creationArgs, null, (MauiContext.Context));
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public AView GetCell(Cell item, AView convertView, ViewGroup parent, Context context)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			if (item.Parent is View parentView)
 				ParentView = parentView;
@@ -57,7 +71,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Object tag = convertView.Tag;
 				CellRenderer renderer = (tag as RendererHolder)?.Renderer;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				Cell oldCell = renderer?.Cell;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				if (oldCell != null)
 				{
@@ -88,7 +104,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return view;
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected virtual AView GetCellCore(Cell item, AView convertView, ViewGroup parent, Context context)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			Performance.Start(out string reference, "GetCellCore");
 
@@ -110,7 +128,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		protected void WireUpForceUpdateSizeRequested(Cell cell, AView platformCell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			ICellController cellController = cell;
 			cellController.ForceUpdateSizeRequested -= OnForceUpdateSizeRequested;
@@ -127,8 +147,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		static void OnForceUpdateSizeRequested(object sender, EventArgs e)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (sender is not Cell cellInner)
 				return;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (cellInner.Handler is not IElementHandler elementHandler ||
 				elementHandler.PlatformView is not AView pCell ||
@@ -144,14 +166,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			pCell.SetMinimumWidth(pCell.MeasuredWidth);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		internal static CellRenderer GetRenderer(Cell cell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
 			return (CellRenderer)cell.Handler;
 		}
 
 		static void OnGlobalCellPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var cell = (Cell)sender;
+#pragma warning restore CS0618 // Type or member is obsolete
 			CellRenderer renderer = GetRenderer(cell);
 			if (renderer == null)
 			{

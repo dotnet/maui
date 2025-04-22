@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    internal class ReduceInvalidateMeasure : _IssuesUITest
+	internal class ReduceInvalidateMeasure : _IssuesUITest
 	{
 		public ReduceInvalidateMeasure(TestDevice device)
 			: base(device)

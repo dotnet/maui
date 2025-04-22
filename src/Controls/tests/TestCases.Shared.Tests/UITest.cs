@@ -20,6 +20,8 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 	public abstract class UITest : UITestBase
 	{
+		string _defaultiOSVersion = "18.0";
+
 		protected const int SetupMaxRetries = 1;
 		readonly VisualRegressionTester _visualRegressionTester;
 		readonly IImageEditorFactory _imageEditorFactory;
@@ -63,14 +65,14 @@ namespace Microsoft.Maui.TestCases.Tests
 					break;
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone Xs");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "18.2");
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? _defaultiOSVersion);
 					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\Controls.TestCases.HostApp");
 					var windowsExe = "Controls.TestCases.HostApp.exe";
-					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win10-x64\\{windowsExe}");
-					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win10-x64\\{windowsExe}");
+					var windowsExePath = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.20348.0\\win-x64\\{windowsExe}");
+					var windowsExePath19041 = Path.Combine(appProjectFolder, $"{configuration}\\{frameworkVersion}-windows10.0.19041.0\\win-x64\\{windowsExe}");
 
 					if (!File.Exists(windowsExePath) && File.Exists(windowsExePath19041))
 					{
@@ -121,7 +123,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		public void VerifyScreenshotOrSetException(
 			ref Exception? exception,
 			string? name = null,
-			TimeSpan? retryDelay = null
+			TimeSpan? retryDelay = null,
+			int cropTop = 0,
+			int cropBottom = 0
 #if MACUITEST || WINTEST
 			, bool includeTitleBar = false
 #endif
@@ -129,7 +133,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			try
 			{
-				VerifyScreenshot(name, retryDelay
+				VerifyScreenshot(name, retryDelay, cropTop, cropBottom
 #if MACUITEST || WINTEST
 				, includeTitleBar
 #endif
@@ -143,7 +147,9 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		public void VerifyScreenshot(
 			string? name = null,
-			TimeSpan? retryDelay = null
+			TimeSpan? retryDelay = null,
+			int cropTop = 0,
+			int cropBottom = 0
 #if MACUITEST || WINTEST
 			, bool includeTitleBar = false
 #endif
@@ -164,6 +170,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			void Verify(string? name)
 			{
 				string deviceName = GetTestConfig().GetProperty<string>("DeviceName") ?? string.Empty;
+
 
 				// Remove the XHarness suffix if present
 				deviceName = deviceName.Replace(" - created by XHarness", "", StringComparison.Ordinal);
@@ -198,7 +205,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
 						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
 
-						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.2")
+						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == _defaultiOSVersion)
 						{
 							environmentName = "ios";
 						}
@@ -212,7 +219,7 @@ namespace Microsoft.Maui.TestCases.Tests
 						}
 						else
 						{
-							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS 17.2) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}'. Follow the steps on the MAUI UI testing wiki.");
+							Assert.Fail($"iOS visual tests should be run on iPhone Xs (iOS {_defaultiOSVersion}) or iPhone X (iOS 16.4) simulator images, but the current device is '{deviceName}' '{platformVersion}'. Follow the steps on the MAUI UI testing wiki.");
 						}
 						break;
 
@@ -274,6 +281,9 @@ namespace Microsoft.Maui.TestCases.Tests
 					_ => 0,
 				};
 
+				cropFromTop = cropTop > 0 ? cropTop : cropFromTop;
+				cropFromBottom = cropBottom > 0 ? cropBottom : cropFromBottom;
+
 				if (cropFromTop > 0 || cropFromBottom > 0)
 				{
 					IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
@@ -285,6 +295,19 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 
 				_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: environmentName, testContext: _visualTestContext);
+			}
+		}
+
+		protected void VerifyInternetConnectivity()
+		{
+			try
+			{
+				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(30));
+				Assert.Inconclusive("This device doesn't have internet access");
+			}
+			catch (TimeoutException)
+			{
+				// Continue with the test
 			}
 		}
 

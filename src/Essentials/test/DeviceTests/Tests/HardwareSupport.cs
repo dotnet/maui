@@ -36,8 +36,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public static bool HasGyroscope =>
 #if __ANDROID__
 			// Android emulators and devices have gyros
-			Android.App.Application.Context.GetSystemService(Android.Content.Context.SensorService) is Android.Hardware.SensorManager sensorManager &&
-			sensorManager.GetDefaultSensor(Android.Hardware.SensorType.Gyroscope) is not null;
+			global::Android.App.Application.Context.GetSystemService(global::Android.Content.Context.SensorService) is global::Android.Hardware.SensorManager sensorManager &&
+			sensorManager.GetDefaultSensor(global::Android.Hardware.SensorType.Gyroscope) is not null;
 #elif MACCATALYST
 			false;
 #elif __IOS__
@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public static bool HasFlash =>
 #if __ANDROID__
 			// TODO: android emulates the lamp, I think...
-			PlatformUtils.HasSystemFeature(Android.Content.PM.PackageManager.FeatureCameraFlash);
+			PlatformUtils.HasSystemFeature(global::Android.Content.PM.PackageManager.FeatureCameraFlash);
 #elif MACCATALYST
 			false;
 #elif __IOS__

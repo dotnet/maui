@@ -16,6 +16,15 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		public bool IsListeningForeground { get => listeningGeolocator != null; }
 
+		public bool IsEnabled
+		{
+			get
+			{
+				var geolocator = new Geolocator();
+				return geolocator.LocationStatus != PositionStatus.Disabled && geolocator.LocationStatus != PositionStatus.NotAvailable;
+			}
+		}
+
 		public async Task<Location?> GetLastKnownLocationAsync()
 		{
 			// no need for permissions as AllowFallbackToConsentlessPositions

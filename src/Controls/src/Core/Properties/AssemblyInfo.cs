@@ -162,6 +162,8 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: StyleProperty("-maui-vertical-text-alignment", typeof(Label), nameof(TextAlignmentElement.VerticalTextAlignmentProperty))]
 [assembly: StyleProperty("-maui-thumb-color", typeof(Switch), nameof(Switch.ThumbColorProperty))]
 
+[assembly: StyleProperty("-maui-shadow", typeof(VisualElement), nameof(VisualElement.ShadowProperty))]
+
 //shell
 [assembly: StyleProperty("-maui-flyout-background", typeof(Shell), nameof(Shell.FlyoutBackgroundColorProperty))]
 [assembly: StyleProperty("-maui-shell-background", typeof(Element), nameof(Shell.BackgroundColorProperty), PropertyOwnerType = typeof(Shell))]

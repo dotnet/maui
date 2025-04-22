@@ -6,7 +6,7 @@ variables:
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
-  value: 9.0.100
+  value: 10.0.100-preview.2.25164.34
 - name: REQUIRED_XCODE
   value: 16.2.0
 - name: DEVICETESTS_REQUIRED_XCODE
@@ -68,9 +68,9 @@ variables:
     - name: PrivateBuild
       value: false
     - name: _RunAsPublic
-      value: False
+      value: false
     - name: _RunAsInternal
-      value: True
+      value: true
     - name: _SignType
       value: real
     # - name: PostBuildSign

@@ -17,13 +17,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		public async Task BindingToValuesTypesAndScrollingNoCrash()
+		public void BindingToValuesTypesAndScrollingNoCrash()
 		{
-			await Task.Delay(4000);
-			App.WaitForNoElement(Success);
+			Thread.Sleep(5000);
+			App.WaitForElement(Success);
 		}
 	}
 }

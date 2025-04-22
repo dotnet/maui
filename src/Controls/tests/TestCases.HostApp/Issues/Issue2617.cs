@@ -43,7 +43,7 @@ namespace Maui.Controls.Sample.Issues
 					nameLabel.SetBinding(Label.TextProperty, new Binding("."));
 					var cell = new ViewCell
 					{
-						View = new Frame()
+						View = new Border()
 						{
 							Content = nameLabel
 						},
@@ -63,7 +63,7 @@ namespace Maui.Controls.Sample.Issues
 					nameLabel.SetBinding(Label.TextProperty, new Binding("."));
 					var cell = new ViewCell
 					{
-						View = new Frame()
+						View = new Border()
 						{
 							Content = nameLabel
 						},

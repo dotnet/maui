@@ -16,6 +16,7 @@ public class Issue6323 : _IssuesUITest
 	[Category(UITestCategories.WebView)]
 	public void Issue6323Test()
 	{
+		VerifyInternetConnectivity();
 		App.WaitForElement("Success");
 	}
 }

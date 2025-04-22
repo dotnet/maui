@@ -76,6 +76,8 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new SwipeViewCoreGalleryPage(), "SwipeView Gallery"),
 			new GalleryPageFactory(() => new TimePickerCoreGalleryPage(), "Time Picker Gallery"),
 			new GalleryPageFactory(() => new WebViewCoreGalleryPage(), "WebView Gallery"),
+			new GalleryPageFactory(() => new SliderControlPage(), "Slider Feature Matrix"),
+			new GalleryPageFactory(() => new HeaderFooterMainPage(), "CollectionView Feature Matrix"),
 		};
 
 		public CorePageView(Page rootPage)
@@ -93,7 +95,7 @@ namespace Maui.Controls.Sample
 					Command = new Command(async () =>
 					{
 						var buttons = typeof(VisualMarker).GetProperties().Select(p => p.Name);
-						var selection = await rootPage.DisplayActionSheet("Select Visual", "Cancel", null, buttons.ToArray());
+						var selection = await rootPage.DisplayActionSheetAsync("Select Visual", "Cancel", null, buttons.ToArray());
 						if (cell.BindingContext is GalleryPageFactory pageFactory)
 						{
 							var page = pageFactory.Realize();

@@ -48,7 +48,7 @@
 					};
 
 					grd.Add(btn, 0, 1);
-					var image = new Image() { Source = "coffee.png", AutomationId = "CoffeeImageId", BackgroundColor = Colors.Yellow };
+					var image = new Image() { Source = "coffee.png", AutomationId = "CoffeeImageId", BackgroundColor = Colors.Yellow, HeightRequest = 56, WidthRequest = 56 };
 					image.VerticalOptions = LayoutOptions.End;
 					grd.Add(image, 0, 2);
 					Content = grd;

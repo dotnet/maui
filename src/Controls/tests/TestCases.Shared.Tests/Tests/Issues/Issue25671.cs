@@ -1,4 +1,4 @@
-#if ANDROID || IOS
+#if ANDROID || IOS //This test is only valid for Android and iOS as it measures the layout passes.
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -42,8 +42,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			var arrangePasses = int.Parse(match.Groups[2].Value);
 
 #if IOS
-            const int maxMeasurePasses = 525;
-            const int maxArrangePasses = 308;
+            var maxMeasurePasses = 225;
+            var maxArrangePasses = 247;
+
+            if (App.FindElement("HeadingLabel").GetText() == "CollectionViewHandler2")
+            {
+	            maxMeasurePasses = 380;
+	            maxArrangePasses = 295;
+            }
 #elif ANDROID
 			const int maxMeasurePasses = 353;
 			const int maxArrangePasses = 337;

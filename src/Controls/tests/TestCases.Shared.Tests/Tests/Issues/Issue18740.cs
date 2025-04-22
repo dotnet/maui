@@ -1,4 +1,4 @@
-﻿#if ANDROID
+﻿#if ANDROID || IOS //This test case verifies "IsKeyboardShown method" exclusively on the Android and IOS platforms
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
