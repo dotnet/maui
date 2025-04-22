@@ -47,11 +47,11 @@ namespace Microsoft.Maui.Platform
 			}
 			else if (self == Keyboard.Date)
 			{
-				name.NameValue = InputScopeNameValue.DateDayNumber | InputScopeNameValue.DateMonthNumber | InputScopeNameValue.DateYear;
+				name.NameValue = InputScopeNameValue.DateDayNumber;
 			}
 			else if (self == Keyboard.Time)
 			{
-				name.NameValue = InputScopeNameValue.TimeHour | InputScopeNameValue.TimeMinutesOrSeconds;
+				name.NameValue = InputScopeNameValue.TimeHour;
 			}
 			else
 			{
