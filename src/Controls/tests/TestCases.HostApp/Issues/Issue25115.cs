@@ -1,7 +1,7 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 25115, "The color was not applied properly to the Tab Chevron icon", PlatformAffected.UWP)]
-public partial class Issue25115 : TestShell
+public class Issue25115 : TestShell
 {
 	protected override void Init()
 	{
