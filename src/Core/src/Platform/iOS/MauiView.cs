@@ -213,8 +213,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public override bool CanBecomeFocused => true;
-
 		public override void DidUpdateFocus(UIFocusUpdateContext context, UIFocusAnimationCoordinator coordinator)
 		{
 			base.DidUpdateFocus(context, coordinator);
