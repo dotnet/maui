@@ -431,7 +431,13 @@ namespace Microsoft.Maui.Controls
 		void SendWindowDisppearing()
 		{
 			if (Navigation.ModalStack.Count == 0)
+			{
 				Page?.SendDisappearing();
+			}
+			else
+			{
+				Navigation.ModalStack[Navigation.ModalStack.Count - 1].SendDisappearing();
+			}
 
 			IsActivated = false;
 		}
