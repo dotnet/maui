@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
@@ -14,6 +15,34 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class WindowExtensions
 	{
+		private const int DWMWA_EXTENDED_FRAME_BOUNDS = 9;
+
+		[DllImport("dwmapi.dll", PreserveSig = true)]
+		private static extern int DwmGetWindowAttribute(
+			IntPtr hwnd,
+			int dwAttribute,
+			out RECT pvAttribute,
+			int cbAttribute);
+
+		[StructLayout(LayoutKind.Sequential)]
+		private struct RECT
+		{
+			public int Left;
+			public int Top;
+			public int Right;
+			public int Bottom;
+		}
+
+		internal static Rect GetExtendedFrameBounds(this IntPtr hwnd)
+		{
+			if (DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, out RECT rect, Marshal.SizeOf<RECT>()) == 0)
+			{
+				return new Rect(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
+			}
+
+			return new Rect(); // fallback if DWM fails
+		}
+    
 		internal static Rect[]? GetDefaultTitleBarDragRectangles(this UI.Xaml.Window platformWindow, IWindow window)
 		{
 			if (window?.Handler?.MauiContext is IMauiContext mauiContext)
