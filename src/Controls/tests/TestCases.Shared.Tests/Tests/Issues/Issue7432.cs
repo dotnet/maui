@@ -14,5 +14,6 @@ public class Issue7432 : _IssuesUITest
     public void ImageShouldScaleProperly()
     {
         App.WaitForElement("Image");
+        VerifyScreenshot();
     }
 }
