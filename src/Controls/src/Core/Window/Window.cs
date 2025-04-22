@@ -434,9 +434,9 @@ namespace Microsoft.Maui.Controls
 			{
 				Page?.SendDisappearing();
 			}
-			else
+			else if (Navigation.ModalStack.Count > 0)
 			{
-				Navigation.ModalStack[Navigation.ModalStack.Count - 1].SendDisappearing();
+				Navigation.ModalStack[Navigation.ModalStack.Count - 1]?.SendDisappearing();
 			}
 
 			IsActivated = false;
