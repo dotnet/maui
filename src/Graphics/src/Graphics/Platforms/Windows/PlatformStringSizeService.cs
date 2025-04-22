@@ -1,7 +1,5 @@
-﻿using System;
-using Microsoft.Graphics.Canvas;
+﻿using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
-using Windows.UI.Text;
 
 #if MAUI_GRAPHICS_WIN2D
 namespace Microsoft.Maui.Graphics.Win2D
