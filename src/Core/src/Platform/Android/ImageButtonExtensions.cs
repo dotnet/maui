@@ -84,11 +84,11 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateRippleColor(this ShapeableImageView platformView, Color rippleColor)
 		{
-			if (platformView.Background is Android.Graphics.Drawables.RippleDrawable ripple)
+			if (platformView.Background is global::Android.Graphics.Drawables.RippleDrawable ripple)
 			{
 				if (rippleColor?.ToPlatform() is not null)
 				{
-					ripple.SetColor(Android.Content.Res.ColorStateList.ValueOf(rippleColor.ToPlatform()));
+					ripple.SetColor(global::Android.Content.Res.ColorStateList.ValueOf(rippleColor.ToPlatform()));
 				}
 				else
 				{
