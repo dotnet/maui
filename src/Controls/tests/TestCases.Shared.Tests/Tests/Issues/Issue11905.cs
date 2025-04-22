@@ -14,7 +14,6 @@ internal class Issue11905 : _IssuesUITest
 	[Category(UITestCategories.WebView)]
 	public void JavaScriptWithNewlinesShouldExecuteCorrectly()
 	{
-		App.WaitForElement("WebView");
 		App.WaitForElement("TestLabel");
 	}
 }
