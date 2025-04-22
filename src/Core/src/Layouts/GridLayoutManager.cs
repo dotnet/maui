@@ -894,13 +894,6 @@ namespace Microsoft.Maui.Layouts
 			{
 				Debug.Assert(starCount > 0, "Assume that the caller has already checked for the existence of star rows/columns before using this.");
 
-				var availableSpace = targetSize - currentSize;
-
-				if (availableSpace <= 0)
-				{
-					return;
-				}
-
 				// Figure out which is the biggest star definition in this dimension (absolute value and star scale)
 				var maxCurrentSize = 0.0;
 				var maxCurrentStarSize = 0.0;
@@ -931,6 +924,12 @@ namespace Microsoft.Maui.Layouts
 						}
 					}
 
+					return;
+				}
+
+				var availableSpace = targetSize - currentSize;
+				if (availableSpace <= 0)
+				{
 					return;
 				}
 
