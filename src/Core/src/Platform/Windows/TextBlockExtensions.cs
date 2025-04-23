@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePadding(this TextBlock platformControl, ILabel label)
 		{
+			// Label padding values do not support negative values; if specified, negative values will be replaced with zero
 			var padding = new WThickness(
 				Math.Max(0, label.Padding.Left),
 				Math.Max(0, label.Padding.Top),
