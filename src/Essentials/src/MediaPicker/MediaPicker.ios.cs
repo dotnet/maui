@@ -297,7 +297,7 @@ namespace Microsoft.Maui.Media
 
 		internal PHPickerFileResult(NSItemProvider provider)
 		{
-			this._provider = provider;
+			_provider = provider;
 			var identifiers = provider?.RegisteredTypeIdentifiers;
 
 			_identifier = (identifiers?.Any(i => i.StartsWith(UTType.LivePhoto)) ?? false)
