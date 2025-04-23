@@ -1005,6 +1005,11 @@ namespace Microsoft.Maui.Controls
 
 		private protected void TriggerLayoutPassEvent(LayoutPassEvent layoutPassEvent)
 		{
+			if (!RuntimeFeature.IsVisualElementProfilerEnabled)
+			{
+				return;
+			}
+
 			LayoutPassEvent?.Invoke(this, layoutPassEvent);
 		}
 

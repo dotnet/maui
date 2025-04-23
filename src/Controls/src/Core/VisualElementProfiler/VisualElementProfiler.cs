@@ -2,13 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Microsoft.Maui.Controls;
 
-internal class VisualElementProfiler
+// TODO: NET10 make this public
+internal interface IVisualElementProfiler
+{
+	void Attach(VisualElement element);
+	void Detach(VisualElement element);
+	bool TryGetStats(VisualElement element, [NotNullWhen(true)] out ILayoutPassStats? stats);
+}
+
+// TODO: NET10 make this public
+internal class VisualElementProfiler : IVisualElementProfiler
 {
 	class LayoutPassTypeStats : ILayoutPassTypeStats
 	{
@@ -57,19 +67,19 @@ internal class VisualElementProfiler
 			var sb = new StringBuilder();
 			foreach (var typeStats in _layoutPassTypeStats)
 			{
-				sb.AppendLine($"{typeStats.LayoutPassType}: {typeStats.Count} ({typeStats.TotalTime} ns)");
+				sb.AppendLine($"{typeStats.LayoutPassType}: {typeStats.StandaloneCount} / {typeStats.Count} ({typeStats.GetAverageTimeNs()} ns)");
 			}
 			return sb.ToString();
 		}
 	}
-
+	
 	class LayoutPassTimer
 	{
 		// [ Measure, CrossPlatformMeasure, Arrange, CrossPlatformArrange ]
-		private readonly long[] _startTimes = [0, 0, 0, 0];
-		private readonly long[] _totalTimes = [0, 0, 0, 0];
-		private readonly long[] _counts = [0, 0, 0, 0];
-		private readonly long[] _standaloneCounts = [0, 0, 0, 0];
+		private readonly long[] _startTimes = new long[4];
+		private readonly long[] _totalTimes = new long[4];
+		private readonly long[] _counts = new long[4];
+		private readonly long[] _standaloneCounts = new long[4];
 
 		public ILayoutPassStats ToStats()
 		{
@@ -86,8 +96,9 @@ internal class VisualElementProfiler
 
 		public (LayoutPassType Type, bool Standalone, long Duration)? Track(LayoutPassEvent evt)
 		{
-			var index = (int)evt / 2;
-			if ((int)evt % 2 == 0)
+			var index = (int)evt >> 1;
+			bool isStartEvent = ((int)evt & 1) == 0;
+			if (isStartEvent)
 			{
 				_startTimes[index] = Stopwatch.GetTimestamp();
 				return null;
@@ -164,7 +175,7 @@ internal class VisualElementProfiler
 	public override string ToString()
 	{
 		var statsTable = new List<string[]>();
-		statsTable.Add(["Type", "M(count)", "M(ns)", "CPM(count)", "CPM(ns)", "A(count)", "A(ns)", "CPA(count)", "CPA(ns)"]);
+		statsTable.Add(["Type", "M (count)", "M (ns)", "CPM (count)", "CPM (ns)", "A (count)", "A (ns)", "CPA (count)", "CPA (ns)"]);
 		foreach (var ts in _typeStats)
 		{
 			var type = ts.Key;
@@ -177,13 +188,13 @@ internal class VisualElementProfiler
 			statsTable.Add([
 				type.Name,
 				$"{m.StandaloneCount} / {m.Count}",
-				m.GetAverageTimeNs().ToString("N0"),
+				m.GetAverageTimeNs().ToString("N0", CultureInfo.InvariantCulture),
 				$"{cpm.StandaloneCount} / {cpm.Count}",
-				cpm.GetAverageTimeNs().ToString("N0"),
+				cpm.GetAverageTimeNs().ToString("N0", CultureInfo.InvariantCulture),
 				$"{a.StandaloneCount} / {a.Count}",
-				a.GetAverageTimeNs().ToString("N0"),
+				a.GetAverageTimeNs().ToString("N0", CultureInfo.InvariantCulture),
 				$"{cpa.StandaloneCount} / {cpa.Count}",
-				cpa.GetAverageTimeNs().ToString("N0"),
+				cpa.GetAverageTimeNs().ToString("N0", CultureInfo.InvariantCulture),
 			]);
 		}
 
