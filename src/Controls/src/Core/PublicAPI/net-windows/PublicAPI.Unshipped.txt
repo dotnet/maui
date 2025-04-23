@@ -1,1 +1,2 @@
 #nullable enable
+override Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.UpdateEmptyViewVisibility() -> void
