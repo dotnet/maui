@@ -26,13 +26,12 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void Initialize(this AView platformView, IView view)
 		{
-			if (platformView.Parent is WrapperView wrapperView)
-			{
-				platformView = wrapperView;
-			}
+			var wrapperView = platformView.Parent as WrapperView;
+			var transformView = wrapperView ?? platformView;
 
-			var pivotX = (float)(view.AnchorX * platformView.ToPixels(view.Frame.Width));
-			var pivotY = (float)(view.AnchorY * platformView.ToPixels(view.Frame.Height));
+			var pivotX = (float)(view.AnchorX * transformView.ToPixels(view.Frame.Width));
+			var pivotY = (float)(view.AnchorY * transformView.ToPixels(view.Frame.Height));
+
 			int visibility;
 
 			if (view is IActivityIndicator a)
@@ -44,24 +43,59 @@ namespace Microsoft.Maui.Platform
 				visibility = (int)view.Visibility.ToPlatformVisibility();
 			}
 
-			// NOTE: use named arguments for clarity
-			PlatformInterop.Set(platformView,
-				visibility: visibility,
-				layoutDirection: (int)GetLayoutDirection(view),
-				minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
-				minimumWidth: (int)platformView.ToPixels(view.MinimumWidth),
-				enabled: view.IsEnabled,
-				alpha: (float)view.Opacity,
-				translationX: platformView.ToPixels(view.TranslationX),
-				translationY: platformView.ToPixels(view.TranslationY),
-				scaleX: (float)(view.Scale * view.ScaleX),
-				scaleY: (float)(view.Scale * view.ScaleY),
-				rotation: (float)view.Rotation,
-				rotationX: (float)view.RotationX,
-				rotationY: (float)view.RotationY,
-				pivotX: pivotX,
-				pivotY: pivotY
-			);
+			if (wrapperView is not null)
+			{
+				// Apply transform properties to the wrapper
+				wrapperView.TranslationX = wrapperView.ToPixels(view.TranslationX);
+				wrapperView.TranslationY = wrapperView.ToPixels(view.TranslationY);
+				wrapperView.ScaleX = (float)(view.Scale * view.ScaleX);
+				wrapperView.ScaleY = (float)(view.Scale * view.ScaleY);
+				wrapperView.Rotation = (float)view.Rotation;
+				wrapperView.RotationX = (float)view.RotationX;
+				wrapperView.RotationY = (float)view.RotationY;
+				wrapperView.PivotX = pivotX;
+				wrapperView.PivotY = pivotY;
+
+				// Apply non-transform properties to the inner view
+				PlatformInterop.Set(platformView,
+					visibility: visibility,
+					layoutDirection: (int)GetLayoutDirection(view),
+					minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
+					minimumWidth: (int)platformView.ToPixels(view.MinimumWidth),
+					enabled: view.IsEnabled,
+					alpha: (float)view.Opacity,
+					translationX: 0,
+					translationY: 0,
+					scaleX: 1,
+					scaleY: 1,
+					rotation: 0,
+					rotationX: 0,
+					rotationY: 0,
+					pivotX: 0,
+					pivotY: 0
+				);
+			}
+			else
+			{
+				// NOTE: use named arguments for clarity
+				PlatformInterop.Set(platformView,
+					visibility: visibility,
+					layoutDirection: (int)GetLayoutDirection(view),
+					minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
+					minimumWidth: (int)platformView.ToPixels(view.MinimumWidth),
+					enabled: view.IsEnabled,
+					alpha: (float)view.Opacity,
+					translationX: platformView.ToPixels(view.TranslationX),
+					translationY: platformView.ToPixels(view.TranslationY),
+					scaleX: (float)(view.Scale * view.ScaleX),
+					scaleY: (float)(view.Scale * view.ScaleY),
+					rotation: (float)view.Rotation,
+					rotationX: (float)view.RotationX,
+					rotationY: (float)view.RotationY,
+					pivotX: pivotX,
+					pivotY: pivotY
+				);
+			}
 		}
 
 		public static void UpdateIsEnabled(this AView platformView, IView view)
