@@ -22,7 +22,7 @@ public class Issue28725 : _IssuesUITest
 		TestResizeMode("BleedButton", "ImagePaintWithResizeModeBleed", ref exception);
 		TestResizeMode("StretchButton", "ImagePaintWithResizeModeStretch", ref exception);
 
-		if(exception != null)
+		if(exception is not null)
 		{
 			throw exception;
 		}
