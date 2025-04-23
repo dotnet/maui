@@ -313,7 +313,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			TextFlow textFlow = TextFlow.ClipBounds,
 			float lineAdjustment = 0)
 		{
-			var textFormat = (CurrentState.Font ?? Graphics.Font.Default).ToCanvasTextFormat(CurrentState.FontSize);
+			//var textFormat = (CurrentState.Font ?? Graphics.Font.Default).ToCanvasTextFormat(CurrentState.FontSize);
+			var textFormat = (CurrentState.Font ?? Graphics.Font.Default).ToCanvasTextFormat(CurrentState.FontSize, value);
 
 			switch (horizontalAlignment)
 			{
