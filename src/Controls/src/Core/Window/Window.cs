@@ -436,7 +436,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else if (Navigation.ModalStack.Count > 0)
 			{
-				Navigation.ModalStack[Navigation.ModalStack.Count - 1]?.SendDisappearing();
+				Navigation.ModalStack[^1]?.SendDisappearing();
 			}
 
 			IsActivated = false;
