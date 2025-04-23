@@ -171,4 +171,3 @@ namespace Microsoft.Maui.Graphics.Skia
 		}
 	}
 }
-}
