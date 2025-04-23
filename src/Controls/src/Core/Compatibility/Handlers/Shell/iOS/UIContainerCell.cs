@@ -116,6 +116,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		public override void SetSelected(bool selected, bool animated)
+		{
+			base.SetSelected(selected, animated);
+			UpdateVisualState();
+		}
+
 		void UpdateVisualState()
 		{
 			if (BindingContext is BaseShellItem baseShellItem && baseShellItem != null)
