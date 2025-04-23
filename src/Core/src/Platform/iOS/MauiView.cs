@@ -220,9 +220,19 @@ namespace Microsoft.Maui.Platform
 		{
 			base.DidUpdateFocus(context, coordinator);
 
-			if (View is not null)
+			if (context.NextFocusedView == this)
 			{
-				View.IsFocused = context.NextFocusedView == this;
+				if(CrossPlatformLayout is IView view)
+				{
+					view.IsFocused = true;
+				}
+			}
+			else
+			{
+				if(CrossPlatformLayout is IView view)
+				{
+					view.IsFocused = false;
+				}
 			}
 		}
 	}

@@ -5,23 +5,34 @@
 	{
 		public Issue28945()
 		{
-#if IOS
+#if IOS || MACCATALYST
 			var layout = new StackLayout();
 
-			var content = new Issue28945ContentView
+			var button = new Button
+			{
+				Text = "Set focus"
+			};
+			
+			var issue28945ContentView = new Issue28945ContentView
 			{
 				BackgroundColor = Colors.Red,
 				HeightRequest = 200
 			};
-
-			layout.Add(content);
+			
+			layout.Add(button);
+			layout.Add(issue28945ContentView);
 
 			Content = layout;
+
+			button.Clicked += (sender, args) =>
+			{
+				issue28945ContentView.Focus();
+			};
 #endif
 		}
 	}
 
-#if IOS
+#if IOS || MACCATALYST
 	public class Issue28945ContentView : ContentView
 	{
 		public Issue28945ContentView()
@@ -82,7 +93,7 @@
 		{
 			builder.ConfigureMauiHandlers(handlers =>
 			{	
-#if IOS
+#if IOS || MACCATALYST
 				handlers.AddHandler(typeof(Issue28945ContentView), typeof(Issue28945ContentViewPlatformHandler));
 #endif
 			});
