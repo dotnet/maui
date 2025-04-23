@@ -51,19 +51,9 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			if (Width > maxWidthOrHeight || Height > maxWidthOrHeight)
 			{
-				float factor;
-				if (Width > Height)
-				{
-					factor = maxWidthOrHeight / Width;
-				}
-				else
-				{
-					factor = maxWidthOrHeight / Height;
-				}
-
+				float factor = Width > Height ? maxWidthOrHeight / Width : maxWidthOrHeight / Height;
 				var targetWidth = factor * Width;
 				var targetHeight = factor * Height;
-
 				return ResizeInternal(targetWidth, targetHeight, 0, 0, targetWidth, targetHeight, disposeOriginal);
 			}
 
