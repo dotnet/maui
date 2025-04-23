@@ -46,8 +46,20 @@
 
 	public class Issue28945ContentViewPlatform : Microsoft.Maui.Platform.ContentView
 	{
+		public Issue28945ContentViewPlatform()
+		{
+			UserInteractionEnabled = true;
+		}
+
 		public override bool CanBecomeFocused => true;
 		public override bool CanBecomeFirstResponder => true;
+
+		public override void DidUpdateFocus(UIKit.UIFocusUpdateContext context, UIKit.UIFocusAnimationCoordinator coordinator)
+		{
+			base.DidUpdateFocus(context, coordinator);
+
+			Console.WriteLine("Issue28945ContentViewPlatform DidUpdateFocus");
+		}
 	}
 
 	public class Issue28945ContentViewPlatformHandler : Microsoft.Maui.Handlers.ContentViewHandler
