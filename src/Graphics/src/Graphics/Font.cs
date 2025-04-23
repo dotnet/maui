@@ -141,9 +141,6 @@ namespace Microsoft.Maui.Graphics
 		/// <summary>
 		/// Gets the font style type.
 		/// </summary>
-		/// <summary>
-		/// Gets the font style type.
-		/// </summary>
 		public FontStyleType StyleType { get; private set; }
 
 		/// <summary>
