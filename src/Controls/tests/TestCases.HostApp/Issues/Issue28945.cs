@@ -12,6 +12,20 @@
 		public Issue28945ContentView()
 		{
 			Focused += OnFocused;
+
+			var layout = new StackLayout();
+
+			var button = new Button
+			{
+				Text = "Set the focus"
+			};
+
+			button.Clicked += (sender, args) =>
+			{
+				this.Focus();
+			};
+
+			Content = layout;
 		}
 
 		async void OnFocused(object sender, FocusEventArgs e)
