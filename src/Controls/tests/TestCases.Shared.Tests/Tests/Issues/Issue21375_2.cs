@@ -15,7 +15,7 @@ public class Issue21375_2 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.CollectionView)]
-    public void SelectedItemsShowSelected ()
+    public void SelectedItemsShowSelected2()
     {
         var collectionView = App.WaitForElement("collectionView");
         var centerX = collectionView.GetRect().X + (collectionView.GetRect().Width / 2);
