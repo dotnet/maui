@@ -101,11 +101,13 @@ namespace Microsoft.Maui.Media
 
 				if (!UIImagePickerController.IsSourceTypeAvailable(sourceType))
 				{
+					tcs.TrySetCanceled();
 					throw new FeatureNotSupportedException();
 				}
 
 				if (!UIImagePickerController.AvailableMediaTypes(sourceType).Contains(mediaType))
 				{
+					tcs.TrySetCanceled();
 					throw new FeatureNotSupportedException();
 				}
 
