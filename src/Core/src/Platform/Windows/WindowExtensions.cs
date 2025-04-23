@@ -10,29 +10,21 @@ using Microsoft.UI.Xaml;
 using Windows.Graphics;
 using Windows.Graphics.Display;
 using WinRT.Interop;
+using static Microsoft.Maui.ApplicationModel.PlatformMethods;
 
 namespace Microsoft.Maui.Platform
 {
 	public static partial class WindowExtensions
 	{
-		private const int DWMWA_EXTENDED_FRAME_BOUNDS = 9;
+		const int DWMWA_EXTENDED_FRAME_BOUNDS = 9;
 
 		[DllImport("dwmapi.dll", PreserveSig = true)]
-		private static extern int DwmGetWindowAttribute(
+		 static extern int DwmGetWindowAttribute(
 			IntPtr hwnd,
 			int dwAttribute,
 			out RECT pvAttribute,
 			int cbAttribute);
-
-		[StructLayout(LayoutKind.Sequential)]
-		private struct RECT
-		{
-			public int Left;
-			public int Top;
-			public int Right;
-			public int Bottom;
-		}
-
+	
 		internal static Rect GetExtendedFrameBounds(this IntPtr hwnd)
 		{
 			if (DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, out RECT rect, Marshal.SizeOf<RECT>()) == 0)
