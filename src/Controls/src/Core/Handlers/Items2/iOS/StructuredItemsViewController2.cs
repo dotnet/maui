@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using CoreGraphics;
 using Foundation;
@@ -160,38 +161,27 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				? HorizontalSupplementaryView2.ReuseId
 				: VerticalSupplementaryView2.ReuseId;
 		}
-		internal override CGRect LayoutEmptyView()
-		{
-			var emptyViewFrame = base.LayoutEmptyView();
-			var footerView = CollectionView.ViewWithTag(FooterTag);
 
-			if (footerView is not null)
+		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
+		{
+			if (ItemsSource.ItemCount == 0)
 			{
-				if (emptyViewFrame.Height > 0)
-					footerView.Frame = new CGRect(footerView.Frame.X, emptyViewFrame.Bottom, footerView.Frame.Width, footerView.Frame.Height);
-				else
-					footerView.Frame = new CGRect(footerView.Frame.X, CollectionView.ContentSize.Height - footerView.Frame.Height, footerView.Frame.Width, footerView.Frame.Height);
+				double headerHeight = 0;
+				if (ItemsView?.Header is View headerView)
+				{
+					headerHeight = headerView.HeightRequest;
+				}
+
+				double footerHeight = 0;
+				if (ItemsView?.Footer is View footerView)
+				{
+					footerHeight = footerView.HeightRequest;
+				}
+
+				return GetEmptyViewCell(collectionView, indexPath, headerHeight, footerHeight);
 			}
 
-			return emptyViewFrame;
-		}
-
-		protected override CGRect DetermineEmptyViewFrame()
-		{
-			nfloat headerHeight = 0;
-			var headerView = CollectionView.ViewWithTag(HeaderTag);
-
-			if (headerView != null)
-				headerHeight = headerView.Frame.Height;
-
-			nfloat footerHeight = 0;
-			var footerView = CollectionView.ViewWithTag(FooterTag);
-
-			if (footerView != null)
-				footerHeight = footerView.Frame.Height;
-
-			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y + headerHeight, CollectionView.Frame.Width,
-							Math.Abs(CollectionView.Frame.Height - (headerHeight + footerHeight)));
+			return base.GetCell(collectionView, indexPath);
 		}
 
 		public override void ViewWillLayoutSubviews()

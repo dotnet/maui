@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using CoreGraphics;
@@ -97,12 +98,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public static void MapEmptyView(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.Controller?.UpdateEmptyView();
+			UpdateEmptyView(handler, itemsView);
 		}
 
 		public static void MapEmptyViewTemplate(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
 		{
-			handler.Controller?.UpdateEmptyView();
+			UpdateEmptyView(handler, itemsView);
+		}
+
+		private static void UpdateEmptyView(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
+		{
+			if (itemsView.ItemsSource is null || itemsView.ItemsSource is IList list && list.Count == 0)
+			{
+				handler.Controller?.CollectionView.ReloadItems(handler.Controller?.CollectionView.IndexPathsForVisibleItems);
+			}
 		}
 
 		public static void MapFlowDirection(ItemsViewHandler2<TItemsView> handler, ItemsView itemsView)
