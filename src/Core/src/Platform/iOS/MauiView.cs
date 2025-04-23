@@ -214,6 +214,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public override bool CanBecomeFocused => true;
+		public override bool CanBecomeFirstResponder => true;
 
 		public override void DidUpdateFocus(UIFocusUpdateContext context, UIFocusAnimationCoordinator coordinator)
 		{

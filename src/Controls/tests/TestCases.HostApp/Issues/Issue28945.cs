@@ -8,23 +8,12 @@
 #if IOS
 			var layout = new StackLayout();
 
-			var button = new Button
-			{
-				Text = "Set the focus"
-			};
-
 			var content = new Issue28945ContentView
 			{
 				BackgroundColor = Colors.Red,
-				HeightRequest = 100
+				HeightRequest = 200
 			};
 
-			button.Clicked += (sender, args) =>
-			{
-				content.Focus();
-			};
-
-			layout.Add(button);
 			layout.Add(content);
 
 			Content = layout;
@@ -38,6 +27,15 @@
 		public Issue28945ContentView()
 		{
 			Focused += OnFocused;
+
+			GestureRecognizers.Add(new TapGestureRecognizer
+			{
+				NumberOfTapsRequired = 1,
+				Command = new Command(async () =>
+				{
+					await this.Window.Page.DisplayAlert("Tapped", "Tapped Issue28945ContentView", "Ok");
+				})
+			});
 		}
 
 		async void OnFocused(object sender, FocusEventArgs e)
