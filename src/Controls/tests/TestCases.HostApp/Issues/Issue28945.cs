@@ -3,7 +3,33 @@
 	[Issue(IssueTracker.Github, 28945, "Add Focus propagation to MauiView", PlatformAffected.iOS)]
 	public class Issue28945 : ContentPage
 	{
+		public Issue28945()
+		{
+#if IOS
+			var layout = new StackLayout();
 
+			var button = new Button
+			{
+				Text = "Set the focus"
+			};
+
+			var content = new Issue28945ContentView
+			{
+				BackgroundColor = Colors.Red,
+				HeightRequest = 100
+			};
+
+			button.Clicked += (sender, args) =>
+			{
+				content.Focus();
+			};
+
+			layout.Add(button);
+			layout.Add(content);
+
+			Content = layout;
+#endif
+		}
 	}
 
 #if IOS
@@ -12,20 +38,6 @@
 		public Issue28945ContentView()
 		{
 			Focused += OnFocused;
-
-			var layout = new StackLayout();
-
-			var button = new Button
-			{
-				Text = "Set the focus"
-			};
-
-			button.Clicked += (sender, args) =>
-			{
-				this.Focus();
-			};
-
-			Content = layout;
 		}
 
 		async void OnFocused(object sender, FocusEventArgs e)
