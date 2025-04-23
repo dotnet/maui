@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateText(this MaterialButton platformButton, Button button)
 		{
-			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
+			var text = TextTransformUtilities.GetTransformedText(button.Text, button.TextTransform);
 			platformButton.Text = text;
 
 			// Content layout depends on whether or not the text is empty; changing the text means
@@ -29,7 +29,9 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			var icon = materialButton.Icon ??
+#pragma warning disable CS0618 // Type or member is obsolete
 						TextViewCompat.GetCompoundDrawablesRelative(materialButton)[3];
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (icon != null &&
 				!String.IsNullOrEmpty(button.Text))

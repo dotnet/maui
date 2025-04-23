@@ -4,18 +4,18 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-    public class Issue17123 : _IssuesUITest 
+	public class Issue17123 : _IssuesUITest
 	{
-        public override string Issue => "TableSection and TableRoot Title properties are displayed as lower case";
+		public override string Issue => "TableSection and TableRoot Title properties are displayed as lower case";
 
-        public Issue17123(TestDevice device) : base(device)
-        {
-        }
+		public Issue17123(TestDevice device) : base(device)
+		{
+		}
 
-        [Test]
+		[Test]
 		[Category(UITestCategories.TableView)]
 		public void ValidateTableViewTitles()
-        {
+		{
 			App.WaitForElement("TableView");
 			var tableViewRootText = App.FindElement("TableRootLabel").GetText();
 			if (string.IsNullOrEmpty(tableViewRootText))
@@ -39,5 +39,5 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			VerifyScreenshot();
 		}
-    }
+	}
 }

@@ -13,6 +13,7 @@ templatesTest/
 *.user
 *.userosscache
 *.sln.docstates
+/src/Controls/tests/TestCases.HostApp/MauiProgram.user.cs
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -185,9 +186,6 @@ publish/
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml
-# Note: Comment the next line if you want to checkin your web deploy settings,
-# but database connection strings (with potential passwords) will be unencrypted
-*.pubxml
 *.publishproj
 
 # Microsoft Azure Web App publish settings. Comment the next line if you want to
@@ -382,3 +380,4 @@ snapshots-diff/
 .dotnet
 temp
 .packages
+/src/Templates/.tempTemplateOutput

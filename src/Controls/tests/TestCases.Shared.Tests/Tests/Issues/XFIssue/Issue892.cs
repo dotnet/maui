@@ -31,7 +31,7 @@ public class Issue892 : _IssuesUITest
 		App.Tap("Present Flyout");
 		App.Tap(Page5);
 
-#if ANDROID || WINDOWS // IsPresented value not reflected when changing on ItemTapped in FlyoutPage More Information: https://github.com/dotnet/maui/issues/26324.
+#if WINDOWS // IsPresented value not reflected when changing on ItemTapped in FlyoutPage.
 		App.WaitForElementTillPageNavigationSettled(Page5);
 		App.TapInFlyoutPageFlyout("Close Flyout");
 #else
@@ -42,10 +42,10 @@ public class Issue892 : _IssuesUITest
 
 	void NavigateToEndAndBack(string BackButtonId)
 	{
-		App.WaitForElement("Push next page"); 
+		App.WaitForElement("Push next page");
 		App.Tap("Push next page");
-		App.WaitForElement("Push next next page"); 
-		App.Tap("Push next next page"); 
+		App.WaitForElement("Push next next page");
+		App.Tap("Push next next page");
 		App.WaitForElement("You are at the end of the line");
 		App.Tap("Check back one");
 		App.WaitForElement("Pop one");
@@ -55,6 +55,7 @@ public class Issue892 : _IssuesUITest
 		App.WaitForElement("Pop two");
 		App.WaitForElementTillPageNavigationSettled("Check back two");
 		App.TapBackArrow(BackButtonId);
+		App.WaitForElementTillPageNavigationSettled("Check back three");
 		App.Tap("Check back three");
 		App.WaitForElement("At root");
 	}

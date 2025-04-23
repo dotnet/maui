@@ -1,9 +1,9 @@
-﻿#if IOS
+#if (IOS && TEST_FAILS_ON_IOS) || (ANDROID && TEST_FAILS_ON_ANDROID) // Android related issue: https://github.com/dotnet/maui/issues/27951, iOS related issue: https://github.com/dotnet/maui/issues/28760
+//The test is applicable only to mobile platforms like iOS and Android.
 using System.Drawing;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using OpenQA.Selenium.Appium.Interactions;
-using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Interactions;
 using UITest.Appium;
 using UITest.Core;

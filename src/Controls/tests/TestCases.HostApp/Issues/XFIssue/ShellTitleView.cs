@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.None, 0, "Shell Title View Test",
+[Issue(IssueTracker.None, 0, "Shell Title View Tests",
 	PlatformAffected.All)]
 public class ShellTitleView : TestShell
 {

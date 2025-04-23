@@ -1,6 +1,5 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
-	// Issue13436 (src\ControlGallery\src\Issues.Shared\Issue13436.cs
 	[Issue(IssueTracker.None, 13436,
 		"[Bug] Java.Lang.IllegalArgumentException in CarouselView adjusting PeekAreaInsets in OnSizeAllocated using XF 5.0",
 		PlatformAffected.Android)]

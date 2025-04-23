@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
@@ -24,12 +25,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			var border = new Border()
 			{
-				Content = new Label 
-				{ 
-					Text = "Background", 
-					TextColor = Colors.Red, 
-					FontFamily = "Segoe UI", 
-					HorizontalOptions =  LayoutOptions.Center,
+				Content = new Label
+				{
+					Text = "Background",
+					TextColor = Colors.Red,
+					FontFamily = "Segoe UI",
+					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.Center
 				},
 				HorizontalOptions = LayoutOptions.Center,
@@ -58,6 +59,23 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertColorAtPoint(border, expected, typeof(BorderHandler), cornerRadius, cornerRadius);
+		}
+
+	    [Fact]
+		[Description("The IsVisible property of a Border should match with native IsVisible")]		
+		public async Task VerifyBorderIsVisibleProperty()
+		{
+			var border = new Border();
+			border.IsVisible = false;
+			var expectedValue = border.IsVisible;
+
+			var handler = await CreateHandlerAsync<BorderHandler>(border);
+			var nativeView = GetNativeBorder(handler);
+			await InvokeOnMainThreadAsync(() =>
+   			{
+				var isVisible = nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
+				Assert.Equal(expectedValue, isVisible);
+			});	
 		}
 
 		ContentPanel GetNativeBorder(BorderHandler borderHandler) =>

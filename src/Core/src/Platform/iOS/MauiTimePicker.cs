@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Platform
 			_proxy = new(dateSelected);
 #endif
 
-			if (OperatingSystem.IsIOSVersionAtLeast(14))
+			if (OperatingSystem.IsIOSVersionAtLeast(13, 4) || OperatingSystem.IsMacCatalyst())
 			{
 				_picker.PreferredDatePickerStyle = UIDatePickerStyle.Wheels;
 			}
@@ -50,9 +50,10 @@ namespace Microsoft.Maui.Platform
 
 		public NSDate Date => Picker.Date;
 
-		public void UpdateTime(TimeSpan time)
+		public void UpdateTime(TimeSpan? time)
 		{
-			_picker.Date = new DateTime(1, 1, 1, time.Hours, time.Minutes, time.Seconds).ToNSDate();
+			_picker.Date = new DateTime(1, 1, 1, time?.Hours ?? 0, 
+				time?.Minutes ?? 0, time?.Seconds ?? 0).ToNSDate();
 		}
 
 #if !MACCATALYST

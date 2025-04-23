@@ -3,6 +3,7 @@ using System.Net;
 using Android.Graphics;
 using Android.Text;
 using Android.Widget;
+using Android.Views;
 using static Android.Widget.TextView;
 using ALayoutDirection = Android.Views.LayoutDirection;
 using ATextDirection = Android.Views.TextDirection;
@@ -63,14 +64,14 @@ namespace Microsoft.Maui.Platform
 			{
 				// But if RTL support is not available for some reason, we have to resort
 				// to gravity, because Android will simply ignore text alignment
-				textView.Gravity = Android.Views.GravityFlags.Top | text.HorizontalTextAlignment.ToHorizontalGravityFlags();
+				textView.Gravity = GravityFlags.Top | text.HorizontalTextAlignment.ToHorizontalGravityFlags();
 			}
 
 			if (OperatingSystem.IsAndroidVersionAtLeast(26))
 			{
 				textView.JustificationMode = text.HorizontalTextAlignment == TextAlignment.Justify
-					? Android.Text.JustificationMode.InterWord
-					: Android.Text.JustificationMode.None;
+					? JustificationMode.InterWord
+					: JustificationMode.None;
 			}
 		}
 

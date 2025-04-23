@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(ImageView platformView)
 		{
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
+			platformView.ImportantForAccessibility = ImportantForAccessibility.No;
 		}
 
 		protected override void DisconnectHandler(ImageView platformView)
@@ -74,6 +75,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		public static void MapInputTransparent(IImageHandler handler,IImage image)
+		{
+			if(handler.IsConnected())
+			{
+				handler.PlatformView.Clickable = !image.InputTransparent;
+			}
+		}
+
 		public override void PlatformArrange(Graphics.Rect frame)
 		{
 			if (PlatformView.GetScaleType() == ImageView.ScaleType.CenterCrop)
@@ -82,7 +91,7 @@ namespace Microsoft.Maui.Handlers
 				// the view size in some dimension. So we need to clip to the view's bounds.
 
 				var (left, top, right, bottom) = PlatformView.Context!.ToPixels(frame);
-				var clipRect = new Android.Graphics.Rect(0, 0, right - left, bottom - top);
+				var clipRect = new global::Android.Graphics.Rect(0, 0, right - left, bottom - top);
 				PlatformView.ClipBounds = clipRect;
 			}
 			else

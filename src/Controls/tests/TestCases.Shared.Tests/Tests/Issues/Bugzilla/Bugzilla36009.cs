@@ -1,4 +1,4 @@
-﻿#if IOS
+﻿#if TEST_FAILS_ON_WINDOWS // BoxView automation is not supported in windows.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -11,17 +11,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 		}
 
-		public override string Issue => "[Bug] Exception Ancestor must be provided for all pushes except first";
+		public override string Issue => "Children of Layouts with data bound IsVisible are not displayed";
 
 		[Test]
 		[Category(UITestCategories.BoxView)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest("The content is not visible. The test is failing.")]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Bugzilla36009Test()
 		{
-			App.WaitForElement("Victory");
+			App.WaitForElementTillPageNavigationSettled("Victory");
 		}
 	}
 }

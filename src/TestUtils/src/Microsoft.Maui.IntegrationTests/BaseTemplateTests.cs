@@ -13,10 +13,25 @@ public abstract class BaseTemplateTests : BaseBuildTest
 
 	protected void EnableTizen(string projectFile)
 	{
-		FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
-		{
-			{ "<!-- <TargetFrameworks>", "<TargetFrameworks>" },
-			{ "</TargetFrameworks> -->", "</TargetFrameworks>" },
-		});
+		// TODO: enable Tizen in future
+		// FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
+		// {
+		// 	{ "<!-- <TargetFrameworks>", "<TargetFrameworks>" },
+		// 	{ "</TargetFrameworks> -->", "</TargetFrameworks>" },
+		// });
+	}
+
+	protected void AssertContains(string expected, string actual)
+	{
+		Assert.IsTrue(
+			actual.Contains(expected, StringComparison.Ordinal),
+			$"Expected string '{actual}' to contain '{expected}'.");
+	}
+
+	protected void AssertDoesNotContain(string expected, string actual)
+	{
+		Assert.IsFalse(
+			actual.Contains(expected, StringComparison.Ordinal),
+			$"Expected string '{actual}' to not contain '{expected}'.");
 	}
 }

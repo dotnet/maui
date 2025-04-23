@@ -18,12 +18,6 @@ public static class MauiProgram
 #if (IncludeSampleContent)
 			.UseMauiCommunityToolkit()
 			.ConfigureSyncfusionToolkit()
-			.ConfigureMauiHandlers(handlers =>
-			{
-#if IOS || MACCATALYST
-				handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
-#endif
-			})
 #endif
 			.ConfigureFonts(fonts =>
 			{

@@ -19,7 +19,8 @@ public class ShellSearchHandlerItemSizing : TestShell
 			{
 				new Label()
 				{
-					Text = "Type into the search handler to display a list. Each item should be measured to the size of the content"
+					Text = "Type into the search handler to display a list. Each item should be measured to the size of the content",
+					AutomationId="Instructions"
 				}
 			};
 	}

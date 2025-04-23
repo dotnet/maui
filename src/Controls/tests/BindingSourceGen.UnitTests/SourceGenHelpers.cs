@@ -17,7 +17,7 @@ internal record CodeGeneratorResult(
 internal static class SourceGenHelpers
 {
 	private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview).WithFeatures(
-				[new KeyValuePair<string, string>("InterceptorsPreviewNamespaces", "Microsoft.Maui.Controls.Generated")]);
+				[new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.Maui.Controls.Generated")]);
 
 	internal static List<string> StepsForComparison = [TrackingNames.Bindings, TrackingNames.BindingsWithDiagnostics];
 

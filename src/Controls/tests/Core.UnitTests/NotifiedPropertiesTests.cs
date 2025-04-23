@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new PropertyTestCase<TextCell, string> ("Detail", v => v.Detail, (v, o) => v.Detail = o, () => null, "Foo"),
 			new PropertyTestCase<TextCell, Color> ("TextColor", v => v.TextColor, (v, o) => v.TextColor = o, () => null, new Color (0, 1, 0)),
 			new PropertyTestCase<TextCell, Color> ("DetailColor", v => v.DetailColor, (v, o) => v.DetailColor = o, () => null, new Color (0, 1, 0)),
-			new PropertyTestCase<TimePicker, TimeSpan> ("Time", v => v.Time, (v, o) => v.Time = o, () => default(TimeSpan), new TimeSpan (8, 0, 0)),
+			new PropertyTestCase<TimePicker, TimeSpan?> ("Time", v => v.Time, (v, o) => v.Time = o, () => default(TimeSpan), new TimeSpan (8, 0, 0)),
 			new PropertyTestCase<TimePicker, string> ("Format", v => v.Format, (v, o) => v.Format = o, () => "t", "T"),
 			new PropertyTestCase<ViewCell, View> ("View", v => v.View, (v, o) => v.View = o, () => null, new View ()),
 			new PropertyTestCase<WebView, WebViewSource> ("Source", v => v.Source, (v, o) => v.Source = o, () => null, new UrlWebViewSource { Url = "Foo" }),

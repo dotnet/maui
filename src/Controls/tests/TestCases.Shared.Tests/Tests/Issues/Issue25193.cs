@@ -11,11 +11,7 @@ public class Issue25193 : _IssuesUITest
 	public override string Issue => "Background gradients don't work for some views";
 
 	[Test]
-	[Category(UITestCategories.Label)]
-	[Category(UITestCategories.ScrollView)]
-	[Category(UITestCategories.Button)]
-	[Category(UITestCategories.Entry)]
-	[Category(UITestCategories.Picker)]
+	[Category(UITestCategories.Brush)]
 	public void BackgroundGradientsShouldRenderCorrectly()
 	{
 		App.WaitForElement("label");

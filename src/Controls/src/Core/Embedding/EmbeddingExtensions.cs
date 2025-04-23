@@ -37,7 +37,7 @@ public static class EmbeddingExtensions
 	internal static MauiAppBuilder UseMauiEmbedding(this MauiAppBuilder builder)
 	{
 #if ANDROID
-		var platformApplication = (Android.App.Application)Android.App.Application.Context;
+		var platformApplication = (global::Android.App.Application)global::Android.App.Application.Context;
 #elif IOS || MACCATALYST
 		var platformApplication = UIKit.UIApplication.SharedApplication.Delegate;
 #elif WINDOWS

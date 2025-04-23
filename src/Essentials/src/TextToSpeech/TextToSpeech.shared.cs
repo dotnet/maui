@@ -148,6 +148,10 @@ namespace Microsoft.Maui.Media
 		internal const float VolumeDefault = 0.5f;
 		internal const float VolumeMin = 0.0f;
 
+		internal const float RateMax = 2.0f;
+		internal const float RateDefault = 1.0f;
+		internal const float RateMin = 0.1f;
+
 		SemaphoreSlim? semaphore;
 
 		public Task<IEnumerable<Locale>> GetLocalesAsync() =>
@@ -168,6 +172,12 @@ namespace Microsoft.Maui.Media
 			{
 				if (options.Pitch.Value < PitchMin || options.Pitch.Value > PitchMax)
 					throw new ArgumentOutOfRangeException($"Pitch must be >= {PitchMin} and <= {PitchMin}");
+			}
+
+			if (options?.Rate.HasValue ?? false)
+			{
+				if (options.Rate.Value < RateMin || options.Rate.Value > RateMax)
+					throw new ArgumentOutOfRangeException($"Rate must be >= {RateMin} and <= {RateMin}");
 			}
 
 			if (semaphore == null)
@@ -194,14 +204,24 @@ namespace Microsoft.Maui.Media
 		/// <summary>
 		/// Gets the language name or code.
 		/// </summary>
-		/// <remarks>This value may vary between platforms.</remarks>
+		/// <remarks>
+		/// <para>This value may vary between platforms.</para>
+		/// <para>
+		/// For Android this used the ISO 639 alpha-2 or alpha-3 language code, or registered language subtags up to 8 alpha letters (for future enhancements).
+		/// When a language has both an alpha-2 code and an alpha-3 code, the alpha-2 code must be used.
+		/// </para>
+		/// <para>For iOS and Windows this uses the BCP-47 language code.</para>
+		/// </remarks>
 		public string Language { get; }
 
 		/// <summary>
 		/// Gets the country name or code.
 		/// </summary>
-		/// <remarks>This value may vary between platforms.</remarks>
-
+		/// <remarks>
+		/// <para>This value may vary between platforms.</para>
+		/// <para>For Android this used the ISO 3166 alpha-2 country code or UN M.49 numeric-3 area code.</para>
+		/// <para>For iOS and Windows this field is not used and <see langword="null"/> .</para>
+		/// </remarks>
 		public string Country { get; }
 
 		/// <summary>
@@ -245,5 +265,11 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <remarks>This value should be between <c>0f</c> and <c>1.0f</c>.</remarks>
 		public float? Volume { get; set; }
+
+		/// <summary>
+		/// The speech rate to use when speaking.
+		/// </summary>
+		/// <remarks>This value should be between <c>0.1f</c> and <c>2.0f</c>.</remarks>
+		public float? Rate { get; set; }
 	}
 }

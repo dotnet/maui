@@ -10,6 +10,9 @@ public class ShellFlyoutHeaderBehavior : TestShell
 
 	protected override void Init()
 	{
+
+		// Lock FlyoutBehavior to keep the flyout open when interacting with menu items, ensuring consistent testing across platforms.
+		Shell.SetFlyoutBehavior(this, FlyoutBehavior.Locked);
 		FlyoutHeader = new Grid()
 		{
 			HeightRequest = 143,

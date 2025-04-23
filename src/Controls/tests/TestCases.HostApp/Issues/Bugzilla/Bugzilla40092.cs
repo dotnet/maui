@@ -1,3 +1,4 @@
+using Microsoft.Maui.Layouts;
 namespace Maui.Controls.Sample.Issues;
 
 
@@ -31,7 +32,10 @@ public class Bugzilla40092 : TestContentPage
 			AutomationId = Black
 		};
 
-		mainLayout.Add(view);
+		mainLayout.Children.Add(view);
+		AbsoluteLayout.SetLayoutBounds(view, new Rect(0, 0, 1, 1));
+		AbsoluteLayout.SetLayoutFlags(view, AbsoluteLayoutFlags.All);
+
 		Content = thePage;
 
 	}
@@ -39,6 +43,6 @@ public class Bugzilla40092 : TestContentPage
 	protected override async void OnAppearing()
 	{
 		base.OnAppearing();
-		await DisplayAlert("Instruction", "If you see just the black color, the test pass. (Ignore the navigation bar)", Ok);
+		await DisplayAlertAsync("Instruction", "If you see just the black color, the test pass. (Ignore the navigation bar)", Ok);
 	}
 }

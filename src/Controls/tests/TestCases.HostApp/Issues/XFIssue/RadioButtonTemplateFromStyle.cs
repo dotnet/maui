@@ -6,7 +6,7 @@ public class RadioButtonTemplateFromStyle : TestNavigationPage
 	protected override void Init()
 	{
 
-		//PushAsync(new GalleryPages.RadioButtonGalleries.TemplateFromStyle());
+		PushAsync(new Pages.RadioButtonGalleries.TemplateFromStyle());
 
 	}
 }

@@ -17,16 +17,15 @@
 				AutomationId = "TestReady"
 			};
 
-#pragma warning disable CS0618 // Type or member is obsolete
 			var button = new Button
 			{
 				AutomationId = AnimateBoxViewButton,
 				Text = "Animate BoxView",
-				BackgroundColor = Colors.Black,
-				TextColor = Colors.White,
-				VerticalOptions = LayoutOptions.EndAndExpand
+				//Commented out due to tap does not perform while automation on the Mac platform when setting VerticalOptions.				
+				// BackgroundColor = Colors.Black,
+				// TextColor = Colors.White,
+				// VerticalOptions = LayoutOptions.EndAndExpand
 			};
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			button.Clicked += AnimateButton_Clicked;
 
@@ -54,8 +53,8 @@
 
 		void AnimateButton_Clicked(object sender, EventArgs e)
 		{
-			_boxView.ScaleYTo(2, 250, Easing.CubicInOut);
-			_boxView.ScaleXTo(1.5, 400, Easing.BounceOut);
+			_boxView.ScaleYToAsync(2, 250, Easing.CubicInOut);
+			_boxView.ScaleXToAsync(1.5, 400, Easing.BounceOut);
 		}
 	}
 }

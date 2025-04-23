@@ -23,7 +23,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		readonly List<UIButton> _buttons = new List<UIButton>();
 		readonly List<MenuItem> _menuItems = new List<MenuItem>();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		Cell _cell;
+#pragma warning restore CS0618 // Type or member is obsolete
 		UIButton _moreButton;
 		UIScrollView _scroller;
 		UITableView _tableView;
@@ -124,9 +126,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Dispose(true);
 		}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 		public void Update(UITableView tableView, Cell cell, UITableViewCell nativeCell)
+#pragma warning restore CS0618 // Type or member is obsolete
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var parentListView = cell.RealParent as ListView;
+#pragma warning restore CS0618 // Type or member is obsolete
 			var recycling = parentListView != null &&
 				((parentListView.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0);
 			if (_cell != cell && recycling)
@@ -137,7 +143,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				((INotifyCollectionChanged)cell.ContextActions).CollectionChanged += OnContextItemsChanged;
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var height = Frame.Height + (parentListView != null && parentListView.SeparatorVisibility == SeparatorVisibility.None ? 0.5f : 0f);
+#pragma warning restore CS0618 // Type or member is obsolete
 			var width = ContentView.Frame.Width;
 
 			nativeCell.Frame = new RectangleF(0, 0, width, height);
@@ -214,6 +222,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				//Hack: if we have a ImageCell the insets are slightly different,
 				//the inset numbers user below were taken using the Reveal app from the default cells
+#pragma warning disable CS0618 // Type or member is obsolete
 				if ((ContentCell as CellTableViewCell)?.Cell is ImageCell)
 				{
 					nfloat imageCellInsetLeft = 57;
@@ -225,6 +234,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					}
 					SeparatorInset = new UIEdgeInsets(0, imageCellInsetLeft, 0, imageCellInsetRight);
 				}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				_scroller.AddSubview(nativeCell);
 			}
@@ -340,15 +350,18 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (controller == null)
 				throw new InvalidOperationException("No UIViewController found to present.");
 
-			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone)
+			if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone || (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad && actionSheet.PopoverPresentationController == null))
 			{
 				var cancel = UIAlertAction.Create(StringResources.Cancel, UIAlertActionStyle.Cancel, null);
 				actionSheet.AddAction(cancel);
 			}
 			else
 			{
-				actionSheet.PopoverPresentationController.SourceView = _tableView;
-				actionSheet.PopoverPresentationController.SourceRect = sourceRect;
+				if (actionSheet.PopoverPresentationController != null)
+				{
+					actionSheet.PopoverPresentationController.SourceView = _tableView;
+					actionSheet.PopoverPresentationController.SourceRect = sourceRect;
+				}
 			}
 
 			controller.PresentViewController(actionSheet, true, null);
@@ -438,8 +451,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_cell == null)
 					return;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				var recycling = _cell.RealParent is ListView parentListView &&
 					((parentListView.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				if (!recycling)
 					ReloadRow();
@@ -448,7 +463,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void OnContextItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var parentListView = _cell?.RealParent as ListView;
+#pragma warning restore CS0618 // Type or member is obsolete
 			var recycling = parentListView != null &&
 				((parentListView.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0);
 			if (recycling)
@@ -460,7 +477,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void OnMenuItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var parentListView = _cell.RealParent as ListView;
+#pragma warning restore CS0618 // Type or member is obsolete
 			var recycling = parentListView != null &&
 				((parentListView.CachingStrategy & ListViewCachingStrategy.RecycleElement) != 0);
 			if (recycling)

@@ -65,4 +65,7 @@
     <FlyoutItem Title = "Window Title Bar">
         <ShellContent ContentTemplate="{DataTemplate pages:WindowTitleBar}"></ShellContent>
     </FlyoutItem>
+    <FlyoutItem Title="Custom Title Bar">
+        <ShellContent ContentTemplate="{DataTemplate pages:TitleBarPage}"></ShellContent>
+    </FlyoutItem>
 </Shell>

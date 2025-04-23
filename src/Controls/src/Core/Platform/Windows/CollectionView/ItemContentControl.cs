@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var content = dataTemplate.CreateContent();
 				_visualElement = content as VisualElement;
 
-				if(_visualElement is null)
+				if (_visualElement is null)
 				{
 					throw new InvalidOperationException($"{dataTemplate} could not be created from {content}");
 				}
@@ -348,11 +348,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var platformView = view.ToPlatform();
 
+#pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. Here we cannot avoid accessing it.
 				// Just in case this view is already parented to a wrapper that's been cycled out
 				if (platformView.Parent is ContentLayoutPanel clp)
 					clp.Children.Remove(platformView);
 
 				Children.Add(platformView);
+#pragma warning restore RS0030 // Do not use banned APIs
 			}
 
 			protected override WSize ArrangeOverride(WSize finalSize) => _view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();

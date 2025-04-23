@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 			var expectedSize = new Size(size, size);
 			AssertWithinTolerance(expectedSize, nativeBoundingBox.Size);
 		}
-    
+
 		[Fact]
 		public override async Task DisconnectHandlerDoesntCrash()
 		{

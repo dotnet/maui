@@ -1,4 +1,6 @@
-﻿namespace Maui.Controls.Sample.Issues
+﻿using Microsoft.Maui.Layouts;
+
+namespace Maui.Controls.Sample.Issues
 {
 
 	[Issue(IssueTracker.Bugzilla, 36009, "Children of Layouts with data bound IsVisible are not displayed")]
@@ -29,7 +31,8 @@
 			{
 				Children = { contentView }
 			};
-
+			AbsoluteLayout.SetLayoutBounds(contentView, new Rect(0, 0, 1, 1));
+			AbsoluteLayout.SetLayoutFlags(contentView, AbsoluteLayoutFlags.All);
 			Content = layout;
 
 			var vm = new SampleViewModel();

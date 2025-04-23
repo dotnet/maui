@@ -1,11 +1,13 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="Type[@FullName='Microsoft.Maui.Controls.Slider']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Slider : View, ISliderController, IElementConfiguration<Slider>, ISlider
 	{
 		/// <summary>Bindable property for <see cref="Minimum"/>.</summary>
@@ -181,6 +183,11 @@ namespace Microsoft.Maui.Controls
 		void ISlider.DragStarted()
 		{
 			(this as ISliderController).SendDragStarted();
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"{base.GetDebuggerDisplay()}, Value = {Value}, Min-Max = {Minimum} - {Maximum}";
 		}
 	}
 }

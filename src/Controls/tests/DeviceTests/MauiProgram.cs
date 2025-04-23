@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Hosting;
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 	public static class MauiProgram
 	{
 #if ANDROID
-		public static Android.Content.Context CurrentContext => MauiProgramDefaults.DefaultContext;
+		public static global::Android.Content.Context CurrentContext => MauiProgramDefaults.DefaultContext;
 #elif WINDOWS
 		public static Microsoft.UI.Xaml.Window CurrentWindow => MauiProgramDefaults.DefaultWindow;
 #endif

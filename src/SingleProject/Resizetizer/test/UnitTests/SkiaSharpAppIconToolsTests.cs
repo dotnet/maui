@@ -1,6 +1,7 @@
 using System.IO;
 using SkiaSharp;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.Resizetizer.Tests
 {
@@ -11,7 +12,8 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			readonly string DestinationFilename;
 			readonly TestLogger Logger;
 
-			public Resize()
+			public Resize(ITestOutputHelper outputHelper)
+				: base(outputHelper)
 			{
 				DestinationFilename = Path.Combine(DestinationDirectory, Path.GetRandomFileName() + ".png");
 				Logger = new TestLogger();
@@ -61,6 +63,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				tools.Resize(dpiPath, DestinationFilename);
 
 				AssertFileSize(DestinationFilename, exWidth, exHeight);
+				AssertFileMatches(DestinationFilename, new object[] { dpi.ToString("0.#"), fgScale.ToString("0.#"), bg, fg });
 			}
 
 			[Theory]

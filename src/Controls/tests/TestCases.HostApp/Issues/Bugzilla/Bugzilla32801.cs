@@ -6,16 +6,15 @@ public class Bugzilla32801 : TestTabbedPage
 {
 	protected override void Init()
 	{
-		Children.Add(new NavigationPage(new TestDemoPage(1)) { Title = "Tab", IconImageSource = "bank.png" });
-		Children.Add(new NavigationPage(new TestDemoPage(1)) { Title = "Tab 1", IconImageSource = "bank.png" });
-
+		Children.Add(new NavigationPage(new TestDemoPage(1, "FirstTabAddButton", "FirstTabStackButton")) { Title = "Tab", IconImageSource = "bank.png" });
+		Children.Add(new NavigationPage(new TestDemoPage(1, "SecondTabAddButton", "SecondTabStackButton")) { Title = "Tab 1", IconImageSource = "bank.png" });
 	}
 
 	public class TestDemoPage : ContentPage
 	{
 		int _level = 0;
 
-		public TestDemoPage(int level)
+		public TestDemoPage(int level, string AddButtonAutomationId, string StackButtonAutomationId)
 		{
 			_level = level;
 
@@ -28,16 +27,16 @@ public class Bugzilla32801 : TestTabbedPage
 			var buttonAdd = new Button
 			{
 				Text = "Add Level",
-				AutomationId = "btnAdd",
+				AutomationId = AddButtonAutomationId,
 				BackgroundColor = Colors.Aqua
 			};
 
-			buttonAdd.Clicked += (sender, e) => Navigation.PushAsync(new TestDemoPage(_level + 1));
+			buttonAdd.Clicked += (sender, e) => Navigation.PushAsync(new TestDemoPage(_level + 1, $"Level{_level + 1}AddButton", $"Level{_level + 1}StackButton"));
 
 			var buttonStack = new Button
 			{
 				Text = "Show Navigation Stack",
-				AutomationId = "btnStack",
+				AutomationId = StackButtonAutomationId,
 				BackgroundColor = Colors.Aqua
 			};
 

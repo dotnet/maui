@@ -8,4 +8,9 @@ public partial class Issue19926 : ContentPage
 	{
 		InitializeComponent();
 	}
+
+	void Button_Clicked(object sender, System.EventArgs e)
+	{
+		boxView.IsVisible = true;
+	}
 }

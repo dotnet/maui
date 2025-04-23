@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,7 +20,6 @@ public class Bugzilla53179_1 : _IssuesUITest
 	{
 		App.WaitForElement(StartTest);
 		App.Tap(StartTest);
-		App.WaitForElement(RootLabel);
+		App.WaitForElementTillPageNavigationSettled(RootLabel);
 	}
 }
-#endif

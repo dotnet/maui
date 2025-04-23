@@ -7,7 +7,7 @@
              Title="Test 8308" xmlns:local="using:Maui.Controls.Sample.Issues"
              x:Class="Maui.Controls.Sample.Issues.Issue8308">
 
-    <FlyoutItem Title="Page 1" AutomationId="Page1">
+    <FlyoutItem Title="Page 1" AutomationId="Page 1">
         <Tab Title="Page 1">
             <ShellContent>
                 <ContentPage Title="Control">
@@ -29,7 +29,7 @@
         </Tab>
     </FlyoutItem>
 
-    <FlyoutItem Title="Page 2" AutomationId="Page2">
+    <FlyoutItem Title="Page 2" AutomationId="Page 2">
         <ShellContent>
             <ContentPage Title="Control">
                 <ScrollView>

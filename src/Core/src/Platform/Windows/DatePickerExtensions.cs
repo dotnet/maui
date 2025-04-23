@@ -69,12 +69,19 @@ namespace Microsoft.Maui.Platform
 		static readonly string[] TextColorResourceKeys =
 		{
 			"CalendarDatePickerTextForeground",
+			"CalendarDatePickerTextForegroundPointerOver",
+			"CalendarDatePickerTextForegroundPressed",
 			"CalendarDatePickerTextForegroundDisabled",
-			"CalendarDatePickerTextForegroundSelected"
+			"CalendarDatePickerTextForegroundSelected",
+
+			// below resource keys are used for the calendar icon
+			"CalendarDatePickerCalendarGlyphForeground",
+			"CalendarDatePickerCalendarGlyphForegroundPointerOver",
+			"CalendarDatePickerCalendarGlyphForegroundPressed",
+			"CalendarDatePickerCalendarGlyphForegroundDisabled",
 		};
 
-		// TODO NET8 add to public API
-		internal static void UpdateBackground(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
+		public static void UpdateBackground(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			var brush = datePicker?.Background?.ToPlatform();
 

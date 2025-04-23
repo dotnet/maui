@@ -104,14 +104,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		internal virtual bool UpdateConstraints(CGSize size)
+		internal virtual bool UpdateConstraints(CGSize size, bool forceUpdate = false)
 		{
-			if (size.IsCloseTo(_currentSize))
+			if (size.IsCloseTo(_currentSize) && !forceUpdate)
 			{
 				return false;
 			}
 
 			ClearCellSizeCache();
+
+			EstimatedItemSize = CGSize.Empty;
 
 			_currentSize = size;
 

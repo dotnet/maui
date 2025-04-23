@@ -12,6 +12,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+#pragma warning disable CS0618 // Type or member is obsolete
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	[Category(TestCategory.ListView)]
 	public partial class ListViewTests : ControlsHandlerTestBase
@@ -34,11 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
-		[Fact
-#if ANDROID
-			(Skip = "https://github.com/dotnet/maui/issues/24701")
-#endif
-		]
+		[Fact]
 		public async Task ChangingTemplateTypeDoesNotCrash()
 		{
 			SetupBuilder();
@@ -55,20 +52,25 @@ namespace Microsoft.Maui.DeviceTests
 
 			var template1 = new DataTemplate(() =>
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				return new ViewCell()
 				{
 					View = new Label()
 				};
+#pragma warning restore CS0618 // Type or member is obsolete
 			});
 
 			var template2 = new DataTemplate(() =>
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				return new ViewCell()
 				{
 					View = new Entry()
 				};
+#pragma warning restore CS0618 // Type or member is obsolete
 			});
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var listView = new ListView()
 			{
 				HasUnevenRows = true,
@@ -79,6 +81,7 @@ namespace Microsoft.Maui.DeviceTests
 				IsGroupingEnabled = true,
 				ItemsSource = new ObservableCollection<ObservableCollection<string>>() { data1 }
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			await CreateHandlerAndAddToWindow<LayoutHandler>(new VerticalStackLayout() { listView }, async (handler) =>
 			{
@@ -98,10 +101,12 @@ namespace Microsoft.Maui.DeviceTests
 				"catdog"
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var listView = new ListView()
 			{
 				ItemTemplate = new DataTemplate(() =>
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					return new ViewCell()
 					{
 						View = new VerticalStackLayout()
@@ -109,9 +114,11 @@ namespace Microsoft.Maui.DeviceTests
 							new Label()
 						}
 					};
+#pragma warning restore CS0618 // Type or member is obsolete
 				}),
 				ItemsSource = data
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var layout = new VerticalStackLayout()
 			{
@@ -139,10 +146,12 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task ReAssigninListViewInVSLCrashes()
 		{
 			SetupBuilder();
+#pragma warning disable CS0618 // Type or member is obsolete
 			var listView = new ListView()
 			{
 				ItemTemplate = new DataTemplate(() =>
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					return new ViewCell()
 					{
 						View = new VerticalStackLayout()
@@ -153,8 +162,10 @@ namespace Microsoft.Maui.DeviceTests
 							}
 						}
 					};
+#pragma warning restore CS0618 // Type or member is obsolete
 				})
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var layout = new VerticalStackLayout()
 			{
@@ -182,16 +193,22 @@ namespace Microsoft.Maui.DeviceTests
 				vm
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var listView = new ListView()
 			{
 				ItemTemplate = new DataTemplate(() =>
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					var cell = new EntryCell();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 					cell.SetBinding(EntryCell.TextProperty, "Value");
+#pragma warning restore CS0618 // Type or member is obsolete
 					return cell;
 				}),
 				ItemsSource = data
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var layout = new VerticalStackLayout()
 			{
@@ -201,7 +218,9 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async (handler) =>
 			{
 				await Task.Yield();
+#pragma warning disable CS0618 // Type or member is obsolete
 				var entryCell = listView.TemplatedItems[0] as EntryCell;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				// Initial Value is correct
 				Assert.Equal(vm.Value, entryCell.Text);
@@ -239,10 +258,12 @@ namespace Microsoft.Maui.DeviceTests
 				"catdog"
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement)
 			{
 				ItemTemplate = new DataTemplate(() =>
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					return new ViewCell()
 					{
 						View = new VerticalStackLayout()
@@ -250,10 +271,12 @@ namespace Microsoft.Maui.DeviceTests
 							new Label()
 						}
 					};
+#pragma warning restore CS0618 // Type or member is obsolete
 				}),
 				HasUnevenRows = true,
 				ItemsSource = data
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var layout = new VerticalStackLayout()
 			{
@@ -284,10 +307,12 @@ namespace Microsoft.Maui.DeviceTests
 				"catdog"
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var listView = new ListView(ListViewCachingStrategy.RecycleElement)
 			{
 				ItemTemplate = new DataTemplate(() =>
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					return new ViewCell
 					{
 						View = new VerticalStackLayout
@@ -295,9 +320,11 @@ namespace Microsoft.Maui.DeviceTests
 							new Label()
 						}
 					};
+#pragma warning restore CS0618 // Type or member is obsolete
 				}),
 				ItemsSource = data
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			var layout = new VerticalStackLayout
 			{
@@ -339,15 +366,19 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 
 			var references = new List<WeakReference>();
+#pragma warning disable CS0618 // Type or member is obsolete
 			var listView = new ListView
 			{
 				ItemTemplate = new DataTemplate(() =>
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					var cell = new TextCell();
+#pragma warning restore CS0618 // Type or member is obsolete
 					references.Add(new(cell));
 					return cell;
 				})
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			await CreateHandlerAndAddToWindow<ListViewRenderer>(listView, async _ =>
 			{
@@ -367,18 +398,26 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			List<TextCell> cells = null;
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var listView = new ListView
 			{
 				ItemTemplate = new DataTemplate(() =>
 				{
+#pragma warning disable CS0618 // Type or member is obsolete
 					var cell = new TextCell();
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 					cell.SetBinding(TextCell.TextProperty, new Binding("."));
+#pragma warning restore CS0618 // Type or member is obsolete
 					cells?.Add(cell);
 					return cell;
 				})
 			};
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			await CreateHandlerAndAddToWindow<ListViewRenderer>(listView, async _ =>
 			{
@@ -417,4 +456,5 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 	}
+#pragma warning restore CS0618 // Type or member is obsolete
 }

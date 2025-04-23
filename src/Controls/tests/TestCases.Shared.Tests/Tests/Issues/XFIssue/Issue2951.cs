@@ -12,51 +12,30 @@ public class Issue2951 : _IssuesUITest
 
 	public override string Issue => "On Android, button background is not updated when color changes ";
 
-	//[Test]
-	//[Category(UITestCategories.Button)]
-	//[FailsOnMauiIOS]
-	//public void Issue2951Test()
-	//{
-	//	App.WaitForElement("Ready");
-	//	var bt = App.WaitForElement(c => c.Marked("btnChangeStatus"));
+	[Test]
+	[Category(UITestCategories.Button)]
+	public void Issue2951Test()
+	{
+		App.WaitForElement("Ready");
 
-	//	var buttons = App.QueryUntilPresent(() =>
-	//	{
-	//		var results = App.Query("btnChangeStatus");
-	//		if (results.Length == 3)
-	//			return results;
+		var initialButtonCount = App.FindElements("btnChangeStatus").Count();
+		Assert.That(initialButtonCount, Is.EqualTo(3));
 
-	//		return null;
-	//	});
+		var buttonToClick = App.FindElements("btnChangeStatus").ElementAt(1);
+		buttonToClick.Click();
 
-	//	Assert.That(buttons.Length, Is.EqualTo(3));
-	//	App.Tap(c => c.Marked("btnChangeStatus").Index(1));
+		Assert.That(buttonToClick.GetText(), Is.EqualTo("B"));
 
-	//	buttons = App.QueryUntilPresent(() =>
-	//	{
-	//		var results = App.Query("btnChangeStatus");
-	//		if ((results[1].Text ?? results[1].Label) == "B")
-	//			return results;
+		buttonToClick.Click();
+		var updatedButtonCount = App.FindElements("btnChangeStatus").Count();
+		Assert.That(updatedButtonCount, Is.EqualTo(2));
 
-	//		return null;
-	//	});
+		buttonToClick = App.FindElements("btnChangeStatus").ElementAt(1);
+		buttonToClick.Click();
 
-	//	var text = buttons[1].Text ?? buttons[1].Label;
-	//	Assert.That(text, Is.EqualTo("B"));
-	//	App.Tap(c => c.Marked("btnChangeStatus").Index(1));
+		// Use VerifyScreenshot to ensure the button background color has been updated properly
+		// This screenshot is captured to visually confirm that the background color has changed as expected
+		VerifyScreenshot();
 
-	//	buttons = App.QueryUntilPresent(() =>
-	//	{
-	//		var results = App.Query("btnChangeStatus");
-	//		if (results.Length == 2)
-	//			return results;
-
-	//		return null;
-	//	});
-
-	//	Assert.That(buttons.Length, Is.EqualTo(2));
-	//	//TODO: we should check the color of the button
-	//	//var buttonTextColor = GetProperty<Color> ("btnChangeStatus", Button.BackgroundColorProperty);
-	//	//Assert.AreEqual (Color.Pink, buttonTextColor);
-	//}
+	}
 }

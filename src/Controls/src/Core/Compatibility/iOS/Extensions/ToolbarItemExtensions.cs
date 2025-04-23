@@ -47,8 +47,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
 					AccessibilityIdentifier = item.AutomationId;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				this.SetAccessibilityHint(item);
 				this.SetAccessibilityLabel(item);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			void OnClicked(object sender, EventArgs e)
@@ -105,14 +107,15 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				}
 				else
 				{
-					item.IconImageSource.LoadImage(item.FindMauiContext(), result =>
+					var mauiContext = item.FindMauiContext();
+					if (mauiContext is null)
+					{
+						return;
+					}
+					item.IconImageSource.LoadImage(mauiContext, result =>
 					{
 						Image = result?.Value;
 						Style = UIBarButtonItemStyle.Plain;
-						if (item.IconImageSource is FontImageSource fontImageSource && fontImageSource.Color is not null)
-						{
-							TintColor = fontImageSource.Color.ToPlatform();
-						}
 					});
 				}
 			}
@@ -149,8 +152,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				if (item != null && !string.IsNullOrEmpty(item.AutomationId))
 					AccessibilityIdentifier = item.AutomationId;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				this.SetAccessibilityHint(item);
 				this.SetAccessibilityLabel(item);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			void OnClicked(object sender, EventArgs e)
@@ -183,8 +188,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				else if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
 					this.SetAccessibilityHint(item);
 				else if (e.PropertyName == AutomationProperties.NameProperty.PropertyName)
-#pragma warning restore CS0618 // Type or member is obsolete
 					this.SetAccessibilityLabel(item);
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			void UpdateIcon(ToolbarItem item)

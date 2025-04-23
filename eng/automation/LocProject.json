@@ -16,6 +16,12 @@
                 "OutputPath": "src\\Controls\\src\\Build.Tasks\\xlf\\"
             },
             {
+              "SourceFile":  ".\\src\\Templates\\src\\templates\\maui-aspire-servicedefaults\\.template.config\\localize\\templatestrings.json",
+              "LclFile":  "loc\\{Lang}\\src\\Templates\\src\\templates\\maui-aspire-servicedefaults\\.template.config\\localize\\templatestrings.json.lcl",
+              "CopyOption":  "LangIDOnName",
+              "OutputPath":  ".\\src\\Templates\\src\\templates\\maui-aspire-servicedefaults\\.template.config\\localize\\"
+            },
+            {
               "SourceFile":  ".\\src\\Templates\\src\\templates\\maui-blazor\\.template.config\\localize\\templatestrings.json",
               "LclFile":  "loc\\{Lang}\\src\\Templates\\src\\templates\\maui-blazor\\.template.config\\localize\\templatestrings.json.lcl",
               "CopyOption":  "LangIDOnName",
@@ -43,7 +49,7 @@
               "SourceFile":  ".\\src\\Templates\\src\\templates\\maui-contentview-csharp\\.template.config\\localize\\templatestrings.json",
               "LclFile":  "loc\\{Lang}\\src\\Templates\\src\\templates\\maui-contentview-csharp\\.template.config\\localize\\templatestrings.json.lcl",
               "CopyOption":  "LangIDOnName",
-              "OutputPath":  ".\\src\\Templates\\src\\templates\\maui-contentview-xaml\\.template.config\\localize\\"
+              "OutputPath":  ".\\src\\Templates\\src\\templates\\maui-contentview-csharp\\.template.config\\localize\\"
             },
             {
               "SourceFile":  ".\\src\\Templates\\src\\templates\\maui-contentview-xaml\\.template.config\\localize\\templatestrings.json",
@@ -86,6 +92,12 @@
               "LclFile":  "loc\\{Lang}\\src\\Templates\\src\\templates\\maui-window-xaml\\.template.config\\localize\\templatestrings.json.lcl",
               "CopyOption":  "LangIDOnName",
               "OutputPath":  ".\\src\\Templates\\src\\templates\\maui-window-xaml\\.template.config\\localize\\"
+            },
+            {
+              "SourceFile": "src\\Controls\\src\\SourceGen\\MauiGResources.resx",
+              "LclFile": "loc\\{Lang}\\src\\Controls\\src\\SourceGen\\MauiGResources.resx.lcl",
+              "CopyOption": "LangIDOnName",
+              "OutputPath": "src\\Controls\\src\\SourceGen\\"
             }
         ],
         "LssFiles": [],

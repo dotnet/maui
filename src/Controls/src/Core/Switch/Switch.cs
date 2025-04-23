@@ -1,11 +1,13 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="Type[@FullName='Microsoft.Maui.Controls.Switch']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Switch : View, IElementConfiguration<Switch>, ISwitch
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='SwitchOnVisualState']/Docs/*" />
@@ -29,6 +31,13 @@ namespace Microsoft.Maui.Controls
 				((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
 			});
 
+		/// <summary>Bindable property for <see cref="OffColor"/>.</summary>
+		public static readonly BindableProperty OffColorProperty = BindableProperty.Create(nameof(OffColor), typeof(Color), typeof(Switch), null,
+			propertyChanged: (bindable, oldValue, newValue) =>
+            {
+				((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
+			});
+
 		/// <summary>Bindable property for <see cref="ThumbColor"/>.</summary>
 		public static readonly BindableProperty ThumbColorProperty = BindableProperty.Create(nameof(ThumbColor), typeof(Color), typeof(Switch), null);
 
@@ -38,6 +47,17 @@ namespace Microsoft.Maui.Controls
 			get { return (Color)GetValue(OnColorProperty); }
 			set { SetValue(OnColorProperty, value); }
 		}
+
+		/// <summary>
+		/// Gets or sets the color of the toggle switch's track when it is in the off state.
+		/// If not set, the default color will be used for the off-track appearance.
+		/// </summary>
+		public Color OffColor
+		{
+			get { return (Color) GetValue(OffColorProperty); }
+			set { SetValue(OffColorProperty, value); }
+        }
+
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='ThumbColor']/Docs/*" />
 		public Color ThumbColor
@@ -91,14 +111,14 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-#if WINDOWS
-				return OnColor;
-#else
 				if (IsToggled)
+				{
 					return OnColor;
-
-				return null;
-#endif
+				}
+				else
+				{
+					return OffColor;
+				}
 			}
 		}
 
@@ -106,6 +126,11 @@ namespace Microsoft.Maui.Controls
 		{
 			get => IsToggled;
 			set => SetValue(IsToggledProperty, value, SetterSpecificity.FromHandler);
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"{base.GetDebuggerDisplay()}, IsToggled = {IsToggled}";
 		}
 	}
 }

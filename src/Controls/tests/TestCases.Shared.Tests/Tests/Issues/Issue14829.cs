@@ -1,5 +1,4 @@
-﻿#if WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -18,10 +17,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void DisplayActionSheetStillNotWorkingOnWindows()
 		{
 			App.WaitForElement("DisplayActionSheetButton", timeout: TimeSpan.FromSeconds(4)).Click();
-			App.WaitForElement("ActionSheetTitle", timeout: TimeSpan.FromSeconds(4));
-
-			VerifyScreenshot();
+			App.WaitForElement("ActionSheet: Send to?", timeout: TimeSpan.FromSeconds(4));
+			App.WaitForElement("Email");
 		}
 	}
 }
-#endif

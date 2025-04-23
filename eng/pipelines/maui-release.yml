@@ -3,6 +3,7 @@ trigger:
     include:
     - main
     - net9.0
+    - net10.0
     - release/*
   tags:
     include:
@@ -18,7 +19,6 @@ trigger:
     - LICENSE.TXT
     - PATENTS.TXT
     - README.md
-    - SECURITY.md
     - THIRD-PARTY-NOTICES.TXT
 
 schedules:
@@ -27,20 +27,12 @@ schedules:
   branches:
     include:
     - main
+    - inflight/current
 
 variables:
   - template: /eng/pipelines/common/variables.yml@self
-  - template: templates/common/vs-release-vars.yml@sdk-insertions
 
 parameters:
-  - name: pushMauiPackagesToMaestro
-    default: true
-
-  - name: provisionatorChannel
-    displayName: 'Provisionator channel'
-    type: string
-    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
-
   - name: VM_IMAGE_HOST
     type: object
     default:
@@ -59,7 +51,12 @@ parameters:
       docsArtifact: xml-docs
 
   - name: Skip1ESComplianceTasks
+    type: boolean
     default: false
+
+  - name: PushMauiPackagesToMaestro
+    type: boolean
+    default: true
 
 resources:
   repositories:
@@ -68,11 +65,6 @@ resources:
       name: xamarin/yaml-templates
       endpoint: xamarin
       ref: refs/heads/main
-    - repository: sdk-insertions
-      type: github
-      name: xamarin/sdk-insertions
-      ref: refs/heads/main
-      endpoint: xamarin
     - repository: 1ESPipelineTemplates
       type: git
       name: 1ESPipelineTemplates/1ESPipelineTemplates
@@ -153,7 +145,6 @@ extends:
                 parameters:
                   publishArtifacts: false
                   platform: ${{ parameters.PackPlatform.name }}
-                  provisionatorChannel: ${{ parameters.provisionatorChannel }}
                   artifact: ${{ parameters.PackPlatform.artifact }}
                   artifactBinaries: ${{ parameters.PackPlatform.binariesArtifact }}
                   artifactsPath: '$(Build.ArtifactStagingDirectory)'
@@ -168,11 +159,13 @@ extends:
                     - template: /eng/pipelines/common/provision.yml@self
                       parameters:
                         checkoutDirectory: '$(System.DefaultWorkingDirectory)'
-                        provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         # gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-                        skipAndroidImages: true
-                        skipAndroidSdks: true
-                        installDefaultAndroidApi: true
+                        skipJdk: false
+                        skipAndroidCommonSdks: false
+                        skipAndroidPlatformApis: false
+                        onlyAndroidPlatformDefaultApis: true
+                        skipAndroidEmulatorImages: true
+                        skipAndroidCreateAvds: true
                         skipProvisioning: true
                         skipXcode: true
 
@@ -192,7 +185,7 @@ extends:
             poolName: ${{ parameters.VM_IMAGE_HOST.name }}
             vmImage: ${{ parameters.VM_IMAGE_HOST.image }}
             os: ${{ parameters.VM_IMAGE_HOST.os }}
-            pushMauiPackagesToMaestro: ${{ parameters.pushMauiPackagesToMaestro }}
+            pushMauiPackagesToMaestro: ${{ parameters.PushMauiPackagesToMaestro }}
 
         - template: /eng/pipelines/common/apiscan.yml@self                                  # ApiScan
           parameters:

@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.ComponentModel;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -51,6 +53,37 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				Assert.Equal(expectedValue, GetPlatformLineBreakMode(handler));
+			});
+		}
+
+		[Fact]
+		[Description("The BackgroundColor of a Button should match with native background color")]
+		public async Task ButtonBackgroundColorConsistent()
+		{
+			var expected = Colors.AliceBlue;
+			var button = new Button()
+			{
+				BackgroundColor = expected,
+				HeightRequest = 100,
+				WidthRequest = 200
+			};
+
+			await ValidateHasColor(button, expected, typeof(ButtonHandler));
+		}
+
+		[Fact]
+		[Description("The IsVisible property of a Button should match with native IsVisible")]
+		public async Task VerifyButtonIsVisibleProperty()
+		{
+			var button = new Button();
+			button.IsVisible = false;
+			var expectedValue = button.IsVisible;
+
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var isVisible = await GetPlatformIsVisible(handler);
+				Assert.Equal(expectedValue, isVisible);
 			});
 		}
 	}

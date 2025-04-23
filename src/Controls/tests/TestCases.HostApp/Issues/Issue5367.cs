@@ -3,8 +3,8 @@
 	[Issue(IssueTracker.Github, 5367, "[Bug] Editor with MaxLength", PlatformAffected.Android)]
 	public class Issue5367 : TestContentPage
 	{
-		const string MaxLengthEditor = "MaxLength Editor";
-		const string ForceBigStringButton = "Force Big String Button";
+		const string MaxLengthEditor = "MaxLengthEditor";
+		const string ForceBigStringButton = "StringButton";
 
 		protected override void Init()
 		{

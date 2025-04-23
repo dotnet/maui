@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
 		List<string> _cellReuseIds = new List<string>();
+		CGSize _previousContentSize;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
@@ -188,8 +189,40 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void ViewWillLayoutSubviews()
 		{
+			if (CollectionView is Items.MauiCollectionView { NeedsCellLayout: true } collectionView)
+			{
+				InvalidateLayoutIfItemsMeasureChanged();
+				collectionView.NeedsCellLayout = false;
+			}
+
 			base.ViewWillLayoutSubviews();
 			LayoutEmptyView();
+			InvalidateMeasureIfContentSizeChanged();
+		}
+
+		void InvalidateLayoutIfItemsMeasureChanged()
+		{
+			var collectionView = CollectionView;
+			var visibleCells = collectionView.VisibleCells;
+			List<NSIndexPath> invalidatedPaths = null;
+
+			var visibleCellsLength = visibleCells.Length;
+			for (int n = 0; n < visibleCellsLength; n++)
+			{
+				if (visibleCells[n] is TemplatedCell2 { MeasureInvalidated: true } cell)
+				{
+					invalidatedPaths ??= new List<NSIndexPath>(visibleCellsLength);
+					var path = collectionView.IndexPathForCell(cell);
+					invalidatedPaths.Add(path);
+				}
+			}
+
+			if (invalidatedPaths != null)
+			{
+				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
+				layoutInvalidationContext.InvalidateItems(invalidatedPaths.ToArray());
+				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
+			}
 		}
 
 		void Items.MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
@@ -263,6 +296,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override nint NumberOfSections(UICollectionView collectionView)
 		{
+			// https://github.com/dotnet/maui/issues/26997
+			// On iOS versions 15 and 16, this method is called immediately after the base LoadView method is invoked.
+			// At this point, ItemsSource was not set, which caused a crash when accessed.
+			// To handle this scenario, we check if ItemsSource is null before proceeding.
+			// In iOS 17 and later versions, this behavior works properly, as the method is no longer called prematurely.
+			// To ensure compatibility with older iOS versions, we include this null check and return 0 if ItemsSource is null.
+			if (ItemsSource == null)
+			{
+				return 0;
+			}
+
 			CheckForEmptySource();
 			return ItemsSource.GroupCount;
 		}
@@ -319,6 +363,63 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				CollectionView.Frame.Width, CollectionView.Frame.Height);
 		}
 
+		void InvalidateMeasureIfContentSizeChanged()
+		{
+			if (CollectionView?.CollectionViewLayout?.CollectionViewContentSize is not { } contentSize)
+			{
+				return;
+			}
+
+			var previousContentSize = _previousContentSize;
+			_previousContentSize = contentSize;
+
+			bool widthChanged = previousContentSize.Width != contentSize.Width;
+			bool heightChanged = previousContentSize.Height != contentSize.Height;
+
+			if (_initialized && (widthChanged || heightChanged))
+			{
+				if (CollectionView?.Bounds is not { } bounds)
+				{
+					return;
+				}
+
+				var cvWidth = bounds.Width;
+				var cvHeight = bounds.Height;
+				bool invalidate = false;
+
+				// If both the previous content size and the current content size are larger
+				// than the UICollectionView size, then we know that we're already maxed out and the 
+				// CollectionView items are scrollable. There's no reason to force an invalidation
+				// of the CollectionView to expand/contract it.
+
+				// If either size is smaller than that, we need to invalidate to ensure that the 
+				// CollectionView is re-measured and set to the correct size.
+
+				if (widthChanged && (contentSize.Width <= cvWidth || previousContentSize.Width <= cvWidth))
+				{
+					invalidate = true;
+				}
+				else if (heightChanged && (contentSize.Height <= cvHeight || previousContentSize.Height <= cvHeight))
+				{
+					invalidate = true;
+				}
+
+				if (invalidate)
+				{
+					(ItemsView as IView)?.InvalidateMeasure();
+				}
+			}
+		}
+
+		internal Size GetSize()
+		{
+			if (_emptyViewDisplayed)
+			{
+				return _emptyUIView.Frame.Size.ToSize();
+			}
+
+			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
+		}
 
 		internal void UpdateView(object view, DataTemplate viewTemplate, ref UIView uiView, ref VisualElement formsElement)
 		{
@@ -507,8 +608,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal virtual void CellDisplayingEndedFromDelegate(UICollectionViewCell cell, NSIndexPath indexPath)
 		{
-			if (cell is TemplatedCell2 TemplatedCell2 &&
-				(TemplatedCell2.PlatformHandler?.VirtualView as View)?.BindingContext is object bindingContext)
+			if (cell is TemplatedCell2 templatedCell2 &&
+				(templatedCell2.PlatformHandler?.VirtualView as View)?.BindingContext is { } bindingContext)
 			{
 				// We want to unbind a cell that is no longer present in the items source. Unfortunately
 				// it's too expensive to check directly, so let's check that the current binding context
@@ -521,7 +622,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					!Items.IndexPathHelpers.IsIndexPathValid(itemsSource, indexPath) ||
 					!Equals(itemsSource[indexPath], bindingContext))
 				{
-					TemplatedCell2.Unbind();
+					templatedCell2.Unbind();
 				}
 			}
 		}

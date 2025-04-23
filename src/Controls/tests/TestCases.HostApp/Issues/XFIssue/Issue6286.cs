@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 6286, "ObjectDisposedException in Android WebView.EvaluateJavascriptAsync", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 6286, "ObjectDisposedException in Android WebView.EvaluateJavascriptAsync", PlatformAffected.Android, isInternetRequired: true)]
 public class Issue6286 : TestNavigationPage
 {
 	WebView _webview;

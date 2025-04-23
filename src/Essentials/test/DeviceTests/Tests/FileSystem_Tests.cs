@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Assert.NotNull(stream);
 
 			using var reader = new StreamReader(stream);
-			var text = await reader.ReadToEndAsync();
+			var text = await reader.ReadToEndAsync().ConfigureAwait(false);
 
 			Assert.Equal(contents, text);
 		}
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public async Task OpenAppPackageFileAsync_Throws_If_File_Is_Not_Found()
 		{
-			await Assert.ThrowsAsync<FileNotFoundException>(() => FileSystem.OpenAppPackageFileAsync("MissingFile.txt"));
+			await Assert.ThrowsAsync<FileNotFoundException>(() => FileSystem.OpenAppPackageFileAsync("MissingFile.txt")).ConfigureAwait(false);
 		}
 	}
 }

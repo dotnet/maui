@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -8,6 +9,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ProgressBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.ProgressBar']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class ProgressBar : View, IElementConfiguration<ProgressBar>, IProgress
 	{
 		/// <summary>Bindable property for <see cref="ProgressColor"/>.</summary>
@@ -52,6 +54,11 @@ namespace Microsoft.Maui.Controls
 		public IPlatformElementConfiguration<T, ProgressBar> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			return $"{base.GetDebuggerDisplay()}, Progress = {Progress}";
 		}
 	}
 }

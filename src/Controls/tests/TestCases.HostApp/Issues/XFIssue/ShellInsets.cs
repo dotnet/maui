@@ -16,7 +16,7 @@ public class ShellInsets : TestShell
 
 	const string EntrySuccess = "EntrySuccess";
 	const string ResetKeyboard = "Hide Keyboard";
-	const string ResetKeyboard2 = "Hide Keyboard 2";
+	const string ResetKeyboard2 = "HideKeyboard2";
 	const string Reset = "Reset";
 
 	const string ToggleSafeArea = "ToggleSafeArea";

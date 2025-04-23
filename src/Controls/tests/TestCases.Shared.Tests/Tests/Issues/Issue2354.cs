@@ -14,12 +14,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ListView)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void TestDoesntCrashWithCachingDisable()
 		{
+			VerifyInternetConnectivity();
+			//Wait for the image URLs to load before proceeding with the test
+			Thread.Sleep(TimeSpan.FromSeconds(2));
 			App.WaitForElement("ImageLoaded");
 			App.ScrollDown("TestListView", ScrollStrategy.Programmatically);
 			App.ScrollDown("TestListView", ScrollStrategy.Programmatically);

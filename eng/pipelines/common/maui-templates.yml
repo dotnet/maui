@@ -69,11 +69,6 @@ jobs:
           checkoutDirectory: ${{ parameters.checkoutDirectory }}
           prepareSteps: ${{ parameters.prepareSteps }}
           category: ${{ category }}
-          skipXcode: false
-          ${{ if eq(parameters.skipProvisioning, 'true') }}:
-            skipProvisioning: true
-          ${{ else }}:  
-            skipProvisioning: false
 
 
 - ${{ each category in parameters.BuildCategories }}:
@@ -95,7 +90,7 @@ jobs:
       name: $(POOL_NAME)
       vmImage: $(POOL_VIMAGE)
       demands:
-        - macOS.Name -equals Sonoma
+        - macOS.Name -equals Sequoia
         - macOS.Architecture -equals arm64
     steps:
       - template: maui-templates-steps.yml
@@ -114,7 +109,10 @@ jobs:
     displayName: ${{ RunPlatform.testName }}
     timeoutInMinutes: 240
     condition: ${{ parameters.condition}}
-    pool: ${{ RunPlatform }}
+    pool:
+      name: ${{ RunPlatform.name }}
+      vmImage: ${{ RunPlatform.vmImage }}
+      demands: ${{ RunPlatform.demands }}
     steps:
 
     - ${{ each step in parameters.prepareSteps }}:
@@ -129,13 +127,6 @@ jobs:
     #     displayName: 'Clean bot'
     #     continueOnError: true
     #     timeoutInMinutes: 60
-
-    - template: provision.yml
-      parameters:
-        skipXcode: ${{ eq(RunPlatform.testName, 'RunOnAndroid') }}
-        skipProvisioning: true
-        skipAndroidImages: ${{ ne(RunPlatform.testName, 'RunOnAndroid') }}
-        checkoutDirectory: ${{ parameters.checkoutDirectory }}
 
     - task: DownloadBuildArtifacts@0
       displayName: 'Download Packages'
@@ -166,15 +157,13 @@ jobs:
         DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
         PRIVATE_BUILD: $(PrivateBuild)
 
-    # - script: dotnet tool update Microsoft.DotNet.XHarness.CLI --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json --version "9.0.0-prerelease*" -g
-    #   displayName: install xharness
 
     - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
       - pwsh: ./build.ps1 -Script eng/devices/ios.cake --target=Cleanup --verbosity=diagnostic
         displayName: Reset iOS simulators
         # TODO: pass properly device type/version from top-level yml
         env:
-          IOS_TEST_DEVICE: ios-simulator-64_17.2
+          IOS_TEST_DEVICE: ios-simulator-64_18.0
 
     - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Category=${{ RunPlatform.testName }}" --resultsfilename="integration-run-${{ RunPlatform.testName }}" --verbosity=diagnostic
       displayName: Run ${{ RunPlatform.testName }} templates run tests
@@ -182,7 +171,7 @@ jobs:
       # TODO: pass properly device type/version from top-level yml
       ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
         env:
-            IOS_TEST_DEVICE: ios-simulator-64_17.2
+            IOS_TEST_DEVICE: ios-simulator-64_18.0
 
     - ${{ if eq(RunPlatform.testName, 'RunOniOS') }}:
       - pwsh: ./build.ps1 --target=Cleanup -Script eng/devices/ios.cake ---results="$(TestResultsDirectory)" ${{ parameters.cakeArgs }}
@@ -198,9 +187,5 @@ jobs:
         testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
         testRunTitle: ${{ RunPlatform.testName }} templates run tests
 
-    - pwsh: |
-        Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
-        if ($env:AGENT_JOBSTATUS -eq "SucceededWithIssues") {
-            Write-Host "##vso[task.complete result=Failed;]DONE"
-        }
-      displayName: Fail if any issues occurred
+    - template: /eng/pipelines/common/fail-on-issue.yml
+

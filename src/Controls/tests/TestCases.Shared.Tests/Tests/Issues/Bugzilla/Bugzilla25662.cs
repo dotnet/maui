@@ -1,6 +1,4 @@
-#if ANDROID
 using NUnit.Framework;
-using OpenQA.Selenium.Appium;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,8 +14,6 @@ public class Bugzilla25662 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Cells)]
-	[FailsOnIOSWhenRunningOnXamarinUITest]
-	[FailsOnWindowsWhenRunningOnXamarinUITest]
 	public void Bugzilla25662Test()
 	{
 		App.WaitForElement("One");
@@ -25,4 +21,4 @@ public class Bugzilla25662 : _IssuesUITest
 		App.WaitForNoElement("FAIL");
 	}
 }
-#endif
+

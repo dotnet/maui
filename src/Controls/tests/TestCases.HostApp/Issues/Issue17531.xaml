@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<local:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+				 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+				 xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+				 x:Class="Maui.Controls.Sample.Issues.Issue17531">
+	<local:TestContentPage.Content>
+    <StackLayout>
+      <Label 
+        x:Name="TapLabel"
+        AutomationId="TapLabel"
+        Text="Tap Me!">
+        <Label.GestureRecognizers>
+          <TapGestureRecognizer Tapped="OnTap"/>
+        </Label.GestureRecognizers>
+      </Label>
+      <Label 
+        x:Name="TapResultLabel"
+        AutomationId="TapResultLabel"/>
+      <Label 
+        x:Name="DragLabel"
+        AutomationId="DragLabel"
+        Text="Drag Me!">
+        <Label.GestureRecognizers>
+          <DragGestureRecognizer 
+            DragStarting="OnDragStart"/>
+        </Label.GestureRecognizers>
+      </Label>
+      <Label 
+        x:Name="DragResultLabel"
+        AutomationId="DragResultLabel"/>
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <ScrollView 
+          AutomationId="AllColorsScrollView" 
+          Grid.Column="0">
+          <StackLayout 
+              AutomationId="AllColorsStack"
+              x:Name="SLAllColors">
+            <StackLayout.GestureRecognizers>
+              <DropGestureRecognizer 
+                DragOver="OnDragOver"
+                DragLeave="OnDragLeave"
+                Drop="OnDrop">
+              </DropGestureRecognizer>
+            </StackLayout.GestureRecognizers>
+            <Label HeightRequest="50" 
+                   Background="Red" 
+                   Text="Red" 
+                   AutomationId="Red">
+              <Label.GestureRecognizers>
+                <DragGestureRecognizer 
+                  DropCompleted="OnDropCompleted" 
+                  DragStarting="OnDragStarting"/>
+              </Label.GestureRecognizers>
+            </Label>
+            <Label HeightRequest="50" 
+                   Background="Yellow" 
+                   Text="Yellow" 
+                   AutomationId="Yellow">
+              <Label.GestureRecognizers>
+                <DragGestureRecognizer 
+                  DropCompleted="OnDropCompleted" 
+                  DragStarting="OnDragStarting"/>
+              </Label.GestureRecognizers>
+            </Label>
+            <Label HeightRequest="50" 
+                   Background="Blue" 
+                   Text="Blue" 
+                   AutomationId="Blue">
+              <Label.GestureRecognizers>
+                <DragGestureRecognizer 
+                  DropCompleted="OnDropCompleted" 
+                  DragStarting="OnDragStarting"/>
+              </Label.GestureRecognizers>
+            </Label>
+          </StackLayout>
+        </ScrollView>
+        <ScrollView 
+          AutomationId="RainbowScrollView"
+          Grid.Column="1"
+          Background="Brown">
+          <StackLayout 
+              AutomationId="RainbowStack"
+              Background="Blue"
+              x:Name="SLRainbow">
+            <StackLayout.GestureRecognizers>
+              <DropGestureRecognizer 
+                DragOver="OnDragOver"
+                DragLeave="OnDragLeave"
+                Drop="OnDrop">
+              </DropGestureRecognizer>
+            </StackLayout.GestureRecognizers>
+            <Label 
+              HeightRequest="50" 
+              Background="Green" 
+              Text="Green" 
+              AutomationId="Green">
+              <Label.GestureRecognizers>
+                <DragGestureRecognizer 
+                  DropCompleted="OnDropCompleted" 
+                  DragStarting="OnDragStarting"/>
+              </Label.GestureRecognizers>
+            </Label>
+          </StackLayout>
+        </ScrollView>
+      </Grid>
+      <Label 
+        x:Name="DropResultLabel"
+        AutomationId="DropResultLabel"/>
+    </StackLayout>
+  </local:TestContentPage.Content>
+</local:TestContentPage>

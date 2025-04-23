@@ -18,33 +18,21 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnAndroidWhenRunningOnXamarinUITest]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
 		public void Issue2680Test_ScrollDisabled()
 		{
-			App.WaitForElement(ScrollViewMark);
+			var label = App.WaitForElement(FirstItemMark);
 			App.ScrollDown(ScrollViewMark);
-			App.ScrollDown(ScrollViewMark);
-
-			App.WaitForElement(FirstItemMark, timeout: TimeSpan.FromSeconds(5));
+			Assert.That(label.GetText(), Is.EqualTo("Not scrolled"));
 		}
 
 		[Test]
 		[Category(UITestCategories.ScrollView)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue2680Test_ScrollEnabled()
 		{
-			App.WaitForElement(ToggleButtonMark);
+			var label = App.WaitForElement(FirstItemMark);
 			App.Tap(ToggleButtonMark);
-
 			App.ScrollDown(ScrollViewMark);
-			App.ScrollDown(ScrollViewMark);
-
-			App.WaitForNoElement(FirstItemMark, timeout: TimeSpan.FromSeconds(5));
+			Assert.That(label.GetText(), Is.EqualTo("Scrolled"));
 		}
 	}
 }

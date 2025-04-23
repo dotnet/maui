@@ -109,6 +109,10 @@
         Version="$(MicrosoftExtensionsFileProvidersAbstractionsVersion)"
     />
     <PackageReference
+        Update="Microsoft.Extensions.Hosting.Abstractions"
+        Version="$(MicrosoftExtensionsHostingAbstractionsVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Extensions.Logging.Abstractions"
         Version="$(MicrosoftExtensionsLoggingAbstractionsVersion)"
     />
@@ -303,6 +307,16 @@
     <PackageReference
         Update="System.Drawing.Common"
         Version="$(SystemDrawingCommonPackageVersion)"
+    />
+    <PackageReference
+        Update="Microsoft.Build.Framework"
+        Version="$(MicrosoftBuildFrameworkPackageVersion)"
+        PrivateAssets="All"
+    />
+    <PackageReference
+        Update="Microsoft.Build.Utilities.Core"
+        Version="$(MicrosoftBuildUtilitiesCorePackageVersion)"
+        PrivateAssets="All"
     />
 
     <PackageReference Update="Microsoft.DotNet.Build.Tasks.Workloads" Version="$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)" />

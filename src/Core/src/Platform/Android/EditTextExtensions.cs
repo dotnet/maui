@@ -1,6 +1,7 @@
 ﻿using System;
 using Android.Content;
 using Android.Content.Res;
+using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Views;
@@ -170,12 +171,7 @@ namespace Microsoft.Maui.Platform
 			editText.SetCursorVisible(isReadOnly);
 		}
 
-		// TODO: NET8 hartez - Remove this, nothing uses it
-		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Drawable? clearButtonDrawable) =>
-			UpdateClearButtonVisibility(editText, entry, () => clearButtonDrawable);
-
-		// TODO: NET8 hartez - Remove the getClearButtonDrawable parameter, nothing uses it
-		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Func<Drawable?>? getClearButtonDrawable)
+		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry)
 		{
 			if (entry?.Handler is not EntryHandler entryHandler)
 			{
@@ -201,7 +197,6 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateReturnType(this EditText editText, IEntry entry)
 		{
-			editText.SetInputType(entry);
 			editText.ImeOptions = entry.ReturnType.ToPlatform();
 
 			// Restart the input on the current focused EditText
@@ -209,8 +204,7 @@ namespace Microsoft.Maui.Platform
 			imm?.RestartInput(editText);
 		}
 
-		// TODO: NET8 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
-		internal static int GetCursorPosition(this EditText editText, int cursorOffset = 0)
+		public static int GetCursorPosition(this EditText editText, int cursorOffset = 0)
 		{
 			var newCursorPosition = editText.SelectionStart + cursorOffset;
 			return Math.Max(0, newCursorPosition);
@@ -272,8 +266,7 @@ namespace Microsoft.Maui.Platform
 			return end;
 		}
 
-		// TODO: NET8 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
-		internal static int GetSelectedTextLength(this EditText editText)
+		public static int GetSelectedTextLength(this EditText editText)
 		{
 			var selectedLength = editText.SelectionEnd - editText.SelectionStart;
 			return Math.Max(0, selectedLength);
@@ -381,7 +374,7 @@ namespace Microsoft.Maui.Platform
 		// Android.Graphics.Rect has a Containts(x,y) method, but it only takes `int` and the coordinates from
 		// the motion event are `float`. The we use GetX() and GetY() so our coordinates are relative to the
 		// bounds of the EditText.
-		static bool RectContainsMotionEvent(Android.Graphics.Rect rect, MotionEvent motionEvent)
+		static bool RectContainsMotionEvent(Rect rect, MotionEvent motionEvent)
 		{
 			var x = motionEvent.GetX();
 
@@ -401,7 +394,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		// Gets the location of the "Clear" button relative to the bounds of the EditText
-		static Android.Graphics.Rect GetClearButtonLocation(Android.Graphics.Rect buttonRect, EditText platformView)
+		static Rect GetClearButtonLocation(Rect buttonRect, EditText platformView)
 		{
 			// Determine the top and bottom edges of the button
 			// This assumes the button is vertically centered within the padded area of the EditText
@@ -422,14 +415,14 @@ namespace Microsoft.Maui.Platform
 				var rightEdge = platformView.Width - platformView.PaddingRight;
 				var leftEdge = rightEdge - buttonRect.Width();
 
-				return new Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
+				return new Rect(leftEdge, topEdge, rightEdge, bottomEdge);
 			}
 			else
 			{
 				var leftEdge = platformView.PaddingLeft;
 				var rightEdge = leftEdge + buttonRect.Width();
 
-				return new Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
+				return new Rect(leftEdge, topEdge, rightEdge, bottomEdge);
 			}
 		}
 	}

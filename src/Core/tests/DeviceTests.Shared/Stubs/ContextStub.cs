@@ -1,6 +1,9 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Maui.Animations;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
@@ -14,7 +17,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		NavigationRootManager _windowManager;
 #endif
 #if ANDROID
-		Android.Content.Context _androidContext;
+		global::Android.Content.Context _androidContext;
 		IFontManager _fontManager;
 #endif
 
@@ -41,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			if (serviceType == typeof(IFontManager))
 				return _fontManager ??= _services.GetRequiredService<IFontManager>();
 
-			if (serviceType == typeof(Android.Content.Context))
+			if (serviceType == typeof(global::Android.Content.Context))
 				return MauiProgramDefaults.DefaultContext;
 
 			if (serviceType == typeof(NavigationRootManager))
@@ -70,6 +73,27 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			if (serviceType == typeof(IDispatcher))
 				return _services.GetService(serviceType) ?? TestDispatcher.Current;
 
+			if (serviceType.IsGenericType && serviceType.GetGenericTypeDefinition() == typeof(ILogger<>) ||
+				serviceType == typeof(ILogger) ||
+				serviceType == typeof(ILoggerFactory))
+			{
+				// This verifies that the test itself hasn't registered a logger
+				// if the test itself has registered a logger than return that because the logger is under tests
+				var registeredLogger = _services.GetService(serviceType);
+				var registeredLoggerType = registeredLogger.GetType();
+
+				if (registeredLogger is NullLoggerFactory)
+				{
+					return TestServices.Services.GetService(serviceType) ?? registeredLogger;
+				}
+
+				if (registeredLogger is NullLogger ||
+					registeredLoggerType.IsGenericType && registeredLoggerType.GetGenericTypeDefinition() == typeof(NullLogger<>))
+				{
+					return TestServices.Services.GetService(serviceType) ?? registeredLogger;
+				}
+			}
+
 			return _services.GetService(serviceType);
 		}
 
@@ -87,9 +111,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			Services.GetRequiredService<IMauiHandlersFactory>();
 
 #if __ANDROID__
-		public Android.Content.Context Context
+		public global::Android.Content.Context Context
 		{
-			get => Services.GetRequiredService<Android.Content.Context>();
+			get => Services.GetRequiredService<global::Android.Content.Context>();
 			set => _androidContext = value;
 		}
 #endif
@@ -99,7 +123,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			var returnValue = new ContextStub(mauiContext.Services);
 #if ANDROID
 			var activity = returnValue.GetActivity();
-			returnValue.Context = new Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
+			returnValue.Context = new global::Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
 #endif
 			return returnValue;
 		}

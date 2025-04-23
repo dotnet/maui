@@ -17,6 +17,7 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui
 {
+	[Obsolete("Use Microsoft.Maui.Accessibility.SemanticScreenReader")]
 	public static partial class SemanticExtensions
 	{
 		public static void SetSemanticFocus(this IView element)

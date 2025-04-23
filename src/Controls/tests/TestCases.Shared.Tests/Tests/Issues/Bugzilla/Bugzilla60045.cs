@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -16,7 +15,6 @@ public class Bugzilla60045 : _IssuesUITest
 	public override string Issue => "ListView with RecycleElement strategy doesn't handle CanExecute of TextCell Command properly";
 
 	[Test]
-	[FailsOnIOSWhenRunningOnXamarinUITest]
 	[Category(UITestCategories.ListView)]
 	public void CommandDoesNotFire()
 	{
@@ -25,4 +23,3 @@ public class Bugzilla60045 : _IssuesUITest
 		App.WaitForNoElement(Fail);
 	}
 }
-#endif

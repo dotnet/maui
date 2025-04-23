@@ -14,7 +14,7 @@ public class ShellFlyoutContent : TestShell
 		for (int i = 0; i < 50; i++)
 		{
 			AddFlyoutItem($"Flyout Item :{i}");
-			Items[i].AutomationId = "Flyout Item";
+			Items[i].AutomationId = "FlyoutItem";
 		}
 
 		Items.Add(new MenuItem() { Text = "Menu Item" });
@@ -55,7 +55,7 @@ public class ShellFlyoutContent : TestShell
 								var button = new Button()
 								{
 									Text = "Click to Reset",
-									AutomationId = "ContentView",
+									AutomationId = "Reset",
 									Command = new Command(() =>
 									{
 										FlyoutContentTemplate = null;

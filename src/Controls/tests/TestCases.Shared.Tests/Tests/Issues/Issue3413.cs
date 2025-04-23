@@ -1,4 +1,5 @@
-﻿#if IOS
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS
+//For more information : https://github.com/dotnet/maui/issues/27329
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -16,12 +17,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.SearchBar)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void Issue3413Test()
 		{
 			App.WaitForElement("srb_vertical");
-			App.WaitForElement("srb_horizontal");
-			App.Screenshot("Please verify we have 2 SearchBars. One below the label, other side by side with the label");
+			VerifyScreenshot();
 		}
 	}
 }

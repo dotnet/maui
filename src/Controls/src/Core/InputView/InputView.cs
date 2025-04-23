@@ -1,11 +1,14 @@
 #nullable disable
 using System;
+using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
+
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="Type[@FullName='Microsoft.Maui.Controls.InputView']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class InputView : View, IPlaceholderElement, ITextElement, ITextInput, IFontElement
 	{
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>
@@ -168,7 +171,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
 		public string UpdateFormsText(string original, TextTransform transform)
 		{
-			return TextTransformUtilites.GetTransformedText(original, transform);
+			return TextTransformUtilities.GetTransformedText(original, transform);
 		}
 
 		/// <summary>
@@ -270,6 +273,12 @@ namespace Microsoft.Maui.Controls
 		{
 			get => Text;
 			set => SetValue(TextProperty, value, SetterSpecificity.FromHandler);
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Text), Text);
+			return $"{base.GetDebuggerDisplay()}, Text = {debugText}";
 		}
 	}
 }

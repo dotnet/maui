@@ -406,11 +406,11 @@ namespace Microsoft.Maui.Graphics.Platform
 		}
 
 		// Normalize the angle to be between 0 and 2PI
-        float NormalizeAngle(float angle)
-        {
-            var twoPi = MathF.PI * 2;
-            return (angle % twoPi + twoPi) % twoPi;
-        }
+		float NormalizeAngle(float angle)
+		{
+			var twoPi = MathF.PI * 2;
+			return (angle % twoPi + twoPi) % twoPi;
+		}
 
 		protected override void PlatformDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool close)
 		{

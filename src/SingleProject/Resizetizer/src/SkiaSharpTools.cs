@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using System.Runtime.InteropServices;
+using System.Threading;
 using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
@@ -23,11 +23,12 @@ namespace Microsoft.Maui.Resizetizer
 		/// set.
 		/// </summary>
 		/// <returns>The value of DOTNET_ANDROID_FILE_WRITE_RETRY_ATTEMPTS or the default of DEFAULT_FILE_WRITE_RETRY_ATTEMPTS</returns>
-		public static int GetFileWriteRetryAttempts ()
+		public static int GetFileWriteRetryAttempts()
 		{
-			if (fileWriteRetry == -1) {
-				var retryVariable = Environment.GetEnvironmentVariable ("DOTNET_ANDROID_FILE_WRITE_RETRY_ATTEMPTS");
-				if (string.IsNullOrEmpty (retryVariable) || !int.TryParse (retryVariable, out fileWriteRetry))
+			if (fileWriteRetry == -1)
+			{
+				var retryVariable = Environment.GetEnvironmentVariable("DOTNET_ANDROID_FILE_WRITE_RETRY_ATTEMPTS");
+				if (string.IsNullOrEmpty(retryVariable) || !int.TryParse(retryVariable, out fileWriteRetry))
 					fileWriteRetry = DEFAULT_FILE_WRITE_RETRY_ATTEMPTS;
 			}
 			return fileWriteRetry;
@@ -39,15 +40,16 @@ namespace Microsoft.Maui.Resizetizer
 		/// set.
 		/// </summary>
 		/// <returns>The value of DOTNET_ANDROID_FILE_WRITE_RETRY_DELAY_MS or the default of DEFAULT_FILE_WRITE_RETRY_DELAY_MS</returns>
-		public static int GetFileWriteRetryDelay ()
+		public static int GetFileWriteRetryDelay()
 		{
-			if (fileWriteRetryDelay == -1) {
-				var delayVariable = Environment.GetEnvironmentVariable ("DOTNET_ANDROID_FILE_WRITE_RETRY_DELAY_MS");
-				if (string.IsNullOrEmpty (delayVariable) || !int.TryParse (delayVariable, out fileWriteRetryDelay))
+			if (fileWriteRetryDelay == -1)
+			{
+				var delayVariable = Environment.GetEnvironmentVariable("DOTNET_ANDROID_FILE_WRITE_RETRY_DELAY_MS");
+				if (string.IsNullOrEmpty(delayVariable) || !int.TryParse(delayVariable, out fileWriteRetryDelay))
 					fileWriteRetryDelay = DEFAULT_FILE_WRITE_RETRY_DELAY_MS;
 			}
 			return fileWriteRetryDelay;
-		} 
+		}
 
 		static SkiaSharpTools()
 		{
@@ -62,7 +64,7 @@ namespace Microsoft.Maui.Resizetizer
 		public static SkiaSharpTools Create(bool isVector, string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ILogger logger)
 			=> isVector
 				? new SkiaSharpSvgTools(filename, baseSize, backgroundColor, tintColor, logger) as SkiaSharpTools
-				: new SkiaSharpBitmapTools(filename, baseSize, backgroundColor, tintColor, logger);
+				: new SkiaSharpRasterTools(filename, baseSize, backgroundColor, tintColor, logger);
 
 		public static SkiaSharpTools CreateImaginary(SKColor? backgroundColor, ILogger logger)
 			=> new SkiaSharpImaginaryTools(backgroundColor, logger);
@@ -80,7 +82,10 @@ namespace Microsoft.Maui.Resizetizer
 			BackgroundColor = backgroundColor;
 			Paint = new SKPaint
 			{
-				FilterQuality = SKFilterQuality.High
+				IsAntialias = true,
+#pragma warning disable CS0618 // Type or member is obsolete
+				FilterQuality = SKFilterQuality.High,
+#pragma warning restore CS0618 // Type or member is obsolete
 			};
 
 			if (tintColor is SKColor tint)
@@ -88,6 +93,10 @@ namespace Microsoft.Maui.Resizetizer
 				Logger?.Log($"Detected a tint color of {tint}");
 				Paint.ColorFilter = SKColorFilter.CreateBlendMode(tint, SKBlendMode.SrcIn);
 			}
+
+			// Typically the Mitchell cubic resampler is for upsampling
+			// and the bilinear with mipmaps is for downsampling.
+			SamplingOptions = new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear);
 		}
 
 		public string Filename { get; }
@@ -99,6 +108,8 @@ namespace Microsoft.Maui.Resizetizer
 		public ILogger Logger { get; }
 
 		public SKPaint Paint { get; }
+
+		public SKSamplingOptions SamplingOptions { get; }
 
 		public void Resize(DpiPath dpi, string destination, double additionalScale = 1.0, bool dpiSizeIsAbsolute = false)
 		{
@@ -193,8 +204,8 @@ namespace Microsoft.Maui.Resizetizer
 		void Save(string destination, SKBitmap tempBitmap)
 		{
 			int attempt = 0;
-			int attempts = GetFileWriteRetryAttempts ();
-			int delay = GetFileWriteRetryDelay ();
+			int attempts = GetFileWriteRetryAttempts();
+			int delay = GetFileWriteRetryDelay();
 			while (attempt <= attempts)
 			{
 				try
@@ -210,7 +221,7 @@ namespace Microsoft.Maui.Resizetizer
 						case UnauthorizedAccessException:
 						case IOException:
 							var code = Marshal.GetHRForException(ex);
-							if ((code != ERROR_ACCESS_DENIED && code  != ERROR_SHARING_VIOLATION) || attempt >= attempts)
+							if ((code != ERROR_ACCESS_DENIED && code != ERROR_SHARING_VIOLATION) || attempt >= attempts)
 							{
 								throw;
 							}

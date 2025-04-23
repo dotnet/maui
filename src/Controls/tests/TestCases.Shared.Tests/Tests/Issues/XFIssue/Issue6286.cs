@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,7 +16,7 @@ internal class Issue6286 : _IssuesUITest
 	[Category(UITestCategories.WebView)]
 	public void Issue6286_WebView_Test()
 	{
+		VerifyInternetConnectivity();
 		App.QueryUntilPresent(() => App.WaitForElement("success"));
 	}
 }
-#endif

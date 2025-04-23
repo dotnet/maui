@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST // This test is only applicable for iOS as here tested the native property behavior.
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -6,30 +7,34 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue5503 : _IssuesUITest
 {
+	const string ChangeBackgroundButtonAutomationId = "ChangeBackgroundButton";
+	const string ListViewAutomationId = "TheListView";
+	const string GoToTestPage = "Go To Test Page";
+
 	public Issue5503(TestDevice testDevice) : base(testDevice)
 	{
 	}
 
 	public override string Issue => "[iOS] UITableView.Appearance.BackgroundColor ignored or overridden for ListView";
 
-	// TODO: in the old tests this was marked as manual review, can we still automate this somehow?
-	//[Test]
-	//[Category(UITestCategories.ListView)]
-	//[Category(UITestCategories.ManualReview)]
-	//[FailsOnIOS]
-	//public void ToggleAppearanceApiBackgroundColorListView()
-	//{
-	//	App.WaitForElement(ChangeBackgroundButtonAutomationId);
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void ToggleAppearanceApiBackgroundColorListView()
+	{
+		App.WaitForElement(GoToTestPage);
+		App.Tap(GoToTestPage);
 
-	//	App.Screenshot("ListView cells have clear background, default color from code");
+		App.WaitForElement(ChangeBackgroundButtonAutomationId);
+		App.Tap(ChangeBackgroundButtonAutomationId);
 
-	//	App.Tap(ChangeBackgroundButtonAutomationId);
-	//	App.NavigateBack();
-	//	App.WaitForNoElement(ChangeBackgroundButtonAutomationId);
-	//	AppSetup.NavigateToIssue(typeof(Issue5503), RunningApp);
-	//	App.WaitForElement(ChangeBackgroundButtonAutomationId);
+		App.TapBackArrow();
 
-	//	App.Screenshot("ListView cells have Red background, set by Appearance API");
+		App.WaitForElement(GoToTestPage);
+		App.Tap(GoToTestPage);
 
-	//}
+		App.WaitForElement(ChangeBackgroundButtonAutomationId);
+
+		VerifyScreenshot();
+	}
 }
+#endif

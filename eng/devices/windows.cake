@@ -29,10 +29,11 @@ string CONFIGURATION = Argument("configuration", "Debug");
 var windowsVersion = Argument("apiversion", EnvironmentVariable("WINDOWS_PLATFORM_VERSION") ?? defaultVersion);
 
 var dotnetToolPath = GetDotnetToolPath();
+LogSetupInfo(dotnetToolPath);
 
 // other
 string PLATFORM = "windows";
-string DOTNET_PLATFORM = $"win10-x64";
+string DOTNET_PLATFORM = $"win-x64";
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 string certificateThumbprint = "";
 bool isPackagedTestRun = TEST_DEVICE.ToLower().Equals("packaged");
@@ -58,24 +59,6 @@ Information("Build Configuration: {0}", CONFIGURATION);
 
 Information("Target Framework: {0}", TARGET_FRAMEWORK);
 Information("Windows version: {0}", windowsVersion);
-
-Setup(context =>
-{
-	Cleanup();
-});
-
-Teardown(context =>
-{
-	Cleanup();
-});
-
-void Cleanup()
-{
-	if (!DEVICE_CLEANUP)
-		return;
-}
-
-Task("Cleanup");
 
 Task("GenerateMsixCert")
 	.WithCriteria(isPackagedTestRun)
@@ -132,10 +115,9 @@ Task("GenerateMsixCert")
 	currentUserMyStore.Close();
 });
 
-Task("Build")
+Task("buildOnly")
 	.IsDependentOn("GenerateMsixCert")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
-	.WithCriteria(!string.IsNullOrEmpty(PACKAGEID))
 	.Does(() =>
 {
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
@@ -156,8 +138,11 @@ Task("Build")
 	s.ToolPath = dotnetToolPath;
 	s.Configuration = CONFIGURATION;
 	s.Framework = TARGET_FRAMEWORK;
-	s.MSBuildSettings = new DotNetMSBuildSettings();
-	s.MSBuildSettings.Properties.Add("RuntimeIdentifierOverride", new List<string> { "win10-x64" });
+	s.MSBuildSettings = new DotNetMSBuildSettings()
+	{
+		ArgumentCustomization = args => args.Append("/bl:" + binlog),
+	};
+	s.MSBuildSettings.Properties.Add("RuntimeIdentifierOverride", new List<string> { "win-x64" });
 	
 	var launchSettingsNeedle = "Project";
 	var launchSettingsReplacement = "MsixPackage";
@@ -179,6 +164,7 @@ Task("Build")
 	else
 	{
 		// Apply correct build properties for unpackaged builds
+		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
 		s.MSBuildSettings.Properties.Add("WindowsPackageType", new List<string> { "None" });
 		s.MSBuildSettings.Properties.Add("ExtraDefineConstants", new List<string> { "UNPACKAGED" });
 	}
@@ -196,8 +182,7 @@ Task("Build")
 	DotNetPublish(PROJECT.FullPath, s);
 });
 
-Task("Test")
-	.IsDependentOn("Build")
+Task("testOnly")
 	.IsDependentOn("SetupTestPaths")
 	.Does(() =>
 {
@@ -423,6 +408,16 @@ Task("Test")
 	}
 });
 
+Task("build")
+	.IsDependentOn("buildOnly");
+
+Task("test")
+	.IsDependentOn("buildOnly")
+	.IsDependentOn("testOnly");
+
+Task("buildAndTest")
+	.IsDependentOn("buildOnly")
+	.IsDependentOn("testOnly");
 
 Task("SetupTestPaths")
 	.Does(() => {

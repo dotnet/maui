@@ -80,6 +80,41 @@ namespace Microsoft.Maui.Controls
 				});
 		}
 
+		/// <summary>
+		/// Invokes a JavaScript method named <paramref name="methodName"/> and optionally passes in the parameter values specified
+		/// by <paramref name="paramValues"/> by JSON-encoding each one.
+		/// </summary>
+		/// <param name="methodName">The name of the JavaScript method to invoke.</param>
+		/// <param name="paramValues">Optional array of objects to be passed to the JavaScript method by JSON-encoding each one.</param>
+		/// <param name="paramJsonTypeInfos">Optional array of metadata about serializing the types of the parameters specified by <paramref name="paramValues"/>.</param>
+		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
+		public async Task InvokeJavaScriptAsync(
+			string methodName,
+			object?[]? paramValues = null,
+			JsonTypeInfo?[]? paramJsonTypeInfos = null)
+		{
+			if (string.IsNullOrEmpty(methodName))
+			{
+				throw new ArgumentException($"The method name cannot be null or empty.", nameof(methodName));
+			}
+			if (paramValues != null && paramJsonTypeInfos == null)
+			{
+				throw new ArgumentException($"The parameter values were provided, but the parameter JSON type infos were not.", nameof(paramJsonTypeInfos));
+			}
+			if (paramValues == null && paramJsonTypeInfos != null)
+			{
+				throw new ArgumentException($"The parameter JSON type infos were provided, but the parameter values were not.", nameof(paramValues));
+			}
+			if (paramValues != null && paramValues.Length != paramJsonTypeInfos!.Length)
+			{
+				throw new ArgumentException($"The number of parameter values does not match the number of parameter JSON type infos.", nameof(paramValues));
+			}
+
+			await Handler?.InvokeAsync(
+				nameof(IHybridWebView.InvokeJavaScriptAsync),
+				new HybridWebViewInvokeJavaScriptRequest(methodName, null, paramValues, paramJsonTypeInfos))!;
+		}
+
 		/// <inheritdoc/>
 		public async Task<TReturnType?> InvokeJavaScriptAsync<TReturnType>(
 			string methodName,

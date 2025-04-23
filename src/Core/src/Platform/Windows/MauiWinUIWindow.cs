@@ -28,7 +28,7 @@ namespace Microsoft.Maui
 		{
 			_windowManager = WindowMessageManager.Get(this);
 			_viewSettings = new ViewManagement.UISettings();
-			
+
 			Activated += OnActivated;
 			Closed += OnClosedPrivate;
 			VisibilityChanged += OnVisibilityChanged;

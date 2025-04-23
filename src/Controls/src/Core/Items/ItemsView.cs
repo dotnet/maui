@@ -3,15 +3,18 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml.Diagnostics;
+
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ItemsView']/Docs/*" />
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public abstract class ItemsView : View
 	{
 
@@ -224,6 +227,12 @@ namespace Microsoft.Maui.Controls
 			base.OnBindingContextChanged();
 			if (InternalItemsLayout is BindableObject bo)
 				SetInheritedBindingContext(bo, BindingContext);
+		}
+
+		private protected override string GetDebuggerDisplay()
+		{
+			var itemsSourceText = DebuggerDisplayHelpers.GetDebugText(nameof(ItemsSource), ItemsSource);
+			return $"{base.GetDebuggerDisplay()}, {itemsSourceText}";
 		}
 	}
 }

@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -15,14 +14,11 @@ public class Bugzilla33870 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.ListView)]
-	[FailsOnIOSWhenRunningOnXamarinUITest]
 	public void Bugzilla33870Test()
 	{
-		App.WaitForElement("PageContentAutomatedId");
 		App.WaitForElement("ListViewAutomatedId");
 		App.Tap("CLEAR SELECTION");
 
 		App.WaitForElement("Cleared");
 	}
 }
-#endif

@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -18,26 +17,11 @@ public class Bugzilla25979 : _IssuesUITest
 	public void Bugzilla25979Test()
 	{
 		App.WaitForElement("PageOneButtonId");
-		App.Screenshot("At page one");
-
 		App.Tap("PageOneButtonId");
-#if MACCATALYST
- 		System.Threading.Thread.Sleep(2000);
-#endif
-
-		App.WaitForElement("PageTwoButtonId");
-		App.Screenshot("At page two - I didn't crash");
-
+		App.WaitForElementTillPageNavigationSettled("PageTwoButtonId");
 		App.Tap("PageTwoButtonId");
-#if MACCATALYST
- 		System.Threading.Thread.Sleep(2000);
-#endif
-
-		App.WaitForElement("PopButton");
-		App.Screenshot("At page three - I didn't crash");
-
+		App.WaitForElementTillPageNavigationSettled("PopButton");
 		App.Tap("PopButton");
-		App.WaitForNoElement("PopAttempted");
+		App.WaitForElement("PopAttempted");
 	}
 }
-#endif

@@ -15,16 +15,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test]
 		[Category(UITestCategories.Layout)]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void Issue1601Test()
 		{
-			App.Screenshot("Start G1601");
 			App.WaitForElement("CrashButton");
-			App.Screenshot("I see the button");
 			App.Tap("CrashButton");
-			App.Screenshot("Didn't crash!");
+			App.WaitForNoElement("CrashButton");
 		}
 	}
 }

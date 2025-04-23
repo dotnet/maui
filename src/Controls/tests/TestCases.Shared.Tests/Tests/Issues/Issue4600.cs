@@ -1,5 +1,4 @@
-﻿#if IOS
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -15,14 +14,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		[Category(UITestCategories.Compatibility)]
-		[FailsOnIOSWhenRunningOnXamarinUITest]
 		public void InitiallyEmptySourceDisplaysAddedItem()
 		{
-			App.WaitForNoElement("Insert");
+			App.WaitForElement("Insert");
 			App.Tap("btnInsert");
-			App.WaitForNoElement("Inserted");
+			App.WaitForElement("Inserted");
 		}
 	}
 }
-#endif
