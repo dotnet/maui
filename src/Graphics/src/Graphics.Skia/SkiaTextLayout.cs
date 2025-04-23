@@ -91,8 +91,11 @@ namespace Microsoft.Maui.Graphics.Skia
 		/// <summary>
 		/// Performs layout of text within the specified rectangle.
 		/// </summary>
-		public void Layout()
+		public void LayoutText()
 		{
+			if (string.IsNullOrEmpty(_value))
+				return;
+
 			var x = _rect.X;
 			var y = _rect.Y;
 			var width = _rect.Width;
