@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Foundation;
 using UIKit;
@@ -19,10 +20,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public ObservableGroupedSource(IEnumerable groupSource, UICollectionViewController collectionViewController)
 		{
 			_collectionViewController = new(collectionViewController);
-			_groupSource = new List<object>();
-			var groupList = groupSource as IList ?? new ListSource(groupSource);
+			_groupSource = groupSource is INotifyCollectionChanged ? new ObservableCollection<object>() : new List<object>();
+			var source = groupSource as IList ?? new ListSource(groupSource);
 
-			foreach (var group in groupList)
+			foreach (var group in source)
 			{
 				if (group is IEnumerable enumerable)
 				{
