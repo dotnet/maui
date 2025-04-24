@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //NullReferenceException throws on iOS and mac Issue link - https://github.com/dotnet/maui/issues/19642
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -37,3 +38,4 @@ public class Issue16767_Resize : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
