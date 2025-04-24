@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues
 {
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS
 	public class Issue8263 : _IssuesUITest
 	{
 		public Issue8263(TestDevice testDevice) : base(testDevice)
@@ -25,5 +24,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_SwitchOn");
 		}
 	}
-#endif
 }
