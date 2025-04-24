@@ -270,6 +270,12 @@ namespace Microsoft.Maui.Platform
 
 			var service = provider.GetRequiredImageSourceService(imageSource);
 			var nativeImageSource = await service.GetImageSourceAsync(imageSource);
+			
+			if (nativeImageSource is null)
+			{
+				paneContentGrid.Background = null;
+				return;
+			}
 
 			var BackgroundImage = new ImageBrush
 			{

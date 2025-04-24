@@ -6,7 +6,7 @@ public class Issue21472 : Shell
 	public Issue21472()
 	{
 		FlyoutBackgroundImage = "dotnet_bot.png";
-		FlyoutBehavior = FlyoutBehavior.Locked;
+		FlyoutBehavior = FlyoutBehavior.Flyout;
 		FlyoutBackgroundImageAspect = Aspect.AspectFill;
 		var flyoutItem1 = new FlyoutItem { Title = "Item1" };
 		var tab1 = new Tab();
@@ -20,12 +20,19 @@ public class Issue21472ContentPage : ContentPage
 {
 	public Issue21472ContentPage()
 	{
-		Content = new Label
+		var button = new Button
 		{
-			Text = "Flyout Should Contain backgroundImage",
+			Text = "RemoveFlyoutBackground",
 			HorizontalOptions = LayoutOptions.Center,
 			VerticalOptions = LayoutOptions.Center,
-			AutomationId = "label"
+			AutomationId = "button"
 		};
+
+		button.Clicked += (sender, e) =>
+		{
+			Shell.Current.FlyoutBackgroundImage = null;
+		};
+
+		Content = button;
 	}
 }

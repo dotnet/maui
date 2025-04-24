@@ -10,11 +10,22 @@ public class Issue21472 : _IssuesUITest
 	}
 	public override string Issue => "Shell FlyoutBackgroundImage doesn't shown";
 
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.Shell)]
-	public void ShellFlyoutBackgroundImageVerify()
+	public void VerifyShellFlyoutBackgroundImage()
 	{
-		App.WaitForElement("label");
+		App.WaitForElement("button");
+		App.ShowFlyout();	
+		VerifyScreenshot();
+	}
+
+	[Test, Order(2)]
+	[Category(UITestCategories.Shell)]
+	public void VerifyShellFlyoutBackgroundImageSetNull()
+	{
+		App.WaitForElement("button");
+		App.Tap("button");
+		App.ShowFlyout();
 		VerifyScreenshot();
 	}
 }
