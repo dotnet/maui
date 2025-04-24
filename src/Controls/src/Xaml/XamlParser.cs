@@ -357,6 +357,14 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 		}
 
+		public static IList<XmlnsPrefixAttribute> GetXmlnsPrefixAttributes()
+		{
+			return [.. AppDomain.CurrentDomain.GetAssemblies()
+				.SelectMany(assembly => assembly.GetCustomAttributes(typeof(XmlnsPrefixAttribute), false)
+					.OfType<XmlnsPrefixAttribute>()).Distinct()];
+		}
+
+
 		[RequiresUnreferencedCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]
 #if !NETSTANDARD
 		[RequiresDynamicCode(TrimmerConstants.XamlRuntimeParsingNotSupportedWarning)]

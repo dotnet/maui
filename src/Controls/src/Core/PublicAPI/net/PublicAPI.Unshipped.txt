@@ -100,6 +100,9 @@ static Microsoft.Maui.Controls.ViewExtensions.ScaleToAsync(this Microsoft.Maui.C
 static Microsoft.Maui.Controls.ViewExtensions.ScaleXToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double x, double y, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute
+Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.Allow.get -> bool
+Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute.AllowImplicitXmlnsDeclarationAttribute(bool allow = true) -> void
 ~Microsoft.Maui.Controls.Internals.TypedBindingBase.UpdateSourceEventName.set -> void
 ~Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource<T>(System.Uri value) -> void
 ~Microsoft.Maui.Controls.Xaml.IXamlTypeResolver.Resolve(string qualifiedTypeName, System.IServiceProvider serviceProvider = null, bool expandToExtension = true) -> System.Type
