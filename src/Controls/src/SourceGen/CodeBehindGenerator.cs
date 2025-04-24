@@ -39,20 +39,6 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		//	System.Diagnostics.Debugger.Launch();
 		//}
 #endif
-		var projectItemProvider = initContext.AdditionalTextsProvider
-			.Combine(initContext.AnalyzerConfigOptionsProvider)
-			.Select(ComputeProjectItem)
-			.WithTrackingName(TrackingNames.ProjectItemProvider);
-
-		var xamlProjectItemProvider = projectItemProvider
-			.Where(static p => p?.Kind == "Xaml")
-			.Select(ComputeXamlProjectItem)
-			.WithTrackingName(TrackingNames.XamlProjectItemProvider);
-
-		var cssProjectItemProvider = projectItemProvider
-			.Where(static p => p?.Kind == "Css")
-			.WithTrackingName(TrackingNames.CssProjectItemProvider);
-
 		// Only provide a new Compilation when the references change
 		var referenceCompilationProvider = initContext.CompilationProvider
 			.WithComparer(new CompilationReferencesComparer())
@@ -61,6 +47,21 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		var xmlnsDefinitionsProvider = referenceCompilationProvider
 			.Select(GetAssemblyAttributes)
 			.WithTrackingName(TrackingNames.XmlnsDefinitionsProvider);
+			
+		var projectItemProvider = initContext.AdditionalTextsProvider
+			.Combine(initContext.AnalyzerConfigOptionsProvider)
+			.Select(ComputeProjectItem)
+			.WithTrackingName(TrackingNames.ProjectItemProvider);
+
+		var xamlProjectItemProvider = projectItemProvider
+			.Where(static p => p?.Kind == "Xaml")
+			.Combine(xmlnsDefinitionsProvider)
+			.Select(ComputeXamlProjectItem)
+			.WithTrackingName(TrackingNames.XamlProjectItemProvider);
+
+		var cssProjectItemProvider = projectItemProvider
+			.Where(static p => p?.Kind == "Css")
+			.WithTrackingName(TrackingNames.CssProjectItemProvider);
 
 		var referenceTypeCacheProvider = referenceCompilationProvider
 			.Select(GetTypeCache)
@@ -117,8 +118,10 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		return new ProjectItem(additionalText, targetPath: targetPath, relativePath: relativePath, manifestResourceName: manifestResourceName, kind: kind, targetFramework: targetFramework);
 	}
 
-	static XamlProjectItem? ComputeXamlProjectItem(ProjectItem? projectItem, CancellationToken cancellationToken)
+	static XamlProjectItem? ComputeXamlProjectItem((ProjectItem?, AssemblyCaches) itemAndCaches, CancellationToken cancellationToken)
 	{
+		var projectItem = itemAndCaches.Item1;
+		var xmlnsCache = itemAndCaches.Item2;
 		if (projectItem == null)
 		{
 			return null;
@@ -130,10 +133,20 @@ public class CodeBehindGenerator : IIncrementalGenerator
 			return null;
 		}
 
+		var nsmgr = new XmlNamespaceManager(new NameTable());
+		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
+		nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+		foreach (var xmlnsPrefix in xmlnsCache.XmlnsPrefixes)		
+			nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+		
+		using var reader = XmlReader.Create(new StringReader(text.ToString()),
+											new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
+											new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None));
+
 		var xmlDoc = new XmlDocument();
 		try
 		{
-			xmlDoc.LoadXml(text.ToString());
+			xmlDoc.Load(reader);
 		}
 		catch (XmlException xe)
 		{
@@ -148,9 +161,6 @@ public class CodeBehindGenerator : IIncrementalGenerator
 #pragma warning restore CS0618 // Type or member is obsolete
 
 		cancellationToken.ThrowIfCancellationRequested();
-
-		var nsmgr = new XmlNamespaceManager(xmlDoc.NameTable);
-		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
 
 		var root = xmlDoc.SelectSingleNode("/*", nsmgr);
 		if (root == null)
@@ -189,6 +199,9 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		// [assembly: InternalsVisibleTo]
 		INamedTypeSymbol? internalsVisibleToAttribute = compilation.GetTypeByMetadataName(typeof(InternalsVisibleToAttribute).FullName);
 
+		INamedTypeSymbol? xmlnsPrefixAttribute = compilation.GetTypesByMetadataName(typeof(XmlnsPrefixAttribute).FullName)
+			.SingleOrDefault(t => t.ContainingAssembly.Identity.Name == "Microsoft.Maui.Controls");
+
 		if (xmlnsDefinitonAttribute is null || internalsVisibleToAttribute is null)
 		{
 			return AssemblyCaches.Empty;
@@ -196,6 +209,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 
 		var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 		var internalsVisible = new List<IAssemblySymbol>();
+		var xmlnsPrefixes = new List<XmlnsPrefixAttribute>();
 
 		internalsVisible.Add(compilation.Assembly);
 
@@ -234,9 +248,15 @@ public class CodeBehindGenerator : IIncrementalGenerator
 						internalsVisible.Add(symbol);
 					}
 				}
+				else if (SymbolEqualityComparer.Default.Equals(attr.AttributeClass, xmlnsPrefixAttribute))
+				{
+					// [assembly: XmlnsPrefix]
+					var xmlnsPrefix = new XmlnsPrefixAttribute(attr.ConstructorArguments[0].Value as string, attr.ConstructorArguments[1].Value as string);
+					xmlnsPrefixes.Add(xmlnsPrefix);
+				}
 			}
 		}
-		return new AssemblyCaches(xmlnsDefinitions, internalsVisible);
+		return new AssemblyCaches(xmlnsDefinitions, xmlnsPrefixes, internalsVisible);
 	}
 
 	static IDictionary<XmlType, string> GetTypeCache(Compilation compilation, CancellationToken cancellationToken)
@@ -377,7 +397,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
 	}
 
-	static bool TryParseXaml(XamlProjectItem parseResult, string uid, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields)
+	static bool TryParseXaml(XamlProjectItem parseResult, string uid, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string?, string)>? namedFields)
 	{
 		accessModifier = null;
 		rootType = null;
@@ -430,6 +450,8 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsCache, typeCache, cancellationToken);
 		var typeArguments = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
 		baseType = GetTypeName(new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null), compilation, xmlnsCache, typeCache);
+		if (baseType == null)
+			return false;
 
 		// x:ClassModifier attribute
 		var classModifier = GetAttributeValue(root, "ClassModifier", XamlParser.X2006Uri, XamlParser.X2009Uri);
@@ -457,7 +479,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		return true;
 	}
 
-	static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken)
+	static IEnumerable<(string name, string? type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken)
 	{
 		var xPrefix = nsmgr.LookupPrefix(XamlParser.X2006Uri) ?? nsmgr.LookupPrefix(XamlParser.X2009Uri);
 		if (xPrefix == null)
@@ -492,7 +514,7 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		}
 	}
 
-	static string GetTypeName(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
+	static string? GetTypeName(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
 	{
 		if (typeCache.TryGetValue(xmlType, out string returnType))
 		{
@@ -513,6 +535,11 @@ public class CodeBehindGenerator : IIncrementalGenerator
 		if (xmlType.TypeArguments != null)
 		{
 			returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, compilation, xmlnsCache, typeCache)))}>";
+		}
+
+		if (returnType == null)
+		{
+			return null;
 		}
 
 		returnType = $"global::{returnType}";
@@ -755,16 +782,17 @@ public class CodeBehindGenerator : IIncrementalGenerator
 
 	class AssemblyCaches
 	{
-		public static readonly AssemblyCaches Empty = new(Array.Empty<XmlnsDefinitionAttribute>(), Array.Empty<IAssemblySymbol>());
+		public static readonly AssemblyCaches Empty = new(Array.Empty<XmlnsDefinitionAttribute>(), Array.Empty<XmlnsPrefixAttribute>(), Array.Empty<IAssemblySymbol>());
 
-		public AssemblyCaches(IReadOnlyList<XmlnsDefinitionAttribute> xmlnsDefinitions, IReadOnlyList<IAssemblySymbol> internalsVisible)
+		public AssemblyCaches(IReadOnlyList<XmlnsDefinitionAttribute> xmlnsDefinitions, IReadOnlyList<XmlnsPrefixAttribute> xmlnsPrefixes, IReadOnlyList<IAssemblySymbol> internalsVisible)
 		{
 			XmlnsDefinitions = xmlnsDefinitions;
+			XmlnsPrefixes = xmlnsPrefixes;
 			InternalsVisible = internalsVisible;
 		}
 
 		public IReadOnlyList<XmlnsDefinitionAttribute> XmlnsDefinitions { get; }
-
+		public IReadOnlyList<XmlnsPrefixAttribute> XmlnsPrefixes { get; }
 		public IReadOnlyList<IAssemblySymbol> InternalsVisible { get; }
 	}
 

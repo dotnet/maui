@@ -38,6 +38,26 @@ public class SourceGenXamlTests : SourceGenTestsBase
 	}
 
 	[Test]
+	public void TestCodeBehindGenerator_GlobalNamespace()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage x:Class="Test.TestPage">
+		<Button x:Name="MyButton" Text="Hello MAUI!" />
+</ContentPage>
+""";
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+
+		Assert.IsFalse(result.Diagnostics.Any());
+
+		var generated = result.Results.Single().GeneratedSources.Single().SourceText.ToString();
+
+		Assert.IsTrue(generated.Contains("Microsoft.Maui.Controls.Button MyButton", StringComparison.Ordinal));
+	}
+
+	[Test]
 	public void TestCodeBehindGenerator_LocalXaml()
 	{
 		var xaml =
@@ -206,5 +226,20 @@ public class SourceGenXamlTests : SourceGenTestsBase
 		};
 
 		VerifyStepRunReasons(result2, expectedReasons);
+	}
+
+		[Test]
+	public void TestCodeBehindGenerator_NotXaml()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<foo>
+</foo>
+""";
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+
+		Assert.That(result.Results.Single().GeneratedSources, Is.Empty);
 	}
 }

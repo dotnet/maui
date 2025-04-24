@@ -40,9 +40,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		public abstract bool Execute(out IList<Exception> thrownExceptions);
 
-		internal static ILRootNode ParseXaml(Stream stream, TypeReference typeReference)
+		internal static ILRootNode ParseXaml(Stream stream, ModuleDefinition module, TypeReference typeReference)
 		{
-			using (var reader = XmlReader.Create(stream))
+			var nsmgr = new XmlNamespaceManager(new NameTable());
+			nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
+			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+			foreach (var xmlnsPrefix in XmlTypeExtensions.GetXmlnsPrefixAttributes(module))
+				nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+
+
+			using (var reader = XmlReader.Create(stream,
+										new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
+										new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None)))
 			{
 				while (reader.Read())
 				{
@@ -73,8 +82,16 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (!resource.Name.EndsWith(".xaml", StringComparison.InvariantCulture))
 				return false;
 
+			var nsmgr = new XmlNamespaceManager(new NameTable());
+			nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
+			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+			foreach (var xmlnsPrefix in XmlTypeExtensions.GetXmlnsPrefixAttributes(module))
+				nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+
 			using (var resourceStream = resource.GetResourceStream())
-			using (var reader = XmlReader.Create(resourceStream))
+			using (var reader = XmlReader.Create(resourceStream,
+										new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
+										new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None)))
 			{
 				// Read to the first Element
 				while (reader.Read() && reader.NodeType != XmlNodeType.Element)
