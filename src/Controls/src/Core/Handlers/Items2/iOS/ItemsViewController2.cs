@@ -120,6 +120,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				TemplatedCell2.ScrollDirection = ScrollDirection;
 
 				TemplatedCell2.Bind(ItemsView.ItemTemplate, ItemsSource[indexpathAdjusted], ItemsView);
+
+				if (ItemsView is CollectionView cv && cv.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+				{
+					var layoutAttributes = UICollectionViewLayoutAttributes.CreateForCell(indexPath);
+					TemplatedCell2.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
+				}
+
 			}
 			else if (cell is DefaultCell2 DefaultCell2)
 			{

@@ -85,15 +85,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(
 			UICollectionViewLayoutAttributes layoutAttributes)
 		{
+			Size measure;
+
 			var preferredAttributes = base.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
 
 			if (PlatformHandler?.VirtualView is { } virtualView)
 			{
 				var constraints = GetMeasureConstraints(preferredAttributes);
 
-				if (_measureInvalidated || _cachedConstraints != constraints)
+
+				if (PlatformHandler?.VirtualView is View view && view.Parent is CollectionView itemsView && itemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
 				{
-					var measure = virtualView.Measure(constraints.Width, constraints.Height);
+					// Measure the first item at location (0, 0) and reuse its size for all items
+					if (preferredAttributes.Frame.Location == new CGPoint(0, 0))
+					{
+						measure = virtualView.Measure(constraints.Width, constraints.Height);
+					}
+					else
+					{
+						// Use the cached size for all other items
+						measure = _measuredSize;
+					}
+
+					_measuredSize = measure;
+					_cachedConstraints = constraints;
+					_needsArrange = true;
+				}
+				else
+				{
+					// Measure each item individually
+					measure = virtualView.Measure(constraints.Width, constraints.Height);
 					_cachedConstraints = constraints;
 					_measuredSize = measure;
 					_needsArrange = true;
