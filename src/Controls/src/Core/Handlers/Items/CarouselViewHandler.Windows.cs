@@ -159,8 +159,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			bool isEmpty = (CollectionViewSource?.View?.Count ?? 0) == 0;
 			if (isEmpty)
 			{
-				ItemsView.CurrentItem = null;
-				ItemsView.Position = 0;
 				if (_loopableCollectionView is not null)
 				{
 					_loopableCollectionView.IsLoopingEnabled = false;
