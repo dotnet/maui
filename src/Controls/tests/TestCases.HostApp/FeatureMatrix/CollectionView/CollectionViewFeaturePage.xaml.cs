@@ -27,5 +27,10 @@ namespace Maui.Controls.Sample
 		{
 			await Navigation.PushAsync(new CollectionViewHeaderPage());
 		}
+
+		private async void OnSelectionButtonClicked(object sender, EventArgs e)
+		{
+			await Navigation.PushAsync(new CollectionViewSelectionPage());
+		}
 	}
 }
