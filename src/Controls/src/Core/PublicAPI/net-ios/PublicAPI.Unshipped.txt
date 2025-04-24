@@ -108,6 +108,9 @@ Microsoft.Maui.Controls.ITextElement.OnCharacterSpacingPropertyChanged(double ol
 Microsoft.Maui.Controls.ITextElement.OnTextTransformChanged(Microsoft.Maui.TextTransform oldValue, Microsoft.Maui.TextTransform newValue) -> void
 Microsoft.Maui.Controls.ITextElement.TextTransform.get -> Microsoft.Maui.TextTransform
 Microsoft.Maui.Controls.ITextElement.TextTransform.set -> void
+~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
+~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string
 ~Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource<T>(System.Uri value) -> void
 ~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 ~Microsoft.Maui.Controls.Xaml.IXamlTypeResolver.Resolve(string qualifiedTypeName, System.IServiceProvider serviceProvider = null, bool expandToExtension = true) -> System.Type

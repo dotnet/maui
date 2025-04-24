@@ -27,6 +27,9 @@ Microsoft.Maui.Controls.ITextElement.OnCharacterSpacingPropertyChanged(double ol
 Microsoft.Maui.Controls.ITextElement.OnTextTransformChanged(Microsoft.Maui.TextTransform oldValue, Microsoft.Maui.TextTransform newValue) -> void
 Microsoft.Maui.Controls.ITextElement.TextTransform.get -> Microsoft.Maui.TextTransform
 Microsoft.Maui.Controls.ITextElement.TextTransform.set -> void
+~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
+~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string
 override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewHandler<TItemsView>.UpdateItemsLayout() -> void
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
