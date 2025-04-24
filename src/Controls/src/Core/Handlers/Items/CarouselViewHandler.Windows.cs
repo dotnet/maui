@@ -170,6 +170,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else
 			{
+				if (_loopableCollectionView is not null)
+				{
+					_loopableCollectionView.IsLoopingEnabled = true;
+				}
+
 				ListViewBase.ItemTemplate = CarouselItemsViewTemplate;
 			}
 
