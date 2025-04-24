@@ -14,10 +14,11 @@ public class Issue17105 : ContentPage
             Spacing = 25
         };
 
-        var entry = new Entry
+        var entry = new UITestEntry
         {
             HorizontalOptions = LayoutOptions.Fill,
             Placeholder = "Password: testing_password",
+            IsCursorVisible = false,
             IsPassword = true,
             AutomationId = "Entry"
         };
