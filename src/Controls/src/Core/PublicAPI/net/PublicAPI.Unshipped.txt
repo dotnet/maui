@@ -22,6 +22,9 @@ Microsoft.Maui.Controls.ITextAlignmentElement.HorizontalTextAlignment.get -> Mic
 Microsoft.Maui.Controls.ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(Microsoft.Maui.TextAlignment oldValue, Microsoft.Maui.TextAlignment newValue) -> void
 Microsoft.Maui.Controls.ITextAlignmentElement.VerticalTextAlignment.get -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.Controls.ITextElement
+~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
+~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string
 Microsoft.Maui.Controls.ITextElement.CharacterSpacing.get -> double
 Microsoft.Maui.Controls.ITextElement.OnCharacterSpacingPropertyChanged(double oldValue, double newValue) -> void
 Microsoft.Maui.Controls.ITextElement.OnTextTransformChanged(Microsoft.Maui.TextTransform oldValue, Microsoft.Maui.TextTransform newValue) -> void
