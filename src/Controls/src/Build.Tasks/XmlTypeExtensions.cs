@@ -44,18 +44,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					}
 			}
 
-			var globalXmlns = xmlnsDefinitions.Where(x => x.XmlNamespace == XamlParser.MauiGlobal).ToList();
-			foreach (var global in globalXmlns)
-			{
-				var pointedXmlns = xmlnsDefinitions.Where(x => x.XmlNamespace == global.Target).ToList();
-				foreach (var pointed in pointedXmlns)
-				{
-					xmlnsDefinitions.Add (new XmlnsDefinitionAttribute(global.XmlNamespace, pointed.Target)
-					{
-						AssemblyName = pointed.AssemblyName
-					});
-				}
-			}
 			return xmlnsDefinitions;
 		}
 

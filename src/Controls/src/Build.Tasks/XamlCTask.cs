@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil;
