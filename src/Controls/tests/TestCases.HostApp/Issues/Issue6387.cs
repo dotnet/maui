@@ -9,7 +9,7 @@ public class Issue6387 : ContentPage
 		{
 			AutomationId = "LabelWithNegativePaddingValue",
 			Text = "The test passes if the app runs without crashing and fails if the app crashes",
-			Padding = new Thickness(-10)
+			Padding = new Thickness(-2)
 		};
 
 		VerticalStackLayout verticalStackLayout = new VerticalStackLayout
