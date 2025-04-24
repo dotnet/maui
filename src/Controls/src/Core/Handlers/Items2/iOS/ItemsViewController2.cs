@@ -126,7 +126,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					var layoutAttributes = UICollectionViewLayoutAttributes.CreateForCell(indexPath);
 					TemplatedCell2.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
 				}
-
+				else
+				{
+					CollectionView.InvalidateMeasure();
+				}
 			}
 			else if (cell is DefaultCell2 DefaultCell2)
 			{
