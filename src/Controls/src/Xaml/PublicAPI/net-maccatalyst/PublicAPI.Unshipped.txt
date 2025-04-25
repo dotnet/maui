@@ -8,3 +8,5 @@ Microsoft.Maui.Controls.Embedding.EmbeddingExtensions
 Microsoft.Maui.Controls.Xaml.Internals.ValueTargetProvider
 Microsoft.Maui.Controls.Xaml.Internals.ValueTargetProvider.ValueTargetProvider(object! targetObject, object! targetProperty) -> void
 Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers
+~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.RootObject.get -> object
+~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, Microsoft.Maui.Controls.Internals.INameScope[] scopes, object rootObject) -> void
