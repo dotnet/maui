@@ -38,8 +38,7 @@ namespace Microsoft.Maui.Platform
 
 			// Explicitly disconnect the existing handler to ensure the native context menu (UIMenu)
 			// is recreated properly when the underlying menu items change dynamically.
-			// Without this, the native context menu remains cached and won't reflect updates,
-			// causing issues on iOS and Mac Catalyst platforms.
+			// Without this, the native context menu remains cached and won't reflect updates.
 			contextFlyout.Handler?.DisconnectHandler();
 			var contextFlyoutHandler = contextFlyout.ToHandler(mauiContext);
 			var contextFlyoutPlatformView = contextFlyoutHandler.PlatformView;
