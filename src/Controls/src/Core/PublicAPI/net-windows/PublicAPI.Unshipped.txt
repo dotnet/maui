@@ -11,7 +11,25 @@
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
+Microsoft.Maui.Controls.ICornerElement
+Microsoft.Maui.Controls.ICornerElement.CornerRadius.get -> Microsoft.Maui.CornerRadius
+Microsoft.Maui.Controls.ILineHeightElement
+Microsoft.Maui.Controls.ILineHeightElement.LineHeight.get -> double
+Microsoft.Maui.Controls.ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue) -> void
 Microsoft.Maui.Controls.Internals.TextTransformUtilities
+Microsoft.Maui.Controls.ITextAlignmentElement
+Microsoft.Maui.Controls.ITextAlignmentElement.HorizontalTextAlignment.get -> Microsoft.Maui.TextAlignment
+Microsoft.Maui.Controls.ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(Microsoft.Maui.TextAlignment oldValue, Microsoft.Maui.TextAlignment newValue) -> void
+Microsoft.Maui.Controls.ITextAlignmentElement.VerticalTextAlignment.get -> Microsoft.Maui.TextAlignment
+Microsoft.Maui.Controls.ITextElement
+Microsoft.Maui.Controls.ITextElement.CharacterSpacing.get -> double
+Microsoft.Maui.Controls.ITextElement.OnCharacterSpacingPropertyChanged(double oldValue, double newValue) -> void
+Microsoft.Maui.Controls.ITextElement.OnTextTransformChanged(Microsoft.Maui.TextTransform oldValue, Microsoft.Maui.TextTransform newValue) -> void
+Microsoft.Maui.Controls.ITextElement.TextTransform.get -> Microsoft.Maui.TextTransform
+Microsoft.Maui.Controls.ITextElement.TextTransform.set -> void
+~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
+~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string
 override Microsoft.Maui.Controls.Handlers.Items.SelectableItemsViewHandler<TItemsView>.UpdateItemsLayout() -> void
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
