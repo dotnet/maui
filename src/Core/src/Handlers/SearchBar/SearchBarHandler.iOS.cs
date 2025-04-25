@@ -49,7 +49,19 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView?.UpdateBackground(searchBar);
+			if (handler.PlatformView != null)
+			{
+				if (searchBar.Background.IsTransparent())
+				{
+					handler.PlatformView.SetBackgroundImage(new UIImage(), UIBarPosition.Any, UIBarMetrics.Default);
+					handler.PlatformView.BackgroundColor = UIColor.Clear;
+				}
+				else
+				{
+					handler.PlatformView.SetBackgroundImage(null, UIBarPosition.Any, UIBarMetrics.Default);
+					handler.PlatformView.UpdateBackground(searchBar);
+				}
+			}
 		}
 
 		public static void MapIsEnabled(ISearchBarHandler handler, ISearchBar searchBar)
