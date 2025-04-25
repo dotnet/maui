@@ -39,7 +39,7 @@ public class _28023Page : ContentPage
 
 public class _28023MainPage : ContentPage
 {
-	private CollectionView collectionView;
+	CollectionView collectionView;
 
 	public _28023MainPage()
 	{
