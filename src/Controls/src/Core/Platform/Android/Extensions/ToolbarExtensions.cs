@@ -237,11 +237,10 @@ namespace Microsoft.Maui.Controls.Platform
 			// menu items can be deleted by Android after switching activities, removing outdated menu items first
 			if (menu != null)
 			{
-				var clonedPreviousMenuItems = previousMenuItems.ToArray();
-				foreach (var previousMenuItem in clonedPreviousMenuItems)
+				for (var j = previousMenuItems.Count - 1; j >= 0; j--)
 				{
-					var item = menu.FindItem(previousMenuItem.ItemId);
-					if (item == null)
+					var previousMenuItem = previousMenuItems[j];
+					if (menu.FindItem(previousMenuItem.ItemId) == null)
 					{
 						previousMenuItem.Dispose();
 						previousMenuItems.Remove(previousMenuItem);
