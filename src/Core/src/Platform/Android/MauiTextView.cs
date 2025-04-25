@@ -22,8 +22,11 @@ namespace Microsoft.Maui.Platform
 		{
 			if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.AtMost && Layout is not null)
 			{
-				int maxWidth = (int)Math.Ceiling(GetMaxLineWidth(Layout)) + CompoundPaddingLeft + CompoundPaddingRight;
-				widthMeasureSpec = MeasureSpec.MakeMeasureSpec(maxWidth, MeasureSpecMode.AtMost);
+				if (Layout.EllipsizedWidth > 0)
+				{
+					int maxWidth = (int)Math.Ceiling(GetMaxLineWidth(Layout)) + CompoundPaddingLeft + CompoundPaddingRight;
+					widthMeasureSpec = MeasureSpec.MakeMeasureSpec(maxWidth, MeasureSpecMode.AtMost);
+				}
 			}
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
