@@ -15,8 +15,10 @@ public class Issue21472 : _IssuesUITest
 	public void VerifyShellFlyoutBackgroundImage()
 	{
 		App.WaitForElement("button");
-		App.ShowFlyout();	
+		App.ShowFlyout();
+		App.WaitForElement("CloseFlyoutButton");
 		VerifyScreenshot();
+		App.Tap("CloseFlyoutButton");
 	}
 
 	[Test, Order(2)]

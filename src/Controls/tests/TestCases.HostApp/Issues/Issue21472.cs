@@ -1,25 +1,16 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 21472, "Shell FlyoutBackgroundImage doesn't shown", PlatformAffected.UWP)]
-public class Issue21472 : Shell
+public class Issue21472 : TestShell
 {
-	public Issue21472()
+	protected override void Init()
 	{
-		FlyoutBackgroundImage = "dotnet_bot.png";
-		FlyoutBehavior = FlyoutBehavior.Flyout;
-		FlyoutBackgroundImageAspect = Aspect.AspectFill;
-		var flyoutItem1 = new FlyoutItem { Title = "Item1" };
-		var tab1 = new Tab();
-		tab1.Items.Add(new ShellContent { ContentTemplate = new DataTemplate(typeof(Issue21472ContentPage)) });
-		flyoutItem1.Items.Add(tab1);
-		Items.Add(flyoutItem1);
-	}
-}
+		var page = new ContentPage();
+		this.BindingContext = this;
 
-public class Issue21472ContentPage : ContentPage
-{
-	public Issue21472ContentPage()
-	{
+		FlyoutBackgroundImage = "dotnet_bot.png";
+		AddFlyoutItem(page, "Flyout Item");
+
 		var button = new Button
 		{
 			Text = "RemoveFlyoutBackground",
@@ -33,6 +24,27 @@ public class Issue21472ContentPage : ContentPage
 			Shell.Current.FlyoutBackgroundImage = null;
 		};
 
-		Content = button;
+		page.Content = button;
+
+		FlyoutContentTemplate = new DataTemplate(() =>
+		{
+			var stackLayout = new StackLayout();
+
+			var closeButton = new Button
+			{
+				Text = "Close Flyout",
+				AutomationId = "CloseFlyoutButton",
+				Margin = new Thickness(20),
+				HorizontalOptions = LayoutOptions.Center
+			};
+
+			closeButton.Clicked += (sender, e) =>
+			{
+				Shell.Current.FlyoutIsPresented = false;
+			};
+
+			stackLayout.Add(closeButton);
+			return stackLayout;
+		});
 	}
 }
