@@ -77,7 +77,10 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			using (var resizedStream = new InMemoryRandomAccessStream())
 			{
-				AsyncPump.Run(async () => await renderTarget.SaveAsync(resizedStream, CanvasBitmapFileFormat.Png));
+				renderTarget.SaveAsync(resizedStream, CanvasBitmapFileFormat.Png)
+					.AsTask()
+					.GetAwaiter()
+					.GetResult();
 				resizedStream.Seek(0);
 
 				var newImage = FromStream(resizedStream.AsStreamForRead());
