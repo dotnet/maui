@@ -44,16 +44,14 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("This Is A Footer");
 
 			// Now let's add items until the footer goes out of the screen
-			// and then remove them all and verify the footer is visible again (#29137) 
-            var add2Items = App.WaitForElement("Add 2 Items");
-            for (var i = 6; i >= 0; --i)
-            {
-	            add2Items.Tap();
-            }
+			// and then remove them all and verify the footer is visible again (#29137)
+			var i = 5;
+			while (--i > 0)
+			{
+				App.WaitForElement("Add 2 Items").Tap();
+				App.ScrollDownTo("Add 2 Items", "CV");				
+			}
 
-            await Task.Delay(1500);
-
-            App.ScrollDownTo("Clear All Items", "CV");
             App.WaitForElement("Clear All Items").Tap();
             await Task.Delay(300);
 
