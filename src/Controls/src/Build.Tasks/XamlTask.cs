@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Xml;
+using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.Maui.Controls.Xaml;
@@ -42,15 +43,21 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		internal static ILRootNode ParseXaml(Stream stream, ModuleDefinition module, TypeReference typeReference)
 		{
+			var allowImplicitXmlns = module.Assembly.CustomAttributes.Any(a =>
+				   a.AttributeType.FullName == typeof(Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute).FullName
+				&& (a.ConstructorArguments.Count == 0 || a.ConstructorArguments[0].Value is bool b && b));
+
 			var nsmgr = new XmlNamespaceManager(new NameTable());
 			nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
-			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
-			foreach (var xmlnsPrefix in XmlTypeExtensions.GetXmlnsPrefixAttributes(module))
-				nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
-
+			if (allowImplicitXmlns)
+			{
+				nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+				foreach (var xmlnsPrefix in XmlTypeExtensions.GetXmlnsPrefixAttributes(module))
+					nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+			}
 
 			using (var reader = XmlReader.Create(stream,
-										new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
+										new XmlReaderSettings { ConformanceLevel = allowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
 										new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None)))
 			{
 				while (reader.Read())
@@ -82,15 +89,21 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (!resource.Name.EndsWith(".xaml", StringComparison.InvariantCulture))
 				return false;
 
+			var allowImplicitXmlns = module.Assembly.CustomAttributes.Any(a =>
+				   a.AttributeType.FullName == typeof(Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute).FullName
+				&& (a.ConstructorArguments.Count == 0 || a.ConstructorArguments[0].Value is bool b && b));
+
 			var nsmgr = new XmlNamespaceManager(new NameTable());
 			nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
-			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
-			foreach (var xmlnsPrefix in XmlTypeExtensions.GetXmlnsPrefixAttributes(module))
-				nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
-
+			if (allowImplicitXmlns)
+			{
+				nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+				foreach (var xmlnsPrefix in XmlTypeExtensions.GetXmlnsPrefixAttributes(module))
+					nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+			}
 			using (var resourceStream = resource.GetResourceStream())
 			using (var reader = XmlReader.Create(resourceStream,
-										new XmlReaderSettings { ConformanceLevel = ConformanceLevel.Fragment },
+										new XmlReaderSettings { ConformanceLevel = allowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
 										new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None)))
 			{
 				// Read to the first Element
