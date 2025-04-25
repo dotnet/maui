@@ -126,9 +126,9 @@ namespace Microsoft.Maui.Controls.Platform
 				for (int index = 0; index < newItems.Count; index++)
 				{
 					var item = newItems[index];
-					var FlyoutIndex = FlyoutItems.IndexOf(item);
-					
-					if (FlyoutIndex == -1)
+					var flyoutItemIndex = FlyoutItems.IndexOf(item);
+
+					if (flyoutItemIndex == -1)
 					{
 						if (index < FlyoutItems.Count)
 						{
