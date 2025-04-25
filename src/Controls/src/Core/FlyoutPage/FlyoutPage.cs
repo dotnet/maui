@@ -311,7 +311,6 @@ namespace Microsoft.Maui.Controls
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<FlyoutPage>>(() => new PlatformConfigurationRegistry<FlyoutPage>(this));
 			(this as IControlsVisualElement).WindowChanged += OnWindowChanged;
-			this.SizeChanged += OnSizeChanged;
 		}
 
 		readonly Lazy<PlatformConfigurationRegistry<FlyoutPage>> _platformConfigurationRegistry;
@@ -322,30 +321,25 @@ namespace Microsoft.Maui.Controls
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		void OnSizeChanged(object sender, EventArgs e)
-		{
-			if (Handler is not null)
-			{
-				Handler?.UpdateValue(nameof(FlyoutBehavior));
-				SizeChanged -= OnSizeChanged;
-			}
-		}
-
 		void OnWindowChanged(object sender, EventArgs e)
 		{
 			if (Window is null)
 			{
-				SizeChanged -= OnSizeChanged;
-				SizeChanged += OnSizeChanged;
 				DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 			}
 			else
 			{
 				DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+				Window.SizeChanged += OnWindowOnSizeChanged;
 			}
 		}
 
 		void OnMainDisplayInfoChanged(object sender, DisplayInfoChangedEventArgs e)
+		{
+			Handler?.UpdateValue(nameof(FlyoutBehavior));
+		}
+
+		void OnWindowOnSizeChanged(object sender, EventArgs e)
 		{
 			Handler?.UpdateValue(nameof(FlyoutBehavior));
 		}
