@@ -1309,7 +1309,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			public override void ViewWillAppear(bool animated)
 			{
 				SetupDefaultNavigationBarAppearance();
-				UpdateNavigationBarVisibility(animated);
+				UpdateNavigationBarVisibility();
 
 				NavigationRenderer n;
 				var isTranslucent = false;
@@ -1410,7 +1410,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			void HandleChildPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
 				if (e.PropertyName == NavigationPage.HasNavigationBarProperty.PropertyName)
-					UpdateNavigationBarVisibility(true);
+					UpdateNavigationBarVisibility();
 				else if (e.PropertyName == Page.TitleProperty.PropertyName)
 					NavigationItem.Title = Child.Title;
 				else if (e.PropertyName == NavigationPage.HasBackButtonProperty.PropertyName)
@@ -1647,7 +1647,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					UpdateTitleArea(child);
 			}
 
-			void UpdateNavigationBarVisibility(bool animated)
+			void UpdateNavigationBarVisibility()
 			{
 				var current = Child;
 
@@ -1664,7 +1664,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					// prevent bottom content "jumping"
 					current.IgnoresContainerArea = !hasNavBar;
-					NavigationController.SetNavigationBarHidden(!hasNavBar, animated);
+					bool isAnimated = PlatformConfiguration.iOSSpecific.Page.GetNavigationBarHiddenAnimation(current);
+					NavigationController.SetNavigationBarHidden(!hasNavBar, isAnimated);
 				}
 			}
 

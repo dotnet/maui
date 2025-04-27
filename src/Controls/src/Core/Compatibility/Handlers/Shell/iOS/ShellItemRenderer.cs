@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using CoreGraphics;
+using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -372,6 +372,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				((IShellSectionController)_currentSection).AddDisplayedPageObserver(this, OnDisplayedPageChanged);
 			}
+
+			UpdateNavBarHidden(shellSection);
 		}
 
 		void OnDisplayedPageChanged(Page page)
@@ -431,6 +433,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			UpdateTabBarHidden();
 			base.ViewWillLayoutSubviews();
+		}
+
+		async void UpdateNavBarHidden(ShellSection shellSection)
+		{
+			if (SelectedViewController is UINavigationController navigationController)
+			{
+				// We need to wait for the layout to finish before we can set the navigation bar hidden,
+				// otherwise it will not animate correctly.
+				await Task.Yield();
+				bool isAnimated = PlatformConfiguration.iOSSpecific.Page.GetNavigationBarHiddenAnimation(shellSection);
+				navigationController.SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), isAnimated);
+			}
 		}
 
 		void UpdateTabBarHidden()

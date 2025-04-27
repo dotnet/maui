@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Foundation;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
@@ -343,7 +344,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_displayedPage != null)
 			{
 				_displayedPage.PropertyChanged += OnDisplayedPagePropertyChanged;
-				UpdateNavigationBarHidden();
 				UpdateNavigationBarHasShadow();
 			}
 		}
@@ -692,7 +692,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateNavigationBarHidden()
 		{
-			SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), true);
+			bool isAnimated = PlatformConfiguration.iOSSpecific.Page.GetNavigationBarHiddenAnimation(_displayedPage);
+			SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), isAnimated);
 		}
 
 		void UpdateNavigationBarHasShadow()
@@ -774,8 +775,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					else
 						navBarVisible = Shell.GetNavBarIsVisible(element);
 				}
-
-				navigationController.SetNavigationBarHidden(!navBarVisible, true);
 
 				var coordinator = viewController.GetTransitionCoordinator();
 				if (coordinator != null && coordinator.IsInteractive)

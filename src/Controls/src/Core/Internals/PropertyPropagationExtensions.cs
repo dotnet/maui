@@ -38,6 +38,11 @@ namespace Microsoft.Maui.Controls.Internals
 			if (propertyName == null || propertyName == Shell.NavBarIsVisibleProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.NavBarIsVisibleProperty, element);
 
+#if IOS
+			if (propertyName == null || propertyName == PlatformConfiguration.iOSSpecific.Page.NavigationBarHiddenAnimationProperty.PropertyName)
+				BaseShellItem.PropagateFromParent(PlatformConfiguration.iOSSpecific.Page.NavigationBarHiddenAnimationProperty, element);
+#endif
+
 			foreach (var child in children.ToArray())
 			{
 				if (child is IPropertyPropagationController view)

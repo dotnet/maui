@@ -345,5 +345,52 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			SetPrefersHomeIndicatorAutoHidden(config.Element, value);
 			return config;
 		}
+
+		/// <summary>
+		/// Backing store for the attached property that controls whether the navigation bar hidden animation is enabled.
+		/// </summary>
+		public static readonly BindableProperty NavigationBarHiddenAnimationProperty = BindableProperty.Create(nameof(NavigationBarHiddenAnimation), typeof(bool), typeof(Page), true);
+
+		/// <summary>
+		/// Gets a value that indicates whether the navigation bar hidden animation is enabled.
+		/// </summary>
+		/// <param name="element">The element to get the navigation bar hidden animation behavior from.</param>
+		/// <returns><see langword="true"/> if the navigation bar hidden animation is enabled; otherwise, <see langword="false"/>.</returns>
+		public static bool GetNavigationBarHiddenAnimation(BindableObject element)
+		{
+			return (bool)element.GetValue(NavigationBarHiddenAnimationProperty);
+		}
+
+		/// <summary>
+		/// Sets a value that controls whether the navigation bar hidden animation is enabled.
+		/// </summary>
+		/// <param name="element">The element whose navigation bar hidden animation behavior to set.</param>
+		/// <param name="value"><see langword="true"/> to enable the navigation bar hidden animation; otherwise, <see langword="false"/>.</param>
+		public static void SetNavigationBarHiddenAnimation(BindableObject element, bool value)
+		{
+			element.SetValue(NavigationBarHiddenAnimationProperty, value);
+		}
+
+		/// <summary>
+		/// Sets a value that controls whether the navigation bar hidden animation is enabled.
+		/// </summary>
+		/// <param name="config">The platform-specific configuration that contains the element on which to perform the operation.</param>
+		/// <param name="value"><see langword="true"/> to enable the navigation bar hidden animation; otherwise, <see langword="false"/>.</param>
+		/// <returns>The updated configuration object on which developers can make successive method calls.</returns>
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetNavigationBarHiddenAnimation(this IPlatformElementConfiguration<iOS, FormsElement> config, bool value)
+		{
+			SetNavigationBarHiddenAnimation(config.Element, value);
+			return config;
+		}
+
+		/// <summary>
+		/// Gets a value that indicates whether the navigation bar hidden animation is enabled.
+		/// </summary>
+		/// <param name="config">The platform-specific configuration that contains the element on which to perform the operation.</param>
+		/// <returns><see langword="true"/> if the navigation bar hidden animation is enabled; otherwise, <see langword="false"/>.</returns>
+		public static bool NavigationBarHiddenAnimation(this IPlatformElementConfiguration<iOS, FormsElement> config)
+		{
+			return GetNavigationBarHiddenAnimation(config.Element);
+		}
 	}
 }
