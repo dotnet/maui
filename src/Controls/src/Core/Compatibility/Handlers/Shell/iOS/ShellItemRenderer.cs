@@ -373,7 +373,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				((IShellSectionController)_currentSection).AddDisplayedPageObserver(this, OnDisplayedPageChanged);
 			}
 
-			UpdateNavBarHidden(shellSection);
+			_ = UpdateNavBarHidden(shellSection);
 		}
 
 		void OnDisplayedPageChanged(Page page)
@@ -435,9 +435,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewWillLayoutSubviews();
 		}
 
-		async void UpdateNavBarHidden(ShellSection shellSection)
+		async Task UpdateNavBarHidden(ShellSection shellSection)
 		{
-			if (SelectedViewController is UINavigationController navigationController)
+			if (SelectedViewController is UINavigationController navigationController && _displayedPage is not null)
 			{
 				// We need to wait for the layout to finish before we can set the navigation bar hidden,
 				// otherwise it will not animate correctly.
