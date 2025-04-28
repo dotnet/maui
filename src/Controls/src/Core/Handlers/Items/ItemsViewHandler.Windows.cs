@@ -148,7 +148,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
 				var lastItem = items[itemsCount - 1];
-				// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
+				ScrollToLastItem(lastItem);
+			}
+		}
+
+		void ScrollToLastItem(object lastItem)
+		{
+			var itemsPanel = ListViewBase.ItemsPanelRoot;
+			if (itemsPanel != null)
+			{
+				// Subscribe to the LayoutUpdated event for a one-time scroll operation
+				void ItemsPanel_LayoutUpdated(object sender, object e)
+				{
+					ListViewBase.LayoutUpdated -= ItemsPanel_LayoutUpdated;
+					ListViewBase.ScrollIntoView(lastItem);
+				}
+				ListViewBase.LayoutUpdated += ItemsPanel_LayoutUpdated;
+			}
+			else
+			{
+				// If the items panel is not available, scroll directly
 				ListViewBase.ScrollIntoView(lastItem);
 			}
 		}
