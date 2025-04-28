@@ -7,227 +7,333 @@ using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Maui.Controls.Sample.CollectionViewGalleries;
+using System.Collections.Specialized;
 
-namespace Maui.Controls.Sample
+namespace Maui.Controls.Sample;
+public class Grouping<TKey, TItem> : ObservableCollection<TItem>
 {
-    public class Grouping<TKey, TItem> : ObservableCollection<TItem>
-    {
-        public TKey Key { get; }
+    public TKey Key { get; }
 
-        public Grouping(TKey key, IEnumerable<TItem> items) : base(items)
-        {
-            Key = key;
-        }
+    public Grouping(TKey key, IEnumerable<TItem> items) : base(items)
+    {
+        Key = key;
     }
+}
 
-    public enum ItemsSourceType
-    {
-        None,
-        ObservableCollection25T,
-        ObservableCollection5T,
-        GroupedListT,
-        EmptyGroupedListT,
-        EmptyObservableCollectionT
-    }
-    public class CollectionViewViewModel : INotifyPropertyChanged
-    {
-        private object _emptyView;
-        private object _header;
-        private object _footer;
-        private DataTemplate _emptyViewTemplate;
-        private DataTemplate _headerTemplate;
-        private DataTemplate _footerTemplate;
-        private DataTemplate _groupHeaderTemplate;
-        private DataTemplate _groupFooterTemplate;
-        private DataTemplate _itemTemplate;
-        private IItemsLayout _itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
-        private ItemsSourceType _itemsSourceType = ItemsSourceType.None;
-        private bool _isGrouped = false;
-        private ObservableCollection<CollectionViewTestItem> _observableCollection25;
-        private ObservableCollection<CollectionViewTestItem> _observableCollection5;
-        private ObservableCollection<CollectionViewTestItem> _emptyObservableCollection;
-        private List<Grouping<string, CollectionViewTestItem>> _groupedList;
-        private List<Grouping<string, CollectionViewTestItem>> _emptyGroupedList;
-        public event PropertyChangedEventHandler PropertyChanged;
+public enum ItemsSourceType
+{
+    None,
+    ObservableCollection25T,
+    ObservableCollection5T,
+    GroupedListT,
+    EmptyGroupedListT,
+    EmptyObservableCollectionT
+}
+public class CollectionViewViewModel : INotifyPropertyChanged
+{
+    private object _emptyView;
+    private object _header;
+    private object _footer;
+    private DataTemplate _emptyViewTemplate;
+    private DataTemplate _headerTemplate;
+    private DataTemplate _footerTemplate;
+    private DataTemplate _groupHeaderTemplate;
+    private DataTemplate _groupFooterTemplate;
+    private DataTemplate _itemTemplate;
+    private IItemsLayout _itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
+    private ItemsSourceType _itemsSourceType = ItemsSourceType.None;
+    private bool _isGrouped = false;
+    private ObservableCollection<CollectionViewTestItem> _observableCollection25;
+    private ObservableCollection<CollectionViewTestItem> _observableCollection5;
+    private ObservableCollection<CollectionViewTestItem> _emptyObservableCollection;
+    private List<Grouping<string, CollectionViewTestItem>> _groupedList;
+    private List<Grouping<string, CollectionViewTestItem>> _emptyGroupedList;
 
-        public CollectionViewViewModel()
-        {
-            LoadItems();
-            ItemTemplate = new DataTemplate(() =>
+    private SelectionMode _selectionMode = SelectionMode.None;
+    private object _selectedItem;
+    private ObservableCollection<object> _selectedItems = new ObservableCollection<object>();
+    private int _selectionChangedEventCount = 0;
+    private string _previousSelectionText;
+    private string _currentSelectionText;
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public CollectionViewViewModel()
+    {
+        LoadItems();
+        ItemTemplate = new DataTemplate(() =>
+       {
+           var stackLayout = new StackLayout
            {
-               var stackLayout = new StackLayout
-               {
-                   Padding = new Thickness(10),
-                   HorizontalOptions = LayoutOptions.Center,
-                   VerticalOptions = LayoutOptions.Center
-               };
+               Padding = new Thickness(10),
+               HorizontalOptions = LayoutOptions.Center,
+               VerticalOptions = LayoutOptions.Center
+           };
 
-               var label = new Label
-               {
-                   VerticalOptions = LayoutOptions.Center,
-                   HorizontalOptions = LayoutOptions.Center
-               };
-               label.SetBinding(Label.TextProperty, "Caption");
-               stackLayout.Children.Add(label);
-               return stackLayout;
-           });
+           var label = new Label
+           {
+               VerticalOptions = LayoutOptions.Center,
+               HorizontalOptions = LayoutOptions.Center
+           };
+           label.SetBinding(Label.TextProperty, "Caption");
+           stackLayout.Children.Add(label);
+           return stackLayout;
+       });
 
-            GroupHeaderTemplate = new DataTemplate(() =>
+        GroupHeaderTemplate = new DataTemplate(() =>
+        {
+            var stackLayout = new StackLayout
             {
-                var stackLayout = new StackLayout
-                {
-                    BackgroundColor = Colors.LightGray
-                };
-                var label = new Label
-                {
-                    FontAttributes = FontAttributes.Bold,
-                    FontSize = 18
-                };
-                label.SetBinding(Label.TextProperty, "Key");
-                stackLayout.Children.Add(label);
-                return stackLayout;
-            });
-        }
-
-        public object EmptyView
-        {
-            get => _emptyView;
-            set { _emptyView = value; OnPropertyChanged(); }
-        }
-
-        public object Header
-        {
-            get => _header;
-            set { _header = value; OnPropertyChanged(); }
-        }
-
-        public object Footer
-        {
-            get => _footer;
-            set { _footer = value; OnPropertyChanged(); }
-        }
-
-        public DataTemplate EmptyViewTemplate
-        {
-            get => _emptyViewTemplate;
-            set { _emptyViewTemplate = value; OnPropertyChanged(); }
-        }
-
-        public DataTemplate HeaderTemplate
-        {
-            get => _headerTemplate;
-            set { _headerTemplate = value; OnPropertyChanged(); }
-        }
-
-        public DataTemplate FooterTemplate
-        {
-            get => _footerTemplate;
-            set { _footerTemplate = value; OnPropertyChanged(); }
-        }
-
-        public DataTemplate GroupHeaderTemplate
-        {
-            get => _groupHeaderTemplate;
-            set { _groupHeaderTemplate = value; OnPropertyChanged(); }
-        }
-
-        public DataTemplate GroupFooterTemplate
-        {
-            get => _groupFooterTemplate;
-            set { _groupFooterTemplate = value; OnPropertyChanged(); }
-        }
-
-        public DataTemplate ItemTemplate
-        {
-            get => _itemTemplate;
-            set { _itemTemplate = value; OnPropertyChanged(); }
-        }
-
-        public IItemsLayout ItemsLayout
-        {
-            get => _itemsLayout;
-            set
+                BackgroundColor = Colors.LightGray
+            };
+            var label = new Label
             {
-                if (_itemsLayout != value)
-                {
-                    _itemsLayout = value;
-                    OnPropertyChanged();
-                }
+                FontAttributes = FontAttributes.Bold,
+                FontSize = 18
+            };
+            label.SetBinding(Label.TextProperty, "Key");
+            stackLayout.Children.Add(label);
+            return stackLayout;
+        });
+        SelectedItems = new ObservableCollection<object>();
+        SelectedItems.CollectionChanged += OnSelectedItemsChanged;
+    }
+
+    public object EmptyView
+    {
+        get => _emptyView;
+        set { _emptyView = value; OnPropertyChanged(); }
+    }
+
+    public object Header
+    {
+        get => _header;
+        set { _header = value; OnPropertyChanged(); }
+    }
+
+    public object Footer
+    {
+        get => _footer;
+        set { _footer = value; OnPropertyChanged(); }
+    }
+
+    public DataTemplate EmptyViewTemplate
+    {
+        get => _emptyViewTemplate;
+        set { _emptyViewTemplate = value; OnPropertyChanged(); }
+    }
+
+    public DataTemplate HeaderTemplate
+    {
+        get => _headerTemplate;
+        set { _headerTemplate = value; OnPropertyChanged(); }
+    }
+
+    public DataTemplate FooterTemplate
+    {
+        get => _footerTemplate;
+        set { _footerTemplate = value; OnPropertyChanged(); }
+    }
+
+    public DataTemplate GroupHeaderTemplate
+    {
+        get => _groupHeaderTemplate;
+        set { _groupHeaderTemplate = value; OnPropertyChanged(); }
+    }
+
+    public DataTemplate GroupFooterTemplate
+    {
+        get => _groupFooterTemplate;
+        set { _groupFooterTemplate = value; OnPropertyChanged(); }
+    }
+
+    public DataTemplate ItemTemplate
+    {
+        get => _itemTemplate;
+        set { _itemTemplate = value; OnPropertyChanged(); }
+    }
+
+    public IItemsLayout ItemsLayout
+    {
+        get => _itemsLayout;
+        set
+        {
+            if (_itemsLayout != value)
+            {
+                _itemsLayout = value;
+                OnPropertyChanged();
             }
         }
+    }
 
-        public ItemsSourceType ItemsSourceType
+    public ItemsSourceType ItemsSourceType
+    {
+        get => _itemsSourceType;
+        set
         {
-            get => _itemsSourceType;
-            set
+            if (_itemsSourceType != value)
             {
-                if (_itemsSourceType != value)
-                {
-                    _itemsSourceType = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(ItemsSource));
-                }
+                _itemsSourceType = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(ItemsSource));
             }
         }
+    }
 
-        public bool IsGrouped
+    public bool IsGrouped
+    {
+        get => _isGrouped;
+        set
         {
-            get => _isGrouped;
-            set
+            if (_isGrouped != value)
             {
-                if (_isGrouped != value)
-                {
-                    _isGrouped = value;
-                    OnPropertyChanged();
-                }
+                _isGrouped = value;
+                OnPropertyChanged();
             }
         }
+    }
 
-        public object ItemsSource
+    public object ItemsSource
+    {
+        get
         {
-            get
+            return ItemsSourceType switch
             {
-                return ItemsSourceType switch
-                {
-                    ItemsSourceType.ObservableCollection25T => _observableCollection25,
-                    ItemsSourceType.ObservableCollection5T => _observableCollection5,
-                    ItemsSourceType.GroupedListT => _groupedList,
-                    ItemsSourceType.EmptyGroupedListT => _emptyGroupedList,
-                    ItemsSourceType.EmptyObservableCollectionT => _emptyObservableCollection,
-                    ItemsSourceType.None => null,
-                    _ => null
-                };
+                ItemsSourceType.ObservableCollection25T => _observableCollection25,
+                ItemsSourceType.ObservableCollection5T => _observableCollection5,
+                ItemsSourceType.GroupedListT => _groupedList,
+                ItemsSourceType.EmptyGroupedListT => _emptyGroupedList,
+                ItemsSourceType.EmptyObservableCollectionT => _emptyObservableCollection,
+                ItemsSourceType.None => null,
+                _ => null
+            };
+        }
+    }
+    public SelectionMode SelectionMode
+    {
+        get => _selectionMode;
+        set
+        {
+            if (_selectionMode != value)
+            {
+                _selectionMode = value;
+                OnPropertyChanged();
             }
         }
+    }
 
-
-        private void LoadItems()
+    public object SelectedItem
+    {
+        get => _selectedItem;
+        set
         {
-            _observableCollection25 = new ObservableCollection<CollectionViewTestItem>();
-            _observableCollection5 = new ObservableCollection<CollectionViewTestItem>();
-            AddItems(_observableCollection5, 5, "Fruits");
-            AddItems(_observableCollection25, 10, "Fruits");
-            AddItems(_observableCollection25, 10, "Vegetables");
+            if (_selectedItem != value)
+            {
+                _selectedItem = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(SelectedItemText));
+                OnPropertyChanged(nameof(SelectedItemsCount));
+            }
+        }
+    }
 
-            _emptyObservableCollection = new ObservableCollection<CollectionViewTestItem>();
+    public ObservableCollection<object> SelectedItems
+    {
+        get => _selectedItems;
+        set
+        {
+            if (_selectedItems != value)
+            {
+                _selectedItems = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(SelectedItemsCount));
+                OnPropertyChanged(nameof(SelectedItemText));
+            }
+        }
+    }
+    public int SelectedItemsCount
+    {
+        get
+        {
+            if (SelectionMode == SelectionMode.Single)
+            {
+                return SelectedItem != null ? 1 : 0;
+            }
+            else if (SelectionMode == SelectionMode.Multiple)
+            {
+                return SelectedItems?.Count ?? 0;
+            }
+            return 0;
 
-            _groupedList = new List<Grouping<string, CollectionViewTestItem>>
+        }
+    }
+    public string SelectedItemText
+    {
+        get
+        {
+            if (SelectionMode == SelectionMode.Single && SelectedItem is CollectionViewTestItem item)
+            {
+                return $"{item.Caption}";
+            }
+            else if (SelectionMode == SelectionMode.Multiple && SelectedItems?.Count > 0)
+            {
+                var selectedCaptions = SelectedItems
+                    .OfType<CollectionViewTestItem>()
+                    .Select(i => i.Caption);
+                return string.Join(", ", selectedCaptions);
+            }
+            return "No items selected";
+        }
+    }
+
+    public int SelectionChangedEventCount
+    {
+        get => _selectionChangedEventCount;
+        set
+        {
+            _selectionChangedEventCount = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string PreviousSelectionText
+    {
+        get => _previousSelectionText;
+        set { _previousSelectionText = value; OnPropertyChanged(); }
+    }
+
+    public string CurrentSelectionText
+    {
+        get => _currentSelectionText;
+        set { _currentSelectionText = value; OnPropertyChanged(); }
+    }
+
+    private void LoadItems()
+    {
+        _observableCollection25 = new ObservableCollection<CollectionViewTestItem>();
+        _observableCollection5 = new ObservableCollection<CollectionViewTestItem>();
+        AddItems(_observableCollection5, 5, "Fruits");
+        AddItems(_observableCollection25, 10, "Fruits");
+        AddItems(_observableCollection25, 10, "Vegetables");
+
+        _emptyObservableCollection = new ObservableCollection<CollectionViewTestItem>();
+
+        _groupedList = new List<Grouping<string, CollectionViewTestItem>>
             {
                 new Grouping<string, CollectionViewTestItem>("Fruits", new List<CollectionViewTestItem>()),
                 new Grouping<string, CollectionViewTestItem>("Vegetables", new List<CollectionViewTestItem>())
             };
 
-            AddItems(_groupedList[0], 4, "Fruits");
-            AddItems(_groupedList[1], 4, "Vegetables");
+        AddItems(_groupedList[0], 4, "Fruits");
+        AddItems(_groupedList[1], 4, "Vegetables");
 
-            _emptyGroupedList = new List<Grouping<string, CollectionViewTestItem>>();
-        }
+        _emptyGroupedList = new List<Grouping<string, CollectionViewTestItem>>();
+    }
 
 
-        private void AddItems(IList<CollectionViewTestItem> list, int count, string category)
+    private void AddItems(IList<CollectionViewTestItem> list, int count, string category)
+    {
+        string[] fruits =
         {
-            string[] fruits =
-            {
               "Apple", "Banana", "Orange", "Grapes", "Mango",
               "Pineapple", "Strawberry", "Blueberry", "Peach", "Cherry",
               "Watermelon", "Papaya", "Kiwi", "Pear", "Plum",
@@ -235,8 +341,8 @@ namespace Maui.Controls.Sample
               "Lime", "Lemon", "Coconut", "Apricot", "Blackberry"
             };
 
-            string[] vegetables =
-            {
+        string[] vegetables =
+        {
                "Carrot", "Broccoli", "Spinach", "Potato", "Tomato",
                "Cucumber", "Lettuce", "Onion", "Garlic", "Pepper",
                "Zucchini", "Pumpkin", "Radish", "Beetroot", "Cabbage",
@@ -244,50 +350,55 @@ namespace Maui.Controls.Sample
                "Eggplant", "Chili", "Corn", "Peas", "Mushroom"
            };
 
-            string[] items = category == "Fruits" ? fruits : vegetables;
+        string[] items = category == "Fruits" ? fruits : vegetables;
 
-            for (int n = 0; n < count; n++)
-            {
-                list.Add(new CollectionViewTestItem(items[n % items.Length], n)); // Pass the index
-            }
+        for (int n = 0; n < count; n++)
+        {
+            list.Add(new CollectionViewTestItem(items[n % items.Length], n)); // Pass the index
+        }
+    }
+
+    private void OnSelectedItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(SelectedItemsCount));
+        OnPropertyChanged(nameof(SelectedItemText));
+    }
+
+    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        if (propertyName == nameof(IsGrouped))
+        {
+            OnPropertyChanged(nameof(ItemsSource));
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    public class CustomDataTemplateSelector : DataTemplateSelector
+    {
+        public DataTemplate Template1 { get; set; }
+        public DataTemplate Template2 { get; set; }
+
+        protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
         {
-            if (propertyName == nameof(IsGrouped))
+            if (item is CollectionViewTestItem testItem)
             {
-                OnPropertyChanged(nameof(ItemsSource));
+                return testItem.Index % 2 == 0 ? Template1 : Template2;
             }
 
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            return Template1;
         }
+    }
 
-        public class CustomDataTemplateSelector : DataTemplateSelector
+    public class CollectionViewTestItem
+    {
+        public string Caption { get; set; }
+        public int Index { get; set; }
+
+        public CollectionViewTestItem(string caption, int index)
         {
-            public DataTemplate Template1 { get; set; }
-            public DataTemplate Template2 { get; set; }
-
-            protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
-            {
-                if (item is CollectionViewTestItem testItem)
-                {
-                    return testItem.Index % 2 == 0 ? Template1 : Template2;
-                }
-
-                return Template1;
-            }
-        }
-
-        public class CollectionViewTestItem
-        {
-            public string Caption { get; set; }
-            public int Index { get; set; }
-
-            public CollectionViewTestItem(string caption, int index)
-            {
-                Caption = caption;
-                Index = index;
-            }
+            Caption = caption;
+            Index = index;
         }
     }
 }
