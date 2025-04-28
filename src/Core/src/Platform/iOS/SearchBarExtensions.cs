@@ -62,7 +62,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-
 		public static void UpdateIsEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			uiSearchBar.UserInteractionEnabled = searchBar.IsEnabled;
