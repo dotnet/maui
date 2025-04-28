@@ -24,8 +24,4 @@ public class Issue11677 : ContentPage
 			}
 		};
 	}
-}
-
-
-
-	
+}	

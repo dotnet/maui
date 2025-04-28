@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			handler.PlatformView.UpdateBackground(searchBar);
+			handler.PlatformView?.UpdateBackground(searchBar);
 		}
 
 		public static void MapIsEnabled(ISearchBarHandler handler, ISearchBar searchBar)
