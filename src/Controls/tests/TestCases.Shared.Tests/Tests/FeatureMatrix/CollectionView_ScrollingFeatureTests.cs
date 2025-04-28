@@ -54,6 +54,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // [Windows] NullReferenceException thrown When Toggling IsGrouped to True in ObservableCollection Binding Issue Link: https://github.com/dotnet/maui/issues/28824
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyMeasureAllItemsWithGroupedList()
@@ -70,6 +71,7 @@ public class CollectionView_ScrollingFeatureTests : UITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
 	//CollectionView2 ItemSizingStrategy="MeasureFirstItem" Fails to Apply Correct Sizing Issue Link: https://github.com/dotnet/maui/issues/29130

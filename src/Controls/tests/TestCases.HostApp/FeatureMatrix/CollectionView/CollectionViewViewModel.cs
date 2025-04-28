@@ -66,8 +66,8 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 
     private readonly string[] _addSequenceFruits =
     {
-            "Dragonfruit", "Passionfruit", "Starfruit", "Rambutan", "Durian", "Persimmon"
-        };
+        "Dragonfruit", "Passionfruit", "Starfruit", "Rambutan", "Durian", "Persimmon"
+    };
     private int _addIndex = 0;
 
     public ICommand AddItemCommand { get; }
@@ -176,7 +176,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ItemsSource));
                 OnPropertyChanged(nameof(ShowAddRemoveButtons));
-                SetItemTemplate(); // Reset template based on selected source
+                SetItemTemplate(); 
             }
         }
     }
@@ -316,7 +316,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 
         for (int n = 0; n < count; n++)
         {
-            list.Add(new CollectionViewTestItem(items[n % items.Length], n)); // Pass the index
+            list.Add(new CollectionViewTestItem(items[n % items.Length], n)); 
         }
     }
 
@@ -329,7 +329,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 
         for (int i = 0; i < count; i++)
         {
-            int sentenceCount = (i % sentences.Length) + 1; // Use 1 to N sentences
+            int sentenceCount = (i % sentences.Length) + 1; 
             string text = string.Join(". ", sentences.Take(sentenceCount)) + ".";
             list.Add(new ItemModel(text, fixedFontSize));
         }
