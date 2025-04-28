@@ -9,19 +9,39 @@ public class Issue11677 : ContentPage
 		{
 			Children =
 			{
-				new SearchBar
-				{
-					BackgroundColor = Colors.Transparent,
-					Placeholder = "Search"
-				},
 				new Label
 				{
-					Text = "Test SearchBar with Transparent Background",
+					Text = "SearchBar Transparent BackgroundColor",
 					FontSize = 16,
 					TextColor = Colors.Black,
 					AutomationId = "Label"
+				},
+				new SearchBar
+				{
+					BackgroundColor = Colors.Transparent,
+				},
+				new Label
+				{
+					Text = "SearchBar with null background",
+					FontSize = 16,
+					TextColor = Colors.Black,
+				},
+				new SearchBar
+				{
+					BackgroundColor = null,
+				},
+				new Label
+				{
+					Text = "SeachBar with default background",
+					FontSize = 16,
+					TextColor = Colors.Black,
+				},
+				new SearchBar
+				{
+					Background = Brush.Default,
 				}
 			}
 		};
+
 	}
 }	
