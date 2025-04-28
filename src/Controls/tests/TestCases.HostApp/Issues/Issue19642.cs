@@ -39,7 +39,7 @@ internal class Issue19642_ImagePaintDrawable : IDrawable
 
 		if (image is not null)
 		{
-			canvas.SetFillImage(image.Downsize(100));
+			canvas.SetFillImage(image);
 			canvas.FillRectangle(0, 0, 240, 300);
 		}
 	}
