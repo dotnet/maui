@@ -114,8 +114,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				else
 				{
 					// Measure each item individually
-					_cachedConstraints = constraints;
 					_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
+					_cachedConstraints = constraints;
 					_needsArrange = true;
 				}
 
