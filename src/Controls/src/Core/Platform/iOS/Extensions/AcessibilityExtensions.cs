@@ -2,7 +2,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform;
 
-internal static class AcessibilityExtensions
+internal static class AccessibilityExtensions
 {
 	internal static void UpdateSelectedAccessibility(this UICollectionViewCell cell, bool selected)
 	{
