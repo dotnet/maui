@@ -4,7 +4,7 @@
              x:Class="Controls.TestCases.HostApp.Issues.Issue29233"
              Title="Issue29233">
     <VerticalStackLayout VerticalOptions="Center">
-         <Label AutomationId="WaitLabel" x:Name="waitLabel" />
+        <Label AutomationId="WaitLabel" x:Name="waitLabel" />
         <Label IsVisible="false" AutomationId="MauiLabel" x:Name="label" />
         <WebView Navigated="WebView_Navigated"/>
     </VerticalStackLayout>
