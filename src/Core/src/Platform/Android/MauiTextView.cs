@@ -22,7 +22,8 @@ namespace Microsoft.Maui.Platform
 		{
 			if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.AtMost && Layout is not null)
 			{
-				if (Layout.EllipsizedWidth > 0)
+				// Ensure the Layout is valid and measured before reading LineCount or GetLineWidth(i) to avoid unnecessary calculations.
+				if (Layout.Width > 0)
 				{
 					int maxWidth = (int)Math.Ceiling(GetMaxLineWidth(Layout)) + CompoundPaddingLeft + CompoundPaddingRight;
 					widthMeasureSpec = MeasureSpec.MakeMeasureSpec(maxWidth, MeasureSpecMode.AtMost);
