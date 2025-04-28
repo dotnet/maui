@@ -36,7 +36,7 @@ public partial class Issue28798 : ContentPage
 
         var webView = new WebView
         {
-            Source = "https://google.com",
+            Source = "https://example.com/",
             BackgroundColor = Colors.Transparent,
             HeightRequest = 300,
             WidthRequest = 300
