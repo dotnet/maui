@@ -31,7 +31,7 @@
                     RowDefinitions="*,Auto">
                 <Label Grid.ColumnSpan="4"
                        Grid.Row="1"
-                       AutomationId="ItemLabel"
+                       AutomationId="{Binding .}"
                        Text="{Binding .}"
                        VerticalTextAlignment="Center"
                        HorizontalTextAlignment="Center" />
