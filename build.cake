@@ -30,6 +30,29 @@ PowerShell:
 #tool "nuget:?package=nuget.commandline&version=6.6.1"
 
 //////////////////////////////////////////////////////////////////////
+// TASKS
+//////////////////////////////////////////////////////////////////////
+
+Task("GenerateCgManifest")
+    .Description("Generates the cgmanifest.json file with versions from Versions.props")
+    .Does(() => 
+{
+    Information("Generating cgmanifest.json from Versions.props");
+    if (IsRunningOnWindows())
+    {
+        StartProcess("powershell", new ProcessSettings {
+            Arguments = "-NonInteractive -ExecutionPolicy Bypass -File ./eng/scripts/update-cgmanifest.ps1"
+        });
+    }
+    else
+    {
+        StartProcess("bash", new ProcessSettings {
+            Arguments = "./eng/scripts/update-cgmanifest.sh"
+        });
+    }
+});
+
+//////////////////////////////////////////////////////////////////////
 // ARGUMENTS
 //////////////////////////////////////////////////////////////////////
 

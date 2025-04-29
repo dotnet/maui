@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!--
+    This file contains targets for generating and updating the cgmanifest.json file with versions from Versions.props.
+    Include this file in your project to ensure component governance manifests are kept up to date.
+    
+    Usage:
+    - For CI: dotnet build -p:GenerateCgManifest=true
+    - Manual: dotnet build -t:GenerateCgManifest
+  -->
+  
+  <PropertyGroup>
+    <CgManifestPath>$(MSBuildThisFileDirectory)..\..\src\Templates\src\cgmanifest.json</CgManifestPath>
+    <!-- Control whether to update cgmanifest.json before build -->
+    <UpdateCgManifestBeforeBuild Condition="'$(UpdateCgManifestBeforeBuild)' == ''">false</UpdateCgManifestBeforeBuild>
+    <!-- Detect if we're in CI build -->
+    <IsInCIBuild Condition="'$(TF_BUILD)' == 'true' OR '$(GITHUB_ACTIONS)' == 'true'">true</IsInCIBuild>
+    <IsInCIBuild Condition="'$(IsInCIBuild)' == ''">false</IsInCIBuild>
+    <!-- Global switch to control whether to generate cgmanifest.json -->
+    <GenerateCgManifest Condition="'$(GenerateCgManifest)' == ''">false</GenerateCgManifest>
+  </PropertyGroup>
+  
+  <!-- Update cgmanifest.json before build if explicitly requested or in CI with GenerateCgManifest=true -->
+  <Target Name="UpdateCgManifest" Condition="'$(UpdateCgManifestBeforeBuild)' == 'true' OR ('$(IsInCIBuild)' == 'true' AND '$(GenerateCgManifest)' == 'true')" BeforeTargets="BeforeBuild">
+    <Message Text="Updating cgmanifest.json from Versions.props" Importance="high" />
+    <Exec Command="pwsh -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)scripts\update-cgmanifest.ps1&quot;" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <Exec Command="bash &quot;$(MSBuildThisFileDirectory)scripts/update-cgmanifest.sh&quot;" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
+  </Target>
+  
+  <!-- Add a custom target to update cgmanifest.json on demand -->
+  <Target Name="GenerateCgManifest">
+    <Message Text="Generating cgmanifest.json from Versions.props" Importance="high" />
+    <Exec Command="pwsh -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)scripts\update-cgmanifest.ps1&quot;" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+    <Exec Command="bash &quot;$(MSBuildThisFileDirectory)scripts/update-cgmanifest.sh&quot;" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
+  </Target>
+</Project>
