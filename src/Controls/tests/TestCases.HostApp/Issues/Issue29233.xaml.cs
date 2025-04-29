@@ -13,7 +13,7 @@ public partial class Issue29233 : ContentPage
 	private  void WebView_Navigated(object sender, WebNavigatedEventArgs e)
 	{
 		label.IsVisible = true;
-		label.Text= "Naviaged Failed";
+		label.Text= "Failed";
 	}
 
 	protected override async void OnAppearing()
