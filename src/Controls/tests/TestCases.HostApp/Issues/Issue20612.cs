@@ -54,9 +54,21 @@ public class Issue20612page2 : ContentPage
         };
         goBackButton.Clicked += GoBack;
 
-        var grid = new Grid();
+        var grid = new Grid
+        {
+            RowDefinitions =
+    {
+        new RowDefinition { Height = new GridLength(1, GridUnitType.Star) },  // Row 0: for map
+        new RowDefinition { Height = GridLength.Auto }                         // Row 1: for button
+    }
+        };
+
         grid.Children.Add(_map);
+        Grid.SetRow(_map, 0);
+
         grid.Children.Add(goBackButton);
+        Grid.SetRow(goBackButton, 1);
+
 
         Content = grid;
 
