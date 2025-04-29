@@ -275,16 +275,17 @@ namespace Microsoft.Maui.Controls
 			if (((LockableObservableListWrapper)Items).IsLocked)
 				return;
 
+			int index = SelectedIndex;
 			if (SelectedItem is not null && Items is not null)
 			{
 				int newIndex = Items.IndexOf(SelectedItem);
 				if (newIndex >= 0)
 				{
-					SelectedIndex = newIndex;
+					index = newIndex;
 				}
 			}
 
-			ClampSelectedIndex();
+			ClampSelectedIndex(index);
 			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
 
@@ -379,8 +380,14 @@ namespace Microsoft.Maui.Controls
 			int index = insertIndex;
 			foreach (object newItem in e.NewItems)
 				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
-			if (insertIndex <= SelectedIndex)
-				UpdateSelectedItem(SelectedIndex);
+
+			if (SelectedItem is not null && ItemsSource is not null)
+			{
+				int newIndex = ItemsSource.IndexOf(SelectedItem);
+				index = newIndex >= 0 ? newIndex : SelectedIndex;
+			}
+			if (insertIndex <= index)
+				UpdateSelectedItem(index);
 		}
 
 		void RemoveItems(NotifyCollectionChangedEventArgs e)
@@ -408,14 +415,11 @@ namespace Microsoft.Maui.Controls
 			if (SelectedItem is not null && ItemsSource is not null)
 			{
 				int newIndex = ItemsSource.IndexOf(SelectedItem);
-				if (newIndex >= 0)
-				{
-					SelectedIndex = newIndex;
-				}
+				index = newIndex >= 0 ? newIndex : SelectedIndex;
 			}
-			if (removeStart <= SelectedIndex)
+			if (removeStart <= index)
 			{
-				ClampSelectedIndex();
+				ClampSelectedIndex(index);
 			}
 		}
 
@@ -428,7 +432,7 @@ namespace Microsoft.Maui.Controls
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
 			Handler?.UpdateValue(nameof(IPicker.Items));
 
-			ClampSelectedIndex();
+			ClampSelectedIndex(SelectedIndex);
 		}
 
 		static void OnSelectedIndexChanged(object bindable, object oldValue, object newValue)
@@ -444,10 +448,10 @@ namespace Microsoft.Maui.Controls
 			picker.UpdateSelectedIndex(newValue);
 		}
 
-		void ClampSelectedIndex()
+		void ClampSelectedIndex(int selectedIndex)
 		{
-			var oldIndex = SelectedIndex;
-			var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
+			var oldIndex = selectedIndex;
+			var newIndex = selectedIndex.Clamp(-1, Items.Count - 1);
 			//FIXME use the specificity of the caller
 			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
 			// If the index has not changed, still need to change the selected item
