@@ -37,6 +37,8 @@ namespace Microsoft.Maui.Controls
 
 		IFlyoutPageController FlyoutPageController => this;
 
+		Window _parentWindow;
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='Detail']/Docs/*" />
 		public Page Detail
 		{
@@ -326,11 +328,17 @@ namespace Microsoft.Maui.Controls
 			if (Window is null)
 			{
 				DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+				if (_parentWindow != null)
+				{
+					_parentWindow.SizeChanged -= OnWindowOnSizeChanged;
+					_parentWindow = null;
+				}
 			}
 			else
 			{
 				DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
-				Window.SizeChanged += OnWindowOnSizeChanged;
+				_parentWindow = Window;
+				_parentWindow.SizeChanged += OnWindowOnSizeChanged;
 			}
 		}
 
