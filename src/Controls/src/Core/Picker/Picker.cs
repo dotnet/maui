@@ -275,6 +275,15 @@ namespace Microsoft.Maui.Controls
 			if (((LockableObservableListWrapper)Items).IsLocked)
 				return;
 
+			if (SelectedItem is not null && Items is not null)
+			{
+				int newIndex = Items.IndexOf(SelectedItem);
+				if (newIndex >= 0)
+				{
+					SelectedIndex = newIndex;
+				}
+			}
+
 			ClampSelectedIndex();
 			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
@@ -395,6 +404,15 @@ namespace Microsoft.Maui.Controls
 
 			foreach (object _ in e.OldItems)
 				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+
+			if (SelectedItem is not null && ItemsSource is not null)
+			{
+				int newIndex = ItemsSource.IndexOf(SelectedItem);
+				if (newIndex >= 0)
+				{
+					SelectedIndex = newIndex;
+				}
+			}
 			if (removeStart <= SelectedIndex)
 			{
 				ClampSelectedIndex();
