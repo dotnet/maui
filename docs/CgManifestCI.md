@@ -1,19 +1,20 @@
-# CG Manifest for CI Build
+# CG Manifest for CI Buil- name: Pack with CG Manifest
+  run: dotnet pack src/Templates/src/Microsoft.Maui.Templates.csproj -p:GenerateCgManifest=true -o $GITHUB_WORKSPACE/artifacts/nuget
+```
 
-This document provides instructions for setting up Component Governance manifest generation in your CI pipeline.
+## Local Testing of CI Build
+
+To test the CI build process locally, run this command:
+
+```bash
+# Pack with cgmanifest.json included in the package
+dotnet pack src/Templates/src/Microsoft.Maui.Templates.csproj -p:GenerateCgManifest=true -o ./artifacts/packagesprovides instructions for including the Component Governance manifest in your CI pipeline packages.
 
 ## Azure DevOps Pipeline
 
-Add the following steps to your YAML pipeline to generate the cgmanifest.json file before packaging:
+Add the following step to your YAML pipeline to include the cgmanifest.json file in the package:
 
 ```yaml
-- task: DotNetCoreCLI@2
-  displayName: 'Generate CG Manifest'
-  inputs:
-    command: 'build'
-    projects: 'src/Templates/src/Microsoft.Maui.Templates.csproj'
-    arguments: '-t:GenerateCgManifest'
-
 - task: DotNetCoreCLI@2
   displayName: 'Pack with CG Manifest'
   inputs:
@@ -23,13 +24,15 @@ Add the following steps to your YAML pipeline to generate the cgmanifest.json fi
     arguments: '-p:GenerateCgManifest=true'
 ```
 
+Note: The cgmanifest.json file is always generated during build, so you don't need a separate step to generate it.
+
 ## GitHub Actions
 
-For GitHub Actions workflows, add these steps:
+For GitHub Actions workflows, add this step:
 
 ```yaml
-- name: Generate CG Manifest
-  run: dotnet build src/Templates/src/Microsoft.Maui.Templates.csproj -t:GenerateCgManifest
+- name: Pack with CG Manifest
+  run: dotnet pack src/Templates/src/Microsoft.Maui.Templates.csproj -p:GenerateCgManifest=true -o $GITHUB_WORKSPACE/artifacts/nuget
   
 - name: Pack with CG Manifest
   run: dotnet pack src/Templates/src/Microsoft.Maui.Templates.csproj -p:GenerateCgManifest=true -o $GITHUB_WORKSPACE/artifacts/nuget

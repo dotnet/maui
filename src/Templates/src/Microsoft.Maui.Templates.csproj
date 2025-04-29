@@ -108,10 +108,10 @@
 
   <!-- CgManifest generation configuration -->
   <PropertyGroup>
-    <!-- Set to 'true' only in CI, defaults to false -->
-    <GenerateCgManifest Condition="'$(GenerateCgManifest)' == ''">false</GenerateCgManifest>
-    <!-- Don't automatically generate during normal build/pack -->
+    <!-- Always generate the file, but only include in package when explicitly requested -->
     <UpdateCgManifestBeforeBuild>true</UpdateCgManifestBeforeBuild>
+    <!-- Controls whether to include cgmanifest.json in the package (default: false) -->
+    <GenerateCgManifest Condition="'$(GenerateCgManifest)' == ''">false</GenerateCgManifest>
   </PropertyGroup>
   
   <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">

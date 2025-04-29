@@ -36,33 +36,42 @@ pwsh -ExecutionPolicy Bypass -File .\eng\scripts\update-cgmanifest.ps1
 
 ### MSBuild Integration
 
-The `CgManifest.targets` file provides MSBuild integration. You can include it in your project and run:
+The `CgManifest.targets` file provides MSBuild integration.
+
+#### Default Behavior
+
+By default, the cgmanifest.json file is **always generated** during build, but it is **not included** in the NuGet package. This ensures the manifest is always up-to-date without affecting package contents.
+
+#### Manual Generation
+
+You can explicitly generate the manifest file:
 
 ```bash
 dotnet build -t:GenerateCgManifest
 ```
 
-#### For CI Only
+#### For CI Builds
 
-For CI builds, you can explicitly enable the cgmanifest.json generation:
+For CI builds where you want to include the cgmanifest.json in the package:
 
 ```bash
 dotnet build -p:GenerateCgManifest=true
 ```
+OR
+```bash
+dotnet pack -p:GenerateCgManifest=true
+```
 
 This will:
-1. Generate the cgmanifest.json file
+1. Generate the cgmanifest.json file (happens by default)
 2. Include it in the package (for Template projects)
 
-#### For Development Builds
+#### Disabling Generation
 
-By default, the cgmanifest.json generation is disabled for normal development builds. 
-This ensures your local builds are faster and don't unnecessarily modify the cgmanifest.json file.
-
-If needed, you can manually enable it for a specific build:
+If needed, you can temporarily disable the automatic generation:
 
 ```bash
-dotnet build -p:UpdateCgManifestBeforeBuild=true
+dotnet build -p:UpdateCgManifestBeforeBuild=false
 ```
 
 ## Customizing Package Mappings
