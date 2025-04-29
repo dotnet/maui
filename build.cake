@@ -29,51 +29,6 @@ PowerShell:
 //////////////////////////////////////////////////////////////////////
 #tool "nuget:?package=nuget.commandline&version=6.6.1"
 
-//////////////////////////////////////////////////////////////////////
-// TASKS
-//////////////////////////////////////////////////////////////////////
-
-Task("GenerateCgManifest")
-    .Description("Generates the cgmanifest.json file with versions from Versions.props")
-    .Does(() => 
-{
-    Information("Generating cgmanifest.json from Versions.props");
-    
-    // Use pwsh on all platforms
-    var pwshExecutable = "pwsh";
-    
-    // Check if pwsh is available
-    try {
-        if (IsRunningOnWindows()) {
-            var exitCode = StartProcess("where", new ProcessSettings {
-                Arguments = "pwsh",
-                RedirectStandardOutput = true, 
-                RedirectStandardError = true
-            });
-            if (exitCode != 0) {
-                Information("pwsh not found, falling back to powershell");
-                pwshExecutable = "powershell";
-            }
-        } else {
-            var exitCode = StartProcess("which", new ProcessSettings {
-                Arguments = "pwsh",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            });
-            if (exitCode != 0) {
-                throw new Exception("PowerShell Core (pwsh) is not installed. Please install it to continue.");
-            }
-        }
-    } catch (Exception ex) when (!IsRunningOnWindows()) {
-        Error("Error checking for pwsh: " + ex.Message);
-        throw new Exception("PowerShell Core (pwsh) is required on non-Windows platforms. Please install it and try again.");
-    }
-    
-    // Execute the PowerShell script
-    StartProcess(pwshExecutable, new ProcessSettings {
-        Arguments = "-NonInteractive -ExecutionPolicy Bypass -File ./eng/scripts/update-cgmanifest.ps1"
-    });
-});
 
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS
