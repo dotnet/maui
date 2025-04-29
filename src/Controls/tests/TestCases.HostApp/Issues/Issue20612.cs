@@ -3,7 +3,7 @@
 namespace Maui.Controls.Sample.Issues;
 
 
-[Issue(IssueTracker.Github, 20612, "Disconnecting Map Handler causes Map to crash on second page entrance and moving to region.", PlatformAffected.Android)]
+[Issue(IssueTracker.Github, 20612, "Disconnecting Map Handler causes Map to crash on second page entrance and moving to region.", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue20612 : TestNavigationPage
 {
     protected override void Init()

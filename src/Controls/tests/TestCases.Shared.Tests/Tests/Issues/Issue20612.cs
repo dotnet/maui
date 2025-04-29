@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			// second Navigation to Map page
 			App.WaitForElement("MapButton");
 			App.Tap("MapButton");
-			//App.WaitForElement("GoBackButton");
+
 		}
 	}
 }
