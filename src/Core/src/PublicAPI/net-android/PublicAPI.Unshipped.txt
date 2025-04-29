@@ -101,6 +101,7 @@ static Microsoft.Maui.Handlers.HybridWebViewHandler.MapEvaluateJavaScriptAsync(M
 static Microsoft.Maui.Handlers.HybridWebViewHandler.MapInvokeJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
 static Microsoft.Maui.Handlers.HybridWebViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
 static Microsoft.Maui.Handlers.HybridWebViewHandler.MapSendRawMessage(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
+static Microsoft.Maui.Handlers.ImageHandler.MapInputTransparent(Microsoft.Maui.Handlers.IImageHandler! handler, Microsoft.Maui.IImage! image) -> void
 static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureEnvironmentVariables(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 static Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions.AddHybridWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
@@ -140,3 +141,5 @@ Microsoft.Maui.ISearchBar.ReturnType.get -> Microsoft.Maui.ReturnType
 *REMOVED*static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry, Android.Graphics.Drawables.Drawable? clearButtonDrawable) -> void
 *REMOVED*static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry, System.Func<Android.Graphics.Drawables.Drawable?>? getClearButtonDrawable) -> void
 override Microsoft.Maui.Platform.MauiTextView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
+*REMOVED*Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan
+Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?

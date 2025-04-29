@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(ImageView platformView)
 		{
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
+			platformView.ImportantForAccessibility = ImportantForAccessibility.No;
 		}
 
 		protected override void DisconnectHandler(ImageView platformView)
@@ -71,6 +72,14 @@ namespace Microsoft.Maui.Handlers
 			if (handler.IsConnected())
 			{
 				handler.UpdateValue(nameof(IImage.IsAnimationPlaying));
+			}
+		}
+
+		public static void MapInputTransparent(IImageHandler handler,IImage image)
+		{
+			if(handler.IsConnected())
+			{
+				handler.PlatformView.Clickable = !image.InputTransparent;
 			}
 		}
 

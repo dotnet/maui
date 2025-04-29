@@ -4,7 +4,6 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 
-#if TEST_FAILS_ON_CATALYST
 public class Issue15695 : _IssuesUITest
 {
 	public override string Issue => "Support for Switch OFF State color";
@@ -52,4 +51,3 @@ public class Issue15695 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
-#endif

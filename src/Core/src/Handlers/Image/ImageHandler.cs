@@ -28,6 +28,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IImage.Aspect)] = MapAspect,
 			[nameof(IImage.IsAnimationPlaying)] = MapIsAnimationPlaying,
 			[nameof(IImage.Source)] = MapSource,
+#if __ANDROID__
+			[nameof(IImage.InputTransparent)] = MapInputTransparent
+#endif
 		};
 
 		public static CommandMapper<IImage, IImageHandler> CommandMapper = new(ViewHandler.ViewCommandMapper)
