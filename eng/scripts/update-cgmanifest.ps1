@@ -41,7 +41,7 @@ $packageVersionMappings = @{
     'Microsoft.NET.Test.Sdk' = 'MicrosoftNETTestSdkPackageVersion'
     'xunit' = 'XunitPackageVersion'
     'xunit.runner.visualstudio' = 'XunitRunnerVisualStudioPackageVersion'
-    'xunit.analyzer' = 'XUnitAnalyzersPackageVersion'  # named differently
+    'xunit.analyzer' = 'XUnitAnalyzersPackageVersion'
     'coverlet.collector' = 'CoverletCollectorPackageVersion'
     
     # Microsoft Extensions packages
@@ -58,140 +58,88 @@ $packageVersionMappings = @{
     'Syncfusion.Maui.Toolkit' = 'SyncfusionMauiToolkitPackageVersion'
     'Microsoft.Data.Sqlite.Core' = 'MicrosoftDataSqliteCorePackageVersion'
     'SQLitePCLRaw.bundle_green' = 'SQLitePCLRawBundleGreenPackageVersion'
-    'CommunityToolkit.Maui' = 'CommunityToolkitMauiPackageVersion'
     'CommunityToolkit.Mvvm' = 'CommunityToolkitMvvmPackageVersion'
-
-    # Add mappings for any other packages as needed
 }
 
-# Create a function to find or add a package entry
-function Set-PackageVersion {
+# Initialize new registrations list
+$newRegistrations = New-Object System.Collections.ArrayList
+
+# Function to create a new package entry
+function New-PackageEntry {
     param(
         [string]$PackageName,
-        [string]$PackageVersion,
-        [switch]$AllowDuplicate
+        [string]$PackageVersion
     )
     
-    # Check if the package already exists in the manifest
-    $existingEntry = $cgManifest.registrations | Where-Object { 
-        $_.component.type -eq 'nuget' -and 
-        $_.component.nuget.name -eq $PackageName -and 
-        (!$AllowDuplicate -or $_.component.nuget.version -eq $PackageVersion)
-    }
-    
-    if ($existingEntry -and !$AllowDuplicate) {
-        # Update the existing entry
-        $existingEntry.component.nuget.version = $PackageVersion
-        Write-Host "Updated $PackageName to version $PackageVersion"
-    }
-    else {
-        # Create a new entry
-        $newEntry = @{
-            component = @{
-                type = 'nuget'
-                nuget = @{
-                    name = $PackageName
-                    version = $PackageVersion
-                }
-            }
-        }
-        
-        $cgManifest.registrations += $newEntry
-        Write-Host "Added $PackageName with version $PackageVersion"
-    }
-}
-
-# Handle additional explicit entries that need to be added
-# Note: CommunityToolkit.Maui is handled both here with its previous version and in the main mapping with current version
-$additionalEntries = @(
-    @{ Name = 'CommunityToolkit.Maui'; Version = 'CommunityToolkitMauiPreviousPackageVersion' }
-)
-
-# Add all the additional entries directly
-foreach ($entry in $additionalEntries) {
-    # Find the version in the Versions.props file for the entry
-    $versionPropertyName = $entry.Version
-    $version = $null
-
-    # Try to find the property in PropertyGroups
-    foreach ($propertyGroup in $versionsProps.Project.PropertyGroup) {
-        if ($null -ne $propertyGroup.$versionPropertyName) {
-            $version = $propertyGroup.$versionPropertyName.ToString()
-            if (-not [string]::IsNullOrEmpty($version)) {
-                break
+    return @{
+        component = @{
+            type = 'nuget'
+            nuget = @{
+                name = $PackageName
+                version = $PackageVersion
             }
         }
     }
+}
 
-    if (-not [string]::IsNullOrWhiteSpace($version)) {
-        # Ensure version doesn't have duplicated values
-        $cleanVersion = ($version -split ' ')[0]
-        Set-PackageVersion -PackageName $entry.Name -PackageVersion $cleanVersion
-    }
-    else {
-        Write-Warning "Could not find property $versionPropertyName in Versions.props for $($entry.Name)"
+# Handle CommunityToolkit.Maui versions first
+Write-Host "Setting up CommunityToolkit.Maui entries..."
+
+# Get current version
+$currentVersion = $null
+foreach ($propertyGroup in $versionsProps.Project.PropertyGroup) {
+    if ($null -ne $propertyGroup.CommunityToolkitMauiPackageVersion) {
+        $currentVersion = $propertyGroup.CommunityToolkitMauiPackageVersion.ToString().Trim()
+        if (-not [string]::IsNullOrEmpty($currentVersion)) {
+            Write-Host "Found current CommunityToolkit.Maui version: $currentVersion"
+            [void]$newRegistrations.Add((New-PackageEntry -PackageName 'CommunityToolkit.Maui' -PackageVersion $currentVersion))
+            break
+        }
     }
 }
 
-# Update the manifest with versions from Versions.props
+# Get previous version
+$previousVersion = $null
+foreach ($propertyGroup in $versionsProps.Project.PropertyGroup) {
+    if ($null -ne $propertyGroup.CommunityToolkitMauiPreviousPackageVersion) {
+        $previousVersion = $propertyGroup.CommunityToolkitMauiPreviousPackageVersion.ToString().Trim()
+        if (-not [string]::IsNullOrEmpty($previousVersion)) {
+            Write-Host "Found previous CommunityToolkit.Maui version: $previousVersion"
+            [void]$newRegistrations.Add((New-PackageEntry -PackageName 'CommunityToolkit.Maui' -PackageVersion $previousVersion))
+            break
+        }
+    }
+}
+
+# Process other packages
 foreach ($package in $packageVersionMappings.GetEnumerator()) {
     $packageName = $package.Key
     $versionPropertyName = $package.Value
-    
-    # For packages that have both current and previous versions (like CommunityToolkit.Maui),
-# we want both entries, so we don't skip them
-# We only skip exact duplicates
-    if ($packageName -ne 'CommunityToolkit.Maui' && 
-        ($additionalEntries | Where-Object { $_.Name -eq $packageName })) {
-        continue
-    }
-    
-    # Find the version in the Versions.props file
     $version = $null
 
-    # Try to find the property in the first level of PropertyGroups
+    # Look for the version in PropertyGroups
     foreach ($propertyGroup in $versionsProps.Project.PropertyGroup) {
-        $propNode = $propertyGroup.SelectSingleNode($versionPropertyName)
-        if ($null -ne $propNode) {
-            # Found it directly
-            $version = $propNode.'#text'
+        if ($propertyGroup.$versionPropertyName) {
+            $version = $propertyGroup.$versionPropertyName.ToString().Trim()
             if (-not [string]::IsNullOrEmpty($version)) {
+                Write-Host "Found $packageName version: $version"
+                [void]$newRegistrations.Add((New-PackageEntry -PackageName $packageName -PackageVersion $version))
                 break
             }
         }
     }
 
-    # If not found, try with the standard method
     if ([string]::IsNullOrEmpty($version)) {
-        # This approach avoids the issue with duplicate versions
-        foreach ($propertyGroup in $versionsProps.Project.PropertyGroup) {
-            if ($null -ne $propertyGroup.$versionPropertyName) {
-                $version = $propertyGroup.$versionPropertyName.ToString()
-                if (-not [string]::IsNullOrEmpty($version)) {
-                    break
-                }
-            }
-        }
-    }
-
-    # Another attempt - use XPath to search the entire document
-    if ([string]::IsNullOrEmpty($version)) {
-        $node = $versionsProps.SelectSingleNode("//Project/PropertyGroup/$versionPropertyName")
-        if ($null -ne $node) {
-            $version = $node.InnerText
-        }
-    }
-    
-    if (-not [string]::IsNullOrWhiteSpace($version)) {
-        # Ensure version doesn't have duplicated values (clean it up if necessary)
-        $cleanVersion = ($version -split ' ')[0]
-        Set-PackageVersion -PackageName $packageName -PackageVersion $cleanVersion
-    }
-    else {
-        Write-Warning "Could not find property $versionPropertyName in Versions.props or it has no value"
+        Write-Warning "Could not find version for $packageName (property: $versionPropertyName)"
     }
 }
+
+# Update the manifest
+$cgManifest.registrations = $newRegistrations
 
 # Save the updated manifest
 $cgManifest | ConvertTo-Json -Depth 10 | Out-File $cgManifestPath -Encoding utf8
 Write-Host "Updated cgmanifest.json saved to: $cgManifestPath"
+
+# Print summary
+Write-Host "Successfully added $($newRegistrations.Count) package registrations to cgmanifest.json"
