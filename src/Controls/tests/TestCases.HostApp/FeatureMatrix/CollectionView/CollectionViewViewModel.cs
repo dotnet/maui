@@ -71,7 +71,6 @@ public class CollectionViewViewModel : INotifyPropertyChanged
     private int _addIndex = 0;
 
     public ICommand AddItemCommand { get; }
-    public ICommand RemoveItemCommand { get; }
 
     public CollectionViewViewModel()
     {
