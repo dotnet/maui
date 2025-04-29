@@ -169,7 +169,6 @@ namespace Microsoft.Maui.DeviceTests
 				// maximize window
 				presenter.Maximize();
 				var appWindow = handler.PlatformView.GetWindow();
-				var position = appWindow.X;
 				await AssertEventually(() => appWindow.X == 0);
 				await AssertEventually(() => appWindow.Y == 0);
 			});
