@@ -168,10 +168,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				// maximize window
 				presenter.Maximize();
-				var appwindow= handler.PlatformView.GetAppWindow();
-				var position= appwindow.Position;
-				await AssertEventually(() =>position.X == 0);
-				await AssertEventually(() => position.Y == 0);
+				var appWindow = handler.PlatformView.GetWindow();
+				var position = appWindow.X;
+				await AssertEventually(() => appWindow.X == 0);
+				await AssertEventually(() => appWindow.Y == 0);
 			});
 		}
 
