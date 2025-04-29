@@ -13,7 +13,6 @@ public class Issue7150 : TestContentPage
 	}
 	protected override void Init()
 	{
-		var layout = new StackLayout();
 		var filterButton = new Button
 		{
 			Margin = new Thickness(20),
@@ -54,9 +53,18 @@ public class Issue7150 : TestContentPage
 		};
 
 		carouselView.SetBinding(ItemsView.ItemsSourceProperty, "Items");
-		layout.Children.Add(filterButton);
-		layout.Children.Add(carouselView);
-		Content = layout;
+		var grid = new Grid
+		{
+			RowDefinitions = new RowDefinitionCollection
+			{
+				new RowDefinition { Height = GridLength.Auto },
+				new RowDefinition { Height = GridLength.Star }
+			}
+		};
+
+		grid.Add(filterButton, 0, 0);
+		grid.Add(carouselView, 0, 1);
+		Content = grid;
 	}
 
 	internal DataTemplate GetCarouselTemplate()
