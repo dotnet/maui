@@ -1,3 +1,5 @@
+#if TEST_FAILS_ON_WINDOWS
+//No Map control support in windows https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/map?view=net-maui-9.0
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -24,3 +26,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
