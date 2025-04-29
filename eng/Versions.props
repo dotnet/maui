@@ -152,6 +152,13 @@
     <XunitAbstractionsPackageVersion>2.0.3</XunitAbstractionsPackageVersion>
     <NSubstitutePackageVersion>5.1.0</NSubstitutePackageVersion>
     <CoverletCollectorPackageVersion>6.0.0</CoverletCollectorPackageVersion>
+    <!-- Additional packages for cgmanifest.json -->
+    <SyncfusionMauiToolkitPackageVersion>1.0.4</SyncfusionMauiToolkitPackageVersion>
+    <MicrosoftDataSqliteCorePackageVersion>8.0.8</MicrosoftDataSqliteCorePackageVersion>
+    <SQLitePCLRawBundleGreenPackageVersion>2.1.10</SQLitePCLRawBundleGreenPackageVersion>
+    <CommunityToolkitMauiPackageVersion>11.1.1</CommunityToolkitMauiPackageVersion>
+    <CommunityToolkitMauiPreviousPackageVersion>9.1.0</CommunityToolkitMauiPreviousPackageVersion>
+    <CommunityToolkitMvvmPackageVersion>8.3.2</CommunityToolkitMvvmPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Appium -->

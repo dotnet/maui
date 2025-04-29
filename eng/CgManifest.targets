@@ -23,14 +23,12 @@
   <!-- Always update cgmanifest.json before build -->
   <Target Name="UpdateCgManifest" BeforeTargets="BeforeBuild" Condition="'$(UpdateCgManifestBeforeBuild)' == 'true'">
     <Message Text="Updating cgmanifest.json from Versions.props" Importance="high" />
-    <Exec Command="pwsh -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)scripts\update-cgmanifest.ps1&quot;" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
-    <Exec Command="bash &quot;$(MSBuildThisFileDirectory)scripts/update-cgmanifest.sh&quot;" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
+    <Exec Command="pwsh -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)scripts\update-cgmanifest.ps1&quot;" />
   </Target>
   
   <!-- Add a custom target to update cgmanifest.json on demand -->
   <Target Name="GenerateCgManifest">
     <Message Text="Generating cgmanifest.json from Versions.props" Importance="high" />
-    <Exec Command="pwsh -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)scripts\update-cgmanifest.ps1&quot;" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
-    <Exec Command="bash &quot;$(MSBuildThisFileDirectory)scripts/update-cgmanifest.sh&quot;" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
+    <Exec Command="pwsh -NonInteractive -ExecutionPolicy Bypass -File &quot;$(MSBuildThisFileDirectory)scripts\update-cgmanifest.ps1&quot;" />
   </Target>
 </Project>

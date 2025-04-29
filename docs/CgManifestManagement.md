@@ -24,14 +24,11 @@ Run the `GenerateCgManifest` task:
 
 ### Using Scripts Directly
 
-You can also run the scripts directly:
+You can also run the PowerShell script directly (works on both Windows and macOS/Linux):
 
 ```bash
-# On macOS/Linux
-./eng/scripts/update-cgmanifest.sh
-
-# On Windows
-pwsh -ExecutionPolicy Bypass -File .\eng\scripts\update-cgmanifest.ps1
+# On all platforms (Windows/macOS/Linux)
+pwsh -ExecutionPolicy Bypass -File ./eng/scripts/update-cgmanifest.ps1
 ```
 
 ### MSBuild Integration

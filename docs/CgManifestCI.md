@@ -1,14 +1,6 @@
-# CG Manifest for CI Buil- name: Pack with CG Manifest
-  run: dotnet pack src/Templates/src/Microsoft.Maui.Templates.csproj -p:GenerateCgManifest=true -o $GITHUB_WORKSPACE/artifacts/nuget
-```
+# CG Manifest for CI Build
 
-## Local Testing of CI Build
-
-To test the CI build process locally, run this command:
-
-```bash
-# Pack with cgmanifest.json included in the package
-dotnet pack src/Templates/src/Microsoft.Maui.Templates.csproj -p:GenerateCgManifest=true -o ./artifacts/packagesprovides instructions for including the Component Governance manifest in your CI pipeline packages.
+This document provides instructions for including the Component Governance manifest in your CI pipeline packages.
 
 ## Azure DevOps Pipeline
 
@@ -33,20 +25,14 @@ For GitHub Actions workflows, add this step:
 ```yaml
 - name: Pack with CG Manifest
   run: dotnet pack src/Templates/src/Microsoft.Maui.Templates.csproj -p:GenerateCgManifest=true -o $GITHUB_WORKSPACE/artifacts/nuget
-  
-- name: Pack with CG Manifest
-  run: dotnet pack src/Templates/src/Microsoft.Maui.Templates.csproj -p:GenerateCgManifest=true -o $GITHUB_WORKSPACE/artifacts/nuget
 ```
 
 ## Local Testing of CI Build
 
-To test the CI build process locally, run these commands:
+To test the CI build process locally, run this command:
 
 ```bash
-# Generate the cgmanifest.json file
-dotnet build src/Templates/src/Microsoft.Maui.Templates.csproj -t:GenerateCgManifest
-
-# Pack with cgmanifest.json included
+# Pack with cgmanifest.json included in the package
 dotnet pack src/Templates/src/Microsoft.Maui.Templates.csproj -p:GenerateCgManifest=true -o ./artifacts/packages
 ```
 
