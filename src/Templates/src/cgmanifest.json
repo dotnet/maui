@@ -1,0 +1,185 @@
+{
+    "$schema": "https://json.schemastore.org/component-detection-manifest.json",
+    "version": 1,
+    "registrations": [
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "Syncfusion.Maui.Toolkit",
+                    "version": "1.0.4"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "Microsoft.Data.Sqlite.Core",
+                    "version": "8.0.8"
+                }
+            }
+        },     {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "SQLitePCLRaw.bundle_green",
+                    "version": "2.1.10"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "CommunityToolkit.Maui",
+                    "version": "11.1.1"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "CommunityToolkit.Maui",
+                    "version": "9.1.0"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "CommunityToolkit.Mvvm",
+                    "version": "8.3.2"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "Microsoft.Extensions.Logging.Debug",
+                    "version": "9.0.4"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "Microsoft.NET.Test.Sdk",
+                    "version": "17.6.0"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "MSTest",
+                    "version": "3.4.3"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "MSTest",
+                    "version": "3.6.1"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "MSTest",
+                    "version": "3.6.4"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "coverlet.collector",
+                    "version": "6.0.0"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "NUnit",
+                    "version": "3.13.3"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "NUnit.Analyzers",
+                    "version": "4.3.0"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "NUnit3TestAdapter",
+                    "version": "4.5.0"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "xunit",
+                    "version": "2.9.0"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "xunit",
+                    "version": "2.9.2"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "xunit.runner.visualstudio",
+                    "version": "2.8.2"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "xunit.analyzer",
+                    "version": "1.15.0"
+                }
+            }
+        },
+        {
+            "component": {
+                "type": "nuget",
+                "nuget": {
+                    "name": "MSBuild.StructuredLogger",
+                    "version": "2.2.158"
+                }
+            }
+        }
+    ]
+}
