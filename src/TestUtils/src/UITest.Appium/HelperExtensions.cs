@@ -2736,55 +2736,34 @@ namespace UITest.Appium
 			}
 		}
 
-		/// <summary>
-		/// Gets the display density for the current device using the appropriate platform-specific method.
-		/// For Android, uses the Appium getDisplayDensity command for accurate results.
-		/// For iOS and Catalyst, uses the deviceScreenInfo command.
-		/// For other platforms, falls back to driver capabilities.
+		/// Enters text into the search handler element for the shell.
+		/// This method is used to enter the search handler element in the app.
+		/// It uses different queries based on the app type (Android, iOS, Catalyst, or Windows).
 		/// </summary>
 		/// <param name="app">The IApp instance representing the application.</param>
-		/// <returns>The display density as a double value (e.g., 1.0 for mdpi, 2.0 for xhdpi/Retina, 3.0 for xxhdpi/Retina HD)</returns>
-		public static double GetDisplayDensity(this IApp app)
+		/// <returns>The search handler element for the shell.</returns>
+		public static void EnterTextInShellSearchHandler(this IApp app, string text)
 		{
-			if (app is not AppiumApp appiumApp)
+			if (app is AppiumWindowsApp)
 			{
-				throw new InvalidOperationException($"GetDisplayDensity is only supported on AppiumApp");
+				app.WaitForElement("TextBox");
+				app.EnterText("TextBox", text);
 			}
-
-			// Use platform-specific methods for accurate results
-			return app switch
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumAndroidApp)
 			{
-				AppiumAndroidApp androidApp => GetAndroidDisplayDensity(androidApp),
-				AppiumIOSApp iOSApp => GetIOSDisplayDensity(iOSApp),
-				_ => 1.0 // Fallback for other platforms (Catalyst, Windows)
-			};
-		}
-
-		static double GetAndroidDisplayDensity(AppiumAndroidApp androidApp)
-		{
-			// Use the command executor to call the Android-specific action
-			float? response = (androidApp.Driver as AndroidDriver)?.GetDisplayDensity();
-			if (response is not null)
-			{
-				return (double)response.Value / 160f;
-			}
-
-			return 1.0;
-		}
-
-		static double GetIOSDisplayDensity(AppiumIOSApp iOSApp)
-		{
-			var response = (iOSApp.Driver as IOSDriver)?.ExecuteScript("mobile: deviceScreenInfo");
-			if (response is not null && response is IDictionary<string, object> screenInfo)
-			{
-				// Extract the scale factor from the deviceScreenInfo response
-				if (screenInfo.TryGetValue("scale", out var scaleValue))
+				IQuery query;
+				if (app is AppiumAndroidApp)
 				{
-					return Convert.ToDouble(scaleValue);
+					query = AppiumQuery.ByXPath("//android.widget.EditText");
 				}
-			}
+				else
+				{
+					query = AppiumQuery.ByXPath("//XCUIElementTypeSearchField");
+				}
 
-			return 1.0;
+				app.WaitForElement(query);
+				app.EnterText(query, text);
+			}
 		}
 	}
 }
