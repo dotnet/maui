@@ -16,7 +16,6 @@ public class Issue15508 : _IssuesUITest
 	{
 		App.WaitForElement("Button");
 		App.Tap("Button");
-		var scrollLabel = App.WaitForElement("Label");
 		var isTextPresent = App.WaitForTextToBePresentInElement("Label", "Scroll Completed");
 		Assert.That(isTextPresent, Is.True, "The text 'Scroll Completed' was not found in the element.");
 	}
