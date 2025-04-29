@@ -10,7 +10,6 @@ using Microsoft.UI.Xaml;
 using Windows.Graphics;
 using Windows.Graphics.Display;
 using WinRT.Interop;
-using static Microsoft.Maui.ApplicationModel.PlatformMethods;
 
 namespace Microsoft.Maui.Platform
 {
@@ -22,12 +21,12 @@ namespace Microsoft.Maui.Platform
 		 static extern int DwmGetWindowAttribute(
 			IntPtr hwnd,
 			int dwAttribute,
-			out RECT pvAttribute,
+			out PlatformMethods.RECT pvAttribute,
 			int cbAttribute);
 	
 		internal static Rect GetExtendedFrameBounds(this IntPtr hwnd)
 		{
-			if (DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, out RECT rect, Marshal.SizeOf<RECT>()) == 0)
+			if (DwmGetWindowAttribute(hwnd, DWMWA_EXTENDED_FRAME_BOUNDS, out PlatformMethods.RECT rect, Marshal.SizeOf<PlatformMethods.RECT>()) == 0)
 			{
 				return new Rect(rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
 			}
