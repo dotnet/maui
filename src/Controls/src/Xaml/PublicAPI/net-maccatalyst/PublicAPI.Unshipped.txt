@@ -17,3 +17,5 @@ Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers
 *REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.ProvideValue(System.IServiceProvider serviceProvider) -> Microsoft.Maui.Controls.ImageSource
 *REMOVED*Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.get -> double
 *REMOVED*Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.set -> void
+~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.RootObject.get -> object
+~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, Microsoft.Maui.Controls.Internals.INameScope[] scopes, object rootObject) -> void
