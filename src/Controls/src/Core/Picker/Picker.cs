@@ -253,16 +253,7 @@ namespace Microsoft.Maui.Controls
 			if (((LockableObservableListWrapper)Items).IsLocked)
 				return;
 
-			int index = SelectedIndex;
-			if (SelectedItem is not null && Items is not null)
-			{
-				int newIndex = Items.IndexOf(SelectedItem);
-				if (newIndex >= 0)
-				{
-					index = newIndex;
-				}
-			}
-
+			int index = GetSelectedIndex();
 			ClampSelectedIndex(index);
 			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
@@ -322,11 +313,7 @@ namespace Microsoft.Maui.Controls
 			foreach (object newItem in e.NewItems)
 				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
 
-			if (SelectedItem is not null && ItemsSource is not null)
-			{
-				int newIndex = ItemsSource.IndexOf(SelectedItem);
-				index = newIndex >= 0 ? newIndex : SelectedIndex;
-			}
+			index = GetSelectedIndex();
 			if (insertIndex <= index)
 				UpdateSelectedItem(index);
 		}
@@ -353,15 +340,26 @@ namespace Microsoft.Maui.Controls
 			foreach (object _ in e.OldItems)
 				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
 
-			if (SelectedItem is not null && ItemsSource is not null)
-			{
-				int newIndex = ItemsSource.IndexOf(SelectedItem);
-				index = newIndex >= 0 ? newIndex : SelectedIndex;
-			}
+			index = GetSelectedIndex();
 			if (removeStart <= index)
 			{
 				ClampSelectedIndex(index);
 			}
+		}
+
+		int GetSelectedIndex()
+		{
+			int index = SelectedIndex;
+			if (SelectedItem is not null && ItemsSource is not null)
+			{
+				int newIndex = ItemsSource.IndexOf(SelectedItem);
+				if (newIndex >= 0)
+				{
+					index = newIndex;
+				}
+			}
+
+			return index;
 		}
 
 		void ResetItems()
