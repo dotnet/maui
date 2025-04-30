@@ -34,26 +34,29 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			var background = searchBar.Background;
-			if (background is SolidPaint solid)
+
+			switch (background)
 			{
-				if (solid.Color == Colors.Transparent)
-				{
-					uiSearchBar.BackgroundImage = new UIImage();
-					uiSearchBar.BarTintColor = UIColor.Clear;
-				}
-				else
-				{
-					uiSearchBar.BackgroundImage = null;
-					uiSearchBar.BarTintColor = solid.Color.ToPlatform();
-				}
-			}
-			else if (background is GradientPaint gradientPaint)
-			{
-				ViewExtensions.UpdateBackground(uiSearchBar, gradientPaint);
-			}
-			else if (background == null)
-			{
-				uiSearchBar.BarTintColor = UISearchBar.Appearance.BarTintColor;
+				case null:
+					uiSearchBar.BarTintColor = UISearchBar.Appearance.BarTintColor;
+					break;
+
+				case SolidPaint solid:
+					if (solid.Color == Colors.Transparent)
+					{
+						uiSearchBar.BackgroundImage = new UIImage();
+						uiSearchBar.BarTintColor = UIColor.Clear;
+					}
+					else
+					{
+						uiSearchBar.BackgroundImage = null;
+						uiSearchBar.BarTintColor = solid.Color.ToPlatform();
+					}
+					break;
+
+				case GradientPaint gradientPaint:
+					ViewExtensions.UpdateBackground(uiSearchBar, gradientPaint);
+					break;
 			}
 		}
 
