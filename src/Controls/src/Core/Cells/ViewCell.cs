@@ -1,10 +1,12 @@
 #nullable disable
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ViewCell.xml" path="Type[@FullName='Microsoft.Maui.Controls.ViewCell']/Docs/*" />
+	[Obsolete("The controls which use ViewCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
 	[ContentProperty("View")]
 	public class ViewCell : Cell
 	{

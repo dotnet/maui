@@ -1,5 +1,7 @@
-﻿using Android.Content.Res;
+﻿using Android.Content;
+using Android.Content.Res;
 using Android.Text;
+using Android.Views.InputMethods;
 using Android.Widget;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
@@ -118,6 +120,27 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static void UpdateSearchIconColor(this SearchView searchView, ISearchBar searchBar)
+		{
+			if (searchView.Resources is null)
+				return;
+
+			var searchIconIdentifier = Resource.Id.search_mag_icon;
+
+			if (searchIconIdentifier > 0)
+			{
+				var image = searchView.FindViewById<ImageView>(searchIconIdentifier);
+
+				if (image?.Drawable is not null)
+				{
+					if (searchBar.SearchIconColor is not null)
+						image.Drawable.SetColorFilter(searchBar.SearchIconColor, FilterMode.SrcIn);
+					else
+						image.Drawable.ClearColorFilter();
+				}
+			}
+		}
+
 		public static void UpdateIsTextPredictionEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
 		{
 			editText ??= searchView.GetFirstChildOfType<EditText>();
@@ -160,6 +183,12 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateKeyboard(this SearchView searchView, ISearchBar searchBar)
 		{
 			searchView.SetInputType(searchBar);
+		}
+
+		public static void UpdateReturnType(this SearchView searchView, ISearchBar searchBar)
+		{
+			searchView.SetInputType(searchBar);
+			searchView.ImeOptions = (int)searchBar.ReturnType.ToPlatform();
 		}
 
 		internal static void SetInputType(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)

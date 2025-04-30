@@ -388,8 +388,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					if (image != null)
 					{
+#pragma warning disable CS0618 // Type or member is obsolete
 						NavigationItem.LeftBarButtonItem.SetAccessibilityHint(image);
 						NavigationItem.LeftBarButtonItem.SetAccessibilityLabel(image);
+#pragma warning restore CS0618 // Type or member is obsolete
 					}
 				}
 			});
@@ -491,7 +493,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				context.CGContext.RestoreState();
 			});
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			_nSCache.SetObjectforKey(img, (NSString)hamburgerKey);
+#pragma warning restore CS0618 // Type or member is obsolete
 			return img;
 		}
 

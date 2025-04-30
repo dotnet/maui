@@ -75,7 +75,7 @@ namespace Maui.Controls.Sample.ViewModels
 				new SectionModel(typeof(iOSListViewWithCellPage), "ListView/Cell Platform-Specifics",
 					"This iOS platform-specific controls whether ListView header cells float during scrolling."),
 
-				new SectionModel(typeof(iOSModalPagePresentationStyle), "Modal FormSheet Page",
+				new SectionModel(typeof(iOSModalPagePresentationStyle), "Modal Presentation Style Page",
 					"This iOS platform-specific is used to set the presentation style of a modal page, and in addition can be used to display modal pages that have transparent backgrounds."),
 
 				new SectionModel(typeof(iOSNavigationPage), "NavigationPage Platform-Specifics",

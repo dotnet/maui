@@ -80,9 +80,15 @@ namespace Microsoft.Maui.Controls
 				});
 		}
 
-		/// <inheritdoc/>
-		/// TODO: make this public for .NET 10 (or a .NET 9 SR)
-		internal async Task InvokeJavaScriptAsync(
+		/// <summary>
+		/// Invokes a JavaScript method named <paramref name="methodName"/> and optionally passes in the parameter values specified
+		/// by <paramref name="paramValues"/> by JSON-encoding each one.
+		/// </summary>
+		/// <param name="methodName">The name of the JavaScript method to invoke.</param>
+		/// <param name="paramValues">Optional array of objects to be passed to the JavaScript method by JSON-encoding each one.</param>
+		/// <param name="paramJsonTypeInfos">Optional array of metadata about serializing the types of the parameters specified by <paramref name="paramValues"/>.</param>
+		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
+		public async Task InvokeJavaScriptAsync(
 			string methodName,
 			object?[]? paramValues = null,
 			JsonTypeInfo?[]? paramJsonTypeInfos = null)

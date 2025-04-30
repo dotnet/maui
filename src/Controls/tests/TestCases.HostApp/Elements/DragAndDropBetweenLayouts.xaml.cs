@@ -15,15 +15,15 @@ namespace Maui.Controls.Sample
 		void OnDragStarting(object sender, DragStartingEventArgs e)
 		{
 			_emittedDragOver = false;
-			var label = (Label)(sender as Element).Parent;
+			var label = (Label)sender;
 			var sl = label.Parent as StackLayout;
 			e.Data.Properties.Add("Color", label);
 			e.Data.Properties.Add("Source", sl);
 
 			if (sl == SLAllColors)
-				SLRainbow.Background = SolidColorBrush.LightBlue;
+				SLRainbow.Background = Brush.LightBlue;
 			else
-				SLAllColors.Background = SolidColorBrush.LightBlue;
+				SLAllColors.Background = Brush.LightBlue;
 
 			dragStartEvent.Text = "DragStarting";
 
@@ -34,12 +34,12 @@ namespace Maui.Controls.Sample
 
 		void OnDropCompleted(object sender, DropCompletedEventArgs e)
 		{
-			var sl = (sender as Element).Parent.Parent as StackLayout;
+			var sl = ((Element)sender).Parent as StackLayout;
 
 			if (sl == SLAllColors)
-				SLRainbow.Background = SolidColorBrush.White;
+				SLRainbow.Background = Brush.White;
 			else
-				SLAllColors.Background = SolidColorBrush.White;
+				SLAllColors.Background = Brush.White;
 
 			dragCompletedEvent.Text = "DropCompleted";
 		}
@@ -49,15 +49,14 @@ namespace Maui.Controls.Sample
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
-			//e.AcceptedOperation = DataPackageOperation.None;
-			var sl = (StackLayout)(sender as Element).Parent;
+			var sl = ((StackLayout)sender);
 			if (e.Data.Properties["Source"] == sl)
 			{
 				e.AcceptedOperation = DataPackageOperation.None;
 				return;
 			}
 
-			sl.Background = SolidColorBrush.LightPink;
+			sl.Background = Brush.LightPink;
 
 			if (!_emittedDragOver) // This can generate a lot of noise, only add it once
 			{
@@ -75,14 +74,14 @@ namespace Maui.Controls.Sample
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
-			var sl = (StackLayout)(sender as Element).Parent;
+			var sl = (StackLayout)sender;
 			if (e.Data.Properties["Source"] == sl)
 			{
 				e.AcceptedOperation = DataPackageOperation.None;
 				return;
 			}
 
-			sl.Background = SolidColorBrush.LightBlue;
+			sl.Background = Brush.LightBlue;
 
 			dragLeaveEvent.Text = "DragLeave";
 		}
@@ -92,7 +91,7 @@ namespace Maui.Controls.Sample
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
-			var sl = (sender as Element).Parent as StackLayout;
+			var sl = (StackLayout)sender;
 			if (e.Data.Properties["Source"] == sl)
 			{
 				return;
@@ -116,13 +115,13 @@ namespace Maui.Controls.Sample
 			dropRelativeScreen.Text = $"Drop relative to screen: {(int)e.GetPosition(null).Value.X},{(int)e.GetPosition(null).Value.Y}";
 			dropRelativeLabel.Text = $"Drop relative to this label: {(int)e.GetPosition(dropRelativeLabel).Value.X},{(int)e.GetPosition(dropRelativeLabel).Value.Y}";
 
-			SLAllColors.Background = SolidColorBrush.White;
-			SLRainbow.Background = SolidColorBrush.White;
+			SLAllColors.Background = Brush.White;
+			SLRainbow.Background = Brush.White;
 
 			dropEvent.Text = "Drop";
 		}
 
-		void ResetLayouts(object sender, System.EventArgs e)
+		void ResetLayouts(object sender, EventArgs e)
 		{
 			SLAllColors.Clear();
 			SLRainbow.Clear();

@@ -292,11 +292,13 @@ namespace Microsoft.Maui.Controls
 					scrollView.Scrolled -= OnParentScrolled;
 				}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (_scrollParent is ListView listView)
 				{
 					listView.Scrolled -= OnParentScrolled;
 					return;
 				}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				if (_scrollParent is Microsoft.Maui.Controls.CollectionView collectionView)
 				{
@@ -318,13 +320,17 @@ namespace Microsoft.Maui.Controls
 					return;
 				}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				_scrollParent = this.FindParentOfType<ListView>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (_scrollParent is ListView listView)
 				{
 					listView.Scrolled += OnParentScrolled;
 					return;
 				}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 				_scrollParent = this.FindParentOfType<Microsoft.Maui.Controls.CollectionView>();
 

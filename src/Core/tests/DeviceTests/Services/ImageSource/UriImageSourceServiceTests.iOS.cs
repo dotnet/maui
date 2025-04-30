@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await Assert.ThrowsAsync<InvalidCastException>(() => service.GetImageAsync(imageSource));
 		}
-
+		
 		[Theory]
 		[InlineData("https://test.com/file", "{hash}")]
 		[InlineData("https://test.com/file#test", "{hash}")]

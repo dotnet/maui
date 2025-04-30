@@ -276,11 +276,19 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public event EventHandler Disappearing;
 
-		/// <inheritdoc cref="DisplayActionSheet(string, string, string, FlowDirection, string[])"/>
+		/// <inheritdoc cref="DisplayActionSheetAsync(string, string, string, FlowDirection, string[])"/>
+		[Obsolete("Use DisplayActionSheetAsync instead")]
 		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, params string[] buttons)
-		{
-			return DisplayActionSheet(title, cancel, destruction, FlowDirection.MatchParent, buttons);
-		}
+			=> DisplayActionSheetAsync(title, cancel, destruction, FlowDirection.MatchParent, buttons);
+
+		/// <inheritdoc cref="DisplayActionSheetAsync(string, string, string, FlowDirection, string[])"/>
+		[Obsolete("Use DisplayActionSheetAsync instead")]
+		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, FlowDirection flowDirection, params string[] buttons)
+			=> DisplayActionSheetAsync(title, cancel, destruction, flowDirection, buttons);
+
+		/// <inheritdoc cref="DisplayActionSheetAsync(string, string, string, FlowDirection, string[])"/>
+		public Task<string> DisplayActionSheetAsync(string title, string cancel, string destruction, params string[] buttons)
+			=> DisplayActionSheetAsync(title, cancel, destruction, FlowDirection.MatchParent, buttons);
 
 		/// <summary>
 		/// Displays a platform action sheet, allowing the application user to choose from several buttons.
@@ -292,7 +300,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="buttons">Text labels for additional buttons.</param>
 		/// <returns>A <see cref="Task"/> that displays an action sheet and returns the string caption of the button pressed by the user.</returns>
 		/// <remarks>Developers should be aware that Windows line endings, CR-LF, only work on Windows systems, and are incompatible with iOS and Android. A particular consequence of this is that characters that appear after a CR-LF, (For example, in the title) may not be displayed on non-Windows platforms. Developers must use the correct line endings for each of the targeted systems.</remarks>
-		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, FlowDirection flowDirection, params string[] buttons)
+		public Task<string> DisplayActionSheetAsync(string title, string cancel, string destruction, FlowDirection flowDirection, params string[] buttons)
 		{
 			var args = new ActionSheetArguments(title, cancel, destruction, buttons);
 
@@ -307,25 +315,38 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
-		/// <returns>A <see cref="Task"/> that completes when the alert is dismissed.</returns>
-		/// <inheritdoc cref="DisplayAlert(string, string, string, string, FlowDirection)"/>
+		/// <inheritdoc cref="DisplayAlertAsync(string, string, string, string, FlowDirection)"/>
+		[Obsolete("Use DisplayAlertAsync instead")]
 		public Task DisplayAlert(string title, string message, string cancel)
-		{
-			return DisplayAlert(title, message, null, cancel, FlowDirection.MatchParent);
-		}
 
-		/// <inheritdoc cref="DisplayAlert(string, string, string, string, FlowDirection)"/>
+			=> DisplayAlertAsync(title, message, null, cancel, FlowDirection.MatchParent);
+
+		/// <inheritdoc cref="DisplayAlertAsync(string, string, string, string, FlowDirection)"/>
+		[Obsolete("Use DisplayAlertAsync instead")]
 		public Task<bool> DisplayAlert(string title, string message, string accept, string cancel)
-		{
-			return DisplayAlert(title, message, accept, cancel, FlowDirection.MatchParent);
-		}
+			=> DisplayAlertAsync(title, message, accept, cancel, FlowDirection.MatchParent);
 
-		/// <returns>A <see cref="Task"/> that completes when the alert is dismissed.</returns>
-		/// <inheritdoc cref="DisplayAlert(string, string, string, string, FlowDirection)"/>
+		/// <inheritdoc cref="DisplayAlertAsync(string, string, string, string, FlowDirection)"/>
+		[Obsolete("Use DisplayAlertAsync instead")]
 		public Task DisplayAlert(string title, string message, string cancel, FlowDirection flowDirection)
-		{
-			return DisplayAlert(title, message, null, cancel, flowDirection);
-		}
+			=> DisplayAlertAsync(title, message, null, cancel, flowDirection);
+
+		/// <inheritdoc cref="DisplayAlertAsync(string, string, string, string, FlowDirection)"/>
+		[Obsolete("Use DisplayAlertAsync instead")]
+		public Task<bool> DisplayAlert(string title, string message, string accept, string cancel, FlowDirection flowDirection)
+			=> DisplayAlertAsync(title, message, accept, null, flowDirection);
+
+		/// <inheritdoc cref="DisplayAlertAsync(string, string, string, string, FlowDirection)"/>
+		public Task DisplayAlertAsync(string title, string message, string cancel)
+			=> DisplayAlertAsync(title, message, null, cancel, FlowDirection.MatchParent);
+
+		/// <inheritdoc cref="DisplayAlertAsync(string, string, string, string, FlowDirection)"/>
+		public Task<bool> DisplayAlertAsync(string title, string message, string accept, string cancel) 
+			=> DisplayAlertAsync(title, message, accept, cancel, FlowDirection.MatchParent);
+
+		/// <inheritdoc cref="DisplayAlertAsync(string, string, string, string, FlowDirection)"/>
+		public Task DisplayAlertAsync(string title, string message, string cancel, FlowDirection flowDirection)
+			=> DisplayAlertAsync(title, message, null, cancel, flowDirection);
 
 		/// <summary>
 		/// Displays an alert dialog to the application user with a single cancel button.
@@ -337,10 +358,12 @@ namespace Microsoft.Maui.Controls
 		/// <param name="flowDirection">The flow direction to be used by the alert.</param>
 		/// <returns>A <see cref="Task"/> that contains the user's choice as a <see cref="bool"/> value. <see langword="true"/> indicates that the user accepted the alert. <see langword="false"/> indicates that the user cancelled the alert.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="cancel"/> is <see langword="null"/> or empty.</exception>
-		public Task<bool> DisplayAlert(string title, string message, string accept, string cancel, FlowDirection flowDirection)
+		public Task<bool> DisplayAlertAsync(string title, string message, string accept, string cancel, FlowDirection flowDirection)
 		{
 			if (string.IsNullOrEmpty(cancel))
+			{
 				throw new ArgumentNullException(nameof(cancel));
+			}
 
 			var args = new AlertArguments(title, message, accept, cancel);
 			args.FlowDirection = flowDirection;
