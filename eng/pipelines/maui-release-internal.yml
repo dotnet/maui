@@ -196,6 +196,7 @@ extends:
           clean: all
         templateContext:
           type: releaseJob # Indicates that this is a release job
+          isProduction: true
         # inputs:  # Specify inputs declaratively
         # - input: pipelineArtifact
         #   pipeline: myBuildPipeline
@@ -277,6 +278,9 @@ extends:
         displayName: Wait to push packs
         timeoutInMinutes: 240
         pool: server
+        templateContext:
+          type: releaseJob # Indicates that this is a release job
+          isProduction: true
         steps:
         - task: 1ES.DownloadPipelineArtifact@1
           inputs:
@@ -310,6 +314,7 @@ extends:
           clean: all
         templateContext:
           type: releaseJob # Indicates that this is a release job
+          isProduction: true
         steps:
         - checkout: self
           clean: true
@@ -369,6 +374,9 @@ extends:
         displayName: Wait to push manifests
         timeoutInMinutes: 240
         pool: server
+        templateContext:
+          type: releaseJob # Indicates that this is a release job
+          isProduction: true
         steps:
         - task: 1ES.DownloadPipelineArtifact@1
           inputs:
@@ -402,6 +410,7 @@ extends:
           clean: all
         templateContext:
           type: releaseJob # Indicates that this is a release job
+          isProduction: true
         steps:
         - checkout: self
           clean: true
