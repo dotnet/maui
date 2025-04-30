@@ -89,9 +89,98 @@ extends:
       suppression:
         suppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
     stages:
+    - stage: download_and_analyze
+      displayName: Download and Analyze Artifacts
+      dependsOn: []
+      jobs:
+      - job: download_artifacts
+        displayName: Download and List Artifacts
+        pool: ${{ parameters.VM_IMAGE_HOST }}
+        timeoutInMinutes: 60
+        workspace:
+          clean: all
+        steps:
+        - checkout: self
+          clean: true
+
+        - ${{ if eq(parameters.commitHash, 'skip') }}:
+          - script: echo parameters.commitHash was not set, skipping...
+            displayName: Skip artifact download
+
+        - ${{ else }}:
+          - script: |
+              echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
+            displayName: Set COMMIT
+
+          - task: AzureCLI@2
+            displayName: Get and analyze build artifacts
+            inputs:
+              azureSubscription: "Darc: Maestro Production"
+              scriptType: pscore
+              scriptLocation: inlineScript
+              inlineScript: |
+                Write-Host "Getting BAR ID for commit: $(COMMIT)"
+                . $(Build.SourcesDirectory)\eng\common\tools.ps1
+                $darc = Get-Darc
+                $buildJson = & $darc get-build --ci --repo "${{ parameters.ghRepo }}" --commit "$(COMMIT)" --output-format json --azdev-pat $(System.AccessToken)
+                Write-Host "`n$buildJson`n"
+                $barId = $buildJson | ConvertFrom-Json | Select-Object -ExpandProperty "id" -First 1
+                Write-Host "Got the Bar ID: $barId for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
+                if ($barId -eq $null) {
+                  Write-Error "Could not find a build for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
+                  exit 1
+                }
+
+                Write-Host "Getting drop for Bar ID: $barId"
+                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose
+
+                # List and analyze artifacts
+                Write-Host "=== Listing All Downloaded Artifacts ==="
+                $allFiles = Get-ChildItem -Path "$(Build.StagingDirectory)\nupkgs" -Recurse -Filter "*.nupkg"
+                Write-Host "$($allFiles.Count) packages found."
+
+                # Analyze manifest packages
+                $manifestFiles = $allFiles | Where-Object { $_.Name -like "*Manifest*.nupkg" }
+                Write-Host "`n=== Manifest Packages ($($manifestFiles.Count) found) ==="
+                $manifestFiles | ForEach-Object { Write-Host "  $($_.Name)" }
+
+                # Determine .NET version from manifests for workload sets
+                if ($manifestFiles.Count -gt 0) {
+                  $dotnetVersion = ""
+                  if ($manifestFiles[0].Name -match "Manifest-(\d+\.\d+)") {
+                    $dotnetVersion = $matches[1]
+                    Write-Host "`nDetected .NET version: $dotnetVersion"
+                    Write-Host "Workload Sets Channel: .NET $dotnetVersion Workload Release"
+                    Write-Host "Workload Sets Feed: dotnet$($dotnetVersion.Replace('.',''))-workloads"
+                  }
+                }
+
+                # Analyze non-manifest packages
+                $nonManifestFiles = $allFiles | Where-Object { $_.Name -notlike "*Manifest*.nupkg" }
+                Write-Host "`n=== Non-Manifest Packages ($($nonManifestFiles.Count) found) ==="
+                $nonManifestFiles | ForEach-Object { Write-Host "  $($_.Name)" }
+
+                # Save details to a file for later stages
+                Write-Host "`n=== Saving package details for subsequent stages ==="
+                $packageDetails = @{
+                  "BarId" = $barId;
+                  "ManifestCount" = $manifestFiles.Count;
+                  "NonManifestCount" = $nonManifestFiles.Count;
+                  "TotalCount" = $allFiles.Count;
+                }
+                $packageDetails | ConvertTo-Json | Set-Content -Path "$(Build.StagingDirectory)\package-details.json"
+                Write-Host "Package details saved to: $(Build.StagingDirectory)\package-details.json"
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publish package details artifact
+            inputs:
+              targetPath: '$(Build.StagingDirectory)\package-details.json'
+              artifact: 'PackageDetails'
+              publishLocation: 'pipeline'
+
     - stage: publish_maestro
       displayName: Publish to Workload Set channel
-      dependsOn: []
+      dependsOn: [ download_and_analyze ]
       condition: eq(${{ parameters.pushWorkloadSet }}, true)
       jobs:
       - job: publish_maestro
@@ -109,6 +198,22 @@ extends:
               echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
             displayName: Set COMMIT
 
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifact: 'PackageDetails'
+              path: '$(Pipeline.Workspace)/PackageDetails'
+
+          - task: PowerShell@2
+            displayName: Retrieve package details
+            inputs:
+              targetType: 'inline'
+              script: |
+                $packageDetails = Get-Content -Raw -Path "$(Pipeline.Workspace)/PackageDetails/package-details.json" | ConvertFrom-Json
+                $barId = $packageDetails.BarId
+                Write-Host "Using Bar ID: $barId for Maestro publish"
+                Write-Host "Total manifest packages: $($packageDetails.ManifestCount)"
+                Write-Host "##vso[task.setvariable variable=BAR_ID]$barId"
+
           - task: AzureCLI@2
             displayName: Add build to workload set channel
             inputs:
@@ -116,24 +221,19 @@ extends:
               scriptType: pscore
               scriptLocation: inlineScript
               inlineScript: |
-                Write-Host "Getting BAR ID for commit: $(COMMIT)"
                 . $(Build.SourcesDirectory)\eng\common\tools.ps1
                 $darc = Get-Darc
-                $buildJson = & $darc get-build --ci --repo "${{ parameters.ghRepo }}" --commit "$(COMMIT)" --output-format json --azdev-pat $(System.AccessToken)
-                Write-Host "`n$buildJson`n"
-                $barId = $buildJson | ConvertFrom-Json | Select-Object -ExpandProperty "id" -First 1
-                Write-Host "Got the Bar ID: $barId for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
-                if ($barId -eq $null) {
-                  Write-Error "Could not find a build for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
-                  exit 1
-                }
-                Write-Host "Getting drop for Bar ID: $barId"
-                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose
+
+                # Download the drop just to get the manifest package for version detection
+                Write-Host "Getting drop for Bar ID: $(BAR_ID)"
+                & $darc gather-drop --ci --id $(BAR_ID) -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose
+
                 Write-Host "List downloaded artifacts"
                 Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
                 $manifestPack = Get-ChildItem -Path "$(Build.StagingDirectory)\nupkgs\shipping\packages\" -Filter "*.Manifest-*.nupkg" | Select-Object -First 1
                 $workloadSetsChannel = ""
                 $workloadSetsFeed = ""
+
                 if ($manifestPack -like "*.Manifest-8.0*") {
                     $workloadSetsChannel = ".NET 8 Workload Release"
                     $workloadSetsFeed = "dotnet8-workloads"
@@ -146,17 +246,19 @@ extends:
                   $workloadSetsChannel = ".NET 10 Workload Release"
                   $workloadSetsFeed = "dotnet10-workloads"
                 }
+
                 if (!$workloadSetsChannel -or !$workloadSetsFeed) {
                   Write-Error "Could not determine the workload sets channel or feed for the manifest pack '$manifestPack'"
                   exit 1
                 }
+
                 Write-Host "##vso[task.setvariable variable=WorkloadSetsFeedName;]$workloadSetsFeed"
-                Write-Host "Adding build ID '$barId' to channel '$workloadSetsChannel' and feed '$workloadSetsFeed'"
-                & $darc add-build-to-channel --ci --channel "$workloadSetsChannel" --id "$barId" --skip-assets-publishing --azdev-pat $(System.AccessToken) --verbose
+                Write-Host "Adding build ID '$(BAR_ID)' to channel '$workloadSetsChannel' and feed '$workloadSetsFeed'"
+                & $darc add-build-to-channel --ci --channel "$workloadSetsChannel" --id "$(BAR_ID)" --skip-assets-publishing --azdev-pat $(System.AccessToken) --verbose
 
     - stage: stage_push_packs
       displayName: Release packs
-      dependsOn: []
+      dependsOn: [ download_and_analyze ]
       condition: eq(${{ parameters.pushNugetOrg }}, true)
       jobs:
       # Waits for two hours for approval and will fail on timeout. The job can be re-ran to prompt another approval workflow after the initial timeout
@@ -165,10 +267,27 @@ extends:
         timeoutInMinutes: 240
         pool: server
         steps:
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifact: 'PackageDetails'
+            path: '$(Pipeline.Workspace)/PackageDetails'
+
+        - task: PowerShell@2
+          displayName: Read package information
+          inputs:
+            targetType: 'inline'
+            script: |
+              $packageDetails = Get-Content -Raw -Path "$(Pipeline.Workspace)/PackageDetails/package-details.json" | ConvertFrom-Json
+              Write-Host "Summary of packages to be pushed:"
+              Write-Host "Total packages: $($packageDetails.TotalCount)"
+              Write-Host "Non-manifest packages: $($packageDetails.NonManifestCount)"
+              Write-Host "##vso[task.setvariable variable=NonManifestCount;isoutput=true]$($packageDetails.NonManifestCount)"
+          name: PackageInfo
+
         - task: ManualValidation@0
           timeoutInMinutes: 120
           inputs:
-            instructions: 'Press "Resume" to push workload packs to NuGet.org.'
+            instructions: 'The pipeline is about to push $(PackageInfo.NonManifestCount) workload pack(s) to NuGet.org. Press "Resume" to continue with the push.'
             onTimeout: reject
 
       - job: push_packs
@@ -191,29 +310,35 @@ extends:
               echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
             displayName: set COMMIT
 
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifact: 'PackageDetails'
+              path: '$(Pipeline.Workspace)/PackageDetails'
+
+          - task: PowerShell@2
+            displayName: Retrieve package details
+            inputs:
+              targetType: 'inline'
+              script: |
+                $packageDetails = Get-Content -Raw -Path "$(Pipeline.Workspace)/PackageDetails/package-details.json" | ConvertFrom-Json
+                $barId = $packageDetails.BarId
+                Write-Host "Using Bar ID: $barId for pushing NuGet packages"
+                Write-Host "##vso[task.setvariable variable=BAR_ID]$barId"
+
           - task: AzureCLI@2
-            displayName: Get build for commit
+            displayName: Download artifacts for pushing
             inputs:
               azureSubscription: "Darc: Maestro Production"
               scriptType: pscore
               scriptLocation: inlineScript
               inlineScript: |
-                Write-Host "Getting BAR ID for commit: $(COMMIT)"
+                Write-Host "Getting drop for Bar ID: $(BAR_ID)"
                 . $(Build.SourcesDirectory)\eng\common\tools.ps1
                 $darc = Get-Darc
-                $buildJson = & $darc get-build --ci --repo "${{ parameters.ghRepo }}" --commit "$(COMMIT)" --output-format json --azdev-pat $(System.AccessToken)
-                Write-Host "`n$buildJson`n"
-                $barId = $buildJson | ConvertFrom-Json | Select-Object -ExpandProperty "id" -First 1
-                Write-Host "Got the Bar ID: $barId for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
-                if ($barId -eq $null) {
-                  Write-Error "Could not find a build for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
-                  exit 1
-                }
-                Write-Host "Getting drop for Bar ID: $barId"
-                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose  
+                & $darc gather-drop --ci --id $(BAR_ID) -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose
 
           - pwsh: Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
-            displayName: list downloaded artifacts
+            displayName: List downloaded artifacts
 
           - powershell: >-
               $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\*" -NuGetIncludeFilters "${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "*Manifest*.nupkg;${{ parameters.nugetExcludeFilters }}"
@@ -223,7 +348,7 @@ extends:
 
     - stage: stage_push_manifests
       displayName: Release manifests
-      dependsOn: []
+      dependsOn: [ download_and_analyze ]
       condition: eq(${{ parameters.pushNugetOrg }}, true)
       jobs:
       # Waits for two hours for approval and will fail on timeout. The job can be re-ran to prompt another approval workflow after the initial timeout
@@ -232,10 +357,27 @@ extends:
         timeoutInMinutes: 240
         pool: server
         steps:
+        - task: DownloadPipelineArtifact@2
+          inputs:
+            artifact: 'PackageDetails'
+            path: '$(Pipeline.Workspace)/PackageDetails'
+
+        - task: PowerShell@2
+          displayName: Read manifest information
+          inputs:
+            targetType: 'inline'
+            script: |
+              $packageDetails = Get-Content -Raw -Path "$(Pipeline.Workspace)/PackageDetails/package-details.json" | ConvertFrom-Json
+              Write-Host "Summary of manifests to be pushed:"
+              Write-Host "Total packages: $($packageDetails.TotalCount)"
+              Write-Host "Manifest packages: $($packageDetails.ManifestCount)"
+              Write-Host "##vso[task.setvariable variable=ManifestCount;isoutput=true]$($packageDetails.ManifestCount)"
+          name: ManifestInfo
+
         - task: ManualValidation@0
           timeoutInMinutes: 120
           inputs:
-            instructions: 'Press "Resume" to push workload manifests to NuGet.org.'
+            instructions: 'The pipeline is about to push $(ManifestInfo.ManifestCount) workload manifest(s) to NuGet.org. Press "Resume" to continue with the push.'
             onTimeout: reject
 
       - job: push_manifests
@@ -258,29 +400,36 @@ extends:
               echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
             displayName: set COMMIT
 
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifact: 'PackageDetails'
+              path: '$(Pipeline.Workspace)/PackageDetails'
+
+          - task: PowerShell@2
+            displayName: Retrieve package details
+            inputs:
+              targetType: 'inline'
+              script: |
+                $packageDetails = Get-Content -Raw -Path "$(Pipeline.Workspace)/PackageDetails/package-details.json" | ConvertFrom-Json
+                $barId = $packageDetails.BarId
+                Write-Host "Using Bar ID: $barId for pushing manifest packages"
+                Write-Host "Total manifest packages to push: $($packageDetails.ManifestCount)"
+                Write-Host "##vso[task.setvariable variable=BAR_ID]$barId"
+
           - task: AzureCLI@2
-            displayName: Get build for commit
+            displayName: Download artifacts for pushing
             inputs:
               azureSubscription: "Darc: Maestro Production"
               scriptType: pscore
               scriptLocation: inlineScript
               inlineScript: |
-                Write-Host "Getting BAR ID for commit: $(COMMIT)"
+                Write-Host "Getting drop for Bar ID: $(BAR_ID)"
                 . $(Build.SourcesDirectory)\eng\common\tools.ps1
                 $darc = Get-Darc
-                $buildJson = & $darc get-build --ci --repo "${{ parameters.ghRepo }}" --commit "$(COMMIT)" --output-format json --azdev-pat $(System.AccessToken)
-                Write-Host "`n$buildJson`n"
-                $barId = $buildJson | ConvertFrom-Json | Select-Object -ExpandProperty "id" -First 1
-                Write-Host "Got the Bar ID: $barId for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
-                if ($barId -eq $null) {
-                  Write-Error "Could not find a build for commit $(COMMIT) on repo ${{ parameters.ghRepo }}"
-                  exit 1
-                }
-                Write-Host "Getting drop for Bar ID: $barId"
-                & $darc gather-drop --ci --id $barId -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose  
+                & $darc gather-drop --ci --id $(BAR_ID) -o "$(Build.StagingDirectory)\nupkgs" --azdev-pat $(System.AccessToken) --verbose
 
           - pwsh: Get-ChildItem -Name -Recurse -Path $(Build.StagingDirectory)
-            displayName: list downloaded artifacts
+            displayName: List downloaded artifacts
 
           - powershell: >-
               $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\*" -NuGetIncludeFilters "*Manifest*.nupkg;${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "${{ parameters.nugetExcludeFilters }}"
