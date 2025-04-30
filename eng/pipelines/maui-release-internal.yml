@@ -194,6 +194,12 @@ extends:
         timeoutInMinutes: 240
         workspace:
           clean: all
+        templateContext:
+          type: releaseJob # Indicates that this is a release job
+        # inputs:  # Specify inputs declaratively
+        # - input: pipelineArtifact
+        #   pipeline: myBuildPipeline
+        #   artifactName: PackageDetails
         steps:
         - ${{ if eq(parameters.commitHash, 'skip') }}:
           - script: echo parameters.commitHash was not set, skipping...
@@ -302,6 +308,8 @@ extends:
         condition: eq(dependencies.push_packs_approval.result, 'Succeeded')
         workspace:
           clean: all
+        templateContext:
+          type: releaseJob # Indicates that this is a release job
         steps:
         - checkout: self
           clean: true
@@ -392,6 +400,8 @@ extends:
         condition: eq(dependencies.push_manifests_approval.result, 'Succeeded')
         workspace:
           clean: all
+        templateContext:
+          type: releaseJob # Indicates that this is a release job
         steps:
         - checkout: self
           clean: true
