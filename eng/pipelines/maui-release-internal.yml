@@ -19,12 +19,12 @@ parameters:
 
 - name: pushWorkloadSet
   displayName: Push workload set channel
-  type: bool
+  type: boolean
   default: true
 
 - name: pushNugetOrg
   displayName: Push to NuGet.org
-  type: bool
+  type: boolean
   default: true
 
 - name: VM_IMAGE_HOST
