@@ -157,23 +157,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void UpdateEmptyViewVisibility()
 		{
 			bool isEmpty = (CollectionViewSource?.View?.Count ?? 0) == 0;
-			if (isEmpty)
+			if(_loopableCollectionView != null)
 			{
-				if (_loopableCollectionView is not null)
-				{
-					_loopableCollectionView.IsLoopingEnabled = false;
-				}
-
-				ListViewBase.ItemTemplate = null;
+				_loopableCollectionView.IsLoopingEnabled = !isEmpty;
 			}
-			else
-			{
-				if (_loopableCollectionView is not null)
-				{
-					_loopableCollectionView.IsLoopingEnabled = true;
-				}
 
-				ListViewBase.ItemTemplate = CarouselItemsViewTemplate;
+			var targetTemplate = isEmpty ? null : CarouselItemsViewTemplate;
+			if (ListViewBase.ItemTemplate != targetTemplate)
+			{
+				ListViewBase.ItemTemplate = targetTemplate;
 			}
 
 			base.UpdateEmptyViewVisibility();
