@@ -140,4 +140,9 @@ public static class DatePickerExtensions
 	{
 		// TODO: Update TextAlignment based on the EffectiveFlowDirection property.
 	}
+
+	public static void UpdateIsOpen(this UIDatePicker picker, IDatePicker datePicker)
+	{
+
+	}
 }

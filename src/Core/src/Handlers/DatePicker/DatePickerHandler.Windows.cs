@@ -53,6 +53,11 @@ public partial class DatePickerHandler : ViewHandler<IDatePicker, CalendarDatePi
 		handler.PlatformView.UpdateTextColor(datePicker);
 	}
 
+	public static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
+	{
+		handler.PlatformView?.UpdateIsOpen(datePicker);
+	}
+
 	private void DateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
 	{
 		if (VirtualView is null)

@@ -45,6 +45,8 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>.</summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
+		public static readonly BindableProperty IsOpenProperty = PickerElement.IsOpenProperty;
+
 		readonly Lazy<PlatformConfigurationRegistry<DatePicker>> _platformConfigurationRegistry;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
@@ -132,6 +134,12 @@ namespace Microsoft.Maui.Controls
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
 			set => SetValue(FontAutoScalingEnabledProperty, value);
 		}
+		
+		public bool IsOpen
+		{
+			get => (bool)GetValue(IsOpenProperty);
+			set => SetValue(IsOpenProperty, value);
+		}
 
 		void IFontElement.OnFontFamilyChanged(string oldValue, string newValue) =>
 			HandleFontChanged();
@@ -158,11 +166,27 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
+		void IPickerElement.OnIsOpenPropertyChanged(bool oldValue, bool newValue) =>
+			HandleIsOpenChanged();
+
+		void HandleIsOpenChanged()
+		{
+			if (Handler.VirtualView is not DatePicker datePicker)
+				return;
+
+			if (datePicker.IsOpen)
+				datePicker.Opened?.Invoke(datePicker, new PickerOpenedEventArgs());
+			else
+				datePicker.Closed?.Invoke(datePicker, new PickerClosedEventArgs());
+		}
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/DatePicker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilities.GetTransformedText(source, textTransform);
 
 		public event EventHandler<DateChangedEventArgs> DateSelected;
+		public event EventHandler<PickerOpenedEventArgs> Opened;
+		public event EventHandler<PickerClosedEventArgs> Closed;
 
 		static object CoerceDate(BindableObject bindable, object value)
 		{

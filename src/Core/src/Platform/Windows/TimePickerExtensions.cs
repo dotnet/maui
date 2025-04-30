@@ -84,4 +84,9 @@ public static class TimePickerExtensions
 		"TimePickerButtonBackgroundDisabled",
 		"TimePickerButtonBackgroundFocused",
 	};
+
+	public static void UpdateIsOpen(this TimePicker platformTimePicker, ITimePicker timePicker)
+	{
+
+	}
 }

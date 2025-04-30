@@ -62,6 +62,11 @@ namespace Microsoft.Maui.Handlers
 			// handler.PlatformView?.UpdateTextAlignment(timePicker);
 		}
 
+		public static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
+		{
+
+		}
+
 		void SetVirtualViewTime()
 		{
 			if (VirtualView == null || PlatformView == null)

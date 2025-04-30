@@ -73,6 +73,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public static void UpdateIsOpen(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
+		{
+		
+		}
+
 		internal static void SetText(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
 		{
 			platformDatePicker.Text = datePicker.Date?.ToString(datePicker.Format) ?? string.Empty;

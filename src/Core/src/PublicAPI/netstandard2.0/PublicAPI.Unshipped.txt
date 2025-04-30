@@ -56,6 +56,7 @@ Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.set -> void
 Microsoft.Maui.IHybridWebView.RawMessageReceived(string! rawMessage) -> void
 Microsoft.Maui.IHybridWebView.SendRawMessage(string! rawMessage) -> void
 Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
+Microsoft.Maui.IPickerElement.OnIsOpenPropertyChanged(bool oldValue, bool newValue) -> void
 Microsoft.Maui.ITitleBar
 Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
 Microsoft.Maui.ITitleBar.Subtitle.get -> string?

@@ -12,6 +12,11 @@ public static class TimePickerExtensions
 		mauiTimePicker.SetTime(timePicker);
 	}
 
+	public static void UpdateIsOpen(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
+	{
+
+	}
+
 	internal static void SetTime(this MauiTimePicker mauiTimePicker, ITimePicker timePicker)
 	{
 		var time = timePicker.Time;

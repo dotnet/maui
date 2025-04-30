@@ -88,5 +88,10 @@ namespace Microsoft.Maui.Platform
 		{
 			nativeComboBox.VerticalContentAlignment = picker.VerticalTextAlignment.ToPlatformVerticalAlignment();
 		}
+
+		public static void UpdateIsOpen(this ComboBox nativeComboBox, IPicker picker)
+		{
+	
+		}
 	}
 }

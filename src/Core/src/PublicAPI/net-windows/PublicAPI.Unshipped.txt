@@ -56,6 +56,10 @@ Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.set -> void
 Microsoft.Maui.IHybridWebView.RawMessageReceived(string! rawMessage) -> void
 Microsoft.Maui.IHybridWebView.SendRawMessage(string! rawMessage) -> void
 Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
+Microsoft.Maui.IPickerElement
+Microsoft.Maui.IPickerElement.IsOpen.get -> bool
+Microsoft.Maui.IPickerElement.IsOpen.set -> void
+Microsoft.Maui.IPickerElement.OnIsOpenPropertyChanged(bool oldValue, bool newValue) -> void
 Microsoft.Maui.ITitleBar
 Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
 Microsoft.Maui.ITitleBar.Subtitle.get -> string?
@@ -83,12 +87,15 @@ static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui
 static Microsoft.Maui.ElementHandlerExtensions.GetServiceProvider(this Microsoft.Maui.IElementHandler! handler) -> System.IServiceProvider!
 static Microsoft.Maui.ElementHandlerExtensions.IsConnected(this Microsoft.Maui.IElementHandler! handler) -> bool
 static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
+static Microsoft.Maui.Handlers.DatePickerHandler.MapIsOpen(Microsoft.Maui.Handlers.IDatePickerHandler! handler, Microsoft.Maui.IDatePicker! datePicker) -> void
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapBackground(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
 static Microsoft.Maui.Handlers.HybridWebViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
 static Microsoft.Maui.Handlers.HybridWebViewHandler.MapEvaluateJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
 static Microsoft.Maui.Handlers.HybridWebViewHandler.MapInvokeJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
 static Microsoft.Maui.Handlers.HybridWebViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
 static Microsoft.Maui.Handlers.HybridWebViewHandler.MapSendRawMessage(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
+static Microsoft.Maui.Handlers.PickerHandler.MapIsOpen(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.TimePickerHandler.MapIsOpen(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureEnvironmentVariables(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 static Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions.AddHybridWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
@@ -98,6 +105,9 @@ static Microsoft.Maui.Platform.CalendarDatePickerExtensions.ToDateFormat(this st
 *REMOVED*readonly Microsoft.Maui.PropertyMapper._mapper -> System.Collections.Generic.Dictionary<string!, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>!>!
 *REMOVED*virtual Microsoft.Maui.PropertyMapper.ClearKeyCache() -> void
 *REMOVED*virtual Microsoft.Maui.PropertyMapper.UpdateKeys.get -> System.Collections.Generic.IReadOnlyCollection<string!>!
+static Microsoft.Maui.Platform.DatePickerExtensions.UpdateIsOpen(this Microsoft.UI.Xaml.Controls.CalendarDatePicker! platformDatePicker, Microsoft.Maui.IDatePicker! datePicker) -> void
+static Microsoft.Maui.Platform.PickerExtensions.UpdateIsOpen(this Microsoft.UI.Xaml.Controls.ComboBox! nativeComboBox, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Platform.TimePickerExtensions.UpdateIsOpen(this Microsoft.UI.Xaml.Controls.TimePicker! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 *REMOVED*virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement! platformView) -> void
 virtual Microsoft.Maui.Platform.NavigationRootManager.Connect(Microsoft.UI.Xaml.UIElement? platformView) -> void

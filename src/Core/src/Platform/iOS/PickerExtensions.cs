@@ -18,6 +18,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateSelectedIndex(this MauiPicker platformPicker, IPicker picker) =>
 			platformPicker.UpdatePicker(picker, picker.SelectedIndex);
 
+		public static void UpdateIsOpen(this MauiPicker platformPicker, IPicker picker)
+		{
+
+		}
+
 		internal static void SetTitleColor(this MauiPicker platformPicker, IPicker picker)
 		{
 			var title = picker.Title;

@@ -86,6 +86,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateVerticalAlignment(picker.VerticalTextAlignment);
 		}
 
+		public static void MapIsOpen(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView?.UpdateIsOpen(picker);
+		}
+		
 		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
 		{
 			if (PlatformView == null)

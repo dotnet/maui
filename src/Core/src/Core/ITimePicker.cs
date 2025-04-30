@@ -5,7 +5,7 @@ namespace Microsoft.Maui;
 /// <summary>
 /// Represents a <see cref="IView"/> that allows the user to select a time.
 /// </summary>
-public interface ITimePicker : IView, ITextStyle
+public interface ITimePicker : IView, IPickerElement, ITextStyle
 {
 	/// <summary>
 	/// The format of the time to display to the user.

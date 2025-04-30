@@ -85,6 +85,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateTextColor(timePicker);
 		}
 
+		public static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
+		{
+			handler.PlatformView?.UpdateIsOpen(timePicker);
+		}
+		
 		void ShowPickerDialog()
 		{
 			if (VirtualView is null)

@@ -107,6 +107,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateVerticalTextAlignment(picker);
 		}
 
+		public static void MapIsOpen(IPickerHandler handler, IPicker picker)
+		{
+			handler.PlatformView?.UpdateIsOpen(picker);
+		}
+
 		void OnControlSelectionChanged(object? sender, WSelectionChangedEventArgs e)
 		{
 			if (PlatformView == null)

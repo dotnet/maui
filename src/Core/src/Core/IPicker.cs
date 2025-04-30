@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Represents a View for selecting a text item from a list of data.
 	/// </summary>
-	public interface IPicker : IView, ITextStyle, ITextAlignment, IItemDelegate<string>
+	public interface IPicker : IView, IPickerElement, ITextStyle, ITextAlignment, IItemDelegate<string>
 	{
 		/// <summary>
 		/// Gets the list of choices.

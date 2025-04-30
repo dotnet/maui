@@ -65,6 +65,8 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="VerticalTextAlignment"/>.</summary>
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
+		public static readonly BindableProperty IsOpenProperty = PickerElement.IsOpenProperty;
+
 		readonly Lazy<PlatformConfigurationRegistry<Picker>> _platformConfigurationRegistry;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
@@ -220,7 +222,15 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		public bool IsOpen
+		{
+			get => (bool)GetValue(IsOpenProperty);
+			set => SetValue(IsOpenProperty, value);
+		}
+
 		public event EventHandler SelectedIndexChanged;
+		public event EventHandler<PickerOpenedEventArgs> Opened;
+		public event EventHandler<PickerClosedEventArgs> Closed;
 
 		static readonly BindableProperty s_displayProperty =
 			BindableProperty.Create("Display", typeof(string), typeof(Picker), default(string));
@@ -285,6 +295,20 @@ namespace Microsoft.Maui.Controls
 				((LockableObservableListWrapper)Items).IsLocked = false;
 				((LockableObservableListWrapper)Items).InternalClear();
 			}
+		}
+
+		void IPickerElement.OnIsOpenPropertyChanged(bool oldValue, bool newValue) =>
+			HandleIsOpenChanged();
+
+		void HandleIsOpenChanged()
+		{
+			if (Handler.VirtualView is not Picker picker)
+				return;
+
+			if (picker.IsOpen)
+				picker.Opened?.Invoke(picker, new PickerOpenedEventArgs());
+			else
+				picker.Closed?.Invoke(picker, new PickerClosedEventArgs());
 		}
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
