@@ -203,7 +203,7 @@ extends:
               echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
             displayName: Set COMMIT
 
-          - task: DownloadPipelineArtifact@2
+          - task: 1ES.DownloadPipelineArtifact@1
             inputs:
               artifactName: 'PackageDetails'
               downloadPath: '$(Build.StagingDirectory)/PackageDetails'
@@ -272,7 +272,7 @@ extends:
         timeoutInMinutes: 240
         pool: server
         steps:
-        - task: DownloadPipelineArtifact@2
+        - task: 1ES.DownloadPipelineArtifact@1
           inputs:
             artifactName: 'PackageDetails'
             downloadPath: '$(Build.StagingDirectory)/PackageDetails'
@@ -315,7 +315,7 @@ extends:
               echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
             displayName: set COMMIT
 
-          - task: DownloadPipelineArtifact@2
+          - task: 1ES.DownloadPipelineArtifact@1
             inputs:
               artifactName: 'PackageDetails'
               downloadPath: '$(Build.StagingDirectory)/PackageDetails'
@@ -362,7 +362,7 @@ extends:
         timeoutInMinutes: 240
         pool: server
         steps:
-        - task: DownloadPipelineArtifact@2
+        - task: 1ES.DownloadPipelineArtifact@1
           inputs:
             artifactName: 'PackageDetails'
             downloadPath: '$(Build.StagingDirectory)/PackageDetails'
@@ -405,7 +405,7 @@ extends:
               echo ##vso[task.setvariable variable=COMMIT]${{ parameters.commitHash }}
             displayName: set COMMIT
 
-          - task: DownloadPipelineArtifact@2
+          - task: 1ES.DownloadPipelineArtifact@1
             inputs:
               artifactName: 'PackageDetails'
               downloadPath: '$(Build.StagingDirectory)/PackageDetails'
