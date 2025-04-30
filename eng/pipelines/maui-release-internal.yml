@@ -97,6 +97,12 @@ extends:
         displayName: Download and List Artifacts
         pool: ${{ parameters.VM_IMAGE_HOST }}
         timeoutInMinutes: 60
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            displayName: 'Publish package details artifact'
+            artifactName: PackageDetails
+            targetPath: '$(Build.ArtifactStagingDirectory)/package-details.json'
         workspace:
           clean: all
         steps:
@@ -170,13 +176,12 @@ extends:
                 }
                 $packageDetails | ConvertTo-Json | Set-Content -Path "$(Build.StagingDirectory)\package-details.json"
                 Write-Host "Package details saved to: $(Build.StagingDirectory)\package-details.json"
-
-          - task: PublishPipelineArtifact@1
-            displayName: Publish package details artifact
-            inputs:
-              targetPath: '$(Build.StagingDirectory)\package-details.json'
-              artifact: 'PackageDetails'
-              publishLocation: 'pipeline'
+          # - task: PublishPipelineArtifact@1
+          #   displayName: Publish package details artifact
+          #   inputs:
+          #     targetPath: '$(Build.StagingDirectory)\package-details.json'
+          #     artifact: 'PackageDetails'
+          #     publishLocation: 'pipeline'
 
     - stage: publish_maestro
       displayName: Publish to Workload Set channel
