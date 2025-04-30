@@ -22,7 +22,7 @@ public class Issue29194 : ContentPage
             {
                 label,
                 mySwitch,
-                new Entry() {AutomationId = "Entry"},
+                new UITestEntry() {AutomationId = "Entry",IsCursorVisible=false},
             }
         };
 
