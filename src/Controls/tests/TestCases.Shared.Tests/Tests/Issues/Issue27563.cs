@@ -1,4 +1,7 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
+// On Catalyst, Swipe actions not supported in Appium.
+// On Windows, TimeoutException is thrown when enabling the Loop. Refer issue: https://github.com/dotnet/maui/issues/29245
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -26,3 +29,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
