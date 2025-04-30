@@ -58,6 +58,7 @@ variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
 - group: DotNetBuilds storage account read tokens
 - group: AzureDevOps-Artifact-Feeds-Pats
+- group: DotNet-Maui-Release
 
 resources:
   repositories:
