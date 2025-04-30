@@ -144,3 +144,8 @@ static readonly Microsoft.Maui.Controls.TitleBar.TitleProperty -> Microsoft.Maui
 static readonly Microsoft.Maui.Controls.TitleBar.TrailingContentProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.TitleBarProperty -> Microsoft.Maui.Controls.BindableProperty!
 virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Controls.Window! window) -> void
+Microsoft.Maui.Controls.DispatcherExtensions
+static Microsoft.Maui.Controls.DispatcherExtensions.DispatchIfRequired(this Microsoft.Maui.Dispatching.IDispatcher? dispatcher, System.Action! action) -> void
+static Microsoft.Maui.Controls.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher? dispatcher, System.Action! action) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Controls.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher? dispatcher, System.Func<System.Threading.Tasks.Task!>! action) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Controls.DispatcherExtensions.FindDispatcher(this Microsoft.Maui.Controls.BindableObject? bindableObject) -> Microsoft.Maui.Dispatching.IDispatcher!
