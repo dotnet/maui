@@ -32,7 +32,7 @@ public class Issue11677 : ContentPage
 				},
 				new Label
 				{
-					Text = "SeachBar with default background",
+					Text = "SearchBar with default background",
 					FontSize = 16,
 					TextColor = Colors.Black,
 				},
