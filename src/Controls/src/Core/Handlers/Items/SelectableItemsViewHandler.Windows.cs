@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	public partial class SelectableItemsViewHandler<TItemsView> : StructuredItemsViewHandler<TItemsView> where TItemsView : SelectableItemsView
 	{
 		bool _ignorePlatformSelectionChange;
+		bool _ignoreVirtualSelectionChange;
 
 		protected override void ConnectHandler(ListViewBase platformView)
 		{
@@ -132,6 +133,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void VirtualSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			if (_ignoreVirtualSelectionChange)
+			{
+				_ignoreVirtualSelectionChange = false;
+				return;
+			}
 			UpdatePlatformSelection();
 		}
 
@@ -172,10 +178,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (ItemsView != null)
 			{
-				ItemsView.SelectionChanged -= VirtualSelectionChanged;
+				_ignoreVirtualSelectionChange = true;
 				ItemsView.SelectedItem = selectedItem;
-
-				ItemsView.SelectionChanged += VirtualSelectionChanged;
+				_ignoreVirtualSelectionChange = false;
 			}
 		}
 
