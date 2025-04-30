@@ -125,5 +125,7 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="datePicker">The associated <see cref="IDatePicker"/> instance.</param>
 		public static partial void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker);
+
+		public static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker);
 	}
 }

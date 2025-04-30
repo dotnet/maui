@@ -120,6 +120,7 @@ static Microsoft.Maui.Platform.PickerExtensions.UpdateIsOpen(this Microsoft.Maui
 static Microsoft.Maui.Platform.TextInputExtensions.GetCursorPosition(this UIKit.IUITextInput! platformView, int cursorOffset = 0) -> int
 static Microsoft.Maui.Platform.TextInputExtensions.GetSelectedTextLength(this UIKit.IUITextInput! platformView) -> int
 static Microsoft.Maui.Platform.TextInputExtensions.SetTextRange(this UIKit.IUITextInput! platformView, int start, int selectedTextLength) -> void
+static Microsoft.Maui.Platform.TimePickerExtensions.UpdateIsOpen(this Microsoft.Maui.Platform.MauiTimePicker! mauiTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindow? platformWindow) -> Microsoft.Maui.IWindow?
 static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindowScene? windowScene) -> Microsoft.Maui.IWindow?
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
