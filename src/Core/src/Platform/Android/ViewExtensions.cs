@@ -56,15 +56,7 @@ namespace Microsoft.Maui.Platform
 				wrapperView.PivotX = pivotX;
 				wrapperView.PivotY = pivotY;
 
-				// Apply non-transform properties to the inner view
-				PlatformInterop.Set(platformView,
-					visibility: visibility,
-					layoutDirection: (int)GetLayoutDirection(view),
-					minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
-					minimumWidth: (int)platformView.ToPixels(view.MinimumWidth),
-					enabled: view.IsEnabled,
-					alpha: (float)view.Opacity,
-					translationX: 0,
+				SetPlatformViewPropertiesWithTransform(platformView, view, visibility, translationX: 0,
 					translationY: 0,
 					scaleX: 1,
 					scaleY: 1,
@@ -72,20 +64,12 @@ namespace Microsoft.Maui.Platform
 					rotationX: 0,
 					rotationY: 0,
 					pivotX: 0,
-					pivotY: 0
-				);
+					pivotY: 0);
 			}
 			else
 			{
 				// NOTE: use named arguments for clarity
-				PlatformInterop.Set(platformView,
-					visibility: visibility,
-					layoutDirection: (int)GetLayoutDirection(view),
-					minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
-					minimumWidth: (int)platformView.ToPixels(view.MinimumWidth),
-					enabled: view.IsEnabled,
-					alpha: (float)view.Opacity,
-					translationX: platformView.ToPixels(view.TranslationX),
+				SetPlatformViewPropertiesWithTransform(platformView, view, visibility, translationX: platformView.ToPixels(view.TranslationX),
 					translationY: platformView.ToPixels(view.TranslationY),
 					scaleX: (float)(view.Scale * view.ScaleX),
 					scaleY: (float)(view.Scale * view.ScaleY),
@@ -93,9 +77,31 @@ namespace Microsoft.Maui.Platform
 					rotationX: (float)view.RotationX,
 					rotationY: (float)view.RotationY,
 					pivotX: pivotX,
-					pivotY: pivotY
-				);
+					pivotY: pivotY);
 			}
+		}
+
+		static void SetPlatformViewPropertiesWithTransform(View platformView, IView view, int visibility, float translationX,
+			float translationY, float scaleX, float scaleY, float rotation, float rotationX, float rotationY, float pivotX, float pivotY)
+		{
+			PlatformInterop.Set(
+				platformView,
+				visibility: visibility,
+				layoutDirection: (int)GetLayoutDirection(view),
+				minimumHeight: (int)platformView.ToPixels(view.MinimumHeight),
+				minimumWidth: (int)platformView.ToPixels(view.MinimumWidth),
+				enabled: view.IsEnabled,
+				alpha: (float)view.Opacity,
+				translationX: translationX,
+				translationY: translationY,
+				scaleX: scaleX,
+				scaleY: scaleY,
+				rotation: rotation,
+				rotationX: rotationX,
+				rotationY: rotationY,
+				pivotX: pivotX,
+				pivotY: pivotY
+			);
 		}
 
 		public static void UpdateIsEnabled(this AView platformView, IView view)
