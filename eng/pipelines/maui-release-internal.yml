@@ -205,15 +205,15 @@ extends:
 
           - task: DownloadPipelineArtifact@2
             inputs:
-              artifact: 'PackageDetails'
-              path: '$(Pipeline.Workspace)/PackageDetails'
+              artifactName: 'PackageDetails'
+              downloadPath: '$(Build.StagingDirectory)/PackageDetails'
 
           - task: PowerShell@2
             displayName: Retrieve package details
             inputs:
               targetType: 'inline'
               script: |
-                $packageDetails = Get-Content -Raw -Path "$(Pipeline.Workspace)/PackageDetails/package-details.json" | ConvertFrom-Json
+                $packageDetails = Get-Content -Raw -Path "$(Build.StagingDirectory)/PackageDetails/package-details.json" | ConvertFrom-Json
                 $barId = $packageDetails.BarId
                 Write-Host "Using Bar ID: $barId for Maestro publish"
                 Write-Host "Total manifest packages: $($packageDetails.ManifestCount)"
@@ -274,15 +274,15 @@ extends:
         steps:
         - task: DownloadPipelineArtifact@2
           inputs:
-            artifact: 'PackageDetails'
-            path: '$(Pipeline.Workspace)/PackageDetails'
+            artifactName: 'PackageDetails'
+            downloadPath: '$(Build.StagingDirectory)/PackageDetails'
 
         - task: PowerShell@2
           displayName: Read package information
           inputs:
             targetType: 'inline'
             script: |
-              $packageDetails = Get-Content -Raw -Path "$(Pipeline.Workspace)/PackageDetails/package-details.json" | ConvertFrom-Json
+              $packageDetails = Get-Content -Raw -Path "$(Build.StagingDirectory)/PackageDetails/package-details.json" | ConvertFrom-Json
               Write-Host "Summary of packages to be pushed:"
               Write-Host "Total packages: $($packageDetails.TotalCount)"
               Write-Host "Non-manifest packages: $($packageDetails.NonManifestCount)"
@@ -317,15 +317,15 @@ extends:
 
           - task: DownloadPipelineArtifact@2
             inputs:
-              artifact: 'PackageDetails'
-              path: '$(Pipeline.Workspace)/PackageDetails'
+              artifactName: 'PackageDetails'
+              downloadPath: '$(Build.StagingDirectory)/PackageDetails'
 
           - task: PowerShell@2
             displayName: Retrieve package details
             inputs:
               targetType: 'inline'
               script: |
-                $packageDetails = Get-Content -Raw -Path "$(Pipeline.Workspace)/PackageDetails/package-details.json" | ConvertFrom-Json
+                $packageDetails = Get-Content -Raw -Path "$(Build.StagingDirectory)/PackageDetails/package-details.json" | ConvertFrom-Json
                 $barId = $packageDetails.BarId
                 Write-Host "Using Bar ID: $barId for pushing NuGet packages"
                 Write-Host "##vso[task.setvariable variable=BAR_ID]$barId"
@@ -364,8 +364,8 @@ extends:
         steps:
         - task: DownloadPipelineArtifact@2
           inputs:
-            artifact: 'PackageDetails'
-            path: '$(Pipeline.Workspace)/PackageDetails'
+            artifactName: 'PackageDetails'
+            downloadPath: '$(Build.StagingDirectory)/PackageDetails'
 
         - task: PowerShell@2
           displayName: Read manifest information
@@ -407,8 +407,8 @@ extends:
 
           - task: DownloadPipelineArtifact@2
             inputs:
-              artifact: 'PackageDetails'
-              path: '$(Pipeline.Workspace)/PackageDetails'
+              artifactName: 'PackageDetails'
+              downloadPath: '$(Build.StagingDirectory)/PackageDetails'
 
           - task: PowerShell@2
             displayName: Retrieve package details
