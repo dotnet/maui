@@ -217,7 +217,7 @@ extends:
             displayName: list downloaded artifacts
 
           - powershell: >-
-              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\*" -NuGetIncludeFilters "${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "*Manifest*.nupkg;${{ parameters.nugetExcludeFilters }}"
+              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "*Manifest*.nupkg;${{ parameters.nugetExcludeFilters }}"
             displayName: Push workload packs to NuGet.org
             env:
               PUSH_PACKAGES: ${{ parameters.pushPackages }}
@@ -284,7 +284,7 @@ extends:
             displayName: list downloaded artifacts
 
           - powershell: >-
-              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\*" -NuGetIncludeFilters "*Manifest*.nupkg;${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "${{ parameters.nugetExcludeFilters }}"
+              $(Build.SourcesDirectory)\eng\scripts\push_nuget_org.ps1 -ApiKey "$(pat--nuget--xamarinc--push--wildcard)" -FeedUrl "${{ parameters.feedUrl }}" -NuGetSearchPath "$(Build.StagingDirectory)\nupkgs\shipping\packages\*" -NuGetIncludeFilters "*Manifest*.nupkg;${{ parameters.nugetIncludeFilters }}" -NuGetExcludeFilters "${{ parameters.nugetExcludeFilters }}"
             displayName: Push workload manifests to NuGet.org
             env:
               PUSH_PACKAGES: ${{ parameters.pushPackages }}
