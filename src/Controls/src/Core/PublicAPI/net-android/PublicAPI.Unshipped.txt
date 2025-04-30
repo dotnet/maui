@@ -9,8 +9,13 @@
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.Style.set -> void
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.get -> System.Collections.Generic.IList<string>
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void
+Microsoft.Maui.Controls.DispatcherExtensions
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
 Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.Style?
+static Microsoft.Maui.Controls.DispatcherExtensions.DispatchIfRequired(this Microsoft.Maui.Dispatching.IDispatcher? dispatcher, System.Action! action) -> void
+static Microsoft.Maui.Controls.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher? dispatcher, System.Action! action) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Controls.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher? dispatcher, System.Func<System.Threading.Tasks.Task!>! action) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Controls.DispatcherExtensions.FindDispatcher(this Microsoft.Maui.Controls.BindableObject? bindableObject) -> Microsoft.Maui.Dispatching.IDispatcher!
 ~Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource<T>(System.Uri value) -> void
 ~Microsoft.Maui.Controls.Internals.TypedBindingBase.UpdateSourceEventName.set -> void
 ~Microsoft.Maui.Controls.Xaml.IXamlTypeResolver.Resolve(string qualifiedTypeName, System.IServiceProvider serviceProvider = null, bool expandToExtension = true) -> System.Type
