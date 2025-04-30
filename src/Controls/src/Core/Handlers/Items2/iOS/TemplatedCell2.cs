@@ -92,30 +92,29 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				var constraints = GetMeasureConstraints(preferredAttributes);
 
-
-				if (PlatformHandler?.VirtualView is View view && view.Parent is CollectionView itemsView && itemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
+				if (_measureInvalidated || _cachedConstraints != constraints)
 				{
-					Size measure;
-					// Measure the first item at location (0, 0) and reuse its size for all items
-					if (preferredAttributes.Frame.Location == new CGPoint(0, 0))
+					if (PlatformHandler?.VirtualView is View view && view.Parent is CollectionView itemsView && itemsView.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
 					{
-						measure = virtualView.Measure(constraints.Width, constraints.Height);
+						Size measure;
+						if (preferredAttributes.IndexPath.Item == 0)
+						{
+							measure = view.Measure(preferredAttributes.Size.Width, preferredAttributes.Size.Height);
+						}
+						else
+						{
+							// Use the cached size for all other items
+							measure = _measuredSize;
+						}
+
+						_measuredSize = measure;
 					}
 					else
 					{
-						// Use the cached size for all other items
-						measure = _measuredSize;
+						var measure = virtualView.Measure(constraints.Width, constraints.Height);
+						_cachedConstraints = constraints;
+						_measuredSize = measure;
 					}
-
-					_measuredSize = measure;
-					_cachedConstraints = constraints;
-					_needsArrange = true;
-				}
-				else
-				{
-					// Measure each item individually
-					_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
-					_cachedConstraints = constraints;
 					_needsArrange = true;
 				}
 
