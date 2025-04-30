@@ -17,6 +17,16 @@ parameters:
   type: string
   default: skip
 
+- name: pushWorkloadSet
+  displayName: Push workload set channel
+  type: bool
+  default: true
+
+- name: pushNugetOrg
+  displayName: Push to NuGet.org
+  type: bool
+  default: true
+
 - name: VM_IMAGE_HOST
   type: object
   default:
@@ -62,6 +72,7 @@ extends:
     - stage: publish_maestro
       displayName: Publish to Workload Set channel
       dependsOn: []
+      condition: eq(${{ parameters.pushWorkloadSet }}, true)
       jobs:
       - job: publish_maestro
         displayName: Publish to Workload Set channel
@@ -126,6 +137,7 @@ extends:
     - stage: stage_push_packs
       displayName: Release packs
       dependsOn: []
+      condition: eq(${{ parameters.pushNugetOrg }}, true)
       jobs:
       # Waits for two hours for approval and will fail on timeout. The job can be re-ran to prompt another approval workflow after the initial timeout
       - job: push_packs_approval
@@ -192,6 +204,7 @@ extends:
     - stage: stage_push_manifests
       displayName: Release manifests
       dependsOn: []
+      condition: eq(${{ parameters.pushNugetOrg }}, true)
       jobs:
       # Waits for two hours for approval and will fail on timeout. The job can be re-ran to prompt another approval workflow after the initial timeout
       - job: push_manifests_approval
