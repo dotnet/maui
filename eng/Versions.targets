@@ -31,17 +31,17 @@
           Returns="$(Version)">
 
     <PropertyGroup>
-      <PreReleaseVersionLabel Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'">$(NightlyTag)</PreReleaseVersionLabel>
+      <PreReleaseVersionLabel Condition="'$(CI)' == 'true' and '$(BUILD_REASON)' == 'Schedule'">$(NightlyTag)</PreReleaseVersionLabel>
     </PropertyGroup>
 
     <ItemGroup>
 
-      <VersionMetadata Condition="$(CI) and '$(BUILD_REASON)' == 'PullRequest'"
+      <VersionMetadata Condition="'$(CI)' == 'true' and '$(BUILD_REASON)' == 'PullRequest'"
                        Include="pr.$(SYSTEM_PULLREQUEST_PULLREQUESTNUMBER)"/>
 
       <VersionMetadata Condition="'$(SourceLinkId)' != ''"  Include="sha.$(SourceLinkId)"/>
 
-      <VersionMetadata Condition="$(CI)"
+      <VersionMetadata Condition="'$(CI)' == 'true'"
                        Include="azdo.$(BUILD_BUILDID)"/>
     </ItemGroup>
 
@@ -52,8 +52,8 @@
     </PropertyGroup>
 
     <PropertyGroup>
-      <_SkipUpdateBuildNumber Condition="'$(SampleProject)' == 'true' or '$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true' or '$(IsTestProject)' == 'true' or '$(IsPackable)' == 'false' or '_SkipUpdateBuildNumber' == 'true' ">true</_SkipUpdateBuildNumber>
-      <_UpdateBuildNumber Condition="$(CI) and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)' AND '$(_SkipUpdateBuildNumber)' != 'true'">$(PackageVersion)</_UpdateBuildNumber>
+      <_SkipUpdateBuildNumber Condition="'$(SampleProject)' == 'true' or '$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true' or '$(MauiTestProject)' == 'true' or '$(IsPackable)' == 'false' or '_SkipUpdateBuildNumber' == 'true' ">true</_SkipUpdateBuildNumber>
+      <_UpdateBuildNumber Condition="'$(CI)' == 'true' and '$(BUILD_BUILDNUMBER)' != '$(PackageVersion)' AND '$(_SkipUpdateBuildNumber)' != 'true'">$(PackageVersion)</_UpdateBuildNumber>
     </PropertyGroup>
 
     <Error Condition="'$(_UpdateBuildNumber)' == '1.0.0'" Text="Unexpected _UpdateBuildNumber: '$(_UpdateBuildNumber)'" />
@@ -62,7 +62,7 @@
       <_UpdateBuildNumber Condition="'@(VersionMetadata)' != ''">$(_UpdateBuildNumber)+@(VersionMetadata -> '%(Identity)', '.')</_UpdateBuildNumber>
     </PropertyGroup>
 
-    <Message Condition="$(CI) and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
+    <Message Condition="'$(CI)' == 'true' and '$(BUILD_REASON)' == 'Schedule'" Importance="high" Text="##vso[build.addbuildtag]$(NightlyTag)"/>
     <Message Condition="'$(_UpdateBuildNumber)' != ''" Importance="high" Text="##vso[build.updatebuildnumber]$(_UpdateBuildNumber)"/>
 
   </Target>

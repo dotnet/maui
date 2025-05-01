@@ -43,6 +43,29 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("This Is A Footer");
         }
 
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void HeaderFooterHorizontalViewWorks()
+		{
+			// Navigate to the selection galleries
+			VisitInitialGallery("Header Footer");
+
+			// Navigate to the specific sample inside selection galleries
+			VisitSubGallery("Header/Footer (Horizontal Forms View)");
+
+			// Verify the header is visible
+			App.WaitForElement("This Is A Header");
+			
+			// Scroll right to ensure the footer is visible and positioned at the end
+			for (int i = 0; i < 5; i++)
+			{
+				App.ScrollRight("CV", ScrollStrategy.Auto, 0.9, 250);
+			}
+
+			// Verify the footer is visible
+			App.WaitForElement("This Is A Footer");
+		}
+
         [Test]
         [Category(UITestCategories.CollectionView)]
         public void HeaderFooterTemplateWorks()

@@ -47,10 +47,16 @@ namespace Microsoft.Maui.Graphics.Platform
 				return target;
 			}
 
-			UIGraphics.BeginImageContextWithOptions(target.Size, false, target.CurrentScale);
-			target.Draw(CGPoint.Empty);
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
+			var renderer = new UIGraphicsImageRenderer(target.Size, new UIGraphicsImageRendererFormat()
+			{
+				Opaque = false,
+				Scale = target.CurrentScale,
+			});
+
+			var image = renderer.CreateImage((context) =>
+			{
+				target.Draw(CGPoint.Empty);
+			});
 
 			if (disposeOriginal)
 			{

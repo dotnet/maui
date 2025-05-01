@@ -100,8 +100,6 @@ namespace Maui.Controls.Sample.Issues
 			while (Items.Count > 0)
 			{
 				Items.Remove(Items.Last());
-				Items.Remove(Items.Last());
-				Items.Remove(Items.Last());
 			}
 			RemoveAllItemsCommand.ChangeCanExecute();
 			RemoveLastItemCommand.ChangeCanExecute();
