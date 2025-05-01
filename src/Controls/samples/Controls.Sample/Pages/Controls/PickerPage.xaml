@@ -114,6 +114,13 @@
                         </Picker.Items>
                     </Picker>
                 </Grid>
+                <Label      
+                    Text="IsOpen"
+                    Style="{StaticResource Headline}"/>
+                <Picker
+                    x:Name="IsOpenPicker"/>
+                <Button Text="Open Picker" Clicked="OnOpenClicked" />
+                <Button Text="Close Picker" Clicked="OnCloseClicked" />
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
