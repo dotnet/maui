@@ -42,6 +42,8 @@ Microsoft.Maui.Controls.Picker.Closed -> System.EventHandler<Microsoft.Maui.Cont
 Microsoft.Maui.Controls.Picker.IsOpen.get -> bool
 Microsoft.Maui.Controls.Picker.IsOpen.set -> void
 Microsoft.Maui.Controls.Picker.Opened -> System.EventHandler<Microsoft.Maui.Controls.PickerOpenedEventArgs>
+Microsoft.Maui.Controls.PickerOpenedEventArgs
+Microsoft.Maui.Controls.PickerOpenedEventArgs.PickerOpenedEventArgs() -> void
 Microsoft.Maui.Controls.TimePicker.Closed -> System.EventHandler<Microsoft.Maui.Controls.PickerClosedEventArgs>
 Microsoft.Maui.Controls.TimePicker.IsOpen.get -> bool
 Microsoft.Maui.Controls.TimePicker.IsOpen.set -> void

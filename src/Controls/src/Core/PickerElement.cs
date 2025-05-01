@@ -12,21 +12,5 @@ namespace Microsoft.Maui.Controls
 		{
 			((IPickerElement)bindable).OnIsOpenPropertyChanged((bool)oldValue, (bool)newValue);
 		}
-
-		static void IsOpenPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var datePicker = (DatePicker)bindable;
-
-			bool isOpen = (bool)newValue;
-
-			// Only process if there's an actual change
-			if ((bool)oldValue == isOpen)
-				return;
-
-			if (isOpen)
-				datePicker.Opened?.Invoke(datePicker, new PickerOpenedEventArgs());
-			else
-				datePicker.Closed?.Invoke(datePicker, new PickerClosedEventArgs());
-		}
 	}
 }
