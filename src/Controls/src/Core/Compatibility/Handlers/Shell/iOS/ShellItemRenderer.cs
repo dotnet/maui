@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -104,6 +103,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			base.ViewDidLayoutSubviews();
 
 			_appearanceTracker?.UpdateLayout(this);
+			UpdateNavBarHidden();
 		}
 
 		public override void ViewDidLoad()
@@ -431,6 +431,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			UpdateTabBarHidden();
 			base.ViewWillLayoutSubviews();
+		}
+
+		void UpdateNavBarHidden()
+		{
+			if (SelectedViewController is UINavigationController navigationController && _displayedPage is not null)
+			{
+				navigationController.SetNavigationBarHidden(!Shell.GetNavBarIsVisible(_displayedPage), Shell.GetNavBarVisibilityAnimationEnabled(_displayedPage));
+			}
 		}
 
 		void UpdateTabBarHidden()
