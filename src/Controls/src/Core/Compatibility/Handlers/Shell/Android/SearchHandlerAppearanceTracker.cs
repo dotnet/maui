@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateInputType();
 		}
 
-		private void SearchHandlerFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
+	    void SearchHandlerFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
 		{
 			if(e.Focus)
 			{

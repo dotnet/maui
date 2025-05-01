@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Controls.TestCases.HostApp.Issues.Issue29277"
+             Title="Issue29277">
+    <ShellContent
+        Title="Home"
+        Route="MainPage">
+        <ContentPage>
+            <Shell.SearchHandler>
+                <SearchHandler
+                    x:Name="searchHandler"
+                    Placeholder="Enter Text"
+                    SearchBoxVisibility="Expanded"/>
+            </Shell.SearchHandler>
+            <VerticalStackLayout>
+                <Button Text="Focus()" AutomationId="FoucsButton" Clicked="Focus_Clicked"/>
+                <Button Text="UnFoucsu()" AutomationId="UnfocusButton" Clicked="Unfocus_Clicked" />
+            </VerticalStackLayout>
+        </ContentPage>
+    </ShellContent>
+</Shell>
