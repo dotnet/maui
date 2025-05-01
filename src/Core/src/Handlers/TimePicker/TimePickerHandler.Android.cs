@@ -87,7 +87,13 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateIsOpen(timePicker);
+			if (handler is TimePickerHandler timePickerHandler)
+			{
+				if (timePicker.IsOpen)
+					timePickerHandler.ShowPickerDialog();
+				else
+					timePickerHandler.HidePickerDialog();
+			}
 		}
 		
 		void ShowPickerDialog()
