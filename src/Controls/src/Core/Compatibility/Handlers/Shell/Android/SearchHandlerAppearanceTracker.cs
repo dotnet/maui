@@ -53,7 +53,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				_editText.ClearFocus();
 				if(_editText.IsSoftInputShowing())
+				{
 					_editText.HideSoftInput();
+				}
 				e.Result = !_editText.IsFocused;
 			}
 		}
