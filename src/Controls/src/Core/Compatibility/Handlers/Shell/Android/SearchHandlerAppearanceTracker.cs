@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 	    void SearchHandlerFocusChangeRequested(object sender, VisualElement.FocusRequestArgs e)
 		{
-			if(e.Focus)
+			if (e.Focus)
 			{
 				var request = new FocusRequest();
 			  	_editText.Focus(request);
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 			{
 				_editText.ClearFocus();
-				if(_editText.IsSoftInputShowing())
+				if (_editText.IsSoftInputShowing())
 				{
 					_editText.HideSoftInput();
 				}
