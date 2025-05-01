@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsOpen(this CalendarDatePicker platformDatePicker, IDatePicker datePicker)
 		{
-
+			platformDatePicker.IsCalendarOpen = datePicker.IsOpen;
 		}
 	}
 }

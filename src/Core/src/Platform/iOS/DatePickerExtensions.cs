@@ -141,8 +141,11 @@ public static class DatePickerExtensions
 		// TODO: Update TextAlignment based on the EffectiveFlowDirection property.
 	}
 
-	public static void UpdateIsOpen(this MauiDatePicker nativeDatePicker, IDatePicker datePicker)
+	public static void UpdateIsOpen(this MauiDatePicker platformDatePicker, IDatePicker datePicker)
 	{
-
+		if (datePicker.IsOpen)
+			platformDatePicker.BecomeFirstResponder();
+		else
+			platformDatePicker.ResignFirstResponder();
 	}
 }

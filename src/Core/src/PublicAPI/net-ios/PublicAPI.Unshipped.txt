@@ -112,7 +112,7 @@ static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 *REMOVED*virtual Microsoft.Maui.PropertyMapper.UpdateKeys.get -> System.Collections.Generic.IReadOnlyCollection<string!>!
 *REMOVED*static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement! view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
 static Microsoft.Maui.Platform.ApplicationExtensions.CreatePlatformWindow(this UIKit.IUIApplicationDelegate! platformApplication, Microsoft.Maui.IApplication! application, UIKit.UIApplication! uiApplication, Foundation.NSDictionary? launchOptions) -> void
-static Microsoft.Maui.Platform.DatePickerExtensions.UpdateIsOpen(this Microsoft.Maui.Platform.MauiDatePicker! nativeDatePicker, Microsoft.Maui.IDatePicker! datePicker) -> void
+static Microsoft.Maui.Platform.DatePickerExtensions.UpdateIsOpen(this Microsoft.Maui.Platform.MauiDatePicker! platformDatePicker, Microsoft.Maui.IDatePicker! datePicker) -> void
 static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microsoft.Maui.IElement? view, Microsoft.Maui.IMauiContext! context) -> UIKit.UIViewController!
 static Microsoft.Maui.Platform.PickerExtensions.UpdateIsOpen(this Microsoft.Maui.Platform.MauiPicker! platformPicker, Microsoft.Maui.IPicker! picker) -> void
 static Microsoft.Maui.Platform.TextInputExtensions.GetCursorPosition(this UIKit.IUITextInput! platformView, int cursorOffset = 0) -> int

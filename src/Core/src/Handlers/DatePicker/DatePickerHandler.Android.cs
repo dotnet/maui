@@ -128,7 +128,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
 		{
-			handler.PlatformView?.UpdateIsOpen(datePicker);
+			if (handler is DatePickerHandler platformHandler)
+				handler.PlatformView?.UpdateIsOpen(datePicker, platformHandler._dialog);
 		}
 
 		void ShowPickerDialog()
@@ -136,7 +137,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView is null)
 			{
 				return;
-			}
+			} 
 
 			if (_dialog is not null && _dialog.IsShowing)
 			{
