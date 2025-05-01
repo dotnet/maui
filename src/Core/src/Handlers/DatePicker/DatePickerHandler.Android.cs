@@ -126,6 +126,11 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView?.UpdateTextColor(datePicker);
 		}
 
+		public static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+			handler.PlatformView?.UpdateIsOpen(datePicker);
+		}
+
 		void ShowPickerDialog()
 		{
 			if (VirtualView is null)
