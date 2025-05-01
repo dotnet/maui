@@ -75,6 +75,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.Focus)
 				e.Result = _uiSearchBar.BecomeFirstResponder();
+			else
+				e.Result = _uiSearchBar.ResignFirstResponder();
 		}
 
 		void SearchHandlerPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
