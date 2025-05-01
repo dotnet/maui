@@ -9,6 +9,7 @@ Microsoft.Maui.Controls.Picker.IsOpen.set -> void
 Microsoft.Maui.Controls.Picker.Opened -> System.EventHandler<Microsoft.Maui.Controls.PickerOpenedEventArgs>
 Microsoft.Maui.Controls.PickerClosedEventArgs
 Microsoft.Maui.Controls.PickerOpenedEventArgs
+Microsoft.Maui.Controls.PickerOpenedEventArgs.PickerOpenedEventArgs() -> void
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
 *REMOVED*Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime
