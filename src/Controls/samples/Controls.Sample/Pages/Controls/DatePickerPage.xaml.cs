@@ -14,6 +14,22 @@ namespace Maui.Controls.Sample.Pages
 			UpdateDatePickerBackground();
 		}
 
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+
+			IsOpenDatePicker.Opened += IsOpenDatePickerOpened;
+			IsOpenDatePicker.Closed += IsOpenDatePickerClosed;
+		}
+
+		protected override void OnDisappearing()
+		{
+			base.OnDisappearing();
+
+			IsOpenDatePicker.Opened -= IsOpenDatePickerOpened;
+			IsOpenDatePicker.Closed -= IsOpenDatePickerClosed;
+		}
+
 		void OnUpdateBackgroundButtonClicked(object sender, EventArgs e)
 		{
 			UpdateDatePickerBackground();
@@ -60,5 +76,25 @@ namespace Maui.Controls.Sample.Pages
 		{
 			NullDatePicker.Date = DateTime.Now;
 		}
-    }
+
+		void OnOpenClicked(object sender, EventArgs e)
+		{
+			IsOpenDatePicker.IsOpen = true;
+		}
+
+		void OnCloseClicked(object sender, EventArgs e)
+		{
+			IsOpenDatePicker.IsOpen = false;
+		}
+
+		void IsOpenDatePickerOpened(object? sender, PickerOpenedEventArgs e)
+		{
+			Console.WriteLine("IsOpenDatePicker Opened");
+		}
+
+		void IsOpenDatePickerClosed(object? sender, PickerClosedEventArgs e)
+		{
+			Console.WriteLine("IsOpenDatePicker Closed");
+		}
+	}
 }
