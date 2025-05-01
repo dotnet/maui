@@ -20,7 +20,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsOpen(this MauiPicker platformPicker, IPicker picker)
 		{
-
+			if (picker.IsOpen)
+				platformPicker.BecomeFirstResponder();
+			else
+				platformPicker.ResignFirstResponder();
 		}
 
 		internal static void SetTitleColor(this MauiPicker platformPicker, IPicker picker)

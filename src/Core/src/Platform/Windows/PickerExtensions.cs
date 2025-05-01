@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsOpen(this ComboBox nativeComboBox, IPicker picker)
 		{
-	
+			nativeComboBox.IsDropDownOpen = picker.IsOpen;
 		}
 	}
 }

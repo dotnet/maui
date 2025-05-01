@@ -88,7 +88,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsOpen(IPickerHandler handler, IPicker picker)
 		{
-			handler.PlatformView?.UpdateIsOpen(picker);
+			if (handler is PickerHandler pickerHandler)
+				handler.PlatformView?.UpdateIsOpen(picker, pickerHandler._dialog);
 		}
 		
 		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
