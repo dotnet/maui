@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 
@@ -28,6 +29,10 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("black.png", "#000000")]
 		public async Task GetImageAsyncWithResource(string filename, string colorHex)
 		{
+#if IOS || MACCATALYST
+			await MainThread.InvokeOnMainThreadAsync(async () =>
+		   {
+#endif
 			var expectedColor = Color.FromArgb(colorHex);
 
 			var service = new FileImageSourceService();
@@ -38,6 +43,9 @@ namespace Microsoft.Maui.DeviceTests
 			var image = result.Value;
 
 			image.AssertColorAtCenter(expectedColor.ToPlatform());
+#if IOS || MACCATALYST
+		});
+#endif
 		}
 
 		[Theory]
@@ -46,6 +54,10 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task GetImageAsyncWithFile(string colorHex)
 		{
+#if IOS || MACCATALYST
+			await MainThread.InvokeOnMainThreadAsync(async () =>
+		   {
+#endif
 			var expectedColor = Color.FromArgb(colorHex);
 
 			var service = new FileImageSourceService();
@@ -57,6 +69,10 @@ namespace Microsoft.Maui.DeviceTests
 			var image = result.Value;
 
 			image.AssertColorAtCenter(expectedColor.ToPlatform());
+#if IOS || MACCATALYST
+		});
+#endif
+
 		}
 
 		[Theory]
@@ -65,6 +81,10 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task GetImageAsyncWithFileLoadsFileInsteadOfResource(string colorHex)
 		{
+#if IOS || MACCATALYST
+			await MainThread.InvokeOnMainThreadAsync(async () =>
+		   {
+#endif
 			var expectedColor = Color.FromArgb(colorHex);
 
 			var service = new FileImageSourceService();
@@ -76,6 +96,9 @@ namespace Microsoft.Maui.DeviceTests
 			var image = result.Value;
 
 			image.AssertColorAtCenter(expectedColor.ToPlatform());
+#if IOS || MACCATALYST
+		});
+#endif
 		}
 #endif
 	}
