@@ -39,6 +39,12 @@ Microsoft.Maui.HybridWebViewRawMessage.HybridWebViewRawMessage() -> void
 Microsoft.Maui.HybridWebViewRawMessage.Message.get -> string?
 Microsoft.Maui.HybridWebViewRawMessage.Message.set -> void
 Microsoft.Maui.IApplication.ActivateWindow(Microsoft.Maui.IWindow! window) -> void
+*REMOVED*Microsoft.Maui.IDatePicker.Date.get -> System.DateTime
+*REMOVED*Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime
+*REMOVED*Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime
+Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime?
+Microsoft.Maui.IDatePicker.MinimumDate.get -> System.DateTime?
+Microsoft.Maui.IDatePicker.Date.get -> System.DateTime?
 Microsoft.Maui.IHybridWebView
 Microsoft.Maui.IHybridWebView.DefaultFile.get -> string?
 Microsoft.Maui.IHybridWebView.EvaluateJavaScriptAsync(string! script) -> System.Threading.Tasks.Task<string?>!
@@ -110,10 +116,12 @@ static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 *REMOVED*readonly Microsoft.Maui.PropertyMapper._mapper -> System.Collections.Generic.Dictionary<string!, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>!>!
 *REMOVED*virtual Microsoft.Maui.PropertyMapper.ClearKeyCache() -> void
 *REMOVED*virtual Microsoft.Maui.PropertyMapper.UpdateKeys.get -> System.Collections.Generic.IReadOnlyCollection<string!>!
+static Microsoft.Maui.Platform.ButtonExtensions.UpdateRippleColor(this Google.Android.Material.Button.MaterialButton! platformView, Microsoft.Maui.Graphics.Color? rippleColor) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.GetCursorPosition(this Android.Widget.EditText! editText, int cursorOffset = 0) -> int
 static Microsoft.Maui.Platform.EditTextExtensions.GetSelectedTextLength(this Android.Widget.EditText! editText) -> int
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformButton, Microsoft.Maui.IImageButton! imageButton) -> void
+static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateRippleColor(this Google.Android.Material.ImageView.ShapeableImageView! platformView, Microsoft.Maui.Graphics.Color! rippleColor) -> void
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Platform.MauiWebChromeClient.OnHideCustomView() -> void
