@@ -18,9 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Bugzilla31255Test()
 		{
 			App.Screenshot("I am at Bugzilla 31255");
-			Thread.Sleep(5000);
-			var text = App.WaitForElement("MauiLabel").GetText();
-			Assert.That(text, Is.EqualTo("Page1. But Page2 IsAlive = False"));
+			App.AssertMemoryTest();
 		}
 	}
 }

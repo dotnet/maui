@@ -49,8 +49,7 @@
 			{
 				while (true)
 				{
-					((Label)((StackLayout)Content).Children[0]).Text =
-							string.Format("Page1. But Page2 IsAlive = {0}", _page2Tracker.IsAlive);
+					((Label)((StackLayout)Content).Children[0]).Text = _page2Tracker.IsAlive ? "Failed" : "Success";
 					await Task.Delay(1000);
 					GarbageCollectionHelper.Collect();
 				}
