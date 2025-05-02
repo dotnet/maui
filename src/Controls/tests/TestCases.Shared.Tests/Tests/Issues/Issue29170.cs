@@ -1,4 +1,4 @@
-﻿#if IOS
+﻿#if IOS //iOS only support the SetUseSafeArea
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
