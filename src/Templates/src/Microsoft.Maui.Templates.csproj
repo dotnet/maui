@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  <!-- Import Component Governance manifest generation targets -->
+  <Import Project="$(MSBuildThisFileDirectory)../../../eng/CgManifest.targets" />
+  
   <UsingTask TaskName="ReplaceFileText" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
     <ParameterGroup>
       <InputFilename ParameterType="System.String" Required="true" />
@@ -55,6 +57,8 @@
       <IntermediateLocation>$(IntermediateOutputPath)$([System.String]::Concat(%(RelativeDir), '%(Filename)%(Extension)'))</IntermediateLocation>
     </TemplateJsonInput>
     <Content Include="templates\**\*" Exclude="templates\**\bin\**;templates\**\obj\**;@(TemplateJsonInput)" />
+    <!-- Only include cgmanifest.json when GenerateCgManifest is true (for CI builds) -->
+    <Content Include="cgmanifest.json" Pack="true" PackagePath="content" Condition="'$(GenerateCgManifest)' == 'true'" />
     <Compile Remove="**\*" />
   </ItemGroup>
 
@@ -102,6 +106,14 @@
     />
   </Target>
 
+  <!-- CgManifest generation configuration -->
+  <PropertyGroup>
+    <!-- Always generate the file, but only include in package when explicitly requested -->
+    <UpdateCgManifestBeforeBuild>true</UpdateCgManifestBeforeBuild>
+    <!-- Controls whether to include cgmanifest.json in the package (default: false) -->
+    <GenerateCgManifest Condition="'$(GenerateCgManifest)' == ''">false</GenerateCgManifest>
+  </PropertyGroup>
+  
   <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
     <PackageReference Include="Microsoft.TemplateEngine.Tasks" Version="$(MicrosoftTemplateEngineTasksVersion)" PrivateAssets="all" IsImplicitlyDefined="true" />
   </ItemGroup>

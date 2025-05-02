@@ -22,11 +22,8 @@ public class Issue28930 : _IssuesUITest
 		App.WaitForElement("dotnetbot4");
 		
 		App.ScrollRight("MyCarousel", swipePercentage: 0.9, swipeSpeed: 200);
-
-		if (!App.WaitForTextToBePresentInElement("ItemLabel", "Item 2"))
-		{
-			Assert.Fail("Item 2 not found");
-		}
+		
+		Assert.That(App.WaitForElementTillPageNavigationSettled("Item 2").GetText(), Is.EqualTo("Item 2"));
 	}
 }
 
