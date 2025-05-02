@@ -17,5 +17,10 @@
                 HorizontalOptions="Center"
                 AutomationId="HeaderFooterViewButton"
                 WidthRequest="400"/>
+         <Button Text="CollectionViewScrollingBehaviorPage"
+                Clicked="OnScrollingButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="ScrollingButton"
+                WidthRequest="400"/>
     </VerticalStackLayout>
 </ContentPage>
