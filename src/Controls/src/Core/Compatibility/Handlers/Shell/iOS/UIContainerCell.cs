@@ -33,10 +33,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			platformView.AccessibilityTraits |= UIAccessibilityTrait.Button;
 			platformView.TranslatesAutoresizingMaskIntoConstraints = false;
 
-			ContentView.LeadingAnchor.ConstraintEqualTo(platformView.LeadingAnchor).Active = true;
-			ContentView.TrailingAnchor.ConstraintEqualTo(platformView.TrailingAnchor).Active = true;
-			ContentView.TopAnchor.ConstraintEqualTo(platformView.TopAnchor).Active = true;
-			ContentView.BottomAnchor.ConstraintEqualTo(platformView.BottomAnchor).Active = true;
+			var margin = view.Margin;
+			platformView.LeadingAnchor.ConstraintEqualTo(ContentView.LeadingAnchor, (nfloat)margin.Left).Active = true;
+			platformView.TrailingAnchor.ConstraintEqualTo(ContentView.TrailingAnchor, (nfloat)(-margin.Right)).Active = true;
+			platformView.TopAnchor.ConstraintEqualTo(ContentView.TopAnchor, (nfloat)margin.Top).Active = true;
+			platformView.BottomAnchor.ConstraintEqualTo(ContentView.BottomAnchor, (nfloat)(-margin.Bottom)).Active = true;
 
 			_renderer.PlatformView.ClipsToBounds = true;
 			ContentView.ClipsToBounds = true;
