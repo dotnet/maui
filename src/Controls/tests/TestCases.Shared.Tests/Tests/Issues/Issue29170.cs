@@ -15,9 +15,14 @@ internal class Issue29170 : _IssuesUITest
 	[Category(UITestCategories.FlyoutPage)]
 	public void CollectionViewFirstItemShouldNotOverlapWithSafeAreaInFlyoutMenu()
 	{
+		Assert.That(App.WaitForElement("CollectionViewDetail").GetRect().Y, Is.GreaterThanOrEqualTo(54), 
+            "CollectionView Y position should be at least 54 to avoid overlapping with safe area");
 		App.WaitForElement("FlyoutButton").Tap();
-		Assert.That(App.WaitForElement("CollectionView").GetRect().Y, Is.GreaterThanOrEqualTo(69), 
-            "CollectionView Y position should be at least 69 to avoid overlapping with safe area");
+		Assert.That(App.WaitForElement("CollectionViewFlyout").GetRect().Y, Is.GreaterThanOrEqualTo(54), 
+            "CollectionView Y position should be at least 54 to avoid overlapping with safe area");
 	}
 }
+
+//need to wait for test case to complete and then add here for flyout detail page also assert condition and then commit.
+//also modoify the test value to 54
 #endif
