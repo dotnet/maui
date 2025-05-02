@@ -371,6 +371,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var lv = (ListViewBase)sender;
 				lv.Loaded -= ListViewLoaded;
 				FindScrollViewer(listView);
+				if (Element is CarouselView carouselView)
+				{
+					UpdateVerticalScrollBarVisibility();
+					UpdateHorizontalScrollBarVisibility();
+				}
 			}
 
 			listView.Loaded += ListViewLoaded;
@@ -392,31 +397,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			if (Element is CarouselView)
-			{
-				var scrollViewer = _scrollViewer ?? Control.GetFirstDescendant<ScrollViewer>();
-				if (scrollViewer == null)
-				{
-					// If ScrollViewer is still null, attach a Loaded event to retry later
-					(Control as ListViewBase).Loaded += (sender, args) =>
-					{
-						scrollViewer = Control.GetFirstDescendant<ScrollViewer>();
-						if (scrollViewer != null)
-						{
-							ApplyVerticalScrollBarVisibility(scrollViewer);
-						}
-					};
-					return;
-				}
-			}
-			else
-			{
-				ApplyVerticalScrollBarVisibility(Control);
-			}
-		}
-
-		void ApplyVerticalScrollBarVisibility(object scrollViewer)
-		{
 			switch (Element.VerticalScrollBarVisibility)
 			{
 				case (ScrollBarVisibility.Always):
@@ -433,45 +413,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateHorizontalScrollBarVisibility()
 		{
-			if (Element.HorizontalScrollBarVisibility != ScrollBarVisibility.Default)
-			{
-				// If the value is changing to anything other than the default, record the default 
-				if (_defaultHorizontalScrollVisibility == null)
-					_defaultHorizontalScrollVisibility = ScrollViewer.GetHorizontalScrollBarVisibility(Control);
-			}
-
 			if (_defaultHorizontalScrollVisibility == null)
-			{
-				// If the default has never been recorded, then this has never been set to anything but the 
-				// default value; there's nothing to do.
-				return;
-			}
-			//Attempt to find the ScrollViewer within the ListViewBase
-			if (Element is CarouselView)
-			{
-				var scrollViewer = _scrollViewer ?? Control.GetFirstDescendant<ScrollViewer>();
-				if (scrollViewer == null)
-				{
-					// If ScrollViewer is still null, attach a Loaded event to retry later
-					(Control as ListViewBase).Loaded += (sender, args) =>
-					{
-						scrollViewer = Control.GetFirstDescendant<ScrollViewer>();
-						if (scrollViewer != null)
-						{
-							ApplyHorizontalScrollBarVisibility();
-						}
-					};
-					return;
-				}
-			}
-			else
-			{
-				ApplyHorizontalScrollBarVisibility();
-			}
-		}
+				_defaultHorizontalScrollVisibility = ScrollViewer.GetHorizontalScrollBarVisibility(Control);
 
-		void ApplyHorizontalScrollBarVisibility()
-		{
 			switch (Element.HorizontalScrollBarVisibility)
 			{
 				case (ScrollBarVisibility.Always):
@@ -644,7 +588,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				default:
 					return elementBounds.Left < containerBounds.Right && elementBounds.Right > containerBounds.Left;
-			};
+			}
+			;
 		}
 
 		async void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
