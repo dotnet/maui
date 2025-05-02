@@ -17,11 +17,9 @@ public class Issue29277 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void FocusCallShouldWorkOnSearchHandler()
 	{
-		App.WaitForElement("FoucsButton");
-        App.Tap("FoucsButton");
-		Thread.Sleep(2000);
-        var text  = App.WaitForElement("MauiLabel").GetText();
-		Assert.That(text,Is.EqualTo("Focused"));
+		App.WaitForElement("FocusButton");
+        App.Tap("FocusButton");
+		App.WaitForTextToBePresentInElement("MauiLabel", "Focused");
 	}
 
     [Test]
@@ -30,8 +28,6 @@ public class Issue29277 : _IssuesUITest
 	{
 		App.WaitForElement("UnfocusButton");
         App.Tap("UnfocusButton");
-		Thread.Sleep(2000);
-        var text  = App.WaitForElement("MauiLabel").GetText();
-		Assert.That(text,Is.EqualTo("Unfocused"));
+		App.WaitForTextToBePresentInElement("MauiLabel", "Unfocused");
 	}
 }
