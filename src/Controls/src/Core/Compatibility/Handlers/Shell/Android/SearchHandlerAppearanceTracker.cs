@@ -45,18 +45,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			if (e.Focus)
 			{
-				var request = new FocusRequest();
-			  	_editText.Focus(request);
-				e.Result = request.Result;
+				e.Result = _editText.RequestFocus();
 			}
 			else
 			{
 				_editText.ClearFocus();
-				if (_editText.IsSoftInputShowing())
-				{
-					_editText.HideSoftInput();
-				}
-				e.Result = !_editText.IsFocused;
+				e.Result = _editText.IsFocused;
 			}
 		}
 

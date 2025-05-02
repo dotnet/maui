@@ -11,10 +11,12 @@ public partial class Issue29277 : Shell
 	private void Focus_Clicked(object sender, EventArgs e)
 	{
 		searchHandler.Focus();
+		label.Text="Focused";
 	}
 
 	private void Unfocus_Clicked(object sender, EventArgs e)
 	{
 		searchHandler.Unfocus();
+		label.Text = "Unfocused";
 	}
 }
