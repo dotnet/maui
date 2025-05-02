@@ -9,7 +9,8 @@
         <ContentPage>
             <Shell.SearchHandler>
                 <SearchHandler
-                    x:Name="searchHandler"
+                    x:Name="searchHandler" Focused="searchHandler_Focused"
+                    Unfocused="searchHandler_Unfocused"
                     Placeholder="Enter Text"
                     SearchBoxVisibility="Expanded"/>
             </Shell.SearchHandler>
