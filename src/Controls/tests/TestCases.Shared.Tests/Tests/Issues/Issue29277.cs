@@ -20,7 +20,8 @@ public class Issue29277 : _IssuesUITest
 		App.WaitForElement("FoucsButton");
         App.Tap("FoucsButton");
 		Thread.Sleep(2000);
-        VerifyScreenshot();
+        var text  = App.WaitForElement("MauiLabel").GetText();
+		Assert.That(text,Is.EqualTo("Focused"));
 	}
 
     [Test]
@@ -30,6 +31,7 @@ public class Issue29277 : _IssuesUITest
 		App.WaitForElement("UnfocusButton");
         App.Tap("UnfocusButton");
 		Thread.Sleep(2000);
-        VerifyScreenshot();
+        var text  = App.WaitForElement("MauiLabel").GetText();
+		Assert.That(text,Is.EqualTo("Unfocused"));
 	}
 }

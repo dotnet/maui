@@ -15,7 +15,8 @@
             </Shell.SearchHandler>
             <VerticalStackLayout>
                 <Button Text="Focus()" AutomationId="FoucsButton" Clicked="Focus_Clicked"/>
-                <Button Text="UnFoucsu()" AutomationId="UnfocusButton" Clicked="Unfocus_Clicked" />
+                <Button Text="Unfocus()" AutomationId="UnfocusButton" Clicked="Unfocus_Clicked" />
+                <Label x:Name="label" AutomationId="MauiLabel" />
             </VerticalStackLayout>
         </ContentPage>
     </ShellContent>
