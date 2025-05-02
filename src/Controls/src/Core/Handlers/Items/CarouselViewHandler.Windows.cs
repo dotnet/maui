@@ -99,6 +99,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_scrollViewer.SizeChanged += OnScrollViewSizeChanged;
 
 			UpdateScrollBarVisibilityForLoop();
+			UpdateHorizontalScrollBarVisibility();
+			UpdateVerticalScrollBarVisibility();
 		}
 
 		protected override ICollectionView GetCollectionView(CollectionViewSource collectionViewSource)

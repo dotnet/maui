@@ -371,17 +371,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var lv = (ListViewBase)sender;
 				lv.Loaded -= ListViewLoaded;
 				FindScrollViewer(listView);
-				if (Element is CarouselView carouselView)
-				{
-					UpdateVerticalScrollBarVisibility();
-					UpdateHorizontalScrollBarVisibility();
-				}
 			}
 
 			listView.Loaded += ListViewLoaded;
 		}
 
-		void UpdateVerticalScrollBarVisibility()
+		private protected void UpdateVerticalScrollBarVisibility()
 		{
 			if (Element.VerticalScrollBarVisibility != ScrollBarVisibility.Default)
 			{
@@ -411,7 +406,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		void UpdateHorizontalScrollBarVisibility()
+		private protected void UpdateHorizontalScrollBarVisibility()
 		{
 			if (_defaultHorizontalScrollVisibility == null)
 				_defaultHorizontalScrollVisibility = ScrollViewer.GetHorizontalScrollBarVisibility(Control);
