@@ -101,15 +101,8 @@ namespace Microsoft.Maui.Storage
 		// we can't do anything here, but Windows will take care of it
 		string PlatformGetContentType(string extension) => null;
 
-		internal async virtual Task<Stream> PlatformOpenReadAsync()
-		{
-			if (File is null && FullPath is not null)
-			{
-				File = await StorageFile.GetFileFromPathAsync(FullPath);
-			}
-
-			return await File.OpenStreamForReadAsync();
-		}
+		internal virtual Task<Stream> PlatformOpenReadAsync() =>
+			File.OpenStreamForReadAsync();
 	}
 
 	public partial class FileResult

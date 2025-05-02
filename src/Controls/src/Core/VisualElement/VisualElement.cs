@@ -269,12 +269,9 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create("TransformOrigin", typeof(Point), typeof(VisualElement), new Point(.5d, .5d),
 									propertyChanged: (b, o, n) => { (((VisualElement)b).AnchorX, ((VisualElement)b).AnchorY) = (Point)n; });
 
-		bool _isVisibleExplicit = (bool)IsVisibleProperty.DefaultValue;
-
 		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(VisualElement), true,
-			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue),
-			coerceValue: CoerceIsVisibleProperty);
+			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
 
 		/// <summary>Bindable property for <see cref="Opacity"/>.</summary>
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create(nameof(Opacity), typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
@@ -708,36 +705,6 @@ namespace Microsoft.Maui.Controls
 				}
 
 				return _inputTransparentExplicit;
-			}
-		}
-
-		/// <summary>
-		/// This value represents the cumulative IsVisible value.
-		/// All types that override this property need to also invoke
-		/// the RefreshIsVisibleProperty() method if the value will change.
-		/// </summary>
-		private protected bool IsVisibleCore
-		{
-			get
-			{
-				if (_isVisibleExplicit == false)
-				{
-					// If the explicitly set value is false, then nothing else matters
-					// And we can save the effort of a Parent check
-					return false;
-				}
-
-				var parent = Parent as VisualElement;
-				while (parent is not null)
-				{
-					if (!parent.IsVisible)
-					{
-						return false;
-					}
-					parent = parent.Parent as VisualElement;
-				}
-
-				return _isVisibleExplicit;
 			}
 		}
 
@@ -1627,7 +1594,6 @@ namespace Microsoft.Maui.Controls
 				fe.Handler?.UpdateValue(nameof(IView.Visibility));
 			}
 
-			(this as IPropertyPropagationController)?.PropagatePropertyChanged(IsVisibleProperty.PropertyName);
 			InvalidateMeasureInternal(InvalidationTrigger.Undefined);
 		}
 
@@ -1792,17 +1758,6 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		static object CoerceIsVisibleProperty(BindableObject bindable, object value)
-		{
-			if (bindable is VisualElement visualElement)
-			{
-				visualElement._isVisibleExplicit = (bool)value;
-				return visualElement.IsVisibleCore;
-			}
-
-			return false;
-		}
-
 		static void OnInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			(bindable as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.InputTransparentProperty.PropertyName);
@@ -1869,9 +1824,6 @@ namespace Microsoft.Maui.Controls
 
 			if (propertyName == null || propertyName == InputTransparentProperty.PropertyName)
 				this.RefreshPropertyValue(InputTransparentProperty, _inputTransparentExplicit);
-
-			if (propertyName == null || propertyName == IsVisibleProperty.PropertyName)
-				this.RefreshPropertyValue(IsVisibleProperty, _isVisibleExplicit);
 
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}

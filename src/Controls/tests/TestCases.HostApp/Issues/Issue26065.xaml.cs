@@ -7,16 +7,17 @@ namespace Maui.Controls.Sample.Issues
 	{
 		public Issue26065()
 		{
-			InitializeComponent();BindingContext = new BookViewModel();
+			InitializeComponent();
+			BindingContext = new BookViewModel();
 		}
-	
+
 
 		private void Button_Clicked(object sender, EventArgs e)
 		{
-			if(collView.ItemsLayout is LinearItemsLayout linearItemsLayout)
+			if (collView.ItemsLayout is LinearItemsLayout linearItemsLayout)
 			{
-				linearItemsLayout.ItemSpacing = 20;				
-			} 
+				linearItemsLayout.ItemSpacing = 20;
+			}
 		}
 	}
 
@@ -27,16 +28,16 @@ namespace Maui.Controls.Sample.Issues
 	}
 
 	// ViewModel
-	public class BookViewModel 
+	public class BookViewModel
 	{
 		private ObservableCollection<Book> _bookGroups;
 		public ObservableCollection<Book> Books
 		{
 			get => _bookGroups;
-			set 
+			set
 			{
 				_bookGroups = value;
-				
+
 			}
 		}
 
@@ -49,18 +50,18 @@ namespace Maui.Controls.Sample.Issues
 		{
 			Books = new ObservableCollection<Book>
 			{
-				
+
 					new Book { Title = "Dune", Author = "Frank Herbert" },
 					new Book { Title = "Neuromancer", Author = "William Gibson" },
-			
-				
+
+
 					new Book { Title = "The Hobbit", Author = "J.R.R. Tolkien" },
 					new Book { Title = "Name of the Wind", Author = "Patrick Rothfuss" },
-				
-				
+
+
 					new Book { Title = "Murder on the Orient Express", Author = "Agatha Christie" },
 					new Book { Title = "The Girl with the Dragon Tattoo", Author = "Stieg Larsson" }
-				
+
 			};
 		}
 	}
