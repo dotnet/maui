@@ -93,6 +93,38 @@
             return response.status;
         }
 
+        async function RequestsWithAppUriCanBeIntercepted() {
+            const response = await fetch(`${window.location.origin}/api/sample?param1=value1&param2=value2`);
+            const jsonData = await response.json();
+            return jsonData;
+        }
+
+        async function RequestsCanBeIntercepted() {
+            const response = await fetch('https://echo.free.beeceptor.com/sample-request?param1=value1&param2=value2', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Test-Header': 'Test Value',
+                    'X-Echo-Name': 'Matthew'
+                }
+            });
+            const jsonData = await response.json();
+            return jsonData;
+        }
+
+        async function RequestsWithCustomSchemeCanBeIntercepted() {
+            const response = await fetch('app://echoservice/?param1=value1&param2=value2', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Test-Header': 'Test Value',
+                    'X-Echo-Name': 'Matthew'
+                }
+            });
+            const jsonData = await response.json();
+            return jsonData;
+        }
+
         function ThrowAnError(value, errorType) {
             if (errorType === 1) {                  // throw number
                 throw value;

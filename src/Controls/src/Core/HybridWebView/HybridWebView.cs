@@ -66,6 +66,16 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
 
+		bool IHybridWebView.WebResourceRequested(WebResourceRequestedEventArgs args)
+		{
+			var platformArgs = new PlatformHybridWebViewWebResourceRequestedEventArgs(args);
+			var e = new HybridWebViewWebResourceRequestedEventArgs(platformArgs);
+			WebResourceRequested?.Invoke(this, e);
+			return e.Handled;
+		}
+
+		public event EventHandler<HybridWebViewWebResourceRequestedEventArgs>? WebResourceRequested;
+
 		/// <summary>
 		/// Sends a raw message to the code running in the web view. Raw messages have no additional processing.
 		/// </summary>
