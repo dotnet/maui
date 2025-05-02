@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Runtime.Versioning;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Foundation;
@@ -130,7 +129,6 @@ namespace Microsoft.Maui.Handlers
 		private class SchemeHandler : NSObject, IWKUrlSchemeHandler
 		{
 			private readonly WeakReference<HybridWebViewHandler?> _webViewHandler;
-			private readonly Lazy<byte[]> _404MessageBytes = new(() => Encoding.UTF8.GetBytes("Resource not found (404)"));
 
 			public SchemeHandler(HybridWebViewHandler webViewHandler)
 			{
@@ -151,37 +149,79 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
-				var url = urlSchemeTask.Request.Url?.AbsoluteString ?? "";
+				var url = urlSchemeTask.Request.Url.AbsoluteString ?? "";
 
-				var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url);
+				var logger = Handler.MauiContext?.CreateLogger<HybridWebViewHandler>();
 
-				using (var dic = new NSMutableDictionary<NSString, NSString>())
+				logger?.LogDebug("Intercepting request for {Url}.", url);
+
+				// 1. First check if the app wants to modify or override the request.
 				{
-					dic.Add((NSString)"Content-Length", (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture));
-					dic.Add((NSString)"Content-Type", (NSString)contentType);
-					// Disable local caching. This will prevent user scripts from executing correctly.
-					dic.Add((NSString)"Cache-Control", (NSString)"no-cache, max-age=0, must-revalidate, no-store");
+					// 1.a. First, create the event args
+					var platformArgs = new WebResourceRequestedEventArgs(webView, urlSchemeTask);
 
-					if (urlSchemeTask.Request.Url != null)
+					// 1.b. Trigger the event for the app
+					var handled = Handler.VirtualView.WebResourceRequested(platformArgs);
+
+					// 1.c. If the app reported that it completed the request, then we do nothing more
+					if (handled)
 					{
-						using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
-						urlSchemeTask.DidReceiveResponse(response);
+						logger?.LogDebug("Request for {Url} was handled by the user.", url);
+
+						return;
 					}
 				}
 
-				urlSchemeTask.DidReceiveData(NSData.FromArray(bytes));
-				urlSchemeTask.DidFinish();
+				// 2. If this is an app request, then assume the request is for a local resource.
+				if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
+				{
+					logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", url);
+
+					// 2.a. Check if the request is for a local resource
+					var (bytes, contentType, statusCode) = await GetResponseBytesAsync(url, logger);
+
+					// 2.b. Return the response header
+					using var dic = new NSMutableDictionary<NSString, NSString>();
+					if (contentType is not null)
+					{
+						dic[(NSString)"Content-Type"] = (NSString)contentType;
+					}
+					if (bytes?.Length > 0)
+					{
+						// Disable local caching which would otherwise prevent user scripts from executing correctly.
+						dic[(NSString)"Cache-Control"] = (NSString)"no-cache, max-age=0, must-revalidate, no-store";
+						dic[(NSString)"Content-Length"] = (NSString)bytes.Length.ToString(CultureInfo.InvariantCulture);
+					}
+
+					using var response = new NSHttpUrlResponse(urlSchemeTask.Request.Url, statusCode, "HTTP/1.1", dic);
+					urlSchemeTask.DidReceiveResponse(response);
+
+					// 2.c. Return the body
+					if (bytes?.Length > 0)
+					{
+						urlSchemeTask.DidReceiveData(NSData.FromArray(bytes));
+					}
+
+					// 2.d. Finish the task
+					urlSchemeTask.DidFinish();
+				}
+
+				// 3. If the request is not handled by the app nor is it a local source, then we let the WKWebView
+				//    handle the request as it would normally do. This means that it will try to load the resource
+				//    from the internet or from the local cache.
+
+				logger?.LogDebug("Request for {Url} was not handled.", url);
 			}
 
-			private async Task<(byte[] ResponseBytes, string ContentType, int StatusCode)> GetResponseBytesAsync(string? url)
+			private async Task<(byte[]? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string? url, ILogger? logger)
 			{
 				if (Handler is null)
 				{
-					return (_404MessageBytes.Value, ContentType: "text/plain", StatusCode: 404);
+					return (null, ContentType: null, StatusCode: 404);
 				}
 
 				var fullUrl = url;
-				url = HybridWebViewQueryStringHelper.RemovePossibleQueryString(url);
+				url = WebUtils.RemovePossibleQueryString(url);
 
 				if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
 				{
@@ -192,6 +232,8 @@ namespace Microsoft.Maui.Handlers
 					// 1. Try special InvokeDotNet path
 					if (relativePath == InvokeDotNetPath)
 					{
+						logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", url);
+
 						var fullUri = new Uri(fullUrl!);
 						var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
 						var contentBytes = await Handler.InvokeDotNetAsync(invokeQueryString);
@@ -213,8 +255,8 @@ namespace Microsoft.Maui.Handlers
 					{
 						if (!ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
 						{
-							// TODO: Log this
 							contentType = "text/plain";
+							logger?.LogWarning("Could not determine content type for '{relativePath}'", relativePath);
 						}
 					}
 
@@ -222,11 +264,16 @@ namespace Microsoft.Maui.Handlers
 
 					if (File.Exists(assetPath))
 					{
+						// 2.a. If something was found, return the content
+						logger?.LogDebug("Request for {Url} will return an app package file.", url);
+
 						return (File.ReadAllBytes(assetPath), contentType, StatusCode: 200);
 					}
 				}
 
-				return (_404MessageBytes.Value, ContentType: "text/plain", StatusCode: 404);
+				// 2.b. Otherwise, return a 404
+				logger?.LogDebug("Request for {Url} could not be fulfilled.", url);
+				return (null, ContentType: null, StatusCode: 404);
 			}
 
 			[Export("webView:stopURLSchemeTask:")]
