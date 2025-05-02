@@ -22,7 +22,4 @@ internal class Issue29170 : _IssuesUITest
             "CollectionView Y position should be at least 54 to avoid overlapping with safe area");
 	}
 }
-
-//need to wait for test case to complete and then add here for flyout detail page also assert condition and then commit.
-//also modoify the test value to 54
 #endif
