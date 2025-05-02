@@ -33,7 +33,28 @@ public class SourceGenXamlTests : SourceGenTestsBase
 
 		Assert.IsFalse(result.Diagnostics.Any());
 
-		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
+		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
+
+		Assert.IsTrue(generated.Contains("Microsoft.Maui.Controls.Button MyButton", StringComparison.Ordinal));
+	}
+
+	[Test]
+	public void TestCodeBehindGenerator_GlobalNamespace()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage x:Class="Test.TestPage">
+		<Button x:Name="MyButton" Text="Hello MAUI!" />
+</ContentPage>
+""";
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText("[assembly: global::Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclaration]"));
+		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+
+		Assert.IsFalse(result.Diagnostics.Any());
+
+		var generated = result.Results.Single().GeneratedSources.Single(gs=>gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
 		Assert.IsTrue(generated.Contains("Microsoft.Maui.Controls.Button MyButton", StringComparison.Ordinal));
 	}
@@ -88,7 +109,7 @@ using Microsoft.Maui.Controls;
 
 		Assert.IsFalse(result.Diagnostics.Any());
 
-		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
+		var generated = result.Results.Single().GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
 		Assert.IsTrue(generated.Contains("Test.TestControl MyTestControl", StringComparison.Ordinal));
 	}
@@ -112,8 +133,8 @@ using Microsoft.Maui.Controls;
 
 		var result1 = result.result1.Results.Single();
 		var result2 = result.result2.Results.Single();
-		var output1 = result1.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
-		var output2 = result2.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
+		var output1 = result1.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
+		var output2 = result2.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
 		// Assert.IsTrue(result1.TrackedSteps.All(s => s.Value.Single().Outputs.Single().Reason == IncrementalStepRunReason.New));
 		Assert.AreEqual(output1, output2);
@@ -155,8 +176,8 @@ using Microsoft.Maui.Controls;
 
 		var result1 = result.result1.Results.Single();
 		var result2 = result.result2.Results.Single();
-		var output1 = result1.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
-		var output2 = result2.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
+		var output1 = result1.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
+		var output2 = result2.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
 		// Assert.IsTrue(result1.TrackedSteps.All(s => s.Value.Single().Outputs.Single().Reason == IncrementalStepRunReason.New));
 		Assert.AreEqual(output1, output2);
@@ -169,7 +190,7 @@ using Microsoft.Maui.Controls;
 		var expectedReasons = new Dictionary<string, IncrementalStepRunReason>
 		{
 			{ TrackingNames.ProjectItemProvider, IncrementalStepRunReason.Cached },
-			{ TrackingNames.XamlProjectItemProvider, IncrementalStepRunReason.Cached },
+			{ TrackingNames.XamlProjectItemProvider, IncrementalStepRunReason.Modified },
 			{ TrackingNames.ReferenceCompilationProvider, IncrementalStepRunReason.Modified },
 			{ TrackingNames.XmlnsDefinitionsProvider, IncrementalStepRunReason.Modified },
 			{ TrackingNames.ReferenceTypeCacheProvider, IncrementalStepRunReason.Modified },
@@ -209,8 +230,8 @@ using Microsoft.Maui.Controls;
 
 		var result1 = result.result1.Results.Single();
 		var result2 = result.result2.Results.Single();
-		var output1 = result1.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
-		var output2 = result2.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs")).SourceText.ToString();
+		var output1 = result1.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
+		var output2 = result2.GeneratedSources.Single(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)).SourceText.ToString();
 
 		// Assert.IsTrue(result1.TrackedSteps.All(s => s.Value.Single().Outputs.Single().Reason == IncrementalStepRunReason.New));
 		Assert.AreNotEqual(output1, output2);
@@ -231,12 +252,27 @@ using Microsoft.Maui.Controls;
 		{
 			{ TrackingNames.ProjectItemProvider, IncrementalStepRunReason.Modified },
 			{ TrackingNames.XamlProjectItemProvider, IncrementalStepRunReason.Modified },
-			{ TrackingNames.ReferenceCompilationProvider, IncrementalStepRunReason.Cached },
+			{ TrackingNames.ReferenceCompilationProvider, IncrementalStepRunReason.Unchanged },
 			{ TrackingNames.XmlnsDefinitionsProvider, IncrementalStepRunReason.Cached },
 			{ TrackingNames.ReferenceTypeCacheProvider, IncrementalStepRunReason.Cached },
 			{ TrackingNames.XamlSourceProvider, IncrementalStepRunReason.Modified }
 		};
 
 		VerifyStepRunReasons(result2, expectedReasons);
+	}
+
+		[Test]
+	public void TestCodeBehindGenerator_NotXaml()
+	{
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<foo>
+</foo>
+""";
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+
+		Assert.That(result.Results.Single().GeneratedSources.Where(gs=>gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)), Is.Empty);
 	}
 }
