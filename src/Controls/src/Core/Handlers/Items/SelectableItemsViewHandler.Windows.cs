@@ -133,6 +133,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void VirtualSelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+			// When the selection changes within the SelectionChanged event, the new selection isn't immediately reflected in the view.
+			// After the virtual selection is correctly updated, the flag is reset to enable future updates
 			if (_ignoreVirtualSelectionChange)
 			{
 				_ignoreVirtualSelectionChange = false;
@@ -180,6 +182,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				_ignoreVirtualSelectionChange = true;
 				ItemsView.SelectedItem = selectedItem;
+
 				_ignoreVirtualSelectionChange = false;
 			}
 		}
