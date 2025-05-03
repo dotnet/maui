@@ -24,8 +24,6 @@
     <FileSignInfo Include="FluentSystemIcons-Regular.ttf" CertificateName="3PartyScriptsSHA2" />
     <FileSignInfo Include="SegoeUI-Semibold.ttf" CertificateName="3PartyScriptsSHA2" />
   </ItemGroup>
-  
-
 
   <ItemGroup>
     <ItemsToSign Include="$(ArtifactsShippingPackagesDir)\**\*.msi" Condition="'$(PostBuildSign)' != 'true'" />

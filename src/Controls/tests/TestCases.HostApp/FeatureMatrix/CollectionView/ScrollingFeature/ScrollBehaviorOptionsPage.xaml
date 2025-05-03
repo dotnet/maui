@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.ScrollBehaviorOptionsPage"
+             Title="ScrollBehaviorOptionsPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Apply"
+                     Clicked="ApplyButton_Clicked"
+                     AutomationId="Apply"/>
+    </ContentPage.ToolbarItems>
+    <ScrollView>
+        <Grid Padding="1"
+              RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
+            <StackLayout Grid.Row="1"
+                         Padding="1">
+
+                <!-- ItemsSizingStrategy Selection -->
+                <Label Text="ItemsSizingStrategy:"
+                       FontAttributes="Bold"
+                       FontSize="11"/>
+                <VerticalStackLayout>
+                    <HorizontalStackLayout Spacing="10">
+                        <RadioButton x:Name="ItemSizingMeasureFirstItem"
+                                     Content="MeasureFirstItem"
+                                     FontSize="10"
+                                     GroupName="ItemSizingStrategyGroup"
+                                     CheckedChanged="OnItemSizingStrategyChanged"
+                                     AutomationId="ItemSizingMeasureFirstItem"/>
+                        <RadioButton x:Name="ItemSizingMeasureAllItems"
+                                     Content="MeasureAllItems"
+                                     FontSize="10"
+                                     GroupName="ItemSizingStrategyGroup"
+                                     CheckedChanged="OnItemSizingStrategyChanged"
+                                     AutomationId="ItemSizingMeasureAllItems"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+
+                <!-- ItemsUpdatingScrollMode Selection -->
+                <Label Text="ItemsUpdatingScrollMode:"
+                       FontAttributes="Bold"
+                       FontSize="11"/>
+                <VerticalStackLayout>
+                    <HorizontalStackLayout Spacing="10">
+                        <RadioButton x:Name="ItemsUpdatingKeepItemsInView"
+                                     Content="KeepItemsInView"
+                                     FontSize="10"
+                                     GroupName="ItemsUpdatingScrollModeGroup"
+                                     CheckedChanged="OnItemsUpdatingScrollModeChanged"
+                                     AutomationId="ItemsUpdatingKeepItemsInView"/>
+                        <RadioButton x:Name="ItemsUpdatingKeepLastItemInView"
+                                     Content="KeepLastItemInView"
+                                     FontSize="10"
+                                     GroupName="ItemsUpdatingScrollModeGroup"
+                                     CheckedChanged="OnItemsUpdatingScrollModeChanged"
+                                     AutomationId="ItemsUpdatingKeepLastItemInView"/>
+                    </HorizontalStackLayout>
+                     <HorizontalStackLayout Spacing="10">
+                        <RadioButton x:Name="ItemsUpdatingKeepScrollOffset"
+                                     Content="KeepScrollOffset"
+                                     FontSize="10"
+                                     GroupName="ItemsUpdatingScrollModeGroup"
+                                     CheckedChanged="OnItemsUpdatingScrollModeChanged"
+                                     AutomationId="ItemsUpdatingKeepScrollOffset"/>
+
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+                <!-- ItemsSource Selection -->
+                <Label Text="ItemsSource:"
+                       FontAttributes="Bold"
+                       FontSize="11"/>
+                <VerticalStackLayout>
+                    <!-- First Row -->
+                    <HorizontalStackLayout Spacing="10">
+                        <RadioButton x:Name="ItemsSourceObservableCollection3"
+                                     Content="ObservableCollection3"
+                                     FontSize="10"
+                                     IsChecked="True"
+                                     GroupName="ItemsSourceGroup"
+                                     CheckedChanged="OnItemsSourceChanged"
+                                     AutomationId="ItemsSourceObservableCollection3"/>
+                        <RadioButton x:Name="ItemsSourceObservableCollection2"
+                                     Content="ObservableCollection2"
+                                     FontSize="10"
+                                     GroupName="ItemsSourceGroup"
+                                     CheckedChanged="OnItemsSourceChanged"
+                                     AutomationId="ItemsSourceObservableCollection2"/>
+                    </HorizontalStackLayout>
+                    <!-- Second Row -->
+                    <HorizontalStackLayout Spacing="10">
+                        <RadioButton x:Name="ItemsSourceGroupedList2"
+                                     Content="Grouped List2"
+                                     FontSize="10"
+                                     GroupName="ItemsSourceGroup"
+                                     CheckedChanged="OnItemsSourceChanged"
+                                     AutomationId="ItemsSourceGroupedList2"/>
+                         <RadioButton x:Name="ItemsSourceGroupedList3"
+                                     Content="Grouped List3"
+                                     FontSize="10"
+                                     GroupName="ItemsSourceGroup"
+                                     CheckedChanged="OnItemsSourceChanged"
+                                     AutomationId="ItemsSourceGroupedList3"/>
+                        <RadioButton x:Name="ItemsSourceNone"
+                                     Content="None"
+                                     FontSize="10"
+                                     GroupName="ItemsSourceGroup"
+                                     CheckedChanged="OnItemsSourceChanged"
+                                     AutomationId="ItemsSourceNone"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+
+                <Label Text="IsGrouped:"
+                       FontSize="12"
+                       FontAttributes="Bold"/>
+                <StackLayout Orientation="Horizontal">
+                    <RadioButton x:Name="IsGroupedTrue"
+                                 Content="True"
+                                 CheckedChanged="OnIsGroupedChanged"
+                                 FontSize="11"
+                                 AutomationId="IsGroupedTrue"/>
+                    <RadioButton x:Name="IsGroupedFalse"
+                                 Content="False"
+                                 IsChecked="True"
+                                 CheckedChanged="OnIsGroupedChanged"
+                                 FontSize="11"
+                                 AutomationId="IsGroupedFalse"/>
+                </StackLayout>
+                 <Label Text="ItemsLayout:"
+                       FontAttributes="Bold"
+                       FontSize="12"/>
+                <VerticalStackLayout>
+                    <!-- First Row -->
+                    <HorizontalStackLayout Spacing="10">
+                        <RadioButton x:Name="ItemsLayoutVerticalList"
+                                     IsChecked="True"
+                                     CheckedChanged="OnItemsLayoutChanged"
+                                     Content="Vertical List"
+                                     FontSize="11"
+                                     GroupName="ItemsLayoutGroup"
+                                     AutomationId="ItemsLayoutVerticalList"/>
+                        <RadioButton x:Name="ItemsLayoutHorizontalList"
+                                     CheckedChanged="OnItemsLayoutChanged"
+                                     Content="Horizontal List"
+                                     FontSize="11"
+                                     GroupName="ItemsLayoutGroup"
+                                     AutomationId="ItemsLayoutHorizontalList"/>
+                    </HorizontalStackLayout>
+                    <!-- Second Row -->
+                    <HorizontalStackLayout Spacing="10">
+                        <RadioButton x:Name="ItemsLayoutVerticalGrid"
+                                     CheckedChanged="OnItemsLayoutChanged"
+                                     Content="Vertical Grid"
+                                     FontSize="11"
+                                     GroupName="ItemsLayoutGroup"
+                                     AutomationId="ItemsLayoutVerticalGrid"/>
+                        <RadioButton x:Name="ItemsLayoutHorizontalGrid"
+                                     CheckedChanged="OnItemsLayoutChanged"
+                                     Content="Horizontal Grid"
+                                     FontSize="11"
+                                     GroupName="ItemsLayoutGroup"
+                                     AutomationId="ItemsLayoutHorizontalGrid"/>
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+            </StackLayout>
+        </Grid>
+    </ScrollView>
+</ContentPage>

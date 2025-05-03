@@ -223,26 +223,25 @@ namespace Microsoft.Maui.Platform
 		{
 			var size = image.Size;
 
-			UIGraphics.BeginImageContextWithOptions(size, false, UIScreen.MainScreen.Scale);
+			var renderer = new UIGraphicsImageRenderer(size, new UIGraphicsImageRendererFormat()
+			{
+				Opaque = false,
+				Scale = UIScreen.MainScreen.Scale,
+			});
 
-			if (UIGraphics.GetCurrentContext() == null)
+			if (renderer is null)
+			{
 				return null;
+			}
 
-			var context = UIGraphics.GetCurrentContext();
+			return renderer.CreateImage((context) =>
+			{
+				image.Draw(CGPoint.Empty, CGBlendMode.Normal, 1.0f);
+				color.ColorWithAlpha(1.0f).SetFill();
 
-			image.Draw(CGPoint.Empty, CGBlendMode.Normal, 1.0f);
-			context?.SetFillColor(color.CGColor);
-			context?.SetBlendMode(CGBlendMode.SourceIn);
-			context?.SetAlpha(1.0f);
-
-			var rect = new CGRect(CGPoint.Empty.X, CGPoint.Empty.Y, image.Size.Width, image.Size.Height);
-			context?.FillRect(rect);
-
-			var tintedImage = UIGraphics.GetImageFromCurrentImageContext();
-
-			UIGraphics.EndImageContext();
-
-			return tintedImage;
+				var rect = new CGRect(CGPoint.Empty.X, CGPoint.Empty.Y, image.Size.Width, image.Size.Height);
+				context?.FillRect(rect, CGBlendMode.SourceIn);
+			});
 		}
 	}
 }

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 			if (DatePickerDialog is UIDatePicker picker)
 			{
 				var date = VirtualView?.Date;
-				if (date is DateTime dt)
+				if (date is not null && date is DateTime dt)
 				{
 					picker.Date = dt.ToNSDate();
 				}
@@ -121,10 +121,12 @@ namespace Microsoft.Maui.Handlers
 
 		void SetVirtualViewDate()
 		{
-			if (VirtualView == null || DatePickerDialog == null)
+			if (VirtualView is null || DatePickerDialog is null)
+			{
 				return;
+			}
 
-			VirtualView.Date = DatePickerDialog.Date.ToDateTime().Date;
+			VirtualView.Date = DatePickerDialog.Date.ToDateTime();
 		}
 
 		class DatePickerDelegate : MauiDatePickerDelegate
