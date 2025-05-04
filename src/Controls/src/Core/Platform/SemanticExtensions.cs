@@ -7,22 +7,23 @@
 
 		internal static bool TapGestureRecognizerNeedsDelegate(this View virtualView)
 		{
+			static bool IsPrimarySingleTap(IGestureRecognizer gesture)
+			{
+				return gesture is TapGestureRecognizer tgr &&
+					   tgr.NumberOfTapsRequired == 1 &&
+					   (tgr.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary;
+			}
+
 			foreach (var gesture in virtualView.GestureRecognizers)
 			{
-				//Accessibility can't handle Tap Recognizers with > 1 tap
-				if (gesture is TapGestureRecognizer tgr && tgr.NumberOfTapsRequired == 1)
-				{
-					return (tgr.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary;
-				}
+				if (IsPrimarySingleTap(gesture))
+					return true;
 			}
 
 			foreach (var gesture in virtualView.GestureController.CompositeGestureRecognizers)
 			{
-				//Accessibility can't handle Tap Recognizers with > 1 tap
-				if (gesture is ChildGestureRecognizer cgr && cgr.GestureRecognizer is TapGestureRecognizer tgr && tgr.NumberOfTapsRequired == 1)
-				{
-					return (tgr.Buttons & ButtonsMask.Primary) == ButtonsMask.Primary;
-				}
+				if (gesture is ChildGestureRecognizer cgr && IsPrimarySingleTap(cgr.GestureRecognizer))
+					return true;
 			}
 
 			return false;
