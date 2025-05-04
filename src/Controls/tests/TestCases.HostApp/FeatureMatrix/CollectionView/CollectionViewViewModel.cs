@@ -23,6 +23,7 @@ public class Grouping<TKey, TItem> : ObservableCollection<TItem>
 public enum ItemsSourceType
 {
     None,
+    ObservableCollectionT,
     ObservableCollectionT2,
     ObservableCollectionT3,
     ObservableCollection25T,
@@ -47,8 +48,11 @@ public class CollectionViewViewModel : INotifyPropertyChanged
     private IItemsLayout _itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
     private ItemsSourceType _itemsSourceType = ItemsSourceType.None;
     private bool _isGrouped = false;
+    private bool _canReorderItems = false;
+    private bool _canMixGroups = false;
     private ItemSizingStrategy _itemSizingStrategy;
     private ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
+    private ObservableCollection<CollectionViewTestItem> _observableCollection;
     private ObservableCollection<CollectionViewTestItem> _observableCollection25;
     private ObservableCollection<CollectionViewTestItem> _observableCollection5;
     private ObservableCollection<CollectionViewTestItem> _emptyObservableCollection;
@@ -175,7 +179,32 @@ public class CollectionViewViewModel : INotifyPropertyChanged
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(ItemsSource));
                 OnPropertyChanged(nameof(ShowAddRemoveButtons));
-                SetItemTemplate(); 
+                SetItemTemplate();
+            }
+        }
+    }
+
+    public bool CanReorderItems
+    {
+        get => _canReorderItems;
+        set
+        {
+            if (_canReorderItems != value)
+            {
+                _canReorderItems = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    public bool CanMixGroups
+    {
+        get => _canMixGroups;
+        set
+        {
+            if (_canMixGroups != value)
+            {
+                _canMixGroups = value;
+                OnPropertyChanged();
             }
         }
     }
@@ -199,6 +228,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
         {
             return ItemsSourceType switch
             {
+                ItemsSourceType.ObservableCollectionT => _observableCollection,
                 ItemsSourceType.ObservableCollection25T => _observableCollection25,
                 ItemsSourceType.ObservableCollection5T => _observableCollection5,
                 ItemsSourceType.ObservableCollectionT3 => _observableCollection3,
@@ -213,7 +243,6 @@ public class CollectionViewViewModel : INotifyPropertyChanged
             };
         }
     }
-
 
     public ItemSizingStrategy ItemSizingStrategy
     {
@@ -244,6 +273,10 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 
     private void LoadItems()
     {
+        _observableCollection = new ObservableCollection<CollectionViewTestItem>();
+        AddItems(_observableCollection, 7, "Fruits");
+        AddItems(_observableCollection, 7, "Vegetables");
+
         _observableCollection25 = new ObservableCollection<CollectionViewTestItem>();
         _observableCollection5 = new ObservableCollection<CollectionViewTestItem>();
         AddItems(_observableCollection5, 5, "Fruits");
@@ -315,7 +348,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 
         for (int n = 0; n < count; n++)
         {
-            list.Add(new CollectionViewTestItem(items[n % items.Length], n)); 
+            list.Add(new CollectionViewTestItem(items[n % items.Length], n));
         }
     }
 
@@ -328,7 +361,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 
         for (int i = 0; i < count; i++)
         {
-            int sentenceCount = (i % sentences.Length) + 1; 
+            int sentenceCount = (i % sentences.Length) + 1;
             string text = string.Join(". ", sentences.Take(sentenceCount)) + ".";
             list.Add(new ItemModel(text, fixedFontSize));
         }
@@ -344,7 +377,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 
         if (ItemsSourceType == ItemsSourceType.ObservableCollectionT3)
         {
-            _observableCollection3.Insert(0, newItem);  
+            _observableCollection3.Insert(0, newItem);
         }
         else if (ItemsSourceType == ItemsSourceType.GroupedListT3 && _groupedList3.Count > 0)
         {
@@ -364,7 +397,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
                 var stackLayout = new StackLayout
                 {
                     BackgroundColor = Colors.LightBlue,
-                    Margin = new Thickness(1),  
+                    Margin = new Thickness(1),
 
                 };
 

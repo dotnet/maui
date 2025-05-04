@@ -12,6 +12,11 @@
                 HorizontalOptions="Center"
                 AutomationId="EmptyViewButton"
                 WidthRequest="400"/>
+        <Button Text="CollectionViewGrouping"
+                Clicked="OnGroupingButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="GroupingButton"
+                WidthRequest="400"/>
          <Button Text="Header/FooterViewTemplate"
                 Clicked="OnHeaderFooterViewButtonClicked"
                 HorizontalOptions="Center"
