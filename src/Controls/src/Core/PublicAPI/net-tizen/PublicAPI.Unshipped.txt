@@ -306,3 +306,4 @@ override Microsoft.Maui.Controls.TypeTypeConverter.ConvertTo(System.ComponentMod
 override Microsoft.Maui.Controls.IExtendedTypeConverter.ConvertFromInvariantString(string! value, System.IServiceProvider! serviceProvider) -> object!
 override Microsoft.Maui.Controls.LayoutOptionsConverter.GetStandardValuesSupported(System.ComponentModel.ITypeDescriptorContext? context) -> bool
 override Microsoft.Maui.Controls.LayoutOptionsConverter.GetStandardValuesExclusive(System.ComponentModel.ITypeDescriptorContext? context) -> bool
+override Microsoft.Maui.Controls.LayoutOptionsConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext? context) -> System.ComponentModel.TypeConverter.StandardValuesCollection!
