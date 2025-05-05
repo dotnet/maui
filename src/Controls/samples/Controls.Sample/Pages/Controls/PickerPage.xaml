@@ -118,7 +118,8 @@
                     Text="IsOpen"
                     Style="{StaticResource Headline}"/>
                 <Picker
-                    x:Name="IsOpenPicker"/>
+                    x:Name="IsOpenPicker"
+                    Title="Select an item" ItemsSource="{Binding PickerItems}" />
                 <Button Text="Open Picker" Clicked="OnOpenClicked" />
                 <Button Text="Close Picker" Clicked="OnCloseClicked" />
             </VerticalStackLayout>
