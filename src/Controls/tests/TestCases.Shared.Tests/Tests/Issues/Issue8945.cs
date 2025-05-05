@@ -13,6 +13,28 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Add Open/Close API to picker controls";
 
 		[Test]
+		[Category(UITestCategories.DatePicker)]
+		public void OpenCloseDatePicker()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Tap("OpenDatePickerButton");
+			Assert.That(App.WaitForElement("DatePickerStatusLabel")?.GetText(), Is.EqualTo("DatePicker Opened"));
+			App.Tap("CloseDatePickerButton");
+			Assert.That(App.WaitForElement("DatePickerStatusLabel")?.GetText(), Is.EqualTo("DatePicker Closed"));
+		}
+
+		[Test]
+		[Category(UITestCategories.TimePicker)]
+		public void OpenCloseTimePicker()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Tap("OpenTimePickerButton");
+			Assert.That(App.WaitForElement("TimePickerStatusLabel")?.GetText(), Is.EqualTo("TimePicker Opened"));
+			App.Tap("CloseTimePickerButton");
+			Assert.That(App.WaitForElement("TimePickerStatusLabel")?.GetText(), Is.EqualTo("TimePicker Closed"));
+		}
+
+		[Test]
 		[Category(UITestCategories.Picker)]
 		public void OpenClosePicker()
 		{
