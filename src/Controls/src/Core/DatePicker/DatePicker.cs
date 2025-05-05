@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>.</summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
+		/// <summary>Bindable property for <see cref="IsOpen"/>.</summary>
 		public static readonly BindableProperty IsOpenProperty = PickerElement.IsOpenProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<DatePicker>> _platformConfigurationRegistry;

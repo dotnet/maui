@@ -65,6 +65,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="VerticalTextAlignment"/>.</summary>
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
+		/// <summary>Bindable property for <see cref="IsOpen"/>.</summary>
 		public static readonly BindableProperty IsOpenProperty = PickerElement.IsOpenProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<Picker>> _platformConfigurationRegistry;
