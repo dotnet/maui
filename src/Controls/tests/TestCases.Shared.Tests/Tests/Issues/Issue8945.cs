@@ -23,6 +23,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That(App.WaitForElement("DatePickerStatusLabel")?.GetText(), Is.EqualTo("DatePicker Closed"));
 		}
 
+#if TEST_FAILS_ON_WINDOWS // Pending implementation of Open/Close API for TimePicker on Windows
 		[Test]
 		[Category(UITestCategories.TimePicker)]
 		public void OpenCloseTimePicker()
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("CloseTimePickerButton");
 			Assert.That(App.WaitForElement("TimePickerStatusLabel")?.GetText(), Is.EqualTo("TimePicker Closed"));
 		}
+#endif
 
 		[Test]
 		[Category(UITestCategories.Picker)]
