@@ -12,84 +12,58 @@ namespace Maui.Controls.Sample;
 
 public partial class CollectionViewItemsSourcePage : ContentPage
 {
-	private ItemsSourceViewModel _viewModel;
+	private CollectionViewViewModel _viewModel;
 	public CollectionViewItemsSourcePage()
 	{
 		InitializeComponent();
-		_viewModel = new ItemsSourceViewModel();
+		_viewModel = new CollectionViewViewModel();
 		BindingContext = _viewModel;
 	}
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		BindingContext = _viewModel = new ItemsSourceViewModel();
+		BindingContext = _viewModel = new CollectionViewViewModel();
 		await Navigation.PushAsync(new ItemsSourceOptionsPage(_viewModel));
 	}
 
 	private void RemoveItems_Clicked(object sender, EventArgs e)
 	{
-		try
+		if (int.TryParse(IndexEntry.Text?.Trim(), out int index))
 		{
-			// Check if the input is a valid integer index
-			if (int.TryParse(IndexEntry.Text?.Trim(), out int index))
-			{
-				// Remove item at the specified index
-				_viewModel.RemoveItemAtIndex(index);
-			}
-			else
-			{
-				// Remove the last item if no input is provided
-				_viewModel.RemoveLastItem();
-			}
+			_viewModel.RemoveItemAtIndex(index);
 		}
-		catch (Exception ex)
+		else
 		{
-			DisplayAlert("Error", ex.Message, "OK");
+			_viewModel.RemoveLastItem();
 		}
-		finally
-		{
-			// Clear the index entry field
-			IndexEntry.Text = string.Empty;
-		}
+
+		IndexEntry.Text = string.Empty;
 	}
 
 	private void AddItems_Clicked(object sender, EventArgs e)
 	{
-		try
+		if (int.TryParse(IndexEntry.Text?.Trim(), out int index))
 		{
-			// Check if the input is a valid integer index
-			if (int.TryParse(IndexEntry.Text?.Trim(), out int index))
-			{
-				// Add item at the specified index
-				_viewModel.AddItemAtIndex(index);
-			}
-			else
-			{
-				// Add a random item if no input is provided
-				_viewModel.AddSequentialItem();
-			}
+			_viewModel.AddItemAtIndex(index);
 		}
-		catch (Exception ex)
+		else
 		{
-			DisplayAlert("Error", ex.Message, "OK");
+			_viewModel.AddSequentialItem();
 		}
-		finally
-		{
-			// Clear the index entry field
-			IndexEntry.Text = string.Empty;
-		}
+
+		IndexEntry.Text = string.Empty;
 	}
 
 	void OnCollectionViewSelectionChanged(object sender, SelectionChangedEventArgs e)
 	{
-		if (BindingContext is ItemsSourceViewModel vm)
+		if (BindingContext is CollectionViewViewModel vm)
 		{
 			var previousSelection = e.PreviousSelection.Any()
 				? string.Join(", ", e.PreviousSelection.Select(obj =>
 				{
-					if (obj is ItemsSourceViewModel.CollectionViewTestItem item)
+					if (obj is CollectionViewViewModel.CollectionViewTestItem item)
 						return item.Caption;
-					else if (obj is ItemsSourceViewModel.CollectionViewTestModelItem modelItem)
+					else if (obj is CollectionViewViewModel.CollectionViewTestModelItem modelItem)
 						return modelItem.Caption;
 					return null;
 				}).Where(caption => caption != null))
@@ -98,9 +72,9 @@ public partial class CollectionViewItemsSourcePage : ContentPage
 			var currentSelection = e.CurrentSelection.Any()
 				? string.Join(", ", e.CurrentSelection.Select(obj =>
 				{
-					if (obj is ItemsSourceViewModel.CollectionViewTestItem item)
+					if (obj is CollectionViewViewModel.CollectionViewTestItem item)
 						return item.Caption;
-					else if (obj is ItemsSourceViewModel.CollectionViewTestModelItem modelItem)
+					else if (obj is CollectionViewViewModel.CollectionViewTestModelItem modelItem)
 						return modelItem.Caption;
 					return null;
 				}).Where(caption => caption != null))
@@ -118,34 +92,32 @@ public partial class CollectionViewItemsSourcePage : ContentPage
 
 		var allItems = new List<object>();
 
-		// Handle flat items for both CollectionViewTestItem and CollectionViewTestModelItem
-		if (_viewModel.ItemsSourceType1 == ItemsSourceType1.ObservableCollectionT &&
-			_viewModel.ItemsSource is ObservableCollection<ItemsSourceViewModel.CollectionViewTestItem> flatItems)
+		if (_viewModel.ItemsSourceType == ItemsSourceType.ObservableColllectionStringT &&
+			_viewModel.ItemsSource is ObservableCollection<CollectionViewViewModel.CollectionViewTestItem> flatItems)
 		{
 			allItems = flatItems.Cast<object>().ToList();
 		}
-		else if (_viewModel.ItemsSourceType1 == ItemsSourceType1.ObservableCollectionModelT &&
-				 _viewModel.ItemsSource is ObservableCollection<ItemsSourceViewModel.CollectionViewTestModelItem> flatModelItems)
+		else if (_viewModel.ItemsSourceType == ItemsSourceType.ObservableCollectionModelT &&
+				 _viewModel.ItemsSource is ObservableCollection<CollectionViewViewModel.CollectionViewTestModelItem> flatModelItems)
 		{
 			allItems = flatModelItems.Cast<object>().ToList();
 		}
-		// Handle grouped items for both CollectionViewTestItem and CollectionViewTestModelItem
-		else if (_viewModel.ItemsSourceType1 == ItemsSourceType1.GroupedListT &&
-				 _viewModel.ItemsSource is List<GroupingItemsSource<string, ItemsSourceViewModel.CollectionViewTestItem>> groupedItems)
+		else if (_viewModel.ItemsSourceType == ItemsSourceType.GroupedListT &&
+				 _viewModel.ItemsSource is List<Grouping<string, CollectionViewViewModel.CollectionViewTestItem>> groupedItems)
 		{
 			allItems = groupedItems.SelectMany(g => g).Cast<object>().ToList();
 		}
-		else if (_viewModel.ItemsSourceType1 == ItemsSourceType1.GroupedListModelT &&
-				 _viewModel.ItemsSource is List<GroupingItemsSource<string, ItemsSourceViewModel.CollectionViewTestModelItem>> groupedModelItems)
+		else if (_viewModel.ItemsSourceType == ItemsSourceType.GroupedListModelT &&
+				 _viewModel.ItemsSource is List<Grouping<string, CollectionViewViewModel.CollectionViewTestModelItem>> groupedModelItems)
 		{
 			allItems = groupedModelItems.SelectMany(g => g).Cast<object>().ToList();
 		}
 
 		var itemsToSelect = allItems.Where(obj =>
 		{
-			if (obj is ItemsSourceViewModel.CollectionViewTestItem item)
+			if (obj is CollectionViewViewModel.CollectionViewTestItem item)
 				return item.Caption == "Carrot" || item.Caption == "Apple";
-			else if (obj is ItemsSourceViewModel.CollectionViewTestModelItem modelItem)
+			else if (obj is CollectionViewViewModel.CollectionViewTestModelItem modelItem)
 				return modelItem.Caption == "dotnet_bot.png" || modelItem.Caption == "avatar.png";
 			return false;
 		}).ToList();
