@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_scrollViewer.ViewChanged += OnScrollViewChanged;
 			_scrollViewer.SizeChanged += OnScrollViewSizeChanged;
 
-			if (Element is CarouselView cv && cv.Loop)
+			if (Element.Loop)
 			{
 				UpdateScrollBarVisibilityForLoop();
 			}
