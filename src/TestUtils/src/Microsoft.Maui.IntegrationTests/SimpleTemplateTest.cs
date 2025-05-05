@@ -13,6 +13,9 @@ public class SimpleTemplateTest : BaseTemplateTests
 	[TestCase("maui", DotNetCurrent, "Release", false, "", "TrimMode=partial")]
 	[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "")]
 	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "TrimMode=partial")]
+	//Debug not ready yet
+	//[TestCase("maui", DotNetCurrent, "Debug", false, "--sample-content", "UseMonoRuntime=false")]
+	[TestCase("maui", DotNetCurrent, "Release", false, "--sample-content", "UseMonoRuntime=false")]
 	[TestCase("maui-blazor", DotNetPrevious, "Debug", false, "", "")]
 	[TestCase("maui-blazor", DotNetPrevious, "Release", false, "", "")]
 	[TestCase("maui-blazor", DotNetCurrent, "Debug", false, "", "")]
