@@ -336,7 +336,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			UIViewController poppedViewController;
 			_ignorePopCall = true;
-			poppedViewController = base.PopViewController(animated);
+			poppedViewController = PopViewController(animated);
 
 			var actuallyRemoved = poppedViewController == null ? true : !await task;
 			_ignorePopCall = false;
