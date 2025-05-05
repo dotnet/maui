@@ -20,7 +20,7 @@ public class Issue15253 : ContentPage
 			AutomationId = "15253CarouselView",
 			Loop = false,
 			VerticalScrollBarVisibility = ScrollBarVisibility.Never,
-			HorizontalScrollBarVisibility = ScrollBarVisibility.Always,
+			HorizontalScrollBarVisibility = ScrollBarVisibility.Never,
 			BackgroundColor = Colors.LightBlue,
 			ItemsSource = Items,
 			ItemTemplate = new DataTemplate(() =>
