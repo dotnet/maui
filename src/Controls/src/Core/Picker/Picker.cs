@@ -374,7 +374,9 @@ namespace Microsoft.Maui.Controls
 
 			index = GetSelectedIndex();
 			if (insertIndex <= index)
+			{
 				ClampSelectedIndex(index);
+			}
 		}
 
 		void RemoveItems(NotifyCollectionChangedEventArgs e)
