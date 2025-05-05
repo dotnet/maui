@@ -602,18 +602,31 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			_canvas.Save();
 			_canvas.Translate(x, y - CurrentState.ScaledFontSize);
+			StaticLayout layout;
+			if (OperatingSystem.IsAndroidVersionAtLeast(23))
+			{
+				layout = StaticLayout.Builder.Obtain(value, 0, value.Length, CurrentState.FontPaint, 512)
+					.SetAlignment(Layout.Alignment.AlignNormal)
+					.SetLineSpacing(0f, 1f)
+					.SetIncludePad(false)
+					.SetTextDirection(TextDirectionHeuristics.Ltr)
+					.Build();
+			}
+			else
+			{
 #pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1422 // Validate platform compatibility
-			var layout = new StaticLayout(
-				value,
-				CurrentState.FontPaint,
-				512,
-				Layout.Alignment.AlignNormal,
-				1f,
-				0f,
-				false);
+				layout = new StaticLayout(
+					value,
+					CurrentState.FontPaint,
+					512,
+					Layout.Alignment.AlignNormal,
+					1f,
+					0f,
+					false);
 #pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
+			}
 			layout.Draw(_canvas);
 			_canvas.Restore();
 		}
