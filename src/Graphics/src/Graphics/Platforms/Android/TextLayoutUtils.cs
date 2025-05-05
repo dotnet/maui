@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using Android.Text;
 
@@ -11,18 +12,31 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (boundedWidth > 0)
 				finalWidth = (int)boundedWidth;
 
+			StaticLayout layout;
+			if (OperatingSystem.IsAndroidVersionAtLeast(23))
+			{
+				layout = StaticLayout.Builder.Obtain(text, 0, text.Length, textPaint, finalWidth)
+					.SetAlignment(alignment)
+					.SetLineSpacing(0f, 1f)
+					.SetIncludePad(false)
+					.SetTextDirection(TextDirectionHeuristics.Ltr)
+					.Build();
+			}
+			else
+			{
 #pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1422 // Validate platform compatibility
-			var layout = new StaticLayout(
-				text, // Text to layout
-				textPaint, // Text paint (font, size, etc...) to use
-				finalWidth, // The maximum width the text can be
-				alignment, // The horizontal alignment of the text
-				1.0f, // Spacing multiplier
-				0.0f, // Additional spacing
-				false); // Include padding
+				layout = new StaticLayout(
+				   text, // Text to layout
+				   textPaint, // Text paint (font, size, etc...) to use
+				   finalWidth, // The maximum width the text can be
+				   alignment, // The horizontal alignment of the text
+				   1.0f, // Spacing multiplier
+				   0.0f, // Additional spacing
+				   false); // Include padding
 #pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
+			}
 
 			return layout;
 		}
@@ -79,3 +93,4 @@ namespace Microsoft.Maui.Graphics.Platform
 		}
 	}
 }
+
