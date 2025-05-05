@@ -108,6 +108,11 @@ namespace Microsoft.Maui.Handlers
 			{
 				_dialog.Hide();
 				_dialog = null;
+
+				if (VirtualView is not null)
+				{
+					VirtualView.IsOpen = false;
+				}
 			}
 		}
 
@@ -164,6 +169,8 @@ namespace Microsoft.Maui.Handlers
 				};
 
 				_dialog.Show();
+
+				VirtualView.IsOpen = true;		
 			}
 		}
 

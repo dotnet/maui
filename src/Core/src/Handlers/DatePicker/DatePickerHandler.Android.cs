@@ -151,6 +151,7 @@ namespace Microsoft.Maui.Handlers
 
 			var date = VirtualView.Date;
 			ShowPickerDialog(date);
+			VirtualView.IsOpen = true;
 		}
 
 		void ShowPickerDialog(DateTime? date)
@@ -176,6 +177,7 @@ namespace Microsoft.Maui.Handlers
 		void HidePickerDialog()
 		{
 			_dialog?.Hide();
+			VirtualView.IsOpen = false;
 		}
 
 		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
