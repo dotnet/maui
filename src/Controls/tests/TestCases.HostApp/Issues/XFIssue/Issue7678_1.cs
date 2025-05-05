@@ -30,7 +30,7 @@ public class Issue7678_2 : TestContentPage
 			};
 			
 		// This functionality failed in CarouselView2. Reference: https://github.com/dotnet/maui/issues/29310      
-		// TODO: Replace CarouselView1 with CarouselView2 once the issues mentioned in the GitHub issue are resolved.
+		// TODO: Replace CarouselView1 with CarouselView once the issues mentioned in the GitHub issue are resolved.
 		var carouselView = new CarouselView1
 		{
 			AutomationId = "carouselView",
