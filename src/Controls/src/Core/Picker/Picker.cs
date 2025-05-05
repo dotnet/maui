@@ -372,7 +372,7 @@ namespace Microsoft.Maui.Controls
 			foreach (object newItem in e.NewItems)
 				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
 
-			index = SelectedIndex;
+			index = GetSelectedIndex();
 			if (insertIndex <= index)
 				ClampSelectedIndex(index);
 		}
@@ -399,7 +399,7 @@ namespace Microsoft.Maui.Controls
 			foreach (object _ in e.OldItems)
 				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
 
-			index = SelectedIndex;
+			index = GetSelectedIndex();
 			if (removeStart <= index)
 			{
 				ClampSelectedIndex(index);

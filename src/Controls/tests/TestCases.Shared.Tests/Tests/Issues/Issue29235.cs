@@ -11,10 +11,21 @@ public class Issue29235 : _IssuesUITest
 
     [Test]
     [Category(UITestCategories.Picker)]
+    public void VerifyPickerMaintainsSelectionAfterItemInsert()
+    {
+        App.WaitForElement("InsertButton");
+        App.Tap("InsertButton");
+        var text = App.FindElement("SelectedItemLabel").GetText();
+        Assert.That(text, Is.EqualTo("Selected Item: Dog"));
+    }
+
+    [Test]
+    [Category(UITestCategories.Picker)]
     public void VerifyPickerMaintainsSelectionAfterItemRemoval()
     {
         App.WaitForElement("RemoveButton");
         App.Tap("RemoveButton");
-        VerifyScreenshot();
+        var text = App.FindElement("SelectedItemLabel").GetText();
+        Assert.That(text, Is.EqualTo("Selected Item: Rabbit"));
     }
 }
