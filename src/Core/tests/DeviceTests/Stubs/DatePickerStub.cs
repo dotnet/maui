@@ -20,5 +20,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public Color TextColor { get; set; }
 
 		public bool IsOpen { get; set; }
+
+		public void OnIsOpenPropertyChanged(bool oldValue, bool newValue)
+		{
+
+		}
 	}
 }
