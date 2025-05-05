@@ -14,7 +14,7 @@
             ColumnSpacing="5"
             RowDefinitions="*, Auto, Auto, Auto, Auto, Auto"
             ColumnDefinitions="*, *">
-        <CollectionView
+        <local:CollectionView2
             x:Name="collectionView"
             Grid.Row="0"
             Grid.ColumnSpan="2"
@@ -27,7 +27,7 @@
             SelectionChanged ="OnCollectionViewSelectionChanged"
             GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
             AutomationId="CollectionViewItemsSource">
-        </CollectionView>
+        </local:CollectionView2>
         <!--Add or Remove item based on Index-->
         <Label Text="Enter Item Index:"
                FontAttributes="Bold"
