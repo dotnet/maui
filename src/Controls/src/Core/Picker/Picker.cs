@@ -375,6 +375,7 @@ namespace Microsoft.Maui.Controls
 			index = GetSelectedIndex();
 			if (insertIndex <= index)
 			{
+				// When an item is inserted before the current selection, the selected item changes because the selected index is not properly updated.
 				ClampSelectedIndex(index);
 			}
 		}
@@ -410,17 +411,16 @@ namespace Microsoft.Maui.Controls
 
 		int GetSelectedIndex()
 		{
-			int index = SelectedIndex;
 			if (SelectedItem is not null && (ItemsSource is not null || Items is not null))
 			{
-				int newIndex = ItemsSource.IndexOf(SelectedItem);
+				int newIndex = ItemsSource?.IndexOf(SelectedItem) ?? Items.IndexOf(SelectedItem);
 				if (newIndex >= 0)
 				{
-					index = newIndex;
+					return newIndex;
 				}
 			}
 
-			return index;
+			return SelectedIndex;
 		}
 
 		void ResetItems()
