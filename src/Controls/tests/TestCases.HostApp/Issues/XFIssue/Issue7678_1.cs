@@ -28,8 +28,9 @@ public class Issue7678_2 : TestContentPage
 				SnapPointsType = SnapPointsType.MandatorySingle,
 				SnapPointsAlignment = SnapPointsAlignment.Center
 			};
-
-		var carouselView = new CarouselView
+			
+		//This functionality failed in CarouselView2. Reference: https://github.com/dotnet/maui/issues/29310      
+		var carouselView = new CarouselView1
 		{
 			AutomationId = "carouselView",
 			ItemsLayout = itemsLayout,
