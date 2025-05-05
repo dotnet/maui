@@ -23,34 +23,13 @@ namespace Microsoft.Maui.Graphics.Platform
 				_ => FontStyle.Normal
 			};
 
-		public static CanvasTextFormat ToCanvasTextFormat(this IFont font, float size, string text = "")
-		{
-			var direction = IsRightToLeft(text)
-				? CanvasTextDirection.RightToLeftThenTopToBottom
-				: CanvasTextDirection.LeftToRightThenTopToBottom;
-
-			return new CanvasTextFormat
+		public static CanvasTextFormat ToCanvasTextFormat(this IFont font, float size)
+			=> new CanvasTextFormat
 			{
 				FontFamily = font?.Name ?? FontFamily.XamlAutoFontFamily.Source,
 				FontSize = size,
 				FontWeight = new FontWeight { Weight = (ushort)(font?.Weight ?? FontWeights.Regular) },
-				FontStyle = (font?.StyleType ?? FontStyleType.Normal).ToFontStyle(),
-				Direction = direction
+				FontStyle = (font?.StyleType ?? FontStyleType.Normal).ToFontStyle()
 			};
-		}
-
-		static bool IsRightToLeft(string text)
-		{
-			// Check for known RTL Unicode ranges (e.g., Arabic, Hebrew, Urdu)
-			foreach (char c in text)
-			{
-				// RTL Unicode block ranges: 0590–08FF
-				if ((c >= '\u0590' && c <= '\u08FF') || (c >= '\uFB1D' && c <= '\uFDFF') || (c >= '\uFE70' && c <= '\uFEFF'))
-					return true;
-				break;
-			}
-			return false;
-		}
-
 	}
 }
