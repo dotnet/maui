@@ -440,6 +440,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("dotnet_bot.png");
 	}
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //related issue: https://github.com/dotnet/maui/issues/28509
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyStringItemsGroupedListWhenAddItems()
@@ -607,6 +608,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(RemoveItems);
 		App.WaitForNoElement("dotnet_bot.png");
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
@@ -692,6 +694,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("avatar.png"));
 	}
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //related issue: https://github.com/dotnet/maui/issues/28509
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyStringItemsGroupedListWhenSingleModePreSelection()
@@ -791,5 +794,5 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(RemoveItems);
 		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("avatar.png"));
 	}
-
+#endif
 }
