@@ -200,6 +200,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 
 #if TEST_FAILS_ON_WINDOWS 
 //[Testing] EmptyView(null ItemsSource) elements Not Accessible via Automation on Windows Platform Issue Link:  https://github.com/dotnet/maui/issues/28022
+//EmptyViewTemplate not shown in Windows Issue Link: https://github.com/dotnet/maui/issues/28334
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicEmptyViewStringDisplayed()
@@ -240,7 +241,6 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("EmptyView Grid2: No items available");
 	}
 
-// EmptyViewTemplate not shown in Windows Issue Link: https://github.com/dotnet/maui/issues/28334
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicEmptyViewTemplateDisplayed()
