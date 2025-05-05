@@ -1,6 +1,6 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 17323, "Automatic Flow Direction Change for Arabic Strings in When Drawing the String in MAUI on Android and Opposite Behavior in Windows.", PlatformAffected.UWP)]
+[Issue(IssueTracker.Github, 17323, "Arabic text flows RTL on Android in MAUI, but flows LTR on Windows", PlatformAffected.UWP)]
 public class Issue17323 : TestContentPage
 {
 	protected override void Init()

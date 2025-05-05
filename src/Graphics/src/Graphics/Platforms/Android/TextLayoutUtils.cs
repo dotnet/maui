@@ -26,6 +26,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 #pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1422 // Validate platform compatibility
+				text = "\u200E" + text;
 				layout = new StaticLayout(
 				   text, // Text to layout
 				   textPaint, // Text paint (font, size, etc...) to use
@@ -93,4 +94,3 @@ namespace Microsoft.Maui.Graphics.Platform
 		}
 	}
 }
-
