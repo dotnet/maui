@@ -1,14 +1,12 @@
 using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
-
 [Issue(IssueTracker.Github, 29261, "CarouselViewHandler2 for iOS does not properly bounce back when reaching the end with Loop=false", PlatformAffected.iOS)]
-public partial class Issue29261 : ContentPage
+public class Issue29261 : ContentPage
 {
 	public Issue29261()
 	{
 		var verticalStackLayout = new VerticalStackLayout();
-
 		var carouselItems = new ObservableCollection<string>
 		{
 			"First Item",
@@ -36,7 +34,6 @@ public partial class Issue29261 : ContentPage
 					FontSize = 18,
 				};
 				label.SetBinding(Label.TextProperty, ".");
-
 				grid.Children.Add(label);
 				return grid;
 			}),
