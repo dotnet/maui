@@ -7661,7 +7661,7 @@ override Microsoft.Maui.Controls.Platform.Compatibility.ShellSearchViewAdapter.G
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.OnDestroy() -> void
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellToolbarTracker.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
+override Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
 override Microsoft.Maui.Controls.Platform.GenericAnimatorListener.JavaFinalize() -> void
 override Microsoft.Maui.Controls.RadialGradientBrush.IsEmpty.get -> bool
 override Microsoft.Maui.Controls.RadioButton.ChangeVisualState() -> void
