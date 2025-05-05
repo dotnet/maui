@@ -800,7 +800,6 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void SetupBottomNavigationViewIconColor(Page page, IMenuItem menuItem, int i)
 		{
-
 			// Updating the icon color of each BottomNavigationView item individually works correctly.
 			// This is necessary because `ItemIconTintList` applies the color globally to all items,
 			// which doesn't allow for per-item customization.
