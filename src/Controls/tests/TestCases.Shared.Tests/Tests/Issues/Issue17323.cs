@@ -10,7 +10,7 @@ public class Issue17323 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "Automatic Flow Direction Change for Arabic Strings in When Drawing the String in MAUI on Android and Opposite Behavior in Windows.";
+	public override string Issue => "Arabic text flows RTL on Android in MAUI, but flows LTR on Windows";
 
 	[Test]
 	[Category(UITestCategories.GraphicsView)]
