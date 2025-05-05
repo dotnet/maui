@@ -79,8 +79,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(AddItems);
 		App.Tap(AddItems);
-		App.WaitForElement("Unsupported ItemsSourceType for adding items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForNoElement("Kiwi");
 	}
 
 	[Test]
@@ -93,10 +92,10 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(ItemsSourceList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement("Broccoli");
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		App.WaitForElement("Unsupported ItemsSourceType for removing items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForElement("Broccoli");
 	}
 
 	[Test]
@@ -111,8 +110,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(AddItems);
 		App.Tap(AddItems);
-		App.WaitForElement("Unsupported ItemsSourceType for adding items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForNoElement("Kiwi");
 	}
 
 	[Test]
@@ -127,8 +125,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		App.WaitForElement("Unsupported ItemsSourceType for removing items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForNoElement("Broccoli");
 	}
 
 	[Test]
@@ -143,8 +140,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(AddItems);
 		App.Tap(AddItems);
-		App.WaitForElement("Unsupported ItemsSourceType for adding items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForNoElement("Kiwi");
 	}
 
 	[Test]
@@ -159,8 +155,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		App.WaitForElement("Unsupported ItemsSourceType for removing items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForNoElement("Broccoli");
 	}
 
 	[Test]
@@ -173,8 +168,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(AddItems);
 		App.Tap(AddItems);
-		App.WaitForElement("Unsupported ItemsSourceType for adding items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForNoElement("Kiwi");
 	}
 
 	[Test]
@@ -187,8 +181,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		App.WaitForElement("Unsupported ItemsSourceType for removing items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForNoElement("Broccoli");
 	}
 
 	[Test]
@@ -240,8 +233,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(AddItems);
 		App.Tap(AddItems);
-		App.WaitForElement("Unsupported ItemsSourceType for adding items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForNoElement("green.png");
 	}
 
 	[Test]
@@ -256,10 +248,10 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(ItemsSourceList);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
+		App.WaitForElement("calculator.png");
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		App.WaitForElement("Unsupported ItemsSourceType for removing items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForElement("calculator.png");
 	}
 
 	[Test]
@@ -276,8 +268,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(AddItems);
 		App.Tap(AddItems);
-		App.WaitForElement("Unsupported ItemsSourceType for adding items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForNoElement("green.png");
 	}
 
 	[Test]
@@ -294,8 +285,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		App.WaitForElement("Unsupported ItemsSourceType for removing items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForNoElement("calculator.png");
 	}
 
 	[Test]
@@ -312,8 +302,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(AddItems);
 		App.Tap(AddItems);
-		App.WaitForElement("Unsupported ItemsSourceType for adding items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForNoElement("green.png");
 	}
 
 	[Test]
@@ -330,8 +319,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		App.WaitForElement("Unsupported ItemsSourceType for removing items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForNoElement("calculator.png");
 	}
 
 	[Test]
@@ -346,12 +334,11 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(AddItems);
 		App.Tap(AddItems);
-		App.WaitForElement("Unsupported ItemsSourceType for adding items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForNoElement("green.png");
 	}
 
 	[Test]
-	[Category(UITestCategories.CollectionView)]	
+	[Category(UITestCategories.CollectionView)]
 	public void VerifyModelItemsItemsSourceNoneWhenRemoveItems()
 	{
 		App.WaitForElement(Options);
@@ -362,8 +349,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		App.WaitForElement("Unsupported ItemsSourceType for removing items.");
-		App.TapDisplayAlertButton("OK");
+		App.WaitForNoElement("calculator.png");
 	}
 
 	[Test]
@@ -440,7 +426,6 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.WaitForNoElement("dotnet_bot.png");
 	}
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //related issue: https://github.com/dotnet/maui/issues/28509
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyStringItemsGroupedListWhenAddItems()
@@ -608,7 +593,6 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.Tap(RemoveItems);
 		App.WaitForNoElement("dotnet_bot.png");
 	}
-#endif
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
@@ -627,7 +611,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.EnterText(IndexEntry, "0");
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("No current items"));
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -647,7 +631,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.EnterText(IndexEntry, "0");
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Carrot"));
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -669,7 +653,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.EnterText(IndexEntry, "0");
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("No current items"));
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -691,10 +675,9 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.EnterText(IndexEntry, "0");
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("avatar.png"));
+		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //related issue: https://github.com/dotnet/maui/issues/28509
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyStringItemsGroupedListWhenSingleModePreSelection()
@@ -740,7 +723,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.EnterText(IndexEntry, "0");
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("Carrot"));
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -766,7 +749,7 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.EnterText(IndexEntry, "0");
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("No current items"));
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -792,7 +775,6 @@ public class CollectionView_ItemsSourceFeatureTests : UITest
 		App.EnterText(IndexEntry, "0");
 		App.WaitForElement(RemoveItems);
 		App.Tap(RemoveItems);
-		Assert.That(App.WaitForElement(CurrentSelectionTextLabel).GetText(), Is.EqualTo("avatar.png"));
+		VerifyScreenshot();
 	}
-#endif
 }

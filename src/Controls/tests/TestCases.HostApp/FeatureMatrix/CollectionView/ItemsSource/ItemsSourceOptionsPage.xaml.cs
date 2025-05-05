@@ -2,9 +2,9 @@ namespace Maui.Controls.Sample;
 
 public partial class ItemsSourceOptionsPage : ContentPage
 {
-	private ItemsSourceViewModel _viewModel;
+	private CollectionViewViewModel _viewModel;
 
-	public ItemsSourceOptionsPage(ItemsSourceViewModel viewModel)
+	public ItemsSourceOptionsPage(CollectionViewViewModel viewModel)
 	{
 		InitializeComponent();
 		_viewModel = viewModel;
@@ -19,13 +19,11 @@ public partial class ItemsSourceOptionsPage : ContentPage
 	{
 		if (ModelItem.IsChecked)
 		{
-			_viewModel.ItemsSourceModelItems = true;
 			_viewModel.ItemsSourceStringItems = false;
 		}
 		else if (StringItem.IsChecked)
 		{
 			_viewModel.ItemsSourceStringItems = true;
-			_viewModel.ItemsSourceModelItems = false;
 		}
 	}
 	private void OnItemsSourceChanged(object sender, CheckedChangedEventArgs e)
@@ -33,35 +31,35 @@ public partial class ItemsSourceOptionsPage : ContentPage
 		if (!(sender is RadioButton radioButton) || !e.Value)
 			return;
 
-		if (_viewModel.ItemsSourceStringItems == true && _viewModel.ItemsSourceModelItems == false)
+		if (_viewModel.ItemsSourceStringItems == true)
 		{
 			if (radioButton == ItemsSourceObservableCollection)
-				_viewModel.ItemsSourceType1 = ItemsSourceType1.ObservableCollectionT;
+				_viewModel.ItemsSourceType = ItemsSourceType.ObservableColllectionStringT;
 			else if (radioButton == ItemsSourceList)
-				_viewModel.ItemsSourceType1 = ItemsSourceType1.ListT;
+				_viewModel.ItemsSourceType = ItemsSourceType.ListT;
 			else if (radioButton == ItemsSourceGroupedList)
-				_viewModel.ItemsSourceType1 = ItemsSourceType1.GroupedListT;
+				_viewModel.ItemsSourceType = ItemsSourceType.GroupedListT;
 			else if (radioButton == ItemsSourceNone)
-				_viewModel.ItemsSourceType1 = ItemsSourceType1.None;
+				_viewModel.ItemsSourceType = ItemsSourceType.None;
 			else if (radioButton == EmptyGroupedListT)
-				_viewModel.ItemsSourceType1 = ItemsSourceType1.EmptyGroupedListT;
+				_viewModel.ItemsSourceType = ItemsSourceType.EmptyGroupedListT;
 			else if (radioButton == EmptyObservableCollectionT)
-				_viewModel.ItemsSourceType1 = ItemsSourceType1.EmptyObservableCollectionT;
+				_viewModel.ItemsSourceType = ItemsSourceType.EmptyObservableCollectionT;
 		}
 		else
 		{
 			if (radioButton == ItemsSourceObservableCollection)
-				_viewModel.ItemsSourceType1 = ItemsSourceType1.ObservableCollectionModelT;
+				_viewModel.ItemsSourceType = ItemsSourceType.ObservableCollectionModelT;
 			else if (radioButton == ItemsSourceList)
-				_viewModel.ItemsSourceType1 = ItemsSourceType1.ListModelT;
+				_viewModel.ItemsSourceType = ItemsSourceType.ListModelT;
 			else if (radioButton == ItemsSourceGroupedList)
-				_viewModel.ItemsSourceType1 = ItemsSourceType1.GroupedListModelT;
+				_viewModel.ItemsSourceType = ItemsSourceType.GroupedListModelT;
 			else if (radioButton == ItemsSourceNone)
-				_viewModel.ItemsSourceType1 = ItemsSourceType1.None;
+				_viewModel.ItemsSourceType = ItemsSourceType.None;
 			else if (radioButton == EmptyGroupedListT)
-				_viewModel.ItemsSourceType1 = ItemsSourceType1.EmptyGroupedListModelT;
+				_viewModel.ItemsSourceType = ItemsSourceType.EmptyGroupedListModelT;
 			else if (radioButton == EmptyObservableCollectionT)
-				_viewModel.ItemsSourceType1 = ItemsSourceType1.EmptyObservableCollectionModelT;
+				_viewModel.ItemsSourceType = ItemsSourceType.EmptyObservableCollectionModelT;
 		}
 	}
 
