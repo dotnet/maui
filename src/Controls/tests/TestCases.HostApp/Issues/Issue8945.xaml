@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<controls:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			       xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+             xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
+             x:Class="Maui.Controls.Sample.Issues.Issue8945">
+  <ContentPage.Content>
+    <VerticalStackLayout
+        Padding="12">
+        <Label      
+            AutomationId="WaitForStubControl"
+            Text="IsOpen" />
+      <Picker
+            x:Name="IsOpenPicker" AutomationId="IsOpenPicker"
+            Title="Select an item">
+          <Picker.Items>
+            <x:String>Item 1</x:String>
+            <x:String>Item 2</x:String>
+            <x:String>Item 3</x:String>
+          </Picker.Items>
+      </Picker>
+        <Button AutomationId="OpenPickerButton" Text="Open Picker" Clicked="OnOpenClicked" />
+        <Button AutomationId="ClosePickerButton" Text="Close Picker" Clicked="OnCloseClicked" />
+        <Label x:Name="StatusLabel" AutomationId="StatusLabel" />
+    </VerticalStackLayout>
+  </ContentPage.Content>
+</controls:TestContentPage>
