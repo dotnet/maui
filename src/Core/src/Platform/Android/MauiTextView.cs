@@ -25,8 +25,15 @@ namespace Microsoft.Maui.Platform
 				// Ensure the Layout is valid and measured before reading LineCount or GetLineWidth(i) to avoid unnecessary calculations.
 				if (Layout.Width > 0)
 				{
-					int maxWidth = (int)Math.Ceiling(GetMaxLineWidth(Layout)) + CompoundPaddingLeft + CompoundPaddingRight;
-					widthMeasureSpec = MeasureSpec.MakeMeasureSpec(maxWidth, MeasureSpecMode.AtMost);
+					// Calculate the total width needed based on text content plus padding
+					int contentWidth = (int)Math.Ceiling(GetMaxLineWidth(Layout));
+					int totalPadding = CompoundPaddingLeft + CompoundPaddingRight;
+					int requiredWidth = contentWidth + totalPadding;
+
+					// Constrain to maximum available width from original spec
+					int availableWidth = MeasureSpec.GetSize(widthMeasureSpec);
+					int desiredWidth = Math.Min(requiredWidth, availableWidth);
+					widthMeasureSpec = MeasureSpec.MakeMeasureSpec(desiredWidth, MeasureSpecMode.AtMost);
 				}
 			}
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
