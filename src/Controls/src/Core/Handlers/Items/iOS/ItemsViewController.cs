@@ -924,6 +924,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					!Equals(itemsSource[indexPath], bindingContext))
 				{
 					templatedCell.Unbind();
+
+					if (CollectionView is MauiCollectionView collectionView)
+					{
+						// When removing a cell, we need to trigger a layout update in order to sync the footer position
+						collectionView.NeedsCellLayout = true;
+					}
 				}
 			}
 		}
