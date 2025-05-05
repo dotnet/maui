@@ -10,6 +10,16 @@
         <Label      
             AutomationId="WaitForStubControl"
             Text="IsOpen" />
+        <DatePicker
+              x:Name="IsOpenDatePicker" AutomationId="IsOpenDatePicker" />
+        <Button AutomationId="OpenDatePickerButton" Text="Open DatePicker" Clicked="OnOpenDatePickerClicked" />
+        <Button AutomationId="CloseDatePickerButton" Text="Close DatePicker" Clicked="OnCloseDatePickerClicked" />
+        <Label x:Name="DatePickerStatusLabel" AutomationId="DatePickerStatusLabel" />
+      <TimePicker
+            x:Name="IsOpenTimePicker" AutomationId="IsOpenTimePicker" />
+      <Button AutomationId="OpenTimePickerButton" Text="Open TimePicker" Clicked="OnOpenTimePickerClicked" />
+      <Button AutomationId="CloseTimePickerButton" Text="Close TimePicker" Clicked="OnCloseTimePickerClicked" />
+      <Label x:Name="TimePickerStatusLabel" AutomationId="TimePickerStatusLabel" />
       <Picker
             x:Name="IsOpenPicker" AutomationId="IsOpenPicker"
             Title="Select an item">
@@ -19,9 +29,9 @@
             <x:String>Item 3</x:String>
           </Picker.Items>
       </Picker>
-        <Button AutomationId="OpenPickerButton" Text="Open Picker" Clicked="OnOpenClicked" />
-        <Button AutomationId="ClosePickerButton" Text="Close Picker" Clicked="OnCloseClicked" />
-        <Label x:Name="StatusLabel" AutomationId="StatusLabel" />
+        <Button AutomationId="OpenPickerButton" Text="Open Picker" Clicked="OnOpenPickerClicked" />
+        <Button AutomationId="ClosePickerButton" Text="Close Picker" Clicked="OnClosePickerClicked" />
+        <Label x:Name="PickerStatusLabel" AutomationId="PickerStatusLabel" />
     </VerticalStackLayout>
   </ContentPage.Content>
 </controls:TestContentPage>

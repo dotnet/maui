@@ -18,6 +18,12 @@
 		{
 			base.OnAppearing();
 
+			IsOpenDatePicker.Opened += IsOpenDatePickerOpened;
+			IsOpenDatePicker.Closed += IsOpenDatePickerClosed;
+
+			IsOpenTimePicker.Opened += IsOpenTimePickerOpened;
+			IsOpenTimePicker.Closed += IsOpenTimePickerClosed;
+
 			IsOpenPicker.Opened += IsOpenPickerOpened;
 			IsOpenPicker.Closed += IsOpenPickerClosed;
 		}
@@ -26,28 +32,74 @@
 		{
 			base.OnDisappearing();
 
+			IsOpenDatePicker.Opened -= IsOpenDatePickerOpened;
+			IsOpenDatePicker.Closed -= IsOpenDatePickerClosed;
+
+			IsOpenTimePicker.Opened -= IsOpenTimePickerOpened;
+			IsOpenTimePicker.Closed -= IsOpenTimePickerClosed;
+
 			IsOpenPicker.Opened -= IsOpenPickerOpened;
 			IsOpenPicker.Closed -= IsOpenPickerClosed;
 		}
 
-		void OnOpenClicked(object sender, EventArgs e)
+		void OnOpenDatePickerClicked(object sender, EventArgs e)
+		{
+			IsOpenDatePicker.IsOpen = true;
+		}
+
+		void OnCloseDatePickerClicked(object sender, EventArgs e)
+		{
+			IsOpenDatePicker.IsOpen = false;
+		}
+
+		void OnOpenTimePickerClicked(object sender, EventArgs e)
+		{
+			IsOpenTimePicker.IsOpen = true;
+		}
+
+		void OnCloseTimePickerClicked(object sender, EventArgs e)
+		{
+			IsOpenTimePicker.IsOpen = false;
+		}
+
+		void OnOpenPickerClicked(object sender, EventArgs e)
 		{
 			IsOpenPicker.IsOpen = true;
 		}
 
-		void OnCloseClicked(object sender, EventArgs e)
+		void OnClosePickerClicked(object sender, EventArgs e)
 		{
 			IsOpenPicker.IsOpen = false;
 		}
 
+		void IsOpenDatePickerOpened(object sender, PickerOpenedEventArgs e)
+		{
+			DatePickerStatusLabel.Text = "DatePicker Opened";
+		}
+
+		void IsOpenDatePickerClosed(object sender, PickerClosedEventArgs e)
+		{
+			DatePickerStatusLabel.Text = "DatePicker Closed";
+		}
+
+		void IsOpenTimePickerOpened(object sender, PickerOpenedEventArgs e)
+		{
+			TimePickerStatusLabel.Text = "TimePicker Opened";
+		}
+
+		void IsOpenTimePickerClosed(object sender, PickerClosedEventArgs e)
+		{
+			TimePickerStatusLabel.Text = "TimePicker Closed";
+		}
+
 		void IsOpenPickerOpened(object sender, PickerOpenedEventArgs e)
 		{
-			StatusLabel.Text = "Picker Opened";
+			PickerStatusLabel.Text = "Picker Opened";
 		}
 
 		void IsOpenPickerClosed(object sender, PickerClosedEventArgs e)
 		{
-			StatusLabel.Text = "Picker Closed";
+			PickerStatusLabel.Text = "Picker Closed";
 		}
 	}
 }

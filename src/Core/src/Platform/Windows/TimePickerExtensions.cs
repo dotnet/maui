@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Platform;
@@ -88,12 +87,6 @@ public static class TimePickerExtensions
 
 	public static void UpdateIsOpen(this TimePicker platformTimePicker, ITimePicker timePicker)
 	{
-		if (platformTimePicker.Resources["TimePickerFlyoutPresenter"] is not Flyout flyout)
-			return;
-
-		if (timePicker.IsOpen)
-			flyout.ShowAt(platformTimePicker);
-		else
-			flyout.Hide();
+		// TODO: Implement logic to programmatically open and close the WinUI TimePicker.
 	}
 }

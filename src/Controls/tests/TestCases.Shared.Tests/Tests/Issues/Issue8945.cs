@@ -18,9 +18,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			App.WaitForElement("WaitForStubControl");
 			App.Tap("OpenPickerButton");
-			Assert.That(App.WaitForElement("StatusLabel")?.GetText(), Is.EqualTo("Picker Opened"));
+			Assert.That(App.WaitForElement("PickerStatusLabel")?.GetText(), Is.EqualTo("Picker Opened"));
 			App.Tap("ClosePickerButton");
-			Assert.That(App.WaitForElement("StatusLabel")?.GetText(), Is.EqualTo("Picker Closed"));
+			Assert.That(App.WaitForElement("PickerStatusLabel")?.GetText(), Is.EqualTo("Picker Closed"));
 		}
 	}
 }

@@ -19,18 +19,20 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.SelectionChanged += OnControlSelectionChanged;
 			platformView.DropDownOpened += OnMauiComboBoxDropDownOpened;
+			platformView.DropDownClosed += OnMauiComboBoxDropDownClosed;
 		}
 
 		protected override void DisconnectHandler(ComboBox platformView)
 		{
 			platformView.SelectionChanged -= OnControlSelectionChanged;
 			platformView.DropDownOpened -= OnMauiComboBoxDropDownOpened;
+			platformView.DropDownClosed -= OnMauiComboBoxDropDownClosed;
 		}
 
 		// Updating ItemSource Resets the SelectedIndex.
-		// Which propagates that change to the virtualview
+		// Which propagates that change to the VirtualView
 		// We don't want the virtual views selected index to change
-		// when updating the itmmsource.
+		// when updating the ItemSource.
 		// The ItemSource should probably be reworked to just be an OC that's
 		// kept in sync
 		internal bool UpdatingItemSource { get; set; }
@@ -123,12 +125,27 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.MinWidth = 0;
 		}
 
-		static void OnMauiComboBoxDropDownOpened(object? sender, object e)
+		void OnMauiComboBoxDropDownOpened(object? sender, object e)
 		{
 			ComboBox? comboBox = sender as ComboBox;
-			if (comboBox == null)
+
+			if (comboBox is null)
 				return;
+
 			comboBox.MinWidth = comboBox.ActualWidth;
+
+			if (VirtualView is null)
+				return;
+
+			VirtualView.IsOpen = true;
+		}
+
+		void OnMauiComboBoxDropDownClosed(object? sender, object e)
+		{
+			if (VirtualView is null)
+				return;
+
+			VirtualView.IsOpen = false;
 		}
 	}
 }
