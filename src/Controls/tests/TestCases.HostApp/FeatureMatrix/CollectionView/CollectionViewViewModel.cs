@@ -30,7 +30,7 @@ public enum ItemsSourceType
     ObservableCollectionT3,
     ObservableCollection5T,
     ObservableCollection25T,
-    ObservableColllectionStringT,
+    ObservableCollectionStringT,
     ObservableCollectionModelT,
     EmptyObservableCollectionT,
     EmptyObservableCollectionModelT,
@@ -252,7 +252,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
                 ItemsSourceType.EmptyGroupedListT => _emptyGroupedList,
                 ItemsSourceType.GroupedListT3 => _groupedList3,
                 ItemsSourceType.EmptyObservableCollectionT => _emptyObservableCollection,
-                ItemsSourceType.ObservableColllectionStringT => _observableCollectionString,
+                ItemsSourceType.ObservableCollectionStringT => _observableCollectionString,
                 ItemsSourceType.ObservableCollectionModelT => _observableCollectionModel,
                 ItemsSourceType.GroupedListModelT => _groupedListModel,
                 ItemsSourceType.ListT => _list,
@@ -675,14 +675,14 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 
         string nextItem = ItemsSourceType switch
         {
-            ItemsSourceType.ObservableColllectionStringT or ItemsSourceType.GroupedListT => fruits[fruitIndex++ % fruits.Length],
+            ItemsSourceType.ObservableCollectionStringT or ItemsSourceType.GroupedListT => fruits[fruitIndex++ % fruits.Length],
             ItemsSourceType.ObservableCollectionModelT or ItemsSourceType.GroupedListModelT => groupA[groupAIndex++ % groupA.Length],
             _ => string.Empty
         };
 
         switch (ItemsSourceType)
         {
-            case ItemsSourceType.ObservableColllectionStringT:
+            case ItemsSourceType.ObservableCollectionStringT:
                 _observableCollectionString.Add(new CollectionViewTestItem(nextItem, _observableCollectionString.Count));
                 break;
 
@@ -723,7 +723,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
         object deletedItem = null;
         switch (ItemsSourceType)
         {
-            case ItemsSourceType.ObservableColllectionStringT:
+            case ItemsSourceType.ObservableCollectionStringT:
                 if (_observableCollectionString.Count > 0)
                 {
                     deletedItem = _observableCollectionString[^1];
@@ -792,7 +792,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 
         switch (ItemsSourceType)
         {
-            case ItemsSourceType.ObservableColllectionStringT:
+            case ItemsSourceType.ObservableCollectionStringT:
                 if (index >= 0 && index <= _observableCollectionString.Count)
                 {
                     _observableCollectionString.Insert(index, new CollectionViewTestItem(sequentialItem, index));
@@ -829,7 +829,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 
         switch (ItemsSourceType)
         {
-            case ItemsSourceType.ObservableColllectionStringT:
+            case ItemsSourceType.ObservableCollectionStringT:
                 if (index >= 0 && index < _observableCollectionString.Count)
                 {
                     deletedItem = _observableCollectionString[index];
