@@ -1492,7 +1492,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await TestHelpers.Collect();
 
 			Assert.False(await bindingRef.WaitForCollect(), "Binding should not be alive!");
-			Assert.False(await buttonRef.WaitForCollect()s, "Button should not be alive!");
+			Assert.False(await buttonRef.WaitForCollect(), "Button should not be alive!");
 
 			// WeakPropertyChangedProxy won't go away until the second GC, PropertyChangedProxy unsubscribes in its finalizer
 			await TestHelpers.Collect();
