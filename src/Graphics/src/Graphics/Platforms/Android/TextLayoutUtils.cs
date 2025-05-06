@@ -12,10 +12,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (boundedWidth > 0)
 				finalWidth = (int)boundedWidth;
 
-			StaticLayout layout;
 			if (OperatingSystem.IsAndroidVersionAtLeast(23))
 			{
-				layout = StaticLayout.Builder.Obtain(text, 0, text.Length, textPaint, finalWidth)
+				return StaticLayout.Builder.Obtain(text, 0, text.Length, textPaint, finalWidth)
 					.SetAlignment(alignment)
 					.SetLineSpacing(0f, 1f)
 					.SetIncludePad(false)
@@ -27,7 +26,7 @@ namespace Microsoft.Maui.Graphics.Platform
 #pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1422 // Validate platform compatibility
 				text = "\u200E" + text;
-				layout = new StaticLayout(
+				return new StaticLayout(
 				   text, // Text to layout
 				   textPaint, // Text paint (font, size, etc...) to use
 				   finalWidth, // The maximum width the text can be
@@ -39,7 +38,6 @@ namespace Microsoft.Maui.Graphics.Platform
 #pragma warning restore CA1416 // Validate platform compatibility
 			}
 
-			return layout;
 		}
 
 		public static StaticLayout CreateLayoutForSpannedString(SpannableString spannedString, TextPaint textPaint, int? boundedWidth, Layout.Alignment alignment)
