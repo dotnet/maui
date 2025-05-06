@@ -26,50 +26,16 @@ namespace Microsoft.Maui.Controls
 			{
 				UpdateGroupNames(_layout, _groupName);
 			}
-
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-			MessagingCenter.Subscribe<RadioButton, RadioButtonGroupSelectionChanged>(this,
-				RadioButtonGroup.GroupSelectionChangedMessage, HandleRadioButtonGroupSelectionChanged);
-			MessagingCenter.Subscribe<RadioButton, RadioButtonGroupNameChanged>(this, RadioButton.GroupNameChangedMessage,
-				HandleRadioButtonGroupNameChanged);
-			MessagingCenter.Subscribe<RadioButton, RadioButtonValueChanged>(this, RadioButton.ValueChangedMessage,
-				HandleRadioButtonValueChanged);
-#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
-		bool MatchesScope(RadioButtonScopeMessage message)
+		internal void HandleRadioButtonGroupSelectionChanged(RadioButton selected)
 		{
-			return RadioButtonGroup.GetVisualRoot(_layout) == message.Scope;
-		}
-
-		void HandleRadioButtonGroupSelectionChanged(RadioButton selected, RadioButtonGroupSelectionChanged args)
-		{
-			if (selected.GroupName != _groupName || !MatchesScope(args))
+			if (selected.GroupName != _groupName)
 			{
 				return;
 			}
 
 			_layout.SetValue(RadioButtonGroup.SelectedValueProperty, selected.Value);
-		}
-
-		void HandleRadioButtonGroupNameChanged(RadioButton radioButton, RadioButtonGroupNameChanged args)
-		{
-			if (args.OldName != _groupName || !MatchesScope(args))
-			{
-				return;
-			}
-
-			_layout.ClearValue(RadioButtonGroup.SelectedValueProperty);
-		}
-
-		void HandleRadioButtonValueChanged(RadioButton radioButton, RadioButtonValueChanged args)
-		{
-			if (radioButton.GroupName != _groupName || !MatchesScope(args))
-			{
-				return;
-			}
-
-			_layout.SetValue(RadioButtonGroup.SelectedValueProperty, radioButton.Value);
 		}
 
 		void ChildAdded(object sender, ElementEventArgs e)
@@ -139,10 +105,13 @@ namespace Microsoft.Maui.Controls
 
 			if (radioButtonValue != null)
 			{
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-				MessagingCenter.Send<Element, RadioButtonGroupValueChanged>(_layout, RadioButtonGroup.GroupValueChangedMessage,
-					new RadioButtonGroupValueChanged(_groupName, RadioButtonGroup.GetVisualRoot(_layout), radioButtonValue));
-#pragma warning restore CS0618 // Type or member is obsolete
+				foreach (var child in ((IVisualTreeElement)_layout).GetVisualChildren())
+				{
+					if (child is RadioButton radioButton && radioButton.GroupName == _groupName && radioButton.Value is not null && radioButton.Value.Equals(radioButtonValue))
+					{
+						radioButton.SetValue(RadioButton.IsCheckedProperty, true);
+					}
+				}
 			}
 		}
 
