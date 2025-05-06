@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NUnit.Framework.Legacy;
 using NUnit.Framework;
 using UITest.Core;
 using UITest.Appium;
@@ -23,6 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			// Is a Windows issue; see https://github.com/dotnet/maui/issues/15253
 			App.WaitForElement("15253CarouselView");
+			App.Tap("one");
 			VerifyScreenshot();
 		}
 	}
