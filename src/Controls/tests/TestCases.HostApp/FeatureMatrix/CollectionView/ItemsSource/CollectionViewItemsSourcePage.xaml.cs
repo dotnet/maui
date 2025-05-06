@@ -92,7 +92,7 @@ public partial class CollectionViewItemsSourcePage : ContentPage
 
 		var allItems = new List<object>();
 
-		if (_viewModel.ItemsSourceType == ItemsSourceType.ObservableColllectionStringT &&
+		if (_viewModel.ItemsSourceType == ItemsSourceType.ObservableCollectionStringT &&
 			_viewModel.ItemsSource is ObservableCollection<CollectionViewViewModel.CollectionViewTestItem> flatItems)
 		{
 			allItems = flatItems.Cast<object>().ToList();
