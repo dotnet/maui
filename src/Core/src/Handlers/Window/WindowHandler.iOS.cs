@@ -1,4 +1,5 @@
 ﻿using System;
+using CoreFoundation;
 using Foundation;
 using UIKit;
 
@@ -7,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class WindowHandler : ElementHandler<IWindow, UIWindow>
 	{
 		readonly WindowProxy _proxy = new();
+		NSObject? _orientationObserver;
 
 		protected override void ConnectHandler(UIWindow platformView)
 		{
@@ -20,6 +22,19 @@ namespace Microsoft.Maui.Handlers
 			else
 			{
 				UpdateVirtualViewFrame(platformView);
+				
+				UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
+				_orientationObserver = NSNotificationCenter.DefaultCenter.AddObserver(
+					UIDevice.OrientationDidChangeNotification,
+					_ => {
+						// Using dispatch to defer execution until after the rotation animation completes
+						DispatchQueue.MainQueue.DispatchAsync(() => {
+							if (platformView != null)
+							{
+								UpdateVirtualViewFrame(platformView);
+							}
+						});
+					});
 			}
 		}
 
@@ -28,6 +43,12 @@ namespace Microsoft.Maui.Handlers
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
 			{
 				_proxy.Disconnect();
+			}
+			else if (_orientationObserver != null)
+			{
+				_orientationObserver.Dispose();
+				_orientationObserver = null;
+				UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
 			}
 
 			base.DisconnectHandler(platformView);
