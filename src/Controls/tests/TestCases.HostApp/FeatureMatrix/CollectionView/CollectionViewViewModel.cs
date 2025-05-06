@@ -527,17 +527,21 @@ public class CollectionViewViewModel : INotifyPropertyChanged
         {
             ItemTemplate = new DataTemplate(() =>
             {
+                var stackLayout = new StackLayout
+                {
+                    Padding = new Thickness(10),
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center
+                };
+ 
                 var label = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
                     HorizontalOptions = LayoutOptions.Center
                 };
                 label.SetBinding(Label.TextProperty, "Caption");
-                return new StackLayout
-                {
-                    Padding = new Thickness(10),
-                    Children = { label }
-                };
+                stackLayout.Children.Add(label);
+                return stackLayout;
             });
         }
     }
