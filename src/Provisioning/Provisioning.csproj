@@ -299,7 +299,16 @@
         ContinueOnError="true"
         StandardOutputImportance="low"
         StandardErrorImportance="high" />
+    
+    <!-- Read the content from the saved file -->
+    <ReadLinesFromFile
+        File="$(MSBuildThisFileDirectory)obj\final-appium-drivers.json">
+      <Output TaskParameter="Lines" PropertyName="AppiumDriverOutput" />
+    </ReadLinesFromFile>
 
+    <!-- Display the driver list result -->
+    <Message Text="Appium driver list result: $(AppiumDriverOutput)" Importance="high" />
+    
     <Message Text="Appium provisioning completed successfully." Importance="high" />
 	</Target>
 
