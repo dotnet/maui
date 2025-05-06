@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		private static void UncheckMatchingDescendants(Element element, string groupName, RadioButton radioButton)
+		static void UncheckMatchingDescendants(Element element, string groupName, RadioButton radioButton)
 		{
 			if (element is RadioButton rb && rb.GroupName == groupName)
 			{
