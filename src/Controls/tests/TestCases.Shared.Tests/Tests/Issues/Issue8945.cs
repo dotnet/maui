@@ -35,7 +35,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			}
 		}
 
-#if TEST_FAILS_ON_WINDOWS // Pending implementation of Open/Close API for TimePicker on Windows
 		[Test]
 		[Category(UITestCategories.TimePicker)]
 		public void OpenCloseTimePicker()
@@ -58,7 +57,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 				throw exception;
 			}
 		}
-#endif
 
 		[Test]
 		[Category(UITestCategories.Picker)]
