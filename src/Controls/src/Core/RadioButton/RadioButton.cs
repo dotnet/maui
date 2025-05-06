@@ -362,13 +362,32 @@ namespace Microsoft.Maui.Controls
 		void SelectRadioButton(object sender, EventArgs e)
 		{
 			if (IsEnabled)
+			{
 				SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
+			}
 		}
 
 		void OnIsCheckedPropertyChanged(bool isChecked)
 		{
+			if (IsLoaded)
+			{
+				UpdateRadioButtonGroup(isChecked);
+			}
+			else
+			{
+				// During the initial loading, the Parent property has not been set yet. 
+				// Therefore, we need to delay the update of the RadioButtonGroup until the Parent is properly assigned. 
+				// This is necessary because we need to retrieve the RadioButton from its Parent to perform the update correctly.
+				Dispatcher.Dispatch(() => UpdateRadioButtonGroup(isChecked));
+			}
+		}
+
+		void UpdateRadioButtonGroup(bool isChecked)
+		{
 			if (isChecked)
+			{
 				RadioButtonGroup.UpdateRadioButtonGroup(this);
+			}
 
 			ChangeVisualState();
 			CheckedChanged?.Invoke(this, new CheckedChangedEventArgs(isChecked));

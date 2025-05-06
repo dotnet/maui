@@ -63,25 +63,56 @@ namespace Microsoft.Maui.Controls
 
 		internal static void UncheckOtherRadioButtonsInScope(RadioButton radioButton)
 		{
-			Element parent = radioButton.Parent ??
-					(!string.IsNullOrEmpty(radioButton.GroupName) ? GetVisualRoot(radioButton) : null);
-
-			if (parent is IElementController controller)
+			if (!string.IsNullOrEmpty(radioButton.GroupName))
 			{
-				bool hasGroupName = !string.IsNullOrEmpty(radioButton.GroupName);
+				var root = GetVisualRoot(radioButton) ?? radioButton.Parent;
+				if (root is not IElementController rootController)
+				{
+					return;
+				}
+
+				foreach (var child in rootController.LogicalChildren)
+				{
+					UncheckMatchingDescendants(child, radioButton.GroupName, radioButton);
+				}
+			}
+			else
+			{
+				if (radioButton.Parent is not IElementController parentController)
+				{
+					return;
+				}
+
+				foreach (var child in parentController.LogicalChildren)
+				{
+					if (child is RadioButton rb && string.IsNullOrEmpty(rb.GroupName))
+					{
+						UncheckRadioButtonIfChecked(rb, radioButton);
+					}
+				}
+			}
+		}
+
+		static void UncheckRadioButtonIfChecked(RadioButton child, RadioButton radioButton)
+		{
+			if (child != radioButton && child.IsChecked)
+			{
+				child.SetValueFromRenderer(RadioButton.IsCheckedProperty, false);
+			}
+		}
+
+		private static void UncheckMatchingDescendants(Element element, string groupName, RadioButton radioButton)
+		{
+			if (element is RadioButton rb && rb.GroupName == groupName)
+			{
+				UncheckRadioButtonIfChecked(rb, radioButton);
+			}
+
+			if (element is IElementController controller)
+			{
 				foreach (var child in controller.LogicalChildren)
 				{
-					if (child is RadioButton rb && rb != radioButton)
-					{
-						bool groupMatch = hasGroupName
-							? !string.IsNullOrEmpty(rb.GroupName) && rb.GroupName == radioButton.GroupName
-							: string.IsNullOrEmpty(rb.GroupName);
-
-						if (groupMatch && rb.IsChecked == true)
-						{
-							rb.SetValueFromRenderer(RadioButton.IsCheckedProperty, false);
-						}
-					}
+					UncheckMatchingDescendants(child, groupName, radioButton);
 				}
 			}
 		}
@@ -102,7 +133,9 @@ namespace Microsoft.Maui.Controls
 		{
 			Element parent = element.Parent;
 			while (parent != null && !(parent is Page))
+			{
 				parent = parent.Parent;
+			}
 			return parent;
 		}
 	}
