@@ -18,6 +18,6 @@ public class Issue28975 : _IssuesUITest
 	{
 		App.WaitForElement("DateEntry");
 		App.EnterText("DateEntry", "2023-10-01");
-		VerifyScreenshot();
+		Assert.That(App.FindElement("DateEntry").GetText(), Is.EqualTo("2023-10-01"));
 	}
 }
