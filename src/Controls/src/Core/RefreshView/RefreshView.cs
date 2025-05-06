@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="Type[@FullName='Microsoft.Maui.Controls.RefreshView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class RefreshView : ContentView, IElementConfiguration<RefreshView>, IRefreshView, ICommandElement
+	public partial class RefreshView : ContentView, IElementConfiguration<RefreshView>, IRefreshView, ICommandElement, IClippedToBoundsElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<RefreshView>> _platformConfigurationRegistry;
 		public event EventHandler Refreshing;
@@ -27,6 +27,10 @@ namespace Microsoft.Maui.Controls
 
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<RefreshView>>(() => new PlatformConfigurationRegistry<RefreshView>(this));
 		}
+
+		/// <summary>Bindable property for <see cref="IClippedToBoundsElement.IsClippedToBounds"/>.</summary>
+		public static readonly BindableProperty IsClippedToBoundsProperty =
+			ClippedToBoundsElement.IsClippedToBoundsProperty;
 
 		/// <summary>Bindable property for <see cref="IsRefreshing"/>.</summary>
 		public static readonly BindableProperty IsRefreshingProperty =
@@ -60,6 +64,13 @@ namespace Microsoft.Maui.Controls
 				return value;
 
 			return value;
+		}
+
+		/// <inheritdoc cref="IClippedToBoundsElement.IsClippedToBounds"/>
+		public bool IsClippedToBounds
+		{
+			get => (bool)GetValue(ClippedToBoundsElement.IsClippedToBoundsProperty);
+			set => SetValue(ClippedToBoundsElement.IsClippedToBoundsProperty, value);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='IsRefreshing']/Docs/*" />
