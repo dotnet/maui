@@ -2311,6 +2311,10 @@ namespace UITest.Appium
 			{
 				app.WaitForElement(AppiumQuery.ByAccessibilityId("MoreButton"));
 			}
+			else
+			{
+				throw new InvalidOperationException($"WaitForMoreButton is not supported on this platform.");
+			}
 		}
 
 		/// <summary>
