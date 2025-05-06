@@ -1,5 +1,11 @@
 # Template for build + pack on dnceng
 parameters:
+- name: prepareSteps
+  type: stepList
+  default: []
+- name: postSteps
+  type: stepList
+  default: []
 - name: pool
   type: object
 - name: enableSourceBuild
@@ -48,23 +54,12 @@ stages:
           fetchDepth: 1
           clean: true
         steps:
-    
-        - script: $(_buildScript)
-                  -restore -build
-                  -configuration $(_BuildConfig)
-                  -projects "Microsoft.Maui.BuildTasks.slnf"
-                  /p:ArchiveTests=false
-                  /p:TreatWarningsAsErrors=false
-                  /bl:$(Build.Arcade.LogsPath)buildtasks.binlog
-                  $(_OfficialBuildIdArgs)
+        - ${{ each step in parameters.prepareSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
+        - script: $(_buildScript) -restore -build -configuration $(_BuildConfig) -projects "Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)buildtasks.binlog $(_OfficialBuildIdArgs)
           displayName: 🛠️ Build BuildTasks
 
-        - script: $(_buildScript)
-                  -restore -build
-                  -configuration $(_BuildConfig)
-                  -projects "${{ parameters.buildProjects }}"
-                  /p:ArchiveTests=false
-                  /p:TreatWarningsAsErrors=false
-                  /bl:$(Build.Arcade.LogsPath)build.binlog
-                  $(_OfficialBuildIdArgs)
+        - script: $(_buildScript) -restore -build -configuration $(_BuildConfig) -projects "${{ parameters.buildProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)build.binlog $(_OfficialBuildIdArgs)
           displayName: 🛠️ Build ${{ parameters.buildProjects }}
