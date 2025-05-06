@@ -102,7 +102,7 @@ public partial class CollectionViewItemsSourcePage : ContentPage
 		{
 			allItems = flatModelItems.Cast<object>().ToList();
 		}
-		else if (_viewModel.ItemsSourceType == ItemsSourceType.GroupedListT &&
+		else if (_viewModel.ItemsSourceType == ItemsSourceType.GroupedListStringT &&
 				 _viewModel.ItemsSource is List<Grouping<string, CollectionViewViewModel.CollectionViewTestItem>> groupedItems)
 		{
 			allItems = groupedItems.SelectMany(g => g).Cast<object>().ToList();

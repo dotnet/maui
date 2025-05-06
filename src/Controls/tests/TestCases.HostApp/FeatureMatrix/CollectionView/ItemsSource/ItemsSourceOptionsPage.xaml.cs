@@ -34,11 +34,11 @@ public partial class ItemsSourceOptionsPage : ContentPage
 		if (_viewModel.ItemsSourceStringItems == true)
 		{
 			if (radioButton == ItemsSourceObservableCollection)
-				_viewModel.ItemsSourceType = ItemsSourceType.ObservableColllectionStringT;
+				_viewModel.ItemsSourceType = ItemsSourceType.ObservableCollectionStringT;
 			else if (radioButton == ItemsSourceList)
 				_viewModel.ItemsSourceType = ItemsSourceType.ListT;
 			else if (radioButton == ItemsSourceGroupedList)
-				_viewModel.ItemsSourceType = ItemsSourceType.GroupedListT;
+				_viewModel.ItemsSourceType = ItemsSourceType.GroupedListStringT;
 			else if (radioButton == ItemsSourceNone)
 				_viewModel.ItemsSourceType = ItemsSourceType.None;
 			else if (radioButton == EmptyGroupedListT)
