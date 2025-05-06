@@ -351,8 +351,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			UpdateItemTemplate();
 			UpdateItemsSource();
-			UpdateVerticalScrollBarVisibility();
-			UpdateHorizontalScrollBarVisibility();
+			UpdateScrollBarVisibility();
 			UpdateEmptyView();
 		}
 
@@ -376,7 +375,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			listView.Loaded += ListViewLoaded;
 		}
 
-		private protected void UpdateVerticalScrollBarVisibility()
+		internal void UpdateScrollBarVisibility()
+		{
+			UpdateVerticalScrollBarVisibility();
+			UpdateHorizontalScrollBarVisibility();
+		}
+
+		void UpdateVerticalScrollBarVisibility()
 		{
 			if (Element.VerticalScrollBarVisibility != ScrollBarVisibility.Default)
 			{
@@ -406,7 +411,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		private protected void UpdateHorizontalScrollBarVisibility()
+		void UpdateHorizontalScrollBarVisibility()
 		{
 			if (_defaultHorizontalScrollVisibility == null)
 				_defaultHorizontalScrollVisibility = ScrollViewer.GetHorizontalScrollBarVisibility(Control);

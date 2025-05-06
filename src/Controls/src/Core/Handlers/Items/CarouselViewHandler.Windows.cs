@@ -104,8 +104,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else
 			{
-				UpdateHorizontalScrollBarVisibility();
-				UpdateVerticalScrollBarVisibility();
+				UpdateScrollBarVisibility();
 			}
 		}
 
