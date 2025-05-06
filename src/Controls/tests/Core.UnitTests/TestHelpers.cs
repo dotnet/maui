@@ -8,7 +8,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public static async Task Collect()
 		{
 			await Task.Yield();
-			GC.Collect();
+			GC.Collect(2);
+			GC.WaitForPendingFinalizers();
+			GC.Collect(2);
 			GC.WaitForPendingFinalizers();
 		}
 
@@ -19,6 +21,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				await Task.Yield();
 				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				GC.Collect(2);
 				GC.WaitForPendingFinalizers();
 			}
 

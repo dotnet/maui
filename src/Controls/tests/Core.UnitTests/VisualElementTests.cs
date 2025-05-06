@@ -231,10 +231,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var reference = new WeakReference(new VisualElement { Shadow = shadow });
 
 			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
-			Assert.False(reference.IsAlive, "VisualElement should not be alive!");
+			Assert.False(reference.WaitForCollect(), "VisualElement should not be alive!");
 		}
 
 		[Fact]
