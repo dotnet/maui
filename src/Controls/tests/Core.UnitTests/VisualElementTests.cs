@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await Task.Yield();
 			await TestHelpers.Collect();
 
-			Assert.False(reference.WaitForCollect(), "VisualElement should not be alive!");
+			Assert.False(await reference.WaitForCollect(), "VisualElement should not be alive!");
 		}
 
 		[Fact]
