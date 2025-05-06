@@ -43,6 +43,8 @@ namespace Microsoft.Maui.Platform
 				separator = "-";
 			else if (format.Contains(' ', StringComparison.CurrentCultureIgnoreCase))
 				separator = " ";
+			else if (format.Contains('.', StringComparison.CurrentCultureIgnoreCase))
+				separator = ".";
 			else
 				separator = string.Empty;
 

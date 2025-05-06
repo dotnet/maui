@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #if IOS || ANDROID
 		[Test]
         [Category(UITestCategories.CollectionView)]
-        public void HeaderFooterViewWorks()
+        public async Task HeaderFooterViewWorks()
         {
             // Navigate to the selection galleries
             VisitInitialGallery("Header Footer");
@@ -41,6 +42,20 @@ namespace Microsoft.Maui.TestCases.Tests
 
             App.WaitForElement("This Is A Header");
             App.WaitForElement("This Is A Footer");
+
+			// Now let's add items until the footer goes out of the screen
+			// and then remove them all and verify the footer is visible again (#29137)
+			var i = 5;
+			while (--i > 0)
+			{
+				App.WaitForElement("Add 2 Items").Tap();
+				App.ScrollDownTo("Add 2 Items", "CV");				
+			}
+
+            App.WaitForElement("Clear All Items").Tap();
+            await Task.Delay(300);
+
+            ClassicAssert.IsTrue(App.WaitForElement("This Is A Footer").IsDisplayed());
         }
 
 		[Test]

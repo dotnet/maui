@@ -249,9 +249,19 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateFlyoutWidth(this MauiNavigationView navigationView, IFlyoutView flyoutView)
 		{
 			if (flyoutView.FlyoutWidth >= 0)
+			{
 				navigationView.OpenPaneLength = flyoutView.FlyoutWidth;
+			}
 			else
+			{
 				navigationView.OpenPaneLength = 320;
+			}
+
+			if (navigationView.PaneContentGrid is not null)
+			{
+				navigationView.PaneContentGrid.Width = navigationView.OpenPaneLength;
+			}
+
 			// At some point this Template Setting is going to show up with a bump to winui
 			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;
 		}
