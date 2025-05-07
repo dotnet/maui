@@ -47,9 +47,11 @@ namespace Microsoft.Maui.Controls
 					case "FillAndExpand":
 						return LayoutOptions.FillAndExpand;
 				}
-				FieldInfo field = typeof(LayoutOptions).GetFields().FirstOrDefault(fi => fi.IsStatic && fi.Name == strValue);
-				if (field != null)
-					return (LayoutOptions)field.GetValue(null);
+				FieldInfo? field = typeof(LayoutOptions).GetFields().FirstOrDefault(fi => fi.IsStatic && fi.Name == strValue);
+				if (field is not null)
+				{
+					return field.GetValue(null);
+				}
 			}
 
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(LayoutOptions)}");

@@ -20,13 +20,22 @@ namespace Microsoft.Maui.Controls
 		{
 			var strValue = value?.ToString();
 
-			if (strValue != null)
+			if (strValue is not null)
 			{
 				var lengths = strValue.Split(',');
 				var converter = new GridLengthTypeConverter();
 				var definitions = new RowDefinition[lengths.Length];
+				
 				for (var i = 0; i < lengths.Length; i++)
-					definitions[i] = new RowDefinition { Height = (GridLength)converter.ConvertFromInvariantString(lengths[i]) };
+				{
+					if (converter.ConvertFromInvariantString(lengths[i]) is not GridLength height)
+					{
+						throw new InvalidOperationException(string.Format("Cannot convert \"{0}\" into {1}", lengths[i], typeof(GridLength)));
+					}
+
+					definitions[i] = new RowDefinition { Height = height };
+				}
+
 				return new RowDefinitionCollection(definitions);
 			}
 
