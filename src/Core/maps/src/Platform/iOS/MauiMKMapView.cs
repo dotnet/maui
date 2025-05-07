@@ -12,13 +12,13 @@ namespace Microsoft.Maui.Maps.Platform
 {
 	public class MauiMKMapView : MKMapView
 	{
-		WeakReference<IMapHandler> _handlerRef = new WeakReference<IMapHandler>(null!);
+		WeakReference<IMapHandler> _handlerRef;
 		object? _lastTouchedView;
 		UITapGestureRecognizer? _mapClickedGestureRecognizer;
 
 		public MauiMKMapView(IMapHandler handler)
 		{
-			Handler = handler;
+			_handlerRef = new WeakReference<IMapHandler>(handler);
 			OverlayRenderer = GetViewForOverlayDelegate;
 		}
 

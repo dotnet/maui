@@ -14,14 +14,12 @@ namespace Microsoft.Maui.Maps.Platform
 
 		public static MauiMKMapView? Get(IMapHandler mapHandler)
 		{
-			var hasInstance = Instance.Maps.TryDequeue(out MauiMKMapView? mapView);
-
-			if (hasInstance && mapView != null)
+			if (Instance.Maps.TryDequeue(out MauiMKMapView? mapView) && mapView is not null)
 			{
 				mapView.Handler = mapHandler;
+				return mapView;
 			}
-
-			return hasInstance ? mapView : null;
+			return null;
 		}
 	}
 }
