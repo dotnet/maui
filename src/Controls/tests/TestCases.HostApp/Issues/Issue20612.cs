@@ -2,7 +2,6 @@
 
 namespace Maui.Controls.Sample.Issues;
 
-
 [Issue(IssueTracker.Github, 20612, "Disconnecting Map Handler causes Map to crash on second page entrance and moving to region.", PlatformAffected.iOS | PlatformAffected.macOS)]
 public class Issue20612 : TestNavigationPage
 {
@@ -68,8 +67,6 @@ public class Issue20612page2 : ContentPage
 
         grid.Children.Add(goBackButton);
         Grid.SetRow(goBackButton, 1);
-
-
         Content = grid;
 
         MoveMap();
