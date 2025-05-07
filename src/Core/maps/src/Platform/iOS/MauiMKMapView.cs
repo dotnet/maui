@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Maps.Platform
 			}
 			set
 			{
-				if (value != null)
+				if (value is not null)
 				{
 					_handlerRef = new WeakReference<IMapHandler>(value);
 				}
