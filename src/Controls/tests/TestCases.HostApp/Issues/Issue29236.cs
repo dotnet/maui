@@ -6,30 +6,23 @@ using System;
 [Issue(IssueTracker.Github, 29236, "Window dimensions not updating after device orientation changes on iOS", PlatformAffected.iOS)]
 public partial class Issue29236 : ContentPage
 {
-	private Label WindowWidth, WindowHeight, PageWidth, PageHeight;
+	private Label WindowWidth, WindowHeight;
 
 	public Issue29236()
 	{
-		WindowWidth = new Label {AutomationId = "WindowWidth"};
-		WindowHeight = new Label {AutomationId = "WindowHeight"};
-		PageWidth = new Label {AutomationId = "PageWidth"};
-		PageHeight = new Label {AutomationId = "PageHeight"};
+		WindowWidth = new Label { AutomationId = "WindowWidth" };
+		WindowHeight = new Label { AutomationId = "WindowHeight" };
 
 		var grid = new Grid
 		{
-			ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition(), new ColumnDefinition() },
-			RowDefinitions = { new RowDefinition(), new RowDefinition(), new RowDefinition() }
+			ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition() },
+			RowDefinitions = { new RowDefinition(), new RowDefinition() }
 		};
 
-		grid.Add(new Label { Text = "Width:" }, 0, 1);
-		grid.Add(new Label { Text = "Height:" }, 0, 2);
-		grid.Add(new Label { Text = "Window" }, 1, 0);
-		grid.Add(new Label { Text = "Page" }, 2, 0);
-
-		grid.Add(WindowWidth, 1, 1);
-		grid.Add(WindowHeight, 1, 2);
-		grid.Add(PageWidth, 2, 1);
-		grid.Add(PageHeight, 2, 2);
+		grid.Add(new Label { Text = "Width:" }, 0, 0);
+		grid.Add(new Label { Text = "Height:" }, 0, 1);
+		grid.Add(WindowWidth, 1, 0);
+		grid.Add(WindowHeight, 1, 1);
 
 		var button = new Button
 		{
@@ -44,11 +37,11 @@ public partial class Issue29236 : ContentPage
 			Padding = new Thickness(20),
 			Spacing = 20,
 			Children =
-				{
-					new Label { Text = "Window Dimension Test" , AutomationId = "Label"},
-					grid,
-					button
-				}
+			{
+				new Label { Text = "Window Dimension Test", AutomationId = "Label" },
+				grid,
+				button
+			}
 		};
 	}
 
@@ -56,7 +49,5 @@ public partial class Issue29236 : ContentPage
 	{
 		WindowWidth.Text = Application.Current.Windows[0].Width.ToString();
 		WindowHeight.Text = Application.Current.Windows[0].Height.ToString();
-		PageWidth.Text = Width.ToString();
-		PageHeight.Text = Height.ToString();
 	}
 }
