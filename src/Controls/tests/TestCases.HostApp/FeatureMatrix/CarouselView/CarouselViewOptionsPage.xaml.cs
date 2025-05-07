@@ -34,7 +34,7 @@ public partial class CarouselViewOptionsPage : ContentPage
                     {
                         new Label
                         {
-                            Text = "No items available",
+                            Text = "No items available(Custom View)",
                             FontSize = 18,
                             HorizontalOptions = LayoutOptions.Center,
                             VerticalOptions = LayoutOptions.Center,
@@ -89,22 +89,7 @@ public partial class CarouselViewOptionsPage : ContentPage
     {
         if (ItemTemplateNone.IsChecked)
         {
-            _viewModel.ItemTemplate = null; 
-        }
-        else if (ItemTemplateString.IsChecked)
-        {
-            _viewModel.ItemTemplate = new DataTemplate(() =>
-            {
-                var label = new Label
-                {
-                    Margin = new Thickness(10),
-                    FontSize = 18,
-                    HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center
-                };
-                label.SetBinding(Label.TextProperty, ".");
-                return label;
-            });
+            _viewModel.ItemTemplate = null;
         }
         else if (ItemTemplateGrid.IsChecked)
         {
@@ -125,7 +110,12 @@ public partial class CarouselViewOptionsPage : ContentPage
                     FontSize = 24,
                     TextColor = Colors.DarkBlue
                 };
-                label.SetBinding(Label.TextProperty, ".");
+
+                // Bind the text with a suffix "(Grid Template)"
+                label.SetBinding(Label.TextProperty, new Binding(".")
+                {
+                    StringFormat = "{0} (Grid Template)"
+                });
 
                 grid.Children.Add(label);
                 return grid;
@@ -157,7 +147,12 @@ public partial class CarouselViewOptionsPage : ContentPage
                     TextColor = Colors.DarkBlue,
                     HorizontalOptions = LayoutOptions.Center
                 };
-                label.SetBinding(Label.TextProperty, ".");
+
+                // Bind the text with a suffix "(Custom View Template)"
+                label.SetBinding(Label.TextProperty, new Binding(".")
+                {
+                    StringFormat = "{0} (Image View)"
+                });
 
                 var image = new Image
                 {
@@ -247,6 +242,16 @@ public partial class CarouselViewOptionsPage : ContentPage
         {
             _viewModel.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepLastItemInView;
         }
+    }
+
+    private void OnLoopLabelTapped(object sender, EventArgs e)
+    {
+        Loop.IsChecked = !Loop.IsChecked;
+    }
+
+    private void OnSwipeLabelTapped(object sender, EventArgs e)
+    {
+        IsSwipeEnabled.IsChecked = !IsSwipeEnabled.IsChecked;
     }
 
     private void OnPeekAreaInsetsEntryCompleted(object sender, EventArgs e)

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Linq;
+using System.Windows.Input;
 
 namespace Maui.Controls.Sample
 {
@@ -24,16 +25,32 @@ namespace Maui.Controls.Sample
         private Thickness _peekAreaInsets;
         private int _position;
         private object _currentItem;
-        private IItemsLayout _itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
+        private IItemsLayout _itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
 
         private ScrollBarVisibility _horizontalScrollBarVisibility = ScrollBarVisibility.Default;
         private ScrollBarVisibility _verticalScrollBarVisibility = ScrollBarVisibility.Default;
         private ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
         public event PropertyChangedEventHandler PropertyChanged;
+        public ICommand AddItemCommand { get; }
+        public ICommand RemoveItemCommand { get; }
 
         public CarouselViewViewModel()
         {
             LoadItems();
+            AddItemCommand = new Command(AddItem);
+            RemoveItemCommand = new Command(RemoveItem);
+            ItemTemplate = new DataTemplate(() =>
+            {
+                var label = new Label
+                {
+                    Margin = new Thickness(10),
+                    FontSize = 18,
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center
+                };
+                label.SetBinding(Label.TextProperty, ".");
+                return label;
+            });
         }
 
         public ObservableCollection<string> Items { get; private set; }
@@ -48,9 +65,23 @@ namespace Maui.Controls.Sample
                 "Item 4",
                 "Item 5"
             };
-
             OnPropertyChanged(nameof(Items));
             OnPropertyChanged(nameof(ItemsSource));
+        }
+        private void AddItem()
+        {
+            // Add a new item to the Items collection
+            Items.Insert(0, $"Item {Items.Count + 1}");
+            OnPropertyChanged(nameof(Items));
+        }
+        private void RemoveItem()
+        {
+            // Remove the top item from the Items collection
+            if (Items.Count > 0)
+            {
+                Items.RemoveAt(0);
+                OnPropertyChanged(nameof(Items));
+            }
         }
 
         public object EmptyView
@@ -94,7 +125,7 @@ namespace Maui.Controls.Sample
                 {
                     _isLoopEnabled = value;
                     OnPropertyChanged();
-                                OnPropertyChanged(nameof(ItemsSource));
+                    OnPropertyChanged(nameof(ItemsSource));
 
                 }
             }

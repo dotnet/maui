@@ -2,12 +2,14 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.CarouselViewFeatureMainPage"
-             Title="MainGallery">
-    <VerticalStackLayout Spacing="25" Padding="30">
+             Title="CarouselViewFeatureMainPage">
+    <VerticalStackLayout Spacing="25"
+            Padding="30">
 
-        <Button 
+        <Button
             Text="CarouselView"
             Clicked="OnCarouselViewClicked"
-            HorizontalOptions="Center" />
+            HorizontalOptions="Center"
+            AutomationId="CarouselViewButton"/>
     </VerticalStackLayout>
 </ContentPage>
