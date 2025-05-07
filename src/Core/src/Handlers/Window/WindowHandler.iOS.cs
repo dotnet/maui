@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 						DispatchQueue.MainQueue.DispatchAsync(() => {
 							if (platformView != null)
 							{
-								//UpdateVirtualViewFrame(platformView);
+								UpdateVirtualViewFrame(platformView);
 							}
 						});
 					});
