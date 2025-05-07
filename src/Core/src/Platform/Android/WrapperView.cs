@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Platform
 			if (Shadow?.Paint is { } shadowPaint)
 			{
 				var context = Context;
-				var paintColorAlpha = Shadow.Paint.ToColor().Alpha;
+				var paintColorAlpha = shadowPaint.ToColor().Alpha;
 				// If the color has an alpha value indicating transparency, we can use that; otherwise, we can use the shadow opacity.
 				var shadowOpacity = paintColorAlpha == 1 ? Shadow.Opacity : paintColorAlpha;
 				float radius = context.ToPixels(Shadow.Radius);
