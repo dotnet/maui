@@ -8,6 +8,7 @@ parameters:
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
+  timeoutInMinutes: 120
   skipProvisioning: true
   agentPoolAccessToken: ''
   categoryGroupsToTest:
@@ -143,7 +144,7 @@ stages:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
-                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
@@ -180,7 +181,7 @@ stages:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: CV2_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
-                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
@@ -218,7 +219,7 @@ stages:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: CARV2_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
-                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
@@ -262,7 +263,7 @@ stages:
                       ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                         ${{ categoryGroup }}:
                           CATEGORYGROUP: ${{ categoryGroup }}
-                  timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                  timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                   workspace:
                     clean: all
                   displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
@@ -302,7 +303,7 @@ stages:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
-                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}
@@ -334,7 +335,7 @@ stages:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
-                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}
