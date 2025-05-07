@@ -15,7 +15,7 @@ public class Issue29297 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.Shell)]
-	public void Shell_Issue21916()
+	public void Shell_Issue29297()
 	{
 		App.WaitForElement("Button");
 		App.Click("Button");
