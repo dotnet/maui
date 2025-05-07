@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.CarouselViewControlsPage"
+            Title="CarouselView Feature">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options" Clicked="NavigateToOptionsPage_Clicked" AutomationId="Options"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid Padding="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <CarouselView 
+            x:Name="carouselView"
+            ItemsSource="{Binding ItemsSource}"
+            EmptyView="{Binding EmptyView}"
+            EmptyViewTemplate="{Binding EmptyViewTemplate}"
+            ItemTemplate="{Binding ItemTemplate}"
+            Loop="{Binding Loop , Mode=OneWay}"
+            IsSwipeEnabled="{Binding IsSwipeEnabled}"
+            IsBounceEnabled="{Binding IsBounceEnabled}"
+            IsScrollAnimated="{Binding IsScrollAnimated}"
+            PeekAreaInsets="{Binding PeekAreaInsets}"
+            Position="{Binding Position, Mode=TwoWay}"
+            CurrentItem="{Binding CurrentItem, Mode=TwoWay}"
+            HorizontalScrollBarVisibility="{Binding HorizontalScrollBarVisibility}"
+            VerticalScrollBarVisibility="{Binding VerticalScrollBarVisibility}"
+            ItemsUpdatingScrollMode="{Binding ItemsUpdatingScrollMode}"
+            IndicatorView="{x:Reference indicatorView}"
+            ItemsLayout="{Binding ItemsLayout}">
+        </CarouselView>
+        
+        <IndicatorView 
+            x:Name="indicatorView"
+            Grid.Row="1"
+            HorizontalOptions="Center"
+            VerticalOptions="End"
+            Margin="0,0,0,20"
+            IndicatorColor="LightGray"
+            SelectedIndicatorColor="DarkGray"
+            IndicatorSize="12"/>
+    </Grid>
+</ContentPage>
