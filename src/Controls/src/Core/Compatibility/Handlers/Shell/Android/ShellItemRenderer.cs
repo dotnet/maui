@@ -77,11 +77,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_bottomView = PlatformInterop.CreateNavigationBar(context, Resource.Attribute.bottomNavigationViewStyle, _outerLayout, this);
 
 			if (ShellItem is null)
-				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
-
+				// throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
+				return _outerLayout;
 			if (ShellItem.CurrentItem is null)
-				throw new InvalidOperationException($"Content not found for active {ShellItem}. Title: {ShellItem.Title}. Route: {ShellItem.Route}.");
-
+				// throw new InvalidOperationException($"Content not found for active {ShellItem}. Title: {ShellItem.Title}. Route: {ShellItem.Route}.");
+				return _outerLayout;
 			HookEvents(ShellItem);
 			SetupMenu();
 
