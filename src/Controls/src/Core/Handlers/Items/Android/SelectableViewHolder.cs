@@ -34,7 +34,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				SetSelectionStates(_isSelected);
 
 				ItemView.Activated = _isSelected;
-				ItemView.Selected = _isSelected;
 				OnSelectedChanged();
 			}
 		}

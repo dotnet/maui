@@ -1,3 +1,4 @@
+#if !ANDROID
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -52,3 +53,4 @@ public class Issue21375 : _IssuesUITest
 
     }
 }
+#endif
