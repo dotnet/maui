@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform
 			out PlatformMethods.RECT pvAttribute,
 			int cbAttribute);
 
-		private static readonly Rect EmptyRect = new(0, 0, 0, 0);
+		static readonly Rect EmptyRect = new(0, 0, 0, 0);
 
 		internal static Rect GetExtendedFrameBounds(this IntPtr hwnd)
 		{
