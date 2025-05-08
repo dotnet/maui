@@ -175,7 +175,7 @@ void ExecuteTests(string project, string device, string resultsDir, string confi
 
 
 
-	RunMacAndiOSTests(project, device, resultsDir, config, tfm, rid, toolPath, (category) =>
+	RunMacAndiOSTests(project, device, resultsDir, config, tfm, rid, toolPath, projectPath, (category) =>
 	{
 		return new DotNetToolSettings
 		{

@@ -274,7 +274,7 @@ DirectoryPath DetermineBinlogDirectory(string projectPath, string binlogArg)
 }
 
 void RunMacAndiOSTests(
-    string project, string device, string resultsDir, string config, string tfm, string rid, string toolPath,
+    string project, string device, string resultsDir, string config, string tfm, string rid, string toolPath, string projectPath,
     Func<string, DotNetToolSettings> getSettings)
 {
     Exception exception = null;
