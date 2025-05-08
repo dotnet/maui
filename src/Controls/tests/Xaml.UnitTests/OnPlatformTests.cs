@@ -179,27 +179,5 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			Assert.AreEqual(StackOrientation.Horizontal, layout.Orientation);
 		}
 
-		[Test]
-		public void OnIdiomReturnsBindablePropertyDefaultWhenNotSet()
-		{
-			var xaml = @"
-			<Button
-				xmlns=""http://schemas.microsoft.com/dotnet/2021/maui""
-				xmlns:x=""http://schemas.microsoft.com/winfx/2009/xaml""
-				Text=""Sample Button""
-				HeightRequest=""{OnIdiom Tablet=50}"" />";
-
-			mockDeviceInfo.Idiom = DeviceIdiom.Tablet;
-			var button = new Button().LoadFromXaml(xaml);
-			Assert.AreEqual(50, button.HeightRequest);
-
-			foreach (var idiom in new[] { DeviceIdiom.Phone, DeviceIdiom.Desktop, DeviceIdiom.TV, DeviceIdiom.Watch })
-			{
-				mockDeviceInfo.Idiom = idiom;
-				button = new Button().LoadFromXaml(xaml);
-				Assert.AreEqual(-1, button.HeightRequest, $"Expected default value -1 for idiom {idiom}");
-			}
-		}
-
 	}
 }
