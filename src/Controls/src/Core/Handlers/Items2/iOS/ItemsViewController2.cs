@@ -61,6 +61,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			if (newLayout is UICollectionViewCompositionalLayout compositionalLayout)
 			{
+				// Note: on carousel layout, the scroll direction is always vertical to achieve horizontal paging with snapping.
+				// Thanks to it, we can use OrthogonalScrollingBehavior.GroupPagingCentered to scroll the section horizontally.
+				// And even if CarouselView is vertically oriented, each section scrolls horizontally — which results in the carousel-style behavior.
 				ScrollDirection = compositionalLayout.Configuration.ScrollDirection;
 			}
 
@@ -189,9 +192,40 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override void ViewWillLayoutSubviews()
 		{
+			if (CollectionView is Items.MauiCollectionView { NeedsCellLayout: true } collectionView)
+			{
+				InvalidateLayoutIfItemsMeasureChanged();
+				collectionView.NeedsCellLayout = false;
+			}
+
 			base.ViewWillLayoutSubviews();
 			LayoutEmptyView();
 			InvalidateMeasureIfContentSizeChanged();
+		}
+
+		void InvalidateLayoutIfItemsMeasureChanged()
+		{
+			var collectionView = CollectionView;
+			var visibleCells = collectionView.VisibleCells;
+			List<NSIndexPath> invalidatedPaths = null;
+
+			var visibleCellsLength = visibleCells.Length;
+			for (int n = 0; n < visibleCellsLength; n++)
+			{
+				if (visibleCells[n] is TemplatedCell2 { MeasureInvalidated: true } cell)
+				{
+					invalidatedPaths ??= new List<NSIndexPath>(visibleCellsLength);
+					var path = collectionView.IndexPathForCell(cell);
+					invalidatedPaths.Add(path);
+				}
+			}
+
+			if (invalidatedPaths != null)
+			{
+				var layoutInvalidationContext = new UICollectionViewLayoutInvalidationContext();
+				layoutInvalidationContext.InvalidateItems(invalidatedPaths.ToArray());
+				collectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
+			}
 		}
 
 		void Items.MauiCollectionView.ICustomMauiCollectionViewDelegate.MovedToWindow(UIView view)
@@ -299,10 +333,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				var dataTemplate = ItemsView.ItemTemplate.SelectDataTemplate(item, ItemsView);
 
-				var cellType = typeof(TemplatedCell2);
-
 				var orientation = ScrollDirection == UICollectionViewScrollDirection.Horizontal ? "Horizontal" : "Vertical";
-				var reuseId = $"{TemplatedCell2.ReuseId}.{orientation}.{dataTemplate.Id}";
+				(Type cellType, var cellTypeReuseId) = DetermineTemplatedCellType();
+				var reuseId = $"{cellTypeReuseId}.{orientation}.{dataTemplate.Id}";
 
 				if (!_cellReuseIds.Contains(reuseId))
 				{
@@ -315,6 +348,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 			return ScrollDirection == UICollectionViewScrollDirection.Horizontal ? HorizontalDefaultCell2.ReuseId : VerticalDefaultCell2.ReuseId;
 		}
+
+		private protected virtual (Type CellType, string CellTypeReuseId) DetermineTemplatedCellType()
+			=> (typeof(TemplatedCell2), TemplatedCell2.ReuseId);
 
 		protected virtual void RegisterViewTypes()
 		{
@@ -577,8 +613,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal virtual void CellDisplayingEndedFromDelegate(UICollectionViewCell cell, NSIndexPath indexPath)
 		{
-			if (cell is TemplatedCell2 TemplatedCell2 &&
-				(TemplatedCell2.PlatformHandler?.VirtualView as View)?.BindingContext is object bindingContext)
+			if (cell is TemplatedCell2 templatedCell2 &&
+				(templatedCell2.PlatformHandler?.VirtualView as View)?.BindingContext is { } bindingContext)
 			{
 				// We want to unbind a cell that is no longer present in the items source. Unfortunately
 				// it's too expensive to check directly, so let's check that the current binding context
@@ -591,7 +627,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					!Items.IndexPathHelpers.IsIndexPathValid(itemsSource, indexPath) ||
 					!Equals(itemsSource[indexPath], bindingContext))
 				{
-					TemplatedCell2.Unbind();
+					templatedCell2.Unbind();
 				}
 			}
 		}
