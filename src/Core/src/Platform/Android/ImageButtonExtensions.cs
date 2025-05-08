@@ -81,5 +81,20 @@ namespace Microsoft.Maui.Platform
 							.Build();
 				});
 		}
+
+		public static void UpdateRippleColor(this ShapeableImageView platformView, Color rippleColor)
+		{
+			if (platformView.Background is global::Android.Graphics.Drawables.RippleDrawable ripple)
+			{
+				if (rippleColor?.ToPlatform() is not null)
+				{
+					ripple.SetColor(global::Android.Content.Res.ColorStateList.ValueOf(rippleColor.ToPlatform()));
+				}
+				else
+				{
+					ripple.ClearColorFilter();
+				}
+			}
+		}
 	}
 }

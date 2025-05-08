@@ -360,6 +360,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Green");
 			App.DragAndDrop("Blue", "Green");
 
+			// Wait for all UI elements to confirm drag and drop operation completion
+			App.WaitForElement("DropRelativeLayout");
+			App.WaitForElement("DropRelativeScreen");
+			App.WaitForElement("DropRelativeLabel");
+			App.WaitForElement("DragStartRelativeScreen");
+
 			var dropRelativeToLayout = GetCoordinatesFromLabel(App.FindElement("DropRelativeLayout").GetText());
 			var dropRelativeToScreen = GetCoordinatesFromLabel(App.FindElement("DropRelativeScreen").GetText());
 			var dropRelativeToLabel = GetCoordinatesFromLabel(App.FindElement("DropRelativeLabel").GetText());

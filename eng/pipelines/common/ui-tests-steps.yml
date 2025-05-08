@@ -108,11 +108,11 @@ steps:
     displayName: "Install node"
 
   - pwsh: |
-      $skipAppiumDoctor = if ($IsMacOS) { "true" } else { "false" }
+      $skipAppiumDoctor = if ($IsMacOS -or $IsLinux) { "true" } else { "false" }
       dotnet build ./src/Provisioning/Provisioning.csproj -t:ProvisionAppium -p:SkipAppiumDoctor="$skipAppiumDoctor" -bl:"$(LogDirectory)/provision-appium.binlog"
     displayName: "Install Appium"
     continueOnError: false
-    retryCountOnTaskFailure: 1
+    retryCountOnTaskFailure: 2
     timeoutInMinutes: 10
     env:
       APPIUM_HOME: $(APPIUM_HOME)
