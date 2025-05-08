@@ -29,9 +29,9 @@ namespace Microsoft.Maui.Handlers
 					_ => {
 						// Using dispatch to defer execution until after the rotation animation completes
 						DispatchQueue.MainQueue.DispatchAsync(() => {
-							if (platformView != null)
+							if (platformView is not null)
 							{
-								//UpdateVirtualViewFrame(platformView);
+								UpdateVirtualViewFrame(platformView);
 							}
 						});
 					});
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				_proxy.Disconnect();
 			}
-			else if (_orientationObserver != null)
+			else if (_orientationObserver is not null)
 			{
 				_orientationObserver.Dispose();
 				_orientationObserver = null;
