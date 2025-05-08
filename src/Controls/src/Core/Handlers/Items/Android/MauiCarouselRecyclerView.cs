@@ -139,6 +139,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_gotoPosition = -1;
 
+			if (GetLayoutManager() is LinearLayoutManager layoutManager)
+			{
+				var isHorizontal = IsHorizontal;
+				layoutManager.Orientation = isHorizontal
+					? LinearLayoutManager.Horizontal
+					: LinearLayoutManager.Vertical;
+			}
+
 			base.UpdateAdapter();
 
 			UpdateInitialPosition();

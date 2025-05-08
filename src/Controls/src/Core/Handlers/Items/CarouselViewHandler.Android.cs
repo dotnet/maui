@@ -53,6 +53,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.PlatformView as IMauiCarouselRecyclerView).UpdateFromCurrentItem();
 		}
 
+		public static void MapItemsLayout(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			(handler.PlatformView as IMauiRecyclerView<CarouselView>)?.UpdateAdapter();
+		}
+
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			_widthConstraint = widthConstraint;

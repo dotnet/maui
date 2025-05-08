@@ -27,8 +27,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.CarouselView.PeekAreaInsetsProperty.PropertyName] = MapPeekAreaInsets,
 			[Controls.CarouselView.IsBounceEnabledProperty.PropertyName] = MapIsBounceEnabled,
 			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
-			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem
+			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem,
+			[Controls.CarouselView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
+
 		};
+
+
 	}
 
 	public partial class CarouselViewHandler2 : ItemsViewHandler2<CarouselView>
@@ -188,6 +192,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapIsBounceEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
 		{
 			handler.Controller.CollectionView.Bounces = carouselView.IsBounceEnabled;
+		}
+
+		public static void MapItemsLayout(CarouselViewHandler2 handler, CarouselView carouselView)
+		{
+			handler.UpdateLayout();
 		}
 
 		public static void MapPeekAreaInsets(CarouselViewHandler2 handler, CarouselView carouselView)
