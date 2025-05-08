@@ -201,9 +201,14 @@ namespace Microsoft.Maui.Handlers
 			var size = appWindow.Size;
 			var pos = appWindow.Position;
 
-			bool isMaximized = (appWindow.Presenter as OverlappedPresenter)!.IsMaximizable && (appWindow.Presenter as OverlappedPresenter)!.State == OverlappedPresenterState.Maximized;
-			if (isMaximized)
+			bool isMaximized = false;
+			if (appWindow.Presenter is OverlappedPresenter presenter)
 			{
+				isMaximized = presenter.IsMaximizable && presenter.State == OverlappedPresenterState.Maximized;
+			}
+
+			if (isMaximized)
+            {
 				// If the window is maximized, we need to use the bounds of the window
 				// instead of the size and position of the app window.
 				size = new SizeInt32((int)bounds.Width, (int)bounds.Height);
