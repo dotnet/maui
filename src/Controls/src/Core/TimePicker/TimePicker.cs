@@ -20,11 +20,11 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
 		/// <summary>Bindable property for <see cref="Time"/>.</summary>
-		public static readonly BindableProperty TimeProperty = BindableProperty.Create(nameof(Time), typeof(TimeSpan), typeof(TimePicker), new TimeSpan(0), BindingMode.TwoWay,
+		public static readonly BindableProperty TimeProperty = BindableProperty.Create(nameof(Time), typeof(TimeSpan?), typeof(TimePicker), new TimeSpan(0), BindingMode.TwoWay,
 			validateValue: (bindable, value) =>
 			{
-				var time = (TimeSpan)value;
-				return time.TotalHours < 24 && time.TotalMilliseconds >= 0;
+				var time = (TimeSpan?)value;
+				return time is null || (time?.TotalHours < 24 && time?.TotalMilliseconds >= 0);
 			},
 			propertyChanged: TimePropertyChanged);
 
@@ -70,9 +70,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='Time']/Docs/*" />
-		public TimeSpan Time
+		public TimeSpan? Time
 		{
-			get { return (TimeSpan)GetValue(TimeProperty); }
+			get { return (TimeSpan?)GetValue(TimeProperty); }
 			set { SetValue(TimeProperty, value); }
 		}
 
@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls
 
 		Font ITextStyle.Font => this.ToFont();
 
-		TimeSpan ITimePicker.Time
+		TimeSpan? ITimePicker.Time
 		{
 			get => Time;
 			set => SetValue(TimeProperty, value, SetterSpecificity.FromHandler);
