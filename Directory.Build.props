@@ -19,6 +19,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <RoslynCompilerType>FrameworkPackage</RoslynCompilerType>
+  </PropertyGroup>
+
+
+  <PropertyGroup>
     <!-- NuGet package information -->
     <Copyright>$(CopyrightNetFoundation)</Copyright>
     <Company>Microsoft</Company>
