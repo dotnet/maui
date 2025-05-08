@@ -23,6 +23,17 @@ Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime?
 Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime?
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
+Microsoft.Maui.Controls.NavigatedFromEventArgs.NavigationType.get -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigatedToEventArgs.NavigationType.get -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigatingFromEventArgs.NavigationType.get -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.Initialize = 6 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.Insert = 3 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.PageSwap = 5 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.Pop = 1 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.PopToRoot = 2 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.Push = 0 -> Microsoft.Maui.Controls.NavigationType
+Microsoft.Maui.Controls.NavigationType.Remove = 4 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.ICornerElement
 Microsoft.Maui.Controls.ICornerElement.CornerRadius.get -> Microsoft.Maui.CornerRadius
 Microsoft.Maui.Controls.ILineHeightElement
@@ -69,6 +80,9 @@ static Microsoft.Maui.Controls.ViewExtensions.ScaleXToAsync(this Microsoft.Maui.
 static Microsoft.Maui.Controls.ViewExtensions.ScaleYToAsync(this Microsoft.Maui.Controls.VisualElement! view, double scale, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Maui.Controls.VisualElement! view, double x, double y, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
 ~Microsoft.Maui.Controls.Internals.TypedBindingBase.UpdateSourceEventName.set -> void
+~Microsoft.Maui.Controls.NavigatedFromEventArgs.DestinationPage.get -> Microsoft.Maui.Controls.Page
+~Microsoft.Maui.Controls.NavigatedToEventArgs.PreviousPage.get -> Microsoft.Maui.Controls.Page
+~Microsoft.Maui.Controls.NavigatingFromEventArgs.DestinationPage.get -> Microsoft.Maui.Controls.Page
 ~Microsoft.Maui.Controls.ResourceDictionary.SetAndCreateSource<T>(System.Uri value) -> void
 ~Microsoft.Maui.Controls.Xaml.IXamlTypeResolver.Resolve(string qualifiedTypeName, System.IServiceProvider serviceProvider = null, bool expandToExtension = true) -> System.Type
 ~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
