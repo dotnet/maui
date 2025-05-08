@@ -4,6 +4,6 @@
              x:Class="Controls.TestCases.HostApp.Issues.Issue9978"
              Title="Issue9978">
             <VerticalStackLayout>
-                <Image AutomationId="MauiImage" Source="dotnet_bot.png" HeightRequest="{OnIdiom  Tablet=100}" />
+                <Image AutomationId="MauiImage" Source="groceries.png" HeightRequest="{OnIdiom  Tablet=100}" />
             </VerticalStackLayout>
 </ContentPage>
