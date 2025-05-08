@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// No template, Footer is not a Forms View, so just display Footer.ToString
-			return SimpleViewHolder.FromText(content?.ToString(), context, false);
+			return SimpleViewHolder.FromText(content?.ToString(), context, fill: false);
 		}
 
 		protected RecyclerView.ViewHolder CreateEmptyViewHolder(object content, DataTemplate template, ViewGroup parent)
@@ -235,7 +235,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (content is not View formsView)
 				{
 					// No template, EmptyView is not a Forms View, so just display EmptyView.ToString
-					return SimpleViewHolder.FromText(content?.ToString(), context);
+					return SimpleViewHolder.FromText(content?.ToString(), context, () => GetWidth(parent), () => GetHeight(parent), ItemsView);
 				}
 
 				// EmptyView is a Forms View; display that
@@ -317,6 +317,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				var content = dataTemplate.CreateContent() as IView;
 				size = content.Measure(double.PositiveInfinity, double.PositiveInfinity);
+			}
+
+			if (item is string text)
+			{
+				Label label = new Label { Text = text };
+				TemplateHelpers.GetHandler(label, ItemsView.FindMauiContext());
+
+				size = label.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			}
 
 			var itemHeight = size.Height;
