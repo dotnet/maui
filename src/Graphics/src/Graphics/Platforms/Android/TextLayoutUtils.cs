@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 #pragma warning disable CA1416 // Validate platform compatibility
 #pragma warning disable CA1422 // Validate platform compatibility
+				// The Unicode character \u200E is the Left-to-Right Mark (LRM). It is used to explicitly set the text direction to left-to-right
 				text = "\u200E" + text;
 				return new StaticLayout(
 				   text, // Text to layout
