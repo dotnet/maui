@@ -57,6 +57,10 @@ Microsoft.Maui.IHybridWebView.InvokeJavaScriptType.set -> void
 Microsoft.Maui.IHybridWebView.RawMessageReceived(string! rawMessage) -> void
 Microsoft.Maui.IHybridWebView.SendRawMessage(string! rawMessage) -> void
 Microsoft.Maui.IHybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
+Microsoft.Maui.IPickerElement
+Microsoft.Maui.IPickerElement.IsOpen.get -> bool
+Microsoft.Maui.IPickerElement.IsOpen.set -> void
+Microsoft.Maui.IPickerElement.OnIsOpenPropertyChanged(bool oldValue, bool newValue) -> void
 Microsoft.Maui.ITitleBar
 Microsoft.Maui.ITitleBar.PassthroughElements.get -> System.Collections.Generic.IList<Microsoft.Maui.IView!>!
 Microsoft.Maui.ITitleBar.Subtitle.get -> string?
@@ -101,6 +105,7 @@ static Microsoft.Maui.ElementHandlerExtensions.GetService<T>(this Microsoft.Maui
 static Microsoft.Maui.ElementHandlerExtensions.GetServiceProvider(this Microsoft.Maui.IElementHandler! handler) -> System.IServiceProvider!
 static Microsoft.Maui.ElementHandlerExtensions.IsConnected(this Microsoft.Maui.IElementHandler! handler) -> bool
 static Microsoft.Maui.Handlers.ApplicationHandler.MapActivateWindow(Microsoft.Maui.Handlers.ApplicationHandler! handler, Microsoft.Maui.IApplication! application, object? args) -> void
+static Microsoft.Maui.Handlers.DatePickerHandler.MapIsOpen(Microsoft.Maui.Handlers.IDatePickerHandler! handler, Microsoft.Maui.IDatePicker! datePicker) -> void
 static Microsoft.Maui.Handlers.GraphicsViewHandler.MapBackground(Microsoft.Maui.Handlers.IGraphicsViewHandler! handler, Microsoft.Maui.IGraphicsView! graphicsView) -> void
 static Microsoft.Maui.Handlers.HybridWebViewHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
 static Microsoft.Maui.Handlers.HybridWebViewHandler.MapEvaluateJavaScriptAsync(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
@@ -108,6 +113,8 @@ static Microsoft.Maui.Handlers.HybridWebViewHandler.MapInvokeJavaScriptAsync(Mic
 static Microsoft.Maui.Handlers.HybridWebViewHandler.Mapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IHybridWebView!, Microsoft.Maui.Handlers.IHybridWebViewHandler!>!
 static Microsoft.Maui.Handlers.HybridWebViewHandler.MapSendRawMessage(Microsoft.Maui.Handlers.IHybridWebViewHandler! handler, Microsoft.Maui.IHybridWebView! hybridWebView, object? arg) -> void
 static Microsoft.Maui.Handlers.ImageHandler.MapInputTransparent(Microsoft.Maui.Handlers.IImageHandler! handler, Microsoft.Maui.IImage! image) -> void
+static Microsoft.Maui.Handlers.PickerHandler.MapIsOpen(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.IPicker! picker) -> void
+static Microsoft.Maui.Handlers.TimePickerHandler.MapIsOpen(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Hosting.AppHostBuilderExtensions.ConfigureEnvironmentVariables(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 static Microsoft.Maui.Hosting.HybridWebViewServiceCollectionExtensions.AddHybridWebViewDeveloperTools(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Maui.Keyboard.Date.get -> Microsoft.Maui.Keyboard!
@@ -122,6 +129,7 @@ static Microsoft.Maui.Platform.EditTextExtensions.GetSelectedTextLength(this And
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformButton, Microsoft.Maui.IImageButton! imageButton) -> void
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateRippleColor(this Google.Android.Material.ImageView.ShapeableImageView! platformView, Microsoft.Maui.Graphics.Color! rippleColor) -> void
+static Microsoft.Maui.Platform.PickerExtensions.UpdateIsOpen(this Microsoft.Maui.Platform.MauiPicker! platformPicker, Microsoft.Maui.IPicker! picker, AndroidX.AppCompat.App.AlertDialog? dialog) -> void
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Platform.MauiWebChromeClient.OnHideCustomView() -> void

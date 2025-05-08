@@ -126,12 +126,23 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView?.UpdateTextColor(datePicker);
 		}
 
+		public static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+			if (handler is DatePickerHandler platformHandler)
+			{
+				if (datePicker.IsOpen)
+					platformHandler.ShowPickerDialog(datePicker.Date);
+				else
+					platformHandler.HidePickerDialog();
+			}
+		}
+
 		void ShowPickerDialog()
 		{
 			if (VirtualView is null)
 			{
 				return;
-			}
+			} 
 
 			if (_dialog is not null && _dialog.IsShowing)
 			{
@@ -140,6 +151,7 @@ namespace Microsoft.Maui.Handlers
 
 			var date = VirtualView.Date;
 			ShowPickerDialog(date);
+			VirtualView.IsOpen = true;
 		}
 
 		void ShowPickerDialog(DateTime? date)
@@ -165,6 +177,7 @@ namespace Microsoft.Maui.Handlers
 		void HidePickerDialog()
 		{
 			_dialog?.Hide();
+			VirtualView.IsOpen = false;
 		}
 
 		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
