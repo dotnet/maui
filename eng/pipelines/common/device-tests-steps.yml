@@ -145,7 +145,6 @@ steps:
     displayName: Execute Test Run
     workingDirectory: ${{ parameters.checkoutDirectory }}
     condition: and(succeeded(), ne('${{ parameters.buildType }}', 'buildOnly'))
-    retryCountOnTaskFailure: 1
 
 
   ##################################################
