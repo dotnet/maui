@@ -127,6 +127,28 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.ViewDidLayoutSubviews();
 
+			bool isInMoreTab = false;
+			// Check if the selected tab is in the More tab
+			if (MoreNavigationController != null && MoreNavigationController.ViewControllers != null)
+			{
+				foreach (var viewController in MoreNavigationController.ViewControllers)
+				{
+					if (viewController == SelectedViewController)
+					{
+						isInMoreTab = true;
+						break;
+					}
+				}
+			}
+
+			// Only update if CurrentPage's controller is not the selected one, and if in More tab
+			var currentPageController = Tabbed?.CurrentPage != null ? GetViewController(Tabbed.CurrentPage) : null;
+			if ((isInMoreTab || SelectedViewController.Title.Equals("More", StringComparison.Ordinal)) &&
+				(currentPageController != SelectedViewController))
+			{
+				UpdateCurrentPage();
+			}
+
 			if (Element is IView view)
 				view.Arrange(View.Bounds.ToRectangle());
 		}
@@ -465,6 +487,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateCurrentPage()
 		{
+			if (SelectedViewController.Title.Equals("More", StringComparison.Ordinal))
+			{
+				Tabbed.CurrentPage = null;
+				return;
+			}
+
 			if (Tabbed is TabbedPage tabbed)
 			{
 				var count = tabbed.InternalChildren.Count;
