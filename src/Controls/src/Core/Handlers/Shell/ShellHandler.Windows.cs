@@ -116,8 +116,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapCurrentItem(ShellHandler handler, Shell view)
 		{
-			if view.CurrentItem is not null
-				handler.PlatformView.SwitchShellItem(view.CurrentItem, true);
+			handler.PlatformView.SwitchShellItem(view.CurrentItem, true);
 		}
 
 		public static void MapFlyoutBackground(ShellHandler handler, Shell view)
