@@ -366,7 +366,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (Shell.CurrentItem == null)
 			{
-				return;
+				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
 			}
 			else if (_currentShellItemRenderer == null)
 			{
