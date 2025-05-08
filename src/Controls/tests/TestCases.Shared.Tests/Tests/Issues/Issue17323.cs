@@ -16,7 +16,7 @@ public class Issue17323 : _IssuesUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void ArabicStringShouldBeLeftToRight()
 	{
-		App.WaitForElement("Label");
+		App.WaitForElement("TextLabel");
 		VerifyScreenshot();
 	}
 }
