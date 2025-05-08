@@ -283,6 +283,7 @@ void RunMacAndiOSTests(
 	    bool testsFailed = true;
 		Information($"Running tests for category: {category}");
 		var settings = getSettings(category);
+        var suffix = category.Split('=').Skip(1).FirstOrDefault();
 
 		try
 		{
@@ -299,7 +300,20 @@ void RunMacAndiOSTests(
 				{
 					Information($"Test attempt {i} failed: {ex.Message}");
 					if (i == 1)
+                    {
 						throw;
+                    }
+                    else
+                    {
+                        // delete any log files created so it's fresh for the rerun
+			            HandleTestResults(resultsDir, false, true, "-" + suffix);
+                        var logFiles = GetFiles($"{resultsDir}/*-{suffix}*");
+
+                        foreach (var logFile in logFiles)
+                        {
+                            DeleteFile(logFile);
+                        }
+                    }
 				}
 			}
 		}
@@ -309,7 +323,7 @@ void RunMacAndiOSTests(
 		}
 		finally
 		{
-			HandleTestResults(resultsDir, testsFailed, true, "-" + category.Split('=').Skip(1).FirstOrDefault());
+			HandleTestResults(resultsDir, testsFailed, true, "-" + suffix);
 		}
 	}
 
