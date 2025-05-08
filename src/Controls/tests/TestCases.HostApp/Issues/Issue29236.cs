@@ -24,9 +24,9 @@ public partial class Issue29236 : ContentPage
 
 		var button = new Button
 		{
-			Text = "Get dimensions",
+			Text = "Get Dimensions",
 			HorizontalOptions = LayoutOptions.Fill,
-			AutomationId = "getDimensionsButton"
+			AutomationId = "getDimensions"
 		};
 		button.Clicked += UpdateDimensions;
 

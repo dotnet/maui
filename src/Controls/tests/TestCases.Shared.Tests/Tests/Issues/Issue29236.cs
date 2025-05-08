@@ -16,13 +16,13 @@ internal class Issue29236 : _IssuesUITest
 	public void WindowDimensionsShouldUpdateAfterOrientationChange()
 	{
 		App.WaitForElement("windowTestTitle");
-		App.Tap("GetDimensionsButton");
+		App.Tap("getDimensions");
 		
 		var portraitWindowWidth = App.WaitForElement("windowWidth").GetText();
 		var portraitWindowHeight = App.WaitForElement("windowHeight").GetText();
 		
 		App.SetOrientationLandscape();
-		App.Tap("getDimensionsButton");
+		App.Tap("getDimensions");
 		
 		var previousWindowWidth = Math.Round(double.Parse(portraitWindowWidth ?? "0"));
 		var previousWindowHeight = Math.Round(double.Parse(portraitWindowHeight ?? "0"));
