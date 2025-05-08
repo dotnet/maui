@@ -8,8 +8,10 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Maui.Controls.Sample.CollectionViewGalleries;
 using System.Windows.Input;
+using System.Collections.Specialized;
 
 namespace Maui.Controls.Sample;
+
 public class Grouping<TKey, TItem> : ObservableCollection<TItem>
 {
     public TKey Key { get; }
@@ -62,6 +64,12 @@ public class CollectionViewViewModel : INotifyPropertyChanged
     private ObservableCollection<ItemModel> _observableCollection2;
     private List<Grouping<string, CollectionViewTestItem>> _groupedList3;
     private List<Grouping<string, ItemModel>> _groupedList2;
+    private SelectionMode _selectionMode = SelectionMode.None;
+    private object _selectedItem;
+    private ObservableCollection<object> _selectedItems = new ObservableCollection<object>();
+    private int _selectionChangedEventCount = 0;
+    private string _previousSelectionText;
+    private string _currentSelectionText;
 
     public bool ShowAddRemoveButtons => ItemsSourceType == ItemsSourceType.ObservableCollectionT3 || ItemsSourceType == ItemsSourceType.GroupedListT3;
 
@@ -99,6 +107,8 @@ public class CollectionViewViewModel : INotifyPropertyChanged
         });
 
         SetItemTemplate();
+        SelectedItems = new ObservableCollection<object>();
+        SelectedItems.CollectionChanged += OnSelectedItemsChanged;
     }
 
     public object EmptyView
@@ -270,6 +280,105 @@ public class CollectionViewViewModel : INotifyPropertyChanged
         }
     }
 
+    public SelectionMode SelectionMode
+    {
+        get => _selectionMode;
+        set
+        {
+            if (_selectionMode != value)
+            {
+                _selectionMode = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public object SelectedItem
+    {
+        get => _selectedItem;
+        set
+        {
+            if (_selectedItem != value)
+            {
+                _selectedItem = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(SelectedItemText));
+                OnPropertyChanged(nameof(SelectedItemsCount));
+            }
+        }
+    }
+
+    public ObservableCollection<object> SelectedItems
+    {
+        get => _selectedItems;
+        set
+        {
+            if (_selectedItems != value)
+            {
+                _selectedItems = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(SelectedItemsCount));
+                OnPropertyChanged(nameof(SelectedItemText));
+            }
+        }
+    }
+    public int SelectedItemsCount
+    {
+        get
+        {
+            if (SelectionMode == SelectionMode.Single)
+            {
+                return SelectedItem != null ? 1 : 0;
+            }
+            else if (SelectionMode == SelectionMode.Multiple)
+            {
+                return SelectedItems?.Count ?? 0;
+            }
+            return 0;
+
+        }
+    }
+    public string SelectedItemText
+    {
+        get
+        {
+            if (SelectionMode == SelectionMode.Single && SelectedItem is CollectionViewTestItem item)
+            {
+                return $"{item.Caption}";
+            }
+            else if (SelectionMode == SelectionMode.Multiple && SelectedItems?.Count > 0)
+            {
+                var selectedCaptions = SelectedItems
+                    .OfType<CollectionViewTestItem>()
+                    .Select(i => i.Caption);
+                return string.Join(", ", selectedCaptions);
+            }
+            return "No items selected";
+        }
+    }
+
+    public int SelectionChangedEventCount
+    {
+        get => _selectionChangedEventCount;
+        set
+        {
+            _selectionChangedEventCount = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string PreviousSelectionText
+    {
+        get => _previousSelectionText;
+        set { _previousSelectionText = value; OnPropertyChanged(); }
+    }
+
+    public string CurrentSelectionText
+    {
+        get => _currentSelectionText;
+        set { _currentSelectionText = value; OnPropertyChanged(); }
+    }
+
 
     private void LoadItems()
     {
@@ -418,19 +527,29 @@ public class CollectionViewViewModel : INotifyPropertyChanged
         {
             ItemTemplate = new DataTemplate(() =>
             {
+                var stackLayout = new StackLayout
+                {
+                    Padding = new Thickness(10),
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center
+                };
+ 
                 var label = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
                     HorizontalOptions = LayoutOptions.Center
                 };
                 label.SetBinding(Label.TextProperty, "Caption");
-                return new StackLayout
-                {
-                    Padding = new Thickness(10),
-                    Children = { label }
-                };
+                stackLayout.Children.Add(label);
+                return stackLayout;
             });
         }
+    }
+
+    private void OnSelectedItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(SelectedItemsCount));
+        OnPropertyChanged(nameof(SelectedItemText));
     }
 
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
