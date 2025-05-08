@@ -32,11 +32,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				_proxy.Disconnect();
 			}
-			else if (_orientationObserver is not null)
-			{
-				UnregisterOrientationChangeNotification();
-			}
 
+			UnregisterOrientationChangeNotification();
 			base.DisconnectHandler(platformView);
 		}
 
@@ -141,15 +138,19 @@ namespace Microsoft.Maui.Handlers
 
 		private void UnregisterOrientationChangeNotification()
 		{
-			NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver!);
-			_orientationObserver = null;
-			UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
+			if (_orientationObserver is not null)
+			{
+				NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
+				_orientationObserver = null;
+				UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
+			}
 		}
 
 		private void HandleOrientationChanged(NSNotification notification)
 		{
-			// Using dispatch to defer execution until after the rotation animation completes
-			DispatchQueue.MainQueue.DispatchAsync(() => {
+			// Using dispatch to defer execution until after the rotation animation completes.
+			DispatchQueue.MainQueue.DispatchAsync(() => 
+			{
 				UpdateVirtualViewFrame(PlatformView);
 			});
 		}
