@@ -16,16 +16,21 @@ internal class Issue29236 : _IssuesUITest
 	public void WindowDimensionsShouldUpdateAfterOrientationChange()
 	{
 		App.WaitForElement("Label");
-		App.WaitForElement("GetDimensionsButton").Tap();
-
+		App.Tap("GetDimensionsButton");
+		
 		var portraitWindowWidth = App.WaitForElement("WindowWidth").GetText();
-    	var portraitWindowHeight = App.WaitForElement("WindowHeight").GetText();
-
+		var portraitWindowHeight = App.WaitForElement("WindowHeight").GetText();
+		
 		App.SetOrientationLandscape();
-		App.WaitForElement("GetDimensionsButton").Tap();
-
-		Assert.That(Math.Round(double.Parse(portraitWindowWidth ?? "0")), Is.EqualTo(Math.Round(double.Parse(App.WaitForElement("WindowHeight").GetText() ?? "0"))));
-    	Assert.That(Math.Round(double.Parse(portraitWindowHeight ?? "0")), Is.EqualTo(Math.Round(double.Parse(App.WaitForElement("WindowWidth").GetText() ?? "0"))));
+		App.Tap("GetDimensionsButton");
+		
+		var previousWindowWidth = Math.Round(double.Parse(portraitWindowWidth ?? "0"));
+		var previousWindowHeight = Math.Round(double.Parse(portraitWindowHeight ?? "0"));
+		var currentWindowWidth = Math.Round(double.Parse(App.WaitForElement("WindowWidth").GetText() ?? "0"));
+		var currentWindowHeight = Math.Round(double.Parse(App.WaitForElement("WindowHeight").GetText() ?? "0"));
+		
+		Assert.That(previousWindowWidth, Is.EqualTo(currentWindowHeight));
+		Assert.That(previousWindowHeight, Is.EqualTo(currentWindowWidth));
 	}
 }
 #endif
