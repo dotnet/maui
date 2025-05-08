@@ -63,9 +63,7 @@ namespace Microsoft.Maui.Platform
 			if (Shadow?.Paint is { } shadowPaint)
 			{
 				var context = Context;
-				var paintColorAlpha = shadowPaint.ToColor().Alpha;
-				// If the color has an alpha value indicating transparency, we can use that; otherwise, we can use the shadow opacity.
-				var shadowOpacity = paintColorAlpha == 1 ? Shadow.Opacity : paintColorAlpha;
+				var shadowOpacity = Shadow.Opacity;
 				float radius = context.ToPixels(Shadow.Radius);
 				float offsetX = context.ToPixels(Shadow.Offset.X);
 				float offsetY = context.ToPixels(Shadow.Offset.Y);
@@ -92,7 +90,8 @@ namespace Microsoft.Maui.Platform
 						break;
 					case SolidPaint solidPaint:
 						paintType = PlatformPaintType.Solid;
-						colors = [solidPaint.Color.WithAlpha(shadowOpacity).ToPlatform().ToArgb()];
+						// To achieve shadow transparency, color alpha is combined with shadow opacity to maintain consistent behavior across platforms.
+						colors = [solidPaint.Color.WithAlpha(solidPaint.Color.Alpha * shadowOpacity).ToPlatform().ToArgb()];
 						positions = null;
 						bounds = null;
 						break;
