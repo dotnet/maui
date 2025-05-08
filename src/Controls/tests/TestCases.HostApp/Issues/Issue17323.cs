@@ -15,7 +15,7 @@ public class Issue17323 : TestContentPage
 
 		Label label = new Label
 		{
-			AutomationId = "Label",
+			AutomationId = "TextLabel",
 			Text = "The Arabic text should be drawn from left to right on Android for consistent behavior with Windows, iOS, and macOS."
 		};
 
