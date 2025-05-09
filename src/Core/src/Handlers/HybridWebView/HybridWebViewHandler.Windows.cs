@@ -184,8 +184,8 @@ namespace Microsoft.Maui.Handlers
 			var result = await CopyToRandomAccessStreamAsync(async ras =>
 			{
 				var streamForWrite = ras.AsStreamForWrite(); // Do not dispose as this stream IS the IMRAS
-				await content.CopyToAsync(streamForWrite);
-				await streamForWrite.FlushAsync();
+				await content.CopyToAsync(streamForWrite).ConfigureAwait(false);
+				await streamForWrite.FlushAsync().ConfigureAwait(false);
 			});
 
 			return result;
