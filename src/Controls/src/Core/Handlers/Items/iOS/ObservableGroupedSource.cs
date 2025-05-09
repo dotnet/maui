@@ -20,16 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public ObservableGroupedSource(IEnumerable groupSource, UICollectionViewController collectionViewController)
 		{
 			_collectionViewController = new(collectionViewController);
-			_groupSource = groupSource is INotifyCollectionChanged ? new ObservableCollection<object>() : new List<object>();
-			var source = groupSource as IList ?? new ListSource(groupSource);
-
-			foreach (var group in source)
-			{
-				if (group is IEnumerable enumerable)
-				{
-					_groupSource.Add(enumerable);
-				}
-			}
+			_groupSource = groupSource as IList ?? new ListSource(groupSource);
 
 			if (_groupSource is INotifyCollectionChanged incc)
 			{
@@ -418,12 +409,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		int GroupsCount()
 		{
-			if (_groupSource is IList list)
-				return list.Count;
-
 			int count = 0;
-			foreach (var item in _groupSource)
-				count++;
+			if (_groupSource is IList list)
+			{
+				foreach (var group in list)
+				{
+					if (group is IEnumerable enumerable)
+					{
+						count++;
+					}
+				}
+
+				return count;
+			}
+
 			return count;
 		}
 	}
