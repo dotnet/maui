@@ -1,5 +1,11 @@
 #nullable enable
 Microsoft.Maui.ElementHandlerExtensions
+Microsoft.Maui.GridLength.GridLengthTypeConverter
+Microsoft.Maui.GridLength.GridLengthTypeConverter.GridLengthTypeConverter() -> void
+override Microsoft.Maui.GridLength.GridLengthTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType) -> bool
+override Microsoft.Maui.GridLength.GridLengthTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.GridLength.GridLengthTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value) -> object!
+override Microsoft.Maui.GridLength.GridLengthTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
 Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.HandlerDisconnectPolicy.Automatic = 0 -> Microsoft.Maui.HandlerDisconnectPolicy
 Microsoft.Maui.HandlerDisconnectPolicy.Manual = 1 -> Microsoft.Maui.HandlerDisconnectPolicy
