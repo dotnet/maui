@@ -20,7 +20,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.NavigateToGallery(DynamicChangesFeatureMatrix);
 	}
 
-    [Test, Order(1)]
+	[Test, Order(1)]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicItemTemplateDisplayed()
 	{
@@ -31,7 +31,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("ItemTemplateBasic");
 		App.Tap("ItemTemplateBasic");
 		App.WaitForElement(Apply);
-        App.Tap(Apply);
+		App.Tap(Apply);
 		App.WaitForElement("Apple");
 		App.WaitForElement("Orange");
 		App.WaitForElement("ItemTemplateButton");
