@@ -8,10 +8,10 @@ namespace Microsoft.Maui.Controls;
 public class DateTimeTypeConverter : TypeConverter, IExtendedTypeConverter
 {
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? sourceType)
-        => sourceType == typeof(string) || sourceType == typeof(DateTime);
+        => sourceType == typeof(string) || sourceType == typeof(DateTime) || sourceType == typeof(DateOnly);
 
     public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
-        => destinationType == typeof(string) || destinationType == typeof(DateTime);
+        => destinationType == typeof(string) || destinationType == typeof(DateTime) || destinationType == typeof(DateOnly);
 
     object IExtendedTypeConverter.ConvertFromInvariantString(string value, IServiceProvider serviceProvider)
     {
@@ -28,7 +28,7 @@ public class DateTimeTypeConverter : TypeConverter, IExtendedTypeConverter
         {
             return dateTime;
         }
-        if (value is string stringValue && DateTime.TryParse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime))
+        if (value is string stringValue && DateTime.TryParse(stringValue, culture, DateTimeStyles.None, out dateTime))
         {
             return dateTime;
         }
@@ -39,16 +39,66 @@ public class DateTimeTypeConverter : TypeConverter, IExtendedTypeConverter
     {
         if (value is DateOnly dateOnly)
         {
-            if (destinationType == typeof(string))
-            {
-                return dateOnly.ToString(culture);
-            }
-            if (destinationType == typeof(DateTime))
-            {
-                return dateOnly.ToDateTime(TimeOnly.MinValue);
-            }
+			return ConvertToDestinationType(dateOnly, destinationType, culture);
         }
+		else if (value is DateTime dateTime)
+        {
+			return ConvertToDestinationType(dateTime, destinationType, culture);
+        }
+		else if (value is string stringValue)
+		{
+			if (destinationType == typeof(string))
+			{
+				return stringValue;
+			}
+
+			if (DateTime.TryParse(stringValue, culture, DateTimeStyles.None, out dateTime))
+			{
+				return ConvertToDestinationType(dateTime, destinationType, culture);
+			}
+			else if (DateOnly.TryParse(stringValue, culture, out dateOnly))
+			{
+				return ConvertToDestinationType(dateOnly, destinationType, culture);
+			}
+		}
+
         throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
     }
+
+	private static object ConvertToDestinationType(DateOnly dateOnly, Type destinationType, CultureInfo? culture)
+	{
+		if (destinationType == typeof(string))
+		{
+			return dateOnly.ToString(culture);
+		}
+		if (destinationType == typeof(DateTime))
+		{
+			return dateOnly.ToDateTime(TimeOnly.MinValue);
+		}
+		if (destinationType == typeof(DateOnly))
+		{
+			return dateOnly;
+		}
+
+		throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
+	}
+
+	private static object ConvertToDestinationType(DateTime dateTime, Type destinationType, CultureInfo? culture)
+	{
+		if (destinationType == typeof(string))
+		{
+			return dateTime.ToString(culture);
+		}
+		if (destinationType == typeof(DateTime))
+		{
+			return dateTime;
+		}
+		if (destinationType == typeof(DateOnly))
+		{
+			return DateOnly.FromDateTime(dateTime);
+		}
+
+		throw new NotSupportedException($"Cannot convert \"{value}\" into {destinationType}");
+	}
 }
 #endif
