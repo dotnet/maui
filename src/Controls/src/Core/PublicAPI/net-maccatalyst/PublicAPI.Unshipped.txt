@@ -304,7 +304,6 @@ override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewDidLoad() -> void
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.ViewWillLayoutSubviews() -> void
 override Microsoft.Maui.Controls.Handlers.Items2.ReorderableItemsViewController2<TItemsView>.Dispose(bool disposing) -> void
-override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.DetermineEmptyViewFrame() -> CoreGraphics.CGRect
 override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.Dispose(bool disposing) -> void
 override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.IsHorizontal.get -> bool
 override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.RegisterViewTypes() -> void
@@ -339,7 +338,6 @@ static readonly Microsoft.Maui.Controls.TitleBar.TrailingContentProperty -> Micr
 static readonly Microsoft.Maui.Controls.Window.TitleBarProperty -> Microsoft.Maui.Controls.BindableProperty!
 virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Controls.Window! window) -> void
 *REMOVED*virtual Microsoft.Maui.Controls.Handlers.Compatibility.ShellScrollViewTracker.Dispose(bool disposing) -> void
-virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.DetermineEmptyViewFrame() -> CoreGraphics.CGRect
 virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.RegisterViewTypes() -> void
 virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.UpdateFlowDirection() -> void
 virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.UpdateItemsSource() -> void
@@ -349,3 +347,5 @@ virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.Up
 *REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.SetNeedsLayout() -> void
 *REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWindow() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MovedToWindow() -> void
+~override Microsoft.Maui.Controls.Handlers.Items2.StructuredItemsViewController2<TItemsView>.GetCell(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath) -> UIKit.UICollectionViewCell
+~Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.GetEmptyViewCell(UIKit.UICollectionView collectionView, Foundation.NSIndexPath indexPath, double headerHeight = 0, double footerHeight = 0) -> UIKit.UICollectionViewCell

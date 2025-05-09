@@ -1,14 +1,11 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using PassKit;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
@@ -31,13 +28,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		protected UICollectionViewLayout ItemsViewLayout { get; set; }
 
 		bool _initialized;
-		bool _isEmpty = true;
-		bool _emptyViewDisplayed;
 		bool _disposed;
 
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
-		UIView _emptyUIView;
-		VisualElement _emptyViewFormsElement;
 		List<string> _cellReuseIds = new List<string>();
 		CGSize _previousContentSize;
 
@@ -93,11 +86,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				CollectionView.Delegate = null;
 				Delegator?.Dispose();
 
-				_emptyUIView?.Dispose();
-				_emptyUIView = null;
-
-				_emptyViewFormsElement = null;
-
 				ItemsViewLayout?.Dispose();
 				CollectionView?.Dispose();
 			}
@@ -107,6 +95,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
 		{
+			if (ItemsSource.ItemCount == 0)
+			{
+				return GetEmptyViewCell(collectionView, indexPath);
+			}
+
 			var cell = collectionView.DequeueReusableCell(DetermineCellReuseId(indexPath), indexPath) as UICollectionViewCell;
 
 			// We need to get the index path that is adjusted for the item source
@@ -127,31 +120,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return cell;
 		}
 
-		public override nint GetItemsCount(UICollectionView collectionView, nint section)
+		protected UICollectionViewCell GetEmptyViewCell(UICollectionView collectionView, NSIndexPath indexPath, double headerHeight = 0, double footerHeight = 0)
 		{
-			CheckForEmptySource();
+			if (ItemsSource.ItemCount == 0 && ItemsView?.EmptyView is View emptyView)
+			{
+				var emptyViewCell = collectionView.DequeueReusableCell("EmptyViewCell", indexPath) as TemplatedCell2;
+				emptyViewCell.ScrollDirection = ScrollDirection;
+				emptyViewCell.Unbind();
+				emptyViewCell.PlatformHandler = null;
 
-			return ItemsSource.ItemCountInGroup(section);
+				emptyViewCell.Bind(emptyView, ItemsView);
+				return emptyViewCell;
+			}
+			return null;
 		}
 
-		void CheckForEmptySource()
+		public override nint GetItemsCount(UICollectionView collectionView, nint section)
 		{
-			var wasEmpty = _isEmpty;
-
-			_isEmpty = ItemsSource.ItemCount == 0;
-
-			if (wasEmpty != _isEmpty)
+			// If the ItemsSource is empty, we need to return 1 so that the empty view can be displayed
+			if (ItemsSource.ItemCount == 0 && ItemsView?.EmptyView is not null)
 			{
-				UpdateEmptyViewVisibility(_isEmpty);
+				return 1;
 			}
 
-			if (wasEmpty && !_isEmpty)
-			{
-				// If we're going from empty to having stuff, it's possible that we've never actually measured
-				// a prototype cell and our itemSize or estimatedItemSize are wrong/unset
-				// So trigger a constraint update; if we need a measurement, that will make it happen
-				// TODO: Fix ItemsViewLayout.ConstrainTo(CollectionView.Bounds.Size);
-			}
+			return ItemsSource.ItemCountInGroup(section);
 		}
 
 		public override void ViewDidLoad()
@@ -199,7 +191,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			}
 
 			base.ViewWillLayoutSubviews();
-			LayoutEmptyView();
 			InvalidateMeasureIfContentSizeChanged();
 		}
 
@@ -260,8 +251,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			CollectionView.Delegate = Delegator;
 
 			CollectionView.SetCollectionViewLayout(ItemsViewLayout, false);
-
-			UpdateEmptyView();
 		}
 
 		protected virtual UICollectionViewDelegateFlowLayout CreateDelegator()
@@ -288,12 +277,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public virtual void UpdateFlowDirection()
 		{
 			CollectionView.UpdateFlowDirection(ItemsView);
-
-			if (_emptyViewDisplayed)
-			{
-				AlignEmptyView();
-			}
-
 			Layout.InvalidateLayout();
 		}
 
@@ -305,12 +288,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// To handle this scenario, we check if ItemsSource is null before proceeding.
 			// In iOS 17 and later versions, this behavior works properly, as the method is no longer called prematurely.
 			// To ensure compatibility with older iOS versions, we include this null check and return 0 if ItemsSource is null.
-			if (ItemsSource == null)
+			if (ItemsSource.ItemCount == 0 && ItemsView?.EmptyView is not null)
 			{
-				return 0;
+				return 1;
 			}
 
-			CheckForEmptySource();
 			return ItemsSource.GroupCount;
 		}
 
@@ -358,15 +340,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			CollectionView.RegisterClassForCell(typeof(VerticalDefaultCell2), VerticalDefaultCell2.ReuseId);
 			CollectionView.RegisterClassForCell(typeof(HorizontalCell2), HorizontalCell2.ReuseId);
 			CollectionView.RegisterClassForCell(typeof(VerticalCell2), VerticalCell2.ReuseId);
+			CollectionView.RegisterClassForCell(typeof(TemplatedCell2), "EmptyViewCell");
 		}
 
 		protected abstract bool IsHorizontal { get; }
-
-		protected virtual CGRect DetermineEmptyViewFrame()
-		{
-			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y,
-				CollectionView.Frame.Width, CollectionView.Frame.Height);
-		}
 
 		void InvalidateMeasureIfContentSizeChanged()
 		{
@@ -418,11 +395,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal Size GetSize()
 		{
-			if (_emptyViewDisplayed)
-			{
-				return _emptyUIView.Frame.Size.ToSize();
-			}
-
 			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
 		}
 
@@ -446,139 +418,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				// around for updating the layout later
 				(uiView, formsElement) = Items.TemplateHelpers.RealizeView(view, viewTemplate, ItemsView);
 			}
-		}
-
-		internal void UpdateEmptyView()
-		{
-			if (!_initialized)
-			{
-				return;
-			}
-
-			// Get rid of the old view
-			TearDownEmptyView();
-
-			// Set up the new empty view
-			UpdateView(ItemsView?.EmptyView, ItemsView?.EmptyViewTemplate, ref _emptyUIView, ref _emptyViewFormsElement);
-
-			// We may need to show the updated empty view
-			UpdateEmptyViewVisibility(ItemsSource?.ItemCount == 0);
-		}
-
-		void UpdateEmptyViewVisibility(bool isEmpty)
-		{
-			if (!_initialized)
-			{
-				return;
-			}
-
-			if (isEmpty)
-			{
-				ShowEmptyView();
-			}
-			else
-			{
-				HideEmptyView();
-			}
-		}
-
-		void AlignEmptyView()
-		{
-			if (_emptyUIView == null)
-			{
-				return;
-			}
-
-			bool isRtl;
-
-			if (OperatingSystem.IsIOSVersionAtLeast(10) || OperatingSystem.IsTvOSVersionAtLeast(10))
-				isRtl = CollectionView.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft;
-			else
-				isRtl = CollectionView.SemanticContentAttribute == UISemanticContentAttribute.ForceRightToLeft;
-
-			if (isRtl)
-			{
-				if (_emptyUIView.Transform.A == -1)
-				{
-					return;
-				}
-
-				FlipEmptyView();
-			}
-			else
-			{
-				if (_emptyUIView.Transform.A == -1)
-				{
-					FlipEmptyView();
-				}
-			}
-		}
-
-		void FlipEmptyView()
-		{
-			// Flip the empty view 180 degrees around the X axis 
-			_emptyUIView.Transform = CGAffineTransform.Scale(_emptyUIView.Transform, -1, 1);
-		}
-
-		void ShowEmptyView()
-		{
-			if (_emptyViewDisplayed || _emptyUIView == null)
-			{
-				return;
-			}
-
-			_emptyUIView.Tag = EmptyTag;
-			CollectionView.AddSubview(_emptyUIView);
-
-			if (((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) == -1)
-			{
-				ItemsView.AddLogicalChild(_emptyViewFormsElement);
-			}
-
-			LayoutEmptyView();
-
-			AlignEmptyView();
-			_emptyViewDisplayed = true;
-		}
-
-		void HideEmptyView()
-		{
-			if (!_emptyViewDisplayed || _emptyUIView == null)
-			{
-				return;
-			}
-
-			_emptyUIView.RemoveFromSuperview();
-
-			_emptyViewDisplayed = false;
-		}
-
-		void TearDownEmptyView()
-		{
-			HideEmptyView();
-
-			// RemoveLogicalChild will trigger a disposal of the native view and its content
-			ItemsView.RemoveLogicalChild(_emptyViewFormsElement);
-
-			_emptyUIView = null;
-			_emptyViewFormsElement = null;
-		}
-
-		virtual internal CGRect LayoutEmptyView()
-		{
-			if (!_initialized || _emptyUIView == null || _emptyUIView.Superview == null)
-			{
-				return CGRect.Empty;
-			}
-
-			var frame = DetermineEmptyViewFrame();
-
-			_emptyUIView.Frame = frame;
-
-			if (_emptyViewFormsElement != null && ((IElementController)ItemsView).LogicalChildren.IndexOf(_emptyViewFormsElement) != -1)
-				_emptyViewFormsElement.Layout(frame.ToRectangle());
-
-			return frame;
 		}
 
 		internal protected virtual void UpdateVisibility()
