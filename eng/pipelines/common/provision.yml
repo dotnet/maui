@@ -46,6 +46,10 @@ steps:
         SelfHealPowerShell: false
           
   # Provisioning macOS - Xcode
+  - script: |
+      echo "skipXcode is set to ${{ parameters.skipXcode }}"
+      echo "skipProvisionator is set to ${{ parameters.skipProvisionator }}"
+    displayName: "Echo Provisioning macOS - Xcode parameters"
   - ${{ if ne(parameters.skipXcode, 'true') }}:
     - ${{ if ne(parameters.skipProvisionator, true) }}:
       - task: xamops.azdevex.provisionator-task.provisionator@3
