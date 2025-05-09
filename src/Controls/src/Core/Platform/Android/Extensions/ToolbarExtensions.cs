@@ -243,7 +243,7 @@ namespace Microsoft.Maui.Controls.Platform
 					if (menu.FindItem(previousMenuItem.ItemId) == null)
 					{
 						previousMenuItem.Dispose();
-						previousMenuItems.Remove(previousMenuItem);
+						previousMenuItems.RemoveAt(j);
 					}
 				}
 			}
