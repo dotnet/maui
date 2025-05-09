@@ -175,11 +175,11 @@ public partial class CarouselViewOptionsPage : ContentPage
     {
         if (ItemsSourceNone.IsChecked)
         {
-            _viewModel.ItemsSourceType = CarouselViewItemsSourceType.None;
+            _viewModel.ItemsSourceType = CarouselItemsSourceType.None;
         }
         else if (ObservableCollection.IsChecked)
         {
-            _viewModel.ItemsSourceType = CarouselViewItemsSourceType.ObservableCollection;
+            _viewModel.ItemsSourceType = CarouselItemsSourceType.ObservableCollectionT;
         }
     }
 
@@ -246,7 +246,7 @@ public partial class CarouselViewOptionsPage : ContentPage
 
     private void OnLoopLabelTapped(object sender, EventArgs e)
     {
-        Loop.IsChecked = !Loop.IsChecked;
+        Loop.IsChecked = true;
     }
 
     private void OnSwipeLabelTapped(object sender, EventArgs e)

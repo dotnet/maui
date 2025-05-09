@@ -6,10 +6,10 @@ using System.Windows.Input;
 
 namespace Maui.Controls.Sample
 {
-    public enum CarouselViewItemsSourceType
+    public enum CarouselItemsSourceType
     {
         None,
-        ObservableCollection,
+        ObservableCollectionT,
     }
 
     public class CarouselViewViewModel : INotifyPropertyChanged
@@ -17,28 +17,27 @@ namespace Maui.Controls.Sample
         private object _emptyView;
         private DataTemplate _emptyViewTemplate;
         private DataTemplate _itemTemplate;
-        private CarouselViewItemsSourceType _itemsSourceType = CarouselViewItemsSourceType.ObservableCollection;
-        private bool _isLoopEnabled = true;
+        private CarouselItemsSourceType _itemsSourceType = CarouselItemsSourceType.ObservableCollectionT;
+        private bool _isLoopEnabled = false;
         private bool _isSwipeEnabled = true;
-        private bool _isBounceEnabled = true;
-        private bool _isScrollAnimated = true;
         private Thickness _peekAreaInsets;
         private int _position;
-        private object _currentItem;
+        private bool _isIndicatorViewVisible = true;
         private IItemsLayout _itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
-
         private ScrollBarVisibility _horizontalScrollBarVisibility = ScrollBarVisibility.Default;
         private ScrollBarVisibility _verticalScrollBarVisibility = ScrollBarVisibility.Default;
         private ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
-        public event PropertyChangedEventHandler PropertyChanged;
-        public ICommand AddItemCommand { get; }
-        public ICommand RemoveItemCommand { get; }
+        private double _leftPeekInset;
+        private double _rightPeekInset;
+        private string _previousItemText;
+        private string _currentItemText;
+        private string _currentItemPosition;
+        private string _previousItemPosition;
 
         public CarouselViewViewModel()
         {
             LoadItems();
             AddItemCommand = new Command(AddItem);
-            RemoveItemCommand = new Command(RemoveItem);
             ItemTemplate = new DataTemplate(() =>
             {
                 var label = new Label
@@ -53,36 +52,11 @@ namespace Maui.Controls.Sample
             });
         }
 
-        public ObservableCollection<string> Items { get; private set; }
+        public event PropertyChangedEventHandler PropertyChanged;
 
-        private void LoadItems()
-        {
-            Items = new ObservableCollection<string>
-            {
-                "Item 1",
-                "Item 2",
-                "Item 3",
-                "Item 4",
-                "Item 5"
-            };
-            OnPropertyChanged(nameof(Items));
-            OnPropertyChanged(nameof(ItemsSource));
-        }
-        private void AddItem()
-        {
-            // Add a new item to the Items collection
-            Items.Insert(0, $"Item {Items.Count + 1}");
-            OnPropertyChanged(nameof(Items));
-        }
-        private void RemoveItem()
-        {
-            // Remove the top item from the Items collection
-            if (Items.Count > 0)
-            {
-                Items.RemoveAt(0);
-                OnPropertyChanged(nameof(Items));
-            }
-        }
+        public ICommand AddItemCommand { get; }
+
+        public ObservableCollection<string> Items { get; private set; }
 
         public object EmptyView
         {
@@ -102,7 +76,7 @@ namespace Maui.Controls.Sample
             set { _itemTemplate = value; OnPropertyChanged(); }
         }
 
-        public CarouselViewItemsSourceType ItemsSourceType
+        public CarouselItemsSourceType ItemsSourceType
         {
             get => _itemsSourceType;
             set
@@ -125,8 +99,6 @@ namespace Maui.Controls.Sample
                 {
                     _isLoopEnabled = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(ItemsSource));
-
                 }
             }
         }
@@ -144,27 +116,14 @@ namespace Maui.Controls.Sample
             }
         }
 
-        public bool IsBounceEnabled
+        public bool IsIndicatorViewVisible
         {
-            get => _isBounceEnabled;
+            get => _isIndicatorViewVisible;
             set
             {
-                if (_isBounceEnabled != value)
+                if (_isIndicatorViewVisible != value)
                 {
-                    _isBounceEnabled = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public bool IsScrollAnimated
-        {
-            get => _isScrollAnimated;
-            set
-            {
-                if (_isScrollAnimated != value)
-                {
-                    _isScrollAnimated = value;
+                    _isIndicatorViewVisible = value;
                     OnPropertyChanged();
                 }
             }
@@ -183,7 +142,6 @@ namespace Maui.Controls.Sample
             }
         }
 
-        private double _leftPeekInset;
         public double LeftPeekInset
         {
             get => _leftPeekInset;
@@ -198,7 +156,6 @@ namespace Maui.Controls.Sample
             }
         }
 
-        private double _rightPeekInset;
         public double RightPeekInset
         {
             get => _rightPeekInset;
@@ -226,23 +183,39 @@ namespace Maui.Controls.Sample
             }
         }
 
-        public object CurrentItem
+        public string PreviousItemText
         {
-            get => _currentItem;
+            get => _previousItemText;
+            set { _previousItemText = value; OnPropertyChanged(); }
+        }
+
+        public string CurrentItemText
+        {
+            get => _currentItemText;
+            set { _currentItemText = value; OnPropertyChanged(); }
+        }
+
+        public string CurrentItemPostion
+        {
+            get => _currentItemPosition;
             set
             {
-                if (!object.Equals(_currentItem, value))
+                if (_currentItemPosition != value)
                 {
-                    _currentItem = value;
-                    if (_currentItem != null && Items != null)
-                    {
-                        int index = Items.IndexOf(_currentItem.ToString());
-                        if (index != -1 && index != _position)
-                        {
-                            _position = index;
-                            OnPropertyChanged(nameof(Position));
-                        }
-                    }
+                    _currentItemPosition = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        public string PreviousItemPosition
+        {
+            get => _previousItemPosition;
+            set
+            {
+                if (_previousItemPosition != value)
+                {
+                    _previousItemPosition = value;
                     OnPropertyChanged();
                 }
             }
@@ -306,11 +279,31 @@ namespace Maui.Controls.Sample
             {
                 return ItemsSourceType switch
                 {
-                    CarouselViewItemsSourceType.ObservableCollection => Items,
-                    CarouselViewItemsSourceType.None => null,
+                    CarouselItemsSourceType.ObservableCollectionT => Items,
+                    CarouselItemsSourceType.None => null,
                     _ => Items
                 };
             }
+        }
+
+        private void LoadItems()
+        {
+            Items = new ObservableCollection<string>
+            {
+                "Item 1",
+                "Item 2",
+                "Item 3",
+                "Item 4",
+                "Item 5"
+            };
+            OnPropertyChanged(nameof(Items));
+            OnPropertyChanged(nameof(ItemsSource));
+        }
+
+        private void AddItem()
+        {
+            Items.Insert(0, $"Item {Items.Count + 1}");
+            OnPropertyChanged(nameof(Items));
         }
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

@@ -112,55 +112,6 @@
                                    </HorizontalStackLayout>
                             </VerticalStackLayout>
 
-                            <!-- Scroll Bar Visibility -->
-                            <Label Text="Horizontal Scroll Bar"
-                                   FontAttributes="Bold"/>
-                            <StackLayout Orientation="Horizontal">
-                                   <RadioButton x:Name="HScrollDefault"
-                                                Content="Default"
-                                                GroupName="HScroll"
-                                                IsChecked="True"
-                                                FontSize="11"
-                                                CheckedChanged="OnHorizontalScrollBarVisibilityChanged"
-                                                AutomationId="HScrollDefault"/>
-                                   <RadioButton x:Name="HScrollAlways"
-                                                Content="Always"
-                                                GroupName="HScroll"
-                                                FontSize="11"
-                                                CheckedChanged="OnHorizontalScrollBarVisibilityChanged"
-                                                AutomationId="HScrollAlways"/>
-                                   <RadioButton x:Name="HScrollNever"
-                                                Content="Never"
-                                                GroupName="HScroll"
-                                                FontSize="11"
-                                                CheckedChanged="OnHorizontalScrollBarVisibilityChanged"
-                                                AutomationId="HScrollNever"/>
-                            </StackLayout>
-
-                            <Label Text="Vertical Scroll Bar"
-                                   FontAttributes="Bold"
-                                   Margin="0,10,0,0"/>
-                            <StackLayout Orientation="Horizontal">
-                                   <RadioButton x:Name="VScrollDefault"
-                                                Content="Default"
-                                                GroupName="VScroll"
-                                                IsChecked="True"
-                                                FontSize="11"
-                                                CheckedChanged="OnVerticalScrollBarVisibilityChanged"
-                                                AutomationId="VScrollDefault"/>
-                                   <RadioButton x:Name="VScrollAlways"
-                                                Content="Always"
-                                                GroupName="VScroll"
-                                                FontSize="11"
-                                                CheckedChanged="OnVerticalScrollBarVisibilityChanged"
-                                                AutomationId="VScrollAlways"/>
-                                   <RadioButton x:Name="VScrollNever"
-                                                Content="Never"
-                                                GroupName="VScroll"
-                                                FontSize="11"
-                                                CheckedChanged="OnVerticalScrollBarVisibilityChanged"
-                                                AutomationId="VScrollNever"/>
-                            </StackLayout>
 
                             <!-- Items Updating Scroll Mode -->
                             <Label Text="Items Updating Scroll Mode"

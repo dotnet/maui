@@ -22,9 +22,10 @@ public class CarouselViewFeatureTests : UITest
 	private const string KeepItemsInView = "KeepItemsInView";
 	private const string KeepScrollOffset = "KeepScrollOffset";
 	private const string KeepLastItemInView = "KeepLastItemInView";
+	private const string LoopLabel = "LoopLabel";
+	private const string SwipeLabel = "SwipeLabel";
 	private const string AddButton = "AddButton";
-	private const string RemoveButton = "RemoveButton";
-	private const string PositionLabel = "PositionLabel";
+	private const string PositionEntry = "PositionEntry";
 
 	public CarouselViewFeatureTests(TestDevice device) : base(device)
 	{
@@ -156,13 +157,9 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("Item 1");
-		for (int i = 1; i < 3; i++)
-		{
-			App.ScrollRight(CarouselViewControl, ScrollStrategy.Gesture, 0.9, 500);
-		}
 		App.WaitForElement(AddButton);
 		App.Tap(AddButton);
-		App.WaitForElement("Item 3");
+		App.WaitForElement("Item 1");
 	}
 
 	[Test]
@@ -178,6 +175,59 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 1");
 		App.WaitForElement(AddButton);
 		App.Tap(AddButton);
-		App.WaitForElement("Item 6");
+		App.WaitForElement("Item 5");
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithIsLoopEnabled()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(LoopLabel);
+		App.Tap(LoopLabel);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 1");
+		for (int i = 1; i < 7; i++)
+		{
+			App.ScrollRight(CarouselViewControl, ScrollStrategy.Gesture, 0.9, 500);
+		}
+		App.WaitForElement("Item 2");
+	}
+
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // related issue link:https://github.com/dotnet/maui/issues/29391
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithIsSwipeEnabled()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(SwipeLabel);
+		App.Tap(SwipeLabel);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 1");
+		for (int i = 1; i < 2; i++)
+		{
+			App.ScrollRight(CarouselViewControl, ScrollStrategy.Gesture, 0.9, 500);
+		}
+		App.WaitForElement("Item 1");
+	}
+#endif
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithPosition()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(PositionEntry);
+		App.Tap(PositionEntry);
+		App.ClearText(PositionEntry);
+		App.EnterText(PositionEntry, "2");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 3");
 	}
 }

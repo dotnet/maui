@@ -20,7 +20,7 @@ public partial class CarouselViewFeatureMainPage : ContentPage
 
     private async void OnCarouselViewClicked(object sender, System.EventArgs e)
     {
-        await Navigation.PushAsync(new CarouselViewControlsPage());
+        await Navigation.PushAsync(new CarouselViewControlPage());
     }
 
 }
