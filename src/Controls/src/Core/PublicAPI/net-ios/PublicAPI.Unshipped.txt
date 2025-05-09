@@ -3,6 +3,8 @@ Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.St
 override Microsoft.Maui.Controls.Handlers.Items.TemplatedCell.LayoutSubviews() -> void
 override Microsoft.Maui.Controls.Handlers.Items2.TemplatedCell2.LayoutSubviews() -> void
 override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutContentRenderer.LoadView() -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.MovedToWindow() -> void
 ~abstract Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.CreateController(TItemsView newElement, UIKit.UICollectionViewLayout layout) -> Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>
 ~abstract Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.SelectLayout() -> UIKit.UICollectionViewLayout
 *REMOVED*override Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewController<TItemsView>.ViewWillLayoutSubviews() -> void

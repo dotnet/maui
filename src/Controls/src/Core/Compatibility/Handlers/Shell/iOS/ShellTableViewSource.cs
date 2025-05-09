@@ -178,14 +178,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_cells[context] = cell;
 			cell.TableView = tableView;
 			cell.IndexPath = indexPath;
-			cell.ViewMeasureInvalidated += OnViewMeasureInvalidated;
 
 			return cell;
-		}
-
-		void OnViewMeasureInvalidated(UIContainerCell cell)
-		{
-			cell.ReloadRow();
 		}
 
 		public override nfloat GetHeightForFooter(UITableView tableView, nint section)
