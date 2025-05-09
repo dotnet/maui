@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+        xmlns:controls="clr-namespace:Maui.Controls.Sample.Issues"
+        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        x:Class="Maui.Controls.Sample.Issues.Issue26449">
+        <Grid Padding="10">
+                <CollectionView>
+                        <CollectionView.ItemsSource>
+                                <x:Array Type="{x:Type x:String}">
+                                        <x:String>Item 1</x:String>
+                                </x:Array>
+                        </CollectionView.ItemsSource>
+                        <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                        <Border Stroke="Red"
+                                                Padding="5">
+                                                <VerticalStackLayout>
+                                                        <CollectionView
+                                                                AutomationId="CollectionView"
+                                                                HeightRequest="100"
+                                                                VerticalScrollBarVisibility="Always">
+                                                                <CollectionView.ItemsSource>
+                                                                        <x:Array Type="{x:Type x:String}">
+                                                                                <x:String>Item1</x:String>
+                                                                                <x:String>Item2</x:String>
+                                                                                <x:String>Item3</x:String>
+                                                                                <x:String>Item4</x:String>
+                                                                                <x:String>Item5</x:String>
+                                                                                <x:String>Item6</x:String>
+                                                                                <x:String>Item7</x:String>
+                                                                        </x:Array>
+                                                                </CollectionView.ItemsSource>
+                                                                <CollectionView.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                                <Label Text="{Binding}"
+                                                                                       Padding="5"/>
+                                                                        </DataTemplate>
+                                                                </CollectionView.ItemTemplate>
+                                                        </CollectionView>
+                                                </VerticalStackLayout>
+                                        </Border>
+                                </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                </CollectionView>
+        </Grid>
+</ContentPage>
