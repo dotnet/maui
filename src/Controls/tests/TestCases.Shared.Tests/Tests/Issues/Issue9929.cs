@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.CollectionView)]
-		public void Issue3884Test()
+		public void Issue9929Test()
 		{
 			App.WaitForElement("entryUpdate_Spacing");
 			App.Tap("entryUpdate_Spacing");
