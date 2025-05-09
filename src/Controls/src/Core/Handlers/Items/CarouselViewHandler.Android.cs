@@ -43,6 +43,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.PlatformView as IMauiRecyclerView<CarouselView>).UpdateAdapter();
 		}
 
+		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView)
+		{
+			if (handler.PlatformView is MauiCarouselRecyclerView t)
+			{
+				t.UpdateLoop();
+			}
+		}
+
 		public static void MapPosition(CarouselViewHandler handler, CarouselView carouselView)
 		{
 			(handler.PlatformView as IMauiCarouselRecyclerView).UpdateFromPosition();
