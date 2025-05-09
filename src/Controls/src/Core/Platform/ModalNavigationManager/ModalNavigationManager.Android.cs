@@ -320,9 +320,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 				_navigationRootManager = modalContext.GetNavigationRootManager();
 				_navigationRootManager.Connect(_modal, modalContext);
-
+				
 				UpdateBackgroundColor();
-				if (IsAnimated && _navigationRootManager is not null && _navigationRootManager.RootView is not null)
+
+				var rootView = _navigationRootManager?.RootView ??
+					throw new InvalidOperationException("Root view not initialized");
+
+				if (IsAnimated)
 				{
 					_ = new GenericGlobalLayoutListener((listner,view) =>
 					{
@@ -335,8 +339,7 @@ namespace Microsoft.Maui.Controls.Platform
 						}
 					},_navigationRootManager.RootView);
 				}
-				return _navigationRootManager?.RootView ??
-					throw new InvalidOperationException("Root view not initialized");
+				return rootView;
 			}
 			void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
 			{
