@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls;
     
-public class DateOnlyToDateTimeConverter : TypeConverter, IExtendedTypeConverter
+public class DateTimeTypeConverter : TypeConverter, IExtendedTypeConverter
 {
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? sourceType)
         => sourceType == typeof(string) || sourceType == typeof(DateTime);

@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Controls;
 
-public class TimeOnlyToTimeSpanConverter : TypeConverter, IExtendedTypeConverter
+public class TimeSpanTypeConverter : TypeConverter, IExtendedTypeConverter
 {
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type? sourceType)
         => sourceType == typeof(string) || sourceType == typeof(TimeOnly);

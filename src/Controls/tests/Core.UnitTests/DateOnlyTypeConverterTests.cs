@@ -12,7 +12,7 @@ public class DateOnlyTypeConverterTests : BaseTestFixture
 	[Fact]
 	public void DateOnlyToStringCanConvertToDateTime()
 	{
-		var converter = new DateOnlyToDateTimeConverter();
+		var converter = new DateTimeTypeConverter();
 
 		var dateOnlyValue = new DateOnly(2025, 2, 21);
 
@@ -25,7 +25,7 @@ public class DateOnlyTypeConverterTests : BaseTestFixture
 	[Fact]
     public async Task ConvertToInvariantStringThrowsNotSupportedException()
     {
-        var converter = new DateOnlyToDateTimeConverter();
+        var converter = new DateTimeTypeConverter();
         
         var stringValue = "Not a DateOnly string";
         
