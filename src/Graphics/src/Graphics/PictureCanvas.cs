@@ -6,6 +6,9 @@ using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// A canvas implementation that records drawing commands into a picture for later playback.
+	/// </summary>
 	public class PictureCanvas : ICanvas, IDisposable
 	{
 		private readonly float _x;
@@ -14,6 +17,13 @@ namespace Microsoft.Maui.Graphics
 		private readonly float _height;
 		private readonly List<DrawingCommand> _commands;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PictureCanvas"/> class with the specified dimensions.
+		/// </summary>
+		/// <param name="x">The x-coordinate of the top-left corner of the canvas.</param>
+		/// <param name="y">The y-coordinate of the top-left corner of the canvas.</param>
+		/// <param name="width">The width of the canvas.</param>
+		/// <param name="height">The height of the canvas.</param>
 		public PictureCanvas(float x, float y, float width, float height)
 		{
 			_x = x;
@@ -24,8 +34,14 @@ namespace Microsoft.Maui.Graphics
 			_commands = new List<DrawingCommand>();
 		}
 
+		/// <summary>
+		/// Gets a picture containing all the recorded drawing commands.
+		/// </summary>
 		public IPicture Picture => new StandardPicture(_x, _y, _width, _height, _commands.ToArray());
 
+		/// <summary>
+		/// Releases all resources used by the picture canvas.
+		/// </summary>
 		public void Dispose()
 		{
 			_commands.Clear();

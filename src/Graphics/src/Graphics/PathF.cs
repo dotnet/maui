@@ -5,6 +5,9 @@ using System.Numerics;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Represents a geometric path consisting of lines, curves, and shapes using single-precision floating-point coordinates.
+	/// </summary>
 	public class PathF : IDisposable
 	{
 		private const float K_RATIO = 0.551784777779014f; // ideal ratio of cubic Bezier points for a quarter circle
