@@ -4,8 +4,6 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.Issues.Issue25192">
     <Grid>
-        <!-- This functionality failed in CarouselView2. Reference: https://github.com/dotnet/maui/issues/27025 -->
-        <!-- TODO: Replace CarouselView1 with CarouselView once the issues mentioned in the GitHub issue are resolved. -->
         <CarouselView Margin="2,9,2,20"
                       HeightRequest="180"
                       Loop="False"
