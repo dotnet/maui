@@ -131,6 +131,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				view.Arrange(View.Bounds.ToRectangle());
 		}
 
+		public override void ViewDidLoad()
+		{
+			base.ViewDidLoad();
+			ShouldSelectViewController = (tabController, viewController) =>
+			{
+				if (viewController == tabController.SelectedViewController && !TabbedPage.GetPopToRootOnTabReselect(Tabbed))
+				{
+					return false;
+				}
+
+				return true;
+			};
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
