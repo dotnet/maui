@@ -36,6 +36,10 @@ public partial class CollectionViewFeatureMainPage : ContentPage
 	{
 		await Navigation.PushAsync(new CollectionViewScrollPage());
 	}
+	private async void OnDynamicChangesButtonClicked(object sender, EventArgs e)
+	{
+		await Navigation.PushAsync(new CollectionViewDynamicPage());
+	}
 
 	private async void OnSelectionButtonClicked(object sender, EventArgs e)
 	{
