@@ -12,7 +12,7 @@ public class TimeOnlyTypeConverterTests : BaseTestFixture
 	[Fact]
 	public void TimeOnlyToStringCanConvertToTimeSpan()
 	{
-		var converter = new TimeOnlyToTimeSpanConverter();
+		var converter = new TimeSpanTypeConverter();
 
 		var timeOnlyValue = new TimeOnly(8, 30, 0);
 
@@ -25,7 +25,7 @@ public class TimeOnlyTypeConverterTests : BaseTestFixture
 	[Fact]
     public async Task ConvertToInvariantStringThrowsNotSupportedException()
     {
-        var converter = new TimeOnlyToTimeSpanConverter();
+        var converter = new TimeSpanTypeConverter();
 
         var stringValue = "Not a TimeOnly string";
 
