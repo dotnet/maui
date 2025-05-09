@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue27281"
+             Background="{DynamicResource Issue27281Color}">
+  <VerticalStackLayout
+    Padding="12">
+    <Button 
+      AutomationId="WaitForStubControl"
+      Text="Add Resource Dictionary"
+      Clicked="OnAddDictionaryButtonClicked"/>
+    <Button 
+      AutomationId="TestButton"
+      Text="Whitout freeze, the test has passed."
+      Clicked="OnTestButtonClicked"/>
+    <Label 
+      x:Name="ResultLabel"
+      AutomationId="ResultLabel"/>
+  </VerticalStackLayout>
+</ContentPage>
