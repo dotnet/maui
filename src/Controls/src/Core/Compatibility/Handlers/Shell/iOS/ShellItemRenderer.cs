@@ -117,6 +117,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (r != null)
 					accept = ((IShellItemController)ShellItem).ProposeSection(r.ShellSection, false);
 
+				if (viewController == tabController.SelectedViewController && !Shell.GetPopToRootOnTabReselect(r.ShellSection))
+				{
+					return false;
+				}
+
 				return accept;
 			};
 		}
