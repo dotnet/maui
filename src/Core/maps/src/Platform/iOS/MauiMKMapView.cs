@@ -18,8 +18,24 @@ namespace Microsoft.Maui.Maps.Platform
 
 		public MauiMKMapView(IMapHandler handler)
 		{
-			_handlerRef = new WeakReference<IMapHandler>(handler);
+			Handler = handler;
 			OverlayRenderer = GetViewForOverlayDelegate;
+		}
+		
+		public IMapHandler? Handler
+		{
+			get
+			{
+				_handlerRef.TryGetTarget(out var handler);
+				return handler;
+			}
+			set
+			{
+				if (value != null)
+				{
+					_handlerRef = new WeakReference<IMapHandler>(value);
+				}
+			}
 		}
 
 		public override void MovedToWindow()
