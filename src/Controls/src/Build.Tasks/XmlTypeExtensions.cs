@@ -109,5 +109,48 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			attr.AssemblyName = assemblyName ?? asmDef.Name.FullName;
 			return attr;
 		}
+
+		public static IList<XmlnsPrefixAttribute> GetXmlnsPrefixAttributes(ModuleDefinition module)
+		{
+			var xmlnsPrefixes = new List<XmlnsPrefixAttribute>();
+			foreach (var ca in module.Assembly.CustomAttributes)
+			{
+				if (ca.AttributeType.FullName == typeof(XmlnsPrefixAttribute).FullName)
+				{
+					var attr = new XmlnsPrefixAttribute(
+						ca.ConstructorArguments[0].Value as string,
+						ca.ConstructorArguments[1].Value as string);
+					xmlnsPrefixes.Add(attr);
+				}
+			}
+
+			if (module.AssemblyReferences?.Count > 0)
+			{
+				// Search for the attribute in the assemblies being
+				// referenced.
+				foreach (var asmRef in module.AssemblyReferences)
+				{
+					try
+					{
+						var asmDef = module.AssemblyResolver.Resolve(asmRef);
+						foreach (var ca in asmDef.CustomAttributes)
+						{
+							if (ca.AttributeType.FullName == typeof(XmlnsPrefixAttribute).FullName)
+							{
+								var attr = new XmlnsPrefixAttribute(
+									ca.ConstructorArguments[0].Value as string,
+									ca.ConstructorArguments[1].Value as string);
+								xmlnsPrefixes.Add(attr);
+							}
+						}
+					}
+					catch (System.Exception)
+					{
+						// Ignore assembly resolution errors
+					}
+				}
+			}
+			return xmlnsPrefixes;
+		}
 	}
 }
