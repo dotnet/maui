@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+  x:Class="Maui.Controls.Sample.Issues.Issue28711"
+  Title="Issue28711">
+
+  <ContentPage.Resources>
+    <SolidColorBrush x:Name="SCB"
+                     x:Key="SCB"/>
+  </ContentPage.Resources>
+
+  <VerticalStackLayout>
+    <Label AutomationId="label"
+        Text="Application runs without crash"/>
+  </VerticalStackLayout>
+
+</ContentPage>
