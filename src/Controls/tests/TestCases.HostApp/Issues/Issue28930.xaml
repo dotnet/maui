@@ -12,7 +12,7 @@
         <Label Text="CAROUSEL"
                TextTransform="Uppercase" />
         <!--https://github.com/dotnet/maui/issues/29402 -->
-        <local:CarouselView1 x:Name="MyCarousel"
+        <CarouselView x:Name="MyCarousel"
                       AutomationId="MyCarousel"
                       HorizontalOptions="Fill"
                       VerticalOptions="Start"
@@ -20,14 +20,14 @@
                       HeightRequest="140"
                       HorizontalScrollBarVisibility="Never"
                       EmptyView="No data">
-          <local:CarouselView1.ItemsSource>
+          <CarouselView.ItemsSource>
             <x:Array Type="{x:Type x:String}">
               <x:String>Item 1</x:String>
               <x:String>Item 2</x:String>
               <x:String>Item 3</x:String>
             </x:Array>
-          </local:CarouselView1.ItemsSource>
-          <local:CarouselView1.ItemTemplate>
+          </CarouselView.ItemsSource>
+          <CarouselView.ItemTemplate>
             <DataTemplate>
               <Grid ColumnDefinitions="*,*,*,*"
                     RowDefinitions="*,Auto">
@@ -140,8 +140,8 @@
                 </Grid>
               </Grid>
             </DataTemplate>
-          </local:CarouselView1.ItemTemplate>
-        </local:CarouselView1>
+          </CarouselView.ItemTemplate>
+        </CarouselView>
       </VerticalStackLayout>
     </Border>
   </VerticalStackLayout>

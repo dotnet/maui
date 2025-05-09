@@ -21,5 +21,11 @@ public class Issue28523 : _IssuesUITest
 		App.WaitForElement("Baboon");
 		VerifyScreenshot();
 	}
+
+	[TearDown]
+	public void TearDown()
+	{
+		App.SetOrientationPortrait();
+	}
 }
 #endif
