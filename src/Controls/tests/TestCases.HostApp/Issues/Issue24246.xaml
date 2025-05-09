@@ -1,0 +1,11 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue24246"
+             Title="Issue24246"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             ios:Page.UseSafeArea="false">
+  <VerticalStackLayout Background="Purple" IgnoreSafeArea="False" VerticalOptions="Start" IsClippedToBounds="True" x:Name="RootLayout" InputTransparent="False" >
+    <Entry AutomationId="entry" Background="Green" Placeholder="You should see a button below this"></Entry>
+    <Button Clicked="Button_Clicked" AutomationId="button" Text="Click" LineBreakMode="CharacterWrap"></Button>
+  </VerticalStackLayout>
+</ContentPage>
