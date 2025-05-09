@@ -6,6 +6,7 @@
     <PatchVersion>0</PatchVersion>
     <SdkBandVersion>10.0.100</SdkBandVersion>
     <PreReleaseVersionLabel>ci.net10</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'">ci.inflight</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>
     </PreReleaseVersionIteration>
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
