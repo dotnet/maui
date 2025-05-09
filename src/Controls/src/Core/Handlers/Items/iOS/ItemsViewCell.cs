@@ -54,5 +54,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public abstract void ConstrainTo(nfloat constant);
 		public abstract void ConstrainTo(CGSize constraint);
 		public abstract CGSize Measure();
+		internal CGSize IntrinsicCellSize { get; set; }
 	}
 }
