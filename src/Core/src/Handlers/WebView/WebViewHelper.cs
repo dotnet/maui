@@ -10,7 +10,11 @@ internal static partial class WebViewHelper
 		if (js == null)
 			return null;
 
+#if NET6_0_OR_GREATER
 		if (!js.Contains('\'', StringComparison.Ordinal))
+#else
+		if (!js.Contains('\''))
+#endif
 			return js;
 
 #if NET6_0_OR_GREATER
