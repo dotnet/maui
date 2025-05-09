@@ -32,8 +32,6 @@ public enum ItemsSourceType
     ObservableCollection25T,
     ObservableCollectionStringT,
     ObservableCollectionModelT,
-    EmptyObservableCollectionT,
-    EmptyObservableCollectionModelT,
     ListT,
     ListModelT,
     GroupedListT,
@@ -99,6 +97,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
     private int _addIndex = 0;
     private int fruitIndex = 0;
     private int groupAIndex = 0;
+    public event PropertyChangedEventHandler PropertyChanged;
 
     public CollectionViewViewModel()
     {
