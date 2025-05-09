@@ -15,30 +15,24 @@ namespace Microsoft.Maui.Graphics.Platform
 {
 	public partial class PlatformCanvas : AbstractCanvas<PlatformCanvasState>
 	{
-		private static readonly nfloat[] EmptyNFloatArray = Array.Empty<nfloat>();
-		private static readonly CGAffineTransform FlipTransform = new CGAffineTransform(1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f);
-
-		private bool _antialias = true;
-		private CGContext _context;
-		private readonly Func<CGColorSpace> _getColorspace;
-
-		private Color _fontColor = Colors.Black;
-		private IFont _font;
-		private float _fontSize = 10f;
-		private CGGradient _gradient;
-
-		private PlatformCanvas _fillPatternCanvas;
-
-		private IPattern _fillPattern;
-		private CGRect _fillPatternRect;
-
-		private IImage _fillImage;
-
-		private RectF _gradientRectangle = RectF.Zero;
-		private Paint _paint;
+		static readonly nfloat[] EmptyNFloatArray = Array.Empty<nfloat>();
+		static readonly CGAffineTransform FlipTransform = new CGAffineTransform(1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f);
+		bool _antialias = true;
+		CGContext _context;
+		readonly Func<CGColorSpace> _getColorspace;
+		Color _fontColor = Colors.Black;
+		IFont _font;
+		float _fontSize = 10f;
+		CGGradient _gradient;
+		PlatformCanvas _fillPatternCanvas;
+		IPattern _fillPattern;
+		CGRect _fillPatternRect;
+		IImage _fillImage;
+		RectF _gradientRectangle = RectF.Zero;
+		Paint _paint;
 
 		// A local instance of a rectangle to avoid lots of object creation.
-		private CGRect _rect = new CGRect(0, 0, 0, 0);
+		CGRect _rect = new CGRect(0, 0, 0, 0);
 
 		public PlatformCanvas(Func<CGColorSpace> getColorspace)
 			: base(new PlatformCanvasStateService(), new PlatformStringSizeService())
@@ -53,7 +47,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			set
 			{
 				_context = value;
-				if (_context != null)
+				if (_context is not null)
 				{
 					var colorspace = _getColorspace?.Invoke() ?? CGColorSpace.CreateDeviceRGB();
 					_context.SetFillColorSpace(colorspace);
@@ -125,7 +119,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			set
 			{
-				if (value != null)
+				if (value is not null)
 				{
 					_context.SetStrokeColor(value.Red, value.Green, value.Blue, value.Alpha);
 				}
@@ -155,7 +149,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			set
 			{
-				if (value != null)
+				if (value is not null)
 				{
 					_context.SetFillColor(value.Red, value.Green, value.Blue, value.Alpha);
 				}
@@ -164,7 +158,7 @@ namespace Microsoft.Maui.Graphics.Platform
 					_context.SetFillColor(1, 1, 1, 1); // White
 				}
 
-				if (_gradient != null)
+				if (_gradient is not null)
 				{
 					_gradient.Dispose();
 					_gradient = null;
@@ -276,7 +270,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		protected override void PlatformSetStrokeDashPattern(float[] strokePattern, float strokeDashOffset, float strokeSize)
 		{
-			if (strokePattern == null)
+			if (strokePattern is null)
 			{
 				_context.SetLineDash(0, EmptyNFloatArray);
 			}
@@ -309,12 +303,12 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			_gradientRectangle = rectangle;
 
-			if (paint == null)
+			if (paint is null)
 			{
 				paint = Colors.White.AsPaint();
 			}
 
-			if (_gradient != null)
+			if (_gradient is not null)
 			{
 				_gradient.Dispose();
 				_gradient = null;
@@ -339,8 +333,10 @@ namespace Microsoft.Maui.Graphics.Platform
 					Color vColor = linearGradientPaint.GradientStops[i].Color;
 					offsets[i] = linearGradientPaint.GradientStops[i].Offset;
 
-					if (vColor == null)
+					if (vColor is null)
+					{
 						vColor = Colors.White;
+					}
 
 					gradientColors[g++] = vColor.Red;
 					gradientColors[g++] = vColor.Green;
@@ -363,8 +359,10 @@ namespace Microsoft.Maui.Graphics.Platform
 					Color vColor = radialGradientPaint.GradientStops[i].Color;
 					offsets[i] = radialGradientPaint.GradientStops[i].Offset;
 
-					if (vColor == null)
+					if (vColor is null)
+					{
 						vColor = Colors.White;
+					}
 
 					gradientColors[g++] = vColor.Red;
 					gradientColors[g++] = vColor.Green;
@@ -388,21 +386,23 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				FillColor = paint.BackgroundColor;
 			}
-
-			//System.Diagnostics.Debug.WriteLine("Gradient Set To: "+aPaint.PaintType);
 		}
 
 		protected override void PlatformDrawLine(float x1, float y1, float x2, float y2)
 		{
 			if (!_antialias)
+			{
 				_context.SetShouldAntialias(false);
+			}
 
 			_context.MoveTo(x1, y1);
 			_context.AddLineToPoint(x2, y2);
 			_context.StrokePath();
 
 			if (!_antialias)
+			{
 				_context.SetShouldAntialias(true);
+			}
 		}
 
 		// Normalize the angle to be between 0 and 2PI
@@ -420,7 +420,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			_rect.Height = height;
 
 			if (!_antialias)
+			{
 				_context.SetShouldAntialias(false);
+			}
 
 			var startAngleInRadians = NormalizeAngle(GeometryUtil.DegreesToRadians(-startAngle));
 			var endAngleInRadians = NormalizeAngle(GeometryUtil.DegreesToRadians(-endAngle));
@@ -455,7 +457,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 
 			if (!_antialias)
+			{
 				_context.SetShouldAntialias(true);
+			}
 		}
 
 		public override void FillArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise)
@@ -469,14 +473,18 @@ namespace Microsoft.Maui.Graphics.Platform
 			var endAngleInRadians = GeometryUtil.DegreesToRadians(-endAngle);
 
 			while (startAngleInRadians < 0)
+			{
 				startAngleInRadians += MathF.PI * 2;
+			}
 
 			while (endAngleInRadians < 0)
+			{
 				endAngleInRadians += MathF.PI * 2;
+			}
 
 			if (width == height)
 			{
-				if (_gradient != null)
+				if (_gradient is not null)
 				{
 					FillWithGradient(
 						() =>
@@ -485,12 +493,12 @@ namespace Microsoft.Maui.Graphics.Platform
 							return true;
 						});
 				}
-				else if (_fillPattern != null)
+				else if (_fillPattern is not null)
 				{
 					_context.AddArc(_rect.GetMidX(), _rect.GetMidY(), _rect.Width / 2, startAngleInRadians, endAngleInRadians, !clockwise);
 					FillWithPattern(x, y, () => _context.FillPath());
 				}
-				else if (_fillImage != null)
+				else if (_fillImage is not null)
 				{
 					_context.AddArc(_rect.GetMidX(), _rect.GetMidY(), _rect.Width / 2, startAngleInRadians, endAngleInRadians, !clockwise);
 					FillWithImage(x, y, () => _context.FillPath());
@@ -510,7 +518,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				var path = new CGPath();
 				path.AddArc(transform, 0, 0, _rect.Width / 2, startAngleInRadians, endAngleInRadians, !clockwise);
 
-				if (_gradient != null)
+				if (_gradient is not null)
 				{
 					FillWithGradient(
 						() =>
@@ -520,12 +528,12 @@ namespace Microsoft.Maui.Graphics.Platform
 							return true;
 						});
 				}
-				else if (_fillPattern != null)
+				else if (_fillPattern is not null)
 				{
 					_context.AddPath(path);
 					FillWithPattern(x, y, () => _context.FillPath());
 				}
-				else if (_fillImage != null)
+				else if (_fillImage is not null)
 				{
 					_context.AddPath(path);
 					FillWithImage(x, y, () => _context.FillPath());
@@ -578,13 +586,19 @@ namespace Microsoft.Maui.Graphics.Platform
 			_rect.Height = height;
 
 			if (!_antialias)
+			{
 				_context.SetShouldAntialias(false);
+			}
+
 			_context.StrokeRect(_rect);
+
 			if (!_antialias)
+			{
 				_context.SetShouldAntialias(true);
+			}
 		}
 
-		private void DrawGradient()
+		void DrawGradient()
 		{
 			if (_paint is LinearGradientPaint linearGradientPaint)
 			{
@@ -618,10 +632,9 @@ namespace Microsoft.Maui.Graphics.Platform
 			_gradient.Dispose();
 			_gradient = null;
 			_paint = null;
-			//System.Diagnostics.Debug.WriteLine("Gradient Painted and Cleared");
 		}
 
-		private static float GetDistance(CGPoint point1, CGPoint point2)
+		static float GetDistance(CGPoint point1, CGPoint point2)
 		{
 			var a = point2.X - point1.X;
 			var b = point2.Y - point1.Y;
@@ -629,23 +642,23 @@ namespace Microsoft.Maui.Graphics.Platform
 			return (float)Math.Sqrt(a * a + b * b);
 		}
 
-		private void DrawPatternCallback(CGContext context, IPattern fillPattern)
+		void DrawPatternCallback(CGContext context, IPattern fillPattern)
 		{
-			if (fillPattern != null)
+			if (fillPattern is not null)
 			{
 				context.SetLineDash(0, EmptyNFloatArray);
-				if (_fillPatternCanvas == null)
+				if (_fillPatternCanvas is null)
 					_fillPatternCanvas = new PlatformCanvas(_getColorspace);
 				_fillPatternCanvas.Context = context;
 				fillPattern.Draw(_fillPatternCanvas);
 			}
 		}
 
-		private void DrawImageCallback(CGContext context)
+		void DrawImageCallback(CGContext context, IImage fillImage)
 		{
-			var platformWrapper = _fillImage.ToPlatformImage() as PlatformImage;
+			var platformWrapper = fillImage?.ToPlatformImage() as PlatformImage;
 			var platformImage = platformWrapper?.PlatformRepresentation;
-			if (platformImage != null)
+			if (platformImage is not null)
 			{
 				var rect = new CGRect
 				{
@@ -657,19 +670,15 @@ namespace Microsoft.Maui.Graphics.Platform
 #else
 				var cgImage = platformImage.CGImage;
 #endif
-				context.TranslateCTM(0, rect.Height);
-				context.ScaleCTM(1, -1);
 				context.DrawImage(rect, cgImage);
-				context.ScaleCTM(1, -1);
-				context.TranslateCTM(0, -rect.Height);
 			}
 		}
 
 		public override void DrawImage(IImage image, float x, float y, float width, float height)
 		{
-			var platformImage = image.ToPlatformImage() as PlatformImage;
+			var platformImage = image?.ToPlatformImage() as PlatformImage;
 			var platformRepresentation = platformImage?.PlatformRepresentation;
-			if (platformRepresentation != null)
+			if (platformRepresentation is not null)
 			{
 				_rect.X = x;
 				_rect.Y = -y;
@@ -692,7 +701,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			_rect.Width = width;
 			_rect.Height = height;
 
-			if (_gradient != null)
+			if (_gradient is not null)
 			{
 				FillWithGradient(
 					() =>
@@ -701,11 +710,11 @@ namespace Microsoft.Maui.Graphics.Platform
 						return true;
 					});
 			}
-			else if (_fillPattern != null)
+			else if (_fillPattern is not null)
 			{
 				FillWithPattern(x, y, () => _context.FillRect(_rect));
 			}
-			else if (_fillImage != null)
+			else if (_fillImage is not null)
 			{
 				FillWithImage(x, y, () => _context.FillRect(_rect));
 			}
@@ -715,7 +724,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
-		private void FillWithPattern(nfloat x, nfloat y, Action drawingAction)
+		void FillWithPattern(nfloat x, nfloat y, Action drawingAction)
 		{
 			_context.SaveState();
 			var baseColorspace = _getColorspace?.Invoke();
@@ -749,7 +758,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			_context.RestoreState();
 		}
 
-		private void FillWithImage(nfloat x, nfloat y, Action drawingAction)
+		void FillWithImage(nfloat x, nfloat y, Action drawingAction)
 		{
 			_context.SaveState();
 			var baseColorspace = _getColorspace?.Invoke();
@@ -766,7 +775,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			transform.Multiply(currentTransform);
 			transform.Multiply(new CGAffineTransform(1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f));
 
-			var pattern = new CGPattern(_fillPatternRect, transform, _fillImage.Width, _fillImage.Height, CGPatternTiling.NoDistortion, true, DrawImageCallback);
+			var imageToDraw = _fillImage;
+			var pattern = new CGPattern(_fillPatternRect, transform, _fillImage.Width, _fillImage.Height, CGPatternTiling.NoDistortion, true, (handle) => DrawImageCallback(handle, imageToDraw));
 			_context.SetFillPattern(pattern, new nfloat[] { 1 });
 			drawingAction();
 
@@ -796,7 +806,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				cornerRadius = halfWidth;
 			}
 
-			if (_gradient != null)
+			if (_gradient is not null)
 			{
 				FillWithGradient(
 					() =>
@@ -805,12 +815,12 @@ namespace Microsoft.Maui.Graphics.Platform
 						return true;
 					});
 			}
-			else if (_fillPattern != null)
+			else if (_fillPattern is not null)
 			{
 				_context.AddRoundedRectangle(x, y, width, height, cornerRadius);
 				FillWithPattern(x, y, _context.FillPath);
 			}
-			else if (_fillImage != null)
+			else if (_fillImage is not null)
 			{
 				_context.AddRoundedRectangle(x, y, width, height, cornerRadius);
 				FillWithImage(x, y, _context.FillPath);
@@ -838,7 +848,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			_rect.Width = width;
 			_rect.Height = height;
 
-			if (_gradient != null)
+			if (_gradient is not null)
 			{
 				FillWithGradient(
 					() =>
@@ -847,11 +857,11 @@ namespace Microsoft.Maui.Graphics.Platform
 						return true;
 					});
 			}
-			else if (_fillPattern != null)
+			else if (_fillPattern is not null)
 			{
 				FillWithPattern(x, y, () => _context.FillEllipseInRect(_rect));
 			}
-			else if (_fillImage != null)
+			else if (_fillImage is not null)
 			{
 				FillWithImage(x, y, () => _context.FillEllipseInRect(_rect));
 			}
@@ -875,11 +885,11 @@ namespace Microsoft.Maui.Graphics.Platform
 			clip.Dispose();
 		}
 
-		private CGPath GetPlatformPath(PathF path)
+		CGPath GetPlatformPath(PathF path)
 		{
 			var platformPath = path.PlatformPath as CGPath;
 
-			if (platformPath == null || platformPath.Handle == IntPtr.Zero)
+			if (platformPath is null || platformPath.Handle == IntPtr.Zero)
 			{
 				platformPath = path.AsCGPath();
 				path.PlatformPath = platformPath;
@@ -929,7 +939,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			var platformPath = GetPlatformPath(path);
 
-			if (_gradient != null)
+			if (_gradient is not null)
 			{
 				FillWithGradient(
 					() =>
@@ -944,7 +954,7 @@ namespace Microsoft.Maui.Graphics.Platform
 						return true;
 					});
 			}
-			else if (_fillPattern != null)
+			else if (_fillPattern is not null)
 			{
 				var boundingBox = platformPath.PathBoundingBox;
 				var x = boundingBox.Left;
@@ -960,7 +970,7 @@ namespace Microsoft.Maui.Graphics.Platform
 					FillWithPattern(x, y, _context.FillPath);
 				}
 			}
-			else if (_fillImage != null)
+			else if (_fillImage is not null)
 			{
 				var boundingBox = platformPath.PathBoundingBox;
 				var x = boundingBox.Left;
@@ -1014,7 +1024,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
-		private void DrawString(string value, float x, float y)
+		void DrawString(string value, float x, float y)
 		{
 			_context.SetFillColor(_fontColor);
 			_context.SetFont(_font?.ToCGFont() ?? FontExtensions.GetDefaultCGFont());
@@ -1078,7 +1088,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			DrawAttributedText(_context, value, rect, _font, _fontSize, _fontColor);
 		}
 
-		private void DrawStringInPlatformPath(
+		void DrawStringInPlatformPath(
 			CGPath path,
 			string value,
 			HorizontalAlignment horizontalAlignment,
@@ -1109,7 +1119,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			var ctFont = font?.ToCTFont(fontSize) ?? FontExtensions.GetDefaultCTFont(fontSize);
 
-			if (ctFont != null && ctFont.Handle != IntPtr.Zero)
+			if (ctFont is not null && ctFont.Handle != IntPtr.Zero)
 				attributes.Font = ctFont;
 
 			if (verticalAlignment == VerticalAlignment.Center)
@@ -1151,7 +1161,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			// Create the frame and draw it into the graphics context
 			var frame = frameSetter.GetFrame(new NSRange(0, 0), path, null);
 
-			if (frame != null)
+			if (frame is not null)
 			{
 				if (verticalAlignment != VerticalAlignment.Top)
 				{
@@ -1228,8 +1238,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			context.TextMatrix.Translate(ix, iy);
 
 			var attributedString = text.AsNSAttributedString(font, fontSize, fontColor?.ToHex(), true);
-			if (attributedString == null)
+			if (attributedString is null)
+			{
 				return;
+			}
 
 			// Create the frame setter with the attributed string.
 			var framesetter = new CTFramesetter(attributedString);
@@ -1237,7 +1249,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			// Create the frame and draw it into the graphics context
 			var frame = framesetter.GetFrame(new NSRange(0, 0), path, null);
 
-			if (frame != null)
+			if (frame is not null)
 			{
 				if (verticalAlignment != VerticalAlignment.Top)
 				{
@@ -1281,7 +1293,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			var actualBlur = blur;
 
-			if (color == null)
+			if (color is null)
 			{
 				_context.SetShadow(sizeF, actualBlur);
 			}
@@ -1342,7 +1354,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		{
 			var success = base.RestoreState();
 
-			if (_gradient != null)
+			if (_gradient is not null)
 			{
 				_gradient.Dispose();
 				_gradient = null;
@@ -1384,10 +1396,14 @@ namespace Microsoft.Maui.Graphics.Platform
 			var rect = new CGRect(x, y, width, height);
 
 			if (finalCornerRadius > rect.Width)
+			{
 				finalCornerRadius = rect.Width / 2;
+			}
 
 			if (finalCornerRadius > rect.Height)
+			{
 				finalCornerRadius = rect.Height / 2;
+			}
 
 			var minX = rect.X;
 			var minY = rect.Y;
