@@ -316,6 +316,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			AddItemDecoration(_itemDecoration);
 		}
 
+		internal void UpdateLoop()
+		{
+			int currentPosition = Carousel.Position;
+
+			UpdateAdapter();
+			ScrollToPosition(currentPosition);
+		}
+
 		void UpdateInitialPosition()
 		{
 			//if we don't have any items don't update position
