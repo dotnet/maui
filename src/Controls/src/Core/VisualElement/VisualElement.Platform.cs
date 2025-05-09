@@ -42,7 +42,9 @@ namespace Microsoft.Maui.Controls
 					_loadedUnloadedToken?.Dispose();
 					_loadedUnloadedToken = null;
 					if (Handler is not null)
+					{
 						_loadedUnloadedToken = this.OnLoaded(SendLoaded);
+					}
 				}
 			}
 			else
