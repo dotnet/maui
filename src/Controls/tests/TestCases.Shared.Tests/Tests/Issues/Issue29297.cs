@@ -1,5 +1,4 @@
-#if !ANDROID
-//Skipping the test case to run in android because the loaded event is not triggered when navigating back to previous page.
+#if TEST_FAILS_ON_ANDROID // Loaded event is not triggered when navigating back to previous page - https://github.com/dotnet/maui/issues/29414
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
