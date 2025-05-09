@@ -468,11 +468,15 @@ namespace Microsoft.Maui.Controls
 		new public Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 #pragma warning restore RS0016 // Add public types and members to the declared API
 		{
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureStart);
+
 			var layoutManager = _layoutManager ??= CreateLayoutManager();
 
 			InMeasureMode = true;
 			var result = layoutManager.Measure(widthConstraint, heightConstraint);
 			InMeasureMode = false;
+
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureEnd);
 
 			return result;
 		}
