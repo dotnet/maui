@@ -15,6 +15,7 @@ override Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.G
 ~Microsoft.Maui.Controls.Handlers.Items2.DefaultCell2.Constraint.set -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.DefaultCell2.Label.get -> UIKit.UILabel
 ~Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>
+override Microsoft.Maui.Controls.IndicatorView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 ~Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewController2<TItemsView>.GroupableItemsViewController2(TItemsView groupableItemsView, UIKit.UICollectionViewLayout layout) -> void
 ~Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewDelegator2<TItemsView, TViewController>
 ~Microsoft.Maui.Controls.Handlers.Items2.GroupableItemsViewDelegator2<TItemsView, TViewController>.GroupableItemsViewDelegator2(UIKit.UICollectionViewLayout itemsViewLayout, TViewController ItemsViewController2) -> void
