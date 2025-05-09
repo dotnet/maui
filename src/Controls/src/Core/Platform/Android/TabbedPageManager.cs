@@ -989,6 +989,13 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					if (_tabbedPageManager._bottomNavigationView.SelectedItemId != item.ItemId && _tabbedPageManager.Element.Children.Count > item.ItemId)
 						_tabbedPageManager.Element.CurrentPage = _tabbedPageManager.Element.Children[item.ItemId];
+					else
+					{
+						if (TabbedPage.GetPopToRootOnTabReselect(_tabbedPageManager.Element) && _tabbedPageManager.Element.CurrentPage.Navigation.NavigationStack.Count > 1)
+						{
+							_tabbedPageManager.Element.CurrentPage.Navigation.PopToRootAsync();
+						}
+					}
 				}
 
 				return true;
