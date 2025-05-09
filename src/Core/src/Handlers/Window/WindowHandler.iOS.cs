@@ -1,4 +1,5 @@
 ﻿using System;
+using CoreFoundation;
 using Foundation;
 using UIKit;
 
@@ -7,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class WindowHandler : ElementHandler<IWindow, UIWindow>
 	{
 		readonly WindowProxy _proxy = new();
+		NSObject? _orientationObserver;
 
 		protected override void ConnectHandler(UIWindow platformView)
 		{
@@ -20,6 +22,7 @@ namespace Microsoft.Maui.Handlers
 			else
 			{
 				UpdateVirtualViewFrame(platformView);
+				RegisterOrientationChangeNotification();
 			}
 		}
 
@@ -30,6 +33,7 @@ namespace Microsoft.Maui.Handlers
 				_proxy.Disconnect();
 			}
 
+			UnregisterOrientationChangeNotification();
 			base.DisconnectHandler(platformView);
 		}
 
@@ -122,6 +126,33 @@ namespace Microsoft.Maui.Handlers
 			{
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
 			}
+		}
+
+		private void RegisterOrientationChangeNotification()
+		{
+			UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
+			_orientationObserver = NSNotificationCenter.DefaultCenter.AddObserver(
+				UIDevice.OrientationDidChangeNotification,
+				HandleOrientationChanged);
+		}
+
+		private void UnregisterOrientationChangeNotification()
+		{
+			if (_orientationObserver is not null)
+			{
+				NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
+				_orientationObserver = null;
+				UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
+			}
+		}
+
+		private void HandleOrientationChanged(NSNotification notification)
+		{
+			// Using dispatch to defer execution until after the rotation animation completes.
+			DispatchQueue.MainQueue.DispatchAsync(() => 
+			{
+				UpdateVirtualViewFrame(PlatformView);
+			});
 		}
 
 		void UpdateVirtualViewFrame(UIWindow window)
