@@ -6,8 +6,6 @@
 
 		void UpdateFromPosition();
 
-		void UpdateItemsLayout();
-
 		bool IsSwipeEnabled { get; set; }
 	}
 }

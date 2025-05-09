@@ -556,14 +556,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			SetCurrentItem(carouselPosition);
 		}
 
-		void IMauiCarouselRecyclerView.UpdateItemsLayout()
-		{
-			if (GetLayoutManager() is LinearLayoutManager layoutManager)
-			{
-				layoutManager.Orientation = IsHorizontal ? LinearLayoutManager.Horizontal : LinearLayoutManager.Vertical;
-			}
-		}
-
 		void AddLayoutListener()
 		{
 			if (_carouselViewLayoutListener is not null)
