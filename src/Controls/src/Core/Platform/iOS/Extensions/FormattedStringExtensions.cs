@@ -28,7 +28,8 @@ namespace Microsoft.Maui.Controls.Platform
 				label.HorizontalTextAlignment,
 				label.ToFont(),
 				label.TextColor,
-				label.TextTransform);
+				label.TextTransform,
+				label.LineBreakMode);
 
 		public static NSAttributedString ToNSAttributedString(
 			this FormattedString formattedString,
@@ -37,7 +38,8 @@ namespace Microsoft.Maui.Controls.Platform
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
-			TextTransform defaultTextTransform = TextTransform.Default)
+			TextTransform defaultTextTransform = TextTransform.Default,
+			LineBreakMode lineBreakMode = LineBreakMode.WordWrap)
 		{
 			if (formattedString == null)
 				return new NSAttributedString(string.Empty);
@@ -50,7 +52,7 @@ namespace Microsoft.Maui.Controls.Platform
 					continue;
 
 				attributed.Append(span.ToNSAttributedString(fontManager, defaultLineHeight, defaultHorizontalAlignment,
-					defaultFont, defaultColor, defaultTextTransform));
+					defaultFont, defaultColor, defaultTextTransform, lineBreakMode));
 			}
 
 			return attributed;
@@ -63,7 +65,8 @@ namespace Microsoft.Maui.Controls.Platform
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
-			TextTransform defaultTextTransform = TextTransform.Default)
+			TextTransform defaultTextTransform = TextTransform.Default,
+			LineBreakMode lineBreakMode = LineBreakMode.WordWrap)
 		{
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
 
@@ -89,6 +92,17 @@ namespace Microsoft.Maui.Controls.Platform
 				TextAlignment.Center => UITextAlignment.Center,
 				TextAlignment.End => UITextAlignment.Right,
 				_ => UITextAlignment.Left
+			};
+
+			style.LineBreakMode = lineBreakMode switch
+			{
+				LineBreakMode.NoWrap => UILineBreakMode.Clip,
+				LineBreakMode.WordWrap => UILineBreakMode.WordWrap,
+				LineBreakMode.CharacterWrap => UILineBreakMode.CharacterWrap,
+				LineBreakMode.HeadTruncation => UILineBreakMode.HeadTruncation,
+				LineBreakMode.TailTruncation => UILineBreakMode.TailTruncation,
+				LineBreakMode.MiddleTruncation => UILineBreakMode.MiddleTruncation,
+				_ => UILineBreakMode.WordWrap
 			};
 
 			var font = span.ToFont(defaultFontSize);
