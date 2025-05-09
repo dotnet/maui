@@ -5,11 +5,11 @@ using Maui.Controls.Sample.CollectionViewGalleries;
 
 namespace Maui.Controls.Sample
 {
-    public partial class CollectionViewOptionsPage : ContentPage
+    public partial class HeaderFooterOptionsPage : ContentPage
     {
         private CollectionViewViewModel _viewModel;
 
-        public CollectionViewOptionsPage(CollectionViewViewModel viewModel)
+        public HeaderFooterOptionsPage(CollectionViewViewModel viewModel)
         {
             InitializeComponent();
             _viewModel = viewModel;

@@ -9,6 +9,10 @@
     <Version Condition=" '$(ApplicationDisplayVersion)' != '' ">$(ApplicationDisplayVersion)</Version>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Win2DWarnNoPlatform>false</Win2DWarnNoPlatform>
+  </PropertyGroup>
+
   <Target Name="_AddMauiPriFiles" AfterTargets="ResolveAssemblyReferences">
     <ItemGroup>
       <_ReferenceRelatedPaths

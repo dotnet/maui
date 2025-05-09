@@ -7,7 +7,7 @@
              x:Class=" Maui.Controls.Sample.CollectionViewGalleries.HeaderFooterGalleries.HeaderFooterView">
     <ContentPage.Content>
 
-        <CollectionView x:Name="CollectionView" ItemsSource="{Binding Items}">
+        <CollectionView x:Name="CollectionView" AutomationId="CV" ItemsSource="{Binding Items}">
             
             <CollectionView.Header>
 

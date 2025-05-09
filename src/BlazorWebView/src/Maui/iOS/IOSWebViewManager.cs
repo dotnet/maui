@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			var messageJSStringLiteral = JavaScriptEncoder.Default.Encode(message);
 			_webview.EvaluateJavaScript(
 				javascript: $"__dispatchMessageCallback(\"{messageJSStringLiteral}\")",
-				completionHandler: (NSObject result, NSError error) => { });
+				completionHandler: (NSObject? result, NSError? error) => { });
 		}
 
 		internal void MessageReceivedInternal(Uri uri, string message)

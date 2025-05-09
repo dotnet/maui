@@ -126,9 +126,7 @@ namespace Microsoft.Maui.IntegrationTests
 		#region Expected warning messages
 
 		// IMPORTANT: Always store expected File information as a relative path to the repo ROOT
-		private static readonly List<WarningsPerFile> expectedNativeAOTWarnings = new()
-		{
-		};
+		private static readonly List<WarningsPerFile> expectedNativeAOTWarnings = new();
 
 		#region Utility methods for generating the list of expected warnings
 

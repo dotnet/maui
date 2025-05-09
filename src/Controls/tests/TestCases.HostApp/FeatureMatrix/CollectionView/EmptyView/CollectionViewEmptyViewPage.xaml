@@ -2,13 +2,14 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
-             x:Class="Maui.Controls.Sample.CollectionViewControlPage"
+             x:Class="Maui.Controls.Sample.CollectionViewEmptyViewPage"
              Title="CollectionViewFeature">
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Options"
-                     Clicked="NavigateToOptionsPage_Clicked"
-                     AutomationId="Options"/>
+                Clicked="NavigateToOptionsPage_Clicked"
+                AutomationId="Options"/>
     </ContentPage.ToolbarItems>
+
         <local:CollectionView2
             x:Name="collectionView"
             ItemsSource="{Binding ItemsSource}"
@@ -16,13 +17,10 @@
             Header="{Binding Header}"
             Footer="{Binding Footer}"
             EmptyViewTemplate="{Binding EmptyViewTemplate}"
-            HeaderTemplate="{Binding HeaderTemplate}"
-            FooterTemplate="{Binding FooterTemplate}"
             GroupHeaderTemplate="{Binding GroupHeaderTemplate}"
-            GroupFooterTemplate="{Binding GroupFooterTemplate}"
             ItemTemplate="{Binding ItemTemplate}"
-            ItemsLayout="{Binding ItemsLayout}"
             IsGrouped="{Binding IsGrouped}"
+            ItemsLayout="{Binding ItemsLayout}"
             AutomationId="CollectionViewControl">
         </local:CollectionView2>
 </ContentPage>

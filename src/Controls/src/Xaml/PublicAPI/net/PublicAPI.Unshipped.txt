@@ -1,4 +1,5 @@
 #nullable enable
+~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.RootObject.get -> object
 ~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TypedBinding.get -> Microsoft.Maui.Controls.Internals.TypedBindingBase
 ~Microsoft.Maui.Controls.Xaml.TemplateBindingExtension.TypedBinding.set -> void
 ~static Microsoft.Maui.Controls.Embedding.EmbeddingExtensions.UseMauiEmbeddedApp<TApp>(this Microsoft.Maui.Hosting.MauiAppBuilder builder, System.Func<System.IServiceProvider, TApp> implementationFactory) -> Microsoft.Maui.Hosting.MauiAppBuilder
@@ -17,3 +18,4 @@ Microsoft.Maui.Controls.Xaml.ResourceDictionaryHelpers
 *REMOVED*~Microsoft.Maui.Controls.Xaml.FontImageExtension.ProvideValue(System.IServiceProvider serviceProvider) -> Microsoft.Maui.Controls.ImageSource
 *REMOVED*Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.get -> double
 *REMOVED*Microsoft.Maui.Controls.Xaml.FontImageExtension.Size.set -> void
+~Microsoft.Maui.Controls.Xaml.Internals.SimpleValueTargetProvider.SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, Microsoft.Maui.Controls.Internals.INameScope[] scopes, object rootObject) -> void

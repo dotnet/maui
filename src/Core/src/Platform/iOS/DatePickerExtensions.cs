@@ -34,9 +34,9 @@ public static class DatePickerExtensions
 	{
 		var textColor = datePicker.TextColor;
 
-		if (textColor == null)
+		if (textColor is null)
 		{
-			if (defaultTextColor != null)
+			if (defaultTextColor is not null)
 			{
 				platformDatePicker.TextColor = defaultTextColor;
 			}
@@ -52,19 +52,23 @@ public static class DatePickerExtensions
 
 	public static void UpdateDate(this UIDatePicker picker, IDatePicker datePicker)
 	{
-		if (picker != null && picker.Date.ToDateTime().Date != datePicker.Date.Date)
-			picker.SetDate(datePicker.Date.ToNSDate(), false);
+		if (picker is not null && picker.Date.ToDateTime() != datePicker.Date)
+		{
+			picker.SetDate(datePicker.Date?.ToNSDate() ?? NSDate.DistantPast, false);
+		}
 	}
 
 	public static void UpdateDate(this MauiDatePicker platformDatePicker, IDatePicker datePicker, UIDatePicker? picker)
 	{
-		if (picker != null && picker.Date.ToDateTime().Date != datePicker.Date.Date)
-			picker.SetDate(datePicker.Date.ToNSDate(), false);
+		if (picker is not null && picker.Date != NSDate.DistantPast && picker.Date.ToDateTime() != datePicker.Date)
+		{
+			picker.SetDate(datePicker.Date?.ToNSDate() ?? NSDate.DistantPast, false);
+		}
 
 		string format = datePicker.Format ?? string.Empty;
 
 		// Can't use VirtualView.Format because it won't display the correct format if the region and language are set differently
-		if (picker != null && (string.IsNullOrWhiteSpace(format) || format.Equals("d", StringComparison.OrdinalIgnoreCase)))
+		if (picker is not null && (string.IsNullOrWhiteSpace(format) || format.Equals("d", StringComparison.OrdinalIgnoreCase)))
 		{
 			NSDateFormatter dateFormatter = new NSDateFormatter
 			{
@@ -86,11 +90,11 @@ public static class DatePickerExtensions
 		}
 		else if (format.Contains('/', StringComparison.Ordinal))
 		{
-			platformDatePicker.Text = datePicker.Date.ToString(format, CultureInfo.InvariantCulture);
+			platformDatePicker.Text = datePicker.Date?.ToString(format, CultureInfo.InvariantCulture) ?? string.Empty;
 		}
 		else
 		{
-			platformDatePicker.Text = datePicker.Date.ToString(format);
+			platformDatePicker.Text = datePicker.Date?.ToString(format) ?? string.Empty;
 		}
 
 		platformDatePicker.UpdateCharacterSpacing(datePicker);
@@ -108,9 +112,9 @@ public static class DatePickerExtensions
 
 	public static void UpdateMinimumDate(this UIDatePicker platformDatePicker, IDatePicker datePicker)
 	{
-		if (platformDatePicker != null)
+		if (platformDatePicker is not null)
 		{
-			platformDatePicker.MinimumDate = datePicker.MinimumDate.ToNSDate();
+			platformDatePicker.MinimumDate = datePicker.MinimumDate?.ToNSDate();
 		}
 	}
 
@@ -126,9 +130,9 @@ public static class DatePickerExtensions
 
 	public static void UpdateMaximumDate(this UIDatePicker platformDatePicker, IDatePicker datePicker)
 	{
-		if (platformDatePicker != null)
+		if (platformDatePicker is not null)
 		{
-			platformDatePicker.MaximumDate = datePicker.MaximumDate.ToNSDate();
+			platformDatePicker.MaximumDate = datePicker.MaximumDate?.ToNSDate();
 		}
 	}
 
