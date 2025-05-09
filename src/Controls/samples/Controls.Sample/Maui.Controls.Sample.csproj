@@ -45,6 +45,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
     <!--<PackageReference Include="Microsoft.Maui.Graphics.Skia" />-->
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
