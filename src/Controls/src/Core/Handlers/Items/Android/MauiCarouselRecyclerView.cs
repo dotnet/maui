@@ -139,7 +139,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_gotoPosition = -1;
 
-
 			base.UpdateAdapter();
 
 			UpdateInitialPosition();
