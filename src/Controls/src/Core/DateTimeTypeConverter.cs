@@ -26,11 +26,11 @@ public class DateTimeTypeConverter : TypeConverter, IExtendedTypeConverter
     {
         if (value is DateTime dateTime)
         {
-            return DateOnly.FromDateTime(dateTime);
+            return dateTime;
         }
-        if (value is string stringValue && DateTime.TryParse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
+        if (value is string stringValue && DateTime.TryParse(stringValue, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime))
         {
-            return DateOnly.FromDateTime(result);
+            return dateTime;
         }
         throw new NotSupportedException($"Cannot convert \"{value}\" into {typeof(DateOnly)}");
     }
