@@ -55,6 +55,12 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
+		{
+			base.OnLayout(changed, left, top, right, bottom);
+			_contentView?.Layout(0, 0, right - left, bottom - top);
+		}
+
 		public override bool CanChildScrollUp()
 		{
 			if (ChildCount == 0)
