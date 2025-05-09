@@ -2286,15 +2286,15 @@ override Microsoft.Maui.MauiViewGroup.JniPeerMembers.get -> Java.Interop.JniPeer
 override Microsoft.Maui.MauiViewGroup.OnLayout(bool changed, int l, int t, int r, int b) -> void
 override Microsoft.Maui.MauiViewGroup.ThresholdClass.get -> nint
 override Microsoft.Maui.MauiViewGroup.ThresholdType.get -> System.Type!
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.DispatchPopulateAccessibilityEvent(Android.Views.View? host, Android.Views.Accessibility.AccessibilityEvent? e) -> bool
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.GetAccessibilityNodeProvider(Android.Views.View? host) -> AndroidX.Core.View.Accessibility.AccessibilityNodeProviderCompat?
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityEvent(Android.Views.View? host, Android.Views.Accessibility.AccessibilityEvent? e) -> void
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnPopulateAccessibilityEvent(Android.Views.View? host, Android.Views.Accessibility.AccessibilityEvent? e) -> void
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnRequestSendAccessibilityEvent(Android.Views.ViewGroup? host, Android.Views.View? child, Android.Views.Accessibility.AccessibilityEvent? e) -> bool
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAccessibilityAction(Android.Views.View? host, int action, Android.OS.Bundle? args) -> bool
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEvent(Android.Views.View? host, int eventType) -> void
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEventUnchecked(Android.Views.View? host, Android.Views.Accessibility.AccessibilityEvent? e) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.DispatchPopulateAccessibilityEvent(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> bool
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.GetAccessibilityNodeProvider(Android.Views.View! host) -> AndroidX.Core.View.Accessibility.AccessibilityNodeProviderCompat?
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityEvent(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnPopulateAccessibilityEvent(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnRequestSendAccessibilityEvent(Android.Views.ViewGroup! host, Android.Views.View! child, Android.Views.Accessibility.AccessibilityEvent! e) -> bool
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAccessibilityAction(Android.Views.View! host, int action, Android.OS.Bundle! args) -> bool
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEvent(Android.Views.View! host, int eventType) -> void
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEventUnchecked(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> void
 override Microsoft.Maui.Platform.BorderDrawable.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.BorderDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 override Microsoft.Maui.Platform.BorderDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
