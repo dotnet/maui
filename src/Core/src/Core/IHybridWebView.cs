@@ -65,5 +65,11 @@ namespace Microsoft.Maui
 			JsonTypeInfo<TReturnType> returnTypeJsonTypeInfo,
 			object?[]? paramValues = null,
 			JsonTypeInfo?[]? paramJsonTypeInfos = null);
+
+#if NETSTANDARD
+		bool WebResourceRequested(WebResourceRequestedEventArgs args);
+#else
+		bool WebResourceRequested(WebResourceRequestedEventArgs args) => false;
+#endif
 	}
 }
