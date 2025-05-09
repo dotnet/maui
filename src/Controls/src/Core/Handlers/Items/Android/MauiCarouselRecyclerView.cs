@@ -139,13 +139,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_gotoPosition = -1;
 
-			if (GetLayoutManager() is LinearLayoutManager layoutManager)
-			{
-				var isHorizontal = IsHorizontal;
-				layoutManager.Orientation = isHorizontal
-					? LinearLayoutManager.Horizontal
-					: LinearLayoutManager.Vertical;
-			}
 
 			base.UpdateAdapter();
 
@@ -562,6 +555,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				ItemsView.ScrollTo(carouselPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimatePositionChanges);
 			}
 			SetCurrentItem(carouselPosition);
+		}
+
+		void IMauiCarouselRecyclerView.UpdateItemsLayout()
+		{
+			if (GetLayoutManager() is LinearLayoutManager layoutManager)
+			{
+				layoutManager.Orientation = IsHorizontal ? LinearLayoutManager.Horizontal : LinearLayoutManager.Vertical;
+			}
 		}
 
 		void AddLayoutListener()
