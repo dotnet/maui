@@ -14,7 +14,6 @@ namespace Microsoft.Maui.Controls.Xaml
 		 typeof(IValueConverterProvider),
 		 typeof(IXmlLineInfoProvider),
 		 typeof(IConverterOptions)])]
-	[RequiresUnreferencedCode("The OnIdiomExtension is not trim safe. Use OnIdiom<T> instead.")]
 	public class OnIdiomExtension : IMarkupExtension
 	{
 		// See Device.Idiom
@@ -61,7 +60,9 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			var value = GetValue();
 			if (value == null && propertyType.IsValueType)
-				return Activator.CreateInstance(propertyType);
+			{
+				throw new XamlParseException($"Missing value for idiom {DeviceInfo.Idiom} or Default", serviceProvider);
+			}
 
 			if (Converter != null)
 				return Converter.Convert(value, propertyType, ConverterParameter, CultureInfo.CurrentUICulture);
