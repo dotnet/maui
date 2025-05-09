@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls.XamlC
 			do
 			{
 				if (string.IsNullOrEmpty(value))
+				{
 					break;
+				}
 
 				value = value.Trim();
 
