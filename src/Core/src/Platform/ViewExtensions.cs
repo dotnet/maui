@@ -28,7 +28,9 @@ using ParentView = System.Object;
 
 namespace Microsoft.Maui.Platform
 {
-	/// <include file="../../docs/Microsoft.Maui/ViewExtensions.xml" path="Type[@FullName='Microsoft.Maui.ViewExtensions']/Docs/*" />
+	/// <summary>
+	/// Extension methods for <see cref="IView"/>s, providing animatable scaling, rotation, and layout functions.
+	/// </summary>
 	public static partial class ViewExtensions
 	{
 		internal static Vector3 ExtractPosition(this Matrix4x4 matrix) => matrix.Translation;
@@ -40,6 +42,12 @@ namespace Microsoft.Maui.Platform
 		internal static double ExtractAngleInDegrees(this Matrix4x4 matrix) => ExtractAngleInRadians(matrix) * 180 / Math.PI;
 
 
+		/// <summary>
+		/// Gets the platform-specific view handler for the specified view.
+		/// </summary>
+		/// <param name="view">The view to get the handler for.</param>
+		/// <param name="context">The Maui context used to create the handler.</param>
+		/// <returns>The platform-specific view handler.</returns>
 		public static IPlatformViewHandler ToHandler(this IView view, IMauiContext context) =>
 			(IPlatformViewHandler)ElementExtensions.ToHandler(view, context);
 
