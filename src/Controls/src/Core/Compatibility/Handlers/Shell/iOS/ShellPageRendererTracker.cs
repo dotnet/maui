@@ -480,7 +480,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				float size = 3f;
 				float start = 4f;
 				context.CGContext.SetLineWidth(size);
-				
+
 				for (int i = 0; i < 3; i++)
 				{
 					context.CGContext.MoveTo(1f, start + i * (size * 2));

@@ -68,22 +68,22 @@ public partial class ScrollBehaviorOptionsPage : ContentPage
 	}
 
 	private void OnItemsLayoutChanged(object sender, CheckedChangedEventArgs e)
-    {
-        if (ItemsLayoutVerticalList.IsChecked)
-        {
-            _viewModel.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
-        }
-        else if (ItemsLayoutHorizontalList.IsChecked)
-        {
-            _viewModel.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
-        }
-        else if (ItemsLayoutVerticalGrid.IsChecked)
-        {
-            _viewModel.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical); // 2 columns
-        }
-        else if (ItemsLayoutHorizontalGrid.IsChecked)
-        {
-            _viewModel.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Horizontal); // 2 rows
-        }
-    }
+	{
+		if (ItemsLayoutVerticalList.IsChecked)
+		{
+			_viewModel.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
+		}
+		else if (ItemsLayoutHorizontalList.IsChecked)
+		{
+			_viewModel.ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
+		}
+		else if (ItemsLayoutVerticalGrid.IsChecked)
+		{
+			_viewModel.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Vertical); // 2 columns
+		}
+		else if (ItemsLayoutHorizontalGrid.IsChecked)
+		{
+			_viewModel.ItemsLayout = new GridItemsLayout(2, ItemsLayoutOrientation.Horizontal); // 2 rows
+		}
+	}
 }

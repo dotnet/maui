@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				return 0;
 			}
-			
+
 			return ItemsView.ItemsUpdatingScrollMode switch
 			{
 				ItemsUpdatingScrollMode.KeepItemsInView => 0,

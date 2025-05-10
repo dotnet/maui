@@ -210,7 +210,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// We could then invalidate the layout for supplementary cell only `collectionView.IndexPathForCell(headerCell)` like we do on standard cells,
 			// but that causes other cells to oddly collapse (see Issue25362 UITest), so in this case we have to stick with `InvalidateLayout`.
 			var collectionView = CollectionView;
-			
+
 			if (ItemsView.Header is not null || ItemsView.HeaderTemplate is not null)
 			{
 				var visibleHeaders = collectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Header);

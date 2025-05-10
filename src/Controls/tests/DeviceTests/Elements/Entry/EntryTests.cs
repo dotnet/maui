@@ -223,7 +223,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The IsVisible property of a Entry should match with native IsVisible")]		
+		[Description("The IsVisible property of a Entry should match with native IsVisible")]
 		public async Task VerifyEntryIsVisibleProperty()
 		{
 			var entry = new Entry();
