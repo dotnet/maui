@@ -88,6 +88,5 @@ override Microsoft.Maui.Handlers.EditorHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.WindowHandler.DisconnectHandler(UIKit.UIWindow! platformView) -> void
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.ImageButtonHandler.SetupContainer() -> void
-override Microsoft.Maui.Handlers.PageHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 *REMOVED*override Microsoft.Maui.Platform.WrapperView.SetNeedsLayout() -> void
 *REMOVED*override Microsoft.Maui.Platform.MauiView.SetNeedsLayout() -> void

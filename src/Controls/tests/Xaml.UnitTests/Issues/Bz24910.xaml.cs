@@ -47,6 +47,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(true), TestCase(false)]
 			public void AllowNull(bool useCompiledXaml)
 			{
+				if (useCompiledXaml)
+					MockCompiler.Compile(typeof(Bz24910));
+
 				var page = new Bz24910(useCompiledXaml);
 				var control = page.control2;
 				Assert.Null(control.NullableInt);
@@ -85,7 +88,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	public class Bz24910Control : Button
 	{
 		public static readonly BindableProperty NullableIntProperty =
-			BindableProperty.Create("NullableInt", typeof(int?), typeof(Bz24910Control), default(int?));
+			BindableProperty.Create(nameof(NullableInt), typeof(int?), typeof(Bz24910Control), default(int?));
 
 		public int? NullableInt
 		{
@@ -94,7 +97,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		public static readonly BindableProperty NullableDoubleProperty =
-			BindableProperty.Create("NullableDouble", typeof(double?), typeof(Bz24910Control), default(double?));
+			BindableProperty.Create(nameof(NullableDouble), typeof(double?), typeof(Bz24910Control), default(double?));
 
 		public double? NullableDouble
 		{
