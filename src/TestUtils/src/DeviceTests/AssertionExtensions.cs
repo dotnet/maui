@@ -1,9 +1,9 @@
 using System;
+using System.Net.Http;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Net.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Platform;
@@ -268,38 +268,38 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 		// Add these methods to AssertionExtensions class
- 		/// <summary>
- 		/// Checks if internet connection is available by making an HTTP request
- 		/// </summary>
- 		/// <returns>True if internet connection is available</returns>
- 		public static async Task<bool> HasInternetConnection()
- 		{
- 			try
- 			{
- 				using var httpClient = new HttpClient();
- 				httpClient.Timeout = TimeSpan.FromSeconds(5);
- 				using var response = await httpClient.GetAsync("https://1.1.1.1");
- 				return response.IsSuccessStatusCode;
- 			}
- 			catch
- 			{
- 				return false;
- 			}
- 		}
- 
- 		/// <summary>
- 		/// Skips the current test if no internet connection is available
- 		/// </summary>
- 		/// <param name="message">Custom message to display when skipping the test</param>
- 		/// <returns>True if test should be skipped (no internet), false if test can continue</returns>
- 		public static async Task<bool> SkipTestIfNoInternetConnection(string message = "Test requires internet connection")
- 		{
- 			if (!await HasInternetConnection())
- 			{
- 				Assert.True(true, $"TEST SKIPPED: {message}");
- 				return true; // Test should be skipped
- 			}
- 			return false; // Test can proceed
- 		}
+		/// <summary>
+		/// Checks if internet connection is available by making an HTTP request
+		/// </summary>
+		/// <returns>True if internet connection is available</returns>
+		public static async Task<bool> HasInternetConnection()
+		{
+			try
+			{
+				using var httpClient = new HttpClient();
+				httpClient.Timeout = TimeSpan.FromSeconds(5);
+				using var response = await httpClient.GetAsync("https://1.1.1.1");
+				return response.IsSuccessStatusCode;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Skips the current test if no internet connection is available
+		/// </summary>
+		/// <param name="message">Custom message to display when skipping the test</param>
+		/// <returns>True if test should be skipped (no internet), false if test can continue</returns>
+		public static async Task<bool> SkipTestIfNoInternetConnection(string message = "Test requires internet connection")
+		{
+			if (!await HasInternetConnection())
+			{
+				Assert.True(true, $"TEST SKIPPED: {message}");
+				return true; // Test should be skipped
+			}
+			return false; // Test can proceed
+		}
 	}
 }

@@ -1,10 +1,10 @@
 ﻿#nullable enable
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System.ComponentModel;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -57,6 +57,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
-		
+
 	}
 }

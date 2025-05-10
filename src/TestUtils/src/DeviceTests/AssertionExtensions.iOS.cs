@@ -112,7 +112,7 @@ namespace Microsoft.Maui.DeviceTests
 		private class TestWrapperView : UIView
 		{
 			private readonly TaskCompletionSource _tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-			
+
 			public Task WaitForLayoutPassAsync() => _tcs.Task;
 
 			public override void LayoutSubviews()
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.DeviceTests
 				_tcs.TrySetResult();
 			}
 		}
-		
+
 		public static async Task<T> AttachAndRun<T>(this UIView view, Func<Task<T>> action)
 		{
 			var currentView = FindContentView();
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					return _contentView;
 				}
-				
+
 				if (GetKeyWindow(UIApplication.SharedApplication) is not UIWindow window)
 				{
 					throw new InvalidOperationException("Could not attach view - unable to find UIWindow");

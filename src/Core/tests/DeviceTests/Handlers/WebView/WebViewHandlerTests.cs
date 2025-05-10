@@ -127,9 +127,9 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task WebViewShouldLoadEncodedUrl(string encodedUrl)
 		{
 			if (await AssertionExtensions.SkipTestIfNoInternetConnection())
- 			{
- 				return;
- 			}
+			{
+				return;
+			}
 			var webView = new WebView();
 			var tcs = new TaskCompletionSource<WebNavigationResult>();
 

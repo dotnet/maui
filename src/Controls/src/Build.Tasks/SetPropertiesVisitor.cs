@@ -1410,7 +1410,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		static bool CanSetValue(FieldReference bpRef, bool attached, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
 		{
-			static bool CanSetValue (TypeReference bpTypeRef, VariableDefinition varValue, ILContext context, IXmlLineInfo iXmlLineInfo)
+			static bool CanSetValue(TypeReference bpTypeRef, VariableDefinition varValue, ILContext context, IXmlLineInfo iXmlLineInfo)
 			{
 				// If it's an attached BP, there's no second chance to handle IMarkupExtensions, so we try here.
 				// Worst case scenario ? InvalidCastException at runtime
@@ -1527,7 +1527,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					yield return instruction;
 				if (bpTypeRef.IsValueType)
 				{
-					if (   bpTypeRef.ResolveCached(context.Cache).FullName == "System.Nullable`1"
+					if (bpTypeRef.ResolveCached(context.Cache).FullName == "System.Nullable`1"
 						&& TypeRefComparer.Default.Equals(varValue.VariableType, ((GenericInstanceType)bpTypeRef).GenericArguments[0]))
 						bpTypeRef = ((GenericInstanceType)bpTypeRef).GenericArguments[0];
 					yield return Create(Box, module.ImportReference(bpTypeRef));

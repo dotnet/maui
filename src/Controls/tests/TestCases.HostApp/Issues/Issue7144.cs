@@ -49,7 +49,8 @@ public class Issue7144 : ContentPage
 					HorizontalOptions = LayoutOptions.Center,
 					VerticalOptions = LayoutOptions.Center
 				};
-				label.SetBinding(Label.TextProperty, ".");;
+				label.SetBinding(Label.TextProperty, ".");
+				;
 
 				stackLayout.Children.Add(label);
 

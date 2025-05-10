@@ -58,7 +58,7 @@
 					cv.ItemsSource = items;
 					Content = cv;
 				}
-				
+
 				// Scrolls to last item then pops the page
 				async void LabelTapped()
 				{

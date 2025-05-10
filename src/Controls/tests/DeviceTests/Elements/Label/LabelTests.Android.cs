@@ -163,8 +163,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, platformRotation);
 		}
 
-	    [Fact]
-		[Description("The IsEnabled property of a Label should match with native IsEnabled")]		
+		[Fact]
+		[Description("The IsEnabled property of a Label should match with native IsEnabled")]
 		public async Task VerifyLabelIsEnabledProperty()
 		{
 			var label = new Label
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var isEnabled = nativeView.Enabled;
 				Assert.Equal(expectedValue, isEnabled);
-			});		
+			});
 		}
 
 		TextView GetPlatformLabel(LabelHandler labelHandler) =>

@@ -1,12 +1,12 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
 using Xunit;
-using System.ComponentModel;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Handlers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -23,9 +23,9 @@ namespace Microsoft.Maui.DeviceTests
 				return (float)nativeView.Opacity;
 			});
 		}
-		
+
 		[Fact]
-		[Description("The IsEnabled property of a BoxView should match with native IsEnabled")]		
+		[Description("The IsEnabled property of a BoxView should match with native IsEnabled")]
 		public async Task BoxViewIsEnabled()
 		{
 			var boxView = new BoxView
@@ -40,7 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var isEnabled = nativeView.IsEnabled;
 				Assert.Equal(expectedValue, isEnabled);
-			});		
+			});
 		}
 
 		Task<bool> GetPlatformIsVisible(ShapeViewHandler boxViewHandler)

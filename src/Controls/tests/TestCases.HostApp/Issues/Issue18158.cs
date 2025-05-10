@@ -10,13 +10,13 @@ public class Issue18158 : TestFlyoutPage
 	Button _button;
 	protected override void Init()
 	{
-		_button = new Button{ Text="Click", AutomationId = "Button"};
+		_button = new Button { Text = "Click", AutomationId = "Button" };
 		FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split;
 		// Define the Flyout page
 		Flyout = new ContentPage
 		{
 			Title = "Menu",
-			
+
 			Content = new StackLayout
 			{
 				Children =
@@ -26,7 +26,7 @@ public class Issue18158 : TestFlyoutPage
 			}
 		};
 
-		_button.Clicked += (s,e) =>
+		_button.Clicked += (s, e) =>
 		{
 			if (this.FlyoutLayoutBehavior == FlyoutLayoutBehavior.Split)
 			{
