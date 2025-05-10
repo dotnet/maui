@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement
+	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement, IConstrainedView
 	{
 		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
@@ -944,6 +944,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal LayoutConstraint Constraint => ComputedConstraint | SelfConstraint;
+
+		bool IConstrainedView.HasFixedConstraints => Constraint == LayoutConstraint.Fixed;
 
 		/// <summary>
 		/// Gets a value that indicates that layout for this element is disabled.

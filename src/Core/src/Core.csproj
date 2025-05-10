@@ -9,7 +9,8 @@
     <IsTrimmable>false</IsTrimmable>
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027</NoWarn>
+    <NoWarn>$(NoWarn);RS0041;RS0026;RS0027</NoWarn>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
   </PropertyGroup>
 
   <PropertyGroup Condition="!$(TargetFramework.StartsWith('netstandard'))">

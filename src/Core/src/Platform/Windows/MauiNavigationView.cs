@@ -124,6 +124,10 @@ namespace Microsoft.Maui.Platform
 			// It causes the content to not be flush up against the title bar
 			PaneContentGrid.Margin = new WThickness(0, 0, 0, 0);
 			UpdateMenuItemsContainerHeight();
+
+			// On WinAppSDK 1.7, it seems that if the PaneContentGrid width is not explicitly set,
+			// it takes on the desired width of its child.
+			PaneContentGrid.Width = OpenPaneLength;
 		}
 
 

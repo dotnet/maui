@@ -83,6 +83,7 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			platformView.UpdateIsEnabled(scrollView);
 			platformView.InvalidateMeasure(scrollView);
 		}
 

@@ -16,7 +16,11 @@ public class Issue2809 : _IssuesUITest
 	[Category(UITestCategories.ToolbarItem)]
 	public void TestPageDoesntCrash()
 	{
-		App.TapMoreButton();
+		if (App is AppiumAndroidApp || App is AppiumWindowsApp) // WaitForMoreButton is only supported on Android and Windows
+		{
+			App.WaitForMoreButton();
+			App.TapMoreButton();
+		}
 		App.Tap("Item 1");
 	}
 }

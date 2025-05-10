@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 		{
 			var size = base.ArrangeOverride(bounds);
 
-			RecalculateSpanPositions();
+			RecalculateSpanPositions(size);
 
 			return size;
 		}
@@ -51,14 +51,14 @@ namespace Microsoft.Maui.Controls
 			LabelHandler.MapFormatting(handler, label);
 		}
 
-		void RecalculateSpanPositions()
+		void RecalculateSpanPositions(Size size)
 		{
 			if (Handler is LabelHandler labelHandler)
 			{
 				if (labelHandler.PlatformView is not UILabel platformView || labelHandler.VirtualView is not Label virtualView)
 					return;
 
-				platformView.RecalculateSpanPositions(virtualView);
+				platformView.RecalculateSpanPositions(virtualView, size);
 			}
 		}
 	}
