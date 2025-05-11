@@ -89,11 +89,6 @@ namespace Microsoft.Maui.Platform
 			textField.AttributedPlaceholder.WithCharacterSpacing(entry.CharacterSpacing);
 		}
 
-		public static void UpdateIsReadOnly(this UITextField textField, IEntry entry)
-		{
-			textField.UserInteractionEnabled = !(entry.IsReadOnly || entry.InputTransparent);
-		}
-
 		public static void UpdateFont(this UITextField textField, ITextStyle textStyle, IFontManager fontManager)
 		{
 			var uiFont = fontManager.GetFont(textStyle.Font, UIFont.LabelFontSize);

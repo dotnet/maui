@@ -90,3 +90,6 @@ override Microsoft.Maui.Handlers.WindowHandler.DisconnectHandler(UIKit.UIWindow!
 override Microsoft.Maui.Handlers.ImageButtonHandler.SetupContainer() -> void
 *REMOVED*override Microsoft.Maui.Platform.WrapperView.SetNeedsLayout() -> void
 *REMOVED*override Microsoft.Maui.Platform.MauiView.SetNeedsLayout() -> void
+*REMOVED*static Microsoft.Maui.Platform.TextFieldExtensions.UpdateIsReadOnly(this UIKit.UITextField! textField, Microsoft.Maui.IEntry! entry) -> void
+*REMOVED*static Microsoft.Maui.Platform.ViewExtensions.UpdateInputTransparent(this UIKit.UIView! platformView, bool isReadOnly, bool inputTransparent) -> void
+override Microsoft.Maui.Platform.MauiTextField.CanPerform(ObjCRuntime.Selector! action, Foundation.NSObject? withSender) -> bool
