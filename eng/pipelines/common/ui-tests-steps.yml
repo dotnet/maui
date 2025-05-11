@@ -56,7 +56,7 @@ steps:
           
   - template: provision.yml
     parameters:
-      skipProvisioning:  true
+      skipProvisioning: ${{ not(or(eq(parameters.UseProvisionator, true), eq(variables['internalProvisioning'], 'true'))) }}
       skipJdk: ${{ ne(parameters.platform, 'android') }}
       skipAndroidCommonSdks: ${{ ne(parameters.platform, 'android') }}
       skipAndroidPlatformApis: true
@@ -66,8 +66,12 @@ steps:
       androidEmulatorApiLevel: ${{ parameters.version }}
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      skipProvisionator: ${{ eq(parameters.skipProvisioning, true) }}
-      gitHubToken: ${{ if not(parameters.skipProvisioning) }} $(github--pat--vs-mobiletools-engineering-service2) ${{ end }}
+      ${{ if parameters.skipProvisioning }}:
+        skipProvisionator: true
+        gitHubToken: ''
+      ${{ else }}:  
+        skipProvisionator: false
+        gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
 
   - task: PowerShell@2
     condition: and(ne('${{ parameters.platform }}', 'windows'), ne('${{ parameters.platform }}', 'android'))
