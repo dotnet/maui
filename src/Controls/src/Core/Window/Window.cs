@@ -611,7 +611,7 @@ namespace Microsoft.Maui.Controls
 			if (oldValue is Page oldPage)
 			{
 				oldPage.SendDisappearing();
-				oldPage.WireUpAsOutgoingPage(newValue as Page, NavigationType.PageSwap);
+				oldPage.WireUpAsOutgoingPage(oldPage as Page, NavigationType.PageSwap);
 			}
 		}
 
@@ -644,7 +644,7 @@ namespace Microsoft.Maui.Controls
 				}
 
 				newPage.HandlerChanged += OnPageHandlerChanged;
-				newPage.HandlerChanging += OnPageHandlerChanging;				
+				newPage.HandlerChanging += OnPageHandlerChanging;
 
 				if (newPage.Handler is not null)
 				{
