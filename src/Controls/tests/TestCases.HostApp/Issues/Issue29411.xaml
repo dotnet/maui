@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Controls.TestCases.HostApp.Issues.Issue29411"
+             Title="Issue29411">
+    <ContentPage.Resources>
+        <x:Array x:Key="MyItems" Type="{x:Type x:String}">
+            <x:String>First</x:String>
+            <x:String>Second</x:String>
+            <x:String>Third</x:String>
+        </x:Array>
+    </ContentPage.Resources>
+    <VerticalStackLayout> 
+        <CarouselView x:Name="cview" AutomationId="MauiCarouselView" HeightRequest="300" Loop="True" ItemsSource="{StaticResource MyItems}">
+            <CarouselView.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Grid VerticalOptions="Center" HorizontalOptions="Center">
+                        <Border
+                            Stroke="DarkGray"
+                            StrokeThickness="2"
+                            Background="LightBlue"
+                            Padding="20"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            StrokeShape="RoundRectangle 12">
+                            <Label Text="{Binding .}" FontSize="24" HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                    </Grid>
+                </DataTemplate>
+            </CarouselView.ItemTemplate>
+        </CarouselView>
+        <Button Text="Change Loop" AutomationId="MauiButton" Clicked="Button_Clicked" />
+    </VerticalStackLayout>
+</ContentPage>
