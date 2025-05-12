@@ -579,7 +579,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		}
 
 		int _lastAppbarLayoutOffset;
-		public void OnOffsetChanged(AppBarLayout appBarLayout, int verticalOffset)
+#nullable enable
+		public void OnOffsetChanged(AppBarLayout? appBarLayout, int verticalOffset)
+#nullable disable
 		{
 			if (_lastAppbarLayoutOffset == verticalOffset)
 				return;
