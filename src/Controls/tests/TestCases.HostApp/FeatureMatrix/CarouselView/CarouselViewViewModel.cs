@@ -4,276 +4,266 @@ using System.Runtime.CompilerServices;
 using System.Linq;
 using System.Windows.Input;
 
-namespace Maui.Controls.Sample
+namespace Maui.Controls.Sample;
+
+public enum CarouselItemsSourceType
 {
-    public enum CarouselItemsSourceType
+    None,
+    ObservableCollectionT,
+}
+
+public class CarouselViewViewModel : INotifyPropertyChanged
+{
+    private object _emptyView;
+    private DataTemplate _emptyViewTemplate;
+    private DataTemplate _itemTemplate;
+    private CarouselItemsSourceType _itemsSourceType = CarouselItemsSourceType.ObservableCollectionT;
+    private bool _isLoopEnabled = false;
+    private bool _isSwipeEnabled = true;
+    private Thickness _peekAreaInsets;
+    private int _thickness;
+    private int _position;
+    private bool _isIndicatorViewVisible = true;
+    private IItemsLayout _itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
+    private ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
+    private string _currentItemText;
+    private string _previousItemText;
+    private string _previousItemPosition;
+    private int _currentPosition;
+    private int _previousPosition;
+
+    public CarouselViewViewModel()
     {
-        None,
-        ObservableCollectionT,
+        LoadItems();
+        AddItemCommand = new Command(AddItem);
+
+        ItemTemplate = new DataTemplate(() =>
+        {
+            var label = new Label
+            {
+                Margin = new Thickness(10),
+                FontSize = 18,
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center
+            };
+            label.SetBinding(Label.TextProperty, ".");
+            return label;
+        });
     }
 
-    public class CarouselViewViewModel : INotifyPropertyChanged
+    public event PropertyChangedEventHandler PropertyChanged;
+    public ICommand AddItemCommand { get; }
+    public ObservableCollection<string> Items { get; private set; }
+
+    public object EmptyView
     {
-        private object _emptyView;
-        private DataTemplate _emptyViewTemplate;
-        private DataTemplate _itemTemplate;
-        private CarouselItemsSourceType _itemsSourceType = CarouselItemsSourceType.ObservableCollectionT;
-        private bool _isLoopEnabled = false;
-        private bool _isSwipeEnabled = true;
-        private Thickness _peekAreaInsets;
-        private int _thickness;
-        private int _position;
-        private bool _isIndicatorViewVisible = true;
-        private IItemsLayout _itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
-        private ScrollBarVisibility _horizontalScrollBarVisibility = ScrollBarVisibility.Default;
-        private ScrollBarVisibility _verticalScrollBarVisibility = ScrollBarVisibility.Default;
-        private ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
-        private string _previousItemText;
-        private string _currentItemText;
-        private string _currentItemPosition;
-        private string _previousItemPosition;
+        get => _emptyView;
+        set { _emptyView = value; OnPropertyChanged(); }
+    }
 
-        public CarouselViewViewModel()
+    public DataTemplate EmptyViewTemplate
+    {
+        get => _emptyViewTemplate;
+        set { _emptyViewTemplate = value; OnPropertyChanged(); }
+    }
+
+    public DataTemplate ItemTemplate
+    {
+        get => _itemTemplate;
+        set { _itemTemplate = value; OnPropertyChanged(); }
+    }
+
+    public CarouselItemsSourceType ItemsSourceType
+    {
+        get => _itemsSourceType;
+        set
         {
-            LoadItems();
-            AddItemCommand = new Command(AddItem);
-            ItemTemplate = new DataTemplate(() =>
+            if (_itemsSourceType != value)
             {
-                var label = new Label
-                {
-                    Margin = new Thickness(10),
-                    FontSize = 18,
-                    HorizontalOptions = LayoutOptions.Center,
-                    VerticalOptions = LayoutOptions.Center
-                };
-                label.SetBinding(Label.TextProperty, ".");
-                return label;
-            });
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public ICommand AddItemCommand { get; }
-
-        public ObservableCollection<string> Items { get; private set; }
-
-        public object EmptyView
-        {
-            get => _emptyView;
-            set { _emptyView = value; OnPropertyChanged(); }
-        }
-
-        public DataTemplate EmptyViewTemplate
-        {
-            get => _emptyViewTemplate;
-            set { _emptyViewTemplate = value; OnPropertyChanged(); }
-        }
-
-        public DataTemplate ItemTemplate
-        {
-            get => _itemTemplate;
-            set { _itemTemplate = value; OnPropertyChanged(); }
-        }
-
-        public CarouselItemsSourceType ItemsSourceType
-        {
-            get => _itemsSourceType;
-            set
-            {
-                if (_itemsSourceType != value)
-                {
-                    _itemsSourceType = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(ItemsSource));
-                }
+                _itemsSourceType = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(ItemsSource));
             }
         }
+    }
 
-        public bool Loop
+    public bool Loop
+    {
+        get => _isLoopEnabled;
+        set
         {
-            get => _isLoopEnabled;
-            set
+            if (_isLoopEnabled != value)
             {
-                if (_isLoopEnabled != value)
-                {
-                    _isLoopEnabled = value;
-                    OnPropertyChanged();
-                }
+                _isLoopEnabled = value;
+                OnPropertyChanged();
             }
         }
+    }
 
-        public bool IsSwipeEnabled
+    public bool IsSwipeEnabled
+    {
+        get => _isSwipeEnabled;
+        set
         {
-            get => _isSwipeEnabled;
-            set
+            if (_isSwipeEnabled != value)
             {
-                if (_isSwipeEnabled != value)
-                {
-                    _isSwipeEnabled = value;
-                    OnPropertyChanged();
-                }
+                _isSwipeEnabled = value;
+                OnPropertyChanged();
             }
         }
+    }
 
-        public bool IsIndicatorViewVisible
+    public bool IsIndicatorViewVisible
+    {
+        get => _isIndicatorViewVisible;
+        set
         {
-            get => _isIndicatorViewVisible;
-            set
+            if (_isIndicatorViewVisible != value)
             {
-                if (_isIndicatorViewVisible != value)
-                {
-                    _isIndicatorViewVisible = value;
-                    OnPropertyChanged();
-                }
+                _isIndicatorViewVisible = value;
+                OnPropertyChanged();
             }
         }
+    }
 
-        public Thickness PeekAreaInsets
+    public Thickness PeekAreaInsets
+    {
+        get => _peekAreaInsets;
+        set
         {
-            get => _peekAreaInsets;
-            set
+            if (_peekAreaInsets != value)
             {
-                if (_peekAreaInsets != value)
-                {
-                    _peekAreaInsets = value;
-                    OnPropertyChanged();
-                }
+                _peekAreaInsets = value;
+                OnPropertyChanged();
             }
         }
+    }
 
-        public int Thickness
+    public int Thickness
+    {
+        get => _thickness;
+        set
         {
-            get => _thickness;
-            set
+            if (_thickness != value)
             {
-                if (_thickness != value)
-                {
-                    _thickness = value;
-                    PeekAreaInsets = new Thickness(value); 
-                    OnPropertyChanged();
-                }
+                _thickness = value;
+                PeekAreaInsets = new Thickness(value);
+                OnPropertyChanged();
             }
         }
+    }
 
-        public int Position
+    public int Position
+    {
+        get => _position;
+        set
         {
-            get => _position;
-            set
+            if (_position != value)
             {
-                if (_position != value)
-                {
-                    _position = value;
-                    OnPropertyChanged();
-                }
+                _position = value;
+                OnPropertyChanged();
             }
         }
+    }
 
-        public string PreviousItemText
+    public string CurrentItemText
+    {
+        get => _currentItemText;
+        set
         {
-            get => _previousItemText;
-            set { _previousItemText = value; OnPropertyChanged(); }
-        }
-
-        public string CurrentItemText
-        {
-            get => _currentItemText;
-            set { _currentItemText = value; OnPropertyChanged(); }
-        }
-
-        public string CurrentItemPostion
-        {
-            get => _currentItemPosition;
-            set
+            if (_currentItemText != value)
             {
-                if (_currentItemPosition != value)
-                {
-                    _currentItemPosition = value;
-                    OnPropertyChanged();
-                }
+                _currentItemText = value;
+                OnPropertyChanged(nameof(CurrentItemText));
             }
         }
+    }
 
-        public string PreviousItemPosition
+    public string PreviousItemText
+    {
+        get => _previousItemText;
+        set
         {
-            get => _previousItemPosition;
-            set
+            if (_previousItemText != value)
             {
-                if (_previousItemPosition != value)
-                {
-                    _previousItemPosition = value;
-                    OnPropertyChanged();
-                }
+                _previousItemText = value;
+                OnPropertyChanged(nameof(PreviousItemText));
             }
         }
+    }
 
-        public ScrollBarVisibility HorizontalScrollBarVisibility
+    public string PreviousItemPosition
+    {
+        get => _previousItemPosition;
+        set
         {
-            get => _horizontalScrollBarVisibility;
-            set
+            if (_previousItemPosition != value)
             {
-                if (_horizontalScrollBarVisibility != value)
-                {
-                    _horizontalScrollBarVisibility = value;
-                    OnPropertyChanged();
-                }
+                _previousItemPosition = value;
+                OnPropertyChanged(nameof(PreviousItemPosition));
             }
         }
+    }
 
-        public ScrollBarVisibility VerticalScrollBarVisibility
+    public int CurrentPosition
+    {
+        get => _currentPosition;
+        set
         {
-            get => _verticalScrollBarVisibility;
-            set
+            if (_currentPosition != value)
             {
-                if (_verticalScrollBarVisibility != value)
-                {
-                    _verticalScrollBarVisibility = value;
-                    OnPropertyChanged();
-                }
+                _previousPosition = _currentPosition;
+                _currentPosition = value;
+                OnPropertyChanged(nameof(CurrentPosition));
+                OnPropertyChanged(nameof(PreviousPosition));
             }
         }
+    }
 
-        public ItemsUpdatingScrollMode ItemsUpdatingScrollMode
+    public int PreviousPosition => _previousPosition;
+
+    public ItemsUpdatingScrollMode ItemsUpdatingScrollMode
+    {
+        get => _itemsUpdatingScrollMode;
+        set
         {
-            get => _itemsUpdatingScrollMode;
-            set
+            if (_itemsUpdatingScrollMode != value)
             {
-                if (_itemsUpdatingScrollMode != value)
-                {
-                    _itemsUpdatingScrollMode = value;
-                    OnPropertyChanged();
-                }
+                _itemsUpdatingScrollMode = value;
+                OnPropertyChanged();
             }
         }
+    }
 
-        public IItemsLayout ItemsLayout
+    public IItemsLayout ItemsLayout
+    {
+        get => _itemsLayout;
+        set
         {
-            get => _itemsLayout;
-            set
+            if (_itemsLayout != value)
             {
-                if (_itemsLayout != value)
-                {
-                    _itemsLayout = value;
-                    OnPropertyChanged();
-                }
+                _itemsLayout = value;
+                OnPropertyChanged();
             }
         }
+    }
 
-        public object ItemsSource
+    public object ItemsSource
+    {
+        get
         {
-            get
+            return ItemsSourceType switch
             {
-                return ItemsSourceType switch
-                {
-                    CarouselItemsSourceType.ObservableCollectionT => Items,
-                    CarouselItemsSourceType.None => null,
-                    _ => Items
-                };
-            }
+                CarouselItemsSourceType.ObservableCollectionT => Items,
+                CarouselItemsSourceType.None => null,
+                _ => Items
+            };
         }
+    }
 
-        private void LoadItems()
-        {
-            Items = new ObservableCollection<string>
+    private void LoadItems()
+    {
+        Items = new ObservableCollection<string>
             {
                 "Item 1",
                 "Item 2",
@@ -281,19 +271,18 @@ namespace Maui.Controls.Sample
                 "Item 4",
                 "Item 5"
             };
-            OnPropertyChanged(nameof(Items));
-            OnPropertyChanged(nameof(ItemsSource));
-        }
+        OnPropertyChanged(nameof(Items));
+        OnPropertyChanged(nameof(ItemsSource));
+    }
 
-        private void AddItem()
-        {
-            Items.Insert(0, $"Item {Items.Count + 1}");
-            OnPropertyChanged(nameof(Items));
-        }
+    private void AddItem()
+    {
+        Items.Insert(0, $"Item {Items.Count + 1}");
+        OnPropertyChanged(nameof(Items));
+    }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+    protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

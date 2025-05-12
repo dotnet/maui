@@ -12,17 +12,20 @@ public partial class CarouselViewControlPage : ContentPage
         InitializeComponent();
         _viewModel = new CarouselViewViewModel();
         _viewModel.PreviousItemText = "No previous item";
-        _viewModel.PreviousItemPosition = "No previous items";
+        _viewModel.PreviousItemPosition = "No previous position";
         BindingContext = _viewModel;
     }
 
     private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
     {
         BindingContext = _viewModel = new CarouselViewViewModel();
+        _viewModel.PreviousItemText = "No previous item";
+        _viewModel.PreviousItemPosition = "No previous position";
         await Navigation.PushAsync(new CarouselViewOptionsPage(_viewModel));
     }
 
     string _previousItem = null;
+
     private void OnCarouselView_CurrentItemChanged(object sender, CurrentItemChangedEventArgs e)
     {
         if (BindingContext is CarouselViewViewModel viewModel)
@@ -43,18 +46,17 @@ public partial class CarouselViewControlPage : ContentPage
     {
         if (BindingContext is CarouselViewViewModel viewModel)
         {
-            var items = viewModel.Items;
+            viewModel.CurrentPosition = e.CurrentPosition;
+            viewModel.PreviousItemPosition = e.PreviousPosition.ToString();
+        }
+    }
 
-            bool hasCurrent = e.CurrentPosition >= 0 && e.CurrentPosition < items.Count;
-            bool hasPrevious = e.PreviousPosition >= 0 && e.PreviousPosition < items.Count;
-
-            viewModel.CurrentItemText = hasCurrent ? items[e.CurrentPosition] : string.Empty;
-            viewModel.CurrentItemPostion = hasCurrent ? e.CurrentPosition.ToString() : string.Empty;
-
-            viewModel.PreviousItemText = hasPrevious ? items[e.PreviousPosition] : "No previous item";
-            viewModel.PreviousItemPosition = hasPrevious ? e.PreviousPosition.ToString() : "No previous items";
-
-            viewModel.Position = e.CurrentPosition;
+    private void OnScrollToButtonClicked(object sender, EventArgs e)
+    {
+        if (int.TryParse(scrollToIndexEntry.Text, out int index) &&
+            index >= 0 && index < carouselView.ItemsSource.Cast<object>().Count())
+        {
+            carouselView.ScrollTo(index, position: ScrollToPosition.Center, animate: true);
         }
     }
 }
