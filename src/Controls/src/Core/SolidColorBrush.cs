@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/SolidColorBrush.xml" path="//Member[@MemberName='GetHashCode']/Docs/*" />
 		public override int GetHashCode()
 		{
-			return -1234567890 + (Color?.GetHashCode() ?? 0);
+			return -1234567890 ^ (Color?.GetHashCode() ?? 0);
 		}
 	}
 }
