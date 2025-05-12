@@ -134,7 +134,6 @@ Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) ->
 *REMOVED*~static Microsoft.Maui.Controls.Entry.ControlsEntryMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IEntry, Microsoft.Maui.Handlers.EntryHandler>
 ~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapCurrentItem(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 ~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapIsBounceEnabled(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
-~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapItemsLayout(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 ~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapIsSwipeEnabled(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 ~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapLoop(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
 ~static Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2.MapPeekAreaInsets(Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2 handler, Microsoft.Maui.Controls.CarouselView carouselView) -> void
