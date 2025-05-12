@@ -1,4 +1,4 @@
-#if !MACCATALYST //Appium Swipe is not on MACCATALYST
+#if !MACCATALYST //Appium Swipe is not working on MACCATALYST
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
