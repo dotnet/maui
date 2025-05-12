@@ -175,7 +175,7 @@ public class Issue17521 : Shell
 			Cats.Add(new _17521Animal
 			{
 				Name = "Abyssinian",
-				Location = "Ethopia",
+				Location = "Ethiopia",
 				Details = "The Abyssinian is a breed of domestic short-haired cat."
 			});
 
