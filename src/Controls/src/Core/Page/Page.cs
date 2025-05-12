@@ -884,13 +884,13 @@ namespace Microsoft.Maui.Controls
 
 			if (IsLoaded)
 			{
-				_handleNavigatedEventsForRootPage = 
+				_handleNavigatedEventsForRootPage =
 					this.OnUnloaded(() =>
 					{
 						if (HasNavigatedTo)
 						{
 							SendNavigatedFrom(new NavigatedFromEventArgs(outgoingPage, navigationType));
-						}						
+						}
 
 						outgoingPage?.DisconnectHandlers();
 						_handleNavigatedEventsForRootPage?.Dispose();
@@ -904,20 +904,20 @@ namespace Microsoft.Maui.Controls
 				{
 					SendNavigatedFrom(new NavigatedFromEventArgs(outgoingPage, navigationType));
 				}
-				
+
 				outgoingPage?.DisconnectHandlers();
 			}
 		}
 
 		internal void WireUpAsIncomingPage(Page? oldPage)
 		{
-			oldPage?.WireUpAsOutgoingPage(this, NavigationType.PageSwap);
+			oldPage?.WireUpAsOutgoingPage(oldPage, NavigationType.PageSwap);
 			_handleNavigatedEventsForRootPage?.Dispose();
 			_handleNavigatedEventsForRootPage = null;
 
 			IDisposable? newPageUnloaded = null;
 			IDisposable? newPageLoaded = null;
-			
+
 			var previousPage = oldPage;
 
 			if (!IsLoaded)
@@ -926,7 +926,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (sender is Page page)
 					{
-						if(!page.HasNavigatedTo)
+						if (!page.HasNavigatedTo)
 						{
 							page.SendNavigatedTo(new NavigatedToEventArgs(previousPage));
 						}
@@ -946,7 +946,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				if(!HasNavigatedTo)
+				if (!HasNavigatedTo)
 				{
 					SendNavigatedTo(new NavigatedToEventArgs(oldPage));
 				}
@@ -969,7 +969,7 @@ namespace Microsoft.Maui.Controls
 						WireUpAsIncomingPage(null);
 					}
 				};
-				
+
 				Unloaded += onUnloaded;
 				newPageUnloaded = new ActionDisposable(() =>
 				{
