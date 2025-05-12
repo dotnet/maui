@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (VirtualView.Parent is Shell shell)
 			{
-				shell.Navigated += Shell_Navigated;
+				shell.Navigated += OnShellNavigated;
 			}
 		}
 
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (VirtualView.Parent is Shell shell)
 			{
-				shell.Navigated -= Shell_Navigated;
+				shell.Navigated -= OnShellNavigated;
 			}
 		}
 
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		void Shell_Navigated(object? sender, ShellNavigatedEventArgs e)
+		void OnShellNavigated(object? sender, ShellNavigatedEventArgs e)
 		{
 			UpdateSearchHandler();
 		}
