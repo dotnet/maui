@@ -324,9 +324,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdateLoop()
 		{
-			int currentPosition = Carousel.Position;
+			if (Carousel is null)
+			{
+				return;
+			}
 
+			int currentPosition = Carousel.Position;
 			UpdateAdapter();
+			UpdateScrollBarVisibility(Carousel);
 			ScrollToPosition(currentPosition);
 		}
 
@@ -388,6 +393,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				UpdateInitialPosition();
 
 			_isVisible = ItemsView.IsVisible;
+		}
+
+		void UpdateScrollBarVisibility(CarouselView carouselView)
+		{
+			if (carouselView.Loop)
+			{
+				HorizontalScrollBarEnabled = false;
+				VerticalScrollBarEnabled = false;
+			}
+			else
+			{
+				HorizontalScrollBarEnabled = true;
+				VerticalScrollBarEnabled = true;
+			}
 		}
 
 		void UpdateVisualStates()
