@@ -2307,7 +2307,7 @@ override Microsoft.Maui.Platform.LayoutViewGroup.OnTouchEvent(Android.Views.Moti
 override Microsoft.Maui.Platform.LocalizedDigitsKeyListener.FilterFormatted(Java.Lang.ICharSequence? source, int start, int end, Android.Text.ISpanned? dest, int dstart, int dend) -> Java.Lang.ICharSequence?
 override Microsoft.Maui.Platform.LocalizedDigitsKeyListener.GetAcceptedChars() -> char[]!
 override Microsoft.Maui.Platform.LocalizedDigitsKeyListener.InputType.get -> Android.Text.InputTypes
-override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
+override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
 override Microsoft.Maui.Platform.MauiMaterialButton.IconGravity.get -> int
 override Microsoft.Maui.Platform.MauiMaterialButton.IconGravity.set -> void
 override Microsoft.Maui.Platform.MauiMaterialButton.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
