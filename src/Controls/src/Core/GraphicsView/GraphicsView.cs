@@ -42,6 +42,15 @@ namespace Microsoft.Maui.Controls
 		void IGraphicsView.MoveHoverInteraction(PointF[] points) => MoveHoverInteraction?.Invoke(this, new TouchEventArgs(points, true));
 
 		void IGraphicsView.StartInteraction(PointF[] points) => StartInteraction?.Invoke(this, new TouchEventArgs(points, true));
+
+		protected override void OnBindingContextChanged()
+		{
+			base.OnBindingContextChanged();
+			if (Drawable is BindableObject bindable)
+			{
+				bindable.BindingContext = BindingContext;
+			}
+		}
 	}
 	public class TouchEventArgs : EventArgs
 	{
