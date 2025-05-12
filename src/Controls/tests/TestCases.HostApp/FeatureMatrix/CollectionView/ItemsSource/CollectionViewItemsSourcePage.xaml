@@ -34,11 +34,12 @@
                      FontSize="11"
                      Grid.Row="1"
                      Grid.Column="0"/>
-              <Entry x:Name="IndexEntry"
+              <local:UITestEntry  x:Name="IndexEntry"
                      Placeholder="Enter item index"
                      Grid.Row="1"
                      Grid.Column="1"
-                     AutomationId="IndexEntry"/>
+                     AutomationId="IndexEntry"
+                     IsCursorVisible="false"/>
               <!--Add or Remove Buttons -->
               <Button Text="Add Item"
                       Clicked="AddItems_Clicked"
