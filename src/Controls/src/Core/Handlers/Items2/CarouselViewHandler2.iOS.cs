@@ -193,7 +193,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public static void MapItemsLayout(CarouselViewHandler2 handler, CarouselView carouselView)
 		{
-			handler.UpdateLayout();
+			handler?.UpdateLayout();
 		}
 
 		public static void MapPeekAreaInsets(CarouselViewHandler2 handler, CarouselView carouselView)
