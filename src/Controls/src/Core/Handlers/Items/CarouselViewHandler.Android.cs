@@ -45,9 +45,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView)
 		{
-			if (handler.PlatformView is MauiCarouselRecyclerView t)
+			if (handler.PlatformView is MauiCarouselRecyclerView cv)
 			{
-				t.UpdateLoop();
+				cv.UpdateLoop();
 			}
 		}
 
