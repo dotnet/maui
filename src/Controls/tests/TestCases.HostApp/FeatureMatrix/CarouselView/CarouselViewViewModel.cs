@@ -21,14 +21,13 @@ namespace Maui.Controls.Sample
         private bool _isLoopEnabled = false;
         private bool _isSwipeEnabled = true;
         private Thickness _peekAreaInsets;
+        private int _thickness;
         private int _position;
         private bool _isIndicatorViewVisible = true;
         private IItemsLayout _itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
         private ScrollBarVisibility _horizontalScrollBarVisibility = ScrollBarVisibility.Default;
         private ScrollBarVisibility _verticalScrollBarVisibility = ScrollBarVisibility.Default;
         private ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
-        private double _leftPeekInset;
-        private double _rightPeekInset;
         private string _previousItemText;
         private string _currentItemText;
         private string _currentItemPosition;
@@ -142,29 +141,15 @@ namespace Maui.Controls.Sample
             }
         }
 
-        public double LeftPeekInset
+        public int Thickness
         {
-            get => _leftPeekInset;
+            get => _thickness;
             set
             {
-                if (_leftPeekInset != value)
+                if (_thickness != value)
                 {
-                    _leftPeekInset = value;
-                    PeekAreaInsets = new Thickness(_leftPeekInset, 0, _rightPeekInset, 0);
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public double RightPeekInset
-        {
-            get => _rightPeekInset;
-            set
-            {
-                if (_rightPeekInset != value)
-                {
-                    _rightPeekInset = value;
-                    PeekAreaInsets = new Thickness(_leftPeekInset, 0, _rightPeekInset, 0);
+                    _thickness = value;
+                    PeekAreaInsets = new Thickness(value); 
                     OnPropertyChanged();
                 }
             }

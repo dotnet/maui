@@ -195,39 +195,6 @@ public partial class CarouselViewOptionsPage : ContentPage
         }
     }
 
-
-    private void OnHorizontalScrollBarVisibilityChanged(object sender, CheckedChangedEventArgs e)
-    {
-        if (HScrollDefault.IsChecked)
-        {
-            _viewModel.HorizontalScrollBarVisibility = ScrollBarVisibility.Default;
-        }
-        else if (HScrollAlways.IsChecked)
-        {
-            _viewModel.HorizontalScrollBarVisibility = ScrollBarVisibility.Always;
-        }
-        else if (HScrollNever.IsChecked)
-        {
-            _viewModel.HorizontalScrollBarVisibility = ScrollBarVisibility.Never;
-        }
-    }
-
-    private void OnVerticalScrollBarVisibilityChanged(object sender, CheckedChangedEventArgs e)
-    {
-        if (VScrollDefault.IsChecked)
-        {
-            _viewModel.VerticalScrollBarVisibility = ScrollBarVisibility.Default;
-        }
-        else if (VScrollAlways.IsChecked)
-        {
-            _viewModel.VerticalScrollBarVisibility = ScrollBarVisibility.Always;
-        }
-        else if (VScrollNever.IsChecked)
-        {
-            _viewModel.VerticalScrollBarVisibility = ScrollBarVisibility.Never;
-        }
-    }
-
     private void OnItemsUpdatingScrollModeChanged(object sender, CheckedChangedEventArgs e)
     {
         if (KeepItemsInView.IsChecked)
@@ -260,18 +227,9 @@ public partial class CarouselViewOptionsPage : ContentPage
         {
             if (double.TryParse(entry.Text, out double value))
             {
-                value = Math.Clamp(value, 50, 200);
-
-                if (sender == LeftInset)
-                {
-                    _viewModel.LeftPeekInset = value;
-                    entry.Text = value.ToString();
-                }
-                else if (sender == RightInset)
-                {
-                    _viewModel.RightPeekInset = value;
-                    entry.Text = value.ToString();
-                }
+                value = Math.Clamp(value, 0, 500);
+                _viewModel.PeekAreaInsets = new Thickness(value);
+                entry.Text = value.ToString();
             }
         }
     }

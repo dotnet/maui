@@ -11,6 +11,8 @@ public partial class CarouselViewControlPage : ContentPage
     {
         InitializeComponent();
         _viewModel = new CarouselViewViewModel();
+        _viewModel.PreviousItemText = "No previous item";
+        _viewModel.PreviousItemPosition = "No previous items";
         BindingContext = _viewModel;
     }
 
@@ -21,20 +23,21 @@ public partial class CarouselViewControlPage : ContentPage
     }
 
     string _previousItem = null;
-
     private void OnCarouselView_CurrentItemChanged(object sender, CurrentItemChangedEventArgs e)
-{
-    if (BindingContext is CarouselViewViewModel viewModel)
     {
-        var currentItem = e.CurrentItem?.ToString();
+        if (BindingContext is CarouselViewViewModel viewModel)
+        {
+            var currentItem = e.CurrentItem?.ToString();
 
-        // Update ViewModel properties
-        viewModel.PreviousItemText = string.IsNullOrEmpty(_previousItem) ? "No previous item" : _previousItem;
-        viewModel.CurrentItemText = currentItem;
+            if (viewModel.CurrentItemText != currentItem)
+            {
+                _previousItem = viewModel.CurrentItemText;
 
-        _previousItem = currentItem;
+                viewModel.PreviousItemText = string.IsNullOrEmpty(_previousItem) ? "No previous item" : _previousItem;
+                viewModel.CurrentItemText = currentItem;
+            }
+        }
     }
-}
 
     private void OnCarouselView_PositionChanged(object sender, PositionChangedEventArgs e)
     {
@@ -42,25 +45,15 @@ public partial class CarouselViewControlPage : ContentPage
         {
             var items = viewModel.Items;
 
-            // Update CurrentItemText and CurrentItemPosition
-            if (e.CurrentPosition >= 0 && e.CurrentPosition < items.Count)
-            {
-                viewModel.CurrentItemText = items[e.CurrentPosition];
-                viewModel.CurrentItemPostion = e.CurrentPosition.ToString();
-            }
+            bool hasCurrent = e.CurrentPosition >= 0 && e.CurrentPosition < items.Count;
+            bool hasPrevious = e.PreviousPosition >= 0 && e.PreviousPosition < items.Count;
 
-            // Handle PreviousPosition only if it's valid
-            if (e.PreviousPosition >= 0 && e.PreviousPosition < items.Count)
-            {
-                viewModel.PreviousItemText = items[e.PreviousPosition];
-                viewModel.PreviousItemPosition = e.PreviousPosition.ToString();
-            }
-            else
-            {
-                viewModel.PreviousItemPosition = " ";
-            }
+            viewModel.CurrentItemText = hasCurrent ? items[e.CurrentPosition] : string.Empty;
+            viewModel.CurrentItemPostion = hasCurrent ? e.CurrentPosition.ToString() : string.Empty;
 
-            // Update the Position property in the view model
+            viewModel.PreviousItemText = hasPrevious ? items[e.PreviousPosition] : "No previous item";
+            viewModel.PreviousItemPosition = hasPrevious ? e.PreviousPosition.ToString() : "No previous items";
+
             viewModel.Position = e.CurrentPosition;
         }
     }

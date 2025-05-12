@@ -230,4 +230,20 @@ public class CarouselViewFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Item 3");
 	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithPeekAreaInsets()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("PeekAreaInsetsEntry");
+		App.Tap("PeekAreaInsetsEntry");
+		App.ClearText("PeekAreaInsetsEntry");
+		App.EnterText("PeekAreaInsetsEntry", "120");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 1");
+		App.WaitForElement("Item 2");
+	}
 }

@@ -114,29 +114,33 @@
 
 
                             <!-- Items Updating Scroll Mode -->
-                            <Label Text="Items Updating Scroll Mode"
-                                   FontAttributes="Bold"/>
-                            <StackLayout Orientation="Horizontal">
-                                   <RadioButton x:Name="KeepItemsInView"
-                                                Content="KeepItemsInView"
-                                                GroupName="ScrollMode"
-                                                IsChecked="True"
-                                                FontSize="11"
-                                                CheckedChanged="OnItemsUpdatingScrollModeChanged"
-                                                AutomationId="KeepItemsInView"/>
-                                   <RadioButton x:Name="KeepScrollOffset"
-                                                Content="KeepScrollOffset"
-                                                GroupName="ScrollMode"
-                                                FontSize="11"
-                                                CheckedChanged="OnItemsUpdatingScrollModeChanged"
-                                                AutomationId="KeepScrollOffset"/>
-                                   <RadioButton x:Name="KeepLastItemInView"
-                                                Content="KeepLastItemInView"
-                                                GroupName="ScrollMode"
-                                                FontSize="11"
-                                                CheckedChanged="OnItemsUpdatingScrollModeChanged"
-                                                AutomationId="KeepLastItemInView"/>
-                            </StackLayout>
+                            <VerticalStackLayout>
+                                   <Label Text="Items Updating Scroll Mode"
+                                          FontAttributes="Bold"/>
+                                   <StackLayout Orientation="Horizontal">
+                                          <RadioButton x:Name="KeepItemsInView"
+                                                       Content="KeepItemsInView"
+                                                       GroupName="ScrollMode"
+                                                       IsChecked="True"
+                                                       FontSize="11"
+                                                       CheckedChanged="OnItemsUpdatingScrollModeChanged"
+                                                       AutomationId="KeepItemsInView"/>
+                                          <RadioButton x:Name="KeepScrollOffset"
+                                                       Content="KeepScrollOffset"
+                                                       GroupName="ScrollMode"
+                                                       FontSize="11"
+                                                       CheckedChanged="OnItemsUpdatingScrollModeChanged"
+                                                       AutomationId="KeepScrollOffset"/>
+                                   </StackLayout>
+                                   <StackLayout Orientation="Horizontal">
+                                          <RadioButton x:Name="KeepLastItemInView"
+                                                       Content="KeepLastItemInView"
+                                                       GroupName="ScrollMode"
+                                                       FontSize="11"
+                                                       CheckedChanged="OnItemsUpdatingScrollModeChanged"
+                                                       AutomationId="KeepLastItemInView"/>
+                                   </StackLayout>
+                            </VerticalStackLayout>
 
                             <!-- CarouselView Specific Options -->
                             <Label Text="CarouselView Options"
@@ -144,96 +148,63 @@
                             <StackLayout Orientation="Horizontal"
                                          Spacing="20">
                                    <!-- Loop Option -->
-                                   <Grid ColumnDefinitions="Auto,*">
+                                   <StackLayout Orientation="Horizontal"
+                                                Spacing="5">
                                           <CheckBox x:Name="Loop"
-                                                    IsChecked="{Binding Loop}"
-                                                    Grid.Column="0"/>
+                                                    IsChecked="{Binding Loop}"/>
                                           <Label Text="Enable Loop"
                                                  VerticalOptions="Center"
-                                                 Grid.Column="1"
-                                                 AutomationId="LoopLabel">
+                                                 AutomationId="LoopLabel"
+                                                 FontSize="11">
                                                  <Label.GestureRecognizers>
                                                         <TapGestureRecognizer Tapped="OnLoopLabelTapped"/>
                                                  </Label.GestureRecognizers>
                                           </Label>
-                                   </Grid>
+                                   </StackLayout>
+
                                    <!-- Swipe Option -->
-                                   <Grid ColumnDefinitions="Auto,*">
+                                   <StackLayout Orientation="Horizontal"
+                                                Spacing="5">
                                           <CheckBox x:Name="IsSwipeEnabled"
-                                                    IsChecked="{Binding IsSwipeEnabled}"
-                                                    Grid.Column="0"/>
+                                                    IsChecked="{Binding IsSwipeEnabled}"/>
                                           <Label Text="Enable Swipe"
                                                  VerticalOptions="Center"
-                                                 Grid.Column="1"
-                                                 AutomationId="SwipeLabel">
+                                                 AutomationId="SwipeLabel"
+                                                 FontSize="11">
                                                  <Label.GestureRecognizers>
                                                         <TapGestureRecognizer Tapped="OnSwipeLabelTapped"/>
                                                  </Label.GestureRecognizers>
                                           </Label>
-                                   </Grid>
+                                   </StackLayout>
                             </StackLayout>
 
                             <!-- Peek Area Insets -->
-                            <Label Text="Peek Area Insets"
-                                   FontAttributes="Bold"/>
-                            <Grid
-                                   RowSpacing="3"
-                                   ColumnSpacing="3">
-                                   <Grid.RowDefinitions>
-                                          <RowDefinition Height="Auto"/>
-                                          <RowDefinition Height="Auto"/>
-                                   </Grid.RowDefinitions>
-
-                                   <!-- Define columns explicitly -->
-                                   <Grid.ColumnDefinitions>
-                                          <ColumnDefinition Width="Auto"/>
-                                          <ColumnDefinition Width="*"/>
-                                   </Grid.ColumnDefinitions>
-                                   <!-- Left Inset Row -->
-                                   <Label Text="Left:"
+                            <StackLayout Orientation="Horizontal"
+                                         Spacing="10">
+                                   <Label Text="Peek Area Insets"
                                           VerticalOptions="Center"
-                                          HorizontalOptions="Start"
-                                          Grid.Row="0"
-                                          Grid.Column="0"/>
-                                   <Entry x:Name="LeftInset"
-                                          Text="{Binding LeftPeekInset}"
+                                          FontAttributes="Bold"/>
+                                   <Entry x:Name="PeekAreaInsets"
+                                          Text="{Binding Thickness}"
                                           Completed="OnPeekAreaInsetsEntryCompleted"
                                           MaxLength="3"
-                                          Grid.Row="0"
-                                          Grid.Column="1"
-                                          AutomationId="LeftInset"/>
-
-                                   <!-- Right Inset Row -->
-                                   <Label Text="Right:"
-                                          VerticalOptions="Center"
-                                          Grid.Row="1"
-                                          Grid.Column="0"/>
-                                   <Entry x:Name="RightInset"
-                                          Text="{Binding RightPeekInset}"
-                                          Completed="OnPeekAreaInsetsEntryCompleted"
-                                          MaxLength="3"
-                                          Grid.Row="1"
-                                          Grid.Column="1"
-                                          AutomationId="RightInset"/>
-                            </Grid>
+                                          AutomationId="PeekAreaInsetsEntry"
+                                          HorizontalOptions="FillAndExpand"/>
+                            </StackLayout>
 
                             <!-- Position Control -->
-                            <Grid ColumnDefinitions="Auto,*"
-                                  RowSpacing="10"
-                                  Margin="0,5,0,10">
+                            <StackLayout Orientation="Horizontal"
+                                         Spacing="10">
                                    <Label Text="Position:"
                                           VerticalOptions="Center"
-                                          FontAttributes="Bold"
-                                          Grid.Row="0"
-                                          Grid.Column="0"/>
+                                          FontAttributes="Bold"/>
                                    <Entry x:Name="PositionEntry"
                                           Text="{Binding Position}"
                                           Completed="OnPositionEntryCompleted"
                                           MaxLength="1"
-                                          Grid.Row="0"
-                                          Grid.Column="1"
-                                          AutomationId="PositionEntry"/>
-                            </Grid>
+                                          AutomationId="PositionEntry"
+                                          HorizontalOptions="FillAndExpand"/>
+                            </StackLayout>
                      </StackLayout>
               </Grid>
        </ScrollView>
