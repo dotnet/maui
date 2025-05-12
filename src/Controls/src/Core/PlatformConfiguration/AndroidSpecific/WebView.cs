@@ -114,14 +114,14 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		}
 
 		/// <summary>
-		/// Bindable property for controlling whether JavaScript is enabled in a FormsElement.
+		/// Bindable property for controlling whether JavaScript is enabled in a Element.
 		/// </summary>
 		public static readonly BindableProperty JavaScriptEnabledProperty = BindableProperty.Create("JavaScriptEnabled", typeof(bool), typeof(FormsElement), true);
 
 		/// <summary>
-		/// Gets the value of the JavaScriptEnabled property for the specified FormsElement.
+		/// Gets the value of the JavaScriptEnabled property for the specified WebView.
 		/// </summary>
-		/// <param name="element">The FormsElement from which to read the property value.</param>
+		/// <param name="element">The WebView from which to read the property value.</param>
 		/// <returns>A boolean value indicating whether JavaScript is enabled.</returns>
 		public static bool GetJavaScriptEnabled(FormsElement element)
 		{
@@ -129,9 +129,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		}
 
 		/// <summary>
-		/// Sets the value of the JavaScriptEnabled property for the specified FormsElement.
+		/// Sets the value of the JavaScriptEnabled property for the specified WebView.
 		/// </summary>
-		/// <param name="element">The FormsElement on which to set the property value.</param>
+		/// <param name="element">The WebView on which to set the property value.</param>
 		/// <param name="value">The boolean value indicating whether JavaScript should be enabled.</param>
 		public static void SetJavaScriptEnabled(FormsElement element, bool value)
 		{
