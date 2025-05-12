@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android.Enums;
@@ -89,6 +90,20 @@ namespace UITest.Appium
 				{ "element", element },
 			});
 			return (string?)response.Value;
+		}
+
+		public static bool TryGetText(this IUIElement element, [NotNullWhen(true)] out string? text)
+		{
+			try
+			{
+				text = GetText(element);
+				return text is not null;
+			}
+			catch
+			{
+				text = null;
+				return false;
+			}
 		}
 
 		public static string? ReadText(this IUIElement element)
@@ -799,7 +814,8 @@ namespace UITest.Appium
 			while (true)
 			{
 				var element = app.FindElements(automationId).FirstOrDefault();
-				if (element != null && (element.GetText()?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false))
+				
+				if (element is not null && element.TryGetText(out var s) && s.Contains(text, StringComparison.OrdinalIgnoreCase))
 				{
 					return true;
 				}
@@ -2281,6 +2297,27 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Waits for the "More" button in the app, with platform-specific logic for Android and Windows.
+		/// This method does not currently support iOS and macOS platforms, where the "More" button is not shown.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void WaitForMoreButton(this IApp app)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc=\"More options\"]"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				app.WaitForElement(AppiumQuery.ByAccessibilityId("MoreButton"));
+			}
+			else
+			{
+				throw new InvalidOperationException($"WaitForMoreButton is not supported on this platform.");
+			}
+		}
+
+		/// <summary>
 		/// Taps the "More" button in the app, with platform-specific logic for Android and Windows.
 		/// This method does not currently support iOS and macOS platforms, where the "More" button is not shown.
 		/// </summary>
@@ -2444,6 +2481,39 @@ namespace UITest.Appium
 			var startupArg = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
 			startupArg.Add(key, value);
 			config.SetProperty("TestConfigurationArgs", startupArg);
+		}
+
+		/// <summary>
+		/// Gets the search handler element for the shell.
+		/// This method is used to find the search handler element in the app.
+		/// It uses different queries based on the app type (Android, iOS, Catalyst, or Windows).
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <returns>The search handler element for the shell.</returns>
+		public static IUIElement GetShellSearchHandler(this IApp app)
+		{
+			IUIElement? element = null;
+
+			if (app is AppiumAndroidApp)
+			{
+				element = app.WaitForElement(AppiumQuery.ByXPath("//android.widget.EditText"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				element = app.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				element = app.WaitForElement("TextBox");
+			}
+
+			// Ensure the element is not null before returning
+			if (element is null)
+			{
+				throw new InvalidOperationException("SearchHandler element not found.");
+			}
+
+			return element;
 		}
 	}
 }

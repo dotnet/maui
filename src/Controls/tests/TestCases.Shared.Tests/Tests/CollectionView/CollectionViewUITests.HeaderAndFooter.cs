@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using UITest.Appium;
 using UITest.Core;
 
@@ -28,10 +29,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Just a string as a header");
 			App.WaitForElement("This footer is also a string");
 		}
-#if IOS
+#if IOS || ANDROID
 		[Test]
         [Category(UITestCategories.CollectionView)]
-        public void HeaderFooterViewWorks()
+        public async Task HeaderFooterViewWorks()
         {
             // Navigate to the selection galleries
             VisitInitialGallery("Header Footer");
@@ -41,7 +42,44 @@ namespace Microsoft.Maui.TestCases.Tests
 
             App.WaitForElement("This Is A Header");
             App.WaitForElement("This Is A Footer");
+
+			// Now let's add items until the footer goes out of the screen
+			// and then remove them all and verify the footer is visible again (#29137)
+			var i = 5;
+			while (--i > 0)
+			{
+				App.WaitForElement("Add 2 Items").Tap();
+				App.ScrollDownTo("Add 2 Items", "CV");				
+			}
+
+            App.WaitForElement("Clear All Items").Tap();
+            await Task.Delay(300);
+
+            ClassicAssert.IsTrue(App.WaitForElement("This Is A Footer").IsDisplayed());
         }
+
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void HeaderFooterHorizontalViewWorks()
+		{
+			// Navigate to the selection galleries
+			VisitInitialGallery("Header Footer");
+
+			// Navigate to the specific sample inside selection galleries
+			VisitSubGallery("Header/Footer (Horizontal Forms View)");
+
+			// Verify the header is visible
+			App.WaitForElement("This Is A Header");
+			
+			// Scroll right to ensure the footer is visible and positioned at the end
+			for (int i = 0; i < 5; i++)
+			{
+				App.ScrollRight("CV", ScrollStrategy.Auto, 0.9, 250);
+			}
+
+			// Verify the footer is visible
+			App.WaitForElement("This Is A Footer");
+		}
 
         [Test]
         [Category(UITestCategories.CollectionView)]
@@ -67,7 +105,11 @@ namespace Microsoft.Maui.TestCases.Tests
             VisitSubGallery("Header/Footer (Grid)");
 
             App.WaitForElement("This Is A Header");
+#if !ANDROID
+			// Android screen is too small to show this label
+			// but we can check for the footer via screenshot
             App.WaitForElement("This Is A Footer");
+#endif
 
             VerifyScreenshot();
         }

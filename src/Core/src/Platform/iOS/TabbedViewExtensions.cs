@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 		internal static void DisableiOS18ToolbarTabs(this UITabBarController tabBarController)
 		{
 			// Should apply to iOS and Catalyst
-			if (OperatingSystemMacCatalyst18Workaround.IsMacCatalystVersionAtLeast18()) //https://github.com/xamarin/xamarin-macios/issues/21390		
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(18))
 			{
 				tabBarController.TraitOverrides.HorizontalSizeClass = UIUserInterfaceSizeClass.Compact;
 				tabBarController.Mode = UITabBarControllerMode.TabSidebar;

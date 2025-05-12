@@ -378,6 +378,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						{
 							return index;
 						}
+
+						index++;
 					}
 					return -1;
 			}

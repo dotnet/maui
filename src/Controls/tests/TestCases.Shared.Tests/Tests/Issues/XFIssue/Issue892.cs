@@ -55,6 +55,7 @@ public class Issue892 : _IssuesUITest
 		App.WaitForElement("Pop two");
 		App.WaitForElementTillPageNavigationSettled("Check back two");
 		App.TapBackArrow(BackButtonId);
+		App.WaitForElementTillPageNavigationSettled("Check back three");
 		App.Tap("Check back three");
 		App.WaitForElement("At root");
 	}
