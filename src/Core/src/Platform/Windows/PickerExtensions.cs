@@ -51,6 +51,8 @@ namespace Microsoft.Maui.Platform
 				nativeComboBox.Resources.SetValueForAllKey(TextColorResourceKeys, platformBrush);
 				nativeComboBox.Foreground = platformBrush;
 			}
+
+			nativeComboBox.RefreshThemeResources();
 		}
 
 		// ResourceKeys controlling the foreground color of the ComboBox.

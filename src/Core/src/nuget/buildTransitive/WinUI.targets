@@ -9,74 +9,16 @@
     <Version Condition=" '$(ApplicationDisplayVersion)' != '' ">$(ApplicationDisplayVersion)</Version>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Win2DWarnNoPlatform>false</Win2DWarnNoPlatform>
+  </PropertyGroup>
+
   <Target Name="_AddMauiPriFiles" AfterTargets="ResolveAssemblyReferences">
     <ItemGroup>
       <_ReferenceRelatedPaths
           Include="@(ReferencePath->'%(RootDir)%(Directory)%(FileName).pri')"
           Condition="Exists('%(RootDir)%(Directory)%(FileName).pri')"
       />
-    </ItemGroup>
-  </Target>
-
-  <!--
-    Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
-    This replaces the error check target entirely as it is not needed.
-  -->
-  <Target Name="WindowsAppSDKSelfContainedVerifyConfiguration">
-  </Target>
-
-  <!--
-    Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
-    This adjusts the items if we are still resolving to AnyCPU.
-  -->
-  <Target Name="_MAUIAfter_GetExtractMicrosoftWindowsAppSDKMsixFilesInputs"
-          AfterTargets="GetExtractMicrosoftWindowsAppSDKMsixFilesInputs"
-          Condition="'$(NativePlatform)' == 'AnyCPU'">
-    <PropertyGroup>
-      <NativePlatform>Invalid</NativePlatform>
-      <NativePlatform Condition="'$(Platform)' == 'x86'">x86</NativePlatform>
-      <NativePlatform Condition="'$(Platform)' == 'Win32'">x86</NativePlatform>
-      <NativePlatform Condition="'$(Platform)' == 'x64'">x64</NativePlatform>
-      <NativePlatform Condition="'$(Platform)' == 'arm'">arm</NativePlatform>
-      <NativePlatform Condition="'$(Platform)' == 'arm64'">arm64</NativePlatform>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Platform)' == 'AnyCPU' or '$(Platform)' == 'Any CPU'">
-      <NativePlatform>neutral</NativePlatform>
-      <NativePlatform Condition="'$(RuntimeIdentifier)' == 'win10-x86' or '$(RuntimeIdentifier)' == 'win-x86'">x86</NativePlatform>
-      <NativePlatform Condition="'$(RuntimeIdentifier)' == 'win10-x64' or '$(RuntimeIdentifier)' == 'win-x64'">x64</NativePlatform>
-      <NativePlatform Condition="'$(RuntimeIdentifier)' == 'win10-arm' or '$(RuntimeIdentifier)' == 'win-arm'">arm</NativePlatform>
-      <NativePlatform Condition="'$(RuntimeIdentifier)' == 'win10-arm64' or '$(RuntimeIdentifier)' == 'win-arm64'">arm64</NativePlatform>
-    </PropertyGroup>
-    <ItemGroup>
-      <MicrosoftWindowsAppSDKMsix Include="$([MSBuild]::NormalizeDirectory('$(MicrosoftWindowsAppSDKPackageDir)','tools\Msix\win10-$(NativePlatform)'))Microsoft.WindowsAppRuntime.?.?.Msix"/>
-      <MicrosoftWindowsAppSDKMsix Include="$([MSBuild]::NormalizeDirectory('$(MicrosoftWindowsAppSDKPackageDir)','tools\Msix\win10-$(NativePlatform)'))Microsoft.WindowsAppRuntime.?.?-*.Msix"/>
-    </ItemGroup>
-  </Target>
-
-  <!--
-    Workaround for https://github.com/microsoft/WindowsAppSDK/issues/893
-    This adjusts the items if we are still resolving to AnyCPU.
-  -->
-  <Target Name="_GetProjectArchitecture" Returns="@(ProjectArchitecture)">
-    <PropertyGroup>
-      <_ProjectArchitectureOutput>Invalid</_ProjectArchitectureOutput>
-      <_ProjectArchitectureOutput Condition="'$(Platform)' == 'x86'">x86</_ProjectArchitectureOutput>
-      <_ProjectArchitectureOutput Condition="'$(Platform)' == 'Win32'">x86</_ProjectArchitectureOutput>
-      <_ProjectArchitectureOutput Condition="'$(Platform)' == 'x64'">x64</_ProjectArchitectureOutput>
-      <_ProjectArchitectureOutput Condition="'$(Platform)' == 'arm'">arm</_ProjectArchitectureOutput>
-      <_ProjectArchitectureOutput Condition="'$(Platform)' == 'arm64'">arm64</_ProjectArchitectureOutput>
-    </PropertyGroup>
-    <PropertyGroup Condition="'$(Platform)' == 'AnyCPU' or '$(Platform)' == 'Any CPU'">
-      <_ProjectArchitectureOutput>neutral</_ProjectArchitectureOutput>
-      <_ProjectArchitectureOutput Condition="'$(RuntimeIdentifier)' == 'win10-x86' or '$(RuntimeIdentifier)' == 'win-x86'">x86</_ProjectArchitectureOutput>
-      <_ProjectArchitectureOutput Condition="'$(RuntimeIdentifier)' == 'win10-x64' or '$(RuntimeIdentifier)' == 'win-x64'">x64</_ProjectArchitectureOutput>
-      <_ProjectArchitectureOutput Condition="'$(RuntimeIdentifier)' == 'win10-arm' or '$(RuntimeIdentifier)' == 'win-arm'">arm</_ProjectArchitectureOutput>
-      <_ProjectArchitectureOutput Condition="'$(RuntimeIdentifier)' == 'win10-arm64' or '$(RuntimeIdentifier)' == 'win-arm64'">arm64</_ProjectArchitectureOutput>
-    </PropertyGroup>
-    <Error Condition="'$(UseAppHost)' == 'true' and '$(_ProjectArchitectureOutput)' == 'neutral' and '$(AllowNeutralPackageWithAppHost)' != 'true'"
-      Text="Packaged .NET applications with an app host exe cannot be ProcessorArchitecture neutral. Please specify a RuntimeIdentifier or a Platform other than AnyCPU." />
-    <ItemGroup>
-      <ProjectArchitecture Include="$(_ProjectArchitectureOutput)" />
     </ItemGroup>
   </Target>
 
