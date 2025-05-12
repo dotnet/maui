@@ -138,7 +138,10 @@ namespace Maui.Controls.Sample.Issues
 			Items.Remove(Items.Last());
 			RemoveAllItemsCommand.ChangeCanExecute();
 			RemoveLastItemCommand.ChangeCanExecute();
-			CurrentPosition--;
+			if (CurrentPosition > 0)
+			{
+				CurrentPosition--;
+			}
 		}
 
 		void ExecuteLoadItemsCommand()
