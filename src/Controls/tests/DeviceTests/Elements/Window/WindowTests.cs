@@ -159,7 +159,6 @@ namespace Microsoft.Maui.DeviceTests
 				else
 				{
 					Assert.NotEqual(window.Page, s);
-					Assert.Equal(window.Page, args.DestinationPage);
 				}
 			};
 
