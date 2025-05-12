@@ -3,8 +3,7 @@ using Maui.Controls.Sample.CollectionViewGalleries;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 20991, "Custom IDrawable control does not support binding",
-	PlatformAffected.All)]
+[Issue(IssueTracker.Github, 20991, "Custom IDrawable control does not support binding", PlatformAffected.All)]
 public class Issue20991 : TestContentPage
 {
 	public string ItemName { get; set; } = "Item 1";
