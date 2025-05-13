@@ -205,8 +205,16 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString) =>
-				(VirtualView?.TextWithinMaxLength(textField.Text, range, replacementString) ?? false) && (!VirtualView?.IsReadOnly ?? true);
+			bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString)
+			{
+				if (VirtualView == null || textField?.Text == null)
+					return false;
+
+				bool withinMaxLength = VirtualView.TextWithinMaxLength(textField.Text, range, replacementString);
+				bool isEditable = !VirtualView.IsReadOnly;
+
+				return withinMaxLength && isEditable;
+			}
 
 			void OnSelectionChanged(object? sender, EventArgs e)
 			{

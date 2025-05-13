@@ -13,8 +13,6 @@ namespace Microsoft.Maui.Platform
 	{
 		internal bool IsReadOnly;
 
-		readonly HashSet<string> _readOnlyActions = ["copy:", "select:", "selectAll:"];
-
 		public MauiTextField(CGRect frame)
 			: base(frame)
 		{
@@ -30,7 +28,12 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public override bool CanPerform(Selector action, NSObject? withSender)
-			=> !IsReadOnly ? base.CanPerform(action, withSender) : _readOnlyActions.Contains(action.Name);
+		{
+			if (!IsReadOnly)
+				return base.CanPerform(action, withSender);
+
+			return action.Name == "copy:" || action.Name == "select:" || action.Name == "selectAll:";
+		}
 
 		public override string? Text
 		{
