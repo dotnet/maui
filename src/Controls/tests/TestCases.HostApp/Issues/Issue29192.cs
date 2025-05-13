@@ -19,7 +19,7 @@ public class Issue29192 : ContentPage
 		collectionView.ItemTemplate = new DataTemplate(() =>
 		{
 			var label = new Label();
-			label.SetBinding(Label.TextProperty, "Item");
+			label.SetBinding(Label.TextProperty, ".");
 			return label;
 		});
 
@@ -34,20 +34,15 @@ public class Issue29192 : ContentPage
 
 public class Issue29192ViewModel
 {
-	public ObservableCollection<Issue29192Modal> Items { get; set; }
+	public ObservableCollection<string> Items { get; set; }
 
 	public Issue29192ViewModel()
 	{
-		Items = new ObservableCollection<Issue29192Modal>
+		Items = new ObservableCollection<string>
 		{
-			new Issue29192Modal { Item = "Short text." },
-			new Issue29192Modal { Item = "This is a long text; it should be wrapped to avoid truncation or overflow." },
-			new Issue29192Modal { Item = "This is very long text." }
+			"Short text.",
+			"This is a long text; it should be wrapped to avoid truncation or overflow.",
+			"This is very long text."
 		};
 	}
-}
-
-public class Issue29192Modal
-{
-	public string Item { get; set; }
 }
