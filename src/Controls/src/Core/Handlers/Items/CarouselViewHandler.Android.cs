@@ -43,7 +43,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			(handler.PlatformView as IMauiRecyclerView<CarouselView>).UpdateAdapter();
 		}
 
-		public static void MapLoop(CarouselViewHandler handler, CarouselView carouselView)
+		// TODO: Change the modifier to public in .NET 10.
+		internal static void MapLoop(CarouselViewHandler handler, CarouselView carouselView)
 		{
 			if (handler.PlatformView is MauiCarouselRecyclerView cv)
 			{
