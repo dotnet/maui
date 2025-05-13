@@ -12,6 +12,11 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="Type[@FullName='Microsoft.Maui.Controls.CarouselView']/Docs/*" />
+#if IOS || MACCATALYST
+	[ElementHandler<Handlers.Items2.CarouselViewHandler2>]
+#else
+	[ElementHandler<Handlers.Items.CarouselViewHandler>]
+#endif
 	public class CarouselView : ItemsView
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='CurrentItemVisualState']/Docs/*" />
