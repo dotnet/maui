@@ -21,6 +21,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static MauiApp CreateMauiApp(List<Assembly> testAssemblies)
 		{
+			return CreateMauiApp((_) => new TestOptions
+			{
+				Assemblies = testAssemblies
+			});
+		}
+
+		public static MauiApp CreateMauiApp(Func<IServiceProvider, TestOptions> options)
+		{
 			var appBuilder = MauiApp.CreateBuilder();
 
 #if DEBUG
@@ -45,13 +53,10 @@ namespace Microsoft.Maui.DeviceTests
 					});
 #endif
 				})
-				.ConfigureTests(new TestOptions
-				{
-					Assemblies = testAssemblies,
-				});
+				.ConfigureTests(options);
 
 #if WINDOWS
-			if (testAssemblies.Any(a => a.FullName.Contains("Controls.DeviceTests",
+			if (options(null).Assemblies.Any(a => a.FullName.Contains("Controls.DeviceTests",
 				StringComparison.OrdinalIgnoreCase)))
 			{
 				appBuilder.UseControlsHeadlessRunner(new HeadlessRunnerOptions
@@ -76,10 +81,10 @@ namespace Microsoft.Maui.DeviceTests
 #if IOS || MACCATALYST
 
 			appBuilder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
-					handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
-				});
+			{
+				handlers.AddHandler<Microsoft.Maui.Controls.CollectionView, Microsoft.Maui.Controls.Handlers.Items2.CollectionViewHandler2>();
+				handlers.AddHandler<Microsoft.Maui.Controls.CarouselView, Microsoft.Maui.Controls.Handlers.Items2.CarouselViewHandler2>();
+			});
 
 #endif
 			appBuilder.UseVisualRunner();
