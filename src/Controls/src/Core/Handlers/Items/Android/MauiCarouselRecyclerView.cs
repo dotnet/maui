@@ -325,6 +325,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			int currentPosition = Carousel.Position;
 			UpdateAdapter();
+
+			// In Windows, the scrollbar is hidden when Loop is enabled.
+			// For platform consistency, apply the same behavior on Android.
 			UpdateScrollBarVisibility(Carousel);
 			ScrollToPosition(currentPosition);
 		}
