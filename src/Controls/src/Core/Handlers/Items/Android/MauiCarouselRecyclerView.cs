@@ -407,8 +407,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else
 			{
-				HorizontalScrollBarEnabled = true;
-				VerticalScrollBarEnabled = true;
+				UpdateHorizontalScrollBarVisibility();
+				UpdateVerticalScrollBarVisibility();
 			}
 		}
 
