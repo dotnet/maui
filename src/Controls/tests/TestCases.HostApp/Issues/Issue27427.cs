@@ -38,28 +38,6 @@ namespace Maui.Controls.Sample.Issues
 				}
 			};
 
-			FlexLayout flexLayout = new FlexLayout
-			{
-				Direction = FlexDirection.Row,
-				Wrap = FlexWrap.Wrap,
-				Padding = new Thickness(20, 0),
-				Children =
-				{
-					new SearchBar
-					{
-						HeightRequest = 80,
-						BackgroundColor = Colors.LightPink,
-						Placeholder = "Flex Layout SearchBar 1"
-					},
-					new SearchBar
-					{
-						HeightRequest = 100,
-						BackgroundColor = Colors.LightPink,
-						Placeholder = "Flex Layout SearchBar 2"
-					}
-				}
-			};
-
 			AbsoluteLayout absoluteLayout = new AbsoluteLayout
 			{
 				Padding = new Thickness(20, 0),
@@ -112,7 +90,6 @@ namespace Maui.Controls.Sample.Issues
 			mainLayout.Children.Add(new Label { Text = "SearchBar Explicit Size Dimensions", AutomationId = "SearchBarDimensionsHeaderLabel" });
 			mainLayout.Children.Add(verticalLayout);
 			mainLayout.Children.Add(horizontalLayout);
-			mainLayout.Children.Add(flexLayout);
 			mainLayout.Children.Add(absoluteLayout);
 			mainLayout.Children.Add(gridLayout);
 
