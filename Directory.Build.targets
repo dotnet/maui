@@ -119,4 +119,17 @@
     </ItemGroup>
   </Target>
 
+  <!-- Packaging -->
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <!-- The msi files add the license themselves. -->
+    <None Include="$(LicenseFile)"
+          PackagePath="$([System.IO.Path]::GetFileName('$(LicenseFile)'))"
+          Pack="true"
+          Condition="'$(MSBuildProjectFile)' != 'msi.csproj'" />
+    <None Include="$(PackageThirdPartyNoticesFile)"
+          PackagePath="$([System.IO.Path]::GetFileName('$(PackageThirdPartyNoticesFile)'))"
+          Pack="true" />
+  </ItemGroup>
+
+
 </Project>
