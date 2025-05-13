@@ -6,8 +6,12 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Application
 	{
+		static Application() => RemapForControls();
+
 		internal static new void RemapForControls()
 		{
+			Element.RemapIfNeeded();
+			
 			// Adjust the mappings to preserve Controls.Application legacy behaviors
 #if ANDROID
 			// There is also a mapper on Window for this property since this property is relevant at the window level for
