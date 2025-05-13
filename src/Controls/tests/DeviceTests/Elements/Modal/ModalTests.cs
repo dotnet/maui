@@ -556,6 +556,28 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if WINDOWS || MACCATALYST
+		[Fact]
+		public async Task DisappearingEventFiresWhenWindowClosedWithModal()
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage();
+			var modalPage = new ContentPage();
+			bool disappearingTriggered = false;
+			modalPage.Disappearing += (_, _) => disappearingTriggered = true;
+			var window = new Window(rootPage);
+			await rootPage.Navigation.PushModalAsync(modalPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async handler =>
+			{
+				await OnLoadedAsync(modalPage);
+				Application.Current?.CloseWindow(window);
+			});
+
+			Assert.True(disappearingTriggered);
+		}
+#endif
+
 		class PageTypes : IEnumerable<object[]>
 		{
 			public IEnumerator<object[]> GetEnumerator()
