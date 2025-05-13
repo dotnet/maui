@@ -97,7 +97,7 @@ namespace Microsoft.Maui.DeviceTests
 #pragma warning disable CS0618 // Type or member is obsolete
 				var drawables = TextViewCompat.GetCompoundDrawablesRelative(platformButton);
 #pragma warning restore CS0618 // Type or member is obsolete
-				Assert.NotNull(drawables[matchingDrawableIndex]);
+				Assert.NotNull(drawables?[matchingDrawableIndex]);
 			});
 		}
 

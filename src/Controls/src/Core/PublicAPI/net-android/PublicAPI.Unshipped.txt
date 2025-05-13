@@ -144,6 +144,8 @@ Microsoft.Maui.Controls.HybridWebView.SendRawMessage(string! rawMessage) -> void
 Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs
 Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs.HybridWebViewRawMessageReceivedEventArgs(string? message) -> void
 Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs.Message.get -> string?
+override Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
+*REMOVED*override Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
 Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.RenderProcessGoneDetail.get -> Android.Webkit.RenderProcessGoneDetail?
 Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.Sender.get -> Android.Views.View?
