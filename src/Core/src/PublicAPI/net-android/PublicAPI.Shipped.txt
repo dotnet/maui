@@ -2292,7 +2292,7 @@ override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitialize
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnPopulateAccessibilityEvent(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> void
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.OnRequestSendAccessibilityEvent(Android.Views.ViewGroup! host, Android.Views.View! child, Android.Views.Accessibility.AccessibilityEvent! e) -> bool
-override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAccessibilityAction(Android.Views.View! host, int action, Android.OS.Bundle! args) -> bool
+override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.PerformAccessibilityAction(Android.Views.View! host, int action, Android.OS.Bundle? args) -> bool
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEvent(Android.Views.View! host, int eventType) -> void
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEventUnchecked(Android.Views.View! host, Android.Views.Accessibility.AccessibilityEvent! e) -> void
 override Microsoft.Maui.Platform.BorderDrawable.Dispose(bool disposing) -> void
