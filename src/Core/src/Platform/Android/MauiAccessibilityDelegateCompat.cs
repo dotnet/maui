@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		public override void OnInitializeAccessibilityNodeInfo(PlatformView host, AccessibilityNodeInfoCompat info)
+		public override void OnInitializeAccessibilityNodeInfo(PlatformView? host, AccessibilityNodeInfoCompat? info)
 		{
 			base.OnInitializeAccessibilityNodeInfo(host, info);
 
