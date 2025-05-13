@@ -40,9 +40,4 @@ public partial class Issue29411 : ContentPage
     {
         carouselView.Loop = !carouselView.Loop;
     }
-
-    void OnPositionChangeClicked(object sender, EventArgs e)
-    {
-        carouselView.Position = 2;
-    }
 }
