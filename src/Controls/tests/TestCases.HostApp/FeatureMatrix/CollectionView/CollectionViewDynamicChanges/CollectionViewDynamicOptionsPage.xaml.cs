@@ -38,6 +38,7 @@ public partial class CollectionViewDynamicOptionsPage : ContentPage
 			{
 				Text = "No Items Available(Grid View)",
 
+
 				TextColor = Colors.Blue
 			});
 			_viewModel.EmptyView = grid;
