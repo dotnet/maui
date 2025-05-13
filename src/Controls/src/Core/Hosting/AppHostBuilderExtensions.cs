@@ -63,11 +63,6 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
-#if IOS || MACCATALYST
-		handlersCollection.AddHandler<CarouselView, CarouselViewHandler2>();
-#else
-		handlersCollection.AddHandler<CarouselView, CarouselViewHandler>();
-#endif
 		handlersCollection.AddHandler<Application, ApplicationHandler>();
 		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
