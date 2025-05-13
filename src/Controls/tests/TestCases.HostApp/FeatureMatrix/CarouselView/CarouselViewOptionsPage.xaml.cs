@@ -246,4 +246,9 @@ public partial class CarouselViewOptionsPage : ContentPage
             }
         }
     }
+
+    private void OnFlowDirectionChanged(object sender, EventArgs e)
+    {
+        _viewModel.FlowDirection = FlowDirectionLTR.IsChecked ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+    }
 }

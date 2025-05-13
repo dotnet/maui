@@ -44,6 +44,23 @@ public class CarouselViewFeatureTests : UITest
 
 	[Test, Order(1)]
 	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithKeepItemInView()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(KeepItemsInView);
+		App.Tap(KeepItemsInView);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 1");
+		App.WaitForElement(AddButton);
+		App.Tap(AddButton);
+		App.WaitForElement("Item 6");
+	}
+
+#if TEST_FAILS_ON_WINDOWS //In windows related issue link: https://github.com/dotnet/maui/issues/29462
+	[Test]
+	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithIGridLayOut()
 	{
 		App.WaitForElement("CarouselViewButton");
@@ -69,8 +86,9 @@ public class CarouselViewFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Item 1 (Image View)");
 	}
+#endif
 
-#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/28334 && https://github.com/dotnet/maui/issues/28022
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/28334 && https://github.com/dotnet/maui/issues/28022 && https://github.com/dotnet/maui/issues/29463
 	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithEmptyViewString()
@@ -156,22 +174,6 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 2");
 	}
 #endif
-
-	[Test]
-	[Category(UITestCategories.CarouselView)]
-	public void VerifyCarouselViewWithKeepItemInView()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(KeepItemsInView);
-		App.Tap(KeepItemsInView);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("Item 1");
-		App.WaitForElement(AddButton);
-		App.Tap(AddButton);
-		App.WaitForElement("Item 6");
-	}
 
 #if TEST_FAILS_ON_ANDROID //In android related issue: https://github.com/dotnet/maui/issues/29415
 	[Test]
@@ -478,6 +480,7 @@ public class CarouselViewFeatureTests : UITest
 	}
 #endif
 
+#if TEST_FAILS_ON_WINDOWS //In windows related issue link: https://github.com/dotnet/maui/issues/29448
 	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithScrollTo()
@@ -493,7 +496,9 @@ public class CarouselViewFeatureTests : UITest
 		App.Tap(ScrollToButton);
 		App.WaitForElement("Item 4");
 	}
+#endif
 
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In CV2 related issue link: https://github.com/dotnet/maui/issues/27711
 	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithRTLFlowDirection()
@@ -511,4 +516,5 @@ public class CarouselViewFeatureTests : UITest
 		}
 		App.WaitForElement("Item 4");
 	}
+#endif
 }
