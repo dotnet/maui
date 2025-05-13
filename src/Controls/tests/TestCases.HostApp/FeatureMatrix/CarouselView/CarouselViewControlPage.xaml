@@ -39,6 +39,7 @@
                                    ItemsUpdatingScrollMode="{Binding ItemsUpdatingScrollMode}"
                                    IndicatorView="{x:Reference indicatorView}"
                                    ItemsLayout="{Binding ItemsLayout}"
+                                   FlowDirection="{Binding FlowDirection}"
                                    AutomationId="CarouselViewControl"/>
 
               <!-- Indicator -->
@@ -49,6 +50,7 @@
                               VerticalOptions="End"
                               Margin="0,0,0,20"
                               IndicatorColor="LightGray"
+                              FlowDirection="{Binding FlowDirection}"
                               SelectedIndicatorColor="DarkGray"
                               IndicatorSize="12"/>
 

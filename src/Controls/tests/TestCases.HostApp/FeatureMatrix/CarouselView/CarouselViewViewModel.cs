@@ -31,6 +31,7 @@ public class CarouselViewViewModel : INotifyPropertyChanged
     private string _previousItemPosition;
     private int _currentPosition;
     private int _previousPosition;
+    private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 
     public CarouselViewViewModel()
     {
@@ -258,6 +259,19 @@ public class CarouselViewViewModel : INotifyPropertyChanged
                 CarouselItemsSourceType.None => null,
                 _ => Items
             };
+        }
+    }
+
+    public FlowDirection FlowDirection
+    {
+        get => _flowDirection;
+        set
+        {
+            if (_flowDirection != value)
+            {
+                _flowDirection = value;
+                OnPropertyChanged();
+            }
         }
     }
 

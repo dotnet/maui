@@ -205,6 +205,25 @@
                                           AutomationId="PositionEntry"
                                           HorizontalOptions="FillAndExpand"/>
                             </StackLayout>
+
+                            <!-- Flow Direction -->
+                            <Label Text="Flow Direction:"
+                                   FontSize="15"/>
+                            <StackLayout Orientation="Horizontal">
+                                   <RadioButton x:Name="FlowDirectionLTR"
+                                                AutomationId="FlowDirectionLTR"
+                                                GroupName="FlowDirection"
+                                                Content="LTR"
+                                                IsChecked="True"
+                                                FontSize="14"
+                                                CheckedChanged="OnFlowDirectionChanged"/>
+                                   <RadioButton x:Name="FlowDirectionRTL"
+                                                AutomationId="FlowDirectionRTL"
+                                                GroupName="FlowDirection"
+                                                Content="RTL"
+                                                FontSize="14"
+                                                CheckedChanged="OnFlowDirectionChanged"/>
+                            </StackLayout>
                      </StackLayout>
               </Grid>
        </ScrollView>

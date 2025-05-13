@@ -265,7 +265,7 @@ public class CarouselViewFeatureTests : UITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link:https://github.com/dotnet/maui/issues/29412 && CV2 related issue:https://github.com/dotnet/maui/issues/29449
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link:https://github.com/dotnet/maui/issues/29412 && CV2 related issue:https://github.com/dotnet/maui/issues/29449 && https://github.com/dotnet/maui/issues/29261
 	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithIsLoopEnabled()
@@ -353,7 +353,7 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentItemLabel).GetText(), Is.EqualTo("Item 2"));
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link: https://github.com/dotnet/maui/issues/29412 && CV2 related issue link:https://github.com/dotnet/maui/issues/29449
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link: https://github.com/dotnet/maui/issues/29412 && CV2 related issue link:https://github.com/dotnet/maui/issues/29449 && https://github.com/dotnet/maui/issues/29261
 	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithEnbleLoopAndCurrentItem()
@@ -491,6 +491,24 @@ public class CarouselViewFeatureTests : UITest
 		App.EnterText(ScrollToIndexEntry, "3");
 		App.WaitForElement(ScrollToButton);
 		App.Tap(ScrollToButton);
+		App.WaitForElement("Item 4");
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithRTLFlowDirection()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement("FlowDirectionRTL");
+		App.Tap("FlowDirectionRTL");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 1");
+		for (int i = 1; i < 4; i++)
+		{
+			App.ScrollLeft(CarouselViewControl, ScrollStrategy.Gesture, 0.9, 500);
+		}
 		App.WaitForElement("Item 4");
 	}
 }
