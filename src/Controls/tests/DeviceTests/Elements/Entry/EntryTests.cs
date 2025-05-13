@@ -239,7 +239,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Category(TestCategory.Entry)]
-		[Category(TestCategory.TextInput)]
 		[Collection(RunInNewWindowCollection)]
 		public class EntryTextInputTests : TextInputTests<EntryHandler, Entry>
 		{
