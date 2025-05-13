@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Media
 			var renderer = new UIGraphicsImageRenderer(view.Bounds.Size, new UIGraphicsImageRendererFormat()
 			{
 				Opaque = false,
-				Scale = view.Window.Screen.Scale,
+				Scale = view.Window?.Screen?.Scale ?? 1.0f,
 			});
 
 			// renderer will be null if the width/height of the view is zero
