@@ -17,7 +17,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		Task<string> GetPlatformText(ButtonHandler buttonHandler)
 		{
-			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).CurrentTitle);
+			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).CurrentTitle!);
 		}
 
 		UILineBreakMode GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
