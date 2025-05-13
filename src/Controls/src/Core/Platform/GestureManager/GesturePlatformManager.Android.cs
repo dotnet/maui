@@ -274,7 +274,9 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			//Allow Touch to propagate to the view. If not set to false, the touch will be consumed entirely by gestures.
 			if(Control is not null && Control.Focusable)
-			 e.Handled = false;
+			{
+		    	e.Handled = false;
+			}
 
 			if (_disposed)
 			{

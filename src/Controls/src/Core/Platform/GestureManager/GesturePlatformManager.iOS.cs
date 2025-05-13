@@ -563,9 +563,13 @@ namespace Microsoft.Maui.Controls.Platform
 			// added to the MAUI Element), we want to allow them to fire simultaneously if they have the same number
 			// of taps and touches
 			if (gesture is not MauiUITapGestureRecognizer tap)
+			{
 				return true;
+			}
 			if (other is not MauiUITapGestureRecognizer otherTap)
+			{
 				return true;
+			}
 			
 			if(tap != null && otherTap != null)
 			{
