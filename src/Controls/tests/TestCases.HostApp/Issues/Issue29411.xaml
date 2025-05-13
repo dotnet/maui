@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue29411">
+      <Grid Padding="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <VerticalStackLayout Grid.Row="0" Padding="10">
+            <HorizontalStackLayout Spacing="10" Margin="0,5,0,0">
+                <Button Text="ChangeLoop"
+                        WidthRequest="120"
+                        AutomationId="Button"
+                        Clicked="OnDisabledButtonClicked" />
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+
+        <CarouselView x:Name="carouselView" AutomationId="CarouselView" Position="2"
+                      Grid.Row="1">
+        </CarouselView>
+    </Grid>
+</ContentPage>
