@@ -120,7 +120,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				TemplatedCell2.ScrollDirection = ScrollDirection;
 
 				TemplatedCell2.Bind(ItemsView.ItemTemplate, ItemsSource[indexpathAdjusted], ItemsView);
-
 			}
 			else if (cell is DefaultCell2 DefaultCell2)
 			{

@@ -85,7 +85,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(
 			UICollectionViewLayoutAttributes layoutAttributes)
 		{
-
 			var preferredAttributes = base.PreferredLayoutAttributesFittingAttributes(layoutAttributes);
 
 			if (PlatformHandler?.VirtualView is { } virtualView)
