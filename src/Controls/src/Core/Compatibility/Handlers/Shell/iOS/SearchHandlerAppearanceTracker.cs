@@ -119,6 +119,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateText(_uiSearchBar.FindDescendantView<UITextField>());
 			}
+			else if (e.Is(SearchHandler.CharacterSpacingProperty))
+			{
+				UpdateCharacterSpacing(_uiSearchBar.FindDescendantView<UITextField>());
+			}
 		}
 
 		void UpdateText(UITextField uiTextField)
@@ -128,6 +132,27 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			uiTextField.Text = _searchHandler.Query;
 			UpdateTextTransform(uiTextField);
+			UpdateCharacterSpacing(uiTextField);
+		}
+
+		void UpdateCharacterSpacing(UITextField textField)
+		{
+			if (textField is null)
+				return;
+
+			var characterSpacing = _searchHandler.CharacterSpacing;
+			if (characterSpacing > 0)
+			{
+				var attributedText = textField.AttributedText?.WithCharacterSpacing(characterSpacing);
+				if (attributedText is not null)
+				{
+					textField.AttributedText = attributedText;
+				}
+			}
+
+			var textAttr = textField.AttributedPlaceholder?.WithCharacterSpacing(characterSpacing);
+			if (textAttr != null)
+				textField.AttributedPlaceholder = textAttr;
 		}
 
 		void GetDefaultSearchBarColors(UISearchBar searchBar)
