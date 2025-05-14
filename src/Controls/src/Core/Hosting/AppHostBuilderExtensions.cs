@@ -101,15 +101,11 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
 
-#if ANDROID || IOS || MACCATALYST
-		handlersCollection.AddHandler<Shell, ShellRenderer>();
-#elif WINDOWS
-		handlersCollection.AddHandler<Shell, ShellHandler>();
+#if WINDOWS
 		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 		handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
 #elif TIZEN
-		handlersCollection.AddHandler<Shell, ShellHandler>();
 		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 #endif
