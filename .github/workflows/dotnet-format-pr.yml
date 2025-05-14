@@ -19,14 +19,9 @@ jobs:
           dotnet-version: 8.x
 
       - name: Run dotnet format
-        id: format
         run: |
           dotnet format .\Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
-          if git diff --quiet; then
-            echo "::set-output name=has-changes::false"
-          else
-            echo "::set-output name=has-changes::true"
-          fi
+          git diff
     
       - name: Commit files
         if: steps.format.outputs.has-changes == 'true'
