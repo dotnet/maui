@@ -6,10 +6,12 @@ using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Content))]
+	[ElementHandler<BorderHandler>]
 	public class Border : View, IContentView, IBorderView, IPaddingElement
 	{
 		float[]? _strokeDashPattern;
