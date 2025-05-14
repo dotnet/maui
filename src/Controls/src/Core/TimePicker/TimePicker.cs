@@ -3,11 +3,13 @@ using System;
 using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="Type[@FullName='Microsoft.Maui.Controls.TimePicker']/Docs/*" />
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler<TimePickerHandler>]
 	public partial class TimePicker : View, IFontElement, ITextElement, IElementConfiguration<TimePicker>, ITimePicker
 	{
 		/// <summary>Bindable property for <see cref="Format"/>.</summary>
