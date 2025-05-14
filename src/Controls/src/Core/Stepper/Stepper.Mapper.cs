@@ -4,8 +4,12 @@ namespace Microsoft.Maui.Controls;
 
 public partial class Stepper
 {
-	internal static new void RemapForControls()
+	static Stepper() => RemapForControls();
+
+	private static new void RemapForControls()
 	{
+		VisualElement.RemapIfNeeded();
+
 		StepperHandler.Mapper.AppendToMapping(nameof(Stepper.Increment), MapInterval);
 	}
 
