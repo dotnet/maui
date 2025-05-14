@@ -107,8 +107,6 @@ public static partial class AppHostBuilderExtensions
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiControlsInitializer>());
 #endif
 
-		builder.RemapForControls();
-
 		return builder;
 	}
 
@@ -142,15 +140,6 @@ public static partial class AppHostBuilderExtensions
 			services.AddService<StreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
 			services.AddService<UriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
 		});
-
-		return builder;
-	}
-
-	internal static MauiAppBuilder RemapForControls(this MauiAppBuilder builder)
-	{
-		// Update the mappings for IView/View to work specifically for Controls
-		Element.RemapIfNeeded();
-		VisualElement.RemapIfNeeded();
 
 		return builder;
 	}
