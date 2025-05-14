@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Handlers;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -20,6 +21,7 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[ContentProperty(nameof(IndicatorLayout))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler<IndicatorViewHandler>]
 	public partial class IndicatorView : TemplatedView, ITemplatedIndicatorView
 	{
 		const int DefaultPadding = 4;
