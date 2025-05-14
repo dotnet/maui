@@ -26,6 +26,7 @@ public class CarouselViewViewModel : INotifyPropertyChanged
     private bool _isIndicatorViewVisible = true;
     private IItemsLayout _itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal);
     private ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
+    private string _currentItem;
     private string _currentItemText;
     private string _previousItemText;
     private string _previousItemPosition;
@@ -42,14 +43,22 @@ public class CarouselViewViewModel : INotifyPropertyChanged
         {
             var label = new Label
             {
-                Margin = new Thickness(10),
-                FontSize = 18,
                 HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.Center
+                VerticalOptions = LayoutOptions.Center,
             };
             label.SetBinding(Label.TextProperty, ".");
-            return label;
+
+            var stack = new StackLayout
+            {
+                Padding = new Thickness(10),
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center,
+                Children = { label }
+            };
+
+            return stack;
         });
+
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
@@ -162,6 +171,19 @@ public class CarouselViewViewModel : INotifyPropertyChanged
             if (_position != value)
             {
                 _position = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public string CurrentItem
+    {
+        get => _currentItem;
+        set
+        {
+            if (_currentItem != value)
+            {
+                _currentItem = value;
                 OnPropertyChanged();
             }
         }
@@ -285,8 +307,6 @@ public class CarouselViewViewModel : INotifyPropertyChanged
                 "Item 4",
                 "Item 5"
             };
-        OnPropertyChanged(nameof(Items));
-        OnPropertyChanged(nameof(ItemsSource));
     }
 
     private void AddItem()

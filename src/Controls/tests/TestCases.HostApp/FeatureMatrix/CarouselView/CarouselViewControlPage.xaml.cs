@@ -13,6 +13,7 @@ public partial class CarouselViewControlPage : ContentPage
         _viewModel = new CarouselViewViewModel();
         _viewModel.PreviousItemText = "No previous item";
         _viewModel.PreviousItemPosition = "No previous position";
+        _viewModel.CurrentItem = _viewModel.Items.FirstOrDefault(); 
         BindingContext = _viewModel;
     }
 
@@ -21,6 +22,7 @@ public partial class CarouselViewControlPage : ContentPage
         BindingContext = _viewModel = new CarouselViewViewModel();
         _viewModel.PreviousItemText = "No previous item";
         _viewModel.PreviousItemPosition = "No previous position";
+        _viewModel.CurrentItem = _viewModel.Items.FirstOrDefault(); 
         await Navigation.PushAsync(new CarouselViewOptionsPage(_viewModel));
     }
 
@@ -56,7 +58,7 @@ public partial class CarouselViewControlPage : ContentPage
         if (int.TryParse(scrollToIndexEntry.Text, out int index) &&
             index >= 0 && index < carouselView.ItemsSource.Cast<object>().Count())
         {
-            carouselView.ScrollTo(index, position: ScrollToPosition.Center, animate: true);
+            carouselView.ScrollTo(index);
         }
     }
 }

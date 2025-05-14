@@ -46,6 +46,8 @@ public class CarouselViewFeatureTests : UITest
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepItemInView()
 	{
+		App.WaitForElement("CarouselViewButton");
+		App.Tap("CarouselViewButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(KeepItemsInView);
@@ -63,8 +65,6 @@ public class CarouselViewFeatureTests : UITest
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithIGridLayOut()
 	{
-		App.WaitForElement("CarouselViewButton");
-		App.Tap("CarouselViewButton");
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(ItemTemplateGrid);
@@ -88,7 +88,7 @@ public class CarouselViewFeatureTests : UITest
 	}
 #endif
 
-#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/28334 && https://github.com/dotnet/maui/issues/28022 && https://github.com/dotnet/maui/issues/29463
+#if TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/28334 && https://github.com/dotnet/maui/issues/28022 && https://github.com/dotnet/maui/issues/29463 && https://github.com/dotnet/maui/issues/29472
 	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithEmptyViewString()
@@ -374,7 +374,6 @@ public class CarouselViewFeatureTests : UITest
 	}
 #endif
 
-#if TEST_FAILS_ON_ANDROID //In android related issue :https://github.com/dotnet/maui/issues/23023
 	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithCurrentPosition()
@@ -407,7 +406,6 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 5");
 		Assert.That(App.WaitForElement(CurrentPositionLabel).GetText(), Is.EqualTo("4"));
 	}
-#endif
 #endif
 
 	[Test]
