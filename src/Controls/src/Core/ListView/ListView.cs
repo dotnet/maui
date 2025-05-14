@@ -17,6 +17,14 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ListView']/Docs/*" />
 	[Obsolete("Please use CollectionView instead.")]
+#if WINDOWS || IOS || MACCATALYST || TIZEN
+#pragma warning disable CS0618 // Type or member is obsolete
+	[ElementHandler<Handlers.Compatibility.ListViewRenderer>]
+#pragma warning restore CS0618 // Type or member is obsolete
+#if ANDROID
+	// TODO: ListViewRenderer needs _Context_ parameter in the constructor in the ANDROID case
+#endif
+#endif
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
 	{
 		// The ListViewRenderer has some odd behavior with LogicalChildren
