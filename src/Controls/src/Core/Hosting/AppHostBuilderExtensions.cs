@@ -70,7 +70,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Shapes.Polyline, PolylineHandler>();
 		handlersCollection.AddHandler<Shapes.Rectangle, RectangleHandler>();
 		handlersCollection.AddHandler<Shapes.RoundRectangle, RoundRectangleHandler>();
-		handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
 
 #pragma warning disable CA1416 //  'MenuBarHandler', MenuFlyoutSubItemHandler, MenuFlyoutSubItemHandler, MenuBarItemHandler is only supported on: 'ios' 13.0 and later
 		handlersCollection.AddHandler<MenuBar, MenuBarHandler>();
@@ -227,7 +226,6 @@ public static partial class AppHostBuilderExtensions
 		VisualElement.RemapIfNeeded();
 		FlyoutPage.RemapForControls();
 		Toolbar.RemapForControls();
-		SwipeView.RemapForControls();
 		TabbedPage.RemapForControls();
 		Shape.RemapForControls();
 		ContentPage.RemapForControls();
