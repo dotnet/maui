@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public static class DeviceTestSharedHelpers
 	{
-		public static string[] GetTestCategoryValues(this Type testCategoryType)
+		public static string[] GetTestCategoryValues([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] this Type testCategoryType)
 		{
 			var values = new List<string>();
 
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 			return values.ToArray();
 		}
 
-		public static List<String> GetExcludedTestCategories(this Type testCategoryType)
+		public static List<String> GetExcludedTestCategories([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields)] this Type testCategoryType)
 		{
 #if IOS || MACCATALYST
 			foreach (var en in Foundation.NSProcessInfo.ProcessInfo.Environment)
