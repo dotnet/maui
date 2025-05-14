@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Media
 			});
 
 			// renderer will be null if the width/height of the view is zero
-			if (renderer is not null && !TryRender(layer, ctx, skipChildren, out _))
+			if (renderer is not null)
 			{
 				// TODO: test/handle this case
 			}
