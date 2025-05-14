@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 	[ElementHandler<Handlers.Compatibility.ListViewRenderer>]
 #pragma warning restore CS0618 // Type or member is obsolete
 #if ANDROID
-	// TODO: ListViewRenderer needs _Context_ parameter in the constructor in the ANDROID case
+	[ElementHandlerWithAndroidContext<Handlers.Compatibility.ListViewRenderer>]
 #endif
 #endif
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
