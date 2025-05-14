@@ -8,8 +8,12 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class TabbedPage
 	{
-		internal new static void RemapForControls()
+		static TabbedPage() => RemapForControls();
+		
+		private new static void RemapForControls()
 		{
+			VisualElement.RemapIfNeeded();
+
 			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(BarBackground), MapBarBackground);
 			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(BarBackgroundColor), MapBarBackgroundColor);
 			TabbedViewHandler.Mapper.ReplaceMapping<TabbedPage, ITabbedViewHandler>(nameof(BarTextColor), MapBarTextColor);
