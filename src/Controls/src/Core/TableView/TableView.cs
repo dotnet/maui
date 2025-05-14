@@ -20,6 +20,10 @@ namespace Microsoft.Maui.Controls
 #pragma warning disable CS0618 // Type or member is obsolete
 	[ElementHandler<Handlers.Compatibility.TableViewRenderer>]
 #pragma warning restore CS0618 // Type or member is obsolete
+#elif ANDROID
+#pragma warning disable CS0618 // Type or member is obsolete
+	[ElementHandlerWithAndroidContext<Handlers.Compatibility.TableViewRenderer>]
+#pragma warning restore CS0618 // Type or member is obsolete
 #endif
 	public class TableView : View, ITableViewController, IElementConfiguration<TableView>, IVisualTreeElement
 	{
