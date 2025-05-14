@@ -63,11 +63,6 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
-		if (RuntimeFeature.IsHybridWebViewSupported)
-		{
-			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
-			handlersCollection.AddHandler<HybridWebView, HybridWebViewHandler>();
-		}
 		handlersCollection.AddHandler<Border, BorderHandler>();
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
 		handlersCollection.AddHandler<ContentView, ContentViewHandler>();
