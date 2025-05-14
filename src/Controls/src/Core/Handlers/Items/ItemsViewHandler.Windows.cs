@@ -354,6 +354,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_emptyView is not null && ListViewBase is IEmptyView emptyViewControl)
 			{
 				emptyViewControl.EmptyViewVisibility = WVisibility.Collapsed;
+				emptyViewControl.SetEmptyView(null, null);
 			}
 
 			if (_formsEmptyView is not null && _emptyViewDisplayed)
