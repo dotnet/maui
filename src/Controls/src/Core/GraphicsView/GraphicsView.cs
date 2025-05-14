@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Drawable"/>.</summary>
 		public static readonly BindableProperty DrawableProperty =
-			BindableProperty.Create(nameof(Drawable), typeof(IDrawable), typeof(GraphicsView), null);
+			BindableProperty.Create(nameof(Drawable), typeof(IDrawable), typeof(GraphicsView), null, propertyChanged: OnDrawablePropertyChanged);
 
 		public IDrawable Drawable
 		{
@@ -48,7 +48,20 @@ namespace Microsoft.Maui.Controls
 			base.OnBindingContextChanged();
 			if (Drawable is BindableObject bindable)
 			{
-				bindable.BindingContext = BindingContext;
+				SetInheritedBindingContext(bindable, BindingContext);
+			}
+		}
+
+		static void OnDrawablePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (oldValue is BindableObject oldDrawable)
+			{
+				SetInheritedBindingContext(oldDrawable, null);
+			}
+
+			if (newValue is BindableObject newDrawable)
+			{
+				SetInheritedBindingContext(newDrawable, bindable.BindingContext);
 			}
 		}
 	}
