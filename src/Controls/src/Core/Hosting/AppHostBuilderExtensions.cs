@@ -76,7 +76,10 @@ public static partial class AppHostBuilderExtensions
 
 		builder.ConfigureImageSourceHandlers();
 
-		builder.ConfigureMauiHandlers(configureDelegate: null);
+		builder.ConfigureMauiHandlers(handlers =>
+		{
+			handlers.AddControlsHandlers();
+		});
 
 		// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
 		if (RuntimeFeature.IsHybridWebViewSupported)
@@ -112,6 +115,11 @@ public static partial class AppHostBuilderExtensions
 				});
 #endif
 		}
+	}
+
+	internal static void AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
+	{
+		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
 	}
 
 	static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)
