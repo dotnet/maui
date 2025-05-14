@@ -452,9 +452,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				LoopItemsSource.Loop = carousel.Loop;
 			}
 
+			UpdateScrollBarVisibility();
 			CollectionView.ReloadData();
+			ScrollToOriginalPosition(carouselPosition, false);
+		}
 
-			ScrollToPosition(carouselPosition, carouselPosition, false, true);
+		void UpdateScrollBarVisibility()
+		{
+			if (ItemsView is CarouselView carousel)
+			{
+				CollectionView.ShowsHorizontalScrollIndicator = !carousel.Loop;
+				CollectionView.ShowsVerticalScrollIndicator = !carousel.Loop;
+			}
+		}
+
+		void ScrollToOriginalPosition(int position, bool animate)
+		{
+			if (ItemsView is not CarouselView carousel)
+        		return;
+
+			if (position < 0 || position >= ItemsSource.ItemCount)
+				return;
+
+			var targetIndexPath = GetScrollToIndexPath(position);
+			CollectionView.ScrollToItem(targetIndexPath, UICollectionViewScrollPosition.CenteredHorizontally, animate);
+
+			// Update internal state
+			SetPosition(position);
+			SetCurrentItem(position);
 		}
 
 		void ScrollToPosition(int goToPosition, int carouselPosition, bool animate, bool forceScroll = false)
