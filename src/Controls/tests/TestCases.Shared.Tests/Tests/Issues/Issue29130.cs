@@ -1,3 +1,4 @@
+#if TEST_FAILS_ON_WINDOWS //ItemSizingStrategy not working in Windows, Issue:https://github.com/dotnet/maui/issues/29130
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -27,3 +28,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
