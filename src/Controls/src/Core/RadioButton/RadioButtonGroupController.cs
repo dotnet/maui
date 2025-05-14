@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 {
 	internal class RadioButtonGroupController
 	{
-		internal static readonly ConditionalWeakTable<RadioButton, RadioButtonGroupController> groupControllers;
+		internal static readonly ConditionalWeakTable<RadioButton, RadioButtonGroupController> groupControllers = new();
 		readonly Element _layout;
 		string _groupName;
 		private object _selectedValue;
@@ -29,6 +29,15 @@ namespace Microsoft.Maui.Controls
 			{
 				UpdateGroupNames(_layout, _groupName);
 			}
+		}
+
+		internal static RadioButtonGroupController GetGroupController(RadioButton radioButton)
+		{
+			if (radioButton is not null && groupControllers.TryGetValue(radioButton, out var controller))
+			{
+				return controller;
+			}
+			return null;
 		}
 
 		internal void HandleRadioButtonGroupSelectionChanged(RadioButton radioButton)
@@ -88,27 +97,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal static RadioButtonGroupController GetGroupController(RadioButton radioButton)
-		{
-			if (radioButton is null)
-			{
-				throw new ArgumentNullException(nameof(radioButton));
-			}
-
-			if (groupControllers.TryGetValue(radioButton, out var controller))
-			{
-				return controller;
-			}
-			return null;
-		}
-
 		internal void HandleRadioButtonValueChanged(RadioButton radioButton)
 		{
-			if (radioButton == null)
-			{
-				return;
-			}
-			if (radioButton.GroupName != _groupName)
+			if (radioButton?.GroupName != _groupName)
 			{
 				return;
 			}
