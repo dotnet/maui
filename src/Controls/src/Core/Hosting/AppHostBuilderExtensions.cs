@@ -222,7 +222,6 @@ public static partial class AppHostBuilderExtensions
 		Toolbar.RemapForControls();
 		TabbedPage.RemapForControls();
 		Shape.RemapForControls();
-		ContentPage.RemapForControls();
 
 		Slider.RemapForControls();
 		return builder;
