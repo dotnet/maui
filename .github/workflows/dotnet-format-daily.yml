@@ -28,13 +28,6 @@ jobs:
       - name: Run dotnet format
         run: dotnet format .\Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
     
-      - name: Commit files
-        if: steps.format.outputs.has-changes == 'true'
-        run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -a -m 'Automated dotnet-format update on ${{ matrix.branch }}'
-
       - name: Create Pull Request
         uses: dotnet/actions-create-pull-request@v4
         with:
