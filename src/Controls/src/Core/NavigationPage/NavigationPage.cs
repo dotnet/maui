@@ -12,6 +12,11 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs/*" />
+#if IOS || MACCATALYST
+	[ElementHandler<Handlers.Compatibility.NavigationRenderer>]
+#elif WINDOWS || ANDROID || TIZEN
+	[ElementHandler<NavigationViewHandler>]
+#endif
 	public partial class NavigationPage : Page, IPageContainer<Page>, IBarElement, IElementConfiguration<NavigationPage>, IStackNavigationView, IToolbarElement
 	{
 		/// <summary>Bindable property for attached property <c>BackButtonTitle</c>.</summary>
