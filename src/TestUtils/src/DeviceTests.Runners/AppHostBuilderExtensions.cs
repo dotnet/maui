@@ -16,6 +16,16 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 		public static MauiAppBuilder ConfigureTests(this MauiAppBuilder appHostBuilder, TestOptions options)
 		{
 			appHostBuilder.Services.AddSingleton(options);
+
+			appHostBuilder.Logging.AddConsole();
+			// appHostBuilder.Logging.SetMinimumLevel(LogLevel.Debug);
+			return appHostBuilder;
+		}
+
+		public static MauiAppBuilder ConfigureTests(this MauiAppBuilder appHostBuilder, Func<IServiceProvider, TestOptions> options)
+		{
+			appHostBuilder.Services.AddSingleton(options);
+
 			appHostBuilder.Logging.AddConsole();
 			// appHostBuilder.Logging.SetMinimumLevel(LogLevel.Debug);
 			return appHostBuilder;

@@ -21,7 +21,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 			App.WaitForElement(ButtonId, "Timed out waiting for first page.");
 			App.Tap(ButtonId);
-			App.WaitForElement("LabelId", "Timed out waiting for the destination page.");
+			App.WaitForElementTillPageNavigationSettled("LabelId");
 			App.TapBackArrow("BackButtonImage");
 			App.WaitForElement(ButtonId, "Timed out waiting to navigate back to the first page.");
 		}

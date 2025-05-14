@@ -326,7 +326,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Category(TestCategory.Editor)]
-		[Category(TestCategory.TextInput)]
 		[Collection(RunInNewWindowCollection)]
 		public class EditorTextInputTests : TextInputTests<EditorHandler, Editor>
 		{

@@ -49,7 +49,7 @@ public static class DatePickerExtensions
 		// HACK This forces the color to update; there's probably a more elegant way to make this happen
 		platformDatePicker.UpdateDate(datePicker);
 	}
-
+			
 	public static void UpdateDate(this UIDatePicker picker, IDatePicker datePicker)
 	{
 		if (picker is not null && picker.Date.ToDateTime() != datePicker.Date)
