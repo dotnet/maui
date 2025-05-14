@@ -63,10 +63,6 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
-#pragma warning disable CA1416 //  'MenuBarHandler', MenuFlyoutSubItemHandler, MenuFlyoutSubItemHandler, MenuBarItemHandler is only supported on: 'ios' 13.0 and later
-		handlersCollection.AddHandler<MenuBarItem, MenuBarItemHandler>();
-#pragma warning restore CA1416
-
 #if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
 #pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
