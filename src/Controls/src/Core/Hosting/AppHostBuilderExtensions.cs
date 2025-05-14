@@ -63,8 +63,6 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
-		handlersCollection.AddHandler<Shapes.RoundRectangle, RoundRectangleHandler>();
-
 #pragma warning disable CA1416 //  'MenuBarHandler', MenuFlyoutSubItemHandler, MenuFlyoutSubItemHandler, MenuBarItemHandler is only supported on: 'ios' 13.0 and later
 		handlersCollection.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
 		handlersCollection.AddHandler<MenuFlyoutSeparator, MenuFlyoutSeparatorHandler>();
@@ -220,7 +218,6 @@ public static partial class AppHostBuilderExtensions
 		FlyoutPage.RemapForControls();
 		Toolbar.RemapForControls();
 		TabbedPage.RemapForControls();
-		Shape.RemapForControls();
 
 		Slider.RemapForControls();
 		return builder;
