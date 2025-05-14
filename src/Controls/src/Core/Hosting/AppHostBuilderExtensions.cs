@@ -71,7 +71,6 @@ public static partial class AppHostBuilderExtensions
 #endif
 
 #if WINDOWS || ANDROID || TIZEN
-		handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 		handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 		handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
 		handlersCollection.AddHandler<TabbedPage, TabbedViewHandler>();
