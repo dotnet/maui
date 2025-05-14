@@ -69,7 +69,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Shapes.Polyline, PolylineHandler>();
 		handlersCollection.AddHandler<Shapes.Rectangle, RectangleHandler>();
 		handlersCollection.AddHandler<Shapes.RoundRectangle, RoundRectangleHandler>();
-		handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
 		handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 		handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
 
@@ -228,7 +227,6 @@ public static partial class AppHostBuilderExtensions
 		Toolbar.RemapForControls();
 		SwipeView.RemapForControls();
 		TabbedPage.RemapForControls();
-		RefreshView.RemapForControls();
 		Shape.RemapForControls();
 		ContentPage.RemapForControls();
 
