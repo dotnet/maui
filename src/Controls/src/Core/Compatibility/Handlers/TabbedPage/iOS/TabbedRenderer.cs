@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			bool isInMoreTab = false;
 			// Check if the selected tab is in the More tab
-			if (MoreNavigationController != null && MoreNavigationController.ViewControllers != null)
+			if (MoreNavigationController is not null && MoreNavigationController.ViewControllers is not null)
 			{
 				foreach (var viewController in MoreNavigationController.ViewControllers)
 				{
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			// Only update if CurrentPage's controller is not the selected one, and if in More tab
-			var currentPageController = Tabbed?.CurrentPage != null ? GetViewController(Tabbed.CurrentPage) : null;
+			var currentPageController = Tabbed?.CurrentPage is not null ? GetViewController(Tabbed.CurrentPage) : null;
 			if ((isInMoreTab || SelectedViewController.Title.Equals("More", StringComparison.Ordinal)) &&
 				(currentPageController != SelectedViewController))
 			{
