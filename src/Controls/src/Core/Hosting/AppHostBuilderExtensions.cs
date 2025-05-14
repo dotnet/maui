@@ -94,10 +94,6 @@ public static partial class AppHostBuilderExtensions
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
 
-#if WINDOWS || MACCATALYST
-		handlersCollection.AddHandler(typeof(MenuFlyout), typeof(MenuFlyoutHandler));
-#endif
-
 #if IOS || MACCATALYST
 		handlersCollection.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
 		handlersCollection.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
@@ -207,7 +203,6 @@ public static partial class AppHostBuilderExtensions
 		VisualElement.RemapIfNeeded();
 		FlyoutPage.RemapForControls();
 		Toolbar.RemapForControls();
-		TabbedPage.RemapForControls();
 
 		return builder;
 	}
