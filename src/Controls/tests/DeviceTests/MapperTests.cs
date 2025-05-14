@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(MapperGenericTypeCases))]
 		public void ValidateMapperGenerics(IPropertyMapper propertyMapper, Type viewType, Type handlerType)
 		{
-			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(h => h.AddMauiControlsHandlers()));
+			EnsureHandlerCreated(builder => builder.ConfigureMauiHandlers(configureDelegate: null));
 			var generics = propertyMapper.GetType().GenericTypeArguments;
 			Assert.Equal(viewType, generics[0]);
 			Assert.Equal(handlerType, generics[1]);

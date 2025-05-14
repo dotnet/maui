@@ -56,7 +56,6 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					builder.ConfigureMauiHandlers(handlers =>
 					{
-						handlers.AddMauiControlsHandlers();
 						handlers.AddHandler(typeof(Window), typeof(WindowHandlerStub));
 					});
 				});
