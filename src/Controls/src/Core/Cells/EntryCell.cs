@@ -7,6 +7,11 @@ namespace Microsoft.Maui.Controls
 {
 	/// <summary>A <see cref="Microsoft.Maui.Controls.Cell"/> with a label and a single line text entry field.</summary>
 	[Obsolete("The controls which use EntryCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
+#if WINDOWS || ANDROID || IOS || MACCATALYST
+#pragma warning disable CS0618 // Type or member is obsolete
+	[ElementHandler<Handlers.Compatibility.EntryCellRenderer>]
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 	public class EntryCell : Cell, ITextAlignmentElement, IEntryCellController, ITextAlignment
 	{
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>
