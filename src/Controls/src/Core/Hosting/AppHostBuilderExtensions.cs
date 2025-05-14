@@ -95,10 +95,6 @@ public static partial class AppHostBuilderExtensions
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
 
-#if IOS || MACCATALYST
-		handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
-#endif
-
 #if WINDOWS
 		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
@@ -194,7 +190,6 @@ public static partial class AppHostBuilderExtensions
 		// Update the mappings for IView/View to work specifically for Controls
 		Element.RemapIfNeeded();
 		VisualElement.RemapIfNeeded();
-		FlyoutPage.RemapForControls();
 		Toolbar.RemapForControls();
 
 		Slider.RemapForControls();
