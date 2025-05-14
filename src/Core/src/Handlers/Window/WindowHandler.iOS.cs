@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class WindowHandler : ElementHandler<IWindow, UIWindow>
 	{
 		readonly WindowProxy _proxy = new();
+		DisplayOrientation _previousOrientation;
 
 		protected override void ConnectHandler(UIWindow platformView)
 		{
@@ -21,6 +22,7 @@ namespace Microsoft.Maui.Handlers
 			else
 			{
 				UpdateVirtualViewFrame(platformView);
+				 _previousOrientation = VirtualView.GetOrientation();
 				DeviceDisplay.Current.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 			}
 		}
@@ -130,10 +132,15 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
-        {
-			UpdateVirtualViewFrame(PlatformView);
-        }
+		 void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
+		{
+			// Only update frame when orientation actually changes, not for other display events.
+			if (_previousOrientation != e.DisplayInfo.Orientation)
+			{
+				_previousOrientation = e.DisplayInfo.Orientation;
+				UpdateVirtualViewFrame(PlatformView);
+			}
+		}
 
 		void UpdateVirtualViewFrame(UIWindow window)
 		{
