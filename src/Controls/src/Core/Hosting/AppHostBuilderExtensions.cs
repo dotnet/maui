@@ -71,9 +71,6 @@ public static partial class AppHostBuilderExtensions
 #endif
 #if !TIZEN
 #pragma warning disable CS0618 // Type or member is obsolete
-		handlersCollection.AddHandler(typeof(TextCell), typeof(Handlers.Compatibility.TextCellRenderer));
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(ViewCell), typeof(Handlers.Compatibility.ViewCellRenderer));
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
