@@ -7,6 +7,9 @@ using System.Collections.ObjectModel;
 namespace Microsoft.Maui.Controls
 {
 
+#if WINDOWS || MACCATALYST
+	[ElementHandler<MenuFlyoutHandler>]
+#endif
 	public class MenuFlyout : FlyoutBase, IMenuFlyout // Same pattern as MenuBarItem
 	{
 		readonly List<IMenuElement> _menus = new List<IMenuElement>();
