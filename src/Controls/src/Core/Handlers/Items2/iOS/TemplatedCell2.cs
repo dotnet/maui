@@ -99,10 +99,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					}
 					else
 					{
-						var measure = virtualView.Measure(constraints.Width, constraints.Height);
-						_cachedConstraints = constraints;
-						_measuredSize = measure;
+						_measuredSize = virtualView.Measure(constraints.Width, constraints.Height);
+
 					}
+					_cachedConstraints = constraints;
 					_needsArrange = true;
 				}
 
