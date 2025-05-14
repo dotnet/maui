@@ -11,9 +11,12 @@ namespace Microsoft.Maui.Controls
 	public partial class Button
 	{
 		// IButton does not include the ContentType property, so we map it here to handle Image Positioning
+		static Button() => RemapForControls();
 
 		internal new static void RemapForControls()
 		{
+			VisualElement.RemapIfNeeded();
+
 			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(ContentLayout), MapContentLayout);
 #if IOS
 			ButtonHandler.Mapper.ReplaceMapping<Button, IButtonHandler>(nameof(Padding), MapPadding);
