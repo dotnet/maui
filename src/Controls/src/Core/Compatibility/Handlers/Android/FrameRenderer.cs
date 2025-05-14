@@ -15,7 +15,7 @@ using Color = Microsoft.Maui.Graphics.Color;
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	[Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
-	public class FrameRenderer : CardView, IPlatformViewHandler
+	public class FrameRenderer : CardView, IPlatformViewHandler, IElementHandlerWithAndroidContext<FrameRenderer>
 	{
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
 			= new PropertyMapper<Frame, FrameRenderer>(ViewRenderer.VisualElementRendererMapper)
@@ -52,6 +52,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public event EventHandler<PropertyChangedEventArgs>? ElementPropertyChanged;
 
 		const double LegacyMinimumFrameSize = 20;
+
+		static FrameRenderer IElementHandlerWithAndroidContext<FrameRenderer>.CreateHandler(Context context)
+			=> new FrameRenderer(context);
 
 		public FrameRenderer(Context context) : this(context, Mapper)
 		{
