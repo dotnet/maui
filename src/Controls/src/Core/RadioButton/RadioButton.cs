@@ -369,21 +369,6 @@ namespace Microsoft.Maui.Controls
 
 		void OnIsCheckedPropertyChanged(bool isChecked)
 		{
-			if (IsLoaded)
-			{
-				UpdateRadioButtonGroup(isChecked);
-			}
-			else
-			{
-				// During the initial loading, the Parent property has not been set yet. 
-				// Therefore, we need to delay the update of the RadioButtonGroup until the Parent is properly assigned. 
-				// This is necessary because we need to retrieve the RadioButton from its Parent to perform the update correctly.
-				Dispatcher.Dispatch(() => UpdateRadioButtonGroup(isChecked));
-			}
-		}
-
-		void UpdateRadioButtonGroup(bool isChecked)
-		{
 			if (isChecked)
 			{
 				RadioButtonGroup.UpdateRadioButtonGroup(this);
@@ -399,21 +384,24 @@ namespace Microsoft.Maui.Controls
 			{
 				return;
 			}
-			if (Parent is Element layout)
-			{
-				layout.SetValue(RadioButtonGroup.SelectedValueProperty, Value);
-			}
+
+			var controller = RadioButtonGroupController.GetGroupController(this);
+			controller?.HandleRadioButtonValueChanged(this);
 		}
 
 		void OnGroupNamePropertyChanged(string oldGroupName, string newGroupName)
 		{
 			if (!string.IsNullOrEmpty(oldGroupName) && !string.IsNullOrEmpty(newGroupName) && newGroupName != oldGroupName)
 			{
-				if (Parent is Element layout)
-				{
-					layout.ClearValue(RadioButtonGroup.SelectedValueProperty);
-				}
+				var controller = RadioButtonGroupController.GetGroupController(this);
+				controller?.HandleRadioButtonGroupNameChanged(oldGroupName);
 			}
+		}
+
+		internal void OnGroupSelectionChanged(RadioButton radioButton)
+		{
+			var controller = RadioButtonGroupController.GetGroupController(this);
+			controller?.HandleRadioButtonGroupSelectionChanged(radioButton);
 		}
 
 		static View BuildDefaultTemplate()

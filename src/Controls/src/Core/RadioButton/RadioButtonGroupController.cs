@@ -1,10 +1,12 @@
 #nullable disable
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Maui.Controls
 {
 	internal class RadioButtonGroupController
 	{
+		internal static readonly ConditionalWeakTable<RadioButton, RadioButtonGroupController> groupControllers;
 		readonly Element _layout;
 		string _groupName;
 		private object _selectedValue;
@@ -21,6 +23,7 @@ namespace Microsoft.Maui.Controls
 
 			_layout = (Element)layout;
 			_layout.ChildAdded += ChildAdded;
+			_layout.ChildRemoved += ChildRemoved;
 
 			if (!string.IsNullOrEmpty(_groupName))
 			{
@@ -28,14 +31,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal void HandleRadioButtonGroupSelectionChanged(RadioButton selected)
+		internal void HandleRadioButtonGroupSelectionChanged(RadioButton radioButton)
 		{
-			if (selected.GroupName != _groupName)
+			if (radioButton.GroupName != _groupName)
 			{
 				return;
 			}
 
-			_layout.SetValue(RadioButtonGroup.SelectedValueProperty, selected.Value);
+			_layout.SetValue(RadioButtonGroup.SelectedValueProperty, radioButton.Value);
 		}
 
 		void ChildAdded(object sender, ElementEventArgs e)
@@ -59,6 +62,68 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
+		}
+
+		private void ChildRemoved(object sender, ElementEventArgs e)
+		{
+			if (e.Element is RadioButton radioButton)
+			{
+				if (groupControllers.TryGetValue(radioButton, out _))
+				{
+					groupControllers.Remove(radioButton);
+				}
+			}
+			else
+			{
+				foreach (var element in e.Element.Descendants())
+				{
+					if (element is RadioButton radioButton1)
+					{
+						if (groupControllers.TryGetValue(radioButton1, out _))
+						{
+							groupControllers.Remove(radioButton1);
+						}
+					}
+				}
+			}
+		}
+
+		internal static RadioButtonGroupController GetGroupController(RadioButton radioButton)
+		{
+			if (radioButton is null)
+			{
+				throw new ArgumentNullException(nameof(radioButton));
+			}
+
+			if (groupControllers.TryGetValue(radioButton, out var controller))
+			{
+				return controller;
+			}
+			return null;
+		}
+
+		internal void HandleRadioButtonValueChanged(RadioButton radioButton)
+		{
+			if (radioButton == null)
+			{
+				return;
+			}
+			if (radioButton.GroupName != _groupName)
+			{
+				return;
+			}
+
+			_layout.SetValue(RadioButtonGroup.SelectedValueProperty, radioButton.Value);
+		}
+
+		internal void HandleRadioButtonGroupNameChanged(string oldGroupName)
+		{
+			if (oldGroupName != _groupName)
+			{
+				return;
+			}
+
+			_layout.ClearValue(RadioButtonGroup.SelectedValueProperty);
 		}
 
 		void AddRadioButton(RadioButton radioButton)
@@ -89,6 +154,11 @@ namespace Microsoft.Maui.Controls
 			{
 				radioButton.GroupName = name;
 			}
+
+			if (!groupControllers.TryGetValue(radioButton, out _))
+			{
+				groupControllers.Add(radioButton, this);
+			}
 		}
 
 		void UpdateGroupNames(Element element, string name, string oldName = null)
@@ -105,11 +175,11 @@ namespace Microsoft.Maui.Controls
 
 			if (radioButtonValue != null)
 			{
-				foreach (var child in ((IVisualTreeElement)_layout).GetVisualChildren())
+				foreach (var child in _layout.Descendants())
 				{
 					if (child is RadioButton radioButton && radioButton.GroupName == _groupName && radioButton.Value is not null && radioButton.Value.Equals(radioButtonValue))
 					{
-						radioButton.SetValue(RadioButton.IsCheckedProperty, true);
+						radioButton.SetValue(RadioButton.IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
 					}
 				}
 			}

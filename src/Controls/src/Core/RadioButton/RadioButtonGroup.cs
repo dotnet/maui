@@ -52,13 +52,7 @@ namespace Microsoft.Maui.Controls
 		internal static void UpdateRadioButtonGroup(RadioButton radioButton)
 		{
 			UncheckOtherRadioButtonsInScope(radioButton);
-
-			radioButton.SetValue(RadioButton.IsCheckedProperty, true);
-
-			if (radioButton.Parent is not null)
-			{
-				GetRadioButtonGroupController(radioButton.Parent)?.HandleRadioButtonGroupSelectionChanged(radioButton);
-			}
+			radioButton.OnGroupSelectionChanged(radioButton);
 		}
 
 		internal static void UncheckOtherRadioButtonsInScope(RadioButton radioButton)
@@ -97,7 +91,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (child != radioButton && child.IsChecked)
 			{
-				child.SetValueFromRenderer(RadioButton.IsCheckedProperty, false);
+				child.SetValue(RadioButton.IsCheckedProperty, false, specificity: SetterSpecificity.FromHandler);
 			}
 		}
 
