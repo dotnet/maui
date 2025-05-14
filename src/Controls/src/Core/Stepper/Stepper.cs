@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -14,6 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// The value is constrained between <see cref="Minimum"/> and <see cref="Maximum"/>.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler<StepperHandler>]
 	public partial class Stepper : View, IElementConfiguration<Stepper>, IStepper
 	{
 		// Stores the value that was requested by the user, before clamping
