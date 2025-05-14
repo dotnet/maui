@@ -63,7 +63,6 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
-		handlersCollection.AddHandler<Image, ImageHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
 		handlersCollection.AddHandler<Picker, PickerHandler>();
 		handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
