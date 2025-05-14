@@ -6,8 +6,12 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Picker
 	{
-		internal static new void RemapForControls()
+		static Picker() => RemapForControls();
+
+		private static new void RemapForControls()
 		{
+			VisualElement.RemapIfNeeded();
+
 			// Adjust the mappings to preserve Controls.Picker legacy behaviors
 #if IOS
 			PickerHandler.Mapper.ReplaceMapping<Picker, IPickerHandler>(PlatformConfiguration.iOSSpecific.Picker.UpdateModeProperty.PropertyName, MapUpdateMode);
