@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Represents a menu item displayed in a <see cref="SwipeView"/> when the view is swiped.
 	/// </summary>
+	[ElementHandler<SwipeItemMenuItemHandler>]
 	public partial class SwipeItem : MenuItem, Controls.ISwipeItem, Maui.ISwipeItemMenuItem
 	{
 		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
