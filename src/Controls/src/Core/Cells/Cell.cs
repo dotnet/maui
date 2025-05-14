@@ -10,7 +10,12 @@ using Microsoft.Maui.Controls.Internals;
 namespace Microsoft.Maui.Controls
 {
 	// Don't add IElementConfiguration<Cell> because it kills performance on UWP structures that use Cells
-	/// <summary>Provides base class and capabilities for all Microsoft.Maui.Controls cells. Cells are elements meant to be added to <see cref="Microsoft.Maui.Controls.ListView"/> or <see cref="Microsoft.Maui.Controls.TableView"/>.</summary>
+/// <summary>Provides base class and capabilities for all Microsoft.Maui.Controls cells. Cells are elements meant to be added to <see cref="Microsoft.Maui.Controls.ListView"/> or <see cref="Microsoft.Maui.Controls.TableView"/>.</summary>
+#if WINDOWS || ANDROID || IOS || MACCATALYST
+#pragma warning disable CS0618 // Type or member is obsolete
+[ElementHandler<Handlers.Compatibility.CellRenderer>]
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 	public abstract class Cell : Element, ICellController, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IVisualTreeElement
 	{
 		/// <summary>The default height of cells.</summary>
