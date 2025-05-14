@@ -1,6 +1,6 @@
 ﻿using System;
-using CoreFoundation;
 using Foundation;
+using Microsoft.Maui.Devices;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Handlers
 	public partial class WindowHandler : ElementHandler<IWindow, UIWindow>
 	{
 		readonly WindowProxy _proxy = new();
-		NSObject? _orientationObserver;
 
 		protected override void ConnectHandler(UIWindow platformView)
 		{
@@ -22,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 			else
 			{
 				UpdateVirtualViewFrame(platformView);
-				RegisterOrientationChangeNotification();
+				DeviceDisplay.Current.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 			}
 		}
 
@@ -32,8 +31,11 @@ namespace Microsoft.Maui.Handlers
 			{
 				_proxy.Disconnect();
 			}
-
-			UnregisterOrientationChangeNotification();
+			else
+            {
+                DeviceDisplay.Current.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+            }
+			
 			base.DisconnectHandler(platformView);
 		}
 
@@ -128,32 +130,10 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		private void RegisterOrientationChangeNotification()
-		{
-			UIDevice.CurrentDevice.BeginGeneratingDeviceOrientationNotifications();
-			_orientationObserver = NSNotificationCenter.DefaultCenter.AddObserver(
-				UIDevice.OrientationDidChangeNotification,
-				HandleOrientationChanged);
-		}
-
-		private void UnregisterOrientationChangeNotification()
-		{
-			if (_orientationObserver is not null)
-			{
-				NSNotificationCenter.DefaultCenter.RemoveObserver(_orientationObserver);
-				_orientationObserver = null;
-				UIDevice.CurrentDevice.EndGeneratingDeviceOrientationNotifications();
-			}
-		}
-
-		private void HandleOrientationChanged(NSNotification notification)
-		{
-			// Using dispatch to defer execution until after the rotation animation completes.
-			DispatchQueue.MainQueue.DispatchAsync(() => 
-			{
-				UpdateVirtualViewFrame(PlatformView);
-			});
-		}
+		void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
+        {
+			UpdateVirtualViewFrame(PlatformView);
+        }
 
 		void UpdateVirtualViewFrame(UIWindow window)
 		{
