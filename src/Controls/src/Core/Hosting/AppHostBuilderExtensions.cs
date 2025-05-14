@@ -64,9 +64,9 @@ public static partial class AppHostBuilderExtensions
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
 #if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
-#if !TIZEN
+#if ANDROID
 #pragma warning disable CS0618 // Type or member is obsolete
-		handlersCollection.AddHandler(typeof(Cell), typeof(Handlers.Compatibility.CellRenderer));
+		handlersCollection.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(ImageCell), typeof(Handlers.Compatibility.ImageCellRenderer));
@@ -74,6 +74,7 @@ public static partial class AppHostBuilderExtensions
 #pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(EntryCell), typeof(Handlers.Compatibility.EntryCellRenderer));
 #pragma warning restore CS0618 // Type or member is obsolete
+#if !TIZEN
 #pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(TextCell), typeof(Handlers.Compatibility.TextCellRenderer));
 #pragma warning restore CS0618 // Type or member is obsolete
