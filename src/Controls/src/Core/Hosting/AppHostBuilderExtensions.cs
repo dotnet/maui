@@ -96,11 +96,9 @@ public static partial class AppHostBuilderExtensions
 #endif
 
 #if WINDOWS
-		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 		handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
 #elif TIZEN
-		handlersCollection.AddHandler<ShellItem, ShellItemHandler>();
 		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 #endif
 
