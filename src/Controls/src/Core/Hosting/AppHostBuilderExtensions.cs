@@ -117,9 +117,11 @@ public static partial class AppHostBuilderExtensions
 		}
 	}
 
-	internal static void AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
+	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
 		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
+
+		return handlersCollection;
 	}
 
 	static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)
