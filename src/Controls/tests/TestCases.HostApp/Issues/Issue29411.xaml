@@ -3,23 +3,26 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue29411">
-      <Grid Padding="10">
+    <Grid Padding="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-
-        <VerticalStackLayout Grid.Row="0" Padding="10">
+       <VerticalStackLayout Grid.Row="0" Padding="10">
+             
             <HorizontalStackLayout Spacing="10" Margin="0,5,0,0">
-                <Button Text="ChangeLoop"
-                        WidthRequest="120"
-                        AutomationId="Button"
-                        Clicked="OnDisabledButtonClicked" />
+                <Button Text="LoopDisbled"
+                WidthRequest="120"
+                AutomationId="Button"
+                Clicked="OnButtonClicked" />
             </HorizontalStackLayout>
         </VerticalStackLayout>
-
-        <CarouselView x:Name="carouselView" AutomationId="CarouselView" Position="2"
-                      Grid.Row="1">
+        <CarouselView Grid.Row="1"
+                      x:Name="carouselView"
+                      ItemsSource="{Binding ItemsSource}"
+                      ItemTemplate="{Binding ItemTemplate}"
+                      AutomationId="CarouselView">
         </CarouselView>
     </Grid>
 </ContentPage>
