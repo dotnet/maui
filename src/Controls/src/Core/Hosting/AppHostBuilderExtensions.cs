@@ -63,7 +63,6 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
-		handlersCollection.AddHandler<TimePicker, TimePickerHandler>();
 		handlersCollection.AddHandler<Page, PageHandler>();
 		handlersCollection.AddHandler<WebView, WebViewHandler>();
 		if (RuntimeFeature.IsHybridWebViewSupported)
@@ -248,7 +247,6 @@ public static partial class AppHostBuilderExtensions
 		Window.RemapForControls();
 		SwipeView.RemapForControls();
 		TabbedPage.RemapForControls();
-		TimePicker.RemapForControls();
 		RefreshView.RemapForControls();
 		Shape.RemapForControls();
 		WebView.RemapForControls();
