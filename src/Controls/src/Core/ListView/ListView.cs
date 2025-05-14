@@ -17,6 +17,14 @@ namespace Microsoft.Maui.Controls
 {
 	/// <summary>An <see cref="Microsoft.Maui.Controls.ItemsView{T}"/> that displays a collection of data as a vertical list.</summary>
 	[Obsolete("ListView is deprecated. Please use CollectionView instead.")]
+#if WINDOWS || IOS || MACCATALYST || TIZEN
+#pragma warning disable CS0618 // Type or member is obsolete
+	[ElementHandler<Handlers.Compatibility.ListViewRenderer>]
+#pragma warning restore CS0618 // Type or member is obsolete
+#if ANDROID
+	// TODO: ListViewRenderer needs _Context_ parameter in the constructor in the ANDROID case
+#endif
+#endif
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
 	{
 		// The ListViewRenderer has some odd behavior with LogicalChildren
