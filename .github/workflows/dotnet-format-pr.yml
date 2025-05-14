@@ -1,0 +1,39 @@
+name: PR format check
+on:
+  pull_request
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  dotnet-format:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v3.2.0
+        with:
+          dotnet-version: 8.x
+
+      - name: Run dotnet format
+        run: |
+          dotnet format .\Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
+          git diff
+    
+      - name: Commit files
+        if: steps.format.outputs.has-changes == 'true'
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -a -m 'Automated dotnet-format update'
+
+      - name: Push changes to the PR
+        if: steps.format.outputs.has-changes == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git show
+          git push
