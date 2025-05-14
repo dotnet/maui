@@ -96,7 +96,6 @@ public static partial class AppHostBuilderExtensions
 #endif
 
 #if IOS || MACCATALYST
-		handlersCollection.AddHandler(typeof(NavigationPage), typeof(Handlers.Compatibility.NavigationRenderer));
 		handlersCollection.AddHandler(typeof(TabbedPage), typeof(Handlers.Compatibility.TabbedRenderer));
 		handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
