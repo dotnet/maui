@@ -71,7 +71,6 @@ public static partial class AppHostBuilderExtensions
 #endif
 
 #if WINDOWS || ANDROID || TIZEN
-		handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 		handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
 		handlersCollection.AddHandler<TabbedPage, TabbedViewHandler>();
 #endif
@@ -155,7 +154,6 @@ public static partial class AppHostBuilderExtensions
 		// Update the mappings for IView/View to work specifically for Controls
 		Element.RemapIfNeeded();
 		VisualElement.RemapIfNeeded();
-		Toolbar.RemapForControls();
 
 		Slider.RemapForControls();
 		return builder;
