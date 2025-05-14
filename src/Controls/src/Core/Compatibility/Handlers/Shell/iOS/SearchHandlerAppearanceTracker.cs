@@ -150,9 +150,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
-			var textAttr = textField.AttributedPlaceholder?.WithCharacterSpacing(characterSpacing);
-			if (textAttr is not null)
-				textField.AttributedPlaceholder = textAttr;
+			var placeholderAttributedText = textField.AttributedPlaceholder?.WithCharacterSpacing(characterSpacing);
+			if (placeholderAttributedText is not null)
+			{
+				textField.AttributedPlaceholder = placeholderAttributedText;
+			}
 		}
 
 		void GetDefaultSearchBarColors(UISearchBar searchBar)
