@@ -69,11 +69,6 @@ public static partial class AppHostBuilderExtensions
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
 #if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
-#if !TIZEN
-#pragma warning disable CS0618 // Type or member is obsolete
-		handlersCollection.AddHandler(typeof(SwitchCell), typeof(Handlers.Compatibility.SwitchCellRenderer));
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
 #pragma warning disable CS0618 // Type or member is obsolete
 		handlersCollection.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
 #pragma warning restore CS0618 // Type or member is obsolete
