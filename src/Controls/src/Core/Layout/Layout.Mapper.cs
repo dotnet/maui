@@ -9,8 +9,11 @@ namespace Microsoft.Maui.Controls
 {
 	public abstract partial class Layout
 	{
-		internal static new void RemapForControls()
+		static Layout() => RemapForControls();
+
+		private static new void RemapForControls()
 		{
+			VisualElement.RemapIfNeeded();
 		}
 	}
 }
