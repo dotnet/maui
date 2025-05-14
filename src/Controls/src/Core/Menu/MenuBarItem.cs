@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls
 {
+	[ElementHandler<MenuBarItemHandler>]
 	public partial class MenuBarItem : BaseMenuItem, IMenuBarItem
 	{
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>
