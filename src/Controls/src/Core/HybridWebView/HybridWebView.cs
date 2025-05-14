@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls
 	/// A <see cref="View"/> that presents local HTML content in a web view and allows JavaScript and C# code to
 	/// communicate by using messages and by invoking methods.
 	/// </summary>
+	[ElementHandler<HybridWebViewHandler>]
 	public class HybridWebView : View, IHybridWebView
 	{
 		/// <summary>Bindable property for <see cref="DefaultFile"/>.</summary>
