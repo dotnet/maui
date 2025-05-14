@@ -65,7 +65,6 @@ public static partial class AppHostBuilderExtensions
 	{
 #if ANDROID
 #pragma warning disable CS0618 // Type or member is obsolete
-		handlersCollection.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
 		handlersCollection.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
