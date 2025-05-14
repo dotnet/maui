@@ -63,7 +63,6 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
-		handlersCollection.AddHandler<WebView, WebViewHandler>();
 		if (RuntimeFeature.IsHybridWebViewSupported)
 		{
 			// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
@@ -248,7 +247,6 @@ public static partial class AppHostBuilderExtensions
 		TabbedPage.RemapForControls();
 		RefreshView.RemapForControls();
 		Shape.RemapForControls();
-		WebView.RemapForControls();
 		ContentPage.RemapForControls();
 		ImageButton.RemapForControls();
 
