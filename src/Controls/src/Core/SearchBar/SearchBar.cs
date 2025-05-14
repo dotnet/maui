@@ -7,6 +7,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Controls
 	/// placeholder text, and optionally a cancel button. Use the <see cref="SearchCommand"/> to respond to search requests.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler<SearchBarHandler>]
 	public partial class SearchBar : InputView, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>, ICommandElement, ISearchBar
 	{
 		/// <summary>Bindable property for <see cref="ReturnType"/>. This is a bindable property.</summary>
