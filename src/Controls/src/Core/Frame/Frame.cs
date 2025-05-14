@@ -10,8 +10,12 @@ namespace Microsoft.Maui.Controls
 	[Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
 #if WINDOWS || IOS || MACCATALYST || TIZEN
 #pragma warning disable CS0618 // Type or member is obsolete
-	// TODO this doesn't work on Android yet - FrameRenderer needs injecting _Context_ in the constructor
 	[ElementHandler<Handlers.Compatibility.FrameRenderer>]
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
+#elif ANDROID
+#pragma warning disable CS0618 // Type or member is obsolete
+	[ElementHandlerWithAndroidContext<Handlers.Compatibility.FrameRenderer>]
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
 	public partial class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement, IBorderElement, IView, IContentView
