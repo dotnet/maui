@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebView']/Docs/*" />
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler<WebViewHandler>]
 	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>, IWebView
 	{
 		/// <summary>Bindable property for <see cref="Source"/>.</summary>

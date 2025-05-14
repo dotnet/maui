@@ -6,8 +6,12 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class WebView
 	{
-		internal static new void RemapForControls()
+		static WebView() => RemapForControls();
+
+		private static new void RemapForControls()
 		{
+			VisualElement.RemapIfNeeded();
+
 			// Adjust the mappings to preserve Controls.WebView legacy behaviors
 #if ANDROID
 			WebViewHandler.Mapper.ReplaceMapping<WebView, IWebViewHandler>(PlatformConfiguration.AndroidSpecific.WebView.DisplayZoomControlsProperty.PropertyName, MapDisplayZoomControls);
