@@ -1,4 +1,4 @@
-name: PR format check
+name: Format PR Code
 on:
   pull_request
 
