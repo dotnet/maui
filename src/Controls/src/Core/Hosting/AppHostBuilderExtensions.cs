@@ -110,8 +110,6 @@ public static partial class AppHostBuilderExtensions
 		builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiControlsInitializer>());
 #endif
 
-		builder.RemapForControls();
-
 		return builder;
 	}
 
