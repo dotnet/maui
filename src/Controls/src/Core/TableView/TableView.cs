@@ -14,6 +14,11 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableView']/Docs/*" />
 	[Obsolete("Please use CollectionView instead.")]
 	[ContentProperty(nameof(Root))]
+#if WINDOWS || IOS || MACCATALYST || TIZEN
+#pragma warning disable CS0618 // Type or member is obsolete
+	[ElementHandler<Handlers.Compatibility.TableViewRenderer>]
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 	public class TableView : View, ITableViewController, IElementConfiguration<TableView>, IVisualTreeElement
 	{
 		/// <summary>Bindable property for <see cref="RowHeight"/>.</summary>
