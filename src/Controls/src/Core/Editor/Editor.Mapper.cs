@@ -6,8 +6,12 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Editor
 	{
-		internal static new void RemapForControls()
+		static Editor() => RemapForControls();
+
+		private new static void RemapForControls()
 		{
+			VisualElement.RemapIfNeeded();
+
 			// Adjust the mappings to preserve Controls.Editor legacy behaviors
 #if WINDOWS
 			EditorHandler.Mapper.ReplaceMapping<Editor, IEditorHandler>(PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName, MapDetectReadingOrderFromContent);
