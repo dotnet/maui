@@ -5,11 +5,13 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ProgressBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.ProgressBar']/Docs/*" />
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler<ProgressBarHandler>]
 	public partial class ProgressBar : View, IElementConfiguration<ProgressBar>, IProgress
 	{
 		/// <summary>Bindable property for <see cref="ProgressColor"/>.</summary>
