@@ -33,12 +33,12 @@ jobs:
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -a -m 'Automated dotnet-format update'
+          git commit -a -m 'Automated dotnet-format update on ${{ matrix.branch }}'
 
       - name: Create Pull Request
         uses: dotnet/actions-create-pull-request@v4
         with:
-          title: '[housekeeping] Automated PR to fix formatting errors'
+          title: '[housekeeping] Automated PR to fix formatting errors on ${{ matrix.branch }}'
           body: |
             Automated PR to fix formatting errors
           committer: GitHub <noreply@github.com>
@@ -48,5 +48,5 @@ jobs:
             area-infrastructure
           assignees: rmarinho, jsuarezruiz
           reviewers: rmarinho, jsuarezruiz
-          branch: housekeeping/fix-codeformatting
+          branch: housekeeping/fix-codeformatting/${{ matrix.branch }}
           base: ${{ matrix.branch }}
