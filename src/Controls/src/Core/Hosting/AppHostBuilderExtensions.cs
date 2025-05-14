@@ -61,23 +61,6 @@ public static partial class AppHostBuilderExtensions
 		return builder;
 	}
 
-	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
-	{
-#if ANDROID
-#pragma warning disable CS0618 // Type or member is obsolete
-		handlersCollection.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
-		handlersCollection.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
-#pragma warning restore CS0618 // Type or member is obsolete
-#endif
-
-#if WINDOWS || ANDROID || TIZEN
-		handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
-		handlersCollection.AddHandler<TabbedPage, TabbedViewHandler>();
-#endif
-
-		return handlersCollection;
-	}
-
 	static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
 	{
 #if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
@@ -93,10 +76,7 @@ public static partial class AppHostBuilderExtensions
 
 		builder.ConfigureImageSourceHandlers();
 
-		builder.ConfigureMauiHandlers(handlers =>
-		{
-			handlers.AddControlsHandlers();
-		});
+		builder.ConfigureMauiHandlers(configureDelegate: null);
 
 		// NOTE: not registered under NativeAOT or TrimMode=Full scenarios
 		if (RuntimeFeature.IsHybridWebViewSupported)
