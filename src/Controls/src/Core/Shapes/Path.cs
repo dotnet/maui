@@ -3,10 +3,12 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Controls.Handlers;
 
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Path']/Docs/*" />
+	[ElementHandler<PathHandler>]
 	public sealed partial class Path : Shape, IShape
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
