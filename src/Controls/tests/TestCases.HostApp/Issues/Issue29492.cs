@@ -1,7 +1,7 @@
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, "29492", "CharacterSpacing should be applied", PlatformAffected.Android | PlatformAffected.iOS)]
-public class CharacterSpacingIssue : TestShell
+public class Issue29492 : TestShell
 {
     protected override void Init()
     {

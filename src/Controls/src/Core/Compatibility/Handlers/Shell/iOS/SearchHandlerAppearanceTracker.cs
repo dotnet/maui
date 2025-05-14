@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			var textAttr = textField.AttributedPlaceholder?.WithCharacterSpacing(characterSpacing);
-			if (textAttr != null)
+			if (textAttr is not null)
 				textField.AttributedPlaceholder = textAttr;
 		}
 
