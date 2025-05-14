@@ -14,6 +14,11 @@ namespace Microsoft.Maui.Controls
 	/// <summary>A <see cref="Page"/> that manages two panes of information: a flyout that presents a menu or navigation, and a detail that presents the selected content.</summary>
 	[ContentProperty(nameof(Detail))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+#if IOS || MACCATALYST
+	[ElementHandler<Handlers.Compatibility.PhoneFlyoutPageRenderer>]
+#elif WINDOWS || ANDROID || TIZEN
+	[ElementHandler<FlyoutViewHandler>]
+#endif
 	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>, IFlyoutView
 	{
 		/// <summary>Bindable property for <see cref="IsGestureEnabled"/>.</summary>
