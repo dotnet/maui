@@ -17,22 +17,22 @@ namespace Microsoft.Maui.Graphics
 		/// Gets the x-coordinate of the picture's origin.
 		/// </summary>
 		public float X { get; }
-		
+
 		/// <summary>
 		/// Gets the y-coordinate of the picture's origin.
 		/// </summary>
 		public float Y { get; }
-		
+
 		/// <summary>
 		/// Gets the width of the picture.
 		/// </summary>
 		public float Width { get; }
-		
+
 		/// <summary>
 		/// Gets the height of the picture.
 		/// </summary>
 		public float Height { get; }
-		
+
 		/// <summary>
 		/// Gets or sets a hash value that uniquely identifies this picture's content.
 		/// </summary>

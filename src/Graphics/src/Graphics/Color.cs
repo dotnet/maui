@@ -18,17 +18,17 @@ namespace Microsoft.Maui.Graphics
 		/// The red component of the color, ranging from 0.0 to 1.0.
 		/// </summary>
 		public readonly float Red;
-		
+
 		/// <summary>
 		/// The green component of the color, ranging from 0.0 to 1.0.
 		/// </summary>
 		public readonly float Green;
-		
+
 		/// <summary>
 		/// The blue component of the color, ranging from 0.0 to 1.0.
 		/// </summary>
 		public readonly float Blue;
-		
+
 		/// <summary>
 		/// The alpha (opacity) component of the color, ranging from 0.0 (transparent) to 1.0 (opaque).
 		/// </summary>

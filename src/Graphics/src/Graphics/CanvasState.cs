@@ -12,12 +12,12 @@ namespace Microsoft.Maui.Graphics
 		/// Gets or sets the pattern of dashes and gaps used to stroke paths.
 		/// </summary>
 		public float[] StrokeDashPattern { get; set; }
-		
+
 		/// <summary>
 		/// Gets or sets the distance into the dash pattern to start the dash.
 		/// </summary>
 		public float StrokeDashOffset { get; set; } = 1;
-		
+
 		/// <summary>
 		/// Gets or sets the width of the stroke used to draw an object's outline.
 		/// </summary>
@@ -44,17 +44,17 @@ namespace Microsoft.Maui.Graphics
 				TransformChanged();
 			}
 		}
-		
+
 		/// <summary>
 		/// Gets the uniform scale factor derived from the transformation matrix.
 		/// </summary>
 		public float Scale => this._scale;
-		
+
 		/// <summary>
 		/// Gets the horizontal scale factor derived from the transformation matrix.
 		/// </summary>
 		public float ScaleX => this._scaleX;
-		
+
 		/// <summary>
 		/// Gets the vertical scale factor derived from the transformation matrix.
 		/// </summary>
