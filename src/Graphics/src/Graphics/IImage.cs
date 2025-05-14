@@ -14,12 +14,12 @@ namespace Microsoft.Maui.Graphics
 		/// May leave empty space if the aspect ratios don't match.
 		/// </summary>
 		Fit,
-		
+
 		/// <summary>
 		/// Preserves aspect ratio and fills the target dimensions, potentially cropping the image.
 		/// </summary>
 		Bleed,
-		
+
 		/// <summary>
 		/// Ignores aspect ratio and stretches the image to exactly fit the target dimensions.
 		/// </summary>
@@ -35,12 +35,12 @@ namespace Microsoft.Maui.Graphics
 		/// Gets the width of the image in pixels.
 		/// </summary>
 		float Width { get; }
-		
+
 		/// <summary>
 		/// Gets the height of the image in pixels.
 		/// </summary>
 		float Height { get; }
-		
+
 		/// <summary>
 		/// Creates a downsized version of the image with the same aspect ratio.
 		/// </summary>
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Graphics
 		/// <param name="disposeOriginal">Whether to dispose the original image after downsizing.</param>
 		/// <returns>A new <see cref="IImage"/> with the downsized dimensions.</returns>
 		IImage Downsize(float maxWidthOrHeight, bool disposeOriginal = false);
-		
+
 		/// <summary>
 		/// Creates a downsized version of the image that fits within the specified dimensions.
 		/// </summary>
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Graphics
 		/// <param name="disposeOriginal">Whether to dispose the original image after downsizing.</param>
 		/// <returns>A new <see cref="IImage"/> with the downsized dimensions.</returns>
 		IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false);
-		
+
 		/// <summary>
 		/// Resizes the image to the specified dimensions using the specified resize mode.
 		/// </summary>
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Graphics
 		/// <param name="disposeOriginal">Whether to dispose the original image after resizing.</param>
 		/// <returns>A new <see cref="IImage"/> with the resized dimensions.</returns>
 		IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit, bool disposeOriginal = false);
-		
+
 		/// <summary>
 		/// Saves the image to a stream in the specified format.
 		/// </summary>
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Graphics
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="stream"/> is null.</exception>
 		/// <exception cref="ArgumentException">Thrown when <paramref name="quality"/> is not between 0.0 and 1.0.</exception>
 		void Save(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1);
-		
+
 		/// <summary>
 		/// Asynchronously saves the image to a stream in the specified format.
 		/// </summary>
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Graphics
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="stream"/> is null.</exception>
 		/// <exception cref="ArgumentException">Thrown when <paramref name="quality"/> is not between 0.0 and 1.0.</exception>
 		Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1);
-		
+
 		/// <summary>
 		/// Creates a platform-specific representation of this image.
 		/// </summary>

@@ -9,37 +9,37 @@ namespace Microsoft.Maui.Graphics
 		/// Draws a line between two points.
 		/// </summary>
 		DrawLine = 0,
-		
+
 		/// <summary>
 		/// Draws the outline of a rectangle.
 		/// </summary>
 		DrawRectangle = 1,
-		
+
 		/// <summary>
 		/// Draws the outline of a rectangle with rounded corners.
 		/// </summary>
 		DrawRoundedRectangle = 2,
-		
+
 		/// <summary>
 		/// Draws the outline of an ellipse.
 		/// </summary>
 		DrawEllipse = 3,
-		
+
 		/// <summary>
 		/// Draws the outline of a path.
 		/// </summary>
 		DrawPath = 4,
-		
+
 		/// <summary>
 		/// Draws an image.
 		/// </summary>
 		DrawImage = 5,
-		
+
 		/// <summary>
 		/// Draws an arc.
 		/// </summary>
 		DrawArc = 6,
-		
+
 		/// <summary>
 		/// Draws a PDF page.
 		/// </summary>
@@ -49,27 +49,27 @@ namespace Microsoft.Maui.Graphics
 		/// Fills a rectangle with the current fill color or paint.
 		/// </summary>
 		FillRectangle = 10,
-		
+
 		/// <summary>
 		/// Fills a rectangle with rounded corners with the current fill color or paint.
 		/// </summary>
 		FillRoundedRectangle = 11,
-		
+
 		/// <summary>
 		/// Fills an ellipse with the current fill color or paint.
 		/// </summary>
 		FillEllipse = 12,
-		
+
 		/// <summary>
 		/// Fills a path with the current fill color or paint.
 		/// </summary>
 		FillPath = 13,
-		
+
 		/// <summary>
 		/// Fills an arc with the current fill color or paint.
 		/// </summary>
 		FillArc = 14,
-		
+
 		/// <summary>
 		/// Alternative command for filling a path.
 		/// </summary>
@@ -79,17 +79,17 @@ namespace Microsoft.Maui.Graphics
 		/// Draws text at a specific point.
 		/// </summary>
 		DrawStringAtPoint = 20,
-		
+
 		/// <summary>
 		/// Draws text within a rectangle with alignment.
 		/// </summary>
 		DrawStringInRect = 21,
-		
+
 		/// <summary>
 		/// Draws text along a path.
 		/// </summary>
 		DrawStringInPath = 22,
-		
+
 		/// <summary>
 		/// Draws formatted text within a rectangle.
 		/// </summary>
@@ -99,27 +99,27 @@ namespace Microsoft.Maui.Graphics
 		/// Sets the stroke width.
 		/// </summary>
 		StrokeSize = 30,
-		
+
 		/// <summary>
 		/// Sets the stroke color.
 		/// </summary>
 		StrokeColor = 31,
-		
+
 		/// <summary>
 		/// Sets the stroke dash pattern.
 		/// </summary>
 		StrokeDashPattern = 32,
-		
+
 		/// <summary>
 		/// Sets the stroke line cap style.
 		/// </summary>
 		StrokeLineCap = 33,
-		
+
 		/// <summary>
 		/// Sets the stroke line join style.
 		/// </summary>
 		StrokeLineJoin = 34,
-		
+
 		/// <summary>
 		/// Sets the stroke location.
 		/// </summary>
@@ -127,22 +127,22 @@ namespace Microsoft.Maui.Graphics
 		/// Sets the stroke location.
 		/// </summary>
 		StrokeLocation = 35,
-		
+
 		/// <summary>
 		/// Sets the miter limit for stroke line joins.
 		/// </summary>
 		StrokeMiterLimit = 36,
-		
+
 		/// <summary>
 		/// Controls whether stroke scaling is limited.
 		/// </summary>
 		LimitStrokeScaling = 37,
-		
+
 		/// <summary>
 		/// Sets the stroke limit.
 		/// </summary>
 		StrokeLimit = 38,
-		
+
 		/// <summary>
 		/// Sets the stroke brush.
 		/// </summary>
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Graphics
 		/// Sets the fill color.
 		/// </summary>
 		FillColor = 40,
-		
+
 		/// <summary>
 		/// Sets the fill paint (gradient, pattern, etc.).
 		/// </summary>
@@ -162,12 +162,12 @@ namespace Microsoft.Maui.Graphics
 		/// Sets the font color.
 		/// </summary>
 		FontColor = 50,
-		
+
 		/// <summary>
 		/// Sets the font name or family.
 		/// </summary>
 		FontName = 51,
-		
+
 		/// <summary>
 		/// Sets the font size.
 		/// </summary>
@@ -177,22 +177,22 @@ namespace Microsoft.Maui.Graphics
 		/// Applies a scaling transformation.
 		/// </summary>
 		Scale = 60,
-		
+
 		/// <summary>
 		/// Applies a translation transformation.
 		/// </summary>
 		Translate = 61,
-		
+
 		/// <summary>
 		/// Applies a rotation transformation around the origin.
 		/// </summary>
 		Rotate = 62,
-		
+
 		/// <summary>
 		/// Applies a rotation transformation around a specified point.
 		/// </summary>
 		RotateAtPoint = 63,
-		
+
 		/// <summary>
 		/// Concatenates a transformation matrix with the current transformation.
 		/// </summary>
@@ -202,12 +202,12 @@ namespace Microsoft.Maui.Graphics
 		/// Sets shadow properties.
 		/// </summary>
 		Shadow = 70,
-		
+
 		/// <summary>
 		/// Sets the global alpha (transparency) value.
 		/// </summary>
 		Alpha = 71,
-		
+
 		/// <summary>
 		/// Sets the blend mode for compositing.
 		/// </summary>
@@ -217,17 +217,17 @@ namespace Microsoft.Maui.Graphics
 		/// Subtracts a region from the current clipping area.
 		/// </summary>
 		SubtractFromClip = 80,
-		
+
 		/// <summary>
 		/// Sets the clipping area to a path.
 		/// </summary>
 		ClipPath = 81,
-		
+
 		/// <summary>
 		/// Sets the clipping area to a rectangle.
 		/// </summary>
 		ClipRectangle = 82,
-		
+
 		/// <summary>
 		/// Subtracts a path from the current clipping area.
 		/// </summary>
@@ -237,12 +237,12 @@ namespace Microsoft.Maui.Graphics
 		/// Saves the current graphics state on a stack.
 		/// </summary>
 		SaveState = 100,
-		
+
 		/// <summary>
 		/// Restores the most recently saved graphics state.
 		/// </summary>
 		RestoreState = 101,
-		
+
 		/// <summary>
 		/// Resets the graphics state to its default values.
 		/// </summary>
