@@ -63,7 +63,6 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
-		handlersCollection.AddHandler<Shapes.Line, LineHandler>();
 		handlersCollection.AddHandler<Shapes.Path, PathHandler>();
 		handlersCollection.AddHandler<Shapes.Polygon, PolygonHandler>();
 		handlersCollection.AddHandler<Shapes.Polyline, PolylineHandler>();
