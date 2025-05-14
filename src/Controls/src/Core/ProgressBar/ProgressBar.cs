@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -16,6 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// Use the <see cref="ProgressTo"/> method to animate the progress bar.
 	/// </remarks>
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler<ProgressBarHandler>]
 	public partial class ProgressBar : View, IElementConfiguration<ProgressBar>, IProgress
 	{
 		/// <summary>Bindable property for <see cref="ProgressColor"/>.</summary>
