@@ -69,7 +69,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Shapes.Polyline, PolylineHandler>();
 		handlersCollection.AddHandler<Shapes.Rectangle, RectangleHandler>();
 		handlersCollection.AddHandler<Shapes.RoundRectangle, RoundRectangleHandler>();
-		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
 		handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
 		handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 		handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
@@ -225,7 +224,6 @@ public static partial class AppHostBuilderExtensions
 		// Update the mappings for IView/View to work specifically for Controls
 		Element.RemapIfNeeded();
 		VisualElement.RemapIfNeeded();
-		RadioButton.RemapForControls();
 		FlyoutPage.RemapForControls();
 		Toolbar.RemapForControls();
 		SwipeView.RemapForControls();
