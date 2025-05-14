@@ -10,13 +10,14 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>
-	/// Represents a button that displays an image and reacts to touch events.
-	/// </summary>
-	/// <remarks>
-	/// <see cref="ImageButton"/> is similar to <see cref="Button"/> but displays an image instead of text.
-	/// It supports all standard button features including commands, events, borders, and visual states.
-	/// </remarks>
+/// <summary>
+/// Represents a button that displays an image and reacts to touch events.
+/// </summary>
+/// <remarks>
+/// <see cref="ImageButton"/> is similar to <see cref="Button"/> but displays an image instead of text.
+/// It supports all standard button features including commands, events, borders, and visual states.
+/// </remarks>
+[ElementHandler<ImageButtonHandler>]
 	public partial class ImageButton : View, IImageController, IElementConfiguration<ImageButton>, IBorderElement, IButtonController, IViewController, IPaddingElement, IButtonElement, ICommandElement, IImageElement, IImageButton
 	{
 		const int DefaultCornerRadius = -1;
