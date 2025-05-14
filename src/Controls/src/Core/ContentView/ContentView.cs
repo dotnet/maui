@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -15,7 +16,8 @@ namespace Microsoft.Maui.Controls
 	/// </remarks>
 	[ContentProperty("Content")]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
-	public partial class ContentView : TemplatedView, IContentView, ISafeAreaView2, ISafeAreaElement
+[ElementHandler<ContentViewHandler>]
+public partial class ContentView : TemplatedView, IContentView, ISafeAreaView2, ISafeAreaElement
 	{
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentView), null, propertyChanged: TemplateUtilities.OnContentChanged);
