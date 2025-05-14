@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Hosting.Internal
 			_registeredHandlerServiceTypeSet = RegisteredHandlerServiceTypeSet.GetInstance(collection);
 		}
 
-		public IElementHandler? GetHandler(Type type)
+		public IElementHandler? GetHandler(Type type, IMauiContext context)
 		{
 			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
 				&& GetService(serviceType) is IElementHandler handler)
@@ -28,14 +28,14 @@ namespace Microsoft.Maui.Hosting.Internal
 
 			if (TryGetElementHandlerAttribute(type, out var elementHandlerAttribute))
 			{
-				return elementHandlerAttribute.CreateHandler();
+				return elementHandlerAttribute.CreateHandler(context);
 			}
 
 			throw new HandlerNotFoundException($"Unable to find a {nameof(IElementHandler)} corresponding to {type}. Please register a handler for {type} using `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` or `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler`");
 		}
 
-		public IElementHandler? GetHandler<T>() where T : IElement
-			=> GetHandler(typeof(T));
+		public IElementHandler? GetHandler<T>(IMauiContext context) where T : IElement
+			=> GetHandler(typeof(T), context);
 
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public Type? GetHandlerType(Type iview)
