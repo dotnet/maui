@@ -6,7 +6,6 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// A View that contains another View.
 	/// </summary>
-	[ElementHandler<ContentViewHandler>]
 	public interface IContentView : IView, IPadding, ICrossPlatformLayout
 	{
 		/// <summary>
