@@ -7,6 +7,11 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="Type[@FullName='Microsoft.Maui.Controls.TextCell']/Docs/*" />
 	[Obsolete("The controls which use TextCell (ListView and TableView) are obsolete. Please use CollectionView instead.")]
+#if WINDOWS || ANDROID || IOS || MACCATALYST
+#pragma warning disable CS0618 // Type or member is obsolete
+	[ElementHandler<Handlers.Compatibility.TextCellRenderer>]
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 	public class TextCell : Cell
 	{
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
