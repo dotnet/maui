@@ -70,7 +70,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Shapes.Polyline, PolylineHandler>();
 		handlersCollection.AddHandler<Shapes.Rectangle, RectangleHandler>();
 		handlersCollection.AddHandler<Shapes.RoundRectangle, RoundRectangleHandler>();
-		handlersCollection.AddHandler<IndicatorView, IndicatorViewHandler>();
 		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
 		handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
 		handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
