@@ -63,7 +63,6 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
-		handlersCollection.AddHandler<SearchBar, SearchBarHandler>();
 		handlersCollection.AddHandler<Slider, SliderHandler>();
 		handlersCollection.AddHandler<Stepper, StepperHandler>();
 		handlersCollection.AddHandler<Switch, SwitchHandler>();
@@ -251,7 +250,6 @@ public static partial class AppHostBuilderExtensions
 		Toolbar.RemapForControls();
 		Window.RemapForControls();
 		SwipeView.RemapForControls();
-		SearchBar.RemapForControls();
 		Stepper.RemapForControls();
 		TabbedPage.RemapForControls();
 		TimePicker.RemapForControls();
