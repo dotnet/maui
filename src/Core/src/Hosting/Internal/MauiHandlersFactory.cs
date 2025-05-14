@@ -20,15 +20,21 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		public IElementHandler? GetHandler(Type type, IMauiContext context)
 		{
-			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
-				&& GetService(serviceType) is IElementHandler handler)
+			// Check if there is a handler registered for this EXACT type -- allows overriding the default handler
+			if (GetService(type) is IElementHandler exactRegisteredHandler)
 			{
-				return handler;
+				return exactRegisteredHandler;
 			}
 
 			if (TryGetElementHandlerAttribute(type, out var elementHandlerAttribute))
 			{
 				return elementHandlerAttribute.CreateHandler(context);
+			}
+
+			if (TryGetVirtualViewHandlerServiceType(type) is Type serviceType
+				&& GetService(serviceType) is IElementHandler inheritedRegisteredHandler)
+			{
+				return inheritedRegisteredHandler;
 			}
 
 			throw new HandlerNotFoundException($"Unable to find a {nameof(IElementHandler)} corresponding to {type}. Please register a handler for {type} using `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler` or `Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.TryAddHandler`");
@@ -40,9 +46,8 @@ namespace Microsoft.Maui.Hosting.Internal
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 		public Type? GetHandlerType(Type iview)
 		{
-			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
-				&& InternalCollection.TryGetService(serviceType, out ServiceDescriptor? serviceDescriptor)
-				&& serviceDescriptor?.ImplementationType is Type type)
+			// Check if there is a handler registered for this EXACT type -- allows overriding the default handler
+			if (TryGetRegisteredHandlerType(iview, out Type? type))
 			{
 				return type;
 			}
@@ -50,6 +55,12 @@ namespace Microsoft.Maui.Hosting.Internal
 			if (TryGetElementHandlerAttribute(iview, out var elementHandlerAttribute))
 			{
 				return GetHandlerType(elementHandlerAttribute);
+			}
+
+			if (TryGetVirtualViewHandlerServiceType(iview) is Type serviceType
+				&& TryGetRegisteredHandlerType(serviceType, out type))
+			{
+				return type;
 			}
 
 			return null;
@@ -60,6 +71,19 @@ namespace Microsoft.Maui.Hosting.Internal
 			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 			static Type GetHandlerType(ElementHandlerAttribute elementHandlerAttribute)
 				=> elementHandlerAttribute.HandlerType;
+		}
+
+		private bool TryGetRegisteredHandlerType(Type serviceType, [NotNullWhen(returnValue: true)] out Type? handlerType)
+		{
+			if (InternalCollection.TryGetService(serviceType, out ServiceDescriptor? serviceDescriptor)
+				&& serviceDescriptor?.ImplementationType is Type type)
+			{
+				handlerType = type;
+				return true;
+			}
+
+			handlerType = null;
+			return handlerType is not null;
 		}
 
 		private static bool TryGetElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)

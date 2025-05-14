@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/TemplatedView.xml" path="Type[@FullName='Microsoft.Maui.Controls.TemplatedView']/Docs/*" />
 #pragma warning disable CS0618 // Type or member is obsolete
-	[ElementHandler<ContentViewHandler>]
 	public partial class TemplatedView : Compatibility.Layout, IControlTemplated, IContentView
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
