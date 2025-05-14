@@ -6,7 +6,9 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class SearchBar
 	{
-		internal static new void RemapForControls()
+		static SearchBar() => RemapForControls();
+
+		private static new void RemapForControls()
 		{
 			// Adjust the mappings to preserve Controls.SearchBar legacy behaviors
 #if IOS
