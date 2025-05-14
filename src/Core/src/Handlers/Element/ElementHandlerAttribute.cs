@@ -21,7 +21,7 @@ internal sealed class ElementHandlerWithAndroidContextAttribute<THandler> : Elem
 	where THandler : IElementHandler, IElementHandlerWithAndroidContext<THandler>
 {
 	public override IElementHandler CreateHandler(IMauiContext context)
-		=> THandler.CreateHandler(context.Context);
+		=> THandler.CreateHandler(context.Context!); // TODO: revisit nullability
 
 	public override Type HandlerType => typeof(THandler);
 }
