@@ -126,13 +126,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			UpdateCurrentPageIfInMoreTab();
+			UpdateCurrentPageForMoreTab();
 
 			if (Element is IView view)
 				view.Arrange(View.Bounds.ToRectangle());
 		}
 
-		void UpdateCurrentPageIfInMoreTab()
+		void UpdateCurrentPageForMoreTab()
 		{
 			bool isInMoreTab = false;
 			// Check if the selected tab is in the More tab
