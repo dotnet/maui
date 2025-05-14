@@ -63,7 +63,6 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
-		handlersCollection.AddHandler<Shapes.Polyline, PolylineHandler>();
 		handlersCollection.AddHandler<Shapes.Rectangle, RectangleHandler>();
 		handlersCollection.AddHandler<Shapes.RoundRectangle, RoundRectangleHandler>();
 
