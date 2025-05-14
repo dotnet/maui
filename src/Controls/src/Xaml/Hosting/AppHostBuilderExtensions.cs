@@ -35,8 +35,9 @@ public static partial class AppHostBuilderExtensions
 		return builder;
 	}
 
+	[Obsolete("The AddMauiControlsHandlers method is a no-op.")]
 	public static IMauiHandlersCollection AddMauiControlsHandlers(this IMauiHandlersCollection handlersCollection) =>
-		handlersCollection.AddControlsHandlers();
+		handlersCollection;
 
 	static MauiAppBuilder SetupXamlDefaults(this MauiAppBuilder builder)
 	{
