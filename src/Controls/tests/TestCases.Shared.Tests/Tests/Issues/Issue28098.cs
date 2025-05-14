@@ -10,14 +10,14 @@ public class Issue28098 : _IssuesUITest
 	{
 	}
 
-    [Test]
-    [Category(UITestCategories.Picker)]
-    public void BlankScreenOnNavigationBack()
-    {
-        App.WaitForElement("Button");
-        App.Tap("Button");
-        App.WaitForElement("BackButton");
-        App.Tap("BackButton");
-        VerifyScreenshot();
-    }
+	[Test]
+	[Category(UITestCategories.Picker)]
+	public void BlankScreenOnNavigationBack()
+	{
+		App.WaitForElement("Button");
+		App.Tap("Button");
+		App.WaitForElement("BackButton");
+		App.Tap("BackButton");
+		VerifyScreenshot();
+	}
 }

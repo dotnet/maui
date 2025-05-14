@@ -196,7 +196,7 @@ namespace Microsoft.Maui.Graphics
 			width = Width;
 			height = Height;
 		}
-		
+
 		/// <summary>
 		/// Implicitly converts a <see cref="Size"/> to a <see cref="SizeF"/>.
 		/// </summary>

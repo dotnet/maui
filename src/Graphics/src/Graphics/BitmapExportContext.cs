@@ -16,12 +16,12 @@ namespace Microsoft.Maui.Graphics
 		/// Gets the width of the bitmap in pixels.
 		/// </summary>
 		public int Width { get; }
-		
+
 		/// <summary>
 		/// Gets the height of the bitmap in pixels.
 		/// </summary>
 		public int Height { get; }
-		
+
 		/// <summary>
 		/// Gets the resolution (dots per inch) of the bitmap.
 		/// </summary>

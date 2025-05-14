@@ -9,17 +9,17 @@ namespace Microsoft.Maui.Graphics
 		/// Gets the width of the pattern.
 		/// </summary>
 		public float Width { get; }
-		
+
 		/// <summary>
 		/// Gets the height of the pattern.
 		/// </summary>
 		public float Height { get; }
-		
+
 		/// <summary>
 		/// Gets the horizontal step size for repeating the pattern.
 		/// </summary>
 		public float StepX { get; }
-		
+
 		/// <summary>
 		/// Gets the vertical step size for repeating the pattern.
 		/// </summary>

@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(binding, testView.ItemDisplayBinding);
 			Assert.Equal(binding, testView.picker.ItemDisplayBinding);
 		}
-				
+
 
 	}
 }
