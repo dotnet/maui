@@ -71,10 +71,7 @@ public static partial class AppHostBuilderExtensions
 #endif
 
 #if WINDOWS
-		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 		handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
-#elif TIZEN
-		handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 #endif
 
 #if WINDOWS || ANDROID || TIZEN
