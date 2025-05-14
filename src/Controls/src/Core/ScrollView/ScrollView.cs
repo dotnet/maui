@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -14,6 +15,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Content))]
 #pragma warning disable CS0618 // Type or member is obsolete
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler<ScrollViewHandler>]
 	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView
 #pragma warning restore CS0618 // Type or member is obsolete
 	{
