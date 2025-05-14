@@ -4,13 +4,13 @@
 	{
 		// Because we run the ios/catalyst one category at a time, we only want to compile in
 		// Categories that iOS/Catalyst are actually using
-		#if ANDROID || WINDOWS
+#if ANDROID || WINDOWS
 		public const string MauiContext = "MauiContext";
 		public const string Application = "Application";
 		public const string BoxView = "BoxView";
 		public const string RadioButton = "RadioButton";
 		public const string WindowOverlay = "WindowOverlay";
-		#endif
+#endif
 
 		public const string ActivityIndicator = "ActivityIndicator";
 		public const string Border = "Border";

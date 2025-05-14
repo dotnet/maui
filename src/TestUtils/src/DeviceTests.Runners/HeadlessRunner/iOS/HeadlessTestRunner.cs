@@ -46,7 +46,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 				testRunner.SkipCategories(_options.SkipCategories);
 				Console.WriteLine($"Skipping categories: {string.Join(", ", _options.SkipCategories)}");
 			}
-			
+
 			return testRunner;
 		}
 
