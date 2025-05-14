@@ -63,7 +63,6 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
-		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
 		handlersCollection.AddHandler<Editor, EditorHandler>();
 		handlersCollection.AddHandler<Entry, EntryHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
@@ -255,7 +254,6 @@ public static partial class AppHostBuilderExtensions
 		// Update the mappings for IView/View to work specifically for Controls
 		Element.RemapIfNeeded();
 		VisualElement.RemapIfNeeded();
-		DatePicker.RemapForControls();
 		RadioButton.RemapForControls();
 		FlyoutPage.RemapForControls();
 		Toolbar.RemapForControls();
