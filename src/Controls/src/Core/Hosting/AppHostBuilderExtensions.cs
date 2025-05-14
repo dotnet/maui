@@ -63,7 +63,6 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
-		handlersCollection.AddHandler<Entry, EntryHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
 		handlersCollection.AddHandler<Image, ImageHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
@@ -257,7 +256,6 @@ public static partial class AppHostBuilderExtensions
 		FlyoutPage.RemapForControls();
 		Toolbar.RemapForControls();
 		Window.RemapForControls();
-		Entry.RemapForControls();
 		SwipeView.RemapForControls();
 		Picker.RemapForControls();
 		SearchBar.RemapForControls();
