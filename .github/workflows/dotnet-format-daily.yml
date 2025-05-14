@@ -1,4 +1,4 @@
-name: Daily code format check
+name: Format Branch Code
 on:
   workflow_dispatch:
   schedule:
