@@ -63,7 +63,6 @@ public static partial class AppHostBuilderExtensions
 
 	internal static IMauiHandlersCollection AddControlsHandlers(this IMauiHandlersCollection handlersCollection)
 	{
-		handlersCollection.AddHandler<IContentView, ContentViewHandler>();
 		handlersCollection.AddHandler<ContentView, ContentViewHandler>();
 		handlersCollection.AddHandler<Shapes.Ellipse, ShapeViewHandler>();
 		handlersCollection.AddHandler<Shapes.Line, LineHandler>();
