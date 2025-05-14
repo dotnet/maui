@@ -11,11 +11,14 @@ permissions:
 jobs:
   dotnet-format:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        branch: [ main, inflight/current ]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
         with:
-          ref: main
+          ref: ${{ matrix.branch }}
 
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v3.2.0
@@ -46,4 +49,4 @@ jobs:
           assignees: rmarinho, jsuarezruiz
           reviewers: rmarinho, jsuarezruiz
           branch: housekeeping/fix-codeformatting
-          base: main
+          base: ${{ matrix.branch }}
