@@ -8,6 +8,11 @@ namespace Microsoft.Maui.Controls
 	/// <summary>An element containing a single child, with some framing options.</summary>
 	[ContentProperty(nameof(Content))]
 	[Obsolete("Frame is obsolete as of .NET 9. Please use Border instead.")]
+#if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
+#pragma warning disable CS0618 // Type or member is obsolete
+	[ElementHandler<Handlers.Compatibility.FrameRenderer>]
+#pragma warning restore CS0618 // Type or member is obsolete
+#endif
 	public partial class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement, IBorderElement, IView, IContentView
 	{
 		/// <summary>Bindable property for <see cref="BorderColor"/>.</summary>
