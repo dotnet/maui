@@ -100,10 +100,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
 
-#if ANDROID || IOS || MACCATALYST || TIZEN
-		handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
-#endif
-
 #if ANDROID || IOS || MACCATALYST
 		handlersCollection.AddHandler<Shell, ShellRenderer>();
 #elif WINDOWS
