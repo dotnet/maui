@@ -80,6 +80,7 @@ namespace Microsoft.Maui
 				window = Window ?? this.GetWindow() ??
 					UIApplication.SharedApplication.GetWindow()?.Handler?.PlatformView as UIWindow;
 			}
+
 			window?.GetWindow()?.Handler?.UpdateValue(nameof(IMenuBarElement.MenuBar));
 
 			MenuBuilder = null;

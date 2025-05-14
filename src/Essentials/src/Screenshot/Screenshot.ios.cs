@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Media
 		public Task<IScreenshotResult> CaptureAsync()
 		{
 			var currentWindow = WindowStateManager.Default.GetCurrentUIWindow();
-			if (currentWindow is null)
+			if (currentWindow == null)
 				throw new InvalidOperationException("Unable to find current window.");
 
 			return CaptureAsync(currentWindow);
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Media
 			});
 
 			// renderer will be null if the width/height of the view is zero
-			if (ctx is not null && !TryRender(window, out _))
+			if (renderer is not null && !TryRender(window, out _))
 			{
 				// TODO: test/handle this case
 			}
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Media
 			});
 
 			// renderer will be null if the width/height of the view is zero
-			if (ctx is not null && !TryRender(view, out _))
+			if (renderer is not null && !TryRender(view, out _))
 			{
 				// TODO: test/handle this case
 			}
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Media
 			});
 
 			// renderer will be null if the width/height of the view is zero
-			if (ctx is not null && !TryRender(layer, ctx, skipChildren, out _))
+			if (renderer is not null && !TryRender(layer, ctx, skipChildren, out _))
 			{
 				// TODO: test/handle this case
 			}
