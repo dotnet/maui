@@ -476,10 +476,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var targetIndexPath = GetScrollToIndexPath(position);
 			CollectionView.ScrollToItem(targetIndexPath, UICollectionViewScrollPosition.CenteredHorizontally, animate);
-
-			// Update internal state
-			SetPosition(position);
-			SetCurrentItem(position);
 		}
 
 		void ScrollToPosition(int goToPosition, int carouselPosition, bool animate, bool forceScroll = false)
