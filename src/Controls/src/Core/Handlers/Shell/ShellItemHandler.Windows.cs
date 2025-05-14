@@ -339,17 +339,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void AutoSuggestBoxOnLoaded(object sender, RoutedEventArgs e)
 		{
-			if (VirtualView is not null)
+			if (VirtualView is null || _currentSearchHandler is null || PlatformView is not NavigationView mauiNavView)
 			{
-				if (PlatformView is not NavigationView mauiNavView)
-				{
-					return;
-				}
-				if (_currentSearchHandler is not null)
-				{
-					mauiNavView.AutoSuggestBox.UpdateSearchHandlerCancelButtonColor(_currentSearchHandler);
-				}
+				return;
 			}
+
+			mauiNavView.AutoSuggestBox.UpdateSearchHandlerCancelButtonColor(_currentSearchHandler);
 		}
 
 		void OnSearchBoxGotFocus(object sender, RoutedEventArgs e)
