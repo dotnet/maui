@@ -70,7 +70,6 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<Shapes.Polyline, PolylineHandler>();
 		handlersCollection.AddHandler<Shapes.Rectangle, RectangleHandler>();
 		handlersCollection.AddHandler<Shapes.RoundRectangle, RoundRectangleHandler>();
-		handlersCollection.AddHandler<Window, WindowHandler>();
 		handlersCollection.AddHandler<ImageButton, ImageButtonHandler>();
 		handlersCollection.AddHandler<IndicatorView, IndicatorViewHandler>();
 		handlersCollection.AddHandler<RadioButton, RadioButtonHandler>();
@@ -234,7 +233,6 @@ public static partial class AppHostBuilderExtensions
 		RadioButton.RemapForControls();
 		FlyoutPage.RemapForControls();
 		Toolbar.RemapForControls();
-		Window.RemapForControls();
 		SwipeView.RemapForControls();
 		TabbedPage.RemapForControls();
 		RefreshView.RemapForControls();
