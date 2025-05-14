@@ -69,10 +69,6 @@ public static partial class AppHostBuilderExtensions
 #pragma warning restore CS0618 // Type or member is obsolete
 #endif
 
-#if WINDOWS
-		handlersCollection.AddHandler<ShellContent, ShellContentHandler>();
-#endif
-
 #if WINDOWS || ANDROID || TIZEN
 		handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 		handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
