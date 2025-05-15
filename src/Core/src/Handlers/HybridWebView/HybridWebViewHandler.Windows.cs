@@ -18,9 +18,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override WebView2 CreatePlatformView()
 		{
-			var webView = new MauiHybridWebView(this);
-
-			return webView;
+			return new MauiHybridWebView(this);
 		}
 
 		protected override void ConnectHandler(WebView2 platformView)
