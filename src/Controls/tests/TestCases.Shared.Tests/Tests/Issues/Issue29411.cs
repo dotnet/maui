@@ -19,7 +19,7 @@ public class Issue29411 : _IssuesUITest
 		App.Tap("Button");
 		var text = App.FindElement("Label").GetText();
 		Assert.That(text, Is.EqualTo("Item 1"));
-		App.SwipeLeftToRight("CarouselView");
+		App.SwipeRightToLeft("CarouselView");
 		App.WaitForElement("CarouselView");
 	}
 }
