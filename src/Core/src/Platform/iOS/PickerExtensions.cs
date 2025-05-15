@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Platform
 			{
 				platformPicker.Text = picker.GetItem(selectedIndex);
 			}
-			else 
+			else
 			{
 				platformPicker.UpdatePickerTitle(picker);
 			}
