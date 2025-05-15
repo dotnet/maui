@@ -327,12 +327,39 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				size = label.Measure(double.PositiveInfinity, double.PositiveInfinity);
 			}
 
-			var itemHeight = size.Height;
+			if (IsVerticalItemsLayout())
+			{
+				var itemHeight = size.Height;
 
-			if (isHeader)
-				_headerHeight = itemHeight;
-			else
-				_footerHeight = itemHeight;
+				if (isHeader)
+				{
+					_headerHeight = itemHeight;
+				}
+				else
+				{
+					_footerHeight = itemHeight;
+				}
+			}
+		}
+
+		bool IsVerticalItemsLayout()
+		{
+			if (ItemsView is CollectionView collectionView)
+			{
+				switch (collectionView.ItemsLayout)
+				{
+					case LinearItemsLayout linearLayout:
+				    {
+						return linearLayout.Orientation == ItemsLayoutOrientation.Vertical;
+					}
+					case GridItemsLayout gridItemsLayout:
+					{
+						return gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical;
+					}
+				}
+			}
+			// Default
+			return true;
 		}
 	}
 }
