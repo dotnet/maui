@@ -5,40 +5,40 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
- 
-    public class CollectionViewEmptyViewTests : CollectionViewUITests
-    {
-        protected override bool ResetAfterEachTest => true;
 
-        public CollectionViewEmptyViewTests(TestDevice device)
-            : base(device)
-        {
-        }
+	public class CollectionViewEmptyViewTests : CollectionViewUITests
+	{
+		protected override bool ResetAfterEachTest => true;
 
-        [Test]
-        [Category(UITestCategories.CollectionView)]
-        public void EmptyViewItemsSourceNullStringWorks()
-        {
-            VisitInitialGallery("EmptyView");
+		public CollectionViewEmptyViewTests(TestDevice device)
+			: base(device)
+		{
+		}
 
-            VisitSubGallery("EmptyView (null ItemsSource)");
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void EmptyViewItemsSourceNullStringWorks()
+		{
+			VisitInitialGallery("EmptyView");
 
-            // EmptyView string
-            App.WaitForElement("Nothing to display.");
-        }
+			VisitSubGallery("EmptyView (null ItemsSource)");
 
-        [Test]
-        [Category(UITestCategories.CollectionView)]
-        public void EmptyViewItemsSourceNullViewWorks()
-        {
-            VisitInitialGallery("EmptyView");
+			// EmptyView string
+			App.WaitForElement("Nothing to display.");
+		}
 
-            VisitSubGallery("EmptyView (null ItemsSource) View");
+		[Test]
+		[Category(UITestCategories.CollectionView)]
+		public void EmptyViewItemsSourceNullViewWorks()
+		{
+			VisitInitialGallery("EmptyView");
 
-            // EmptyView string
-            App.WaitForElement("Nothing to display.");
-        }
-    }
- 
+			VisitSubGallery("EmptyView (null ItemsSource) View");
+
+			// EmptyView string
+			App.WaitForElement("Nothing to display.");
+		}
+	}
+
 }
 #endif
