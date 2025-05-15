@@ -50,6 +50,9 @@ namespace Microsoft.Maui
 		/// <returns>The return value (if any) of running the script.</returns>
 		Task<string?> EvaluateJavaScriptAsync(string script);
 
+		object? InitializingWebView();
+		void InitializedWebView(object webView);
+
 		/// <summary>
 		/// Invokes a JavaScript method named <paramref name="methodName"/> and optionally passes in the parameter values specified
 		/// by <paramref name="paramValues"/> by JSON-encoding each one.

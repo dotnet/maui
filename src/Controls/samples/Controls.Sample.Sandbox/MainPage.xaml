@@ -2,4 +2,44 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.MainPage"
              xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+              <Grid ColumnDefinitions="2*,1*" RowDefinitions="Auto,1*">
+
+      <Editor
+          Grid.Row="0"
+          Grid.Column="0"
+          Text="HybridWebView here"
+          IsReadOnly="True"
+          MinimumHeightRequest="200"
+          x:Name="statusText" />
+
+      <VerticalStackLayout
+          Grid.Row="0"
+          Grid.Column="1">
+
+        <Button
+          Margin="10"
+          Text="Send message to JS"
+          Clicked="SendMessageButton_Clicked" />
+
+        <Button
+          Margin="10"
+          Text="Invoke JS"
+          Clicked="InvokeJSMethodButton_Clicked" />
+
+        <Button
+          Margin="10"
+          Text="Invoke Async JS"
+          Clicked="InvokeAsyncJSMethodButton_Clicked" />
+
+      </VerticalStackLayout>
+
+      <HybridWebView
+          x:Name="hwv"
+          Grid.Row="1"
+          Grid.ColumnSpan="3"
+          HybridRoot="HybridSamplePage"
+          RawMessageReceived="hwv_RawMessageReceived"/>
+
+    </Grid>
 </ContentPage>
