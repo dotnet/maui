@@ -31,21 +31,19 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			ClassicAssert.True(App.IsFocused("Entry2"));
 		}
 
-#if TEST_FAILS_ON_ANDROID // More information: https://github.com/dotnet/maui/issues/28640
 		[Test]
 		[Category(UITestCategories.SoftInput)]
-		public async Task TappingDoneClosesKeyboard()
+		public  void TappingDoneClosesKeyboard()
 		{
 			App.WaitForElement("EntryDone");
 			App.Tap("EntryDone");
 
-			await Task.Yield();
+			App.WaitUntilKeyboardIsVisible();
 			ClassicAssert.True(App.IsKeyboardShown());
 			App.Tap("SendDone");
-			await Task.Yield();
+			App.WaitUntilKeyboardIsHidden();
 			ClassicAssert.False(App.IsKeyboardShown());
 		}
-#endif
 	}
 }
 #endif
