@@ -349,3 +349,4 @@ virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewHandler2<TItemsView>.Up
 *REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.SetNeedsLayout() -> void
 *REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.MovedToWindow() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.MovedToWindow() -> void
+override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
