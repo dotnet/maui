@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
 
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v3.2.0
@@ -24,6 +22,13 @@ jobs:
         run: |
           dotnet format .\Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
           git diff
+
+      - name: Commit changes
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com>"
+          git add .
+          git commit -m "[housekeeping] Automated PR to fix formatting errors on ${{ github.head_ref }}"
     
       - name: Push changes to PR
         env:
