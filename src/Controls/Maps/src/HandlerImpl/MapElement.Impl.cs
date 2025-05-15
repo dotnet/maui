@@ -19,5 +19,8 @@ namespace Microsoft.Maui.Controls.Maps
 		float IStroke.StrokeDashOffset => throw new NotImplementedException();
 
 		float IStroke.StrokeMiterLimit => throw new NotImplementedException();
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		void IMapElement.Clicked() => throw new NotImplementedException();
 	}
 }
