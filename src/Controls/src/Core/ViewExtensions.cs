@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 		[Obsolete("Please use LayoutToAsync instead.")]
 		public static Task<bool> LayoutTo(this VisualElement view, Rect bounds, uint length = 250, Easing? easing = null)
 			=> LayoutToAsync(view, bounds, length, easing);
-		
+
 		/// <summary>
 		/// <summary>Returns a task that eases the bounds of the <see cref="VisualElement" /> that is specified by the <paramref name="view" />
 		/// to the rectangle that is specified by the <paramref name="bounds" /> parameter.</summary>

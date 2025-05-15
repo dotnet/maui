@@ -1,6 +1,6 @@
 ﻿using Microsoft.UI.Xaml.Controls;
-using Windows.UI;
 using Microsoft.UI.Xaml.Media;
+using Windows.UI;
 
 namespace Microsoft.Maui.Platform
 {
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform
 			var trackColor = view.TrackColor?.ToPlatform() ?? new SolidColorBrush(Color.FromArgb(6, 0, 0, 0));
 
 			toggleSwitch.TryUpdateResource(
-				    trackColor,
+					trackColor,
 					"ToggleSwitchFillOn",
 					"ToggleSwitchFillOnPointerOver",
 					"ToggleSwitchFillOnPressed",

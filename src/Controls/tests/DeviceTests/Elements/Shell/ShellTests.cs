@@ -474,9 +474,9 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 
 			var page1 = new ContentPage()
-				{ Content = new Label() { Text = "Page 1" }, Title = "Page 1" };
+			{ Content = new Label() { Text = "Page 1" }, Title = "Page 1" };
 			var page2 = new ContentPage()
-				{ Content = new Label() { Text = "Page 2" }, Title = "Page 2" };
+			{ Content = new Label() { Text = "Page 2" }, Title = "Page 2" };
 
 			var shell = await CreateShellAsync((shell) =>
 			{

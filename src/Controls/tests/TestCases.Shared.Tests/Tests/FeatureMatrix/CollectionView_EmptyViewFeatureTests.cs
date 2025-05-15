@@ -153,7 +153,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("No Items Available(String)");
 		}
-	 
+
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayed_GroupedListSetFirst()
@@ -311,7 +311,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForNoElement("No Items Available(Grid View)");
 		}
-	 
+
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateCustomEmptyViewSizeDisplayed_AndEmptyObservableCollectionSetFirst()
@@ -431,7 +431,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForNoElement("Custom Empty View (Sized)");
 		}
-		
+
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewStringDisplayed_AndEmptyViewTemplate()
@@ -1003,22 +1003,22 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			var emptyViewBounds = App.WaitForElement("EmptyViewLabel").GetRect();
 			Assert.That(emptyViewBounds, Is.Not.Null);
-			#if ANDROID
+#if ANDROID
 			int expectedWidth = 788;
 			int expectedHeight = 525;
-			#elif MACCATALYST
+#elif MACCATALYST
 			int expectedWidth = 235;
 			int expectedHeight = 150; 
-			#else
+#else
 			int expectedWidth = 300;
 			int expectedHeight = 200;
-			#endif
+#endif
 			Assert.That(emptyViewBounds.Width, Is.EqualTo(expectedWidth).Within(5));
-			Assert.That(emptyViewBounds.Height, Is.EqualTo(expectedHeight).Within(5));   
+			Assert.That(emptyViewBounds.Height, Is.EqualTo(expectedHeight).Within(5));
 		}
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
-//When setting HeightRequest and WidthRequest in the EmptyViewTemplate, as the values were not applied, preventing proper resizing. Issue Link: https://github.com/dotnet/maui/issues/28605
+		//When setting HeightRequest and WidthRequest in the EmptyViewTemplate, as the values were not applied, preventing proper resizing. Issue Link: https://github.com/dotnet/maui/issues/28605
 		[Test]
 		[Category(UITestCategories.CollectionView)]
 		public void ValidateEmptyViewTemplateSize()
@@ -1030,18 +1030,18 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			var emptyViewBounds = App.WaitForElement("EmptyViewTemplateLabel").GetRect();
-			#if ANDROID
+#if ANDROID
 			int expectedWidth = 788;
 			int expectedHeight = 525;
-			#elif MACCATALYST
+#elif MACCATALYST
 			int expectedWidth = 235;
 			int expectedHeight = 150; 
-			#else
+#else
 			int expectedWidth = 300;
 			int expectedHeight = 200;
-			#endif
+#endif
 			Assert.That(emptyViewBounds.Width, Is.EqualTo(expectedWidth).Within(5));
-			Assert.That(emptyViewBounds.Height, Is.EqualTo(expectedHeight).Within(5)); 
+			Assert.That(emptyViewBounds.Height, Is.EqualTo(expectedHeight).Within(5));
 		}
 #endif
 
