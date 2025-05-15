@@ -359,6 +359,10 @@ namespace Microsoft.Maui.Controls.Internals
 		static Dictionary<string, IList<StylePropertyAttribute>> LoadStyleSheets()
 		{
 			var properties = new Dictionary<string, IList<StylePropertyAttribute>>(StringComparer.Ordinal);
+
+			if (!RuntimeFeature.IsCssEnabled)
+				return properties;
+
 			if (DisableCSS)
 				return properties;
 

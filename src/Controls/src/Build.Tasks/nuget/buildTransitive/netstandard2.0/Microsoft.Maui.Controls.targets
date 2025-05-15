@@ -303,6 +303,7 @@
       <MauiImplicitCastOperatorsUsageViaReflectionSupport Condition="'$(MauiImplicitCastOperatorsUsageViaReflectionSupport)' == ''">false</MauiImplicitCastOperatorsUsageViaReflectionSupport>
       <MauiEnableXamlCBindingWithSourceCompilation Condition="'$(MauiEnableXamlCBindingWithSourceCompilation)' == ''">true</MauiEnableXamlCBindingWithSourceCompilation>
       <MauiHybridWebViewSupported Condition="'$(MauiHybridWebViewSupported)' == ''">false</MauiHybridWebViewSupported>
+      <MauiCssEnabled Condition="'$(MauiCssEnabled)' == ''">false</MauiCssEnabled>
       <!-- FIXME: https://github.com/xamarin/xamarin-macios/issues/22065 -->
       <MobileAggressiveAttributeTrimming Condition="'$(PublishAot)' == 'true' and '$(MobileAggressiveAttributeTrimming)' == ''">false</MobileAggressiveAttributeTrimming>
       
@@ -354,6 +355,10 @@
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsMaterial3Enabled"
                                       Condition="'$(UseMaterial3)' != ''"
                                       Value="$(UseMaterial3)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsCssEnabled"
+                                      Condition="'$(MauiCssEnabled)' != ''"
+                                      Value="$(MauiCssEnabled)"
                                       Trim="true" />
     </ItemGroup>
   </Target>
