@@ -1,7 +1,7 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 29516, "Issue with the TitleBar TrailingContent not being properly aligned on macOS", PlatformAffected.macOS)]
-public partial class Issue29516 : ContentPage
+public class Issue29516 : ContentPage
 {
 	TitleBar _titleBar;
 	public Issue29516()
