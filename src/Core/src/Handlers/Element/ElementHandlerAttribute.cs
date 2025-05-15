@@ -2,7 +2,7 @@ using System;
 
 namespace Microsoft.Maui.Handlers;
 
-[AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
 internal abstract class ElementHandlerAttribute : Attribute
 {
 	public abstract IElementHandler CreateHandler(IMauiContext context);
