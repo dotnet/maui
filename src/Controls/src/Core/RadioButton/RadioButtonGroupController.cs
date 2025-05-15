@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 {
 	internal class RadioButtonGroupController
 	{
-		internal static readonly ConditionalWeakTable<RadioButton, RadioButtonGroupController> groupControllers = new();
+		static readonly ConditionalWeakTable<RadioButton, RadioButtonGroupController> groupControllers = new();
 		readonly Element _layout;
 		string _groupName;
 		private object _selectedValue;
