@@ -22,6 +22,22 @@ namespace Microsoft.Maui.Maps.Platform
 			OverlayRenderer = GetViewForOverlayDelegate;
 		}
 
+		internal IMapHandler? Handler
+		{
+			get
+			{
+				_handlerRef.TryGetTarget(out var handler);
+				return handler;
+			}
+			set
+			{
+				if (value is not null)
+				{
+					_handlerRef = new WeakReference<IMapHandler>(value);
+				}
+			}
+		}
+
 		public override void MovedToWindow()
 		{
 			base.MovedToWindow();
