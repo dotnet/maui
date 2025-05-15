@@ -57,5 +57,7 @@ namespace Microsoft.Maui.Handlers
 				VirtualView.InvalidateMeasure();
 			}
 		}
+
+		internal override bool PreventGestureBubbling => true;
 	}
 }
