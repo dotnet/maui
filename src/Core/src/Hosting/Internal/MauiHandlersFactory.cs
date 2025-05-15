@@ -88,8 +88,21 @@ namespace Microsoft.Maui.Hosting.Internal
 
 		private static bool TryGetElementHandlerAttribute(Type viewType, [NotNullWhen(returnValue: true)] out ElementHandlerAttribute? elementHandlerAttribute)
 		{
-			elementHandlerAttribute = viewType.GetCustomAttribute<ElementHandlerAttribute>();
-			return elementHandlerAttribute is not null;
+			elementHandlerAttribute = null;
+			Type? type = viewType;
+
+			while (type is not null)
+			{
+				elementHandlerAttribute = type.GetCustomAttribute<ElementHandlerAttribute>();
+				if (elementHandlerAttribute is not null)
+				{
+					return true;
+				}
+
+				type = type.BaseType;
+			}
+
+			return false;
 		}
 
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
