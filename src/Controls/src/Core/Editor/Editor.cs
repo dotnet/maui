@@ -191,5 +191,11 @@ namespace Microsoft.Maui.Controls
 					(width - otherWidth) < double.Epsilon;
 			}
 		}
+
+		internal override bool TrySetValue(string text)
+		{
+			Text = text;
+			return true;
+		}
 	}
 }
