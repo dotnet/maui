@@ -32,6 +32,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			ContentView.TranslatesAutoresizingMaskIntoConstraints = false;
 
+			foreach (var subview in ContentView.Subviews)
+			{
+				subview.RemoveFromSuperview();
+			}
 			ContentView.AddSubview(platformView);
 
 			// We want the cell to be the same size as the ContentView
