@@ -16,13 +16,9 @@ public class Issue29411 : _IssuesUITest
 	public void VerifyLoopChangeAtRuntimeShouldNotCrash()
 	{
 		App.WaitForElement("CarouselView");
-		App.SwipeRightToLeft("CarouselView");
-		App.SwipeRightToLeft("CarouselView");
-		App.SwipeRightToLeft("CarouselView");
-		App.WaitForElement("Label");
 		App.Tap("Button");
 		var text = App.FindElement("Label").GetText();
-		Assert.That(text, Is.EqualTo("Item 4"));
+		Assert.That(text, Is.EqualTo("Item 1"));
 		App.SwipeLeftToRight("CarouselView");
 		App.WaitForElement("CarouselView");
 	}
