@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		WScrollBarVisibility? _verticalScrollBarVisibilityWithoutLoop;
 		Size _currentSize;
 		bool _isCarouselViewReady;
+		bool _isCollectionChanged;
 		NotifyCollectionChangedEventHandler _collectionChanged;
 		readonly WeakNotifyCollectionChangedProxy _proxy = new();
 
@@ -489,6 +490,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void CarouselScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
 			var position = e.CenterItemIndex;
+			if (_isCollectionChanged && ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
+			{
+				position = ItemsView.Position;
+				_isCollectionChanged = false;
+			}
 
 			if (position == -1)
 			{
@@ -541,6 +547,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				&& currentItemPosition != -1)
 			{
 				carouselPosition = currentItemPosition;
+				_isCollectionChanged = true;
+			}
+
+			if (e.Action == NotifyCollectionChangedAction.Remove)
+			{
+				_isCollectionChanged = true;
 			}
 
 			SetCarouselViewCurrentItem(carouselPosition);
