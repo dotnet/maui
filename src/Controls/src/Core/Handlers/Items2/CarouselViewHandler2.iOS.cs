@@ -215,5 +215,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			(handler.Controller as CarouselViewController2)?.UpdateLoop();
 		}
 
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
+			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 	}
 }
