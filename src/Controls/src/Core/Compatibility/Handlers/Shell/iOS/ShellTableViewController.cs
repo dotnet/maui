@@ -51,10 +51,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set => ShellFlyoutContentManager.HeaderView = value;
 		}
 
+		// TODO: .NET10 change to UIContainerView
 		public virtual UIView FooterView
 		{
 			get => ShellFlyoutContentManager.FooterView;
-			set => ShellFlyoutContentManager.FooterView = value;
+			set => ShellFlyoutContentManager.FooterView = value as UIContainerView;
 		}
 
 		protected ShellTableViewSource CreateShellTableViewSource()
