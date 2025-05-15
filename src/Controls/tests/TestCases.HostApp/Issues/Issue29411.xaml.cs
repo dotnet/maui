@@ -5,11 +5,11 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 29411, "[Android] CarouselView.Loop = false causes crash on Android when changed at runtime", PlatformAffected.Android)]
 public partial class Issue29411 : ContentPage
 {
-    CarouselViewViewModel _viewModel;
+    Issue29411_ViewModel _viewModel;
     public Issue29411()
     {
         InitializeComponent();
-		_viewModel = new CarouselViewViewModel();
+		_viewModel = new Issue29411_ViewModel();
         BindingContext = _viewModel;
 	}
 
@@ -24,13 +24,13 @@ public partial class Issue29411 : ContentPage
 }
 
 
-public class CarouselViewViewModel : BindableObject
+public class Issue29411_ViewModel : BindableObject
 {
     public ObservableCollection<string> ItemsSource { get; set; }
  
 	public DataTemplate ItemTemplate { get; set; }
    
-    public CarouselViewViewModel()
+    public Issue29411_ViewModel()
     {
         ItemsSource = new ObservableCollection<string>
         {
