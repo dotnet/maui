@@ -359,12 +359,111 @@ namespace Microsoft.Maui.Controls.Internals
 			var properties = new Dictionary<string, IList<StylePropertyAttribute>>(StringComparer.Ordinal);
 			if (DisableCSS)
 				return properties;
-			var assembly = typeof(StylePropertyAttribute).Assembly;
-			var styleAttributes = assembly.GetCustomAttributesSafe(typeof(StylePropertyAttribute));
-			var stylePropertiesLength = styleAttributes?.Length ?? 0;
-			for (var i = 0; i < stylePropertiesLength; i++)
+
+			// Note: these attributes were previously used as actual attributes [assembly: StylePropertyAttribute(...)]
+			// but this caused problem for trimming, so instead of scanning for the global assemblies, the attributes were moved here
+			// with the least amount of changes to the existing code.
+			StylePropertyAttribute[] styleAttributes = [
+				new StylePropertyAttribute("background-color", typeof(VisualElement), nameof(VisualElement.BackgroundColorProperty)),
+				new StylePropertyAttribute("background", typeof(VisualElement), nameof(VisualElement.BackgroundProperty)),
+				new StylePropertyAttribute("background-image", typeof(Page), nameof(Page.BackgroundImageSourceProperty)),
+				new StylePropertyAttribute("border-color", typeof(IBorderElement), nameof(BorderElement.BorderColorProperty)),
+				new StylePropertyAttribute("border-color", typeof(IBorderView), nameof(Border.StrokeProperty)),
+				new StylePropertyAttribute("border-radius", typeof(ICornerElement), nameof(CornerElement.CornerRadiusProperty)),
+				new StylePropertyAttribute("border-radius", typeof(Button), nameof(Button.CornerRadiusProperty)),
+				#pragma warning disable CS0618 // Type or member is obsolete
+				new StylePropertyAttribute("border-radius", typeof(Frame), nameof(Frame.CornerRadiusProperty)),
+				#pragma warning restore CS0618 // Type or member is obsolete
+				new StylePropertyAttribute("border-radius", typeof(IBorderView), nameof(Border.StrokeShapeProperty)),
+				new StylePropertyAttribute("border-radius", typeof(ImageButton), nameof(BorderElement.CornerRadiusProperty)),
+				new StylePropertyAttribute("border-width", typeof(IBorderElement), nameof(BorderElement.BorderWidthProperty)),
+				new StylePropertyAttribute("border-width", typeof(IBorderView), nameof(Border.StrokeThicknessProperty)),
+				new StylePropertyAttribute("color", typeof(IColorElement), nameof(ColorElement.ColorProperty)) { Inherited = true },
+				new StylePropertyAttribute("color", typeof(ITextElement), nameof(TextElement.TextColorProperty)) { Inherited = true },
+				new StylePropertyAttribute("text-transform", typeof(ITextElement), nameof(TextElement.TextTransformProperty)) { Inherited = true },
+				new StylePropertyAttribute("color", typeof(ProgressBar), nameof(ProgressBar.ProgressColorProperty)),
+				new StylePropertyAttribute("color", typeof(Switch), nameof(Switch.OnColorProperty)),
+				new StylePropertyAttribute("column-gap", typeof(Grid), nameof(Grid.ColumnSpacingProperty)),
+				new StylePropertyAttribute("direction", typeof(VisualElement), nameof(VisualElement.FlowDirectionProperty)) { Inherited = true },
+				new StylePropertyAttribute("font-family", typeof(IFontElement), nameof(FontElement.FontFamilyProperty)) { Inherited = true },
+				new StylePropertyAttribute("font-size", typeof(IFontElement), nameof(FontElement.FontSizeProperty)) { Inherited = true },
+				new StylePropertyAttribute("font-style", typeof(IFontElement), nameof(FontElement.FontAttributesProperty)) { Inherited = true },
+				new StylePropertyAttribute("height", typeof(VisualElement), nameof(VisualElement.HeightRequestProperty)),
+				new StylePropertyAttribute("margin", typeof(View), nameof(View.MarginProperty)),
+				new StylePropertyAttribute("margin-left", typeof(View), nameof(View.MarginLeftProperty)),
+				new StylePropertyAttribute("margin-top", typeof(View), nameof(View.MarginTopProperty)),
+				new StylePropertyAttribute("margin-right", typeof(View), nameof(View.MarginRightProperty)),
+				new StylePropertyAttribute("margin-bottom", typeof(View), nameof(View.MarginBottomProperty)),
+				new StylePropertyAttribute("max-lines", typeof(Label), nameof(Label.MaxLinesProperty)),
+				new StylePropertyAttribute("min-height", typeof(VisualElement), nameof(VisualElement.MinimumHeightRequestProperty)),
+				new StylePropertyAttribute("min-width", typeof(VisualElement), nameof(VisualElement.MinimumWidthRequestProperty)),
+				new StylePropertyAttribute("opacity", typeof(VisualElement), nameof(VisualElement.OpacityProperty)),
+				new StylePropertyAttribute("padding", typeof(IPaddingElement), nameof(PaddingElement.PaddingProperty)),
+				new StylePropertyAttribute("padding-left", typeof(IPaddingElement), nameof(PaddingElement.PaddingLeftProperty)) { PropertyOwnerType = typeof(PaddingElement) },
+				new StylePropertyAttribute("padding-top", typeof(IPaddingElement), nameof(PaddingElement.PaddingTopProperty)) { PropertyOwnerType = typeof(PaddingElement) },
+				new StylePropertyAttribute("padding-right", typeof(IPaddingElement), nameof(PaddingElement.PaddingRightProperty)) { PropertyOwnerType = typeof(PaddingElement) },
+				new StylePropertyAttribute("padding-bottom", typeof(IPaddingElement), nameof(PaddingElement.PaddingBottomProperty)) { PropertyOwnerType = typeof(PaddingElement) },
+				new StylePropertyAttribute("row-gap", typeof(Grid), nameof(Grid.RowSpacingProperty)),
+				new StylePropertyAttribute("text-align", typeof(ITextAlignmentElement), nameof(TextAlignmentElement.HorizontalTextAlignmentProperty)) { Inherited = true },
+				new StylePropertyAttribute("text-decoration", typeof(IDecorableTextElement), nameof(DecorableTextElement.TextDecorationsProperty)),
+				new StylePropertyAttribute("transform", typeof(VisualElement), nameof(VisualElement.TransformProperty)),
+				new StylePropertyAttribute("transform-origin", typeof(VisualElement), nameof(VisualElement.TransformOriginProperty)),
+				new StylePropertyAttribute("vertical-align", typeof(ITextAlignmentElement), nameof(TextAlignmentElement.VerticalTextAlignmentProperty)),
+				new StylePropertyAttribute("visibility", typeof(VisualElement), nameof(VisualElement.IsVisibleProperty)) { Inherited = true },
+				new StylePropertyAttribute("width", typeof(VisualElement), nameof(VisualElement.WidthRequestProperty)),
+				new StylePropertyAttribute("letter-spacing", typeof(ITextElement), nameof(TextElement.CharacterSpacingProperty)) { Inherited = true },
+				new StylePropertyAttribute("line-height", typeof(Controls.ILineHeightElement), nameof(LineHeightElement.LineHeightProperty)) { Inherited = true },
+
+				//flex
+				new StylePropertyAttribute("align-content", typeof(FlexLayout), nameof(FlexLayout.AlignContentProperty)),
+				new StylePropertyAttribute("align-items", typeof(FlexLayout), nameof(FlexLayout.AlignItemsProperty)),
+				new StylePropertyAttribute("align-self", typeof(VisualElement), nameof(FlexLayout.AlignSelfProperty)) { PropertyOwnerType = typeof(FlexLayout) },
+				new StylePropertyAttribute("flex-direction", typeof(FlexLayout), nameof(FlexLayout.DirectionProperty)),
+				new StylePropertyAttribute("flex-basis", typeof(VisualElement), nameof(FlexLayout.BasisProperty)) { PropertyOwnerType = typeof(FlexLayout) },
+				new StylePropertyAttribute("flex-grow", typeof(VisualElement), nameof(FlexLayout.GrowProperty)) { PropertyOwnerType = typeof(FlexLayout) },
+				new StylePropertyAttribute("flex-shrink", typeof(VisualElement), nameof(FlexLayout.ShrinkProperty)) { PropertyOwnerType = typeof(FlexLayout) },
+				new StylePropertyAttribute("flex-wrap", typeof(VisualElement), nameof(FlexLayout.WrapProperty)) { PropertyOwnerType = typeof(FlexLayout) },
+				new StylePropertyAttribute("justify-content", typeof(FlexLayout), nameof(FlexLayout.JustifyContentProperty)),
+				new StylePropertyAttribute("order", typeof(VisualElement), nameof(FlexLayout.OrderProperty)) { PropertyOwnerType = typeof(FlexLayout) },
+				new StylePropertyAttribute("position", typeof(FlexLayout), nameof(FlexLayout.PositionProperty)),
+
+				//xf specific
+				new StylePropertyAttribute("-maui-placeholder", typeof(IPlaceholderElement), nameof(PlaceholderElement.PlaceholderProperty)),
+				new StylePropertyAttribute("-maui-placeholder-color", typeof(IPlaceholderElement), nameof(PlaceholderElement.PlaceholderColorProperty)),
+				new StylePropertyAttribute("-maui-max-length", typeof(InputView), nameof(InputView.MaxLengthProperty)),
+				new StylePropertyAttribute("-maui-bar-background-color", typeof(IBarElement), nameof(BarElement.BarBackgroundColorProperty)),
+				new StylePropertyAttribute("-maui-bar-text-color", typeof(IBarElement), nameof(BarElement.BarTextColorProperty)),
+				new StylePropertyAttribute("-maui-orientation", typeof(ScrollView), nameof(ScrollView.OrientationProperty)),
+				new StylePropertyAttribute("-maui-horizontal-scroll-bar-visibility", typeof(ScrollView), nameof(ScrollView.HorizontalScrollBarVisibilityProperty)),
+				new StylePropertyAttribute("-maui-vertical-scroll-bar-visibility", typeof(ScrollView), nameof(ScrollView.VerticalScrollBarVisibilityProperty)),
+				new StylePropertyAttribute("-maui-min-track-color", typeof(Slider), nameof(Slider.MinimumTrackColorProperty)),
+				new StylePropertyAttribute("-maui-max-track-color", typeof(Slider), nameof(Slider.MaximumTrackColorProperty)),
+				new StylePropertyAttribute("-maui-thumb-color", typeof(Slider), nameof(Slider.ThumbColorProperty)),
+				new StylePropertyAttribute("-maui-spacing", typeof(StackBase), nameof(StackBase.SpacingProperty)),
+				new StylePropertyAttribute("-maui-orientation", typeof(StackLayout), nameof(StackLayout.OrientationProperty)),
+
+				new StylePropertyAttribute("-maui-visual", typeof(VisualElement), nameof(VisualElement.VisualProperty)),
+				new StylePropertyAttribute("-maui-vertical-text-alignment", typeof(Label), nameof(TextAlignmentElement.VerticalTextAlignmentProperty)),
+				new StylePropertyAttribute("-maui-thumb-color", typeof(Switch), nameof(Switch.ThumbColorProperty)),
+
+				new StylePropertyAttribute("-maui-shadow", typeof(VisualElement), nameof(VisualElement.ShadowProperty)),
+
+				//shell
+				new StylePropertyAttribute("-maui-flyout-background", typeof(Shell), nameof(Shell.FlyoutBackgroundColorProperty)),
+				new StylePropertyAttribute("-maui-shell-background", typeof(Element), nameof(Shell.BackgroundColorProperty)) { PropertyOwnerType = typeof(Shell) },
+				new StylePropertyAttribute("-maui-shell-disabled", typeof(Element), nameof(Shell.DisabledColorProperty)) { PropertyOwnerType = typeof(Shell) },
+				new StylePropertyAttribute("-maui-shell-foreground", typeof(Element), nameof(Shell.ForegroundColorProperty)) { PropertyOwnerType = typeof(Shell) },
+				new StylePropertyAttribute("-maui-shell-tabbar-background", typeof(Element), nameof(Shell.TabBarBackgroundColorProperty)) { PropertyOwnerType = typeof(Shell) },
+				new StylePropertyAttribute("-maui-shell-tabbar-disabled", typeof(Element), nameof(Shell.TabBarDisabledColorProperty)) { PropertyOwnerType = typeof(Shell) },
+				new StylePropertyAttribute("-maui-shell-tabbar-foreground", typeof(Element), nameof(Shell.TabBarForegroundColorProperty)) { PropertyOwnerType = typeof(Shell) },
+				new StylePropertyAttribute("-maui-shell-tabbar-title", typeof(Element), nameof(Shell.TabBarTitleColorProperty)) { PropertyOwnerType = typeof(Shell) },
+				new StylePropertyAttribute("-maui-shell-tabbar-unselected", typeof(Element), nameof(Shell.TabBarUnselectedColorProperty)) { PropertyOwnerType = typeof(Shell) },
+				new StylePropertyAttribute("-maui-shell-title", typeof(Element), nameof(Shell.TitleColorProperty)) { PropertyOwnerType = typeof(Shell) },
+				new StylePropertyAttribute("-maui-shell-unselected", typeof(Element), nameof(Shell.UnselectedColorProperty)) { PropertyOwnerType = typeof(Shell) },
+			];
+
+			foreach (var attribute in styleAttributes)
 			{
-				var attribute = (StylePropertyAttribute)styleAttributes[i];
 				if (properties.TryGetValue(attribute.CssPropertyName, out var attrList))
 					attrList.Add(attribute);
 				else

@@ -68,6 +68,9 @@ namespace Microsoft.Maui.Hosting.Internal
 			[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2073",
 				Justification = "There is no need to create instances of the handlers for types with this attribute using reflection."
 					+ "We intentionally avoid annotating these handler types with DAM.")]
+			[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2068",
+				Justification = "There is no need to create instances of the handlers for types with this attribute using reflection."
+					+ "We intentionally avoid annotating these handler types with DAM.")]
 			[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
 			static Type GetHandlerType(ElementHandlerAttribute elementHandlerAttribute)
 				=> elementHandlerAttribute.HandlerType;
