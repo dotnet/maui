@@ -52,7 +52,7 @@ namespace Maui.Controls.Sample.ViewModels
 				"Manage whether a view participates in the user interaction cycle."),
 
 			new SectionModel(typeof(MenuBarPage), "MenuBar",
-				"Allows you to push and pop Modal Pages."),
+				"Menu Bar is a horizontal bar that shows menu items."),
 
 			new SectionModel(typeof(ModalPage), "Modal",
 				"Allows you to push and pop Modal Pages."),
@@ -68,6 +68,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(ShadowPage), "Shadows",
  				"Shadow is one way a user perceives elevation. Light above an elevated object creates a shadow on the surface below. The higher the object, the larger and softer the shadow becomes."),
+
+			new SectionModel(typeof(ToolbarPage), "Toolbar",
+				"Toolbar items are buttons that are typically displayed in the navigation bar."),
 
 			new SectionModel(typeof(TransformationsPage), "Transformations",
 				"Apply scale transformations, rotation, etc. to a View."),
