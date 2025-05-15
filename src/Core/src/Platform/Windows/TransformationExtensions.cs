@@ -19,8 +19,13 @@ namespace Microsoft.Maui.Platform
 			if (rotationX % 360 == 0 && rotationY % 360 == 0 && rotation % 360 == 0 &&
 				translationX == 0 && translationY == 0 && scaleX == 1 && scaleY == 1)
 			{
-				frameworkElement.Projection = null;
-				frameworkElement.RenderTransform = null;
+				bool? skipInitialization = (view.Handler as ElementHandler)?._isInitializing ?? false;
+
+				if (skipInitialization != true)
+				{
+					frameworkElement.Projection = null;
+					frameworkElement.RenderTransform = null;
+				}
 			}
 			else
 			{
