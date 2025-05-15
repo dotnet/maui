@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 				var lengths = strValue.Split(',');
 				var converter = new GridLengthTypeConverter();
 				var definitions = new RowDefinition[lengths.Length];
-				
+
 				for (var i = 0; i < lengths.Length; i++)
 				{
 					if (converter.ConvertFromInvariantString(lengths[i]) is not GridLength height)
