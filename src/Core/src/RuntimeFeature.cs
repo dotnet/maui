@@ -21,6 +21,7 @@ namespace Microsoft.Maui
 		private const bool AreBindingInterceptorsSupportedByDefault = true;
 		private const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
 		private const bool IsHybridWebViewSupportedByDefault = true;
+		private const bool IsCssEnabledByDefault = true;
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
@@ -84,6 +85,15 @@ namespace Microsoft.Maui
 			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported", out bool isSupported)
 				? isSupported
 				: IsHybridWebViewSupportedByDefault;
+#pragma warning restore IL4000
+
+#if NET9_0_OR_GREATER
+		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsCssEnabled")]
+#endif
+		internal static bool IsCssEnabled =>
+			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsCssEnabled", out bool isEnabled)
+				? isEnabled
+				: IsCssEnabledByDefault;
 #pragma warning restore IL4000
 	}
 }
