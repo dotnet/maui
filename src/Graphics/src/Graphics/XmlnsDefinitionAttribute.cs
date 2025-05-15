@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Graphics
 		/// Gets the XML namespace.
 		/// </summary>
 		public string XmlNamespace { get; }
-		
+
 		/// <summary>
 		/// Gets the CLR namespace.
 		/// </summary>

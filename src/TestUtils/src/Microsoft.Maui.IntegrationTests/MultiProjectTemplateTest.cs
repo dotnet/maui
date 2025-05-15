@@ -20,7 +20,7 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 		// Always remove WinUI project if the project name contains special characters that cause WinRT source generator issues
 		// See: https://github.com/microsoft/CsWinRT/issues/1809 (under "Special characters in assembly name" section)
 		bool containsSpecialChars = projectName.IndexOfAny(new[] { '@', '&', '+', '%', '!', '#', '$', '^', '*', ' ', '-' }) >= 0;
-		
+
 		if (!TestEnvironment.IsWindows || containsSpecialChars)
 		{
 			Assert.IsTrue(DotnetInternal.Run("sln", $"\"{solutionFile}\" remove \"{projectDir}/{name}.WinUI/{name}.WinUI.csproj\""),
@@ -65,7 +65,7 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 	[TestCase("--windows")]
 	[TestCase("--macos")]
 	[TestCase("")] // no platform arg means all platforms
-	// https://github.com/dotnet/maui/issues/28695
+				   // https://github.com/dotnet/maui/issues/28695
 	public void VerifyIncludedPlatformsInSln(string platformArg)
 	{
 		var projectDir = TestDirectory;
@@ -109,7 +109,7 @@ public class MultiProjectTemplateTest : BaseTemplateTests
 				expectedCsprojFiles.Remove("WinUI.csproj");
 				break;
 		}
-		
+
 		// Depending on the platform argument, we assert if the expected projects are included in the solution
 		foreach (var platformCsproj in expectedCsprojFiles)
 		{
