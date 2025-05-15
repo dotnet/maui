@@ -15,6 +15,8 @@ namespace Microsoft.Maui.Handlers
 
 		protected override AWebView CreatePlatformView()
 		{
+			var customSettings = VirtualView.InitializingWebView() as WebViewInitializingEventArgs;
+
 			var platformView = new MauiHybridWebView(this, Context!)
 			{
 				LayoutParameters = new LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent)
@@ -32,8 +34,13 @@ namespace Microsoft.Maui.Handlers
 
 			platformView.Settings.JavaScriptEnabled = true;
 
+			// Allow additional custom settings to be applied through the WebViewInitializingEventArgs Class
+			customSettings?.AdditionalSettings?.Invoke(platformView.Settings);
+
 			_javaScriptInterface = new HybridWebViewJavaScriptInterface(this);
 			platformView.AddJavascriptInterface(_javaScriptInterface, HybridWebViewHostJsName);
+
+			VirtualView.InitializedWebView(platformView);
 
 			return platformView;
 		}
