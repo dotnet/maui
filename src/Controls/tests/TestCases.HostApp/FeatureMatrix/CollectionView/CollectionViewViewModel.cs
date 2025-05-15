@@ -432,6 +432,16 @@ public class CollectionViewViewModel : INotifyPropertyChanged
         }
     }
 
+    public bool IsFooterGridSelected
+    {
+        get => _isFooterGridSelected;
+        set
+        {
+            _isFooterGridSelected = value;
+            OnPropertyChanged();
+        }
+    }
+
     public bool IsHeaderTemplateViewSelected
     {
         get => _isHeaderTemplateViewSelected;
@@ -665,7 +675,6 @@ public class CollectionViewViewModel : INotifyPropertyChanged
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center
                 };
-
                 var label = new Label
                 {
                     VerticalOptions = LayoutOptions.Center,
