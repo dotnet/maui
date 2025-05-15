@@ -31,6 +31,12 @@ parameters:
 
 steps:
 
+  # Always print skipProvisionator value
+  - script: |
+      echo "Current skipProvisionator value: ${{ parameters.skipProvisionator }}"
+    displayName: 'Print Provisionator Information'
+    condition: always()
+
   ##################################################
   #               Provisioning macOS               #
   ##################################################
