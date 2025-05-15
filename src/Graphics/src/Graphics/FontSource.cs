@@ -22,17 +22,17 @@ namespace Microsoft.Maui.Graphics
 			Weight = weight;
 			FontStyleType = fontStyleType;
 		}
-		
+
 		/// <summary>
 		/// Gets the font file name or font family name.
 		/// </summary>
 		public readonly string Name;
-		
+
 		/// <summary>
 		/// Gets the font weight.
 		/// </summary>
 		public readonly int Weight;
-		
+
 		/// <summary>
 		/// Gets the font style type.
 		/// </summary>

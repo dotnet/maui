@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Graphics
 		/// Gets the default platform font.
 		/// </summary>
 		IFont Default { get; }
-		
+
 		/// <summary>
 		/// Gets the default bold platform font.
 		/// </summary>

@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Graphics
 		/// Text that exceeds the bounds will be clipped (not visible).
 		/// </summary>
 		ClipBounds = 0,
-		
+
 		/// <summary>
 		/// Text that exceeds the bounds will still be rendered, potentially overlapping with other elements.
 		/// </summary>

@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Graphics
 		/// Gets the wrapped pattern that this pattern applies a paint to.
 		/// </summary>
 		public IPattern Wrapped { get; }
-		
+
 		/// <summary>
 		/// Gets or sets the paint to apply to the wrapped pattern.
 		/// </summary>
@@ -19,17 +19,17 @@ namespace Microsoft.Maui.Graphics
 		/// Gets the width of the pattern, which is the width of the wrapped pattern or 0 if there is no wrapped pattern.
 		/// </summary>
 		public float Width => Wrapped?.Width ?? 0;
-		
+
 		/// <summary>
 		/// Gets the height of the pattern, which is the height of the wrapped pattern or 0 if there is no wrapped pattern.
 		/// </summary>
 		public float Height => Wrapped?.Height ?? 0;
-		
+
 		/// <summary>
 		/// Gets the horizontal step size for repeating the pattern, which is the step X of the wrapped pattern or 0 if there is no wrapped pattern.
 		/// </summary>
 		public float StepX => Wrapped?.StepX ?? 0;
-		
+
 		/// <summary>
 		/// Gets the vertical step size for repeating the pattern, which is the step Y of the wrapped pattern or 0 if there is no wrapped pattern.
 		/// </summary>

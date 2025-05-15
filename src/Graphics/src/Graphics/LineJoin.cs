@@ -10,12 +10,12 @@ namespace Microsoft.Maui.Graphics
 		/// If the joint's angle is too sharp, a bevel join is used instead.
 		/// </summary>
 		Miter,
-		
+
 		/// <summary>
 		/// Creates a rounded corner at the joint. The corner is filled with a circle with the diameter equal to the line width.
 		/// </summary>
 		Round,
-		
+
 		/// <summary>
 		/// Creates a beveled corner at the joint. The joint is filled by a triangle that connects the outer edges of the lines.
 		/// </summary>

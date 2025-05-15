@@ -16,82 +16,82 @@ namespace Microsoft.Maui.Graphics
 		/// Represents a thin font weight (100).
 		/// </summary>
 		public const int Thin = 100;
-		
+
 		/// <summary>
 		/// Represents an extra light font weight (200).
 		/// </summary>
 		public const int ExtraLight = 200;
-		
+
 		/// <summary>
 		/// Represents an ultra light font weight (200), equivalent to ExtraLight.
 		/// </summary>
 		public const int UltraLight = 200;
-		
+
 		/// <summary>
 		/// Represents a light font weight (300).
 		/// </summary>
 		public const int Light = 300;
-		
+
 		/// <summary>
 		/// Represents a semi-light font weight (400), equivalent to Normal.
 		/// </summary>
 		public const int SemiLight = 400;
-		
+
 		/// <summary>
 		/// Represents a normal font weight (400).
 		/// </summary>
 		public const int Normal = 400;
-		
+
 		/// <summary>
 		/// Represents a regular font weight (400), equivalent to Normal.
 		/// </summary>
 		public const int Regular = 400;
-		
+
 		/// <summary>
 		/// Represents a medium font weight (500).
 		/// </summary>
 		public const int Medium = 500;
-		
+
 		/// <summary>
 		/// Represents a demi-bold font weight (600), equivalent to SemiBold.
 		/// </summary>
 		public const int DemiBold = 600;
-		
+
 		/// <summary>
 		/// Represents a semi-bold font weight (600).
 		/// </summary>
 		public const int SemiBold = 600;
-		
+
 		/// <summary>
 		/// Represents a bold font weight (700).
 		/// </summary>
 		public const int Bold = 700;
-		
+
 		/// <summary>
 		/// Represents an extra bold font weight (800).
 		/// </summary>
 		public const int ExtraBold = 800;
-		
+
 		/// <summary>
 		/// Represents an ultra bold font weight (800), equivalent to ExtraBold.
 		/// </summary>
 		public const int UltraBold = 800;
-		
+
 		/// <summary>
 		/// Represents a black font weight (900).
 		/// </summary>
 		public const int Black = 900;
-		
+
 		/// <summary>
 		/// Represents a heavy font weight (900), equivalent to Black.
 		/// </summary>
 		public const int Heavy = 900;
-		
+
 		/// <summary>
 		/// Represents an extra black font weight (950).
 		/// </summary>
 		public const int ExtraBlack = 950;
-		
+
 		/// <summary>
 		/// Represents an ultra black font weight (950), equivalent to ExtraBlack.
 		/// </summary>
@@ -132,12 +132,12 @@ namespace Microsoft.Maui.Graphics
 		/// Gets the font name or family.
 		/// </summary>
 		public string Name { get; private set; }
-		
+
 		/// <summary>
 		/// Gets the font weight.
 		/// </summary>
 		public int Weight { get; private set; }
-		
+
 		/// <summary>
 		/// Gets the font style type.
 		/// </summary>

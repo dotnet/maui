@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Controls.Platform
 					var statusBarColor = mainActivityWindow.StatusBarColor;
 #pragma warning disable CA1422
 					dialog.Window.SetNavigationBarColor(new AColor(navigationBarColor));
-				 	dialog.Window.SetStatusBarColor(new AColor(statusBarColor));
+					dialog.Window.SetStatusBarColor(new AColor(statusBarColor));
 #pragma warning restore CA1422
 				}
 

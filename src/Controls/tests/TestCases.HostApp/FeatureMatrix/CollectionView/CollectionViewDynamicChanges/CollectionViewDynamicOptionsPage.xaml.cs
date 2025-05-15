@@ -2,7 +2,7 @@ namespace Maui.Controls.Sample;
 
 public partial class CollectionViewDynamicOptionsPage : ContentPage
 {
-private CollectionViewViewModel _viewModel;
+	private CollectionViewViewModel _viewModel;
 
 	public CollectionViewDynamicOptionsPage(CollectionViewViewModel viewModel)
 	{
@@ -37,7 +37,7 @@ private CollectionViewViewModel _viewModel;
 			grid.Children.Add(new Label
 			{
 				Text = "No Items Available(Grid View)",
-				 
+
 				TextColor = Colors.Blue
 			});
 			_viewModel.EmptyView = grid;
@@ -124,7 +124,7 @@ private CollectionViewViewModel _viewModel;
 					TextColor = Colors.Blue
 				});
 				return grid;
-				
+
 			});
 			_viewModel.IsEmptyViewTemplateSelected = true;
 		}
@@ -201,7 +201,7 @@ private CollectionViewViewModel _viewModel;
 		if (GroupHeaderTemplateNone.IsChecked)
 		{
 			_viewModel.GroupHeaderTemplate = null;
-			 
+
 
 		}
 		else if (GroupHeaderTemplateGrid.IsChecked)
@@ -233,7 +233,7 @@ private CollectionViewViewModel _viewModel;
 		if (GroupFooterTemplateNone.IsChecked)
 		{
 			_viewModel.GroupFooterTemplate = null;
-			 
+
 		}
 		else if (GroupFooterTemplateGrid.IsChecked)
 		{
@@ -274,7 +274,7 @@ private CollectionViewViewModel _viewModel;
 				label.SetBinding(Label.TextProperty, new Binding("Caption"));
 				return label;
 			});
-		  _viewModel.IsItemTemplateSelected = true;
+			_viewModel.IsItemTemplateSelected = true;
 		}
 	}
 
@@ -298,7 +298,7 @@ private CollectionViewViewModel _viewModel;
 			_viewModel.ItemsSourceType = ItemsSourceType.ObservableCollection5T;
 		else if (radioButton == ItemsSourceGroupedList)
 			_viewModel.ItemsSourceType = ItemsSourceType.GroupedListT;
-		else if (radioButton == ItemsSourceNone)	
+		else if (radioButton == ItemsSourceNone)
 			_viewModel.ItemsSourceType = ItemsSourceType.None;
-	}	 	 
-}	
+	}
+}

@@ -13,12 +13,12 @@ namespace Microsoft.Maui.Graphics
 		/// Gets the width of the PDF page.
 		/// </summary>
 		float Width { get; }
-		
+
 		/// <summary>
 		/// Gets the height of the PDF page.
 		/// </summary>
 		float Height { get; }
-		
+
 		/// <summary>
 		/// Gets the page number within the PDF document.
 		/// </summary>
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Graphics
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="stream"/> is null.</exception>
 		/// <exception cref="IOException">Thrown when an I/O error occurs.</exception>
 		void Save(Stream stream);
-		
+
 		/// <summary>
 		/// Asynchronously saves the PDF page to the specified stream.
 		/// </summary>

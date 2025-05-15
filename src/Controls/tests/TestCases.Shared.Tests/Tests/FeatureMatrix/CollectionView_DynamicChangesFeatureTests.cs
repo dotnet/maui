@@ -165,9 +165,9 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("IsGroupedTrue");
 		App.Tap("IsGroupedTrue");
 		App.WaitForElement("GroupHeaderTemplateGrid");
-		App.Tap("GroupHeaderTemplateGrid");	
+		App.Tap("GroupHeaderTemplateGrid");
 		App.WaitForElement(Apply);
-		App.Tap(Apply); 
+		App.Tap(Apply);
 		App.WaitForElement("Default GroupHeaderTemplate");
 		App.WaitForElement("GroupHeaderTemplateButton");
 		App.Tap("GroupHeaderTemplateButton");
@@ -189,7 +189,7 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("GroupFooterTemplateGrid");
 		App.Tap("GroupFooterTemplateGrid");
 		App.WaitForElement(Apply);
-		App.Tap(Apply);	
+		App.Tap(Apply);
 		App.WaitForElement("Default GroupFooterTemplate");
 		App.WaitForElement("GroupFooterTemplateButton");
 		App.Tap("GroupFooterTemplateButton");
@@ -198,9 +198,9 @@ public class CollectionView_DynamicChangesFeatureTests : UITest
 		App.WaitForElement("GroupFooterTemplate2");
 	}
 
-#if TEST_FAILS_ON_WINDOWS 
-//[Testing] EmptyView(null ItemsSource) elements Not Accessible via Automation on Windows Platform Issue Link:  https://github.com/dotnet/maui/issues/28022
-//EmptyViewTemplate not shown in Windows Issue Link: https://github.com/dotnet/maui/issues/28334
+#if TEST_FAILS_ON_WINDOWS
+	//[Testing] EmptyView(null ItemsSource) elements Not Accessible via Automation on Windows Platform Issue Link:  https://github.com/dotnet/maui/issues/28022
+	//EmptyViewTemplate not shown in Windows Issue Link: https://github.com/dotnet/maui/issues/28334
 	[Test]
 	[Category(UITestCategories.CollectionView)]
 	public void ValidateDynamicEmptyViewStringDisplayed()

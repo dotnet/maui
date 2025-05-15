@@ -12,12 +12,12 @@ namespace Microsoft.Maui.Graphics
 		/// A normal, upright font style.
 		/// </summary>
 		Normal,
-		
+
 		/// <summary>
 		/// An italic font style, typically slanted and based on a specially designed italic typeface.
 		/// </summary>
 		Italic,
-		
+
 		/// <summary>
 		/// An oblique font style, typically a slanted version of the regular typeface.
 		/// </summary>
