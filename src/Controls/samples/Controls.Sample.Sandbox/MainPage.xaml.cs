@@ -8,7 +8,7 @@ public partial class MainPage : ContentPage
 		something();
 	}
 
-	void something(){
+	void something(){ 
 						return;
 	}
 }
