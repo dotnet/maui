@@ -9,8 +9,16 @@
         Version="1.8.0.9"
     />
     <PackageReference
+        Update="Xamarin.AndroidX.DynamicAnimation"
+        Version="1.1.0.1"
+    />
+    <PackageReference
         Update="Xamarin.AndroidX.SwipeRefreshLayout"
         Version="1.1.0.27"
+    />
+    <PackageReference
+        Update="Xamarin.AndroidX.Transition"
+        Version="1.5.1.5"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Lifecycle.LiveData"

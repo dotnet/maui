@@ -62,7 +62,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
-    <PackageReference Include="Xamarin.AndroidX.DynamicAnimation" Version="1.1.0.1"/>
+    <PackageReference Include="Xamarin.AndroidX.DynamicAnimation" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
