@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui19560">
+	<ContentPage.Resources>
+		<ResourceDictionary>
+			 <Style
+				TargetType="Shadow">
+				<Setter Property="Radius" Value="15" />
+				<Setter Property="Opacity" Value="0.5" />
+				<Setter Property="Brush" Value="Red" />
+				<Setter Property="Offset" Value="10,10" />
+			</Style>
+		</ResourceDictionary>
+	</ContentPage.Resources>
+	<Label BackgroundColor="White"
+		TextColor="Black"
+		x:Name="label"
+		Text="Standalone label with a shadow - shadow should be red if it's picking up styles.">
+        <Label.Shadow>
+            <Shadow />
+        </Label.Shadow>
+    </Label>
+</ContentPage>
