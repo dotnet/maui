@@ -167,6 +167,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				virtualView = existingView;
 			}
 
+			if (PlatformHandler?.VirtualView is Element element && element.Parent == null)
+			{
+				element.Parent = itemsView;
+			}
+
 			BindVirtualView(virtualView, bindingContext, itemsView, false);
 		}
 
