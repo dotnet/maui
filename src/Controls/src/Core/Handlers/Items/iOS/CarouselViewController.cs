@@ -461,8 +461,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			if (ItemsView is CarouselView carousel)
 			{
-				CollectionView.ShowsHorizontalScrollIndicator = !carousel.Loop;
-				CollectionView.ShowsVerticalScrollIndicator = !carousel.Loop;
+				var visibility = carousel.Loop ? ScrollBarVisibility.Never : ScrollBarVisibility.Always;
+        		CollectionView.UpdateHorizontalScrollBarVisibility(visibility);
+				CollectionView.UpdateVerticalScrollBarVisibility(visibility);
 			}
 		}
 
