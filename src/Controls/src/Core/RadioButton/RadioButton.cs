@@ -769,5 +769,16 @@ namespace Microsoft.Maui.Controls
 				throw new NotImplementedException();
 			}
 		}
+
+		internal override bool TrySetValue(string text)
+		{
+			if (bool.TryParse(text, out bool rbResult))
+			{
+				IsChecked = rbResult;
+				return true;
+			}
+
+			return false;
+		}
 	}
 }

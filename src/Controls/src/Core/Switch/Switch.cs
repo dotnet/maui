@@ -164,5 +164,16 @@ namespace Microsoft.Maui.Controls
 		{
 			return $"{base.GetDebuggerDisplay()}, IsToggled = {IsToggled}";
 		}
+
+		internal override bool TrySetValue(string text)
+		{
+			if (bool.TryParse(text, out bool swResult))
+			{
+				IsToggled = swResult;
+				return true;
+			}
+
+			return false;
+		}
 	}
 }

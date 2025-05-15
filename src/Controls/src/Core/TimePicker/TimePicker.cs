@@ -252,5 +252,16 @@ namespace Microsoft.Maui.Controls
 		{
 			return $"{base.GetDebuggerDisplay()}, Time = {Time}";
 		}
+
+		internal override bool TrySetValue(string text)
+		{
+			if (TimeSpan.TryParse(text, out TimeSpan tpResult))
+			{
+				Time = tpResult;
+				return true;
+			}
+
+			return false;
+		}
 	}
 }
