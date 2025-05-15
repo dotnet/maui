@@ -1,0 +1,32 @@
+name: Format PR Code
+on:
+  pull_request
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  dotnet-format:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v3.2.0
+        with:
+          dotnet-version: 8.x
+
+      - name: Run dotnet format
+        run: |
+          dotnet format .\Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
+          git diff
+    
+      - name: Push changes to PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git push
