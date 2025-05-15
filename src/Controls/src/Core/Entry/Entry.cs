@@ -202,5 +202,11 @@ namespace Microsoft.Maui.Controls
 		{
 			(this as IEntryController).SendCompleted();
 		}
+
+		internal override bool TrySetValue(string text)
+		{
+			Text = text;
+			return true;
+		}
 	}
 }
