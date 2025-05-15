@@ -20,9 +20,9 @@ namespace Microsoft.Maui.Resizetizer
 					{
 						body(s);
 					}
-					catch (Exception exc)
+					catch (Exception ex)
 					{
-						asyncTask.LogCodedError("MAUI0000", exc.ToString());
+						asyncTask.LogCodedError("MAUIR0002", "Image Processing", $"There was an exception processing the image. {ex.ToString()}");
 						asyncTask.Cancel();
 					}
 				});
