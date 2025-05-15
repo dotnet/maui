@@ -348,5 +348,16 @@ namespace Microsoft.Maui.Controls
 		{
 			return $"{base.GetDebuggerDisplay()}, Date = {Date}";
 		}
+
+		internal override bool TrySetValue(string text)
+		{
+			if (DateTime.TryParse(text, out DateTime dpResult))
+			{
+				Date = dpResult;
+				return true;
+			}
+
+			return false;
+		}
 	}
 }
