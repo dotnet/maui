@@ -25,7 +25,7 @@ jobs:
           dotnet format .\Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
           git diff
     
-      - name: Push changes to the PR
+      - name: Push changes to PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
