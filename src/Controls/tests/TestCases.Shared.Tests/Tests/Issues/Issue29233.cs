@@ -13,11 +13,11 @@ public class Issue29233 : _IssuesUITest
 
 	public override string Issue => "Android WebView Navigated is fired without setting source";
 
-    [Test]
+	[Test]
 	[Category(UITestCategories.WebView)]
 	public void NavigatedShouldNotFireWithNullSource()
 	{
-        App.WaitForElement("WaitLabel",timeout: TimeSpan.FromSeconds(5));
+		App.WaitForElement("WaitLabel", timeout: TimeSpan.FromSeconds(5));
 		App.WaitForNoElement("MauiLabel");
 	}
 }

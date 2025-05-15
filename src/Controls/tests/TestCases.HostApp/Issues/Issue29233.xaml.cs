@@ -10,10 +10,10 @@ public partial class Issue29233 : ContentPage
 		InitializeComponent();
 	}
 
-	private  void WebView_Navigated(object sender, WebNavigatedEventArgs e)
+	private void WebView_Navigated(object sender, WebNavigatedEventArgs e)
 	{
 		label.IsVisible = true;
-		label.Text= "Failed";
+		label.Text = "Failed";
 	}
 
 	protected override async void OnAppearing()
