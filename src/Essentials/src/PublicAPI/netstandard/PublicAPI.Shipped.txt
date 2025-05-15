@@ -1222,6 +1222,7 @@ static Microsoft.Maui.Storage.SecureStorage.GetAsync(string! key) -> System.Thre
 static Microsoft.Maui.Storage.SecureStorage.Remove(string! key) -> bool
 static Microsoft.Maui.Storage.SecureStorage.RemoveAll() -> void
 static Microsoft.Maui.Storage.SecureStorage.SetAsync(string! key, string! value) -> System.Threading.Tasks.Task!
+
 static readonly Microsoft.Maui.Storage.FilePickerFileType.Images -> Microsoft.Maui.Storage.FilePickerFileType!
 static readonly Microsoft.Maui.Storage.FilePickerFileType.Jpeg -> Microsoft.Maui.Storage.FilePickerFileType!
 static readonly Microsoft.Maui.Storage.FilePickerFileType.Pdf -> Microsoft.Maui.Storage.FilePickerFileType!
