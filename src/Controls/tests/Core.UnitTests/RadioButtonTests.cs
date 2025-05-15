@@ -170,6 +170,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var radioButton2 = new RadioButton() { GroupName = "foo" };
 			var radioButton3 = new RadioButton() { GroupName = "foo" };
 
+			var layout = new Grid();
+			layout.Children.Add(radioButton1);
+			layout.Children.Add(radioButton2);
+			layout.Children.Add(radioButton3);
+
 			radioButton1.IsChecked = true;
 			radioButton2.IsChecked = true;
 
