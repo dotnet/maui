@@ -4,7 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests
 {
-#if IOS
+ 
     public class CollectionViewGroupingTests : CollectionViewUITests
     {
         protected override bool ResetAfterEachTest => true;
@@ -30,5 +30,5 @@ namespace Microsoft.Maui.TestCases.Tests
             App.WaitForElement("Total members: 12");
         }
     }
-#endif
+ 
 }
