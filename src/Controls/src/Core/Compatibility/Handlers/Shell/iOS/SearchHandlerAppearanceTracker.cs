@@ -138,7 +138,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateCharacterSpacing(UITextField textField)
 		{
 			if (textField is null)
+			{
 				return;
+			}
 
 			var characterSpacing = _searchHandler.CharacterSpacing;
 			if (characterSpacing > 0)
