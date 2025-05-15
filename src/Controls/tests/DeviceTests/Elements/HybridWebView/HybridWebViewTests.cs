@@ -377,6 +377,74 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public Task WebViewInitializedAndInitializing(bool testValue)
+		{
+			var hybridWebView = new HybridWebView
+			{
+				WidthRequest = 100,
+				HeightRequest = 100,
+
+				HybridRoot = "HybridTestRoot",
+				DefaultFile = "index.html",
+			};
+
+			hybridWebView.WebViewInitializing += (s, e) =>
+			{
+#if IOS || MACCATALYST
+				e.AdditionalSettings = (config) =>
+				{
+					config.AllowsPictureInPictureMediaPlayback = testValue;
+				};
+#elif ANDROID
+				e.AdditionalSettings = (settings) =>
+				{
+					settings.AllowFileAccess = testValue;
+				};
+
+#elif WINDOWS
+				e.AdditionalSettings = (settings) =>
+				{
+					settings.AreDevToolsEnabled = testValue;
+				};
+#endif
+			};
+
+			hybridWebView.WebViewInitialized += (s, e) =>
+			{
+				var webView = e.WebView;
+				Assert.NotNull(webView);
+
+#if IOS || MACCATALYST
+				AssertTestValue(testValue, webView.Configuration.AllowsPictureInPictureMediaPlayback);
+#elif ANDROID
+				AssertTestValue(testValue, webView.Settings.AllowFileAccess);
+#elif WINDOWS
+				AssertTestValue(testValue, webView.Settings.AreDevToolsEnabled);
+#endif
+			};
+
+			void AssertTestValue(bool testValue, bool comparingValue)
+			{
+				if (testValue)
+				{
+					Assert.True(comparingValue);
+				}
+				else
+				{
+					Assert.False(comparingValue);
+				}
+			}
+
+			return RunTest("", async (hybridWebView) =>
+			{
+				// await just so the HybridWebView can be created and the initialization events can be fired
+				await Task.Delay(1);
+			}, customHybridWebView: hybridWebView);
+		}
+
+		[Theory]
 		[ClassData(typeof(InvokeJavaScriptAsyncTestData))]
 		public Task InvokeDotNet(string methodName, string expectedReturnValue) =>
 			RunTest("invokedotnettests.html", async (hybridWebView) =>
@@ -823,7 +891,7 @@ namespace Microsoft.Maui.DeviceTests
 		Task RunTest(Func<HybridWebView, Task> test) =>
 			RunTest(null, test);
 
-		async Task RunTest(string defaultFile, Func<HybridWebView, Task> test)
+		async Task RunTest(string defaultFile, Func<HybridWebView, Task> test, HybridWebView customHybridWebView = null)
 		{
 			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
 			if (OperatingSystem.IsAndroid() && !OperatingSystem.IsAndroidVersionAtLeast(24))
@@ -833,7 +901,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			SetupBuilder();
 
-			var hybridWebView = new HybridWebView
+			var hybridWebView = customHybridWebView ?? new HybridWebView
 			{
 				WidthRequest = 100,
 				HeightRequest = 100,
