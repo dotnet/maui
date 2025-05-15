@@ -1,6 +1,29 @@
 #nullable enable
+Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.get -> bool
+Microsoft.Maui.Controls.ContentPresenter.CascadeInputTransparent.set -> void
+Microsoft.Maui.Controls.ContentPresenter.LayoutChanged -> System.EventHandler
+Microsoft.Maui.Controls.ContentPresenter.Padding.get -> Microsoft.Maui.Thickness
+Microsoft.Maui.Controls.ContentPresenter.Padding.set -> void
+Microsoft.Maui.Controls.Frame.IsClippedToBounds.get -> bool
+Microsoft.Maui.Controls.Frame.IsClippedToBounds.set -> void
+Microsoft.Maui.Controls.IClippedToBoundsElement
+Microsoft.Maui.Controls.IClippedToBoundsElement.IsClippedToBounds.get -> bool
+Microsoft.Maui.Controls.IClippedToBoundsElement.IsClippedToBounds.set -> void
+Microsoft.Maui.Controls.RefreshView.IsClippedToBounds.get -> bool
+Microsoft.Maui.Controls.RefreshView.IsClippedToBounds.set -> void
+Microsoft.Maui.Controls.ScrollView.CascadeInputTransparent.get -> bool
+Microsoft.Maui.Controls.ScrollView.CascadeInputTransparent.set -> void
+Microsoft.Maui.Controls.ScrollView.LayoutChanged -> System.EventHandler
+Microsoft.Maui.Controls.ScrollView.Padding.get -> Microsoft.Maui.Thickness
+Microsoft.Maui.Controls.ScrollView.Padding.set -> void
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
+*REMOVED*override Microsoft.Maui.Controls.ContentPresenter.LayoutChildren(double x, double y, double width, double height) -> void
+*REMOVED*override Microsoft.Maui.Controls.ContentPresenter.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
+*REMOVED*override Microsoft.Maui.Controls.ScrollView.LayoutChildren(double x, double y, double width, double height) -> void
+*REMOVED*override Microsoft.Maui.Controls.ScrollView.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
+*REMOVED*override Microsoft.Maui.Controls.TemplatedView.LayoutChildren(double x, double y, double width, double height) -> void
+*REMOVED*override Microsoft.Maui.Controls.TemplatedView.OnMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
 *REMOVED*Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime
 *REMOVED*Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime
 *REMOVED*Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime
@@ -15,10 +38,16 @@ Microsoft.Maui.Controls.DateChangedEventArgs.OldDate.get -> System.DateTime?
 Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime?
 Microsoft.Maui.Controls.StyleableElement.Style.get -> Microsoft.Maui.Controls.Style?
 Microsoft.Maui.Controls.Internals.TextTransformUtilities
+Microsoft.Maui.Controls.TemplatedView.CascadeInputTransparent.get -> bool
+Microsoft.Maui.Controls.TemplatedView.CascadeInputTransparent.set -> void
+Microsoft.Maui.Controls.TemplatedView.LayoutChanged -> System.EventHandler
+Microsoft.Maui.Controls.TemplatedView.Padding.get -> Microsoft.Maui.Thickness
+Microsoft.Maui.Controls.TemplatedView.Padding.set -> void
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
+~Microsoft.Maui.Controls.TemplatedView.Children.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.Controls.Element>
 ~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.GetTransformedText(string source, Microsoft.Maui.TextTransform textTransform) -> string
 ~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.SetPlainText(Microsoft.Maui.Controls.InputView inputView, string platformText) -> void
 ~Microsoft.Maui.Controls.Page.DisplayActionSheetAsync(string title, string cancel, string destruction, Microsoft.Maui.FlowDirection flowDirection, params string[] buttons) -> System.Threading.Tasks.Task<string>
@@ -231,6 +260,8 @@ Microsoft.Maui.Controls.ITextElement.TextTransform.set -> void
 *REMOVED*~static Microsoft.Maui.Controls.WebView.ControlsWebViewMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWebView, Microsoft.Maui.Handlers.WebViewHandler>
 *REMOVED*~static Microsoft.Maui.Controls.Window.ControlsWindowMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IWindow, Microsoft.Maui.Handlers.WindowHandler>
 ~static readonly Microsoft.Maui.Controls.BaseShellItem.FlyoutItemIsVisibleProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Frame.IsClippedToBoundsProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.RefreshView.IsClippedToBoundsProperty -> Microsoft.Maui.Controls.BindableProperty
 ~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.CreateDelegator() -> UIKit.UICollectionViewDelegateFlowLayout
 ~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.CreateItemsViewSource() -> Microsoft.Maui.Controls.Handlers.Items.IItemsViewSource
 ~virtual Microsoft.Maui.Controls.Handlers.Items2.ItemsViewController2<TItemsView>.DetermineCellReuseId(Foundation.NSIndexPath indexPath) -> string
