@@ -215,6 +215,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.ViewDidLayoutSubviews();
 
+			if (IsOpen && TapoffView is not null && TapoffView.Frame != View.Bounds)
+			{
+				TapoffView.Frame = View.Bounds;
+			}
+
 			if (_flyoutAnimation == null)
 				LayoutSidebar(false);
 		}
