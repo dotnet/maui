@@ -238,6 +238,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var itemsSource = ItemsSourceFactory.CreateForCarouselView(ItemsView.ItemsSource, this, ItemsView.Loop);
 			_carouselViewLoopManager?.SetItemsSource(itemsSource);
 			SubscribeCollectionItemsSourceChanged(itemsSource);
+			UpdateScrollBarVisibility();
 			return itemsSource;
 		}
 
