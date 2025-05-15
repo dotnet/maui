@@ -142,17 +142,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
-			var characterSpacing = _searchHandler.CharacterSpacing;
-			if (characterSpacing > 0)
+			var attributedText = textField.AttributedText?.WithCharacterSpacing(_searchHandler.CharacterSpacing);
+			if (attributedText is not null)
 			{
-				var attributedText = textField.AttributedText?.WithCharacterSpacing(characterSpacing);
-				if (attributedText is not null)
-				{
-					textField.AttributedText = attributedText;
-				}
+				textField.AttributedText = attributedText;
 			}
 
-			var placeholderAttributedText = textField.AttributedPlaceholder?.WithCharacterSpacing(characterSpacing);
+			var placeholderAttributedText = textField.AttributedPlaceholder?.WithCharacterSpacing(_searchHandler.CharacterSpacing);
 			if (placeholderAttributedText is not null)
 			{
 				textField.AttributedPlaceholder = placeholderAttributedText;
