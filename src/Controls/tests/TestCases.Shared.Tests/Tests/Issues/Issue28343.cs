@@ -48,6 +48,18 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.ScrollUp("CollectionView");
 			App.WaitForElement("RefreshTriggered");
 		}
+
+#if IOS
+		[Test]
+		public void ProgressSpinnerIsVisibleWhenContentWasReset()
+		{
+			App.WaitForElement("SetToEnabled").Tap();
+			App.ScrollUp("CollectionView");
+			App.Tap("ResetContent");
+			App.ScrollUp("CollectionView");
+			VerifyScreenshot("Issue28343_ProgressSpinnerVisible");
+		}
+#endif
 	}
 #endif
 }
