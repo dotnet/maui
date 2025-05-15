@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 			if (strValue != null)
 			{
 				var lengths = strValue.Split(',');
-				var converter = new GridLengthTypeConverter();
+				var converter = new Microsoft.Maui.GridLength.GridLengthTypeConverter();
 				var definitions = new RowDefinition[lengths.Length];
 				for (var i = 0; i < lengths.Length; i++)
 					definitions[i] = new RowDefinition { Height = (GridLength)converter.ConvertFromInvariantString(lengths[i]) };
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (value is not RowDefinitionCollection rdc)
 				throw new NotSupportedException();
-			var converter = new GridLengthTypeConverter();
+			var converter = new Microsoft.Maui.GridLength.GridLengthTypeConverter();
 			return string.Join(", ", rdc.Select(rd => converter.ConvertToInvariantString(rd.Height)));
 		}
 	}

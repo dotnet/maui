@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="//Member[@MemberName='Height']/Docs/*" />
-		[System.ComponentModel.TypeConverter(typeof(GridLengthTypeConverter))]
+		[System.ComponentModel.TypeConverter(typeof(Microsoft.Maui.GridLength.GridLengthTypeConverter))]
 		public GridLength Height
 		{
 			get { return (GridLength)GetValue(HeightProperty); }
