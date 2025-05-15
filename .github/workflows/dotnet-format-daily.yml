@@ -13,7 +13,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        branch: [ main, inflight/current ]
+        branch: [ main, net10.0, inflight/current ]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
