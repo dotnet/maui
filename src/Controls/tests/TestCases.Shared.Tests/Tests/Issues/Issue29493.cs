@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST
+// On Android and iOS, CharacterSpacing is not working. See the related issue: https://github.com/dotnet/maui/issues/29492
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -21,3 +23,4 @@ public class Issue29493 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif

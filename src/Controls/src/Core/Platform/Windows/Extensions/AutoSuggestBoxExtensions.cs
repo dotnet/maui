@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			platformControl.Text = TextTransformUtilites.GetTransformedText(inputView.Text, inputView.TextTransform);
 		}
+
 		internal static void UpdateSearchHandlerText(this AutoSuggestBox platformControl, SearchHandler searchHandler)
 		{
 			platformControl.Text = TextTransformUtilites.GetTransformedText(searchHandler.Query, searchHandler.TextTransform);
