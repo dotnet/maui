@@ -178,7 +178,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_defaultBackgroundColor == null)
 				_defaultBackgroundColor = backgroundView.BackgroundColor;
 
-			UIColor backgroundColor = backGroundColor.ToPlatform(); 
+			UIColor backgroundColor = backGroundColor.ToPlatform();
 			backgroundView.BackgroundColor = backgroundColor;
 			textField.BackgroundColor = backgroundColor;
 		}

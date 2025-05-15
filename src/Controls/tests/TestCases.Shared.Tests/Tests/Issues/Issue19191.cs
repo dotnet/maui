@@ -12,7 +12,7 @@ public class Issue19191 : _IssuesUITest
 		: base(device)
 	{ }
 
-    [Test]
+	[Test]
 	[Category(UITestCategories.Picker)]
 	public void PickerTitleShouldBeRed()
 	{
