@@ -11,7 +11,9 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr checkout ${{ github.event.pull_request.number }}
 
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v3.2.0
