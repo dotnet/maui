@@ -1,17 +1,10 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 16175, "OnNavigatedTo was not triggered when tabs in More section", PlatformAffected.iOS)]
-public class Issue16175 : NavigationPage
-{
-	public Issue16175() : base(new Issue16175MainPage())
-	{
 
-	}
-}
-
-public class Issue16175MainPage : TabbedPage
+public class Issue16175 : TabbedPage
 {
-	public Issue16175MainPage()
+	public Issue16175()
 	{
 		for (var i = 0; i < 10; i++)
 		{
