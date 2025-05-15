@@ -12,6 +12,10 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 0
 
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v3.2.0
@@ -34,4 +38,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git push
+          git push origin HEAD:${{ github.event.pull_request.head.ref }}
