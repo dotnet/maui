@@ -24,9 +24,7 @@ public class Issue29493 : TestShell
 		button.Clicked += (s, e) =>
 		{
 			searchHandler.TextColor = Colors.YellowGreen;
-			searchHandler.BackgroundColor = Colors.Black;
 			searchHandler.CancelButtonColor = Colors.Red;
-			searchHandler.CharacterSpacing = 5;
 			searchHandler.HorizontalTextAlignment = TextAlignment.End;
 			searchHandler.TextTransform = TextTransform.Uppercase;
 			searchHandler.Query = "Apple";
