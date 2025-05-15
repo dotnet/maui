@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			get
 			{
 				var newCount = ItemCount;
-				if (Loop && newCount > 0)
+				if (newCount > 0)
 				{
 					newCount = ItemCount + 2;
 				}

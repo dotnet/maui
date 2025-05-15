@@ -409,6 +409,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		internal void UpdateLoop()
 		{
+			if (!InitialPositionSet)
+			{
+				return;
+			}
+			
 			if (ItemsView is not CarouselView carousel)
 			{
 				return;
