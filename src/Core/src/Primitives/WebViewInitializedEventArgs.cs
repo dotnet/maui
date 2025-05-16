@@ -4,7 +4,7 @@ using PlatformWebView = WebKit.WKWebView;
 #elif ANDROID
 using PlatformWebView = Microsoft.Maui.Platform.MauiHybridWebView;
 #elif WINDOWS
-using PlatformWebView = Microsoft.Web.WebView2;
+using PlatformWebView = Microsoft.Web.WebView2.Core.CoreWebView2;
 #else
 using PlatformWebView = System.Object;
 #endif
