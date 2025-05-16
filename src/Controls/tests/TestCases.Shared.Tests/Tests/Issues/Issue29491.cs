@@ -13,7 +13,7 @@ public class Issue29491 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
-	public void VerifyDataTemplateParentisNotNull()
+	public void VerifyDataTemplateParentIsNotNull()
 	{
 		App.WaitForElement("Button");
 		App.Tap("Button");
