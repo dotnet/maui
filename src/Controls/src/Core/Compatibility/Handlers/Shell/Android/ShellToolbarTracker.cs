@@ -658,6 +658,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					_searchView.View.LayoutParameters = new LP(LP.MatchParent, LP.MatchParent);
 					_searchView.SearchConfirmed += OnSearchConfirmed;
 				}
+				else if (_searchView.SearchHandler != SearchHandler)
+				{
+					_searchView.SearchHandler = SearchHandler;
+					_searchView.LoadView();
+				}
 
 				if (SearchHandler.SearchBoxVisibility == SearchBoxVisibility.Collapsible)
 				{
