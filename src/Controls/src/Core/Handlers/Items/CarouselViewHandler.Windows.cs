@@ -87,6 +87,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 
 			ListViewBase.ItemTemplate = CarouselItemsViewTemplate;
+			UpdateItemsSource();
 		}
 
 		protected override void OnScrollViewerFound(ScrollViewer scrollViewer)
