@@ -5,8 +5,8 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Resolvers;
 using Microsoft.UI.Xaml.Controls;
-using WThickness = Microsoft.UI.Xaml.Thickness;
 using Microsoft.UI.Xaml.Documents;
+using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Platform
 {
