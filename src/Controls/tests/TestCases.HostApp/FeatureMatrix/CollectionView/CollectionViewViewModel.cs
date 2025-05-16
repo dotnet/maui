@@ -70,6 +70,19 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 	private int _selectionChangedEventCount = 0;
 	private string _previousSelectionText;
 	private string _currentSelectionText;
+	private bool _isHeaderStringSelected;
+	private bool _isFooterStringSelected;
+	private bool _isHeaderGridSelected;
+	private bool _isFooterGridSelected;
+	private bool _isHeaderTemplateViewSelected;
+	private bool _isFooterTemplateViewSelected;
+	private bool _isGroupHeaderTemplateViewSelected;
+	private bool _isGroupFooterTemplateViewSelected;
+	private bool _isEmptyViewStringSelected;
+	private bool _isEmptyViewGridSelected;
+	private bool _isEmptyViewTemplateSelected;
+	private bool _isItemTemplateSelected;
+
 
 	public bool ShowAddRemoveButtons => ItemsSourceType == ItemsSourceType.ObservableCollectionT3 || ItemsSourceType == ItemsSourceType.GroupedListT3;
 
@@ -379,6 +392,125 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		set { _currentSelectionText = value; OnPropertyChanged(); }
 	}
 
+	public bool IsHeaderStringSelected
+	{
+		get => _isHeaderStringSelected;
+		set
+		{
+			_isHeaderStringSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsFooterStringSelected
+	{
+		get => _isFooterStringSelected;
+		set
+		{
+			_isFooterStringSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsHeaderGridSelected
+	{
+		get => _isHeaderGridSelected;
+		set
+		{
+			_isHeaderGridSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsFooterGridSelected
+	{
+		get => _isFooterGridSelected;
+		set
+		{
+			_isFooterGridSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsHeaderTemplateViewSelected
+	{
+		get => _isHeaderTemplateViewSelected;
+		set
+		{
+			_isHeaderTemplateViewSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsFooterTemplateViewSelected
+	{
+		get => _isFooterTemplateViewSelected;
+		set
+		{
+			_isFooterTemplateViewSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsGroupHeaderTemplateViewSelected
+	{
+		get => _isGroupHeaderTemplateViewSelected;
+		set
+		{
+			_isGroupHeaderTemplateViewSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsGroupFooterTemplateViewSelected
+	{
+		get => _isGroupFooterTemplateViewSelected;
+		set
+		{
+			_isGroupFooterTemplateViewSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsEmptyViewStringSelected
+	{
+		get => _isEmptyViewStringSelected;
+		set
+		{
+			_isEmptyViewStringSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsEmptyViewGridSelected
+	{
+		get => _isEmptyViewGridSelected;
+		set
+		{
+			_isEmptyViewGridSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsEmptyViewTemplateSelected
+	{
+		get => _isEmptyViewTemplateSelected;
+		set
+		{
+			_isEmptyViewTemplateSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsItemTemplateSelected
+	{
+		get => _isItemTemplateSelected;
+		set
+		{
+			_isItemTemplateSelected = value;
+			OnPropertyChanged();
+		}
+	}
 
 	private void LoadItems()
 	{
