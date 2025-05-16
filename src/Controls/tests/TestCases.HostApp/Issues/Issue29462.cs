@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 
 namespace Maui.Controls.Sample.Issues;
+
 [Issue(IssueTracker.Github, 29462, "CarouselView ItemTemplate Not Updating at Runtime", PlatformAffected.UWP)]
 public class Issue29462 : ContentPage
 {
@@ -16,12 +17,13 @@ public class Issue29462 : ContentPage
 			"Item 4",
 		};
 
-		CarouselView carouselView = new CarouselView
+		CarouselView2 carouselView = new CarouselView2
 		{
 			ItemsSource = carouselItems,
 			ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset,
 			HeightRequest = 300,
 			Loop = false,
+			HorizontalScrollBarVisibility = ScrollBarVisibility.Never,
 			ItemTemplate = new DataTemplate(() =>
 			{
 				var grid = new Grid
