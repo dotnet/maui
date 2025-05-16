@@ -137,7 +137,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 				_dismissAnimation.AnimationEnd += OnAnimationEnded;
 
-				dialogFragment.View.StartAnimation(_dismissAnimation);
+				//dialogFragment.View.StartAnimation(_dismissAnimation);
+				dialogFragment.Dismiss();
+				source.TrySetResult(modal);
 			}
 			else
 			{
@@ -204,6 +206,9 @@ namespace Microsoft.Maui.Controls.Platform
 			var dialogFragmentId = AView.GenerateViewId().ToString();
 			_modals.Push(dialogFragmentId);
 			dialogFragment.Show(fragmentManager, dialogFragmentId);
+
+
+			//var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_enter_anim)!;
 
 			if (animated)
 			{
@@ -333,6 +338,11 @@ namespace Microsoft.Maui.Controls.Platform
 				SetStyle(DialogFragment.StyleNormal, Resource.Style.Maui_MainTheme_NoActionBar);
 			}
 
+			public override void OnResume()
+			{
+				base.OnResume();
+			}
+
 			public override void OnStart()
 			{
 				base.OnStart();
@@ -348,13 +358,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (IsAnimated)
 				{
-					var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_enter_anim)!;
-					View.StartAnimation(animation);
+					Dialog?.Window?.SetWindowAnimations(Resource.Style.dialog_animation);
+					//View.StartAnimation(animation);
 
-					animation.AnimationEnd += OnAnimationEnded;
+					//animation.AnimationEnd += OnAnimationEnded;
 				}
 
-				void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
+				/*void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
 				{
 					if (sender is not AAnimation animation)
 					{
@@ -363,7 +373,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 					animation.AnimationEnd -= OnAnimationEnded;
 					FireAnimationEnded();
-				}
+				}*/
 			}
 
 			public override void OnDismiss(IDialogInterface dialog)
@@ -388,6 +398,12 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				base.OnDestroy();
 				FireAnimationEnded();
+			}
+
+			public override AAnimation? OnCreateAnimation(int transit, bool enter, int nextAnim)
+			{
+				var animation = base.OnCreateAnimation(transit, enter, nextAnim);
+				return animation;
 			}
 
 			void FireAnimationEnded()
