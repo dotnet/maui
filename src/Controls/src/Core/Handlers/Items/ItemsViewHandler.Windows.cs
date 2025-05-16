@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				if (CollectionViewSource.View.Count == 0)
+				if (ItemCount == 0)
 				{
 					return;
 				}
