@@ -104,6 +104,10 @@ static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Ma
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.get -> System.Collections.Generic.IList<string>
 *REMOVED*~Microsoft.Maui.Controls.NavigableElement.StyleClass.set -> void
 Microsoft.Maui.Controls.HybridWebView.InvokeJavaScriptAsync(string! methodName, object?[]? paramValues = null, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos = null) -> System.Threading.Tasks.Task!
+Microsoft.Maui.Controls.HybridWebView.WebViewInitializing -> System.EventHandler<Microsoft.Maui.WebViewInitializingEventArgs!>?
+Microsoft.Maui.Controls.HybridWebView.WebViewInitialized -> System.EventHandler<Microsoft.Maui.WebViewInitializedEventArgs!>?
+virtual Microsoft.Maui.Controls.HybridWebView.OnWebViewInitializing(Microsoft.Maui.WebViewInitializingEventArgs! e) -> void
+virtual Microsoft.Maui.Controls.HybridWebView.OnWebViewInitialized(Microsoft.Maui.WebViewInitializedEventArgs! e) -> void
 Microsoft.Maui.Controls.HybridWebView.SetInvokeJavaScriptTarget<T>(T! target) -> void
 Microsoft.Maui.Controls.ICornerElement
 Microsoft.Maui.Controls.ICornerElement.CornerRadius.get -> Microsoft.Maui.CornerRadius

@@ -81,6 +81,10 @@ static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Ma
 ~static Microsoft.Maui.Controls.Brush.LightGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
 ~static Microsoft.Maui.Controls.Brush.LightSlateGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
 ~static Microsoft.Maui.Controls.Brush.SlateGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
+Microsoft.Maui.Controls.HybridWebView.WebViewInitializing -> System.EventHandler<Microsoft.Maui.WebViewInitializingEventArgs!>?
+Microsoft.Maui.Controls.HybridWebView.WebViewInitialized -> System.EventHandler<Microsoft.Maui.WebViewInitializedEventArgs!>?
+virtual Microsoft.Maui.Controls.HybridWebView.OnWebViewInitializing(Microsoft.Maui.WebViewInitializingEventArgs! e) -> void
+virtual Microsoft.Maui.Controls.HybridWebView.OnWebViewInitialized(Microsoft.Maui.WebViewInitializedEventArgs! e) -> void
 *REMOVED*~static Microsoft.Maui.Controls.Button.ControlsButtonMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IButton, Microsoft.Maui.Handlers.ButtonHandler>
 *REMOVED*~static Microsoft.Maui.Controls.DatePicker.ControlsDatePickerMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IDatePicker, Microsoft.Maui.Handlers.DatePickerHandler>
 *REMOVED*~static Microsoft.Maui.Controls.Editor.ControlsEditorMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IEditor, Microsoft.Maui.Handlers.EditorHandler>

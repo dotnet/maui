@@ -66,6 +66,33 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
 
+		public event EventHandler<WebViewInitializingEventArgs>? WebViewInitializing;
+		public event EventHandler<WebViewInitializedEventArgs>? WebViewInitialized;
+
+		object? IHybridWebView.InitializingWebView()
+		{
+			var args = new WebViewInitializingEventArgs();
+			OnWebViewInitializing(args);
+
+			return args;
+		}
+
+		void IHybridWebView.InitializedWebView(object webView)
+		{
+			var args = new WebViewInitializedEventArgs(webView);
+			OnWebViewInitialized(args);
+		}
+
+		protected virtual void OnWebViewInitializing(WebViewInitializingEventArgs e)
+		{
+			WebViewInitializing?.Invoke(this, e);
+		}
+
+		protected virtual void OnWebViewInitialized(WebViewInitializedEventArgs e)
+		{
+			WebViewInitialized?.Invoke(this, e);
+		}
+
 		/// <summary>
 		/// Sends a raw message to the code running in the web view. Raw messages have no additional processing.
 		/// </summary>
