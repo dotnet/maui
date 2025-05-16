@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.Graphics.Platform
 {
 #if NETSTANDARD || NETSTANDARD2_0 || NETSTANDARD2_1 || (NET6_0_OR_GREATER && !PLATFORM) || TIZEN || TIZEN40
+	/// <summary>
+	/// Provides a platform-agnostic implementation of an image.
+	/// </summary>
 	public class PlatformImage : IImage
 	{
 		private readonly byte[] _bytes;
@@ -12,6 +15,12 @@ namespace Microsoft.Maui.Graphics.Platform
 		private readonly int _height;
 		private readonly ImageFormat _originalFormat;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="PlatformImage"/> class with the specified bytes and format.
+		/// </summary>
+		/// <param name="bytes">The raw image data.</param>
+		/// <param name="originalFormat">The format of the image data (default is PNG).</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="bytes"/> is null.</exception>
 		public PlatformImage(byte[] bytes, ImageFormat originalFormat = ImageFormat.Png)
 		{
 			_bytes = bytes;
@@ -27,18 +36,48 @@ namespace Microsoft.Maui.Graphics.Platform
 			}
 		}
 
+		/// <summary>
+		/// Gets the raw image data.
+		/// </summary>
+		/// <summary>
+		/// Gets the raw image data.
+		/// </summary>
 		public byte[] Bytes => _bytes;
 
+		/// <summary>
+		/// Downsizes the image to fit within the specified maximum dimension while maintaining aspect ratio.
+		/// </summary>
+		/// <param name="maxWidthOrHeight">The maximum width or height of the resulting image.</param>
+		/// <param name="disposeOriginal">Whether to dispose the original image after downsizing.</param>
+		/// <returns>A new <see cref="IImage"/> with the downsized dimensions.</returns>
+		/// <exception cref="PlatformNotSupportedException">This functionality is not supported in this platform implementation.</exception>
 		public IImage Downsize(float maxWidthOrHeight, bool disposeOriginal = false)
 		{
 			throw new PlatformNotSupportedException();
 		}
 
+		/// <summary>
+		/// Downsizes the image to fit within the specified maximum width and height while maintaining aspect ratio.
+		/// </summary>
+		/// <param name="maxWidth">The maximum width of the resulting image.</param>
+		/// <param name="maxHeight">The maximum height of the resulting image.</param>
+		/// <param name="disposeOriginal">Whether to dispose the original image after downsizing.</param>
+		/// <returns>A new <see cref="IImage"/> with the downsized dimensions.</returns>
+		/// <exception cref="PlatformNotSupportedException">This functionality is not supported in this platform implementation.</exception>
 		public IImage Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false)
 		{
 			throw new PlatformNotSupportedException();
 		}
 
+		/// <summary>
+		/// Resizes the image to the specified dimensions using the specified resize mode.
+		/// </summary>
+		/// <param name="width">The width of the resulting image.</param>
+		/// <param name="height">The height of the resulting image.</param>
+		/// <param name="resizeMode">The mode to use when resizing the image.</param>
+		/// <param name="disposeOriginal">Whether to dispose the original image after resizing.</param>
+		/// <returns>A new <see cref="IImage"/> with the resized dimensions.</returns>
+		/// <exception cref="PlatformNotSupportedException">This functionality is not supported in this platform implementation.</exception>
 		public IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit, bool disposeOriginal = false)
 		{
 			throw new PlatformNotSupportedException();
@@ -83,13 +122,22 @@ namespace Microsoft.Maui.Graphics.Platform
 			throw new NotImplementedException();
 		}
 
+		/// <summary>
+		/// Releases all resources used by the image.
+		/// </summary>
 		public void Dispose()
 		{
 			// Do nothing
 		}
 
+		/// <summary>
+		/// Gets the width of the image.
+		/// </summary>
 		public float Width => _width;
 
+		/// <summary>
+		/// Gets the height of the image.
+		/// </summary>
 		public float Height => _height;
 
 		private void GetPngDimension(out int width, out int height)

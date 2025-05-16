@@ -1,11 +1,11 @@
 ﻿#nullable enable
-using Xunit;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml.Controls;
+using Xunit;
 using WTextAlignment = Microsoft.UI.Xaml.TextAlignment;
 
 namespace Microsoft.Maui.DeviceTests
