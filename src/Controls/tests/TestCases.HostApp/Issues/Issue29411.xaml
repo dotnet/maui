@@ -12,7 +12,7 @@
        <VerticalStackLayout Grid.Row="0" Padding="10">
              
             <HorizontalStackLayout Spacing="10" Margin="0,5,0,0">
-                <Button Text="LoopDisbled"
+                <Button Text="LoopDisabled"
                 WidthRequest="120"
                 AutomationId="Button"
                 Clicked="OnButtonClicked" />
