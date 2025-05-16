@@ -384,13 +384,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var currentItemPosition = GetItemPositionInCarousel(ItemsView.CurrentItem);
 
-			if (currentItemPosition < 0 || currentItemPosition >= ItemCount)
+			if (currentItemPosition < 0 || currentItemPosition >= ItemCount || ItemsView.Position == currentItemPosition)
 				return;
 
-			if (ItemsView.Position != currentItemPosition)
-			{
-				ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
-			}
+			ItemsView.ScrollTo(currentItemPosition, position: ScrollToPosition.Center, animate: ItemsView.AnimateCurrentItemChanges);
 		}
 
 		void UpdatePosition()
