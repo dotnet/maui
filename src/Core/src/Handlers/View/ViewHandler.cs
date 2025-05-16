@@ -539,6 +539,15 @@ namespace Microsoft.Maui.Handlers
 #endif
 		}
 
+		/// <summary>
+		/// Provides a string representation of the current object for debugging purposes.
+		/// </summary>
+		/// <remarks>
+		/// This method is used by the <see cref="DebuggerDisplayAttribute"/> to display
+		/// a concise and informative string representation of the <see cref="ViewHandler"/> instance
+		/// during debugging sessions.
+		/// </remarks>
+		/// <returns>A string containing the type name and key properties of the object.</returns>
 		private protected virtual string GetDebuggerDisplay()
 		{
 			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(VirtualView), VirtualView, nameof(PlatformView), PlatformView);
