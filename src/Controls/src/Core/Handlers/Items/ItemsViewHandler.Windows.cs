@@ -147,7 +147,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
 			{
-				var lastItem = items[itemsCount - 1];
+				if (CollectionViewSource.View.Count == 0)
+					return;
+
+				var lastItem = CollectionViewSource.View[ItemCount - 1];
 				// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
 				ListViewBase.ScrollIntoView(lastItem, ScrollIntoViewAlignment.Leading);
 			}
