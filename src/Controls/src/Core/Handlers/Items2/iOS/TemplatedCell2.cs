@@ -167,18 +167,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				virtualView = existingView;
 			}
 
-			//Fix 1(Co-Pilot recommended approach)
-			if (virtualView != null && virtualView.Parent is null)
-			{
-				itemsView.AddLogicalChild(virtualView);
-			}
-
-			//Fix 2
-			if (PlatformHandler?.VirtualView is Element element && element.Parent == null)
-			{
-				element.Parent = itemsView;
-			}
-
 			BindVirtualView(virtualView, bindingContext, itemsView, false);
 		}
 
@@ -218,6 +206,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				ContentView.MarkAsCrossPlatformLayoutBacking();
 
 				virtualView.BindingContext = bindingContext;
+				itemsView.AddLogicalChild(virtualView);
+			}
+			else if (virtualView is not null && virtualView.Parent == null)
+			{
 				itemsView.AddLogicalChild(virtualView);
 			}
 
