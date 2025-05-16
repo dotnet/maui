@@ -2,7 +2,6 @@ using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
-
 namespace Microsoft.Maui.TestCases.Tests;
 
 public class CarouselViewFeatureTests : UITest
@@ -112,9 +111,9 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement(AddButton);
 		App.Tap(AddButton);
 		App.WaitForElement("Item 6");
-
 		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("Item 1"));
 	}
+
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In CV2 related issue link: https://github.com/dotnet/maui/issues/29524 
 	[Test]
 	[Category(UITestCategories.CarouselView)]
@@ -141,7 +140,7 @@ public class CarouselViewFeatureTests : UITest
 #if TEST_FAILS_ON_WINDOWS //In windows related issue link: https://github.com/dotnet/maui/issues/29462
 	[Test]
 	[Category(UITestCategories.CarouselView)]
-	public void VerifyCarouselViewWithIGridLayOut()
+	public void VerifyCarouselViewWithGridLayout()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
@@ -360,6 +359,7 @@ public class CarouselViewFeatureTests : UITest
 		Assert.That(App.WaitForElement(CurrentPositionLabel).GetText(), Is.EqualTo("5"));
 	}
 
+#if TEST_FAILS_ON_ANDROID // Issue link: https://github.com/dotnet/maui/issues/29544
 	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepLastItemInViewAndPreviousItem()
@@ -375,10 +375,11 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement(AddButton);
 		App.Tap(AddButton);
 		App.WaitForElement("Item 5");
-		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("Item 1"));
+		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("Item 6"));
 	}
+#endif
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In CV2 related issue link: https://github.com/dotnet/maui/issues/29529
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID//In CV2 related issue link: https://github.com/dotnet/maui/issues/29529 Android related issue link: https://github.com/dotnet/maui/issues/29544
 	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithKeepLastItemInViewAndPreviousPosition()
@@ -510,6 +511,150 @@ public class CarouselViewFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Item 3");
 	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithPositionAndCurrentItem()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(PositionEntry);
+		App.Tap(PositionEntry);
+		App.ClearText(PositionEntry);
+		App.EnterText(PositionEntry, "1");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(CurrentItemLabel).GetText(), Is.EqualTo("Item 2"));
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithPositionAndCurrentPosition()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(PositionEntry);
+		App.Tap(PositionEntry);
+		App.ClearText(PositionEntry);
+		App.EnterText(PositionEntry, "1");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(CurrentPositionLabel).GetText(), Is.EqualTo("1"));
+	}
+
+#if TEST_FAILS_ON_ANDROID //In android related issue link: https://github.com/dotnet/maui/issues/29544
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithPositionAndPreviousItem()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(PositionEntry);
+		App.Tap(PositionEntry);
+		App.ClearText(PositionEntry);
+		App.EnterText(PositionEntry, "1");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("Item 1"));
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithPositionAndPreviousPosition()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(PositionEntry);
+		App.Tap(PositionEntry);
+		App.ClearText(PositionEntry);
+		App.EnterText(PositionEntry, "1");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(PreviousPositionLabel).GetText(), Is.EqualTo("0"));
+	}
+#endif
+#endif
+
+ 
+#if TEST_FAILS_ON_WINDOWS //In windows related issue link:  https://github.com/dotnet/maui/issues/15443
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithScrollToAndCurrentItem()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 1");
+		App.WaitForElement(ScrollToIndexEntry);
+		App.ClearText(ScrollToIndexEntry);
+		App.EnterText(ScrollToIndexEntry, "1");
+		App.WaitForElement(ScrollToButton);
+		App.Tap(ScrollToButton);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(CurrentItemLabel).GetText(), Is.EqualTo("Item 2"));
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithScrollToAndCurrentPosition()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 1");
+		App.WaitForElement(ScrollToIndexEntry);
+		App.ClearText(ScrollToIndexEntry);
+		App.EnterText(ScrollToIndexEntry, "1");
+		App.WaitForElement(ScrollToButton);
+		App.Tap(ScrollToButton);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(CurrentPositionLabel).GetText(), Is.EqualTo("1"));
+	}
+
+#if TEST_FAILS_ON_ANDROID //In android related issue link: https://github.com/dotnet/maui/issues/29544  
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithScrollToAndPreviousItem()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 1");
+		App.WaitForElement(ScrollToIndexEntry);
+		App.ClearText(ScrollToIndexEntry);
+		App.EnterText(ScrollToIndexEntry, "1");
+		App.WaitForElement(ScrollToButton);
+		App.Tap(ScrollToButton);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("Item 1"));
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithScrollToAndPreviousPosition()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 1");
+		App.WaitForElement(ScrollToIndexEntry);
+		App.ClearText(ScrollToIndexEntry);
+		App.EnterText(ScrollToIndexEntry, "1");
+		App.WaitForElement(ScrollToButton);
+		App.Tap(ScrollToButton);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(PreviousPositionLabel).GetText(), Is.EqualTo("0"));
+	}
+#endif
 #endif
 
 	[Test]
@@ -576,7 +721,7 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement(AddButton);
 		App.Tap(AddButton);
 		App.WaitForElement("Item 6");
-		Assert.That(App.WaitForElement(CurrentPositionLabel).GetText(), Is.EqualTo("1"));
+		Assert.That(App.WaitForElement(CurrentPositionLabel).GetText(), Is.EqualTo("0"));
 	}
 #endif
 
@@ -686,6 +831,7 @@ public class CarouselViewFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Item 1");
 		App.WaitForElement(ScrollToIndexEntry);
+		App.ClearText(ScrollToIndexEntry);
 		App.EnterText(ScrollToIndexEntry, "3");
 		App.WaitForElement(ScrollToButton);
 		App.Tap(ScrollToButton);
@@ -704,6 +850,7 @@ public class CarouselViewFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Item 1");
 		App.WaitForElement(ScrollToIndexEntry);
+		App.ClearText(ScrollToIndexEntry);
 		App.EnterText(ScrollToIndexEntry, "3");
 		App.WaitForElement(ScrollToButton);
 		App.Tap(ScrollToButton);
@@ -750,6 +897,178 @@ public class CarouselViewFeatureTests : UITest
 		}
 		App.WaitForElement("Item 5");
 	}
+
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS  
+// Android related issue link: https://github.com/dotnet/maui/issues/29544 In CV2 related issue link: https://github.com/dotnet/maui/issues/29312 and In windows related issue link: https://github.com/dotnet/maui/issues/15443
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewWithVerticalLayoutAndPosition()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutVertical);
+		App.Tap(ItemsLayoutVertical);
+		App.WaitForElement(PositionEntry);
+		App.Tap(PositionEntry);
+		App.ClearText(PositionEntry);
+		App.EnterText(PositionEntry, "1");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 2");
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewCurrentItemWithVerticalLayoutAndPosition()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutVertical);
+		App.Tap(ItemsLayoutVertical);
+		App.WaitForElement(PositionEntry);
+		App.Tap(PositionEntry);
+		App.ClearText(PositionEntry);
+		App.EnterText(PositionEntry, "1");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(CurrentItemLabel).GetText(), Is.EqualTo("Item 2"));
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewPreviousItemWithVerticalLayoutAndPosition()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutVertical);
+		App.Tap(ItemsLayoutVertical);
+		App.WaitForElement(PositionEntry);
+		App.Tap(PositionEntry);
+		App.ClearText(PositionEntry);
+		App.EnterText(PositionEntry, "1");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("Item 1"));
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewPreviousPositionWithVerticalLayoutAndPosition()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutVertical);
+		App.Tap(ItemsLayoutVertical);
+		App.WaitForElement(PositionEntry);
+		App.Tap(PositionEntry);
+		App.ClearText(PositionEntry);
+		App.EnterText(PositionEntry, "1");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(PreviousPositionLabel).GetText(), Is.EqualTo("0"));
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewCurrentPositionWithVerticalLayoutAndPosition()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutVertical);
+		App.Tap(ItemsLayoutVertical);
+		App.WaitForElement(PositionEntry);
+		App.Tap(PositionEntry);
+		App.ClearText(PositionEntry);
+		App.EnterText(PositionEntry, "1");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(CurrentPositionLabel).GetText(), Is.EqualTo("1"));
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewCurrentItemWithVerticalLayoutAndScrollTo()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutVertical);
+		App.Tap(ItemsLayoutVertical);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 1");
+		App.WaitForElement(ScrollToIndexEntry);
+		App.ClearText(ScrollToIndexEntry);
+		App.EnterText(ScrollToIndexEntry, "1");
+		App.WaitForElement(ScrollToButton);
+		App.Tap(ScrollToButton);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(CurrentItemLabel).GetText(), Is.EqualTo("Item 2"));
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewPreviousItemWithVerticalLayoutAndScrollTo()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutVertical);
+		App.Tap(ItemsLayoutVertical);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 1");
+		App.WaitForElement(ScrollToIndexEntry);
+		App.ClearText(ScrollToIndexEntry);
+		App.EnterText(ScrollToIndexEntry, "1");
+		App.WaitForElement(ScrollToButton);
+		App.Tap(ScrollToButton);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(PreviousItemLabel).GetText(), Is.EqualTo("Item 1"));
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewCurrentPositionWithVerticalLayoutAndScrollTo()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutVertical);
+		App.Tap(ItemsLayoutVertical);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 1");
+		App.WaitForElement(ScrollToIndexEntry);
+		App.ClearText(ScrollToIndexEntry);
+		App.EnterText(ScrollToIndexEntry, "1");
+		App.WaitForElement(ScrollToButton);
+		App.Tap(ScrollToButton);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(CurrentPositionLabel).GetText(), Is.EqualTo("1"));
+	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyCarouselViewPreviousPositionWithVerticalLayoutAndScrollTo()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(ItemsLayoutVertical);
+		App.Tap(ItemsLayoutVertical);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("Item 1");
+		App.WaitForElement(ScrollToIndexEntry);
+		App.ClearText(ScrollToIndexEntry);
+		App.EnterText(ScrollToIndexEntry, "1");
+		App.WaitForElement(ScrollToButton);
+		App.Tap(ScrollToButton);
+		App.WaitForElement("Item 2");
+		Assert.That(App.WaitForElement(PreviousPositionLabel).GetText(), Is.EqualTo("0"));	
+	}
+#endif
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In android related issue link: https://github.com/dotnet/maui/issues/29411, In Windows related issue link:https://github.com/dotnet/maui/issues/29412 && CV2 related issue link: https://github.com/dotnet/maui/issues/29449 && https://github.com/dotnet/maui/issues/29524
 	[Test]
@@ -886,7 +1205,7 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 1");
 		App.WaitForElement("Item 2");
 	}
-
+ 
 #if TEST_FAILS_ON_WINDOWS //In windows related issue link: https://github.com/dotnet/maui/issues/29529
 	[Test]
 	[Category(UITestCategories.CarouselView)]
@@ -1065,6 +1384,7 @@ public class CarouselViewFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Item 1");
 		App.WaitForElement(ScrollToIndexEntry);
+		App.ClearText(ScrollToIndexEntry);
 		App.EnterText(ScrollToIndexEntry, "3");
 		App.WaitForElement(ScrollToButton);
 		App.Tap(ScrollToButton);
@@ -1086,13 +1406,13 @@ public class CarouselViewFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Item 1");
 		App.WaitForElement(ScrollToIndexEntry);
+		App.ClearText(ScrollToIndexEntry);
 		App.EnterText(ScrollToIndexEntry, "3");
 		App.WaitForElement(ScrollToButton);
 		App.Tap(ScrollToButton);
 		App.WaitForElement("Item 4");
 	}
 	
-
 	[Test]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewWithVerticalLayoutAndIsSwipeDisableAndScrollTo()
@@ -1107,6 +1427,7 @@ public class CarouselViewFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("Item 1");
 		App.WaitForElement(ScrollToIndexEntry);
+		App.ClearText(ScrollToIndexEntry);
 		App.EnterText(ScrollToIndexEntry, "3");
 		App.WaitForElement(ScrollToButton);
 		App.Tap(ScrollToButton);
