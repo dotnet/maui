@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS || TEST_FAILS_ON_CATALYST // CarouselView Fails to Keep Last Item in View on iOS and macOS https://github.com/dotnet/maui/issues/18029
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // CarouselView Fails to Keep Last Item in View on iOS and macOS https://github.com/dotnet/maui/issues/18029
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
