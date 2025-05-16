@@ -46,7 +46,7 @@ public class Issue29491 : ContentPage
 				var parentLabel = new Label(){AutomationId = "Label"};
 				parentLabel.SetBinding(Label.TextProperty, new Binding
 				{
-					Source = label,
+					Source = stack,
 					Path = "Parent",
 					TargetNullValue = "`null`"
 				});
