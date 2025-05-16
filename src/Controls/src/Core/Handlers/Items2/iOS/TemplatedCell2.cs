@@ -167,6 +167,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				virtualView = existingView;
 			}
 
+			//Fix 1(Co-Pilot recommended approach)
+			if (virtualView != null && virtualView.Parent is null)
+			{
+				itemsView.AddLogicalChild(virtualView);
+			}
+
+			//Fix 2
 			if (PlatformHandler?.VirtualView is Element element && element.Parent == null)
 			{
 				element.Parent = itemsView;
