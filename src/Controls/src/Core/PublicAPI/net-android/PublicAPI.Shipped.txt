@@ -1311,7 +1311,7 @@
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.HeaderContainer.HeaderContainer(Android.Content.Context context, Microsoft.Maui.Controls.View view, Microsoft.Maui.IMauiContext mauiContext) -> void
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.MauiContext.get -> Microsoft.Maui.IMauiContext
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.OnElementSelected(Microsoft.Maui.Controls.Element element) -> void
-~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.OnOffsetChanged(Google.Android.Material.AppBar.AppBarLayout appBarLayout, int verticalOffset) -> void
+~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.OnOffsetChanged(Google.Android.Material.AppBar.AppBarLayout? appBarLayout, int verticalOffset) -> void
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.ShellContext.get -> Microsoft.Maui.Controls.Platform.Compatibility.IShellContext
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.ShellFlyoutTemplatedContentRenderer(Microsoft.Maui.Controls.Platform.Compatibility.IShellContext shellContext) -> void
 ~Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer.View.get -> Android.Views.View
