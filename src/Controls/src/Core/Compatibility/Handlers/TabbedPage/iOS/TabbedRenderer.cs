@@ -130,6 +130,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
+
 			if (Element is IView view)
 				view.Arrange(View.Bounds.ToRectangle());
 		}
@@ -150,7 +151,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			if (isInMoreTab || SelectedViewController.Title.Equals("More", StringComparison.Ordinal))
+			if (isInMoreTab)
 			{
 				UpdateCurrentPage();
 			}
