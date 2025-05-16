@@ -63,8 +63,11 @@ namespace Microsoft.Maui.Graphics.Platform
 			get => _strokeColor;
 			set
 			{
-				_strokeColor = value;
-				UpdateShadowState();
+				if (_strokeColor != value)
+				{
+					_strokeColor = value;
+					UpdateShadowState();
+				}
 			}
 		}
 
@@ -73,8 +76,11 @@ namespace Microsoft.Maui.Graphics.Platform
 			get => _fillColor;
 			set
 			{
-				_fillColor = value;
-				UpdateShadowState();
+				if (_fillColor != value)
+				{
+					_fillColor = value;
+					UpdateShadowState();
+				}
 			}
 		}
 
@@ -83,9 +89,12 @@ namespace Microsoft.Maui.Graphics.Platform
 			get => _fontColor;
 			set
 			{
-				_fontColor = value;
-				FontPaint.Color = value != null ? _fontColor.AsColor() : global::Android.Graphics.Color.Black;
-				UpdateShadowState();
+				if (_fontColor != value)
+				{
+					_fontColor = value;
+					FontPaint.Color = value != null ? _fontColor.AsColor() : global::Android.Graphics.Color.Black;
+					UpdateShadowState();
+				}
 			}
 		}
 
