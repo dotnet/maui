@@ -26,7 +26,7 @@ namespace Microsoft.Maui
 		CancellationTokenSource? _sourceCancellation;
 		IDisposable? _sourceResult;
 
-		public bool IsLoading;
+		public bool IsLoading => _sourceCancellation is not null;
 		public CancellationToken Token =>
 			_sourceCancellation?.Token ?? default;
 
@@ -36,7 +36,6 @@ namespace Microsoft.Maui
 
 		public CancellationToken BeginLoad()
 		{
-			IsLoading = true;
 			_sourceResult?.Dispose();
 
 			_sourceCancellation?.Cancel();
@@ -80,7 +79,6 @@ namespace Microsoft.Maui
 
 			IsResolutionDependent = false;
 			CurrentResolution = 1.0f;
-			IsLoading = false;
 		}
 
 		public void Reset()
