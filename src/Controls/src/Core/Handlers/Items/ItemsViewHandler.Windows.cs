@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var emptyView = Element.EmptyView;
+			var emptyView = Element.EmptyViewTemplate ?? Element.EmptyView;
 
 			if (emptyView is null)
 			{
