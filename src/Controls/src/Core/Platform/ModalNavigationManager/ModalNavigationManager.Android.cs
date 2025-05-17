@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		partial void InitializePlatform()
 		{
-			_window.Activated += OnWindowsActivated;
+			_window.Activated += (_, _) => SyncModalStackWhenPlatformIsReady();
 			_window.HandlerChanging += OnPlatformWindowHandlerChanging;
 			_window.PropertyChanging += OnWindowPropertyChanging;
 		}
@@ -121,8 +121,10 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		Task PresentModal(Page modal, bool animated)
+		async Task PresentModal(Page modal, bool animated)
 		{
+			TaskCompletionSource<bool> animationCompletionSource = new();
+
 			var dialogFragment = new ModalFragment(WindowMauiContext, modal)
 			{
 				Cancelable = false,
@@ -132,9 +134,20 @@ namespace Microsoft.Maui.Controls.Platform
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
 			var dialogFragmentId = AView.GenerateViewId().ToString();
 			_modals.Push(dialogFragmentId);
-			dialogFragment.Show(fragmentManager, dialogFragmentId);	
 
-			return Task.CompletedTask;	
+			dialogFragment.Show(fragmentManager, dialogFragmentId);
+
+			EventHandler? OnDailogShown = null;
+
+			OnDailogShown = (_, _) =>
+			{
+				dialogFragment!.DialogShowEvent -= OnDailogShown;
+				animationCompletionSource.SetResult(true);
+			};
+
+			dialogFragment!.DialogShowEvent += OnDailogShown;
+
+			await animationCompletionSource.Task;
 		}
 
 		internal class ModalFragment : DialogFragment
@@ -142,6 +155,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Page _modal;
 			IMauiContext _mauiWindowContext;
 			NavigationRootManager? _navigationRootManager;
+			public event EventHandler? DialogShowEvent;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
 
 			public bool IsAnimated { get; internal set; }
@@ -169,14 +183,19 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					dialog.Window.SetSoftInputMode(attributes.SoftInputMode);
 				}
+				EventHandler? OnDailogShown = null;
+
+				OnDailogShown = (_, _) =>
+				{
+					dialog.ShowEvent -= OnDailogShown;
+					DialogShowEvent?.Invoke(this, EventArgs.Empty);
+				};
+
+				dialog.ShowEvent += OnDailogShown;
 
 				if (IsAnimated)
 				{
 					dialog.Window?.SetWindowAnimations(Resource.Style.dialog_animation);
-				}
-				else
-				{
-					dialog.Window?.SetWindowAnimations(0);
 				}
 
 				return dialog;
