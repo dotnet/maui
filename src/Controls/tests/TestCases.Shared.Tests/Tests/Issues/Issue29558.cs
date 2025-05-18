@@ -18,7 +18,7 @@ public class Issue29558 : _IssuesUITest
 		bool isKeyboardVisible;
 		App.WaitForElement("unfocusButton");
 
-		List<string> inputControls = ["entry", "editor", "searchHandler"];
+		List<string> inputControls = ["entry", "editor", "searchBar", "searchHandler"];
 		foreach (var control in inputControls)
 		{
 			App.Click(control);

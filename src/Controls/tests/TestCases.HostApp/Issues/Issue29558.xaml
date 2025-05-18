@@ -17,6 +17,8 @@
                                        x:Name="entry"/>
                                 <Editor AutomationId="editor"
                                         x:Name="editor"/>
+                                <SearchBar AutomationId="searchBar"
+                                           x:Name="searchBar"/>
                                 <Button Text="Unfocus"
                                         Clicked="UnfocusButton_Clicked"
                                         AutomationId="unfocusButton"/>
