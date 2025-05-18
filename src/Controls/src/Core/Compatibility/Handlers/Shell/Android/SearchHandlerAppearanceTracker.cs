@@ -215,6 +215,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void OnShowKeyboardRequested(object sender, EventArgs e)
 		{
+			_editText?.RequestFocus();
 			_control?.ShowSoftInput();
 		}
 
