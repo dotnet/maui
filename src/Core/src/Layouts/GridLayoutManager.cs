@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Layouts
 				for (int n = 0; n < count; n++)
 				{
 					var definition = rowDefinitions[n];
-					rows[n] = new Definition(definition.Height);
+					rows[n] = new Definition(definition.Height, definition.MinHeight, definition.MaxHeight);
 				}
 
 				return rows;
@@ -188,7 +188,7 @@ namespace Microsoft.Maui.Layouts
 				for (int n = 0; n < count; n++)
 				{
 					var definition = columnDefinitions[n];
-					definitions[n] = new Definition(definition.Width);
+					definitions[n] = new Definition(definition.Width, definition.MinWidth, definition.MaxWidth);
 				}
 
 				return definitions;
@@ -1198,6 +1198,8 @@ namespace Microsoft.Maui.Layouts
 		{
 			readonly GridLength _gridLength;
 			private double _size;
+			private readonly double _minSize;
+			private readonly double _maxSize;
 
 			/// <summary>
 			/// The current size of this definition
@@ -1207,10 +1209,20 @@ namespace Microsoft.Maui.Layouts
 				get => _size;
 				set
 				{
-					_size = value;
+					double newSize = value;
+					if (_minSize >= 0 && newSize < _minSize)
+					{
+						newSize = _minSize;
+					}
+					if (_maxSize >= 0 && newSize > _maxSize)
+					{
+						newSize = _maxSize;
+					}
+
+					_size = newSize;
 					if (!IsStar)
 					{
-						MinimumSize = value;
+						MinimumSize = newSize;
 					}
 				}
 			}
@@ -1244,6 +1256,14 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				_gridLength = gridLength;
+				_minSize = -1;
+				_maxSize = -1;
+			}
+
+			public Definition(GridLength gridLength, double minSize, double maxSize) : this(gridLength)
+			{
+				_minSize = minSize;
+				_maxSize = maxSize;
 			}
 		}
 	}
