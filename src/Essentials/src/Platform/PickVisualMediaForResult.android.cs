@@ -6,7 +6,7 @@ namespace Microsoft.Maui.ApplicationModel;
 
 internal class PickVisualMediaForResult : ActivityForResultRequest<PickVisualMedia, AndroidUri>
 {
-    static readonly Lazy<PickVisualMediaForResult> LazyInstance = new(new PickVisualMediaForResult());
+	static readonly Lazy<PickVisualMediaForResult> LazyInstance = new(new PickVisualMediaForResult());
 
-    public static PickVisualMediaForResult Instance => LazyInstance.Value;
+	public static PickVisualMediaForResult Instance => LazyInstance.Value;
 }
