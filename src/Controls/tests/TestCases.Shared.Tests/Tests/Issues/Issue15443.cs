@@ -16,12 +16,14 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.CarouselView)]
 		public void CarouselShouldWorkProperOnBinding()
 		{
-			App.WaitForElement("15443Stack");
+			var initialRect = App.WaitForElement("One").GetRect();
 			App.WaitForElement("15443Button3");
 			App.Click("15443Button3");
-			App.WaitForElement("Three");
+			var rect = App.WaitForElement("Three").GetRect();
+			Assert.That(rect.X, Is.GreaterThan(0));
 			App.Click("15443Button2");
-			App.WaitForElement("Two");
+			var rect1 = App.WaitForElement("Two").GetRect();
+			Assert.That(rect1.X, Is.GreaterThan(0));
 		}
 	}
 }
