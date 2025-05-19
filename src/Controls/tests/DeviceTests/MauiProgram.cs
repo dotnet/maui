@@ -24,9 +24,19 @@ namespace Microsoft.Maui.DeviceTests
 		public static IApplication DefaultTestApp => MauiProgramDefaults.DefaultTestApp;
 
 		public static MauiApp CreateMauiApp() =>
-			MauiProgramDefaults.CreateMauiApp(new List<Assembly>()
+			MauiProgramDefaults.CreateMauiApp((sp) =>
 			{
-				typeof(MauiProgram).Assembly
+				var options = new TestOptions
+				{
+					Assemblies = new List<Assembly>()
+					{
+						typeof(MauiProgram).Assembly
+					},
+					SkipCategories = typeof(TestCategory).GetExcludedTestCategories()
+				};
+
+				return options;
+
 			});
 	}
 }

@@ -164,14 +164,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Force UICollectionView to get the internal accounting straight
 			var collectionView = controller.CollectionView;
-			if (!collectionView.Hidden)
-			{
-				var numberOfSections = collectionView.NumberOfSections();
-				for (int section = 0; section < numberOfSections; section++)
-				{
-					collectionView.NumberOfItemsInSection(section);
-				}
-			}
+			UpdateSection(collectionView);
 
 			switch (args.Action)
 			{
@@ -193,8 +186,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+
+			// Calculate section and item counts after processing changes  
+			// to ensure UICollectionView reflects the updated state 
+			UpdateSection(collectionView);
 		}
 
+		void UpdateSection(UICollectionView collectionView)
+		{
+			if (!collectionView.Hidden)
+			{
+				var numberOfSections = collectionView.NumberOfSections();
+				for (int section = 0; section < numberOfSections; section++)
+				{
+					collectionView.NumberOfItemsInSection(section);
+				}
+			}
+		}
 		void Reload(bool collectionWasReset = false)
 		{
 			ResetGroupTracking();
@@ -370,6 +378,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 						{
 							return index;
 						}
+
+						index++;
 					}
 					return -1;
 			}

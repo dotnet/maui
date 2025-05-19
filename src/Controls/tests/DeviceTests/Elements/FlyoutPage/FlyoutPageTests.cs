@@ -52,23 +52,26 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var flyoutPage = CreateFlyoutPage(
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var flyoutPage = CreateFlyoutPage(
 					flyoutPageType,
 					new NavigationPage(new ContentPage() { Content = new Border(), Title = "Detail" }),
 					new ContentPage() { Title = "Flyout" });
 
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), async (handler) =>
-			{
-				var currentDetailPage = flyoutPage.Detail;
+				await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), async (handler) =>
+				{
+					var currentDetailPage = flyoutPage.Detail;
 
-				// Set with new page
-				var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
-				flyoutPage.Detail = navPage;
-				await OnNavigatedToAsync(navPage);
+					// Set with new page
+					var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
+					flyoutPage.Detail = navPage;
+					await OnNavigatedToAsync(navPage);
 
-				// Set back to previous page
-				flyoutPage.Detail = currentDetailPage;
-				await OnNavigatedToAsync(currentDetailPage);
+					// Set back to previous page
+					flyoutPage.Detail = currentDetailPage;
+					await OnNavigatedToAsync(currentDetailPage);
+				});
 			});
 		}
 
@@ -247,6 +250,39 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertEventually(() => IsBackButtonVisible(handler));
 				Assert.True(IsBackButtonVisible(handler));
 			});
+		}
+
+		[Fact(DisplayName = "FlyoutPage as Modal Does Not Leak")]
+		public async Task DoesNotLeakAsModal()
+		{
+			SetupBuilder();
+
+			var references = new List<WeakReference>();
+			var launcherPage = new ContentPage();
+			var window = new Window(launcherPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				var flyoutPage = new FlyoutPage
+				{
+					Flyout = new ContentPage
+					{
+						Title = "Flyout",
+						IconImageSource = "icon.png"
+					},
+					Detail = new ContentPage { Title = "Detail" }
+				};
+
+				await launcherPage.Navigation.PushModalAsync(flyoutPage, true);
+
+				references.Add(new WeakReference(flyoutPage));
+				references.Add(new WeakReference(flyoutPage.Flyout));
+				references.Add(new WeakReference(flyoutPage.Detail));
+
+				await launcherPage.Navigation.PopModalAsync();
+			});
+
+			await AssertionExtensions.WaitForGC(references.ToArray());
 		}
 
 		bool CanDeviceDoSplitMode(FlyoutPage page)

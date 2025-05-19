@@ -22,6 +22,8 @@
 
     <ItemGroup>
       <ItemsToPush Include="$(RootManifestOutputPath)**\*.nupkg" />
+      <WorkloadArtifacts Include="$(RootManifestOutputPath)**\*.zip" />
+      <ItemsToPush Include="@(WorkloadArtifacts)" PublishFlatContainer="true" RelativeBlobPath="maui/$(PackageReferenceVersion)/%(Filename)%(Extension)" />
     </ItemGroup>
 
     <Error Condition="'@(ItemsToPush)' == ''" Text="No packages to push." />

@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			VirtualView.ScrollToRequested -= ScrollToRequested;
 			CleanUpCollectionViewSource(platformView);
+			_formsEmptyView?.Handler?.DisconnectHandler();
 			base.DisconnectHandler(platformView);
 		}
 
@@ -582,7 +583,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				default:
 					return elementBounds.Left < containerBounds.Right && elementBounds.Right > containerBounds.Left;
-			};
+			}
+			;
 		}
 
 		async void ScrollToRequested(object sender, ScrollToRequestEventArgs args)

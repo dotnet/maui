@@ -57,6 +57,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 			_carouselView.SetBinding(CarouselView.ItemsSourceProperty, "Items");
 			this.SetBinding(Page.TitleProperty, "Title");
+			_carouselView.ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset;
 
 			var layout = new Grid();
 			layout.RowDefinitions.Add(new RowDefinition { Height = 100 });
@@ -98,8 +99,6 @@ namespace Maui.Controls.Sample.Issues
 		{
 			while (Items.Count > 0)
 			{
-				Items.Remove(Items.Last());
-				Items.Remove(Items.Last());
 				Items.Remove(Items.Last());
 			}
 			RemoveAllItemsCommand.ChangeCanExecute();

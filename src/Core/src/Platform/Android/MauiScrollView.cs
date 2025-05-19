@@ -63,10 +63,14 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_hScrollView.HorizontalScrollBarEnabled = scrollBarVisibility == ScrollBarVisibility.Always;
+			_hScrollView.ScrollbarFadingEnabled = _horizontalScrollVisibility != ScrollBarVisibility.Always;
+			PlatformInterop.RequestLayoutIfNeeded(this);
 		}
 
 		public void SetVerticalScrollBarVisibility(ScrollBarVisibility scrollBarVisibility)
 		{
+			ScrollBarVisibility verticalScrollVisibility = scrollBarVisibility;
+
 			if (_defaultVerticalScrollVisibility == 0)
 				_defaultVerticalScrollVisibility = VerticalScrollBarEnabled ? ScrollBarVisibility.Always : ScrollBarVisibility.Never;
 
@@ -74,8 +78,8 @@ namespace Microsoft.Maui.Platform
 				scrollBarVisibility = _defaultVerticalScrollVisibility;
 
 			VerticalScrollBarEnabled = scrollBarVisibility == ScrollBarVisibility.Always;
-
-			this.HandleScrollBarVisibilityChange();
+			ScrollbarFadingEnabled = verticalScrollVisibility != ScrollBarVisibility.Always;
+			PlatformInterop.RequestLayoutIfNeeded(this);
 		}
 
 		public void SetContent(View content)
@@ -313,7 +317,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 #pragma warning disable CA1822 // DO NOT REMOVE! Needed because dotnet format will else try to make this static and break things
-		void IOnScrollChangeListener.OnScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
+		void IOnScrollChangeListener.OnScrollChange(NestedScrollView? v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
 #pragma warning restore CA1822
 		{
 			OnScrollChanged(scrollX, scrollY, oldScrollX, oldScrollY);
@@ -428,7 +432,6 @@ namespace Microsoft.Maui.Platform
 			set
 			{
 				base.HorizontalScrollBarEnabled = value;
-				this.HandleScrollBarVisibilityChange();
 			}
 		}
 

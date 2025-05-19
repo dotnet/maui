@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls.XamlC;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 namespace Microsoft.Maui.Controls.Build.Tasks;
 
@@ -38,8 +39,13 @@ class XamlCache
 	public FieldReference GetOrAddFieldReference((ModuleDefinition module, string fieldRefKey) key, Func<(ModuleDefinition module, string fieldRefKey), FieldReference> valueFactory) =>
 		GetOrAdd(_fieldReferenceCache, key, valueFactory);
 
-	public TypeReference GetOrAddTypeReference(ModuleDefinition module, (string assemblyName, string clrNamespace, string typeName) type) =>
-		GetOrAdd(_typeReferenceCache, (module, type.ToString()), x => x.module.ImportReference(x.module.GetTypeDefinition(this, type)));
+	public TypeReference GetOrAddTypeReference(ModuleDefinition module, (string assemblyName, string clrNamespace, string typeName) type) => GetOrAdd(_typeReferenceCache, (module, type.ToString()), x =>
+	{
+		if (type.typeName.EndsWith("[]", StringComparison.InvariantCultureIgnoreCase))
+			return x.module.GetTypeDefinition(this, (type.assemblyName, type.clrNamespace, type.typeName.Substring(0, type.typeName.Length - 2))).MakeArrayType();
+		else
+			return x.module.ImportReference(x.module.GetTypeDefinition(this, type));
+	});
 
 	public TypeReference GetOrAddTypeReference(ModuleDefinition module, string typeKey, Func<(ModuleDefinition module, string typeKey), TypeReference> valueFactory) =>
 		GetOrAdd(_typeReferenceCache, (module, typeKey), valueFactory);

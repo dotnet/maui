@@ -1,5 +1,6 @@
 parameters:
   androidPool: { }
+  androidLinuxPool: { }
   iosPool: { }
   windowsPool: { }
   windowsBuildPool: { }
@@ -7,6 +8,7 @@ parameters:
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
+  timeoutInMinutes: 120
   skipProvisioning: true
   agentPoolAccessToken: ''
   categoryGroupsToTest:
@@ -108,7 +110,7 @@ stages:
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
-                pool: ${{ parameters.androidPool }}
+                pool: ${{ parameters.androidLinuxPool }}
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
@@ -142,7 +144,7 @@ stages:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
-                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
@@ -179,7 +181,7 @@ stages:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: CV2_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
-                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
@@ -208,6 +210,44 @@ stages:
                       testConfigurationArgs: "CollectionView2"
                       skipProvisioning: ${{ parameters.skipProvisioning }}
 
+  - stage: ios_ui_tests_mono_carv2
+    displayName: iOS UITests Mono CarouselView2
+    dependsOn: build_ui_tests
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.ios, '') }}:
+          - ${{ each version in parameters.iosVersions }}:
+            - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
+              - job: CARV2_ios_ui_tests_mono_${{ project.name }}_${{ replace(version, '.', '_') }}
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
+                pool: ${{ parameters.iosPool }}
+                variables:
+                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  APPIUM_HOME: $(System.DefaultWorkingDirectory)/.appium/
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: ios
+                      ${{ if eq(version, 'latest') }}:
+                        version: 16.4
+                      ${{ if ne(version, 'latest') }}:
+                        version: ${{ version }}
+                      path: ${{ project.ios }}
+                      app: ${{ project.app }}
+                      ${{ if eq(version, 'latest') }}:
+                        device: ios-simulator-64
+                      ${{ if ne(version, 'latest') }}:
+                        device: ios-simulator-64_${{ version }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      runtimeVariant : "Mono"
+                      testFilter: "CarouselView"
+                      testConfigurationArgs: "CollectionView2"
+                      skipProvisioning: ${{ parameters.skipProvisioning }}
+
   - ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
     - stage: ios_ui_tests_nativeaot
       displayName: iOS UITests NativeAOT
@@ -223,7 +263,7 @@ stages:
                       ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                         ${{ categoryGroup }}:
                           CATEGORYGROUP: ${{ categoryGroup }}
-                  timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                  timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                   workspace:
                     clean: all
                   displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
@@ -263,7 +303,7 @@ stages:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
-                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}
@@ -295,7 +335,7 @@ stages:
                     ${{ each categoryGroup in parameters.categoryGroupsToTest }}:
                       ${{ categoryGroup }}:
                         CATEGORYGROUP: ${{ categoryGroup }}
-                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                timeoutInMinutes: ${{ parameters.timeoutInMinutes }} # how long to run the job before automatically cancelling
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}

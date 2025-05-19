@@ -11,8 +11,8 @@ using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
-using LP = Android.Views.ViewGroup.LayoutParams;
 using LD = Android.Views.LayoutDirection;
+using LP = Android.Views.ViewGroup.LayoutParams;
 using Paint = Android.Graphics.Paint;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
@@ -275,7 +275,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				UpdateDrawerState();
 			}
-			else if(e.PropertyName == Shell.FlowDirectionProperty.PropertyName)
+			else if (e.PropertyName == Shell.FlowDirectionProperty.PropertyName)
 			{
 				UpdateFlowDirection();
 			}

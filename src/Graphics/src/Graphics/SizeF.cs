@@ -6,18 +6,33 @@ using System.Numerics;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Represents a size with single-precision floating-point width and height.
+	/// </summary>
 	[DebuggerDisplay("Width={Width}, Height={Height}")]
 	[TypeConverter(typeof(Converters.SizeFTypeConverter))]
 	public partial struct SizeF
 	{
+		/// <summary>
+		/// A size with both width and height set to zero.
+		/// </summary>
 		public static readonly SizeF Zero;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SizeF"/> struct with the specified value for both width and height.
+		/// </summary>
+		/// <param name="size">The value to use for both width and height.</param>
 		public SizeF(float size = 0)
 		{
 			Width = size;
 			Height = size;
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SizeF"/> struct with the specified width and height.
+		/// </summary>
+		/// <param name="width">The width of the size.</param>
+		/// <param name="height">The height of the size.</param>
 		public SizeF(float width, float height)
 		{
 			Width = width;
