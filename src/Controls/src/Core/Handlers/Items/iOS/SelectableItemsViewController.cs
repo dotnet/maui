@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Foundation;
+using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

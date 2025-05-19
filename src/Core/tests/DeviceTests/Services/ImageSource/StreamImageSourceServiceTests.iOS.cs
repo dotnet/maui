@@ -1,11 +1,11 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
-using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.DeviceTests
 {

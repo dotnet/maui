@@ -5,18 +5,36 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Represents a rectangle with single-precision floating-point x, y coordinates and width and height.
+	/// </summary>
 	[DebuggerDisplay("X={X}, Y={Y}, Width={Width}, Height={Height}")]
 	[TypeConverter(typeof(Converters.RectFTypeConverter))]
 	public partial struct RectF
 	{
+		/// <summary>
+		/// Gets or sets the x-coordinate of the rectangle's left edge.
+		/// </summary>
 		public float X { get; set; }
 
+		/// <summary>
+		/// Gets or sets the y-coordinate of the rectangle's top edge.
+		/// </summary>
 		public float Y { get; set; }
 
+		/// <summary>
+		/// Gets or sets the width of the rectangle.
+		/// </summary>
 		public float Width { get; set; }
 
+		/// <summary>
+		/// Gets or sets the height of the rectangle.
+		/// </summary>
 		public float Height { get; set; }
 
+		/// <summary>
+		/// Represents a <see cref="RectF"/> with all values set to 0.
+		/// </summary>
 		public static RectF Zero = new RectF();
 
 		public override string ToString()

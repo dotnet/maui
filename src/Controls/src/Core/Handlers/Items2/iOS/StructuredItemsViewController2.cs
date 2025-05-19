@@ -101,6 +101,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				: ItemsView.Footer;
 
 			cell.Label.Text = obj?.ToString();
+			cell.Tag = elementKind == UICollectionElementKindSectionKey.Header
+				? HeaderTag
+				: FooterTag;
 		}
 
 		void UpdateTemplatedSupplementaryView(TemplatedCell2 cell, NSString elementKind)
@@ -157,6 +160,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				? HorizontalSupplementaryView2.ReuseId
 				: VerticalSupplementaryView2.ReuseId;
 		}
+		internal override CGRect LayoutEmptyView()
+		{
+			var emptyViewFrame = base.LayoutEmptyView();
+			var footerView = CollectionView.ViewWithTag(FooterTag);
+
+			if (footerView is not null)
+			{
+				if (emptyViewFrame.Height > 0)
+					footerView.Frame = new CGRect(footerView.Frame.X, emptyViewFrame.Bottom, footerView.Frame.Width, footerView.Frame.Height);
+				else
+					footerView.Frame = new CGRect(footerView.Frame.X, CollectionView.ContentSize.Height - footerView.Frame.Height, footerView.Frame.Width, footerView.Frame.Height);
+			}
+
+			return emptyViewFrame;
+		}
 
 		protected override CGRect DetermineEmptyViewFrame()
 		{
@@ -172,8 +190,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (footerView != null)
 				footerHeight = footerView.Frame.Height;
 
-			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y, CollectionView.Frame.Width,
-				Math.Abs(CollectionView.Frame.Height - (headerHeight + footerHeight)));
+			return new CGRect(CollectionView.Frame.X, CollectionView.Frame.Y + headerHeight, CollectionView.Frame.Width,
+							Math.Abs(CollectionView.Frame.Height - (headerHeight + footerHeight)));
 		}
 
 		public override void ViewWillLayoutSubviews()
@@ -192,7 +210,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			// We could then invalidate the layout for supplementary cell only `collectionView.IndexPathForCell(headerCell)` like we do on standard cells,
 			// but that causes other cells to oddly collapse (see Issue25362 UITest), so in this case we have to stick with `InvalidateLayout`.
 			var collectionView = CollectionView;
-			
+
 			if (ItemsView.Header is not null || ItemsView.HeaderTemplate is not null)
 			{
 				var visibleHeaders = collectionView.GetVisibleSupplementaryViews(UICollectionElementKindSectionKey.Header);
