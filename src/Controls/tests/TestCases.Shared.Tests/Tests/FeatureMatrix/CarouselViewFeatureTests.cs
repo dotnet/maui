@@ -579,7 +579,7 @@ public class CarouselViewFeatureTests : UITest
 #endif
 #endif
 
- 
+
 #if TEST_FAILS_ON_WINDOWS //In windows related issue link:  https://github.com/dotnet/maui/issues/15443
 	[Test]
 	[Category(UITestCategories.CarouselView)]
@@ -898,7 +898,7 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement("Item 5");
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS  
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS
 // Android related issue link: https://github.com/dotnet/maui/issues/29544 In CV2 related issue link: https://github.com/dotnet/maui/issues/29312 and In windows related issue link: https://github.com/dotnet/maui/issues/15443
 	[Test]
 	[Category(UITestCategories.CarouselView)]
