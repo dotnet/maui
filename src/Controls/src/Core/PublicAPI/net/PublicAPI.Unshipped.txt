@@ -34,6 +34,9 @@ Microsoft.Maui.Controls.ITextAlignmentElement.HorizontalTextAlignment.get -> Mic
 Microsoft.Maui.Controls.ITextAlignmentElement.OnHorizontalTextAlignmentPropertyChanged(Microsoft.Maui.TextAlignment oldValue, Microsoft.Maui.TextAlignment newValue) -> void
 Microsoft.Maui.Controls.ITextAlignmentElement.VerticalTextAlignment.get -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.Controls.ITextElement
+Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan?
+Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan?
+Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan? oldTime, System.TimeSpan? newTime) -> void
 ~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
 ~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string
@@ -149,9 +152,6 @@ Microsoft.Maui.Controls.StyleableElement.StyleableElement() -> void
 Microsoft.Maui.Controls.StyleableElement.StyleClass.get -> System.Collections.Generic.IList<string!>!
 Microsoft.Maui.Controls.StyleableElement.StyleClass.set -> void
 Microsoft.Maui.Controls.TimeChangedEventArgs
-Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan
-Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan
-Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan oldTime, System.TimeSpan newTime) -> void
 Microsoft.Maui.Controls.TimePicker.TimeSelected -> System.EventHandler<Microsoft.Maui.Controls.TimeChangedEventArgs>
 Microsoft.Maui.Controls.TitleBar
 Microsoft.Maui.Controls.TitleBar.Content.get -> Microsoft.Maui.IView?
