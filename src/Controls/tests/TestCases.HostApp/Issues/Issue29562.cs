@@ -8,17 +8,19 @@ public class Issue29562 : ContentPage
 		var stack = new StackLayout();
 		var graphicsView = new GraphicsView
 		{
-			Drawable = new Issue29562_drawable(),
+			HeightRequest = 300,
+			WidthRequest = 300,
 		};
+
+		graphicsView.Drawable = new Issue29562_drawable();
 		var label = new Label
 		{
 			Text = "Text should displayed in single line.",
 			AutomationId = "Label"
 		};
 
-		stack.Children.Add(graphicsView);
 		stack.Children.Add(label);
-		
+		stack.Children.Add(graphicsView);
 		Content = stack;
 	}
 }
