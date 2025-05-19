@@ -133,7 +133,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (sender is not ItemCollection items)
 				return;
 
-			var itemsCount = items.Count;
 
 			if (itemsCount == 0)
 				return;
