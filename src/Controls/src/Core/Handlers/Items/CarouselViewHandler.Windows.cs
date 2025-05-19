@@ -193,7 +193,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// that will handle this so we want to skip this mapper call. We need to wait for the LIstView to be ready
 			if (handler.InitialPositionSet)
 			{
-				handler.IsProgrammaticScroll = true;
 				handler.UpdatePosition();
 			}
 
@@ -219,7 +218,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			handler.UpdateLoop();
 		}
 
-		internal bool IsProgrammaticScroll { get; private set; }
 		internal bool InitialPositionSet { get; private set; }
 
 
@@ -499,15 +497,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (position == Element.Position)
 			{
-				IsProgrammaticScroll = false;
 				return;
 			}
 
-			if (!IsProgrammaticScroll)
-			{
-				IsProgrammaticScroll = false;
-				SetCarouselViewPosition(position);
-			}
+			SetCarouselViewPosition(position);
 		}
 
 		void OnScrollViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
