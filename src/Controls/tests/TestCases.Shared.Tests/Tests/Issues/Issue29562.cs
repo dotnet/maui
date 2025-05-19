@@ -16,7 +16,6 @@ public class Issue29562 : _IssuesUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void IncorrectWidthAndHeight()
 	{
-		App.WaitForElement("GraphicsView");
 		VerifyScreenshot();
 	}
 }
