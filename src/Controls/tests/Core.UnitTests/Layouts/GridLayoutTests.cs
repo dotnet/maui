@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
-	public class GridLayoutTests
+	public partial class GridLayoutTests
 	{
 		[Fact]
 		public void RemovedMauiViewsHaveNoRowColumnInfo()
