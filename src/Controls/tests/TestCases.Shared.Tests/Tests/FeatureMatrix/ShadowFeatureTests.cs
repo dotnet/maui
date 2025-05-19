@@ -158,7 +158,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.DismissKeyboard();
 
 			Assert.That(App.FindElement("OpacityEntry").GetText(), Is.EqualTo("0"));
-			
+
 			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshot();
 		}
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ClipButton");
 			App.Tap("ClipButton");
 			VerifyScreenshotOrSetException(ref exception, "ShadowAddClip");
-			
+
 			App.Tap("ClipButton");
 			VerifyScreenshotOrSetException(ref exception, "ShadowRemoveClip");
 
