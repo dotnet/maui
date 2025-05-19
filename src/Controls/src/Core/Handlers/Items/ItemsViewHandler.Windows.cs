@@ -448,7 +448,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void ScrollViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
 		{
-			HandleScroll(_scrollViewer);
+
+			if (!e.IsIntermediate)
+			{
+				HandleScroll(_scrollViewer);
+			}
 		}
 
 		FrameworkElement RealizeEmptyViewTemplate(object bindingContext, DataTemplate emptyViewTemplate)
