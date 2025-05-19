@@ -140,6 +140,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action, IMauiContext mauiContext = null, TimeSpan? timeOut = null)
 			where THandler : class, IElementHandler
 		{
+			var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 			mauiContext ??= MauiContext;
 
 			if (System.Diagnostics.Debugger.IsAttached)
@@ -275,7 +276,11 @@ namespace Microsoft.Maui.DeviceTests
 				finally
 				{
 					_takeOverMainContentSempahore.Release();
-					TestRunnerLogger.LogDebug($"Finished Running Test");
+					stopwatch.Stop();
+					TestRunnerLogger.LogDebug($"Finished Running Test: {stopwatch.Elapsed}");
+
+					if (stopwatch.ElapsedMilliseconds > 15000)
+						TestRunnerLogger.LogError($"Test took longer than 15 seconds to complete.");
 				}
 			});
 		}
