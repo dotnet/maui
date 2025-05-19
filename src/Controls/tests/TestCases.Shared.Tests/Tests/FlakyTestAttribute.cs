@@ -20,7 +20,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		readonly string _ignoreMessage;
 		readonly int _retryCount;
 		readonly bool _ignore;
-		
+
 		public FlakyTestAttribute(string message, int retryCount = 2, bool ignore = true)
 		{
 			_ignoreMessage = message;
@@ -40,9 +40,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			readonly string _ignoreMessage;
 			readonly int _retryCount;
 			readonly bool _ignore;
-			
+
 			int _failedAttempts = 0;
-			
+
 			public CustomRetryCommand(TestCommand innerCommand, string ignoreMessage, int retryCount, bool ignore)
 				: base(innerCommand)
 			{
@@ -58,14 +58,14 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					context.CurrentResult = innerCommand.Execute(context);
 					var results = context.CurrentResult.ResultState;
-					
+
 					if (results.Equals(ResultState.Error)
-					    || results.Equals(ResultState.Failure)
-					    || results.Equals(ResultState.SetUpError)
-					    || results.Equals(ResultState.SetUpFailure)
-					    || results.Equals(ResultState.TearDownError)
-					    || results.Equals(ResultState.ChildFailure)
-					    || results.Equals(ResultState.Cancelled))
+						|| results.Equals(ResultState.Failure)
+						|| results.Equals(ResultState.SetUpError)
+						|| results.Equals(ResultState.SetUpFailure)
+						|| results.Equals(ResultState.TearDownError)
+						|| results.Equals(ResultState.ChildFailure)
+						|| results.Equals(ResultState.Cancelled))
 					{
 						_failedAttempts++;
 						context.CurrentContext.OutWriter.WriteLine("Test Failed on attempt #" + _failedAttempts);
@@ -76,13 +76,13 @@ namespace Microsoft.Maui.TestCases.Tests
 						break;
 					}
 				}
-				
+
 				// If want to ignore and all retry attempts fail, ignore the test with the provided message.
 				if (_ignore && _failedAttempts == _retryCount)
 				{
 					context.CurrentResult.SetResult(ResultState.Ignored, _ignoreMessage);
 				}
-				
+
 				return context.CurrentResult;
 			}
 		}
