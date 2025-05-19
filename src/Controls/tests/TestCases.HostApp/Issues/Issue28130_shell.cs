@@ -1,9 +1,9 @@
 ﻿namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.None,28130, "[Windows] Shell Flyout Menu Icon disappears from Window Title Bar after Navigation", PlatformAffected.UWP)]
+	[Issue(IssueTracker.None, 28130, "[Windows] Shell Flyout Menu Icon disappears from Window Title Bar after Navigation", PlatformAffected.UWP)]
 	public class Issue28130_Shell : TestShell
 	{
-		
+
 		protected override void Init()
 		{
 			Routing.RegisterRoute(nameof(Issue28130_Page1), typeof(Issue28130_Page1));
@@ -17,7 +17,7 @@
 
 		Button CreateShellItemTemplate()
 		{
-			var navigateButton = new Button() { Text = "Navigate to Page 2" ,AutomationId = "NavigateButton"};
+			var navigateButton = new Button() { Text = "Navigate to Page 2", AutomationId = "NavigateButton" };
 			navigateButton.Clicked += NavigateButton_Clicked;
 			return navigateButton;
 		}

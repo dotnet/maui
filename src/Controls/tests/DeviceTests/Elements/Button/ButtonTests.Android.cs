@@ -116,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
-		
+
 		[Fact]
 		[Description("The ScaleX property of a Button should match with native ScaleX")]
 		public async Task ScaleXConsistent()
