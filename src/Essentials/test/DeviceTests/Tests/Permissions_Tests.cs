@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 		[Fact]
 		[Trait(Traits.UI, Traits.FeatureSupport.Supported)]
-		public async Task Request_NotMainThread()
+		public async Task Request_NotMainThread_LocationWhenInUse()
 		{
 			// Location permissions can now be requested from any thread
 			if (DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.MacCatalyst)
@@ -82,10 +82,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 					var status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>().ConfigureAwait(false);
 					// Status could be various things depending on system state, but we should get a result
 					Assert.NotEqual(PermissionStatus.Unknown, status);
-					
-					// Also test LocationAlways permission on a background thread
-					status = await Permissions.RequestAsync<Permissions.LocationAlways>().ConfigureAwait(false);
-					Assert.NotEqual(PermissionStatus.Unknown, status);
 				}).ConfigureAwait(false);
 			}
 			else
@@ -94,6 +90,31 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				await Task.Run(async () =>
 				{
 					await Assert.ThrowsAsync<PermissionException>(async () => await Permissions.RequestAsync<Permissions.LocationWhenInUse>()).ConfigureAwait(false);
+				}).ConfigureAwait(false);
+			}
+		}
+
+		[Fact]
+		[Trait(Traits.UI, Traits.FeatureSupport.Supported)]
+		public async Task Request_NotMainThread_LocationAlways()
+		{
+			// Location permissions can now be requested from any thread
+			if (DeviceInfo.Platform == DevicePlatform.iOS || DeviceInfo.Platform == DevicePlatform.MacCatalyst)
+			{
+				await Task.Run(async () =>
+				{
+					// Should not throw an exception
+					var status = await Permissions.RequestAsync<Permissions.LocationAlways>().ConfigureAwait(false);
+					// Status could be various things depending on system state, but we should get a result
+					Assert.NotEqual(PermissionStatus.Unknown, status);
+				}).ConfigureAwait(false);
+			}
+			else
+			{
+				// On Android and other platforms, keep original behavior for now
+				await Task.Run(async () =>
+				{
+					await Assert.ThrowsAsync<PermissionException>(async () => await Permissions.RequestAsync<Permissions.LocationAlways>()).ConfigureAwait(false);
 				}).ConfigureAwait(false);
 			}
 		}
