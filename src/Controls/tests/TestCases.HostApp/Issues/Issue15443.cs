@@ -21,7 +21,6 @@ namespace Maui.Controls.Sample.Issues
 				WidthRequest = 200,
 				HeightRequest = 200,
 				Loop = false,
-				HorizontalScrollBarVisibility = ScrollBarVisibility.Never,
 				Background = Colors.LightBlue
 			};
 			carouselView.SetBinding(CarouselView.ItemsSourceProperty, "Items");
@@ -149,49 +148,30 @@ class Issue15443ViewModel : INotifyPropertyChanged
 	public Command ThreeCommand { get; }
 
 	public Issue15443ViewModel()
-
 	{
 
 		Items = new ObservableCollection<Issue15443DemoData>()
-
 			{
-
-				new Issue15443DemoData("One", "icon_add.png"),
-
-				new Issue15443DemoData("Two", "icon_add.png"),
-
-				new Issue15443DemoData("Three", "icon_add.png"),
-
+				new Issue15443DemoData("One", "15443One"),
+				new Issue15443DemoData("Two", "15443Two"),
+				new Issue15443DemoData("Three", "15443Three"),
 			};
 
 		CarouselCurrentItemIndex = 0;
 
 		OneCommand = new Command(() =>
-
 		{
-
-			System.Diagnostics.Debug.WriteLine("click 1");
-
 			CarouselCurrentItemIndex = 0;
 
 		});
 
 		TwoCommand = new Command(() =>
-
 		{
-
-			System.Diagnostics.Debug.WriteLine("click 2");
-
 			CarouselCurrentItemIndex = 1;
-
 		});
 
 		ThreeCommand = new Command(() =>
-
 		{
-
-			System.Diagnostics.Debug.WriteLine("click 3");
-
 			CarouselCurrentItemIndex = 2;
 
 		});
@@ -208,19 +188,12 @@ class Issue15443ViewModel : INotifyPropertyChanged
 }
 
 class Issue15443DemoData
-
 {
-
 	public string Title { get; set; }
 
-	public string Image { get; set; }
-
-	public Issue15443DemoData(string title, string image)
-
+	public Issue15443DemoData(string title, string automationid)
 	{
-
 		Title = title;
-
-		Image = image;
+		AutomationId = automationid;
 	}
 }
