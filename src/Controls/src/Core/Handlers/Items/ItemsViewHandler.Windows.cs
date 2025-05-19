@@ -133,6 +133,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (sender is not ItemCollection items)
 				return;
 
+			// When looping is enabled in CarouselView, Items.Count returns the FakeCount instead of the actual item count.
+			var itemsCount = VirtualView is CollectionView ? items.Count : ItemCount;
 
 			if (itemsCount == 0)
 				return;
@@ -151,7 +153,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					return;
 				}
 
-				var lastItem = CollectionViewSource.View[ItemCount - 1];
+				var lastItem = items[itemsCount - 1];
 				// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
 				ListViewBase.ScrollIntoView(lastItem, ScrollIntoViewAlignment.Leading);
 			}
