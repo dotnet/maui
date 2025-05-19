@@ -26,6 +26,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ResetButton").Tap();
 			App.WaitForElement("ColorEntry");
 			App.EnterText("ColorEntry", "#00FF00");
+			App.DismissKeyboard();
 
 			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshot();
@@ -41,11 +42,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("ColorEntry");
 			App.ClearText("ColorEntry");
 			App.EnterText("ColorEntry", "#00FF00");
+			App.DismissKeyboard();
 			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshotOrSetException(ref exception, "ShadowUpdateColor1");
 
 			App.ClearText("ColorEntry");
 			App.EnterText("ColorEntry", "#00FFFF");
+			App.DismissKeyboard();
 			App.WaitForElement("LabelShadow").Tap();
 			VerifyScreenshotOrSetException(ref exception, "ShadowUpdateColor2");
 
@@ -63,9 +66,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("OffsetXEntry");
 			App.ClearText("OffsetXEntry");
 			App.EnterText("OffsetXEntry", "20");
+			App.DismissKeyboard();
 			App.WaitForElement("OffsetYEntry");
 			App.ClearText("OffsetYEntry");
 			App.EnterText("OffsetYEntry", "20");
+			App.DismissKeyboard();
 
 			Assert.That(App.FindElement("OffsetXEntry").GetText(), Is.EqualTo("20"));
 			Assert.That(App.FindElement("OffsetYEntry").GetText(), Is.EqualTo("20"));
@@ -82,8 +87,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("OffsetXEntry");
 			App.ClearText("OffsetXEntry");
 			App.EnterText("OffsetXEntry", "0");
+			App.DismissKeyboard();
 			App.ClearText("OffsetYEntry");
 			App.EnterText("OffsetYEntry", "0");
+			App.DismissKeyboard();
 
 			Assert.That(App.FindElement("OffsetXEntry").GetText(), Is.EqualTo("0"));
 			Assert.That(App.FindElement("OffsetYEntry").GetText(), Is.EqualTo("0"));
@@ -100,6 +107,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("RadiusEntry");
 			App.ClearText("RadiusEntry");
 			App.EnterText("RadiusEntry", "20");
+			App.DismissKeyboard();
 
 			Assert.That(App.FindElement("RadiusEntry").GetText(), Is.EqualTo("20"));
 
@@ -115,6 +123,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("RadiusEntry");
 			App.ClearText("RadiusEntry");
 			App.EnterText("RadiusEntry", "0");
+			App.DismissKeyboard();
 
 			Assert.That(App.FindElement("RadiusEntry").GetText(), Is.EqualTo("0"));
 
@@ -130,6 +139,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.ClearText("OpacityEntry");
 			App.WaitForElement("OpacityEntry");
 			App.EnterText("OpacityEntry", "1");
+			App.DismissKeyboard();
 
 			Assert.That(App.FindElement("OpacityEntry").GetText(), Is.EqualTo("1"));
 
@@ -145,6 +155,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("OpacityEntry");
 			App.ClearText("OpacityEntry");
 			App.EnterText("OpacityEntry", "0");
+			App.DismissKeyboard();
 
 			Assert.That(App.FindElement("OpacityEntry").GetText(), Is.EqualTo("0"));
 			
