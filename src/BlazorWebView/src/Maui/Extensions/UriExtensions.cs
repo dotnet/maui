@@ -19,6 +19,12 @@ internal static class UriExtensions
 		if (Path.HasExtension(uri.AbsolutePath))
 			return false;
 
-		return baseUri.IsBaseOf(uri);
+		if (!string.Equals(baseUri.Host, uri.Host, StringComparison.OrdinalIgnoreCase) &&
+			!uri.Host.EndsWith("." + baseUri.Host, StringComparison.OrdinalIgnoreCase))
+		{
+			return false;
+		}
+
+		return uri.AbsolutePath.StartsWith(baseUri.AbsolutePath, StringComparison.OrdinalIgnoreCase);
 	}
 }
