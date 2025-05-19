@@ -264,7 +264,8 @@ namespace Microsoft.Maui.ApplicationModel
 				if (status == PermissionStatus.Granted)
 					return status;
 
-				// No need to ensure main thread here as the permission request dialog will be shown on the main thread
+				// Don't force main thread - the system will handle showing UI when needed
+				// Let the callback pattern in RequestLocationAsync handle the permission request
 
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 				return await LocationWhenInUse.RequestLocationAsync(false, lm => lm.RequestAlwaysAuthorization());
