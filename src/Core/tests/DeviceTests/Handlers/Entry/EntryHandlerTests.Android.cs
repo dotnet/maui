@@ -1,9 +1,9 @@
 using System.Linq;
 using System.Threading.Tasks;
+using AndroidX.AppCompat.Widget;
 using global::Android.Text;
 using global::Android.Text.Method;
 using global::Android.Views.InputMethods;
-using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;

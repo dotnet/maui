@@ -1671,5 +1671,5 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			element.ForceUpdateSize();
 		}
 	}
-	#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 }

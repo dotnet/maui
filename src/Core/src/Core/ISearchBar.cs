@@ -16,7 +16,7 @@ namespace Microsoft.Maui
 		/// Gets the color of the Search icon.
 		/// </summary>
 		Color SearchIconColor { get; }
-		
+
 		/// <summary>
 		/// Gets an enumeration value that controls the appearance of the return button.
 		/// </summary>
