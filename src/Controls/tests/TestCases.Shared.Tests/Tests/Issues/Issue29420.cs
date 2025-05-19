@@ -18,10 +18,12 @@ public class Issue29420 : _IssuesUITest
 		App.WaitForElement("CarouselView");
 		for (var i = 0; i < 5; i++)
 		{
-			App.Tap("Button");
+			App.Tap("InsertButton");
 		}
 		
 		App.WaitForElement("Item 5");
+		App.Tap("AddButton");
+		App.WaitForElement("NewItem");
 	}
 }
 #endif
