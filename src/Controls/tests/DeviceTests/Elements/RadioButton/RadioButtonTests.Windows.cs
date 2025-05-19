@@ -1,8 +1,8 @@
 using System.ComponentModel;
-using Xunit;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -87,9 +87,9 @@ namespace Microsoft.Maui.DeviceTests
 			var nativeView = GetNativeRadioButton(handler);
 			await InvokeOnMainThreadAsync(() =>
    			{
-				var isVisible = nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
-				Assert.Equal(expectedValue, isVisible);
-			});
+				   var isVisible = nativeView.Visibility == Microsoft.UI.Xaml.Visibility.Visible;
+				   Assert.Equal(expectedValue, isVisible);
+			   });
 		}
 	}
 }

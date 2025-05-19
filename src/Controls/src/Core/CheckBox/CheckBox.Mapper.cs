@@ -9,8 +9,12 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class CheckBox
 	{
-		internal new static void RemapForControls()
+		static CheckBox() => RemapForControls();
+
+		private new static void RemapForControls()
 		{
+			VisualElement.RemapForControls();
+
 			CheckBoxHandler.Mapper.ReplaceMapping<ICheckBox, ICheckBoxHandler>(nameof(Color), MapColor);
 		}
 

@@ -129,7 +129,7 @@ public class ShellInsets : _IssuesUITest
 		Assert.That(zeroPadding, Is.EqualTo(1));
 		App.WaitForElement(ResetButton);
 		App.Tap(ResetButton);
-	    App.WaitForElement(PaddingEntry);
+		App.WaitForElement(PaddingEntry);
 		App.EnterText(PaddingEntry, "100");
 		App.WaitForElement(PaddingTest);
 		App.Tap(PaddingTest);
