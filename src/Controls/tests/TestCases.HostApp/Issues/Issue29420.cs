@@ -43,19 +43,32 @@ public class Issue29420 : ContentPage
 			}),
 		};
 
-		var addButton = new Button
+		var insertButton = new Button
 		{
 			Text = "Insert item at 0th index",
-			AutomationId = "Button",
+			AutomationId = "InsertButton",
 			Margin = new Thickness(20),
 		};
 		
-		addButton.Clicked += (sender, e) =>
+		var addButton = new Button
+		{
+			Text = "Add item at end",
+			AutomationId = "AddButton",
+			Margin = new Thickness(20),
+		};
+
+		insertButton.Clicked += (sender, e) =>
 		{
 			carouselItems.Insert(0, "NewItem" + count.ToString());
 			count++;
 		};
 
+		addButton.Clicked += (sender, e) =>
+		{
+			carouselItems.Add("NewItem");
+		};
+
+		verticalStackLayout.Children.Add(insertButton);
 		verticalStackLayout.Children.Add(addButton);
 		verticalStackLayout.Children.Add(carouselView);
 		Content = verticalStackLayout;
