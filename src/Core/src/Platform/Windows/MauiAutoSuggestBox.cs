@@ -21,14 +21,16 @@ namespace Microsoft.Maui.Platform
 
 		public static readonly DependencyProperty IsReadOnlyProperty = DependencyProperty.RegisterAttached(
 			"IsReadOnly", typeof(bool), typeof(MauiTextBox),
-			new PropertyMetadata(true, OnIsReadOnlyPropertyChanged));
+			new PropertyMetadata(false, OnIsReadOnlyPropertyChanged));
 
 		static void OnIsReadOnlyPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs? e = null)
 		{
 			var element = d as FrameworkElement;
 			var textBox = element?.GetDescendantByName<TextBox>("TextBox");
-			if (textBox != null)
-				textBox.IsReadOnly = true;
+			if (textBox is not null && e?.NewValue is bool isReadOnly)
+			{
+				textBox.IsReadOnly = isReadOnly;
+			}
 		}
 	}
 }

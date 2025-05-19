@@ -109,21 +109,42 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateMaxLength(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			var maxLength = searchBar.MaxLength;
-
-			if (maxLength == -1)
-				maxLength = int.MaxValue;
-
-			var children = platformControl.GetChildren<TextBox>();
-			if (children is not null)
+			if (platformControl.IsLoaded)
 			{
-				foreach (var textBox in children)
+				var maxLength = searchBar.MaxLength;
+
+				if (maxLength == -1)
 				{
-					if (textBox is not null)
+					maxLength = int.MaxValue;
+				}
+
+				var children = platformControl.GetChildren<TextBox>();
+				if (children is not null)
+				{
+					foreach (var textBox in children)
 					{
-						textBox.MaxLength = searchBar.MaxLength;
-						break;
+						if (textBox is not null)
+						{
+							textBox.MaxLength = searchBar.MaxLength;
+							break;
+						}
 					}
+				}
+
+				if (maxLength == 0)
+				{
+					MauiAutoSuggestBox.SetIsReadOnly(platformControl, true);
+				}
+				else
+				{
+					MauiAutoSuggestBox.SetIsReadOnly(platformControl, searchBar.IsReadOnly);
+				}
+
+				var currentControlText = platformControl.Text;
+
+				if (currentControlText.Length > maxLength)
+				{
+					platformControl.Text = currentControlText.Substring(0, maxLength);
 				}
 			}
 
@@ -146,7 +167,10 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsReadOnly(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			MauiAutoSuggestBox.SetIsReadOnly(platformControl, searchBar.IsReadOnly);
+			if (platformControl.IsLoaded)
+			{
+				MauiAutoSuggestBox.SetIsReadOnly(platformControl, searchBar.IsReadOnly);
+			}
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar)
