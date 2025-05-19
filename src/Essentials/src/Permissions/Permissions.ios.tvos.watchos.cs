@@ -135,7 +135,7 @@ namespace Microsoft.Maui.ApplicationModel
 				if (status == PermissionStatus.Granted || status == PermissionStatus.Disabled)
 					return status;
 
-				EnsureMainThread();
+				// No need to ensure main thread here as the permission request dialog will be shown on the main thread
 
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-macios/issues/14619
 #pragma warning disable CA1422 // Validate platform compatibility
@@ -181,7 +181,11 @@ namespace Microsoft.Maui.ApplicationModel
 				del.AuthorizationStatusChanged += LocationAuthCallback;
 				locationManager.Delegate = del;
 
-				invokeRequest(locationManager);
+				// Only use the main thread for the actual permission request dialog
+				MainThread.BeginInvokeOnMainThread(() => 
+				{
+					invokeRequest(locationManager);
+				});
 
 				return tcs.Task;
 
