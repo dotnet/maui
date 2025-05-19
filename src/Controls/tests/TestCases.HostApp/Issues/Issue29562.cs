@@ -5,10 +5,21 @@ public class Issue29562 : ContentPage
 {
 	public Issue29562()
 	{
-		Content = new GraphicsView
+		var stack = new StackLayout();
+		var graphicsView = new GraphicsView
 		{
 			Drawable = new Issue29562_drawable(),
 		};
+		var label = new Label
+		{
+			Text = "Text should displayed in single line.",
+			AutomationId = "Label"
+		};
+
+		stack.Children.Add(graphicsView);
+		stack.Children.Add(label);
+		
+		Content = stack;
 	}
 }
 
