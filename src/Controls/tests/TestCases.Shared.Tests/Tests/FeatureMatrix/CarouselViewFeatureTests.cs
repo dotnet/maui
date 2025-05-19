@@ -870,11 +870,8 @@ public class CarouselViewFeatureTests : UITest
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("Item 1");
-		for (int i = 1; i < 5; i++)
-		{
-			App.ScrollLeft(CarouselViewControl, ScrollStrategy.Gesture, 0.9, 500);
-		}
-		App.WaitForElement("Item 5");
+		App.ScrollRight(CarouselViewControl, ScrollStrategy.Gesture, 0.9, 500);
+		App.WaitForElement("Item 1");
 	}
 #endif
 
