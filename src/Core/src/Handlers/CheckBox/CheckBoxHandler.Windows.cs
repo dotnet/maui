@@ -76,5 +76,7 @@ namespace Microsoft.Maui.Handlers
 			if (sender is CheckBox platformView && VirtualView != null)
 				VirtualView.IsChecked = platformView.IsChecked == true;
 		}
+
+		internal override bool PreventGestureBubbling => true;
 	}
 }

@@ -341,7 +341,7 @@ namespace Microsoft.Maui.Controls
 			=> DisplayAlertAsync(title, message, null, cancel, FlowDirection.MatchParent);
 
 		/// <inheritdoc cref="DisplayAlertAsync(string, string, string, string, FlowDirection)"/>
-		public Task<bool> DisplayAlertAsync(string title, string message, string accept, string cancel) 
+		public Task<bool> DisplayAlertAsync(string title, string message, string accept, string cancel)
 			=> DisplayAlertAsync(title, message, accept, cancel, FlowDirection.MatchParent);
 
 		/// <inheritdoc cref="DisplayAlertAsync(string, string, string, string, FlowDirection)"/>

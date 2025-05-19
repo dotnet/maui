@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSelectionLength(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateSelectionLength(entry);
 
-		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry) => 
+		public static void MapClearButtonVisibility(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateClearButtonVisibility(entry);
 
 		static void MapFocus(IEntryHandler handler, IEntry entry, object? args)

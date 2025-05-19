@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
 			var strValue = value?.ToString();
-			
+
 			if (strValue is null)
 			{
 				return null;

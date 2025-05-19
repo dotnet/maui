@@ -147,13 +147,14 @@ namespace Microsoft.Maui.Controls.Platform
 				if (WindowViewController is not null)
 				{
 					// This is branched, because if the modal is a popover and can't display correctly for some reason, we want it to fail
-					if (wrapper.ModalPresentationStyle == UIKit.UIModalPresentationStyle.Popover){
-						if(wrapper.PopoverPresentationController is not null && WindowViewController.View is not null)
+					if (wrapper.ModalPresentationStyle == UIKit.UIModalPresentationStyle.Popover)
+					{
+						if (wrapper.PopoverPresentationController is not null && WindowViewController.View is not null)
 						{
-								await WindowViewController.PresentViewControllerAsync(wrapper, animated);
-								await Task.Delay(5);
+							await WindowViewController.PresentViewControllerAsync(wrapper, animated);
+							await Task.Delay(5);
 						}
-						else 
+						else
 						{
 							failed = true;
 						}
