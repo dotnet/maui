@@ -83,15 +83,35 @@ namespace Microsoft.Maui.Controls.Platform
 			Page modal = CurrentPlatformModalPage;
 			_platformModalPages.Remove(modal);
 
+			TaskCompletionSource<Page> tcs = new();
+
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
 
 			var dialogFragmentId = _modals.Pop();
 			var dialogFragment = (ModalFragment?)fragmentManager.FindFragmentByTag(dialogFragmentId);
+			
+			if (dialogFragment is null)
+			{
+				tcs.TrySetResult(modal);
+				return tcs.Task;
+			}
 
-			dialogFragment?.Dismiss();
-
-			return Task.FromResult(modal);
-
+			if (animated)
+			{
+				dialogFragment.Dialog?.Window?.SetWindowAnimations(Resource.Style.dialog_exit_animation);
+				modal.Dispatcher.Dispatch(() =>
+				{
+					dialogFragment.Dismiss();
+					tcs.TrySetResult(modal);
+				});
+			}
+			else
+			{
+				dialogFragment.Dismiss();
+				tcs.TrySetResult(modal);
+			}
+			
+			return tcs.Task;
 		}
 
 		// The CurrentPage doesn't represent the root of the platform hierarchy.
@@ -195,7 +215,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (IsAnimated)
 				{
-					dialog.Window?.SetWindowAnimations(Resource.Style.dialog_animation);
+					dialog.Window?.SetWindowAnimations(Resource.Style.dialog_enter_animation);
 				}
 
 				return dialog;

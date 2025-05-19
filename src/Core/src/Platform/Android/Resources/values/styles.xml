@@ -102,8 +102,10 @@
     <item name="scrollViewStyle">@style/scrollViewScrollBars</item>
   </style>
 
-  <style name="dialog_animation" >
+  <style name="dialog_enter_animation" >
     <item name="android:windowEnterAnimation">@anim/nav_modal_default_enter_anim</item>
+  </style>
+  <style name="dialog_exit_animation" >
     <item name="android:windowExitAnimation">@anim/nav_modal_default_exit_anim</item>
   </style>
 </resources>
