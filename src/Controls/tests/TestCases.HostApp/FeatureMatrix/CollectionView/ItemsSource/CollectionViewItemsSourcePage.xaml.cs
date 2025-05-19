@@ -17,12 +17,14 @@ public partial class CollectionViewItemsSourcePage : ContentPage
 	{
 		InitializeComponent();
 		_viewModel = new CollectionViewViewModel();
+		_viewModel.PreviousSelectionText = "No previous items";
 		BindingContext = _viewModel;
 	}
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
 		BindingContext = _viewModel = new CollectionViewViewModel();
+		_viewModel.PreviousSelectionText = "No previous items";
 		await Navigation.PushAsync(new ItemsSourceOptionsPage(_viewModel));
 	}
 
