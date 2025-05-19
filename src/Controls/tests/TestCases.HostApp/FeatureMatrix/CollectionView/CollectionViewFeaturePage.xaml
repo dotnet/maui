@@ -27,5 +27,10 @@
                 HorizontalOptions="Center"
                 AutomationId="ScrollingButton"
                 WidthRequest="400"/>
+        <Button Text="Selection FeaturePage"
+                Clicked="OnSelectionButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="SelectionPageButton"
+                WidthRequest="400"/>
     </VerticalStackLayout>
 </ContentPage>
