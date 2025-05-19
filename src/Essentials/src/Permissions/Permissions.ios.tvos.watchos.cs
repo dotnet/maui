@@ -61,6 +61,12 @@ namespace Microsoft.Maui.ApplicationModel
 
 			/// <inheritdoc/>
 			public override bool ShouldShowRationale() => false;
+
+			internal void EnsureMainThread()
+			{
+				if (!MainThread.IsMainThread)
+					throw new PermissionException("Permission request must be invoked on main thread.");
+			}
 		}
 
 		/// <summary>

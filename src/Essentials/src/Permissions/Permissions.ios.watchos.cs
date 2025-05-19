@@ -186,7 +186,7 @@ namespace Microsoft.Maui.ApplicationModel
 				if (status == PermissionStatus.Granted)
 					return Task.FromResult(status);
 
-				// No need to ensure main thread - system APIs will handle threading appropriately
+				EnsureMainThread();
 
 				return RequestSensorPermission();
 			}

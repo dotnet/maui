@@ -82,6 +82,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 					var status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>().ConfigureAwait(false);
 					// Status could be various things depending on system state, but we should get a result
 					Assert.NotEqual(PermissionStatus.Unknown, status);
+					
+					// Also test LocationAlways permission on a background thread
+					status = await Permissions.RequestAsync<Permissions.LocationAlways>().ConfigureAwait(false);
+					Assert.NotEqual(PermissionStatus.Unknown, status);
 				}).ConfigureAwait(false);
 			}
 			else
@@ -94,16 +98,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			}
 		}
 
-		[Fact
-#if !__IOS__
-		(Skip = "Test only applies to iOS")
-#endif
-		]
-		public async Task iOS_LocationPermissions_ThreadSafe()
-		{
-			if (DeviceInfo.Platform != DevicePlatform.iOS && DeviceInfo.Platform != DevicePlatform.MacCatalyst)
-				return;
-				
 		[Fact
 #if !__ANDROID__
 		(Skip = "Test only applies to Android")
@@ -127,43 +121,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				status = await Permissions.CheckStatusAsync<Permissions.StorageWrite>().ConfigureAwait(false);
 				Assert.Equal(PermissionStatus.Denied, status);
 			}
-		}
-			// Test requesting location permission from a background thread
-			await Task.Run(async () =>
-			{
-				var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>().ConfigureAwait(false);
-				// We should get a valid status without exceptions
-				Assert.NotEqual(PermissionStatus.Unknown, status);
-				
-				// Check that we can also request location permissions from a background thread
-				status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>().ConfigureAwait(false);
-				// Status could vary based on user choice, but should be a valid response
-				Assert.NotEqual(PermissionStatus.Unknown, status);
-			}).ConfigureAwait(false);
-		}
-
-		[Fact
-#if !__IOS__
-		(Skip = "Test only applies to iOS")
-#endif
-		]
-		public async Task iOS_LocationAlwaysPermissions_ThreadSafe()
-		{
-			if (DeviceInfo.Platform != DevicePlatform.iOS && DeviceInfo.Platform != DevicePlatform.MacCatalyst)
-				return;
-				
-			// Test requesting location always permission from a background thread  
-			await Task.Run(async () =>
-			{
-				var status = await Permissions.CheckStatusAsync<Permissions.LocationAlways>().ConfigureAwait(false);
-				// We should get a valid status without exceptions
-				Assert.NotEqual(PermissionStatus.Unknown, status);
-				
-				// Check that we can also request location always permissions from a background thread
-				status = await Permissions.RequestAsync<Permissions.LocationAlways>().ConfigureAwait(false);
-				// Status could vary based on user choice, but should be a valid response
-				Assert.NotEqual(PermissionStatus.Unknown, status);
-			}).ConfigureAwait(false);
 		}
 	}
 }
