@@ -15,6 +15,7 @@
     </Grid.RowDefinitions>
 
     <Button Grid.Row="0"
+            BackgroundColor="SkyBlue"
             HeightRequest="100"
             Margin="0,50,0,0"
             WidthRequest="200"
@@ -23,6 +24,8 @@
             BorderColor="{Binding BorderColor}"
             BorderWidth="{Binding BorderWidth}"
             CharacterSpacing="{Binding CharacterSpacing}"
+            Command="{Binding Command}"
+            CommandParameter="{Binding Text}"
             CornerRadius="{Binding CornerRadius}"
             FontAttributes="{Binding FontAttributes}"
             FontFamily="{Binding FontFamily}"

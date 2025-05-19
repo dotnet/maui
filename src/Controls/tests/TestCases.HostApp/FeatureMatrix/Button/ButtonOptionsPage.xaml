@@ -16,6 +16,7 @@
              HorizontalOptions="Center">
 
               <!-- BorderColor -->
+
               <Label Grid.Row="0"
                      Grid.Column="0"
                      Text="BorderColor:"
@@ -34,6 +35,7 @@
               </HorizontalStackLayout>
 
               <!-- BorderWidth -->
+
               <Label Grid.Row="1"
                      Grid.Column="0"
                      Text="BorderWidth:"
@@ -45,6 +47,7 @@
                      VerticalOptions="Center"/>
 
               <!-- CharacterSpacing -->
+
               <Label Grid.Row="2"
                      Grid.Column="0"
                      Text="CharacterSpacing:"
@@ -56,6 +59,7 @@
                      VerticalOptions="Center"/>
 
               <!-- CornerRadius -->
+
               <Label Grid.Row="3"
                      Grid.Column="0"
                      Text="CornerRadius:"
@@ -101,16 +105,15 @@
                                      Grid.Column="1"
                                      VerticalOptions="Center">
                      <RadioButton GroupName="FontFamily"
-                                  Content="CourierNew"
-                                  AutomationId="FontFamilyCourierNewButton"
-                                  CheckedChanged="OnFontFamilyRadioButtonCheckedChanged"/>
+                                  AutomationId="FontFamilyDokdoButton"
+                                  CheckedChanged="OnFontFamilyRadioButtonCheckedChanged"
+                                  Content="Dokdo"/>
 
                      <RadioButton GroupName="FontFamily"
-                                  Content="TimesNewRoman"
-                                  AutomationId="FontFamilyTimesNewRomanButton"
-                                  CheckedChanged="OnFontFamilyRadioButtonCheckedChanged"/>
+                                  AutomationId="FontFamilyMontserratBoldButton"
+                                  CheckedChanged="OnFontFamilyRadioButtonCheckedChanged"
+                                  Content="MontserratBold"/>
               </HorizontalStackLayout>
-
 
               <!-- Font Size -->
 
@@ -125,6 +128,7 @@
                      VerticalOptions="Center"/>
 
               <!-- LineBreakMode -->
+
               <Label Grid.Row="7"
                      Grid.Column="0"
                      Text="LineBreakMode:"/>
@@ -142,6 +146,7 @@
               </HorizontalStackLayout>
 
               <!-- Padding -->
+
               <Label Grid.Row="8"
                      Grid.Column="0"
                      Text="Padding:"
@@ -207,8 +212,5 @@
                                   CheckedChanged="OnTextTransformRadioButtonCheckedChanged"/>
 
               </HorizontalStackLayout>
-
-
        </Grid>
-
 </ContentPage>

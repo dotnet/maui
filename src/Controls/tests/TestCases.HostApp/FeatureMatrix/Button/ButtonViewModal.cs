@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 
 namespace Maui.Controls.Sample;
 
@@ -9,6 +10,7 @@ public class ButtonViewModal : INotifyPropertyChanged
     private Color _borderColor = default;
     private double _borderWidth = default;
     private double _characterSpacing = default;
+    private ICommand _command = default;
     private int _cornerRadius = default;
     private FontAttributes _fontAttributes = default;
     private string _fontFamily = default;
@@ -16,7 +18,7 @@ public class ButtonViewModal : INotifyPropertyChanged
     private LineBreakMode _lineBreakMode = default;
     private double _padding = default;
     private string _text = default;
-    private Color _textColor = default;
+    private Color _textColor = Colors.White;
     private TextTransform _textTransform = default;
 
     public Color BorderColor
@@ -51,6 +53,18 @@ public class ButtonViewModal : INotifyPropertyChanged
             if (_characterSpacing != value)
             {
                 _characterSpacing = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+    public ICommand Command
+    {
+        get => _command;
+        set
+        {
+            if (_command != value)
+            {
+                _command = value;
                 OnPropertyChanged();
             }
         }
@@ -162,6 +176,20 @@ public class ButtonViewModal : INotifyPropertyChanged
                 OnPropertyChanged();
             }
         }
+    }
+
+    public ButtonViewModal()
+    {
+        Command = new Command<string>(
+            execute: (buttonText) =>
+            {
+                if (buttonText == "Command Text")
+                {
+                    Text = "Command Executed";
+                }
+            },
+            canExecute: (buttonText) => buttonText == "Command Text"
+        );
     }
 
     public event PropertyChangedEventHandler PropertyChanged;

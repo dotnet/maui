@@ -28,7 +28,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("BorderColorRedButton");
         App.Tap("BorderColorRedButton");
         App.WaitForElement("BorderWidthEntry");
-        App.ClearText("BorderWidthEntry");  
+        App.ClearText("BorderWidthEntry");
         App.EnterText("BorderWidthEntry", "5");
         App.WaitForElement("TextColorGreenButton");
         App.Tap("TextColorGreenButton");
@@ -58,7 +58,7 @@ public class ButtonFeatureTests : UITest
         // VerifyScreenshot();
     }
 
-#if TEST_FAILS_ON_IOS //CharacterSpacingEntry property not working on iOS, Issue: https://github.com/dotnet/maui/issues/21488
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //CharacterSpacingEntry property not working on iOS and Catalyst, Issue: https://github.com/dotnet/maui/issues/21488
     [Test]
     [Category(UITestCategories.Button)]
     public void Button_SetCharacterSpacingAndText_VerifyVisualState()
@@ -75,6 +75,22 @@ public class ButtonFeatureTests : UITest
         // VerifyScreenshot();
     }
 #endif
+
+    [Test]
+    [Category(UITestCategories.Button)]
+    public void Button_SetCommandAndCommandParameter()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("TextEntry");
+        App.EnterText("TextEntry", "Command Text");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElement("ButtonControl");
+        App.Tap("ButtonControl");
+        var buttonText = App.FindElement("ButtonControl").GetText();
+        Assert.That(buttonText, Is.EqualTo("Command Executed"));
+    }
 
     [Test]
     [Category(UITestCategories.Button)]
@@ -103,8 +119,8 @@ public class ButtonFeatureTests : UITest
         App.Tap("Options");
         App.WaitForElement("FontAttributesBoldButton");
         App.Tap("FontAttributesBoldButton");
-        App.WaitForElement("FontFamilyCourierNewButton");
-        App.Tap("FontFamilyCourierNewButton");
+        App.WaitForElement("FontFamilyMontserratBoldButton");
+        App.Tap("FontFamilyMontserratBoldButton");
         App.WaitForElement("TextEntry");
         App.EnterText("TextEntry", "Button Text");
         App.WaitForElement("Apply");
@@ -150,23 +166,23 @@ public class ButtonFeatureTests : UITest
     {
         App.WaitForElement("Options");
         App.Tap("Options");
-        App.WaitForElement("FontFamilyCourierNewButton");
-        App.Tap("FontFamilyCourierNewButton");
+        App.WaitForElement("FontFamilyDokdoButton");
+        App.Tap("FontFamilyDokdoButton");
         App.WaitForElement("TextEntry");
         App.EnterText("TextEntry", "Button Text");
         App.WaitForElement("Apply");
         App.Tap("Apply");
         // VerifyScreenshot();
     }
-    //(7M)
+
     [Test]
     [Category(UITestCategories.Button)]
     public void Button_setFontFamilyAndTextTransform_VerifyVisualState()
     {
         App.WaitForElement("Options");
         App.Tap("Options");
-        App.WaitForElement("FontFamilyCourierNewButton");
-        App.Tap("FontFamilyCourierNewButton");
+        App.WaitForElement("FontFamilyDokdoButton");
+        App.Tap("FontFamilyDokdoButton");
         App.WaitForElement("TextTransformUppercaseButton");
         App.Tap("TextTransformUppercaseButton");
         App.WaitForElement("TextEntry");
@@ -175,7 +191,7 @@ public class ButtonFeatureTests : UITest
         App.Tap("Apply");
         // VerifyScreenshot();
     }
-    //(8I)
+
     [Test]
     [Category(UITestCategories.Button)]
     public void Button_setFontSizeAndLineBreakMode_VerifyVisualState()
@@ -194,7 +210,6 @@ public class ButtonFeatureTests : UITest
         App.Tap("Apply");
         // VerifyScreenshot();
     }
-
 
     [Test]
     [Category(UITestCategories.Button)]
@@ -296,5 +311,4 @@ public class ButtonFeatureTests : UITest
         App.Tap("Apply");
         Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("BUTTONTEXT"));
     }
-
 }

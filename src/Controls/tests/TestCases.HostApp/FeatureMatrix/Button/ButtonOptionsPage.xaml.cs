@@ -1,4 +1,5 @@
 namespace Maui.Controls.Sample;
+
 public partial class ButtonOptionsPage : ContentPage
 {
 	private ButtonViewModal _viewModel;
@@ -40,7 +41,7 @@ public partial class ButtonOptionsPage : ContentPage
 		var radioButton = sender as RadioButton;
 		if (radioButton.IsChecked)
 		{
-			_viewModel.FontFamily = radioButton.Content.ToString() == "Courier New" ? "Courier New" : "Times New Roman";
+			_viewModel.FontFamily = radioButton.Content.ToString() == "Dokdo" ? "Dokdo" : "MontserratBold";
 		}
 	}
 	private void OnLineBreakModeRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
