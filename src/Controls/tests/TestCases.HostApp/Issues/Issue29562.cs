@@ -7,12 +7,12 @@ public class Issue29562 : ContentPage
 	{
 		Content = new GraphicsView
 		{
-			Drawable = new StringSizeDrawable(),
+			Drawable = new Issue29562_drawable(),
 		};
 	}
 }
 
-class StringSizeDrawable : IDrawable
+class Issue29562_drawable : IDrawable
 {
 	public void Draw(ICanvas canvas, RectF dirtyRect)
 	{

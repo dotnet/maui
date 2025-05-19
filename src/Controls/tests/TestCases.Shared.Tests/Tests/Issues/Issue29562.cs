@@ -14,7 +14,7 @@ public class Issue29562 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.GraphicsView)]
-	public void IncorrectWidthAndHeight()
+	public void GraphicsViewShouldNotWrapText()
 	{
 		VerifyScreenshot();
 	}
