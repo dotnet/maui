@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="TestPathBounds.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Maui.Graphics">
+      <HintPath>/home/runner/work/maui/maui/src/Graphics/src/Graphics/bin/Debug/net8.0/Microsoft.Maui.Graphics.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
