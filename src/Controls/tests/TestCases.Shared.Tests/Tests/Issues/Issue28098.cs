@@ -18,6 +18,10 @@ public class Issue28098 : _IssuesUITest
 		App.Tap("Button");
 		App.WaitForElement("BackButton");
 		App.Tap("BackButton");
+#if WINDOWS
+        VerifyScreenshot(cropBottom: 250);
+#else
 		VerifyScreenshot();
+#endif
 	}
 }

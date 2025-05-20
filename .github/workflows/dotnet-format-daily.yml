@@ -1,4 +1,4 @@
-name: Daily code format check
+name: Format Branch Code
 on:
   workflow_dispatch:
   schedule:
@@ -11,11 +11,14 @@ permissions:
 jobs:
   dotnet-format:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        branch: [ main, net10.0, inflight/current ]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
         with:
-          ref: main
+          ref: ${{ matrix.branch }}
 
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v3.2.0
@@ -25,17 +28,10 @@ jobs:
       - name: Run dotnet format
         run: dotnet format .\Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
     
-      - name: Commit files
-        if: steps.format.outputs.has-changes == 'true'
-        run: |
-          git config --local user.name "github-actions[bot]"
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -a -m 'Automated dotnet-format update'
-
       - name: Create Pull Request
         uses: dotnet/actions-create-pull-request@v4
         with:
-          title: '[housekeeping] Automated PR to fix formatting errors'
+          title: '[housekeeping] Automated PR to fix formatting errors on ${{ matrix.branch }}'
           body: |
             Automated PR to fix formatting errors
           committer: GitHub <noreply@github.com>
@@ -45,5 +41,5 @@ jobs:
             area-infrastructure
           assignees: rmarinho, jsuarezruiz
           reviewers: rmarinho, jsuarezruiz
-          branch: housekeeping/fix-codeformatting
-          base: main
+          branch: housekeeping/fix-codeformatting/${{ matrix.branch }}
+          base: ${{ matrix.branch }}

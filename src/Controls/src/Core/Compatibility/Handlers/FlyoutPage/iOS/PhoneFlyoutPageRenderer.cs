@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				EmptyContainers();
-			    _element = null;
+				_element = null;
 				_disposed = true;
 			}
 

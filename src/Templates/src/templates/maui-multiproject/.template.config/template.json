@@ -199,13 +199,13 @@
           ]
         }
       },
-      "XmlEncodedAppNameParam": {
+    "XmlEncodedAppNameParam": {
         "type": "derived",
         "valueSource": "name",
         "valueTransform": "encode",
         "replaces": "XmlEncodedAppName"
       },
-      "defaultAppId":{
+    "defaultAppId":{
       "type": "generated",
       "generator": "join",
       "parameters": {
