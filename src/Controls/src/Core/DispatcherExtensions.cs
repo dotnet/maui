@@ -1,12 +1,11 @@
 using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Controls
 {
-	public static class DispatcherExtensions
+	internal static class DispatcherExtensions
 	{
 		public static IDispatcher FindDispatcher(this BindableObject? bindableObject)
 		{
@@ -45,46 +44,6 @@ namespace Microsoft.Maui.Controls
 
 			// no dispatchers found at all
 			throw new InvalidOperationException("BindableObject was not instantiated on a thread with a dispatcher nor does the current application have a dispatcher.");
-		}
-
-		public static void DispatchIfRequired(this IDispatcher? dispatcher, Action action)
-		{
-			dispatcher = EnsureDispatcher(dispatcher);
-			if (dispatcher.IsDispatchRequired)
-			{
-				dispatcher.Dispatch(action);
-			}
-			else
-			{
-				action();
-			}
-		}
-
-		public static Task DispatchIfRequiredAsync(this IDispatcher? dispatcher, Action action)
-		{
-			dispatcher = EnsureDispatcher(dispatcher);
-			if (dispatcher.IsDispatchRequired)
-			{
-				return dispatcher.DispatchAsync(action);
-			}
-			else
-			{
-				action();
-				return Task.CompletedTask;
-			}
-		}
-
-		public static Task DispatchIfRequiredAsync(this IDispatcher? dispatcher, Func<Task> action)
-		{
-			dispatcher = EnsureDispatcher(dispatcher);
-			if (dispatcher.IsDispatchRequired)
-			{
-				return dispatcher.DispatchAsync(action);
-			}
-			else
-			{
-				return action();
-			}
 		}
 
 		static IDispatcher EnsureDispatcher(IDispatcher? dispatcher)

@@ -266,11 +266,6 @@ override Microsoft.Maui.Controls.ListStringTypeConverter.ConvertTo(System.Compon
 ~static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ImageButton.SetRippleColor(this Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton> config, Microsoft.Maui.Graphics.Color value) -> Microsoft.Maui.Controls.IPlatformElementConfiguration<Microsoft.Maui.Controls.PlatformConfiguration.Android, Microsoft.Maui.Controls.ImageButton>
 *REMOVED*Microsoft.Maui.Controls.TimePicker.Time.get -> System.TimeSpan
 Microsoft.Maui.Controls.TimePicker.Time.get -> System.TimeSpan?
-Microsoft.Maui.Controls.DispatcherExtensions
-static Microsoft.Maui.Controls.DispatcherExtensions.DispatchIfRequired(this Microsoft.Maui.Dispatching.IDispatcher? dispatcher, System.Action! action) -> void
-static Microsoft.Maui.Controls.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher? dispatcher, System.Action! action) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.Controls.DispatcherExtensions.DispatchIfRequiredAsync(this Microsoft.Maui.Dispatching.IDispatcher? dispatcher, System.Func<System.Threading.Tasks.Task!>! action) -> System.Threading.Tasks.Task!
-static Microsoft.Maui.Controls.DispatcherExtensions.FindDispatcher(this Microsoft.Maui.Controls.BindableObject? bindableObject) -> Microsoft.Maui.Dispatching.IDispatcher!
 override Microsoft.Maui.Controls.FlowDirectionConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Controls.FlowDirectionConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.FlowDirectionConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object?

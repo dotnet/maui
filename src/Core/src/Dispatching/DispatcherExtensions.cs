@@ -90,6 +90,54 @@ namespace Microsoft.Maui.Dispatching
 			});
 
 		/// <summary>
+		/// Checks if a dispatch is required. If a dispatch is required, the provided action will be executed on the UI thread.
+		/// </summary>
+		/// <param name="dispatcher"></param>
+		/// <param name="action"></param>
+		/// <returns></returns>
+		public static void DispatchIfRequired(this IDispatcher dispatcher, Action action)
+		{
+			if (dispatcher.IsDispatchRequired)
+			{
+				dispatcher.Dispatch(action);
+			}
+			else
+			{
+				action();
+			}
+		}
+
+		/// <summary>
+		/// Checks if a dispatch is required. If a dispatch is required, the provided action will be executed on the UI thread.
+		/// </summary>
+		/// <param name="dispatcher"></param>
+		/// <param name="action"></param>
+		/// <returns></returns>
+		public static Task DispatchIfRequiredAsync(this IDispatcher dispatcher, Action action)
+		{
+			if (dispatcher.IsDispatchRequired)
+			{
+				return dispatcher.DispatchAsync(action);
+			}
+			
+			action();
+			return Task.CompletedTask;
+		}
+
+		/// <summary>
+		/// Checks if a dispatch is required. If a dispatch is required, the provided function will be executed on the UI thread.
+		/// </summary>
+		/// <param name="dispatcher"></param>
+		/// <param name="action"></param>
+		/// <returns></returns>
+		public static Task DispatchIfRequiredAsync(this IDispatcher dispatcher, Func<Task> action)
+		{
+			return dispatcher.IsDispatchRequired
+				? dispatcher.DispatchAsync(action)
+				: action();
+		}
+
+		/// <summary>
 		/// Gets the synchronization context for the current thread.
 		/// </summary>
 		/// <param name="dispatcher">The <see cref="IDispatcher"/> instance this method is called on.</param>
