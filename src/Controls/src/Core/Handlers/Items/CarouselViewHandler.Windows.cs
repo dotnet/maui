@@ -68,11 +68,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void UpdateItemsSource()
 		{
-			var itemsSource = ItemsView?.ItemsSource;
-
-			if (itemsSource == null)
-				return;
-
 			var itemTemplate = ItemsView?.ItemTemplate;
 
 			if (itemTemplate == null)
@@ -141,7 +136,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			args = base.ComputeVisibleIndexes(args, orientation, advancing);
 
-			if (ItemsView.Loop)
+			if (ItemsView.Loop && ItemsView.ItemsSource is not null)
 			{
 				args.FirstVisibleItemIndex %= ItemCount;
 				args.CenterItemIndex %= ItemCount;
@@ -505,6 +500,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnScrollViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
 		{
+			if (ItemsView.ItemsSource == null)
+				return;
+
 			ItemsView.SetIsDragging(true);
 			ItemsView.IsScrolling = true;
 		}
