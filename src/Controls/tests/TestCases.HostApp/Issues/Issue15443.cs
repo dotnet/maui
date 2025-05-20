@@ -45,8 +45,8 @@ namespace Maui.Controls.Sample.Issues
 							VerticalOptions = LayoutOptions.Center,
 							HorizontalOptions = LayoutOptions.Center,
 							WidthRequest = 200,
-							
-							Children = {  label }
+
+							Children = { label }
 						};
 
 						return new ContentView
@@ -100,7 +100,7 @@ namespace Maui.Controls.Sample.Issues
 				Orientation = StackOrientation.Vertical,
 				VerticalOptions = LayoutOptions.Center,
 				HorizontalOptions = LayoutOptions.Center,
-				AutomationId="15443Stack",
+				AutomationId = "15443Stack",
 				Spacing = 8,
 				Padding = 8,
 				Children = { carouselView, buttonStack }
@@ -152,9 +152,9 @@ class Issue15443ViewModel : INotifyPropertyChanged
 
 		Items = new ObservableCollection<Issue15443DemoData>()
 			{
-				new Issue15443DemoData("One", "15443One"),
-				new Issue15443DemoData("Two", "15443Two"),
-				new Issue15443DemoData("Three", "15443Three"),
+				new Issue15443DemoData("One"),
+				new Issue15443DemoData("Two"),
+				new Issue15443DemoData("Three"),
 			};
 
 		CarouselCurrentItemIndex = 0;
@@ -191,9 +191,9 @@ class Issue15443DemoData
 {
 	public string Title { get; set; }
 
-	public Issue15443DemoData(string title, string automationid)
+	public Issue15443DemoData(string title)
 	{
 		Title = title;
-		AutomationId = automationid;
+
 	}
 }
