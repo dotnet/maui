@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[Controls.CarouselView.PeekAreaInsetsProperty.PropertyName] = MapPeekAreaInsets,
 			[Controls.CarouselView.IsBounceEnabledProperty.PropertyName] = MapIsBounceEnabled,
 			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
+			[Controls.CarouselView.LoopProperty.PropertyName] = MapLoop,
 			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem
 		};
 	}
