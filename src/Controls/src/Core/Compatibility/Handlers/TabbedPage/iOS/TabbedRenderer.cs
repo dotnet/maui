@@ -491,7 +491,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateCurrentPage()
 		{
-			if (SelectedViewController.Title.Equals("More", StringComparison.Ordinal))
+			if (SelectedViewController?.Title?.Equals("More", StringComparison.Ordinal) == true)
 			{
 				Tabbed.CurrentPage = null;
 				return;
@@ -648,7 +648,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (_renderer is not null
 			&& _renderer.TryGetTarget(out var renderer)
-			&& !renderer.SelectedViewController.Title.Equals("More", StringComparison.Ordinal))
+			&& !renderer.SelectedViewController?.Title?.Equals("More", StringComparison.Ordinal) == true)
 			{
 				renderer.UpdateCurrentPageForMoreTab();
 			}
