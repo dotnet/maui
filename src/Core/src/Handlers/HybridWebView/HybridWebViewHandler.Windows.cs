@@ -205,8 +205,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			var randomAccessStream = new InMemoryRandomAccessStream();
 
-			await copyContentAsync(randomAccessStream).ConfigureAwait(false);
-			await randomAccessStream.FlushAsync().ConfigureAwait(false);
+			await copyContentAsync(randomAccessStream);
+			await randomAccessStream.FlushAsync();
 			randomAccessStream.Seek(0);
 
 			return randomAccessStream;
