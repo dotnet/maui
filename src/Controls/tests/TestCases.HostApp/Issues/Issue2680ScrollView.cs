@@ -30,12 +30,12 @@
 			longStackLayout.Children.Add(toggleButton);
 
 			firstItemLabel = new Label
-            {
-                Text = "Not scrolled",
-                AutomationId = FirstItemMark
-            };
+			{
+				Text = "Not scrolled",
+				AutomationId = FirstItemMark
+			};
 
-            longStackLayout.Children.Add(firstItemLabel);
+			longStackLayout.Children.Add(firstItemLabel);
 			Enumerable.Range(2, 50).Select(i => new Label { Text = $"Test label {i}" })
 				.ToList().ForEach(label => longStackLayout.Children.Add(label));
 
@@ -59,9 +59,9 @@
 		}
 
 		void ScrollViewOnScrolled(object sender, ScrolledEventArgs e)
-        {
-            firstItemLabel.Text = "Scrolled";
-        }
+		{
+			firstItemLabel.Text = "Scrolled";
+		}
 
 		ScrollView scrollView;
 		Button toggleButton;

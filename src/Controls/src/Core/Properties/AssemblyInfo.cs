@@ -48,6 +48,12 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: InternalsVisibleTo("Microsoft.Maui.Controls.DeviceTests")]
 [assembly: InternalsVisibleTo("Controls.TestCases.HostApp")]
 
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.Core")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.Embedding")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.UnitTests")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup")]
+[assembly: InternalsVisibleTo("CommunityToolkit.Maui.Markup.UnitTests")]
 [assembly: InternalsVisibleTo("Controls.TestCases.HostApp")]
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
@@ -122,7 +128,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 [assembly: StyleProperty("visibility", typeof(VisualElement), nameof(VisualElement.IsVisibleProperty), Inherited = true)]
 [assembly: StyleProperty("width", typeof(VisualElement), nameof(VisualElement.WidthRequestProperty))]
 [assembly: StyleProperty("letter-spacing", typeof(ITextElement), nameof(TextElement.CharacterSpacingProperty), Inherited = true)]
-[assembly: StyleProperty("line-height", typeof(ILineHeightElement), nameof(LineHeightElement.LineHeightProperty), Inherited = true)]
+[assembly: StyleProperty("line-height", typeof(Microsoft.Maui.Controls.ILineHeightElement), nameof(LineHeightElement.LineHeightProperty), Inherited = true)]
 
 //flex
 [assembly: StyleProperty("align-content", typeof(FlexLayout), nameof(FlexLayout.AlignContentProperty))]

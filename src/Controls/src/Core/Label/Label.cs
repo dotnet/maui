@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="Type[@FullName='Microsoft.Maui.Controls.Label']/Docs/*" />
 	[ContentProperty(nameof(Text))]
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
+	[ElementHandler<LabelHandler>]
 	public partial class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>, IDecorableTextElement, IPaddingElement, ILabel
 	{
 		/// <summary>Bindable property for <see cref="HorizontalTextAlignment"/>.</summary>

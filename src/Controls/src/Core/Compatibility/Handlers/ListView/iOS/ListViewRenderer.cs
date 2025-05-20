@@ -1201,7 +1201,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				PreserveActivityIndicatorState(cell);
 				Performance.Stop(reference);
 
-				if(platformCell is ContextActionsCell contextActionsCell)
+				if (platformCell is ContextActionsCell contextActionsCell)
 					_contextActionsCells.Add(contextActionsCell);
 
 				return platformCell;
