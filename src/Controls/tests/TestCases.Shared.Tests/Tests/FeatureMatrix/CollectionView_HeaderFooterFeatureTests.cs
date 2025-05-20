@@ -10,10 +10,10 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	public const string Apply = "Apply";
 	public const string EmptyViewString = "EmptyViewString";
 	public const string HeaderString = "HeaderString";
-	public const string HeaderGrid = "HeaderGrid"; 
+	public const string HeaderGrid = "HeaderGrid";
 	public const string FooterString = "FooterString";
 	public const string FooterGrid = "FooterGrid";
-	public const string HeaderTemplateGrid = "HeaderTemplateGrid";	
+	public const string HeaderTemplateGrid = "HeaderTemplateGrid";
 	public const string FooterTemplateGrid = "FooterTemplateGrid";
 	public const string ItemsSourceGroupedList = "ItemsSourceGroupedList";
 	public const string ItemsSourceObservableCollection5 = "ItemsSourceObservableCollection5";
@@ -96,14 +96,14 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	[Category(UITestCategories.CollectionView)]
 	public void VerifyHeaderViewWithItemsSourceObservableCollection25()
 	{
-		App.WaitForElementTillPageNavigationSettled("Options");
-		App.Tap("Options");
-		App.WaitForElementTillPageNavigationSettled("HeaderGrid");
-		App.Tap("HeaderGrid");
-		App.WaitForElementTillPageNavigationSettled("ItemsSourceObservableCollection25");
-		App.Tap("ItemsSourceObservableCollection25");
-		App.WaitForElementTillPageNavigationSettled("Apply");
-    App.Tap("Apply");
+		App.WaitForElementTillPageNavigationSettled(Options);
+		App.Tap(Options);
+		App.WaitForElementTillPageNavigationSettled(HeaderGrid);
+		App.Tap(HeaderGrid);
+		App.WaitForElementTillPageNavigationSettled(ItemsSourceObservableCollection25);
+		App.Tap(ItemsSourceObservableCollection25);
+		App.WaitForElementTillPageNavigationSettled(Apply);
+		App.Tap(Apply);
 		App.WaitForElementTillPageNavigationSettled("HeaderViewLabel");
 		App.WaitForElementTillPageNavigationSettled("Apple");
 		App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
@@ -508,22 +508,22 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In windows, related issue: https://github.com/dotnet/maui/issues/27946 and In CV2, related issue: https://github.com/dotnet/maui/issues/28678
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderStringWithItemsLayoutVerticalGrid()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("HeaderString");
-			App.Tap("HeaderString");
-			App.WaitForElementTillPageNavigationSettled("ItemsLayoutVerticalGrid");
-			App.Tap("ItemsLayoutVerticalGrid");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("CollectionView Header(String)");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.WaitForElementTillPageNavigationSettled("Mango");
-		}
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyHeaderStringWithItemsLayoutVerticalGrid()
+	{
+		App.WaitForElementTillPageNavigationSettled(Options);
+		App.Tap(Options);
+		App.WaitForElementTillPageNavigationSettled(HeaderString);
+		App.Tap(HeaderString);
+		App.WaitForElementTillPageNavigationSettled(ItemsLayoutVerticalGrid);
+		App.Tap(ItemsLayoutVerticalGrid);
+		App.WaitForElementTillPageNavigationSettled(Apply);
+		App.Tap(Apply);
+		App.WaitForElementTillPageNavigationSettled("CollectionView Header(String)");
+		App.WaitForElementTillPageNavigationSettled("Apple");
+		App.WaitForElementTillPageNavigationSettled("Mango");
+	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
@@ -655,413 +655,15 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 		[Category(UITestCategories.CollectionView)]
 		public void VerifyHeaderTemplateWithItemsSourceNone()
 		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
+			App.WaitForElementTillPageNavigationSettled(Options);
+			App.Tap(Options);
+			App.WaitForElementTillPageNavigationSettled(HeaderTemplateGrid);
+			App.Tap(HeaderTemplateGrid);
+			App.WaitForElementTillPageNavigationSettled(ItemsSourceNone);
+			App.Tap(ItemsSourceNone);
+			App.WaitForElementTillPageNavigationSettled(Apply);
+			App.Tap(Apply);
 			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-		}
-#endif
-
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS //In windows related issue:https://github.com/dotnet/maui/issues/28022, In related issue: https://github.com/dotnet/maui/issues/28337
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplateWhenEmptyViewString()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElementTillPageNavigationSettled("EmptyViewString");
-			App.Tap("EmptyViewString");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-			App.WaitForElementTillPageNavigationSettled("No Items Available(String)");
-		}
-#endif
-
-#if TEST_FAILS_ON_ANDROID //related issue: https://github.com/dotnet/maui/issues/28337
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTempalteWhenFooterTemplateView()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("FooterTemplateGrid");
-			App.Tap("FooterTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.WaitForElementTillPageNavigationSettled("Mango");
-			App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
-		}
-#endif
-
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In CV2: related issue: https://github.com/dotnet/maui/issues/28824 and In windows: https://github.com/dotnet/maui/issues/28824
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplateWhenGroupFooterTemplate()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElementTillPageNavigationSettled("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElementTillPageNavigationSettled("GroupFooterTemplateGrid");
-			App.Tap("GroupFooterTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-			App.WaitForElementTillPageNavigationSettled("GroupFooterTemplateLabel");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.WaitForElementTillPageNavigationSettled("Potato");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplateWhenGroupHeaderTemplate()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElementTillPageNavigationSettled("ItemsSourceGroupedList");
-			App.Tap("ItemsSourceGroupedList");
-			App.WaitForElementTillPageNavigationSettled("GroupHeaderTemplateGrid");
-			App.Tap("GroupHeaderTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-			App.WaitForElementTillPageNavigationSettled("GroupHeaderTemplateLabel");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.WaitForElementTillPageNavigationSettled("Potato");
-		}
-#endif
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS  //In CV2, unintended synchronization between the HeaderTemplate/FooterTemplate and Header/Footer views, related issue: https://github.com/dotnet/maui/issues/28504
-		//In windows, related issue: https://github.com/dotnet/maui/issues/28337
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplateWhenHeaderString()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("HeaderString");
-			App.Tap("HeaderString");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("CollectionView Header(String)");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.WaitForElementTillPageNavigationSettled("Mango");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplateWhenHeaderView()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("HeaderGrid");
-			App.Tap("HeaderGrid");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-			App.WaitForNoElement("HeaderViewLabel");
-		}
-#endif
-
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //In all platforms, issue related: https://github.com/dotnet/maui/issues/28824 and CV2, related issues:https://github.com/dotnet/maui/issues/28504
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplateWhenIsGroupedTrueOrFalse()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("IsGroupedTrue");
-			App.Tap("IsGroupedTrue");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("IsGroupedFalse");
-			App.Tap("IsGroupedFalse");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-		}
-#endif
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplateWhenBasicDataTemplateView()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("ItemTemplateBasic");
-			App.Tap("ItemTemplateBasic");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.WaitForElementTillPageNavigationSettled("Mango");
-		}
-
-#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID //In windows, related issue: https://github.com/dotnet/maui/issues/27946, In CV2, related issue: https://github.com/dotnet/maui/issues/28678 and In android related issue:https://github.com/dotnet/maui/issues/28337
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplateWithItemsLayoutVerticalGrid()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("ItemsLayoutVerticalGrid");
-			App.Tap("ItemsLayoutVerticalGrid");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.WaitForElementTillPageNavigationSettled("Mango");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplateWithItemsLayoutHorizontalList()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("ItemsLayoutHorizontalList");
-			App.Tap("ItemsLayoutHorizontalList");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
-			App.WaitForElementTillPageNavigationSettled("Mango");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyHeaderTemplateWithItemsLayoutHorizontalGrid()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateGrid");
-			App.Tap("HeaderTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("ItemsLayoutHorizontalGrid");
-			App.Tap("ItemsLayoutHorizontalList");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("HeaderTemplateLabel");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.ScrollRight("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
-			App.WaitForElementTillPageNavigationSettled("Mango");
-		}
-#endif
-
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //In CV2, unintended synchronization between the HeaderTemplate/FooterTemplate and Header/Footer views, related issue: https://github.com/dotnet/maui/issues/28504
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterStringWithItemsSourceObservableCollection5()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("FooterString");
-			App.Tap("FooterString");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.WaitForElementTillPageNavigationSettled("Mango");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterStringWithItemsSourceNone()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("FooterString");
-			App.Tap("FooterString");
-			App.WaitForElementTillPageNavigationSettled("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
-		}
-
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterStringWithItemsSourceObservableCollection25()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("FooterString");
-			App.Tap("FooterString");
-			App.WaitForElementTillPageNavigationSettled("ItemsSourceObservableCollection25");
-			App.Tap("ItemsSourceObservableCollection25");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("CollectionView Footer(String)");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
-			App.WaitForElementTillPageNavigationSettled("Pepper");
-			App.WaitForElement("CollectionView Footer(String)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterViewWithItemsSourceObservableCollection5()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.WaitForElementTillPageNavigationSettled("Mango");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterViewWithItemsSourceObservableCollection25()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElementTillPageNavigationSettled("ItemsSourceObservableCollection25");
-			App.Tap("ItemsSourceObservableCollection25");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("CollectionView Footer(Grid View)");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.ScrollDown("CollectionViewControl", ScrollStrategy.Gesture, 0.9, 500);
-			App.WaitForElementTillPageNavigationSettled("Pepper");
-			App.WaitForElementTillPageNavigationSettled("CollectionView Footer(Grid View)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterViewWithItemsSourceNone()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElementTillPageNavigationSettled("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
-		}
-
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In android related issue:https://github.com/dotnet/maui/issues/28622, In windows related issue:https://github.com/dotnet/maui/issues/28022 and In CV2, related issue: https://github.com/dotnet/maui/issues/28604
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterStringWhenEmptyViewString()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("FooterString");
-			App.Tap("FooterString");
-			App.WaitForElementTillPageNavigationSettled("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElementTillPageNavigationSettled("EmptyViewString");
-			App.Tap("EmptyViewString");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
-			App.WaitForElementTillPageNavigationSettled("No Items Available(String)");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterViewWhenEmptyViewString()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElementTillPageNavigationSettled("ItemsSourceNone");
-			App.Tap("ItemsSourceNone");
-			App.WaitForElementTillPageNavigationSettled("EmptyViewString");
-			App.Tap("EmptyViewString");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("FooterViewLabel");
-			App.WaitForElementTillPageNavigationSettled("No Items Available(String)");
-		}
-#endif
-
-#if TEST_FAILS_ON_WINDOWS //In Windows related issue: https://github.com/dotnet/maui/issues/28337
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterStringWhenFooterTemplateView()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("FooterString");
-			App.Tap("FooterString");
-			App.WaitForElementTillPageNavigationSettled("FooterTemplateGrid");
-			App.Tap("FooterTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("CollectionView Footer(String)");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.WaitForElementTillPageNavigationSettled("Mango");
-			App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
-		}
-
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterViewWhenFooterTemplateView()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("FooterGrid");
-			App.Tap("FooterGrid");
-			App.WaitForElementTillPageNavigationSettled("FooterTemplateGrid");
-			App.Tap("FooterTemplateGrid");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForNoElement("FooterViewLabel");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-			App.WaitForElementTillPageNavigationSettled("Mango");
-			App.WaitForElementTillPageNavigationSettled("FooterTemplateLabel");
 		}
 #endif
 
@@ -1757,21 +1359,21 @@ public class CollectionView_HeaderFooterFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS //In windows, related issue: https://github.com/dotnet/maui/issues/27946 and In CV2, related issue: https://github.com/dotnet/maui/issues/28678
-		[Test]
-		[Category(UITestCategories.CollectionView)]
-		public void VerifyFooterStringWithItemsLayoutVerticalGrid()
-		{
-			App.WaitForElementTillPageNavigationSettled("Options");
-			App.Tap("Options");
-			App.WaitForElementTillPageNavigationSettled("FooterString");
-			App.Tap("FooterString");
-			App.WaitForElementTillPageNavigationSettled("ItemsLayoutVerticalGrid");
-			App.Tap("ItemsLayoutVerticalGrid");
-			App.WaitForElementTillPageNavigationSettled("Apply");
-			App.Tap("Apply");
-			App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
-			App.WaitForElementTillPageNavigationSettled("Apple");
-		}
+	[Test]
+	[Category(UITestCategories.CollectionView)]
+	public void VerifyFooterStringWithItemsLayoutVerticalGrid()
+	{
+		App.WaitForElementTillPageNavigationSettled(Options);
+		App.Tap(Options);
+		App.WaitForElementTillPageNavigationSettled(FooterString);
+		App.Tap(FooterString);
+		App.WaitForElementTillPageNavigationSettled(ItemsLayoutVerticalGrid);
+		App.Tap(ItemsLayoutVerticalGrid);
+		App.WaitForElementTillPageNavigationSettled(Apply);
+		App.Tap(Apply);
+		App.WaitForElementTillPageNavigationSettled("CollectionView Footer(String)");
+		App.WaitForElementTillPageNavigationSettled("Apple");
+	}
 
 	[Test]
 	[Category(UITestCategories.CollectionView)]
