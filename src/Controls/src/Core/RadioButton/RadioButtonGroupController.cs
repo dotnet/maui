@@ -65,9 +65,9 @@ namespace Microsoft.Maui.Controls
 			{
 				foreach (var element in e.Element.Descendants())
 				{
-					if (element is RadioButton radioButton1)
+					if (element is RadioButton childRadioButton)
 					{
-						AddRadioButton(radioButton1);
+						AddRadioButton(childRadioButton);
 					}
 				}
 			}
