@@ -1546,7 +1546,7 @@ namespace Microsoft.Maui.Graphics
 					break;
 
 				default:
-					throw new ArgumentOutOfRangeException();
+					throw new ArgumentOutOfRangeException(nameof(operation), operation, $"Unexpected path operation: {operation}");
 			}
 		}
 
