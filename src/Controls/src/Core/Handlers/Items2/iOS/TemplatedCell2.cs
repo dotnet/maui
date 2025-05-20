@@ -208,14 +208,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				virtualView.BindingContext = bindingContext;
 				itemsView.AddLogicalChild(virtualView);
 			}
-			else if (virtualView is not null && virtualView.Parent is null)
-			{
-				itemsView.AddLogicalChild(virtualView);
-			}
 
 			if (PlatformHandler?.VirtualView is View view)
 			{
 				view.SetValueFromRenderer(BindableObject.BindingContextProperty, bindingContext);
+				if (view.Parent is null)
+				{
+					itemsView.AddLogicalChild(view);
+				}
 			}
 
 			_bound = true;
