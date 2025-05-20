@@ -1,4 +1,5 @@
-﻿#if ANDROID
+﻿#if ANDROID ///This test only runs on Android because UnFocus behavior differs across platforms: on Android the input view should remain visible after UnFocus, whereas on iOS it automatically hides.
+
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;

@@ -12,18 +12,22 @@ public partial class Issue29558 : Shell
 
 	private void UnfocusButton_Clicked(object sender, EventArgs e)
 	{
-		if (_action == 0)
+		switch (_action)
 		{
-			searchHandler.Unfocus();
+			case 0:
+				searchHandler.Unfocus();
+				break;
+			case 1:
+				entry.Unfocus();
+				break;
+			case 2:
+				editor.Unfocus();
+				break;
+			default:
+				_action = 0;
+				break;
 		}
-		else if (_action == 1)
-		{
-			entry.Unfocus();
-		}
-		else if (_action == 2)
-		{
-			editor.Unfocus();
-		}
-		_action++;
+
+		_action = (_action + 1) % 3;
 	}
 }
