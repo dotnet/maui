@@ -1,14 +1,14 @@
 using System;
-using Microsoft.Maui.Controls;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample
 {
-	public partial class CollectionViewControlPage : ContentPage
+	public partial class CollectionViewHeaderPage : ContentPage
 	{
 		private CollectionViewViewModel _viewModel;
 
-		public CollectionViewControlPage()
+		public CollectionViewHeaderPage()
 		{
 			InitializeComponent();
 			_viewModel = new CollectionViewViewModel();
@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample
 		{
 			BindingContext = _viewModel = new CollectionViewViewModel();
 			_viewModel.ItemsSourceType = ItemsSourceType.ObservableCollection5T;
-			await Navigation.PushAsync(new CollectionViewOptionsPage(_viewModel));
+			await Navigation.PushAsync(new HeaderFooterOptionsPage(_viewModel));
 		}
 	}
 }

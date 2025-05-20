@@ -73,13 +73,11 @@ public static partial class AppHostBuilderExtensions
 		handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 		handlersCollection.AddHandler<BoxView, BoxViewHandler>();
 		handlersCollection.AddHandler<Button, ButtonHandler>();
-		handlersCollection.AddHandler<CheckBox, CheckBoxHandler>();
 		handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
 		handlersCollection.AddHandler<Editor, EditorHandler>();
 		handlersCollection.AddHandler<Entry, EntryHandler>();
 		handlersCollection.AddHandler<GraphicsView, GraphicsViewHandler>();
 		handlersCollection.AddHandler<Image, ImageHandler>();
-		handlersCollection.AddHandler<Label, LabelHandler>();
 		handlersCollection.AddHandler<Layout, LayoutHandler>();
 		handlersCollection.AddHandler<Picker, PickerHandler>();
 		handlersCollection.AddHandler<ProgressBar, ProgressBarHandler>();
@@ -263,12 +261,10 @@ public static partial class AppHostBuilderExtensions
 	internal static MauiAppBuilder RemapForControls(this MauiAppBuilder builder)
 	{
 		// Update the mappings for IView/View to work specifically for Controls
-		Element.RemapForControls();
+		Element.RemapIfNeeded();
 		Application.RemapForControls();
-		VisualElement.RemapForControls();
-		Label.RemapForControls();
+		VisualElement.RemapIfNeeded();
 		Button.RemapForControls();
-		CheckBox.RemapForControls();
 		DatePicker.RemapForControls();
 		RadioButton.RemapForControls();
 		FlyoutPage.RemapForControls();
@@ -288,6 +284,7 @@ public static partial class AppHostBuilderExtensions
 		Shape.RemapForControls();
 		WebView.RemapForControls();
 		ContentPage.RemapForControls();
+		ImageButton.RemapForControls();
 
 		return builder;
 	}

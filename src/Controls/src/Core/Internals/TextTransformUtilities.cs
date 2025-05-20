@@ -11,7 +11,7 @@ public static class TextTransformUtilites
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static string GetTransformedText(string source, TextTransform textTransform)
 		=> TextTransformUtilities.GetTransformedText(source, textTransform);
-	
+
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public static void SetPlainText(InputView inputView, string platformText)
 		=> TextTransformUtilities.SetPlainText(inputView, platformText);

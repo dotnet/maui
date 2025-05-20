@@ -27,9 +27,9 @@ namespace Microsoft.Maui.Media
 		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
 			=> PickAsync(options, false);
 
-		public async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo) 
-			=> IsPhotoPickerAvailable 
-				? await PickUsingPhotoPicker(photo) 
+		public async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo)
+			=> IsPhotoPickerAvailable
+				? await PickUsingPhotoPicker(photo)
 				: await PickUsingIntermediateActivity(options, photo);
 
 		public Task<FileResult> CapturePhotoAsync(MediaPickerOptions options)

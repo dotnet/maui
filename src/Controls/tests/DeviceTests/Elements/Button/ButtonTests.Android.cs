@@ -2,12 +2,14 @@
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Android.Content.Res;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -116,7 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectedValue, nativeOpacityValue);
 			});
 		}
-		
+
 		[Fact]
 		[Description("The ScaleX property of a Button should match with native ScaleX")]
 		public async Task ScaleXConsistent()
@@ -189,6 +191,32 @@ namespace Microsoft.Maui.DeviceTests
 			var platformButton = GetPlatformButton(handler);
 			var platformRotation = await InvokeOnMainThreadAsync(() => platformButton.Rotation);
 			Assert.Equal(expected, platformRotation);
+		}
+
+		[Fact]
+		[Description("The RippleColor property of a Button Platform Specific should match with native RippleDrawable Color")]
+		public async Task ButtonRippleColorPlatformSpecific()
+		{
+			var button = new Button();
+			var expected = Graphics.Colors.Red;
+			Controls.PlatformConfiguration.AndroidSpecific.Button.SetRippleColor(button, expected);
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+			var platformButton = GetPlatformButton(handler);
+
+			if (platformButton.Background is global::Android.Graphics.Drawables.RippleDrawable rippleDrawable)
+			{
+				var constantState = rippleDrawable.GetConstantState();
+				if (constantState is not null)
+				{
+					var colorField = constantState.Class.GetDeclaredField("mColor");
+					colorField.Accessible = true;
+					if (colorField.Get(constantState) is ColorStateList colorStateList)
+					{
+						var color = colorStateList?.DefaultColor;
+						Assert.Equal(expected.ToPlatform(), color);
+					}
+				}
+			}
 		}
 	}
 }

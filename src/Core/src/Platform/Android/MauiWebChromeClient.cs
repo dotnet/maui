@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Platform
 				{
 					// Store current visibility state
 					var windowInsets = context.Window.DecorView.RootWindowInsets;
-					_isSystemBarVisible = windowInsets.IsVisible(WindowInsetsCompat.Type.NavigationBars()) ||	
+					_isSystemBarVisible = windowInsets.IsVisible(WindowInsetsCompat.Type.NavigationBars()) ||
 						windowInsets.IsVisible(WindowInsetsCompat.Type.StatusBars());
 
 					// Hide system bars
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Platform
 
 			// Restore original screen orientation
 			context.RequestedOrientation = _originalOrientation;
-			
+
 			// Restore system UI visibility based on Android version
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
