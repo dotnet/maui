@@ -99,8 +99,7 @@ namespace Microsoft.Maui.DeviceTests
 				layoutPlatformRef = new WeakReference(handler.PlatformView);
 			});
 
-			await AssertionExtensions.WaitForGC(radioButtonHandlerRef, radioButtonPlatformRef);
-			await AssertionExtensions.WaitForGC(layoutHandlerRef, layoutPlatformRef);
+			await AssertionExtensions.WaitForGC(radioButtonHandlerRef, layoutHandlerRef, layoutPlatformRef, radioButtonPlatformRef);
 		}
 	}
 }
