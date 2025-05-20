@@ -2675,8 +2675,9 @@ namespace UITest.Appium
 		/// Taps the clear button in a search bar control with platform-specific implementations.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="automationId">The automation ID of the search bar.</param>
 		/// <param name="timeout">Optional timeout for waiting for the clear button. Default is null, which uses the default timeout.</param>
-		public static void TapSearchBarClearButton(this IApp app, TimeSpan? timeout = null)
+		public static void TapSearchBarClearButton(this IApp app, string automationId, TimeSpan? timeout = null)
 		{
 			if (app is AppiumAndroidApp)
 			{
@@ -2690,8 +2691,10 @@ namespace UITest.Appium
 			}
 			else if (app is AppiumWindowsApp)
 			{
-				app.WaitForElement(AppiumQuery.ByAccessibilityId("SearchBox_ClearButton"), timeout: timeout);
-				app.Tap(AppiumQuery.ByAccessibilityId("SearchBox_ClearButton"));
+				var searchBar = app.WaitForElement(AppiumQuery.ByAccessibilityId(automationId), timeout: timeout);
+				var rect = searchBar.GetRect();
+				app.Tap(automationId);
+				app.TapCoordinates(rect.Right - 84, rect.Y + rect.Height / 2);
 			}
 		}
 

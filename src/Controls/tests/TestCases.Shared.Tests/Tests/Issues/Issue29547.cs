@@ -16,15 +16,8 @@ public class Issue29547 : _IssuesUITest
 	[Category(UITestCategories.SearchBar)]
 	public void VerifySearchBarDeleteIconBehavior()
 	{
-		var view = App.WaitForElement("searchbar");
-
-#if !WINDOWS
-		App.TapSearchBarClearButton();
-#else
-		var rect = view.GetRect();
-		App.TapCoordinates(rect.Width / 2, rect.Y + rect.Height / 2);
-		App.TapCoordinates(rect.Right - 84, rect.Y + rect.Height / 2);
-#endif
+		App.WaitForElement("searchbar");
+		App.TapSearchBarClearButton("searchbar");
 		VerifyScreenshot();
 	}
 }
