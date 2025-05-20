@@ -349,13 +349,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				switch (collectionView.ItemsLayout)
 				{
 					case LinearItemsLayout linearLayout:
-				    {
-						return linearLayout.Orientation == ItemsLayoutOrientation.Vertical;
-					}
+						{
+							return linearLayout.Orientation == ItemsLayoutOrientation.Vertical;
+						}
 					case GridItemsLayout gridItemsLayout:
-					{
-						return gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical;
-					}
+						{
+							return gridItemsLayout.Orientation == ItemsLayoutOrientation.Vertical;
+						}
 				}
 			}
 			// Default
