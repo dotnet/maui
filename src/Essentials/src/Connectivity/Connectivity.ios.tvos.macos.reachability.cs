@@ -166,5 +166,14 @@ namespace Microsoft.Maui.Networking
 		}
 #pragma warning restore BI1234
 #endif
+
+		async void OnChange(NetworkReachabilityFlags flags)
+		{
+			// Add in artifical delay so the connection status has time to change
+			// else it will return true no matter what.
+			await Task.Delay(400);
+
+			ReachabilityChanged?.Invoke();
+		}
 	}
 }
