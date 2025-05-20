@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (handler.PlatformView is IMauiRecyclerView<TItemsView> recyclerView)
 			{
 				recyclerView.UpdateAdapter();
+				recyclerView.UpdateScrollingMode();
 				recyclerView.UpdateLayoutManager();
 			}
 		}
