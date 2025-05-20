@@ -133,7 +133,7 @@ namespace Maui.Controls.Sample.Issues
                 
                 // For simplicity, we're just showing some potential control points
                 // In a real implementation, we'd extract the actual control points from the path
-                if (_path.Operations.Count > 0)
+                if (_path.OperationCount > 0)
                 {
                     // For cubic bezier, control points could be far outside the path
                     for (int i = 0; i < _path.Points.Count; i++)

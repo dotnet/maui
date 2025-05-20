@@ -33,12 +33,12 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
             Assert.IsNotEmpty(ovalFlattenedBounds);
 
             // Get the text from the bounds labels
-            var rectTightText = App.GetText("RectangleTightBounds");
-            var rectFlatText = App.GetText("RectangleFlattenedBounds");
-            var bezierTightText = App.GetText("BezierTightBounds");
-            var bezierFlatText = App.GetText("BezierFlattenedBounds");
-            var ovalTightText = App.GetText("OvalTightBounds");
-            var ovalFlatText = App.GetText("OvalFlattenedBounds");
+            var rectTightText = App.FindElement("RectangleTightBounds").GetText();
+            var rectFlatText = App.FindElement("RectangleFlattenedBounds").GetText();
+            var bezierTightText = App.FindElement("BezierTightBounds").GetText();
+            var bezierFlatText = App.FindElement("BezierFlattenedBounds").GetText();
+            var ovalTightText = App.FindElement("OvalTightBounds").GetText();
+            var ovalFlatText = App.FindElement("OvalFlattenedBounds").GetText();
             
             // Save a screenshot for verification
             VerifyScreenshot("PathFBoundsTightVsFlattened");
