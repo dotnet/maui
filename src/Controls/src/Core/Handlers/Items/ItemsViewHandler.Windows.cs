@@ -446,7 +446,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (Element is CarouselView)
 			{
 				if (!e.IsIntermediate)
+				{
 					HandleScroll(_scrollViewer);
+				}
 			}
 			else
 			{
