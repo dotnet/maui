@@ -365,7 +365,7 @@ namespace Microsoft.Maui.Controls
 			{
 				result |= LayoutConstraint.VerticallyFixed;
 			}
-			
+
 			if (view.HorizontalOptions.Alignment == LayoutAlignment.Fill && ViewHasFixedWidthDefinition(view))
 			{
 				result |= LayoutConstraint.HorizontallyFixed;

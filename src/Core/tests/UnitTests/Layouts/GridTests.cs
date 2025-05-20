@@ -33,7 +33,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Now set a fixed height on the grid
 			grid.HeightRequest = 100;
-			
+
 			Assert.Equal(LayoutConstraint.VerticallyFixed, f50.Constraint);
 			Assert.Equal(LayoutConstraint.VerticallyFixed, f50star.Constraint);
 			Assert.Equal(LayoutConstraint.VerticallyFixed, star.Constraint);
