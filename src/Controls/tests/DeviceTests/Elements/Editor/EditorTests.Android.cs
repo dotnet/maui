@@ -152,7 +152,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The IsEnabled property of a Editor should match with native IsEnabled")]		
+		[Description("The IsEnabled property of a Editor should match with native IsEnabled")]
 		public async Task VerifyEditorIsEnabledProperty()
 		{
 			var editor = new Editor
@@ -168,7 +168,7 @@ namespace Microsoft.Maui.DeviceTests
 				var isEnabled = nativeView.Enabled;
 
 				Assert.Equal(expectedValue, isEnabled);
-			});		
-		}		
+			});
+		}
 	}
 }
