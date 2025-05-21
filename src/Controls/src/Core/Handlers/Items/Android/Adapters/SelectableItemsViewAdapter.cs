@@ -57,21 +57,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
-		internal void MarkPlatformSelection(object selectedItem)
+		internal void MarkPlatformSelection(SelectableItemsView selectableItemsView)
 		{
-			if (selectedItem == null)
+			HashSet<object> selectedSet = new HashSet<object>();
+			
+			switch (selectableItemsView.SelectionMode)
 			{
-				return;
-			}
-
-			var position = GetPositionForItem(selectedItem);
-
-			for (int i = 0; i < _currentViewHolders.Count; i++)
-			{
-				if (_currentViewHolders[i].BindingAdapterPosition == position)
-				{
-					_currentViewHolders[i].IsSelected = true;
+				case SelectionMode.None:
+					ClearPlatformSelection();
 					return;
+					
+				case SelectionMode.Single:
+					selectedSet = selectableItemsView.SelectedItem != null
+						? new HashSet<object> { selectableItemsView.SelectedItem }
+						: selectedSet;
+					break;
+					
+				case SelectionMode.Multiple:
+					selectedSet = new HashSet<object>(selectableItemsView.SelectedItems ?? []);
+					break;
+			}
+			
+			foreach (var holder in _currentViewHolders)
+			{
+				if (holder.BindingAdapterPosition >= 0)
+				{
+					var item = ItemsSource.GetItem(holder.BindingAdapterPosition);
+					bool shouldBeSelected = selectedSet.Contains(item);
+					
+					if (holder.IsSelected != shouldBeSelected)
+						holder.IsSelected = shouldBeSelected;
 				}
 			}
 		}
