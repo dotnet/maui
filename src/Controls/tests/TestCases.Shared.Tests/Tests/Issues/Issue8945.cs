@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_CATALYST // IsOpen property not implemented on Catalyst
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -81,3 +82,4 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 	}
 }
+#endif
