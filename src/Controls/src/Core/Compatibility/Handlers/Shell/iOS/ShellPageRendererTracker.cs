@@ -796,7 +796,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void SetSearchBarIcon(UISearchBar searchBar, ImageSource source, UISearchBarIcon icon)
 		{
-			var mauiContext = MauiContext ?? Application.Current?.FindMauiContext();
+			var mauiContext = source.FindMauiContext(true);
 
 			if (mauiContext is null)
 			{
