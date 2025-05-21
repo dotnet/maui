@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (animated)
 			{
-				dialogFragment.Dialog?.Window?.SetWindowAnimations(Resource.Style.dialog_exit_animation);
+				dialogFragment.Dialog?.Window?.SetWindowAnimations(Resource.Style.modal_exit_animation);
 				modal.Dispatcher.Dispatch(() =>
 				{
 					dialogFragment.Dismiss();
@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (IsAnimated)
 				{
-					dialog.Window?.SetWindowAnimations(Resource.Style.dialog_enter_animation);
+					dialog.Window?.SetWindowAnimations(Resource.Style.modal_enter_animation);
 				}
 
 				return dialog;
