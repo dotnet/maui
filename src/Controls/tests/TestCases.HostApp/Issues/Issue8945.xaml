@@ -11,12 +11,12 @@
             AutomationId="WaitForStubControl"
             Text="IsOpen" />
         <DatePicker
-              x:Name="IsOpenDatePicker" AutomationId="IsOpenDatePicker" />
+              x:Name="IsOpenDatePicker" AutomationId="IsOpenDatePicker" Date="01/01/2025" />
         <Button AutomationId="OpenDatePickerButton" Text="Open DatePicker" Clicked="OnOpenDatePickerClicked" />
         <Button AutomationId="CloseDatePickerButton" Text="Close DatePicker" Clicked="OnCloseDatePickerClicked" />
         <Label x:Name="DatePickerStatusLabel" AutomationId="DatePickerStatusLabel" />
       <TimePicker
-            x:Name="IsOpenTimePicker" AutomationId="IsOpenTimePicker" />
+            x:Name="IsOpenTimePicker" AutomationId="IsOpenTimePicker" Time="4:15:30" />
       <Button AutomationId="OpenTimePickerButton" Text="Open TimePicker" Clicked="OnOpenTimePickerClicked" />
       <Button AutomationId="CloseTimePickerButton" Text="Close TimePicker" Clicked="OnCloseTimePickerClicked" />
       <Label x:Name="TimePickerStatusLabel" AutomationId="TimePickerStatusLabel" />
