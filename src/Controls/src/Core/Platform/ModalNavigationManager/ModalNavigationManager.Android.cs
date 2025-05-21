@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var dialogFragmentId = _modals.Pop();
 			var dialogFragment = (ModalFragment?)fragmentManager.FindFragmentByTag(dialogFragmentId);
-			
+
 			if (dialogFragment is null)
 			{
 				tcs.TrySetResult(modal);
@@ -336,7 +336,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_modal = null!;
 				_mauiWindowContext = null!;
 				_navigationRootManager?.Disconnect();
-				_navigationRootManager = null;				
+				_navigationRootManager = null;
 			}
 
 			sealed class CustomComponentDialog : ComponentDialog
