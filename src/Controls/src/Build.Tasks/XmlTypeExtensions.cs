@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			var typeArguments = xmlType.TypeArguments;
 
-			TypeReference type = xmlType.GetTypeReference(xmlnsDefinitions, module.Assembly.Name.Name, (typeInfo) =>
+			IEnumerable<TypeReference> types = xmlType.GetTypeReferences(xmlnsDefinitions, module.Assembly.Name.Name, (typeInfo) =>
 			{
 				if (typeInfo.clrNamespace.StartsWith("http")) //aggregated xmlns, might result in a typeload exception
 					return null;
@@ -116,6 +116,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				return null;
 			}, expandToExtension: expandToExtension);
 
+			if (types.Distinct(TypeRefComparer.Default).Skip(1).Any())
+			{
+				typeReference = null;
+				return false;
+			}
+
+			var type = types.Distinct(TypeRefComparer.Default).FirstOrDefault();
 			if (type != null && typeArguments != null && type.HasGenericParameters)
 				type = module.ImportReference(type).MakeGenericInstanceType(typeArguments.Select(x => x.GetTypeReference(cache, module, xmlInfo)).ToArray());
 

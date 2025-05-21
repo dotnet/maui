@@ -404,7 +404,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (s_xmlnsDefinitions == null)
 				GatherXmlnsDefinitionAttributes(currentAssembly);
 
-			Type type = xmlType.GetTypeReference(
+			IEnumerable<Type> types = xmlType.GetTypeReferences(
 				s_xmlnsDefinitions,
 				currentAssembly?.FullName,
 				(typeInfo) =>
@@ -419,7 +419,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			var typeArguments = xmlType.TypeArguments;
 			exception = null;
 
-			if (type == null)
+			if (!types.Any())
 			{
 				// This covers the scenario where the AppDomain's loaded
 				// assemblies might have changed since this method was first
@@ -432,6 +432,14 @@ namespace Microsoft.Maui.Controls.Xaml
 					goto retry;
 				}
 			}
+
+			if (types.Distinct().Skip(1).Any())
+			{
+				exception = new XamlParseException($"Ambiguous type '{xmlType.Name}' in xmlns '{xmlType.NamespaceUri}'", xmlInfo);
+				return null;
+			}
+
+			var type = types.Distinct().FirstOrDefault();
 
 			if (type != null && typeArguments != null)
 			{

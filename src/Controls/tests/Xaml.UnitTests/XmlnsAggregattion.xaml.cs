@@ -7,7 +7,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests;
 
-//  [XamlCompilation(XamlCompilationOptions.Skip)]
 public partial class XmlnsAggregattion : ContentPage
 {
 	public XmlnsAggregattion() => InitializeComponent();

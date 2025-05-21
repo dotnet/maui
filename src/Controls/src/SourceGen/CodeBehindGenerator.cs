@@ -172,6 +172,7 @@ $"""
 
 		var nsmgr = new XmlNamespaceManager(new NameTable());
 		nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
+		nsmgr.AddNamespace("__g__", XamlParser.MauiGlobalUri);
 		if (allowImplicitXmlns)
 		{
 			nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
@@ -564,7 +565,8 @@ $"""
 		XmlNodeList names =
 			root.SelectNodes(
 				"//*[@" + xPrefix + ":Name" +
-				"][not(ancestor:: __f__:DataTemplate) and not(ancestor:: __f__:ControlTemplate) and not(ancestor:: __f__:Style) and not(ancestor:: __f__:VisualStateManager.VisualStateGroups)]", nsmgr);
+				"][not(ancestor:: __f__:DataTemplate) and not(ancestor:: __f__:ControlTemplate) and not(ancestor:: __f__:Style) and not(ancestor:: __f__:VisualStateManager.VisualStateGroups)" +
+				"and not(ancestor:: __g__:DataTemplate) and not(ancestor:: __g__:ControlTemplate) and not(ancestor:: __g__:Style) and not(ancestor:: __g__:VisualStateManager.VisualStateGroups)]", nsmgr);
 		foreach (XmlNode node in names)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
