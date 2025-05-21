@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Platform
 		}
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
+			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 			if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.AtMost && Layout is not null)
 			{
 				// Ensure the Layout is valid and measured before reading LineCount or GetLineWidth(i) to avoid unnecessary calculations.
@@ -34,9 +35,9 @@ namespace Microsoft.Maui.Platform
 					int availableWidth = MeasureSpec.GetSize(widthMeasureSpec);
 					int desiredWidth = Math.Min(requiredWidth, availableWidth);
 					widthMeasureSpec = MeasureSpec.MakeMeasureSpec(desiredWidth, MeasureSpecMode.AtMost);
+					base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 				}
 			}
-			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
 
 		static float GetMaxLineWidth(Layout layout)
