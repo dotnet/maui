@@ -59,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact]
 		[Category(TestCategory.RadioButton)]
-		public async Task RadioButtonIsCleanedUpWhenRemoved()
+		public async Task RadioButtonHandlerShouldNotLeak()
 		{
 			EnsureHandlerCreated(builder =>
 			{

@@ -245,7 +245,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public async Task RadioButtonGroupShouldNotLeakWhenRemoved()
+		public async Task RadioButtonGroupLayoutShouldNotLeak()
 		{
 			WeakReference CreateReference()
 			{
@@ -272,7 +272,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			WeakReference CreateReference()
 			{
-				var radioButton = new RadioButton { Content = "RB1", Value = "RB1" };
+				var radioButton = new RadioButton { Content = "RB1", Value = "RB1", GroupName = "GroupA" };
 				return new(radioButton);
 			}
 			WeakReference reference = CreateReference();
