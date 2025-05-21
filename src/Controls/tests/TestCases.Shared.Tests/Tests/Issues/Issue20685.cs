@@ -21,36 +21,32 @@ public class Issue20685 : _IssuesUITest
 
     public override string Issue => "MenuBarItem Commands not working on Mac Catalyst";
 
-    [Test]
-    public void MenuFlyoutItem_ClickedEventWorks()
+    private void OpenMenuAndTapItem(string menuItem)
     {
         App.WaitForElement(MenuItems);
         App.Tap(MenuItems);
-        App.WaitForElement(ClickedEventItem);
-        App.Tap(ClickedEventItem);
+        App.WaitForElement(menuItem);
+        App.Tap(menuItem);
+    }
 
+    [Test]
+    public void MenuFlyoutItem_ClickedEventWorks()
+    {
+        OpenMenuAndTapItem(ClickedEventItem);
         Assert.That(App.WaitForElement(ResultLabel)?.GetText(), Is.EqualTo("Clicked event handler executed"));
     }
 
     [Test]
     public void MenuFlyoutItem_CommandWorks()
     {
-        App.WaitForElement(MenuItems);
-        App.Tap(MenuItems);
-        App.WaitForElement(CommandItem);
-        App.Tap(CommandItem);
-
+        OpenMenuAndTapItem(CommandItem);
         Assert.That(App.WaitForElement(ResultLabel)?.GetText(), Is.EqualTo("Command executed"));
     }
 
     [Test]
     public void MenuFlyoutItem_CommandWithParameterWorks()
     {
-        App.WaitForElement(MenuItems);
-        App.Tap(MenuItems);
-        App.WaitForElement(CommandWithParamItem);
-        App.Tap(CommandWithParamItem);
-
+        OpenMenuAndTapItem(CommandWithParamItem);
         Assert.That(App.WaitForElement(ResultLabel)?.GetText(), Is.EqualTo("Command executed with parameter: Test Parameter"));
     }
 }
