@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using WebKit;
@@ -186,7 +187,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				if (cancelAction != null)
 					AddCancelAction(controller, () => cancelAction(controller));
 
-				GetTopViewController(UIApplication.SharedApplication.ConnectedScenes.OfType<UIWindowScene>().SelectMany(scene => scene.Windows).FirstOrDefault(window => window.IsKeyWindow)?.RootViewController)?
+				GetTopViewController(UIApplication.SharedApplication.GetKeyWindow()?.RootViewController)?
 					.PresentViewController(controller, true, null);
 			}
 
