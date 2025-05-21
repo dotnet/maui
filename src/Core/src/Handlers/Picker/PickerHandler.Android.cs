@@ -89,30 +89,39 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsOpen(IPickerHandler handler, IPicker picker)
 		{
 			if (handler is PickerHandler pickerHandler)
-				handler.PlatformView?.UpdateIsOpen(picker, pickerHandler._dialog);
+			{
+				if (picker.IsOpen)
+					pickerHandler.ShowDialog();
+				else
+					pickerHandler.HideDialog();
+			}
 		}
-		
+
 		void OnFocusChange(object? sender, global::Android.Views.View.FocusChangeEventArgs e)
 		{
 			if (PlatformView == null)
 				return;
 
 			if (e.HasFocus)
-			{
-				if (PlatformView.Clickable)
-					PlatformView.CallOnClick();
-				else
-					OnClick(PlatformView, EventArgs.Empty);
-			}
+				ShowDialog();
 			else if (_dialog != null)
+				HideDialog();
+		}
+
+		void ShowDialog()
+		{
+			if (PlatformView.Clickable)
+				PlatformView.CallOnClick();
+			else
+				OnClick(PlatformView, EventArgs.Empty);
+		}
+		
+		void HideDialog()
+		{
+			if (_dialog != null)
 			{
 				_dialog.Hide();
 				_dialog = null;
-
-				if (VirtualView is not null)
-				{
-					VirtualView.IsOpen = false;
-				}
 			}
 		}
 
@@ -166,6 +175,7 @@ namespace Microsoft.Maui.Handlers
 				_dialog.DismissEvent += (sender, args) =>
 				{
 					_dialog = null;
+					VirtualView.IsOpen = false;
 				};
 
 				_dialog.Show();

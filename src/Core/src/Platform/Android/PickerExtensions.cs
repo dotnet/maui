@@ -37,18 +37,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateSelectedIndex(this MauiPicker platformPicker, IPicker picker) =>
 			UpdatePicker(platformPicker, picker);
-
-		public static void UpdateIsOpen(this MauiPicker platformPicker, IPicker picker, AppCompatAlertDialog? dialog)
-		{
-			if (dialog is null)
-				return;
-
-			if (picker.IsOpen)
-				dialog.Show();
-			else
-				dialog.Dismiss();
-		}
-
+		
 		internal static void UpdatePicker(this MauiPicker platformPicker, IPicker picker)
 		{
 			platformPicker.Hint = picker.Title;

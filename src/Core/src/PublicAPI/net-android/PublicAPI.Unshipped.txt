@@ -128,7 +128,6 @@ static Microsoft.Maui.Platform.EditTextExtensions.GetSelectedTextLength(this And
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformButton, Microsoft.Maui.IImageButton! imageButton) -> void
 static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateRippleColor(this Google.Android.Material.ImageView.ShapeableImageView! platformView, Microsoft.Maui.Graphics.Color! rippleColor) -> void
-static Microsoft.Maui.Platform.PickerExtensions.UpdateIsOpen(this Microsoft.Maui.Platform.MauiPicker! platformPicker, Microsoft.Maui.IPicker! picker, AndroidX.AppCompat.App.AlertDialog? dialog) -> void
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Platform.MauiWebChromeClient.OnHideCustomView() -> void
