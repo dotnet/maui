@@ -41,24 +41,29 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute), false))
 					{
 						attribute.AssemblyName ??= assembly.FullName;
-						//maui, and x: xmlns are protected
-						if (attribute.XmlNamespace != XamlParser.MauiGlobal
-							&& attribute.XmlNamespace.StartsWith("http://schemas.microsoft.com/", StringComparison.OrdinalIgnoreCase)
-							&& !attribute.AssemblyName.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase)
-							&& !attribute.AssemblyName.StartsWith("System", StringComparison.OrdinalIgnoreCase)
-							&& !attribute.AssemblyName.StartsWith("mscorlib", StringComparison.OrdinalIgnoreCase))
-						{
-							throw new BuildException(BuildExceptionCode.InvalidXaml, null, null,
-								$"Protected Xmlns {attribute.XmlNamespace}. Can't add assembly  {attribute.AssemblyName}.");
-						}
-
+						ValidateProtectedXmlns(attribute.XmlNamespace, attribute.AssemblyName);
 						xmlnsDefinitions.Add(attribute);
 					}
 			}
 
 			return xmlnsDefinitions;
 		}
+		static void ValidateProtectedXmlns(string xmlNamespace, string assemblyName)
+		{
+			//maui, and x: xmlns are protected
+			if (xmlNamespace != XamlParser.MauiUri && xmlNamespace != XamlParser.X2009Uri)
+				return;
 
+			//we know thos assemblies, they are fine in maui or x xmlns
+			if (assemblyName.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase)
+				|| assemblyName.StartsWith("System", StringComparison.OrdinalIgnoreCase)
+				|| assemblyName.StartsWith("mscorlib", StringComparison.OrdinalIgnoreCase))
+				return;
+
+			throw new BuildException(BuildExceptionCode.InvalidXaml, null, null,
+				$"Protected Xmlns {xmlNamespace}. Can't add assembly {assemblyName}.");
+
+		}
 		static void GatherXmlnsDefinitionAttributes(List<XmlnsDefinitionAttribute> xmlnsDefinitions, AssemblyDefinition asmDef, AssemblyDefinition currentAssembly)
 		{
 			foreach (var ca in asmDef.CustomAttributes)
@@ -70,15 +75,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					if (attr.XmlNamespace == XamlParser.MauiGlobal
 						&& asmDef != currentAssembly)
 						continue;
-					if (attr.XmlNamespace != XamlParser.MauiGlobal
-						&& attr.XmlNamespace.StartsWith("http://schemas.microsoft.com/", StringComparison.OrdinalIgnoreCase)
-						&& !attr.AssemblyName.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase)
-						&& !attr.AssemblyName.StartsWith("System", StringComparison.OrdinalIgnoreCase)
-						&& !attr.AssemblyName.StartsWith("mscorlib", StringComparison.OrdinalIgnoreCase))
-					{
-						throw new BuildException(BuildExceptionCode.InvalidXaml, null, null,
-							$"Protected Xmlns {attr.XmlNamespace}. Can't add assembly  {attr.AssemblyName}.");
-					}
+					ValidateProtectedXmlns(attr.XmlNamespace, attr.AssemblyName);
 					xmlnsDefinitions.Add(attr);
 				}
 			}

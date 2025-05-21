@@ -333,6 +333,21 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		static IList<XmlnsDefinitionAttribute> s_xmlnsDefinitions;
 
+		static bool ValidateProtectedXmlns(string xmlNamespace, string assemblyName)
+		{
+			//maui, and x: xmlns are protected
+			if (xmlNamespace != XamlParser.MauiUri && xmlNamespace != XamlParser.X2009Uri)
+				return true;
+
+			//we know thos assemblies, they are fine in maui or x xmlns
+			if (assemblyName.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase)
+				|| assemblyName.StartsWith("System", StringComparison.OrdinalIgnoreCase)
+				|| assemblyName.StartsWith("mscorlib", StringComparison.OrdinalIgnoreCase))
+				return true;
+
+			return false;
+		}
+
 		static void GatherXmlnsDefinitionAttributes(Assembly currentAssembly)
 		{
 			Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -350,12 +365,8 @@ namespace Microsoft.Maui.Controls.Xaml
 							continue;
 
 						attribute.AssemblyName ??= assembly.FullName;
-						//maui, and x: xmlns are protected
-						if (attribute.XmlNamespace != XamlParser.MauiGlobal
-							&& attribute.XmlNamespace.StartsWith("http://schemas.microsoft.com/", StringComparison.Ordinal)
-							&& !attribute.AssemblyName.StartsWith("Microsoft", StringComparison.Ordinal)
-							&& !attribute.AssemblyName.StartsWith("System", StringComparison.Ordinal)
-							&& !attribute.AssemblyName.StartsWith("mscorlib", StringComparison.Ordinal))
+
+						if (!ValidateProtectedXmlns(attribute.XmlNamespace, attribute.AssemblyName))
 						{
 							Debug.WriteLine($"Can not overloadxmlns {attribute.XmlNamespace}. cause it's protected.");
 							continue;
