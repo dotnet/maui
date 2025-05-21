@@ -96,21 +96,26 @@ namespace Microsoft.Maui.Controls.Platform
 				return tcs.Task;
 			}
 
+			EventHandler? OnDialogDismiss = null;
+
+			OnDialogDismiss = (_, _) =>
+			{
+				dialogFragment.DialogDismissEvent -= OnDialogDismiss;
+				tcs.TrySetResult(modal);
+			};
+
+			dialogFragment.DialogDismissEvent += OnDialogDismiss;
+
 			if (animated)
 			{
 				dialogFragment.Dialog?.Window?.SetWindowAnimations(Resource.Style.modal_exit_animation);
-				modal.Dispatcher.Dispatch(() =>
-				{
-					dialogFragment.Dismiss();
-					tcs.TrySetResult(modal);
-				});
+				modal.Dispatcher.Dispatch(() => dialogFragment.Dismiss());
 			}
 			else
 			{
 				dialogFragment.Dismiss();
-				tcs.TrySetResult(modal);
 			}
-			
+
 			return tcs.Task;
 		}
 
@@ -155,15 +160,15 @@ namespace Microsoft.Maui.Controls.Platform
 			var dialogFragmentId = AView.GenerateViewId().ToString();
 			_modals.Push(dialogFragmentId);
 
-			EventHandler? OnDailogShown = null;
+			EventHandler? OnDialogShown = null;
 
-			OnDailogShown = (_, _) =>
+			OnDialogShown = (_, _) =>
 			{
-				dialogFragment!.DialogShowEvent -= OnDailogShown;
+				dialogFragment!.DialogShowEvent -= OnDialogShown;
 				animationCompletionSource.SetResult(true);
 			};
 
-			dialogFragment!.DialogShowEvent += OnDailogShown;
+			dialogFragment!.DialogShowEvent += OnDialogShown;
 
 			dialogFragment.Show(fragmentManager, dialogFragmentId);
 
@@ -176,6 +181,7 @@ namespace Microsoft.Maui.Controls.Platform
 			IMauiContext _mauiWindowContext;
 			NavigationRootManager? _navigationRootManager;
 			public event EventHandler? DialogShowEvent;
+			public event EventHandler? DialogDismissEvent;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
 
 			public bool IsAnimated { get; internal set; }
@@ -203,15 +209,15 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					dialog.Window.SetSoftInputMode(attributes.SoftInputMode);
 				}
-				EventHandler? OnDailogShown = null;
+				EventHandler? OnDialogShown = null;
 
-				OnDailogShown = (_, _) =>
+				OnDialogShown = (_, _) =>
 				{
-					dialog.ShowEvent -= OnDailogShown;
+					dialog.ShowEvent -= OnDialogShown;
 					DialogShowEvent?.Invoke(this, EventArgs.Empty);
 				};
 
-				dialog.ShowEvent += OnDailogShown;
+				dialog.ShowEvent += OnDialogShown;
 
 				if (IsAnimated)
 				{
@@ -304,6 +310,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			public override void OnDismiss(IDialogInterface dialog)
 			{
+				base.OnDismiss(dialog);
+				DialogDismissEvent?.Invoke(this, EventArgs.Empty);
+				DialogDismissEvent = null;
 				_modal.PropertyChanged -= OnModalPagePropertyChanged;
 				_modal.HandlerChanged -= OnPageHandlerChanged;
 
@@ -316,8 +325,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_modal = null!;
 				_mauiWindowContext = null!;
 				_navigationRootManager?.Disconnect();
-				_navigationRootManager = null;
-				base.OnDismiss(dialog);
+				_navigationRootManager = null;				
 			}
 
 			sealed class CustomComponentDialog : ComponentDialog
