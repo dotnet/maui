@@ -137,7 +137,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect()
 		{
-
 		}
 
 		protected override void Dispose(bool disposing)
