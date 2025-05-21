@@ -137,11 +137,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect()
 		{
-			if (_platformView?.Superview == this)
-				_platformView.RemoveFromSuperview();
 
-			_renderer = null;
-			_platformView = null;
 		}
 
 		protected override void Dispose(bool disposing)
