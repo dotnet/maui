@@ -155,8 +155,6 @@ namespace Microsoft.Maui.Controls.Platform
 			var dialogFragmentId = AView.GenerateViewId().ToString();
 			_modals.Push(dialogFragmentId);
 
-			dialogFragment.Show(fragmentManager, dialogFragmentId);
-
 			EventHandler? OnDailogShown = null;
 
 			OnDailogShown = (_, _) =>
@@ -166,6 +164,8 @@ namespace Microsoft.Maui.Controls.Platform
 			};
 
 			dialogFragment!.DialogShowEvent += OnDailogShown;
+
+			dialogFragment.Show(fragmentManager, dialogFragmentId);
 
 			await animationCompletionSource.Task;
 		}
