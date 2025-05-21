@@ -11,11 +11,13 @@ namespace Maui.Controls.Sample.Issues
 		readonly string _carouselAutomationId = "carouselView";
 		readonly string _btnRemoveAutomationId = "btnRemove";
 		readonly string _btnRemoveAllAutomationId = "btnRemoveAll";
+		readonly string _btnSwipeAutomationId = "btnSwipe";
 
 		readonly ViewModelIssue12574 _viewModel;
 		readonly CarouselView2 _carouselView;
 		readonly Button _btn;
 		readonly Button _btn2;
+		readonly Button _btn3;
 
 		public CarouselViewLoopNoFreeze()
 		{
@@ -32,6 +34,19 @@ namespace Maui.Controls.Sample.Issues
 				AutomationId = _btnRemoveAllAutomationId
 			};
 			_btn2.SetBinding(Button.CommandProperty, "RemoveAllItemsCommand");
+
+			_btn3 = new Button
+			{
+				Text = "Swipe",
+				AutomationId = _btnSwipeAutomationId
+			};
+			_btn3.Clicked += (s, e) =>
+			{
+				if (_viewModel.Items.Count == 0)
+					return;
+				_viewModel.CurrentPosition = (_viewModel.CurrentPosition + 1) % _viewModel.Items.Count;
+				_carouselView.ScrollTo(_viewModel.CurrentPosition);
+			};
 
 			_carouselView = new CarouselView2
 			{
@@ -62,11 +77,14 @@ namespace Maui.Controls.Sample.Issues
 			var layout = new Grid();
 			layout.RowDefinitions.Add(new RowDefinition { Height = 100 });
 			layout.RowDefinitions.Add(new RowDefinition { Height = 100 });
+			layout.RowDefinitions.Add(new RowDefinition { Height = 100 });
 			layout.RowDefinitions.Add(new RowDefinition());
 			Grid.SetRow(_btn2, 1);
-			Grid.SetRow(_carouselView, 2);
+			Grid.SetRow(_btn3, 2);
+			Grid.SetRow(_carouselView, 3);
 			layout.Children.Add(_btn);
 			layout.Children.Add(_btn2);
+			layout.Children.Add(_btn3);
 			layout.Children.Add(_carouselView);
 
 			BindingContext = _viewModel = new ViewModelIssue12574();
@@ -85,6 +103,16 @@ namespace Maui.Controls.Sample.Issues
 		public Command LoadItemsCommand { get; set; }
 		public Command RemoveAllItemsCommand { get; set; }
 		public Command RemoveLastItemCommand { get; set; }
+		private int _currentPosition = 0;
+		public int CurrentPosition
+		{
+			get => _currentPosition;
+			set
+			{
+				_currentPosition = value;
+				OnPropertyChanged(nameof(CurrentPosition));
+			}
+		}
 
 		public ViewModelIssue12574()
 		{
@@ -110,6 +138,10 @@ namespace Maui.Controls.Sample.Issues
 			Items.Remove(Items.Last());
 			RemoveAllItemsCommand.ChangeCanExecute();
 			RemoveLastItemCommand.ChangeCanExecute();
+			if (CurrentPosition > 0)
+			{
+				CurrentPosition--;
+			}
 		}
 
 		void ExecuteLoadItemsCommand()
