@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Handlers
 			if (_dialog != null)
 			{	
 				DialogDismissListener.Handler = null;
-				_dialog.SetOnDismissListener(DialogDismissListener);
+				_dialog.SetOnDismissListener(null);
 				
 				_dialog.Hide();
 				_dialog.Dispose();
