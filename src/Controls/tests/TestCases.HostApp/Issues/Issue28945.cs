@@ -70,6 +70,12 @@
 			base.DidUpdateFocus(context, coordinator);
 
 			Console.WriteLine("Issue28945ContentViewPlatform DidUpdateFocus");
+		} 
+		
+		public override bool ShouldUpdateFocus(UIKit.UIFocusUpdateContext context)
+		{
+			Console.WriteLine("ShouldUpdateFocus called");	
+			return true; // Allow focus update
 		}
 	}
 
