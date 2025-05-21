@@ -106,6 +106,18 @@ namespace Microsoft.Maui.ApplicationModel
 			var data = new IntermediateTask(onCreate, onResult);
 			pendingTasks[data.Id] = data;
 
+			// Android 14+ has a better native UI for photo/video picking with bottom sheet
+			// We can avoid showing an intermediate activity for these cases
+			bool isAndroid14Plus = OperatingSystem.IsAndroidVersionAtLeast(34);
+			bool isMediaPickerRequest = requestCode == PlatformUtils.requestCodeMediaPicker;
+			
+			if (isAndroid14Plus && isMediaPickerRequest)
+			{
+				// Start the picker directly from the current activity
+				activity.StartActivityForResult(intent, requestCode);
+				return data.TaskCompletionSource.Task;
+			}
+
 			// create the intermediate intent, and add the real intent to it
 			var intermediateIntent = new Intent(activity, typeof(IntermediateActivity));
 			intermediateIntent.PutExtra(actualIntentExtra, intent);
@@ -116,6 +128,44 @@ namespace Microsoft.Maui.ApplicationModel
 			activity.StartActivityForResult(intermediateIntent, requestCode);
 
 			return data.TaskCompletionSource.Task;
+		}
+
+		// This method will be called from the main activity
+		// to handle results from direct calls (bypassing intermediate activity)
+		public static bool OnActivityResultForDirectCalls(int requestCode, Result resultCode, Intent? data)
+		{
+			// We only handle direct calls for specific request codes (MediaPicker)
+			if (requestCode != PlatformUtils.requestCodeMediaPicker)
+				return false;
+
+			// Find pending tasks for media picker requests
+			foreach (var kvp in pendingTasks)
+			{
+				var task = kvp.Value;
+				if (resultCode == Result.Canceled)
+				{
+					task.TaskCompletionSource.TrySetCanceled();
+				}
+				else
+				{
+					try
+					{
+						data ??= new Intent();
+						task.OnResult?.Invoke(data);
+						task.TaskCompletionSource.TrySetResult(data);
+					}
+					catch (Exception ex)
+					{
+						task.TaskCompletionSource.TrySetException(ex);
+					}
+				}
+				
+				// Remove the task from pending tasks
+				pendingTasks.TryRemove(kvp.Key, out _);
+				return true;
+			}
+			
+			return false;
 		}
 
 		static IntermediateTask? GetIntermediateTask(string? guid, bool remove = false)
