@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsOpen(ITimePickerHandler handler, ITimePicker timePicker)
 		{
-			handler.PlatformView?.UpdateIsOpen(timePicker);
+			
 		}
 
 		void SetVirtualViewTime()
