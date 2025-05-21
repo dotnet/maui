@@ -15,6 +15,15 @@ namespace Maui.Controls.Sample.Issues
 		{
 			this.BindingContext = new Issue15443ViewModel();
 
+			var positionLabel = new Label
+			{
+				AutomationId = "15443PositionLabel",
+				HorizontalOptions = LayoutOptions.Center,
+				TextColor = Colors.Black
+			};
+			positionLabel.SetBinding(Label.TextProperty, new Binding("CarouselCurrentItemIndex", BindingMode.OneWay, null, null, "Position: {0}"));
+
+
 			// Create the CarouselView
 			var carouselView = new CarouselView
 			{
@@ -103,7 +112,7 @@ namespace Maui.Controls.Sample.Issues
 				AutomationId = "15443Stack",
 				Spacing = 8,
 				Padding = 8,
-				Children = { carouselView, buttonStack }
+				Children = { carouselView, buttonStack, positionLabel }
 			};
 
 			// Set the Content of the Page
