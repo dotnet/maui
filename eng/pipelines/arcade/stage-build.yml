@@ -41,26 +41,26 @@ stages:
   displayName: Build .NET MAUI
   dependsOn: []
   jobs:
-  - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-    - template: /eng/common/templates-official/jobs/jobs.yml
-      parameters:
-        helixRepo: dotnet/maui
-        pool: $(BuildPlatform)
-        enableMicrobuild: true
-        enablePublishUsingPipelines: true
-        enablePublishBuildAssets: true
-        enableTelemetry: true
-        enableSourceBuild: ${{ parameters.enableSourceBuild }}
-        enableSourceIndex: ${{ parameters.enableSourceIndex }}
-        sourceIndexParams: ${{ parameters.sourceIndexParams }}
-        publishAssetsImmediately: true
-        enablePublishBuildArtifacts: true
-        enablePublishTestResults: true
-        workspace:
-          clean: all
-        jobs:
-        - job: build_net_$(BuildPlatform.os)_$(BuildConfiguration)
-          displayName: Build $(BuildPlatform.os) $(BuildConfiguration)
+  - template: /eng/common/templates-official/jobs/jobs.yml
+    parameters:
+      helixRepo: dotnet/maui
+      pool: $(BuildPlatform)
+      enableMicrobuild: true
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: true
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: true
+      workspace:
+        clean: all
+      jobs:
+      - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+        - job: build_net_$(BuildConfiguration)
+          displayName: Build Windows $(BuildConfiguration)
           timeoutInMinutes: 240
           preSteps:
           - checkout: self
