@@ -34,7 +34,7 @@ parameters:
   default:
   - name: NetCore-Public
     image: 1es-windows-2022
-    os: windows
+    os: Windows
     buildScript: $(_buildScript)
   - name: Azure Pipelines
     vmImage: $(HostedMacImage)
@@ -66,8 +66,10 @@ stages:
         jobs:
         - ${{ each BuildConfiguration in parameters.buildConfigurations }}:
           - job: build_net_${{ BuildPlatform.os }}_${{ BuildConfiguration }}
-            displayName: Build ${{ BuildPlatform.os }} ${{ BuildConfiguration }}
+            displayName: Build ${{ BuildPlatform.os }} (${{ BuildConfiguration }})
             timeoutInMinutes: 240
+            variables:
+              _BuildConfig: ${{ BuildConfiguration }}
             preSteps:
             - checkout: self
               fetchDepth: 1
@@ -77,8 +79,8 @@ stages:
               - ${{ each pair in step }}:
                   ${{ pair.key }}: ${{ pair.value }}
 
-            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)buildtasks_${{ BuildPlatform.os }}_${{ BuildConfiguration }}.binlog $(_OfficialBuildIdArgs)
+            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/buildtasks_${{ BuildPlatform.os }}.binlog $(_OfficialBuildIdArgs)
               displayName: 🛠️ Build BuildTasks
 
-            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)build_${{ BuildPlatform.os }}_${{ BuildConfiguration }}.binlog $(_OfficialBuildIdArgs)
+            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/build_${{ BuildPlatform.os }}.binlog $(_OfficialBuildIdArgs)
               displayName: 🛠️ Build ${{ parameters.buildProjects }}
