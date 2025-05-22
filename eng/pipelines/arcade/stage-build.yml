@@ -58,8 +58,8 @@ stages:
       workspace:
         clean: all
       jobs:
-      - job: build_net_$(BuildConfiguration)
-        displayName: Build Windows $(BuildConfiguration)
+      - job: build_net_Release
+        displayName: Build Windows Release
         timeoutInMinutes: 240
         preSteps:
         - checkout: self
