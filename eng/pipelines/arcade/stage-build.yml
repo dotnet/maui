@@ -32,11 +32,11 @@ parameters:
   - name: NetCore-Public
     image: 1es-windows-2022
     os: windows
-    buildScript: build.cmd
+    buildScript: $(_buildScript)
   - name: Azure Pipelines
     vmImage: $(HostedMacImage)
     os: macOS
-    buildScript: build.sh
+    buildScript: $(_buildScriptMacOS)
 
 stages:
 - stage: Build
