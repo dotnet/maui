@@ -42,7 +42,6 @@ stages:
   dependsOn: []
   jobs:
   - ${{ each BuildPlatform in parameters.buildPlatforms }}:
-
     - template: /eng/common/templates-official/jobs/jobs.yml
       parameters:
         helixRepo: dotnet/maui
@@ -61,8 +60,8 @@ stages:
           clean: all
         jobs:
         - ${{ each BuildConfiguration in parameters.buildConfigurations }}:
-          - job: build_net_${{ BuildPlatform }}_${{ BuildConfiguration }}
-            displayName: Build ${{ BuildPlatform }} ${{ BuildConfiguration }}
+          - job: build_net_${{ BuildPlatform.os }}_${{ BuildConfiguration }}
+            displayName: Build ${{ BuildPlatform.os }} ${{ BuildConfiguration }}
             timeoutInMinutes: 240
             preSteps:
             - checkout: self
