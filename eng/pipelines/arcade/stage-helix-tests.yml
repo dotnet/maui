@@ -1,0 +1,38 @@
+parameters:
+  jobMatrix: [] # Should define jobMatrix.name, jobMatrix.displayName, jobMatrix.pool, jobMatrix.timeout, jobMatrix.testOS
+  mauiSourcePath: $(Build.SourcesDirectory)
+  buildConfig: Debug
+  repoLogPath: $(Build.Arcade.LogsPath)
+  publishTaskPrefix: '1ES.'
+
+stages:
+- stage: UnitTests
+  displayName: Run Unit Tests
+  dependsOn: []
+  jobs:
+  - template: /eng/common/templates-official/jobs/jobs.yml
+    parameters:
+      helixRepo: dotnet/maui
+      pool:
+        name: Azure Pipelines
+        vmImage: $(HostedMacImage)
+        os: macOS
+      enableMicrobuild: true
+      enablePublishUsingPipelines: true
+      enablePublishBuildAssets: true
+      enableTelemetry: true
+      enableSourceBuild: ${{ parameters.enableSourceBuild }}
+      enableSourceIndex: ${{ parameters.enableSourceIndex }}
+      sourceIndexParams: ${{ parameters.sourceIndexParams }}
+      publishAssetsImmediately: true
+      enablePublishBuildArtifacts: true
+      enablePublishTestResults: true
+      workspace:
+        clean: all
+      jobs:
+      - job: pack_net_Windows
+        displayName: Pack Windows
+        timeoutInMinutes: 240
+        steps:
+        - script: $(_helixScriptMacOS) -test
+          displayName: Run Unit Tests

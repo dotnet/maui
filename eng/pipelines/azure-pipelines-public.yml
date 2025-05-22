@@ -72,6 +72,8 @@ parameters:
 
 stages:
 
+- template: /eng/pipelines/arcade/stage-helix-tests.yml@self
+
 - template: /eng/pipelines/arcade/stage-pack.yml@self
   parameters:
     pool: ${{ parameters.PackPlatform }}
