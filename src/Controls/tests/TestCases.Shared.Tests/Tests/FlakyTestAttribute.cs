@@ -68,11 +68,11 @@ namespace Microsoft.Maui.TestCases.Tests
 						|| results.Equals(ResultState.Cancelled))
 					{
 						_failedAttempts++;
-						context.CurrentContext.OutWriter.WriteLine("Test Failed on attempt #" + _failedAttempts);
+						TestExecutionContext.CurrentContext.OutWriter.WriteLine("Test Failed on attempt #" + _failedAttempts);
 					}
 					else
 					{
-						context.CurrentContext.OutWriter.WriteLine("Test Passed on attempt #" + (_failedAttempts + 1));
+						TestExecutionContext.CurrentContext.OutWriter.WriteLine("Test Passed on attempt #" + (_failedAttempts + 1));
 						break;
 					}
 				}
