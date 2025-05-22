@@ -63,6 +63,16 @@
         const response = await rawResponse.json();
 
         if (response) {
+            // Check if the response contains an error
+            if (response.HasError) {
+                const error = new Error(response.ErrorMessage || "Error in .NET method");
+                error.name = response.ErrorType || "DotNetException";
+                if (response.StackTrace) {
+                    error.stack = response.StackTrace;
+                }
+                throw error;
+            }
+            
             if (response.IsJson) {
                 return JSON.parse(response.Result);
             }

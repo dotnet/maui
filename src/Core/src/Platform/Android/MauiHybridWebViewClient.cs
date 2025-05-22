@@ -216,6 +216,36 @@ namespace Microsoft.Maui.Platform
 				{
 					Handler?.MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "Error invoking .NET method from JavaScript: {ErrorMessage}", ex.Message);
 
+					// Try to write an error response if the pipe is still available
+					try
+					{
+						if (!_isDisposed)
+						{
+							// Create error result
+							var errorResult = new 
+							{
+								HasError = true,
+								ErrorMessage = ex.Message,
+								ErrorType = ex.GetType().Name,
+								StackTrace = ex.StackTrace
+							};
+							
+							var json = System.Text.Json.JsonSerializer.Serialize(errorResult);
+							var errorBytes = System.Text.Encoding.UTF8.GetBytes(json);
+							
+							// Write error bytes to pipe
+							var memory = _pipe.Writer.GetMemory(errorBytes.Length);
+							errorBytes.CopyTo(memory);
+							_pipe.Writer.Advance(errorBytes.Length);
+							_pipe.Writer.Complete();
+							return;
+						}
+					}
+					catch
+					{
+						// Fallback - if we can't write the error result, just complete the pipe with the exception
+					}
+
 					_pipe.Writer.Complete(ex);
 				}
 			}

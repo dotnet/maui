@@ -197,9 +197,19 @@ namespace Microsoft.Maui.Handlers
 			catch (Exception ex)
 			{
 				MauiContext?.CreateLogger<HybridWebViewHandler>()?.LogError(ex, "An error occurred while invoking a .NET method from JavaScript: {ErrorMessage}", ex.Message);
+				
+				// Create an error result to return to JavaScript
+				var errorResult = new DotNetInvokeResult
+				{
+					HasError = true,
+					ErrorMessage = ex.Message,
+					ErrorType = ex.GetType().Name,
+					StackTrace = ex.StackTrace
+				};
+				
+				var json = JsonSerializer.Serialize(errorResult);
+				return Encoding.UTF8.GetBytes(json);
 			}
-
-			return default;
 		}
 
 		private static DotNetInvokeResult CreateInvokeResult(object? result)
@@ -305,11 +315,16 @@ namespace Microsoft.Maui.Handlers
 		{
 			public object? Result { get; set; }
 			public bool IsJson { get; set; }
+			public bool HasError { get; set; }
+			public string? ErrorMessage { get; set; }
+			public string? ErrorType { get; set; }
+			public string? StackTrace { get; set; }
 		}
 
 		[JsonSourceGenerationOptions()]
 		[JsonSerializable(typeof(JSInvokeMethodData))]
 		[JsonSerializable(typeof(JSInvokeError))]
+		[JsonSerializable(typeof(DotNetInvokeResult))]
 		private partial class HybridWebViewHandlerJsonContext : JsonSerializerContext
 		{
 		}
