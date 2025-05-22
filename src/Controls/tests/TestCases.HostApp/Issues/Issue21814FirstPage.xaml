@@ -15,18 +15,21 @@
       FontAttributes="Bold"/>
     <Label 
       x:Name="OnNavigatedToLabel"
-      AutomationId="OnNavigatedToLabel"/>
+      AutomationId="OnNavigatedToLabel"
+      Text="-"/>
     <Label 
       Text="NavigatingFromEventArgs"
       FontAttributes="Bold"/>
     <Label 
       x:Name="OnNavigatingFromLabel"
-      AutomationId="OnNavigatingFromLabel"/>
+      AutomationId="OnNavigatingFromLabel"
+      Text="-"/>
     <Label 
       Text="NavigatedFromEventArgs"
       FontAttributes="Bold"/>
     <Label 
       x:Name="OnNavigatedFromLabel"
-      AutomationId="OnNavigatedFromLabel"/>
+      AutomationId="OnNavigatedFromLabel"
+      Text="-"/>
   </VerticalStackLayout>
 </controls:TestContentPage>

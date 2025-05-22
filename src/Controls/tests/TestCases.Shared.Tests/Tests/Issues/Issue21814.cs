@@ -18,29 +18,32 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void VerifyNavigationEventArgs()
 		{
 			App.WaitForElement("NavigateButton");
-
+			
+			App.WaitForElement("OnNavigatedToLabel");
 			var navigatedToBeforeNavigate = App.FindElement("OnNavigatedToLabel").GetText();
 			Assert.That(navigatedToBeforeNavigate, Is.EqualTo("PreviousPage: Null, NavigationType: Push"));
-			
+
 			var navigatingFromBeforeNavigate = App.FindElement("OnNavigatingFromLabel").GetText();
-			Assert.That(navigatingFromBeforeNavigate, Is.EqualTo(string.Empty));
+			Assert.That(navigatingFromBeforeNavigate, Is.EqualTo("-"));
 
 			var navigatedFromBeforeNavigate = App.FindElement("OnNavigatedFromLabel").GetText();
-			Assert.That(navigatedFromBeforeNavigate, Is.EqualTo(string.Empty));
+			Assert.That(navigatedFromBeforeNavigate, Is.EqualTo("-"));
 
 			App.Tap("NavigateButton");
 
+			App.WaitForElement("OnNavigatedToLabel");
 			var navigatedToPage2 = App.FindElement("OnNavigatedToLabel").GetText();
 			Assert.That(navigatedToPage2, Is.EqualTo("PreviousPage: Issue21814FirstPage, NavigationType: Push"));
 
 			var navigatingFromPage2 = App.FindElement("OnNavigatingFromLabel").GetText();
-			Assert.That(navigatingFromPage2, Is.EqualTo(string.Empty));
+			Assert.That(navigatingFromPage2, Is.EqualTo("-"));
 
 			var navigatedFromPage2 = App.FindElement("OnNavigatedFromLabel").GetText();
-			Assert.That(navigatedFromPage2, Is.EqualTo(string.Empty));
+			Assert.That(navigatedFromPage2, Is.EqualTo("-"));
 
 			App.Tap("NavigateBackButton");
 
+			App.WaitForElement("OnNavigatedToLabel");
 			var navigatedToAfterNavigate = App.FindElement("OnNavigatedToLabel").GetText();
 			Assert.That(navigatedToAfterNavigate, Is.EqualTo("PreviousPage: Issue21814SecondPage, NavigationType: Pop"));
 
