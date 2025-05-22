@@ -1452,7 +1452,7 @@ namespace Microsoft.Maui.Graphics
 			_cachedBounds = new RectF(l, t, r - l, b - t);
 			return (RectF)_cachedBounds;
 		}
-	public RectF CalculateTightBounds()
+	private RectF CalculateTightBounds()
 	{
 		if (_points == null || _points.Count == 0)
 		{
@@ -1692,43 +1692,7 @@ namespace Microsoft.Maui.Graphics
 			   t * t * t * p3;
 	}
 
-	public RectF GetBoundsByFlattening(float flatness = 0.001f)
-	{
-		if (_cachedBounds != null)
-			return (RectF)_cachedBounds;
 
-		var path = GetFlattenedPath(flatness, true);
-
-		float l = 0f;
-		float t = 0f;
-		float r = l;
-		float b = t;
-
-		// Make sure the path actually has points in it.
-		if (path != null && path.Count > 0)
-		{
-			l = path[0].X;
-			t = path[0].Y;
-			r = l;
-			b = t;
-
-			for (int i = 1; i < path.Count; i++)
-			{
-				var point = path[i];
-				if (point.X < l)
-					l = point.X;
-				if (point.Y < t)
-					t = point.Y;
-				if (point.X > r)
-					r = point.X;
-				if (point.Y > b)
-					b = point.Y;
-			}
-		}
-
-		_cachedBounds = new RectF(l, t, r - l, b - t);
-		return (RectF)_cachedBounds;
-	}
 
 		public PathF GetFlattenedPath(float flatness = .001f, bool includeSubPaths = false)
 		{
