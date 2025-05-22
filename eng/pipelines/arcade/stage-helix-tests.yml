@@ -34,5 +34,7 @@ stages:
         displayName: Helix UnitTests
         timeoutInMinutes: 240
         steps:
+        - script: $(_buildScriptMacOS) --nodeReuse false --restore
+          displayName: Install .NET SDK and Workloads
         - script: $(_helixScriptMacOS)
           displayName: Run Unit Tests
