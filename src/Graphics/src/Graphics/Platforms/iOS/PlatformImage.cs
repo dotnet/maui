@@ -34,13 +34,14 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IImage Resize(float width, float height, ResizeMode resizeMode = ResizeMode.Fit, bool disposeOriginal = false)
 		{
+			var normalized = _image.NormalizeOrientation(disposeOriginal);
 			using (var context = new PlatformBitmapExportContext((int)width, (int)height, 1))
 			{
-				var fx = width / Width;
-				var fy = height / Height;
+				var fx = width / (float)normalized.Size.Width;
+				var fy = height / (float)normalized.Size.Height;
 
-				var w = Width;
-				var h = Height;
+				var w = (float)normalized.Size.Width;
+				var h = (float)normalized.Size.Height;
 
 				var x = 0f;
 				var y = 0f;
