@@ -245,6 +245,7 @@ public static partial class AppHostBuilderExtensions
 		Application.RemapForControls();
 		VisualElement.RemapForControls();
 		Label.RemapForControls();
+		BoxView.RemapForControls();
 		Button.RemapForControls();
 		CheckBox.RemapForControls();
 		DatePicker.RemapForControls();
