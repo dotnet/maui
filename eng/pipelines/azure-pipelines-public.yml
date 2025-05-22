@@ -3,7 +3,9 @@ trigger:
   branches:
     include:
     - main
+    - net10.0
     - release/*
+    - inflight/*
   paths:
     include:
     - '*'
@@ -20,8 +22,9 @@ pr:
   branches:
     include:
     - main
+    - net10.0
     - release/*
-    - feature/*
+    - inflight/*
   paths:
     include:
     - '*'
@@ -40,7 +43,7 @@ variables:
 - template: /eng/pipelines/arcade/variables.yml@self
 
 parameters:
-- name: VM_IMAGE_HOST
+- name: PackPlatform
   type: object
   default:
     name: NetCore-Public
@@ -56,20 +59,20 @@ parameters:
 - name: BuildPlatforms
   type: object
   default:
-  - name: Windows
-    poolName: NetCore-Public
-    vmImage: 1es-windows-2022
-    artifact: build-windows
-  - name: macOS
-    poolName: $(macOSXVmPool)
-    vmImage: $(macOSXVmImage)
-    artifact: build-macos
+  - name: NetCore-Public
+    image: 1es-windows-2022
+    os: Windows
+    buildScript: $(_buildScript)
+  - name: Azure Pipelines
+    vmImage: $(HostedMacImage)
+    os: macOS
+    buildScript: $(_buildScriptMacOS)
 
 stages:
 
 - template: /eng/pipelines/arcade/stage-pack.yml@self
   parameters:
-    pool: ${{ parameters.VM_IMAGE_HOST }}
+    pool: ${{ parameters.PackPlatform }}
     runAsPublic: true
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self
@@ -87,6 +90,7 @@ stages:
 - template: /eng/pipelines/arcade/stage-build.yml@self
   parameters:
     buildConfigurations: ${{ parameters.BuildConfigurations }}
+    buildPlatforms: ${{ parameters.BuildPlatforms }}
     runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self
@@ -106,7 +110,7 @@ stages:
     jobMatrix:
     - name: win_unit_tests
       displayName: Windows Unit Tests
-      pool: ${{ parameters.VM_IMAGE_HOST }}
+      pool: ${{ parameters.PackPlatform }}
       timeout: 90
       testOS: Windows
     - name: mac_unit_tests
@@ -125,7 +129,7 @@ stages:
     publishTaskPrefix: ''
     jobMatrix:
     - name: win_sample_tests
-      pool: ${{ parameters.VM_IMAGE_HOST }}
+      pool: ${{ parameters.PackPlatform }}
       timeout: 120
       testCategory: Samples
     - name: mac_sample_tests
@@ -137,7 +141,7 @@ stages:
       testCategory: Samples
 
     - name: win_wintemplate_tests
-      pool: ${{ parameters.VM_IMAGE_HOST }}
+      pool: ${{ parameters.PackPlatform }}
       timeout: 120
       testCategory: WindowsTemplates
     - name: mac_wintemplate_tests
@@ -149,7 +153,7 @@ stages:
       testCategory: WindowsTemplates
 
     - name: win_buildtemplate_tests
-      pool: ${{ parameters.VM_IMAGE_HOST }}
+      pool: ${{ parameters.PackPlatform }}
       timeout: 120
       testCategory: Build
     - name: mac_buildtemplate_tests
@@ -161,7 +165,7 @@ stages:
       testCategory: Build
 
     - name: win_blazortemplate_tests
-      pool: ${{ parameters.VM_IMAGE_HOST }}
+      pool: ${{ parameters.PackPlatform }}
       timeout: 120
       testCategory: Blazor
     - name: mac_blazortemplate_tests
@@ -173,7 +177,7 @@ stages:
       testCategory: Blazor
 
     - name: win_multitemplate_tests
-      pool: ${{ parameters.VM_IMAGE_HOST }}
+      pool: ${{ parameters.PackPlatform }}
       timeout: 120
       testCategory: MultiProject
     - name: mac_multitemplate_tests
