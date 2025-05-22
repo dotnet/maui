@@ -68,5 +68,5 @@ stages:
         - script: $(_buildScript) --restore
           displayName: Install .NET SDK and Workloads
 
-        - script: $(_helixScriptMacOS)
+        - script: $(_helixScript)
           displayName: Run Unit Tests
