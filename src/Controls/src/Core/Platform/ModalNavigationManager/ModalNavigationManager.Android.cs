@@ -222,7 +222,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (IsAnimated)
 				{
-					dialog.Window?.SetWindowAnimations(Resource.Style.modal_enter_animation);
+					dialog.Window.SetWindowAnimations(Resource.Style.modal_enter_animation);
 				}
 
 				if (mainActivityWindow is not null)
