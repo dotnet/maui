@@ -47,6 +47,24 @@ parameters:
     image: 1es-windows-2022
     os: windows
 
+- name: BuildConfigurations
+  type: object
+  default:
+  - Debug
+  - Release
+
+- name: BuildPlatforms
+  type: object
+  default:
+  - name: Windows
+    poolName: NetCore-Public
+    vmImage: 1es-windows-2022
+    artifact: build-windows
+  - name: macOS
+    poolName: $(macOSXVmPool)
+    vmImage: $(macOSXVmImage)
+    artifact: build-macos
+
 stages:
 
 - template: /eng/pipelines/arcade/stage-pack.yml@self
@@ -68,7 +86,7 @@ stages:
 
 - template: /eng/pipelines/arcade/stage-build.yml@self
   parameters:
-    pool: ${{ parameters.VM_IMAGE_HOST }}
+    buildConfigurations: ${{ parameters.BuildConfigurations }}
     runAsPublic: ${{ eq(variables['_RunAsPublic'], 'true') }}
     prepareSteps:
     - template: /eng/pipelines/common/provision.yml@self

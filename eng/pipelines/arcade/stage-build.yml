@@ -23,43 +23,59 @@ parameters:
 - name: buildProjects
   type: string
   default: 'Microsoft.Maui.sln'
+- name: buildConfigurations
+  type: object
+  default:
+  - Debug
+  - Release
+- name: buildPlatforms
+  type: object
+  default:
+  - name: NetCore-Public
+    image: 1es-windows-2022
+    os: windows
+  - name: Azure Pipelines
+    image: $(HostedMacImage)
+    os: macOS
 
 stages:
 - stage: Build
   displayName: Build .NET MAUI
   dependsOn: []
   jobs:
-  - template: /eng/common/templates-official/jobs/jobs.yml
-    parameters:
-      helixRepo: dotnet/maui
-      pool: ${{ parameters.pool }}
-      enableMicrobuild: true
-      enablePublishUsingPipelines: true
-      enablePublishBuildAssets: true
-      enableTelemetry: true
-      enableSourceBuild: ${{ parameters.enableSourceBuild }}
-      enableSourceIndex: ${{ parameters.enableSourceIndex }}
-      sourceIndexParams: ${{ parameters.sourceIndexParams }}
-      publishAssetsImmediately: true
-      enablePublishBuildArtifacts: true
-      enablePublishTestResults: true
-      workspace:
-        clean: all
-      jobs:
-      - job: build_net_Windows
-        displayName: Build Windows
-        timeoutInMinutes: 240
-        preSteps:
-        - checkout: self
-          fetchDepth: 1
-          clean: true
-        steps:
-        - ${{ each step in parameters.prepareSteps }}:
-          - ${{ each pair in step }}:
-              ${{ pair.key }}: ${{ pair.value }}
+  - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
+    - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+      - template: /eng/common/templates-official/jobs/jobs.yml
+        parameters:
+          helixRepo: dotnet/maui
+          pool: $(BuildPlatform)
+          enableMicrobuild: true
+          enablePublishUsingPipelines: true
+          enablePublishBuildAssets: true
+          enableTelemetry: true
+          enableSourceBuild: ${{ parameters.enableSourceBuild }}
+          enableSourceIndex: ${{ parameters.enableSourceIndex }}
+          sourceIndexParams: ${{ parameters.sourceIndexParams }}
+          publishAssetsImmediately: true
+          enablePublishBuildArtifacts: true
+          enablePublishTestResults: true
+          workspace:
+            clean: all
+          jobs:
+          - job: build_net_Windows
+            displayName: Build Windows
+            timeoutInMinutes: 240
+            preSteps:
+            - checkout: self
+              fetchDepth: 1
+              clean: true
+            steps:
+            - ${{ each step in parameters.prepareSteps }}:
+              - ${{ each pair in step }}:
+                  ${{ pair.key }}: ${{ pair.value }}
 
-        - script: $(_buildScript) -restore -build -configuration $(_BuildConfig) -projects "Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)buildtasks.binlog $(_OfficialBuildIdArgs)
-          displayName: 🛠️ Build BuildTasks
+            - script: $(_buildScript) -restore -build -configuration $(BuildConfiguration) -projects "Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)buildtasks.binlog $(_OfficialBuildIdArgs)
+              displayName: 🛠️ Build BuildTasks
 
-        - script: $(_buildScript) -restore -build -configuration $(_BuildConfig) -projects "${{ parameters.buildProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)build.binlog $(_OfficialBuildIdArgs)
-          displayName: 🛠️ Build ${{ parameters.buildProjects }}
+            - script: $(_buildScript) -restore -build -configuration $(BuildConfiguration) -projects "${{ parameters.buildProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)build.binlog $(_OfficialBuildIdArgs)
+              displayName: 🛠️ Build ${{ parameters.buildProjects }}
