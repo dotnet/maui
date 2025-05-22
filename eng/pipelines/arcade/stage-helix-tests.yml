@@ -7,7 +7,7 @@ parameters:
 
 stages:
 - stage: HelixTests
-  displayName: Run Unit Tests
+  displayName: Run Helix Unit Tests
   dependsOn: []
   jobs:
   - template: /eng/common/templates-official/jobs/jobs.yml
@@ -30,9 +30,9 @@ stages:
       workspace:
         clean: all
       jobs:
-      - job: pack_net_Windows
-        displayName: Pack Windows
+      - job: test_helix_unit_tests
+        displayName: Helix UnitTests
         timeoutInMinutes: 240
         steps:
-        - script: $(_helixScriptMacOS) -test
+        - script: $(_helixScriptMacOS)
           displayName: Run Unit Tests
