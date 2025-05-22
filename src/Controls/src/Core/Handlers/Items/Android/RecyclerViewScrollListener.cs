@@ -61,7 +61,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 
 			if (ItemsViewAdapter == null)
+			{
 				return;
+			}
 
 			var itemsSourceCount = ItemsViewAdapter.ItemCount;
 			bool hasHeader = ItemsViewAdapter.ItemsSource.HasHeader;
@@ -74,7 +76,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Don't process if Last is out of bounds
 			if (Last < firstDataItemIndex || Last > lastDataItemIndex)
+			{
 				return;
+			}
 
 			switch (_itemsView.RemainingItemsThreshold)
 			{

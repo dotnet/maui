@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Issues
 		}
 	}
 
-	public class RemainingItemsThresholdViewModel : INotifyPropertyChanged
+	public class Issue29588ViewModel : INotifyPropertyChanged
 	{
 		private bool _isLoadingMore;
 		private int _loadCount = 0;
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Issues
 			}
 		}
 
-		public RemainingItemsThresholdViewModel()
+		public Issue29588ViewModel()
 		{
 			ThresholdStatus = "Threshold not reached";
 			RemainingItemReachedCommand = new Command(async () => await LoadMoreItemsAsync());
