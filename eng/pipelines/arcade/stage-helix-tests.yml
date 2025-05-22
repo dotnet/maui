@@ -1,9 +1,17 @@
 parameters:
-  jobMatrix: [] # Should define jobMatrix.name, jobMatrix.displayName, jobMatrix.pool, jobMatrix.timeout, jobMatrix.testOS
-  mauiSourcePath: $(Build.SourcesDirectory)
-  buildConfig: Debug
-  repoLogPath: $(Build.Arcade.LogsPath)
-  publishTaskPrefix: '1ES.'
+- name: buildPlatforms
+  type: object
+  default:
+  - name: NetCore-Public
+    image: 1es-windows-2022
+    os: Windows
+    buildScript: $(_helixScript)
+    sln: $(buildProjects)
+  - name: Azure Pipelines
+    vmImage: $(HostedMacImage)
+    os: macOS
+    buildScript: $(_helixScriptMacOS)
+    sln: $(buildProjectsMac)
 
 stages:
 - stage: HelixTests
@@ -14,9 +22,9 @@ stages:
     parameters:
       helixRepo: dotnet/maui
       pool:
-        name: Azure Pipelines
-        vmImage: $(HostedMacImage)
-        os: macOS
+        name: NetCore-Public
+        vmImage: 1es-windows-2022
+        os: windows
       enableMicrobuild: true
       enablePublishUsingPipelines: true
       enablePublishBuildAssets: true
@@ -31,10 +39,11 @@ stages:
         clean: all
       jobs:
       - job: test_helix_unit_tests
-        displayName: Helix UnitTests
+        displayName: Windows UnitTests
         timeoutInMinutes: 240
         steps:
-        - script: $(_buildScriptMacOS) --nodeReuse false --restore
+        - script: $(_buildScript) --nodeReuse false --restore
           displayName: Install .NET SDK and Workloads
+
         - script: $(_helixScriptMacOS)
           displayName: Run Unit Tests
