@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Platform
 			Page modal = CurrentPlatformModalPage;
 			_platformModalPages.Remove(modal);
 
-			TaskCompletionSource<Page> tcs = new();
+			TaskCompletionSource<Page> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
 
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		async Task PresentModal(Page modal, bool animated)
 		{
-			TaskCompletionSource<bool> animationCompletionSource = new();
+			TaskCompletionSource<bool> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
 			var dialogFragment = new ModalFragment(WindowMauiContext, modal)
 			{
@@ -165,14 +165,14 @@ namespace Microsoft.Maui.Controls.Platform
 			OnDialogShown = (_, _) =>
 			{
 				dialogFragment!.DialogShowEvent -= OnDialogShown;
-				animationCompletionSource.SetResult(true);
+				tcs.SetResult(true);
 			};
 
 			dialogFragment!.DialogShowEvent += OnDialogShown;
 
 			dialogFragment.Show(fragmentManager, dialogFragmentId);
 
-			await animationCompletionSource.Task;
+			await tcs.Task;
 		}
 
 		internal class ModalFragment : DialogFragment
