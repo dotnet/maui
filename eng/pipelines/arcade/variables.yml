@@ -5,9 +5,9 @@ variables:
 - name: Build.Arcade.ArtifactsPath
   value: $(Build.SourcesDirectory)/artifacts/
 - name: Build.Arcade.LogsPath
-  value: $(Build.Arcade.ArtifactsPath)log/$(_BuildConfig)/
+  value: $(Build.Arcade.ArtifactsPath)log/
 - name: Build.Arcade.TestResultsPath
-  value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
+  value: $(Build.Arcade.ArtifactsPath)TestResults/
 - name: _buildScript
   value: $(Build.SourcesDirectory)/build.cmd -ci
 - name: _buildScriptMacOS
