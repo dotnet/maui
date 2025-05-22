@@ -66,7 +66,6 @@ namespace Microsoft.Maui.Controls.Xaml
 				&& (a.ConstructorArguments.Count == 0 || a.ConstructorArguments[0].Value is bool b && b));
 
 			var nsmgr = new XmlNamespaceManager(new NameTable());
-			nsmgr.AddNamespace("__f__", XamlParser.MauiUri);
 			if (allowImplicitXmlns)
 			{
 				nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);

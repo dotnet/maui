@@ -360,7 +360,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					foreach (XmlnsDefinitionAttribute attribute in assembly.GetCustomAttributes(typeof(XmlnsDefinitionAttribute)))
 					{
 						// Only add global xmlns definition from the current assembly
-						if (attribute.XmlNamespace == XamlParser.MauiGlobal
+						if (attribute.XmlNamespace == XamlParser.MauiGlobalUri
 							&& assembly != currentAssembly)
 							continue;
 

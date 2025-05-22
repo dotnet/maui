@@ -293,7 +293,7 @@ $"""
 					}
 
 					//only add globalxmlns definition from the current assembly
-					if (xmlnsDef.XmlNamespace == XamlParser.MauiGlobal
+					if (xmlnsDef.XmlNamespace == XamlParser.MauiGlobalUri
 						&& !SymbolEqualityComparer.Default.Equals(assembly, compilation.Assembly))
 					{
 						continue;
@@ -318,7 +318,7 @@ $"""
 			}
 		}
 
-		var globalXmlns = xmlnsDefinitions.Where(x => x.XmlNamespace == XamlParser.MauiGlobal).ToList();
+		var globalXmlns = xmlnsDefinitions.Where(x => x.XmlNamespace == XamlParser.MauiGlobalUri).ToList();
 		var globalGeneratedXmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
 		foreach (var global in globalXmlns)
 		{

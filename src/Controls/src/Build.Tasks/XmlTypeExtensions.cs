@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				{
 					var attr = GetXmlnsDefinition(ca, asmDef);
 					//only add globalxmlns definition from the current assembly
-					if (attr.XmlNamespace == XamlParser.MauiGlobal
+					if (attr.XmlNamespace == XamlParser.MauiGlobalUri
 						&& asmDef != currentAssembly)
 						continue;
 					ValidateProtectedXmlns(attr.XmlNamespace, attr.AssemblyName);
