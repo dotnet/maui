@@ -10,6 +10,7 @@
 
 			var button = new Button
 			{
+				AutomationId = "WaitForStubControl",
 				Text = "Set focus"
 			};
 			
