@@ -25,8 +25,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("OpenDatePickerButton");
 			App.Tap("OpenDatePickerButton");
 			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Opened");
-
+#if IOS
+			App.TapCoordinates(10, 10); // Tap outside the date picker to close it
+#else
 			App.TapDisplayAlertButton(CancelBtn);
+#endif
 			App.WaitForElement("CloseDatePickerButton");
 			App.Tap("CloseDatePickerButton");
 			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Closed");
@@ -47,8 +50,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("OpenTimePickerButton");
 			App.Tap("OpenTimePickerButton");
 			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Opened");
-
+#if IOS
+			App.TapCoordinates(10, 10); // Tap outside the date picker to close it
+#else
 			App.TapDisplayAlertButton(CancelBtn);
+#endif
 			App.WaitForElement("CloseTimePickerButton");
 			App.Tap("CloseTimePickerButton");
 			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Closed");
@@ -69,8 +75,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("OpenPickerButton");
 			App.Tap("OpenPickerButton");
 			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Opened");
-
+#if IOS
+			App.TapCoordinates(10, 10); // Tap outside the date picker to close it
+#else
 			App.TapDisplayAlertButton(CancelBtn);
+#endif
 			App.WaitForElement("ClosePickerButton");
 			App.Tap("ClosePickerButton");
 			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Closed");
