@@ -302,30 +302,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			var emptyView = Element.EmptyViewTemplate ?? Element.EmptyView;
+			var emptyView = Element.EmptyView;
+			var emptyViewTemplate = Element.EmptyViewTemplate;
 
-			if (emptyView is null)
+			if (emptyView is null && emptyViewTemplate is null)
 			{
 				RemoveEmptyView();
+				(ListViewBase as IEmptyView)?.SetEmptyView(null, null);
 				return;
 			}
 
-			switch (emptyView)
+			if (emptyViewTemplate is DataTemplate template)
 			{
-				case string text:
-					_emptyView = new TextBlock
-					{
-						HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-						VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-						Text = text
-					};
-					break;
-				case View view:
-					_emptyView = RealizeEmptyView(view);
-					break;
-				default:
-					_emptyView = RealizeEmptyViewTemplate(emptyView, Element.EmptyViewTemplate);
-					break;
+				_emptyView = RealizeEmptyViewTemplate(emptyView, template);
+			}
+			else if (emptyView is View view)
+			{
+				_emptyView = RealizeEmptyView(view);
+			}
+			else
+			{
+				_emptyView = new TextBlock
+				{
+					HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
+					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
+					Text = (string)emptyView,
+				};
 			}
 
 			(ListViewBase as IEmptyView)?.SetEmptyView(_emptyView, _formsEmptyView);
@@ -354,16 +356,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_emptyView is not null && ListViewBase is IEmptyView emptyViewControl)
 			{
 				emptyViewControl.EmptyViewVisibility = WVisibility.Collapsed;
-				emptyViewControl.SetEmptyView(null, null);
 			}
 
 			if (_formsEmptyView is not null && _emptyViewDisplayed)
 			{
 				ItemsView.RemoveLogicalChild(_formsEmptyView);
-				_formsEmptyView = null;
 			}
 
-			_emptyView = null;
 			_emptyViewDisplayed = false;
 		}
 
@@ -459,21 +458,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		FrameworkElement RealizeEmptyViewTemplate(object bindingContext, DataTemplate emptyViewTemplate)
 		{
-			if (emptyViewTemplate == null)
-			{
-				return new TextBlock
-				{
-					HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
-					VerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment.Center,
-					Text = bindingContext.ToString()
-				};
-			}
-
-			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, null);
-			var view = template.CreateContent() as View;
-			view.BindingContext = bindingContext;
-
-			return RealizeEmptyView(view);
+			var template = emptyViewTemplate.SelectDataTemplate(bindingContext, ItemsView);
+			var templatedElement = template.CreateContent() as View;
+			templatedElement.BindingContext = bindingContext;
+			return RealizeEmptyView(templatedElement);
 		}
 
 		FrameworkElement RealizeEmptyView(View view)
