@@ -5,26 +5,55 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Represents a rectangle with double-precision floating-point x, y coordinates and width and height.
+	/// </summary>
 	[DebuggerDisplay("X={X}, Y={Y}, Width={Width}, Height={Height}")]
 	[TypeConverter(typeof(Converters.RectTypeConverter))]
 	public partial struct Rect
 	{
+		/// <summary>
+		/// Gets or sets the x-coordinate of the rectangle's left edge.
+		/// </summary>
 		public double X { get; set; }
 
+		/// <summary>
+		/// Gets or sets the y-coordinate of the rectangle's top edge.
+		/// </summary>
 		public double Y { get; set; }
 
+		/// <summary>
+		/// Gets or sets the width of the rectangle.
+		/// </summary>
 		public double Width { get; set; }
 
+		/// <summary>
+		/// Gets or sets the height of the rectangle.
+		/// </summary>
 		public double Height { get; set; }
 
+		/// <summary>
+		/// A rectangle with all values (X, Y, Width, Height) set to zero.
+		/// </summary>
 		public static Rect Zero = new Rect();
 
+		/// <summary>
+		/// Returns a string representation of the rectangle.
+		/// </summary>
+		/// <returns>A string in the format "X=x Y=y Width=width Height=height" with invariant culture formatting.</returns>
 		public override string ToString()
 		{
 			return string.Format("{{X={0} Y={1} Width={2} Height={3}}}", X.ToString(CultureInfo.InvariantCulture), Y.ToString(CultureInfo.InvariantCulture), Width.ToString(CultureInfo.InvariantCulture), Height.ToString(CultureInfo.InvariantCulture));
 		}
 
 		// constructors
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Rect"/> struct with the specified position and dimensions.
+		/// </summary>
+		/// <param name="x">The x-coordinate of the rectangle's left edge.</param>
+		/// <param name="y">The y-coordinate of the rectangle's top edge.</param>
+		/// <param name="width">The width of the rectangle.</param>
+		/// <param name="height">The height of the rectangle.</param>
 		public Rect(double x, double y, double width, double height) : this()
 		{
 			X = x;
