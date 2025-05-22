@@ -1,4 +1,23 @@
+# Template for running tests on Helix on dnceng
 parameters:
+- name: prepareSteps
+  type: stepList
+  default: []
+- name: postSteps
+  type: stepList
+  default: []
+- name: enableSourceBuild
+  type: boolean
+  default: false
+- name: enableSourceIndex
+  type: boolean
+  default: false
+- name: sourceIndexParams
+  type: object
+  default: []
+- name: runAsPublic
+  type: boolean
+  default: true
 - name: buildPlatforms
   type: object
   default:
