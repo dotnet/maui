@@ -20,24 +20,23 @@ namespace Microsoft.Maui.Platform
 		}
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-			if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.AtMost && Layout is not null)
+			if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.AtMost && !string.IsNullOrEmpty(Text))
 			{
-				// Ensure the Layout is valid and measured before reading LineCount or GetLineWidth(i) to avoid unnecessary calculations.
-				if (Layout.Width > 0)
-				{
-					// Calculate the total width needed based on text content plus padding
-					int contentWidth = (int)Math.Ceiling(GetMaxLineWidth(Layout));
-					int totalPadding = CompoundPaddingLeft + CompoundPaddingRight;
-					int requiredWidth = contentWidth + totalPadding;
+				int availableWidth = MeasureSpec.GetSize(widthMeasureSpec);
+				int totalPadding = CompoundPaddingLeft + CompoundPaddingRight;
 
-					// Constrain to maximum available width from original spec
-					int availableWidth = MeasureSpec.GetSize(widthMeasureSpec);
-					int desiredWidth = Math.Min(requiredWidth, availableWidth);
-					widthMeasureSpec = MeasureSpec.MakeMeasureSpec(desiredWidth, MeasureSpecMode.AtMost);
-					base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-				}
+#pragma warning disable CA1422 // Validate platform compatibility
+				var layout = new StaticLayout(Text, Paint, availableWidth - totalPadding,
+					Android.Text.Layout.Alignment.AlignNormal, 1.0f, 0.0f, false);
+#pragma warning restore CA1422 // Validate platform compatibility
+
+				int contentWidth = (int)Math.Ceiling(GetMaxLineWidth(layout));
+				// Calculate the required width based on the content and padding
+				int requiredWidth = contentWidth + totalPadding;
+				int desiredWidth = Math.Min(requiredWidth, availableWidth);
+				widthMeasureSpec = MeasureSpec.MakeMeasureSpec(desiredWidth, MeasureSpecMode.AtMost);
 			}
+			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
 
 		static float GetMaxLineWidth(Layout layout)

@@ -84,10 +84,10 @@ public class Issue29542 : ContentPage
 		{
 			MaxLines = 3,
 			LineBreakMode = LineBreakMode.TailTruncation,
-			Text = "DescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescription DescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescription\n" +
-				   "DescriptionDescriptionDescriptionDescriptionDescriptionDescription DescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescription\n" +
-				   "DescriptionDescriptionDescription\n" +
-				   "DescriptionDescriptionDescription",
+			Text = @"DescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescription DescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescription 
+				   DescriptionDescriptionDescriptionDescriptionDescriptionDescription DescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescriptionDescription
+				   DescriptionDescriptionDescription
+				   DescriptionDescriptionDescription",
 			BackgroundColor = Colors.Green,
 			HorizontalOptions = LayoutOptions.Start
 		};
