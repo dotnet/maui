@@ -58,18 +58,17 @@ stages:
       workspace:
         clean: all
       jobs:
-      - ${{ each BuildConfiguration in parameters.buildConfigurations }}:
-        - job: build_net_$(BuildConfiguration)
-          displayName: Build Windows $(BuildConfiguration)
-          timeoutInMinutes: 240
-          preSteps:
-          - checkout: self
-            fetchDepth: 1
-            clean: true
-          steps:
+      - job: build_net_$(BuildConfiguration)
+        displayName: Build Windows $(BuildConfiguration)
+        timeoutInMinutes: 240
+        preSteps:
+        - checkout: self
+          fetchDepth: 1
+          clean: true
+        steps:
 
-          - script: $(_buildScript) -restore -build -configuration $(BuildConfiguration) -projects "Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)buildtasks.binlog $(_OfficialBuildIdArgs)
-            displayName: 🛠️ Build BuildTasks
+        - script: $(_buildScript) -restore -build -configuration Release -projects "Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)buildtasks.binlog $(_OfficialBuildIdArgs)
+          displayName: 🛠️ Build BuildTasks
 
-          - script: $(_buildScript) -restore -build -configuration $(BuildConfiguration) -projects "${{ parameters.buildProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)build.binlog $(_OfficialBuildIdArgs)
-            displayName: 🛠️ Build ${{ parameters.buildProjects }}
+        - script: $(_buildScript) -restore -build -configuration Release -projects "${{ parameters.buildProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)build.binlog $(_OfficialBuildIdArgs)
+          displayName: 🛠️ Build ${{ parameters.buildProjects }}
