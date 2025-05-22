@@ -46,7 +46,9 @@ stages:
       - template: /eng/common/templates-official/jobs/jobs.yml
         parameters:
           helixRepo: dotnet/maui
-          pool: $(BuildPlatform)
+          pool:
+            name: $(BuildPlatform.name)
+            image: $(BuildPlatform.image)
           enableMicrobuild: true
           enablePublishUsingPipelines: true
           enablePublishBuildAssets: true
