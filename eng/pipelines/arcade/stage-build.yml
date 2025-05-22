@@ -20,7 +20,10 @@ parameters:
   default: false
 - name: buildProjects
   type: string
-  default: 'Microsoft.Maui.sln'
+  default: '$(Build.SourcesDirectory)Microsoft.Maui.sln'
+- name: buildTaskProjects
+  type: string
+  default: '$(Build.SourcesDirectory)Microsoft.Maui.BuildTasks.slnf'
 - name: buildConfigurations
   type: object
   default:
@@ -74,8 +77,8 @@ stages:
               - ${{ each pair in step }}:
                   ${{ pair.key }}: ${{ pair.value }}
 
-            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)buildtasks.binlog $(_OfficialBuildIdArgs)
+            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)buildtasks_${{ BuildPlatform.os }}_${{ BuildConfiguration }}.binlog $(_OfficialBuildIdArgs)
               displayName: 🛠️ Build BuildTasks
 
-            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)build.binlog $(_OfficialBuildIdArgs)
+            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)build_${{ BuildPlatform.os }}_${{ BuildConfiguration }}.binlog $(_OfficialBuildIdArgs)
               displayName: 🛠️ Build ${{ parameters.buildProjects }}
