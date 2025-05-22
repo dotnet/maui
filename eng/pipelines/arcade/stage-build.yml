@@ -60,8 +60,8 @@ stages:
           workspace:
             clean: all
           jobs:
-          - job: build_net_Windows
-            displayName: Build Windows
+          - job: build_net_$(BuildPlatform.os)_$(BuildConfiguration)
+            displayName: Build $(BuildPlatform.os) $(BuildConfiguration)
             timeoutInMinutes: 240
             preSteps:
             - checkout: self
