@@ -69,8 +69,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			// Adjust the last visible item index to match the ItemsSource index (excluding header/footer)
 			// Range of actual data item indices in adapter
-			int firstDataItemIndex = hasHeader ? 1 : 0;
-			int lastDataItemIndex = itemsSourceCount - (hasFooter ? 1 : 0) - firstDataItemIndex;
+			int firstDataItemIndex = (hasHeader && hasFooter) ? 1 : 0;
+			int lastDataItemIndex = itemsSourceCount - firstDataItemIndex;
 
 			// Don't process if Last is out of bounds
 			if (Last < firstDataItemIndex || Last > lastDataItemIndex)
