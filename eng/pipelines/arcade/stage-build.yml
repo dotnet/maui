@@ -6,8 +6,6 @@ parameters:
 - name: postSteps
   type: stepList
   default: []
-- name: pool
-  type: object
 - name: enableSourceBuild
   type: boolean
   default: false
