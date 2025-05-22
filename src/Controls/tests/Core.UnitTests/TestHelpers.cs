@@ -9,8 +9,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			await Task.Yield();
 			GC.Collect(2);
+			await Task.Yield();
 			GC.WaitForPendingFinalizers();
+			await Task.Yield();
 			GC.Collect(2);
+			await Task.Yield();
 			GC.WaitForPendingFinalizers();
 			GC.Collect(2, GCCollectionMode.Forced, true);
 			GC.WaitForPendingFinalizers();
