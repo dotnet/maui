@@ -33,7 +33,7 @@ parameters:
     image: 1es-windows-2022
     os: windows
   - name: Azure Pipelines
-    image: $(HostedMacImage)
+    vmImage: $(HostedMacImage)
     os: macOS
 
 stages:
