@@ -17,21 +17,21 @@
       <Uri>https://github.com/dotnet/android</Uri>
       <Sha>e7876a4f92d894b40c191a24c2b74f06d4bf4573</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk.net10.0_18.4" Version="18.4.10601-net10-p5">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk.net10.0_18.4" Version="18.4.10617-net10-p5">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>de11cc7ed67f3cdd71cbe05544d71ddc19f64849</Sha>
+      <Sha>49b2331de77819c480f4bd103a9b525063719fb0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk.net10.0_15.4" Version="15.4.10601-net10-p5">
+    <Dependency Name="Microsoft.macOS.Sdk.net10.0_15.4" Version="15.4.10617-net10-p5">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>de11cc7ed67f3cdd71cbe05544d71ddc19f64849</Sha>
+      <Sha>49b2331de77819c480f4bd103a9b525063719fb0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk.net10.0_18.4" Version="18.4.10601-net10-p5">
+    <Dependency Name="Microsoft.iOS.Sdk.net10.0_18.4" Version="18.4.10617-net10-p5">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>de11cc7ed67f3cdd71cbe05544d71ddc19f64849</Sha>
+      <Sha>49b2331de77819c480f4bd103a9b525063719fb0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk.net10.0_18.4" Version="18.4.10601-net10-p5">
+    <Dependency Name="Microsoft.tvOS.Sdk.net10.0_18.4" Version="18.4.10617-net10-p5">
       <Uri>https://github.com/dotnet/macios</Uri>
-      <Sha>de11cc7ed67f3cdd71cbe05544d71ddc19f64849</Sha>
+      <Sha>49b2331de77819c480f4bd103a9b525063719fb0</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
