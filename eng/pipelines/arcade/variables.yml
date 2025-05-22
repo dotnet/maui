@@ -10,6 +10,8 @@ variables:
   value: $(Build.Arcade.ArtifactsPath)TestResults/$(_BuildConfig)/
 - name: _buildScript
   value: $(Build.SourcesDirectory)/build.cmd -ci
+- name: _buildScriptMacOS
+  value: $(Build.SourcesDirectory)/build.sh -ci
 - name: _BuildOfficalId
   value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
 - name: TreatWarningsAsErrors
@@ -33,7 +35,7 @@ variables:
   # needed for darc (dependency flow) publishing
   - name: _PublishArgs
     value: >-
-          /p:DotNetPublishUsingPipelines=true
+      /p:DotNetPublishUsingPipelines=true
   # - name: _OfficialBuildIdArgs
   #   value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
   # needed for signing
