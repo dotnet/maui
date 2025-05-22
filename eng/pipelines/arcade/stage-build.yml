@@ -32,9 +32,11 @@ parameters:
   - name: NetCore-Public
     image: 1es-windows-2022
     os: windows
+    buildScript: build.cmd
   - name: Azure Pipelines
     vmImage: $(HostedMacImage)
     os: macOS
+    buildScript: build.sh
 
 stages:
 - stage: Build
@@ -72,8 +74,8 @@ stages:
               - ${{ each pair in step }}:
                   ${{ pair.key }}: ${{ pair.value }}
 
-            - script: $(_buildScript) -restore -build -configuration ${{ BuildConfiguration }} -projects "Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)buildtasks.binlog $(_OfficialBuildIdArgs)
+            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)buildtasks.binlog $(_OfficialBuildIdArgs)
               displayName: 🛠️ Build BuildTasks
 
-            - script: $(_buildScript) -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)build.binlog $(_OfficialBuildIdArgs)
+            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)build.binlog $(_OfficialBuildIdArgs)
               displayName: 🛠️ Build ${{ parameters.buildProjects }}
