@@ -6,7 +6,7 @@ parameters:
   publishTaskPrefix: '1ES.'
 
 stages:
-- stage: UnitTests
+- stage: HelixTests
   displayName: Run Unit Tests
   dependsOn: []
   jobs:
