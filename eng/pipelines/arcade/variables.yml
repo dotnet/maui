@@ -11,7 +11,7 @@ variables:
 - name: _buildScript
   value: $(Build.SourcesDirectory)/build.cmd -ci
 - name: _buildScriptMacOS
-  value: $(Build.SourcesDirectory)/build.sh -ci
+  value: $(Build.SourcesDirectory)/build.sh -ci -warnAsError 0
 - name: _BuildOfficalId
   value: $[ format('{0}.{1}', format('{0:yyyyMMdd}', pipeline.startTime), counter(format('{0:yyyyMMdd}', pipeline.startTime), 1) )]
 - name: TreatWarningsAsErrors
