@@ -2,7 +2,7 @@
   <PropertyGroup>
     <HelixType>test/product/</HelixType>
     <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
-    <HelixTargetQueues>Windows.10.Amd64.Open</HelixTargetQueues>
+    <HelixTargetQueues>Windows.11.Amd64.Open</HelixTargetQueues>
 
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <XUnitProject Include="$(RepoRoot)/src/Controlstests/Core.UnitTests/*.csproj"/>
+    <XUnitProject Include="$(RepoRoot)/src/Controls/tests/Core.UnitTests/*.csproj" />
   </ItemGroup>
 
 </Project>
