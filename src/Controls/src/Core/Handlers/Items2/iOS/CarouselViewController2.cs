@@ -117,6 +117,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return base.DetermineCellReuseId(itemIndex);
 		}
 
+		private protected override (Type CellType, string CellTypeReuseId) DetermineTemplatedCellType()
+			=> (typeof(CarouselTemplatedCell2), CarouselTemplatedCell2.ReuseId);
+
 		protected override Items.IItemsViewSource CreateItemsViewSource()
 		{
 			var itemsSource = ItemsSourceFactory2.CreateForCarouselView(ItemsView.ItemsSource, this, ItemsView.Loop);
@@ -300,7 +303,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			{
 				return 0;
 			}
-			
+
 			return ItemsView.ItemsUpdatingScrollMode switch
 			{
 				ItemsUpdatingScrollMode.KeepItemsInView => 0,
@@ -506,30 +509,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				return;
 			}
 
-			int position = carousel.Position;
-			var currentItem = carousel.CurrentItem;
-
-			if (currentItem != null)
-			{
-				// Sometimes the item could be just being removed while we navigate back to the CarouselView
-				var positionCurrentItem = ItemsSource.GetIndexForItem(currentItem).Row;
-				if (positionCurrentItem != -1)
-				{
-					position = positionCurrentItem;
-				}
-			}
-
-			var projectedPosition = NSIndexPath.FromItemSection(position, _section);
-
-			if (LoopItemsSource.Loop)
-			{
-				//We need to set the position to the correct position since we added 1 item at the beginning
-				projectedPosition = GetScrollToIndexPath(position);
-			}
-
-			var uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
-
-			await Task.Delay(100).ContinueWith((t) =>
+			await Task.Delay(100).ContinueWith(_ =>
 			{
 				MainThread.BeginInvokeOnMainThread(() =>
 				{
@@ -537,12 +517,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					{
 						return;
 					}
+
 					InitialPositionSet = true;
 
 					if (ItemsSource is null || ItemsSource.ItemCount == 0)
 					{
 						return;
 					}
+
+					int position = carousel.Position;
+					var currentItem = carousel.CurrentItem;
+
+					if (currentItem != null)
+					{
+						// Sometimes the item could be just being removed while we navigate back to the CarouselView
+						var positionCurrentItem = ItemsSource.GetIndexForItem(currentItem).Row;
+						if (positionCurrentItem != -1)
+						{
+							position = positionCurrentItem;
+						}
+					}
+
+					var projectedPosition = LoopItemsSource.Loop
+						? GetScrollToIndexPath(position) // We need to set the position to the correct position since we added 1 item at the beginning
+						: NSIndexPath.FromItemSection(position, _section);
+
+					var uICollectionViewScrollPosition = IsHorizontal ? UICollectionViewScrollPosition.CenteredHorizontally : UICollectionViewScrollPosition.CenteredVertically;
 
 					CollectionView.ScrollToItem(projectedPosition, uICollectionViewScrollPosition, false);
 
@@ -551,9 +551,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 					UpdateVisualStates();
 				});
-
 			});
-
 		}
 
 		void UpdateVisualStates()

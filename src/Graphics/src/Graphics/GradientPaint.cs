@@ -2,6 +2,9 @@
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Represents an abstract base class for gradient paints that transition between multiple colors.
+	/// </summary>
 	public abstract class GradientPaint : Paint
 	{
 		PaintGradientStop[] _gradientStops =
@@ -10,10 +13,17 @@ namespace Microsoft.Maui.Graphics
 			new PaintGradientStop(1, Colors.White)
 		};
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GradientPaint"/> class with default white-to-white gradient stops.
+		/// </summary>
 		public GradientPaint()
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GradientPaint"/> class by copying from another gradient paint.
+		/// </summary>
+		/// <param name="source">The source gradient paint to copy from.</param>
 		public GradientPaint(GradientPaint source)
 		{
 			if (source != null)

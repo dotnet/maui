@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
-	public class PlatformCanvas : AbstractCanvas<PlatformCanvasState>
+	public class PlatformCanvas : AbstractCanvas<PlatformCanvasState>, IBlurrableCanvas
 	{
 		private Canvas _canvas;
 		private Shader _shader;

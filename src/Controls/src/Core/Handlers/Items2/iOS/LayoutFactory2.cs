@@ -62,7 +62,8 @@ internal static class LayoutFactory2
 					scrollDirection == UICollectionViewScrollDirection.Vertical
 						? NSRectAlignment.Top
 						: NSRectAlignment.Leading));
-			};
+			}
+			;
 
 			if (layoutHeaderFooterInfo.HasFooter)
 			{

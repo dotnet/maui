@@ -42,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 				return nativeView.Alpha;
 			});
 		}
-		
+
 		[Fact]
 		[Description("The ScaleX property of a SearchBar should match with native ScaleX")]
 		public async Task ScaleXConsistent()
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		[Description("The IsEnabled of a SearchBar should match with native IsEnabled")]		
+		[Description("The IsEnabled of a SearchBar should match with native IsEnabled")]
 		public async Task VerifySearchBarIsEnabledProperty()
 		{
 			var searchBar = new SearchBar

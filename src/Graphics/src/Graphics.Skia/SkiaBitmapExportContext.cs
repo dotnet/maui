@@ -4,6 +4,9 @@ using SkiaSharp;
 
 namespace Microsoft.Maui.Graphics.Skia
 {
+	/// <summary>
+	/// Provides a context for exporting bitmaps using SkiaSharp.
+	/// </summary>
 	public class SkiaBitmapExportContext : BitmapExportContext
 	{
 		private readonly bool _disposeBitmap;
@@ -15,6 +18,16 @@ namespace Microsoft.Maui.Graphics.Skia
 		private SkiaCanvas _platformCanvas;
 		private ScalingCanvas _canvas;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SkiaBitmapExportContext"/> class with the specified dimensions and properties.
+		/// </summary>
+		/// <param name="width">The width of the bitmap in pixels.</param>
+		/// <param name="height">The height of the bitmap in pixels.</param>
+		/// <param name="displayScale">The display scale factor to use.</param>
+		/// <param name="dpi">The dots per inch (DPI) of the bitmap. Default is 72.</param>
+		/// <param name="disposeBitmap">Whether to dispose the bitmap when this context is disposed.</param>
+		/// <param name="transparent">Whether the bitmap should have an alpha channel (transparency).</param>
+		/// <exception cref="InvalidOperationException">Thrown when unable to create a Skia surface.</exception>
 		public SkiaBitmapExportContext(
 			int width,
 			int height,
@@ -49,12 +62,24 @@ namespace Microsoft.Maui.Graphics.Skia
 			_disposeBitmap = disposeBitmap;
 		}
 
+		/// <summary>
+		/// Gets the canvas that can be used to draw on this bitmap.
+		/// </summary>
 		public override ICanvas Canvas => _canvas;
 
+		/// <summary>
+		/// Gets the resulting image after drawing operations have been performed.
+		/// </summary>
 		public override IImage Image => new SkiaImage(Bitmap);
 
+		/// <summary>
+		/// Gets the Skia image representation of this bitmap.
+		/// </summary>
 		public SKImage SKImage => _image ?? (_image = _surface.Snapshot());
 
+		/// <summary>
+		/// Gets the Skia bitmap representation of this context.
+		/// </summary>
 		public SKBitmap Bitmap
 		{
 			get
@@ -68,6 +93,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			}
 		}
 
+		/// <summary>
+		/// Releases all resources used by this bitmap export context.
+		/// </summary>
 		public override void Dispose()
 		{
 			if (_platformCanvas != null)
@@ -105,6 +133,10 @@ namespace Microsoft.Maui.Graphics.Skia
 			base.Dispose();
 		}
 
+		/// <summary>
+		/// Writes the bitmap to the specified stream in PNG format.
+		/// </summary>
+		/// <param name="stream">The stream to write the bitmap to.</param>
 		public override void WriteToStream(Stream stream)
 		{
 			using (var data = SKImage.Encode(SKEncodedImageFormat.Png, 100))

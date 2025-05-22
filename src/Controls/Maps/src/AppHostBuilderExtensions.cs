@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -40,12 +38,12 @@ namespace Microsoft.Maui.Controls.Hosting
 						.OnCreate((a, b) =>
 						{
 
-							Microsoft.Maui.Maps.Handlers.MapHandler.Bundle = b;
+							MapHandler.Bundle = b;
 							if (GoogleApiAvailability.Instance.IsGooglePlayServicesAvailable(a) == ConnectionResult.Success)
 							{
 								try
 								{
-									MapsInitializer.Initialize(a);
+									MapsInitializer.Initialize(a, MapsInitializer.Renderer.Latest, null);
 								}
 								catch (Exception e)
 								{

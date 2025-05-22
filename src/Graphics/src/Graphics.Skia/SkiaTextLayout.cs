@@ -4,6 +4,9 @@ using SkiaSharp;
 
 namespace Microsoft.Maui.Graphics.Skia
 {
+	/// <summary>
+	/// Provides functionality for laying out text using SkiaSharp.
+	/// </summary>
 	public class SkiaTextLayout : IDisposable
 	{
 		private readonly LayoutLine _callback;
@@ -16,8 +19,20 @@ namespace Microsoft.Maui.Graphics.Skia
 		private readonly float _lineHeight;
 		private readonly float _descent;
 
+		/// <summary>
+		/// Gets or sets a value indicating whether text should wrap to the next line when it exceeds the layout width.
+		/// </summary>
 		public bool WordWrap { get; set; } = true;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SkiaTextLayout"/> class.
+		/// </summary>
+		/// <param name="value">The text to layout.</param>
+		/// <param name="rect">The rectangle in which to layout the text.</param>
+		/// <param name="textAttributes">The text attributes to apply.</param>
+		/// <param name="callback">The callback to invoke for each line of text.</param>
+		/// <param name="textFlow">The text flow behavior.</param>
+		/// <param name="paint">The SkiaSharp paint object to use. This method is obsolete.</param>
 		[Obsolete("Use SkiaTextLayout(string, RectF, ITextAttributes, LayoutLine, TextFlow, SKFont) instead.")]
 		public SkiaTextLayout(
 			string value,
@@ -30,6 +45,15 @@ namespace Microsoft.Maui.Graphics.Skia
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="SkiaTextLayout"/> class.
+		/// </summary>
+		/// <param name="value">The text to layout.</param>
+		/// <param name="rect">The rectangle in which to layout the text.</param>
+		/// <param name="textAttributes">The text attributes to apply.</param>
+		/// <param name="callback">The callback to invoke for each line of text.</param>
+		/// <param name="textFlow">The text flow behavior.</param>
+		/// <param name="font">The SkiaSharp font object to use.</param>
 		public SkiaTextLayout(
 			string value,
 			RectF rect,
@@ -64,6 +88,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			_lineHeight = _font.Spacing;
 		}
 
+		/// <summary>
+		/// Performs layout of text within the specified rectangle.
+		/// </summary>
 		public void LayoutText()
 		{
 			if (string.IsNullOrEmpty(_value))
@@ -251,6 +278,9 @@ namespace Microsoft.Maui.Graphics.Skia
 			return lines;
 		}
 
+		/// <summary>
+		/// Releases all resources used by this text layout.
+		/// </summary>
 		public void Dispose()
 		{
 			if (_disposeFont)
@@ -258,10 +288,21 @@ namespace Microsoft.Maui.Graphics.Skia
 		}
 	}
 
+	/// <summary>
+	/// Represents a line of text with its measured width.
+	/// </summary>
+	/// <param name="value">The text content of the line.</param>
+	/// <param name="width">The measured width of the line.</param>
 	public class TextLine(string value, float width)
 	{
+		/// <summary>
+		/// Gets the text content of the line.
+		/// </summary>
 		public string Value { get; } = value;
 
+		/// <summary>
+		/// Gets the measured width of the line.
+		/// </summary>
 		public float Width { get; } = width;
 	}
 }

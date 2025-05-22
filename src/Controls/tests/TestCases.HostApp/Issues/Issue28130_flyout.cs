@@ -9,14 +9,14 @@
 		{
 			Flyout = CreateFlyoutContent();
 			FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
-			Detail = _navigationPage = new NavigationPage(new Issue28130_DetailPage(pageTitle) { AutomationId = pageTitle});
+			Detail = _navigationPage = new NavigationPage(new Issue28130_DetailPage(pageTitle) { AutomationId = pageTitle });
 		}
 
 		ContentPage CreateFlyoutContent()
 		{
-			var flyoutContent = new ContentPage() { Title = "Menu"};
+			var flyoutContent = new ContentPage() { Title = "Menu" };
 			var layout = new VerticalStackLayout();
-			var navigateButton = new Button() { Text = "Navigate to Page 2", AutomationId = "NavigateButton"};
+			var navigateButton = new Button() { Text = "Navigate to Page 2", AutomationId = "NavigateButton" };
 			navigateButton.Clicked += (s, e) => _navigationPage.PushAsync(new Issue28130_Page1());
 			layout.Add(navigateButton);
 			flyoutContent.Content = layout;
