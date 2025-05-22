@@ -500,7 +500,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void OnScrollViewChanging(object sender, ScrollViewerViewChangingEventArgs e)
 		{
-			if (ItemsView.ItemsSource == null)
+			if (ItemsView.ItemsSource is null)
 				return;
 
 			ItemsView.SetIsDragging(true);
