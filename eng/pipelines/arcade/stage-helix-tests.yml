@@ -61,7 +61,7 @@ stages:
         displayName: Windows UnitTests
         timeoutInMinutes: 240
         steps:
-        - script: $(_buildScript) --nodeReuse false --restore
+        - script: $(_buildScript) --restore
           displayName: Install .NET SDK and Workloads
 
         - script: $(_helixScriptMacOS)
