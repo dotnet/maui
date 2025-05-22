@@ -135,10 +135,9 @@ namespace Maui.Controls.Sample.Issues
                 // In a real implementation, we'd extract the actual control points from the path
                 if (_path.OperationCount > 0)
                 {
-                    // For cubic bezier, control points could be far outside the path
-                    for (int i = 0; i < _path.Points.Count; i++)
+                    foreach (var point in _path.Points)
                     {
-                        canvas.FillCircle(_path.Points[i], 3);
+                        canvas.FillCircle(point, 3);
                     }
                 }
             }
@@ -149,11 +148,11 @@ namespace Maui.Controls.Sample.Issues
             
             canvas.StrokeColor = Colors.Blue;
             canvas.DrawLine(10, 10, 30, 10);
-            canvas.DrawString("Tight Bounds", 35, 13);
+            canvas.DrawString("Tight Bounds", 35, 13, HorizontalAlignment.Left);
             
             canvas.StrokeColor = Colors.Red;
             canvas.DrawLine(10, 25, 30, 25);
-            canvas.DrawString("Flattened Bounds", 35, 28);
+            canvas.DrawString("Flattened Bounds", 35, 28, HorizontalAlignment.Left);
         }
     }
 }
