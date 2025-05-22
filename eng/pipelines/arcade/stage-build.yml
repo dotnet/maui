@@ -69,7 +69,8 @@ stages:
             displayName: Build ${{ BuildPlatform.os }} (${{ BuildConfiguration }})
             timeoutInMinutes: 240
             variables:
-              _BuildConfig: ${{ BuildConfiguration }}
+            - name: _BuildConfig
+              value: ${{ BuildConfiguration }}
             preSteps:
             - checkout: self
               fetchDepth: 1
