@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Issues
 	{
 		public Issue29588()
 		{
-			BindingContext = new RemainingItemsThresholdViewModel();
+			BindingContext = new Issue29588ViewModel();
 
 			var thresholdLabel = new Label
 			{
@@ -20,14 +20,14 @@ namespace Microsoft.Maui.Controls.Issues
 				HeightRequest = 50,
 				FontSize = 18
 			};
-			thresholdLabel.SetBinding(Label.TextProperty, nameof(RemainingItemsThresholdViewModel.ThresholdStatus));
+			thresholdLabel.SetBinding(Label.TextProperty, nameof(Issue29588ViewModel.ThresholdStatus));
 
 			var collectionView = new CollectionView
 			{
 				AutomationId = "29588CollectionView",
-				ItemsSource = ((RemainingItemsThresholdViewModel)BindingContext).Items,
+				ItemsSource = ((Issue29588ViewModel)BindingContext).Items,
 				RemainingItemsThreshold = 1,
-				RemainingItemsThresholdReachedCommand = ((RemainingItemsThresholdViewModel)BindingContext).RemainingItemReachedCommand,
+				RemainingItemsThresholdReachedCommand = ((Issue29588ViewModel)BindingContext).RemainingItemReachedCommand,
 				Header = new Grid
 				{
 					BackgroundColor = Colors.Bisque,
