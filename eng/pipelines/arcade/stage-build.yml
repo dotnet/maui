@@ -89,4 +89,4 @@ stages:
               displayName: 🛠️ Build BuildTasks
 
             - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects ${{ BuildPlatform.sln }} /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /p:EnableWindowsTargeting=true /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/build_${{ BuildPlatform.os }}.binlog $(_OfficialBuildIdArgs)
-              displayName: 🛠️ Build ${{ parameters.buildProjects }}
+              displayName: 🛠️ Build Microsoft.Maui.sln

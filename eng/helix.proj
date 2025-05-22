@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
+  <PropertyGroup>
+    <HelixType>test/product/</HelixType>
+    <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
+    <HelixTargetQueues>Windows.10.Amd64.Open</HelixTargetQueues>
+
+    <IncludeDotNetCli>true</IncludeDotNetCli>
+    <DotNetCliPackageType>sdk</DotNetCliPackageType>
+
+    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+    <FailOnTestFailure>true</FailOnTestFailure>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <XUnitProject Include="$(RepoRoot)/src/Controlstests/Core.UnitTests/*.csproj"/>
+  </ItemGroup>
+
+</Project>
