@@ -8,7 +8,7 @@ export SYSTEM_TEAMPROJECT="public"
 export BUILD_REASON="test"
 
 if [[ ! -f ".dotnet/dotnet" ]]; then
-    dotnet msbuild eng/helix.proj /restore /t:Test "$@"
+    dotnet build eng/helix.proj /restore /t:Test "$@"
 else
-    .dotnet/dotnet msbuild eng/helix.proj /restore /t:Test "$@"
+    .dotnet/dotnet build eng/helix.proj /restore /t:Test "$@"
 fi
