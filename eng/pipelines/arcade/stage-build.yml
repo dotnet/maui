@@ -58,7 +58,7 @@ stages:
       workspace:
         clean: all
       jobs:
-      - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+      - ${{ each BuildConfiguration in parameters.buildConfigurations }}:
         - job: build_net_$(BuildConfiguration)
           displayName: Build Windows $(BuildConfiguration)
           timeoutInMinutes: 240
