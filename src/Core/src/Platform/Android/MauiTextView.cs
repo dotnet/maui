@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Text;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
 {
@@ -24,12 +25,7 @@ namespace Microsoft.Maui.Platform
 			{
 				int availableWidth = MeasureSpec.GetSize(widthMeasureSpec);
 				int totalPadding = CompoundPaddingLeft + CompoundPaddingRight;
-
-#pragma warning disable CA1422 // Validate platform compatibility
-				var layout = new StaticLayout(Text, Paint, availableWidth - totalPadding,
-					Android.Text.Layout.Alignment.AlignNormal, 1.0f, 0.0f, false);
-#pragma warning restore CA1422 // Validate platform compatibility
-
+				var layout = TextLayoutUtils.CreateLayout(Text, Paint, availableWidth - totalPadding, Android.Text.Layout.Alignment.AlignNormal);
 				int contentWidth = (int)Math.Ceiling(GetMaxLineWidth(layout));
 				// Calculate the required width based on the content and padding
 				int requiredWidth = contentWidth + totalPadding;
