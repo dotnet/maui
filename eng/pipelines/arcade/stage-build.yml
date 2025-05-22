@@ -20,10 +20,10 @@ parameters:
   default: false
 - name: buildProjects
   type: string
-  default: '$(Build.SourcesDirectory)Microsoft.Maui.sln'
+  default: '$(Build.SourcesDirectory)/Microsoft.Maui.sln'
 - name: buildTaskProjects
   type: string
-  default: '$(Build.SourcesDirectory)Microsoft.Maui.BuildTasks.slnf'
+  default: '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf'
 - name: buildConfigurations
   type: object
   default:
