@@ -75,7 +75,7 @@ The complete release process follows these steps:
    - This happens automatically on the main branch and release branches
    - The build produces NuGet packages and workload manifests
    - The build is assigned a BAR ID in Maestro
-   - All assets are published to internal feeds and registered in the BAR
+   - All assets are published to internal feeds and registered in the BAR using darc
 
 2. Determine the commit hash of the build to be released
 
@@ -86,7 +86,7 @@ The complete release process follows these steps:
 
 4. The release pipeline uses Darc to:
    - Find the BAR ID associated with the specified commit
-   - Gather all the packages and assets from internal feeds
+   - Gather all the packages and assets from internal channel
    - Publish the workload set to the appropriate .NET SDK workload channel
 
 5. The release pipeline will then:
@@ -168,7 +168,7 @@ The `maui-release-internal.yml` pipeline uses Darc to:
 
 ## Notes
 
-- The release process requires appropriate permissions and API keys for the NuGet feeds
+- The release process requires appropriate permissions and API keys for the NuGet feeds, these are stored normally on a KeyVault that is associated with the pipeline
 - Multiple API keys are used to handle NuGet.org's rate limiting and quota restrictions
 - The process includes retry logic to handle transient failures
 - Both pipelines run on internal Microsoft infrastructure to ensure security
