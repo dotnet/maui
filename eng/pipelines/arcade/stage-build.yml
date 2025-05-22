@@ -61,8 +61,8 @@ stages:
           clean: all
         jobs:
         - ${{ each BuildConfiguration in parameters.buildConfigurations }}:
-          - job: build_net_${{ BuildConfiguration }}
-            displayName: Build Windows ${{ BuildConfiguration }}
+          - job: build_net_${{ BuildPlatform }}_${{ BuildConfiguration }}
+            displayName: Build ${{ BuildPlatform }} ${{ BuildConfiguration }}
             timeoutInMinutes: 240
             preSteps:
             - checkout: self
