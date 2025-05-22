@@ -61,6 +61,10 @@ stages:
         displayName: Windows UnitTests
         timeoutInMinutes: 240
         steps:
+        - ${{ each step in parameters.prepareSteps }}:
+          - ${{ each pair in step }}:
+              ${{ pair.key }}: ${{ pair.value }}
+
         - script: $(_buildScript) --restore
           displayName: Install .NET SDK and Workloads
 
