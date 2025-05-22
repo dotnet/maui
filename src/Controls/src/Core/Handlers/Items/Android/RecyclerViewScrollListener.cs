@@ -55,15 +55,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_itemsView.SendScrolled(itemsViewScrolledEventArgs);
 
-			// Don't send RemainingItemsThresholdReached event for non-linear layout managers
-			// This can also happen if a layout pass has not happened yet
-			if (Last == -1)
+			// Early returns for edge cases
+			if (Last == -1 || ItemsViewAdapter == null || _itemsView.RemainingItemsThreshold == -1)
 				return;
-
-			if (ItemsViewAdapter == null)
-			{
-				return;
-			}
 
 			var itemsSourceCount = ItemsViewAdapter.ItemCount;
 			bool hasHeader = ItemsViewAdapter.ItemsSource.HasHeader;
@@ -74,7 +68,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			int firstDataItemIndex = (hasHeader && hasFooter) ? 1 : 0;
 			int lastDataItemIndex = itemsSourceCount - firstDataItemIndex;
 
-			// Don't process if Last is out of bounds
 			if (Last < firstDataItemIndex || Last > lastDataItemIndex)
 			{
 				return;
@@ -82,8 +75,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			switch (_itemsView.RemainingItemsThreshold)
 			{
-				case -1:
-					return;
 				case 0:
 					if (Last == lastDataItemIndex - 1)
 						_itemsView.SendRemainingItemsThresholdReached();
