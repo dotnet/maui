@@ -99,8 +99,8 @@ namespace Microsoft.Maui.Controls.Xaml
 								node.Properties.Add(XmlName.xArguments, prop);
 						}
 						// 3. DataTemplate (should be handled by 4.)
-						else if (node.XmlType.NamespaceUri == MauiUri &&
-								 (node.XmlType.Name == "DataTemplate" || node.XmlType.Name == "ControlTemplate"))
+						else if ((node.XmlType.NamespaceUri == MauiUri || node.XmlType.NamespaceUri == MauiGlobalUri)
+								&& (node.XmlType.Name == "DataTemplate" || node.XmlType.Name == "ControlTemplate"))
 						{
 							if (node.Properties.ContainsKey(XmlName._CreateContent))
 								throw new XamlParseException($"Multiple child elements in {node.XmlType.Name}", ((IXmlLineInfo)reader).Clone());
