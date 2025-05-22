@@ -74,8 +74,8 @@ stages:
               - ${{ each pair in step }}:
                   ${{ pair.key }}: ${{ pair.value }}
 
-            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)buildtasks.binlog $(_OfficialBuildIdArgs)
+            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "Microsoft.Maui.BuildTasks.slnf" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)buildtasks.binlog $(_OfficialBuildIdArgs)
               displayName: 🛠️ Build BuildTasks
 
-            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=false /bl:$(Build.Arcade.LogsPath)build.binlog $(_OfficialBuildIdArgs)
+            - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)build.binlog $(_OfficialBuildIdArgs)
               displayName: 🛠️ Build ${{ parameters.buildProjects }}
