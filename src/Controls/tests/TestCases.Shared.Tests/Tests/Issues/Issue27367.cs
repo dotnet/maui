@@ -1,5 +1,6 @@
-#if TEST_FAILS_ON_WINDOWS
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_CATALYST
 // [Windows] Swiping does not work with SwipeItemView in SwipeView , see https://github.com/dotnet/maui/issues/27436
+// Since the Appium swipe action does not behave correctly on macOS, the test has been disabled on that platform
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
