@@ -89,9 +89,9 @@ jobs:
 
       - name: Run AI Inference
         id: inference
-        uses: actions/ai-inference@v1
+        uses: actions/ai-inference@main
         with:
-          prompt: ${{ steps.load-system-prompt.outputs.prompt }}
+          prompt-file: "prompt.md"
           system-prompt: ${{ steps.load-system-prompt.outputs.system_prompt }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -99,4 +99,4 @@ jobs:
       - name: Log AI Analysis
         shell: pwsh
         run: |
-          ${{ steps.inference.outputs.response }}
+          cat "${{ steps.inference.outputs.response-file }}"
