@@ -88,14 +88,17 @@ namespace Microsoft.Maui.Platform
 			};
 
 			NSError nsError = new();
-			CoreFoundation.DispatchQueue.MainQueue.DispatchAsync(() =>
-			{
-				platformLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
-				if (label.Handler is ILabelHandler labelHandler)
-					LabelHandler.ReapplyFormattingForHTMLLabel(labelHandler, label);
-					
-				label.InvalidateMeasure();
-			});
+
+			// NOTE: Sometimes this will crash with some sort of consistency error.
+			// https://github.com/dotnet/maui/issues/25946
+			// The caller should ensure that this extension is dispatched. We cannot
+			// do it here as we need to re-apply the formatting and we cannot call
+			// into Controls from Core.
+			// This is observed with CarouselView 1 but not with 2, so hopefully this
+			// will be just disappear once we switch.
+#pragma warning disable CS8601
+			platformLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
+#pragma warning restore CS8601
 		}
 
 		internal static void UpdateTextPlainText(this UILabel platformLabel, IText label)

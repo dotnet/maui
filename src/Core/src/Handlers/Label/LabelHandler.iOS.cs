@@ -81,11 +81,5 @@ namespace Microsoft.Maui.Handlers
 			// so we need to make sure those are applied, too
 			handler.UpdateValue(nameof(ILabel.HorizontalTextAlignment));
 		}
-
-		internal static void ReapplyFormattingForHTMLLabel(ILabelHandler handler, ILabel label)
-		{
-			handler.UpdateValue(nameof(ILabel.TextColor));
-			handler.UpdateValue(nameof(ILabel.Font));
-		}
 	}
 }
