@@ -76,18 +76,8 @@ jobs:
           }
           $issue = $json | ConvertFrom-Json
           "number=$($issue.number)" >> $env:GITHUB_OUTPUT
-          "title=$($issue.title | ConvertTo-Json | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
-          "body=$($issue.body | ConvertTo-Json | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
-
-      - name: Log Issue Data
-        shell: pwsh
-        run: |
-          Write-Host "::group::Issue Data"
-          Write-Host "Number: ${{ steps.issue-data-extract.outputs.number }}"
-          Write-Host "Title: $(${{ steps.issue-data-extract.outputs.title }} | ConvertFrom-Json)"
-          Write-Host "Body:"
-          Write-Host "$(${{ steps.issue-data-extract.outputs.body }} | ConvertFrom-Json)"
-          Write-Host "::endgroup::"
+          "title=$($issue.title | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
+          "body=$($issue.body | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
 
       - name: Create Prompt
         id: create-prompt
