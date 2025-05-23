@@ -4,16 +4,14 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 29207, "KeepLastItemInView Does Not Scroll to Last Item When Adding Items at Top, Instead Scrolls to SecondLast Item", PlatformAffected.UWP)]
 public class Issue29207 : ContentPage
 {
-	ItemsViewModel viewModel;
-	int count = 20;
-	CollectionView collectionView;
+	Issue29207_ItemsViewModel viewModel;
 
 	public Issue29207()
 	{
-		viewModel = new ItemsViewModel();
-		this.BindingContext = viewModel;
+		viewModel = new Issue29207_ItemsViewModel();
+		BindingContext = viewModel;
 
-		collectionView = new CollectionView
+		CollectionView collectionView = new CollectionView
 		{
 			ItemsSource = viewModel.ItemsSource,
 			ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepLastItemInView,
@@ -59,18 +57,17 @@ public class Issue29207 : ContentPage
 		Content = grid;
 	}
 
-	private void Button_Clicked_1(object sender, EventArgs e)
+	void Button_Clicked_1(object sender, EventArgs e)
 	{
-		viewModel.ItemsSource.Insert(0, $"Item {count}");
-		count++;
+		viewModel.ItemsSource.Insert(0, $"NewItem");
 	}
 }
 
-public class ItemsViewModel
+public class Issue29207_ItemsViewModel
 {
 	public ObservableCollection<string> ItemsSource = new ObservableCollection<string>();
 
-	public ItemsViewModel()
+	public Issue29207_ItemsViewModel()
 	{
 		for(int i = 0; i < 20; i++)
 		{
