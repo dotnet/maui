@@ -57,8 +57,7 @@ jobs:
           $title = $issue.title
           $body = $issue.body
 
-          Set-Content -Path "prompt.md" -Value
-          @"
+          Set-Content -Path "prompt.md" -Value @"
           A new issue has arrived, please triage and apply the appropriate labels.
           The issue is as follows:
 
