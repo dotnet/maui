@@ -21,6 +21,12 @@ parameters:
 - name: creator
   type: string
   default: 'maui'
+- name: buildTaskProjects
+  type: string
+  default: '$(Build.SourcesDirectory)/Microsoft.Maui.BuildTasks.slnf'
+- name: helixProject
+  type: string
+  default: '$(Build.SourcesDirectory)/eng/helix.proj'
 - name: buildConfigurations
   type: object
   default:
@@ -77,10 +83,10 @@ stages:
             - ${{ each pair in step }}:
                 ${{ pair.key }}: ${{ pair.value }}
 
-          - script: $(_buildScript) -restore -configuration $(_BuildConfig)
-            displayName: Install .NET SDK and Workloads
+          - script: $(_buildScript) -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/buildtasks.binlog $(_OfficialBuildIdArgs)
+            displayName: 🛠️ Build BuildTasks
 
-          - script: $(_helixScript) --configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)$(_BuildConfig)/helix_unit_tests.binlog
+          - script: $(_buildScript) -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.helixProject }}" /p:ArchiveTests=true /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/helix_tests.binlog
             displayName: Run Helix Tests
             env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken) # We need to set this env var to publish helix results to Azure Dev Ops
