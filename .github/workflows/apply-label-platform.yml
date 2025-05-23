@@ -73,6 +73,7 @@ jobs:
             echo "title=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
             echo "body=${{ github.event.issue.body }}" >> $GITHUB_OUTPUT
           else
+            cat issue-data.json
             ISSUE_DATA=$(jq -c '.' issue-data.json)
             echo "number=$(echo "$ISSUE_DATA" | jq -r '.number')" >> $GITHUB_OUTPUT
             echo "title=$(echo "$ISSUE_DATA" | jq -r '.title | @json')" >> $GITHUB_OUTPUT
@@ -103,6 +104,8 @@ jobs:
       - name: Load System Prompt
         id: load-system-prompt
         run: |
+          cat prompt.txt
+          
           PROMPT_CONTENT=$(cat .github/prompts/apply-label.prompt.md)
           echo "prompt=$PROMPT_CONTENT" >> $GITHUB_OUTPUT
 
