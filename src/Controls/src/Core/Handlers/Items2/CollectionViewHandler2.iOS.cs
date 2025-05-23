@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[StructuredItemsView.FooterProperty.PropertyName] = MapFooterTemplate,
 			[GroupableItemsView.GroupHeaderTemplateProperty.PropertyName] = MapHeaderTemplate,
 			[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapFooterTemplate,
+			[SelectableItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout
 		};
 	}
 
@@ -158,8 +159,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var itemSizingStrategy = ItemsView.ItemSizingStrategy;
 			var itemsLayout = ItemsView.ItemsLayout;
 
-			SubscribeToItemsLayoutPropertyChanged(itemsLayout);
-
 			if (itemsLayout is GridItemsLayout gridItemsLayout)
 			{
 				return LayoutFactory2.CreateGrid(gridItemsLayout, groupInfo, headerFooterInfo);
@@ -197,26 +196,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapItemSizingStrategy(CollectionViewHandler2 handler, StructuredItemsView itemsView)
 		{
 			handler.UpdateLayout();
-		}
-
-		void SubscribeToItemsLayoutPropertyChanged(IItemsLayout itemsLayout)
-		{
-			if (itemsLayout is not null)
-			{
-				itemsLayout.PropertyChanged += (sender, args) =>
-				{
-					if (args.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
-						args.PropertyName == nameof(ItemsLayout.SnapPointsType) ||
-						args.PropertyName == nameof(GridItemsLayout.VerticalItemSpacing) ||
-						args.PropertyName == nameof(GridItemsLayout.HorizontalItemSpacing) ||
-						args.PropertyName == nameof(GridItemsLayout.Span) ||
-						args.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
-
-					{
-						UpdateLayout();
-					}
-				};
-			}
 		}
 	}
 }
