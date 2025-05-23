@@ -13,7 +13,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		[Test]
 		[Category(UITestCategories.Shell)]
-		public void VerifyFlyoutIconisPresentWhenDisabledFlyout()
+		public void VerifyFlyoutIconIsNotPresentWhenDisabledFlyout()
 		{
 			App.WaitForElement("DisabledButton");
 			App.WaitForFlyoutIcon();
