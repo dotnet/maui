@@ -27,11 +27,13 @@ jobs:
 
       - name: Get Issue Data
         id: issue-data
-        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            const issue_number = '29634';
+            const issue_number =
+              github.event_name === 'workflow_dispatch' ? context.payload.inputs.issue_number :
+              github.event_name === 'issues' ? github.event.issue.number :
+              '29634';
             const issue = await github.rest.issues.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -43,51 +45,19 @@ jobs:
               number: issue.data.number
             };
             const fs = require('fs');
-            fs.writeFileSync('issue-data.json', JSON.stringify(data, null, 2));
+            fs.writeFileSync('issue.json', JSON.stringify(data, null, 2));
             return data;
-
-    #   - name: Get Issue Data  
-    #     id: issue-data
-    #     if: github.event_name == 'workflow_dispatch'
-    #     uses: actions/github-script@v7
-    #     with:
-    #       script: |
-    #         const issue_number = context.payload.inputs.issue_number;
-    #         const issue = await github.rest.issues.get({
-    #           owner: context.repo.owner,
-    #           repo: context.repo.repo,
-    #           issue_number: issue_number
-    #         });
-    #         return {
-    #           title: issue.data.title,
-    #           body: issue.data.body,
-    #           number: issue.data.number
-    #         };
-    #       result-encoding: string
-
-      - name: Extract Issue Data
-        id: issue-data-extract
-        shell: pwsh
-        run: |
-          if ("${{ github.event_name }}" -eq "issues") {
-            $json = "${{ github.event.issue }}"
-          } else {
-            Get-Content -Raw "issue-data.json"
-            $json = Get-Content -Raw "issue-data.json"
-          }
-          $issue = $json | ConvertFrom-Json
-          "number=$($issue.number)" >> $env:GITHUB_OUTPUT
-          "title=$($issue.title | ConvertTo-Json | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
-          "body=$($issue.body | ConvertTo-Json | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
 
       - name: Create Prompt
         id: create-prompt
         shell: pwsh
         run: |
-          $number = ${{ steps.issue-data-extract.outputs.number }}
-          $title = "${{ steps.issue-data-extract.outputs.title }}"
-          $body = "${{ steps.issue-data-extract.outputs.body }}"
-          Set-Content -Path "prompt.md" -Value 
+          $issue = Get-Content -Raw "issue.json" | ConvertFrom-Json
+          $number = $issue.number
+          $title = $issue.title
+          $body = $issue.body
+
+          Set-Content -Path "prompt.md" -Value
           @"
           A new issue has arrived, please triage and apply the appropriate labels.
           The issue is as follows:
@@ -121,9 +91,4 @@ jobs:
 
       - name: Log AI Analysis
         run: |
-          echo "::group::AI Analysis for Issue #${{ steps.issue-data-extract.outputs.number }}"
           echo "${{ steps.inference.outputs.response }}"
-          echo "::endgroup::"
-
-          # Save full response to file for potential debugging
-          echo "${{ steps.inference.outputs.response }}" > ai-analysis-issue-${{ steps.issue-data-extract.outputs.number }}.txt
