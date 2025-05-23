@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls
 			if (layout is BindableObject bo && bindable is ItemsView itemsView)
 			{
 				SetInheritedBindingContext(bo, itemsView.BindingContext);
-				itemsView.PropertyChanged += itemsView.OnItemsLayoutPropertyChanged;
+				bo.PropertyChanged += itemsView.OnItemsLayoutPropertyChanged;
 			}
 			
 			return layout;
@@ -137,13 +137,13 @@ namespace Microsoft.Maui.Controls
 			if (oldValue is BindableObject boOld)
 			{
 				SetInheritedBindingContext(boOld, null);
-				itemsView.PropertyChanged -= itemsView.OnItemsLayoutPropertyChanged;
+				boOld.PropertyChanged -= itemsView.OnItemsLayoutPropertyChanged;
 			}
 
 			if (newValue is BindableObject boNew)
 			{
 				SetInheritedBindingContext(boNew, bindable.BindingContext);
-				itemsView.PropertyChanged += itemsView.OnItemsLayoutPropertyChanged;
+				boNew.PropertyChanged += itemsView.OnItemsLayoutPropertyChanged;
 			}
 		}
 
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls
 				e.PropertyName == nameof(GridItemsLayout.Span) ||
 				e.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
 			{
-				OnPropertyChanged(nameof(StructuredItemsView.ItemsLayoutProperty.PropertyName));
+				OnPropertyChanged(StructuredItemsView.ItemsLayoutProperty.PropertyName);
 			}
 		}
 
