@@ -12,4 +12,9 @@ public partial class Issue19313 : ContentPage
 	{
 		tappedLabel.Text = "Tapped";
 	}
+
+	private void CheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		checkedLabel.Text = "Checked";
+	}
 }
