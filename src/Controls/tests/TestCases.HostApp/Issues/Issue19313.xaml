@@ -4,11 +4,12 @@
              x:Class="Controls.TestCases.HostApp.Issues.Issue19313"
              Title="Issue19313">
     <VerticalStackLayout Margin="20" Spacing="30">
-        <CheckBox AutomationId="MauiCheckBox" WidthRequest="50" HeightRequest="50" >
+        <CheckBox AutomationId="MauiCheckBox" CheckedChanged="CheckBox_CheckedChanged" WidthRequest="50" HeightRequest="50" >
             <CheckBox.GestureRecognizers>
                 <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
             </CheckBox.GestureRecognizers>
         </CheckBox>
         <Label AutomationId="MauiLabel" x:Name="tappedLabel" />
+        <Label AutomationId="CheckedStatusLabel" x:Name="checkedLabel"/>
     </VerticalStackLayout>
 </ContentPage>
