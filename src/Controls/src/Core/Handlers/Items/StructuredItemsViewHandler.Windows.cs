@@ -16,51 +16,32 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		View _currentHeader;
 		View _currentFooter;
-		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
-		PropertyChangedEventHandler _layoutPropertyChanged;
 		const string ListViewItemStyleKey = "DefaultListViewItemStyle";
 		const string GridViewItemStyleKey = "DefaultGridViewItemStyle";
 		static WStyle _listViewItemStyle;
 		static WStyle _gridViewItemStyle;
 
-		~StructuredItemsViewHandler() => _layoutPropertyChangedProxy?.Unsubscribe();
+		//TODO: Remove this in .NET 10
+		~StructuredItemsViewHandler() { }
 
 		protected override IItemsLayout Layout { get => ItemsView?.ItemsLayout; }
 
+		//TODO: Remove this in .NET 10
 		protected override void ConnectHandler(ListViewBase platformView)
 		{
 			base.ConnectHandler(platformView);
-
-			if (Layout is not null)
-			{
-				_layoutPropertyChanged ??= LayoutPropertyChanged;
-				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
-			}
-			else if (_layoutPropertyChangedProxy is not null)
-			{
-				_layoutPropertyChangedProxy.Unsubscribe();
-				_layoutPropertyChangedProxy = null;
-			}
 		}
 
+		//TODO: Remove this in .NET 10
 		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			base.DisconnectHandler(platformView);
-
-			if (_layoutPropertyChangedProxy is not null)
-			{
-				_layoutPropertyChangedProxy.Unsubscribe();
-				_layoutPropertyChangedProxy = null;
-			}
 		}
 
-		void LayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void UpdateItemsLayoutProperties()
 		{
-			if (e.PropertyName == GridItemsLayout.SpanProperty.PropertyName)
-				UpdateItemsLayoutSpan();
-			else if (e.PropertyName == GridItemsLayout.HorizontalItemSpacingProperty.PropertyName || e.PropertyName == GridItemsLayout.VerticalItemSpacingProperty.PropertyName)
+				UpdateItemsLayoutSpan();		
 				UpdateItemsLayoutItemSpacing();
-			else if (e.PropertyName == LinearItemsLayout.ItemSpacingProperty.PropertyName)
 				UpdateItemsLayoutItemSpacing();
 		}
 
@@ -77,6 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static void MapItemsLayout(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
 			handler.UpdateItemsLayout();
+			handler.UpdateItemsLayoutProperties();
 		}
 
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
