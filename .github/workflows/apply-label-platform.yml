@@ -1,0 +1,102 @@
+name: "Triage: Apply Labels"
+on:
+#   issues:
+#     types: [opened, edited]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to triage'
+        required: true
+        type: number
+
+permissions:
+  contents: read
+  issues: read
+  models: read
+
+jobs:
+  triage-issue:
+    name: Apply Labels
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get Issue Data
+        id: issue-data
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = context.payload.inputs.issue_number;
+            const issue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue_number
+            });
+            return {
+              title: issue.data.title,
+              body: issue.data.body,
+              number: issue.data.number
+            };
+          result-encoding: string
+          
+      - name: Extract Issue Data
+        id: issue-data-extract
+        run: |
+          if [[ "${{ github.event_name }}" == "issues" ]]; then
+            echo "number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+            echo "title=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
+            echo "body=${{ github.event.issue.body }}" >> $GITHUB_OUTPUT
+          else
+            ISSUE_DATA='${{ steps.issue-data.outputs.result }}'
+            echo "number=$(echo $ISSUE_DATA | jq -r '.number')" >> $GITHUB_OUTPUT
+            echo "title=$(echo $ISSUE_DATA | jq -r '.title')" >> $GITHUB_OUTPUT
+            echo "body=$(echo $ISSUE_DATA | jq -r '.body')" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Log Issue Data
+        run: |
+          echo "::group::Issue Data"
+          echo "Number: ${{ steps.issue-data-extract.outputs.number }}"
+          echo "Title: ${{ steps.issue-data-extract.outputs.title }}"
+          echo "Body: ${{ steps.issue-data-extract.outputs.body }}"
+          echo "::endgroup::"
+
+      - name: Create Prompt
+        id: create-prompt
+        run: |
+          cat > prompt.txt << EOL
+          A new issue has arrived, please triage and apply the appropriate labels.
+          The issue is as follows:
+          
+          Issue #${{ steps.issue-data-extract.outputs.number }}
+          Title: ${{ steps.issue-data-extract.outputs.title }}
+          Body:
+          ${{ steps.issue-data-extract.outputs.body }}
+          EOL
+
+      - name: Load System Prompt
+        id: load-system-prompt
+        run: |
+          PROMPT_CONTENT=$(cat .github/prompts/apply-label.prompt.md)
+          echo "prompt=$PROMPT_CONTENT" >> $GITHUB_OUTPUT
+
+      - name: Run AI Inference
+        id: inference
+        uses: actions/ai-inference@main
+        with:
+          prompt-file: './prompt.txt'
+          model: gpt-4o
+          max-tokens: 1000
+          system-prompt: ${{ steps.load-system-prompt.outputs.prompt }}
+
+      - name: Log AI Analysis
+        run: |
+          echo "::group::AI Analysis for Issue #${{ steps.issue-data-extract.outputs.number }}"
+          echo "${{ steps.inference.outputs.response }}"
+          echo "::endgroup::"
+          
+          # Save full response to file for potential debugging
+          echo "${{ steps.inference.outputs.response }}" > ai-analysis-issue-${{ steps.issue-data-extract.outputs.number }}.txt
