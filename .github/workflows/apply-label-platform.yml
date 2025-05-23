@@ -99,6 +99,4 @@ jobs:
       - name: Log AI Analysis
         shell: pwsh
         run: |
-          @"
           ${{ steps.inference.outputs.response }}
-          "@
