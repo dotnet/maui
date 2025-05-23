@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // CollectionView Fails to Keep Last Item in View on iOS and macOS https://github.com/dotnet/maui/issues/18029
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -20,3 +21,4 @@ public class Issue29207 : _IssuesUITest
 		VerifyScreenshot();
 	}
 }
+#endif
