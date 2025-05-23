@@ -32,7 +32,7 @@ public class Issue29472 : ContentPage
 
 		Button clearItemsSource = new Button
 		{
-			AutomationId = "ClearCarouselViewItemsSource",
+			AutomationId = "ClearItemsSourceBtn",
 			Text = "Set the ItemsSource of the CarouselView to null",
 			HorizontalOptions = LayoutOptions.Center
 		};

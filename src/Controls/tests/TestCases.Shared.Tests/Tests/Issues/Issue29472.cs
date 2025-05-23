@@ -16,8 +16,8 @@ public class Issue29472 : _IssuesUITest
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewItemsSourceClearedDynamically()
 	{
-		App.WaitForElement("ClearCarouselViewItemsSource");
-		App.Tap("ClearCarouselViewItemsSource");
+		App.WaitForElement("ClearItemsSourceBtn");
+		App.Tap("ClearItemsSourceBtn");
 		VerifyScreenshot();
 	}
 }
