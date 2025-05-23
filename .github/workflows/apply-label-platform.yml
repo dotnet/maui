@@ -1,7 +1,7 @@
 name: "Triage: Apply Labels"
 on:
   pull_request:
-    types: [reopened]
+    types: [reopened, synchronize, opened]
 #   issues:
 #     types: [opened, edited]
   workflow_dispatch:
@@ -37,11 +37,17 @@ jobs:
               repo: context.repo.repo,
               issue_number: issue_number
             });
-            return {
+
+            const data = {
               title: issue.data.title,
               body: issue.data.body,
               number: issue.data.number
             };
+            
+            const fs = require('fs');
+            fs.writeFileSync('issue-data.json', JSON.stringify(data, null, 2));
+
+            return data;
 
     #   - name: Get Issue Data  
     #     id: issue-data
