@@ -72,30 +72,34 @@ jobs:
           if ("${{ github.event_name }}" -eq "issues") {
             $json = "${{ github.event.issue }}"
           } else {
+            Get-Content -Raw "issue-data.json"
             $json = Get-Content -Raw "issue-data.json"
           }
           $issue = $json | ConvertFrom-Json
           "number=$($issue.number)" >> $env:GITHUB_OUTPUT
-          "title=$($issue.title | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
-          "body=$($issue.body | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
+          "title=$($issue.title | ConvertTo-Json | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
+          "body=$($issue.body | ConvertTo-Json | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
 
       - name: Create Prompt
         id: create-prompt
         shell: pwsh
         run: |
+          $number = ${{ steps.issue-data-extract.outputs.number }}
+          $title = "${{ steps.issue-data-extract.outputs.title }}"
+          $body = "${{ steps.issue-data-extract.outputs.body }}"
           Set-Content -Path "prompt.md" -Value 
           @"
           A new issue has arrived, please triage and apply the appropriate labels.
           The issue is as follows:
 
           The issue number is:
-          #${{ steps.issue-data-extract.outputs.number }}
+          #$number
 
           The title is:
-          $(${{ steps.issue-data-extract.outputs.title }} | ConvertFrom-Json)
+          $title
 
           The body is:
-          $(${{ steps.issue-data-extract.outputs.body }} | ConvertFrom-Json)
+          $body
           "@
           cat prompt.md
 
