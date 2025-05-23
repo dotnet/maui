@@ -83,8 +83,8 @@ jobs:
         run: |
           echo "::group::Issue Data"
           echo "Number: ${{ steps.issue-data-extract.outputs.number }}"
-          echo "Title: ${{ steps.issue-data-extract.outputs.title }}"
-          echo "Body: ${{ steps.issue-data-extract.outputs.body }}"
+          echo "Title: $(echo '${{ steps.issue-data-extract.outputs.title }}' | jq -r '.')"
+          echo "Body: $(echo '${{ steps.issue-data-extract.outputs.body }}' | jq -r '.')"
           echo "::endgroup::"
 
       - name: Create Prompt
@@ -95,9 +95,9 @@ jobs:
           The issue is as follows:
 
           Issue #${{ steps.issue-data-extract.outputs.number }}
-          Title: ${{ steps.issue-data-extract.outputs.title }}
+          Title: $(echo '${{ steps.issue-data-extract.outputs.title }}' | jq -r '.')
           Body:
-          ${{ steps.issue-data-extract.outputs.body }}
+          $(echo '${{ steps.issue-data-extract.outputs.body }}' | jq -r '.')
           EOL
 
       - name: Load System Prompt
