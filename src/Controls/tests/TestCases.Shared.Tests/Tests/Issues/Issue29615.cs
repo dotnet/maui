@@ -16,9 +16,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void VerifyFlyoutIconisPresentWhenDisabledFlyout()
 		{
 			App.WaitForElement("DisabledButton");
-			App.WaitForElement(FlyoutIconAutomationId);
+			App.WaitForFlyoutIcon();
 			App.Tap("DisabledButton");
-			App.WaitForNoElement(FlyoutIconAutomationId);
+			App.WaitForNoElementFlyoutIcon();
 		}
 	}
 }

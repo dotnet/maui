@@ -2160,6 +2160,32 @@ namespace UITest.Appium
 			}
 		}
 
+		public static void WaitForNoElementFlyoutIcon(this IApp app, string automationId = "", bool isShell = true)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForNoElement(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc=\"Open navigation drawer\"]"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumWindowsApp)
+			{
+				if (isShell)
+				{
+					app.WaitForNoElement("OK");
+				}
+				if (!isShell)
+				{
+					if (app is AppiumWindowsApp)
+					{
+						app.WaitForNoElement(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
+					}
+					else
+					{
+						app.WaitForNoElement(automationId);
+					}
+				}
+			}
+		}
+
 		/// <summary>
 		/// Shows the flyout menu in the app.
 		/// </summary>
