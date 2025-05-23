@@ -259,7 +259,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);
 		}
-		
+
 		[Fact(DisplayName = "Border With Stroke Shape And Name Does Not Leak")]
 		public async Task DoesNotLeakWithStrokeShape()
 		{

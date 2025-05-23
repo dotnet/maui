@@ -27,7 +27,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[Controls.CarouselView.PeekAreaInsetsProperty.PropertyName] = MapPeekAreaInsets,
 			[Controls.CarouselView.IsBounceEnabledProperty.PropertyName] = MapIsBounceEnabled,
 			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
-			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem
+			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem,
+			[Controls.CarouselView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
 		};
 	}
 
@@ -38,8 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override UICollectionViewLayout SelectLayout()
 		{
-			bool IsHorizontal = VirtualView.ItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
-			UICollectionViewScrollDirection scrollDirection = IsHorizontal ? UICollectionViewScrollDirection.Horizontal : UICollectionViewScrollDirection.Vertical;
+			bool isHorizontal = VirtualView.ItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
 
 			NSCollectionLayoutDimension itemWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 			NSCollectionLayoutDimension itemHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					return null;
 				}
 				double sectionMargin = 0.0;
-				if (!IsHorizontal)
+				if (!isHorizontal)
 				{
 					sectionMargin = VirtualView.PeekAreaInsets.VerticalThickness / 2;
 					var newGroupHeight = environment.Container.ContentSize.Height - VirtualView.PeekAreaInsets.VerticalThickness;
@@ -81,19 +81,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 				if (OperatingSystem.IsIOSVersionAtLeast(16))
 				{
-					group = IsHorizontal ? NSCollectionLayoutGroup.GetHorizontalGroup(groupSize, item, 1) :
+					group = isHorizontal ? NSCollectionLayoutGroup.GetHorizontalGroup(groupSize, item, 1) :
 										   NSCollectionLayoutGroup.GetVerticalGroup(groupSize, item, 1);
 				}
 				else
 				{
-					group = IsHorizontal ? NSCollectionLayoutGroup.CreateHorizontal(groupSize, item, 1) :
+					group = isHorizontal ? NSCollectionLayoutGroup.CreateHorizontal(groupSize, item, 1) :
 										   NSCollectionLayoutGroup.CreateVertical(groupSize, item, 1);
 				}
 
 				// Create our section layout
 				var section = NSCollectionLayoutSection.Create(group: group);
 				section.InterGroupSpacing = itemSpacing;
-				section.OrthogonalScrollingBehavior = IsHorizontal ? UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered : UICollectionLayoutSectionOrthogonalScrollingBehavior.None;
+				section.OrthogonalScrollingBehavior = isHorizontal ? UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered : UICollectionLayoutSectionOrthogonalScrollingBehavior.None;
 				section.VisibleItemsInvalidationHandler = (items, offset, env) =>
 				{
 					//This will allow us to SetPosition when we are scrolling the items
@@ -189,6 +189,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		public static void MapIsBounceEnabled(CarouselViewHandler2 handler, CarouselView carouselView)
 		{
 			handler.Controller.CollectionView.Bounces = carouselView.IsBounceEnabled;
+		}
+
+		// TODO: Change the modifier to public in .NET 10.
+		internal static void MapItemsLayout(CarouselViewHandler2 handler, CarouselView carouselView)
+		{
+			handler?.UpdateLayout();
 		}
 
 		public static void MapPeekAreaInsets(CarouselViewHandler2 handler, CarouselView carouselView)

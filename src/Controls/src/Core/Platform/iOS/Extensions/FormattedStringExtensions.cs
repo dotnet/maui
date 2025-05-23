@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return attrString;
 		}
 
-		internal static void RecalculateSpanPositions(this UILabel control, Label element)
+		internal static void RecalculateSpanPositions(this UILabel control, Label element, Size size)
 		{
 			if (element is null)
 			{
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			var finalSize = control.Bounds;
+			var finalSize = size;
 
 			if (finalSize.Width <= 0 || finalSize.Height <= 0)
 			{

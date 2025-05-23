@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Foundation;
+using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
-using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers.Items2
 {
@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 				CollectionView.PerformBatchUpdates(null, _ =>
 				{
 					CollectionView.SelectItem(index, true, UICollectionViewScrollPosition.None);
+					CollectionView.CellForItem(index)?.UpdateSelectedAccessibility(true);
 				});
 			}
 		}
@@ -75,6 +76,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					ItemsView.SelectedItems.Add(GetItemAtIndex(indexPath));
 					break;
 			}
+
+			CollectionView.CellForItem(indexPath)?.UpdateSelectedAccessibility(true);
 		}
 
 		void FormsDeselectItem(NSIndexPath indexPath)
@@ -91,6 +94,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					ItemsView.SelectedItems.Remove(GetItemAtIndex(indexPath));
 					break;
 			}
+
+			CollectionView.CellForItem(indexPath)?.UpdateSelectedAccessibility(false);
 		}
 
 		internal void UpdatePlatformSelection()
@@ -129,6 +134,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		internal void UpdateSelectionMode()
 		{
 			var mode = ItemsView.SelectionMode;
+
+			// We want to make sure we clear the selection trait before we switch modes.
+			// If we do this after we switch modes, cells that are selected may not show up as selected anymore.
+			CollectionView.ClearSelectedAccessibilityTraits(CollectionView.GetIndexPathsForSelectedItems());
 
 			switch (mode)
 			{
