@@ -22,9 +22,10 @@ public class Issue19313 : _IssuesUITest
 		App.Tap("MauiCheckBox");
 
 		var text1 = App.WaitForElement("MauiLabel").GetText();
+		var text2 = App.WaitForElement("CheckedStatusLabel").GetText();
 
         Assert.That(text1,Is.EqualTo("Tapped"));
-        VerifyScreenshot();
+		Assert.That(text2, Is.EqualTo("Checked"));
 	}
 }
 #endif
