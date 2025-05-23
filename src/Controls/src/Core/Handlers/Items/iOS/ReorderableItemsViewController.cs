@@ -14,6 +14,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _disposed;
 		UILongPressGestureRecognizer _longPressGestureRecognizer;
 
+#if MACCATALYST
+		const double defaultMacCatalystPressDuration = 0.1;
+#endif
+
 		public ReorderableItemsViewController(TItemsView reorderableItemsView, ItemsViewLayout layout)
 			: base(reorderableItemsView, layout)
 		{
@@ -166,7 +170,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					// On Mac Catalyst, we disable the default drag interaction and instead handle dragging using a long press gesture recognizer.
 					// Since a long press typically takes more time to trigger than the system's default drag interaction, 
 					// we reduce the minimum press duration to 0.1 seconds to better match the previous behavior.
-					_longPressGestureRecognizer.MinimumPressDuration = 0.1;
+					_longPressGestureRecognizer.MinimumPressDuration = defaultMacCatalystPressDuration;
 #endif
 					CollectionView.AddGestureRecognizer(_longPressGestureRecognizer);
 				}
