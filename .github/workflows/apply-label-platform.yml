@@ -37,16 +37,13 @@ jobs:
               repo: context.repo.repo,
               issue_number: issue_number
             });
-
             const data = {
               title: issue.data.title,
               body: issue.data.body,
               number: issue.data.number
             };
-            
             const fs = require('fs');
             fs.writeFileSync('issue-data.json', JSON.stringify(data, null, 2));
-
             return data;
 
     #   - name: Get Issue Data  
@@ -76,10 +73,9 @@ jobs:
             echo "title=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
             echo "body=${{ github.event.issue.body }}" >> $GITHUB_OUTPUT
           else
-            ISSUE_DATA='${{ steps.issue-data.outputs.result }}'
-            echo "number=$(echo $ISSUE_DATA | jq -r '.number')" >> $GITHUB_OUTPUT
-            echo "title=$(echo $ISSUE_DATA | jq -r '.title')" >> $GITHUB_OUTPUT
-            echo "body=$(echo $ISSUE_DATA | jq -r '.body')" >> $GITHUB_OUTPUT
+            echo "number=$(jq -r '.number' issue-data.json)" >> $GITHUB_OUTPUT
+            echo "title=$(jq -r '.title' issue-data.json)" >> $GITHUB_OUTPUT
+            echo "body=$(jq -r '.body' issue-data.json)" >> $GITHUB_OUTPUT
           fi
 
       - name: Log Issue Data
