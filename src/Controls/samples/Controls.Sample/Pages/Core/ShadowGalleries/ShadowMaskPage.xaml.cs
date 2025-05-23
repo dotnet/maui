@@ -1,10 +1,9 @@
-﻿namespace Maui.Controls.Sample.Pages
+﻿namespace Maui.Controls.Sample.Pages;
+
+public partial class ShadowMaskPage
 {
-	public partial class ShadowMaskPage
+	public ShadowMaskPage()
 	{
-		public ShadowMaskPage()
-		{
-			InitializeComponent();
-		}
+		InitializeComponent();
 	}
 }

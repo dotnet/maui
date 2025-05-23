@@ -13,6 +13,7 @@ using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 
+
 namespace Microsoft.Maui.Platform
 {
 	internal static class ShadowExtensions
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Platform
 			try
 			{
 				var visual = ElementCompositionPreview.GetElementVisual(element);
-				bool isClipped = visual.Clip is not null;
+				var isClipped = visual.Clip is not null;
 
 				if (!isClipped && element is TextBlock textElement)
 				{
@@ -40,10 +41,9 @@ namespace Microsoft.Maui.Platform
 				}
 				if (!isClipped && element is ContentPanel contentPanel)
 				{
-					var borderPath = contentPanel.BorderPath;
-					return borderPath?.GetAlphaMask();
+					return contentPanel.BorderPath?.GetAlphaMask();
 				}
-				else if (element is FrameworkElement frameworkElement)
+				if (element is FrameworkElement frameworkElement)
 				{
 					var height = (int)frameworkElement.ActualHeight;
 					var width = (int)frameworkElement.ActualWidth;
