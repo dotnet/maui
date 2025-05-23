@@ -22,6 +22,8 @@
 
   <ItemGroup>
     <XUnitProject Include="$(RepoRoot)/src/Controls/tests/Core.UnitTests/*.csproj" />
+    <XUnitProject Include="$(RepoRoot)/src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)/src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj" />
   </ItemGroup>
 
 </Project>
