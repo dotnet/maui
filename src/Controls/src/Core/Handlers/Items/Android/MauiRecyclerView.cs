@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		ItemTouchHelper _itemTouchHelper;
 		SimpleItemTouchHelperCallback _itemTouchHelperCallback;
 
+		//TODO: Remove this in .NET 10
 		~MauiRecyclerView() {}
 
 		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(new ContextThemeWrapper(context, Resource.Style.collectionViewTheme))
@@ -495,6 +496,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ScrollTo(args);
 		}
 
+		//TODO: Remove this in .NET 10
 		protected virtual void LayoutPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
 		{
 			
