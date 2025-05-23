@@ -53,9 +53,10 @@ stages:
   jobs:
   - ${{ each BuildPlatform in parameters.buildPlatforms }}:
     - ${{ if eq(parameters.runAsPublic, 'true') }}:
-      - template: /eng/common/templates/jobs/jobs.yml
+      template: /eng/common/templates/jobs/jobs.yml
     - ${{ else }}:
-      - template: /eng/common/templates-official/jobs/jobs.yml
+      template: /eng/common/templates-official/jobs/jobs.yml
+
     parameters:
       helixRepo: dotnet/maui
       pool: ${{ BuildPlatform }}
