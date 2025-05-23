@@ -37,7 +37,7 @@ stages:
   displayName: Run Helix Unit Tests
   dependsOn: []
   jobs:
-  - template: /eng/common/templates-official/jobs/jobs.yml
+  - template: ${{ iif(eq(parameters.runAsPublic, 'true'), '/eng/common/templates/jobs/jobs.yml', '/eng/common/templates-official/jobs/jobs.yml@self') }}
     parameters:
       helixRepo: dotnet/maui
       pool:
