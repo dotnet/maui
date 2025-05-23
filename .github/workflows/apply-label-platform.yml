@@ -67,53 +67,60 @@ jobs:
 
       - name: Extract Issue Data
         id: issue-data-extract
+        shell: pwsh
         run: |
-          if [[ "${{ github.event_name }}" == "issues" ]]; then
-            echo "number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
-            echo "title=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
-            echo "body=${{ github.event.issue.body }}" >> $GITHUB_OUTPUT
-          else
-            cat issue-data.json
-            ISSUE_DATA=$(jq -c '.' issue-data.json)
-            echo "number=$(echo "$ISSUE_DATA" | jq -r '.number')" >> $GITHUB_OUTPUT
-            echo "title=$(echo "$ISSUE_DATA" | jq -r '.title | @json')" >> $GITHUB_OUTPUT
-            echo "body=$(echo "$ISSUE_DATA" | jq -r '.body | @json')" >> $GITHUB_OUTPUT
-          fi
+          if ("${{ github.event_name }}" -eq "issues") {
+            $json = "${{ github.event.issue }}"
+          } else {
+            $json = Get-Content -Raw "issue-data.json"
+          }
+          $issue = $json | ConvertFrom-Json
+          "number=$($issue.number)" >> $env:GITHUB_OUTPUT
+          "title=$($issue.title | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
+          "body=$($issue.body | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
 
       - name: Log Issue Data
+        shell: pwsh
         run: |
-          echo "::group::Issue Data"
-          echo "Number: ${{ steps.issue-data-extract.outputs.number }}"
-          echo "Title: $(echo '${{ steps.issue-data-extract.outputs.title }}' | jq -r '.')"
-          echo "Body: $(echo '${{ steps.issue-data-extract.outputs.body }}' | jq -r '.')"
-          echo "::endgroup::"
+          Write-Host "::group::Issue Data"
+          Write-Host "Number: ${{ steps.issue-data-extract.outputs.number }}"
+          Write-Host "Title: $(${{ steps.issue-data-extract.outputs.title }} | ConvertFrom-Json)"
+          Write-Host "Body:"
+          Write-Host "$(${{ steps.issue-data-extract.outputs.body }} | ConvertFrom-Json)"
+          Write-Host "::endgroup::"
 
       - name: Create Prompt
         id: create-prompt
+        shell: pwsh
         run: |
-          cat > prompt.txt << EOL
+          Set-Content -Path "prompt.md" -Value 
+          @"
           A new issue has arrived, please triage and apply the appropriate labels.
           The issue is as follows:
 
-          Issue #${{ steps.issue-data-extract.outputs.number }}
-          Title: $(echo '${{ steps.issue-data-extract.outputs.title }}' | jq -r '.')
-          Body:
-          $(echo '${{ steps.issue-data-extract.outputs.body }}' | jq -r '.')
-          EOL
+          The issue number is:
+          #${{ steps.issue-data-extract.outputs.number }}
+
+          The title is:
+          $(${{ steps.issue-data-extract.outputs.title }} | ConvertFrom-Json)
+
+          The body is:
+          $(${{ steps.issue-data-extract.outputs.body }} | ConvertFrom-Json)
+          "@
+          cat prompt.md
 
       - name: Load System Prompt
         id: load-system-prompt
+        shell: pwsh
         run: |
-          cat prompt.txt
-          
-          PROMPT_CONTENT=$(cat .github/prompts/apply-label.prompt.md)
-          echo "prompt=$PROMPT_CONTENT" >> $GITHUB_OUTPUT
+          $md = Get-Content -Raw ".github/prompts/apply-label.prompt.md"
+          "prompt=$($md | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
 
       - name: Run AI Inference
         id: inference
         uses: actions/ai-inference@main
         with:
-          prompt-file: './prompt.txt'
+          prompt-file: './prompt.md'
           model: gpt-4o
           max-tokens: 1000
           system-prompt: ${{ steps.load-system-prompt.outputs.prompt }}
