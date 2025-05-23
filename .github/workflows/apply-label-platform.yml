@@ -73,9 +73,10 @@ jobs:
             echo "title=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
             echo "body=${{ github.event.issue.body }}" >> $GITHUB_OUTPUT
           else
-            echo "number=$(jq -r '.number' issue-data.json)" >> $GITHUB_OUTPUT
-            echo "title=$(jq -r '.title' issue-data.json)" >> $GITHUB_OUTPUT
-            echo "body=$(jq -r '.body' issue-data.json)" >> $GITHUB_OUTPUT
+            ISSUE_DATA=$(jq -c '.' issue-data.json)
+            echo "number=$(echo "$ISSUE_DATA" | jq -r '.number')" >> $GITHUB_OUTPUT
+            echo "title=$(echo "$ISSUE_DATA" | jq -r '.title | @json')" >> $GITHUB_OUTPUT
+            echo "body=$(echo "$ISSUE_DATA" | jq -r '.body | @json')" >> $GITHUB_OUTPUT
           fi
 
       - name: Log Issue Data
