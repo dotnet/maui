@@ -251,6 +251,15 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				((INotifyCollectionChanged)oldPage.ToolbarItems).CollectionChanged -= OnPageToolbarItemsChanged;
 			}
 
+			if (_searchView != null)
+			{
+				_searchView.View.RemoveFromParent();
+				_searchView.View.ViewAttachedToWindow -= OnSearchViewAttachedToWindow;
+				_searchView.SearchConfirmed -= OnSearchConfirmed;
+				_searchView.Dispose();
+				_searchView = null;
+			}
+
 			if (newPage != null)
 			{
 				newPage.PropertyChanged += OnPagePropertyChanged;
