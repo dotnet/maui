@@ -68,7 +68,7 @@ stages:
           - ${{ each pair in step }}:
               ${{ pair.key }}: ${{ pair.value }}
 
-        - script: $(_buildScript) --restore --configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)$(_BuildConfig)/restore_workloads.binlog
+        - script: $(_buildScript) -restore -configuration $(_BuildConfig) -binaryLog $(Build.Arcade.LogsPath)$(_BuildConfig)/restore_workloads.binlog
           displayName: Install .NET SDK and Workloads
 
         - script: $(_helixScript) --configuration $(_BuildConfig) /bl:$(Build.Arcade.LogsPath)$(_BuildConfig)/helix_unit_tests.binlog
