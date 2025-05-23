@@ -619,7 +619,10 @@ namespace Microsoft.Maui.Controls
 
 			OnDescendantRemoved(child);
 			foreach (Element element in child.Descendants())
+			{
+				element.SetParent(null);
 				OnDescendantRemoved(element);
+			}
 		}
 
 		/// <summary>Raises the (internal) <c>ParentSet</c> event. Implement this method in order to add behavior when the element is added to a parent.</summary>
