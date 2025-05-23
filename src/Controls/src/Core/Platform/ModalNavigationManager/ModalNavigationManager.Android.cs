@@ -1,14 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
+using Android.Runtime;
 using Android.Views;
+using Android.Views.Animations;
 using AndroidX.Activity;
+using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.LifecycleEvents;
+using AAnimation = Android.Views.Animations.Animation;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 
@@ -17,6 +23,9 @@ namespace Microsoft.Maui.Controls.Platform
 	internal partial class ModalNavigationManager
 	{
 		ViewGroup? _modalParentView;
+		bool _navAnimationInProgress;
+		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
+		AAnimation? _dismissAnimation;
 		bool _platformActivated;
 
 		readonly Stack<string> _modals = [];
@@ -35,6 +44,8 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
+			var handler = _currentPage?.Handler;
+			var windowP = _window.Page;
 			if (CurrentPage is not null &&
 				_window.Page != CurrentPage)
 			{
@@ -78,45 +89,76 @@ namespace Microsoft.Maui.Controls.Platform
 			_modalParentView = viewGroup;
 		}
 
+		ViewGroup GetModalParentView()
+		{
+			return _modalParentView ??
+				_window?.PlatformActivity?.Window?.DecorView as ViewGroup ??
+				throw new InvalidOperationException("Root View Needs to be set");
+		}
+
+		// AFAICT this is specific to ListView and Context Items
+		internal bool NavAnimationInProgress
+		{
+			get { return _navAnimationInProgress; }
+			set
+			{
+				if (_navAnimationInProgress == value)
+					return;
+				_navAnimationInProgress = value;
+
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
+				if (value)
+					MessagingCenter.Send(this, CloseContextActionsSignalName);
+#pragma warning restore CS0618 // Type or member is obsolete
+			}
+		}
+
 		Task<Page> PopModalPlatformAsync(bool animated)
 		{
 			Page modal = CurrentPlatformModalPage;
 			_platformModalPages.Remove(modal);
-
-			TaskCompletionSource<Page> tcs = new();
 
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
 
 			var dialogFragmentId = _modals.Pop();
 			var dialogFragment = (ModalFragment?)fragmentManager.FindFragmentByTag(dialogFragmentId);
 
+			// If for the dialog is null what we want to do?
 			if (dialogFragment is null)
 			{
-				tcs.TrySetResult(modal);
-				return tcs.Task;
+				return Task.FromResult(modal);
 			}
 
-			EventHandler? OnDialogDismiss = null;
+			var source = new TaskCompletionSource<Page>();
 
-			OnDialogDismiss = (_, _) =>
+			if (animated && dialogFragment.View is not null)
 			{
-				dialogFragment.DialogDismissEvent -= OnDialogDismiss;
-				tcs.TrySetResult(modal);
-			};
+				_dismissAnimation ??= AnimationUtils.LoadAnimation(WindowMauiContext.Context, Resource.Animation.nav_modal_default_exit_anim)!;
 
-			dialogFragment.DialogDismissEvent += OnDialogDismiss;
+				_dismissAnimation.AnimationEnd += OnAnimationEnded;
 
-			if (animated)
-			{
-				dialogFragment.Dialog?.Window?.SetWindowAnimations(Resource.Style.modal_exit_animation);
-				modal.Dispatcher.Dispatch(() => dialogFragment.Dismiss());
+				dialogFragment.View.StartAnimation(_dismissAnimation);
 			}
 			else
 			{
 				dialogFragment.Dismiss();
+				source.TrySetResult(modal);
 			}
 
-			return tcs.Task;
+			return source.Task;
+
+			void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
+			{
+				if (sender is not AAnimation animation)
+				{
+					return;
+				}
+
+				animation.AnimationEnd -= OnAnimationEnded;
+				dialogFragment.Dismiss();
+				source.TrySetResult(modal);
+				_dismissAnimation = null;
+			}
 		}
 
 		// The CurrentPage doesn't represent the root of the platform hierarchy.
@@ -150,6 +192,8 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			TaskCompletionSource<bool> animationCompletionSource = new();
 
+			var parentView = GetModalParentView();
+
 			var dialogFragment = new ModalFragment(WindowMauiContext, modal)
 			{
 				Cancelable = false,
@@ -159,20 +203,27 @@ namespace Microsoft.Maui.Controls.Platform
 			var fragmentManager = WindowMauiContext.GetFragmentManager();
 			var dialogFragmentId = AView.GenerateViewId().ToString();
 			_modals.Push(dialogFragmentId);
-
-			EventHandler? OnDialogShown = null;
-
-			OnDialogShown = (_, _) =>
-			{
-				dialogFragment!.DialogShowEvent -= OnDialogShown;
-				animationCompletionSource.SetResult(true);
-			};
-
-			dialogFragment!.DialogShowEvent += OnDialogShown;
-
 			dialogFragment.Show(fragmentManager, dialogFragmentId);
 
-			await animationCompletionSource.Task;
+			if (animated)
+			{
+				NavAnimationInProgress = true;
+				dialogFragment!.AnimationEnded += OnAnimationEnded;
+
+				await animationCompletionSource.Task;
+			}
+			else
+			{
+				NavAnimationInProgress = false;
+				animationCompletionSource.TrySetResult(true);
+			}
+
+			void OnAnimationEnded(object? sender, EventArgs e)
+			{
+				dialogFragment!.AnimationEnded -= OnAnimationEnded;
+				NavAnimationInProgress = false;
+				animationCompletionSource.SetResult(true);
+			}
 		}
 
 		internal class ModalFragment : DialogFragment
@@ -180,9 +231,11 @@ namespace Microsoft.Maui.Controls.Platform
 			Page _modal;
 			IMauiContext _mauiWindowContext;
 			NavigationRootManager? _navigationRootManager;
-			public event EventHandler? DialogShowEvent;
-			public event EventHandler? DialogDismissEvent;
 			static readonly ColorDrawable TransparentColorDrawable = new(AColor.Transparent);
+			bool _pendingAnimation = true;
+
+			public event EventHandler? AnimationEnded;
+
 
 			public bool IsAnimated { get; internal set; }
 
@@ -209,20 +262,6 @@ namespace Microsoft.Maui.Controls.Platform
 				if (attributes is not null)
 				{
 					dialog.Window.SetSoftInputMode(attributes.SoftInputMode);
-				}
-				EventHandler? OnDialogShown = null;
-
-				OnDialogShown = (_, _) =>
-				{
-					dialog.ShowEvent -= OnDialogShown;
-					DialogShowEvent?.Invoke(this, EventArgs.Empty);
-				};
-
-				dialog.ShowEvent += OnDialogShown;
-
-				if (IsAnimated)
-				{
-					dialog.Window.SetWindowAnimations(Resource.Style.modal_enter_animation);
 				}
 
 				if (mainActivityWindow is not null)
@@ -317,13 +356,29 @@ namespace Microsoft.Maui.Controls.Platform
 				int width = ViewGroup.LayoutParams.MatchParent;
 				int height = ViewGroup.LayoutParams.MatchParent;
 				dialog.Window.SetLayout(width, height);
+
+				if (IsAnimated)
+				{
+					var animation = AnimationUtils.LoadAnimation(_mauiWindowContext.Context, Resource.Animation.nav_modal_default_enter_anim)!;
+					View.StartAnimation(animation);
+
+					animation.AnimationEnd += OnAnimationEnded;
+				}
+
+				void OnAnimationEnded(object? sender, AAnimation.AnimationEndEventArgs e)
+				{
+					if (sender is not AAnimation animation)
+					{
+						return;
+					}
+
+					animation.AnimationEnd -= OnAnimationEnded;
+					FireAnimationEnded();
+				}
 			}
 
 			public override void OnDismiss(IDialogInterface dialog)
 			{
-				base.OnDismiss(dialog);
-				DialogDismissEvent?.Invoke(this, EventArgs.Empty);
-				DialogDismissEvent = null;
 				_modal.PropertyChanged -= OnModalPagePropertyChanged;
 				_modal.HandlerChanged -= OnPageHandlerChanged;
 
@@ -337,7 +392,26 @@ namespace Microsoft.Maui.Controls.Platform
 				_mauiWindowContext = null!;
 				_navigationRootManager?.Disconnect();
 				_navigationRootManager = null;
+				base.OnDismiss(dialog);
 			}
+
+			public override void OnDestroy()
+			{
+				base.OnDestroy();
+				FireAnimationEnded();
+			}
+
+			void FireAnimationEnded()
+			{
+				if (!_pendingAnimation)
+				{
+					return;
+				}
+
+				_pendingAnimation = false;
+				AnimationEnded?.Invoke(this, EventArgs.Empty);
+			}
+
 
 			sealed class CustomComponentDialog : ComponentDialog
 			{
