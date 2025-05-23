@@ -25,6 +25,18 @@ namespace Microsoft.Maui.Controls.XamlC
 			yield return Instruction.Create(OpCodes.Ldsfld, bpRef);
 		}
 
+		static bool IsOfAnyType(XmlType xmlType, params string[] types)
+		{
+			if (types == null || types.Length == 0)
+				return false;
+			if (xmlType == null)
+				return false;
+			if (xmlType.NamespaceUri != XamlParser.MauiUri && xmlType.NamespaceUri != XamlParser.MauiGlobalUri)
+				return false;
+			if (types.Contains(xmlType.Name))
+				return true;
+			return false;
+		}
 		public FieldReference GetBindablePropertyFieldReference(string value, ILContext context, ModuleDefinition module, BaseNode node)
 		{
 			FieldReference bpRef = null;
@@ -34,24 +46,18 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (parts.Length == 1)
 			{
 				var parent = node.Parent?.Parent as IElementNode ?? (node.Parent?.Parent as IListNode)?.Parent as IElementNode;
-				if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.MauiUri
-					&& ((node.Parent as ElementNode)?.XmlType.Name == nameof(Setter)
-						|| (node.Parent as ElementNode)?.XmlType.Name == nameof(PropertyCondition)))
+				if (IsOfAnyType((node.Parent as ElementNode)?.XmlType, nameof(Setter), nameof(PropertyCondition)))
 				{
-					if (parent.XmlType.NamespaceUri == XamlParser.MauiUri &&
-						(parent.XmlType.Name == nameof(Trigger)
-						 || parent.XmlType.Name == nameof(DataTrigger)
-						 || parent.XmlType.Name == nameof(MultiTrigger)
-						 || parent.XmlType.Name == nameof(Style)))
+					if (IsOfAnyType(parent.XmlType, nameof(Trigger), nameof(DataTrigger), nameof(MultiTrigger), nameof(Style)))
 					{
 						typeName = GetTargetTypeName(parent);
 					}
-					else if (parent.XmlType.NamespaceUri == XamlParser.MauiUri && parent.XmlType.Name == nameof(VisualState))
+					else if (IsOfAnyType(parent.XmlType, nameof(VisualState)))
 					{
 						typeName = FindTypeNameForVisualState(parent, node);
 					}
 				}
-				else if ((node.Parent as ElementNode)?.XmlType.NamespaceUri == XamlParser.MauiUri && (node.Parent as ElementNode)?.XmlType.Name == nameof(Trigger))
+				else if (IsOfAnyType((node.Parent as ElementNode)?.XmlType, nameof(Trigger)))
 				{
 					typeName = GetTargetTypeName(node.Parent);
 				}
@@ -86,19 +92,19 @@ namespace Microsoft.Maui.Controls.XamlC
 			//1. parent is VisualState, don't check that
 
 			//2. check that the VS is in a VSG
-			if (!(parent.Parent is IElementNode target) || target.XmlType.NamespaceUri != XamlParser.MauiUri || target.XmlType.Name != nameof(VisualStateGroup))
+			// if (!(parent.Parent is IElementNode target) || target.XmlType.NamespaceUri != XamlParser.MauiUri || target.XmlType.Name != nameof(VisualStateGroup))
+			if (!(parent.Parent is IElementNode target) || !IsOfAnyType(target.XmlType, nameof(VisualStateGroup)))
 				throw new XamlParseException($"Expected {nameof(VisualStateGroup)} but found {parent.Parent}", lineInfo);
 
 			//3. if the VSG is in a VSGL, skip that as it could be implicit
 			if (target.Parent is ListNode
-				|| ((target.Parent as IElementNode)?.XmlType.NamespaceUri == XamlParser.MauiUri
-				   && (target.Parent as IElementNode)?.XmlType.Name == nameof(VisualStateGroupList)))
+				|| IsOfAnyType((target.Parent as IElementNode)?.XmlType, nameof(VisualStateGroupList)))
 				target = target.Parent.Parent as IElementNode;
 			else
 				target = target.Parent as IElementNode;
 
 			//4. target is now a Setter in a Style, or a VE
-			if (target.XmlType.NamespaceUri == XamlParser.MauiUri && target.XmlType.Name == nameof(Setter))
+			if (IsOfAnyType(target.XmlType, nameof(Setter)))
 				return ((target?.Parent as IElementNode)?.Properties[new XmlName("", "TargetType")] as ValueNode)?.Value as string;
 			else
 				return target.XmlType.Name;
