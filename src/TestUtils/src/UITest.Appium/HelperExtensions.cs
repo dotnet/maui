@@ -2160,7 +2160,13 @@ namespace UITest.Appium
 			}
 		}
 
-		public static void WaitForNoElementFlyoutIcon(this IApp app, string automationId = "", bool isShell = true)
+		/// <summary>
+		/// Waits for the flyout icon to disappear in the app.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="automationId">The automation ID of the flyout icon (default is an empty string).</param>
+		/// <param name="isShell">Indicates whether the app is using Shell navigation (default is true).</param>
+		public static void WaitForNoFlyoutIcon(this IApp app, string automationId = "", bool isShell = true)
 		{
 			if (app is AppiumAndroidApp)
 			{

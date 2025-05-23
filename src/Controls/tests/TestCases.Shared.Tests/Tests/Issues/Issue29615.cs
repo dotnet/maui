@@ -18,7 +18,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.WaitForElement("DisabledButton");
 			App.WaitForFlyoutIcon();
 			App.Tap("DisabledButton");
-			App.WaitForNoElementFlyoutIcon();
+			App.WaitForNoFlyoutIcon();
 		}
 	}
 }
