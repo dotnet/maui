@@ -84,7 +84,7 @@ stages:
               steps:
               - ${{ each step in parameters.prepareSteps }}:
                 - ${{ each pair in step }}:
-                  ${{ pair.key }}: ${{ pair.value }}
+                    ${{ pair.key }}: ${{ pair.value }}
 
               - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/buildtasks_${{ BuildPlatform.os }}.binlog $(_OfficialBuildIdArgs)
                 displayName: 🛠️ Build BuildTasks
@@ -123,7 +123,7 @@ stages:
               steps:
               - ${{ each step in parameters.prepareSteps }}:
                 - ${{ each pair in step }}:
-                  ${{ pair.key }}: ${{ pair.value }}
+                    ${{ pair.key }}: ${{ pair.value }}
 
               - script: ${{ BuildPlatform.buildScript }} -restore -build -configuration ${{ BuildConfiguration }} -projects "${{ parameters.buildTaskProjects }}" /p:ArchiveTests=false /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors) /bl:$(Build.Arcade.LogsPath)${{ BuildConfiguration }}/buildtasks_${{ BuildPlatform.os }}.binlog $(_OfficialBuildIdArgs)
                 displayName: 🛠️ Build BuildTasks
