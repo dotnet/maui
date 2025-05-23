@@ -65,8 +65,9 @@ and accurately assign labels to new issues that are opened.
   reason for the selection and the rejection.
 
 **Response**
-Please reply in valid and properly formatted JSON with the
-following structure and only in this structure:
+* Respond in valid and properly formatted JSON with the
+  following structure and only in this structure.
+* Do not wrap the JSON in any other text or formatting.
 
 {
   "label": "LABEL_NAME_HERE",

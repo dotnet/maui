@@ -97,5 +97,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
 
       - name: Log AI Analysis
+        shell: pwsh
         run: |
-          echo "${{ steps.inference.outputs.response }}"
+          @"
+          ${{ steps.inference.outputs.response }}
+          "@
