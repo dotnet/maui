@@ -33,17 +33,45 @@
 						VerticalOptions = LayoutOptions.Fill,
 						HorizontalOptions = LayoutOptions.Fill,
 						BackgroundColor = Colors.Green,
-						Content = new StackLayout
+						Content =
+						new VerticalStackLayout
 						{
-							HorizontalOptions = LayoutOptions.Fill,
-							VerticalOptions = LayoutOptions.Center,
-							BackgroundColor = Colors.Red,
-							Children = {
-								new Label
-								{
-									Text = "Hello"
-								},
-							}
+						 	new StackLayout
+							{
+								HorizontalOptions = LayoutOptions.Fill,
+								VerticalOptions = LayoutOptions.Center,
+								BackgroundColor = Colors.Red,
+								Children = {
+									new Label
+									{
+										Text = "Fill"
+									},
+								}
+							},
+							new StackLayout
+							{
+								HorizontalOptions = LayoutOptions.End,
+								VerticalOptions = LayoutOptions.Center,
+								BackgroundColor = Colors.Red,
+								Children = {
+									new Label
+									{
+										Text = "End"
+									},
+								}
+							},
+							new StackLayout
+							{
+								HorizontalOptions = LayoutOptions.Start,
+								VerticalOptions = LayoutOptions.Center,
+								BackgroundColor = Colors.Red,
+								Children = {
+									new Label
+									{
+										Text = "Start"
+									},
+								}
+							},
 						}
 					}
 			}
