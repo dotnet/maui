@@ -58,17 +58,16 @@ public static class KeyboardAutoManagerScroll
 			return;
 		}
 
-		TextFieldToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UITextFieldTextDidBeginEditingNotification"), DidUITextBeginEditing);
+		TextFieldToken = NSNotificationCenter.DefaultCenter.AddObserver(UITextField.TextDidBeginEditingNotification, DidUITextBeginEditing);
 
-		TextViewToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UITextViewTextDidBeginEditingNotification"), DidUITextBeginEditing);
+		TextViewToken = NSNotificationCenter.DefaultCenter.AddObserver(UITextView.TextDidBeginEditingNotification, DidUITextBeginEditing);
 
-		WillShowToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillShowNotification"), WillKeyboardShow);
+		WillShowToken = NSNotificationCenter.DefaultCenter.AddObserver(UIKeyboard.WillShowNotification, WillKeyboardShow);
 
-		WillHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillHideNotification"), WillHideKeyboard);
+		WillHideToken = NSNotificationCenter.DefaultCenter.AddObserver(UIKeyboard.WillHideNotification, WillHideKeyboard);
 
-		DidHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardDidHideNotification"), DidHideKeyboard);
+		DidHideToken = NSNotificationCenter.DefaultCenter.AddObserver(UIKeyboard.DidHideNotification, DidHideKeyboard);
 
-		// Add observer for when the keyboard has fully shown
 		DidShowToken = NSNotificationCenter.DefaultCenter.AddObserver(UIKeyboard.DidShowNotification, DidKeyboardShow);
 	}
 
@@ -99,7 +98,6 @@ public static class KeyboardAutoManagerScroll
 			NSNotificationCenter.DefaultCenter.RemoveObserver(DidHideToken);
 			DidHideToken = null;
 		}
-		// Remove observer for when the keyboard has fully shown
 		if (DidShowToken is not null)
 		{
 			NSNotificationCenter.DefaultCenter.RemoveObserver(DidShowToken);
@@ -294,18 +292,23 @@ public static class KeyboardAutoManagerScroll
 			needsCorrection = true;
 		}
 
-		if (needsCorrection)
+		if (!needsCorrection)
 		{
-			// Ensure new offset is within valid bounds
-			newScrollOffsetY = (nfloat)Math.Max(newScrollOffsetY, -LastScrollView.ContentInset.Top);
-			var maxScrollY = LastScrollView.ContentSize.Height - LastScrollView.Bounds.Height + LastScrollView.ContentInset.Bottom;
-			newScrollOffsetY = (nfloat)Math.Min(newScrollOffsetY, maxScrollY);
+			return;
+		}
 
-			// Apply the correction without animation
-			if (Math.Abs(currentScrollOffset.Y - newScrollOffsetY) > 0.1) // Check if change is meaningful
+		// Ensure new offset is within valid bounds
+		newScrollOffsetY = (nfloat)Math.Max(newScrollOffsetY, -LastScrollView.ContentInset.Top);
+		var maxScrollY = LastScrollView.ContentSize.Height - LastScrollView.Bounds.Height + LastScrollView.ContentInset.Bottom;
+		newScrollOffsetY = (nfloat)Math.Min(newScrollOffsetY, maxScrollY);
+
+		// Apply the correction with animation
+		if (Math.Abs(currentScrollOffset.Y - newScrollOffsetY) > 0.1) // Check if change is meaningful
+		{
+			UIView.Animate(0.03, 0, UIViewAnimationOptions.CurveEaseOut, () =>
 			{
 				LastScrollView.SetContentOffset(new CGPoint(currentScrollOffset.X, newScrollOffsetY), animated: false);
-			}
+			}, () => { });
 		}
 	}
 
