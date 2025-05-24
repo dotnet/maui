@@ -350,7 +350,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_defaultVerticalScrollVisibility = null;
 
 			UpdateItemTemplate();
-			UpdateItemsSource();
 			UpdateScrollBarVisibility();
 			UpdateEmptyView();
 		}

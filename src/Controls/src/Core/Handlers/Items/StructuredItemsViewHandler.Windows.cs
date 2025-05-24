@@ -42,7 +42,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 				UpdateItemsLayoutSpan();		
 				UpdateItemsLayoutItemSpacing();
-				UpdateItemsLayoutItemSpacing();
 		}
 
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
