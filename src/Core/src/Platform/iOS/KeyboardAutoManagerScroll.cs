@@ -237,15 +237,15 @@ public static class KeyboardAutoManagerScroll
 		var intersectRect = CGRect.Intersect(KeyboardFrame, window.Frame);
 		var kbSize = intersectRect == CGRect.Empty ? new CGSize(KeyboardFrame.Width, 0) : intersectRect.Size;
 
-		nfloat statusBarHeight;
 		nfloat navigationBarAreaHeight;
 
-		if (View.FindResponder<UINavigationController>() is UINavigationController navigationController)
+		if (View.FindResponder<UINavigationController>() is { } navigationController)
 		{
 			navigationBarAreaHeight = navigationController.NavigationBar.Frame.GetMaxY();
 		}
 		else
 		{
+			nfloat statusBarHeight;
 			if (OperatingSystem.IsIOSVersionAtLeast(13, 0))
 			{
 				statusBarHeight = window.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? 0;
