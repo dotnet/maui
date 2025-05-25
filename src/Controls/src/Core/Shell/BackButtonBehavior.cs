@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.ComponentModel;
 using System.Windows.Input;
 
 namespace Microsoft.Maui.Controls
@@ -72,6 +73,27 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (string)GetValue(TextOverrideProperty); }
 			set { SetValue(TextOverrideProperty, value); }
+		}
+
+		/// <summary>
+		/// Occurs when the button is clicked/tapped.
+		/// </summary>
+		public event EventHandler Clicked;
+
+		/// <summary>
+		/// Internal method to trigger the <see cref="Clicked"/> event.
+		/// Should not be called manually outside of .NET MAUI.
+		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		public bool SendClicked()
+		{
+			if (Clicked == null)
+				return false;
+			else
+			{
+				Clicked.Invoke(this, EventArgs.Empty);
+				return true;
+			}
 		}
 
 		bool IsEnabledCore { set => SetValue(IsEnabledProperty, value); }
