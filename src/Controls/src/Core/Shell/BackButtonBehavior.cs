@@ -89,6 +89,20 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextOverrideProperty, value); }
 		}
 
+		/// <summary>
+		/// Occurs when the back button is clicked/tapped.
+		/// </summary>
+		public event EventHandler Clicked;
+
+		internal bool SendClicked()
+		{
+			if (Clicked == null)
+				return false;
+
+			Clicked.Invoke(this, EventArgs.Empty);
+			return true;
+		}
+
 		bool IsEnabledCore { set => SetValue(IsEnabledProperty, value); }
 
 		static void OnCommandChanged(BindableObject bindable, object oldValue, object newValue)

@@ -1593,6 +1593,11 @@ namespace Microsoft.Maui.Controls
 				if (command != null)
 				{
 					command.Execute(commandParameter);
+					backButtonBehavior.SendClicked();
+					return true;
+				}
+				else if (backButtonBehavior.SendClicked())
+				{
 					return true;
 				}
 			}

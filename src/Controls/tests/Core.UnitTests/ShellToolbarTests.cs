@@ -83,6 +83,96 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task BackButtonClickedEventFiresWithCommand()
+		{
+			var pushedPage = new ContentPage();
+			TestShell testShell = new TestShell(new ContentPage());
+			var window = new Window()
+			{
+				Page = testShell
+			};
+
+			bool clickedFired = false;
+			bool commandExecuted = false;
+			var command = new Command((p) => commandExecuted = true);
+
+			var backButtonBehavior = new BackButtonBehavior()
+			{
+				Command = command,
+			};
+
+			backButtonBehavior.Clicked += (s, e) => clickedFired = true;
+
+			await testShell.Navigation.PushAsync(pushedPage);
+			Shell.SetBackButtonBehavior(pushedPage, backButtonBehavior);
+
+			(window as IWindow).BackButtonClicked();
+
+			Assert.True(commandExecuted);
+			Assert.True(clickedFired);
+		}
+
+		[Fact]
+		public async Task BackButtonClickedEventFiresWithoutCommand()
+		{
+			var pushedPage = new ContentPage();
+			TestShell testShell = new TestShell(new ContentPage());
+			var window = new Window()
+			{
+				Page = testShell
+			};
+
+			bool clickedFired = false;
+			var backButtonBehavior = new BackButtonBehavior();
+			backButtonBehavior.Clicked += (s, e) => clickedFired = true;
+
+			await testShell.Navigation.PushAsync(pushedPage);
+			Shell.SetBackButtonBehavior(pushedPage, backButtonBehavior);
+
+			(window as IWindow).BackButtonClicked();
+
+			Assert.True(clickedFired);
+			// Should not navigate back when Clicked handler is attached
+			Assert.Equal(pushedPage, testShell.CurrentPage);
+		}
+
+		[Fact]
+		public async Task BackButtonNavigatesBackWhenNoClickedHandler()
+		{
+			var pushedPage = new ContentPage();
+			TestShell testShell = new TestShell(new ContentPage());
+			var window = new Window()
+			{
+				Page = testShell
+			};
+
+			var backButtonBehavior = new BackButtonBehavior();
+
+			await testShell.Navigation.PushAsync(pushedPage);
+			Shell.SetBackButtonBehavior(pushedPage, backButtonBehavior);
+
+			(window as IWindow).BackButtonClicked();
+
+			// With no command and no Clicked handler, should navigate back
+			Assert.NotEqual(pushedPage, testShell.CurrentPage);
+		}
+
+		[Fact]
+		public void SendClickedReturnsFalseWhenNoHandler()
+		{
+			var backButtonBehavior = new BackButtonBehavior();
+			Assert.False(backButtonBehavior.SendClicked());
+		}
+
+		[Fact]
+		public void SendClickedReturnsTrueWhenHandlerAttached()
+		{
+			var backButtonBehavior = new BackButtonBehavior();
+			backButtonBehavior.Clicked += (s, e) => { };
+			Assert.True(backButtonBehavior.SendClicked());
+		}
+
+		[Fact]
 		public async Task BackButtonDisabledWhenCommandDisabled()
 		{
 			var page = new ContentPage();

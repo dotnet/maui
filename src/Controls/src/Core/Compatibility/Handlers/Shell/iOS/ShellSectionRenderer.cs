@@ -140,6 +140,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 							command.Execute(commandParameter);
 						}
 
+						behavior.SendClicked();
+						return false;
+					}
+					else if (behavior.SendClicked())
+					{
 						return false;
 					}
 
