@@ -80,7 +80,7 @@
     <MicrosoftAspNetCoreComponentsWebViewPackageVersion>9.0.5</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>9.0.5</MicrosoftAspNetCoreMetadataPackageVersion>
     <!-- Everything else (previous edition) -->
-    <MicrosoftAspNetCorePackageVersion>8.0.10</MicrosoftAspNetCorePackageVersion>
+    <MicrosoftAspNetCorePackageVersion>8.0.16</MicrosoftAspNetCorePackageVersion>
     <MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthorizationPreviousPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthenticationFacebookPreviousPackageVersion>
     <MicrosoftAspNetCoreAuthenticationGooglePreviousPackageVersion>$(MicrosoftAspNetCorePackageVersion)</MicrosoftAspNetCoreAuthenticationGooglePreviousPackageVersion>
