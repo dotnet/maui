@@ -14,7 +14,10 @@ public class Issue29325 : _IssuesUITest
 	[Category(UITestCategories.Button)]
 	public void ShouldUpdateButtonShadowWithTransparentColor()
 	{
-		App.WaitForElement("Button");
+		App.WaitForElement("withoutAlphaOpacityButton");
+		App.WaitForElement("alphaButton");
+		App.WaitForElement("opacityButton");
+		App.WaitForElement("alphaOpacityButton");
 		VerifyScreenshot();
 	}
 }
