@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var yasm = GetAssemblyName(y);
 
 			//standard types comes from either mscorlib. System.Runtime or netstandard. Assume they are equivalent
-			if (IsSystemAssemvly(xasm) && IsSystemAssemvly(yasm))
+			if (IsSystemAssembly(xasm) && IsSystemAssembly(yasm))
 				return true;
 			return xasm == yasm;
 		}
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public int GetHashCode(TypeReference obj)
 		{
 			var assemblyName = GetAssemblyName(obj);
-			if (IsSystemAssemvly(assemblyName))
+			if (IsSystemAssembly(assemblyName))
 				return obj.FullName.GetHashCode();
 			return assemblyName.GetHashCode() ^ obj.FullName.GetHashCode();
 		}
