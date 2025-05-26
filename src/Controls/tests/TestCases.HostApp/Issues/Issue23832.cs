@@ -60,7 +60,7 @@ internal class Issue23832_ResizeDrawable : IDrawable
             image = PlatformImage.FromStream(stream);
         }
 
-        if (image != null)
+        if (image is not null)
         {
             IImage newImage = image.Resize(400, 300, ResizeMode.Fit, false);
             canvas.DrawImage(newImage, 0, 0, newImage.Width, newImage.Height);
@@ -79,7 +79,7 @@ internal class Issue23832_DownsizeDrawable : IDrawable
             image = PlatformImage.FromStream(stream);
         }
 
-        if (image != null)
+        if (image is not null)
         {
             IImage newImage = image.Downsize(400, 300);
             canvas.DrawImage(newImage, 0, 0, newImage.Width, newImage.Height);
