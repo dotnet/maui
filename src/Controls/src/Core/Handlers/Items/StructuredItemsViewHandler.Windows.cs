@@ -306,13 +306,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (Layout is LinearItemsLayout linearItemsLayout)
 			{
-				switch (ListViewBase)
+				switch (linearItemsLayout.Orientation)
 				{
-					case FormsListView formsListView:
-						formsListView.ItemContainerStyle = GetVerticalItemContainerStyle(linearItemsLayout);
+					case ItemsLayoutOrientation.Vertical:
+						ListViewBase.ItemContainerStyle = GetVerticalItemContainerStyle(linearItemsLayout);
 						break;
-					case WListView listView:
-						listView.ItemContainerStyle = GetHorizontalItemContainerStyle(linearItemsLayout);
+					case ItemsLayoutOrientation.Horizontal:
+						ListViewBase.ItemContainerStyle = GetHorizontalItemContainerStyle(linearItemsLayout);
 						break;
 				}
 			}
