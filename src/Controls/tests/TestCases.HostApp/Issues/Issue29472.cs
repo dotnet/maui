@@ -7,7 +7,7 @@ public class Issue29472 : ContentPage
 	{
 		Label descriptionLabel = new Label
 		{
-			Text = "The test passes only when the CarouselView's ItemsSource is dynamically set to null; otherwise, it fails.",
+			Text = "The test passes if the previously bound items are cleared from the view when the ItemsSource is dynamically set to null; otherwise, it fails.",
 			FontSize = 16,
 			HorizontalOptions = LayoutOptions.Center
 		};
