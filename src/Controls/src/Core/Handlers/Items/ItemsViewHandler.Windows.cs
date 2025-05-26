@@ -351,8 +351,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			UpdateItemTemplate();
 			UpdateItemsSource();
-			UpdateVerticalScrollBarVisibility();
-			UpdateHorizontalScrollBarVisibility();
+			UpdateScrollBarVisibility();
 			UpdateEmptyView();
 		}
 
@@ -374,6 +373,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			listView.Loaded += ListViewLoaded;
+		}
+
+		internal void UpdateScrollBarVisibility()
+		{
+			UpdateVerticalScrollBarVisibility();
+			UpdateHorizontalScrollBarVisibility();
 		}
 
 		void UpdateVerticalScrollBarVisibility()

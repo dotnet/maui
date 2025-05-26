@@ -1,13 +1,16 @@
-namespace Microsoft.Maui
+namespace Microsoft.Maui;
+
+/// <summary>
+/// Specifies the behavior of a SwipeView when an item is invoked.
+/// </summary>
+public enum SwipeBehaviorOnInvoked
 {
-	/// <include file="../../docs/Microsoft.Maui/SwipeBehaviorOnInvoked.xml" path="Type[@FullName='Microsoft.Maui.SwipeBehaviorOnInvoked']/Docs/*" />
-	public enum SwipeBehaviorOnInvoked
-	{
-		/// <include file="../../docs/Microsoft.Maui/SwipeBehaviorOnInvoked.xml" path="//Member[@MemberName='Auto']/Docs/*" />
-		Auto,       // In Reveal mode, the SwipeView closes after an item is invoked. In Execute mode, the SwipeView remains open.
-		/// <include file="../../docs/Microsoft.Maui/SwipeBehaviorOnInvoked.xml" path="//Member[@MemberName='Close']/Docs/*" />
-		Close,      // The SwipeView closes after an item is invoked.
-		/// <include file="../../docs/Microsoft.Maui/SwipeBehaviorOnInvoked.xml" path="//Member[@MemberName='RemainOpen']/Docs/*" />
-		RemainOpen  // The SwipeView remains open after an item is invoked.
-	}
+	/// <summary>In Reveal mode, the SwipeView closes after invocation; in Execute mode, remains open.</summary>
+	Auto,
+
+	/// <summary>The SwipeView closes after an item is invoked.</summary>
+	Close,
+
+	/// <summary>The SwipeView remains open after an item is invoked.</summary>
+	RemainOpen
 }
