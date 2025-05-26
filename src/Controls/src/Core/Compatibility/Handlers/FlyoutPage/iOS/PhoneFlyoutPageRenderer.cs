@@ -378,12 +378,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element is FlyoutPage flyoutPage && flyoutPage is ISafeAreaView sav &&
 			 !sav.IgnoreSafeArea && OperatingSystem.IsIOSVersionAtLeast(11))
 			{
-				var safeAreaInsets = View.SafeAreaInsets;
+				var safeAreaTop = View.SafeAreaInsets.Top;
 
-				if (safeAreaInsets.Top > 0)
+				if (safeAreaTop > 0)
 				{
-					frame.Y = safeAreaInsets.Top;
-					frame.Height -= safeAreaInsets.Top;
+					frame.Y = safeAreaTop;
+					frame.Height -= safeAreaTop;
 				}
 			}
 
