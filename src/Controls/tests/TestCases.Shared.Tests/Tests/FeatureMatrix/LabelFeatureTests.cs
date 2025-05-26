@@ -155,15 +155,12 @@ public class LabelFeatureTests : UITest
 
 	[Test, Order(7)]
 	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithFormattedTextWhenFontSizeAndTextColor()
+	public void VerifyLabelWithFormattedTextWhenTextColor()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(FormattedText);
 		App.Tap(FormattedText);
-		App.WaitForElement(FontSizeEntry);
-		App.ClearText(FontSizeEntry);
-		App.EnterText(FontSizeEntry, "24");
 		App.WaitForElement(TextColorRed);
 		App.Tap(TextColorRed);
 		App.WaitForElement(Apply);
@@ -214,23 +211,6 @@ public class LabelFeatureTests : UITest
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/27828
 	[Test, Order(10)]
 	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithFormattedTextAndCharacterSpacing()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(FormattedText);
-		App.Tap(FormattedText);
-		App.WaitForElement(CharacterSpacingEntry);
-		App.ClearText(CharacterSpacingEntry);
-		App.EnterText(CharacterSpacingEntry, "3");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(MainLabel);
-		VerifyScreenshot();
-	}
-
-	[Test, Order(11)]
-	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextAndLineHeight()
 	{
 		App.WaitForElement(Options);
@@ -246,39 +226,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(12)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithFormattedTextWhenFontAttributesBold()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(FormattedText);
-		App.Tap(FormattedText);
-		App.WaitForElement(FontAttributesBold);
-		App.Tap(FontAttributesBold);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(MainLabel);
-		VerifyScreenshot();
-	}
-
-	[Test, Order(13)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithFormattedTextWhenFontAttributesItalic()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(FormattedText);
-		App.Tap(FormattedText);
-		App.WaitForElement(FontAttributesItalic);
-		App.Tap(FontAttributesItalic);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement(MainLabel);
-		VerifyScreenshot();
-	}
-
-	[Test, Order(14)]
+	[Test, Order(11)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenTextDecorationsUnderLine()
 	{
@@ -294,7 +242,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(15)]
+	[Test, Order(12)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenTextDecorationsStrikethrough()
 	{
@@ -304,6 +252,56 @@ public class LabelFeatureTests : UITest
 		App.Tap(FormattedText);
 		App.WaitForElement(TextDecorationsStrike);
 		App.Tap(TextDecorationsStrike);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(MainLabel);
+		VerifyScreenshot();
+	}
+
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/27828
+	[Test, Order(13)]
+	[Category(UITestCategories.Label)]
+	public void VerifyLabelWithFormattedTextAndCharacterSpacing()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(FormattedText);
+		App.Tap(FormattedText);
+		App.WaitForElement(CharacterSpacingEntry);
+		App.ClearText(CharacterSpacingEntry);
+		App.EnterText(CharacterSpacingEntry, "3");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(MainLabel);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(14)]
+	[Category(UITestCategories.Label)]
+	public void VerifyLabelWithFormattedTextWhenFontAttributesBold()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(FormattedText);
+		App.Tap(FormattedText);
+		App.WaitForElement(FontAttributesBold);
+		App.Tap(FontAttributesBold);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(MainLabel);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(15)]
+	[Category(UITestCategories.Label)]
+	public void VerifyLabelWithFormattedTextWhenFontAttributesItalic()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(FormattedText);
+		App.Tap(FormattedText);
+		App.WaitForElement(FontAttributesItalic);
+		App.Tap(FontAttributesItalic);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement(MainLabel);
@@ -342,9 +340,29 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 #endif
+#endif
 
-#if TEST_FAILS_ON_ANDROID // Issue Link: https://github.com/dotnet/maui/issues/22594
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/27828
     [Test, Order(18)]
+	[Category(UITestCategories.Label)]
+	public void VerifyLabelWithFormattedTextWhenFontSize()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(FormattedText);
+		App.Tap(FormattedText);
+		App.WaitForElement(FontSizeEntry);
+		App.ClearText(FontSizeEntry);
+		App.EnterText(FontSizeEntry, "24");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement(MainLabel);
+		VerifyScreenshot();
+	}
+#endif
+
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/22594, https://github.com/dotnet/maui/issues/21294
+    [Test, Order(19)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenLineBreakModeCharacterwrap()
 	{
@@ -360,7 +378,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test,Order(39)]
+	[Test, Order(43)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeCharacterWrap()
 	{
@@ -368,7 +386,7 @@ public class LabelFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(TextEntry);
 		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit vivamus lacinia felis eu sagittis congue nibh urna malesuada orci at fringilla quam turpis eget nunc");
+		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea");
 		App.WaitForElement(LineBreakModeCharacterWrap);
 		App.Tap(LineBreakModeCharacterWrap);
 		App.WaitForElement(Apply);
@@ -376,27 +394,10 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(63)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithTextTypeAndLineBreakModeCharacterWrap()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(TextEntry);
-		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "<b>Lorem ipsum dolor sit amet consectetur adipiscing elit vivamus lacinia felis eu sagittis congue nibh urna malesuada orci at fringilla quam turpis eget nunc</b>");
-		App.WaitForElement(TextTypeHtml);
-		App.Tap(TextTypeHtml);
-		App.WaitForElement(LineBreakModeCharacterWrap);
-		App.Tap(LineBreakModeCharacterWrap);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
 #endif
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/23159
-    [Test, Order(23)]
+	[Test, Order(20)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenLineBreakModeTailTruncation()
 	{
@@ -420,7 +421,7 @@ public class LabelFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(TextEntry);
 		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit vivamus lacinia felis eu sagittis congue nibh urna malesuada orci at fringilla quam turpis eget nunc");
+		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea");
 		App.WaitForElement(LineBreakModeTailTruncation);
 		App.Tap(LineBreakModeTailTruncation);
 		App.WaitForElement(Apply);
@@ -429,7 +430,7 @@ public class LabelFeatureTests : UITest
 	}
 #endif
 
-	[Test, Order(19)]
+	[Test, Order(21)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelwithFormattedTextWhemLineBreakModeWordwrap()
 	{
@@ -445,7 +446,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(20)]
+	[Test, Order(22)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenLineBreakModeNowrap()
 	{
@@ -461,7 +462,8 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(21)]
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/21294
+	[Test, Order(23)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenLineBreakModeHeadTruncation()
 	{
@@ -477,7 +479,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(22)]
+	[Test, Order(24)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenLineBreakModeMiddleTruncation()
 	{
@@ -492,8 +494,9 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(MainLabel);
 		VerifyScreenshot();
 	}
+#endif
 
-	[Test, Order(24)]
+	[Test, Order(25)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithText()
 	{
@@ -507,7 +510,7 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement("This is a Label");
 	}
 
-	[Test, Order(25)]
+	[Test, Order(26)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndFontSize()
 	{
@@ -524,7 +527,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(26)]
+	[Test, Order(27)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndFontColor()
 	{
@@ -540,7 +543,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(27)]
+	[Test, Order(28)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndTextTransform()
 	{
@@ -556,7 +559,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(28)]
+	[Test, Order(29)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndCharacterSpacing()
 	{
@@ -573,7 +576,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(29)]
+	[Test, Order(30)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndTextDecorations()
 	{
@@ -589,7 +592,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(30)]
+	[Test, Order(31)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndFontFamily()
 	{
@@ -605,7 +608,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(31)]
+	[Test, Order(32)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndFontAttributes()
 	{
@@ -621,7 +624,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(32)]
+	[Test, Order(33)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextWhenVerticalAndHorizontalAlignmentStart()
 	{
@@ -639,7 +642,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(33)]
+	[Test, Order(34)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextWhenVerticalAndHorizontalAlignmentCenter()
 	{
@@ -657,7 +660,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(34)]
+	[Test, Order(35)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextWhenVerticalAndHorizontalAlignmentEnd()
 	{
@@ -675,7 +678,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(35)]
+	[Test, Order(36)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextWhenPaddingApplied()
 	{
@@ -696,7 +699,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(36)]
+	[Test, Order(37)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndMaxlines()
 	{
@@ -704,7 +707,7 @@ public class LabelFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(TextEntry);
 		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit vivamus lacinia felis eu sagittis congue nibh urna malesuada orci at fringilla quam turpis eget nunc");
+		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea");
 		App.WaitForElement(MaxLinesEntry);
 		App.ClearText(MaxLinesEntry);
 		App.EnterText(MaxLinesEntry, "1");
@@ -713,17 +716,15 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(37)]
+	[Test, Order(38)]
 	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithTextWhenLineHeightAndLineBreakModeWordWrap()
+	public void VerifyLabelWithTextWhenLineHeight()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(TextEntry);
 		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit vivamus lacinia felis eu sagittis congue nibh urna malesuada orci at fringilla quam turpis eget nunc");
-		App.WaitForElement(LineBreakModeWordWrap);
-		App.Tap(LineBreakModeWordWrap);
+		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea");
 		App.WaitForElement(LineHeightEntry);
 		App.ClearText(LineHeightEntry);
 		App.EnterText(LineHeightEntry, "2");
@@ -732,7 +733,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(38)]
+	[Test, Order(39)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeNoWrap()
 	{
@@ -740,7 +741,7 @@ public class LabelFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(TextEntry);
 		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit vivamus lacinia felis eu sagittis congue nibh urna malesuada orci at fringilla quam turpis eget nunc");
+		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea");
 		App.WaitForElement(LineBreakModeNoWrap);
 		App.Tap(LineBreakModeNoWrap);
 		App.WaitForElement(Apply);
@@ -748,6 +749,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/21294
 	[Test, Order(40)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeHeadTruncation()
@@ -756,7 +758,7 @@ public class LabelFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(TextEntry);
 		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit vivamus lacinia felis eu sagittis congue nibh urna malesuada orci at fringilla quam turpis eget nunc");
+		App.EnterText(TextEntry, "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea");
 		App.WaitForElement(LineBreakModeHeadTruncation);
 		App.Tap(LineBreakModeHeadTruncation);
 		App.WaitForElement(Apply);
@@ -779,24 +781,9 @@ public class LabelFeatureTests : UITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+#endif
 
-	[Test, Order(43)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithTextAndFontType()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(TextEntry);
-		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "<b>Label</b>");
-		App.WaitForElement(TextTypeHtml);
-		App.Tap(TextTypeHtml);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-
-	[Test, Order(44)]
+	[Test, Order(45)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFontAttributesAndFontFamily()
 	{
@@ -814,7 +801,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(45)]
+	[Test, Order(46)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFontAttributesAndFontSize()
 	{
@@ -833,7 +820,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(46)]
+	[Test, Order(47)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFontAttributesAndTextColor()
 	{
@@ -851,7 +838,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(47)]
+	[Test, Order(48)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFontAttributesAndTextTransform()
 	{
@@ -869,7 +856,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(48)]
+	[Test, Order(49)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFontAttributesAndTextDecorations()
 	{
@@ -887,8 +874,24 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/20372
-	[Test, Order(49)]
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/20372,  https://github.com/dotnet/maui/issues/29672, https://github.com/dotnet/maui/issues/29668 
+    [Test, Order(44)]
+	[Category(UITestCategories.Label)]
+	public void VerifyLabelWithTextAndTextType()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(TextEntry);
+		App.ClearText(TextEntry);
+		App.EnterText(TextEntry, "<b>Label</b>");
+		App.WaitForElement(TextTypeHtml);
+		App.Tap(TextTypeHtml);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(50)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFontAttributesAndTextType()
 	{
@@ -905,9 +908,160 @@ public class LabelFeatureTests : UITest
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
+
+	[Test, Order(56)]
+	[Category(UITestCategories.Label)]
+	public void VerifyLabelWithTextTypeAndTextColor()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(TextEntry);
+		App.ClearText(TextEntry);
+		App.EnterText(TextEntry, "<b>Label</b>");
+		App.WaitForElement(TextTypeHtml);
+		App.Tap(TextTypeHtml);
+		App.WaitForElement(TextColorRed);
+		App.Tap(TextColorRed);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(57)]
+	[Category(UITestCategories.Label)]
+	public void VerifyLabelWithTextTypeAndFontSize()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(TextEntry);
+		App.ClearText(TextEntry);
+		App.EnterText(TextEntry, "<b>Label</b>");
+		App.WaitForElement(TextTypeHtml);
+		App.Tap(TextTypeHtml);
+		App.WaitForElement(FontSizeEntry);
+		App.ClearText(FontSizeEntry);
+		App.EnterText(FontSizeEntry, "24");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(58)]
+	[Category(UITestCategories.Label)]
+	public void VerifyLabelWithTextTypeAndLineBreakModeNoWrap()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(TextEntry);
+		App.ClearText(TextEntry);
+		App.EnterText(TextEntry, "<b>Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliquan ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea</b>");
+		App.WaitForElement(TextTypeHtml);
+		App.Tap(TextTypeHtml);
+		App.WaitForElement(LineBreakModeNoWrap);
+		App.Tap(LineBreakModeNoWrap);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(59)]
+	[Category(UITestCategories.Label)]
+	public void VerifyLabelWithTextTypeAndLineBreakModeWordWrap()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(TextEntry);
+		App.ClearText(TextEntry);
+		App.EnterText(TextEntry, "<b>LLorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea</b>");
+		App.WaitForElement(TextTypeHtml);
+		App.Tap(TextTypeHtml);
+		App.WaitForElement(LineBreakModeWordWrap);
+		App.Tap(LineBreakModeWordWrap);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(60)]
+	[Category(UITestCategories.Label)]
+	public void VerifyLabelWithFontFamilyAndTextType()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(TextEntry);
+		App.ClearText(TextEntry);
+		App.EnterText(TextEntry, "<b>Label</b>");
+		App.WaitForElement(FontFamilyDokdo);
+		App.Tap(FontFamilyDokdo);
+		App.WaitForElement(TextTypeHtml);
+		App.Tap(TextTypeHtml);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+#if TEST_FAILS_ON_ANDROID// Issue Link:  https://github.com/dotnet/maui/issues/29672, https://github.com/dotnet/maui/issues/29668, https://github.com/dotnet/maui/issues/22594
+	[Test, Order(67)]
+	[Category(UITestCategories.Label)]
+	public void VerifyLabelWithTextTypeAndLineHeight()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(TextEntry);
+		App.ClearText(TextEntry);
+		App.EnterText(TextEntry, "<b>Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea</b>");
+		App.WaitForElement(TextTypeHtml);
+		App.Tap(TextTypeHtml);
+		App.WaitForElement(LineHeightEntry);
+		App.ClearText(LineHeightEntry);
+		App.EnterText(LineHeightEntry, "2");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+	[Test, Order(68)]
+	[Category(UITestCategories.Label)]
+	public void VerifyLabelWithTextTypeAndCharacterSpacing()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(TextEntry);
+		App.ClearText(TextEntry);
+		App.EnterText(TextEntry, "<b>This is a Label</b>");
+		App.WaitForElement(TextTypeHtml);
+		App.Tap(TextTypeHtml);
+		App.WaitForElement(CharacterSpacingEntry);
+		App.ClearText(CharacterSpacingEntry);
+		App.EnterText(CharacterSpacingEntry, "3");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/21294
+	[Test, Order(66)]
+	[Category(UITestCategories.Label)]
+	public void VerifyLabelWithTextTypeAndLineBreakModeCharacterWrap()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(TextEntry);
+		App.ClearText(TextEntry);
+		App.EnterText(TextEntry, "<b>Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea</b>");
+		App.WaitForElement(TextTypeHtml);
+		App.Tap(TextTypeHtml);
+		App.WaitForElement(LineBreakModeCharacterWrap);
+		App.Tap(LineBreakModeCharacterWrap);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		VerifyScreenshot();
+	}
+#endif
+#endif
 #endif
 
-	[Test, Order(50)]
+	[Test, Order(51)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFontFamilyAndFontColor()
 	{
@@ -925,7 +1079,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(51)]
+	[Test, Order(52)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFontFamilyAndFontSize()
 	{
@@ -939,24 +1093,6 @@ public class LabelFeatureTests : UITest
 		App.WaitForElement(FontSizeEntry);
 		App.ClearText(FontSizeEntry);
 		App.EnterText(FontSizeEntry, "22");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-
-	[Test, Order(52)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithFontFamilyAndTextType()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(TextEntry);
-		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "<b>Label</b>");
-		App.WaitForElement(FontFamilyDokdo);
-		App.Tap(FontFamilyDokdo);
-		App.WaitForElement(TextTypeHtml);
-		App.Tap(TextTypeHtml);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
@@ -1016,26 +1152,26 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/24298
-	[Test, Order(56)]
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/24298 , https://github.com/dotnet/maui/issues/29673, https://github.com/dotnet/maui/issues/29674
+    [Test, Order(61)]
 	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithTextTypeAndTextTransform()
+	public void VerifyLabelWithTextTypeAndLineBreakModeTailTruncation()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(TextEntry);
 		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "<b>Label</b>");
-		App.WaitForElement(TextTransformUpper);
-		App.Tap(TextTransformUpper);
+		App.EnterText(TextEntry, "<b>Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea</b>");
 		App.WaitForElement(TextTypeHtml);
 		App.Tap(TextTypeHtml);
+		App.WaitForElement(LineBreakModeTailTruncation);
+		App.Tap(LineBreakModeTailTruncation);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
 
-	[Test, Order(57)]
+	[Test, Order(62)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndTextDecorations()
 	{
@@ -1053,7 +1189,8 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(58)]
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/21294
+	[Test, Order(63)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndLineBreakModeHeadTruncation()
 	{
@@ -1061,7 +1198,7 @@ public class LabelFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(TextEntry);
 		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "<b>Lorem ipsum dolor sit amet consectetur adipiscing elit vivamus lacinia felis eu sagittis congue nibh urna malesuada orci at fringilla quam turpis eget nunc</b>");
+		App.EnterText(TextEntry, "<b>Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea</b>");
 		App.WaitForElement(TextTypeHtml);
 		App.Tap(TextTypeHtml);
 		App.WaitForElement(LineBreakModeHeadTruncation);
@@ -1071,7 +1208,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(59)]
+	[Test, Order(64)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndLineBreakModeMiddleTruncation()
 	{
@@ -1079,7 +1216,7 @@ public class LabelFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(TextEntry);
 		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "<b>Lorem ipsum dolor sit amet consectetur adipiscing elit vivamus lacinia felis eu sagittis congue nibh urna malesuada orci at fringilla quam turpis eget nunc</b>");
+		App.EnterText(TextEntry, "<b>Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea</b>");
 		App.WaitForElement(TextTypeHtml);
 		App.Tap(TextTypeHtml);
 		App.WaitForElement(LineBreakModeMiddleTruncation);
@@ -1089,133 +1226,23 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(60)]
+	[Test, Order(65)]
 	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithTextTypeAndLineBreakModeTailTruncation()
+	public void VerifyLabelWithTextTypeAndTextTransform()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
 		App.WaitForElement(TextEntry);
 		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "<b>Lorem ipsum dolor sit amet consectetur adipiscing elit vivamus lacinia felis eu sagittis congue nibh urna malesuada orci at fringilla quam turpis eget nunc</b>");
+		App.EnterText(TextEntry, "<b>Label</b>");
+		App.WaitForElement(TextTransformUpper);
+		App.Tap(TextTransformUpper);
 		App.WaitForElement(TextTypeHtml);
 		App.Tap(TextTypeHtml);
-		App.WaitForElement(LineBreakModeTailTruncation);
-		App.Tap(LineBreakModeTailTruncation);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		VerifyScreenshot();
 	}
 #endif
-
-	[Test, Order(61)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithTextTypeAndTextColor()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(TextEntry);
-		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "<b>Label</b>");
-		App.WaitForElement(TextTypeHtml);
-		App.Tap(TextTypeHtml);
-		App.WaitForElement(TextColorRed);
-		App.Tap(TextColorRed);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-
-	[Test, Order(62)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithTextTypeAndFontSize()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(TextEntry);
-		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "<b>Label</b>");
-		App.WaitForElement(TextTypeHtml);
-		App.Tap(TextTypeHtml);
-		App.WaitForElement(FontSizeEntry);
-		App.ClearText(FontSizeEntry);
-		App.EnterText(FontSizeEntry, "24");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-
-	[Test, Order(64)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithTextTypeAndLineBreakModeNoWrap()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(TextEntry);
-		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "<b>Lorem ipsum dolor sit amet consectetur adipiscing elit vivamus lacinia felis eu sagittis congue nibh urna malesuada orci at fringilla quam turpis eget nunc</b>");
-		App.WaitForElement(TextTypeHtml);
-		App.Tap(TextTypeHtml);
-		App.WaitForElement(LineBreakModeNoWrap);
-		App.Tap(LineBreakModeNoWrap);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-
-	[Test, Order(65)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithTextTypeAndLineBreakModeWordWrap()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(TextEntry);
-		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "<b>Lorem ipsum dolor sit amet consectetur adipiscing elit vivamus lacinia felis eu sagittis congue nibh urna malesuada orci at fringilla quam turpis eget nunc</b>");
-		App.WaitForElement(TextTypeHtml);
-		App.Tap(TextTypeHtml);
-		App.WaitForElement(LineBreakModeWordWrap);
-		App.Tap(LineBreakModeWordWrap);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-
-	[Test, Order(66)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithTextTypeAndLineHeight()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(TextEntry);
-		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "<b>Lorem ipsum dolor sit amet consectetur adipiscing elit vivamus lacinia felis eu sagittis congue nibh urna malesuada orci at fringilla quam turpis eget nunc</b>");
-		App.WaitForElement(TextTypeHtml);
-		App.Tap(TextTypeHtml);
-		App.WaitForElement(LineHeightEntry);
-		App.ClearText(LineHeightEntry);
-		App.EnterText(LineHeightEntry, "2");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
-
-	[Test, Order(67)]
-	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithTextTypeAndCharacterSpacing()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(TextEntry);
-		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "<b>This is a Label</b>");
-		App.WaitForElement(TextTypeHtml);
-		App.Tap(TextTypeHtml);
-		App.WaitForElement(CharacterSpacingEntry);
-		App.ClearText(CharacterSpacingEntry);
-		App.EnterText(CharacterSpacingEntry, "3");
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		VerifyScreenshot();
-	}
+#endif
 }
