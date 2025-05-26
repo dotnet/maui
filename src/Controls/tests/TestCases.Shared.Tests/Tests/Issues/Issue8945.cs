@@ -7,8 +7,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 {
 	public class Issue8945 : _IssuesUITest
 	{
+#if ANDROID
 		const string CancelBtn = "Cancel";
-		
+#endif
 		public Issue8945(TestDevice testDevice) : base(testDevice)
 		{
 		}
