@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			throw new ArgumentOutOfRangeException(nameof(typeRef));
 		}
 
-		bool IsSystemAssemvly(string assemblyName)
+		bool IsSystemAssembly(string assemblyName)
 		{
 			return assemblyName.StartsWith("System", StringComparison.Ordinal)
 				|| assemblyName.StartsWith("mscorlib", StringComparison.Ordinal)
