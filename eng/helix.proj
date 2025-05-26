@@ -3,7 +3,7 @@
     <HelixType>test/product/</HelixType>
     <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
     <HelixTargetQueues>Windows.10.Amd64.Open</HelixTargetQueues>
-    <Creator Condition = "'$(HelixAccessToken)' == ''">maui</Creator>
+    <Creator Condition="'$(HelixAccessToken)' == ''">maui</Creator>
 
     <IncludeDotNetCli>true</IncludeDotNetCli>
     <DotNetCliPackageType>sdk</DotNetCliPackageType>
@@ -12,18 +12,18 @@
     <FailOnTestFailure>true</FailOnTestFailure>
   </PropertyGroup>
 
-  <PropertyGroup Condition = "'$(SYSTEM_ACCESSTOKEN)' == ''">
+  <PropertyGroup Condition="'$(SYSTEM_ACCESSTOKEN)' == ''">
     <!-- Local build outside of Azure Pipeline -->
-    <HelixTargetQueues Condition = "'$(HelixTargetQueues)' == ''">Windows.10.Amd64.Open;OSX.1200.Amd64.Open;OSX.1200.ARM64.Open;Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04-helix-sqlserver-amd64</HelixTargetQueues>
+    <HelixTargetQueues Condition="'$(HelixTargetQueues)' == ''">
+      Windows.10.Amd64.Open;OSX.1200.Amd64.Open;OSX.1200.ARM64.Open;Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04-helix-sqlserver-amd64</HelixTargetQueues>
     <EnableAzurePipelinesReporter>false</EnableAzurePipelinesReporter>
     <HelixSource>maui/localbuild/</HelixSource>
     <HelixBuild>t001</HelixBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <XUnitProject Include="$(RepoRoot)/src/Controls/tests/Core.UnitTests/*.csproj" />
-    <XUnitProject Include="$(RepoRoot)/src/Controls/tests/Xaml.UnitTests/Controls.Xaml.UnitTests.csproj" />
-    <XUnitProject Include="$(RepoRoot)/src/Controls/tests/SourceGen.UnitTests/SourceGen.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)/src/Controls/tests/Core.UnitTests/Controls.Core.UnitTests.csproj" />
+    <XUnitProject Include="$(RepoRoot)/src/Controls/tests/BindingSourceGen.UnitTests/Controls.BindingSourceGen.UnitTests.csproj" />
   </ItemGroup>
 
 </Project>
