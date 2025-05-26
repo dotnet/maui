@@ -290,10 +290,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			{
 				Thread.Sleep(500);
 
-				if (!App.IsKeyboardVisible())
+				if (!App.IsKeyboardShown())
 					return; // Successfully dismissed
 
-				App.HideKeyboard();
+				App.DismissKeyboard();
 				attempt++;
 			}
 		}
