@@ -52,7 +52,7 @@ jobs:
         shell: pwsh
         run: |
           ./.github/scripts/process-prompt-template.ps1 `
-            -Template ".github/prompts/apply-label-user.prompt-template.md"
+            -Template ".github/prompts/apply-label-user.prompt-template.md" `
             -Output "user-prompt.md"
 
       - name: Load System Prompt
@@ -62,7 +62,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           ./.github/scripts/process-prompt-template.ps1 `
-            -Template ".github/prompts/apply-label-system.prompt-template.md"
+            -Template ".github/prompts/apply-label-system.prompt-template.md" `
             -Output "system-prompt.md"
           "system_prompt=$((Get-Content -Raw system-prompt.md) | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
 
