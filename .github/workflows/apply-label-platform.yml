@@ -71,6 +71,31 @@ jobs:
           $body
           "@
 
+      - name: Load System Prompt
+        id: load-system-prompt
+        shell: pwsh
+        run: |
+          $lines = Get-Content ".github/prompts/apply-label.prompt-template.md"
+          $outputContent = ""
+          foreach ($line in $lines) {
+            if ($line -match "^EXEC:\s*(.+)$") {
+              $command = $matches[1]
+              Write-Host "Executing command: $command"
+              try {
+                $result = Invoke-Expression $command
+                Write-Host "Command output: $result"
+                $outputContent += "$result`n"
+              } catch {
+                Write-Error "ERROR executing: $command`n$_"
+                exit 1
+              }
+            } else {
+              $outputContent += "$line`n"
+            }
+          }
+          $outputContent | Set-Content -Path ".github/prompts/apply-label.prompt.md"
+          "system_prompt=$($outputContent | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
+
       - name: Log Prompts
         run: |
           echo "::group::System Prompt"
@@ -79,13 +104,6 @@ jobs:
           echo "::group::User Prompt"
           cat prompt.md
           echo "::endgroup::"
-
-      - name: Load System Prompt
-        id: load-system-prompt
-        shell: pwsh
-        run: |
-          "system_prompt=$((Get-Content -Raw ".github/prompts/apply-label.prompt.md") | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
-          "prompt=$((Get-Content -Raw "prompt.md") | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
 
       - name: Run AI Inference
         id: inference
@@ -99,5 +117,4 @@ jobs:
       - name: Log AI Analysis
         shell: pwsh
         run: |
-          echo "Saved to ${{ steps.inference.outputs.response-file }}"
           cat "${{ steps.inference.outputs.response-file }}"

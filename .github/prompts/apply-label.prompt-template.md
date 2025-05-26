@@ -36,7 +36,8 @@ EXEC: gh label list --json name,description --search "platform/" --template '{{r
 **Response**
 * Respond in valid and properly formatted JSON with the
   following structure and only in this structure.
-* Do not wrap the JSON in any other text or formatting.
+* Do not wrap the JSON in any other text or formatting,
+  including code blocks or markdown.
 
 {
   "label": "LABEL_NAME_HERE",
