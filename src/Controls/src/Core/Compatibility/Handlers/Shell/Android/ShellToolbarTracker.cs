@@ -195,7 +195,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_searchView != null)
 				{
 					RemoveSearchView(_searchView);
-					_searchView.Dispose();
 				}
 
 				_drawerLayout.RemoveDrawerListener(_drawerToggle);
@@ -254,7 +253,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (_searchView != null && _searchView.SearchHandler != searchHandler)
 			{
 				RemoveSearchView(_searchView);
-				_searchView.Dispose();
 				_searchView = null;
 			}
 
@@ -288,6 +286,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			searchView.View.RemoveFromParent();
 			searchView.View.ViewAttachedToWindow -= OnSearchViewAttachedToWindow;
 			searchView.SearchConfirmed -= OnSearchConfirmed;
+			searchView.Dispose();
 		}
 
 		void OnShellNavigated(object sender, ShellNavigatedEventArgs e)
@@ -702,7 +701,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_searchView != null)
 				{
 					RemoveSearchView(_searchView);
-					_searchView.Dispose();
 					_searchView = null;
 				}
 			}
