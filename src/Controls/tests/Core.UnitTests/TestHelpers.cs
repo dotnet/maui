@@ -35,5 +35,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			return reference.IsAlive;
 		}
+
+		public static async Task<bool> WaitForCollect(this WeakReference<object> reference)
+		{
+			for (int i = 0; i < 40 && reference.TryGetTarget(out _); i++)
+			{
+				await Task.Yield();
+				GC.Collect();
+				await Task.Yield();
+				GC.WaitForPendingFinalizers();
+				await Task.Yield();
+				GC.Collect(2);
+				await Task.Yield();
+				GC.WaitForPendingFinalizers();
+				await Task.Yield();
+				GC.Collect(2);
+				await Task.Yield();
+				GC.WaitForPendingFinalizers();
+			}
+
+			return reference.TryGetTarget(out _);
+		}
 	}
 }
