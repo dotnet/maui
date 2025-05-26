@@ -294,6 +294,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					return; // Successfully dismissed
 
 				App.DismissKeyboard();
+				App.TapCoordinates(10, 10);
 				attempt++;
 			}
 		}
