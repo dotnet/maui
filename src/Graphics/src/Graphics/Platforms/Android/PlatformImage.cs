@@ -3,6 +3,8 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics;
+using Android.Media;
+using Stream = System.IO.Stream;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
@@ -156,8 +158,63 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
-			var bitmap = BitmapFactory.DecodeStream(stream);
-			return new PlatformImage(bitmap);
+			// Use original stream if it's seekable, else copy to memory stream
+			var seekableStream = stream.CanSeek ? stream : new MemoryStream();
+			if (!stream.CanSeek)
+			{
+				stream.CopyTo(seekableStream);
+				seekableStream.Position = 0;
+			}
+
+			int orientation = 1;
+			if (OperatingSystem.IsAndroidVersionAtLeast(24))
+			{
+				try
+				{
+					// Read EXIF orientation
+					var exif = new ExifInterface(seekableStream);
+					orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
+				}
+				catch { }
+
+				seekableStream.Position = 0;
+				var bitmap = BitmapFactory.DecodeStream(seekableStream);
+
+				// Apply rotation only if needed
+				if (orientation != 1)
+					bitmap = RotateBitmap(bitmap, orientation);
+
+				return new PlatformImage(bitmap);
+			}
+			else
+			{
+				// Fallback for older Android
+				var bitmap = BitmapFactory.DecodeStream(seekableStream);
+				return new PlatformImage(bitmap);
+			}
+		}
+
+
+		static Bitmap RotateBitmap(Bitmap bitmap, int orientation)
+		{
+			Matrix matrix = new Matrix();
+			switch (orientation)
+			{
+				case 3:
+					matrix.PostRotate(180);
+					break;
+				case 6:
+					matrix.PostRotate(90);
+					break;
+				case 8:
+					matrix.PostRotate(270);
+					break;
+				default:
+					return bitmap;
+			}
+			var rotated = Bitmap.CreateBitmap(bitmap, 0, 0, bitmap.Width, bitmap.Height, matrix, true);
+			bitmap.Dispose();
+			return rotated;
 		}
 	}
 }
