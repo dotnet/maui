@@ -74,6 +74,8 @@ jobs:
       - name: Load System Prompt
         id: load-system-prompt
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $lines = Get-Content ".github/prompts/apply-label.prompt-template.md"
           $outputContent = ""
