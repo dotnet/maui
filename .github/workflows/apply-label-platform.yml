@@ -21,7 +21,6 @@ jobs:
     name: Apply Labels
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -52,24 +51,9 @@ jobs:
         id: create-prompt
         shell: pwsh
         run: |
-          $issue = Get-Content -Raw "issue.json" | ConvertFrom-Json
-          $number = $issue.number
-          $title = $issue.title
-          $body = $issue.body
-
-          Set-Content -Path "prompt.md" -Value @"
-          A new issue has arrived, please triage and apply the appropriate labels.
-          The issue is as follows:
-
-          The issue number is:
-          #$number
-
-          The title is:
-          $title
-
-          The body is:
-          $body
-          "@
+          ./.github/scripts/process-prompt-template.ps1 `
+            -Template ".github/prompts/apply-label-user.prompt-template.md"
+            -Output "user-prompt.md"
 
       - name: Load System Prompt
         id: load-system-prompt
@@ -77,41 +61,25 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $lines = Get-Content ".github/prompts/apply-label.prompt-template.md"
-          $outputContent = ""
-          foreach ($line in $lines) {
-            if ($line -match "^EXEC:\s*(.+)$") {
-              $command = $matches[1]
-              Write-Host "Executing command: $command"
-              try {
-                $result = Invoke-Expression $command
-                Write-Host "Command output: $result"
-                $outputContent += "$result`n"
-              } catch {
-                Write-Error "ERROR executing: $command`n$_"
-                exit 1
-              }
-            } else {
-              $outputContent += "$line`n"
-            }
-          }
-          $outputContent | Set-Content -Path ".github/prompts/apply-label.prompt.md"
-          "system_prompt=$($outputContent | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
+          ./.github/scripts/process-prompt-template.ps1 `
+            -Template ".github/prompts/apply-label-system.prompt-template.md"
+            -Output "system-prompt.md"
+          "system_prompt=$((Get-Content -Raw system-prompt.md) | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
 
       - name: Log Prompts
         run: |
           echo "::group::System Prompt"
-          cat .github/prompts/apply-label.prompt.md
+          cat system-prompt.md
           echo "::endgroup::"
           echo "::group::User Prompt"
-          cat prompt.md
+          cat user-prompt.md
           echo "::endgroup::"
 
       - name: Run AI Inference
         id: inference
         uses: actions/ai-inference@main
         with:
-          prompt-file: "prompt.md"
+          prompt-file: "user-prompt.md"
           system-prompt: ${{ steps.load-system-prompt.outputs.system_prompt }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
