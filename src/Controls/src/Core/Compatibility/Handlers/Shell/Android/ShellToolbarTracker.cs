@@ -194,9 +194,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (_searchView != null)
 				{
-					_searchView.View.RemoveFromParent();
-					_searchView.View.ViewAttachedToWindow -= OnSearchViewAttachedToWindow;
-					_searchView.SearchConfirmed -= OnSearchConfirmed;
+					RemoveSearchView(_searchView);
 					_searchView.Dispose();
 				}
 
@@ -251,11 +249,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				((INotifyCollectionChanged)oldPage.ToolbarItems).CollectionChanged -= OnPageToolbarItemsChanged;
 			}
 
-			if (_searchView != null)
+			SearchHandler searchHandler = Shell.GetSearchHandler(newPage);
+
+			if (_searchView != null && _searchView.SearchHandler != searchHandler)
 			{
-				_searchView.View.RemoveFromParent();
-				_searchView.View.ViewAttachedToWindow -= OnSearchViewAttachedToWindow;
-				_searchView.SearchConfirmed -= OnSearchConfirmed;
+				RemoveSearchView(_searchView);
 				_searchView.Dispose();
 				_searchView = null;
 			}
@@ -283,6 +281,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					shellToolbar.ApplyChanges();
 				}
 			}
+		}
+
+		void RemoveSearchView(IShellSearchView searchView)
+		{
+			searchView.View.RemoveFromParent();
+			searchView.View.ViewAttachedToWindow -= OnSearchViewAttachedToWindow;
+			searchView.SearchConfirmed -= OnSearchConfirmed;
 		}
 
 		void OnShellNavigated(object sender, ShellNavigatedEventArgs e)
@@ -696,9 +701,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (_searchView != null)
 				{
-					_searchView.View.RemoveFromParent();
-					_searchView.View.ViewAttachedToWindow -= OnSearchViewAttachedToWindow;
-					_searchView.SearchConfirmed -= OnSearchConfirmed;
+					RemoveSearchView(_searchView);
 					_searchView.Dispose();
 					_searchView = null;
 				}
