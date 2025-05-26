@@ -369,7 +369,7 @@ $"""
 		}
 
 		var uid = Crc64.ComputeHashString($"{compilation.AssemblyName}.{itemName}");
-		if (!TryParseXaml(xamlItem, uid, compilation, xmlnsCache, typeCache, context.CancellationToken, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields))
+		if (!TryParseXaml(xamlItem, uid, compilation, xmlnsCache, typeCache, context.CancellationToken, context.ReportDiagnostic, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields))
 		{
 			return;
 		}
@@ -472,7 +472,7 @@ $"""
 		context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
 	}
 
-	static bool TryParseXaml(XamlProjectItem parseResult, string uid, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string?, string)>? namedFields)
+	static bool TryParseXaml(XamlProjectItem parseResult, string uid, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken, Action<Diagnostic> reportDiagnostic, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string?, string)>? namedFields)
 	{
 		accessModifier = null;
 		rootType = null;
@@ -522,9 +522,9 @@ $"""
 			return true;
 		}
 
-		namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsCache, typeCache, cancellationToken);
+		namedFields = GetNamedFields(root, nsmgr, compilation, xmlnsCache, typeCache, cancellationToken, reportDiagnostic);
 		var typeArguments = GetAttributeValue(root, "TypeArguments", XamlParser.X2006Uri, XamlParser.X2009Uri);
-		baseType = GetTypeName(new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null), compilation, xmlnsCache, typeCache);
+		baseType = GetTypeName(new XmlType(root.NamespaceURI, root.LocalName, typeArguments != null ? TypeArgumentsParser.ParseExpression(typeArguments, nsmgr, null) : null), compilation, xmlnsCache, typeCache, reportDiagnostic);
 		if (baseType == null)
 			return false;
 
@@ -554,7 +554,7 @@ $"""
 		return true;
 	}
 
-	static IEnumerable<(string name, string? type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken)
+	static IEnumerable<(string name, string? type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, CancellationToken cancellationToken, Action<Diagnostic> reportDiagnostic) 
 	{
 		var xPrefix = nsmgr.LookupPrefix(XamlParser.X2006Uri) ?? nsmgr.LookupPrefix(XamlParser.X2009Uri);
 		if (xPrefix == null)
@@ -586,11 +586,11 @@ $"""
 				accessModifier = "private";
 			}
 
-			yield return (name ?? "", GetTypeName(xmlType, compilation, xmlnsCache, typeCache), accessModifier);
+			yield return (name ?? "", GetTypeName(xmlType, compilation, xmlnsCache, typeCache, reportDiagnostic), accessModifier);
 		}
 	}
 
-	static string? GetTypeName(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache)
+	static string? GetTypeName(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, IDictionary<XmlType, string> typeCache, Action<Diagnostic> reportDiagnostic)
 	{
 		if (typeCache.TryGetValue(xmlType, out string returnType))
 		{
@@ -605,12 +605,12 @@ $"""
 		else
 		{
 			// It's an external, non-built-in namespace URL.
-			returnType = GetTypeNameFromCustomNamespace(xmlType, compilation, xmlnsCache);
+			returnType = GetTypeNameFromCustomNamespace(xmlType, compilation, xmlnsCache, reportDiagnostic);
 		}
 
 		if (xmlType.TypeArguments != null)
 		{
-			returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, compilation, xmlnsCache, typeCache)))}>";
+			returnType = $"{returnType}<{string.Join(", ", xmlType.TypeArguments.Select(typeArg => GetTypeName(typeArg, compilation, xmlnsCache, typeCache, reportDiagnostic)))}>";
 		}
 
 		if (returnType == null)
@@ -640,10 +640,10 @@ $"""
 		return XmlnsHelper.ParseNamespaceFromXmlns(namespaceuri);
 	}
 
-	static string GetTypeNameFromCustomNamespace(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache)
+	static string GetTypeNameFromCustomNamespace(XmlType xmlType, Compilation compilation, AssemblyCaches xmlnsCache, Action<Diagnostic> reportDiagnostic)
 	{
 #nullable disable
-		string typeName = xmlType.GetTypeReference<string>(xmlnsCache.XmlnsDefinitions, null,
+		IEnumerable<string> typeNames = xmlType.GetTypeReferences<string>(xmlnsCache.XmlnsDefinitions, null,
 			(typeInfo) =>
 			{
 				string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
@@ -679,7 +679,13 @@ $"""
 				return null;
 			});
 
-		return typeName;
+		if (typeNames.Distinct().Skip(1).Any())
+		{
+			reportDiagnostic(Diagnostic.Create(Descriptors.AmbiguousType, Location.None,
+				new[] { xmlType.Name, xmlType.NamespaceUri }.ToArray()));
+
+		}
+		return typeNames.FirstOrDefault();
 #nullable enable
 	}
 
@@ -893,9 +899,6 @@ $"""
 			return x.ExternalReferences.OfType<PortableExecutableReference>().SequenceEqual(y.ExternalReferences.OfType<PortableExecutableReference>());
 		}
 
-		public int GetHashCode(Compilation obj)
-		{
-			return obj.References.GetHashCode();
-		}
+		public int GetHashCode(Compilation obj) => obj.References.GetHashCode();
 	}
 }

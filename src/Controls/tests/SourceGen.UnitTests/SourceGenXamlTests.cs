@@ -275,4 +275,46 @@ using Microsoft.Maui.Controls;
 
 		Assert.That(result.Results.Single().GeneratedSources.Where(gs => gs.HintName.EndsWith(".sg.cs", StringComparison.OrdinalIgnoreCase)), Is.Empty);
 	}
+
+		[Test]
+	public void TestCodeBehindGenerator_ConflictingNames()
+	{
+		var code =
+"""
+using Microsoft.Maui.Controls;
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "http://schemas.microsoft.com/dotnet/2021/maui")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "Ns1")]
+[assembly: XmlnsDefinition("http://schemas.microsoft.com/dotnet/maui/global", "Ns2")]
+
+namespace Ns1
+{
+	public class Conflicting : Label { }
+}
+
+namespace Ns2
+{
+	public class Conflicting : Label { }
+}
+""";
+
+		var xaml =
+"""
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+	xmlns="http://schemas.microsoft.com/dotnet/maui/global"
+	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+	x:Class="Test.TestPage">
+		<Conflicting x:Name="conflicting" Text="Hello MAUI!" />
+</ContentPage>
+""";
+
+		var compilation = SourceGeneratorDriver.CreateMauiCompilation();
+		compilation = compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
+
+		var result = SourceGeneratorDriver.RunGenerator<CodeBehindGenerator>(compilation, new AdditionalXamlFile("Test.xaml", xaml));
+
+		Assert.IsTrue(result.Diagnostics.Any());
+
+		//var generated = result.Results.Single().GeneratedSources.Single().SourceText.ToString();
+	}
 }
