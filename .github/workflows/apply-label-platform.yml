@@ -80,17 +80,24 @@ jobs:
           cat prompt.md
           echo "::endgroup::"
 
+      - name: Load System Prompt
+        id: load-system-prompt
+        shell: pwsh
+        run: |
+          "system_prompt=$((Get-Content -Raw ".github/prompts/apply-label.prompt.md") | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
+          "prompt=$((Get-Content -Raw "prompt.md") | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
+
       - name: Run AI Inference
         id: inference
-        uses: mattleibow/ai-inference@dev/system-prompt-file
+        uses: actions/ai-inference@main
         with:
           prompt-file: "prompt.md"
-          system-prompt: ".github/prompts/apply-label.prompt.md"
+          system-prompt: ${{ steps.load-system-prompt.outputs.system_prompt }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
       - name: Log AI Analysis
         shell: pwsh
         run: |
-          echo "${{ steps.inference.outputs.response-file }}"
+          echo "Saved to ${{ steps.inference.outputs.response-file }}"
           cat "${{ steps.inference.outputs.response-file }}"
