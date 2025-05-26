@@ -166,16 +166,12 @@ namespace Microsoft.Maui.Graphics.Platform
 				seekableStream.Position = 0;
 			}
 
-			int orientation = 1;
 			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 			{
-				try
-				{
-					// Read EXIF orientation
-					var exif = new ExifInterface(seekableStream);
-					orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
-				}
-				catch { }
+
+				// Read EXIF orientation
+				var exif = new ExifInterface(seekableStream);
+				var orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
 
 				seekableStream.Position = 0;
 				var bitmap = BitmapFactory.DecodeStream(seekableStream);
