@@ -34,8 +34,8 @@ try {
     $outputContent = @()
 
     foreach ($line in $lines) {
-        $line = $line
-            .Replace('{{LABEL_PREFIX}}', $LabelPrefix)
+        # Replace the placeholders with actual values
+        $line = $line.Replace('{{LABEL_PREFIX}}', $LabelPrefix)
 
         # Check for EXEC: command prefix
         if ($line -match "^EXEC:\s*(.+)$") {
