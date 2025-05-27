@@ -20,9 +20,9 @@ inputs:
     default: '200'
 
 outputs:
-  ai-response:
+  response:
     description: 'The file that contains the AI response'
-    value: ${{ steps.move-response.outputs.ai-response }}
+    value: ${{ steps.move-response.outputs.response }}
 
 runs:
   using: 'composite'
@@ -48,7 +48,7 @@ runs:
         $dst = "${{ inputs.response-file }}"
         Move-Item -Path $src -Destination $dst -Force
         Add-Content -Path $dst -Value "`n"
-        "ai-response=$dst" >> $env:GITHUB_OUTPUT
+        "response=$dst" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
 
     - name: Print AI response
@@ -56,5 +56,5 @@ runs:
       run: |
         "Print AI response"
         echo "::group::AI Response"
-        cat "${{ steps.move-response.outputs.ai-response }}"
+        cat "${{ steps.move-response.outputs.response }}"
         echo "::endgroup::"

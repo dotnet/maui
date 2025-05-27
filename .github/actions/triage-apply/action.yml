@@ -67,7 +67,7 @@ runs:
         system-prompt-file: "${{ steps.create-system-prompt.outputs.prompt }}"
         prompt-file: "${{ steps.create-user-prompt.outputs.prompt }}"
         token: ${{ inputs.token }}
-        response-file: "${{ steps.setup.outputs.work-dir }}/ai-response.md"
+        response-file: "${{ steps.setup.outputs.work-dir }}/response.md"
         max-tokens: 500
 
     - name: Comment on the issue with summary
@@ -75,7 +75,7 @@ runs:
       with:
         script: |
           const fs = require('fs');
-          const summary = fs.readFileSync('ai-response.md', 'utf8');
+          const summary = fs.readFileSync('${{ steps.triage-ai.outputs.response }}', 'utf8');
 
           const issueNumber = parseInt('${{ inputs.issue }}', 10);
           const footer = '${{ inputs.footer }}';

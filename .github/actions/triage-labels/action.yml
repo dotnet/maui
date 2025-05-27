@@ -25,7 +25,7 @@ inputs:
 outputs:
   labels-file:
     description: 'The file that contains the labels to apply to the issue'
-    value: ${{ steps.triage-ai.outputs.ai-response }}
+    value: ${{ steps.triage-ai.outputs.response }}
 
 runs:
   using: 'composite'
@@ -101,4 +101,4 @@ runs:
         system-prompt-file: "${{ steps.create-system-prompt.outputs.prompt }}"
         prompt-file: "${{ steps.create-user-prompt.outputs.prompt }}"
         token: ${{ inputs.token }}
-        response-file: "${{ steps.setup.outputs.work-dir }}/ai-response.json"
+        response-file: "${{ steps.setup.outputs.work-dir }}/response.json"
