@@ -2,8 +2,8 @@ name: "Triage: Apply Labels"
 on:
   pull_request:
     types: [reopened, synchronize, opened]
-#   issues:
-#     types: [opened, edited]
+  # issues:
+  #   types: [opened, edited]
   workflow_dispatch:
     inputs:
       issue_number:
@@ -31,6 +31,7 @@ jobs:
           issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29634' }}
           token: ${{ secrets.GITHUB_TOKEN }}
           label-prefix: 'platform/'
+          mode: 'multi-label'
 
       - name: Determine AREA label for the issue
         id: triage-area
@@ -39,8 +40,19 @@ jobs:
           issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29634' }}
           token: ${{ secrets.GITHUB_TOKEN }}
           label-prefix: 'area-'
+          mode: 'single-label'
+
+      - name: Determine REGRESSION label for the issue
+        id: triage-regression
+        uses: ./.github/actions/triage-labels
+        with:
+          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29634' }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          label: 'potential-regression'
+          mode: 'regression'
 
       - name: Log Labels
         run: |
           cat "${{ steps.triage-platform.outputs.labels-file }}"
           cat "${{ steps.triage-area.outputs.labels-file }}"
+          cat "${{ steps.triage-regression.outputs.labels-file }}"

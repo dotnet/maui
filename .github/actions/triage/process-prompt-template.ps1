@@ -4,7 +4,9 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$Output,
     [Parameter(Mandatory=$true)]
-    [string]$LabelPrefix
+    [string]$LabelPrefix,
+    [Parameter(Mandatory=$true)]
+    [string]$Label
 )
 
 Write-Host "Processing template: $Template"
@@ -36,6 +38,7 @@ try {
     foreach ($line in $lines) {
         # Replace the placeholders with actual values
         $line = $line.Replace('{{LABEL_PREFIX}}', $LabelPrefix)
+        $line = $line.Replace('{{LABEL}}', $Label)
 
         # Check for EXEC: command prefix
         if ($line -match "^EXEC:\s*(.+)$") {

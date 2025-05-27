@@ -1,6 +1,6 @@
-name: 'Triage Labels Action'
+name: 'Flexible Triage Labels Action'
 
-description: 'Process issues and apply labels using AI inference'
+description: 'Process issues and apply labels using AI inference, supporting multiple triage modes.'
 
 inputs:
   issue:
@@ -11,17 +11,27 @@ inputs:
     description: 'GitHub token to use for authentication'
     required: true
   label-prefix:
-    description: 'Prefix for label search (e.g., platform/, area/, etc.)'
+    description: 'Prefix for label search (e.g., platform/, area-, etc.)'
+    required: false
+    default: ''
+  label:
+    description: 'The label to apply to an issue'
+    required: false
+    default: ''
+  mode:
+    description: 'Triage mode: multi-label, single-label, regression'
     required: true
+    default: 'multi-label'
 
 outputs:
   labels-file:
-    description: 'The file taht contains the labels to apply to the issue'
+    description: 'The file that contains the labels to apply to the issue'
     value: ${{ steps.move-response.outputs.ai-response }}
 
 runs:
   using: 'composite'
   steps:
+
     - name: Generate a unique work ID
       id: gen-guid
       shell: pwsh
@@ -29,7 +39,9 @@ runs:
         "Generate a unique work ID"
         echo "::group::Generate a unique work ID"
         $guid = [guid]::NewGuid().ToString()
-        "workid=$guid" >> $env:GITHUB_OUTPUT
+        $workDir = "${{ runner.temp }}/triage-labels-${{ steps.gen-guid.outputs.triage-work-id }}";
+        "triage-work-id=$guid" >> $env:GITHUB_OUTPUT
+        "triage-work-dir=$workDir" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
 
     - name: Fetch issue data
@@ -48,10 +60,26 @@ runs:
           const json = JSON.stringify(data, null, 2);
 
           const fs = require('fs');
-          io.mkdirP('${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}');
-          fs.writeFileSync('${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/issue.json', json);
+          fs.writeFileSync("${{ steps.gen-guid.outputs.triage-work-dir }}/issue.json", json);
 
           return data;
+
+    - name: Select system prompt template
+      id: select-system-prompt
+      shell: pwsh
+      run: |
+        "Select system prompt template"
+        echo "::group::Select system prompt template"
+        $mode = "${{ inputs.mode }}"
+        switch ($mode) {
+          "multi-label"   { $template = "${{ github.action_path }}/system-prompt-multilabel.md" }
+          "single-label"  { $template = "${{ github.action_path }}/system-prompt-singlelabel.md" }
+          "regression"    { $template = "${{ github.action_path }}/system-prompt-regression.md" }
+          default         { throw "Unknown mode: $mode" }
+        }
+        "Using system prompt template: $template"
+        "system-prompt-template=$template" >> $env:GITHUB_OUTPUT
+        echo "::endgroup::"
 
     - name: Setup working directory
       shell: pwsh
@@ -60,7 +88,7 @@ runs:
       run: |
         "Setup working directory"
         echo "::group::Setup working directory"
-        cd ${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}
+        cd "${{ steps.gen-guid.outputs.triage-work-dir }}"
         git init
         git remote add origin ${{ github.repositoryUrl }}
         gh repo set-default ${{ github.repository }}
@@ -74,10 +102,13 @@ runs:
       run: |
         "Create User prompt file"
         echo "::group::Create User prompt file"
+        $prompt = "${{ steps.gen-guid.outputs.triage-work-dir }}/user-prompt.md"
         ${{ github.action_path }}/process-prompt-template.ps1 `
           -LabelPrefix "${{ inputs.label-prefix }}" `
-          -Template "${{ github.action_path }}/user-prompt-template.md" `
-          -Output "${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/user-prompt.md"
+          -Label "${{ inputs.label }}" `
+          -Template "${{ github.action_path }}/user-prompt.md" `
+          -Output $prompt
+        "user-prompt=$prompt" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
 
     - name: Create System prompt file
@@ -88,10 +119,13 @@ runs:
       run: |
         "Create System prompt file"
         echo "::group::Create System prompt file"
+        $prompt = "${{ steps.gen-guid.outputs.triage-work-dir }}/system-prompt.md"
         ${{ github.action_path }}/process-prompt-template.ps1 `
           -LabelPrefix "${{ inputs.label-prefix }}" `
-          -Template "${{ github.action_path }}/system-prompt-template.md" `
-          -Output "${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/system-prompt.md"
+          -Label "${{ inputs.label }}" `
+          -Template "${{ steps.select-system-prompt.outputs.system-prompt-template }}" `
+          -Output $prompt
+        "system-prompt=$prompt" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
 
     - name: Print prompt files
@@ -99,18 +133,18 @@ runs:
       run: |
         "Print prompt files"
         echo "::group::System Prompt"
-        cat ${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/system-prompt.md
+        cat "${{ steps.create-system-prompt.outputs.system-prompt }}"
         echo "::endgroup::"
         echo "::group::User Prompt"
-        cat ${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/user-prompt.md
+        cat "${{ steps.create-user-prompt.outputs.user-prompt }}"
         echo "::endgroup::"
 
     - name: Run AI inference
       id: inference
       uses: actions/ai-inference@main
       with:
-        prompt-file: "${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/user-prompt.md"
-        system-prompt-file: "${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/system-prompt.md"
+        prompt-file: "${{ steps.create-system-prompt.outputs.system-prompt }}"
+        system-prompt-file: "${{ steps.create-user-prompt.outputs.user-prompt }}"
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
 
@@ -121,7 +155,7 @@ runs:
         "Move AI response to work folder"
         echo "::group::Move AI response to work folder"
         $src = "${{ steps.inference.outputs.response-file }}"
-        $dst = "${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/ai-response.json"
+        $dst = "${{ steps.gen-guid.outputs.triage-work-dir }}/ai-response.json"
         Move-Item -Path $src -Destination $dst -Force
         "ai-response=$dst" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
@@ -130,4 +164,6 @@ runs:
       shell: pwsh
       run: |
         "Print AI response"
+        echo "::group::AI Response"
         cat "${{ steps.move-response.outputs.ai-response }}"
+        echo "::endgroup::"
