@@ -75,10 +75,12 @@ runs:
       with:
         script: |
           const fs = require('fs');
+          const summary = fs.readFileSync('ai-response.md', 'utf8');
+
           const issueNumber = parseInt('${{ inputs.issue }}', 10);
-          const summary = fs.readFileSync('summary.txt', 'utf8');
           const footer = '${{ inputs.footer }}';
           const commentBody = `${summary}\n\n${footer}`;
+          
           await github.rest.issues.createComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
