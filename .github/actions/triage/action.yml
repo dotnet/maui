@@ -32,14 +32,14 @@ runs:
   using: 'composite'
   steps:
 
-    - name: Generate a unique work ID
-      id: gen-guid
+    - name: Generate a unique working directory
+      id: gen-work-dir
       shell: pwsh
       run: |
-        "Generate a unique work ID"
-        echo "::group::Generate a unique work ID"
+        "Generate a unique working directory"
+        echo "::group::Generate a unique working directory"
         $guid = [guid]::NewGuid().ToString()
-        $workDir = "${{ runner.temp }}/triage-labels-${{ steps.gen-guid.outputs.triage-work-id }}";
+        $workDir = "${{ runner.temp }}/triage-labels-$guid";
         "triage-work-id=$guid" >> $env:GITHUB_OUTPUT
         "triage-work-dir=$workDir" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
@@ -60,7 +60,7 @@ runs:
           const json = JSON.stringify(data, null, 2);
 
           const fs = require('fs');
-          fs.writeFileSync("${{ steps.gen-guid.outputs.triage-work-dir }}/issue.json", json);
+          fs.writeFileSync("${{ steps.gen-work-dir.outputs.triage-work-dir }}/issue.json", json);
 
           return data;
 
@@ -88,7 +88,7 @@ runs:
       run: |
         "Setup working directory"
         echo "::group::Setup working directory"
-        cd "${{ steps.gen-guid.outputs.triage-work-dir }}"
+        cd "${{ steps.gen-work-dir.outputs.triage-work-dir }}"
         git init
         git remote add origin ${{ github.repositoryUrl }}
         gh repo set-default ${{ github.repository }}
@@ -102,7 +102,7 @@ runs:
       run: |
         "Create User prompt file"
         echo "::group::Create User prompt file"
-        $prompt = "${{ steps.gen-guid.outputs.triage-work-dir }}/user-prompt.md"
+        $prompt = "${{ steps.gen-work-dir.outputs.triage-work-dir }}/user-prompt.md"
         ${{ github.action_path }}/process-prompt-template.ps1 `
           -LabelPrefix "${{ inputs.label-prefix }}" `
           -Label "${{ inputs.label }}" `
@@ -119,7 +119,7 @@ runs:
       run: |
         "Create System prompt file"
         echo "::group::Create System prompt file"
-        $prompt = "${{ steps.gen-guid.outputs.triage-work-dir }}/system-prompt.md"
+        $prompt = "${{ steps.gen-work-dir.outputs.triage-work-dir }}/system-prompt.md"
         ${{ github.action_path }}/process-prompt-template.ps1 `
           -LabelPrefix "${{ inputs.label-prefix }}" `
           -Label "${{ inputs.label }}" `
@@ -155,7 +155,7 @@ runs:
         "Move AI response to work folder"
         echo "::group::Move AI response to work folder"
         $src = "${{ steps.inference.outputs.response-file }}"
-        $dst = "${{ steps.gen-guid.outputs.triage-work-dir }}/ai-response.json"
+        $dst = "${{ steps.gen-work-dir.outputs.triage-work-dir }}/ai-response.json"
         Move-Item -Path $src -Destination $dst -Force
         "ai-response=$dst" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
