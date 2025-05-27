@@ -63,7 +63,7 @@ runs:
         system-prompt-file: "${{ steps.create-system-prompt.outputs.prompt }}"
         prompt-file: "${{ steps.create-user-prompt.outputs.prompt }}"
         token: ${{ inputs.token }}
-        response-file: "${{ steps.setup.outputs.work-dir }}/ai-response.json"
+        response-file: "${{ steps.setup.outputs.work-dir }}/ai-response.md"
 
 
     # - name: Comment on the issue with summary
