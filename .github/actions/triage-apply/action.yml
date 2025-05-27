@@ -40,6 +40,14 @@ runs:
         "merged-file=$out" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
 
+    - name: Create System prompt file
+      id: create-system-prompt
+      uses: ./.github/actions/triage-gen-prompt
+      with:
+        token: ${{ inputs.token }}
+        template: ${{ github.action_path }}/system-prompt.md
+        output: ${{ steps.setup.outputs.work-dir }}/system-prompt.md
+
     - name: Create User prompt file
       id: create-user-prompt
       uses: ./.github/actions/triage-gen-prompt
@@ -52,6 +60,7 @@ runs:
       id: triage-ai
       uses: ./.github/actions/triage-ai
       with:
+        system-prompt-file: "${{ steps.create-system-prompt.outputs.prompt }}"
         prompt-file: "${{ steps.create-user-prompt.outputs.prompt }}"
         token: ${{ inputs.token }}
         response-file: "${{ steps.setup.outputs.work-dir }}/ai-response.json"
