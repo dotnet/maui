@@ -23,15 +23,24 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
-      - name: Determine label for the issue
-        id: triage
+
+      - name: Determine PLATFORM label for the issue
+        id: triage-platform
         uses: ./.github/actions/triage-labels
         with:
           issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29634' }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          label-prefix: 'platform/'
+
+      - name: Determine AREA label for the issue
+        id: triage-area
+        uses: ./.github/actions/triage-labels
+        with:
+          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29634' }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          label-prefix: 'area-'
 
       - name: Log Labels
         run: |
-          echo "Labels file: ${{ steps.triage.outputs.labels-file }}"
-          cat "${{ steps.triage.outputs.labels-file }}"
+          cat "${{ steps.triage-platform.outputs.labels-file }}"
+          cat "${{ steps.triage-area.outputs.labels-file }}"

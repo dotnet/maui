@@ -2,7 +2,9 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$Template,
     [Parameter(Mandatory=$true)]
-    [string]$Output
+    [string]$Output,
+    [Parameter(Mandatory=$true)]
+    [string]$LabelPrefix
 )
 
 Write-Host "Processing template: $Template"
@@ -26,12 +28,15 @@ try {
     Set-Location -Path $outputDir
     Write-Host "Changed working directory to: $outputDir"
     Write-Host ""
-    
+
     # Read the template file
     $lines = Get-Content $Template
     $outputContent = @()
-    
+
     foreach ($line in $lines) {
+        $line = $line
+            .Replace('{{LABEL_PREFIX}}', $LabelPrefix)
+
         # Check for EXEC: command prefix
         if ($line -match "^EXEC:\s*(.+)$") {
 
@@ -39,7 +44,7 @@ try {
             $command = $matches[1]
             Write-Host "Executing command:"
             Write-Host "    $command"
-            
+
             try {
                 # Execute the command
                 $result = Invoke-Expression $command

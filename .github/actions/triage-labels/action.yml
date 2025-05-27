@@ -10,6 +10,9 @@ inputs:
   token:
     description: 'GitHub token to use for authentication'
     required: true
+  label-prefix:
+    description: 'Prefix for label search (e.g., platform/, area/, etc.)'
+    required: true
 
 outputs:
   labels:
@@ -56,7 +59,7 @@ runs:
         git remote add origin ${{ github.repositoryUrl }}
         gh repo set-default ${{ github.repository }}
         echo "::endgroup::"
-      
+
     - name: Create User prompt file
       id: create-user-prompt
       shell: pwsh
@@ -66,10 +69,11 @@ runs:
         "Create User prompt file"
         echo "::group::Create User prompt file"
         ${{ github.action_path }}/process-prompt-template.ps1 `
+          -LabelPrefix "${{ inputs.label-prefix }}" `
           -Template "${{ github.action_path }}/user-prompt-template.md" `
           -Output "${{ runner.temp }}/apply-label/user-prompt.md"
         echo "::endgroup::"
-      
+
     - name: Create System prompt file
       id: create-system-prompt
       shell: pwsh
@@ -79,6 +83,7 @@ runs:
         "Create System prompt file"
         echo "::group::Create System prompt file"
         ${{ github.action_path }}/process-prompt-template.ps1 `
+          -LabelPrefix "${{ inputs.label-prefix }}" `
           -Template "${{ github.action_path }}/system-prompt-template.md" `
           -Output "${{ runner.temp }}/apply-label/system-prompt.md"
         echo "::endgroup::"

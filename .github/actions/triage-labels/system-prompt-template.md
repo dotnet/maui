@@ -22,7 +22,7 @@ and accurately assign labels to new issues that are opened.
   used in order to find the best match.
 
 ===== Available Labels ====
-EXEC: gh label list --json name,description --search "platform/" --template '{{range .}}{{"- name: "}}{{.name}}{{"\n"}}{{"  description: "}}{{.description}}{{"\n"}}{{end}}'
+EXEC: gh label list --limit 1000 --json name,description --search "{{LABEL_PREFIX}}" --jq 'sort_by(.name)[] | select(.name | startswith("{{LABEL_PREFIX}}")) | "- name: \(.name)\n  description: \(.description)"
 ===== Available Labels ====
 
 **Reasoning**
