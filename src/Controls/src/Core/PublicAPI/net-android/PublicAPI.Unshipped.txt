@@ -316,3 +316,5 @@ override Microsoft.Maui.Controls.LayoutOptionsConverter.GetStandardValuesSupport
 override Microsoft.Maui.Controls.LayoutOptionsConverter.GetStandardValuesExclusive(System.ComponentModel.ITypeDescriptorContext? context) -> bool
 override Microsoft.Maui.Controls.LayoutOptionsConverter.GetStandardValues(System.ComponentModel.ITypeDescriptorContext? context) -> System.ComponentModel.TypeConverter.StandardValuesCollection!
 Microsoft.Maui.Controls.IExtendedTypeConverter.ConvertFromInvariantString(string! value, System.IServiceProvider! serviceProvider) -> object?
+Microsoft.Maui.Controls.SearchHandler.HideKeyboard() -> void
+Microsoft.Maui.Controls.SearchHandler.ShowKeyboard() -> void
