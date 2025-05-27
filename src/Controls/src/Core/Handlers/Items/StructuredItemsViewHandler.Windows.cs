@@ -38,10 +38,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.DisconnectHandler(platformView);
 		}
 
-		void UpdateItemsLayoutProperties()
+		void UpdateItemsLayoutProperties(object args)
 		{
-				UpdateItemsLayoutSpan();		
+			if (args is not PropertyChangedEventArgs e)
+				return;
+
+			if (e.PropertyName == GridItemsLayout.SpanProperty.PropertyName)
+			{
+				UpdateItemsLayoutSpan();
+			}
+			else if (e.PropertyName == GridItemsLayout.HorizontalItemSpacingProperty.PropertyName || e.PropertyName == GridItemsLayout.VerticalItemSpacingProperty.PropertyName)
+			{
 				UpdateItemsLayoutItemSpacing();
+			}
+			else if (e.PropertyName == LinearItemsLayout.ItemSpacingProperty.PropertyName)
+			{
+				UpdateItemsLayoutItemSpacing();
+			}
 		}
 
 		public static void MapHeaderTemplate(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
@@ -57,13 +70,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public static void MapItemsLayout(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 		{
 			handler.UpdateItemsLayout();
-			handler.UpdateItemsLayoutProperties();
 		}
 
 		//TODO Make this public in .NET10
 		internal static void MapItemsLayoutPropertyChanged(StructuredItemsViewHandler<TItemsView> handler, TItemsView view, object args)
 		{
-			handler.UpdateItemsLayoutProperties();
+			handler.UpdateItemsLayoutProperties(args);
 		}
 
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
