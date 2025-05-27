@@ -28,6 +28,7 @@ outputs:
 runs:
   using: 'composite'
   steps:
+
     - name: Create prompt file
       id: create-prompt
       shell: pwsh
@@ -42,4 +43,12 @@ runs:
           -Template "${{ inputs.template }}" `
           -Output "${{ inputs.output }}"
         "prompt=${{ inputs.output }}" >> $env:GITHUB_OUTPUT
+        echo "::endgroup::"
+
+    - name: Print prompt file
+      shell: pwsh
+      run: |
+        "Print prompt file"
+        echo "::group::Print prompt file"
+        cat "${{ steps.create-prompt.outputs.prompt }}"
         echo "::endgroup::"

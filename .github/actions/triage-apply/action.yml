@@ -40,11 +40,21 @@ runs:
         "merged-file=$out" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
 
-    - name: Summarize labels
-      id: summarize
-      shell: pwsh
-      run: |
-        cat "${{ steps.merge.outputs.merged-file }}"
+    - name: Create User prompt file
+      id: create-user-prompt
+      uses: ./.github/actions/triage-gen-prompt
+      with:
+        token: ${{ inputs.token }}
+        template: ${{ github.action_path }}/user-prompt.md
+        output: ${{ steps.setup.outputs.work-dir }}/user-prompt.md
+
+    - name: Run Triage AI Action
+      id: triage-ai
+      uses: ./.github/actions/triage-ai
+      with:
+        prompt-file: "${{ steps.create-system-prompt.outputs.prompt }}"
+        token: ${{ inputs.token }}
+        response-file: "${{ steps.setup.outputs.work-dir }}/ai-response.json"
 
 
     # - name: Comment on the issue with summary

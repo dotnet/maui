@@ -94,17 +94,6 @@ runs:
         template: ${{ github.action_path }}/user-prompt.md
         output: ${{ steps.setup.outputs.work-dir }}/user-prompt.md
 
-    - name: Print prompt files
-      shell: pwsh
-      run: |
-        "Print prompt files"
-        echo "::group::System Prompt"
-        cat "${{ steps.create-system-prompt.outputs.prompt }}"
-        echo "::endgroup::"
-        echo "::group::User Prompt"
-        cat "${{ steps.create-user-prompt.outputs.prompt }}"
-        echo "::endgroup::"
-
     - name: Run Triage AI Action
       id: triage-ai
       uses: ./.github/actions/triage-ai
