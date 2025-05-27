@@ -23,7 +23,7 @@ runs:
 
     - name: Setup working directory
       id: setup
-      uses: ./../triage-setup
+      uses: ./.github/actions/triage-setup
       with:
         token: ${{ inputs.token }}
 

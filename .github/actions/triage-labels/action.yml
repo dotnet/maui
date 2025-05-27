@@ -33,7 +33,7 @@ runs:
 
     - name: Setup working directory
       id: setup
-      uses: ./../triage-setup
+      uses: ./.github/actions/triage-setup
       with:
         token: ${{ inputs.token }}
 
@@ -115,7 +115,7 @@ runs:
 
     - name: Run Triage AI Action
       id: triage-ai
-      uses: ./../triage-ai
+      uses: ./.github/actions/triage-ai
       with:
         prompt-file: "${{ steps.create-system-prompt.outputs.system-prompt }}"
         system-prompt-file: "${{ steps.create-user-prompt.outputs.user-prompt }}"
