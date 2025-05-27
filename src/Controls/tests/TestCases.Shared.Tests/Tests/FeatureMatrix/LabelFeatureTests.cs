@@ -716,7 +716,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(43)]
+	[Test, Order(59)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextWhenLineHeight()
 	{
@@ -964,7 +964,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(59)]
+	[Test, Order(43)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextTypeAndLineBreakModeWordWrap()
 	{
@@ -972,7 +972,7 @@ public class LabelFeatureTests : UITest
 		App.Tap(Options);
 		App.WaitForElement(TextEntry);
 		App.ClearText(TextEntry);
-		App.EnterText(TextEntry, "<b>LLorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea</b>");
+		App.EnterText(TextEntry, "<b>Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea</b>");
 		App.WaitForElement(TextTypeHtml);
 		App.Tap(TextTypeHtml);
 		App.WaitForElement(LineBreakModeWordWrap);
