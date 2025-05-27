@@ -39,7 +39,8 @@ runs:
         "Generate a unique working directory"
         echo "::group::Generate a unique working directory"
         $guid = [guid]::NewGuid().ToString()
-        $workDir = "${{ runner.temp }}/triage-labels-$guid";
+        $workDir = "${{ runner.temp }}/triage-action-$guid";
+        New-Item -ItemType Directory -Path $workDir -Force | Out-Null
         "triage-work-id=$guid" >> $env:GITHUB_OUTPUT
         "triage-work-dir=$workDir" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
