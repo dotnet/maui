@@ -40,8 +40,13 @@ This issue is a regression since the Carrot was growing fine in v1 but now is br
 <details>
 <summary>Detailed Summary and Actions</summary>
 
+Summary of the triage:
+
 - The issue affects multiple platforms: SquareOS and BoxPhone.
 - The issue pertains to the Carrot control, specifically its `OrangeColor` and `GrowthMedium` properties.
+- This issue is a regression in v2, since v1 was working correctly.
+
+Summary of the actions that will be performed:
 
 | Action | Item | Description |
 | :----- | :--- | :---------- |
