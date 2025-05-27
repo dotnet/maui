@@ -50,7 +50,7 @@ runs:
       shell: pwsh
       run: |
         cd ${{ runner.temp }}/apply-label
-        gh repo set-default --repo ${{ github.repository }}
+        gh repo set-default ${{ github.repository }}
       
     - name: Create User Prompt
       id: create-user-prompt
