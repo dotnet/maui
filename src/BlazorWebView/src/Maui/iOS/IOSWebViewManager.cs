@@ -128,8 +128,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			[Export("webView:runJavaScriptTextInputPanelWithPrompt:defaultText:initiatedByFrame:completionHandler:")]
 			public void RunJavaScriptTextInputPanelWithPrompt(
-				WKWebView webView, 
-				NSString prompt, 
+				WKWebView webView,
+				NSString prompt,
 				NSString defaultText, 
 				WKFrameInfo frame, 
 				Action<NSString> completionHandler)
