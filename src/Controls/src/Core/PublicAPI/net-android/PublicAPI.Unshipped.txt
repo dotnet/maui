@@ -154,3 +154,5 @@ virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Contro
 ~static Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.StructuredItemsViewCommandMapper -> Microsoft.Maui.CommandMapper<TItemsView, Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>>
 ~Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.ItemsViewHandler(Microsoft.Maui.PropertyMapper mapper = null, Microsoft.Maui.CommandMapper commandMapper = null) -> void
 *REMOVED*~Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.ItemsViewHandler(Microsoft.Maui.PropertyMapper mapper, Microsoft.Maui.CommandMapper commandMapper = null) -> void
+~Microsoft.Maui.Controls.Handlers.Items.IMauiRecyclerView<TItemsView>.UpdateItemsLayoutProperties(object args) -> void
+~Microsoft.Maui.Controls.Handlers.Items.MauiRecyclerView<TItemsView, TAdapter, TItemsViewSource>.UpdateItemsLayoutProperties(object args) -> void

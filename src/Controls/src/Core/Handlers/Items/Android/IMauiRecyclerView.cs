@@ -23,6 +23,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void UpdateLayoutManager();
 
+		public void UpdateItemsLayoutProperties(object args);
+
 		public void UpdateAdapter();
 
 		public void ScrollTo(ScrollToRequestEventArgs args);
