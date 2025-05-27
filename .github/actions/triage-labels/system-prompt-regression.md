@@ -28,7 +28,8 @@ issues that are likely regressions.
 * Respond in valid and properly formatted JSON with one of
   the following structures and only in these structures.
 * Do not wrap the JSON in any other text or formatting,
-  including code blocks or markdown.
+  including code blocks or markdown as this will be read
+  by a machine.
 
 If this issue has strong evidence of a regression, respond with:
 

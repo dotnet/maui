@@ -21,10 +21,26 @@ $merged = @{}
 foreach ($file in $allFiles) {
     if (Test-Path $file) {
         Write-Host "Processing file: $file..."
-        $json = Get-Content $file | ConvertFrom-Json
+        $fileContents = Get-Content $file
+
+        # Remove empty lines
+        $fileContents = $fileContents | Where-Object { $_ -ne '' }
+
+        # Remove the wrapping lines if they contain ```
+        if ($fileContents[0] -match '^\s*```') {
+            $fileContents = $fileContents[1..($fileContents.Length - 1)]
+        }
+        if ($fileContents[-1] -match '^\s*```') {
+            $fileContents = $fileContents[0..($fileContents.Length - 2)]
+        }
+        
+        # Convert from JSON
+        $json = $fileContents | ConvertFrom-Json
         foreach ($prop in $json.PSObject.Properties) {
             $name = $prop.Name
             $value = $prop.Value
+            
+            # Merge properties by name
             if ($merged.ContainsKey($name)) {
                 $merged[$name] += $value
             } else {

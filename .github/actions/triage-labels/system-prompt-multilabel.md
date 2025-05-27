@@ -38,7 +38,8 @@ EXEC: gh label list --limit 1000 --json name,description --search "{{LABEL_PREFI
 * Respond in valid and properly formatted JSON with the
   following structure and only in this structure.
 * Do not wrap the JSON in any other text or formatting,
-  including code blocks or markdown.
+  including code blocks or markdown as this will be read
+  by a machine.
 
 {
   "labels": [

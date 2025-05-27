@@ -16,7 +16,7 @@ with an easy to understand message while also being detailed.
 **Response**
 
 * **IMPORTANT** Respond with a correctly formed markdown file.
-* Do not wrap the markdown in code blocks as it will
+* **IMPORTANT** Do not wrap the markdown in code blocks as it will
   be rendered directly
 * The markdown file should have 4 main parts:
   1. A short sentence summary about the affected components.
