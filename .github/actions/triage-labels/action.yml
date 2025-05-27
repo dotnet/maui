@@ -15,22 +15,22 @@ inputs:
     required: true
 
 outputs:
-  labels:
-    description: 'The labels to apply to the issue'
-    value: ${{ steps.inference.outputs.response }}
   labels-file:
     description: 'The file taht contains the labels to apply to the issue'
-    value: ${{ steps.inference.outputs.response-file }}
+    value: ${{ steps.move-response.outputs.ai-response }}
 
 runs:
   using: 'composite'
   steps:
-    - name: Generate unique work id
+    - name: Generate a unique work ID
       id: gen-guid
       shell: pwsh
       run: |
+        "Generate a unique work ID"
+        echo "::group::Generate a unique work ID"
         $guid = [guid]::NewGuid().ToString()
-        echo "workid=$guid" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+        "workid=$guid" >> $env:GITHUB_OUTPUT
+        echo "::endgroup::"
 
     - name: Fetch issue data
       id: issue-data
@@ -59,10 +59,12 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
       run: |
         "Setup working directory"
+        echo "::group::Setup working directory"
         cd ${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}
         git init
         git remote add origin ${{ github.repositoryUrl }}
         gh repo set-default ${{ github.repository }}
+        echo "::endgroup::"
 
     - name: Create User prompt file
       id: create-user-prompt
@@ -71,10 +73,12 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
       run: |
         "Create User prompt file"
+        echo "::group::Create User prompt file"
         ${{ github.action_path }}/process-prompt-template.ps1 `
           -LabelPrefix "${{ inputs.label-prefix }}" `
           -Template "${{ github.action_path }}/user-prompt-template.md" `
           -Output "${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/user-prompt.md"
+        echo "::endgroup::"
 
     - name: Create System prompt file
       id: create-system-prompt
@@ -110,8 +114,20 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
 
+    - name: Move AI response to work folder
+      id: move-response
+      shell: pwsh
+      run: |
+        "Move AI response to work folder"
+        echo "::group::Move AI response to work folder"
+        $src = "${{ steps.inference.outputs.response-file }}"
+        $dst = "${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/ai-response.json"
+        Move-Item -Path $src -Destination $dst -Force
+        "ai-response=$dst" >> $env:GITHUB_OUTPUT
+        echo "::endgroup::"
+
     - name: Print AI response
       shell: pwsh
       run: |
         "Print AI response"
-        cat "${{ steps.inference.outputs.response-file }}"
+        cat "${{ steps.move-response.outputs.ai-response }}"
