@@ -378,7 +378,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(43)]
+	[Test, Order(42)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeCharacterWrap()
 	{
@@ -413,7 +413,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test,Order(42)]
+	[Test,Order(41)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeTailTruncation()
 	{
@@ -716,7 +716,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(38)]
+	[Test, Order(43)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextWhenLineHeight()
 	{
@@ -733,7 +733,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(39)]
+	[Test, Order(38)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeNoWrap()
 	{
@@ -750,7 +750,7 @@ public class LabelFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/21294
-	[Test, Order(40)]
+	[Test, Order(39)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeHeadTruncation()
 	{
@@ -766,7 +766,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(41)]
+	[Test, Order(40)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndLineBreakModeMiddleTruncation()
 	{
