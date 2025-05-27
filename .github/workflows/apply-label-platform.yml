@@ -28,7 +28,7 @@ jobs:
         id: triage-platform
         uses: ./.github/actions/triage
         with:
-          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29634' }}
+          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29673' }}
           token: ${{ secrets.GITHUB_TOKEN }}
           label-prefix: 'platform/'
           mode: 'multi-label'
@@ -37,7 +37,7 @@ jobs:
         id: triage-area
         uses: ./.github/actions/triage
         with:
-          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29634' }}
+          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29673' }}
           token: ${{ secrets.GITHUB_TOKEN }}
           label-prefix: 'area-'
           mode: 'single-label'
@@ -46,7 +46,7 @@ jobs:
         id: triage-regression
         uses: ./.github/actions/triage
         with:
-          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29634' }}
+          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29673' }}
           token: ${{ secrets.GITHUB_TOKEN }}
           label: 'potential-regression'
           mode: 'regression'
