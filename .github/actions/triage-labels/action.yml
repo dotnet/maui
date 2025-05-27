@@ -25,6 +25,12 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: Generate unique work id
+      id: gen-guid
+      shell: pwsh
+      run: |
+        $guid = [guid]::NewGuid().ToString()
+        echo "workid=$guid" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
     - name: Fetch issue data
       id: issue-data
@@ -42,8 +48,8 @@ runs:
           const json = JSON.stringify(data, null, 2);
 
           const fs = require('fs');
-          io.mkdirP('${{ runner.temp }}/apply-label');
-          fs.writeFileSync('${{ runner.temp }}/apply-label/issue.json', json);
+          io.mkdirP('${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}');
+          fs.writeFileSync('${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/issue.json', json);
 
           return data;
 
@@ -53,12 +59,10 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
       run: |
         "Setup working directory"
-        echo "::group::Setup working directory"
-        cd ${{ runner.temp }}/apply-label
+        cd ${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}
         git init
         git remote add origin ${{ github.repositoryUrl }}
         gh repo set-default ${{ github.repository }}
-        echo "::endgroup::"
 
     - name: Create User prompt file
       id: create-user-prompt
@@ -67,12 +71,10 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
       run: |
         "Create User prompt file"
-        echo "::group::Create User prompt file"
         ${{ github.action_path }}/process-prompt-template.ps1 `
           -LabelPrefix "${{ inputs.label-prefix }}" `
           -Template "${{ github.action_path }}/user-prompt-template.md" `
-          -Output "${{ runner.temp }}/apply-label/user-prompt.md"
-        echo "::endgroup::"
+          -Output "${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/user-prompt.md"
 
     - name: Create System prompt file
       id: create-system-prompt
@@ -85,7 +87,7 @@ runs:
         ${{ github.action_path }}/process-prompt-template.ps1 `
           -LabelPrefix "${{ inputs.label-prefix }}" `
           -Template "${{ github.action_path }}/system-prompt-template.md" `
-          -Output "${{ runner.temp }}/apply-label/system-prompt.md"
+          -Output "${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/system-prompt.md"
         echo "::endgroup::"
 
     - name: Print prompt files
@@ -93,18 +95,18 @@ runs:
       run: |
         "Print prompt files"
         echo "::group::System Prompt"
-        cat ${{ runner.temp }}/apply-label/system-prompt.md
+        cat ${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/system-prompt.md
         echo "::endgroup::"
         echo "::group::User Prompt"
-        cat ${{ runner.temp }}/apply-label/user-prompt.md
+        cat ${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/user-prompt.md
         echo "::endgroup::"
 
     - name: Run AI inference
       id: inference
       uses: actions/ai-inference@main
       with:
-        prompt-file: "${{ runner.temp }}/apply-label/user-prompt.md"
-        system-prompt-file: "${{ runner.temp }}/apply-label/system-prompt.md"
+        prompt-file: "${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/user-prompt.md"
+        system-prompt-file: "${{ runner.temp }}/apply-label-${{ steps.gen-guid.outputs.workid }}/system-prompt.md"
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
 
