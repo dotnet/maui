@@ -28,7 +28,7 @@ runs:
       uses: actions/github-script@v7
       with:
         script: |
-          const issueNumber = core.getInput('issue') || github.event.issue.number;
+          const issueNumber = '${{ inputs.issue }}' || github.event.issue.number;
           const issue = await github.rest.issues.get({
             owner: context.repo.owner,
             repo: context.repo.repo,
