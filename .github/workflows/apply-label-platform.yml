@@ -33,5 +33,5 @@ jobs:
 
       - name: Log Labels
         run: |
-          echo "Labels to apply: ${{ steps.triage.outputs.labels }}"
           echo "Labels file: ${{ steps.triage.outputs.labels-file }}"
+          cat "${{ steps.triage.outputs.labels-file }}"
