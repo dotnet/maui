@@ -25,5 +25,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemSizingStrategy(StructuredItemsViewHandler<TItemsView> handler, StructuredItemsView itemsView)
 			=> (handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateAdapter();
+
+		//TODO Make this public in .NET10
+		internal static void MapItemsLayoutPropertyChanged(StructuredItemsViewHandler<TItemsView> handler, TItemsView view, object arg3)
+		{
+			(handler.PlatformView as IMauiRecyclerView<TItemsView>)?.UpdateLayoutManager();
+		}
 	}
 }
