@@ -158,6 +158,7 @@ runs:
         $src = "${{ steps.inference.outputs.response-file }}"
         $dst = "${{ steps.gen-work-dir.outputs.triage-work-dir }}/ai-response.json"
         Move-Item -Path $src -Destination $dst -Force
+        Add-Content -Path $dst -Value "`n"
         "ai-response=$dst" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
 
