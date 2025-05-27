@@ -1,5 +1,5 @@
 param(
-    [Parameter(Mandatory=$true)][string[]]$Inputs,
+    [Parameter(Mandatory=$true)][string]$Inputs,
     [Parameter(Mandatory=$true)][string]$Output
 )
 
@@ -17,6 +17,7 @@ foreach ($item in $Inputs) {
 $allLabels = @()
 foreach ($file in $allFiles) {
     if (Test-Path $file) {
+        Write-Host "Processing file: $file..."
         $json = Get-Content $file | ConvertFrom-Json
         if ($json.labels) {
             $allLabels += $json.labels
