@@ -443,8 +443,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("RoundRectangleShapeRadio");
 			App.Tap("RoundRectangleShapeRadio");
 
-			App.WaitForElement("LineCapFlatRadio");
-			App.Tap("LineCapFlatRadio");
+			App.WaitForElement("LineCapRoundRadio");
+			App.Tap("LineCapRoundRadio");
 
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
@@ -461,8 +461,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("RoundRectangleShapeRadio");
 			App.Tap("RoundRectangleShapeRadio");
 
-			App.WaitForElement("LineCapFlatRadio");
-			App.Tap("LineCapFlatRadio");
+			App.WaitForElement("LineCapSquareRadio");
+			App.Tap("LineCapSquareRadio");
 
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
