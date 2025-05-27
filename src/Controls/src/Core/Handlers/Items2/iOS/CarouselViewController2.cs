@@ -251,12 +251,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			if (e.Action == NotifyCollectionChangedAction.Add)
 			{
 				// Updates position to match current item when inserting items, correctly tracking previous position values.
-				if (currentItemPosition != carouselPosition && ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+				var shouldUpdatePosition = currentItemPosition != carouselPosition && ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView && InitialPositionSet && currentItemPosition > -1;
+				if (shouldUpdatePosition)
 				{
-					if (InitialPositionSet && currentItemPosition > -1)
-					{
-						ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, currentItemPosition);
-					}
+					ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, currentItemPosition);
 				}
 				_positionAfterUpdate = GetPositionWhenAddingItems(carouselPosition, currentItemPosition);
 			}

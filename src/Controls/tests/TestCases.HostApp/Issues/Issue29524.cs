@@ -71,8 +71,22 @@ public class Issue29524 : ContentPage
 			carouselItems.Insert(0, "Item 0");
 		};
 
+		var removeButton = new Button
+		{
+			Text = "Remove an item",
+			AutomationId = "RemoveButton",
+			Margin = new Thickness(20),
+		};
+
+		removeButton.Clicked += (sender, e) =>
+		{
+			carouselView.Position = 2;
+			carouselItems.RemoveAt(2);
+		};
+
 		verticalStackLayout.Children.Add(carouselView);
 		verticalStackLayout.Children.Add(insertButton);
+		verticalStackLayout.Children.Add(removeButton);
 		verticalStackLayout.Children.Add(positionLabel);
 		Content = verticalStackLayout;
 	}

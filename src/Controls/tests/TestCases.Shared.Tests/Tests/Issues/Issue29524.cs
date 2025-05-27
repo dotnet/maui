@@ -22,5 +22,17 @@ public class Issue29524 : _IssuesUITest
 		var text = App.FindElement("positionLabel").GetText();
 		Assert.That(text, Is.EqualTo("Current Position: 0, Previous Position: 1"));
 	}
+
+	[Test]
+	[Category(UITestCategories.CarouselView)]
+	public void VerifyPreviousPositionUpdatesCorrectlyWhenRemovingItems()
+	{
+		App.WaitForElement("carouselview");
+		App.Tap("RemoveButton");
+#if TEST_FAILS_ON_ANDROID  // Related issue for android: https://github.com/dotnet/maui/issues/29415
+		var text = App.FindElement("positionLabel").GetText();
+		Assert.That(text, Is.EqualTo("Current Position: 0, Previous Position: 2"));
+#endif
+	}
 }
 #endif
