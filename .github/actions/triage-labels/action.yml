@@ -23,7 +23,7 @@ runs:
   using: 'composite'
   steps:
 
-    - name: Get Issue Data
+    - name: Fetch issue data
       id: issue-data
       uses: actions/github-script@v7
       with:
@@ -44,37 +44,40 @@ runs:
 
           return data;
 
-    - name: Set Current Repo
+    - name: Setup working directory
       shell: pwsh
       env:
         GH_TOKEN: ${{ inputs.token }}
       run: |
+        "Setup working directory"
         cd ${{ runner.temp }}/apply-label
         git init
         git remote add origin ${{ github.repositoryUrl }}
         gh repo set-default ${{ github.repository }}
       
-    - name: Create User Prompt
+    - name: Create User prompt file
       id: create-user-prompt
       shell: pwsh
       env:
         GH_TOKEN: ${{ inputs.token }}
       run: |
+        "Create User prompt file"
         ${{ github.action_path }}/process-prompt-template.ps1 `
           -Template "${{ github.action_path }}/user-prompt-template.md" `
           -Output "${{ runner.temp }}/apply-label/user-prompt.md"
       
-    - name: Create System Prompt
+    - name: Create System prompt file
       id: create-system-prompt
       shell: pwsh
       env:
         GH_TOKEN: ${{ inputs.token }}
       run: |
+        "Create System prompt file"
         ${{ github.action_path }}/process-prompt-template.ps1 `
           -Template "${{ github.action_path }}/system-prompt-template.md" `
           -Output "${{ runner.temp }}/apply-label/system-prompt.md"
 
-    - name: Run AI Inference
+    - name: Run AI inference
       id: inference
       uses: actions/ai-inference@main
       with:
@@ -83,6 +86,8 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
 
-    - name: Log AI Analysis
+    - name: Print AI response
       shell: pwsh
-      run: cat "${{ steps.inference.outputs.response-file }}"
+      run: |
+        "Print AI response"
+        cat "${{ steps.inference.outputs.response-file }}"
