@@ -42,8 +42,8 @@ runs:
         echo "::group::Merge response JSON files"
         $out = "${{ steps.gen-work-dir.outputs.triage-work-dir }}/merged.json"
         ${{ github.action_path }}/merge-responses.ps1 `
-          -LabelFiles "${{ inputs.label-files }}" `
-          -OutputFile "$out"
+          -Inputs "${{ inputs.label-files }}" `
+          -Output "$out"
         "merged-file=$out" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
 
