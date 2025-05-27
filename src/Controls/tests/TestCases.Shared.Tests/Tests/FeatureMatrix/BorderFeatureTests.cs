@@ -51,60 +51,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Border)]
-		public void Border_StrokeThicknessWithStrokeLineCap_Flat()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-
-			App.WaitForElement("StrokeThicknessEntry");
-			App.EnterText("StrokeThicknessEntry", "10");
-
-			App.WaitForElement("LineCapFlatRadio");
-			App.Tap("LineCapFlatRadio");
-
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.Border)]
-		public void Border_StrokeThicknessWithStrokeLineCap_Round()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-
-			App.WaitForElement("StrokeThicknessEntry");
-			App.EnterText("StrokeThicknessEntry", "10");
-
-			App.WaitForElement("LineCapRoundRadio");
-			App.Tap("LineCapRoundRadio");
-
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.Border)]
-		public void Border_StrokeThicknessWithStrokeLineCap_Square()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-
-			App.WaitForElement("StrokeThicknessEntry");
-			App.EnterText("StrokeThicknessEntry", "10");
-
-			App.WaitForElement("LineCapSquareRadio");
-			App.Tap("LineCapSquareRadio");
-
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.Border)]
 		public void Border_StrokeThicknessWithDashOffset()
 		{
 			App.WaitForElement("Options");
@@ -192,6 +138,114 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Border)]
+		public void Border_StrokeDashOffsetWithStrokeCapLine_Flat()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("DashOffsetEntry");
+			App.EnterText("DashOffsetEntry", "4");
+
+			App.WaitForElement("LineCapFlatRadio");
+			App.Tap("LineCapFlatRadio");
+
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Border)]
+		public void Border_StrokeThicknessWithStrokeLineCap_Flat()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("StrokeThicknessEntry");
+			App.EnterText("StrokeThicknessEntry", "10");
+
+			App.WaitForElement("LineCapFlatRadio");
+			App.Tap("LineCapFlatRadio");
+
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Border)]
+		public void Border_StrokeThicknessWithStrokeLineCap_Round()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("StrokeThicknessEntry");
+			App.EnterText("StrokeThicknessEntry", "10");
+
+			App.WaitForElement("LineCapRoundRadio");
+			App.Tap("LineCapRoundRadio");
+
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Border)]
+		public void Border_StrokeThicknessWithStrokeLineCap_Square()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("StrokeThicknessEntry");
+			App.EnterText("StrokeThicknessEntry", "10");
+
+			App.WaitForElement("LineCapSquareRadio");
+			App.Tap("LineCapSquareRadio");
+
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			VerifyScreenshot();
+		}
+		
+		[Test]
+		[Category(UITestCategories.Border)]
+		public void Border_StrokeDashOffsetWithStrokeCapLine_Round()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("DashOffsetEntry");
+			App.EnterText("DashOffsetEntry", "4");
+
+			App.WaitForElement("LineCapRoundRadio");
+			App.Tap("LineCapRoundRadio");
+
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Border)]
+		public void Border_StrokeDashOffsetWithStrokeCapLine_Square()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("DashOffsetEntry");
+			App.EnterText("DashOffsetEntry", "4");
+
+			App.WaitForElement("LineCapSquareRadio");
+			App.Tap("LineCapSquareRadio");
+
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Border)]
 		public void Border_StrokeThicknessWithStrokeDashArray()
 		{
 			App.WaitForElement("Options");
@@ -262,47 +316,12 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshot();
 		}
 
-#endif
 		[Test]
 		[Category(UITestCategories.Border)]
-		public void Border_StrokeDashArrayWithDashOffset()
+		public void Border_LineCap_Flat()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-
-			App.WaitForElement("StrokeDashArrayEntry");
-			App.EnterText("StrokeDashArrayEntry", "3,5");
-			App.WaitForElement("DashOffsetEntry");
-			App.EnterText("DashOffsetEntry", "2");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.Border)]
-		public void Border_StrokeDashOffset()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-
-			App.WaitForElement("DashOffsetEntry");
-			App.EnterText("DashOffsetEntry", "4");
-
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.Border)]
-		public void Border_StrokeDashOffsetWithStrokeCapLine_Flat()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-
-			App.WaitForElement("DashOffsetEntry");
-			App.EnterText("DashOffsetEntry", "4");
 
 			App.WaitForElement("LineCapFlatRadio");
 			App.Tap("LineCapFlatRadio");
@@ -314,13 +333,10 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Border)]
-		public void Border_StrokeDashOffsetWithStrokeCapLine_Round()
+		public void Border_LineCap_Round()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-
-			App.WaitForElement("DashOffsetEntry");
-			App.EnterText("DashOffsetEntry", "4");
 
 			App.WaitForElement("LineCapRoundRadio");
 			App.Tap("LineCapRoundRadio");
@@ -332,13 +348,10 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Border)]
-		public void Border_StrokeDashOffsetWithStrokeCapLine_Square()
+		public void Border_LineCap_Square()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-
-			App.WaitForElement("DashOffsetEntry");
-			App.EnterText("DashOffsetEntry", "4");
 
 			App.WaitForElement("LineCapSquareRadio");
 			App.Tap("LineCapSquareRadio");
@@ -350,16 +363,16 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Border)]
-		public void Border_StrokeDashOffsetWithStrokeShape_Rectangle()
+		public void Border_StrokeWithLineCap_Flat()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
 
-			App.WaitForElement("DashOffsetEntry");
-			App.EnterText("DashOffsetEntry", "4");
+			App.WaitForElement("BlackColorButton");
+			App.Tap("BlackColorButton");
 
-			App.WaitForElement("RectangleShapeRadio");
-			App.Tap("RectangleShapeRadio");
+			App.WaitForElement("LineCapFlatRadio");
+			App.Tap("LineCapFlatRadio");
 
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
@@ -368,16 +381,16 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Border)]
-		public void Border_StrokeDashOffsetWithStrokeShape_RoundRectangle()
+		public void Border_StrokeWithLineCap_Round()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
 
-			App.WaitForElement("DashOffsetEntry");
-			App.EnterText("DashOffsetEntry", "4");
+			App.WaitForElement("BlueColorButton");
+			App.Tap("BlueColorButton");
 
-			App.WaitForElement("RoundRectangleShapeRadio");
-			App.Tap("RoundRectangleShapeRadio");
+			App.WaitForElement("LineCapRoundRadio");
+			App.Tap("LineCapRoundRadio");
 
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
@@ -386,34 +399,22 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Border)]
-		public void Border_StrokeShape_RoundRectangle()
+		public void Border_StrokeWithLineCap_Square()
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
 
-			App.WaitForElement("RoundRectangleShapeRadio");
-			App.Tap("RoundRectangleShapeRadio");
+			App.WaitForElement("GreenColorButton");
+			App.Tap("GreenColorButton");
+
+			App.WaitForElement("LineCapSquareRadio");
+			App.Tap("LineCapSquareRadio");
 
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			VerifyScreenshot();
 		}
-
-		[Test]
-		[Category(UITestCategories.Border)]
-		public void Border_StrokeShape_Rectangle()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-
-			App.WaitForElement("RectangleShapeRadio");
-			App.Tap("RectangleShapeRadio");
-
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			VerifyScreenshot();
-		}
-
+		
 		[Test]
 		[Category(UITestCategories.Border)]
 		public void Border_RoundRectangleShapeWithStrokeLineCap_Flat()
@@ -521,107 +522,104 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			VerifyScreenshot();
 		}
-
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //For more information, see : https://github.com/dotnet/maui/issues/29661
-		[Test]
-		[Category(UITestCategories.Border)]
-		public void Border_LineCap_Flat()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-
-			App.WaitForElement("LineCapFlatRadio");
-			App.Tap("LineCapFlatRadio");
-
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.Border)]
-		public void Border_LineCap_Round()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-
-			App.WaitForElement("LineCapRoundRadio");
-			App.Tap("LineCapRoundRadio");
-
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.Border)]
-		public void Border_LineCap_Square()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-
-			App.WaitForElement("LineCapSquareRadio");
-			App.Tap("LineCapSquareRadio");
-
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.Border)]
-		public void Border_StrokeWithLineCap_Flat()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-
-			App.WaitForElement("BlackColorButton");
-			App.Tap("BlackColorButton");
-
-			App.WaitForElement("LineCapFlatRadio");
-			App.Tap("LineCapFlatRadio");
-
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.Border)]
-		public void Border_StrokeWithLineCap_Round()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-
-			App.WaitForElement("BlueColorButton");
-			App.Tap("BlueColorButton");
-
-			App.WaitForElement("LineCapRoundRadio");
-			App.Tap("LineCapRoundRadio");
-
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.Border)]
-		public void Border_StrokeWithLineCap_Square()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-
-			App.WaitForElement("GreenColorButton");
-			App.Tap("GreenColorButton");
-
-			App.WaitForElement("LineCapSquareRadio");
-			App.Tap("LineCapSquareRadio");
-
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			VerifyScreenshot();
-		}
 #endif
+		[Test]
+		[Category(UITestCategories.Border)]
+		public void Border_StrokeDashArrayWithDashOffset()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("StrokeDashArrayEntry");
+			App.EnterText("StrokeDashArrayEntry", "3,5");
+			App.WaitForElement("DashOffsetEntry");
+			App.EnterText("DashOffsetEntry", "2");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Border)]
+		public void Border_StrokeDashOffset()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("DashOffsetEntry");
+			App.EnterText("DashOffsetEntry", "4");
+
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			VerifyScreenshot();
+		}
+
+
+		[Test]
+		[Category(UITestCategories.Border)]
+		public void Border_StrokeDashOffsetWithStrokeShape_Rectangle()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("DashOffsetEntry");
+			App.EnterText("DashOffsetEntry", "4");
+
+			App.WaitForElement("RectangleShapeRadio");
+			App.Tap("RectangleShapeRadio");
+
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Border)]
+		public void Border_StrokeDashOffsetWithStrokeShape_RoundRectangle()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("DashOffsetEntry");
+			App.EnterText("DashOffsetEntry", "4");
+
+			App.WaitForElement("RoundRectangleShapeRadio");
+			App.Tap("RoundRectangleShapeRadio");
+
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Border)]
+		public void Border_StrokeShape_RoundRectangle()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("RoundRectangleShapeRadio");
+			App.Tap("RoundRectangleShapeRadio");
+
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		[Category(UITestCategories.Border)]
+		public void Border_StrokeShape_Rectangle()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+
+			App.WaitForElement("RectangleShapeRadio");
+			App.Tap("RectangleShapeRadio");
+
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			VerifyScreenshot();
+		}
 
 		[Test]
 		[Category(UITestCategories.Border)]
@@ -844,7 +842,5 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			VerifyScreenshot();
 		}
-
-
 	}
 }
