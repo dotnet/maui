@@ -37,11 +37,7 @@ runs:
 
           core.info(JSON.stringify(issue, null, 2));
 
-          const data = {
-            title: issue.data.title,
-            body: issue.data.body,
-            number: issue.data.number
-          };
+          const data = issue.data;
           const json = JSON.stringify(data, null, 2);
 
           const fs = require('fs');
@@ -50,6 +46,9 @@ runs:
 
           return data;
 
+    - name: Set Current Repo
+      run: gh repo set-default --repo ${{ github.repository }}
+      
     - name: Create User Prompt
       id: create-user-prompt
       shell: pwsh
@@ -80,6 +79,4 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
 
     - name: Log AI Analysis
-      shell: pwsh
-      run: |
-        cat "${{ steps.inference.outputs.response-file }}"
+      run: cat "${{ steps.inference.outputs.response-file }}"
