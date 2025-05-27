@@ -3,9 +3,7 @@ param(
     [string]$Template,
     [Parameter(Mandatory=$true)]
     [string]$Output,
-    [Parameter(Mandatory=$true)]
     [string]$LabelPrefix,
-    [Parameter(Mandatory=$true)]
     [string]$Label
 )
 
@@ -37,8 +35,12 @@ try {
 
     foreach ($line in $lines) {
         # Replace the placeholders with actual values
-        $line = $line.Replace('{{LABEL_PREFIX}}', $LabelPrefix)
-        $line = $line.Replace('{{LABEL}}', $Label)
+        if ($LabelPrefix) {
+            $line = $line.Replace('{{LABEL_PREFIX}}', $LabelPrefix)
+        }
+        if ($Label) {
+            $line = $line.Replace('{{LABEL}}', $Label)
+        }
 
         # Check for EXEC: command prefix
         if ($line -match "^EXEC:\s*(.+)$") {
