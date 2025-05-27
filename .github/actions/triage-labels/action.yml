@@ -50,6 +50,7 @@ runs:
         GH_TOKEN: ${{ inputs.token }}
       run: |
         cd ${{ runner.temp }}/apply-label
+        git init
         gh repo set-default ${{ github.repository }}
       
     - name: Create User Prompt
