@@ -3,10 +3,10 @@ description: 'Run AI inference.'
 
 inputs:
   prompt-file:
-    description: 'Path to the system prompt file'
+    description: 'Path to the user prompt file'
     required: true
   system-prompt-file:
-    description: 'Path to the user prompt file'
+    description: 'Path to the system prompt file'
     required: false
   token:
     description: 'GitHub token to use for authentication'
