@@ -7,12 +7,12 @@ inputs:
     required: true
   system-prompt-file:
     description: 'Path to the user prompt file'
-    required: true
+    required: false
   token:
     description: 'GitHub token to use for authentication'
     required: true
-  work-dir:
-    description: 'Working directory for triage files'
+  response-file:
+    description: 'Path to the file where the AI response will be saved'
     required: true
 
 outputs:
@@ -33,14 +33,14 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
 
-    - name: Move AI response to work folder
+    - name: Move AI response to response file
       id: move-response
       shell: pwsh
       run: |
-        "Move AI response to work folder"
-        echo "::group::Move AI response to work folder"
+        "Move AI response to response file"
+        echo "::group::Move AI response to response file"
         $src = "${{ steps.inference.outputs.response-file }}"
-        $dst = "${{ inputs.work-dir }}/ai-response.json"
+        $dst = "${{ inputs.response-file }}"
         Move-Item -Path $src -Destination $dst -Force
         Add-Content -Path $dst -Value "`n"
         "ai-response=$dst" >> $env:GITHUB_OUTPUT

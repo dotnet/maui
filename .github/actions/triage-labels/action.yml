@@ -57,13 +57,11 @@ runs:
 
           return data;
 
-    - name: Create System prompt file
-      id: create-system-prompt
+    - name: Select system prompt template
+      id: select-system-prompt
       shell: pwsh
-      env:
-        GH_TOKEN: ${{ inputs.token }}
       run: |
-        "Create System prompt file"
+        "Select system prompt template"
         echo "::group::Select system prompt template"
         $mode = "${{ inputs.mode }}"
         switch ($mode) {
@@ -73,34 +71,28 @@ runs:
           default         { throw "Unknown mode: $mode" }
         }
         "Using system prompt template: $template"
+        "system-prompt-template=$template" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
 
-        echo "::group::Create System prompt file"
-        $prompt = "${{ steps.setup.outputs.work-dir }}/system-prompt.md"
-        ${{ github.action_path }}/process-prompt-template.ps1 `
-          -LabelPrefix "${{ inputs.label-prefix }}" `
-          -Label "${{ inputs.label }}" `
-          -Template "$template" `
-          -Output "$prompt"
-        "system-prompt=$prompt" >> $env:GITHUB_OUTPUT
-        echo "::endgroup::"
+    - name: Create System prompt file
+      id: create-system-prompt
+      uses: ./.github/actions/triage-gen-prompt
+      with:
+        token: ${{ inputs.token }}
+        label-prefix: ${{ inputs.label-prefix }}
+        label: ${{ inputs.label }}
+        template: ${{ steps.select-system-prompt.outputs.system-prompt-template }}
+        output: ${{ steps.setup.outputs.work-dir }}/system-prompt.md
 
     - name: Create User prompt file
       id: create-user-prompt
-      shell: pwsh
-      env:
-        GH_TOKEN: ${{ inputs.token }}
-      run: |
-        "Create User prompt file"
-        echo "::group::Create User prompt file"
-        $prompt = "${{ steps.setup.outputs.work-dir }}/user-prompt.md"
-        ${{ github.action_path }}/process-prompt-template.ps1 `
-          -LabelPrefix "${{ inputs.label-prefix }}" `
-          -Label "${{ inputs.label }}" `
-          -Template "${{ github.action_path }}/user-prompt.md" `
-          -Output $prompt
-        "user-prompt=$prompt" >> $env:GITHUB_OUTPUT
-        echo "::endgroup::"
+      uses: ./.github/actions/triage-gen-prompt
+      with:
+        token: ${{ inputs.token }}
+        label-prefix: ${{ inputs.label-prefix }}
+        label: ${{ inputs.label }}
+        template: ${{ github.action_path }}/user-prompt.md
+        output: ${{ steps.setup.outputs.work-dir }}/user-prompt.md
 
     - name: Print prompt files
       shell: pwsh
@@ -120,4 +112,4 @@ runs:
         prompt-file: "${{ steps.create-system-prompt.outputs.system-prompt }}"
         system-prompt-file: "${{ steps.create-user-prompt.outputs.user-prompt }}"
         token: ${{ inputs.token }}
-        work-dir: ${{ steps.setup.outputs.work-dir }}
+        response-file: "${{ steps.setup.outputs.work-dir }}/ai-response.json"
