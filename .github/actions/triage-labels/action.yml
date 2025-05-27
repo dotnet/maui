@@ -48,31 +48,14 @@ runs:
       shell: pwsh
       env:
         GH_TOKEN: ${{ inputs.token }}
-      run: |
-        ./.github/scripts/process-prompt-template.ps1 `
-          -Template ".github/prompts/user-prompt-template.md" `
-          -Output "user-prompt.md"
+      run: ./process-prompt-template.ps1 -Template "user-prompt-template.md" -Output "user-prompt.md"
       
     - name: Create System Prompt
       id: create-system-prompt
       shell: pwsh
       env:
         GH_TOKEN: ${{ inputs.token }}
-      run: |
-        ./.github/scripts/process-prompt-template.ps1 `
-          -Template ".github/prompts/system-prompt-template.md" `
-          -Output "system-prompt.md"
-        "system_prompt=$((Get-Content -Raw system-prompt.md) | ConvertTo-Json)" >> $GITHUB_OUTPUT
-
-    - name: Log Prompts
-      shell: bash
-      run: |
-        echo "::group::System Prompt"
-        cat system-prompt.md
-        echo "::endgroup::"
-        echo "::group::User Prompt"
-        cat user-prompt.md
-        echo "::endgroup::"
+      run: ./process-prompt-template.ps1 -Template "system-prompt-template.md" -Output "system-prompt.md"
 
     - name: Run AI Inference
       id: inference
