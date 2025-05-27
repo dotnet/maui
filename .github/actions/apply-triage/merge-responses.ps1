@@ -5,10 +5,13 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
+Write-Host "Processing input files: $Inputs"
+Write-Host "Output will be written to: $Output"
+
 # Accept both comma and newline separated input
 $allFiles = @()
 foreach ($item in $Inputs) {
-    $allFiles += $item -split '[,`n`r]+' |
+    $allFiles += $item -split '[,\n\r]+' |
         ForEach-Object { $_.Trim() } |
         Where-Object { $_ }
 }
