@@ -16,21 +16,22 @@ foreach ($item in $Inputs) {
         Where-Object { $_ }
 }
 
-# Read all JSON files and extract labels
-$allLabels = @()
+# Read all JSON files and merge root properties
+$merged = @{}
 foreach ($file in $allFiles) {
     if (Test-Path $file) {
         Write-Host "Processing file: $file..."
         $json = Get-Content $file | ConvertFrom-Json
-        if ($json.labels) {
-            $allLabels += $json.labels
+        foreach ($prop in $json.PSObject.Properties) {
+            $name = $prop.Name
+            $value = $prop.Value
+            if ($merged.ContainsKey($name)) {
+                $merged[$name] += $value
+            } else {
+                $merged[$name] = $value
+            }
         }
     }
-}
-
-# Generate the final merged object
-$merged = @{
-    labels = $allLabels;
 }
 
 # Save to the output file

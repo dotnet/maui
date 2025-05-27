@@ -1,5 +1,4 @@
 name: 'Flexible Triage Labels Action'
-
 description: 'Process issues and apply labels using AI inference, supporting multiple triage modes.'
 
 inputs:
@@ -26,24 +25,17 @@ inputs:
 outputs:
   labels-file:
     description: 'The file that contains the labels to apply to the issue'
-    value: ${{ steps.move-response.outputs.ai-response }}
+    value: ${{ steps.triage-ai.outputs.ai-response }}
 
 runs:
   using: 'composite'
   steps:
 
-    - name: Generate a unique working directory
-      id: gen-work-dir
-      shell: pwsh
-      run: |
-        "Generate a unique working directory"
-        echo "::group::Generate a unique working directory"
-        $guid = [guid]::NewGuid().ToString()
-        $workDir = "${{ runner.temp }}/triage-action-$guid";
-        New-Item -ItemType Directory -Path $workDir -Force | Out-Null
-        "triage-work-id=$guid" >> $env:GITHUB_OUTPUT
-        "triage-work-dir=$workDir" >> $env:GITHUB_OUTPUT
-        echo "::endgroup::"
+    - name: Setup working directory
+      id: setup
+      uses: ./../triage-setup
+      with:
+        token: ${{ inputs.token }}
 
     - name: Fetch issue data
       id: issue-data
@@ -61,15 +53,17 @@ runs:
           const json = JSON.stringify(data, null, 2);
 
           const fs = require('fs');
-          fs.writeFileSync("${{ steps.gen-work-dir.outputs.triage-work-dir }}/issue.json", json);
+          fs.writeFileSync("${{ steps.setup.outputs.work-dir }}/issue.json", json);
 
           return data;
 
-    - name: Select system prompt template
-      id: select-system-prompt
+    - name: Create System prompt file
+      id: create-system-prompt
       shell: pwsh
+      env:
+        GH_TOKEN: ${{ inputs.token }}
       run: |
-        "Select system prompt template"
+        "Create System prompt file"
         echo "::group::Select system prompt template"
         $mode = "${{ inputs.mode }}"
         switch ($mode) {
@@ -79,20 +73,16 @@ runs:
           default         { throw "Unknown mode: $mode" }
         }
         "Using system prompt template: $template"
-        "system-prompt-template=$template" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
 
-    - name: Setup working directory
-      shell: pwsh
-      env:
-        GH_TOKEN: ${{ inputs.token }}
-      run: |
-        "Setup working directory"
-        echo "::group::Setup working directory"
-        cd "${{ steps.gen-work-dir.outputs.triage-work-dir }}"
-        git init
-        git remote add origin ${{ github.repositoryUrl }}
-        gh repo set-default ${{ github.repository }}
+        echo "::group::Create System prompt file"
+        $prompt = "${{ steps.setup.outputs.work-dir }}/system-prompt.md"
+        ${{ github.action_path }}/process-prompt-template.ps1 `
+          -LabelPrefix "${{ inputs.label-prefix }}" `
+          -Label "${{ inputs.label }}" `
+          -Template "$template" `
+          -Output "$prompt"
+        "system-prompt=$prompt" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
 
     - name: Create User prompt file
@@ -103,30 +93,13 @@ runs:
       run: |
         "Create User prompt file"
         echo "::group::Create User prompt file"
-        $prompt = "${{ steps.gen-work-dir.outputs.triage-work-dir }}/user-prompt.md"
+        $prompt = "${{ steps.setup.outputs.work-dir }}/user-prompt.md"
         ${{ github.action_path }}/process-prompt-template.ps1 `
           -LabelPrefix "${{ inputs.label-prefix }}" `
           -Label "${{ inputs.label }}" `
           -Template "${{ github.action_path }}/user-prompt.md" `
           -Output $prompt
         "user-prompt=$prompt" >> $env:GITHUB_OUTPUT
-        echo "::endgroup::"
-
-    - name: Create System prompt file
-      id: create-system-prompt
-      shell: pwsh
-      env:
-        GH_TOKEN: ${{ inputs.token }}
-      run: |
-        "Create System prompt file"
-        echo "::group::Create System prompt file"
-        $prompt = "${{ steps.gen-work-dir.outputs.triage-work-dir }}/system-prompt.md"
-        ${{ github.action_path }}/process-prompt-template.ps1 `
-          -LabelPrefix "${{ inputs.label-prefix }}" `
-          -Label "${{ inputs.label }}" `
-          -Template "${{ steps.select-system-prompt.outputs.system-prompt-template }}" `
-          -Output $prompt
-        "system-prompt=$prompt" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
 
     - name: Print prompt files
@@ -140,32 +113,11 @@ runs:
         cat "${{ steps.create-user-prompt.outputs.user-prompt }}"
         echo "::endgroup::"
 
-    - name: Run AI inference
-      id: inference
-      uses: actions/ai-inference@main
+    - name: Run Triage AI Action
+      id: triage-ai
+      uses: ./../triage-ai
       with:
         prompt-file: "${{ steps.create-system-prompt.outputs.system-prompt }}"
         system-prompt-file: "${{ steps.create-user-prompt.outputs.user-prompt }}"
-      env:
-        GITHUB_TOKEN: ${{ inputs.token }}
-
-    - name: Move AI response to work folder
-      id: move-response
-      shell: pwsh
-      run: |
-        "Move AI response to work folder"
-        echo "::group::Move AI response to work folder"
-        $src = "${{ steps.inference.outputs.response-file }}"
-        $dst = "${{ steps.gen-work-dir.outputs.triage-work-dir }}/ai-response.json"
-        Move-Item -Path $src -Destination $dst -Force
-        Add-Content -Path $dst -Value "`n"
-        "ai-response=$dst" >> $env:GITHUB_OUTPUT
-        echo "::endgroup::"
-
-    - name: Print AI response
-      shell: pwsh
-      run: |
-        "Print AI response"
-        echo "::group::AI Response"
-        cat "${{ steps.move-response.outputs.ai-response }}"
-        echo "::endgroup::"
+        token: ${{ inputs.token }}
+        work-dir: ${{ steps.setup.outputs.work-dir }}

@@ -1,0 +1,55 @@
+name: 'Triage AI Action'
+description: 'Run AI inference.'
+
+inputs:
+  prompt-file:
+    description: 'Path to the system prompt file'
+    required: true
+  system-prompt-file:
+    description: 'Path to the user prompt file'
+    required: true
+  token:
+    description: 'GitHub token to use for authentication'
+    required: true
+  work-dir:
+    description: 'Working directory for triage files'
+    required: true
+
+outputs:
+  ai-response:
+    description: 'The file that contains the AI response'
+    value: ${{ steps.move-response.outputs.ai-response }}
+
+runs:
+  using: 'composite'
+  steps:
+
+    - name: Run AI inference
+      id: inference
+      uses: actions/ai-inference@main
+      with:
+        prompt-file: ${{ inputs.prompt-file }}
+        system-prompt-file: ${{ inputs.system-prompt-file }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+
+    - name: Move AI response to work folder
+      id: move-response
+      shell: pwsh
+      run: |
+        "Move AI response to work folder"
+        echo "::group::Move AI response to work folder"
+        $src = "${{ steps.inference.outputs.response-file }}"
+        $dst = "${{ inputs.work-dir }}/ai-response.json"
+        Move-Item -Path $src -Destination $dst -Force
+        Add-Content -Path $dst -Value "`n"
+        "ai-response=$dst" >> $env:GITHUB_OUTPUT
+        echo "::endgroup::"
+
+    - name: Print AI response
+      shell: pwsh
+      run: |
+        "Print AI response"
+        echo "::group::AI Response"
+        cat "${{ steps.move-response.outputs.ai-response }}"
+        echo "::endgroup::"
