@@ -14,6 +14,10 @@ inputs:
   response-file:
     description: 'Path to the file where the AI response will be saved'
     required: true
+  max-tokens:
+    description: 'Maximum number of tokens for the AI response'
+    required: false
+    default: '200'
 
 outputs:
   ai-response:
@@ -28,6 +32,7 @@ runs:
       id: inference
       uses: actions/ai-inference@main
       with:
+        max-tokens: ${{ inputs.max-tokens }}
         prompt-file: ${{ inputs.prompt-file }}
         system-prompt-file: ${{ inputs.system-prompt-file }}
       env:

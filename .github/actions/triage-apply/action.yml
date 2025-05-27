@@ -64,6 +64,7 @@ runs:
         prompt-file: "${{ steps.create-user-prompt.outputs.prompt }}"
         token: ${{ inputs.token }}
         response-file: "${{ steps.setup.outputs.work-dir }}/ai-response.md"
+        max-tokens: 500
 
 
     # - name: Comment on the issue with summary
