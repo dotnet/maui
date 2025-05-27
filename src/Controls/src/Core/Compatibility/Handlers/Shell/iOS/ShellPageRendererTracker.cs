@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			get
 			{
 				if (_rendererRef is null)
+				{
 					return null;
+				}
 
 				_rendererRef.TryGetTarget(out var target);
 				return target;
@@ -49,7 +51,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set
 			{
 				if (_page == value)
+				{
 					return;
+				}
 
 				var oldPage = _page;
 				_page = value;
@@ -166,7 +170,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnToolbarPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (!ToolbarReady())
+			{
 				return;
+			}
 
 			if (e.PropertyName == Shell.TitleViewProperty.PropertyName)
 			{
@@ -181,7 +187,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void UpdateTitle()
 		{
 			if (!ToolbarReady() || NavigationItem is null || _context?.Shell?.Toolbar is null)
+			{
 				return;
+			}
 
 			NavigationItem.Title = _context.Shell.Toolbar.Title;
 		}
@@ -190,7 +198,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool ToolbarReady()
 		{
 			if (_context?.Shell?.Toolbar is ShellToolbar st)
+			{
 				return st.CurrentPage == Page;
+			}
 
 			return _isVisiblePage;
 		}
@@ -198,7 +208,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateShellToMyPage()
 		{
 			if (Page == null)
+			{
 				return;
+			}
 
 			SetBackButtonBehavior(Shell.GetBackButtonBehavior(Page));
 			SearchHandler = Shell.GetSearchHandler(Page);
@@ -247,7 +259,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void OnRendererSet()
 		{
 			if (ViewController is null)
+			{
 				return;
+			}
 
 			NavigationItem = ViewController.NavigationItem;
 
@@ -260,7 +274,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void UpdateTitleView()
 		{
 			if (!ToolbarReady() || NavigationItem is null)
+			{
 				return;
+			}
 
 			var titleView = _context?.Shell?.Toolbar?.TitleView as View;
 
@@ -302,7 +318,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnTitleViewParentSet(object? sender, EventArgs e)
 		{
 			if (sender is Element element)
+			{
 				element.ParentSet -= OnTitleViewParentSet;
+			}
 
 			UpdateTitleView();
 		}
@@ -310,10 +328,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		internal void UpdateToolbarItemsInternal(bool updateWhenLoaded = true)
 		{
 			if (Page is null)
+			{
 				return;
+			}
 
 			if (updateWhenLoaded && Page.IsLoaded || !updateWhenLoaded)
+			{
 				UpdateToolbarItems();
+			}
 		}
 
 		protected virtual void UpdateToolbarItems()
@@ -359,7 +381,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var mauiContext = MauiContext;
 
 			if (shell is null || NavigationItem is null || mauiContext is null)
+			{
 				return;
+			}
 
 			var behavior = BackButtonBehavior;
 
@@ -441,7 +465,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateBackButtonTitle()
 		{
 			if (ViewController is null)
+			{
 				return;
+			}
 
 			var behavior = BackButtonBehavior;
 			var text = behavior.GetPropertyIfSet<string?>(BackButtonBehavior.TextOverrideProperty, null);
@@ -648,7 +674,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set
 			{
 				if (_searchHandler == value)
+				{
 					return;
+				}
 
 				if (_searchHandler != null)
 				{
@@ -677,7 +705,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 #nullable restore
 		{
 			if (_searchHandler is null || _searchController is null)
+			{
 				return;
+			}
 
 			if (e.PropertyName == SearchHandler.ClearPlaceholderEnabledProperty.PropertyName)
 				_searchController.SearchBar.ShowsBookmarkButton = _searchHandler.ClearPlaceholderEnabled;
@@ -694,7 +724,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void UpdateAutomationId()
 		{
 			if (_searchHandler?.AutomationId != null && _searchController?.SearchBar != null)
+			{
 				_searchController.SearchBar.AccessibilityIdentifier = _searchHandler.AutomationId;
+			}
 		}
 
 		[SupportedOSPlatform("ios11.0")]
@@ -842,7 +874,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void BookmarkButtonClicked(object? sender, EventArgs e)
 		{
-			((ISearchHandlerController?)SearchHandler)?.ClearPlaceholderClicked();
+			(SearchHandler as ISearchHandlerController)?.ClearPlaceholderClicked();
 		}
 
 		void DettachSearchController()
@@ -880,12 +912,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			_searchController.Active = false;
-			((ISearchHandlerController?)SearchHandler)?.ItemSelected(e);
+			(SearchHandler as ISearchHandlerController)?.ItemSelected(e);
 		}
 
 		void SearchButtonClicked(object? sender, EventArgs e)
 		{
-			((ISearchHandlerController?)SearchHandler)?.QueryConfirmed();
+			(SearchHandler as ISearchHandlerController)?.QueryConfirmed();
 		}
 
 		void SetSearchBarIcon(UISearchBar searchBar, ImageSource source, UISearchBarIcon icon)
@@ -918,7 +950,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnPageLoaded(object? sender, EventArgs e)
 		{
 			if (sender is Page page)
+			{
 				page.Loaded -= OnPageLoaded;
+			}
 
 			// This means the user removed this page during the loaded event
 			if (_page is null)
@@ -940,13 +974,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void CheckAppeared()
 		{
 			if (_context?.Shell?.CurrentPage == Page)
+			{
 				SetAppeared();
+			}
 		}
 
 		void SetAppeared()
 		{
 			if (_isVisiblePage)
+			{
 				return;
+			}
 
 			_isVisiblePage = true;
 			//UIKIt will try to override our colors when the SearchController is inside the NavigationBar
@@ -955,13 +993,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateShellToMyPage();
 
 			if (_context?.Shell?.Toolbar is not null)
+			{
 				_context.Shell.Toolbar.PropertyChanged += OnToolbarPropertyChanged;
+			}
 		}
 
 		void SetDisappeared()
 		{
 			if (!_isVisiblePage)
+			{
 				return;
+			}
 
 			_isVisiblePage = false;
 
@@ -985,7 +1027,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void Dispose(bool disposing)
 		{
 			if (_disposed)
+			{
 				return;
+			}
 
 			if (disposing)
 			{
@@ -1004,7 +1048,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				if (shell is not null)
 				{
-
 					((IShellController)shell).RemoveFlyoutBehaviorObserver(this);
 
 					if (BackButtonBehavior is not null)
