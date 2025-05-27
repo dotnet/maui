@@ -88,10 +88,10 @@ runs:
       run: |
         "Print prompt files"
         echo "::group::System Prompt"
-        cat system-prompt.md
+        cat ${{ runner.temp }}/apply-label/system-prompt.md
         echo "::endgroup::"
         echo "::group::User Prompt"
-        cat user-prompt.md
+        cat ${{ runner.temp }}/apply-label/user-prompt.md
         echo "::endgroup::"
 
     - name: Run AI inference
