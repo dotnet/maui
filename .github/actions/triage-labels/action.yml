@@ -82,4 +82,5 @@ runs:
         GITHUB_TOKEN: ${{ inputs.token }}
 
     - name: Log AI Analysis
+      shell: pwsh
       run: cat "${{ steps.inference.outputs.response-file }}"
