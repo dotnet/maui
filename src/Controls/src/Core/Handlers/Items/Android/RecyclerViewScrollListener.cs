@@ -63,17 +63,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var itemsSource = ItemsViewAdapter.ItemsSource;
-			int hasHeader = itemsSource.HasHeader ? 1 : 0;
-			int hasFooter = itemsSource.HasFooter ? 1 : 0;
+			int headerValue = itemsSource.HasHeader ? 1 : 0;
+			int footerValue = itemsSource.HasFooter ? 1 : 0;
 
-			int lastDataItemIndex = ItemsViewAdapter.ItemCount - hasFooter - hasHeader;
+			int modifiedItemCount = ItemsViewAdapter.ItemCount - footerValue - headerValue;
 
-			if (Last < hasHeader || Last > lastDataItemIndex)
+			if (Last < headerValue || Last > modifiedItemCount)
 			{
 				return;
 			}
 
-			bool isThresholdReached = (Last == lastDataItemIndex - 1) || (lastDataItemIndex - 1 - Last <= _itemsView.RemainingItemsThreshold);
+			bool isThresholdReached = (Last == modifiedItemCount - 1) || (modifiedItemCount - 1 - Last <= _itemsView.RemainingItemsThreshold);
 
 			if (isThresholdReached)
 			{
