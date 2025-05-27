@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
@@ -452,18 +453,20 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (Element.CurrentPage == null)
 				return;
 
-			// TODO MAUI
-			//if (Platform != null)
-			//{
-			//	Platform.NavAnimationInProgress = true;
-			//}
+			var currentWindow = Element.Handler?.MauiContext?.GetPlatformWindow()?.GetWindow() as Window;
+			var modalNavigationManager = currentWindow?.ModalNavigationManager;
+
+			if (modalNavigationManager is not null)
+			{
+				modalNavigationManager.NavAnimationInProgress = true;
+			}
 
 			_viewPager.SetCurrentItem(Element.Children.IndexOf(Element.CurrentPage), Element.OnThisPlatform().IsSmoothScrollEnabled());
 
-			//if (Platform != null)
-			//{
-			//	Platform.NavAnimationInProgress = false;
-			//}
+			if (modalNavigationManager is not null)
+			{
+				modalNavigationManager.NavAnimationInProgress = false;
+			}
 		}
 
 		void UpdateIgnoreContainerAreas()
