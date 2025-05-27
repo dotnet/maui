@@ -5,6 +5,7 @@ using System.Linq;
 using System.Xml;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Microsoft.Maui.Resizetizer.Resources;
 using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.Resizetizer
 			}
 			catch (Exception ex)
 			{
-				Log.LogError("Android Resource Processing", "MAUIR0004", null, null, 0, 0, 0, 0, $"Error occurred in processing Android-specific image resources. {ex.ToString()}");
+				Log.LogError(ErrorMessages.AndroidResourceProcessing, ErrorCodes.AndroidResourceProcessingCode, null, null, 0, 0, 0, 0, string.Format(ErrorMessages.AndroidResourceProcessingError, ex.ToString()));
 				return false;
 			}
 		}

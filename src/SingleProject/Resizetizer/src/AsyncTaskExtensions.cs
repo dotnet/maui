@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Maui.Resizetizer.Resources;
 
 namespace Microsoft.Maui.Resizetizer
 {
@@ -22,7 +23,7 @@ namespace Microsoft.Maui.Resizetizer
 					}
 					catch (Exception ex)
 					{
-						asyncTask.LogCodedError("MAUIR0002", "Image Processing", $"There was an exception processing the image. {ex.ToString()}");
+						asyncTask.LogCodedError(ErrorCodes.ImageProcessingCode, ErrorMessages.ImageProcessing, string.Format(ErrorMessages.ImageProcessingError, ex.ToString()));
 						asyncTask.Cancel();
 					}
 				});
