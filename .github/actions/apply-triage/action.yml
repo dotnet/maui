@@ -1,0 +1,86 @@
+name: 'Apply Labels and Comment'
+description: 'Merge label JSON files, summarize, comment on the issue, and apply labels.'
+
+inputs:
+  issue:
+    description: 'The issue number to update'
+    required: true
+  token:
+    description: 'GitHub token to use for authentication'
+    required: true
+  label-files:
+    description: 'Comma-separated or newline-separated list of JSON files with label results'
+    required: true
+
+outputs:
+  merged-file:
+    description: 'The merged JSON file with all labels and summary.'
+    value: ${{ steps.merge-labels.outputs.merged-file }}
+
+runs:
+  using: 'composite'
+  steps:
+
+    - name: Generate a unique working directory
+      id: gen-work-dir
+      shell: pwsh
+      run: |
+        "Generate a unique working directory"
+        echo "::group::Generate a unique working directory"
+        $guid = [guid]::NewGuid().ToString()
+        $workDir = "${{ runner.temp }}/triage-action-$guid";
+        New-Item -ItemType Directory -Path $workDir -Force | Out-Null
+        "triage-work-id=$guid" >> $env:GITHUB_OUTPUT
+        "triage-work-dir=$workDir" >> $env:GITHUB_OUTPUT
+        echo "::endgroup::"
+
+    - name: Merge response JSON files
+      id: merge
+      shell: pwsh
+      run: |
+        "Merge response JSON files"
+        echo "::group::Merge response JSON files"
+        $out = "${{ steps.gen-work-dir.outputs.triage-work-dir }}/merged.json"
+        ${{ github.action_path }}/merge-responses.ps1 `
+          -LabelFiles "${{ inputs.label-files }}" `
+          -OutputFile "$out"
+        "merged-file=$out" >> $env:GITHUB_OUTPUT
+        echo "::endgroup::"
+
+    - name: Summarize labels
+      id: summarize
+      shell: pwsh
+      run: |
+        cat "${{ steps.merge.outputs.merged-file }}"
+
+
+    # - name: Comment on the issue with summary
+    #   uses: actions/github-script@v7
+    #   with:
+    #     script: |
+    #       const fs = require('fs');
+    #       const issueNumber = parseInt('${{ inputs.issue }}', 10);
+    #       const summary = fs.readFileSync('summary.txt', 'utf8');
+    #       await github.rest.issues.createComment({
+    #         owner: context.repo.owner,
+    #         repo: context.repo.repo,
+    #         issue_number: issueNumber,
+    #         body: summary
+    #       });
+
+    # - name: Apply labels to the issue
+    #   uses: actions/github-script@v7
+    #   with:
+    #     script: |
+    #       const fs = require('fs');
+    #       const issueNumber = parseInt('${{ inputs.issue }}', 10);
+    #       const merged = JSON.parse(fs.readFileSync('merged-labels.json', 'utf8'));
+    #       const labels = merged.labels.map(l => l.label).filter(Boolean);
+    #       if (labels.length > 0) {
+    #         await github.rest.issues.addLabels({
+    #           owner: context.repo.owner,
+    #           repo: context.repo.repo,
+    #           issue_number: issueNumber,
+    #           labels
+    #         });
+    #       }

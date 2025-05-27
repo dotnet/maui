@@ -56,3 +56,13 @@ jobs:
           cat "${{ steps.triage-platform.outputs.labels-file }}"
           cat "${{ steps.triage-area.outputs.labels-file }}"
           cat "${{ steps.triage-regression.outputs.labels-file }}"
+
+      - name: Apply Labels and Comment
+        uses: ./.github/actions/apply-triage
+        with:
+          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29673' }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          label-files: |
+            ${{ steps.triage-platform.outputs.labels-file }}
+            ${{ steps.triage-area.outputs.labels-file }}
+            ${{ steps.triage-regression.outputs.labels-file }}

@@ -16,12 +16,12 @@ issues that are likely regressions.
    "{{LABEL}}" label below.
 4. **IMPORTANT** If you do not find strong evidence of a
    regression, do not assign any labels and instead return an
-   empty array.
+   empty object.
 
 **Reasoning**
 * Provide a short reason for your decision, referencing the
   evidence in the issue.
-* If not assigning any labels, reply with an empty array.
+* If not assigning any labels, reply with an empty object.
 * Make sure your reason is short and concise.
 
 **Response**
@@ -32,15 +32,18 @@ issues that are likely regressions.
 
 If this issue has strong evidence of a regression, respond with:
 
-[
-  {
-    "label": "{{LABEL}}",
-    "reason": "REASON_FOR_LABEL_HERE"
-  }
-]
+{
+  "labels":[
+    {
+      "label": "{{LABEL}}",
+      "reason": "REASON_FOR_LABEL_HERE"
+    }
+  ]
+}
 
 If this issue does not have strong evidence a regression, respond with:
 
-[
-
-]
+{
+  "labels":[
+  ]
+}

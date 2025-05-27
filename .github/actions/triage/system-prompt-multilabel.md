@@ -40,10 +40,12 @@ EXEC: gh label list --limit 1000 --json name,description --search "{{LABEL_PREFI
 * Do not wrap the JSON in any other text or formatting,
   including code blocks or markdown.
 
-[
-  {
-    "label": "LABEL_NAME_HERE", 
-    "reason": "REASON_FOR_LABEL_HERE"
-  },
-  ...
-]
+{
+  "labels": [
+    {
+      "label": "LABEL_NAME_HERE", 
+      "reason": "REASON_FOR_LABEL_HERE"
+    },
+    ...
+  ]
+}
