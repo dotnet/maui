@@ -23,8 +23,11 @@ with an easy to understand message while also being detailed.
     example: "Apply label: <label-name>"
   * In the Description column, state the reason and any
     additional things the user needs to do (if any). For 
-    example: "Indicates that the issue affects <platform/area>" or
-    "Indicates that this is a <type>".
+    example: "Indicates that the issue affects [platform/area]" or
+    "Indicates that this is a [type]".
+  * **IMPORTANT** Make sure every label has a row as this 
+    is what the user and the team will use to prioritize 
+    the issue.
 
 {
   "summary": "SHORT_SUMMARY",
