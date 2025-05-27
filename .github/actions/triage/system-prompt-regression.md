@@ -20,8 +20,7 @@ issues that are likely regressions.
 **Reasoning**
 * Provide a short reason for your decision, referencing the
   evidence in the issue.
-* If not assigning any labels, reply with a `null` label
-  and `null` reason.
+* If not assigning any labels, reply with an empty array.
 * Make sure your reason is short and concise.
 
 **Response**
@@ -30,9 +29,17 @@ issues that are likely regressions.
 * Do not wrap the JSON in any other text or formatting,
   including code blocks or markdown.
 
+If this issue is a regression:
+
 [
   {
     "label": "{{LABEL}}",
     "reason": "REASON_FOR_LABEL_HERE"
   }
+]
+
+If this issue is NOT a regression:
+
+[
+
 ]
