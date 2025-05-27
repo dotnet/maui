@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/BrushTypeConverter.xml" path="//Member[@MemberName='Hsla']/Docs/*" />
 		public const string Hsla = "hsla";
 
-		readonly ColorTypeConverter _colorTypeConverter = new ColorTypeConverter();
+		readonly ColorTypeConverter _colorTypeConverter = new();
 
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string)
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 				return (Brush)paintValue;
 			}
 
-			var strValue = value.ToString();
+			var strValue = value?.ToString();
 
 			if (strValue is not null)
 			{

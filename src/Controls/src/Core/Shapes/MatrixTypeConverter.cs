@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/MatrixTypeConverter.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.MatrixTypeConverter']/Docs/*" />
 	public class MatrixTypeConverter : TypeConverter
 	{
-		static readonly char[] separator = new char[] { ' ', ',' };
+		static readonly char[] _separator = [' ', ','];
 
 		public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
 			=> sourceType == typeof(string);
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			=> destinationType == typeof(string);
 
 		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
-			=> CreateMatrix(value.ToString());
+			=> CreateMatrix(value?.ToString());
 
 		internal static Matrix CreateMatrix(string? value)
 		{
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Shapes
 				throw new ArgumentException("Argument is null or empty");
 			}
 
-			string[] strs = value!.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+			string[] strs = value!.Split(_separator, StringSplitOptions.RemoveEmptyEntries);
 
 			if (strs.Length != 6)
 			{

@@ -18,9 +18,9 @@ namespace Microsoft.Maui.Controls
 
 		public override object? ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
 		{
-			var strValue = value.ToString();
+			var strValue = value?.ToString();
 
-			if (strValue != null)
+			if (strValue is not null)
 			{
 				var lengths = strValue.Split(',');
 				var converter = new GridLengthTypeConverter();
@@ -41,7 +41,10 @@ namespace Microsoft.Maui.Controls
 		public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
 		{
 			if (value is not ColumnDefinitionCollection cdc)
+			{
 				throw new NotSupportedException();
+			}
+
 			var converter = new GridLengthTypeConverter();
 			return string.Join(", ", cdc.Select(cd => converter.ConvertToInvariantString(cd.Width)));
 		}

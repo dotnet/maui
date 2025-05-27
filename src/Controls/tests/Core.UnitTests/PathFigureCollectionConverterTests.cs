@@ -4,9 +4,22 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	public class PathFigureCollectionTests
+	public class PathFigureCollectionConverterTests
 	{
 		private readonly PathFigureCollectionConverter _converter = new();
+
+		[Fact]
+		public void ConvertNullTest()
+		{
+			var result = _converter.ConvertFromInvariantString(null) as PathFigureCollection;
+			var resultPath = _converter.ConvertToInvariantString(result);
+
+			Assert.NotNull(result);
+			Assert.Empty(result);
+
+			Assert.NotNull(resultPath);
+			Assert.Equal("", resultPath);
+		}
 
 		[Theory]
 		[InlineData("M10,100 C100,0 200,200 300,100", "Waveform")]
