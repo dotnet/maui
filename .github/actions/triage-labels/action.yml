@@ -40,7 +40,7 @@ runs:
             number: issue.data.number
           };
           const fs = require('fs');
-          fs.writeFileSync('issue.json', JSON.stringify(data, null, 2));
+          fs.writeFileSync('${{ runner.temp }}/apply-label/issue.json', JSON.stringify(data, null, 2));
           return data;
 
     - name: Create User Prompt
@@ -49,23 +49,26 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.token }}
       run: |
-        echo $PSScriptRoot
-        Get-Location
-        ./process-prompt-template.ps1 -Template "user-prompt-template.md" -Output "user-prompt.md"
+        ${{ github.action_path }}/process-prompt-template.ps1 `
+          -Template "${{ github.action_path }}/user-prompt-template.md" `
+          -Output "${{ runner.temp }}/apply-label/user-prompt.md"
       
     - name: Create System Prompt
       id: create-system-prompt
       shell: pwsh
       env:
         GH_TOKEN: ${{ inputs.token }}
-      run: ./process-prompt-template.ps1 -Template "system-prompt-template.md" -Output "system-prompt.md"
+      run: |
+        ${{ github.action_path }}/process-prompt-template.ps1 `
+          -Template "${{ github.action_path }}/system-prompt-template.md" `
+          -Output "${{ runner.temp }}/apply-label/system-prompt.md"
 
     - name: Run AI Inference
       id: inference
       uses: actions/ai-inference@main
       with:
-        prompt-file: "user-prompt.md"
-        system-prompt-file: "system-prompt.md"
+        prompt-file: "${{ runner.temp }}/apply-label/user-prompt.md"
+        system-prompt-file: "${{ runner.temp }}/apply-label/system-prompt.md"
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
 
