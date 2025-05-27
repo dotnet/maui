@@ -18,7 +18,7 @@ public class Issue29420 : ContentPage
 		{
 			ItemsSource = carouselItems,
 			AutomationId = "CarouselView",
-			Loop = true,
+			Loop = false,
 			ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepLastItemInView,
 
 			ItemTemplate = new DataTemplate(() =>
