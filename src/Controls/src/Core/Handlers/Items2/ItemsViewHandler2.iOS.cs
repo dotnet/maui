@@ -23,6 +23,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		}
 
+		public ItemsViewHandler2(PropertyMapper mapper = null,CommandMapper commandMapper = null) : base(mapper ?? ItemsViewMapper,commandMapper)
+		{
+
+		}
+
 		public static PropertyMapper<TItemsView, ItemsViewHandler2<TItemsView>> ItemsViewMapper = new(ViewMapper)
 		{
 			[Controls.ItemsView.ItemsSourceProperty.PropertyName] = MapItemsSource,
