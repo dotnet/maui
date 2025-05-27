@@ -105,7 +105,7 @@ public class LabelFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test, Order(4)]
+	[Test, Order(41)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenHorizontalAndVerticalAlignmentEnd()
 	{
