@@ -18,7 +18,7 @@ with an easy to understand message while also being detailed.
 * **IMPORTANT** Respond with a correctly formed markdown file.
 * **IMPORTANT** Do not wrap the markdown in code blocks as it will
   be rendered directly
-* The markdown file should have 4 main parts:
+* The markdown file should have 3 main parts:
   1. A short sentence summary about the affected components.
   2. A short sentence summary about whether or not this is a regression.
   3. Collapsable section for details
@@ -27,7 +27,6 @@ with an easy to understand message while also being detailed.
       | Action | Item | Description |
       | :----- | :--- | :---------- |
       | Action 1 | Item 1 | Reason 1 | 
-  4. Note about the fact this entire process was done by AI and there may be mistakes
 
 An example response would be like this:
 
