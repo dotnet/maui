@@ -77,6 +77,17 @@ runs:
           -Template "${{ github.action_path }}/system-prompt-template.md" `
           -Output "${{ runner.temp }}/apply-label/system-prompt.md"
 
+    - name: Print prompt files
+      shell: pwsh
+      run: |
+        "Print prompt files"
+        echo "::group::System Prompt"
+        cat system-prompt.md
+        echo "::endgroup::"
+        echo "::group::User Prompt"
+        cat user-prompt.md
+        echo "::endgroup::"
+
     - name: Run AI inference
       id: inference
       uses: actions/ai-inference@main
