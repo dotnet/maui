@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls
 				e.PropertyName == nameof(GridItemsLayout.Span) ||
 				e.PropertyName == nameof(LinearItemsLayout.ItemSpacing))
 			{
-				OnPropertyChanged(StructuredItemsView.ItemsLayoutProperty.PropertyName);
+				Handler?.Invoke(nameof(Controls.SelectableItemsView.ItemsLayout.PropertyChanged), e);
 			}
 		}
 
