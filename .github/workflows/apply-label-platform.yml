@@ -26,7 +26,7 @@ jobs:
 
       - name: Determine PLATFORM label for the issue
         id: triage-platform
-        uses: ./.github/actions/triage-labels
+        uses: ./.github/actions/triage
         with:
           issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29634' }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -35,7 +35,7 @@ jobs:
 
       - name: Determine AREA label for the issue
         id: triage-area
-        uses: ./.github/actions/triage-labels
+        uses: ./.github/actions/triage
         with:
           issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29634' }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -44,7 +44,7 @@ jobs:
 
       - name: Determine REGRESSION label for the issue
         id: triage-regression
-        uses: ./.github/actions/triage-labels
+        uses: ./.github/actions/triage
         with:
           issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29634' }}
           token: ${{ secrets.GITHUB_TOKEN }}
