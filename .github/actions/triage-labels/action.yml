@@ -1,0 +1,91 @@
+name: 'Triage Labels Action'
+
+description: 'Process issues and apply labels using AI inference'
+
+inputs:
+  issue:
+    description: 'The issue number to triage'
+    required: false
+    default: ''
+  token:
+    description: 'GitHub token to use for authentication'
+    required: true
+
+outputs:
+  labels:
+    description: 'The labels to apply to the issue'
+    value: ${{ steps.inference.outputs.response }}
+  labels-file:
+    description: 'The file taht contains the labels to apply to the issue'
+    value: ${{ steps.inference.outputs.response-file }}
+
+runs:
+  using: 'composite'
+  steps:
+
+    - name: Get Issue Data
+      id: issue-data
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issueNumber = inputs.issue
+            ? inputs.issue
+            : github.event.issue.number;
+          const issue = await github.rest.issues.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue: issueNumber
+          });
+          const data = {
+            title: issue.data.title,
+            body: issue.data.body,
+            number: issue.data.number
+          };
+          const fs = require('fs');
+          fs.writeFileSync('issue.json', JSON.stringify(data, null, 2));
+          return data;
+
+    - name: Create User Prompt
+      id: create-user-prompt
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        ./.github/scripts/process-prompt-template.ps1 `
+          -Template ".github/prompts/user-prompt-template.md" `
+          -Output "user-prompt.md"
+      
+    - name: Create System Prompt
+      id: create-system-prompt
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+      run: |
+        ./.github/scripts/process-prompt-template.ps1 `
+          -Template ".github/prompts/system-prompt-template.md" `
+          -Output "system-prompt.md"
+        "system_prompt=$((Get-Content -Raw system-prompt.md) | ConvertTo-Json)" >> $GITHUB_OUTPUT
+
+    - name: Log Prompts
+      shell: bash
+      run: |
+        echo "::group::System Prompt"
+        cat system-prompt.md
+        echo "::endgroup::"
+        echo "::group::User Prompt"
+        cat user-prompt.md
+        echo "::endgroup::"
+
+    - name: Run AI Inference
+      id: inference
+      uses: actions/ai-inference@main
+      with:
+        prompt-file: "user-prompt.md"
+        system-prompt-file: "system-prompt.md"
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+
+    - name: Log AI Analysis
+      shell: pwsh
+      run: |
+        cat "${{ steps.inference.outputs.response-file }}"

@@ -23,68 +23,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Get Issue Data
-        id: issue-data
-        uses: actions/github-script@v7
+      
+      - name: Determine label for the issue
+        id: triage
+        uses: ./.github/actions/triage-labels
         with:
-          script: |
-            const issue_number =
-              github.event_name === 'workflow_dispatch' ? context.payload.inputs.issue_number :
-              github.event_name === 'issues' ? github.event.issue.number :
-              '29634';
-            const issue = await github.rest.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issue_number
-            });
-            const data = {
-              title: issue.data.title,
-              body: issue.data.body,
-              number: issue.data.number
-            };
-            const fs = require('fs');
-            fs.writeFileSync('issue.json', JSON.stringify(data, null, 2));
-            return data;
+          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29634' }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Prompt
-        id: create-prompt
-        shell: pwsh
+      - name: Log Labels
         run: |
-          ./.github/scripts/process-prompt-template.ps1 `
-            -Template ".github/prompts/apply-label-user.prompt-template.md" `
-            -Output "user-prompt.md"
-
-      - name: Load System Prompt
-        id: load-system-prompt
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          ./.github/scripts/process-prompt-template.ps1 `
-            -Template ".github/prompts/apply-label-system.prompt-template.md" `
-            -Output "system-prompt.md"
-          "system_prompt=$((Get-Content -Raw system-prompt.md) | ConvertTo-Json)" >> $env:GITHUB_OUTPUT
-
-      - name: Log Prompts
-        run: |
-          echo "::group::System Prompt"
-          cat system-prompt.md
-          echo "::endgroup::"
-          echo "::group::User Prompt"
-          cat user-prompt.md
-          echo "::endgroup::"
-
-      - name: Run AI Inference
-        id: inference
-        uses: actions/ai-inference@main
-        with:
-          prompt-file: "user-prompt.md"
-          system-prompt: ${{ steps.load-system-prompt.outputs.system_prompt }}
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
-      - name: Log AI Analysis
-        shell: pwsh
-        run: |
-          cat "${{ steps.inference.outputs.response-file }}"
+          echo "Labels to apply: ${{ steps.triage.outputs.labels }}"
+          echo "Labels file: ${{ steps.triage.outputs.labels-file }}"
