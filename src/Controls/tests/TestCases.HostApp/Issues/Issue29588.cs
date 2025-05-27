@@ -4,34 +4,34 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
 
-namespace Microsoft.Maui.Controls.Issues
+namespace Microsoft.Maui.Controls.Issues;
+
+[Issue(IssueTracker.Github, 29588, "CollectionView RemainingItemsThresholdReachedcommand should trigger on scroll near end", PlatformAffected.Android)]
+public class Issue29588 : ContentPage
 {
-	[Issue(IssueTracker.Github, 29588, "CollectionView RemainingItemsThresholdReachedcommand should trigger on scroll near end", PlatformAffected.Android)]
-	public class Issue29588 : ContentPage
+	public Issue29588()
 	{
-		public Issue29588()
+		BindingContext = new Issue29588ViewModel();
+
+		var thresholdLabel = new Label
 		{
-			BindingContext = new Issue29588ViewModel();
+			AutomationId = "29588ThresholdLabel",
+			HorizontalOptions = LayoutOptions.Center,
+			HeightRequest = 50,
+			FontSize = 18
+		};
+		thresholdLabel.SetBinding(Label.TextProperty, nameof(Issue29588ViewModel.ThresholdStatus));
 
-			var thresholdLabel = new Label
+		var collectionView = new CollectionView
+		{
+			AutomationId = "29588CollectionView",
+			ItemsSource = ((Issue29588ViewModel)BindingContext).Items,
+			RemainingItemsThreshold = 1,
+			RemainingItemsThresholdReachedCommand = ((Issue29588ViewModel)BindingContext).RemainingItemReachedCommand,
+			Header = new Grid
 			{
-				AutomationId = "29588ThresholdLabel",
-				HorizontalOptions = LayoutOptions.Center,
-				HeightRequest = 50,
-				FontSize = 18
-			};
-			thresholdLabel.SetBinding(Label.TextProperty, nameof(Issue29588ViewModel.ThresholdStatus));
-
-			var collectionView = new CollectionView
-			{
-				AutomationId = "29588CollectionView",
-				ItemsSource = ((Issue29588ViewModel)BindingContext).Items,
-				RemainingItemsThreshold = 1,
-				RemainingItemsThresholdReachedCommand = ((Issue29588ViewModel)BindingContext).RemainingItemReachedCommand,
-				Header = new Grid
-				{
-					BackgroundColor = Colors.Bisque,
-					Children =
+				BackgroundColor = Colors.Bisque,
+				Children =
 					{
 						new Label
 						{
@@ -40,120 +40,119 @@ namespace Microsoft.Maui.Controls.Issues
 							Text = "CollectionView does not fire RemainingItemsThresholdReachedCommand when Header and Footer both are set."
 						}
 					}
-				},
-				ItemTemplate = new DataTemplate(() =>
+			},
+			ItemTemplate = new DataTemplate(() =>
+			{
+				var label = new Label
 				{
-					var label = new Label
-					{
-						Margin = new Thickness(20, 30),
-						FontSize = 25
-					};
-					label.SetBinding(Label.TextProperty, ".");
-					return label;
-				}),
+					Margin = new Thickness(20, 30),
+					FontSize = 25
+				};
+				label.SetBinding(Label.TextProperty, ".");
+				return label;
+			}),
 
-			};
+		};
 
-			var activityIndicator = new ActivityIndicator
-			{
-				Margin = new Thickness(0, 20)
-			};
-			activityIndicator.SetBinding(ActivityIndicator.IsRunningProperty, "IsLoadingMore");
-			activityIndicator.SetBinding(ActivityIndicator.IsVisibleProperty, "IsLoadingMore");
-			collectionView.Footer = activityIndicator;
+		var activityIndicator = new ActivityIndicator
+		{
+			Margin = new Thickness(0, 20)
+		};
+		activityIndicator.SetBinding(ActivityIndicator.IsRunningProperty, "IsLoadingMore");
+		activityIndicator.SetBinding(ActivityIndicator.IsVisibleProperty, "IsLoadingMore");
+		collectionView.Footer = activityIndicator;
 
 
-			var grid = new Grid
-			{
-				Padding = 20,
-				RowDefinitions =
+		var grid = new Grid
+		{
+			Padding = 20,
+			RowDefinitions =
 				{
 					new RowDefinition { Height = 50 }, // Threshold label
                     new RowDefinition { Height = GridLength.Star }  // CollectionView
                 }
-			};
+		};
 
-			grid.Add(thresholdLabel, 0, 0);
-			grid.Add(collectionView, 0, 1);
+		grid.Add(thresholdLabel, 0, 0);
+		grid.Add(collectionView, 0, 1);
 
-			Content = grid;
+		Content = grid;
+	}
+}
+
+public class Issue29588ViewModel : INotifyPropertyChanged
+{
+	private bool _isLoadingMore;
+	private int _loadCount = 0;
+	private string thresholdStatus;
+
+	public event PropertyChangedEventHandler PropertyChanged;
+	public ObservableCollection<string> Items { get; } = new ObservableCollection<string>();
+
+	public ICommand RemainingItemReachedCommand { get; }
+
+	public bool IsLoadingMore
+	{
+		get => _isLoadingMore;
+		set
+		{
+			if (_isLoadingMore != value)
+			{
+				_isLoadingMore = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+	public string ThresholdStatus
+	{
+		get => thresholdStatus;
+		set
+		{
+			if (thresholdStatus != value)
+			{
+				thresholdStatus = value;
+				OnPropertyChanged();
+			}
 		}
 	}
 
-	public class Issue29588ViewModel : INotifyPropertyChanged
+	public Issue29588ViewModel()
 	{
-		private bool _isLoadingMore;
-		private int _loadCount = 0;
-		private string thresholdStatus;
+		ThresholdStatus = "Threshold not reached";
+		RemainingItemReachedCommand = new Command(async () => await LoadMoreItemsAsync());
+		LoadInitialItems();
+	}
 
-		public event PropertyChangedEventHandler PropertyChanged;
-		public ObservableCollection<string> Items { get; } = new ObservableCollection<string>();
-
-		public ICommand RemainingItemReachedCommand { get; }
-
-		public bool IsLoadingMore
+	private void LoadInitialItems()
+	{
+		for (int i = 1; i <= 20; i++)
 		{
-			get => _isLoadingMore;
-			set
-			{
-				if (_isLoadingMore != value)
-				{
-					_isLoadingMore = value;
-					OnPropertyChanged();
-				}
-			}
+			Items.Add($"Item {i}");
 		}
-		public string ThresholdStatus
+	}
+
+	private async Task LoadMoreItemsAsync()
+	{
+		if (IsLoadingMore)
+			return;
+
+		IsLoadingMore = true;
+
+		await Task.Delay(1500); // Simulate API call or long operation
+
+		for (int i = 1; i <= 10; i++)
 		{
-			get => thresholdStatus;
-			set
-			{
-				if (thresholdStatus != value)
-				{
-					thresholdStatus = value;
-					OnPropertyChanged();
-				}
-			}
+			Items.Add($"Loaded Item {_loadCount * 10 + i + 20}");
 		}
 
-		public Issue29588ViewModel()
-		{
-			ThresholdStatus = "Threshold not reached";
-			RemainingItemReachedCommand = new Command(async () => await LoadMoreItemsAsync());
-			LoadInitialItems();
-		}
+		_loadCount++;
+		IsLoadingMore = false;
+		ThresholdStatus = "Threshold reached";
+	}
 
-		private void LoadInitialItems()
-		{
-			for (int i = 1; i <= 20; i++)
-			{
-				Items.Add($"Item {i}");
-			}
-		}
-
-		private async Task LoadMoreItemsAsync()
-		{
-			if (IsLoadingMore)
-				return;
-
-			IsLoadingMore = true;
-
-			await Task.Delay(1500); // Simulate API call or long operation
-
-			for (int i = 1; i <= 10; i++)
-			{
-				Items.Add($"Loaded Item {_loadCount * 10 + i + 20}");
-			}
-
-			_loadCount++;
-			IsLoadingMore = false;
-			ThresholdStatus = "Threshold reached";
-		}
-
-		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-		}
+	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 }
 
