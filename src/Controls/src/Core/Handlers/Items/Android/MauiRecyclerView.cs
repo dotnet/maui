@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		SimpleItemTouchHelperCallback _itemTouchHelperCallback;
 
 		//TODO: Remove this in .NET 10
-		~MauiRecyclerView() {}
+		~MauiRecyclerView() { }
 
 		public MauiRecyclerView(Context context, Func<IItemsLayout> getItemsLayout, Func<TAdapter> getAdapter) : base(new ContextThemeWrapper(context, Resource.Style.collectionViewTheme))
 		{
@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			SetLayoutManager(SelectLayoutManager(ItemsLayout));
 
 			UpdateFlowDirection();
-			UpdateItemsLayoutProperties();
+			UpdateItemSpacing();
 		}
 
 		protected virtual RecyclerViewScrollListener<TItemsView, TItemsViewSource> CreateScrollListener() => new(ItemsView, ItemsViewAdapter);
@@ -499,19 +499,30 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		//TODO: Remove this in .NET 10
 		protected virtual void LayoutPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
 		{
-			
+
 		}
 
-		void UpdateItemsLayoutProperties()
+		public void UpdateItemsLayoutProperties(object args)
 		{
-			if (ItemsLayout is GridItemsLayout gridItemsLayout && GetLayoutManager() is GridLayoutManager gridLayoutManager)
+			if (args is not PropertyChangedEventArgs propertyChanged)
+				return;
+
+			if (propertyChanged.Is(GridItemsLayout.SpanProperty))
 			{
-				gridLayoutManager.SpanCount = gridItemsLayout.Span;
+				if (GetLayoutManager() is GridLayoutManager gridLayoutManager)
+				{
+					gridLayoutManager.SpanCount = ((GridItemsLayout)ItemsLayout).Span;
+				}
 			}
-
-			UpdateSnapBehavior();
-
-			UpdateItemSpacing();
+			else if (propertyChanged.IsOneOf(Microsoft.Maui.Controls.ItemsLayout.SnapPointsTypeProperty, Microsoft.Maui.Controls.ItemsLayout.SnapPointsAlignmentProperty))
+			{
+				UpdateSnapBehavior();
+			}
+			else if (propertyChanged.IsOneOf(LinearItemsLayout.ItemSpacingProperty,
+				GridItemsLayout.HorizontalItemSpacingProperty, GridItemsLayout.VerticalItemSpacingProperty))
+			{
+				UpdateItemSpacing();
+			}
 		}
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
