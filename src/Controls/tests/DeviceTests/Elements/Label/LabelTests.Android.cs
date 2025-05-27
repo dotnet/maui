@@ -25,7 +25,9 @@ namespace Microsoft.Maui.DeviceTests
 			var label = new Label()
 			{
 				Text = $"&lt;b&gt;{expected}&lt;/b&gt;",
+#pragma warning disable CS0612 // Type or member is obsolete
 				TextType = TextType.Html
+#pragma warning restore CS0612 // Type or member is obsolete
 			};
 
 			var handler = await CreateHandlerAsync<LabelHandler>(label);

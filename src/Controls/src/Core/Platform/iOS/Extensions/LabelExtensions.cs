@@ -13,7 +13,9 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			switch (label.TextType)
 			{
+#pragma warning disable CS0612 // Type or member is obsolete
 				case TextType.Html:
+#pragma warning restore CS0612 // Type or member is obsolete
 					platformLabel.UpdateTextHtml(label);
 					break;
 

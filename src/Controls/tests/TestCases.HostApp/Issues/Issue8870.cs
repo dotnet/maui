@@ -24,7 +24,9 @@
 			{
 				var label = new Label
 				{
+#pragma warning disable CS0612 // Type or member is obsolete
 					TextType = TextType.Html
+#pragma warning restore CS0612 // Type or member is obsolete
 				};
 
 				label.SetBinding(Label.TextProperty, new Binding(".", stringFormat: "<p style='background-color:red;'>{0}</p>"));

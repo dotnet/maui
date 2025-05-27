@@ -330,8 +330,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var platformView = handler.ToPlatform();
 				await platformView.AssertContainsColor(Colors.Red, MauiContext);
-
+#pragma warning disable CS0612 // Type or member is obsolete
 				label.TextType = TextType.Html;
+#pragma warning restore CS0612 // Type or member is obsolete
 
 				await platformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
 			});
@@ -490,7 +491,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			var label = new Label
 			{
+#pragma warning disable CS0612 // Type or member is obsolete
 				TextType = TextType.Html,
+#pragma warning restore CS0612 // Type or member is obsolete
 				TextColor = Colors.Red,
 				Text = "<p>Test</p>"
 			};
@@ -511,7 +514,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			var label = new Label
 			{
+#pragma warning disable CS0612 // Type or member is obsolete
 				TextType = TextType.Html,
+#pragma warning restore CS0612 // Type or member is obsolete
 				FontSize = 64,
 				FontFamily = "Baskerville",
 				Text = "<p>Test</p>"
@@ -697,7 +702,9 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<LabelHandler>(label);
+#pragma warning disable CS0612 // Type or member is obsolete
 				label.TextType = TextType.Html;
+#pragma warning restore CS0612 // Type or member is obsolete
 				AssertEquivalentFont(handler, label.ToFont());
 			});
 		}
@@ -711,7 +718,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			var label = new Label
 			{
+#pragma warning disable CS0612 // Type or member is obsolete
 				TextType = TextType.Html,
+#pragma warning restore CS0612 // Type or member is obsolete
 				Text = "<p>Test</p>"
 			};
 

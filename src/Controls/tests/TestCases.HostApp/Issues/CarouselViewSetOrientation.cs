@@ -22,7 +22,9 @@
 			{
 				var label = new Label
 				{
+#pragma warning disable CS0612 // Type or member is obsolete
 					TextType = TextType.Html,
+#pragma warning restore CS0612 // Type or member is obsolete
 					Text = $"<p style='background-color:red;'>{HTML}</p>",
 					AutomationId = HTML
 				};

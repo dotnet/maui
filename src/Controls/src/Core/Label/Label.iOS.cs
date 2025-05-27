@@ -39,7 +39,9 @@ namespace Microsoft.Maui.Controls
 		static void MapFormatting(ILabelHandler handler, Label label)
 		{
 			// we need to re-apply color and font for HTML labels
+#pragma warning disable CS0612 // Type or member is obsolete
 			if (!label.HasFormattedTextSpans && label.TextType == TextType.Html)
+#pragma warning restore CS0612 // Type or member is obsolete
 			{
 				handler.UpdateValue(nameof(ILabel.TextColor));
 				handler.UpdateValue(nameof(ILabel.Font));

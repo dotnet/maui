@@ -262,7 +262,9 @@ internal class LabelCoreGalleryPage : CoreGalleryPage<Label>
 			var label = new Label
 			{
 				Text = "<h1>Hello world!</h1>",
+#pragma warning disable CS0612 // Type or member is obsolete
 				TextType = TextType.Html
+#pragma warning restore CS0612 // Type or member is obsolete
 			};
 			var htmlLabelContainer = new ViewContainer<Label>(Test.Label.HtmlTextType, label);
 			Add(htmlLabelContainer);
@@ -272,7 +274,9 @@ internal class LabelCoreGalleryPage : CoreGalleryPage<Label>
 			var label = new Label
 			{
 				Text = "<h1>Broken Html!<h1>",
+#pragma warning disable CS0612 // Type or member is obsolete
 				TextType = TextType.Html
+#pragma warning restore CS0612 // Type or member is obsolete
 			};
 			var htmlLabelContainer = new ViewContainer<Label>(Test.Label.BrokenHtmlTextType, label);
 			Add(htmlLabelContainer);
@@ -282,7 +286,9 @@ internal class LabelCoreGalleryPage : CoreGalleryPage<Label>
 			var label = new Label
 			{
 				Text = "<h1>Hello world!</h1><p>Lorem <strong>ipsum</strong> bla di bla <i>blabla</i> blablabl&nbsp;ablabla & blablablablabl ablabl ablablabl ablablabla blablablablablablab lablablabla blablab lablablabla blablabl ablablablab lablabla blab lablablabla blablab lablabla blablablablab lablabla blablab lablablabl ablablabla blablablablablabla blablabla</p>",
+#pragma warning disable CS0612 // Type or member is obsolete
 				TextType = TextType.Html,
+#pragma warning restore CS0612 // Type or member is obsolete
 				MaxLines = 3
 			};
 			var htmlLabelMultipleLinesContainer = new ViewContainer<Label>(Test.Label.HtmlTextTypeMultipleLines, label);
@@ -293,7 +299,9 @@ internal class LabelCoreGalleryPage : CoreGalleryPage<Label>
 			var label = new Label
 			{
 				Text = "<h1>End aligned. Green. ä</h1>",
+#pragma warning disable CS0612 // Type or member is obsolete
 				TextType = TextType.Html,
+#pragma warning restore CS0612 // Type or member is obsolete
 				HorizontalTextAlignment = TextAlignment.Center,
 				TextColor = Colors.Green,
 			};
@@ -304,14 +312,18 @@ internal class LabelCoreGalleryPage : CoreGalleryPage<Label>
 		{
 			var toggleLabel = new Label
 			{
+#pragma warning disable CS0612 // Type or member is obsolete
 				TextType = TextType.Html,
+#pragma warning restore CS0612 // Type or member is obsolete
 				Text = "<h1 style=\"color: red;\">Hello world!</h1><p>Lorem <strong>ipsum</strong></p>"
 
 			};
 			var gestureRecognizer = new TapGestureRecognizer();
 			gestureRecognizer.Tapped += (s, a) =>
 			{
+#pragma warning disable CS0612 // Type or member is obsolete
 				toggleLabel.TextType = toggleLabel.TextType == TextType.Html ? TextType.Text : TextType.Html;
+#pragma warning restore CS0612 // Type or member is obsolete
 			};
 			toggleLabel.GestureRecognizers.Add(gestureRecognizer);
 			var toggleHtmlPlainTextLabelContainer = new ViewContainer<Label>(Test.Label.TextTypeToggle, toggleLabel);

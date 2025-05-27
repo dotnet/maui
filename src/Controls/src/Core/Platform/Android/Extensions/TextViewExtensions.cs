@@ -19,7 +19,9 @@ namespace Microsoft.Maui.Controls.Platform
 					else
 						textView.Text = TextTransformUtilities.GetTransformedText(label.Text, label.TextTransform);
 					break;
+#pragma warning disable CS0612 // Type or member is obsolete
 				case TextType.Html:
+#pragma warning restore CS0612 // Type or member is obsolete
 					textView.UpdateTextHtml(label);
 					break;
 			}

@@ -19,13 +19,16 @@ public class LabelTextType : TestContentPage
 
 		button.Clicked += (s, a) =>
 		{
+#pragma warning disable CS0612 // Type or member is obsolete
 			label.TextType = label.TextType == TextType.Html ? TextType.Text : TextType.Html;
+#pragma warning restore CS0612 // Type or member is obsolete
 		};
 
-
+#pragma warning disable CS0612 // Type or member is obsolete
 		Label htmlLabel = new Label() { TextType = TextType.Html };
 		Label normalLabel = new Label();
 		Label nullLabel = new Label() { TextType = TextType.Html };
+#pragma warning restore CS0612 // Type or member is obsolete
 
 		Button toggle = new Button()
 		{
