@@ -16,7 +16,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Add Open/Close API to picker controls";
 
-		[Test]
+		[Test, Order(1)]
 		[Category(UITestCategories.DatePicker)]
 		public void OpenCloseDatePicker()
 		{
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			}
 		}
 
-		[Test]
+		[Test, Order(2)]
 		[Category(UITestCategories.TimePicker)]
 		public void OpenCloseTimePicker()
 		{
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			}
 		}
 
-		[Test]
+		[Test, Order(3)]
 		[Category(UITestCategories.Picker)]
 		public void OpenClosePicker()
 		{
