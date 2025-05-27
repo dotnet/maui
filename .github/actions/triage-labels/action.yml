@@ -51,6 +51,7 @@ runs:
       run: |
         cd ${{ runner.temp }}/apply-label
         git init
+        git remote add origin ${{ github.repositoryUrl }}
         gh repo set-default ${{ github.repository }}
       
     - name: Create User Prompt
