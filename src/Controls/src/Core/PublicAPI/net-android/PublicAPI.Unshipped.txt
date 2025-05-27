@@ -58,6 +58,10 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.Compone
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
 static Microsoft.Maui.Controls.ImageButton.MapRippleColor(Microsoft.Maui.Handlers.IImageButtonHandler! handler, Microsoft.Maui.Controls.ImageButton! imageButton) -> void
+~override Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.Compatibility.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.Compatibility.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.ContentPresenter.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~static Microsoft.Maui.Controls.Button.MapRippleColor(Microsoft.Maui.Handlers.IButtonHandler handler, Microsoft.Maui.Controls.Button button) -> void
 ~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.GetTransformedText(string source, Microsoft.Maui.TextTransform textTransform) -> string
 ~static Microsoft.Maui.Controls.Internals.TextTransformUtilities.SetPlainText(Microsoft.Maui.Controls.InputView inputView, string platformText) -> void

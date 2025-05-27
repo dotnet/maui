@@ -80,6 +80,10 @@ static Microsoft.Maui.Controls.ViewExtensions.TranslateToAsync(this Microsoft.Ma
 ~Microsoft.Maui.Controls.WebViewProcessTerminatedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.RequireServiceAttribute(System.Type[] serviceTypes) -> void
 ~Microsoft.Maui.Controls.Xaml.RequireServiceAttribute.ServiceTypes.get -> System.Type[]
+~override Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.Compatibility.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.Compatibility.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
+~override Microsoft.Maui.Controls.ContentPresenter.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.ShellContent.OnPropertyChanged(string propertyName = null) -> void
 *REMOVED*~static Microsoft.Maui.Controls.Application.ControlsApplicationMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IApplication, Microsoft.Maui.Handlers.ApplicationHandler>
 ~static Microsoft.Maui.Controls.Brush.DarkGrey.get -> Microsoft.Maui.Controls.SolidColorBrush
