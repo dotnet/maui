@@ -127,6 +127,7 @@ namespace Microsoft.Maui.Storage
 		{
 			var context = Application.Context;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var prefsMainKey = new MasterKey.Builder(context, Alias)
 				.SetKeyScheme(MasterKey.KeyScheme.Aes256Gcm)
 				.Build();
@@ -137,6 +138,7 @@ namespace Microsoft.Maui.Storage
 				prefsMainKey,
 				EncryptedSharedPreferences.PrefKeyEncryptionScheme.Aes256Siv,
 				EncryptedSharedPreferences.PrefValueEncryptionScheme.Aes256Gcm);
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

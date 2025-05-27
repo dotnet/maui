@@ -17,7 +17,9 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void Bugzilla32615Test()
 		{
+			App.WaitForElement("open");
 			App.Tap("open");
+			App.WaitForElement("pop");
 			App.Tap("pop");
 			App.WaitForElement("lblCount");
 		}

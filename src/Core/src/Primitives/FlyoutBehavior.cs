@@ -1,13 +1,22 @@
-namespace Microsoft.Maui
+namespace Microsoft.Maui;
+
+/// <summary>
+/// Enumeration of modes for the root menu of a Shell application.
+/// </summary>
+public enum FlyoutBehavior
 {
-	/// <include file="../../docs/Microsoft.Maui/FlyoutBehavior.xml" path="Type[@FullName='Microsoft.Maui.FlyoutBehavior']/Docs/*" />
-	public enum FlyoutBehavior
-	{
-		/// <include file="../../docs/Microsoft.Maui/FlyoutBehavior.xml" path="//Member[@MemberName='Disabled']/Docs/*" />
-		Disabled,
-		/// <include file="../../docs/Microsoft.Maui/FlyoutBehavior.xml" path="//Member[@MemberName='Flyout']/Docs/*" />
-		Flyout,
-		/// <include file="../../docs/Microsoft.Maui/FlyoutBehavior.xml" path="//Member[@MemberName='Locked']/Docs/*" />
-		Locked
-	}
+	/// <summary>
+	/// The flyout menu is disabled.
+	/// </summary>
+	Disabled,
+
+	/// <summary>
+	/// The flyout menu can be opened or closed by the user.
+	/// </summary>
+	Flyout,
+
+	/// <summary>
+	/// The flyout menu is locked open and cannot be closed by the user.
+	/// </summary>
+	Locked
 }

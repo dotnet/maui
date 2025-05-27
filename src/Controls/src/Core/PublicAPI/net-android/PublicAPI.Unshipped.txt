@@ -50,6 +50,9 @@ Microsoft.Maui.Controls.ITextElement.OnCharacterSpacingPropertyChanged(double ol
 Microsoft.Maui.Controls.ITextElement.OnTextTransformChanged(Microsoft.Maui.TextTransform oldValue, Microsoft.Maui.TextTransform newValue) -> void
 Microsoft.Maui.Controls.ITextElement.TextTransform.get -> Microsoft.Maui.TextTransform
 Microsoft.Maui.Controls.ITextElement.TextTransform.set -> void
+Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan?
+Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan?
+Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan? oldTime, System.TimeSpan? newTime) -> void
 ~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
 ~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string
@@ -158,6 +161,8 @@ Microsoft.Maui.Controls.HybridWebView.SendRawMessage(string! rawMessage) -> void
 Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs
 Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs.HybridWebViewRawMessageReceivedEventArgs(string? message) -> void
 Microsoft.Maui.Controls.HybridWebViewRawMessageReceivedEventArgs.Message.get -> string?
+override Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
+*REMOVED*override Microsoft.Maui.Controls.Platform.ControlsAccessibilityDelegate.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
 Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs
 Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.RenderProcessGoneDetail.get -> Android.Webkit.RenderProcessGoneDetail?
 Microsoft.Maui.Controls.PlatformWebViewProcessTerminatedEventArgs.Sender.get -> Android.Views.View?
@@ -169,9 +174,6 @@ Microsoft.Maui.Controls.StyleableElement.StyleableElement() -> void
 Microsoft.Maui.Controls.StyleableElement.StyleClass.get -> System.Collections.Generic.IList<string!>!
 Microsoft.Maui.Controls.StyleableElement.StyleClass.set -> void
 Microsoft.Maui.Controls.TimeChangedEventArgs
-Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan
-Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan
-Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan oldTime, System.TimeSpan newTime) -> void
 Microsoft.Maui.Controls.TimePicker.TimeSelected -> System.EventHandler<Microsoft.Maui.Controls.TimeChangedEventArgs>
 Microsoft.Maui.Controls.TitleBar
 Microsoft.Maui.Controls.TitleBar.Content.get -> Microsoft.Maui.IView?

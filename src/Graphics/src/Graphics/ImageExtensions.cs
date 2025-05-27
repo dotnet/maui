@@ -4,8 +4,18 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Provides extension methods for the <see cref="IImage"/> interface.
+	/// </summary>
 	public static class ImageExtensions
 	{
+		/// <summary>
+		/// Converts an image to a byte array in the specified format.
+		/// </summary>
+		/// <param name="target">The image to convert.</param>
+		/// <param name="format">The format to encode the image in (default is PNG).</param>
+		/// <param name="quality">The quality setting for lossy formats like JPEG, ranging from 0 to 1 (default is 1 for maximum quality).</param>
+		/// <returns>A byte array containing the encoded image data, or null if the target image is null.</returns>
 		public static byte[] AsBytes(this IImage target, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (target == null)
@@ -18,6 +28,13 @@ namespace Microsoft.Maui.Graphics
 			}
 		}
 
+		/// <summary>
+		/// Converts an image to a stream in the specified format.
+		/// </summary>
+		/// <param name="target">The image to convert.</param>
+		/// <param name="format">The format to encode the image in (default is PNG).</param>
+		/// <param name="quality">The quality setting for lossy formats like JPEG, ranging from 0 to 1 (default is 1 for maximum quality).</param>
+		/// <returns>A memory stream containing the encoded image data, or null if the target image is null.</returns>
 		public static Stream AsStream(this IImage target, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
 			if (target == null)

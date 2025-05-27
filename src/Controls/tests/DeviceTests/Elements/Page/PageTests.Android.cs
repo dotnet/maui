@@ -9,6 +9,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests
 {
+	[Category(TestCategory.Page)]
 	public partial class PageTests : ControlsHandlerTestBase
 	{
 		//src/Compatibility/Core/tests/Android/EmbeddingTests.cs

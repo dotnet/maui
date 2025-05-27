@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -10,6 +11,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample;
+
 public class Grouping<TKey, TItem> : ObservableCollection<TItem>
 {
 	public TKey Key { get; }
@@ -23,6 +25,7 @@ public class Grouping<TKey, TItem> : ObservableCollection<TItem>
 public enum ItemsSourceType
 {
 	None,
+	ObservableCollectionT,
 	ObservableCollectionT2,
 	ObservableCollectionT3,
 	ObservableCollection25T,
@@ -47,8 +50,11 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 	private IItemsLayout _itemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical);
 	private ItemsSourceType _itemsSourceType = ItemsSourceType.None;
 	private bool _isGrouped = false;
+	private bool _canReorderItems = false;
+	private bool _canMixGroups = false;
 	private ItemSizingStrategy _itemSizingStrategy;
 	private ItemsUpdatingScrollMode _itemsUpdatingScrollMode;
+	private ObservableCollection<CollectionViewTestItem> _observableCollection;
 	private ObservableCollection<CollectionViewTestItem> _observableCollection25;
 	private ObservableCollection<CollectionViewTestItem> _observableCollection5;
 	private ObservableCollection<CollectionViewTestItem> _emptyObservableCollection;
@@ -58,6 +64,25 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 	private ObservableCollection<ItemModel> _observableCollection2;
 	private List<Grouping<string, CollectionViewTestItem>> _groupedList3;
 	private List<Grouping<string, ItemModel>> _groupedList2;
+	private SelectionMode _selectionMode = SelectionMode.None;
+	private object _selectedItem;
+	private ObservableCollection<object> _selectedItems = new ObservableCollection<object>();
+	private int _selectionChangedEventCount = 0;
+	private string _previousSelectionText;
+	private string _currentSelectionText;
+	private bool _isHeaderStringSelected;
+	private bool _isFooterStringSelected;
+	private bool _isHeaderGridSelected;
+	private bool _isFooterGridSelected;
+	private bool _isHeaderTemplateViewSelected;
+	private bool _isFooterTemplateViewSelected;
+	private bool _isGroupHeaderTemplateViewSelected;
+	private bool _isGroupFooterTemplateViewSelected;
+	private bool _isEmptyViewStringSelected;
+	private bool _isEmptyViewGridSelected;
+	private bool _isEmptyViewTemplateSelected;
+	private bool _isItemTemplateSelected;
+
 
 	public bool ShowAddRemoveButtons => ItemsSourceType == ItemsSourceType.ObservableCollectionT3 || ItemsSourceType == ItemsSourceType.GroupedListT3;
 
@@ -95,6 +120,8 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		});
 
 		SetItemTemplate();
+		SelectedItems = new ObservableCollection<object>();
+		SelectedItems.CollectionChanged += OnSelectedItemsChanged;
 	}
 
 	public object EmptyView
@@ -180,6 +207,31 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public bool CanReorderItems
+	{
+		get => _canReorderItems;
+		set
+		{
+			if (_canReorderItems != value)
+			{
+				_canReorderItems = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+	public bool CanMixGroups
+	{
+		get => _canMixGroups;
+		set
+		{
+			if (_canMixGroups != value)
+			{
+				_canMixGroups = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
 	public bool IsGrouped
 	{
 		get => _isGrouped;
@@ -199,6 +251,7 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		{
 			return ItemsSourceType switch
 			{
+				ItemsSourceType.ObservableCollectionT => _observableCollection,
 				ItemsSourceType.ObservableCollection25T => _observableCollection25,
 				ItemsSourceType.ObservableCollection5T => _observableCollection5,
 				ItemsSourceType.ObservableCollectionT3 => _observableCollection3,
@@ -213,7 +266,6 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 			};
 		}
 	}
-
 
 	public ItemSizingStrategy ItemSizingStrategy
 	{
@@ -241,9 +293,231 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public SelectionMode SelectionMode
+	{
+		get => _selectionMode;
+		set
+		{
+			if (_selectionMode != value)
+			{
+				_selectionMode = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public object SelectedItem
+	{
+		get => _selectedItem;
+		set
+		{
+			if (_selectedItem != value)
+			{
+				_selectedItem = value;
+				OnPropertyChanged();
+				OnPropertyChanged(nameof(SelectedItemText));
+				OnPropertyChanged(nameof(SelectedItemsCount));
+			}
+		}
+	}
+
+	public ObservableCollection<object> SelectedItems
+	{
+		get => _selectedItems;
+		set
+		{
+			if (_selectedItems != value)
+			{
+				_selectedItems = value;
+				OnPropertyChanged();
+				OnPropertyChanged(nameof(SelectedItemsCount));
+				OnPropertyChanged(nameof(SelectedItemText));
+			}
+		}
+	}
+	public int SelectedItemsCount
+	{
+		get
+		{
+			if (SelectionMode == SelectionMode.Single)
+			{
+				return SelectedItem != null ? 1 : 0;
+			}
+			else if (SelectionMode == SelectionMode.Multiple)
+			{
+				return SelectedItems?.Count ?? 0;
+			}
+			return 0;
+
+		}
+	}
+	public string SelectedItemText
+	{
+		get
+		{
+			if (SelectionMode == SelectionMode.Single && SelectedItem is CollectionViewTestItem item)
+			{
+				return $"{item.Caption}";
+			}
+			else if (SelectionMode == SelectionMode.Multiple && SelectedItems?.Count > 0)
+			{
+				var selectedCaptions = SelectedItems
+					.OfType<CollectionViewTestItem>()
+					.Select(i => i.Caption);
+				return string.Join(", ", selectedCaptions);
+			}
+			return "No items selected";
+		}
+	}
+
+	public int SelectionChangedEventCount
+	{
+		get => _selectionChangedEventCount;
+		set
+		{
+			_selectionChangedEventCount = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public string PreviousSelectionText
+	{
+		get => _previousSelectionText;
+		set { _previousSelectionText = value; OnPropertyChanged(); }
+	}
+
+	public string CurrentSelectionText
+	{
+		get => _currentSelectionText;
+		set { _currentSelectionText = value; OnPropertyChanged(); }
+	}
+
+	public bool IsHeaderStringSelected
+	{
+		get => _isHeaderStringSelected;
+		set
+		{
+			_isHeaderStringSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsFooterStringSelected
+	{
+		get => _isFooterStringSelected;
+		set
+		{
+			_isFooterStringSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsHeaderGridSelected
+	{
+		get => _isHeaderGridSelected;
+		set
+		{
+			_isHeaderGridSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsFooterGridSelected
+	{
+		get => _isFooterGridSelected;
+		set
+		{
+			_isFooterGridSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsHeaderTemplateViewSelected
+	{
+		get => _isHeaderTemplateViewSelected;
+		set
+		{
+			_isHeaderTemplateViewSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsFooterTemplateViewSelected
+	{
+		get => _isFooterTemplateViewSelected;
+		set
+		{
+			_isFooterTemplateViewSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsGroupHeaderTemplateViewSelected
+	{
+		get => _isGroupHeaderTemplateViewSelected;
+		set
+		{
+			_isGroupHeaderTemplateViewSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsGroupFooterTemplateViewSelected
+	{
+		get => _isGroupFooterTemplateViewSelected;
+		set
+		{
+			_isGroupFooterTemplateViewSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsEmptyViewStringSelected
+	{
+		get => _isEmptyViewStringSelected;
+		set
+		{
+			_isEmptyViewStringSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsEmptyViewGridSelected
+	{
+		get => _isEmptyViewGridSelected;
+		set
+		{
+			_isEmptyViewGridSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsEmptyViewTemplateSelected
+	{
+		get => _isEmptyViewTemplateSelected;
+		set
+		{
+			_isEmptyViewTemplateSelected = value;
+			OnPropertyChanged();
+		}
+	}
+
+	public bool IsItemTemplateSelected
+	{
+		get => _isItemTemplateSelected;
+		set
+		{
+			_isItemTemplateSelected = value;
+			OnPropertyChanged();
+		}
+	}
 
 	private void LoadItems()
 	{
+		_observableCollection = new ObservableCollection<CollectionViewTestItem>();
+		AddItems(_observableCollection, 7, "Fruits");
+		AddItems(_observableCollection, 7, "Vegetables");
+
 		_observableCollection25 = new ObservableCollection<CollectionViewTestItem>();
 		_observableCollection5 = new ObservableCollection<CollectionViewTestItem>();
 		AddItems(_observableCollection5, 5, "Fruits");
@@ -385,19 +659,29 @@ public class CollectionViewViewModel : INotifyPropertyChanged
 		{
 			ItemTemplate = new DataTemplate(() =>
 			{
+				var stackLayout = new StackLayout
+				{
+					Padding = new Thickness(10),
+					HorizontalOptions = LayoutOptions.Center,
+					VerticalOptions = LayoutOptions.Center
+				};
+
 				var label = new Label
 				{
 					VerticalOptions = LayoutOptions.Center,
 					HorizontalOptions = LayoutOptions.Center
 				};
 				label.SetBinding(Label.TextProperty, "Caption");
-				return new StackLayout
-				{
-					Padding = new Thickness(10),
-					Children = { label }
-				};
+				stackLayout.Children.Add(label);
+				return stackLayout;
 			});
 		}
+	}
+
+	private void OnSelectedItemsChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		OnPropertyChanged(nameof(SelectedItemsCount));
+		OnPropertyChanged(nameof(SelectedItemText));
 	}
 
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

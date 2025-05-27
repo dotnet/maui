@@ -12,6 +12,11 @@
                 HorizontalOptions="Center"
                 AutomationId="EmptyViewButton"
                 WidthRequest="400"/>
+        <Button Text="CollectionViewGrouping"
+                Clicked="OnGroupingButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="GroupingButton"
+                WidthRequest="400"/>
          <Button Text="Header/FooterViewTemplate"
                 Clicked="OnHeaderFooterViewButtonClicked"
                 HorizontalOptions="Center"
@@ -22,5 +27,15 @@
                 HorizontalOptions="Center"
                 AutomationId="ScrollingButton"
                 WidthRequest="400"/>
+        <Button Text="Selection FeaturePage"
+                Clicked="OnSelectionButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="SelectionPageButton"
+                WidthRequest="400"/>
+         <Button Text="CollectionViewDynamicChangesPage"
+                Clicked="OnDynamicChangesButtonClicked"
+                HorizontalOptions="Center"
+                AutomationId="DynamicButton"
+                WidthRequest="400"/>    
     </VerticalStackLayout>
 </ContentPage>

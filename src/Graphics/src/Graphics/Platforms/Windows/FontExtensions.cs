@@ -1,5 +1,6 @@
 ﻿using Microsoft.Graphics.Canvas.Text;
 using Windows.UI.Text;
+using System;
 #if NETFX_CORE
 using Windows.UI.Xaml.Media;
 #else
@@ -28,7 +29,8 @@ namespace Microsoft.Maui.Graphics.Platform
 			{
 				FontFamily = font?.Name ?? FontFamily.XamlAutoFontFamily.Source,
 				FontSize = size,
-				FontWeight = new FontWeight { Weight = (ushort)(font?.Weight ?? FontWeights.Regular) },
+				// Ensure font weight stays within the valid range (1–999) to avoid runtime errors
+				FontWeight = new FontWeight { Weight = (ushort)Math.Clamp(font?.Weight ?? FontWeights.Regular, 1, 999) },
 				FontStyle = (font?.StyleType ?? FontStyleType.Normal).ToFontStyle()
 			};
 	}

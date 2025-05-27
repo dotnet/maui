@@ -7,7 +7,7 @@ using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	[Category("RefreshViewHandler")]
+	[Category(TestCategory.RefreshView)]
 	public partial class RefreshViewHandlerTests : CoreHandlerTestBase<RefreshViewHandler, RefreshViewStub>
 	{
 		[Theory(DisplayName = "Is Refreshing Initializes Correctly")]

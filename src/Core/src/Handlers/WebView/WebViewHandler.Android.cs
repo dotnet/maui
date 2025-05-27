@@ -146,9 +146,6 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView == null || string.IsNullOrWhiteSpace(url))
 				return true;
 
-			if (url == AssetBaseUrl)
-				return false;
-
 			SyncPlatformCookies(url);
 			bool cancel = VirtualView.Navigating(CurrentNavigationEvent, url);
 

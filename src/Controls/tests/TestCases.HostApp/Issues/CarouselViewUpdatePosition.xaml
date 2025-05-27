@@ -2,6 +2,7 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Maui.Controls.Sample"
     x:Class="Maui.Controls.Sample.Issues.CarouselViewUpdatePosition">
     <ContentPage.Content>
         <StackLayout
@@ -11,20 +12,22 @@
                 BackgroundColor="Black"
                 TextColor="White"
                 Text="Tap the Button. If the item selected in the CarouselView is Item 4, the test has passed."/>
-            <CarouselView
+            <!-- This functionality failed in CarouselView2. Reference: https://github.com/dotnet/maui/issues/29309 -->     
+            <!-- TODO: Replace CarouselView1 with CarouselView once the issues mentioned in the GitHub issue are resolved. -->  
+            <local:CarouselView1
                 x:Name="carousel"
                 IsSwipeEnabled="True"
                 Position="3"
                 IsVisible="False">
-                <CarouselView.ItemTemplate>
+                <local:CarouselView1.ItemTemplate>
                     <DataTemplate>
                         <Label
                             Text="{Binding}"
                             FontSize="Large"
                             HorizontalOptions="CenterAndExpand"/>
                     </DataTemplate>
-                </CarouselView.ItemTemplate>
-                <CarouselView.ItemsSource>
+                </local:CarouselView1.ItemTemplate>
+                <local:CarouselView1.ItemsSource>
                     <x:Array Type="{x:Type x:String}">
                         <x:String>Item 1</x:String>
                         <x:String>Item 2</x:String>
@@ -32,8 +35,8 @@
                         <x:String>Item 4</x:String>
                         <x:String>Item 5</x:String>
                     </x:Array>
-                </CarouselView.ItemsSource>
-            </CarouselView>
+                </local:CarouselView1.ItemsSource>
+            </local:CarouselView1>
             <Button
                 AutomationId="AppearButton"
                 Text="Appear"

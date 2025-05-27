@@ -37,6 +37,10 @@ namespace Microsoft.Maui.Platform
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundPointerOver");
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundPressed");
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundDisabled");
+
+					navigationView.TopNavArea.Resources.Remove("NavigationViewItemForeground");
+					navigationView.TopNavArea.Resources.Remove("NavigationViewItemForegroundPointerOver");
+					navigationView.TopNavArea.Resources.Remove("NavigationViewItemForegroundPressed");
 				}
 				else
 				{
@@ -44,6 +48,11 @@ namespace Microsoft.Maui.Platform
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundPointerOver"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundPressed"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundDisabled"] = brush;
+
+					//The NavigationViewItemForeground color is applied to the Expand/Collapse Chevron icon
+					navigationView.TopNavArea.Resources["NavigationViewItemForeground"] = brush;
+					navigationView.TopNavArea.Resources["NavigationViewItemForegroundPointerOver"] = brush;
+					navigationView.TopNavArea.Resources["NavigationViewItemForegroundPressed"] = brush;
 				}
 
 				navigationView.TopNavArea.RefreshThemeResources();

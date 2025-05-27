@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+        x:Class="Maui.Controls.Sample.Issues.Issue28622">
+        <Grid RowDefinitions="100,Auto,Auto,Auto,Auto">
+                <CollectionView  x:Name="collectionView"
+                                 BackgroundColor="Gray">
+                </CollectionView>
+                <Button Clicked="OnLayoutButtonClicked"
+                        AutomationId="LayoutButton"
+                        Grid.Row="1"
+                        Text="Change Itemslayout"/>
+                <Button Clicked="OnHeaderButtonClicked"
+                        AutomationId="HeaderButton"
+                        Grid.Row="2"
+                        Text="Add Header"/>
+                <Button Clicked="OnFooterButtonClicked"
+                        AutomationId="FooterButton"
+                        Grid.Row="3"
+                        Text="Add Footer"/>
+                <Button Clicked="OnEmptyViewButtonClicked"
+                        AutomationId="EmptyViewButton"
+                        Grid.Row="4"
+                        Text="Add EmptyView"/>
+        </Grid>
+</ContentPage>

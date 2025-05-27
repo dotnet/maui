@@ -65,8 +65,10 @@
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
+<!--#if (!IncludeSampleContent) -->
 		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
-
+		
+<!--#endif -->
 		<!-- Custom Fonts -->
 		<MauiFont Include="Resources\Fonts\*" />
 
