@@ -411,16 +411,13 @@ namespace Microsoft.Maui.Controls
 
 		int GetSelectedIndex()
 		{
-			if (SelectedItem is not null && (ItemsSource is not null || Items is not null))
+			if (SelectedItem is null)
 			{
-				int newIndex = ItemsSource?.IndexOf(SelectedItem) ?? Items.IndexOf(SelectedItem);
-				if (newIndex >= 0)
-				{
-					return newIndex;
-				}
+				return SelectedIndex;
 			}
 
-			return SelectedIndex;
+			int newIndex = ItemsSource?.IndexOf(SelectedItem) ?? Items?.IndexOf(SelectedItem) ?? -1;
+			return newIndex >= 0 ? newIndex : SelectedIndex;
 		}
 
 		void ResetItems()
