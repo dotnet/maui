@@ -55,7 +55,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_itemsView.SendScrolled(itemsViewScrolledEventArgs);
 
-			// Early returns for edge cases
+
+			// Don't send RemainingItemsThresholdReached event for non-linear layout managers
+			// This can also happen if a layout pass has not happened yet
 			if (Last == -1 || ItemsViewAdapter == null || _itemsView.RemainingItemsThreshold == -1)
 			{
 				return;
