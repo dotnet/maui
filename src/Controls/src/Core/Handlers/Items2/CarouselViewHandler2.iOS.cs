@@ -10,12 +10,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public partial class CarouselViewHandler2
 	{
 
-		WeakReference<CarouselView> _virtualView;
-
-		WeakReference<ItemsViewController2<CarouselView>> _controller;
-
 		public CarouselViewHandler2() : base(Mapper)
 		{
+
 
 		}
 		public CarouselViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper)
@@ -51,26 +48,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			nfloat itemSpacing = 0;
 			NSCollectionLayoutGroup group = null;
 
-			_virtualView = new(VirtualView);
-			_controller = new(Controller);
 			var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
 			{
-				if (_virtualView is null || !_virtualView.TryGetTarget(out var carouselView) || !_controller.TryGetTarget(out var controller))
+				if (VirtualView is null)
 				{
 					return null;
 				}
 				double sectionMargin = 0.0;
 				if (!isHorizontal)
 				{
-					sectionMargin = carouselView.PeekAreaInsets.VerticalThickness / 2;
-					var newGroupHeight = environment.Container.ContentSize.Height - carouselView.PeekAreaInsets.VerticalThickness;
+					sectionMargin = VirtualView.PeekAreaInsets.VerticalThickness / 2;
+					var newGroupHeight = environment.Container.ContentSize.Height - VirtualView.PeekAreaInsets.VerticalThickness;
 					groupHeight = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupHeight);
 					groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 				}
 				else
 				{
-					sectionMargin = carouselView.PeekAreaInsets.HorizontalThickness / 2;
-					var newGroupWidth = environment.Container.ContentSize.Width - carouselView.PeekAreaInsets.HorizontalThickness;
+					sectionMargin = VirtualView.PeekAreaInsets.HorizontalThickness / 2;
+					var newGroupWidth = environment.Container.ContentSize.Width - VirtualView.PeekAreaInsets.HorizontalThickness;
 					groupWidth = NSCollectionLayoutDimension.CreateAbsolute((nfloat)newGroupWidth);
 					groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
 				}
@@ -106,7 +101,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					var page = (offset.X + sectionMargin) / env.Container.ContentSize.Width;
 
 					// Check if we not are at the beginning or end of the page and if we have items
-					if (Math.Abs(page % 1) > (double.Epsilon * 100) || controller.ItemsSource.ItemCount <= 0)
+					if (Math.Abs(page % 1) > (double.Epsilon * 100) || Controller.ItemsSource.ItemCount <= 0)
 					{
 						return;
 					}
@@ -114,12 +109,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 					var pageIndex = (int)page;
 					var carouselPosition = pageIndex;
 
-					var cv2Controller = (CarouselViewController2)controller;
+					var cv2Controller = (CarouselViewController2)Controller;
 
 					//If we are looping, we need to get the correct position
-					if (carouselView.Loop)
+					if (ItemsView.Loop)
 					{
-						var maxIndex = (controller.ItemsSource as ILoopItemsViewSource).LoopCount - 1;
+						var maxIndex = (Controller.ItemsSource as ILoopItemsViewSource).LoopCount - 1;
 
 						//To mimic looping, we needed to modify the ItemSource and inserted a new item at the beginning and at the end
 						if (pageIndex == maxIndex)
@@ -136,7 +131,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 						//since we added one item at the beginning of our ItemSource, we need to subtract one
 						carouselPosition = pageIndex - 1;
 
-						if (carouselView.Position != carouselPosition)
+						if (ItemsView.Position != carouselPosition)
 						{
 							//If we are updating the ItemsSource, we don't want to scroll the CollectionView
 							if (cv2Controller.IsUpdating())
@@ -147,7 +142,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 							var goToIndexPath = cv2Controller.GetScrollToIndexPath(carouselPosition);
 
 							//This will move the carousel to fake the loop
-							controller.CollectionView.ScrollToItem(NSIndexPath.FromItemSection(pageIndex, 0), UICollectionViewScrollPosition.Left, false);
+							Controller.CollectionView.ScrollToItem(NSIndexPath.FromItemSection(pageIndex, 0), UICollectionViewScrollPosition.Left, false);
 
 						}
 					}
