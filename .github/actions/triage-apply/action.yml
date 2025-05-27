@@ -79,6 +79,7 @@ runs:
 
           const issueNumber = parseInt('${{ inputs.issue }}', 10);
           const footer = '${{ inputs.footer }}';
+
           const commentBody = `${summary}\n\n${footer}`;
           
           await github.rest.issues.createComment({
@@ -88,19 +89,25 @@ runs:
             body: commentBody
           });
 
-    # - name: Apply labels to the issue
-    #   uses: actions/github-script@v7
-    #   with:
-    #     script: |
-    #       const fs = require('fs');
-    #       const issueNumber = parseInt('${{ inputs.issue }}', 10);
-    #       const merged = JSON.parse(fs.readFileSync('merged-labels.json', 'utf8'));
-    #       const labels = merged.labels.map(l => l.label).filter(Boolean);
-    #       if (labels.length > 0) {
-    #         await github.rest.issues.addLabels({
-    #           owner: context.repo.owner,
-    #           repo: context.repo.repo,
-    #           issue_number: issueNumber,
-    #           labels
-    #         });
-    #       }
+    - name: Apply labels to the issue
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const mergedJson = fs.readFileSync('${{ steps.merge.outputs.merged-file }}', 'utf8');
+          const merged = JSON.parse(mergedJson);
+
+          const issueNumber = parseInt('${{ inputs.issue }}', 10);
+
+          const labels = merged.labels
+            .map(l => l.label)
+            .filter(Boolean);
+
+          if (labels.length > 0) {
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              labels
+            });
+          }
