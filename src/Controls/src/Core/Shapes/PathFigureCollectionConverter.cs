@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Controls.Shapes
 					{
 						if ((cmd != 'M') && (cmd != 'm'))  // Path starts with M|m
 						{
-							ThrowBadToken();
+							throw GetBadTokenException();
 						}
 
 						first = false;
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Shapes
 										break;
 								}
 
-								pathFigure!.Segments.Add(new LineSegment
+								EnsurePathFigure(pathFigure).Segments.Add(new LineSegment
 								{
 									Point = lastPoint
 								});
@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls.Shapes
 									Point3 = lastPoint
 								};
 
-								pathFigure!.Segments.Add(bezierSegment);
+								EnsurePathFigure(pathFigure).Segments.Add(bezierSegment);
 
 								last_cmd = 'C';
 							}
@@ -264,7 +264,8 @@ namespace Microsoft.Maui.Controls.Shapes
 									Point2 = lastPoint
 								};
 
-								pathFigure!.Segments.Add(quadraticBezierSegment);
+
+								EnsurePathFigure(pathFigure).Segments.Add(quadraticBezierSegment);
 
 								last_cmd = 'Q';
 							}
@@ -296,7 +297,7 @@ namespace Microsoft.Maui.Controls.Shapes
 									Point = lastPoint
 								};
 
-								pathFigure!.Segments.Add(arcSegment);
+								EnsurePathFigure(pathFigure).Segments.Add(arcSegment);
 							}
 							while (IsNumber(AllowComma));
 
@@ -306,7 +307,7 @@ namespace Microsoft.Maui.Controls.Shapes
 						case 'z':
 						case 'Z':
 							EnsureFigure();
-							pathFigure!.IsClosed = true;
+							EnsurePathFigure(pathFigure).IsClosed = true;
 							figureStarted = false;
 							last_cmd = 'Z';
 
@@ -314,9 +315,20 @@ namespace Microsoft.Maui.Controls.Shapes
 							break;
 
 						default:
-							ThrowBadToken();
-							break;
+							throw GetBadTokenException();
 					}
+				}
+			}
+
+			PathFigure EnsurePathFigure(PathFigure? pathFigure) 
+			{
+				if (pathFigure is null)
+				{
+					throw GetBadTokenException();
+				}
+				else
+				{
+					return pathFigure;
 				}
 			}
 
@@ -364,7 +376,7 @@ namespace Microsoft.Maui.Controls.Shapes
 							}
 							else
 							{
-								ThrowBadToken();
+								throw GetBadTokenException();
 							}
 							break;
 
@@ -401,9 +413,7 @@ namespace Microsoft.Maui.Controls.Shapes
 					}
 				}
 
-				ThrowBadToken();
-
-				return false;
+				throw GetBadTokenException();
 			}
 
 			bool ReadToken()
@@ -423,9 +433,9 @@ namespace Microsoft.Maui.Controls.Shapes
 				}
 			}
 
-			void ThrowBadToken()
+			Exception GetBadTokenException()
 			{
-				throw new FormatException(string.Format("UnexpectedToken \"{0}\" into {1}", currentPathString, currentIndex - 1));
+				return new FormatException(string.Format("UnexpectedToken \"{0}\" into {1}", currentPathString, currentIndex - 1));
 			}
 
 			Point ReadPoint(char cmd, bool allowcomma)
@@ -461,7 +471,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 				if (commaMet) // Only allowed between numbers
 				{
-					ThrowBadToken();
+					throw GetBadTokenException();
 				}
 
 				return false;
@@ -471,7 +481,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			{
 				if (!IsNumber(allowComma))
 				{
-					ThrowBadToken();
+					throw GetBadTokenException();
 				}
 
 				bool simple = true;
