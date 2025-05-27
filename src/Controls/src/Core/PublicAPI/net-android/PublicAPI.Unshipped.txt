@@ -17,3 +17,4 @@ virtual Microsoft.Maui.Controls.BindableProperty.CreateDefaultValueDelegate<TDec
 ~virtual Microsoft.Maui.Controls.CollectionSynchronizationCallback.Invoke(System.Collections.IEnumerable collection, object context, System.Action accessMethod, bool writeAccess) -> void
 ~virtual Microsoft.Maui.Controls.Internals.EvaluateJavaScriptDelegate.Invoke(string script) -> System.Threading.Tasks.Task<string>
 ~virtual Microsoft.Maui.Controls.PropertyChangingEventHandler.Invoke(object sender, Microsoft.Maui.Controls.PropertyChangingEventArgs e) -> void
+*REMOVED*~Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.ItemsViewHandler(Microsoft.Maui.PropertyMapper mapper, Microsoft.Maui.CommandMapper commandMapper = null) -> void
