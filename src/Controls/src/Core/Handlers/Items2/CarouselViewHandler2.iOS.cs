@@ -10,9 +10,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public partial class CarouselViewHandler2
 	{
 
+		WeakReference<CarouselView> _virtualView;
+
+		WeakReference<ItemsViewController2<CarouselView>> _controller;
+
 		public CarouselViewHandler2() : base(Mapper)
 		{
-
 
 		}
 		public CarouselViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper)

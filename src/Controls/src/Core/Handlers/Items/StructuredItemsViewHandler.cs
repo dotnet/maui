@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 
 		}
-		public StructuredItemsViewHandler(PropertyMapper mapper = null) : base(mapper ?? StructuredItemsViewMapper)
+		public StructuredItemsViewHandler(PropertyMapper mapper = null) : base(mapper ?? StructuredItemsViewMapper,StructuredItemsViewCommandMapper)
 		{
 
 		}
@@ -31,6 +31,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[StructuredItemsView.FooterProperty.PropertyName] = MapFooterTemplate,
 			[StructuredItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout,
 			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy
+		};
+
+		public static CommandMapper<TItemsView, StructuredItemsViewHandler<TItemsView>> StructuredItemsViewCommandMapper = new(ViewCommandMapper)
+		{
+			[nameof(StructuredItemsView.ItemsLayout.PropertyChanged)] = MapItemsLayoutPropertyChanged
 		};
 
 	}

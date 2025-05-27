@@ -60,6 +60,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			[GroupableItemsView.GroupFooterTemplateProperty.PropertyName] = MapFooterTemplate,
 			[SelectableItemsView.ItemsLayoutProperty.PropertyName] = MapItemsLayout
 		};
+
+		public static CommandMapper<CollectionView, CollectionViewHandler2> CommandMapper = new(ViewCommandMapper)
+		{
+			[nameof(StructuredItemsView.ItemsLayout.PropertyChanged)] = MapItemsLayoutPropertyChanged
+		};
 	}
 
 	public partial class CollectionViewHandler2 : ItemsViewHandler2<ReorderableItemsView>
@@ -190,6 +195,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		}
 
 		public static void MapItemsLayout(CollectionViewHandler2 handler, StructuredItemsView itemsView)
+		{
+			handler.UpdateLayout();
+		}
+
+		//TODO Make this public in .NET10
+		internal static void MapItemsLayoutPropertyChanged(CollectionViewHandler2 handler, CollectionView view, object arg3)
 		{
 			handler.UpdateLayout();
 		}
