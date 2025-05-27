@@ -47,7 +47,10 @@ runs:
           return data;
 
     - name: Set Current Repo
-      run: gh repo set-default --repo ${{ github.repository }}
+      shell: pwsh
+      run: |
+        cd ${{ runner.temp }}/apply-label
+        gh repo set-default --repo ${{ github.repository }}
       
     - name: Create User Prompt
       id: create-user-prompt
