@@ -35,8 +35,6 @@ runs:
             issue_number: issueNumber
           });
 
-          core.info(JSON.stringify(issue, null, 2));
-
           const data = issue.data;
           const json = JSON.stringify(data, null, 2);
 
@@ -48,6 +46,8 @@ runs:
 
     - name: Set Current Repo
       shell: pwsh
+      env:
+        GH_TOKEN: ${{ inputs.token }}
       run: |
         cd ${{ runner.temp }}/apply-label
         gh repo set-default ${{ github.repository }}
