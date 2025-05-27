@@ -12,10 +12,11 @@ issues that are likely regressions.
    "after switching", "after moving to", "after patch", "after hotfix",
    "after release", "after install", "after deployment", "after build",
    "after merge", "after commit", "after PR", "after pull request"
-3. If you find strong evidence of a regression, assign the
+3. Only if you find strong evidence of a regression, assign the
    "{{LABEL}}" label below.
-4. If you do not find strong evidence of a regression, do not
-   assign any labels.
+4. **IMPORTANT** If you do not find strong evidence of a
+   regression, do not assign any labels and instead return an
+   empty array.
 
 **Reasoning**
 * Provide a short reason for your decision, referencing the
@@ -24,12 +25,12 @@ issues that are likely regressions.
 * Make sure your reason is short and concise.
 
 **Response**
-* Respond in valid and properly formatted JSON with the
-  following structure and only in this structure.
+* Respond in valid and properly formatted JSON with one of
+  the following structures and only in these structures.
 * Do not wrap the JSON in any other text or formatting,
   including code blocks or markdown.
 
-If this issue is a regression:
+If this issue has strong evidence of a regression, respond with:
 
 [
   {
@@ -38,7 +39,7 @@ If this issue is a regression:
   }
 ]
 
-If this issue is NOT a regression:
+If this issue does not have strong evidence a regression, respond with:
 
 [
 
