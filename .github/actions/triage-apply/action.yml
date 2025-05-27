@@ -8,9 +8,13 @@ inputs:
   token:
     description: 'GitHub token to use for authentication'
     required: true
-  label-files:
-    description: 'Comma-separated or newline-separated list of JSON files with label results'
+  input-files:
+    description: 'Comma-separated or newline-separated list of JSON files with results to merge'
     required: true
+  footer:
+    description: 'Footer text to append to the AI response comment'
+    required: false
+    default: '_This entire triage process was automated by AI and mistakes may have been made. Please let us know so we can correct any mistakes._'
 
 outputs:
   merged-file:
@@ -35,7 +39,7 @@ runs:
         echo "::group::Merge response JSON files"
         $out = "${{ steps.setup.outputs.work-dir }}/merged.json"
         ${{ github.action_path }}/merge-responses.ps1 `
-          -Inputs "${{ inputs.label-files }}" `
+          -Inputs "${{ inputs.input-files }}" `
           -Output "$out"
         "merged-file=$out" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
@@ -66,20 +70,21 @@ runs:
         response-file: "${{ steps.setup.outputs.work-dir }}/ai-response.md"
         max-tokens: 500
 
-
-    # - name: Comment on the issue with summary
-    #   uses: actions/github-script@v7
-    #   with:
-    #     script: |
-    #       const fs = require('fs');
-    #       const issueNumber = parseInt('${{ inputs.issue }}', 10);
-    #       const summary = fs.readFileSync('summary.txt', 'utf8');
-    #       await github.rest.issues.createComment({
-    #         owner: context.repo.owner,
-    #         repo: context.repo.repo,
-    #         issue_number: issueNumber,
-    #         body: summary
-    #       });
+    - name: Comment on the issue with summary
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const issueNumber = parseInt('${{ inputs.issue }}', 10);
+          const summary = fs.readFileSync('summary.txt', 'utf8');
+          const footer = '${{ inputs.footer }}';
+          const commentBody = `${summary}\n\n${footer}`;
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: issueNumber,
+            body: commentBody
+          });
 
     # - name: Apply labels to the issue
     #   uses: actions/github-script@v7
