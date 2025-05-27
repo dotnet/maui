@@ -48,7 +48,7 @@ runs:
       shell: pwsh
       env:
         GH_TOKEN: ${{ inputs.token }}
-      run: ./process-prompt-template.ps1 -Template "user-prompt-template.md" -Output "user-prompt.md"
+      run: echo $pwd ; ./process-prompt-template.ps1 -Template "user-prompt-template.md" -Output "user-prompt.md"
       
     - name: Create System Prompt
       id: create-system-prompt
