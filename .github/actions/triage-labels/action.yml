@@ -99,17 +99,17 @@ runs:
       run: |
         "Print prompt files"
         echo "::group::System Prompt"
-        cat "${{ steps.create-system-prompt.outputs.system-prompt }}"
+        cat "${{ steps.create-system-prompt.outputs.prompt }}"
         echo "::endgroup::"
         echo "::group::User Prompt"
-        cat "${{ steps.create-user-prompt.outputs.user-prompt }}"
+        cat "${{ steps.create-user-prompt.outputs.prompt }}"
         echo "::endgroup::"
 
     - name: Run Triage AI Action
       id: triage-ai
       uses: ./.github/actions/triage-ai
       with:
-        prompt-file: "${{ steps.create-system-prompt.outputs.system-prompt }}"
-        system-prompt-file: "${{ steps.create-user-prompt.outputs.user-prompt }}"
+        prompt-file: "${{ steps.create-system-prompt.outputs.prompt }}"
+        system-prompt-file: "${{ steps.create-user-prompt.outputs.prompt }}"
         token: ${{ inputs.token }}
         response-file: "${{ steps.setup.outputs.work-dir }}/ai-response.json"
