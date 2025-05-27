@@ -70,6 +70,8 @@ namespace Microsoft.Maui.Platform
 					}
 				}
 
+				// When switching between LTR and RTL, we need to re-arrange and offset content exactly once
+				// to avoid cumulative shifts or incorrect offsets on subsequent layouts.
 				_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
 
 				// When the content size changes, we need to adjust the scrollable area size so that the content can fit in it.
