@@ -59,15 +59,15 @@ jobs:
 
       - name: Log Labels
         run: |
-          cat "${{ steps.triage-platform.outputs.labels-file }}"
-          cat "${{ steps.triage-area.outputs.labels-file }}"
-          cat "${{ steps.triage-regression.outputs.labels-file }}"
+          cat "${{ steps.triage-platform.outputs.response-file }}"
+          cat "${{ steps.triage-area.outputs.response-file }}"
+          cat "${{ steps.triage-regression.outputs.response-file }}"
 
       - name: Apply Labels and Comment
         uses: ./.github/actions/triage-apply
         with:
           issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29698' }}
           input-files: |
-            ${{ steps.triage-platform.outputs.labels-file }}
-            ${{ steps.triage-area.outputs.labels-file }}
-            ${{ steps.triage-regression.outputs.labels-file }}
+            ${{ steps.triage-platform.outputs.response-file }}
+            ${{ steps.triage-area.outputs.response-file }}
+            ${{ steps.triage-regression.outputs.response-file }}

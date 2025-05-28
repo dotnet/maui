@@ -27,7 +27,7 @@ inputs:
     default: ''
 
 outputs:
-  labels-file:
+  response-file:
     description: 'The file that contains the labels to apply to the issue'
     value: ${{ steps.triage-ai.outputs.response }}
 

@@ -15,7 +15,7 @@ inputs:
   footer:
     description: 'Footer text to append to the AI response comment'
     required: false
-    default: '_This entire triage process was automated by AI and mistakes may have been made. Please let us know so we can correct any mistakes._'
+    default: '_This entire triage process was automated by AI and mistakes may have been made. Please let us know so we can continue to improve._'
 
 outputs:
   merged-file:
