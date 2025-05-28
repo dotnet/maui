@@ -1,10 +1,8 @@
 name: "AI Triage"
 
 on:
-  pull_request:
-    types: [reopened, synchronize, opened]
-  # issues:
-    # types: [opened, edited]
+  issues:
+    types: [opened]
   workflow_dispatch:
     inputs:
       issue_number:
@@ -32,8 +30,7 @@ jobs:
           if ("${{ github.event_name }}" -eq "workflow_dispatch") {
             echo "number=${{ inputs.issue_number }}" >> $env:GITHUB_OUTPUT
           } else {
-            echo "number=29698" >> $env:GITHUB_OUTPUT
-            # echo "number=${{ github.event.number }}" >> $env:GITHUB_OUTPUT
+            echo "number=${{ github.event.issue.number }}" >> $env:GITHUB_OUTPUT
           }
 
       - name: Determine PLATFORM label for the issue
@@ -75,6 +72,8 @@ jobs:
           cat "${{ steps.triage-regression.outputs.response-file }}"
 
       - name: Apply Labels and Comment
+        # TODO: when we are ready!
+        if: github.event_name == 'workflow_dispatch'
         uses: ./.github/actions/triage-apply
         with:
           issue: ${{ steps.get-number.outputs.number }}
