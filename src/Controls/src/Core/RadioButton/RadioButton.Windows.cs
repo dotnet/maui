@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Controls
 
 			var transformedText = TextTransformUtilites.GetTransformedText(radioButton.Content.ToString(), radioButton.TextTransform);
 			if (handler.PlatformView is Microsoft.UI.Xaml.Controls.RadioButton platformRadioButton)
+			{
 				platformRadioButton.Content = transformedText;
+			}
 		}
 	}
 }

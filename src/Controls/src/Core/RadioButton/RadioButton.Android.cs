@@ -30,7 +30,9 @@ namespace Microsoft.Maui.Controls
 			var platformRadioButton = RadioButtonHandler.GetPlatformRadioButton(handler);
 			var transformedText = TextTransformUtilites.GetTransformedText(radioButton.Content.ToString(), radioButton.TextTransform);
 			if (platformRadioButton is not null)
+			{
 				platformRadioButton.Text = transformedText;
+			}
 		}
 
 		static AView? CreatePlatformView(ViewHandler<IRadioButton, AView> radioButton)
