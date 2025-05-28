@@ -729,7 +729,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void UpdateSearchVisibility(UISearchController searchController)
 		{
 			if (SearchHandler is null || NavigationItem is null)
+			{
 				return;
+			}
 
 			var visibility = SearchHandler.SearchBoxVisibility;
 			if (visibility == SearchBoxVisibility.Hidden)
