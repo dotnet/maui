@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		private void ChildRemoved(object sender, ElementEventArgs e)
+		void ChildRemoved(object sender, ElementEventArgs e)
 		{
 			if (e.Element is RadioButton radioButton)
 			{
