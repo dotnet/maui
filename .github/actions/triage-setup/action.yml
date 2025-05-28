@@ -39,7 +39,7 @@ runs:
 
         $responsesDir = "${{ runner.temp }}/triage-action-responses";
         New-Item -ItemType Directory -Path $responsesDir -Force | Out-Null
-        "responses-dir=$workDir" >> $env:GITHUB_OUTPUT
+        "responses-dir=$responsesDir" >> $env:GITHUB_OUTPUT
 
         echo "::endgroup::"
 

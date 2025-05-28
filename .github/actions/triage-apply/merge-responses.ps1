@@ -14,18 +14,38 @@ $allFiles = @()
 
 # Process individual files from InputFiles parameter
 # Accept both comma and newline separated input
-foreach ($item in $InputFiles) {
-    $allFiles += $item -split '[,\n\r]+' |
+if ($InputFiles) {
+    $allFiles += $InputFiles -split '[,\n\r]+' |
         ForEach-Object { $_.Trim() } |
         Where-Object { $_ }
+
+    if ($allFiles.Count -gt 0) {
+        Write-Host "Merging files from InputFiles parameter:"
+        foreach ($file in $allFiles) {
+            Write-Host "    $file"
+        }
+    }
 }
 
 # Process all JSON files from InputDir parameter if there are no files specified in InputFiles
 if ($allFiles.Count -eq 0 -and $InputDir -and (Test-Path $InputDir)) {
     $jsonFiles = Get-ChildItem -Path $InputDir -Filter "*.json" -File
+    
+    if ($jsonFiles.Count -gt 0) {
+        Write-Host "Merging files from InputDir parameter:"
+    }
+
     foreach ($file in $jsonFiles) {
         $allFiles += $file.FullName
+
+        Write-Host "    $file"
     }
+}
+
+# If no files were specified, exit with an error
+if ($allFiles.Count -eq 0) {
+    Write-Error "No input files specified. Please provide either InputFiles or InputDir with JSON files."
+    exit 1
 }
 
 # Read all JSON files and merge root properties
