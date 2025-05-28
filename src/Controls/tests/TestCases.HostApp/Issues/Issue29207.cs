@@ -69,7 +69,7 @@ public class Issue29207_ItemsViewModel
 
 	public Issue29207_ItemsViewModel()
 	{
-		for(int i = 0; i < 20; i++)
+		for (int i = 0; i < 20; i++)
 		{
 			ItemsSource.Add($"Item {i}");
 		}
