@@ -1,19 +1,31 @@
 param(
-    [Parameter(Mandatory=$true)][string]$Inputs,
+    [Parameter(Mandatory=$false)][string]$InputFiles,
+    [Parameter(Mandatory=$false)][string]$InputDir,
     [Parameter(Mandatory=$true)][string]$Output
 )
 
 $ErrorActionPreference = 'Stop'
 
-Write-Host "Processing input files: $Inputs"
-Write-Host "Output will be written to: $Output"
+Write-Host "Input files: $InputFiles"
+Write-Host "Input directory: $InputDir"
+Write-Host "Output file: $Output"
 
-# Accept both comma and newline separated input
 $allFiles = @()
-foreach ($item in $Inputs) {
+
+# Process individual files from InputFiles parameter
+# Accept both comma and newline separated input
+foreach ($item in $InputFiles) {
     $allFiles += $item -split '[,\n\r]+' |
         ForEach-Object { $_.Trim() } |
         Where-Object { $_ }
+}
+
+# Process all JSON files from InputDir parameter if there are no files specified in InputFiles
+if ($allFiles.Count -eq 0 -and $InputDir -and (Test-Path $InputDir)) {
+    $jsonFiles = Get-ChildItem -Path $InputDir -Filter "*.json" -File
+    foreach ($file in $jsonFiles) {
+        $allFiles += $file.FullName
+    }
 }
 
 # Read all JSON files and merge root properties

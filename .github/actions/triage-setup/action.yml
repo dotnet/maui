@@ -15,6 +15,9 @@ outputs:
   work-dir:
     description: 'The path to the working directory'
     value: ${{ steps.gen-work-dir.outputs.work-dir }}
+  responses-dir:
+    description: 'The path to the collected responses directory'
+    value: ${{ steps.gen-work-dir.outputs.responses-dir }}
 
 runs:
   using: 'composite'
@@ -26,11 +29,18 @@ runs:
       run: |
         "Generate a unique working directory"
         echo "::group::Generate a unique working directory"
+
         $guid = [guid]::NewGuid().ToString()
+        "work-id=$guid" >> $env:GITHUB_OUTPUT
+
         $workDir = "${{ runner.temp }}/triage-action-$guid";
         New-Item -ItemType Directory -Path $workDir -Force | Out-Null
-        "work-id=$guid" >> $env:GITHUB_OUTPUT
         "work-dir=$workDir" >> $env:GITHUB_OUTPUT
+
+        $responsesDir = "${{ runner.temp }}/triage-action-responses";
+        New-Item -ItemType Directory -Path $responsesDir -Force | Out-Null
+        "responses-dir=$workDir" >> $env:GITHUB_OUTPUT
+
         echo "::endgroup::"
 
     - name: Setup working directory

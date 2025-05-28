@@ -13,10 +13,6 @@ inputs:
     description: 'Triage mode: multi-label, single-label, regression, missing-info'
     required: true
     default: 'multi-label'
-  # variable replacement inputs
-  # TODO: make this be a multiline mapping input:
-  #       NAME1=value1
-  #       NAME2=value2
   label-prefix:
     description: 'Prefix for label search (e.g., platform/, area-, etc.)'
     required: false
@@ -81,7 +77,7 @@ runs:
 
     - name: Create System prompt file
       id: create-system-prompt
-      uses: ./.github/actions/triage-gen-prompt
+      uses: ./.github/actions/triage-ai-gen-prompt
       with:
         token: ${{ inputs.token }}
         label-prefix: ${{ inputs.label-prefix }}
@@ -91,7 +87,7 @@ runs:
 
     - name: Create User prompt file
       id: create-user-prompt
-      uses: ./.github/actions/triage-gen-prompt
+      uses: ./.github/actions/triage-ai-gen-prompt
       with:
         token: ${{ inputs.token }}
         label-prefix: ${{ inputs.label-prefix }}
@@ -106,4 +102,4 @@ runs:
         system-prompt-file: "${{ steps.create-system-prompt.outputs.prompt }}"
         prompt-file: "${{ steps.create-user-prompt.outputs.prompt }}"
         token: ${{ inputs.token }}
-        response-file: "${{ steps.setup.outputs.work-dir }}/response.json"
+        response-file: "${{ steps.setup.outputs.responses-dir }}/response-${{ steps.setup.outputs.work-id }}.json"

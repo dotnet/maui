@@ -11,7 +11,7 @@ inputs:
     required: true
   input-files:
     description: 'Comma-separated or newline-separated list of JSON files with results to merge'
-    required: true
+    required: false
   footer:
     description: 'Footer text to append to the AI response comment'
     required: false
@@ -40,14 +40,15 @@ runs:
         echo "::group::Merge response JSON files"
         $out = "${{ steps.setup.outputs.work-dir }}/merged.json"
         ${{ github.action_path }}/merge-responses.ps1 `
-          -Inputs "${{ inputs.input-files }}" `
+          -InputFiles "${{ inputs.input-files }}" `
+          -InputDir "${{ runner.temp }}/triage-action-responses" `
           -Output "$out"
         "merged-file=$out" >> $env:GITHUB_OUTPUT
         echo "::endgroup::"
 
     - name: Create System prompt file
       id: create-system-prompt
-      uses: ./.github/actions/triage-gen-prompt
+      uses: ./.github/actions/triage-ai-gen-prompt
       with:
         token: ${{ inputs.token }}
         template: ${{ github.action_path }}/system-prompt.md
@@ -55,7 +56,7 @@ runs:
 
     - name: Create User prompt file
       id: create-user-prompt
-      uses: ./.github/actions/triage-gen-prompt
+      uses: ./.github/actions/triage-ai-gen-prompt
       with:
         token: ${{ inputs.token }}
         template: ${{ github.action_path }}/user-prompt.md

@@ -25,11 +25,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Get Issue or PR Number
+        id: get-number
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            echo "number=${{ inputs.issue_number }}" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "number=29698" >> $env:GITHUB_OUTPUT
+            # echo "number=${{ github.event.number }}" >> $env:GITHUB_OUTPUT
+          }
+
       - name: Determine PLATFORM label for the issue
         id: triage-platform
         uses: ./.github/actions/triage-labels
         with:
-          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29698' }}
+          issue: ${{ steps.get-number.outputs.number }}
           label-prefix: 'platform/'
           mode: 'multi-label'
 
@@ -37,7 +48,7 @@ jobs:
         id: triage-area
         uses: ./.github/actions/triage-labels
         with:
-          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29698' }}
+          issue: ${{ steps.get-number.outputs.number }}
           label-prefix: 'area-'
           mode: 'single-label'
 
@@ -45,7 +56,7 @@ jobs:
         id: triage-regression
         uses: ./.github/actions/triage-labels
         with:
-          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29698' }}
+          issue: ${{ steps.get-number.outputs.number }}
           label: 'potential-regression'
           mode: 'regression'
 
@@ -54,7 +65,7 @@ jobs:
       #   id: triage-missing-info
       #   uses: ./.github/actions/triage-labels
       #   with:
-      #     issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29698' }}
+      #     issue: ${{ steps.get-number.outputs.number }}
       #     mode: 'missing-info'
 
       - name: Log Labels
@@ -66,8 +77,4 @@ jobs:
       - name: Apply Labels and Comment
         uses: ./.github/actions/triage-apply
         with:
-          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29698' }}
-          input-files: |
-            ${{ steps.triage-platform.outputs.response-file }}
-            ${{ steps.triage-area.outputs.response-file }}
-            ${{ steps.triage-regression.outputs.response-file }}
+          issue: ${{ steps.get-number.outputs.number }}
