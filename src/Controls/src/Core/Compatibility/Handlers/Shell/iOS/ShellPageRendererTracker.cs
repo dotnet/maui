@@ -875,7 +875,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void OnSearchItemSelected(object? sender, object e)
 		{
 			if (_searchController is null)
+			{
 				return;
+			}
 
 			_searchController.Active = false;
 			((ISearchHandlerController?)SearchHandler)?.ItemSelected(e);
