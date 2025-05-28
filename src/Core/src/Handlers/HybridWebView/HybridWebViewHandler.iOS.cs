@@ -149,7 +149,11 @@ namespace Microsoft.Maui.Handlers
 					return;
 				}
 
-				var url = urlSchemeTask.Request.Url.AbsoluteString ?? "";
+				var url = urlSchemeTask.Request.Url.AbsoluteString;
+				if (string.IsNullOrEmpty(url))
+				{
+					return;
+				}
 
 				var logger = Handler.MauiContext?.CreateLogger<HybridWebViewHandler>();
 
@@ -213,7 +217,7 @@ namespace Microsoft.Maui.Handlers
 				logger?.LogDebug("Request for {Url} was not handled.", url);
 			}
 
-			private async Task<(byte[]? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string? url, ILogger? logger)
+			private async Task<(byte[]? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string url, ILogger? logger)
 			{
 				if (Handler is null)
 				{

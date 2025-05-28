@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 
 			logger?.LogDebug("Intercepting request for {Url}.", url);
 
-			if (view is not null && request is not null)
+			if (view is not null && request is not null && !string.IsNullOrEmpty(url))
 			{
 				// 1. Check if the app wants to modify or override the request
 				var response = TryInterceptResponseStream(view, request, url, logger);
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Platform
 			return base.ShouldInterceptRequest(view, request);
 		}
 
-		private WebResourceResponse? TryInterceptResponseStream(AWebView view, IWebResourceRequest request, string? url, ILogger? logger)
+		private WebResourceResponse? TryInterceptResponseStream(AWebView view, IWebResourceRequest request, string url, ILogger? logger)
 		{
 			if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
 			{
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		private WebResourceResponse? GetResponseStream(AWebView view, IWebResourceRequest request, string? fullUrl, ILogger? logger)
+		private WebResourceResponse? GetResponseStream(AWebView view, IWebResourceRequest request, string fullUrl, ILogger? logger)
 		{
 			if (Handler is null || Handler is IViewHandler ivh && ivh.VirtualView is null)
 			{
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Platform
 			{
 				logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", fullUrl);
 
-				var fullUri = new Uri(fullUrl!);
+				var fullUri = new Uri(fullUr!);
 				var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
 				var contentBytesTask = Handler.InvokeDotNetAsync(invokeQueryString);
 				var responseStream = new AsyncStream(contentBytesTask, logger);

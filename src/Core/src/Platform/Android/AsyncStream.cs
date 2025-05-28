@@ -6,6 +6,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Platform;
 
+/// <summary>
+/// Represents a stream that reads data asynchronously from a task that
+/// produces either a byte array or a stream.
+/// This class is useful for scenarios where the data source is not immediately
+/// available and needs to be fetched asynchronously.
+/// 
+/// Specifically, the Android WebView requires that you provide a stream
+/// immediately, but the data may not be available until later.
+/// This class allows you to wrap a task that fetches the data and provides
+/// an asynchronous stream interface to read from it.
+/// </summary>
 class AsyncStream : Stream
 {
 	readonly Task<Stream?> _streamTask;
@@ -38,6 +49,8 @@ class AsyncStream : Stream
 
 		if (_stream != null)
 			return _stream;
+
+		cancellationToken.ThrowIfCancellationRequested();
 
 		_stream = await _streamTask.ConfigureAwait(false);
 		return _stream;
