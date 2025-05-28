@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Platform
 			{
 				logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", fullUrl);
 
-				var fullUri = new Uri(fullUr!);
+				var fullUri = new Uri(fullUrl);
 				var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
 				var contentBytesTask = Handler.InvokeDotNetAsync(invokeQueryString);
 				var responseStream = new AsyncStream(contentBytesTask, logger);
