@@ -280,23 +280,13 @@ namespace Microsoft.Maui.TestCases.Tests
 			Assert.That(fps3, Is.GreaterThanOrEqualTo(MinimumFps));
 
 			App.Tap("BenchmarkButton");
-		}	
-		
-		void TryDismissKeyboard(int maxRetries = 2)
+		}
+
+		void TryDismissKeyboard()
 		{
-			int attempt = 0;
-
-			while (attempt < maxRetries)
-			{
-				Thread.Sleep(500);
-
-				if (!App.IsKeyboardShown())
-					return; // Successfully dismissed
-
-				App.DismissKeyboard();
-				App.TapCoordinates(10, 10);
-				attempt++;
-			}
+			Thread.Sleep(500);
+			App.DismissKeyboard();
+			App.TapCoordinates(10, 10);
 		}
 	}
 }
