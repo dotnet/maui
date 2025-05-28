@@ -165,10 +165,20 @@
 			<_AppiumNpmListOutput>@(_AppiumNpmListOutputLines->'%(Identity)', ' ')</_AppiumNpmListOutput>
 		</PropertyGroup>
 
-		<!-- Peek the appium version info from the json output -->
-		<JsonPeek Content="$(_AppiumNpmListOutput)" Query="$.dependencies.appium.version">
+		<!-- Check if the output contains an error -->
+		<PropertyGroup>
+			<_AppiumNpmListHasError Condition="$(_AppiumNpmListOutput.Contains('error'))">True</_AppiumNpmListHasError>
+		</PropertyGroup>
+
+		<!-- Peek the appium version info from the json output (only if no error) -->
+		<JsonPeek Content="$(_AppiumNpmListOutput)" Query="$.dependencies.appium.version" Condition="'$(_AppiumNpmListHasError)' != 'True'">
 			<Output TaskParameter="Result" PropertyName="_AppiumNpmListVersion" />
 		</JsonPeek>
+
+		<!-- Set the version to empty if there was an error, which will force installation -->
+		<PropertyGroup Condition="'$(_AppiumNpmListHasError)' == 'True'">
+			<_AppiumNpmListVersion></_AppiumNpmListVersion>
+		</PropertyGroup>
 
 		<!-- Install appium at the specified version if necessary -->
 		<Exec Command="npm i --location=global appium@$(AppiumVersion)" Condition=" '$(_AppiumNpmListVersion)' != '$(AppiumVersion)' " />
