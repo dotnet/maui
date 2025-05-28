@@ -763,7 +763,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var shell = _context?.Shell;
 
 			if (shell is null)
+			{
 				return;
+			}
 
 			_searchHandlerAppearanceTracker?.UpdateFlowDirection(shell);
 
