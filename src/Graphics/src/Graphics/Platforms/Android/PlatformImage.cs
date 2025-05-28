@@ -158,6 +158,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
+
 			// Use original stream if it's seekable, else copy to memory stream
 			var seekableStream = stream.CanSeek ? stream : new MemoryStream();
 			if (!stream.CanSeek)
@@ -166,6 +167,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				seekableStream.Position = 0;
 			}
 
+			Bitmap bitmap;
 			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 			{
 
@@ -174,35 +176,52 @@ namespace Microsoft.Maui.Graphics.Platform
 				var orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
 
 				seekableStream.Position = 0;
-				var bitmap = BitmapFactory.DecodeStream(seekableStream);
+				bitmap = BitmapFactory.DecodeStream(seekableStream);
 
 				// Apply rotation only if needed
 				if (orientation != 1)
+				{
 					bitmap = RotateBitmap(bitmap, orientation);
-
-				return new PlatformImage(bitmap);
+				}
 			}
 			else
 			{
+
 				// Fallback for older Android
-				var bitmap = BitmapFactory.DecodeStream(seekableStream);
-				return new PlatformImage(bitmap);
+				bitmap = BitmapFactory.DecodeStream(seekableStream);
 			}
+			return new PlatformImage(bitmap);
 		}
 
 
 		static Bitmap RotateBitmap(Bitmap bitmap, int orientation)
 		{
+
+			// EXIF orientation has 8 possible values. See: https://jdhao.github.io/2019/07/31/image_rotation_exif_info/#exif-orientation-flag
 			Matrix matrix = new Matrix();
 			switch (orientation)
 			{
-				case 3:
+				case 2: // Flip horizontal
+					matrix.PreScale(-1, 1);
+					break;
+				case 3: // Rotate 180
 					matrix.PostRotate(180);
 					break;
-				case 6:
+				case 4: // Flip vertical
+					matrix.PreScale(1, -1);
+					break;
+				case 5: // Transpose (flip vertical + rotate 90)
+					matrix.PreScale(1, -1);
 					matrix.PostRotate(90);
 					break;
-				case 8:
+				case 6: // Rotate 90
+					matrix.PostRotate(90);
+					break;
+				case 7: // Transverse (flip vertical + rotate 270)
+					matrix.PreScale(1, -1);
+					matrix.PostRotate(270);
+					break;
+				case 8: // Rotate 270
 					matrix.PostRotate(270);
 					break;
 				default:
