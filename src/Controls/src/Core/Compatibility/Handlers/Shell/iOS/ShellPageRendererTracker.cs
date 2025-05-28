@@ -887,7 +887,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var mauiContext = source.FindMauiContext() ?? MauiContext;
 
 			if (mauiContext is null)
+			{
 				return;
+			}
 
 			source.LoadImage(mauiContext, image =>
 			{
