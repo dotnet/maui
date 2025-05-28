@@ -248,16 +248,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				((INotifyCollectionChanged)oldPage.ToolbarItems).CollectionChanged -= OnPageToolbarItemsChanged;
 			}
 
-			SearchHandler searchHandler = Shell.GetSearchHandler(newPage);
-
-			if (_searchView is not null && _searchView.SearchHandler != searchHandler)
-			{
-				RemoveSearchView(_searchView);
-				_searchView = null;
-			}
-
 			if (newPage != null)
 			{
+				SearchHandler searchHandler = Shell.GetSearchHandler(newPage);
+
+				if (_searchView is not null && _searchView.SearchHandler != searchHandler)
+				{
+					RemoveSearchView(_searchView);
+					_searchView = null;
+				}
+
 				newPage.PropertyChanged += OnPagePropertyChanged;
 				_backButtonBehavior = Shell.GetBackButtonBehavior(newPage);
 
