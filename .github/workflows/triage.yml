@@ -1,8 +1,13 @@
 name: "AI Triage"
 
 on:
+  # When someone opens a new issue
   issues:
     types: [opened]
+  # When someone adds the "/triage" comments
+  issue_comment:
+    types: [created, edited]
+  # When the workflow is run manually
   workflow_dispatch:
     inputs:
       issue_number:
@@ -19,6 +24,10 @@ jobs:
   triage-issue:
     name: Apply Labels
     runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'issues' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/triage'))
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
