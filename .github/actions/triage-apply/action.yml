@@ -2,11 +2,12 @@ name: 'Apply Labels and Comment'
 description: 'Merge label JSON files, summarize, comment on the issue, and apply labels.'
 
 inputs:
-  issue:
-    description: 'The issue number to update'
-    required: true
   token:
     description: 'GitHub token to use for authentication'
+    required: false
+    default: ${{ github.token }}
+  issue:
+    description: 'The issue number to update'
     required: true
   input-files:
     description: 'Comma-separated or newline-separated list of JSON files with results to merge'

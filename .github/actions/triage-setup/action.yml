@@ -5,7 +5,8 @@ description: 'Generates a unique working directory and sets up git/gh context.'
 inputs:
   token:
     description: 'GitHub token to use for authentication'
-    required: true
+    required: false
+    default: ${{ github.token }}
 
 outputs:
   work-id:

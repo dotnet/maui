@@ -2,13 +2,21 @@ name: 'Flexible Triage Labels Action'
 description: 'Process issues and apply labels using AI inference, supporting multiple triage modes.'
 
 inputs:
-  issue:
-    description: 'The issue number to triage'
-    required: false
-    default: ''
   token:
     description: 'GitHub token to use for authentication'
+    required: false
+    default: ${{ github.token }}
+  issue:
+    description: 'The issue to triage'
     required: true
+  mode:
+    description: 'Triage mode: multi-label, single-label, regression, missing-info'
+    required: true
+    default: 'multi-label'
+  # variable replacement inputs
+  # TODO: make this be a multiline mapping input:
+  #       NAME1=value1
+  #       NAME2=value2
   label-prefix:
     description: 'Prefix for label search (e.g., platform/, area-, etc.)'
     required: false
@@ -17,10 +25,6 @@ inputs:
     description: 'The label to apply to an issue'
     required: false
     default: ''
-  mode:
-    description: 'Triage mode: multi-label, single-label, regression, missing-info'
-    required: true
-    default: 'multi-label'
 
 outputs:
   labels-file:

@@ -4,7 +4,18 @@ description: 'Generates a prompt file from a template using provided labels and 
 inputs:
   token:
     description: 'GitHub token to use for authentication'
+    required: false
+    default: ${{ github.token }}
+  template:
+    description: 'Path to the prompt template file'
     required: true
+  output:
+    description: 'Path to the output prompt file'
+    required: true
+  # variable replacement inputs
+  # TODO: make this be a multiline mapping input:
+  #       NAME1=value1
+  #       NAME2=value2
   label-prefix:
     description: 'Prefix for label search (e.g., platform/, area-, etc.)'
     required: false
@@ -13,12 +24,6 @@ inputs:
     description: 'The label to apply to an issue'
     required: false
     default: ''
-  template:
-    description: 'Path to the prompt template file'
-    required: true
-  output:
-    description: 'Path to the output prompt file'
-    required: true
 
 outputs:
   prompt:
