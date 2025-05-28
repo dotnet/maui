@@ -499,13 +499,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		//TODO: Remove this in .NET 10
 		protected virtual void LayoutPropertyChanged(object sender, PropertyChangedEventArgs propertyChanged)
 		{
-
 		}
 
 		public void UpdateItemsLayoutProperties(object args)
 		{
 			if (args is not PropertyChangedEventArgs propertyChanged)
+			{
 				return;
+			}
 
 			if (propertyChanged.Is(GridItemsLayout.SpanProperty))
 			{
