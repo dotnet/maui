@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls
 			get => (int)GetValue(RemainingItemsThresholdProperty);
 			set => SetValue(RemainingItemsThresholdProperty, value);
 		}
-		
+
 		internal static readonly BindableProperty InternalItemsLayoutProperty =
 			BindableProperty.Create(nameof(ItemsLayout), typeof(IItemsLayout), typeof(ItemsView),
 				defaultValueCreator: CreateDefaultItemsLayout, propertyChanged: OnInternalItemsLayoutPropertyChanged);
