@@ -719,7 +719,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		protected virtual void UpdateSearchIsEnabled(UISearchController searchController)
 		{
 			if (SearchHandler is null)
+			{
 				return;
+			}
 
 			searchController.SearchBar.UserInteractionEnabled = SearchHandler.IsSearchEnabled;
 		}
