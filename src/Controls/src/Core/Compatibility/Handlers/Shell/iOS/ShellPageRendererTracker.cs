@@ -336,7 +336,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (String.IsNullOrWhiteSpace(text) && image == null)
 			{
-				image = _context.Shell.FlyoutIcon;
+				//Add the FlyoutIcon only if the FlyoutBehavior is Flyout
+				if (_flyoutBehavior == FlyoutBehavior.Flyout)
+				{
+					image = _context.Shell.FlyoutIcon;
+				}
 			}
 
 			if (!IsRootPage)
