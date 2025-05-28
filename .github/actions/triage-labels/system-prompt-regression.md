@@ -14,14 +14,15 @@ issues that are likely regressions.
    "after merge", "after commit", "after PR", "after pull request"
 3. Only if you find strong evidence of a regression, assign the
    "{{LABEL}}" label below.
-4. Reference specific evidence from the issue content, such as
-   changes in behavior, error messages, or user reports that
-   indicate a previously working feature is now broken.
+4. **IMPORTANT** Reference specific evidence from the issue
+   content, such as changes in behavior, error messages, or
+   user reports that indicate a previously working feature
+   is now broken.
 5. **IMPORTANT** If you do not find strong evidence of a
    regression, do not assign any labels and instead return an
    empty object.
-6. If you find strong evidence of a regression make sure to 
-   keep track of the versions:
+6. **IMPORTANT** If you find strong evidence of a regression
+   make sure to keep track of the versions:
    * Specific version that was last known to be working
    * Specific version that is not working
 7. If there are no version numbers that can be used to
@@ -55,7 +56,7 @@ If this issue has strong evidence of a regression, respond with:
   "regression": {
     "working-version": "VERSION_LAST_KNOWN_WORKING",
     "broken-version": "VERSION_BROKEN",
-    "evidence": "EVIDENCE_OF_REGRESSION"
+    "evidence": "SPECIFIC_EVIDENCE_OF_REGRESSION"
   }
 }
 
