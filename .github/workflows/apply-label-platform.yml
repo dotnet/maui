@@ -51,6 +51,14 @@ jobs:
           label: 'potential-regression'
           mode: 'regression'
 
+      - name: Determine MISSING INFO labels for the issue
+        id: triage-missing-info
+        uses: ./.github/actions/triage-labels
+        with:
+          issue: ${{ github.event_name == 'workflow_dispatch' && inputs.issue_number || '29698' }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          mode: 'missing-info'
+
       - name: Log Labels
         run: |
           cat "${{ steps.triage-platform.outputs.labels-file }}"

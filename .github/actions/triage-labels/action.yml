@@ -18,7 +18,7 @@ inputs:
     required: false
     default: ''
   mode:
-    description: 'Triage mode: multi-label, single-label, regression'
+    description: 'Triage mode: multi-label, single-label, regression, missing-info'
     required: true
     default: 'multi-label'
 
@@ -68,6 +68,7 @@ runs:
           "multi-label"   { $template = "${{ github.action_path }}/system-prompt-multilabel.md" }
           "single-label"  { $template = "${{ github.action_path }}/system-prompt-singlelabel.md" }
           "regression"    { $template = "${{ github.action_path }}/system-prompt-regression.md" }
+          "missing-info"  { $template = "${{ github.action_path }}/system-prompt-missinginfo.md" }
           default         { throw "Unknown mode: $mode" }
         }
         "Using system prompt template: $template"
