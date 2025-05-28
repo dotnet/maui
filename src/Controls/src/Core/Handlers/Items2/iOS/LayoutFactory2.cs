@@ -284,8 +284,6 @@ internal static class LayoutFactory2
 				return null;
 			}
 
-
-
 			double sectionMargin = 0.0;
 
 			if (!isHorizontal)
@@ -334,12 +332,16 @@ internal static class LayoutFactory2
 			section.VisibleItemsInvalidationHandler = (items, offset, env) =>
 			{
 				if (!weakItemsView.TryGetTarget(out var itemsView) || !weakController.TryGetTarget(out var cv2Controller))
+				{
 					return;
+				}
 
 				var page = (offset.X + sectionMargin) / env.Container.ContentSize.Width;
 
 				if (Math.Abs(page % 1) > (double.Epsilon * 100) || cv2Controller.ItemsSource.ItemCount <= 0)
+				{
 					return;
+				}
 
 				var pageIndex = (int)page;
 				var carouselPosition = pageIndex;
