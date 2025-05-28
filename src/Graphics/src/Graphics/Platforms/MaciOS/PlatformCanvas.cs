@@ -661,7 +661,12 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void DrawImage(IImage image, float x, float y, float width, float height)
 		{
-			var platformImage = image.ToPlatformImage() as PlatformImage;
+			// Normalize orientation here
+			var normalizedImage = image.ToPlatformImage() is PlatformImage platformImageInstance
+				? new PlatformImage(platformImageInstance.PlatformRepresentation.NormalizeOrientation(false))
+				: image;
+				
+			var platformImage = normalizedImage.ToPlatformImage() as PlatformImage;
 			var platformRepresentation = platformImage?.PlatformRepresentation;
 			if (platformRepresentation != null)
 			{
