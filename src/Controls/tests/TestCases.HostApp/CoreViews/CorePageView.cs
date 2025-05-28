@@ -67,6 +67,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ListViewCoreGalleryPage(), "ListView Gallery"),
 			new GalleryPageFactory(() => new PickerCoreGalleryPage(), "Picker Gallery"),
 			new GalleryPageFactory(() => new ProgressBarCoreGalleryPage(), "Progress Bar Gallery"),
+			new GalleryPageFactory(() => new RadioButtonControlPage(), "RadioButton Feature Matrix"),
 			new GalleryPageFactory(() => new RadioButtonCoreGalleryPage(), "RadioButton Gallery"),
 			new GalleryPageFactory(() => new ScrollViewCoreGalleryPage(), "ScrollView Gallery"),
 			new GalleryPageFactory(() => new SearchBarCoreGalleryPage(), "Search Bar Gallery"),
@@ -79,7 +80,6 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new SliderControlPage(), "Slider Feature Matrix"),
 			new GalleryPageFactory(() => new CollectionViewFeaturePage(), "CollectionView Feature Matrix"),
 			new GalleryPageFactory(() => new CarouselViewFeaturePage(), "CarouselView Feature Matrix"),
-
 		};
 
 		public CorePageView(Page rootPage)
