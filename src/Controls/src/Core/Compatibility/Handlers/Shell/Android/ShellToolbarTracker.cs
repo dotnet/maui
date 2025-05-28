@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			SearchHandler searchHandler = Shell.GetSearchHandler(newPage);
 
-			if (_searchView != null && _searchView.SearchHandler != searchHandler)
+			if (_searchView is not null && _searchView.SearchHandler != searchHandler)
 			{
 				RemoveSearchView(_searchView);
 				_searchView = null;
