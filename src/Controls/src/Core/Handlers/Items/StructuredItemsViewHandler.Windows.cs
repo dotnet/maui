@@ -37,7 +37,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		void UpdateItemsLayoutProperties(object args)
 		{
 			if (args is not PropertyChangedEventArgs e)
+			{
 				return;
+			}
 
 			if (e.PropertyName == GridItemsLayout.SpanProperty.PropertyName)
 			{
