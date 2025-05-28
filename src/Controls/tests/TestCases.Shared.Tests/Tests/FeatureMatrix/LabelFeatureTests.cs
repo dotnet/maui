@@ -364,7 +364,7 @@ public class LabelFeatureTests : UITest
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/22594, https://github.com/dotnet/maui/issues/21294
     [Test, Order(19)]
 	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithFormattedTextWhenLineBreakModeCharacterwrap()
+	public void VerifyLabelWithFormattedTextWhenLineBreakModeCharacterWrap()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
@@ -432,7 +432,7 @@ public class LabelFeatureTests : UITest
 
 	[Test, Order(21)]
 	[Category(UITestCategories.Label)]
-	public void VerifyLabelwithFormattedTextWhemLineBreakModeWordwrap()
+	public void VerifyLabelWithFormattedTextWhenLineBreakModeWordWrap()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
@@ -448,7 +448,7 @@ public class LabelFeatureTests : UITest
 
 	[Test, Order(22)]
 	[Category(UITestCategories.Label)]
-	public void VerifyLabelWithFormattedTextWhenLineBreakModeNowrap()
+	public void VerifyLabelWithFormattedTextWhenLineBreakModeNoWrap()
 	{
 		App.WaitForElement(Options);
 		App.Tap(Options);
