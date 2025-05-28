@@ -47,17 +47,17 @@ issues that are likely regressions.
 If this issue has strong evidence of a regression, respond with:
 
 {
+  "regression": {
+    "working-version": "VERSION_LAST_KNOWN_WORKING",
+    "broken-version": "VERSION_BROKEN",
+    "evidence": "SPECIFIC_EVIDENCE_OF_REGRESSION"
+  },
   "labels":[
     {
       "label": "{{LABEL}}",
       "reason": "REASON_FOR_LABEL_HERE"
     }
-  ],
-  "regression": {
-    "working-version": "VERSION_LAST_KNOWN_WORKING",
-    "broken-version": "VERSION_BROKEN",
-    "evidence": "SPECIFIC_EVIDENCE_OF_REGRESSION"
-  }
+  ]
 }
 
 If this issue does not have strong evidence a regression, respond with:
