@@ -81,8 +81,10 @@ jobs:
           cat "${{ steps.triage-regression.outputs.response-file }}"
 
       - name: Apply Labels and Comment
-        # TODO: when we are ready!
-        if: github.event_name == 'workflow_dispatch'
+        # TODO: delete this condition when we are ready!
+        if: |
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/triage'))
         uses: ./.github/actions/triage-apply
         with:
           issue: ${{ steps.get-number.outputs.number }}
