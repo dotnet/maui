@@ -4,14 +4,17 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-
-	public class BrushUnitTests : BaseTestFixture
+	public class BrushTypeConverterUnitTests : BaseTestFixture
 	{
-		BrushTypeConverter _converter;
+		private readonly BrushTypeConverter _converter = new();
 
-		public BrushUnitTests()
+		[Fact]
+		public void ConvertNullTest()
 		{
-			_converter = new BrushTypeConverter();
+			var result = _converter.ConvertFromInvariantString(null);
+			Assert.NotNull(result);
+			var brush = Assert.IsType<SolidColorBrush>(result);
+			Assert.Null(brush.Color);
 		}
 
 		[Theory]
