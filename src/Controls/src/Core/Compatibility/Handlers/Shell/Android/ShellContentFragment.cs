@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// to avoid the navigation `TaskCompletionSource` to be stuck forever.
 			AnimationFinished?.Invoke(this, EventArgs.Empty);
 
-			((IShellController)_shellContext?.Shell)?.RemoveAppearanceObserver(this);
+			(_shellContext?.Shell as IShellController)?.RemoveAppearanceObserver(this);
 
 			if (_shellContent != null)
 			{
