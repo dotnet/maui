@@ -900,7 +900,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			source.LoadImage(mauiContext, image =>
 			{
 				if (_disposed)
+				{
 					return;
+				}
 
 				var result = image?.Value;
 				if (result != null)
