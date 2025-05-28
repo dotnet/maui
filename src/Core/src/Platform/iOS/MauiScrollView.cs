@@ -14,6 +14,8 @@ namespace Microsoft.Maui.Platform
 		double _lastArrangeHeight;
 		double _lastArrangeWidth;
 
+		UIUserInterfaceLayoutDirection? _previousEffectiveUserInterfaceLayoutDirection;
+
 		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
 
 		ICrossPlatformLayout? ICrossPlatformLayoutBacking.CrossPlatformLayout
@@ -54,16 +56,23 @@ namespace Microsoft.Maui.Platform
 				// For Right-To-Left (RTL) layouts, we need to adjust the content arrangement and offset
 				// to ensure the content is correctly aligned and scrolled. This involves a second layout
 				// arrangement with an adjusted starting point and recalculating the content offset.
-				if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+				if (_previousEffectiveUserInterfaceLayoutDirection != EffectiveUserInterfaceLayoutDirection)
 				{
-					var horizontalOffset = contentSize.Width - crossPlatformBounds.Width;
-					crossPlatformLayout.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), crossPlatformBounds));
-					ContentOffset = new CGPoint(horizontalOffset, 0);
+					if (EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
+					{
+						var horizontalOffset = contentSize.Width - crossPlatformBounds.Width;
+						crossPlatformLayout.CrossPlatformArrange(new Rect(new Point(-horizontalOffset, 0), crossPlatformBounds));
+						ContentOffset = new CGPoint(horizontalOffset, 0);
+					}
+					else
+					{
+						ContentOffset = CGPoint.Empty;
+					}
 				}
-				else
-				{
-					ContentOffset = CGPoint.Empty;
-				}
+
+				// When switching between LTR and RTL, we need to re-arrange and offset content exactly once
+				// to avoid cumulative shifts or incorrect offsets on subsequent layouts.
+				_previousEffectiveUserInterfaceLayoutDirection = EffectiveUserInterfaceLayoutDirection;
 
 				// When the content size changes, we need to adjust the scrollable area size so that the content can fit in it.
 				if (ContentSize != contentSize)
