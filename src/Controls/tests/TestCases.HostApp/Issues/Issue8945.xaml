@@ -14,12 +14,12 @@
               x:Name="IsOpenDatePicker" AutomationId="IsOpenDatePicker" Date="01/01/2025" />
         <Button AutomationId="OpenDatePickerButton" Text="Open DatePicker" Clicked="OnOpenDatePickerClicked" />
         <Button AutomationId="CloseDatePickerButton" Text="Close DatePicker" Clicked="OnCloseDatePickerClicked" />
-        <Label x:Name="DatePickerStatusLabel" AutomationId="DatePickerStatusLabel" />
+      <Label x:Name="DatePickerStatusLabel" AutomationId="DatePickerStatusLabel" Text="-" />
       <TimePicker
             x:Name="IsOpenTimePicker" AutomationId="IsOpenTimePicker" Time="4:15:30" />
       <Button AutomationId="OpenTimePickerButton" Text="Open TimePicker" Clicked="OnOpenTimePickerClicked" />
       <Button AutomationId="CloseTimePickerButton" Text="Close TimePicker" Clicked="OnCloseTimePickerClicked" />
-      <Label x:Name="TimePickerStatusLabel" AutomationId="TimePickerStatusLabel" />
+      <Label x:Name="TimePickerStatusLabel" AutomationId="TimePickerStatusLabel" Text="-" />
       <Picker
             x:Name="IsOpenPicker" AutomationId="IsOpenPicker"
             Title="Select an item">
@@ -31,7 +31,7 @@
       </Picker>
         <Button AutomationId="OpenPickerButton" Text="Open Picker" Clicked="OnOpenPickerClicked" />
         <Button AutomationId="ClosePickerButton" Text="Close Picker" Clicked="OnClosePickerClicked" />
-        <Label x:Name="PickerStatusLabel" AutomationId="PickerStatusLabel" />
+        <Label x:Name="PickerStatusLabel" AutomationId="PickerStatusLabel" Text="-" />
     </VerticalStackLayout>
   </ContentPage.Content>
 </controls:TestContentPage>
