@@ -18,6 +18,7 @@ public class Issue29595_29634 : _IssuesUITest
 	{
 		// This verifies both 29595 and 29634
 		App.WaitForElement("StubLabel");
+		Task.Delay(1000).Wait(); // Wait for the initial layout to settle
 		VerifyScreenshot();
 	}
 }

@@ -118,13 +118,13 @@ namespace Maui.Controls.Sample.Issues
 		    {
 			    var border = new Border
 			    {
-				    Stroke = new SolidColorBrush(Colors.LightGray),
+				    Stroke = new SolidColorBrush(Colors.Black),
 				    StrokeShape = new RoundRectangle { CornerRadius = 15 }
 			    };
 
 			    var innerGrid = new Grid
 			    {
-				    BackgroundColor = Colors.WhiteSmoke,
+				    BackgroundColor = Colors.Yellow,
 				    RowDefinitions =
 				    {
 					    new RowDefinition { Height = new GridLength(1, GridUnitType.Star) },
