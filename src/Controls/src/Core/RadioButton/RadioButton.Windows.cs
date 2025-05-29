@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls
 					platformRadioButton.Content = transformedText;
 				}
 			}
+			
 		}
 	}
 }
