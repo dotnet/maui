@@ -494,7 +494,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 		}
 
-		public void UpdateItemsLayoutProperties(object args)
+		void IMauiRecyclerView<TItemsView>.UpdateItemsLayoutProperties(object args)
 		{
 			if (args is not PropertyChangedEventArgs propertyChanged)
 			{
