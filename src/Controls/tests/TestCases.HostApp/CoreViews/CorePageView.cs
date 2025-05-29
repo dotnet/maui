@@ -71,6 +71,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ScrollViewCoreGalleryPage(), "ScrollView Gallery"),
 			new GalleryPageFactory(() => new SearchBarCoreGalleryPage(), "Search Bar Gallery"),
 			new GalleryPageFactory(() => new SliderCoreGalleryPage(), "Slider Gallery"),
+			new GalleryPageFactory(() => new StepperControlPage(), "Stepper Feature Matrix"),
 			new GalleryPageFactory(() => new StepperCoreGalleryPage(), "Stepper Gallery"),
 			new GalleryPageFactory(() => new SwitchCoreGalleryPage(), "Switch Gallery"),
 			new GalleryPageFactory(() => new SwipeViewCoreGalleryPage(), "SwipeView Gallery"),
@@ -79,7 +80,6 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new SliderControlPage(), "Slider Feature Matrix"),
 			new GalleryPageFactory(() => new CollectionViewFeaturePage(), "CollectionView Feature Matrix"),
 			new GalleryPageFactory(() => new CarouselViewFeaturePage(), "CarouselView Feature Matrix"),
-
 		};
 
 		public CorePageView(Page rootPage)
