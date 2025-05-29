@@ -9,6 +9,11 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiTextView : PlatformAppCompatTextView
 	{
+		private Layout? _cachedLayout;
+		private string? _lastText;
+		private int _lastAvailableWidth;
+		private int _lastTotalPadding;
+
 		public MauiTextView(Context context) : base(context)
 		{
 		}
@@ -25,12 +30,27 @@ namespace Microsoft.Maui.Platform
 			{
 				int availableWidth = MeasureSpec.GetSize(widthMeasureSpec);
 				int totalPadding = CompoundPaddingLeft + CompoundPaddingRight;
-				var layout = TextLayoutUtils.CreateLayout(Text, Paint, availableWidth - totalPadding, Android.Text.Layout.Alignment.AlignNormal);
-				int contentWidth = (int)Math.Ceiling(GetMaxLineWidth(layout));
-				// Calculate the required width based on the content and padding
-				int requiredWidth = contentWidth + totalPadding;
-				int desiredWidth = Math.Min(requiredWidth, availableWidth);
-				widthMeasureSpec = MeasureSpec.MakeMeasureSpec(desiredWidth, MeasureSpecMode.AtMost);
+
+				if (availableWidth > totalPadding)
+				{
+					// Only create new layout if text, width or padding changed
+					if (_lastText != Text || _lastAvailableWidth != availableWidth || _lastTotalPadding != totalPadding || _cachedLayout is null)
+					{
+						_cachedLayout = TextLayoutUtils.CreateLayout(Text, Paint, availableWidth - totalPadding, Android.Text.Layout.Alignment.AlignNormal);
+						_lastText = Text;
+						_lastAvailableWidth = availableWidth;
+						_lastTotalPadding = totalPadding;
+					}
+					// since the original issue 27614 occurs when the text is multiline, we only apply custom width measurement for multiline text
+					if (_cachedLayout.LineCount > 1)
+					{
+						int contentWidth = (int)Math.Ceiling(GetMaxLineWidth(_cachedLayout));
+						int requiredWidth = contentWidth + totalPadding;
+						int desiredWidth = Math.Min(requiredWidth, availableWidth);
+						widthMeasureSpec = MeasureSpec.MakeMeasureSpec(desiredWidth, MeasureSpecMode.AtMost);
+					}
+
+				}
 			}
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
