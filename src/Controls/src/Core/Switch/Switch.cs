@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="OffColor"/>.</summary>
 		public static readonly BindableProperty OffColorProperty = BindableProperty.Create(nameof(OffColor), typeof(Color), typeof(Switch), null,
 			propertyChanged: (bindable, oldValue, newValue) =>
-            {
+			{
 				((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
 			});
 
@@ -54,9 +54,9 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public Color OffColor
 		{
-			get { return (Color) GetValue(OffColorProperty); }
+			get { return (Color)GetValue(OffColorProperty); }
 			set { SetValue(OffColorProperty, value); }
-        }
+		}
 
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='ThumbColor']/Docs/*" />

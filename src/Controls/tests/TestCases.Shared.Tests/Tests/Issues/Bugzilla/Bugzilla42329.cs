@@ -21,7 +21,7 @@ public class Bugzilla42329 : _IssuesUITest
 	[Test]
 #if ANDROID
 	[Ignore("Failing on net10 https://github.com/dotnet/maui/issues/27411")]
-#endif	
+#endif
 	[Category(UITestCategories.ListView)]
 	public async Task MemoryLeakB42329()
 	{

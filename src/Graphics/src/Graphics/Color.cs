@@ -7,15 +7,36 @@ using System.Numerics;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Represents an RGBA color with floating-point components in the range of 0.0 to 1.0.
+	/// </summary>
 	[DebuggerDisplay("Red={Red}, Green={Green}, Blue={Blue}, Alpha={Alpha}")]
 	[TypeConverter(typeof(Converters.ColorTypeConverter))]
 	public class Color
 	{
+		/// <summary>
+		/// The red component of the color, ranging from 0.0 to 1.0.
+		/// </summary>
 		public readonly float Red;
+
+		/// <summary>
+		/// The green component of the color, ranging from 0.0 to 1.0.
+		/// </summary>
 		public readonly float Green;
+
+		/// <summary>
+		/// The blue component of the color, ranging from 0.0 to 1.0.
+		/// </summary>
 		public readonly float Blue;
+
+		/// <summary>
+		/// The alpha (opacity) component of the color, ranging from 0.0 (transparent) to 1.0 (opaque).
+		/// </summary>
 		public readonly float Alpha = 1;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Color"/> class with default values (black).
+		/// </summary>
 		public Color()
 		{
 			// Default Black

@@ -1,11 +1,21 @@
-namespace Microsoft.Maui
+namespace Microsoft.Maui;
+
+/// <summary>
+/// Specifies the format type of text content.
+/// </summary>
+public enum TextType
 {
-	/// <include file="../../docs/Microsoft.Maui/TextType.xml" path="Type[@FullName='Microsoft.Maui.TextType']/Docs/*" />
-	public enum TextType
-	{
-		/// <include file="../../docs/Microsoft.Maui/TextType.xml" path="//Member[@MemberName='Text']/Docs/*" />
-		Text,
-		/// <include file="../../docs/Microsoft.Maui/TextType.xml" path="//Member[@MemberName='Html']/Docs/*" />
-		Html
-	}
+	/// <summary>
+	/// Plain text content without markup.
+	/// </summary>
+	Text,
+
+	/// <summary>
+	/// HTML-formatted text content that may include markup.
+	/// </summary>
+	/// <remarks>
+	/// The subset of supported HTML tags varies by platform. Each platform's native text rendering engine
+	/// determines which HTML tags and attributes are supported.
+	/// </remarks>
+	Html
 }

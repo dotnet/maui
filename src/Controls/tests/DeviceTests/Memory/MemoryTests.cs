@@ -70,7 +70,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 				handlers.AddHandler<Toolbar, ToolbarHandler>();
 				handlers.AddHandler<WebView, WebViewHandler>();
-				
+
 #if IOS || MACCATALYST
 				handlers.AddHandler<NavigationPage, NavigationRenderer>();
 				handlers.AddHandler<TabbedPage, TabbedRenderer>();

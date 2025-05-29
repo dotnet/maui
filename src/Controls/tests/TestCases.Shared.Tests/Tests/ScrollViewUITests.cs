@@ -24,12 +24,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Scroll element to the start")]
 		public void ScrollToElement1Start()
 		{
-#if MACCATALYST
-        // In CI, switches the application to full-screen mode ,full-screen mode may show unexpected offsets or positioning differences due to display scaling.
-        App.EnterFullScreen();
-        // Wait a little bit to complete the system animation moving the App Window to FullScreen.
-        Thread.Sleep(500);
-#endif
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Tap a button to scroll to the start position.
@@ -44,12 +38,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Scroll element to the center")]
 		public void ScrollToElement2Center()
 		{
-#if MACCATALYST
-        // In CI, switches the application to full-screen mode ,full-screen mode may show unexpected offsets or positioning differences due to display scaling.
-        App.EnterFullScreen();
-        // Wait a little bit to complete the system animation moving the App Window to FullScreen.
-        Thread.Sleep(500);
-#endif
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Tap a button to scroll to the center position.
@@ -66,12 +54,6 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Description("Scroll element to the end")]
 		public void ScrollToElement3End()
 		{
-#if MACCATALYST
-        // In CI, switches the application to full-screen mode ,full-screen mode may show unexpected offsets or positioning differences due to display scaling.
-        App.EnterFullScreen();
-        // Wait a little bit to complete the system animation moving the App Window to FullScreen.
-        Thread.Sleep(500);
-#endif
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Tap a button to scroll to the end.

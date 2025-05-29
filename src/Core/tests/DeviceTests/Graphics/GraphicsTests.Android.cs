@@ -205,7 +205,7 @@ public partial class GraphicsTests : TestBase
 	public void NullRadialGradientPaintTest()
 	{
 		RadialGradientPaintStub nullRadialGradientPaint = null;
-		
+
 		Assert.False(nullRadialGradientPaint.IsSolid());
 	}
 }

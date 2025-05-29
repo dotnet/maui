@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 				return (float)nativeView.Opacity;
 			});
 		}
-		
+
 		[Fact("The IsEnabled of a CheckBox should match with native IsEnabled")]
 		public async Task CheckBoxIsEnabled()
 		{

@@ -318,7 +318,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <param name="config">The platform specific configuration that contains the element on which to perform the operation.</param>
 		/// <param name="value">The Microsoft.Maui.Controls.View from which the modal will originate</param>
 		/// <returns>The modal presentation style.</returns>
-		public static IPlatformElementConfiguration<iOS, FormsElement> SetModalPopoverView(this IPlatformElementConfiguration<iOS, FormsElement> config, View value )
+		public static IPlatformElementConfiguration<iOS, FormsElement> SetModalPopoverView(this IPlatformElementConfiguration<iOS, FormsElement> config, View value)
 		{
 			SetModalPopoverView(config.Element, value);
 			return config;

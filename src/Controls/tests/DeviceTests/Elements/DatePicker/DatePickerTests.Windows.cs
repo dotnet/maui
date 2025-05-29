@@ -38,6 +38,6 @@ public partial class DatePickerTests
 		});
 	}
 
-	static CalendarDatePicker GetPlatformControl(DatePickerHandler handler) =>	
+	static CalendarDatePicker GetPlatformControl(DatePickerHandler handler) =>
 		handler.PlatformView;
 }

@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return config;
 		}
 		#endregion
-	
+
 		#region RippleColor
 
 		/// <summary>Bindable property for attached property <c>RippleColor</c>.</summary>

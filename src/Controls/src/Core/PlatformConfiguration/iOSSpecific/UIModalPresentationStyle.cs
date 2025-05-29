@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		/// <summary>The content is displayed in a manner that covers the screen.</summary>
 		/// <remarks>The views belonging to the presenting view controller are removed after the presentation completes.</remarks>
 		FullScreen,
-		
+
 		/// <summary>The content is displayed in the center of the screen.</summary>
 		FormSheet,
 
@@ -24,6 +24,6 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 		/// <summary>The content is displayed in a popover view.</summary>
 		Popover,
-		
+
 	}
 }

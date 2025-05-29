@@ -23,12 +23,12 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 
-			if(modalOrigin is not null)
+			if (modalOrigin is not null)
 			{
 				On<iOS>().SetModalPopoverView(modalOrigin);
 			}
 
-			if(rectangle is not null)
+			if (rectangle is not null)
 			{
 				On<iOS>().SetModalPopoverRect(rectangle.Value);
 			}

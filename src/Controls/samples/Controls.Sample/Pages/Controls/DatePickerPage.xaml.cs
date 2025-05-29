@@ -60,5 +60,5 @@ namespace Maui.Controls.Sample.Pages
 		{
 			NullDatePicker.Date = DateTime.Now;
 		}
-    }
+	}
 }

@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Platform
 
 		public void UpdateTime(TimeSpan? time)
 		{
-			_picker.Date = new DateTime(1, 1, 1, time?.Hours ?? 0, 
+			_picker.Date = new DateTime(1, 1, 1, time?.Hours ?? 0,
 				time?.Minutes ?? 0, time?.Seconds ?? 0).ToNSDate();
 		}
 

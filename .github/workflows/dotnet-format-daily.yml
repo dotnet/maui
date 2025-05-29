@@ -1,0 +1,45 @@
+name: Format Branch Code
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 0 0 * * * # Every day at midnight (UTC)
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  dotnet-format:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        branch: [ main, net10.0, inflight/current ]
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ matrix.branch }}
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v3.2.0
+        with:
+          dotnet-version: 8.x
+
+      - name: Run dotnet format
+        run: dotnet format .\Microsoft.Maui.sln --no-restore --exclude Templates/src --exclude-diagnostics CA1822
+    
+      - name: Create Pull Request
+        uses: dotnet/actions-create-pull-request@v4
+        with:
+          title: '[housekeeping] Automated PR to fix formatting errors on ${{ matrix.branch }}'
+          body: |
+            Automated PR to fix formatting errors
+          committer: GitHub <noreply@github.com>
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          labels: |
+            t/housekeeping ♻︎
+            area-infrastructure
+          assignees: rmarinho, jsuarezruiz
+          reviewers: rmarinho, jsuarezruiz
+          branch: housekeeping/fix-codeformatting/${{ matrix.branch }}
+          base: ${{ matrix.branch }}

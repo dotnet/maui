@@ -22,9 +22,9 @@ namespace Maui.Controls.Sample
 		private Color _maxTrackColor = Color.FromRgba(227, 227, 229, 255);
 		private Color _backgroundColor = Colors.Transparent;
 #else
-                private Color _thumbColor = null;
+		private Color _thumbColor = null;
 		private Color _minTrackColor = null;
-                private Color _maxTrackColor = null;
+		private Color _maxTrackColor = null;
 		private Color _backgroundColor = null;
 #endif
 		private FlowDirection _flowDirection = FlowDirection.LeftToRight;

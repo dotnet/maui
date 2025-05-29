@@ -1,5 +1,5 @@
-using Microsoft.Maui.Graphics;
 using Android.App;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform
 {

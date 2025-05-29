@@ -62,6 +62,6 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidateHasColor(image, expected, typeof(ImageHandler));
-		}		
+		}
 	}
 }

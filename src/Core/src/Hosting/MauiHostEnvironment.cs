@@ -19,13 +19,13 @@ public class MauiHostEnvironment : IHostEnvironment
 	}
 
 	public string ContentRootPath
-	{ 
+	{
 		get => throw new System.NotImplementedException();
 		set => throw new System.NotImplementedException();
 	}
 
 	public IFileProvider ContentRootFileProvider
-	{ 
+	{
 		get => throw new System.NotImplementedException();
 		set => throw new System.NotImplementedException();
 	}

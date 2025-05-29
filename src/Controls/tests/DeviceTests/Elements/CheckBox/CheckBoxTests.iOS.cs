@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -22,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 				return (float)nativeView.Alpha;
 			});
 		}
-		
+
 		[Fact("The IsEnabled of a CheckBox should match with native IsEnabled")]
 		public async Task CheckBoxIsEnabled()
 		{

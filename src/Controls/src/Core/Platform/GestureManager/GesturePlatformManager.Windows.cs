@@ -88,25 +88,8 @@ namespace Microsoft.Maui.Controls.Platform
 		// Do we need to provide a hook for this in the handlers?
 		// For now I just built this ugly matching statement
 		// to replicate our handlers where we are setting this to true
-		public bool PreventGestureBubbling
-		{
-			get
-			{
-				return Element switch
-				{
-					Button => true,
-					CheckBox => true,
-					DatePicker => true,
-					Stepper => true,
-					Slider => true,
-					Switch => true,
-					TimePicker => true,
-					ImageButton => true,
-					RadioButton => true,
-					_ => false,
-				};
-			}
-		}
+		public bool PreventGestureBubbling =>
+			(Element?.Handler as ViewHandler)?.PreventGestureBubbling ?? false;
 
 		public FrameworkElement? Control
 		{
@@ -405,6 +388,18 @@ namespace Microsoft.Maui.Controls.Platform
 					_container.ManipulationStarted -= OnManipulationStarted;
 					_container.ManipulationCompleted -= OnManipulationCompleted;
 					_container.PointerCanceled -= OnPointerCanceled;
+				}
+
+				if (Element is View && ElementGestureRecognizers is { } gestureRecognizers)
+				{
+					if (gestureRecognizers.FirstGestureOrDefault<DragGestureRecognizer>() is { } dragGesture)
+					{
+						dragGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+					}
+					if (gestureRecognizers.FirstGestureOrDefault<DropGestureRecognizer>() is { } dropGesture)
+					{
+						dropGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+					}
 				}
 			}
 		}
@@ -822,26 +817,36 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			bool canDrag = gestures.FirstGestureOrDefault<DragGestureRecognizer>()?.CanDrag ?? false;
-			bool allowDrop = gestures.FirstGestureOrDefault<DropGestureRecognizer>()?.AllowDrop ?? false;
+			DragGestureRecognizer? dragGesture = gestures.FirstGestureOrDefault<DragGestureRecognizer>();
+			DropGestureRecognizer? dropGesture = gestures.FirstGestureOrDefault<DropGestureRecognizer>();
 
-			if (canDrag)
+			if (dragGesture is not null)
 			{
-				_subscriptionFlags |= SubscriptionFlags.ContainerDragEventsSubscribed;
+				dragGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+				dragGesture.PropertyChanged += HandleDragAndDropGesturePropertyChanged;
 
-				_container.CanDrag = true;
-				_container.DragStarting += HandleDragStarting;
-				_container.DropCompleted += HandleDropCompleted;
+				if (dragGesture.CanDrag && ((_subscriptionFlags & SubscriptionFlags.ContainerDragEventsSubscribed) == 0))
+				{
+					_subscriptionFlags |= SubscriptionFlags.ContainerDragEventsSubscribed;
+					_container.CanDrag = true;
+					_container.DragStarting += HandleDragStarting;
+					_container.DropCompleted += HandleDropCompleted;
+				}
 			}
 
-			if (allowDrop)
+			if (dropGesture is not null)
 			{
-				_subscriptionFlags |= SubscriptionFlags.ContainerDropEventsSubscribed;
+				dropGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+				dropGesture.PropertyChanged += HandleDragAndDropGesturePropertyChanged;
 
-				_container.AllowDrop = true;
-				_container.DragOver += HandleDragOver;
-				_container.Drop += HandleDrop;
-				_container.DragLeave += HandleDragLeave;
+				if (dropGesture.AllowDrop && ((_subscriptionFlags & SubscriptionFlags.ContainerDropEventsSubscribed) == 0))
+				{
+					_subscriptionFlags |= SubscriptionFlags.ContainerDropEventsSubscribed;
+					_container.AllowDrop = true;
+					_container.DragOver += HandleDragOver;
+					_container.Drop += HandleDrop;
+					_container.DragLeave += HandleDragLeave;
+				}
 			}
 		}
 
@@ -981,6 +986,15 @@ namespace Microsoft.Maui.Controls.Platform
 		void HandleDoubleTapped(object sender, DoubleTappedRoutedEventArgs doubleTappedRoutedEventArgs)
 		{
 			doubleTappedRoutedEventArgs.Handled = true;
+		}
+
+		void HandleDragAndDropGesturePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == DragGestureRecognizer.CanDragProperty.PropertyName ||
+				e.PropertyName == DropGestureRecognizer.AllowDropProperty.PropertyName)
+			{
+				UpdateDragAndDropGestureRecognizers();
+			}
 		}
 
 		DragEventArgs ToDragEventArgs(UI.Xaml.DragEventArgs e, PlatformDragEventArgs platformArgs)

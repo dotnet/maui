@@ -20,6 +20,8 @@ namespace Microsoft.Maui.Platform
 		WBrush? _fillColor;
 		ObservableCollection<WShape>? _dots;
 
+		internal bool UseShapeIndicator => _indicatorView == null || (_indicatorView is ITemplatedIndicatorView templatedView && templatedView.IndicatorsLayoutOverride != null);
+
 		public MauiPageControl()
 		{
 			HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center;
@@ -36,14 +38,16 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateIndicatorsColor()
 		{
-			if (_indicatorView == null)
+			if (UseShapeIndicator)
+			{
 				return;
+			}
 
-			if (_indicatorView.IndicatorColor is SolidPaint solidPaint)
+			if (_indicatorView?.IndicatorColor is SolidPaint solidPaint)
 				_fillColor = solidPaint?.ToPlatform();
-			if (_indicatorView.SelectedIndicatorColor is SolidPaint selectedSolidPaint)
+			if (_indicatorView?.SelectedIndicatorColor is SolidPaint selectedSolidPaint)
 				_selectedColor = selectedSolidPaint.ToPlatform();
-			var position = _indicatorView.Position;
+			var position = _indicatorView?.Position;
 			int i = 0;
 			foreach (var item in Items)
 			{
@@ -54,13 +58,15 @@ namespace Microsoft.Maui.Platform
 
 		internal void CreateIndicators()
 		{
-			if (_indicatorView == null)
+			if (UseShapeIndicator)
+			{
 				return;
+			}
 
 			var position = GetIndexFromPosition();
 			var indicators = new List<WShape>();
 
-			var indicatorCount = _indicatorView.GetMaximumVisible();
+			var indicatorCount = _indicatorView?.GetMaximumVisible();
 			if (indicatorCount > 0)
 			{
 				for (int i = 0; i < indicatorCount; i++)

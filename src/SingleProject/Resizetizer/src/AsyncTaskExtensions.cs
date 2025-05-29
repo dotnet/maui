@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Maui.Resizetizer.Resources;
 
 namespace Microsoft.Maui.Resizetizer
 {
@@ -20,9 +21,9 @@ namespace Microsoft.Maui.Resizetizer
 					{
 						body(s);
 					}
-					catch (Exception exc)
+					catch (Exception ex)
 					{
-						asyncTask.LogCodedError("MAUI0000", exc.ToString());
+						asyncTask.LogCodedError(ErrorCodes.ImageProcessingCode, ErrorMessages.ImageProcessing, string.Format(ErrorMessages.ImageProcessingError, ex.ToString()));
 						asyncTask.Cancel();
 					}
 				});

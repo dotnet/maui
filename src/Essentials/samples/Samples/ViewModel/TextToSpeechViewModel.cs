@@ -58,7 +58,7 @@ namespace Samples.ViewModel
 					Volume = Volume,
 					Pitch = Pitch,
 					Locale = selectedLocale,
-					Rate=Rate
+					Rate = Rate
 				};
 			}
 
