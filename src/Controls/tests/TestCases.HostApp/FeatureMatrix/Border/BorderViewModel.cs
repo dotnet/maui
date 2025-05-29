@@ -63,7 +63,7 @@ public class BorderViewModel : INotifyPropertyChanged
 		get => _padding;
 		set { _padding = value; OnPropertyChanged(nameof(Padding)); }
 	}
-	private double _strokeThickness = 8;
+	private double _strokeThickness = 1;
 	public double StrokeThickness
 	{
 		get => _strokeThickness;
@@ -76,8 +76,9 @@ public class BorderViewModel : INotifyPropertyChanged
 			}
 		}
 	}
-	public string StrokeDashArrayAsString => string.Join(",", StrokeDashArray);
-	private DoubleCollection _strokeDashArray = new DoubleCollection { 5, 2 };
+	public string StrokeDashArrayAsString => StrokeDashArray != null ? string.Join(",", StrokeDashArray) : string.Empty;
+
+	private DoubleCollection _strokeDashArray = null;
 	public DoubleCollection StrokeDashArray
 	{
 		get => _strokeDashArray;
@@ -91,12 +92,14 @@ public class BorderViewModel : INotifyPropertyChanged
 			}
 		}
 	}
+
 	private double _strokeDashOffset = 0;
 	public double StrokeDashOffset
 	{
 		get => _strokeDashOffset;
 		set { _strokeDashOffset = value; OnPropertyChanged(nameof(StrokeDashOffset)); }
 	}
+
 	private PenLineJoin _strokeLineJoin = PenLineJoin.Miter;
 	public PenLineJoin StrokeLineJoin
 	{
@@ -124,13 +127,49 @@ public class BorderViewModel : INotifyPropertyChanged
 			}
 		}
 	}
-
 	private IShape _strokeShape = new Rectangle();
 	public IShape StrokeShape
 	{
 		get => _strokeShape;
-		set { _strokeShape = value; OnPropertyChanged(nameof(StrokeShape)); }
+		set
+		{
+			if (_strokeShape != value)
+			{
+				_strokeShape = value;
+				OnPropertyChanged(nameof(StrokeShape));
+			}
+		}
 	}
+
+	public IShape CreateRectangleShape() => new Rectangle();
+
+	public IShape CreateRoundRectangleShape() => new RoundRectangle { CornerRadius = new CornerRadius(40) };
+
+	public IShape CreateEllipseShape() => new Ellipse();
+
+	public IShape CreatePathShape()
+	{
+		var pathGeometry = new PathGeometry();
+		var pathFigure = new PathFigure { StartPoint = new Point(10, 100) };
+		pathFigure.Segments.Add(new LineSegment { Point = new Point(100, 10) });
+		pathFigure.Segments.Add(new LineSegment { Point = new Point(190, 100) });
+		pathFigure.IsClosed = true;
+		pathGeometry.Figures.Add(pathFigure);
+
+		return new Microsoft.Maui.Controls.Shapes.Path { Data = pathGeometry };
+	}
+
+	public IShape CreatePolygonShape() => new Polygon
+	{
+		Points = new PointCollection
+	{
+		new Point(100, 0),
+		new Point(190, 70),
+		new Point(150, 180),
+		new Point(50, 180),
+		new Point(10, 70)
+	}
+	};
 	private PenLineCap _strokeLineCap = PenLineCap.Flat;
 	public PenLineCap StrokeLineCap
 	{
@@ -150,14 +189,8 @@ public class BorderViewModel : INotifyPropertyChanged
 		get => _stroke;
 		set { _stroke = value; OnPropertyChanged(nameof(Stroke)); }
 	}
-	private Shadow _shadow = new Shadow
-	{
-		Brush = Brush.Gray,
-		Offset = new Point(10, 10),
-		Radius = 20,
-		Opacity = 0.8f
-	};
 
+	private Shadow _shadow = null;
 	public Shadow Shadow
 	{
 		get => _shadow;
