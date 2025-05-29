@@ -7,7 +7,7 @@ namespace Maui.Controls.Sample
 {
     public class EntryViewModel : INotifyPropertyChanged
     {
-        private string _text = string.Empty;
+        private string _text = "Test Entry";
         private Color _textColor = Colors.Black;
         private double _fontSize = 14;
         private TextAlignment _horizontalTextAlignment = TextAlignment.Start;
@@ -16,13 +16,13 @@ namespace Maui.Controls.Sample
         private double _characterSpacing = 0;
         private ReturnType _returnType = ReturnType.Default;
         private int _maxLength = -1;
+        private bool _isCursorVisible = false;
         private int _cursorPosition = 0;
         private int _selectionLength = 0;
         private bool _isReadOnly = false;
         private bool _isTextPredictionEnabled = false;
         private bool _isSpellCheckEnabled = false;
         private Keyboard _keyboard = Keyboard.Default;
-        private bool _fontAutoScalingEnabled = false;
         private string _fontFamily = null;
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -80,10 +80,20 @@ namespace Maui.Controls.Sample
             get => _maxLength;
             set { _maxLength = value; OnPropertyChanged(); }
         }
+
+        public bool IsCursorVisible
+        {
+            get => _isCursorVisible;
+            set { _isCursorVisible = value; OnPropertyChanged(); }
+        }
         public int CursorPosition
         {
             get => _cursorPosition;
-            set { _cursorPosition = value; OnPropertyChanged(); }
+            set
+            {
+                _cursorPosition = value;
+                OnPropertyChanged();
+            }
         }
         public int SelectionLength
         {
@@ -109,11 +119,6 @@ namespace Maui.Controls.Sample
         {
             get => _keyboard;
             set { _keyboard = value; OnPropertyChanged(); }
-        }
-        public bool FontAutoScalingEnabled
-        {
-            get => _fontAutoScalingEnabled;
-            set { _fontAutoScalingEnabled = value; OnPropertyChanged(); }
         }
 
         public string FontFamily

@@ -95,10 +95,15 @@ namespace Maui.Controls.Sample
         {
             if (int.TryParse(CursorPositionEntry.Text, out int cursorPosition))
             {
+                _viewModel.IsCursorVisible = true;
                 _viewModel.CursorPosition = cursorPosition;
             }
         }
         
+        private void IsCursorVisibleTrueOrFalse_Clicked(object sender, EventArgs e)
+        {
+            _viewModel.IsCursorVisible = IsCursorVisibleTrue.IsChecked;
+        }
 
         private void FontSizeEntry_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -128,11 +133,6 @@ namespace Maui.Controls.Sample
         private void IsSpellCheckEnabledTrueOrFalse_Clicked(object sender, EventArgs e)
         {
             _viewModel.IsSpellCheckEnabled = IsSpellCheckEnabledTrue.IsChecked;
-        }
-
-        private void FontAutoScalingEnabledTrueOrFalse_Clicked(object sender, EventArgs e)
-        {
-            _viewModel.FontAutoScalingEnabled = FontAutoScalingEnabledTrue.IsChecked;
         }
 
         private void KeyboardButton_Clicked(object sender, EventArgs e)

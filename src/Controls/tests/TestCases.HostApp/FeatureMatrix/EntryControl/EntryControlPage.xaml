@@ -7,7 +7,7 @@
                FontSize="20"
                HorizontalOptions="Center"/>
 
-        <Entry
+        <local:UITestEntry x:Name="EntryControl"
             Text="{Binding Text}"
             Placeholder="Enter some text"
             AutomationId="EntryText"
@@ -15,7 +15,6 @@
             HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
             VerticalTextAlignment="{Binding VerticalTextAlignment}"
             IsPassword="{Binding IsPassword}"
-            FontAutoScalingEnabled="{Binding FontAutoScalingEnabled}"
             FontSize="{Binding FontSize}"
             CharacterSpacing="{Binding CharacterSpacing}"
             TextColor="{Binding TextColor}"
@@ -24,16 +23,16 @@
             IsSpellCheckEnabled="{Binding IsSpellCheckEnabled}"
             MaxLength="{Binding MaxLength}"
             SelectionLength="{Binding SelectionLength}"
+            IsCursorVisible="{Binding IsCursorVisible}"
             CursorPosition="{Binding CursorPosition}"
             ReturnType="{Binding ReturnType}"
             Keyboard="{Binding Keyboard}"
             FontFamily="{Binding FontFamily}"
-            HeightRequest="50"/>
+            HeightRequest="100"/>
     </StackLayout>
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Options"
                      Clicked="NavigateToOptionsPage_Clicked"></ToolbarItem>
     </ContentPage.ToolbarItems>
-
 </ContentPage>
