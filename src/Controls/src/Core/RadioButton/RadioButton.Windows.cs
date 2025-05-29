@@ -23,11 +23,15 @@ namespace Microsoft.Maui.Controls
 
 			RadioButtonHandler.MapContent(handler, radioButton);
 
-			var transformedText = TextTransformUtilites.GetTransformedText(radioButton.Content.ToString(), radioButton.TextTransform);
-			if (handler.PlatformView is Microsoft.UI.Xaml.Controls.RadioButton platformRadioButton)
+			if ((radioButton.TextTransform is TextTransform.Lowercase || radioButton.TextTransform is TextTransform.Uppercase) && radioButton.Content is not null && !string.IsNullOrEmpty(radioButton.Content.ToString()))
 			{
-				platformRadioButton.Content = transformedText;
+				var transformedText = TextTransformUtilites.GetTransformedText(radioButton.Content.ToString(), radioButton.TextTransform);
+				if (handler.PlatformView is Microsoft.UI.Xaml.Controls.RadioButton platformRadioButton)
+				{
+					platformRadioButton.Content = transformedText;
+				}
 			}
+			
 		}
 	}
 }
