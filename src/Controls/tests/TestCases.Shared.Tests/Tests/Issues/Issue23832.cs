@@ -1,5 +1,4 @@
-﻿#if TEST_FAILS_ON_WINDOWS //Resize and Downsize method not implemented on windows Issue Link - https://github.com/dotnet/maui/issues/19642
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -17,8 +16,7 @@ public class Issue23832 : _IssuesUITest
 	[Category(UITestCategories.GraphicsView)]
 	public void HEICImageShouldNotRenderUpsideDown()
 	{
-		App.WaitForElement("ResizeLabel");
+		App.WaitForElement("DrawableLabel");
 		VerifyScreenshot();
 	}
 }
-#endif
