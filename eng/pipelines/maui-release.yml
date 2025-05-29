@@ -63,7 +63,7 @@ resources:
     - repository: yaml-templates
       type: git
       name: DevDiv/Xamarin.yaml-templates
-      ref: refs/heads/main
+      ref: refs/heads/fix-signing
     - repository: 1ESPipelineTemplates
       type: git
       name: 1ESPipelineTemplates/1ESPipelineTemplates
