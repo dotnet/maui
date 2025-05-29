@@ -281,7 +281,9 @@ public class MemoryTests : ControlsHandlerTestBase
 
 	[Theory("CollectionView Header/Footer Doesn't Leak")]
 	[InlineData(typeof(CollectionView))]
+#if IOS || MACCATALYST
 	[InlineData(typeof(CollectionView2))]
+#endif
 	public async Task CollectionViewHeaderFooterDoesntLeak(Type type)
 	{
 		SetupBuilder();
