@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class StructuredItemsViewHandler<TItemsView> where TItemsView : StructuredItemsView
 	{
-		public StructuredItemsViewHandler() : base(StructuredItemsViewMapper)
+		public StructuredItemsViewHandler() : base(StructuredItemsViewMapper, StructuredItemsViewCommandMapper)
 		{
 
 		}
