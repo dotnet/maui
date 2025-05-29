@@ -1,34 +1,30 @@
 using System;
 using Microsoft.Maui.Controls;
 
-namespace Maui.Controls.Sample
-{
-	public class RadioButtonControlPage : NavigationPage
-	{
-		private RadioButtonViewModel _viewModel;
+namespace Maui.Controls.Sample;
 
-		public RadioButtonControlPage()
-		{
-			_viewModel = new RadioButtonViewModel();
-			PushAsync(new RadioButtonControlMainPage(_viewModel));
-		}
+public class RadioButtonControlPage : NavigationPage
+{
+	public RadioButtonControlPage()
+	{
+		PushAsync(new RadioButtonControlMainPage());
+	}
+}
+
+public partial class RadioButtonControlMainPage : ContentPage
+{
+	private RadioButtonViewModel _viewModel;
+
+	public RadioButtonControlMainPage()
+	{
+		InitializeComponent();
+		_viewModel = new RadioButtonViewModel();
+		BindingContext = _viewModel;
 	}
 
-	public partial class RadioButtonControlMainPage : ContentPage
+	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		private RadioButtonViewModel _viewModel;
-
-		public RadioButtonControlMainPage(RadioButtonViewModel viewModel)
-		{
-			InitializeComponent();
-			_viewModel = viewModel;
-			BindingContext = _viewModel;
-		}
-
-		private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
-		{
-			BindingContext = _viewModel = new RadioButtonViewModel();
-			await Navigation.PushAsync(new RadioButtonOptionsPage(_viewModel));
-		}
+		BindingContext = _viewModel = new RadioButtonViewModel();
+		await Navigation.PushAsync(new RadioButtonOptionsPage(_viewModel));
 	}
 }

@@ -3,216 +3,220 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 
-namespace Maui.Controls.Sample
+namespace Maui.Controls.Sample;
+
+public class RadioButtonViewModel : INotifyPropertyChanged
 {
-	public class RadioButtonViewModel : INotifyPropertyChanged
+	private object _content = null;
+	private bool _isChecked = false;
+	private string _groupName = null;
+	private object _value = null;
+	private Color _borderColor = Colors.Transparent;
+	private double _borderWidth = -1d;
+	private double _characterSpacing = 0.0d;
+	private int _cornerRadius = -1;
+	private FontAttributes _fontAttributes = FontAttributes.None;
+	private bool _fontAutoScalingEnabled = true;
+	private string _fontFamily = null;
+	private double _fontSize = 0d;
+	private Color _textColor = Colors.Transparent;
+	private TextTransform _textTransform = TextTransform.Default;
+
+	public event PropertyChangedEventHandler PropertyChanged;
+
+	public RadioButtonViewModel()
 	{
-		private string _content = "Radio Button Content";
-		private bool _isChecked = false;
-		private string _groupName = "Group1";
-		private object _value = "Value1";
-		private Color _borderColor = Color.FromRgba(1, 122, 255, 255);
-		private double _borderWidth = 1;
-		private double _characterSpacing = 0;
-		private int _cornerRadius = 0;
-		private FontAttributes _fontAttributes = FontAttributes.None;
-		private bool _fontAutoScalingEnabled = true;
-		private string _fontFamily = null;
-		private double _fontSize = 14;
-		private Color _textColor = Colors.Black;
-		private TextTransform _textTransform = TextTransform.None;
+		Content = "RadioButton";
+		GroupName = "Group1";
+		Value = "DefaultValue";
+		FontSize = 14d;
+		TextColor = Colors.Black;
+	}
 
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		public RadioButtonViewModel()
+	public object Content
+	{
+		get => _content;
+		set
 		{
-		}
-
-		public string Content
-		{
-			get => _content;
-			set
+			if (_content != value)
 			{
-				if (_content != value)
-				{
-					_content = value;
-					OnPropertyChanged();
-				}
+				_content = value;
+				OnPropertyChanged();
 			}
 		}
+	}
 
-		public bool IsChecked
+	public bool IsChecked
+	{
+		get => _isChecked;
+		set
 		{
-			get => _isChecked;
-			set
+			if (_isChecked != value)
 			{
-				if (_isChecked != value)
-				{
-					_isChecked = value;
-					OnPropertyChanged();
-				}
+				_isChecked = value;
+				OnPropertyChanged();
 			}
 		}
+	}
 
-		public string GroupName
+	public string GroupName
+	{
+		get => _groupName;
+		set
 		{
-			get => _groupName;
-			set
+			if (_groupName != value)
 			{
-				if (_groupName != value)
-				{
-					_groupName = value;
-					OnPropertyChanged();
-				}
+				_groupName = value;
+				OnPropertyChanged();
 			}
 		}
+	}
 
-		public object Value
+	public object Value
+	{
+		get => _value;
+		set
 		{
-			get => _value;
-			set
+			if (_value != value)
 			{
-				if (_value != value)
-				{
-					_value = value;
-					OnPropertyChanged();
-				}
+				_value = value;
+				OnPropertyChanged();
 			}
 		}
+	}
 
-		public Color BorderColor
+	public Color BorderColor
+	{
+		get => _borderColor;
+		set
 		{
-			get => _borderColor;
-			set
+			if (_borderColor != value)
 			{
-				if (_borderColor != value)
-				{
-					_borderColor = value;
-					OnPropertyChanged();
-				}
+				_borderColor = value;
+				OnPropertyChanged();
 			}
 		}
+	}
 
-		public double BorderWidth
+	public double BorderWidth
+	{
+		get => _borderWidth;
+		set
 		{
-			get => _borderWidth;
-			set
+			if (_borderWidth != value)
 			{
-				if (_borderWidth != value)
-				{
-					_borderWidth = value;
-					OnPropertyChanged();
-				}
+				_borderWidth = value;
+				OnPropertyChanged();
 			}
 		}
+	}
 
-		public double CharacterSpacing
+	public double CharacterSpacing
+	{
+		get => _characterSpacing;
+		set
 		{
-			get => _characterSpacing;
-			set
+			if (_characterSpacing != value)
 			{
-				if (_characterSpacing != value)
-				{
-					_characterSpacing = value;
-					OnPropertyChanged();
-				}
+				_characterSpacing = value;
+				OnPropertyChanged();
 			}
 		}
+	}
 
-		public int CornerRadius
+	public int CornerRadius
+	{
+		get => _cornerRadius;
+		set
 		{
-			get => _cornerRadius;
-			set
+			if (_cornerRadius != value)
 			{
-				if (_cornerRadius != value)
-				{
-					_cornerRadius = value;
-					OnPropertyChanged();
-				}
+				_cornerRadius = value;
+				OnPropertyChanged();
 			}
 		}
+	}
 
-		public FontAttributes FontAttributes
+	public FontAttributes FontAttributes
+	{
+		get => _fontAttributes;
+		set
 		{
-			get => _fontAttributes;
-			set
+			if (_fontAttributes != value)
 			{
-				if (_fontAttributes != value)
-				{
-					_fontAttributes = value;
-					OnPropertyChanged();
-				}
+				_fontAttributes = value;
+				OnPropertyChanged();
 			}
 		}
+	}
 
-		public bool FontAutoScalingEnabled
+	public bool FontAutoScalingEnabled
+	{
+		get => _fontAutoScalingEnabled;
+		set
 		{
-			get => _fontAutoScalingEnabled;
-			set
+			if (_fontAutoScalingEnabled != value)
 			{
-				if (_fontAutoScalingEnabled != value)
-				{
-					_fontAutoScalingEnabled = value;
-					OnPropertyChanged();
-				}
+				_fontAutoScalingEnabled = value;
+				OnPropertyChanged();
 			}
 		}
+	}
 
-		public string FontFamily
+	public string FontFamily
+	{
+		get => _fontFamily;
+		set
 		{
-			get => _fontFamily;
-			set
+			if (_fontFamily != value)
 			{
-				if (_fontFamily != value)
-				{
-					_fontFamily = value;
-					OnPropertyChanged();
-				}
+				_fontFamily = value;
+				OnPropertyChanged();
 			}
 		}
+	}
 
-		public double FontSize
+	public double FontSize
+	{
+		get => _fontSize;
+		set
 		{
-			get => _fontSize;
-			set
+			if (_fontSize != value)
 			{
-				if (_fontSize != value)
-				{
-					_fontSize = value;
-					OnPropertyChanged();
-				}
+				_fontSize = value;
+				OnPropertyChanged();
 			}
 		}
+	}
 
-		public Color TextColor
+	public Color TextColor
+	{
+		get => _textColor;
+		set
 		{
-			get => _textColor;
-			set
+			if (_textColor != value)
 			{
-				if (_textColor != value)
-				{
-					_textColor = value;
-					OnPropertyChanged();
-				}
+				_textColor = value;
+				OnPropertyChanged();
 			}
 		}
+	}
 
-		public TextTransform TextTransform
+	public TextTransform TextTransform
+	{
+		get => _textTransform;
+		set
 		{
-			get => _textTransform;
-			set
+			if (_textTransform != value)
 			{
-				if (_textTransform != value)
-				{
-					_textTransform = value;
-					OnPropertyChanged();
-				}
+				_textTransform = value;
+				OnPropertyChanged();
 			}
 		}
+	}
 
-		protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-		{
-			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-		}
+	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+	{
+		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 	}
 }

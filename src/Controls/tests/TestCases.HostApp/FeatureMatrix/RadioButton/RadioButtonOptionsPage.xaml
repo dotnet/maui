@@ -21,13 +21,18 @@
                             Text="Content:"
                             FontSize="15"
                             VerticalOptions="Center"/>
-                     <Entry Grid.Row="0"
-                            Grid.Column="1"
-                            x:Name="ContentEntry"
-                            AutomationId="ContentEntry"
-                            Text="{Binding Content}"
-                            HorizontalOptions="Start"
-                            WidthRequest="150"/>
+                     <StackLayout Grid.Row="0"
+                                  Grid.Column="1"
+                                  Orientation="Horizontal">
+                            <Entry x:Name="ContentEntry"
+                                   AutomationId="ContentEntry"
+                                   TextChanged="OnContentChanged"
+                                   HorizontalOptions="Start"
+                                   WidthRequest="150"/>
+                            <Button Text="View Button"
+                                    Clicked="ViewContentButton_Clicked"
+                                    AutomationId="ViewContentButton"/>
+                     </StackLayout>
 
                      <!-- IsChecked -->
                      <Label Grid.Row="1"
@@ -213,10 +218,10 @@
                             Grid.Column="0"
                             Text="Font Family:"
                             FontSize="15"
-                            VerticalOptions="Center"/>
+                            VerticalOptions="Start"/>
                      <StackLayout Grid.Row="10"
                                   Grid.Column="1"
-                                  Orientation="Horizontal">
+                                  Orientation="Vertical">
                             <RadioButton AutomationId="FontFamilyDefault"
                                          GroupName="FontFamily"
                                          Content="Default"
