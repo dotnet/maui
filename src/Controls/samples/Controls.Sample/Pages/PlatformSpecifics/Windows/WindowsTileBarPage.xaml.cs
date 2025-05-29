@@ -24,7 +24,9 @@ namespace Maui.Controls.Sample.Pages
 					xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 					Title="{Binding Title}"
 					Subtitle="{Binding Subtitle}"
-					IsVisible="{Binding ShowTitleBar}"/>
+					IsVisible="{Binding ShowTitleBar}"
+					CanMinimize="{Binding CanMinimize}"
+					CanMaximize="{Binding CanMaximize}"/>
 				""";
 
 			_customTitleBar = new TitleBar().LoadFromXaml(titleBarXaml);

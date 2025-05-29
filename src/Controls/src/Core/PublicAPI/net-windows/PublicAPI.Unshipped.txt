@@ -348,3 +348,9 @@ const Microsoft.Maui.Controls.BrushTypeConverter.Rgba = "rgba" -> string!
 Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.GradientBrushParser(Microsoft.Maui.Graphics.Converters.ColorTypeConverter? colorConverter = null) -> void
 Microsoft.Maui.Controls.BrushTypeConverter.GradientBrushParser.Parse(string? css) -> Microsoft.Maui.Controls.GradientBrush?
 static Microsoft.Maui.Controls.Shapes.PathFigureCollectionConverter.ParseStringToPathFigureCollection(Microsoft.Maui.Controls.Shapes.PathFigureCollection! pathFigureCollection, string? pathString) -> void
+Microsoft.Maui.Controls.TitleBar.CanMinimize.get -> bool
+Microsoft.Maui.Controls.TitleBar.CanMinimize.set -> void
+static readonly Microsoft.Maui.Controls.TitleBar.CanMinimizeProperty -> Microsoft.Maui.Controls.BindableProperty!
+Microsoft.Maui.Controls.TitleBar.CanMaximize.get -> bool
+Microsoft.Maui.Controls.TitleBar.CanMaximize.set -> void
+static readonly Microsoft.Maui.Controls.TitleBar.CanMaximizeProperty -> Microsoft.Maui.Controls.BindableProperty!
