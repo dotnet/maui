@@ -43,9 +43,6 @@ namespace Microsoft.Maui.Platform
 
 			var url = GetCurrentUrl();
 
-			if (url == $"file://{NSBundle.MainBundle.BundlePath}/")
-				return;
-
 			virtualView.Navigated(_lastEvent, url, WebNavigationResult.Success);
 
 			// ProcessNavigatedAsync calls UpdateCanGoBackForward

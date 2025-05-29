@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Microsoft.Maui.Resizetizer.Resources;
 
 namespace Microsoft.Maui.Resizetizer
 {
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.Resizetizer
 				}
 				catch (Exception ex)
 				{
-					LogCodedError("MAUI0000", $"There was an exception processing the image '{img.Filename}': {ex}");
+					LogCodedError(ErrorCodes.ImageFilenameProcessingCode, ErrorMessages.ImageProcessing, string.Format(ErrorMessages.ImageFilenameProcessingError, img.Filename, ex.ToString()));
 				}
 			});
 

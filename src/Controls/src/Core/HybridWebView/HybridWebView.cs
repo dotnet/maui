@@ -66,6 +66,26 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public event EventHandler<HybridWebViewRawMessageReceivedEventArgs>? RawMessageReceived;
 
+		bool IHybridWebView.WebResourceRequested(WebResourceRequestedEventArgs args)
+		{
+			var platformArgs = new PlatformHybridWebViewWebResourceRequestedEventArgs(args);
+			var e = new HybridWebViewWebResourceRequestedEventArgs(platformArgs);
+			WebResourceRequested?.Invoke(this, e);
+			return e.Handled;
+		}
+
+		/// <summary>
+		/// Raised when a web resource is requested. This event allows the application to intercept the request and provide a
+		/// custom response.
+		/// The event handler can set the <see cref="HybridWebViewWebResourceRequestedEventArgs.Handled"/> property to true
+		/// to indicate that the request has been handled and no further processing is needed. If the event handler does set this
+		/// property to true, it must also call the
+		/// <see cref="HybridWebViewWebResourceRequestedEventArgs.SetResponse(int, string, System.Collections.Generic.IReadOnlyDictionary{string, string}?, System.IO.Stream?)"/>
+		/// or <see cref="HybridWebViewWebResourceRequestedEventArgs.SetResponse(int, string, System.Collections.Generic.IReadOnlyDictionary{string, string}?, System.Threading.Tasks.Task{System.IO.Stream?})"/>
+		/// method to provide a response to the request.
+		/// </summary>
+		public event EventHandler<HybridWebViewWebResourceRequestedEventArgs>? WebResourceRequested;
+
 		/// <summary>
 		/// Sends a raw message to the code running in the web view. Raw messages have no additional processing.
 		/// </summary>

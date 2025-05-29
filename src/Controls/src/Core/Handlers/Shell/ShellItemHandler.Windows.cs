@@ -169,9 +169,15 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				((Shell)VirtualView.Parent).CurrentItem = shellSection;
 			}
-			else if (selectedItem.Data is ShellContent shellContent)
+			else if (selectedItem.Data is ShellContent shellContent && VirtualView.Parent is Shell parentShell)
 			{
-				((Shell)VirtualView.Parent).CurrentItem = shellContent;
+				// We need to invoke ProposeSection for TabBar items navigation for ShellContent
+				var currentItem = parentShell.CurrentItem?.CurrentItem;
+				if (currentItem?.Title != shellContent.Title && currentItem != shellContent.Parent)
+				{
+					(parentShell.CurrentItem as IShellItemController)?.ProposeSection(shellContent);
+				}
+				parentShell.CurrentItem = shellContent;
 			}
 		}
 

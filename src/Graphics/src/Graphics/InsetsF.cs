@@ -3,6 +3,9 @@ using System.Globalization;
 
 namespace Microsoft.Maui.Graphics
 {
+	/// <summary>
+	/// Represents inset distances from the four edges of a rectangle using single-precision floating-point values.
+	/// </summary>
 	public class InsetsF
 	{
 		private float _bottom;
@@ -10,6 +13,13 @@ namespace Microsoft.Maui.Graphics
 		private float _right;
 		private float _top;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="InsetsF"/> class with the specified values.
+		/// </summary>
+		/// <param name="top">The top inset value.</param>
+		/// <param name="left">The left inset value.</param>
+		/// <param name="bottom">The bottom inset value.</param>
+		/// <param name="right">The right inset value.</param>
 		public InsetsF(float top, float left, float bottom, float right)
 		{
 			_top = top;
@@ -18,6 +28,10 @@ namespace Microsoft.Maui.Graphics
 			_right = right;
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="InsetsF"/> class by copying the values from another instance.
+		/// </summary>
+		/// <param name="insets">The insets to copy values from.</param>
 		public InsetsF(InsetsF insets) : this(insets.Top, insets.Left, insets.Bottom, insets.Right)
 		{
 		}
