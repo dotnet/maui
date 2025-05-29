@@ -1,11 +1,11 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 29999, "RadioButton TextTransform Property Does Not Apply on Android and Windows Platforms", PlatformAffected.All)]
-public class Issue29999 : ContentPage
+[Issue(IssueTracker.Github, 29729, "RadioButton TextTransform Property Does Not Apply on Android and Windows Platforms", PlatformAffected.All)]
+public class Issue29729 : ContentPage
 {
 	RadioButton radioButton;
 
-    public Issue29999()
+    public Issue29729()
     {
         radioButton = new RadioButton
 		{
