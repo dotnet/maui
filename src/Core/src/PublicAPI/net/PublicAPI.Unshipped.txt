@@ -66,6 +66,16 @@ Microsoft.Maui.IWindow.Content.get -> Microsoft.Maui.IView?
 Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.WebProcessTerminatedEventArgs
 Microsoft.Maui.WebProcessTerminatedEventArgs.WebProcessTerminatedEventArgs() -> void
+Microsoft.Maui.WebViewInitializingEventArgs
+Microsoft.Maui.WebViewInitializingEventArgs.AdditionalSettings.get -> System.Action<object!>?
+Microsoft.Maui.WebViewInitializingEventArgs.AdditionalSettings.set -> void
+Microsoft.Maui.WebViewInitializingEventArgs.WebViewInitializingEventArgs() -> void
+Microsoft.Maui.WebViewInitializedEventArgs
+Microsoft.Maui.WebViewInitializedEventArgs.WebView.get -> object!
+Microsoft.Maui.WebViewInitializedEventArgs.WebView.set -> void
+Microsoft.Maui.WebViewInitializedEventArgs.WebViewInitializedEventArgs(object! webView) -> void
+Microsoft.Maui.IHybridWebView.InitializingWebView() -> object?
+Microsoft.Maui.IHybridWebView.InitializedWebView(object! webView) -> void
 override Microsoft.Maui.Handlers.HybridWebViewHandler.CreatePlatformView() -> object!
 static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler, System.Type! type) -> T
 static Microsoft.Maui.ElementHandlerExtensions.GetRequiredService<T>(this Microsoft.Maui.IElementHandler! handler) -> T

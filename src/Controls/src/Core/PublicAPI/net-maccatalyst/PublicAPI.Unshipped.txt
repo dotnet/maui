@@ -347,6 +347,10 @@ Microsoft.Maui.Controls.Window.TitleBar.get -> Microsoft.Maui.ITitleBar?
 Microsoft.Maui.Controls.Window.TitleBar.set -> void
 Microsoft.Maui.Controls.Xaml.RequireServiceAttribute
 override Microsoft.Maui.Controls.ContentPage.LayoutChildren(double x, double y, double width, double height) -> void
+Microsoft.Maui.Controls.HybridWebView.WebViewInitializing -> System.EventHandler<Microsoft.Maui.WebViewInitializingEventArgs!>?
+Microsoft.Maui.Controls.HybridWebView.WebViewInitialized -> System.EventHandler<Microsoft.Maui.WebViewInitializedEventArgs!>?
+virtual Microsoft.Maui.Controls.HybridWebView.OnWebViewInitializing(Microsoft.Maui.WebViewInitializingEventArgs! e) -> void
+virtual Microsoft.Maui.Controls.HybridWebView.OnWebViewInitialized(Microsoft.Maui.WebViewInitializedEventArgs! e) -> void
 override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.IsHorizontal.get -> bool
 override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.UpdateItemsSource() -> void
 override Microsoft.Maui.Controls.Handlers.Items2.CarouselViewController2.UpdateVisibility() -> void

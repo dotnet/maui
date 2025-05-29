@@ -38,6 +38,16 @@ Microsoft.Maui.HybridWebViewRawMessage
 Microsoft.Maui.HybridWebViewRawMessage.HybridWebViewRawMessage() -> void
 Microsoft.Maui.HybridWebViewRawMessage.Message.get -> string?
 Microsoft.Maui.HybridWebViewRawMessage.Message.set -> void
+Microsoft.Maui.WebViewInitializingEventArgs
+Microsoft.Maui.WebViewInitializingEventArgs.AdditionalSettings.get -> System.Action<Android.Webkit.WebSettings!>?
+Microsoft.Maui.WebViewInitializingEventArgs.AdditionalSettings.set -> void
+Microsoft.Maui.WebViewInitializingEventArgs.WebViewInitializingEventArgs() -> void
+Microsoft.Maui.WebViewInitializedEventArgs
+Microsoft.Maui.WebViewInitializedEventArgs.WebView.get -> Microsoft.Maui.Platform.MauiHybridWebView!
+Microsoft.Maui.WebViewInitializedEventArgs.WebView.set -> void
+Microsoft.Maui.WebViewInitializedEventArgs.WebViewInitializedEventArgs(object! webView) -> void
+Microsoft.Maui.IHybridWebView.InitializingWebView() -> object?
+Microsoft.Maui.IHybridWebView.InitializedWebView(object! webView) -> void
 Microsoft.Maui.IApplication.ActivateWindow(Microsoft.Maui.IWindow! window) -> void
 *REMOVED*Microsoft.Maui.IDatePicker.Date.get -> System.DateTime
 *REMOVED*Microsoft.Maui.IDatePicker.MaximumDate.get -> System.DateTime

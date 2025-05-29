@@ -27,6 +27,16 @@ Microsoft.Maui.Hosting.MauiHostEnvironment.ContentRootPath.set -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment.EnvironmentName.get -> string!
 Microsoft.Maui.Hosting.MauiHostEnvironment.EnvironmentName.set -> void
 Microsoft.Maui.Hosting.MauiHostEnvironment.MauiHostEnvironment() -> void
+Microsoft.Maui.WebViewInitializingEventArgs
+Microsoft.Maui.WebViewInitializingEventArgs.AdditionalSettings.get -> System.Action<WebKit.WKWebViewConfiguration!>?
+Microsoft.Maui.WebViewInitializingEventArgs.AdditionalSettings.set -> void
+Microsoft.Maui.WebViewInitializingEventArgs.WebViewInitializingEventArgs() -> void
+Microsoft.Maui.WebViewInitializedEventArgs
+Microsoft.Maui.WebViewInitializedEventArgs.WebView.get -> WebKit.WKWebView!
+Microsoft.Maui.WebViewInitializedEventArgs.WebView.set -> void
+Microsoft.Maui.WebViewInitializedEventArgs.WebViewInitializedEventArgs(object! webView) -> void
+Microsoft.Maui.IHybridWebView.InitializingWebView() -> object?
+Microsoft.Maui.IHybridWebView.InitializedWebView(object! webView) -> void
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.HybridWebViewInvokeJavaScriptRequest(string! methodName, System.Text.Json.Serialization.Metadata.JsonTypeInfo? returnTypeJsonTypeInfo, object?[]? paramValues, System.Text.Json.Serialization.Metadata.JsonTypeInfo?[]? paramJsonTypeInfos) -> void
 Microsoft.Maui.HybridWebViewInvokeJavaScriptRequest.MethodName.get -> string!
