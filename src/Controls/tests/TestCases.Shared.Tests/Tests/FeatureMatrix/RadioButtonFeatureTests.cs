@@ -19,6 +19,7 @@ public class RadioButtonFeatureTests : UITest
 		App.NavigateToGallery(RadioButtonFeatureMatrix);
 	}
 
+#if TEST_FAILS_ON_WINDOWS // This test fails on Windows because the RadioButton control does not update the BorderColor at runtime. Issue Link - https://github.com/dotnet/maui/issues/15806
 	[Test]
 	[Category(UITestCategories.RadioButton)]
 	public void RadioButton_SetTextColorAndBorderColor_VerifyVisualState()
@@ -38,6 +39,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControl");
 		// VerifyScreenshot();
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.RadioButton)]
@@ -111,7 +113,7 @@ public class RadioButtonFeatureTests : UITest
 		// VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_ANDROID // Unsupported platforms will fallback to a string representation of the View object.
+#if TEST_FAILS_ON_ANDROID // On Android, the View object is not supported, so it falls back to a string representation of the object. https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/radiobutton?view=net-maui-9.0#create-radiobuttons
 	[Test]
 	[Category(UITestCategories.RadioButton)]
 	public void RadioButton_SetContentWithView()
