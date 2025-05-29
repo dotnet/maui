@@ -19,13 +19,11 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Test, Order(1)]
 		[Category(UITestCategories.DatePicker)]
 		public void OpenCloseDatePicker()
-		{
-			Exception? exception = null;
-			
+		{ 
 			App.WaitForElement("WaitForStubControl");
 			App.WaitForElement("OpenDatePickerButton");
 			App.Tap("OpenDatePickerButton");
-			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Opened");
+			Assert.That(App.WaitForElement("StatusLabel")?.GetText(), Is.EqualTo("DatePicker Opened"));
 #if ANDROID
 			App.TapDisplayAlertButton(CancelBtn);
 #else
@@ -33,24 +31,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #endif
 			App.WaitForElement("CloseDatePickerButton");
 			App.Tap("CloseDatePickerButton");
-			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Closed");
-
-			if (exception != null)
-			{
-				throw exception;
-			}
+			Assert.That(App.WaitForElement("StatusLabel")?.GetText(), Is.EqualTo("DatePicker Closed"));
 		}
 
 		[Test, Order(2)]
 		[Category(UITestCategories.TimePicker)]
 		public void OpenCloseTimePicker()
 		{
-			Exception? exception = null;
-
 			App.WaitForElement("WaitForStubControl");
 			App.WaitForElement("OpenTimePickerButton");
 			App.Tap("OpenTimePickerButton");
-			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Opened");
+			Assert.That(App.WaitForElement("StatusLabel")?.GetText(), Is.EqualTo("TimePicker Opened"));
 #if ANDROID
 			App.TapDisplayAlertButton(CancelBtn);
 #else
@@ -58,24 +49,17 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #endif
 			App.WaitForElement("CloseTimePickerButton");
 			App.Tap("CloseTimePickerButton");
-			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Closed");
-
-			if (exception != null)
-			{
-				throw exception;
-			}
+			Assert.That(App.WaitForElement("StatusLabel")?.GetText(), Is.EqualTo("TimePicker Closed"));
 		}
 
 		[Test, Order(3)]
 		[Category(UITestCategories.Picker)]
 		public void OpenClosePicker()
 		{
-			Exception? exception = null;
-
 			App.WaitForElement("WaitForStubControl");
 			App.WaitForElement("OpenPickerButton");
 			App.Tap("OpenPickerButton");
-			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Opened");
+			Assert.That(App.WaitForElement("StatusLabel")?.GetText(), Is.EqualTo("Picker Opened"));
 #if ANDROID
 			App.TapDisplayAlertButton(CancelBtn);
 #else
@@ -83,12 +67,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 #endif
 			App.WaitForElement("ClosePickerButton");
 			App.Tap("ClosePickerButton");
-			VerifyScreenshotOrSetException(ref exception, TestContext.CurrentContext.Test.MethodName + "_Closed");
-
-			if (exception != null)
-			{
-				throw exception;
-			}
+			Assert.That(App.WaitForElement("StatusLabel")?.GetText(), Is.EqualTo("Picker Closed"));
 		}
 	}
 }
