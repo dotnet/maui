@@ -64,9 +64,9 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 
-				if (strValue.StartsWith(Rgb, StringComparison.InvariantCulture) 
-					|| strValue.StartsWith(Rgba, StringComparison.InvariantCulture) 
-					|| strValue.StartsWith(Hsl, StringComparison.InvariantCulture) 
+				if (strValue.StartsWith(Rgb, StringComparison.InvariantCulture)
+					|| strValue.StartsWith(Rgba, StringComparison.InvariantCulture)
+					|| strValue.StartsWith(Hsl, StringComparison.InvariantCulture)
 					|| strValue.StartsWith(Hsla, StringComparison.InvariantCulture))
 				{
 					var color = (Color?)_colorTypeConverter.ConvertFromInvariantString(strValue);
