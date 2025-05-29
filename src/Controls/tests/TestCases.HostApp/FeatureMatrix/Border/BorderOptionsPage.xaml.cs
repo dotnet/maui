@@ -46,17 +46,20 @@ public partial class OptionsPage : ContentPage
 			_viewModel.Stroke = button.BackgroundColor;
 		}
 	}
-	void ShapeChanged(object sender, CheckedChangedEventArgs e)
+	private void ShapeChanged(object sender, CheckedChangedEventArgs e)
 	{
-		if (e.Value && sender is RadioButton rb)
+		if (!e.Value || !(sender is RadioButton rb) || !(BindingContext is BorderViewModel vm))
+			return;
+
+		vm.StrokeShape = rb.Content.ToString() switch
 		{
-			_viewModel.StrokeShape = rb.Content.ToString() switch
-			{
-				"Rectangle" => new Rectangle(),
-				"RoundRectangle" => new RoundRectangle { CornerRadius = 10 },
-				_ => new RoundRectangle()
-			};
-		}
+			"Rectangle" => vm.CreateRectangleShape(),
+			"RoundRectangle" => vm.CreateRoundRectangleShape(),
+			"Ellipse" => vm.CreateEllipseShape(),
+			"Path" => vm.CreatePathShape(),
+			"Polygon" => vm.CreatePolygonShape(),
+			_ => new Rectangle()
+		};
 	}
 	private void OnDashOffsetTextChanged(object sender, TextChangedEventArgs e)
 	{
