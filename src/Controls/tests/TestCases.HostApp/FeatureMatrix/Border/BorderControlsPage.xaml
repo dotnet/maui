@@ -20,8 +20,8 @@
             Padding="{Binding Padding}"
             Shadow="{Binding Shadow}"
             Background="LightGray"
-            MaximumHeightRequest="100"
-            MaximumWidthRequest="200"
+            MaximumHeightRequest="200"
+            MaximumWidthRequest="300"
             Content="{Binding ContentView}"
             AutomationId="BorderControl">
     </Border>
