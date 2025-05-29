@@ -6,20 +6,20 @@ using UITest.Core;
 namespace Microsoft.Maui.TestCases.Tests.Issues;
 public class Issue29492 : _IssuesUITest
 {
-    public Issue29492(TestDevice device)
-        : base(device)
-    {
-    }
+	public Issue29492(TestDevice device)
+		: base(device)
+	{
+	}
 
-    public override string Issue => "CharacterSpacing should be applied";
+	public override string Issue => "CharacterSpacing should be applied";
 
-    [Test]
-    [Category(UITestCategories.Shell)]
-    public void CharacterSpacingShouldApply()
-    {
-        App.WaitForElement("Entertext");
-        App.Tap("Entertext");
-        VerifyScreenshot();
-    }
+	[Test]
+	[Category(UITestCategories.Shell)]
+	public void CharacterSpacingShouldApply()
+	{
+		App.WaitForElement("Entertext");
+		App.Tap("Entertext");
+		VerifyScreenshot();
+	}
 }
 #endif
