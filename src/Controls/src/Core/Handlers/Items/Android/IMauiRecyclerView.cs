@@ -23,7 +23,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public void UpdateLayoutManager();
 
-		public void UpdateItemsLayoutProperties(object args);
+		//TODO Make this public in .NET10
+		internal void UpdateItemsLayoutProperties(object args);
 
 		public void UpdateAdapter();
 

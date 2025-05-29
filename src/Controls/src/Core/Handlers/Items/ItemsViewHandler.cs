@@ -18,7 +18,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		}
 
-		public ItemsViewHandler(PropertyMapper mapper = null, CommandMapper commandMapper = null) : base(mapper ?? ItemsViewMapper,commandMapper)
+		//TODO Make this public in .NET10
+		internal ItemsViewHandler(PropertyMapper mapper = null, CommandMapper commandMapper = null) : base(mapper ?? ItemsViewMapper,commandMapper)
 		{
 
 		}
