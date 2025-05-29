@@ -221,6 +221,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			handler.UpdateLoop();
 		}
 
+		//TODO Make this public in .NET10
+		internal static void MapItemsLayoutPropertyChanged(CarouselViewHandler handler, CarouselView view, object args)
+		{
+
+		}
+
 		internal bool InitialPositionSet { get; private set; }
 
 

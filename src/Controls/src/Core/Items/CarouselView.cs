@@ -186,8 +186,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="ItemsLayout"/>.</summary>
 		public static readonly BindableProperty ItemsLayoutProperty =
-			BindableProperty.Create(nameof(ItemsLayout), typeof(LinearItemsLayout), typeof(ItemsView),
-				null, defaultValueCreator: (b) => LinearItemsLayout.CreateCarouselHorizontalDefault());
+			BindableProperty.Create(nameof(ItemsLayout), typeof(LinearItemsLayout), typeof(CarouselView),
+				defaultValueCreator: CreateDefaultItemsLayout, propertyChanged: OnItemsLayoutPropertyChanged);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='ItemsLayout']/Docs/*" />
 		[System.ComponentModel.TypeConverter(typeof(CarouselLayoutTypeConverter))]
@@ -195,6 +195,51 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (LinearItemsLayout)GetValue(ItemsLayoutProperty);
 			set => SetValue(ItemsLayoutProperty, value);
+		}
+
+		static LinearItemsLayout CreateDefaultItemsLayout(BindableObject bindable)
+		{
+			var layout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal)
+			{
+				SnapPointsType = SnapPointsType.MandatorySingle,
+				SnapPointsAlignment = SnapPointsAlignment.Center
+			};
+
+			if (layout is BindableObject bo && bindable is CarouselView carousel)
+			{
+				SetInheritedBindingContext(bo, carousel.BindingContext);
+				bo.PropertyChanged += carousel.OnItemsLayoutPropertyChanged;
+			}
+
+			return layout;
+		}
+
+		static void OnItemsLayoutPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is not CarouselView carousel)
+				return;
+
+			if (oldValue is BindableObject oldBo)
+			{
+				SetInheritedBindingContext(oldBo, null);
+				oldBo.PropertyChanged -= carousel.OnItemsLayoutPropertyChanged;
+			}
+
+			if (newValue is BindableObject newBo)
+			{
+				SetInheritedBindingContext(newBo, carousel.BindingContext);
+				newBo.PropertyChanged += carousel.OnItemsLayoutPropertyChanged;
+			}
+		}
+
+		void OnItemsLayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == nameof(ItemsLayout.ItemSpacing) ||
+				e.PropertyName == nameof(ItemsLayout.SnapPointsAlignment) ||
+				e.PropertyName == nameof(ItemsLayout.SnapPointsType))
+			{
+				Handler?.Invoke(nameof(Controls.CarouselView.ItemsLayout.PropertyChanged), e);
+			}
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='IndicatorView']/Docs/*" />
