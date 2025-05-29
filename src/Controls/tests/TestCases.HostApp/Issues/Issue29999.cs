@@ -10,6 +10,7 @@ public class Issue29729 : ContentPage
         radioButton = new RadioButton
 		{
 			Content = "HelloWorld",
+			TextTransform= TextTransform.Uppercase,
 			AutomationId = "radioButton"
         };
 
