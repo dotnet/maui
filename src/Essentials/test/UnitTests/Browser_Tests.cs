@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.ApplicationModel;
 using Xunit;
 

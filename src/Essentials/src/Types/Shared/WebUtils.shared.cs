@@ -1,12 +1,28 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Microsoft.Maui.ApplicationModel
+namespace Microsoft.Maui
 {
 	static class WebUtils
 	{
-		internal static IDictionary<string, string> ParseQueryString(Uri uri)
+#if !NETSTANDARD
+		internal static string RemovePossibleQueryString(string? url)
+		{
+			if (string.IsNullOrEmpty(url))
+			{
+				return string.Empty;
+			}
+
+			var indexOfQueryString = url.IndexOf('?', StringComparison.Ordinal);
+			return (indexOfQueryString == -1)
+				? url
+				: url.Substring(0, indexOfQueryString);
+		}
+#endif
+
+		internal static Dictionary<string, string> ParseQueryString(Uri uri, bool includeFragment = true)
 		{
 			var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
 
@@ -17,9 +33,12 @@ namespace Microsoft.Maui.ApplicationModel
 			if (!string.IsNullOrEmpty(uri.Query))
 				UnpackParameters(uri.Query.AsSpan(1), parameters);
 
-			// Note: Uri.Fragment starts with a '#'
-			if (!string.IsNullOrEmpty(uri.Fragment))
-				UnpackParameters(uri.Fragment.AsSpan(1), parameters);
+			if (includeFragment)
+			{
+				// Note: Uri.Fragment starts with a '#'
+				if (!string.IsNullOrEmpty(uri.Fragment))
+					UnpackParameters(uri.Fragment.AsSpan(1), parameters);
+			}
 
 			return parameters;
 		}
@@ -29,7 +48,7 @@ namespace Microsoft.Maui.ApplicationModel
 		//
 		// 1. avoids the IEnumerable overhead that isn't needed (the ASP.NET logic was clearly designed that way to offer a public API whereas we don't need that)
 		// 2. avoids the use of unsafe code
-		static void UnpackParameters(ReadOnlySpan<char> query, Dictionary<string, string> parameters)
+		internal static void UnpackParameters(ReadOnlySpan<char> query, Dictionary<string, string> parameters)
 		{
 			while (!query.IsEmpty)
 			{
