@@ -31,6 +31,7 @@ public class Issue23377 : TestContentPage
 			Margin = new Thickness(100),
 			ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Horizontal),
 			HeightRequest = 200,
+			HorizontalScrollBarVisibility = ScrollBarVisibility.Never
 		};
 
 		collectionView.ItemTemplate = new DataTemplate(() =>
