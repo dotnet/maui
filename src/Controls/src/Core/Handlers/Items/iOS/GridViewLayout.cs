@@ -16,8 +16,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			get
 			{
-				_itemsLayout.TryGetTarget(out var itemsView);
-				return itemsView;
+				_itemsLayout.TryGetTarget(out var itemsLayout);
+				return itemsLayout;
 			}
 			set
 			{
