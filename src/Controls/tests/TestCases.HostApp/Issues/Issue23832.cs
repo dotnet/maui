@@ -17,39 +17,24 @@ public class Issue23832 : ContentPage
 
         Label _labelResize = new Label
         {
-            AutomationId = "ResizeLabel",
-            Text = "Resize image"
+            AutomationId = "DrawableLabel",
+            Text = "The test passes if the image is displayed correctly without being upside down.",
         };
 
-        GraphicsView _graphicsViewResize = new GraphicsView
+        GraphicsView _graphicsView = new GraphicsView
         {
-            Drawable = new Issue23832_ResizeDrawable(),
+            Drawable = new Issue23832_Drawable(),
             HeightRequest = 300,
             WidthRequest = 400,
         };
 
-        Label _labelDownsize = new Label
-        {
-            Text = "Resize image"
-        };
-
-        GraphicsView _graphicsViewDownsize = new GraphicsView
-        {
-            Drawable = new Issue23832_ResizeDrawable(),
-            HeightRequest = 300,
-            WidthRequest = 400,
-        };
-
+        _stackLayout.Children.Add(_graphicsView);
         _stackLayout.Children.Add(_labelResize);
-        _stackLayout.Children.Add(_graphicsViewResize);
-        _stackLayout.Children.Add(_labelDownsize);
-        _stackLayout.Children.Add(_graphicsViewDownsize);
         Content = _stackLayout;
     }
-
 }
 
-internal class Issue23832_ResizeDrawable : IDrawable
+internal class Issue23832_Drawable : IDrawable
 {
     public void Draw(ICanvas canvas, RectF dirtyRect)
     {
@@ -62,27 +47,7 @@ internal class Issue23832_ResizeDrawable : IDrawable
 
         if (image is not null)
         {
-            IImage newImage = image.Resize(400, 300, ResizeMode.Fit, false);
-            canvas.DrawImage(newImage, 0, 0, newImage.Width, newImage.Height);
-        }
-    }
-}
-
-internal class Issue23832_DownsizeDrawable : IDrawable
-{
-    public void Draw(ICanvas canvas, RectF dirtyRect)
-    {
-        IImage image;
-        Assembly assembly = GetType().GetTypeInfo().Assembly;
-        using (Stream stream = assembly.GetManifestResourceStream("Controls.TestCases.HostApp.Resources.Images.img_0111.heic"))
-        {
-            image = PlatformImage.FromStream(stream);
-        }
-
-        if (image is not null)
-        {
-            IImage newImage = image.Downsize(400, 300);
-            canvas.DrawImage(newImage, 0, 0, newImage.Width, newImage.Height);
+            canvas.DrawImage(image, 0, 0, 300, 300);
         }
     }
 }
