@@ -17,14 +17,8 @@ public class Issue29570 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifySearchQueryUpdateOnSecondShellTab()
 	{
-#if WINDOWS
-		// App.Tap("navViewItem");
-		// App.WaitForElement("DogsPage");
-		// App.Tap("DogsPage");
-#else
 		App.WaitForElement("CatsPageUpdateQueryBtn");
 		App.TapTab("DogsPage");
-#endif
 		App.WaitForElement("UpdateQueryButton");
 		App.Tap("UpdateQueryButton");
 		var searchHandlerString = App.GetShellSearchHandler().GetText();
