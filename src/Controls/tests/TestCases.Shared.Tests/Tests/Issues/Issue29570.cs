@@ -1,4 +1,3 @@
-#if TEST_FAILS_ON_WINDOWS // A fix for this issue is already available for Windows platform in an open PR (https://github.com/dotnet/maui/pull/29441), so the test is restricted on Windows for now.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -17,12 +16,17 @@ public class Issue29570 : _IssuesUITest
 	[Category(UITestCategories.Shell)]
 	public void VerifySearchQueryUpdateOnSecondShellTab()
 	{
+#if WINDOWS
+		App.Tap("navViewItem");
+		App.WaitForElement("DogsPage");
+		App.Tap("DogsPage");
+#else
 		App.WaitForElement("CatsPageUpdateQueryBtn");
 		App.TapTab("DogsPage");
+#endif
 		App.WaitForElement("UpdateQueryButton");
 		App.Tap("UpdateQueryButton");
 		var searchHandlerString = App.GetShellSearchHandler().GetText();
 		Assert.That(searchHandlerString, Is.EqualTo("Hound"));
 	}
 }
-#endif
