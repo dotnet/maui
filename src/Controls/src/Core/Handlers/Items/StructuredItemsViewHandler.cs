@@ -33,7 +33,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[StructuredItemsView.ItemSizingStrategyProperty.PropertyName] = MapItemSizingStrategy
 		};
 
-		public static CommandMapper<TItemsView, StructuredItemsViewHandler<TItemsView>> StructuredItemsViewCommandMapper = new(ViewCommandMapper)
+		//TODO Make this public in .NET10
+		internal static CommandMapper<TItemsView, StructuredItemsViewHandler<TItemsView>> StructuredItemsViewCommandMapper = new(ViewCommandMapper)
 		{
 			[nameof(StructuredItemsView.ItemsLayout.PropertyChanged)] = MapItemsLayoutPropertyChanged
 		};
