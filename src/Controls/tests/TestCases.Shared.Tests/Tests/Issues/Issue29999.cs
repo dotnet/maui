@@ -3,11 +3,11 @@ using UITest.Appium;
 using UITest.Core;
 
 namespace Microsoft.Maui.TestCases.Tests.Issues;
-public class Issue29999 : _IssuesUITest
+public class Issue29729 : _IssuesUITest
 {
 	public override string Issue => "RadioButton TextTransform Property Does Not Apply on Android and Windows Platforms";
 
-	public Issue29999(TestDevice device)
+	public Issue29729(TestDevice device)
 	: base(device)
 	{ }
 
