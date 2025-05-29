@@ -1,5 +1,4 @@
-namespace Maui.Controls.Sample
-{
+namespace Maui.Controls.Sample;
 
 public class BorderControlPage : NavigationPage
 {
@@ -70,6 +69,4 @@ public partial class BorderControlMainPage : ContentPage
 		// You may want to set this stack as the content of a Border or the page itself
 		// Border.Content = stack;
 	}
-}
-
 }
