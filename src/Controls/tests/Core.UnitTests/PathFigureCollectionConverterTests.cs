@@ -4,22 +4,57 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	public class PathFigureCollectionTests
+	public class PathFigureCollectionConverterTests
 	{
-		private readonly PathFigureCollectionConverter _pathFigureCollectionConverter = new();
+		private readonly PathFigureCollectionConverter _converter = new();
+
+		[Fact]
+		public void ConvertNullTest()
+		{
+			var result = _converter.ConvertFromInvariantString(null) as PathFigureCollection;
+			var resultPath = _converter.ConvertToInvariantString(result);
+
+			Assert.NotNull(result);
+			Assert.Empty(result);
+
+			Assert.NotNull(resultPath);
+			Assert.Equal("", resultPath);
+		}
 
 		[Theory]
 		[InlineData("M10,100 C100,0 200,200 300,100", "Waveform")]
 		public void ConvertStringToPathFigureCollectionTest(string path, string name)
 		{
 			Console.WriteLine(name);
-			PathFigureCollection result = _pathFigureCollectionConverter.ConvertFromInvariantString(path) as PathFigureCollection;
-			string resultPath = _pathFigureCollectionConverter.ConvertToInvariantString(result);
+			PathFigureCollection result = _converter.ConvertFromInvariantString(path) as PathFigureCollection;
+			string resultPath = _converter.ConvertToInvariantString(result);
 
 			Assert.NotNull(result);
 			Assert.NotNull(resultPath);
 			Assert.Single(result);
 			Assert.Equal(path, resultPath, ignoreCase: true, ignoreWhiteSpaceDifferences: true, ignoreAllWhiteSpace: true);
+		}
+
+		[Theory]
+		[InlineData("l 16", "Move left (relative) with no initial position")]
+		[InlineData("L 16", "Move left with no initial position")]
+		[InlineData("h 16", "Move horizontally (relative) with no initial position")]
+		[InlineData("H 16", "Move horizontally with no initial position")]
+		[InlineData("v 16", "Move vertically (relative) with no initial position")]
+		[InlineData("V 16", "Move vertically with no initial position")]
+		[InlineData("L 100,0", "Line with no initial position")]
+		[InlineData("a 5 3 20 0 1 8 8", "Arc (relative) with no initial position")]
+		[InlineData("A 5 3 20 0 1 8 8", "Arc no initial position")]
+		[InlineData("C 8.4580019,26.747002 10.050002,27.758995 12.013003,27.758995", "Bézier curve with no initial position")]
+		[InlineData("q 8,2 8,8", "Quadratic Bézier curve (relative) with no initial position")]
+		[InlineData("Q 8,2 8,8", "Quadratic Bézier curve with no initial position")]
+		[InlineData("s 7,8 8,4", "Smooth Bézier curve (relative) with no initial position")]
+		[InlineData("S 7,8 8,4", "Smooth Bézier curve with no initial position")]
+		public void InvalidInputTest(string path, string name)
+		{
+			Console.WriteLine(name);
+			var e = Assert.Throws<FormatException>(() => _converter.ConvertFromInvariantString(path));
+			Assert.StartsWith("UnexpectedToken ", e.Message, StringComparison.Ordinal);
 		}
 
 		[Theory]
@@ -34,12 +69,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ComplexPathTest(string path, string name)
 		{
 			Console.WriteLine(name);
-			PathFigureCollection result = _pathFigureCollectionConverter.ConvertFromInvariantString(path) as PathFigureCollection;
+			PathFigureCollection result = _converter.ConvertFromInvariantString(path) as PathFigureCollection;
 
 			Assert.NotNull(result);
 			Assert.NotEmpty(result);
 
-			string resultPath = _pathFigureCollectionConverter.ConvertToInvariantString(result);
+			string resultPath = _converter.ConvertToInvariantString(result);
 
 			Assert.NotNull(resultPath);
 			Assert.Equal(path, resultPath, ignoreCase: true, ignoreWhiteSpaceDifferences: true, ignoreAllWhiteSpace: true);

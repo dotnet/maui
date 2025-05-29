@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
@@ -16,7 +15,6 @@ namespace Microsoft.Maui.Handlers
 	public partial class HybridWebViewHandler : ViewHandler<IHybridWebView, WebView2>
 	{
 		private readonly HybridWebView2Proxy _proxy = new();
-		private readonly Lazy<IBuffer> _404MessageBuffer = new(() => Encoding.UTF8.GetBytes("Resource not found (404)").AsBuffer());
 
 		protected override WebView2 CreatePlatformView()
 		{
@@ -104,30 +102,72 @@ namespace Microsoft.Maui.Handlers
 
 		private async void OnWebResourceRequested(CoreWebView2 sender, CoreWebView2WebResourceRequestedEventArgs eventArgs)
 		{
-			// Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
-			using var deferral = eventArgs.GetDeferral();
+			var url = eventArgs.Request.Uri;
 
-			var (stream, contentType, statusCode, reason) = await GetResponseStreamAsync(eventArgs.Request.Uri);
-			var contentLength = stream?.Size ?? 0;
-			var headers =
-				$"""
-				Content-Type: {contentType}
-				Content-Length: {contentLength}
-				""";
+			var logger = MauiContext?.CreateLogger<HybridWebViewHandler>();
 
-			eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
-				Content: stream,
-				StatusCode: statusCode,
-				ReasonPhrase: reason,
-				Headers: headers);
+			logger?.LogDebug("Intercepting request for {Url}.", url);
 
-			// Notify WebView2 that the deferred (async) operation is complete and we set a response.
-			deferral.Complete();
+			// 1. First check if the app wants to modify or override the request.
+			{
+				// 1.a. First, create the event args
+				var platformArgs = new WebResourceRequestedEventArgs(sender, eventArgs);
+
+				// 1.b. Trigger the event for the app
+				var handled = VirtualView.WebResourceRequested(platformArgs);
+
+				// 1.c. If the app reported that it completed the request, then we do nothing more
+				if (handled)
+				{
+					logger?.LogDebug("Request for {Url} was handled by the user.", url);
+
+					return;
+				}
+			}
+
+			// 2. If this is an app request, then assume the request is for a local resource.
+			if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
+			{
+				logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", url);
+
+				// 2.a. Get a deferral object so that WebView2 knows there's some async stuff going on. We call Complete() at the end of this method.
+				using var deferral = eventArgs.GetDeferral();
+
+				// 2.b. Check if the request is for a local resource
+				var (stream, contentType, statusCode, reason) = await GetResponseStreamAsync(eventArgs.Request.Uri, logger);
+
+				// 2.c. Create the response header
+				var headers = "";
+				if (stream?.Size is { } contentLength && contentLength > 0)
+				{
+					headers += $"Content-Length: {contentLength}{Environment.NewLine}";
+				}
+				if (contentType is not null)
+				{
+					headers += $"Content-Type: {contentType}{Environment.NewLine}";
+				}
+
+				// 2.d. If something was found, return the content
+				eventArgs.Response = sender.Environment!.CreateWebResourceResponse(
+					Content: stream,
+					StatusCode: statusCode,
+					ReasonPhrase: reason,
+					Headers: headers);
+
+				// 2.e. Notify WebView2 that the deferred (async) operation is complete and we set a response.
+				deferral.Complete();
+			}
+
+			// 3. If the request is not handled by the app nor is it a local source, then we let the WebView2
+			//    handle the request as it would normally do. This means that it will try to load the resource
+			//    from the internet or from the local cache.
+
+			logger?.LogDebug("Request for {Url} was not handled.", url);
 		}
 
-		private async Task<(IRandomAccessStream Stream, string ContentType, int StatusCode, string Reason)> GetResponseStreamAsync(string url)
+		private async Task<(IRandomAccessStream? Stream, string? ContentType, int StatusCode, string Reason)> GetResponseStreamAsync(string url, ILogger? logger)
 		{
-			var requestUri = HybridWebViewQueryStringHelper.RemovePossibleQueryString(url);
+			var requestUri = WebUtils.RemovePossibleQueryString(url);
 
 			if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
 			{
@@ -136,6 +176,8 @@ namespace Microsoft.Maui.Handlers
 				// 1. Try special InvokeDotNet path
 				if (relativePath == InvokeDotNetPath)
 				{
+					logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", url);
+
 					var fullUri = new Uri(url);
 					var invokeQueryString = HttpUtility.ParseQueryString(fullUri.Query);
 					var contentBytes = await InvokeDotNetAsync(invokeQueryString);
@@ -158,8 +200,8 @@ namespace Microsoft.Maui.Handlers
 				{
 					if (!ContentTypeProvider.TryGetContentType(relativePath, out contentType!))
 					{
-						// TODO: Log this
 						contentType = "text/plain";
+						logger?.LogWarning("Could not determine content type for '{relativePath}'", relativePath);
 					}
 				}
 
@@ -169,14 +211,16 @@ namespace Microsoft.Maui.Handlers
 				if (contentStream is not null)
 				{
 					// 3.a. If something was found, return the content
+					logger?.LogDebug("Request for {Url} will return an app package file.", url);
+
 					var ras = await CopyContentToRandomAccessStreamAsync(contentStream);
 					return (Stream: ras, ContentType: contentType, StatusCode: 200, Reason: "OK");
 				}
 			}
 
 			// 3.b. Otherwise, return a 404
-			var ras404 = await CopyContentToRandomAccessStreamAsync(_404MessageBuffer.Value);
-			return (Stream: ras404, ContentType: "text/plain", StatusCode: 404, Reason: "Not Found");
+			logger?.LogDebug("Request for {Url} could not be fulfilled.", url);
+			return (Stream: null, ContentType: null, StatusCode: 404, Reason: "Not Found");
 		}
 
 		static async Task<IRandomAccessStream> CopyContentToRandomAccessStreamAsync(Stream content)
@@ -223,7 +267,7 @@ namespace Microsoft.Maui.Handlers
 
 				webView.CoreWebView2.Settings.AreDevToolsEnabled = Handler?.DeveloperTools.Enabled ?? false;
 				webView.CoreWebView2.Settings.IsWebMessageEnabled = true;
-				webView.CoreWebView2.AddWebResourceRequestedFilter($"{AppOrigin}*", CoreWebView2WebResourceContext.All);
+				webView.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
 
 				webView.WebMessageReceived += OnWebMessageReceived;
 				webView.CoreWebView2.WebResourceRequested += OnWebResourceRequested;
