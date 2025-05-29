@@ -1,5 +1,5 @@
-using Microsoft.Maui.Controls.Shapes;
 using System;
+using Microsoft.Maui.Controls.Shapes;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Shapes;

@@ -320,7 +320,7 @@ namespace Microsoft.Maui.Controls.Shapes
 				}
 			}
 
-			PathFigure EnsurePathFigure(PathFigure? pathFigure) 
+			PathFigure EnsurePathFigure(PathFigure? pathFigure)
 			{
 				if (pathFigure is null)
 				{
