@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Platform
 					}
 					else
 					{
-						ContentOffset = CGPoint.Empty;
+						ContentOffset = new CGPoint(0, ContentOffset.Y);
 					}
 				}
 
