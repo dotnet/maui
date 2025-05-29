@@ -14,7 +14,7 @@ stages:
     dependsOn: ${{ parameters.dependsOn }}
     displayName: ${{ parameters.displayName }}
     jobs:
-      - template: sign-artifacts/jobs/v3.yml@yaml-templates
+      - template: sign-artifacts/jobs/v2.yml@yaml-templates
         parameters:
           signType: ${{ parameters.signType }}
           teamName: ${{ parameters.teamName }}

@@ -30,11 +30,6 @@
     <FileExtensionSignInfo Update=".zip" CertificateName="None" />
     <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
   </ItemGroup>
-
-  <ItemGroup>
-    <MacDeveloperSign Include="libHarfBuzzSharp.dylib"/>
-    <MacDeveloperSign Include="libSkiaSharp.dylib"/>
-  </ItemGroup>
   
   <ItemGroup>
     <ItemsToSign Include="$(ArtifactsShippingPackagesDir)\**\*.msi" Condition="'$(PostBuildSign)' != 'true'" />
