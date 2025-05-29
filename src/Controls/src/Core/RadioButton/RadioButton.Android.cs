@@ -30,9 +30,9 @@ namespace Microsoft.Maui.Controls
 			if ((radioButton.TextTransform is TextTransform.Lowercase or TextTransform.Uppercase) && !string.IsNullOrEmpty(radioButton.Content?.ToString()))
 			{
 				var platformRadioButton = RadioButtonHandler.GetPlatformRadioButton(handler);
-				var transformedText = TextTransformUtilites.GetTransformedText(radioButton.Content.ToString(), radioButton.TextTransform);
 				if (platformRadioButton is not null)
 				{
+					var transformedText = TextTransformUtilites.GetTransformedText(radioButton.Content.ToString(), radioButton.TextTransform);
 					platformRadioButton.Text = transformedText;
 				}
 			}
