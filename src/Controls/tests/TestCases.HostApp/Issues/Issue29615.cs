@@ -30,5 +30,5 @@ public class Issue29615 : Shell
 		};
 
 		Items.Add(shellContent);
-    }
+	}
 }
