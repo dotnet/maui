@@ -103,11 +103,11 @@ public partial class OptionsPage : ContentPage
 		if (!e.Value)
 			return;
 
-		if (sender == LineCapFlatRadio)
+		if (sender == FlatLineCapRadio)
 			_viewModel.StrokeLineCap = Microsoft.Maui.Controls.Shapes.PenLineCap.Flat;
-		else if (sender == LineCapRoundRadio)
+		else if (sender == RoundLineCapRadio)
 			_viewModel.StrokeLineCap = Microsoft.Maui.Controls.Shapes.PenLineCap.Round;
-		else if (sender == LineCapSquareRadio)
+		else if (sender == SquareLineCapRadio)
 			_viewModel.StrokeLineCap = Microsoft.Maui.Controls.Shapes.PenLineCap.Square;
 	}
 	private void OnMiterLimitChanged(object sender, TextChangedEventArgs e)

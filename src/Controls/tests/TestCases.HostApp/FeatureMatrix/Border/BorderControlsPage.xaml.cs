@@ -65,8 +65,5 @@ public partial class BorderControlMainPage : ContentPage
 
 		stack.Children.Add(new Label { Text = "First Line", FontSize = 18, TextColor = Colors.Black });
 		stack.Children.Add(new Label { Text = "Second Line", FontSize = 18, TextColor = Colors.DarkBlue });
-
-		// You may want to set this stack as the content of a Border or the page itself
-		// Border.Content = stack;
 	}
 }

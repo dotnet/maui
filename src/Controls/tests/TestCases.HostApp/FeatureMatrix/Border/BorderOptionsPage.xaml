@@ -14,11 +14,11 @@
              ColumnDefinitions="1*, 1*"
              RowDefinitions="Auto, *"
              ColumnSpacing="5"
-             RowSpacing="1">
+             RowSpacing="5">
               <!-- Left column: Label + Entry layout -->
               <Grid Grid.Row="1"
                     Grid.Column="0"
-                    RowSpacing="1"
+                    RowSpacing="5"
                     ColumnDefinitions="* , *">
                      <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -106,11 +106,6 @@
                                          GroupName="Shape"
                                          AutomationId="EllipseShapeRadio"
                                          CheckedChanged="ShapeChanged"/>
-                            <RadioButton x:Name="LineShapeRadio"
-                                         Content="Line"
-                                         GroupName="Shape"
-                                         AutomationId="LineShapeRadio"
-                                         CheckedChanged="ShapeChanged"/>
                             <RadioButton x:Name="PathShapeRadio"
                                          Content="Path"
                                          GroupName="Shape"
@@ -120,11 +115,6 @@
                                          Content="Polygon"
                                          GroupName="Shape"
                                          AutomationId="PolygonShapeRadio"
-                                         CheckedChanged="ShapeChanged"/>
-                            <RadioButton x:Name="PolylineShapeRadio"
-                                         Content="Polyline"
-                                         GroupName="Shape"
-                                         AutomationId="PolylineShapeRadio"
                                          CheckedChanged="ShapeChanged"/>
                      </VerticalStackLayout>
 
@@ -137,14 +127,14 @@
                             <RadioButton Content="Miter"
                                          IsChecked="True"
                                          GroupName="LineJoinGroup"
-                                         AutomationId="LineJoinMiterRadio"
+                                         AutomationId="MiterLineJoinRadio"
                                          CheckedChanged="OnLineJoinChanged"/>
                             <RadioButton Content="Bevel"
-                                         AutomationId="LineJoinBevelRadio"
+                                         AutomationId="BevelLineJoinRadio"
                                          GroupName="LineJoinGroup"
                                          CheckedChanged="OnLineJoinChanged"/>
                             <RadioButton Content="Round"
-                                         AutomationId="LineJoinRoundRadio"
+                                         AutomationId="RoundLineJoinRadio"
                                          GroupName="LineJoinGroup"
                                          CheckedChanged="OnLineJoinChanged"/>
                      </VerticalStackLayout>
@@ -155,7 +145,7 @@
                     Grid.Column="1"
                     RowDefinitions="Auto,Auto,Auto,Auto"
                     ColumnSpacing="5"
-                    RowSpacing="1">
+                    RowSpacing="5">
 
                      <!-- Stroke Color Section -->
                      <VerticalStackLayout Grid.Row="0">
@@ -275,20 +265,20 @@
                             <Label
                                    FontAttributes="Bold"
                                    Text="Stroke Line Cap"/>
-                            <RadioButton x:Name="LineCapFlatRadio"
+                            <RadioButton x:Name="FlatLineCapRadio"
                                          Content="Flat"
                                          GroupName="LineCap"
                                          IsChecked="True"
-                                         AutomationId="LineCapFlatRadio"
+                                         AutomationId="FlatLineCapRadio"
                                          CheckedChanged="LineCapChanged"/>
-                            <RadioButton x:Name="LineCapRoundRadio"
+                            <RadioButton x:Name="RoundLineCapRadio"
                                          Content="Round"
-                                         AutomationId="LineCapRoundRadio"
+                                         AutomationId="RoundLineCapRadio"
                                          GroupName="LineCap"
                                          CheckedChanged="LineCapChanged"/>
-                            <RadioButton x:Name="LineCapSquareRadio"
+                            <RadioButton x:Name="SquareLineCapRadio"
                                          Content="Square"
-                                         AutomationId="LineCapSquareRadio"
+                                         AutomationId="SquareLineCapRadio"
                                          GroupName="LineCap"
                                          CheckedChanged="LineCapChanged"/>
                      </VerticalStackLayout>
