@@ -322,7 +322,7 @@ namespace Microsoft.Maui.Controls
 			return contentRequest;
 		}
 
-		internal override void ComputeConstraintForView(View view)
+		protected override void ComputeConstraintForView(View view)
 		{
 			switch (Orientation)
 			{

@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		internal override void ComputeConstraintForView(View view)
+		protected override void ComputeConstraintForView(View view)
 		{
 			bool isFixedHorizontally = (Constraint & LayoutConstraint.HorizontallyFixed) != 0;
 			bool isFixedVertically = (Constraint & LayoutConstraint.VerticallyFixed) != 0;
