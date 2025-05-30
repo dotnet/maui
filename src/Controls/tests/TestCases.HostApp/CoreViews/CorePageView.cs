@@ -1,6 +1,5 @@
 ﻿using Controls.Sample.UITests;
 using Maui.Controls.Sample.CollectionViewGalleries;
-using Maui.Controls.Sample;
 
 namespace Maui.Controls.Sample
 {
