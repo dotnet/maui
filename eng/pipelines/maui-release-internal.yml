@@ -28,9 +28,9 @@ parameters:
   default: true
 
 - name: pushPackages
-  displayName: "Controls the script, allows for dry run"
+  displayName: "Controls the nuget script, if false allows for dry run"
   type: boolean
-  default: false
+  default: true
 
 - name: nugetIncludeFilters
   displayName: "[OPTIONAL] Semi-colon (';') separated list of nugets packages to include"
