@@ -29,6 +29,7 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/triage'))
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -37,54 +38,56 @@ jobs:
         shell: pwsh
         run: |
           if ("${{ github.event_name }}" -eq "workflow_dispatch") {
-            echo "number=${{ inputs.issue_number }}" >> $env:GITHUB_OUTPUT
+            $number="${{ inputs.issue_number }}"
           } else {
-            echo "number=${{ github.event.issue.number }}" >> $env:GITHUB_OUTPUT
+            $number="${{ github.event.issue.number }}"
           }
+          echo "number=$number" >> $env:GITHUB_OUTPUT
+          echo "I will triage issue #$number"
+
+      - name: Add eyes reaction to issue or comment
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ("${{ github.event_name }}" -eq "issues" -or "${{ github.event_name }}" -eq "workflow_dispatch") {
+            $url = "repos/${{ github.repository }}/issues/${{ steps.get-number.outputs.number }}/reactions"
+          } elseif ("${{ github.event_name }}" -eq "issue_comment") {
+            $url = "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions"
+          }
+          gh api $url --method POST --field content=eyes
 
       - name: Determine PLATFORM label for the issue
         id: triage-platform
-        uses: ./.github/actions/triage-labels
+        uses: mattleibow/triage-assistant@main
         with:
           issue: ${{ steps.get-number.outputs.number }}
           label-prefix: 'platform/'
-          mode: 'multi-label'
+          template: 'multi-label'
 
       - name: Determine AREA label for the issue
         id: triage-area
-        uses: ./.github/actions/triage-labels
+        uses: mattleibow/triage-assistant@main
         with:
           issue: ${{ steps.get-number.outputs.number }}
           label-prefix: 'area-'
-          mode: 'single-label'
+          template: 'single-label'
 
       - name: Determine REGRESSION label for the issue
         id: triage-regression
-        uses: ./.github/actions/triage-labels
+        uses: mattleibow/triage-assistant@main
         with:
           issue: ${{ steps.get-number.outputs.number }}
           label: 'potential-regression'
-          mode: 'regression'
-
-      # TODO: fix this prompt as it is not working correctly
-      # - name: Determine MISSING INFO labels for the issue
-      #   id: triage-missing-info
-      #   uses: ./.github/actions/triage-labels
-      #   with:
-      #     issue: ${{ steps.get-number.outputs.number }}
-      #     mode: 'missing-info'
-
-      - name: Log Labels
-        run: |
-          cat "${{ steps.triage-platform.outputs.response-file }}"
-          cat "${{ steps.triage-area.outputs.response-file }}"
-          cat "${{ steps.triage-regression.outputs.response-file }}"
+          template: 'regression'
 
       - name: Apply Labels and Comment
         # TODO: delete this condition when we are ready!
         if: |
           github.event_name == 'workflow_dispatch' ||
           (github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/triage'))
-        uses: ./.github/actions/triage-apply
+        uses: mattleibow/triage-assistant@main
         with:
           issue: ${{ steps.get-number.outputs.number }}
+          apply-comment: true
+          apply-labels: true
