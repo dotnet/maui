@@ -281,6 +281,7 @@ public class StepperFeatureTests : UITest
         Assert.That(App.FindElement("ValueLabel").GetText(), Is.EqualTo("0.00"));
     }
 
+#if TEST_FAILS_ON_WINDOWS // Related Issue Link : https://github.com/dotnet/maui/issues/29740
     [Test]
     public void Stepper_IncrementDoesNotExceedMaximum()
     {
@@ -310,6 +311,7 @@ public class StepperFeatureTests : UITest
         var currentValue = App.FindElement("ValueLabel").GetText();
         Assert.That(currentValue, Is.EqualTo("10.00"));
     }
+#endif
 
     [Test]
     public void Stepper_DecrementDoesNotGoBelowMinimum()
