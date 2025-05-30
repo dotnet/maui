@@ -38,6 +38,35 @@ public partial class RadioButtonOptionsPage : ContentPage
 		};
 	}
 
+	private void OnIsCheckedChanged(object sender, EventArgs e)
+	{
+		var radioButton = sender as RadioButton;
+		if (radioButton != null && radioButton.IsChecked)
+		{
+			_viewModel.IsChecked = radioButton.IsChecked;
+		}
+	}
+
+	private void OnIsEnabledChanged(object sender, CheckedChangedEventArgs e)
+	{
+		var radioButton = sender as RadioButton;
+		if (radioButton != null && radioButton.IsChecked)
+		{
+			_viewModel.IsEnabled = radioButton.Content.ToString() == "True";
+		}
+	}
+
+	private void OnFlowDirectionChanged(object sender, CheckedChangedEventArgs e)
+	{
+		var radioButton = sender as RadioButton;
+		if (radioButton != null && radioButton.IsChecked)
+		{
+			_viewModel.FlowDirection = radioButton.Content.ToString() == "Left to Right" ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+		}
+	}
+
+
+
 	private void OnIsCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
 		var radioButton = sender as RadioButton;
@@ -147,9 +176,6 @@ public partial class RadioButtonOptionsPage : ContentPage
 				case "MontserratBold":
 					_viewModel.FontFamily = "MontserratBold";
 					break;
-				default:
-					_viewModel.FontFamily = null;
-					break;
 			}
 		}
 	}
@@ -196,6 +222,15 @@ public partial class RadioButtonOptionsPage : ContentPage
 					_viewModel.TextTransform = TextTransform.None;
 					break;
 			}
+		}
+	}
+
+	private void RadioButton_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		var radioButton = sender as RadioButton;
+		if (radioButton != null && radioButton.IsChecked)
+		{
+			_viewModel.SelectedValue = radioButton.Content.ToString();
 		}
 	}
 }

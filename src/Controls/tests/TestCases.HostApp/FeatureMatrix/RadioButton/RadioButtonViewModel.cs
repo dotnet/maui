@@ -7,20 +7,24 @@ namespace Maui.Controls.Sample;
 
 public class RadioButtonViewModel : INotifyPropertyChanged
 {
-	private object _content = null;
-	private bool _isChecked = false;
-	private string _groupName = null;
-	private object _value = null;
 	private Color _borderColor = Colors.Transparent;
 	private double _borderWidth = -1d;
 	private double _characterSpacing = 0.0d;
+	private object _content = null;
 	private int _cornerRadius = -1;
+	private FlowDirection _flowDirection = FlowDirection.MatchParent;
 	private FontAttributes _fontAttributes = FontAttributes.None;
 	private bool _fontAutoScalingEnabled = true;
 	private string _fontFamily = null;
 	private double _fontSize = 0d;
+	private string _groupName = null;
+	private bool _isChecked = false;
+	private bool _isEnabled = true;
+	private bool _isVisible = true;
 	private Color _textColor = Colors.Transparent;
 	private TextTransform _textTransform = TextTransform.Default;
+	private object _selectedValue = "1";
+	private object _value = null;
 
 	public event PropertyChangedEventHandler PropertyChanged;
 
@@ -28,61 +32,8 @@ public class RadioButtonViewModel : INotifyPropertyChanged
 	{
 		Content = "RadioButton";
 		GroupName = "Group1";
-		Value = "DefaultValue";
 		FontSize = 14d;
 		TextColor = Colors.Black;
-	}
-
-	public object Content
-	{
-		get => _content;
-		set
-		{
-			if (_content != value)
-			{
-				_content = value;
-				OnPropertyChanged();
-			}
-		}
-	}
-
-	public bool IsChecked
-	{
-		get => _isChecked;
-		set
-		{
-			if (_isChecked != value)
-			{
-				_isChecked = value;
-				OnPropertyChanged();
-			}
-		}
-	}
-
-	public string GroupName
-	{
-		get => _groupName;
-		set
-		{
-			if (_groupName != value)
-			{
-				_groupName = value;
-				OnPropertyChanged();
-			}
-		}
-	}
-
-	public object Value
-	{
-		get => _value;
-		set
-		{
-			if (_value != value)
-			{
-				_value = value;
-				OnPropertyChanged();
-			}
-		}
 	}
 
 	public Color BorderColor
@@ -124,6 +75,19 @@ public class RadioButtonViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public object Content
+	{
+		get => _content;
+		set
+		{
+			if (_content != value)
+			{
+				_content = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
 	public int CornerRadius
 	{
 		get => _cornerRadius;
@@ -132,6 +96,19 @@ public class RadioButtonViewModel : INotifyPropertyChanged
 			if (_cornerRadius != value)
 			{
 				_cornerRadius = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public FlowDirection FlowDirection
+	{
+		get => _flowDirection;
+		set
+		{
+			if (_flowDirection != value)
+			{
+				_flowDirection = value;
 				OnPropertyChanged();
 			}
 		}
@@ -189,6 +166,58 @@ public class RadioButtonViewModel : INotifyPropertyChanged
 		}
 	}
 
+	public string GroupName
+	{
+		get => _groupName;
+		set
+		{
+			if (_groupName != value)
+			{
+				_groupName = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public bool IsChecked
+	{
+		get => _isChecked;
+		set
+		{
+			if (_isChecked != value)
+			{
+				_isChecked = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public bool IsEnabled
+	{
+		get => _isEnabled;
+		set
+		{
+			if (_isEnabled != value)
+			{
+				_isEnabled = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public bool IsVisible
+	{
+		get => _isVisible;
+		set
+		{
+			if (_isVisible != value)
+			{
+				_isVisible = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
 	public Color TextColor
 	{
 		get => _textColor;
@@ -214,7 +243,30 @@ public class RadioButtonViewModel : INotifyPropertyChanged
 			}
 		}
 	}
-
+	public object Value
+	{
+		get => _value;
+		set
+		{
+			if (_value != value)
+			{
+				_value = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+	public object SelectedValue
+	{
+		get => _selectedValue;
+		set
+		{
+			if (_selectedValue != value)
+			{
+				_selectedValue = value;
+				OnPropertyChanged();
+			}
+		}
+	}
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 	{
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

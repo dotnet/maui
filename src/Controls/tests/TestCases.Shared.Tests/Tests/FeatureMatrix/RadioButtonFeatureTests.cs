@@ -18,7 +18,8 @@ public class RadioButtonFeatureTests : UITest
 		base.FixtureSetup();
 		App.NavigateToGallery(RadioButtonFeatureMatrix);
 	}
-
+	[Test]
+	[Category(UITestCategories.RadioButton)]
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // This test fails on Windows and Android because the RadioButton control does not update the BorderColor at runtime. Issue Link - https://github.com/dotnet/maui/issues/15806
 	[Test]
 	[Category(UITestCategories.RadioButton)]
