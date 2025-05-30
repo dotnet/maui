@@ -57,12 +57,14 @@ public class BorderViewModel : INotifyPropertyChanged
 			VerticalOptions = LayoutOptions.Center
 		};
 	}
+
 	private Thickness _padding = 5;
 	public Thickness Padding
 	{
 		get => _padding;
 		set { _padding = value; OnPropertyChanged(nameof(Padding)); }
 	}
+
 	private double _strokeThickness = 1;
 	public double StrokeThickness
 	{
@@ -76,8 +78,8 @@ public class BorderViewModel : INotifyPropertyChanged
 			}
 		}
 	}
-	public string StrokeDashArrayAsString => StrokeDashArray != null ? string.Join(",", StrokeDashArray) : string.Empty;
 
+	public string StrokeDashArrayAsString => StrokeDashArray != null ? string.Join(",", StrokeDashArray) : string.Empty;
 	private DoubleCollection _strokeDashArray = null;
 	public DoubleCollection StrokeDashArray
 	{
@@ -127,6 +129,7 @@ public class BorderViewModel : INotifyPropertyChanged
 			}
 		}
 	}
+
 	private IShape _strokeShape = new Rectangle();
 	public IShape StrokeShape
 	{
@@ -142,17 +145,15 @@ public class BorderViewModel : INotifyPropertyChanged
 	}
 
 	public IShape CreateRectangleShape() => new Rectangle();
-
 	public IShape CreateRoundRectangleShape() => new RoundRectangle { CornerRadius = new CornerRadius(40) };
-
 	public IShape CreateEllipseShape() => new Ellipse();
 
 	public IShape CreatePathShape()
 	{
 		var pathGeometry = new PathGeometry();
-		var pathFigure = new PathFigure { StartPoint = new Point(10, 100) };
-		pathFigure.Segments.Add(new LineSegment { Point = new Point(100, 10) });
-		pathFigure.Segments.Add(new LineSegment { Point = new Point(190, 100) });
+		var pathFigure = new PathFigure { StartPoint = new Point(0, 150) };
+		pathFigure.Segments.Add(new LineSegment { Point = new Point(150, 10) });
+		pathFigure.Segments.Add(new LineSegment { Point = new Point(300, 150) });
 		pathFigure.IsClosed = true;
 		pathGeometry.Figures.Add(pathFigure);
 
@@ -163,13 +164,14 @@ public class BorderViewModel : INotifyPropertyChanged
 	{
 		Points = new PointCollection
 	{
-		new Point(100, 0),
-		new Point(190, 70),
-		new Point(150, 180),
-		new Point(50, 180),
-		new Point(10, 70)
+		new Point(150, 0),
+		new Point(250, 70),
+		new Point(210, 180),
+		new Point(85, 180),
+		new Point(40, 70)
 	}
 	};
+
 	private PenLineCap _strokeLineCap = PenLineCap.Flat;
 	public PenLineCap StrokeLineCap
 	{
@@ -183,6 +185,7 @@ public class BorderViewModel : INotifyPropertyChanged
 			}
 		}
 	}
+
 	private Brush _stroke = Brush.Red;
 	public Brush Stroke
 	{
@@ -214,6 +217,7 @@ public class BorderViewModel : INotifyPropertyChanged
 			Opacity = opacity
 		};
 	}
+
 	public event PropertyChangedEventHandler PropertyChanged;
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 	{
