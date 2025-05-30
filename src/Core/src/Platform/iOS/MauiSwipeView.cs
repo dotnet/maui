@@ -1144,11 +1144,12 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			UpdateIsOpen(true);
+			UpdateSwipeItems();
 
 			var swipeThreshold = GetSwipeThreshold();
 			UpdateOffset(swipeThreshold);
 
-			UpdateSwipeItems();
+			LayoutIfNeeded();
 			Swipe(animated);
 
 			_swipeOffset = Math.Abs(_swipeOffset);
