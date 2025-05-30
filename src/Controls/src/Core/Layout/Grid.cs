@@ -9,6 +9,9 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Children))]
 	public class Grid : Layout, IGridLayout
 	{
+		static readonly ColumnDefinitionCollection DefaultColumnDefinitions = new(new ColumnDefinition { Width = GridLength.Star });
+		static readonly RowDefinitionCollection DefaultRowDefinitions = new(new RowDefinition { Height = GridLength.Star });
+
 		readonly Dictionary<IView, GridInfo> _viewInfo = new();
 
 		/// <summary>Bindable property for <see cref="ColumnDefinitions"/>.</summary>
@@ -352,6 +355,83 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnBindingContextChanged();
 			UpdateRowColumnBindingContexts();
+		}
+
+		internal override void ComputeConstraintForView(View view)
+		{
+			var result = LayoutConstraint.None;
+
+			if (view.VerticalOptions.Alignment == LayoutAlignment.Fill && ViewHasFixedHeightDefinition(view))
+			{
+				result |= LayoutConstraint.VerticallyFixed;
+			}
+
+			if (view.HorizontalOptions.Alignment == LayoutAlignment.Fill && ViewHasFixedWidthDefinition(view))
+			{
+				result |= LayoutConstraint.HorizontallyFixed;
+			}
+
+			view.ComputedConstraint = result;
+		}
+
+		bool ViewHasFixedHeightDefinition(BindableObject view)
+		{
+			var gridHasFixedHeight = (Constraint & LayoutConstraint.VerticallyFixed) != 0;
+
+			var row = GetRow(view);
+			var rowSpan = GetRowSpan(view);
+			var rowDefinitions = RowDefinitions;
+			if (rowDefinitions?.Count is not > 0)
+			{
+				rowDefinitions = DefaultRowDefinitions;
+			}
+
+			for (int i = row; i < row + rowSpan && i < rowDefinitions.Count; i++)
+			{
+				GridLength height = rowDefinitions[i].Height;
+
+				if (height.IsAuto)
+				{
+					return false;
+				}
+
+				if (!gridHasFixedHeight && height.IsStar)
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		bool ViewHasFixedWidthDefinition(BindableObject view)
+		{
+			var gridHasFixedWidth = (Constraint & LayoutConstraint.HorizontallyFixed) != 0;
+
+			var col = GetColumn(view);
+			var colSpan = GetColumnSpan(view);
+			var columnDefinitions = ColumnDefinitions;
+			if (columnDefinitions?.Count is not > 0)
+			{
+				columnDefinitions = DefaultColumnDefinitions;
+			}
+
+			for (int i = col; i < col + colSpan && i < columnDefinitions.Count; i++)
+			{
+				GridLength width = columnDefinitions[i].Width;
+
+				if (width.IsAuto)
+				{
+					return false;
+				}
+
+				if (!gridHasFixedWidth && width.IsStar)
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		void UpdateRowColumnBindingContexts()

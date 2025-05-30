@@ -1,17 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Graphics.Drawables;
 using Android.OS;
-using Android.Runtime;
 using Android.Views;
 using Android.Views.Animations;
 using AndroidX.Activity;
-using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
 using Microsoft.Maui.LifecycleEvents;
 using AAnimation = Android.Views.Animations.Animation;
@@ -23,8 +19,6 @@ namespace Microsoft.Maui.Controls.Platform
 	internal partial class ModalNavigationManager
 	{
 		ViewGroup? _modalParentView;
-		bool _navAnimationInProgress;
-		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
 		AAnimation? _dismissAnimation;
 		bool _platformActivated;
 
@@ -94,23 +88,6 @@ namespace Microsoft.Maui.Controls.Platform
 			return _modalParentView ??
 				_window?.PlatformActivity?.Window?.DecorView as ViewGroup ??
 				throw new InvalidOperationException("Root View Needs to be set");
-		}
-
-		// AFAICT this is specific to ListView and Context Items
-		internal bool NavAnimationInProgress
-		{
-			get { return _navAnimationInProgress; }
-			set
-			{
-				if (_navAnimationInProgress == value)
-					return;
-				_navAnimationInProgress = value;
-
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-				if (value)
-					MessagingCenter.Send(this, CloseContextActionsSignalName);
-#pragma warning restore CS0618 // Type or member is obsolete
-			}
 		}
 
 		Task<Page> PopModalPlatformAsync(bool animated)
@@ -207,21 +184,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (animated)
 			{
-				NavAnimationInProgress = true;
 				dialogFragment!.AnimationEnded += OnAnimationEnded;
 
 				await animationCompletionSource.Task;
 			}
 			else
 			{
-				NavAnimationInProgress = false;
 				animationCompletionSource.TrySetResult(true);
 			}
 
 			void OnAnimationEnded(object? sender, EventArgs e)
 			{
 				dialogFragment!.AnimationEnded -= OnAnimationEnded;
-				NavAnimationInProgress = false;
 				animationCompletionSource.SetResult(true);
 			}
 		}
