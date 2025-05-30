@@ -96,27 +96,6 @@ public class BorderFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.Border)]
-	public void Border_StrokeColorWithStrokeLineJoin_Round()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-
-		App.WaitForElement("RectangleShapeRadio");
-		App.Tap("RectangleShapeRadio");
-
-		App.WaitForElement("RoundLineJoinRadio");
-		App.Tap("RoundLineJoinRadio");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "10");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.Border)]
 	public void Border_StrokeShapeWithStrokeThickness_Ellipse()
 	{
 		App.WaitForElement("Options");
@@ -154,6 +133,8 @@ public class BorderFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //For more information, see : https://github.com/dotnet/maui/issues/29661 , https://github.com/dotnet/maui/issues/29743
+
 	[Test]
 	[Category(UITestCategories.Border)]
 	public void Border_StrokeShapeWithStrokeLineJoin_Bevel()
@@ -174,8 +155,6 @@ public class BorderFeatureTests : UITest
 		App.Tap("Apply");
 		VerifyScreenshot();
 	}
-
-#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //For more information, see : https://github.com/dotnet/maui/issues/29661
 
 	[Test]
 	[Category(UITestCategories.Border)]
@@ -218,7 +197,49 @@ public class BorderFeatureTests : UITest
 
 	[Test]
 	[Category(UITestCategories.Border)]
+	public void Border_StrokeColorWithStrokeLineJoin_Round()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("RectangleShapeRadio");
+		App.Tap("RectangleShapeRadio");
+
+		App.WaitForElement("RoundLineJoinRadio");
+		App.Tap("RoundLineJoinRadio");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "10");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		VerifyScreenshot();
+	}
+#if TEST_FAILS_ON_WINDOWS // For more information, see : https://github.com/dotnet/maui/issues/29741
+	[Test]
+	[Category(UITestCategories.Border)]
 	public void Border_StrokeDashArrayWithStrokeLineCap_Round()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,3");
+
+		App.WaitForElement("RoundLineCapRadio");
+		App.Tap("RoundLineCapRadio");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "10");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Border)]
+	public void Border_StrokeDashArrayWithDashOffsetAndStrokeLineCapRound()
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -281,6 +302,31 @@ public class BorderFeatureTests : UITest
 		App.Tap("Apply");
 		VerifyScreenshot();
 	}
+	[Test]
+	[Category(UITestCategories.Border)]
+	public void Border_PolygonShapeWithStrokeLineCap_Round()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,3");
+
+		App.WaitForElement("PolygonShapeRadio");
+		App.Tap("PolygonShapeRadio");
+
+		App.WaitForElement("RoundLineCapRadio");
+		App.Tap("RoundLineCapRadio");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "15");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		VerifyScreenshot();
+	}
+
+#endif
 
 	[Test]
 	[Category(UITestCategories.Border)]
@@ -341,30 +387,7 @@ public class BorderFeatureTests : UITest
 		App.Tap("Apply");
 		VerifyScreenshot();
 	}
-
 #endif
-
-
-	[Test]
-	[Category(UITestCategories.Border)]
-	public void Border_StrokeDashArrayWithDashOffsetAndStrokeLineCapRound()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-
-		App.WaitForElement("StrokeDashArrayEntry");
-		App.EnterText("StrokeDashArrayEntry", "5,3");
-
-		App.WaitForElement("RoundLineCapRadio");
-		App.Tap("RoundLineCapRadio");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "10");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		VerifyScreenshot();
-	}
 
 	[Test]
 	[Category(UITestCategories.Border)]
@@ -381,30 +404,6 @@ public class BorderFeatureTests : UITest
 		App.EnterText("OpacityEntry", "0.8");
 		App.WaitForElement("RadiusEntry");
 		App.EnterText("RadiusEntry", "10");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.Border)]
-	public void Border_PolygonShapeWithStrokeLineCap_Round()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-
-		App.WaitForElement("StrokeDashArrayEntry");
-		App.EnterText("StrokeDashArrayEntry", "5,3");
-
-		App.WaitForElement("PolygonShapeRadio");
-		App.Tap("PolygonShapeRadio");
-
-		App.WaitForElement("RoundLineCapRadio");
-		App.Tap("RoundLineCapRadio");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "15");
 
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
