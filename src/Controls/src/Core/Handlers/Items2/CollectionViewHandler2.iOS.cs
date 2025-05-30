@@ -35,12 +35,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 	public partial class CollectionViewHandler2
 	{
 
-		public CollectionViewHandler2() : base(Mapper)
+		public CollectionViewHandler2() : base(Mapper,CommandMapper)
 		{
 
 
 		}
-		public CollectionViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper)
+		public CollectionViewHandler2(PropertyMapper mapper = null) : base(mapper ?? Mapper,CommandMapper)
 		{
 
 		}
