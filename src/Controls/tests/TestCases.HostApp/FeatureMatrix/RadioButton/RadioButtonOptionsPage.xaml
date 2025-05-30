@@ -13,7 +13,8 @@
        <ScrollView>
               <Grid ColumnDefinitions="Auto, Auto"
                     RowDefinitions="Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
-                    RowSpacing="1">
+                    RowSpacing="1"
+                    Padding="5">
 
                      <!-- Content -->
                      <Label Grid.Row="0"
@@ -30,6 +31,7 @@
                                    HorizontalOptions="Start"
                                    WidthRequest="150"/>
                             <Button Text="View Button"
+                                    BackgroundColor="Gray"
                                     Clicked="ViewContentButton_Clicked"
                                     AutomationId="ViewContentButton"/>
                      </StackLayout>

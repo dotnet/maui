@@ -19,7 +19,7 @@ public class RadioButtonFeatureTests : UITest
 		App.NavigateToGallery(RadioButtonFeatureMatrix);
 	}
 
-#if TEST_FAILS_ON_WINDOWS // This test fails on Windows because the RadioButton control does not update the BorderColor at runtime. Issue Link - https://github.com/dotnet/maui/issues/15806
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // This test fails on Windows and Android because the RadioButton control does not update the BorderColor at runtime. Issue Link - https://github.com/dotnet/maui/issues/15806
 	[Test]
 	[Category(UITestCategories.RadioButton)]
 	public void RadioButton_SetTextColorAndBorderColor_VerifyVisualState()
@@ -37,7 +37,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControl");
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 #endif
 
@@ -54,7 +54,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControl");
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -72,9 +72,10 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControl");
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // This test fails on Windows and Android because the RadioButton control does not update the BorderColor at runtime. Issue Link - https://github.com/dotnet/maui/issues/15806
 	[Test]
 	[Category(UITestCategories.RadioButton)]
 	public void RadioButton_SetBorderWidthAndCornerRadius_VerifyVisualState()
@@ -94,9 +95,11 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControl");
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
+#endif
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // This test fails on Android and Windows because the text transform is not applied correctly. Issue Link - https://github.com/dotnet/maui/issues/29729
 	[Test]
 	[Category(UITestCategories.RadioButton)]
 	public void RadioButton_SetFontFamilyAndTextTransform_VerifyVisualState()
@@ -110,8 +113,9 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControl");
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
+#endif
 
 #if TEST_FAILS_ON_ANDROID // On Android, the View object is not supported, so it falls back to a string representation of the object. https://learn.microsoft.com/en-us/dotnet/maui/user-interface/controls/radiobutton?view=net-maui-9.0#create-radiobuttons
 	[Test]
@@ -125,7 +129,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControl");
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 #endif
 
@@ -144,7 +148,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControl");
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 #if TEST_FAILS_ON_WINDOWS // This test fails on Windows because the character spacing is not applied correctly.
@@ -165,7 +169,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControl");
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 #endif
 
@@ -186,7 +190,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControl");
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -204,7 +208,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControl");
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 #if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_WINDOWS // This test fails on Android and Windows because the text transform is not applied correctly. Issue Link - https://github.com/dotnet/maui/issues/29729
@@ -222,7 +226,7 @@ public class RadioButtonFeatureTests : UITest
 		App.Tap("TextTransformUpper");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 #endif
 
@@ -257,7 +261,7 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControl");
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -275,6 +279,6 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControl");
-		// VerifyScreenshot();
+		VerifyScreenshot();
 	}
 }
