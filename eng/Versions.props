@@ -7,7 +7,7 @@
     <SdkBandVersion>10.0.100</SdkBandVersion>
     <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(BUILD_SOURCEBRANCH)' == 'refs/heads/inflight/current'">ci.inflight</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>4</PreReleaseVersionIteration>
+    <PreReleaseVersionIteration>5</PreReleaseVersionIteration>
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->
     <IsServicingBuild Condition=" '$(PreReleaseVersionLabel)' == 'servicing' ">true</IsServicingBuild>
     <!-- Enable to remove prerelease label and produce stable package versions. -->
