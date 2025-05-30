@@ -30,8 +30,9 @@
                                    TextChanged="OnContentChanged"
                                    HorizontalOptions="Start"
                                    WidthRequest="150"/>
-                            <Button Text="View Button"
+                            <Button Text="Add View"
                                     BackgroundColor="Gray"
+                                    TextColor="White"
                                     Clicked="ViewContentButton_Clicked"
                                     AutomationId="ViewContentButton"/>
                      </StackLayout>
