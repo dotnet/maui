@@ -151,6 +151,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateTabBarVisible();
 			}
+			else if (e.PropertyName == Shell.ForegroundColorProperty.PropertyName)
+			{
+				UpdateLeftToolbarItems();
+			}
 		}
 
 		protected virtual void UpdateTabBarVisible()
