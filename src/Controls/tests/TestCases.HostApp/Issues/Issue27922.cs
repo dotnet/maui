@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-namespace  Maui.Controls.Sample.Issues
+namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 27922, "[WinUI]CollectionView with GroupHeader enabled should scroll properly with groupheader",
 		PlatformAffected.UWP)]
@@ -36,6 +36,7 @@ namespace  Maui.Controls.Sample.Issues
 						FontSize = 18,
 						FontAttributes = FontAttributes.Bold,
 						Padding = 10,
+						VerticalTextAlignment = TextAlignment.Center,
 						BackgroundColor = Colors.LightGray
 					};
 					headerLabel.SetBinding(Label.TextProperty, "Category");
