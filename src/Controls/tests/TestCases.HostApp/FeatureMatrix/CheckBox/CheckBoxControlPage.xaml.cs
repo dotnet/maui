@@ -52,6 +52,5 @@ public partial class CheckBoxControlPage : ContentPage
 public partial class CheckBoxFeatureMatrixViewModel
 {
     public ICommand SetColorCommand { get; set; }
-    public ICommand ApplyChangesCommand { get; set; }
 }
 
