@@ -13,7 +13,7 @@ public class Issue29729 : _IssuesUITest
 
 	[Test]
 	[Category(UITestCategories.RadioButton)]
-	public void VerifyCarouselLayoutOrientationChange()
+	public void VerifyRadioButtonTextTransformChanges()
 	{
 		App.WaitForElement("radioButton");
 		App.Tap("LowerCaseButton");
