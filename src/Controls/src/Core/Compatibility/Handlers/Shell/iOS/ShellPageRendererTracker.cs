@@ -130,6 +130,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				UpdateTabBarVisible();
 			}
+			else if (e.PropertyName == Shell.ForegroundColorProperty.PropertyName)
+			{
+				UpdateLeftToolbarItems();
+			}
 		}
 
 		protected virtual void UpdateTabBarVisible()
@@ -353,7 +357,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					icon = result?.Value;
 
-					var foregroundColor = _context.Shell.GetValue(Shell.ForegroundColorProperty);
+					var foregroundColor = _context.Shell.CurrentPage?.GetValue(Shell.ForegroundColorProperty) ??
+					 _context.Shell.GetValue(Shell.ForegroundColorProperty);
+
 					if (foregroundColor is null)
 					{
 						icon = icon.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
