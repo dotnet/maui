@@ -137,12 +137,12 @@ namespace Maui.Controls.Sample.Pages.WebViewGalleries
 
 			if (isJavaScriptEnabled)
 			{
-				MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().EnableZoomControls(false);
+				MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().JavaScriptEnabled(false);
 				JavaScriptEnabledResult.Text = "JavaScript is disabled";
 			}
 			else
 			{
-				MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().EnableZoomControls(true);
+				MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().JavaScriptEnabled(true);
 				JavaScriptEnabledResult.Text = "JavaScript is enabled";
 			}
 		}
