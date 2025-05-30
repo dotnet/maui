@@ -16,7 +16,6 @@ public class Issue29740 : _IssuesUITest
 	[Category(UITestCategories.Stepper)]
 	public void GestureRecognizersOnLabelSpanShouldWork()
 	{
-		App.WaitForElement("29740Stepper");
 		var initialvalue = App.WaitForElement("29740StepperValueLabel").GetText();
 		Assert.That(initialvalue, Is.EqualTo("Stepper Value: 0"));
 		for (int i = 0; i < 4; i++)
