@@ -4,6 +4,13 @@
 	[Issue(IssueTracker.Github, 8945, "Add Open/Close API to picker controls", PlatformAffected.All)]
 	public partial class Issue8945 : TestContentPage
 	{
+		bool _datePickerOpened;
+		bool _datePickerClosed;
+		bool _timePickerOpened;
+		bool _timePickerClosed;
+		bool _pickerOpened;
+		bool _pickerClosed;
+		
 		public Issue8945()
 		{
 			InitializeComponent();
@@ -74,32 +81,62 @@
 
 		void IsOpenDatePickerOpened(object sender, PickerOpenedEventArgs e)
 		{
-			DatePickerStatusLabel.Text = "DatePicker Opened";
+			_datePickerOpened = true;
+			UpdateDatePickerStatus();
 		}
 
 		void IsOpenDatePickerClosed(object sender, PickerClosedEventArgs e)
 		{
-			DatePickerStatusLabel.Text = "DatePicker Closed";
+			_datePickerClosed = true;
+			UpdateDatePickerStatus();
 		}
 
 		void IsOpenTimePickerOpened(object sender, PickerOpenedEventArgs e)
 		{
-			TimePickerStatusLabel.Text = "TimePicker Opened";
+			_timePickerOpened = true;
+			UpdateTimePickerStatus();
 		}
 
 		void IsOpenTimePickerClosed(object sender, PickerClosedEventArgs e)
 		{
-			TimePickerStatusLabel.Text = "TimePicker Closed";
+			_timePickerClosed = true;
+			UpdateTimePickerStatus();
 		}
 
 		void IsOpenPickerOpened(object sender, PickerOpenedEventArgs e)
 		{
-			PickerStatusLabel.Text = "Picker Opened";
+			_pickerOpened = true;
+			UpdatePickerStatus();
 		}
 
 		void IsOpenPickerClosed(object sender, PickerClosedEventArgs e)
 		{
-			PickerStatusLabel.Text = "Picker Closed";
+			_pickerClosed = true;
+			UpdatePickerStatus();
+		}  
+		
+		void UpdateDatePickerStatus()
+		{
+			if (_datePickerOpened && _datePickerClosed)
+			{
+				DatePickerStatusLabel.Text = "Passed";
+			}
+		}
+
+		void UpdateTimePickerStatus()
+		{
+			if (_timePickerOpened && _timePickerClosed)
+			{
+				TimePickerStatusLabel.Text = "Passed";
+			}
+		}
+
+		void UpdatePickerStatus()
+		{
+			if (_pickerOpened && _pickerClosed)
+			{
+				PickerStatusLabel.Text = "Passed";
+			}
 		}
 	}
 }
