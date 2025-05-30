@@ -112,27 +112,6 @@ public class BorderFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-	[Test]
-	[Category(UITestCategories.Border)]
-	public void Border_StrokeShapeWithDashArray_Path()
-	{
-		App.WaitForElement("Options");
-		App.Tap("Options");
-
-		App.WaitForElement("PathShapeRadio");
-		App.Tap("PathShapeRadio");
-
-		App.WaitForElement("StrokeDashArrayEntry");
-		App.EnterText("StrokeDashArrayEntry", "5,3");
-
-		App.WaitForElement("StrokeThicknessEntry");
-		App.EnterText("StrokeThicknessEntry", "10");
-
-		App.WaitForElement("Apply");
-		App.Tap("Apply");
-		VerifyScreenshot();
-	}
-
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //For more information, see : https://github.com/dotnet/maui/issues/29661 , https://github.com/dotnet/maui/issues/29743
 
 	[Test]
@@ -147,6 +126,28 @@ public class BorderFeatureTests : UITest
 
 		App.WaitForElement("BevelLineJoinRadio");
 		App.Tap("BevelLineJoinRadio");
+
+		App.WaitForElement("StrokeThicknessEntry");
+		App.EnterText("StrokeThicknessEntry", "10");
+
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		VerifyScreenshot();
+	}
+
+
+	[Test]
+	[Category(UITestCategories.Border)]
+	public void Border_StrokeShapeWithDashArray_Path()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+
+		App.WaitForElement("PathShapeRadio");
+		App.Tap("PathShapeRadio");
+
+		App.WaitForElement("StrokeDashArrayEntry");
+		App.EnterText("StrokeDashArrayEntry", "5,3");
 
 		App.WaitForElement("StrokeThicknessEntry");
 		App.EnterText("StrokeThicknessEntry", "10");
