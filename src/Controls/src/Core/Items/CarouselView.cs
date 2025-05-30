@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="ItemsLayout"/>.</summary>
 		public static readonly BindableProperty ItemsLayoutProperty =
-			BindableProperty.Create(nameof(ItemsLayout), typeof(LinearItemsLayout), typeof(CarouselView),
+			BindableProperty.Create(nameof(ItemsLayout), typeof(LinearItemsLayout), typeof(ItemsView),
 				defaultValueCreator: CreateDefaultItemsLayout, propertyChanged: OnItemsLayoutPropertyChanged);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='ItemsLayout']/Docs/*" />
