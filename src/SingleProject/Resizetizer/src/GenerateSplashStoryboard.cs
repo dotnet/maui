@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Microsoft.Maui.Resizetizer.Resources;
 using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Resizetizer
 			}
 			catch (Exception ex)
 			{
-				Log.LogError(null, "MAUI0000", null, null, 0, 0, 0, 0, ex.ToString());
+				Log.LogError(ErrorMessages.AppleResourceProcessing, ErrorCodes.AppleResourceProcessingCode, null, null, 0, 0, 0, 0, string.Format(ErrorMessages.AppleResourceProcessingError, ex.ToString()));
 				return false;
 			}
 		}
