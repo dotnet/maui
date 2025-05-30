@@ -74,7 +74,7 @@ namespace Maui.Controls.Sample.Issues
 			};
 
 			button.Clicked += OnNavigateClicked;
-			
+
 			layout.Children.Add(button);
 			Content = layout;
 		}
