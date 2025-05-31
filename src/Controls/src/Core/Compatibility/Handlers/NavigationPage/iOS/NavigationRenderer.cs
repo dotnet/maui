@@ -259,8 +259,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			public override bool ShouldBegin(UIGestureRecognizer recognizer)
 			{
-				_shouldPop();
-				return true;
+				return _shouldPop();
 			}
 		}
 
