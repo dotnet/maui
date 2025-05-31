@@ -40,8 +40,8 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<CarouselView, CarouselViewHandler>();
 				handlers.AddHandler<CollectionView, CollectionViewHandler>();
 #if IOS || MACCATALYST
-				handlers.AddHandler<CollectionView2,CollectionViewHandler2>();
-				handlers.AddHandler<CarouselView2,CarouselViewHandler2>();
+				handlers.AddHandler<CollectionView2, CollectionViewHandler2>();
+				handlers.AddHandler<CarouselView2, CarouselViewHandler2>();
 #endif
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
