@@ -19,6 +19,18 @@ public class RadioButtonFeatureTests : UITest
 		App.NavigateToGallery(RadioButtonFeatureMatrix);
 	}
 
+	[Test]
+	[Category(UITestCategories.RadioButton)]
+	public void RadioButton_Checking_Initial_Configuration_VerifyVisualState()
+	{
+		App.WaitForElement("RadioButtonControlOne");
+		// VerifyScreenshot();
+		App.Tap("RadioButtonControlOne");
+		App.WaitForElement("RadioButtonControlFour");
+		App.Tap("RadioButtonControlFour");
+		// VerifyScreenshot();
+	}
+
 #if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_ANDROID // This test fails on Windows and Android because the RadioButton control does not update the BorderColor at runtime. Issue Link - https://github.com/dotnet/maui/issues/15806
 	[Test]
 	[Category(UITestCategories.RadioButton)]
@@ -299,7 +311,14 @@ public class RadioButtonFeatureTests : UITest
 		App.Tap("RadioButtonControlOne");
 		App.WaitForElement("SelectedValueLabelOne");
 		Assert.That(App.WaitForElement("SelectedValueLabelOne").GetText(), Is.EqualTo(string.Empty));
-		// VerifyScreenshot();
+		App.WaitForElement("RadioButtonControlOne");
+		App.Tap("RadioButtonControlOne");
+		App.WaitForElement("SelectedValueLabelTwo");
+		Assert.That(App.WaitForElement("SelectedValueLabelOne").GetText(), Is.EqualTo(string.Empty));
+		App.WaitForElement("RadioButtonControlOne");
+		App.Tap("RadioButtonControlOne");
+		App.WaitForElement("SelectedValueLabelThree");
+		Assert.That(App.WaitForElement("SelectedValueLabelOne").GetText(), Is.EqualTo(string.Empty));
 	}
 
 	[Test]
@@ -354,6 +373,5 @@ public class RadioButtonFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
 		Assert.That(App.WaitForElement("SelectedValueLabelOne").GetText(), Is.EqualTo("RadioButtonTwo"));
-		// VerifyScreenshot();
 	}
 }
