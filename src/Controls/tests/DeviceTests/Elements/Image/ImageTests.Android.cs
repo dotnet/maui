@@ -167,30 +167,6 @@ namespace Microsoft.Maui.DeviceTests
 			var platformRotation = await InvokeOnMainThreadAsync(() => handler.PlatformView.Rotation);
 			Assert.Equal(expected, platformRotation);
 		}
-	}
-
-	// This subclass of memory stream is deliberately set up to trick Glide into using the cached image
-	// after the first image is loaded. See https://github.com/dotnet/maui/issues/8676#issuecomment-1416183584 and
-	// https://github.com/dotnet/maui/pull/13111#issuecomment-1416214847 for context.
-	class TestMemoryStream : MemoryStream
-	{
-		public TestMemoryStream(byte[] data) : base(data) { }
-
-		public override string ToString()
-		{
-			return "TestMemoryStream";
-		}
-
-		public override int GetHashCode()
-		{
-			return 42;
-		}
-
-		public override bool Equals(object obj)
-		{
-			return true;
-		}
-	}
 
 		[Fact]
 		[Description("Image loading should handle destroyed activity contexts gracefully")]
@@ -346,6 +322,29 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(true);
 				});
 			});
+		}
+	}
+
+	// This subclass of memory stream is deliberately set up to trick Glide into using the cached image
+	// after the first image is loaded. See https://github.com/dotnet/maui/issues/8676#issuecomment-1416183584 and
+	// https://github.com/dotnet/maui/pull/13111#issuecomment-1416214847 for context.
+	class TestMemoryStream : MemoryStream
+	{
+		public TestMemoryStream(byte[] data) : base(data) { }
+
+		public override string ToString()
+		{
+			return "TestMemoryStream";
+		}
+
+		public override int GetHashCode()
+		{
+			return 42;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return true;
 		}
 	}
 }
