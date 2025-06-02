@@ -2,6 +2,7 @@ package com.microsoft.maui;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.res.ColorStateList;
 import android.graphics.BlendMode;
 import android.graphics.BlendModeColorFilter;
@@ -37,6 +38,8 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.TintTypedArray;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 import androidx.window.layout.WindowMetricsCalculator;
@@ -65,6 +68,67 @@ import java.util.Arrays;
 import java.util.List;
 
 public class PlatformInterop {
+
+    /**
+     * Checks if the given context is destroyed.
+     * This is similar to the C# IsDestroyed extension method in ContextExtensions.cs
+     * @param context The context to check
+     * @return true if the context is destroyed, false otherwise
+     */
+    private static boolean isContextDestroyed(Context context) {
+        if (context == null) {
+            return true;
+        }
+
+        Activity activity = getActivity(context);
+        if (activity instanceof FragmentActivity) {
+            FragmentActivity fragmentActivity = (FragmentActivity) activity;
+            
+            // Check if activity is finishing or destroyed
+            if (fragmentActivity.isFinishing() || fragmentActivity.isDestroyed()) {
+                return true;
+            }
+
+            // Check lifecycle state
+            try {
+                if (fragmentActivity.getLifecycle().getCurrentState() == Lifecycle.State.DESTROYED) {
+                    return true;
+                }
+            } catch (Exception e) {
+                // If there's an exception getting the lifecycle state, consider it destroyed
+                return true;
+            }
+        } else if (activity != null) {
+            // For regular Activity, check if finishing or destroyed
+            if (activity.isFinishing() || activity.isDestroyed()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Gets the Activity from a Context, similar to the C# GetActivity extension method.
+     * @param context The context to get the activity from
+     * @return The activity if found, null otherwise
+     */
+    private static Activity getActivity(Context context) {
+        if (context == null) {
+            return null;
+        }
+
+        if (context instanceof Activity) {
+            return (Activity) context;
+        }
+
+        if (context instanceof ContextWrapper) {
+            Context baseContext = ((ContextWrapper) context).getBaseContext();
+            return getActivity(baseContext);
+        }
+
+        return null;
+    }
 
     public static void requestLayoutIfNeeded(View view) {
         
@@ -363,6 +427,10 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromFile(Context context, String file, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(file);
@@ -370,6 +438,10 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromUri(Context context, String uri, boolean cachingEnabled, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
         Uri androidUri = Uri.parse(uri);
         if (androidUri == null) {
             callback.onComplete(false, null, null);
@@ -382,6 +454,10 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromStream(Context context, InputStream inputStream, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(inputStream);
@@ -389,6 +465,10 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
+        if (isContextDestroyed(context)) {
+            callback.onComplete(false, null, null);
+            return;
+        }
         FontModel fontModel = new FontModel(color, glyph, textSize, typeface);
         RequestBuilder<Drawable> builder = Glide
             .with(context)
