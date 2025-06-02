@@ -161,23 +161,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected bool IsIndexPathValid(NSIndexPath indexPath)
 		{
-			if (indexPath.Item < 0 || indexPath.Section < 0)
-			{
-				return false;
-			}
-
-			var collectionView = Controller.CollectionView;
-			if (indexPath.Section >= collectionView.NumberOfSections())
-			{
-				return false;
-			}
-
-			if (indexPath.Item >= collectionView.NumberOfItemsInSection(indexPath.Section))
-			{
-				return false;
-			}
-
-			return true;
+			return LayoutFactory2.IsIndexPathValid(indexPath, Controller.CollectionView);
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
