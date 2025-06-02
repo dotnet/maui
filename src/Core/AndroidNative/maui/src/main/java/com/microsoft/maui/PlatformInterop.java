@@ -75,11 +75,7 @@ public class PlatformInterop {
      * @param context The context to check
      * @return true if the context is destroyed, false otherwise
      */
-    private static boolean isContextDestroyed(Context context) {
-        if (context == null) {
-            return true;
-        }
-
+    static boolean isContextDestroyed(Context context) {
         Activity activity = getActivity(context);
         if (activity instanceof FragmentActivity) {
             FragmentActivity fragmentActivity = (FragmentActivity) activity;
@@ -95,7 +91,8 @@ public class PlatformInterop {
                     return true;
                 }
             } catch (Exception e) {
-                // If there's an exception getting the lifecycle state, consider it destroyed
+                // Log warning if there's an exception getting the lifecycle state, consider it destroyed
+                android.util.Log.w("PlatformInterop", "Exception checking lifecycle state, assuming destroyed", e);
                 return true;
             }
         } else if (activity != null) {
@@ -113,7 +110,7 @@ public class PlatformInterop {
      * @param context The context to get the activity from
      * @return The activity if found, null otherwise
      */
-    private static Activity getActivity(Context context) {
+    static Activity getActivity(Context context) {
         if (context == null) {
             return null;
         }
