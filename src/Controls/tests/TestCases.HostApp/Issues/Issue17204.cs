@@ -33,16 +33,11 @@ public class Issue17204 : ContentPage
 		swipeItems.Add(swipeItemView);
 		swipeView.RightItems = swipeItems;
 
-		var contentLabel = new Label
+		swipeView.Content = new Label
 		{
 			HeightRequest = 200,
 			VerticalTextAlignment = TextAlignment.Center,
 			Text = "Swipe view"
-		};
-
-		swipeView.Content = new SwipeItemView
-		{
-			Content = contentLabel
 		};
 
 		var button = new Button
