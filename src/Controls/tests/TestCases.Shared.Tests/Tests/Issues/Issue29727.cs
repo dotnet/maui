@@ -21,5 +21,11 @@ public class Issue29727 : _IssuesUITest
 		App.WaitForElement("TestCollectionView");
 		VerifyScreenshot();
 	}
+
+	[TearDown]
+	public void TearDown()
+	{
+		App.SetOrientationPortrait();
+	}
 }
 #endif
