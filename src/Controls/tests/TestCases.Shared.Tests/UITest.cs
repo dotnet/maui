@@ -341,7 +341,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			if (tolerance > 15)
 			{
-				throw new ArgumentException($"Tolerance {tolerance}% exceeds acceptable limit. Please review if this requires a different tests or if is a bug.");
+				throw new ArgumentException($"Tolerance {tolerance}% exceeds the acceptable limit. Please review whether this requires a different test or if it is a bug.");
 			}
 
 			try
