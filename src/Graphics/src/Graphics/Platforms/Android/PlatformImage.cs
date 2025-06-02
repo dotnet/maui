@@ -158,21 +158,14 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
-			// Use original stream if it's seekable, else copy to memory stream
-			var seekableStream = stream.CanSeek ? stream : new MemoryStream();
-			if (!stream.CanSeek)
-			{
-				stream.CopyTo(seekableStream);
-				seekableStream.Position = 0;
-			}
 			Bitmap bitmap;
 			if (OperatingSystem.IsAndroidVersionAtLeast(24))
 			{
 				// Read EXIF orientation
-				var exif = new ExifInterface(seekableStream);
+				var exif = new ExifInterface(stream);
 				var orientation = exif.GetAttributeInt(ExifInterface.TagOrientation, 1);
-				seekableStream.Position = 0;
-				bitmap = BitmapFactory.DecodeStream(seekableStream);
+				stream.Position = 0;
+				bitmap = BitmapFactory.DecodeStream(stream);
 				// Apply rotation only if needed
 				if (orientation != 1)
 				{
@@ -182,7 +175,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			else
 			{
 				// Fallback for older Android
-				bitmap = BitmapFactory.DecodeStream(seekableStream);
+				bitmap = BitmapFactory.DecodeStream(stream);
 			}
 			return new PlatformImage(bitmap);
 		}
