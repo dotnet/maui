@@ -90,7 +90,10 @@ namespace Microsoft.Maui.Platform
 						break;
 					case SolidPaint solidPaint:
 						paintType = PlatformPaintType.Solid;
-						colors = [solidPaint.Color.WithAlpha(shadowOpacity).ToPlatform().ToArgb()];
+						// If the alpha is set in the color value, the shadow transparency is applied based on that alpha. 
+						// If the Opacity property is set directly, the shadow transparency is applied based on the Opacity. 
+						// If both values are provided, the color alpha is combined with the Opacity to apply a unified transparency effect to the shadow, ensuring consistent behavior across platforms.
+						colors = [solidPaint.Color.WithAlpha(solidPaint.Color.Alpha * shadowOpacity).ToPlatform().ToArgb()];
 						positions = null;
 						bounds = null;
 						break;
