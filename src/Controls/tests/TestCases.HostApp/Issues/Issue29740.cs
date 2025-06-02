@@ -1,6 +1,6 @@
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 29740, "[Windows]Stepper control fails to reach maximum value when increment exceeds remaining threshold",
+[Issue(IssueTracker.Github, 29740, "[Windows] Stepper control fails to reach maximum value when increment exceeds remaining threshold",
 	PlatformAffected.UWP)]
 public class Issue29740 : ContentPage
 {
