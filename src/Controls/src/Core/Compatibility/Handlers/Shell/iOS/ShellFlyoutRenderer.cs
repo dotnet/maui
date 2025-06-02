@@ -228,18 +228,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			add => _movedToWindow += value;
 			remove => _movedToWindow -= value;
 		}
-		
+
 		public override void ViewWillAppear(bool animated)
 		{
 			UpdateFlowDirection();
 			base.ViewWillAppear(animated);
 		}
-		
+
 		public override void ViewDidDisappear(bool animated)
 		{
 			base.ViewDidDisappear(animated);
 
-			if(View.Window is null)
+			if (View.Window is null)
 			{
 				_movedToWindow?.Invoke(this, EventArgs.Empty);
 			}
@@ -249,7 +249,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.ViewDidAppear(animated);
 
-			if(View.Window is not null)
+			if (View.Window is not null)
 			{
 				_movedToWindow?.Invoke(this, EventArgs.Empty);
 			}

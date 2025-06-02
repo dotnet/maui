@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement, IConstrainedView
 #if IOS
-	,IiOSPageSpecifics
+	, IiOSPageSpecifics
 #endif
 	{
 		/// <summary>

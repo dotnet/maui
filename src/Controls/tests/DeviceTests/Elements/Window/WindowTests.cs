@@ -136,7 +136,7 @@ namespace Microsoft.Maui.DeviceTests
 			bool hasNavigatingFromFired = false;
 			Page previousPage = null;
 
-			EventHandler<NavigatedToEventArgs> NavigatedToHandler = null;			
+			EventHandler<NavigatedToEventArgs> NavigatedToHandler = null;
 			NavigatedToHandler = (s, args) =>
 			{
 				((Page)s).NavigatedTo -= NavigatedToHandler;
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(previousPage, args.PreviousPage);
 			};
 
-			EventHandler<NavigatedFromEventArgs> NavigatedFromHandler = null;			
+			EventHandler<NavigatedFromEventArgs> NavigatedFromHandler = null;
 			NavigatedFromHandler = (s, args) =>
 			{
 				((Page)s).NavigatedFrom -= NavigatedFromHandler;
@@ -162,7 +162,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			};
 
-			EventHandler<NavigatingFromEventArgs> NavigatingFromHandler = null;			
+			EventHandler<NavigatingFromEventArgs> NavigatingFromHandler = null;
 			NavigatingFromHandler = (s, args) =>
 			{
 				Assert.False(hasNavigatedToFired);
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.DeviceTests
 						hasNavigatedToFired = false;
 						hasNavigatedFromFired = false;
 						hasNavigatingFromFired = false;
-						
+
 						// Disconnect the previous page from navigation events
 						previousPage.NavigatedTo -= NavigatedToHandler;
 						previousPage.NavigatedFrom -= NavigatedFromHandler;
