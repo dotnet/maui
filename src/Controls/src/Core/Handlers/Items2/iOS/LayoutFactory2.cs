@@ -267,6 +267,7 @@ internal static class LayoutFactory2
 	public static UICollectionViewLayout CreateCarouselLayout(
 		bool isHorizontal,
 		Thickness peekAreaInsets,
+		double itemSpacing,
 		WeakReference<CarouselView> weakItemsView,
 		WeakReference<CarouselViewController2> weakController)
 	{
@@ -274,7 +275,6 @@ internal static class LayoutFactory2
 		NSCollectionLayoutDimension itemHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
 		NSCollectionLayoutDimension groupWidth = NSCollectionLayoutDimension.CreateFractionalWidth(1);
 		NSCollectionLayoutDimension groupHeight = NSCollectionLayoutDimension.CreateFractionalHeight(1);
-		nfloat itemSpacing = 0;
 		NSCollectionLayoutGroup group = null;
 
 		var layout = new UICollectionViewCompositionalLayout((sectionIndex, environment) =>
@@ -324,7 +324,7 @@ internal static class LayoutFactory2
 			}
 
 			var section = NSCollectionLayoutSection.Create(group: group);
-			section.InterGroupSpacing = itemSpacing;
+			section.InterGroupSpacing = (nfloat)itemSpacing;
 			section.OrthogonalScrollingBehavior = isHorizontal
 				? UICollectionLayoutSectionOrthogonalScrollingBehavior.GroupPagingCentered
 				: UICollectionLayoutSectionOrthogonalScrollingBehavior.None;
