@@ -39,17 +39,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		protected override UICollectionViewLayout SelectLayout()
 		{
-			bool isHorizontal = VirtualView.ItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
-			var peekInsets = VirtualView.PeekAreaInsets;
-
 			var weakItemsView = new WeakReference<CarouselView>(ItemsView);
 			var weakController = new WeakReference<CarouselViewController2>((CarouselViewController2)Controller);
 
-			return LayoutFactory2.CreateCarouselLayout(
-				isHorizontal,
-				peekInsets,
-				weakItemsView,
-				weakController);
+			return LayoutFactory2.CreateCarouselLayout(weakItemsView,weakController);
 		}
 
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
