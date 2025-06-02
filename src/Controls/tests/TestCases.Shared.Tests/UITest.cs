@@ -386,8 +386,8 @@ namespace Microsoft.Maui.TestCases.Tests
 				}
 			}
 
-			// If can't extract specific percentage, assume significant difference
-			return 1.0;
+			// If can't extract specific percentage, throw an exception to indicate failure
+			throw new InvalidOperationException("Unable to extract difference percentage from exception message.");
 		}
 
 		protected void VerifyInternetConnectivity()
