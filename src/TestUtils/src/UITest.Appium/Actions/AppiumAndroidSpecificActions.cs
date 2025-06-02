@@ -81,7 +81,7 @@ namespace UITest.Appium
 		{
 			if (_appiumApp.Driver is AndroidDriver androidDriver)
 			{
-				// Toggle airplane mode on device.
+				// Toggle device data.
 				var currentConnectivity = androidDriver.ExecuteScript("mobile:getConnectivity") as IDictionary<string, object>;
 
 				if (currentConnectivity is not null && currentConnectivity.TryGetValue("data", out var currentState))
