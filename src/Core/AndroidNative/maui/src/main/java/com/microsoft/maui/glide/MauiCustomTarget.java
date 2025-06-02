@@ -86,6 +86,7 @@ public class MauiCustomTarget extends CustomTarget<Drawable> implements MauiTarg
         // we must fix it there to release the Glide cache entry properly
         post(() -> {
             if (PlatformInterop.isContextDestroyed(context)) {
+                if (logger.isVerboseLoggable) logger.v("clear() skipped - context destroyed: " + resourceLogIdentifier);
                 return;
             }
             Glide
