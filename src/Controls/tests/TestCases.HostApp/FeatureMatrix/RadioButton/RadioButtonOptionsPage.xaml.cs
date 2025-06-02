@@ -31,7 +31,7 @@ public partial class RadioButtonOptionsPage : ContentPage
 	{
 		_viewModel.Content = new Label
 		{
-			Text = "The label is set as the content of the RadioButton",
+			Text = "App Theme Selection",
 			FontSize = 14,
 			TextColor = Colors.Black,
 			BackgroundColor = Colors.SkyBlue

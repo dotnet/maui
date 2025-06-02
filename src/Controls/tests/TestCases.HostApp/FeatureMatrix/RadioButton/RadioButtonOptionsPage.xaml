@@ -12,15 +12,13 @@
 
        <ScrollView>
               <Grid ColumnDefinitions="Auto, Auto"
-                    RowDefinitions="Auto, Auto, Auto,Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto"
-                    RowSpacing="1"
-                    Padding="5">
+                    RowDefinitions="Auto, Auto, Auto,Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto, Auto">
 
                      <!-- Content -->
                      <Label Grid.Row="0"
                             Grid.Column="0"
                             Text="Content:"
-                            FontSize="15"
+                            FontSize="14"
                             VerticalOptions="Center"/>
                      <StackLayout Grid.Row="0"
                                   Grid.Column="1"
@@ -70,13 +68,13 @@
                                   Orientation="Horizontal">
                             <RadioButton AutomationId="GroupNameOneRadio"
                                          GroupName="GroupName"
-                                         Content="GroupOne"
+                                         Content="ThemeGroup"
                                          IsChecked="True"
                                          FontSize="14"
                                          CheckedChanged="OnGroupNameChanged"/>
                             <RadioButton AutomationId="GroupNameTwoRadio"
                                          GroupName="GroupName"
-                                         Content="GroupTwo"
+                                         Content="NotificationGroup"
                                          FontSize="14"
                                          CheckedChanged="OnGroupNameChanged"/>
                      </StackLayout>

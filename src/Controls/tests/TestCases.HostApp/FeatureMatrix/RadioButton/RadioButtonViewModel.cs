@@ -10,21 +10,21 @@ public class RadioButtonViewModel : INotifyPropertyChanged
 	private Color _borderColor = Colors.Transparent;
 	private double _borderWidth = -1d;
 	private double _characterSpacing = 0.0d;
-	private object _content = "RadioButtonOne";
+	private object _content = "Dark Mode";
 	private int _cornerRadius = -1;
 	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 	private FontAttributes _fontAttributes = FontAttributes.None;
 	private bool _fontAutoScalingEnabled = true;
 	private string _fontFamily = null;
 	private double _fontSize = 14d;
-	private string _groupName = "GroupOne";
+	private string _groupName = "ThemeGroup";
 	private bool _isChecked = false;
 	private bool _isEnabled = true;
 	private bool _isVisible = true;
 	private Color _textColor = Colors.Black;
 	private TextTransform _textTransform = TextTransform.Default;
-	private object _selectedValue = "1";
-	private object _value = "1";
+	private object _selectedValue = null;
+	private object _value = "One";
 
 	public event PropertyChangedEventHandler PropertyChanged;
 

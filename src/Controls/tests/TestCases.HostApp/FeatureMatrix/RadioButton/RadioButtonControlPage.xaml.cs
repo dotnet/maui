@@ -33,7 +33,7 @@ public partial class RadioButtonControlMainPage : ContentPage
 		if (e.Value)
 		{
 			var radioButton = sender as RadioButton;
-			if (radioButton != null && radioButton.GroupName == "GroupOne")
+			if (radioButton != null && radioButton.GroupName == "ThemeGroup")
 			{
 				SelectedValueLabelOne.Text = radioButton.Content.ToString();
 			}

@@ -21,7 +21,7 @@
                                    Grid.ColumnSpan="2"
                                    Grid.Row="0"
                                    Grid.Column="0">
-                     <Label Text="First Category"/>
+                     <Label Text="Theme Preferences"/>
                      <VerticalStackLayout RadioButtonGroup.SelectedValue="{Binding SelectedValue}"
                                           RadioButtonGroup.GroupName="{Binding GroupName}">
                             <RadioButton  CheckedChanged="RadioButton_CheckedChanged"
@@ -47,14 +47,14 @@
                                           AutomationId="RadioButtonControlOne"/>
 
                             <RadioButton CheckedChanged="RadioButton_CheckedChanged"
-                                         Content="RadioButtonTwo"
+                                         Content="Light Mode"
                                          GroupName="{Binding GroupName}"
                                          Margin="10"
                                          Value="Two"
                                          VerticalOptions="Center"
                                          AutomationId="RadioButtonControlTwo"/>
 
-                            <RadioButton Content="RadioButtonThree"
+                            <RadioButton Content="System Default"
                                          GroupName="{Binding GroupName}"
                                          CheckedChanged="RadioButton_CheckedChanged"
                                          Margin="10"
@@ -63,17 +63,17 @@
                                          AutomationId="RadioButtonControlThree"/>
                      </VerticalStackLayout>
 
-                     <Label Text="Second Category"/>
+                     <Label Text="Notification Settings"/>
                      <VerticalStackLayout>
-                            <RadioButton Content="RadioButtonFour"
-                                         GroupName="GroupTwo"
+                            <RadioButton Content="All Notifications"
+                                         GroupName="NotificationGroup"
                                          CheckedChanged="RadioButton_CheckedChanged"
                                          Margin="10"
                                          VerticalOptions="Center"
                                          AutomationId="RadioButtonControlFour"/>
 
-                            <RadioButton Content="RadioButtonFive"
-                                         GroupName="GroupTwo"
+                            <RadioButton Content="Important Only"
+                                         GroupName="NotificationGroup"
                                          Margin="10"
                                          CheckedChanged="RadioButton_CheckedChanged"
                                          VerticalOptions="Center"
@@ -83,7 +83,7 @@
 
               <Label Grid.Row="3"
                      Grid.Column="0"
-                     Text="Selected Value One:"
+                     Text="Selected Theme:"
                      FontSize="16"
                      VerticalTextAlignment="Start"
                      HorizontalTextAlignment="Start"
@@ -96,7 +96,7 @@
 
               <Label Grid.Row="4"
                      Grid.Column="0"
-                     Text="Selected Value Two:"
+                     Text="Selected Notification Level:"
                      FontSize="16"
                      VerticalTextAlignment="Start"
                      HorizontalTextAlignment="Start"
