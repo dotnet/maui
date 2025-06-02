@@ -317,6 +317,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var success = !await task;
 
 			UpdateToolBarVisible();
+			var parentingViewController = GetParentingViewController();
+			parentingViewController?.UpdateLeftBarButtonItem();
 			return success;
 		}
 
@@ -348,6 +350,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				poppedViewController?.Dispose();
 
 			UpdateToolBarVisible();
+			var parentingViewController = GetParentingViewController();
+			parentingViewController?.UpdateLeftBarButtonItem();
 			return actuallyRemoved;
 		}
 
