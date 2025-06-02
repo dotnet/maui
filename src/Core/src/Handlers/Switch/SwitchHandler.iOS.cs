@@ -63,8 +63,8 @@ namespace Microsoft.Maui.Handlers
 
 			ISwitch? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
 
-			NSObject? _willEnterForegroundObserveriOS;
-			NSObject? _windowDidBecomeKeyObserverMac;
+			NSObject? _willEnterForegroundObserver;
+			NSObject? _windowDidBecomeKeyObserver;
 
 			public void Connect(ISwitch virtualView, UISwitch platformView)
 			{
@@ -72,10 +72,10 @@ namespace Microsoft.Maui.Handlers
 				platformView.ValueChanged += OnControlValueChanged;
 
 #if MACCATALYST
-				_windowDidBecomeKeyObserverMac = NSNotificationCenter.DefaultCenter.AddObserver(
+				_windowDidBecomeKeyObserver = NSNotificationCenter.DefaultCenter.AddObserver(
 					new NSString("NSWindowDidBecomeKeyNotification"), _ => UpdateTrackOffColor(platformView));
 #elif IOS
-				_willEnterForegroundObserveriOS = NSNotificationCenter.DefaultCenter.AddObserver(
+				_willEnterForegroundObserver = NSNotificationCenter.DefaultCenter.AddObserver(
 					UIApplication.WillEnterForegroundNotification, _ => UpdateTrackOffColor(platformView));
 #endif
 			}
@@ -87,10 +87,10 @@ namespace Microsoft.Maui.Handlers
 			{
 				DispatchQueue.MainQueue.DispatchAsync(async () =>
 				{
-					await Task.Delay(10); // Small delay, necessary to allow UIKit to complete its internal layout and styling processes before re-applying the custom color
-
 					if (!platformView.On)
 					{
+						await Task.Delay(10); // Small delay, necessary to allow UIKit to complete its internal layout and styling processes before re-applying the custom color
+
 						if (VirtualView is ISwitch view && view.TrackColor is not null)
 						{
 							platformView.UpdateTrackColor(view);
@@ -103,15 +103,15 @@ namespace Microsoft.Maui.Handlers
 			{
 				platformView.ValueChanged -= OnControlValueChanged;
 
-				if (_willEnterForegroundObserveriOS is not null)
+				if (_willEnterForegroundObserver is not null)
 				{
-					NSNotificationCenter.DefaultCenter.RemoveObserver(_willEnterForegroundObserveriOS);
-					_willEnterForegroundObserveriOS = null;
+					NSNotificationCenter.DefaultCenter.RemoveObserver(_willEnterForegroundObserver);
+					_willEnterForegroundObserver = null;
 				}
-				if (_windowDidBecomeKeyObserverMac is not null)
+				if (_windowDidBecomeKeyObserver is not null)
 				{
-					NSNotificationCenter.DefaultCenter.RemoveObserver(_windowDidBecomeKeyObserverMac);
-					_windowDidBecomeKeyObserverMac = null;
+					NSNotificationCenter.DefaultCenter.RemoveObserver(_windowDidBecomeKeyObserver);
+					_windowDidBecomeKeyObserver = null;
 				}
 			}
 
