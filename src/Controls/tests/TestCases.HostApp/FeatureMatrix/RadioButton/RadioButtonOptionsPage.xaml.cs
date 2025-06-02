@@ -38,12 +38,12 @@ public partial class RadioButtonOptionsPage : ContentPage
 		};
 	}
 
-	private void OnIsCheckedChanged(object sender, EventArgs e)
+	private void OnIsVisibleChanged(object sender, CheckedChangedEventArgs e)
 	{
 		var radioButton = sender as RadioButton;
 		if (radioButton != null && radioButton.IsChecked)
 		{
-			_viewModel.IsChecked = radioButton.IsChecked;
+			_viewModel.IsVisible = radioButton.Content.ToString() == "True";
 		}
 	}
 

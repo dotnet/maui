@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.RadioButtonControlMainPage"
+             x:DataType="local:RadioButtonViewModel"
              Title="RadioButtonFeature">
 
        <ContentPage.ToolbarItems>
@@ -22,14 +23,14 @@
                                    Grid.Column="0">
                      <Label Text="First Category"/>
                      <VerticalStackLayout RadioButtonGroup.SelectedValue="{Binding SelectedValue}"
-                                          RadioButtonGroup.GroupName="Group1">
+                                          RadioButtonGroup.GroupName="{Binding GroupName}">
                             <RadioButton  CheckedChanged="RadioButton_CheckedChanged"
                                           Content="{Binding Content}"
                                           IsChecked="{Binding IsChecked}"
                                           IsVisible="{Binding IsVisible}"
                                           IsEnabled="{Binding IsEnabled}"
                                           GroupName="{Binding GroupName}"
-                                          Value="{Binding Value}"
+                                          Value="One"
                                           BorderColor="{Binding BorderColor}"
                                           BorderWidth="{Binding BorderWidth}"
                                           CharacterSpacing="{Binding CharacterSpacing}"
@@ -43,67 +44,67 @@
                                           TextTransform="{Binding TextTransform}"
                                           Margin="10"
                                           VerticalOptions="Center"
-                                          AutomationId="RadioButtonControl1"/>
+                                          AutomationId="RadioButtonControlOne"/>
 
                             <RadioButton CheckedChanged="RadioButton_CheckedChanged"
-                                         Content="RadioButton 2"
-                                         GroupName="Group1"
+                                         Content="RadioButtonTwo"
+                                         GroupName="{Binding GroupName}"
                                          Margin="10"
-                                         Value="2"
+                                         Value="Two"
                                          VerticalOptions="Center"
-                                         AutomationId="RadioButtonControl"/>
+                                         AutomationId="RadioButtonControlTwo"/>
 
-                            <RadioButton Content="RadioButton 3"
-                                         GroupName="Group1"
+                            <RadioButton Content="RadioButtonThree"
+                                         GroupName="{Binding GroupName}"
                                          CheckedChanged="RadioButton_CheckedChanged"
                                          Margin="10"
-                                         Value="3"
+                                         Value="Three"
                                          VerticalOptions="Center"
-                                         AutomationId="RadioButtonControl3"/>
+                                         AutomationId="RadioButtonControlThree"/>
                      </VerticalStackLayout>
 
                      <Label Text="Second Category"/>
                      <VerticalStackLayout>
-                            <RadioButton Content="RadioButton 4"
-                                         GroupName="Group2"
-                                         CheckedChanged="RadioButton_CheckedChanged_2"
+                            <RadioButton Content="RadioButtonFour"
+                                         GroupName="GroupTwo"
+                                         CheckedChanged="RadioButton_CheckedChanged"
                                          Margin="10"
                                          VerticalOptions="Center"
-                                         AutomationId="RadioButtonControl4"/>
+                                         AutomationId="RadioButtonControlFour"/>
 
-                            <RadioButton Content="RadioButton 5"
-                                         GroupName="Group2"
+                            <RadioButton Content="RadioButtonFive"
+                                         GroupName="GroupTwo"
                                          Margin="10"
-                                         CheckedChanged="RadioButton_CheckedChanged_2"
+                                         CheckedChanged="RadioButton_CheckedChanged"
                                          VerticalOptions="Center"
-                                         AutomationId="RadioButtonControl5"/>
+                                         AutomationId="RadioButtonControlFive"/>
                      </VerticalStackLayout>
               </VerticalStackLayout>
 
               <Label Grid.Row="3"
                      Grid.Column="0"
-                     Text="Selected Value:"
+                     Text="Selected Value One:"
                      FontSize="16"
                      VerticalTextAlignment="Start"
                      HorizontalTextAlignment="Start"
                      Margin="0,0,10,10"/>
               <Label Grid.Row="3"
                      Grid.Column="1"
-                     x:Name="SelectedValueLabel"
+                     x:Name="SelectedValueLabelOne"
                      FontSize="16"
-                     AutomationId="SelectedValueLabel"/>
+                     AutomationId="SelectedValueLabelOne"/>
 
               <Label Grid.Row="4"
                      Grid.Column="0"
-                     Text="Selected Value-2:"
+                     Text="Selected Value Two:"
                      FontSize="16"
                      VerticalTextAlignment="Start"
                      HorizontalTextAlignment="Start"
                      Margin="0,0,10,10"/>
               <Label Grid.Row="4"
                      Grid.Column="1"
-                     x:Name="SelectedValueLabel2"
+                     x:Name="SelectedValueLabelTwo"
                      FontSize="16"
-                     AutomationId="SelectedValueLabel2"/>
+                     AutomationId="SelectedValueLabelTwo"/>
        </Grid>
 </ContentPage>

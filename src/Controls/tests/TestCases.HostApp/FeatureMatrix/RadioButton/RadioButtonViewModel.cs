@@ -10,31 +10,23 @@ public class RadioButtonViewModel : INotifyPropertyChanged
 	private Color _borderColor = Colors.Transparent;
 	private double _borderWidth = -1d;
 	private double _characterSpacing = 0.0d;
-	private object _content = null;
+	private object _content = "RadioButtonOne";
 	private int _cornerRadius = -1;
-	private FlowDirection _flowDirection = FlowDirection.MatchParent;
+	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 	private FontAttributes _fontAttributes = FontAttributes.None;
 	private bool _fontAutoScalingEnabled = true;
 	private string _fontFamily = null;
-	private double _fontSize = 0d;
-	private string _groupName = null;
+	private double _fontSize = 14d;
+	private string _groupName = "GroupOne";
 	private bool _isChecked = false;
 	private bool _isEnabled = true;
 	private bool _isVisible = true;
-	private Color _textColor = Colors.Transparent;
+	private Color _textColor = Colors.Black;
 	private TextTransform _textTransform = TextTransform.Default;
 	private object _selectedValue = "1";
-	private object _value = null;
+	private object _value = "1";
 
 	public event PropertyChangedEventHandler PropertyChanged;
-
-	public RadioButtonViewModel()
-	{
-		Content = "RadioButton";
-		GroupName = "Group1";
-		FontSize = 14d;
-		TextColor = Colors.Black;
-	}
 
 	public Color BorderColor
 	{
@@ -255,6 +247,7 @@ public class RadioButtonViewModel : INotifyPropertyChanged
 			}
 		}
 	}
+
 	public object SelectedValue
 	{
 		get => _selectedValue;
@@ -267,6 +260,7 @@ public class RadioButtonViewModel : INotifyPropertyChanged
 			}
 		}
 	}
+
 	protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
 	{
 		PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

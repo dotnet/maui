@@ -24,7 +24,6 @@ public partial class RadioButtonControlMainPage : ContentPage
 
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
-		// reset the the control page values
 		BindingContext = _viewModel = new RadioButtonViewModel();
 		await Navigation.PushAsync(new RadioButtonOptionsPage(_viewModel));
 	}
@@ -34,23 +33,14 @@ public partial class RadioButtonControlMainPage : ContentPage
 		if (e.Value)
 		{
 			var radioButton = sender as RadioButton;
-			if (radioButton != null)
+			if (radioButton != null && radioButton.GroupName == "GroupOne")
 			{
-				SelectedValueLabel.Text = radioButton.Content.ToString();
+				SelectedValueLabelOne.Text = radioButton.Content.ToString();
+			}
+			else
+			{
+				SelectedValueLabelTwo.Text = radioButton.Content.ToString();
 			}
 		}
-	}
-
-	private void RadioButton_CheckedChanged_2(object sender, CheckedChangedEventArgs e)
-	{
-		if (e.Value)
-		{
-			var radioButton = sender as RadioButton;
-			if (radioButton != null)
-			{
-				SelectedValueLabel2.Text = radioButton.Content.ToString();
-			}
-		}
-
 	}
 }

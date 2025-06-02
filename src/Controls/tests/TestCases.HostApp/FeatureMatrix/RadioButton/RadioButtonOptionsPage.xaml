@@ -68,15 +68,15 @@
                      <StackLayout Grid.Row="2"
                                   Grid.Column="1"
                                   Orientation="Horizontal">
-                            <RadioButton AutomationId="GroupName1Radio"
+                            <RadioButton AutomationId="GroupNameOneRadio"
                                          GroupName="GroupName"
-                                         Content="Group1"
+                                         Content="GroupOne"
                                          IsChecked="True"
                                          FontSize="14"
                                          CheckedChanged="OnGroupNameChanged"/>
-                            <RadioButton AutomationId="GroupName2Radio"
+                            <RadioButton AutomationId="GroupNameTwoRadio"
                                          GroupName="GroupName"
-                                         Content="Group2"
+                                         Content="GroupTwo"
                                          FontSize="14"
                                          CheckedChanged="OnGroupNameChanged"/>
                      </StackLayout>
@@ -166,7 +166,7 @@
                             Keyboard="Numeric"
                             HorizontalOptions="Start"
                             WidthRequest="150"/>
-                     
+
                      <!-- Flow Direction -->
                      <Label Grid.Row="8"
                             Grid.Column="0"
@@ -179,7 +179,6 @@
                             <RadioButton AutomationId="FlowDirectionLeftToRight"
                                          GroupName="FlowDirection"
                                          Content="Left to Right"
-                                         IsChecked="True"
                                          FontSize="14"
                                          CheckedChanged="OnFlowDirectionChanged"/>
                             <RadioButton AutomationId="FlowDirectionRightToLeft"
@@ -251,7 +250,7 @@
                             Keyboard="Numeric"
                             HorizontalOptions="Start"
                             WidthRequest="150"/>
-                     
+
                      <!-- Is Enabled -->
                      <Label Grid.Row="12"
                             Grid.Column="0"
@@ -356,11 +355,17 @@
                             FontSize="16"
                             Margin="0,0,10,10"/>
                      <StackLayout Orientation="Horizontal"
-                            Grid.Row="16"
-                            Grid.Column="1">
-                            <RadioButton Content="1 " CheckedChanged="RadioButton_CheckedChanged" IsChecked="True"/>
-                            <RadioButton Content="2 " CheckedChanged="RadioButton_CheckedChanged"/>
-                            <RadioButton Content="3 " CheckedChanged="RadioButton_CheckedChanged"/>
+                                  Grid.Row="16"
+                                  Grid.Column="1">
+                            <RadioButton AutomationId="SelectedValueRadioButtonOne"
+                                         Content="One"
+                                         CheckedChanged="RadioButton_CheckedChanged"/>
+                            <RadioButton AutomationId="SelectedValueRadioButtonTwo"
+                                         Content="Two"
+                                         CheckedChanged="RadioButton_CheckedChanged"/>
+                            <RadioButton AutomationId="SelectedValueRadioButtonThree"
+                                         Content="Three"
+                                         CheckedChanged="RadioButton_CheckedChanged"/>
                      </StackLayout>
               </Grid>
        </ScrollView>
