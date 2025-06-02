@@ -932,6 +932,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element.Navigation.NavigationStack.Contains(pageBeingRemoved))
 			{
 				await (NavPage as INavigationPageController)?.RemoveAsyncInner(pageBeingRemoved, false, true);
+				UpdateFlyoutMenuButton();
+
 				if (_uiRequestedPop)
 				{
 					NavPage?.SendNavigatedFromHandler(pageBeingRemoved, NavigationType.Pop);
