@@ -225,7 +225,7 @@ public partial class RadioButtonOptionsPage : ContentPage
 		}
 	}
 
-	private void RadioButton_CheckedChanged(object sender, CheckedChangedEventArgs e)
+	private void OnSelectedRadioButton_CheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
 		var radioButton = sender as RadioButton;
 		if (radioButton != null && radioButton.IsChecked)

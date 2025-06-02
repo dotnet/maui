@@ -25,6 +25,12 @@ public partial class RadioButtonControlMainPage : ContentPage
 	private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
 	{
 		BindingContext = _viewModel = new RadioButtonViewModel();
+		RadioButtonControlTwo.IsChecked = false;
+		RadioButtonControlThree.IsChecked = false;
+		RadioButtonControlFour.IsChecked = false;
+		RadioButtonControlFive.IsChecked = false;
+		SelectedValueLabelOne.Text = string.Empty;
+		SelectedValueLabelTwo.Text = string.Empty;
 		await Navigation.PushAsync(new RadioButtonOptionsPage(_viewModel));
 	}
 
@@ -33,7 +39,7 @@ public partial class RadioButtonControlMainPage : ContentPage
 		if (e.Value)
 		{
 			var radioButton = sender as RadioButton;
-			if (radioButton != null && radioButton.GroupName == "ThemeGroup")
+			if (radioButton != null && radioButton.GroupName == "Theme")
 			{
 				SelectedValueLabelOne.Text = radioButton.Content.ToString();
 			}

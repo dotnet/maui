@@ -16,7 +16,9 @@
              RowDefinitions="*, Auto, Auto, Auto, Auto"
              ColumnDefinitions="0.5*, 0.5*"
              RowSpacing="10">
+
               <!-- RadioButton Control -->
+
               <VerticalStackLayout HorizontalOptions="Center"
                                    Grid.ColumnSpan="2"
                                    Grid.Row="0"
@@ -46,17 +48,21 @@
                                           VerticalOptions="Center"
                                           AutomationId="RadioButtonControlOne"/>
 
-                            <RadioButton CheckedChanged="RadioButton_CheckedChanged"
+                            <RadioButton x:Name="RadioButtonControlTwo"
+                                         CheckedChanged="RadioButton_CheckedChanged"
                                          Content="Light Mode"
                                          GroupName="{Binding GroupName}"
+                                         IsEnabled="{Binding IsEnabled}"
                                          Margin="10"
                                          Value="Two"
                                          VerticalOptions="Center"
                                          AutomationId="RadioButtonControlTwo"/>
 
-                            <RadioButton Content="System Default"
+                            <RadioButton x:Name="RadioButtonControlThree"
+                                         Content="System Default"
                                          GroupName="{Binding GroupName}"
                                          CheckedChanged="RadioButton_CheckedChanged"
+                                         IsEnabled="{Binding IsEnabled}"
                                          Margin="10"
                                          Value="Three"
                                          VerticalOptions="Center"
@@ -65,15 +71,17 @@
 
                      <Label Text="Notification Settings"/>
                      <VerticalStackLayout>
-                            <RadioButton Content="All Notifications"
-                                         GroupName="NotificationGroup"
+                            <RadioButton x:Name="RadioButtonControlFour"
+                                         Content="All Notifications"
+                                         GroupName="Notification"
                                          CheckedChanged="RadioButton_CheckedChanged"
                                          Margin="10"
                                          VerticalOptions="Center"
                                          AutomationId="RadioButtonControlFour"/>
 
-                            <RadioButton Content="Important Only"
-                                         GroupName="NotificationGroup"
+                            <RadioButton x:Name="RadioButtonControlFive"
+                                         Content="Important Only"
+                                         GroupName="Notification"
                                          Margin="10"
                                          CheckedChanged="RadioButton_CheckedChanged"
                                          VerticalOptions="Center"

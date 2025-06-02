@@ -68,13 +68,13 @@
                                   Orientation="Horizontal">
                             <RadioButton AutomationId="GroupNameOneRadio"
                                          GroupName="GroupName"
-                                         Content="ThemeGroup"
+                                         Content="Theme"
                                          IsChecked="True"
                                          FontSize="14"
                                          CheckedChanged="OnGroupNameChanged"/>
                             <RadioButton AutomationId="GroupNameTwoRadio"
                                          GroupName="GroupName"
-                                         Content="NotificationGroup"
+                                         Content="Notification"
                                          FontSize="14"
                                          CheckedChanged="OnGroupNameChanged"/>
                      </StackLayout>
@@ -357,13 +357,13 @@
                                   Grid.Column="1">
                             <RadioButton AutomationId="SelectedValueRadioButtonOne"
                                          Content="One"
-                                         CheckedChanged="RadioButton_CheckedChanged"/>
+                                         CheckedChanged="OnSelectedRadioButton_CheckedChanged"/>
                             <RadioButton AutomationId="SelectedValueRadioButtonTwo"
                                          Content="Two"
-                                         CheckedChanged="RadioButton_CheckedChanged"/>
+                                         CheckedChanged="OnSelectedRadioButton_CheckedChanged"/>
                             <RadioButton AutomationId="SelectedValueRadioButtonThree"
                                          Content="Three"
-                                         CheckedChanged="RadioButton_CheckedChanged"/>
+                                         CheckedChanged="OnSelectedRadioButton_CheckedChanged"/>
                      </StackLayout>
               </Grid>
        </ScrollView>

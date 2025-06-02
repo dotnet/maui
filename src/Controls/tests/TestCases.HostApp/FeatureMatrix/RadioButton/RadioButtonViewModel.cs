@@ -17,7 +17,7 @@ public class RadioButtonViewModel : INotifyPropertyChanged
 	private bool _fontAutoScalingEnabled = true;
 	private string _fontFamily = null;
 	private double _fontSize = 14d;
-	private string _groupName = "ThemeGroup";
+	private string _groupName = "Theme";
 	private bool _isChecked = false;
 	private bool _isEnabled = true;
 	private bool _isVisible = true;

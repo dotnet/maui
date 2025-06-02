@@ -19,15 +19,26 @@ public class RadioButtonFeatureTests : UITest
 		App.NavigateToGallery(RadioButtonFeatureMatrix);
 	}
 
-	[Test]
+	[Test, Order(1)]
+	[Category(UITestCategories.RadioButton)]
+	public void RadioButton_Checking_Default_Configuration_VerifyVisualState()
+	{
+		App.WaitForElement("RadioButtonControlOne");
+		// VerifyScreenshot();
+	}
+
+	[Test, Order(2)]
 	[Category(UITestCategories.RadioButton)]
 	public void RadioButton_Checking_Initial_Configuration_VerifyVisualState()
 	{
 		App.WaitForElement("RadioButtonControlOne");
-		// VerifyScreenshot();
 		App.Tap("RadioButtonControlOne");
+		App.WaitForElement("SelectedValueLabelOne");
+		Assert.That(App.WaitForElement("SelectedValueLabelOne").GetText(), Is.EqualTo("Dark Mode"));
 		App.WaitForElement("RadioButtonControlFour");
 		App.Tap("RadioButtonControlFour");
+		App.WaitForElement("SelectedValueLabelTwo");
+		Assert.That(App.WaitForElement("SelectedValueLabelTwo").GetText(), Is.EqualTo("All Notifications"));
 		// VerifyScreenshot();
 	}
 
@@ -307,17 +318,20 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
+
 		App.WaitForElement("RadioButtonControlOne");
 		App.Tap("RadioButtonControlOne");
 		App.WaitForElement("SelectedValueLabelOne");
 		Assert.That(App.WaitForElement("SelectedValueLabelOne").GetText(), Is.EqualTo(string.Empty));
-		App.WaitForElement("RadioButtonControlOne");
-		App.Tap("RadioButtonControlOne");
-		App.WaitForElement("SelectedValueLabelTwo");
+
+		App.WaitForElement("RadioButtonControlTwo");
+		App.Tap("RadioButtonControlTwo");
+		App.WaitForElement("SelectedValueLabelOne");
 		Assert.That(App.WaitForElement("SelectedValueLabelOne").GetText(), Is.EqualTo(string.Empty));
-		App.WaitForElement("RadioButtonControlOne");
-		App.Tap("RadioButtonControlOne");
-		App.WaitForElement("SelectedValueLabelThree");
+
+		App.WaitForElement("RadioButtonControlThree");
+		App.Tap("RadioButtonControlThree");
+		App.WaitForElement("SelectedValueLabelOne");
 		Assert.That(App.WaitForElement("SelectedValueLabelOne").GetText(), Is.EqualTo(string.Empty));
 	}
 
@@ -350,15 +364,18 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
+
 		App.WaitForElement("RadioButtonControlOne");
 		App.Tap("RadioButtonControlOne");
-		Assert.That(App.WaitForElement("SelectedValueLabelTwo").GetText(), Is.EqualTo("RadioButtonOne"));
+		Assert.That(App.WaitForElement("SelectedValueLabelTwo").GetText(), Is.EqualTo("Dark Mode"));
+
 		App.WaitForElement("RadioButtonControlFour");
 		App.Tap("RadioButtonControlFour");
-		Assert.That(App.WaitForElement("SelectedValueLabelTwo").GetText(), Is.EqualTo("RadioButtonFour"));
+		Assert.That(App.WaitForElement("SelectedValueLabelTwo").GetText(), Is.EqualTo("All Notifications"));
+
 		App.WaitForElement("RadioButtonControlFive");
 		App.Tap("RadioButtonControlFive");
-		// VerifyScreenshot();
+		Assert.That(App.WaitForElement("SelectedValueLabelTwo").GetText(), Is.EqualTo("Important Only"));
 	}
 
 	[Test]
@@ -372,6 +389,6 @@ public class RadioButtonFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElementTillPageNavigationSettled("RadioButtonControlOne");
-		Assert.That(App.WaitForElement("SelectedValueLabelOne").GetText(), Is.EqualTo("RadioButtonTwo"));
+		Assert.That(App.WaitForElement("SelectedValueLabelOne").GetText(), Is.EqualTo("Light Mode"));
 	}
 }
