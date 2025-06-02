@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.ImageControlMainPage"
+             Title="SliderFeature">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                     Clicked="NavigateToOptionsPage_Clicked"
+                     AutomationId="Options"/>
+    </ContentPage.ToolbarItems>
+    <Border x:Name="Container"
+            Stroke="Black"
+            StrokeThickness="2"
+            HeightRequest="{Binding ContainerHeight}"
+            WidthRequest="{Binding ContainerWidth}"
+            BackgroundColor="LightGray"
+            HorizontalOptions="Center">
+
+        <!-- Foreground Test Image -->
+        <Image x:Name="TestImage"
+               Aspect="{Binding Aspect}"
+               IsAnimationPlaying="{Binding IsAnimationPlaying}"
+               IsOpaque="{Binding IsOpaque}"
+               Source="{Binding Source}"
+               AutomationId="ImageControl"/>
+    </Border>
+</ContentPage>
