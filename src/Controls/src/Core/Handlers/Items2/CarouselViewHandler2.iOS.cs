@@ -41,11 +41,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 		{
 			bool isHorizontal = VirtualView.ItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal;
 			var peekInsets = VirtualView.PeekAreaInsets;
-			double itemSpacing = 0;
-			if (VirtualView.ItemsLayout is LinearItemsLayout linearItemsLayout)
-			{
-				itemSpacing = linearItemsLayout.ItemSpacing;
-			}
 
 			var weakItemsView = new WeakReference<CarouselView>(ItemsView);
 			var weakController = new WeakReference<CarouselViewController2>((CarouselViewController2)Controller);
@@ -53,7 +48,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return LayoutFactory2.CreateCarouselLayout(
 				isHorizontal,
 				peekInsets,
-				itemSpacing,
 				weakItemsView,
 				weakController);
 		}
