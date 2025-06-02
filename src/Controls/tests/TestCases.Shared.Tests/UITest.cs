@@ -125,7 +125,6 @@ namespace Microsoft.Maui.TestCases.Tests
 			string? name = null,
 			TimeSpan? retryDelay = null,
 			int cropTop = 0,
-			int cropBottom = 0
 			int cropBottom = 0,
 			double tolerance = 0.0
 #if MACUITEST || WINTEST
