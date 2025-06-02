@@ -56,7 +56,14 @@ namespace Maui.Controls.Sample
         }
         private void IsPasswordTrueOrFalse_Clicked(object sender, EventArgs e)
         {
-            _viewModel.IsPassword = IsPasswordTrue.IsChecked;
+            if (IsPasswordTrue.IsChecked)
+            {
+                _viewModel.IsPassword = true;
+            }
+            else if (IsPasswordFalse.IsChecked)
+            {
+                _viewModel.IsPassword = false;
+            }
         }
 
         private void ReturnTypeButton_Clicked(object sender, EventArgs e)
@@ -81,7 +88,7 @@ namespace Maui.Controls.Sample
             if (int.TryParse(MaxLengthEntry.Text, out int maxLength))
             {
                 _viewModel.MaxLength = maxLength;
-            }   
+            }
         }
 
         private void SelectionLength_Clicked(object sender, EventArgs e)
@@ -95,14 +102,20 @@ namespace Maui.Controls.Sample
         {
             if (int.TryParse(CursorPositionEntry.Text, out int cursorPosition))
             {
-                _viewModel.IsCursorVisible = true;
                 _viewModel.CursorPosition = cursorPosition;
             }
         }
-        
+
         private void IsCursorVisibleTrueOrFalse_Clicked(object sender, EventArgs e)
         {
-            _viewModel.IsCursorVisible = IsCursorVisibleTrue.IsChecked;
+            if (IsCursorVisibleTrue.IsChecked)
+            {
+                _viewModel.IsCursorVisible = true;
+            }
+            else if (IsCursorVisibleFalse.IsChecked)
+            {
+                _viewModel.IsCursorVisible = false;
+            }
         }
 
         private void FontSizeEntry_TextChanged(object sender, TextChangedEventArgs e)
@@ -123,16 +136,37 @@ namespace Maui.Controls.Sample
 
         private void IsReadOnlyTrueOrFalse_Clicked(object sender, EventArgs e)
         {
-            _viewModel.IsReadOnly = IsReadOnlyTrue.IsChecked;
+            if (IsReadOnlyTrue.IsChecked)
+            {
+                _viewModel.IsReadOnly = true;
+            }
+            else if (IsReadOnlyFalse.IsChecked)
+            {
+                _viewModel.IsReadOnly = false;
+            }
         }
         private void IsTextPredictionEnabledTrueOrFalse_Clicked(object sender, EventArgs e)
         {
-            _viewModel.IsTextPredictionEnabled = IsTextPredictionEnabledTrue.IsChecked;
+            if (IsTextPredictionEnabledTrue.IsChecked)
+            {
+                _viewModel.IsTextPredictionEnabled = true;
+            }
+            else if (IsTextPredictionEnabledFalse.IsChecked)
+            {
+                _viewModel.IsTextPredictionEnabled = false;
+            }
         }
 
         private void IsSpellCheckEnabledTrueOrFalse_Clicked(object sender, EventArgs e)
         {
-            _viewModel.IsSpellCheckEnabled = IsSpellCheckEnabledTrue.IsChecked;
+            if (IsSpellCheckEnabledTrue.IsChecked)
+            {
+                _viewModel.IsSpellCheckEnabled = true;
+            }
+            else if (IsSpellCheckEnabledFalse.IsChecked)
+            {
+                _viewModel.IsSpellCheckEnabled = false;
+            }
         }
 
         private void KeyboardButton_Clicked(object sender, EventArgs e)

@@ -23,12 +23,14 @@ namespace  Maui.Controls.Sample
 		{
 			InitializeComponent();
 			_viewModel = viewModel;
+			_viewModel.Text = "Test Entry";
 			BindingContext = _viewModel;
 		}
 
 		private async void NavigateToOptionsPage_Clicked(object sender, EventArgs e)
         {
 			BindingContext = _viewModel = new EntryViewModel();
+			_viewModel.Text = "Test Entry";
             await Navigation.PushAsync(new EntryOptionsPage(_viewModel));
         }
 	}

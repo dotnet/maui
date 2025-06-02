@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample
         private Color _textColor = Colors.Black;
         private double _fontSize = 14;
         private TextAlignment _horizontalTextAlignment = TextAlignment.Start;
-        private TextAlignment _verticalTextAlignment = TextAlignment.Start;
+        private TextAlignment _verticalTextAlignment = TextAlignment.Center;
         private bool _isPassword = false;
         private double _characterSpacing = 0;
         private ReturnType _returnType = ReturnType.Default;
@@ -25,7 +25,6 @@ namespace Maui.Controls.Sample
         private Keyboard _keyboard = Keyboard.Default;
         private string _fontFamily = null;
         public event PropertyChangedEventHandler PropertyChanged;
-
 
         public string Text
         {
@@ -89,11 +88,7 @@ namespace Maui.Controls.Sample
         public int CursorPosition
         {
             get => _cursorPosition;
-            set
-            {
-                _cursorPosition = value;
-                OnPropertyChanged();
-            }
+            set { _cursorPosition = value; OnPropertyChanged(); }
         }
         public int SelectionLength
         {
@@ -127,7 +122,7 @@ namespace Maui.Controls.Sample
             set { _fontFamily = value; OnPropertyChanged(); }
         }
 
-       protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
