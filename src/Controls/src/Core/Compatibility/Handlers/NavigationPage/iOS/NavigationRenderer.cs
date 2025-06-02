@@ -111,8 +111,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			View.SetNeedsLayout();
 
-			var parentingViewController = GetParentingViewController();
-			parentingViewController?.UpdateLeftBarButtonItem();
+			UpdateFlyoutMenuButton();
 		}
 
 		public Task<bool> PopToRootAsync(Page page, bool animated = true)
@@ -316,8 +315,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var success = !await task;
 
 			UpdateToolBarVisible();
-			var parentingViewController = GetParentingViewController();
-			parentingViewController?.UpdateLeftBarButtonItem();
+			UpdateFlyoutMenuButton();
 			return success;
 		}
 
@@ -349,8 +347,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				poppedViewController?.Dispose();
 
 			UpdateToolBarVisible();
-			var parentingViewController = GetParentingViewController();
-			parentingViewController?.UpdateLeftBarButtonItem();
+			UpdateFlyoutMenuButton();
 			return actuallyRemoved;
 		}
 
@@ -415,6 +412,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (flyoutDetail != null && parentPages.Append((Page)Element).Contains(flyoutDetail.Detail))
 				_parentFlyoutPage = flyoutDetail;
+		}
+
+		void UpdateFlyoutMenuButton(Page pageBeingRemoved = null)
+		{
+			var parentingViewController = GetParentingViewController();
+			parentingViewController?.UpdateLeftBarButtonItem(pageBeingRemoved);
 		}
 
 		TaskCompletionSource<bool> _pendingNavigationRequest;
@@ -693,8 +696,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				ViewControllers = _removeControllers;
 			}
 			target.Dispose();
-			var parentingViewController = GetParentingViewController();
-			parentingViewController?.UpdateLeftBarButtonItem(page);
+			UpdateFlyoutMenuButton(page);
 		}
 
 		void RemoveViewControllers(bool animated)
