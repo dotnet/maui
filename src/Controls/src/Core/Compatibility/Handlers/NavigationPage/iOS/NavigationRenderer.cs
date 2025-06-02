@@ -1959,8 +1959,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return (Current.Handler as IPlatformViewHandler)?.ViewController;
 		}
 
-
-
 		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler _movedToWindow;
 		event EventHandler IUIViewLifeCycleEvents.MovedToWindow

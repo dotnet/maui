@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			Page?.SendAppearing();
 			base.ViewDidAppear(animated);
 
-			if(View.Window is not null)
+			if (View.Window is not null)
 			{
 				_movedToWindow?.Invoke(this, EventArgs.Empty);
 			}
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			base.ViewDidDisappear(animated);
 			Page?.SendDisappearing();
 
-			if(View.Window is null)
+			if (View.Window is null)
 			{
 				_movedToWindow?.Invoke(this, EventArgs.Empty);
 			}
