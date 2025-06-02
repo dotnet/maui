@@ -68,6 +68,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class PlatformInterop {
+    private static final PlatformLogger logger = new PlatformLogger("PlatformInterop");
 
     /**
      * Checks if the given context is destroyed.
@@ -92,7 +93,7 @@ public class PlatformInterop {
                 }
             } catch (Exception e) {
                 // Log warning if there's an exception getting the lifecycle state, consider it destroyed
-                android.util.Log.w("PlatformInterop", "Exception checking lifecycle state, assuming destroyed", e);
+                logger.w("Exception checking lifecycle state, assuming destroyed", e);
                 return true;
             }
         } else if (activity != null) {
