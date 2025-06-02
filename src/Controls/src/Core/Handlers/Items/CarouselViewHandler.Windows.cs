@@ -549,6 +549,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				&& currentItemPosition != -1)
 			{
 				carouselPosition = currentItemPosition;
+				ItemsView.Position = currentItemPosition;
+			}
+
+			if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+			{
+				carouselPosition = count == 0 ? 0 : count - 1;
+			}
+			else if (ItemsView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				carouselPosition = 0;
 			}
 
 			SetCarouselViewCurrentItem(carouselPosition);
