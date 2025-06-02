@@ -10,7 +10,7 @@ public class Issue29740 : _IssuesUITest
 	{
 	}
 
-	public override string Issue => "[Windows]Stepper control fails to reach maximum value when increment exceeds remaining threshold";
+	public override string Issue => "[Windows] Stepper control fails to reach maximum value when increment exceeds remaining threshold";
 
 	[Test]
 	[Category(UITestCategories.Stepper)]
