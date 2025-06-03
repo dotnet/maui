@@ -10,6 +10,39 @@ public class BoxViewViewModal : INotifyPropertyChanged
     private double _height = 100;
     private bool _isVisible = true;
     private double _opacity = 1.0;
+    private CornerRadius _cornerRadius;
+    private bool _isRedChecked;
+    private bool _isBlueChecked;
+
+    public bool IsRedChecked
+    {
+        get => _isRedChecked;
+        set
+        {
+            if (_isRedChecked != value)
+            {
+                _isRedChecked = value;
+                if (value)
+                    Color = Colors.Red;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public bool IsBlueChecked
+    {
+        get => _isBlueChecked;
+        set
+        {
+            if (_isBlueChecked != value)
+            {
+                _isBlueChecked = value;
+                if (value)
+                    Color = Colors.Blue;
+                OnPropertyChanged();
+            }
+        }
+    }
     public void ResetToDefaults()
     {
         Color = Colors.Blue;
@@ -18,7 +51,9 @@ public class BoxViewViewModal : INotifyPropertyChanged
         Width = 200;
         Height = 100;
         IsVisible = true;
-         HasShadow = false;
+        HasShadow = false;
+        IsRedChecked = false;
+        IsBlueChecked = true;
     }
     public double Opacity
     {
@@ -32,7 +67,6 @@ public class BoxViewViewModal : INotifyPropertyChanged
             }
         }
     }
-    private CornerRadius _cornerRadius;
     public CornerRadius CornerRadius
     {
         get => _cornerRadius;
