@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -53,7 +54,11 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/SolidColorBrush.xml" path="//Member[@MemberName='GetHashCode']/Docs/*" />
 		public override int GetHashCode()
 		{
-			return -1234567890 ^ (Color?.GetHashCode() ?? 0);
+#if NETSTANDARD
+			return (int)(374761393U + 3266489917U ^ (Color?.GetHashCode() ?? 0));
+#else
+			return HashCode.Combine(Color);
+#endif
 		}
 	}
 }
