@@ -71,6 +71,4 @@ public partial class ButtonOptionsPage : ContentPage
 				: TextTransform.Uppercase;
 		}
 	}
-
-
 }

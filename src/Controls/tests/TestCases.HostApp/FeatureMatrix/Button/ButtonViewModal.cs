@@ -7,19 +7,19 @@ namespace Maui.Controls.Sample;
 
 public class ButtonViewModal : INotifyPropertyChanged
 {
-    private Color _borderColor = default;
-    private double _borderWidth = default;
-    private double _characterSpacing = default;
-    private ICommand _command = default;
-    private int _cornerRadius = default;
-    private FontAttributes _fontAttributes = default;
-    private string _fontFamily = default;
-    private double _fontSize = default;
-    private LineBreakMode _lineBreakMode = default;
-    private double _padding = default;
-    private string _text = default;
-    private Color _textColor = Colors.White;
-    private TextTransform _textTransform = default;
+    private Color _borderColor = Colors.White;
+    private double _borderWidth = 0d;
+    private double _characterSpacing = 0.0d;
+    private ICommand _command = null;
+    private int _cornerRadius = 0;
+    private FontAttributes _fontAttributes = FontAttributes.None;
+    private string _fontFamily = null;
+    private double _fontSize = 0d;
+    private LineBreakMode _lineBreakMode = LineBreakMode.NoWrap;
+    private double _padding = 0d;
+    private string _text = null;
+    private Color _textColor = Colors.Black;
+    private TextTransform _textTransform = TextTransform.Default;
 
     public Color BorderColor
     {

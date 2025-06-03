@@ -47,7 +47,7 @@ public class ButtonFeatureTests : UITest
         App.Tap("Options");
         App.WaitForElement("BorderWidthEntry");
         App.ClearText("BorderWidthEntry");
-        App.EnterText("BorderWidthEntry", "20");
+        App.EnterText("BorderWidthEntry", "5");
         App.WaitForElement("LineBreakModeCharacterWrapButton");
         App.Tap("LineBreakModeCharacterWrapButton");
         App.WaitForElement("TextEntry");
