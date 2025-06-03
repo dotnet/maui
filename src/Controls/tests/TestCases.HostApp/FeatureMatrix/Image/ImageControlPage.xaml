@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:Class="Maui.Controls.Sample.ImageControlMainPage"
-             Title="SliderFeature">
+             x:DataType="local:ImageViewModel"
+             Title="ImageFeature">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Options"

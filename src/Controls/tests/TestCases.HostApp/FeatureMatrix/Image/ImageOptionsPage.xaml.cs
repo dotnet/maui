@@ -90,10 +90,10 @@ public partial class ImageOptionsPage : ContentPage
 				case "FontImage":
 					_viewModel.Source = new FontImageSource
 					{
-						FontFamily = "fa-regular-400.ttf",
-						Glyph = "\xf0f3",
-						Color = _viewModel.FontColor,
-						Size = _viewModel.FontSize
+						FontFamily = "Ion",
+						Glyph = "\uf30c",
+						Color = _viewModel.Color,
+						Size = _viewModel.Size
 					};
 					break;
 			}
@@ -107,16 +107,13 @@ public partial class ImageOptionsPage : ContentPage
 			switch (rb.Content?.ToString())
 			{
 				case "Red":
-					_viewModel.FontColor = Colors.Red;
+					_viewModel.Color = Colors.Red;
 					break;
 				case "Green":
-					_viewModel.FontColor = Colors.Green;
+					_viewModel.Color = Colors.Green;
 					break;
 				case "Blue":
-					_viewModel.FontColor = Colors.Blue;
-					break;
-				case "Black":
-					_viewModel.FontColor = Colors.Black;
+					_viewModel.Color = Colors.Blue;
 					break;
 			}
 		}
@@ -132,7 +129,7 @@ public partial class ImageOptionsPage : ContentPage
 	{
 		if (double.TryParse(e.NewTextValue, out double newSize) && newSize > 0)
 		{
-			_viewModel.FontSize = newSize;
+			_viewModel.Size = newSize;
 		}
 	}
 }

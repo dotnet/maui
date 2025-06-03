@@ -320,6 +320,7 @@ public class ImageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/22210
 	[Test]
 	[Category(UITestCategories.Image)]
 	public void VerifyFontImageWithFontSize()
@@ -336,4 +337,5 @@ public class ImageFeatureTests : UITest
 		App.WaitForElement("ImageControl");
 		VerifyScreenshot();
 	}
+#endif
 }
