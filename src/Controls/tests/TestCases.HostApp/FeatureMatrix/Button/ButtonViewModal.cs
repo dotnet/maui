@@ -15,6 +15,8 @@ public class ButtonViewModal : INotifyPropertyChanged
     private FontAttributes _fontAttributes = FontAttributes.None;
     private string _fontFamily = null;
     private double _fontSize = 0d;
+    private bool _isEnabled = true;
+    private bool _isVisible = true;
     private LineBreakMode _lineBreakMode = LineBreakMode.NoWrap;
     private double _padding = 0d;
     private string _text = null;
@@ -33,6 +35,7 @@ public class ButtonViewModal : INotifyPropertyChanged
             }
         }
     }
+
     public double BorderWidth
     {
         get => _borderWidth;
@@ -45,6 +48,7 @@ public class ButtonViewModal : INotifyPropertyChanged
             }
         }
     }
+
     public double CharacterSpacing
     {
         get => _characterSpacing;
@@ -57,6 +61,7 @@ public class ButtonViewModal : INotifyPropertyChanged
             }
         }
     }
+
     public ICommand Command
     {
         get => _command;
@@ -69,6 +74,7 @@ public class ButtonViewModal : INotifyPropertyChanged
             }
         }
     }
+
     public int CornerRadius
     {
         get => _cornerRadius;
@@ -81,6 +87,7 @@ public class ButtonViewModal : INotifyPropertyChanged
             }
         }
     }
+
     public FontAttributes FontAttributes
     {
         get => _fontAttributes;
@@ -93,6 +100,7 @@ public class ButtonViewModal : INotifyPropertyChanged
             }
         }
     }
+
     public string FontFamily
     {
         get => _fontFamily;
@@ -105,6 +113,7 @@ public class ButtonViewModal : INotifyPropertyChanged
             }
         }
     }
+
     public double FontSize
     {
         get => _fontSize;
@@ -117,6 +126,33 @@ public class ButtonViewModal : INotifyPropertyChanged
             }
         }
     }
+
+    public bool IsEnabled
+    {
+        get => _isEnabled;
+        set
+        {
+            if (_isEnabled != value)
+            {
+                _isEnabled = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public bool IsVisible
+    {
+        get => _isVisible;
+        set
+        {
+            if (_isVisible != value)
+            {
+                _isVisible = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public LineBreakMode LineBreakMode
     {
         get => _lineBreakMode;
@@ -129,6 +165,7 @@ public class ButtonViewModal : INotifyPropertyChanged
             }
         }
     }
+
     public double Padding
     {
         get => _padding;
@@ -141,6 +178,7 @@ public class ButtonViewModal : INotifyPropertyChanged
             }
         }
     }
+
     public string Text
     {
         get => _text;
@@ -153,6 +191,7 @@ public class ButtonViewModal : INotifyPropertyChanged
             }
         }
     }
+
     public Color TextColor
     {
         get => _textColor;
@@ -165,6 +204,7 @@ public class ButtonViewModal : INotifyPropertyChanged
             }
         }
     }
+
     public TextTransform TextTransform
     {
         get => _textTransform;
@@ -183,12 +223,8 @@ public class ButtonViewModal : INotifyPropertyChanged
         Command = new Command<string>(
             execute: (buttonText) =>
             {
-                if (buttonText == "Command Text")
-                {
-                    Text = "Command Executed";
-                }
-            },
-            canExecute: (buttonText) => buttonText == "Command Text"
+                Text = "Command Executed";
+            }
         );
     }
 
@@ -197,5 +233,4 @@ public class ButtonViewModal : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
-
 }

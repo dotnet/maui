@@ -48,6 +48,7 @@ namespace Maui.Controls.Sample
 			// Elements
 			new GalleryPageFactory(() => new ActivityIndicatorCoreGalleryPage(), "ActivityIndicator Gallery"),
 			new GalleryPageFactory(() => new BoxViewCoreGalleryPage(), "Box Gallery"),
+			new GalleryPageFactory(() => new ButtonControlPage(), "Button Feature Matrix"),
 			new GalleryPageFactory(() => new ButtonCoreGalleryPage(), "Button Gallery"),
 			new GalleryPageFactory(() => new CarouselViewCoreGalleryPage(), "CarouselView Gallery"),
 			new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),
@@ -78,7 +79,6 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new WebViewCoreGalleryPage(), "WebView Gallery"),
 			new GalleryPageFactory(() => new SliderControlPage(), "Slider Feature Matrix"),
 			new GalleryPageFactory(() => new CollectionViewFeaturePage(), "CollectionView Feature Matrix"),
-			new GalleryPageFactory(() => new ButtonControlPage(), "Button Feature Matrix"),
 		};
 
 		public CorePageView(Page rootPage)

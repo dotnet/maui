@@ -36,6 +36,7 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", "Button Text");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
     }
 
@@ -55,6 +56,7 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", longText);
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
     }
 
@@ -72,6 +74,7 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", "ButtonText");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
     }
 #endif
@@ -86,10 +89,10 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", "Command Text");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         App.WaitForElement("ButtonControl");
         App.Tap("ButtonControl");
-        var buttonText = App.FindElement("ButtonControl").GetText();
-        Assert.That(buttonText, Is.EqualTo("Command Executed"));
+        Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("Command Executed"));
     }
 
     [Test]
@@ -108,7 +111,19 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", "Button Text");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
+    }
+
+    [Test]
+    [Category(UITestCategories.Button)]
+    public void Button_VerifiesAllEventHandlersExecute()
+    {
+        App.WaitForElement("ButtonControl");
+        App.Tap("ButtonControl");
+        Assert.That(App.FindElement("ClickedEventLabel").GetText(), Is.EqualTo("Clicked Event Executed"));
+        Assert.That(App.FindElement("PressedEventLabel").GetText(), Is.EqualTo("Pressed Event Executed"));
+        Assert.That(App.FindElement("ReleasedEventLabel").GetText(), Is.EqualTo("Released Event Executed"));
     }
 
     [Test]
@@ -125,6 +140,7 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", "Button Text");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
     }
 
@@ -140,6 +156,7 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", "Button Text");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
     }
 
@@ -157,6 +174,7 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", "Button Text");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
     }
 
@@ -172,6 +190,7 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", "Button Text");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
     }
 
@@ -189,6 +208,7 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", "Button Text");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
     }
 
@@ -208,6 +228,7 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", longText);
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
     }
 
@@ -224,6 +245,7 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", "Button Text");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
     }
 
@@ -242,7 +264,37 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", "Button Text");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
+    }
+
+    [Test]
+    [Category(UITestCategories.Button)]
+    public void Button_SetIsEnabledFalse_VerifyButtonState()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("IsEnabledFalseButton");
+        App.Tap("IsEnabledFalseButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
+        App.WaitForElement("ButtonControl");
+        App.Tap("ButtonControl");
+        Assert.That(App.FindElement("ClickedEventLabel").GetText(), Is.EqualTo(string.Empty));
+    }
+
+    [Test]
+    [Category(UITestCategories.Button)]
+    public void Button_SetIsVisibleFalse_VerifyButtonState()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("IsVisibleFalseButton");
+        App.Tap("IsVisibleFalseButton");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForNoElement("ButtonControl");
     }
 
     [Test]
@@ -258,6 +310,7 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", longText);
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
     }
 
@@ -279,6 +332,7 @@ public class ButtonFeatureTests : UITest
         App.EnterText("TextEntry", "Button Text");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
     }
 
@@ -294,6 +348,7 @@ public class ButtonFeatureTests : UITest
         App.Tap("TextColorGreenButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         // VerifyScreenshot();
     }
 
@@ -309,6 +364,7 @@ public class ButtonFeatureTests : UITest
         App.Tap("TextTransformUppercaseButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("BUTTONTEXT"));
     }
 }
