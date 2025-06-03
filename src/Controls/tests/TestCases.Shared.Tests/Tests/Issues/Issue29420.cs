@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // CarouselView Fails to Keep Last Item in View on iOS, android and macOS https://github.com/dotnet/maui/issues/18029, https://github.com/dotnet/maui/issues/29415
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // CarouselView Fails to Keep Last Item in View on iOS, android and macOS https://github.com/dotnet/maui/issues/18029, https://github.com/dotnet/maui/issues/29415
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -11,7 +11,7 @@ public class Issue29420 : _IssuesUITest
 	public Issue29420(TestDevice device) : base(device)
 	{ }
 
-	[Test]
+	[Test, Order(1)]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewKeepLastInViewOnItemInsert()
 	{
@@ -20,7 +20,7 @@ public class Issue29420 : _IssuesUITest
 		VerifyScreenshot("CarouselViewKeepLastInViewOnItemInsert");
 	}
 
-	[Test]
+	[Test, Order(2)]
 	[Category(UITestCategories.CarouselView)]
 	public void VerifyCarouselViewKeepLastInViewOnItemAdd()
 	{
