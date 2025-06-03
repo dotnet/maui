@@ -83,13 +83,6 @@ public class ButtonFeatureTests : UITest
     [Category(UITestCategories.Button)]
     public void Button_SetCommandAndCommandParameter()
     {
-        App.WaitForElement("Options");
-        App.Tap("Options");
-        App.WaitForElement("TextEntry");
-        App.EnterText("TextEntry", "Command Text");
-        App.WaitForElement("Apply");
-        App.Tap("Apply");
-        App.WaitForElementTillPageNavigationSettled("ButtonControl");
         App.WaitForElement("ButtonControl");
         App.Tap("ButtonControl");
         Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("Command Executed"));
