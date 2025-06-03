@@ -1,4 +1,5 @@
 ﻿using System;
+using AppKit;
 using Foundation;
 using UIKit;
 
@@ -43,6 +44,16 @@ namespace Microsoft.Maui.Handlers
 			{
 				controller.SetUpTitleBar(window, mauiContext);
 			}
+		}
+
+		public static void MapIsMaximizable(IWindowHandler handler, IWindow window)
+		{
+				
+		}
+
+		public static void MapIsMinimizable(IWindowHandler handler, IWindow window)
+		{
+			
 		}
 #endif
 
