@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Platform
 
 			logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", fullUrl);
 
-			var relativePath = HybridWebViewHandler.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
+			var relativePath = HybridWebViewHandler.AppOriginUri.MakeRelativeUri(uri).ToString();
 
 			// 1.a. Try the special "_framework/hybridwebview.js" path
 			if (relativePath == HybridWebViewHandler.HybridWebViewDotJsPath)

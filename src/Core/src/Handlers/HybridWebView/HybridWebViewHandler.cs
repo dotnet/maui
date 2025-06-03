@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Handlers
 		internal static readonly Uri AppOriginUri = new(AppOrigin);
 
 		internal const string InvokeDotNetPath = "__hwvInvokeDotNet";
-		internal const string HybridWebViewDotJsPath = "_framework\\hybridwebview.js";
+		internal const string HybridWebViewDotJsPath = "_framework/hybridwebview.js";
 
 		public static IPropertyMapper<IHybridWebView, IHybridWebViewHandler> Mapper = new PropertyMapper<IHybridWebView, IHybridWebViewHandler>(ViewHandler.ViewMapper)
 		{

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Storage;
 using UIKit;
 using WebKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -229,7 +230,7 @@ namespace Microsoft.Maui.Handlers
 
 				if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
 				{
-					var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('\\', '/');
+					var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString();
 
 					var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, Handler.VirtualView.HybridRoot!);
 
@@ -263,7 +264,7 @@ namespace Microsoft.Maui.Handlers
 					// 2. If nothing found yet, try to get static content from the asset path
 					if (string.IsNullOrEmpty(relativePath))
 					{
-						relativePath = Handler.VirtualView.DefaultFile!.Replace('\\', '/');
+						relativePath = Handler.VirtualView.DefaultFile;
 						contentType = "text/html";
 					}
 					else
@@ -275,7 +276,8 @@ namespace Microsoft.Maui.Handlers
 						}
 					}
 
-					var assetPath = Path.Combine(bundleRootDir, relativePath);
+					var assetPath = Path.Combine(bundleRootDir, relativePath!);
+					assetPath = FileSystemUtils.NormalizePath(assetPath);
 
 					if (File.Exists(assetPath))
 					{
