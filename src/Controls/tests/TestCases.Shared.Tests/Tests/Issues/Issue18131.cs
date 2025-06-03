@@ -13,7 +13,7 @@ public class Issue18131 : _IssuesUITest
 
 	protected override bool ResetAfterEachTest => true;
 
-	[Test]
+	[Test, Order(1)]
 	public void CheckBackgroundColorUpdatesShapeBackgroundColor()
 	{
 		Exception? exception = null;
@@ -30,7 +30,7 @@ public class Issue18131 : _IssuesUITest
 		}
 	}
 
-	[Test]
+	[Test, Order(2)]
 	public void UncheckBackgroundColorUpdatesShapeBackgroundColor()
 	{
 		Exception? exception = null;
@@ -48,7 +48,7 @@ public class Issue18131 : _IssuesUITest
 		}
 	}
 
-	[Test]
+	[Test, Order(3)]
 	public void CheckBackgroundUpdatesShapeBackground()
 	{
 		Exception? exception = null;
@@ -65,7 +65,7 @@ public class Issue18131 : _IssuesUITest
 		}
 	}
 
-	[Test]
+	[Test, Order(4)]
 	public void UncheckBackgroundUpdatesShapeBackground()
 	{
 		Exception? exception = null;
@@ -83,7 +83,7 @@ public class Issue18131 : _IssuesUITest
 		}
 	}
 
-	[Test]
+	[Test, Order(5)]
 	public void CheckFillUpdatesShapeFill()
 	{
 		Exception? exception = null;
@@ -100,7 +100,7 @@ public class Issue18131 : _IssuesUITest
 		}
 	}
 
-	[Test]
+	[Test, Order(6)]
 	public void UncheckFillUpdatesShapeFill()
 	{
 		Exception? exception = null;
