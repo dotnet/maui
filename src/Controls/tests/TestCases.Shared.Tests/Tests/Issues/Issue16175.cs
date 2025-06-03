@@ -16,6 +16,7 @@ public class Issue16175 : _IssuesUITest
 	[Category(UITestCategories.TabbedPage)]
 	public void TabbedPageTabEventsTriggeredInMoreSection()
 	{
+		App.WaitForElement("navigatedToLabel");
 		App.WaitForElement("More");
 		App.Tap("More");
 		App.WaitForElement("8");
