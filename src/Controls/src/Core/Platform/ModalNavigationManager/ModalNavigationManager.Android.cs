@@ -313,9 +313,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (IsAnimated)
 				{
-					_ = new GenericGlobalLayoutListener((listner,view) =>
+					_ = new GenericGlobalLayoutListener((listener,view) =>
 					{
-						listner.Invalidate();
+						listener.Invalidate();
 						if(view is not null)
 						{
 							var animation = AnimationUtils.LoadAnimation(view.Context, Resource.Animation.nav_modal_default_enter_anim)!;
