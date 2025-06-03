@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:DataType="local:CollectionViewViewModel"
              x:Class="Maui.Controls.Sample.CollectionViewItemsSourcePage"
              Title="CollectionViewItemsSourcePage">
        <ContentPage.ToolbarItems>
@@ -35,11 +36,11 @@
                      Grid.Row="1"
                      Grid.Column="0"/>
               <local:UITestEntry  x:Name="IndexEntry"
-                     Placeholder="Enter item index"
-                     Grid.Row="1"
-                     Grid.Column="1"
-                     AutomationId="IndexEntry"
-                     IsCursorVisible="false"/>
+                                  Placeholder="Enter item index"
+                                  Grid.Row="1"
+                                  Grid.Column="1"
+                                  AutomationId="IndexEntry"
+                                  IsCursorVisible="false"/>
               <!--Add or Remove Buttons -->
               <Button Text="Add Item"
                       Clicked="AddItems_Clicked"
