@@ -4,7 +4,7 @@
 	{
 		internal static new void RemapForControls()
 		{
-			ShapeViewHandler.Mapper.ReplaceMapping<IShapeView, IShapeViewHandler>(nameof(Background), MapBackground);
+			ShapeViewHandler.Mapper.ReplaceMapping<BoxView, IShapeViewHandler>(nameof(Background), MapBackground);
 		}
 	}
 }
