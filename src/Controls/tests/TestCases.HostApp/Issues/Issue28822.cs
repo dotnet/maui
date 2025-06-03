@@ -5,7 +5,7 @@
 	public class Issue28822NavigationPage : NavigationPage
 	{
 		public Issue28822NavigationPage() : base(new Issue28822()) { }
-		
+
 		public class Issue28822 : ContentPage
 		{
 			public Issue28822()
