@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			var weakItemsView = new WeakReference<CarouselView>(ItemsView);
 			var weakController = new WeakReference<CarouselViewController2>((CarouselViewController2)Controller);
 
-			return LayoutFactory2.CreateCarouselLayout(weakItemsView,weakController);
+			return LayoutFactory2.CreateCarouselLayout(weakItemsView, weakController);
 		}
 
 		protected override void ScrollToRequested(object sender, ScrollToRequestEventArgs args)
