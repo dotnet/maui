@@ -45,11 +45,14 @@
                                 <Entry x:Name="CornerRadiusEntry"
                                        AutomationId="CornerRadiusEntry"
                                        Placeholder="e.g. 10,20,30,40"
+                                       Text="{Binding CornerRadiusEntryText, Mode=TwoWay}"
                                        TextChanged="OnCornerRadiusEntryChanged"/>
                                 <Label FontAttributes="Bold"
                                        Text="Opacity"/>
-                                <Entry Placeholder="Enter opacity (0.0 - 1.0)"
+                                <Entry x:Name="OpacityEntry"
+                                        Placeholder="Enter opacity (0.0 - 1.0)"
                                        AutomationId="OpacityEntry"
+                                       Text="{Binding OpacityEntryText, Mode=TwoWay}"
                                        TextChanged="OnOpacityChanged"/>
 
                                 <Button Text="Reset Changes"

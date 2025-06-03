@@ -14,6 +14,39 @@ public class BoxViewViewModal : INotifyPropertyChanged
     private bool _isRedChecked;
     private bool _isBlueChecked;
 
+    private string _cornerRadiusEntryText = null;
+    private string _opacityEntryText = null;
+
+    public string CornerRadiusEntryText
+    {
+        get => _cornerRadiusEntryText;
+        set
+        {
+            if (_cornerRadiusEntryText != value)
+            {
+                _cornerRadiusEntryText = value;
+                if (double.TryParse(value, out double radius))
+                    CornerRadius = radius;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public string OpacityEntryText
+    {
+        get => _opacityEntryText;
+        set
+        {
+            if (_opacityEntryText != value)
+            {
+                _opacityEntryText = value;
+                if (double.TryParse(value, out double opacity))
+                    Opacity = opacity;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public bool IsRedChecked
     {
         get => _isRedChecked;
@@ -54,6 +87,8 @@ public class BoxViewViewModal : INotifyPropertyChanged
         HasShadow = false;
         IsRedChecked = false;
         IsBlueChecked = true;
+        CornerRadiusEntryText = null;
+        OpacityEntryText = null;
     }
     public double Opacity
     {
