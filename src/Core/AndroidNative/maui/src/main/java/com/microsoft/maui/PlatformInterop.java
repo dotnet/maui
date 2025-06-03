@@ -76,7 +76,7 @@ public class PlatformInterop {
      * @param context The context to check
      * @return true if the context is destroyed, false otherwise
      */
-    static boolean isContextDestroyed(Context context) {
+    public static boolean isContextDestroyed(Context context) {
         Activity activity = getActivity(context);
         if (activity instanceof FragmentActivity) {
             FragmentActivity fragmentActivity = (FragmentActivity) activity;
