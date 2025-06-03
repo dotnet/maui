@@ -37,7 +37,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -57,7 +57,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
 #if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST //CharacterSpacingEntry property not working on iOS and Catalyst, Issue: https://github.com/dotnet/maui/issues/21488
@@ -75,7 +75,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 #endif
 
@@ -105,7 +105,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -134,7 +134,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -150,7 +150,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -168,7 +168,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -184,7 +184,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -202,7 +202,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -222,7 +222,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -239,7 +239,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -258,7 +258,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -304,7 +304,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -326,7 +326,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
@@ -342,7 +342,7 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
-        // VerifyScreenshot();
+        VerifyScreenshot();
     }
 
     [Test]
