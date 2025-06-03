@@ -308,6 +308,7 @@ public static partial class AppHostBuilderExtensions
 		WebView.RemapForControls();
 		ContentPage.RemapForControls();
 		ImageButton.RemapForControls();
+		Switch.RemapForControls();
 
 		Slider.RemapForControls();
 		return builder;
