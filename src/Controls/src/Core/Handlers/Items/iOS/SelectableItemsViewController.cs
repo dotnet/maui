@@ -25,12 +25,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
+			if (indexPath is null || indexPath.Handle == IntPtr.Zero)
+			{
+				return;
+			}
+
 			FormsSelectItem(indexPath);
 		}
 
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemDeselected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
+			if (indexPath is null || indexPath.Handle == IntPtr.Zero)
+			{
+				return;
+			}
+
 			FormsDeselectItem(indexPath);
 		}
 
@@ -38,6 +48,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void SelectItem(object selectedItem)
 		{
 			var index = GetIndexForItem(selectedItem);
+
+			if (index is null || index.Handle == IntPtr.Zero)
+			{
+				return;
+			}
 
 			if (index.Section > -1 && index.Item > -1)
 			{
