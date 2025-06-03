@@ -171,7 +171,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
 			{
-				var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
+				var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString();
 
 				// 1.a. Try the special "_framework/hybridwebview.js" path
 				if (relativePath == HybridWebViewDotJsPath)
