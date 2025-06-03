@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls;
+namespace Maui.Controls.Sample;
 
 public class ImageViewModel : INotifyPropertyChanged
 {
@@ -10,6 +11,7 @@ public class ImageViewModel : INotifyPropertyChanged
 	private bool _isOpaque;
 	private ImageSource _source = ImageSource.FromFile("animated_heart.gif");
 	private string _sourcePath = "animated_heart.gif";
+
 
 	public Aspect Aspect
 	{
@@ -35,36 +37,20 @@ public class ImageViewModel : INotifyPropertyChanged
 		set { if (_source != value) { _source = value; OnPropertyChanged(); } }
 	}
 
-	private Color _fontColor = Colors.Blue;
-	public Color FontColor
+	// In your ViewModel
+	private Color _color = Colors.Blue;
+	public Color Color
 	{
-		get => _fontColor;
-		set
-		{
-			if (_fontColor != value)
-			{
-				_fontColor = value;
-				OnPropertyChanged();
-				UpdateFontImageSource();
-			}
-		}
+		get => _color;
+		set { if (_color != value) { _color = value; OnPropertyChanged(); UpdateFontImageSource(); } }
 	}
 
-	private double _fontSize = 250;
-	public double FontSize
+	private double _size = 40;
+	public double Size
 	{
-		get => _fontSize;
-		set
-		{
-			if (_fontSize != value)
-			{
-				_fontSize = value;
-				OnPropertyChanged();
-				UpdateFontImageSource();
-			}
-		}
+		get => _size;
+		set { if (_size != value) { _size = value; OnPropertyChanged(); UpdateFontImageSource(); } }
 	}
-
 	private double _containerHeight = 550;
 	public double ContainerHeight
 	{
@@ -97,8 +83,8 @@ public class ImageViewModel : INotifyPropertyChanged
 	{
 		if (Source is FontImageSource fontImage)
 		{
-			fontImage.Color = FontColor;
-			fontImage.Size = FontSize;
+			fontImage.Color = Color;
+			fontImage.Size = Size;
 			OnPropertyChanged(nameof(Source));
 		}
 	}

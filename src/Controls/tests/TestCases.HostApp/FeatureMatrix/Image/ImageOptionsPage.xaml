@@ -82,10 +82,10 @@
                     AutomationId="FontColorRed"/>
             <RadioButton Content="Green"
                     CheckedChanged="FontColorRadio_CheckedChanged"
-                    AutomationId="FontColorBlue"/>
+                    AutomationId="FontColorGreen"/>
             <RadioButton Content="Blue"
                     CheckedChanged="FontColorRadio_CheckedChanged"
-                    AutomationId="FontColorGreen"/>
+                    AutomationId="FontColorBlue"/>
         </HorizontalStackLayout>
 
         <Label Text="FontImageSource Size:"
