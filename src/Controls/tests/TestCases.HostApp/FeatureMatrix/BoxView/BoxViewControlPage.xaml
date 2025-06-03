@@ -70,13 +70,13 @@
                                                      Value="Red"
                                                      GroupName="Colors"
                                                      AutomationId="RedRadioButton"
-                                                     CheckedChanged="OnColorRadioButtonChanged"/>
+                                                     IsChecked="{Binding IsRedChecked, Mode=TwoWay}"/>
+
                                         <RadioButton Content="Blue"
                                                      Value="Blue"
                                                      GroupName="Colors"
-                                                     IsChecked="True"
                                                      AutomationId="BlueRadioButton"
-                                                     CheckedChanged="OnColorRadioButtonChanged"/>
+                                                     IsChecked="{Binding IsBlueChecked, Mode=TwoWay}"/>
                                 </VerticalStackLayout>
 
                                 <VerticalStackLayout>
@@ -93,7 +93,7 @@
                                                         AutomationId="ShadowCheckBox"/>
                                                 <Label Text="Has Shadow"
                                                        VerticalOptions="Center"/>
-                                        </HorizontalStackLayout>        
+                                        </HorizontalStackLayout>
                                 </VerticalStackLayout>
                         </StackLayout>
                 </Grid>
