@@ -18,6 +18,7 @@ public class Issue22565 : _IssuesUITest
 	{
 		App.WaitForElement("22565DescriptionLabel");
 		App.Tap("DisabledPicker");
-		Assert.That(App.FindElement("22565DescriptionLabel").GetText(), Is.EqualTo("Parent Gesture recognizer triggered"));
+		var labelText = App.FindElement("22565DescriptionLabel").GetText();
+		Assert.That(labelText, Is.EqualTo("Parent Gesture recognizer triggered"));
 	}
 }
