@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Controls
 			// And we map some of the other property handlers to Controls-specific versions that avoid stepping on HTML text settings
 
 			// these just refresh Text / FormattedText
+#pragma warning disable CS0618 // Type or member is obsolete
 			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(TextType), MapTextType);
+#pragma warning restore CS0618 // Type or member is obsolete
 			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(TextTransform), MapTextTransform);
 
 			// these are really a single property
@@ -136,7 +138,9 @@ namespace Microsoft.Maui.Controls
 				// then we re-apply the whole formatted text
 				handler.UpdateValue(nameof(FormattedText));
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (label.TextType == TextType.Text || !IsDefaultFont(label))
+#pragma warning restore CS0618 // Type or member is obsolete
 			{
 				// if this is plain text or if the user specifically wants to override html,
 				// then we fall back to the base implementation
@@ -152,7 +156,9 @@ namespace Microsoft.Maui.Controls
 				// then we re-apply the whole formatted text
 				handler.UpdateValue(nameof(FormattedText));
 			}
+#pragma warning disable CS0618 // Type or member is obsolete
 			else if (label.TextType == TextType.Text || !label.TextColor.IsDefault())
+#pragma warning restore CS0618 // Type or member is obsolete
 			{
 				// if this is plain text or if the user specifically wants to override html,
 				// then we fall back to the base implementation
@@ -167,8 +173,10 @@ namespace Microsoft.Maui.Controls
 			if (label.HasFormattedTextSpans)
 				return false;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (label.TextType != TextType.Text)
 				return false;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return true;
 		}
