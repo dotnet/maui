@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Handlers
 		internal static readonly Uri AppOriginUri = new(AppOrigin);
 
 		internal const string InvokeDotNetPath = "__hwvInvokeDotNet";
+		internal const string HybridWebViewDotJsPath = "_framework/hybridwebview.js";
 
 		public static IPropertyMapper<IHybridWebView, IHybridWebViewHandler> Mapper = new PropertyMapper<IHybridWebView, IHybridWebViewHandler>(ViewHandler.ViewMapper)
 		{
@@ -491,6 +492,22 @@ namespace Microsoft.Maui.Handlers
 				return null;
 			}
 			return await FileSystem.OpenAppPackageFileAsync(assetPath);
+		}
+
+		internal static Stream? GetEmbeddedStream(string embeddedPath)
+		{
+			var assembly = typeof(HybridWebViewHandler).Assembly;
+
+			var resourceName = assembly
+				.GetManifestResourceNames()
+				.FirstOrDefault(name => name.Equals(embeddedPath.Replace('\\', '/'), StringComparison.OrdinalIgnoreCase));
+
+			if (resourceName is null)
+			{
+				return null;
+			}
+
+			return assembly.GetManifestResourceStream(resourceName);
 		}
 
 #if !NETSTANDARD
