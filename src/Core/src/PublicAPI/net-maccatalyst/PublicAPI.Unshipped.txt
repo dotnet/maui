@@ -152,5 +152,3 @@ override Microsoft.Maui.Handlers.ImageButtonHandler.SetupContainer() -> void
 Microsoft.Maui.ITimePicker.Time.get -> System.TimeSpan?
 Microsoft.Maui.IWindow.IsMaximizable.get -> bool
 Microsoft.Maui.IWindow.IsMinimizable.get -> bool
-static Microsoft.Maui.Handlers.WindowHandler.MapIsMaximizable(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window) -> void
-static Microsoft.Maui.Handlers.WindowHandler.MapIsMinimizable(Microsoft.Maui.Handlers.IWindowHandler! handler, Microsoft.Maui.IWindow! window) -> void
