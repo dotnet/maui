@@ -66,6 +66,7 @@ virtual Microsoft.Maui.Platform.MauiWebViewNavigationDelegate.DidFinishNavigatio
 *REMOVED*virtual Microsoft.Maui.PropertyMapper.UpdateKeys.get -> System.Collections.Generic.IReadOnlyCollection<string!>!
 Microsoft.Maui.IWindow.IsMaximizable.get -> bool
 Microsoft.Maui.IWindow.IsMinimizable.get -> bool
+Microsoft.Maui.IWindow.IsMinimizable.get -> bool
 virtual Microsoft.Maui.Animations.Lerp.LerpDelegate.Invoke(object! start, object! end, double progress) -> object!
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.ContextFlyoutItemHandlerUpdate(Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate! original) -> void
 Microsoft.Maui.Handlers.ContextFlyoutItemHandlerUpdate.Deconstruct(out int Index, out Microsoft.Maui.IMenuElement! MenuElement) -> void
