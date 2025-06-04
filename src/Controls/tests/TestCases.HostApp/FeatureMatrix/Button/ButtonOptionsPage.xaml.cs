@@ -29,6 +29,15 @@ public partial class ButtonOptionsPage : ContentPage
 		}
 	}
 
+	private void OnFlowDirectionChanged(object sender, CheckedChangedEventArgs e)
+	{
+		var radioButton = sender as RadioButton;
+		if (radioButton != null && radioButton.IsChecked)
+		{
+			_viewModel.FlowDirection = radioButton.Content.ToString() == "Left to Right" ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+		}
+	}
+
 	private void OnFontAttributesRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
 	{
 		var radioButton = sender as RadioButton;
@@ -70,7 +79,36 @@ public partial class ButtonOptionsPage : ContentPage
 		var radioButton = sender as RadioButton;
 		if (radioButton.IsChecked)
 		{
-			_viewModel.LineBreakMode = radioButton.Content.ToString() == "CharacterWrap" ? LineBreakMode.CharacterWrap : LineBreakMode.WordWrap;
+			switch (radioButton.Content.ToString())
+			{
+				case "CharacterWrap":
+					_viewModel.LineBreakMode = LineBreakMode.CharacterWrap;
+					break;
+				case "HeadTruncation":
+					_viewModel.LineBreakMode = LineBreakMode.HeadTruncation;
+					break;
+				case "MiddleTruncation":
+					_viewModel.LineBreakMode = LineBreakMode.MiddleTruncation;
+					break;
+				case "TailTruncation":
+					_viewModel.LineBreakMode = LineBreakMode.TailTruncation;
+					break;
+				case "WordWrap":
+					_viewModel.LineBreakMode = LineBreakMode.WordWrap;
+					break;
+				default:
+					_viewModel.LineBreakMode = LineBreakMode.NoWrap;
+					break;
+			}
+		}
+	}
+
+	private void OnShadowRadioButtonCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		var radioButton = sender as RadioButton;
+		if (radioButton.IsChecked)
+		{
+			_viewModel.ShadowOpacity = radioButton.Value.ToString() == "1" ? 1f : 0f;
 		}
 	}
 

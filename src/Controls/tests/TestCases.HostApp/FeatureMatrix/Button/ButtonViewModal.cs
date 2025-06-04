@@ -12,6 +12,7 @@ public class ButtonViewModal : INotifyPropertyChanged
     private double _characterSpacing = 0.0d;
     private ICommand _command = null;
     private int _cornerRadius = 0;
+    private FlowDirection _flowDirection = FlowDirection.MatchParent;
     private FontAttributes _fontAttributes = FontAttributes.None;
     private string _fontFamily = null;
     private double _fontSize = 0d;
@@ -21,6 +22,7 @@ public class ButtonViewModal : INotifyPropertyChanged
     private double _padding = 0d;
     private string _text = null;
     private Color _textColor = Colors.Black;
+    private float _shadowOpacity = 0f;
     private TextTransform _textTransform = TextTransform.Default;
 
     public Color BorderColor
@@ -83,6 +85,19 @@ public class ButtonViewModal : INotifyPropertyChanged
             if (_cornerRadius != value)
             {
                 _cornerRadius = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    public FlowDirection FlowDirection
+    {
+        get => _flowDirection;
+        set
+        {
+            if (_flowDirection != value)
+            {
+                _flowDirection = value;
                 OnPropertyChanged();
             }
         }
@@ -179,6 +194,19 @@ public class ButtonViewModal : INotifyPropertyChanged
         }
     }
 
+    public float ShadowOpacity
+    {
+        get => _shadowOpacity;
+        set
+        {
+            if (_shadowOpacity != value)
+            {
+                _shadowOpacity = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
     public string Text
     {
         get => _text;
@@ -223,7 +251,14 @@ public class ButtonViewModal : INotifyPropertyChanged
         Command = new Command<string>(
             execute: (buttonText) =>
             {
-                Text = "Command Executed";
+                if (buttonText == "Command with Parameter")
+                {
+                    Text = "Command Executed with Parameter";
+                }
+                else
+                {
+                    Text = "Command Executed";
+                }
             }
         );
     }

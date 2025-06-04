@@ -86,6 +86,16 @@ public class ButtonFeatureTests : UITest
         App.WaitForElement("ButtonControl");
         App.Tap("ButtonControl");
         Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("Command Executed"));
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("TextEntry");
+        App.ClearText("TextEntry");
+        App.EnterText("TextEntry", "Command with Parameter");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
+        App.Tap("ButtonControl");
+        Assert.That(App.FindElement("ButtonControl").GetText(), Is.EqualTo("Command Executed with Parameter"));
     }
 
     [Test]
@@ -292,14 +302,82 @@ public class ButtonFeatureTests : UITest
 
     [Test]
     [Category(UITestCategories.Button)]
-    public void Button_setLineBreakModeAndText_VerifyVisualState()
+    public void Button_SetLineBreakModeCharacterWrap_VerifyVisualState()
     {
+        string longText = "This is a very long text that should wrap correctly based on the LineBreakMode settings applied to the Button";
         App.WaitForElement("Options");
         App.Tap("Options");
         App.WaitForElement("LineBreakModeCharacterWrapButton");
         App.Tap("LineBreakModeCharacterWrapButton");
         App.WaitForElement("TextEntry");
+        App.EnterText("TextEntry", longText);
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
+        VerifyScreenshot();
+    }
+
+    [Test]
+    [Category(UITestCategories.Button)]
+    public void Button_SetLineBreakModeHeadTruncation_VerifyVisualState()
+    {
         string longText = "This is a very long text that should wrap correctly based on the LineBreakMode settings applied to the Button";
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("LineBreakModeHeadTruncationButton");
+        App.Tap("LineBreakModeHeadTruncationButton");
+        App.WaitForElement("TextEntry");
+        App.EnterText("TextEntry", longText);
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
+        VerifyScreenshot();
+    }
+
+    [Test]
+    [Category(UITestCategories.Button)]
+    public void Button_SetLineBreakModeMiddleTruncation_VerifyVisualState()
+    {
+        string longText = "This is a very long text that should wrap correctly based on the LineBreakMode settings applied to the Button";
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("LineBreakModeMiddleTruncationButton");
+        App.Tap("LineBreakModeMiddleTruncationButton");
+        App.WaitForElement("TextEntry");
+        App.EnterText("TextEntry", longText);
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
+        VerifyScreenshot();
+    }
+
+    [Test]
+    [Category(UITestCategories.Button)]
+    public void Button_SetLineBreakModeTailTruncation_VerifyVisualState()
+    {
+        string longText = "This is a very long text that should wrap correctly based on the LineBreakMode settings applied to the Button";
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("LineBreakModeTailTruncationButton");
+        App.Tap("LineBreakModeTailTruncationButton");
+        App.WaitForElement("TextEntry");
+        App.EnterText("TextEntry", longText);
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
+        VerifyScreenshot();
+    }
+
+    [Test]
+    [Category(UITestCategories.Button)]
+    public void Button_SetLineBreakModeWordWrap_VerifyVisualState()
+    {
+        string longText = "This is a very long text that should wrap correctly based on the LineBreakMode settings applied to the Button";
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("LineBreakModeWordWrapButton");
+        App.Tap("LineBreakModeWordWrapButton");
+        App.WaitForElement("TextEntry");
         App.EnterText("TextEntry", longText);
         App.WaitForElement("Apply");
         App.Tap("Apply");
@@ -323,6 +401,22 @@ public class ButtonFeatureTests : UITest
         App.Tap("BorderColorGreenButton");
         App.WaitForElement("TextEntry");
         App.EnterText("TextEntry", "Button Text");
+        App.WaitForElement("Apply");
+        App.Tap("Apply");
+        App.WaitForElementTillPageNavigationSettled("ButtonControl");
+        VerifyScreenshot();
+    }
+
+    [Test]
+    [Category(UITestCategories.Button)]
+    public void Button_setShadowAndText_VerifyVisualState()
+    {
+        App.WaitForElement("Options");
+        App.Tap("Options");
+        App.WaitForElement("ShadowTrueButton");
+        App.Tap("ShadowTrueButton");
+        App.WaitForElement("TextEntry");
+        App.EnterText("TextEntry", "Shadow Text");
         App.WaitForElement("Apply");
         App.Tap("Apply");
         App.WaitForElementTillPageNavigationSettled("ButtonControl");
