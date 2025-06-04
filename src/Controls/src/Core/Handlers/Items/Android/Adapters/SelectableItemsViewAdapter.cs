@@ -59,32 +59,49 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void MarkPlatformSelection(SelectableItemsView selectableItemsView)
 		{
-			HashSet<object> selectedSet = new HashSet<object>();
-			
+			if (_currentViewHolders.Count == 0)
+				return;
+
+			HashSet<object> selectedSet;
 			switch (selectableItemsView.SelectionMode)
 			{
 				case SelectionMode.None:
 					ClearPlatformSelection();
 					return;
-					
+
 				case SelectionMode.Single:
-					selectedSet = selectableItemsView.SelectedItem != null
-						? new HashSet<object> { selectableItemsView.SelectedItem }
-						: selectedSet;
+					var selectedItem = selectableItemsView.SelectedItem;
+					if (selectedItem == null)
+					{
+						ClearPlatformSelection();
+						return;
+					}
+
+					selectedSet = new HashSet<object> { selectedItem };
 					break;
-					
+
 				case SelectionMode.Multiple:
-					selectedSet = new HashSet<object>(selectableItemsView.SelectedItems ?? []);
+					var selectedItems = selectableItemsView.SelectedItems;
+					if (selectedItems == null || selectedItems.Count == 0)
+					{
+						ClearPlatformSelection();
+						return;
+					}
+					selectedSet = new HashSet<object>(selectedItems);
 					break;
+
+				default:
+					return;
 			}
-			
-			foreach (var holder in _currentViewHolders)
+
+			for (int i = 0; i < _currentViewHolders.Count; i++)
 			{
+				var holder = _currentViewHolders[i];
 				if (holder.BindingAdapterPosition >= 0)
 				{
 					var item = ItemsSource.GetItem(holder.BindingAdapterPosition);
 					bool shouldBeSelected = selectedSet.Contains(item);
-					
+
 					if (holder.IsSelected != shouldBeSelected)
 						holder.IsSelected = shouldBeSelected;
 				}
