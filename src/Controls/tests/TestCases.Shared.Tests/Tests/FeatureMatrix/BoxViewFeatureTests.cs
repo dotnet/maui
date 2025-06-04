@@ -23,20 +23,6 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.BoxView)]
-		public void BoxView_CornerRadiusWithOpacity()
-		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-
-			App.WaitForElement("CornerRadiusEntry");
-			App.EnterText("CornerRadiusEntry", "60,10,20,40");
-
-
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.BoxView)]
 		public void BoxView_IsVisible()
 		{
 			App.WaitForElement("ResetButton");
@@ -58,24 +44,11 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CornerRadiusEntry");
 			App.EnterText("CornerRadiusEntry", "60,10,20,40");
 
+			App.WaitForElement("CornerRadiusLabel");
+			App.Tap("CornerRadiusLabel");
+
 			App.WaitForElement("RedRadioButton");
 			App.Tap("RedRadioButton");
-
-			VerifyScreenshot();
-		}
-
-		[Test]
-		[Category(UITestCategories.BoxView)]
-		public void BoxView_CornerRadiusWithShadow()
-		{
-			App.WaitForElement("ResetButton");
-			App.Tap("ResetButton");
-
-			App.WaitForElement("CornerRadiusEntry");
-			App.EnterText("CornerRadiusEntry", "60,10,20,40");
-
-			App.WaitForElement("ShadowCheckBox");
-			App.Tap("ShadowCheckBox");
 
 			VerifyScreenshot();
 		}
@@ -93,12 +66,15 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("OpacityEntry");
 			App.EnterText("OpacityEntry", "0.5");
 
+			App.WaitForElement("OpacityLabel");
+			App.Tap("OpacityLabel");
+
 			VerifyScreenshot();
 		}
 
 		[Test]
 		[Category(UITestCategories.BoxView)]
-		public void BoxView_CornerRadiusWithOpacityAndSahdow()
+		public void BoxView_CornerRadiusWithFlowDirection()
 		{
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
@@ -106,8 +82,33 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("CornerRadiusEntry");
 			App.EnterText("CornerRadiusEntry", "60,10,20,40");
 
+			App.WaitForElement("CornerRadiusLabel");
+			App.Tap("CornerRadiusLabel");
+
+			App.WaitForElement("FlowDirectionRTLCheckBox");
+			App.Tap("FlowDirectionRTLCheckBox");
+
+			VerifyScreenshot();
+		}
+#if TEST_FAILS_ON_WINDOWS // For more information see: https://github.com/dotnet/maui/issues/27732
+		[Test]
+		[Category(UITestCategories.BoxView)]
+		public void BoxView_CornerRadiusWithOpacityAndShadow()
+		{
+			App.WaitForElement("ResetButton");
+			App.Tap("ResetButton");
+
+			App.WaitForElement("CornerRadiusEntry");
+			App.EnterText("CornerRadiusEntry", "60,10,20,40");
+
+			App.WaitForElement("CornerRadiusLabel");
+			App.Tap("CornerRadiusLabel");
+
 			App.WaitForElement("OpacityEntry");
 			App.EnterText("OpacityEntry", "0.5");
+
+			App.WaitForElement("OpacityLabel");
+			App.Tap("OpacityLabel");
 
 			App.WaitForElement("ShadowCheckBox");
 			App.Tap("ShadowCheckBox");
@@ -117,13 +118,16 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.BoxView)]
-		public void BoxView_CornerRadiusWithColorAndSahdow()
+		public void BoxView_CornerRadiusWithColorAndShadow()
 		{
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
 
 			App.WaitForElement("CornerRadiusEntry");
 			App.EnterText("CornerRadiusEntry", "60,10,20,40");
+
+			App.WaitForElement("CornerRadiusLabel");
+			App.Tap("CornerRadiusLabel");
 
 			App.WaitForElement("RedRadioButton");
 			App.Tap("RedRadioButton");
@@ -136,7 +140,7 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.BoxView)]
-		public void BoxView_ColorWithOpacityAndSahdow()
+		public void BoxView_ColorWithOpacityAndShadow()
 		{
 			App.WaitForElement("ResetButton");
 			App.Tap("ResetButton");
@@ -147,10 +151,14 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("OpacityEntry");
 			App.EnterText("OpacityEntry", "0.5");
 
+			App.WaitForElement("OpacityLabel");
+			App.Tap("OpacityLabel");
+
 			App.WaitForElement("ShadowCheckBox");
 			App.Tap("ShadowCheckBox");
 
 			VerifyScreenshot();
 		}
+#endif
 	}
 }

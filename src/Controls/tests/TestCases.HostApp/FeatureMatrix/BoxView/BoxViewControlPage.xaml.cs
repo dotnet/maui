@@ -25,6 +25,18 @@ namespace Maui.Controls.Sample
 			BindingContext = _viewModel;
 		}
 
+		private void OnFlowDirectionCheckBoxChanged(object sender, CheckedChangedEventArgs e)
+		{
+			if (e.Value)
+			{
+				_viewModel.FlowDirection = FlowDirection.RightToLeft;
+			}
+			else
+			{
+				_viewModel.FlowDirection = FlowDirection.LeftToRight;
+			}
+		}
+
 		private void OnColorRadioButtonChanged(object sender, EventArgs e)
 		{
 			if (sender is RadioButton radioButton && radioButton.IsChecked)
@@ -65,7 +77,7 @@ namespace Maui.Controls.Sample
 
 		private void OnResetChangesClicked(object sender, EventArgs e)
 		{
-			_viewModel.ResetToDefaults();
+			BindingContext = _viewModel = new BoxViewViewModel();
 		}
 
 		private void OnOpacityChanged(object sender, TextChangedEventArgs e)
