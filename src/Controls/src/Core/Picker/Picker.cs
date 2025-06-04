@@ -271,7 +271,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (item is INotifyPropertyChanged npc)
 					{
-						npc.PropertyChanged -= SimpleOnItemPropertyChanged;
+						npc.PropertyChanged -= OnPickerItemPropertyChanged;
 					}
 				}
 			}
@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (item is INotifyPropertyChanged npc)
 					{
-						npc.PropertyChanged += SimpleOnItemPropertyChanged;
+						npc.PropertyChanged += OnPickerItemPropertyChanged;
 					}
 				}
 			}
@@ -310,7 +310,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		void SimpleOnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnPickerItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
 			ResetItems();
 		}
@@ -324,7 +324,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (item is INotifyPropertyChanged npc)
 					{
-						npc.PropertyChanged -= SimpleOnItemPropertyChanged;
+						npc.PropertyChanged -= OnPickerItemPropertyChanged;
 					}
 				}
 			}
@@ -335,7 +335,7 @@ namespace Microsoft.Maui.Controls
 				{
 					if (item is INotifyPropertyChanged npc)
 					{
-						npc.PropertyChanged += SimpleOnItemPropertyChanged;
+						npc.PropertyChanged += OnPickerItemPropertyChanged;
 					}
 				}
 			}
