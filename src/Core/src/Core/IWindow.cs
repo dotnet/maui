@@ -132,9 +132,9 @@ namespace Microsoft.Maui
 
 #if WINDOWS || MACCATALYST
 		ITitleBar? TitleBar => null;
-		/// <summary>Gets or sets whether the window can be minimized.</summary>
+		/// <summary>Gets a value indicating whether the window can be minimized.</summary>
 		bool IsMinimizable { get; }
-		/// <summary>Gets or sets whether the window can be maximized.</summary>
+		/// <summary>Gets a value indicating whether the window can be maximized.</summary>
 		bool IsMaximizable { get; }
 #endif
 
