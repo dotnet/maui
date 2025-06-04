@@ -103,7 +103,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					bool shouldBeSelected = selectedSet.Contains(item);
 
 					if (holder.IsSelected != shouldBeSelected)
+					{
 						holder.IsSelected = shouldBeSelected;
+					}
 				}
 			}
 		}
