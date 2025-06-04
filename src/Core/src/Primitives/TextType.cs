@@ -17,6 +17,6 @@ public enum TextType
 	/// The subset of supported HTML tags varies by platform. Each platform's native text rendering engine
 	/// determines which HTML tags and attributes are supported.
 	/// </remarks>
-	[System.Obsolete]
+	[System.Obsolete("HTML text formatting is discontinued.")]
 	Html
 }
