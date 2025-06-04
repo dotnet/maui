@@ -49,16 +49,6 @@ namespace Microsoft.Maui.Handlers
 				controller.SetUpTitleBar(window, mauiContext);
 			}
 		}
-
-		public static void MapIsMaximizable(IWindowHandler handler, IWindow window)
-		{
-				
-		}
-
-		public static void MapIsMinimizable(IWindowHandler handler, IWindow window)
-		{
-			
-		}
 #endif
 
 		public static void MapContent(IWindowHandler handler, IWindow window)
