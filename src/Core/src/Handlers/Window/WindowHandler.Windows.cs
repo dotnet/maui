@@ -196,6 +196,11 @@ namespace Microsoft.Maui.Handlers
 		void UpdateVirtualViewFrame(AppWindow appWindow)
 		{
 			var hwnd = PlatformView.GetWindowHandle();
+			if (hwnd == IntPtr.Zero)
+			{
+				return;
+			}
+
 			var bounds = hwnd.GetExtendedFrameBounds();
 
 			var size = appWindow.Size;
