@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog == null && VirtualView != null)
 			{
-				using (var builder = new MaterialAlertDialogBuilder(Context, Resource.Style.MauiAlertDialogTheme))
+				using (var builder = new MaterialAlertDialogBuilder(Context))
 				{
 					if (VirtualView.TitleColor == null)
 					{
