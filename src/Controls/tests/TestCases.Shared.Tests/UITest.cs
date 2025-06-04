@@ -222,9 +222,12 @@ namespace Microsoft.Maui.TestCases.Tests
 				{
 					case TestDevice.Android:
 						environmentName = "android";
-						var deviceApiLevel = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel");
-						var deviceScreenSize = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize");
-						var deviceScreenDensity = (long)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity");
+						var deviceApiLevel = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceApiLevel")
+							?? throw new InvalidOperationException("deviceApiLevel capability is missing or null.");
+						var deviceScreenSize = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenSize")
+							?? throw new InvalidOperationException("deviceScreenSize capability is missing or null.");
+						var deviceScreenDensity = (long?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceScreenDensity")
+							?? throw new InvalidOperationException("deviceScreenDensity capability is missing or null.");
 
 						if (!(deviceApiLevel == 30 && deviceScreenSize == "1080x1920" && deviceScreenDensity == 420))
 						{
@@ -233,8 +236,10 @@ namespace Microsoft.Maui.TestCases.Tests
 						break;
 
 					case TestDevice.iOS:
-						var platformVersion = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion");
-						var device = (string)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName");
+						var platformVersion = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion")
+							?? throw new InvalidOperationException("platformVersion capability is missing or null.");
+						var device = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName") 
+							?? throw new InvalidOperationException("deviceName capability is missing or null.");
 
 						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == "18.0")
 						{
