@@ -747,6 +747,55 @@ namespace Microsoft.Maui.DeviceTests
 						HybridWebViewTestContext.Default.ResponseObject));
 			});
 
+
+		[Theory]
+#if !ANDROID // Custom schemes are not supported on Android
+#if !WINDOWS // TODO: There seems to be a bug with the implementation in the WASDK version of WebView2
+		[InlineData("app://echoservice/", "RequestsWithCustomSchemeCanBeIntercepted")]
+#endif
+#endif
+#if !IOS && !MACCATALYST // Cannot intercept https requests on iOS/MacCatalyst
+		[InlineData("https://echo.free.beeceptor.com/", "RequestsCanBeIntercepted")]
+#endif
+		public Task RequestsCanBeInterceptedAndCaseInsensitiveHeadersRead(string uriBase, string function) =>
+			RunTest(async (hybridWebView) =>
+			{
+				var headerValues = new Dictionary<string, string>();
+
+				hybridWebView.WebResourceRequested += (sender, e) =>
+				{
+					if (new Uri(uriBase).IsBaseOf(e.Uri) && !e.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
+					{
+						// Should be exactly as set in the JS
+						try
+						{ headerValues["X-Echo-Name"] = e.Headers["X-Echo-Name"]; }
+						catch (Exception ex)
+						{ headerValues["X-Echo-Name"] = ex.Message; }
+
+						// Sometimes lowercase is used
+						try
+						{ headerValues["x-echo-name"] = e.Headers["x-echo-name"]; }
+						catch (Exception ex)
+						{ headerValues["x-echo-name"] = ex.Message; }
+
+						// This should never actually occur
+						try
+						{ headerValues["X-ECHO-name"] = e.Headers["X-ECHO-name"]; }
+						catch (Exception ex)
+						{ headerValues["X-ECHO-name"] = ex.Message; }
+					}
+				};
+
+				var responseObject = await hybridWebView.InvokeJavaScriptAsync<EchoResponseObject>(
+					function,
+					HybridWebViewTestContext.Default.EchoResponseObject);
+
+				Assert.NotEmpty(headerValues);
+				Assert.Equal("Matthew", headerValues["X-Echo-Name"]);
+				Assert.Equal("Matthew", headerValues["x-echo-name"]);
+				Assert.Equal("Matthew", headerValues["X-ECHO-name"]);
+			});
+
 		async Task<Exception> RunExceptionTest(string method, int errorType)
 		{
 			Exception exception = null;
