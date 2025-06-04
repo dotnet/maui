@@ -211,6 +211,9 @@ namespace Microsoft.Maui.Handlers
 
 			PickerHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
 
+			UITapGestureRecognizer? _dismissPickerTapGesture;
+
+
 			public void Connect(PickerHandler handler, IPicker virtualView, MauiPicker platformView)
 			{
 				_handler = new(handler);
@@ -219,6 +222,25 @@ namespace Microsoft.Maui.Handlers
 				platformView.EditingDidBegin += OnStarted;
 				platformView.EditingDidEnd += OnEnded;
 				platformView.EditingChanged += OnEditing;
+
+			}
+
+			void AddTapToDismissPicker(MauiPicker picker)
+			{
+				// Prevent adding multiple gestures
+				if (_dismissPickerTapGesture != null)
+					return;
+
+				_dismissPickerTapGesture = new UITapGestureRecognizer(() =>
+				{
+					picker.EndEditing(true); // This will trigger EditingDidEnd
+				});
+				_dismissPickerTapGesture.CancelsTouchesInView = false;
+
+				if (picker?.Window is not null)
+				{
+					picker.Window.AddGestureRecognizer(_dismissPickerTapGesture);
+				}
 			}
 
 			public void Disconnect(MauiPicker platformView)
@@ -248,6 +270,7 @@ namespace Microsoft.Maui.Handlers
 
 				handler.DisplayAlert(handler.PlatformView);
 #endif
+				AddTapToDismissPicker(Handler!.PlatformView);
 			}
 
 			void OnEnded(object? sender, EventArgs eventArgs)
@@ -262,6 +285,15 @@ namespace Microsoft.Maui.Handlers
 				}
 				if (VirtualView is IPicker virtualView)
 					virtualView.IsFocused = false;
+				if (_dismissPickerTapGesture != null)
+				{
+					// Remove from window
+					var picker = (MauiPicker)sender!;
+					picker.Window?.RemoveGestureRecognizer(_dismissPickerTapGesture);
+
+					_dismissPickerTapGesture.Dispose();
+					_dismissPickerTapGesture = null;
+				}
 			}
 
 			void OnEditing(object? sender, EventArgs eventArgs)
