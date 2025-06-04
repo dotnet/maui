@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Maui.Controls.Sample;
 
-public class BoxViewViewModal : INotifyPropertyChanged
+public class BoxViewViewModel : INotifyPropertyChanged
 {
     private Color _color = Colors.Blue;
     private double _width = 200;
