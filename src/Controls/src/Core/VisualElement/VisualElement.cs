@@ -1353,8 +1353,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// TODO: .NET10 this should be made public so whoever implements a custom layout can leverage this
-		internal virtual void ComputeConstraintForView(View view) => view.ComputedConstraint = LayoutConstraint.None;
+		protected virtual void ComputeConstraintForView(View view) => view.ComputedConstraint = LayoutConstraint.None;
 
 		/// <summary>
 		/// Occurs when a focus change is requested.

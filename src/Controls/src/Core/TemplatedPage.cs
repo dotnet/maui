@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 
 		Element IControlTemplated.TemplateRoot { get; set; }
 
-		internal override void ComputeConstraintForView(View view)
+		protected override void ComputeConstraintForView(View view)
 		{
 			LayoutOptions vOptions = view.VerticalOptions;
 			LayoutOptions hOptions = view.HorizontalOptions;

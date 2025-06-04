@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			base.OnChildMeasureInvalidated(child, trigger);
 		}
 
-		internal override void ComputeConstraintForView(View view)
+		protected override void ComputeConstraintForView(View view)
 		{
 			ComputeConstraintForView(view, false);
 		}
