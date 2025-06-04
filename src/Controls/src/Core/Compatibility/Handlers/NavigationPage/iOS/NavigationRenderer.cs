@@ -645,6 +645,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var pageContainer = CreateViewControllerForPage(page);
 			var target = nvh.ViewController.ParentViewController;
 			ViewControllers = ViewControllers.Insert(ViewControllers.IndexOf(target), pageContainer);
+
+			int index = -1;
+			for (int i = 0; i < ViewControllers.Length; i++)
+			{
+				if (ViewControllers[i] is ParentingViewController pvc && pvc.Child == before)
+				{
+					index = i;
+					break;
+				}
+			}
+			// Update the flyout icon when the root page changes
+			if (index == 1)
+			{
+				GetParentingViewController()?.UpdateLeftBarButtonItem();
+			}
 		}
 
 		void OnInsertPageBeforeRequested(object sender, NavigationRequestedEventArgs e)
@@ -1634,8 +1649,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 
 				var currentChild = this.Child;
-				var firstPage = n.NavPageController.Pages.FirstOrDefault();
-
+				var firstPage = (n.ViewControllers.FirstOrDefault() as ParentingViewController)?.Child;
 
 				if (n._parentFlyoutPage == null)
 					return;
