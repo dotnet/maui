@@ -99,9 +99,20 @@ namespace Microsoft.Maui.Platform
 
 			logger?.LogDebug("Request for {Url} will be handled by .NET MAUI.", fullUrl);
 
-			var relativePath = HybridWebViewHandler.AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
+			var relativePath = HybridWebViewHandler.AppOriginUri.MakeRelativeUri(uri).ToString();
 
-			// 1. Try special InvokeDotNet path
+			// 1.a. Try the special "_framework/hybridwebview.js" path
+			if (relativePath == HybridWebViewHandler.HybridWebViewDotJsPath)
+			{
+				logger?.LogDebug("Request for {Url} will return the hybrid web view script.", fullUrl);
+				var jsStream = HybridWebViewHandler.GetEmbeddedStream(HybridWebViewHandler.HybridWebViewDotJsPath);
+				if (jsStream is not null)
+				{
+					return new WebResourceResponse("application/json", "UTF-8", 200, "OK", GetHeaders("application/json"), jsStream);
+				}
+			}
+
+			// 1.b. Try special InvokeDotNet path
 			if (relativePath == HybridWebViewHandler.InvokeDotNetPath)
 			{
 				logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", fullUrl);
