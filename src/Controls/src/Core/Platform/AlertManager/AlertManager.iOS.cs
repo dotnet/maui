@@ -38,9 +38,42 @@ namespace Microsoft.Maui.Controls.Platform
 			public partial void OnPageBusy(Page sender, bool enabled)
 			{
 				_busyCount = Math.Max(0, enabled ? _busyCount + 1 : _busyCount - 1);
-#pragma warning disable CA1416, CA1422 // TODO:  'UIApplication.NetworkActivityIndicatorVisible' is unsupported on: 'ios' 13.0 and later
-				UIApplication.SharedApplication.NetworkActivityIndicatorVisible = _busyCount > 0;
-#pragma warning restore CA1416, CA1422
+
+				var rootView = PlatformView.RootViewController?.View;
+				if (rootView is null)
+				{
+					return;
+				}
+
+				if (_busyCount > 0)
+				{
+					if (activityIndicatorView is null)
+					{
+						activityIndicatorView = new UIActivityIndicatorView(UIActivityIndicatorViewStyle.Large)
+						{
+							UserInteractionEnabled = false,
+							HidesWhenStopped = true,
+							Frame = rootView.Bounds,
+							AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight
+						};
+						rootView.AddSubview(activityIndicatorView);
+					}
+
+					if (!activityIndicatorView.IsAnimating)
+					{
+						activityIndicatorView.StartAnimating();
+					}
+				}
+				else
+				{
+					if (activityIndicatorView is not null)
+					{
+						activityIndicatorView.StopAnimating();
+						activityIndicatorView.RemoveFromSuperview();
+						activityIndicatorView.Dispose();
+						activityIndicatorView = null;
+					}
+				}
 			}
 
 			public partial void OnAlertRequested(Page sender, AlertArguments arguments)
