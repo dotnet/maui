@@ -11,20 +11,23 @@
                      Clicked="NavigateToOptionsPage_Clicked"
                      AutomationId="Options"/>
     </ContentPage.ToolbarItems>
+    <VerticalStackLayout>
     <Border x:Name="Container"
             Stroke="Black"
             StrokeThickness="2"
             HeightRequest="{Binding ContainerHeight}"
             WidthRequest="{Binding ContainerWidth}"
-            BackgroundColor="LightGray"
             HorizontalOptions="Center">
 
-        <!-- Foreground Test Image -->
         <Image x:Name="TestImage"
                Aspect="{Binding Aspect}"
                IsAnimationPlaying="{Binding IsAnimationPlaying}"
                IsOpaque="{Binding IsOpaque}"
                Source="{Binding Source}"
+               IsVisible="{Binding IsVisible}"
+               FlowDirection="{Binding FlowDirection}"
+               Shadow="{Binding ImageShadow}"
                AutomationId="ImageControl"/>
     </Border>
+    </VerticalStackLayout>
 </ContentPage>

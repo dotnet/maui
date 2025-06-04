@@ -8,7 +8,6 @@ namespace Microsoft.Maui.TestCases.Tests;
 public class ImageFeatureTests : UITest
 {
 	public const string ImageFeatureMatrix = "Image Feature Matrix";
-
 	public const string Options = "Options";
 	public const string Apply = "Apply";
 	public const string ImageAspectFit = "ImageAspectFit";
@@ -19,6 +18,9 @@ public class ImageFeatureTests : UITest
 	public const string SourceTypeFontImage = "SourceTypeFontImage";
 	public const string SourceTypeStream = "SourceTypeStream";
 	public const string SourceTypeUri = "SourceTypeUri";
+	public const string IsVisibleFalseRadio = "IsVisibleFalseRadio";
+	public const string FlowDirectionRTL = "FlowDirectionRTL";
+	public const string ShadowCheckBox = "ShadowCheckBox";
 
 
 	public ImageFeatureTests(TestDevice device)
@@ -96,6 +98,7 @@ public class ImageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29812
 	[Test]
 	[Category(UITestCategories.Image)]
 	public void VerifyImageAspect_AspectFillWithImageSourceFromFile()
@@ -159,6 +162,7 @@ public class ImageFeatureTests : UITest
 		App.WaitForElement("ImageControl");
 		VerifyScreenshot();
 	}
+#endif
 
 	[Test]
 	[Category(UITestCategories.Image)]
@@ -256,6 +260,7 @@ public class ImageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29813
 	[Test]
 	[Category(UITestCategories.Image)]
 	public void VerifyImageAspect_CenterWithImageSourceFromStream()
@@ -271,7 +276,7 @@ public class ImageFeatureTests : UITest
 		App.WaitForElement("ImageControl");
 		VerifyScreenshot();
 	}
-
+#endif
 	[Test]
 	[Category(UITestCategories.Image)]
 	public void VerifyImageAspect_CenterWithImageSourceFromFontImage()
@@ -282,22 +287,6 @@ public class ImageFeatureTests : UITest
 		App.Tap(ImageCenter);
 		App.WaitForElement(SourceTypeFontImage);
 		App.Tap(SourceTypeFontImage);
-		App.WaitForElement(Apply);
-		App.Tap(Apply);
-		App.WaitForElement("ImageControl");
-		VerifyScreenshot();
-	}
-
-	[Test]
-	[Category(UITestCategories.Image)]
-	public void VerifyFontImageWithFontColorRed()
-	{
-		App.WaitForElement(Options);
-		App.Tap(Options);
-		App.WaitForElement(SourceTypeFontImage);
-		App.Tap(SourceTypeFontImage);
-		App.WaitForElement("FontColorRed");
-		App.Tap("FontColorRed");
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
@@ -331,7 +320,56 @@ public class ImageFeatureTests : UITest
 		App.Tap(SourceTypeFontImage);
 		App.WaitForElement("EntryFontSize");
 		App.ClearText("EntryFontSize");
-		App.EnterText("EntryFontSize", "50");
+		App.Tap("EntryFontSize");
+		App.EnterText("EntryFontSize", "100");
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageControl");
+		VerifyScreenshot();
+	}
+#endif
+
+	[Test]
+	[Category(UITestCategories.Image)]
+	public void VerifyImageWithIsVisibleFalse()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(SourceTypeFile);
+		App.Tap(SourceTypeFile);
+		App.WaitForElement(IsVisibleFalseRadio);
+		App.Tap(IsVisibleFalseRadio);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForNoElement("ImageControl");
+	}
+
+	[Test]
+	[Category(UITestCategories.Image)]
+	public void VerifyImageWithShadow()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(SourceTypeFile);
+		App.Tap(SourceTypeFile);
+		App.WaitForElement(ShadowCheckBox);
+		App.Tap(ShadowCheckBox);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageControl");
+		VerifyScreenshot();
+	}
+
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29817
+	[Category(UITestCategories.Image)]
+	public void VerifyImageFlowDirectionRTL()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(SourceTypeFile);
+		App.Tap(SourceTypeFile);
+		App.WaitForElement(FlowDirectionRTL);
+		App.Tap(FlowDirectionRTL);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");

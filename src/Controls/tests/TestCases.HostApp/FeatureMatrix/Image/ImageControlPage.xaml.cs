@@ -6,7 +6,6 @@ namespace Maui.Controls.Sample
 	public class ImageControlPage : NavigationPage
 	{
 		private ImageViewModel _viewModel;
-
 		public ImageControlPage()
 		{
 			_viewModel = new ImageViewModel();
