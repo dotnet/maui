@@ -132,4 +132,15 @@ public partial class ImageOptionsPage : ContentPage
 			_viewModel.Size = newSize;
 		}
 	}
+
+	private void OnIsVisibleCheckedChanged(object sender, CheckedChangedEventArgs e)
+	{
+		_viewModel.IsVisible = IsVisibleTrueRadio.IsChecked;
+	}
+
+	private void OnFlowDirectionChanged(object sender, EventArgs e)
+	{
+		_viewModel.FlowDirection = FlowDirectionLTR.IsChecked ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
+	}
+
 }

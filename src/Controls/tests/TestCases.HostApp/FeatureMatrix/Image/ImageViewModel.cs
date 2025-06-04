@@ -9,9 +9,13 @@ public class ImageViewModel : INotifyPropertyChanged
 	private Aspect _aspect;
 	private bool _isAnimationPlaying;
 	private bool _isOpaque;
+	private bool _isVisible = true;
+	private double _size = 40;
+	private Color _color = Colors.Blue;
+	private bool _hasShadow;
+	private Shadow _imageShadow;
+	private FlowDirection _flowDirection = FlowDirection.LeftToRight;
 	private ImageSource _source = ImageSource.FromFile("animated_heart.gif");
-	private string _sourcePath = "animated_heart.gif";
-
 
 	public Aspect Aspect
 	{
@@ -37,20 +41,44 @@ public class ImageViewModel : INotifyPropertyChanged
 		set { if (_source != value) { _source = value; OnPropertyChanged(); } }
 	}
 
-	// In your ViewModel
-	private Color _color = Colors.Blue;
+	public bool IsVisible
+	{
+		get => _isVisible;
+		set
+		{
+			if (_isVisible != value)
+			{
+				_isVisible = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
+	public FlowDirection FlowDirection
+	{
+		get => _flowDirection;
+		set
+		{
+			if (_flowDirection != value)
+			{
+				_flowDirection = value;
+				OnPropertyChanged();
+			}
+		}
+	}
+
 	public Color Color
 	{
 		get => _color;
 		set { if (_color != value) { _color = value; OnPropertyChanged(); UpdateFontImageSource(); } }
 	}
 
-	private double _size = 40;
 	public double Size
 	{
 		get => _size;
 		set { if (_size != value) { _size = value; OnPropertyChanged(); UpdateFontImageSource(); } }
 	}
+
 	private double _containerHeight = 550;
 	public double ContainerHeight
 	{
@@ -65,7 +93,7 @@ public class ImageViewModel : INotifyPropertyChanged
 		}
 	}
 
-	private double _containerWidth = 350; // initial value as in XAML
+	private double _containerWidth = 350;
 	public double ContainerWidth
 	{
 		get => _containerWidth;
@@ -88,25 +116,41 @@ public class ImageViewModel : INotifyPropertyChanged
 			OnPropertyChanged(nameof(Source));
 		}
 	}
-	public string SourcePath
-	{
-		get => _sourcePath!;
-		set
-		{
-			if (_sourcePath != value)
-			{
-				_sourcePath = value;
-				if (!string.IsNullOrWhiteSpace(_sourcePath))
-				{
-					if (_sourcePath.StartsWith("http", System.StringComparison.OrdinalIgnoreCase))
-						Source = ImageSource.FromUri(new System.Uri(_sourcePath));
-					else
-						Source = ImageSource.FromFile(_sourcePath);
-				}
-				OnPropertyChanged();
-			}
-		}
-	}
+
+    public bool HasShadow
+    {
+        get => _hasShadow;
+        set
+        {
+            if (_hasShadow != value)
+            {
+                _hasShadow = value;
+                ImageShadow = value
+                    ? new Shadow
+                    {
+                        Radius = 10,
+                        Opacity = 1.0f,
+                        Brush = Colors.Black.AsPaint(),
+                        Offset = new Point(5, 5)
+                    }
+                    : null;
+                OnPropertyChanged(nameof(HasShadow));
+            }
+        }
+    }
+
+    public Shadow ImageShadow
+    {
+        get => _imageShadow;
+        private set
+        {
+            if (_imageShadow != value)
+            {
+                _imageShadow = value;
+                OnPropertyChanged(nameof(ImageShadow));
+            }
+        }
+    }
 
 	public event PropertyChangedEventHandler PropertyChanged;
 
