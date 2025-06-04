@@ -121,6 +121,11 @@ namespace Microsoft.Maui.Handlers
 		// to be lost). Not useful until we have orientation changed events.
 		void ShowPickerDialog(TimeSpan? time)
 		{
+			if (_dialog is not null && _dialog.IsShowing)
+			{
+				return;
+			}
+			
 			var hour = time?.Hours ?? 0;
 			var minute = time?.Minutes ?? 0;
 
