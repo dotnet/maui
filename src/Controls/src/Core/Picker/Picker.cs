@@ -333,7 +333,35 @@ namespace Microsoft.Maui.Controls
 
 		void OnItemsSourceChanged(IList oldValue, IList newValue)
 		{
-			if (ReferenceEquals(oldValue, _subscribedItemsSourceCollection))
+			// Unsubscribe from old items
+			if (oldValue != null)
+			{
+				foreach (var item in oldValue)
+				{
+					if (item is INotifyPropertyChanged npc)
+					{
+						npc.PropertyChanged -= SimpleOnItemPropertyChanged;
+					}
+				}
+			}
+			// Subscribe to new items
+			if (newValue != null)
+			{
+				foreach (var item in newValue)
+				{
+					if (item is INotifyPropertyChanged npc)
+					{
+						npc.PropertyChanged += SimpleOnItemPropertyChanged;
+					}
+				}
+			}
+
+			var oldObservable = oldValue as INotifyCollectionChanged;
+			if (oldObservable != null)
+				oldObservable.CollectionChanged -= CollectionChanged;
+
+			var newObservable = newValue as INotifyCollectionChanged;
+			if (newObservable != null)
 			{
 				UnsubscribeFromItemsSourceCollection();
 			}
@@ -408,6 +436,9 @@ namespace Microsoft.Maui.Controls
 				picker.Opened?.Invoke(picker, PickerOpenedEventArgs.Empty);
 			else
 				picker.Closed?.Invoke(picker, PickerClosedEventArgs.Empty);
+		void SimpleOnItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+		{
+			ResetItems();
 		}
 
 		void SubscribeToItemsSourceCollection(INotifyCollectionChanged collection)
@@ -435,6 +466,29 @@ namespace Microsoft.Maui.Controls
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			// Unsubscribe from removed items
+			if (e.OldItems != null)
+			{
+				foreach (var item in e.OldItems)
+				{
+					if (item is INotifyPropertyChanged npc)
+					{
+						npc.PropertyChanged -= SimpleOnItemPropertyChanged;
+					}
+				}
+			}
+			// Subscribe to added items
+			if (e.NewItems != null)
+			{
+				foreach (var item in e.NewItems)
+				{
+					if (item is INotifyPropertyChanged npc)
+					{
+						npc.PropertyChanged += SimpleOnItemPropertyChanged;
+					}
+				}
+			}
+			
 			switch (e.Action)
 			{
 				case NotifyCollectionChangedAction.Add:
