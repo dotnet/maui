@@ -66,11 +66,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsMinimizable"/>.</summary>
 		public static readonly BindableProperty IsMinimizableProperty = BindableProperty.Create(nameof(IsMinimizable),
-			typeof(bool), typeof(TitleBar), defaultValue: true);
+			typeof(bool), typeof(Window), defaultValue: true);
 
 		/// <summary>Bindable property for <see cref="IsMaximizable"/>.</summary>
 		public static readonly BindableProperty IsMaximizableProperty = BindableProperty.Create(nameof(IsMaximizable),
-			typeof(bool), typeof(TitleBar), defaultValue: true);
+			typeof(bool), typeof(Window), defaultValue: true);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
 		List<IVisualTreeElement> _visualChildren;
