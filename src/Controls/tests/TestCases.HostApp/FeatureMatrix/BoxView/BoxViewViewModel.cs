@@ -11,8 +11,10 @@ public class BoxViewViewModel : INotifyPropertyChanged
     private bool _isVisible = true;
     private double _opacity = 1.0;
     private CornerRadius _cornerRadius;
-    private bool _isRedChecked;
-    private bool _isBlueChecked;
+    private bool _isRedChecked = false;
+    private bool _isBlueChecked = true;
+    private FlowDirection _flowDirection = FlowDirection.LeftToRight;
+
 
     private string _cornerRadiusEntryText = null;
     private string _opacityEntryText = null;
@@ -76,20 +78,6 @@ public class BoxViewViewModel : INotifyPropertyChanged
             }
         }
     }
-    public void ResetToDefaults()
-    {
-        Color = Colors.Blue;
-        Opacity = 1.0;
-        CornerRadius = 0;
-        Width = 200;
-        Height = 100;
-        IsVisible = true;
-        HasShadow = false;
-        IsRedChecked = false;
-        IsBlueChecked = true;
-        CornerRadiusEntryText = null;
-        OpacityEntryText = null;
-    }
     public double Opacity
     {
         get => _opacity;
@@ -123,8 +111,8 @@ public class BoxViewViewModel : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
-    private bool _hasShadow;
-    private Shadow _boxShadow;
+    private bool _hasShadow = false;
+    private Shadow _boxShadow = null;
 
     public bool HasShadow
     {
@@ -178,7 +166,18 @@ public class BoxViewViewModel : INotifyPropertyChanged
         get => _height;
         set { _height = value; OnPropertyChanged(); }
     }
-
+    public FlowDirection FlowDirection
+    {
+        get => _flowDirection;
+        set
+        {
+            if (_flowDirection != value)
+            {
+                _flowDirection = value;
+                OnPropertyChanged();
+            }
+        }
+    }
     public event PropertyChangedEventHandler PropertyChanged;
 
     protected void OnPropertyChanged([CallerMemberName] string propertyName = null)

@@ -22,6 +22,7 @@
                          IsVisible="{Binding IsVisible}"
                          Shadow="{Binding BoxShadow}"
                          VerticalOptions="Center"
+                         FlowDirection="{Binding FlowDirection}"
                          HorizontalOptions="Center"/>
 
                 <!-- Controls at bottom -->
@@ -41,19 +42,23 @@
                                      Padding="20"
                                      Spacing="10">
                                 <Label FontAttributes="Bold"
+                                       AutomationId="CornerRadiusLabel"
                                        Text="Corner Radius"/>
-                                <Entry x:Name="CornerRadiusEntry"
-                                       AutomationId="CornerRadiusEntry"
-                                       Placeholder="e.g. 10,20,30,40"
-                                       Text="{Binding CornerRadiusEntryText, Mode=TwoWay}"
-                                       TextChanged="OnCornerRadiusEntryChanged"/>
+                                <local:UITestEntry x:Name="CornerRadiusEntry"
+                                                   AutomationId="CornerRadiusEntry"
+                                                   Placeholder="e.g. 10,20,30,40"
+                                                   IsCursorVisible="False"
+                                                   Text="{Binding CornerRadiusEntryText, Mode=TwoWay}"
+                                                   TextChanged="OnCornerRadiusEntryChanged"/>
                                 <Label FontAttributes="Bold"
+                                       AutomationId="OpacityLabel"
                                        Text="Opacity"/>
-                                <Entry x:Name="OpacityEntry"
-                                        Placeholder="Enter opacity (0.0 - 1.0)"
-                                       AutomationId="OpacityEntry"
-                                       Text="{Binding OpacityEntryText, Mode=TwoWay}"
-                                       TextChanged="OnOpacityChanged"/>
+                                <local:UITestEntry x:Name="OpacityEntry"
+                                                   Placeholder="Enter opacity (0.0 - 1.0)"
+                                                   AutomationId="OpacityEntry"
+                                                   IsCursorVisible="False"
+                                                   Text="{Binding OpacityEntryText, Mode=TwoWay}"
+                                                   TextChanged="OnOpacityChanged"/>
 
                                 <Button Text="Reset Changes"
                                         WidthRequest="150"
@@ -65,7 +70,7 @@
                         <StackLayout Grid.Column="1"
                                      Grid.Row="0"
                                      Padding="20"
-                                     Spacing="20">
+                                     Spacing="1">
                                 <Label FontAttributes="Bold"
                                        Text="Box Color"/>
                                 <VerticalStackLayout>
@@ -82,7 +87,7 @@
                                                      IsChecked="{Binding IsBlueChecked, Mode=TwoWay}"/>
                                 </VerticalStackLayout>
 
-                                <VerticalStackLayout>
+                                <VerticalStackLayout Spacing="5">
                                         <HorizontalStackLayout
                                                 Spacing="10">
                                                 <CheckBox IsChecked="{Binding IsVisible}"
@@ -97,6 +102,21 @@
                                                 <Label Text="Has Shadow"
                                                        VerticalOptions="Center"/>
                                         </HorizontalStackLayout>
+
+                                        <Label Text="Flow Direction:"
+                                                FontAttributes="Bold"
+                                                        FontSize="15"/>
+                                        <StackLayout Orientation="Horizontal"
+                                                        Spacing="10">
+
+                                                <CheckBox x:Name="FlowDirectionRTLCheckBox"
+                                                          AutomationId="FlowDirectionRTLCheckBox"
+                                                          IsChecked="False"
+                                                          CheckedChanged="OnFlowDirectionCheckBoxChanged"/>
+                                                <Label Text="RTL"
+                                                                VerticalOptions="Center"/>
+                                        </StackLayout>
+
                                 </VerticalStackLayout>
                         </StackLayout>
                 </Grid>
