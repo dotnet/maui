@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Graphics.Platform
 				if (_fontColor != value)
 				{
 					_fontColor = value;
-					FontPaint.Color = value != null ? _fontColor.AsColor() : global::Android.Graphics.Color.Black;
+					FontPaint.Color = _fontColor is not null ? _fontColor.AsColor() : global::Android.Graphics.Color.Black;
 					UpdateShadowState();
 				}
 			}
