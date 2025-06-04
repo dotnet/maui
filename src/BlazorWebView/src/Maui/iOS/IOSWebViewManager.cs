@@ -125,24 +125,24 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					cancelAction: _ => completionHandler(false)
 				);
 			}
-
+			
 			[Export("webView:runJavaScriptTextInputPanelWithPrompt:defaultText:initiatedByFrame:completionHandler:")]
 			public void RunJavaScriptTextInputPanelWithPrompt(
 				WKWebView webView,
-				NSString prompt,
-				NSString defaultText, 
+				string prompt,
+				string? defaultText,
 				WKFrameInfo frame, 
-				Action<NSString> completionHandler)
+				Action<string?> completionHandler)
 			{
 				PresentAlertController(
 					webView,
-					prompt?.ToString() ?? string.Empty,
-					defaultText: defaultText?.ToString(),
+					prompt,
+					defaultText: defaultText,
 					okAction: x => completionHandler(new NSString(x.TextFields[0].Text ?? string.Empty)),
 					cancelAction: _ => completionHandler(null!)
 				);
 			}
-
+			
 			private static string GetJsAlertTitle(WKWebView webView)
 			{
 				// Emulate the behavior of UIWebView dialogs.
