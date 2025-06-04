@@ -5,20 +5,20 @@ namespace Maui.Controls.Sample
 {
 	public class BoxViewControlPage : NavigationPage
 	{
-		private BoxViewViewModal _viewModel;
+		private BoxViewViewModel _viewModel;
 
 		public BoxViewControlPage()
 		{
-			_viewModel = new BoxViewViewModal();
+			_viewModel = new BoxViewViewModel();
 			PushAsync(new BoxViewControlMainPage(_viewModel));
 		}
 	}
 
 	public partial class BoxViewControlMainPage : ContentPage
 	{
-		private BoxViewViewModal _viewModel;
+		private BoxViewViewModel _viewModel;
 
-		public BoxViewControlMainPage(BoxViewViewModal viewModel)
+		public BoxViewControlMainPage(BoxViewViewModel viewModel)
 		{
 			InitializeComponent();
 			_viewModel = viewModel;
