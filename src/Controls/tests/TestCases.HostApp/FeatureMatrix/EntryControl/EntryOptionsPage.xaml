@@ -216,14 +216,17 @@
                             <Button Text="Black"
                                     BackgroundColor="Black"
                                     TextColor="White"
+                                    AutomationId="TextColorBlack"
                                     Clicked="TextColorButton_Clicked"/>
                             <Button Text="Red"
                                     BackgroundColor="Red"
                                     TextColor="White"
+                                    AutomationId="TextColorRed"
                                     Clicked="TextColorButton_Clicked"/>
                             <Button Text="Blue"
                                     BackgroundColor="Blue"
                                     TextColor="White"
+                                    AutomationId="TextColorBlue"
                                     Clicked="TextColorButton_Clicked"/>
                      </StackLayout>
 
@@ -234,14 +237,17 @@
                             <Button Text="Grey"
                                     BackgroundColor="Grey"
                                     TextColor="White"
+                                    AutomationId="PlaceholderColorGrey"
                                     Clicked="PlaceholderColorButton_Clicked"/>
                             <Button Text="Red"
                                     BackgroundColor="Red"
                                     TextColor="White"
+                                    AutomationId="PlaceholderColorRed"
                                     Clicked="PlaceholderColorButton_Clicked"/>
                             <Button Text="Blue"
                                     BackgroundColor="Blue"
                                     TextColor="White"
+                                    AutomationId="PlaceholderColorBlue"
                                     Clicked="PlaceholderColorButton_Clicked"/>
                      </StackLayout>
 
@@ -336,7 +342,7 @@
                             FontSize="11"/>
                      <Entry x:Name="PlaceholderEntry"
                             Text="{Binding Placeholder}"
-                            AutomationId="Placeholder"
+                            AutomationId="PlaceholderText"
                             TextChanged="PlaceholderEntry_TextChanged"/>
               </StackLayout>
        </Grid>
