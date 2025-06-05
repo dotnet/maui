@@ -234,7 +234,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New("maui", projectDir, DotNetCurrent),
 			$"Unable to create template maui. Check test output for errors.");
 
-		EnableTizen(projectFile);
 		File.WriteAllText(Path.Combine(projectDir, "Resources", "Images", ".DS_Store"), "Boom!");
 
 		Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
@@ -256,10 +255,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 			$"Unable to create template {id}. Check test output for errors.");
-
-		// TODO: remove this if as we should be able to build tizen net8
-		if (framework != DotNetPrevious)
-			EnableTizen(projectFile);
 
 		var projectSectionsToReplace = new Dictionary<string, string>()
 		{
