@@ -21,8 +21,12 @@ namespace Microsoft.Maui
 		const bool AreBindingInterceptorsSupportedByDefault = true;
 		const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
 		const bool IsHybridWebViewSupportedByDefault = true;
+<<<<<<< HEAD
 		const bool SupportNamescopesByDefault = true;
 		const string FeatureSwitchPrefix = "Microsoft.Maui.RuntimeFeature";
+=======
+		const bool EnableDiagnosticsByDefault = false;
+>>>>>>> b2393753db (Turn Visual and Binding diags on EnableDiagnostics)
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
@@ -97,6 +101,26 @@ namespace Microsoft.Maui
 				: SupportNamescopesByDefault;
 			//for testing purposes only
 			internal set => AppContext.SetSwitch($"{FeatureSwitchPrefix}.{nameof(AreNamescopesSupported)}", value);
+
+		}
+
+#if NET9_0_OR_GREATER
+		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.EnableDiagnostics")]
+#endif
+		public static bool EnableDiagnostics
+		{
+			get
+			{
+				return AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.EnableDiagnostics", out bool isEnabled)
+				? isEnabled
+				: EnableDiagnosticsByDefault;
+			}
+			internal set
+			{
+				// This property is internal settable to allow tests to enable diagnostics.
+				// It should not be set in production code.
+				AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableDiagnostics", value);
+			}
 		}
 #pragma warning restore IL4000
     }
