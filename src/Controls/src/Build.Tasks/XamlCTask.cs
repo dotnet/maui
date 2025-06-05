@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 							ILRootNode rootnode = null;
 							try
 							{
-								rootnode = ParseXaml(resource.GetResourceStream(), typeDef);
+								rootnode = ParseXaml(resource.GetResourceStream(), module, typeDef);
 								if (rootnode == null)
 								{
 									LoggingHelper.LogMessage(Low, $"{new string(' ', 8)}failed.");

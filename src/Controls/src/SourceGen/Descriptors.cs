@@ -12,6 +12,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 			category: "XamlParsing",
 			defaultSeverity: DiagnosticSeverity.Error,
 			isEnabledByDefault: true);
+
+		public static DiagnosticDescriptor AmbiguousType = new DiagnosticDescriptor(
+			id: "MAUIG1002",
+			title: new LocalizableResourceString(nameof(MauiGResources.AmbiguousTypeTitle), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			messageFormat: new LocalizableResourceString(nameof(MauiGResources.AmbiguousTypeMessage), MauiGResources.ResourceManager, typeof(MauiGResources)),
+			category: "XamlParsing",
+			defaultSeverity: DiagnosticSeverity.Error,
+			isEnabledByDefault: true);
 	}
 }
 

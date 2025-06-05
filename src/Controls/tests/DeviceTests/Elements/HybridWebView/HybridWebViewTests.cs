@@ -603,22 +603,22 @@ namespace Microsoft.Maui.DeviceTests
 
 						// Intercept the request and add the desired header to a copy of the request
 						var task = e.PlatformArgs.UrlSchemeTask;
-						
+
 						// Create a mutable copy of the request (this preserves all existing headers and properties)
 						var request = e.PlatformArgs.Request.MutableCopy() as Foundation.NSMutableUrlRequest;
 
 						// Set the URL to the desired request URL as iOS only allows us to intercept non-https requests
 						request.Url = new("https://echo.free.beeceptor.com/sample-request");
-						
+
 						// Add our custom header
 						var headers = request.Headers.MutableCopy() as Foundation.NSMutableDictionary;
 						headers[(Foundation.NSString)"X-Request-Header"] = (Foundation.NSString)ExpectedHeaderValue;
 						request.Headers = headers;
-						
+
 						// Create a session configuration and session to send the request
 						var configuration = Foundation.NSUrlSessionConfiguration.DefaultSessionConfiguration;
 						var session = Foundation.NSUrlSession.FromConfiguration(configuration);
-						
+
 						// Create a data task to send the request and get the response
 						var dataTask = session.CreateDataTask(request, (data, response, error) =>
 						{
@@ -628,18 +628,18 @@ namespace Microsoft.Maui.DeviceTests
 								task.DidFailWithError(error);
 								return;
 							}
-							
+
 							if (response is Foundation.NSHttpUrlResponse httpResponse)
 							{
 								// Forward the response headers and status
 								task.DidReceiveResponse(httpResponse);
-								
+
 								// Forward the response body if any
 								if (data != null)
 								{
 									task.DidReceiveData(data);
 								}
-								
+
 								// Complete the task
 								task.DidFinish();
 							}
@@ -649,7 +649,7 @@ namespace Microsoft.Maui.DeviceTests
 								task.DidFailWithError(new Foundation.NSError(new Foundation.NSString("HybridWebViewError"), -1, null));
 							}
 						});
-						
+
 						// Start the request
 						dataTask.Resume();
 #elif ANDROID
