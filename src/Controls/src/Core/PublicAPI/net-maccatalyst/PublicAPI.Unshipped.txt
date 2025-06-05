@@ -23,6 +23,10 @@ Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Sende
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.UrlSchemeTask.get -> WebKit.IWKUrlSchemeTask!
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
+Microsoft.Maui.Controls.DateTimeTypeConverter
+Microsoft.Maui.Controls.DateTimeTypeConverter.DateTimeTypeConverter() -> void
+Microsoft.Maui.Controls.TimeSpanTypeConverter
+Microsoft.Maui.Controls.TimeSpanTypeConverter.TimeSpanTypeConverter() -> void
 *REMOVED*Microsoft.Maui.Controls.DatePicker.Date.get -> System.DateTime
 *REMOVED*Microsoft.Maui.Controls.DatePicker.MaximumDate.get -> System.DateTime
 *REMOVED*Microsoft.Maui.Controls.DatePicker.MinimumDate.get -> System.DateTime
@@ -44,6 +48,14 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertFrom(System.Compo
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
+override Microsoft.Maui.Controls.DateTimeTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType) -> bool
+override Microsoft.Maui.Controls.DateTimeTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.DateTimeTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
+override Microsoft.Maui.Controls.DateTimeTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
+override Microsoft.Maui.Controls.TimeSpanTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type? sourceType) -> bool
+override Microsoft.Maui.Controls.TimeSpanTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
+override Microsoft.Maui.Controls.TimeSpanTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
+override Microsoft.Maui.Controls.TimeSpanTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
 ~override Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.Compatibility.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.Compatibility.StackLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
