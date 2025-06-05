@@ -5,15 +5,6 @@
  * The JavaScript file is generated from TypeScript and should not be modified
  * directly. To make changes, modify the TypeScript file and then recompile it.
  */
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 (() => {
     // Cached function to send messages to the host application.
     let sendMessageFunction = null;
@@ -22,19 +13,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
      * This method is called once when the page is loaded.
      */
     function initHybridWebView() {
-        var _a, _b, _c, _d, _e, _f, _g;
         function dispatchHybridWebViewMessage(message) {
             const event = new CustomEvent('HybridWebViewMessageReceived', { detail: { message: message } });
             window.dispatchEvent(event);
         }
         // Determine the mechanism to receive messages from the host application.
-        if ((_b = (_a = window.chrome) === null || _a === void 0 ? void 0 : _a.webview) === null || _b === void 0 ? void 0 : _b.addEventListener) {
+        if (window.chrome && window.chrome.webview && window.chrome.webview.addEventListener) {
             // Windows WebView2
             window.chrome.webview.addEventListener('message', (arg) => {
                 dispatchHybridWebViewMessage(arg.data);
             });
         }
-        else if ((_d = (_c = window.webkit) === null || _c === void 0 ? void 0 : _c.messageHandlers) === null || _d === void 0 ? void 0 : _d.webwindowinterop) {
+        else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
             // iOS and MacCatalyst WKWebView
             // @ts-ignore - We are extending the global object here
             window.external = {
@@ -50,11 +40,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
             });
         }
         // Determine the function to use to send messages to the host application.
-        if ((_e = window.chrome) === null || _e === void 0 ? void 0 : _e.webview) {
+        if (window.chrome && window.chrome.webview) {
             // Windows WebView2
             sendMessageFunction = msg => window.chrome.webview.postMessage(msg);
         }
-        else if ((_g = (_f = window.webkit) === null || _f === void 0 ? void 0 : _f.messageHandlers) === null || _g === void 0 ? void 0 : _g.webwindowinterop) {
+        else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
             // iOS and MacCatalyst WKWebView
             sendMessageFunction = msg => window.webkit.messageHandlers.webwindowinterop.postMessage(msg);
         }
@@ -137,40 +127,38 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
          *
          * @returns A promise that resolves with the result of the .NET method invocation.
          */
-        InvokeDotNet: function (methodName, paramValues) {
-            return __awaiter(this, void 0, void 0, function* () {
-                const body = {
-                    MethodName: methodName
-                };
-                // if parameters were provided, serialize them first
-                if (paramValues !== undefined) {
-                    if (!Array.isArray(paramValues)) {
-                        paramValues = [paramValues];
-                    }
-                    for (let i = 0; i < paramValues.length; i++) {
-                        paramValues[i] = JSON.stringify(paramValues[i]);
-                    }
-                    if (paramValues.length > 0) {
-                        body.ParamValues = paramValues;
-                    }
+        InvokeDotNet: async function (methodName, paramValues) {
+            const body = {
+                MethodName: methodName
+            };
+            // if parameters were provided, serialize them first
+            if (paramValues !== undefined) {
+                if (!Array.isArray(paramValues)) {
+                    paramValues = [paramValues];
                 }
-                const message = JSON.stringify(body);
-                const requestUrl = `${window.location.origin}/__hwvInvokeDotNet?data=${encodeURIComponent(message)}`;
-                const rawResponse = yield fetch(requestUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
-                const response = yield rawResponse.json();
-                if (!response) {
-                    return null;
+                for (let i = 0; i < paramValues.length; i++) {
+                    paramValues[i] = JSON.stringify(paramValues[i]);
                 }
-                if (response.IsJson) {
-                    return JSON.parse(response.Result);
+                if (paramValues.length > 0) {
+                    body.ParamValues = paramValues;
                 }
-                return response.Result;
+            }
+            const message = JSON.stringify(body);
+            const requestUrl = `${window.location.origin}/__hwvInvokeDotNet?data=${encodeURIComponent(message)}`;
+            const rawResponse = await fetch(requestUrl, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
             });
+            const response = await rawResponse.json();
+            if (!response) {
+                return null;
+            }
+            if (response.IsJson) {
+                return JSON.parse(response.Result);
+            }
+            return response.Result;
         },
         /*
          * Invoke a JavaScript method from the .NET host application.
@@ -182,17 +170,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
          *
          * @returns A promise.
          */
-        __InvokeJavaScript: function (taskId, methodName, args) {
-            return __awaiter(this, void 0, void 0, function* () {
-                try {
-                    const result = yield methodName(...args);
-                    invokeJavaScriptCallbackInDotNet(taskId, result);
-                }
-                catch (ex) {
-                    console.error(ex);
-                    invokeJavaScriptFailedInDotNet(taskId, ex);
-                }
-            });
+        __InvokeJavaScript: async function (taskId, methodName, args) {
+            try {
+                const result = await methodName(...args);
+                invokeJavaScriptCallbackInDotNet(taskId, result);
+            }
+            catch (ex) {
+                console.error(ex);
+                invokeJavaScriptFailedInDotNet(taskId, ex);
+            }
         }
     };
     // Make the following APIs available in global scope for invocation from JS

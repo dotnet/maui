@@ -74,7 +74,7 @@
 
   <!-- TypeScript compilation -->
   <PropertyGroup>
-    <TypeScriptTarget>ES2015</TypeScriptTarget>
+    <TypeScriptTarget>ES2020</TypeScriptTarget>
     <TypeScriptSourceMap>false</TypeScriptSourceMap>
     <TypeScriptNoImplicitAny>true</TypeScriptNoImplicitAny>
     <TypeScriptCompileOnSaveEnabled>true</TypeScriptCompileOnSaveEnabled>
