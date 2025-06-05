@@ -111,7 +111,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			View.SetNeedsLayout();
 
-			UpdateFlyoutMenuButton();
+			var parentingViewController = GetParentingViewController();
+			parentingViewController?.UpdateLeftBarButtonItem();
 		}
 
 		public Task<bool> PopToRootAsync(Page page, bool animated = true)
