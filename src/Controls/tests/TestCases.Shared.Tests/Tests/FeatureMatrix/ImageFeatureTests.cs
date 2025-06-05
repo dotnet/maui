@@ -361,8 +361,8 @@ public class ImageFeatureTests : UITest
 		App.WaitForElement("ImageControl");
 		VerifyScreenshot();
 	}
+#endif
 
-// Issue Link: https://github.com/dotnet/maui/issues/29817
 	[Test]
 	[Category(UITestCategories.Image)]
 	public void VerifyImageFlowDirectionRTL()
@@ -378,5 +378,4 @@ public class ImageFeatureTests : UITest
 		App.WaitForElement("ImageControl");
 		VerifyScreenshot();
 	}
-#endif
 }
