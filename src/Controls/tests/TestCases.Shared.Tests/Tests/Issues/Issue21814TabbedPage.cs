@@ -19,5 +19,8 @@ public class Issue21814TabbedPage : _IssuesUITest
 	public void VerifyTabbedPageNavigationEventArgs()
 	{
 		App.WaitForElement("Tab1Content");
-	}
+		
+		App.WaitForElement("Tab1OnNavigatedToLabel");
+		var navigatedTo = App.FindElement("Tab1OnNavigatedToLabel").GetText();
+		Assert.That(navigatedTo, Is.EqualTo("PreviousPage: Null, NavigationType: Replace"));}
 }
