@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Microsoft.Maui.Controls.Internals;
 using Xunit;
 using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
@@ -25,8 +26,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				// Create a weak reference to the button
 				buttonWeakRef = new WeakReference(button);
-				proxyWeakRef = new WeakReference(button.CleanupTracker);
-				proxyProxyWeakRef = new WeakReference(button.CleanupTracker?.Proxy);
+				proxyWeakRef = new WeakReference(((ICommandElement)button).CleanupTracker);
+				proxyProxyWeakRef = new WeakReference(((ICommandElement)button).CleanupTracker?.Proxy);
 				await TestHelpers.Collect();
 
 				// Make sure everything is still alive if the button is still in scope
@@ -67,8 +68,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				// Create a weak reference to the button
 				buttonWeakRef = new WeakReference(button);
-				proxyWeakRef = new WeakReference(button.CleanupTracker);
-				proxyProxyWeakRef = new WeakReference(button.CleanupTracker?.Proxy);
+				proxyWeakRef = new WeakReference(((ICommandElement)button).CleanupTracker);
+				proxyProxyWeakRef = new WeakReference(((ICommandElement)button).CleanupTracker?.Proxy);
 				await TestHelpers.Collect();
 
 				// Make sure everything is still alive if the button is still in scope
