@@ -4,15 +4,53 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample;
 
-public partial class GraphicsViewControlPage : ContentPage
+public partial class GraphicsViewControlPage : NavigationPage
 {
-    private GraphicsViewFeatureMatrixViewModel _viewModel;
+    private GraphicsViewViewModel _viewModel;
 
     public GraphicsViewControlPage()
     {
+        _viewModel = new GraphicsViewViewModel();
+        PushAsync(new GraphicsViewControlMainPage(_viewModel));
+    }
+}
+
+public partial class GraphicsViewControlMainPage : ContentPage
+{
+    private GraphicsViewViewModel _viewModel;
+    private GraphicsView graphicsView;
+
+    public GraphicsViewControlMainPage(GraphicsViewViewModel viewModel)
+    {
         InitializeComponent();
-        _viewModel = new GraphicsViewFeatureMatrixViewModel();
+        _viewModel = viewModel;
         BindingContext = _viewModel;
+
+        graphicsView = new GraphicsView
+        {
+            BackgroundColor = _viewModel.BackgroundColor,
+            IsVisible = _viewModel.IsVisible,
+            IsEnabled = _viewModel.IsEnabled,
+            FlowDirection = _viewModel.FlowDirection
+        };
+
+        Content = new StackLayout
+        {
+            Children =
+            {
+                graphicsView,
+                new Button
+                {
+                    Text = "Options",
+                    Command = new Command(NavigateToOptionsPage_Clicked)
+                },
+                new Button
+                {
+                    Text = "Reset",
+                    Command = new Command(OnResetClicked)
+                }
+            }
+        };
     }
 
     private void OnSetBackgroundColor(string colorName)
@@ -35,17 +73,23 @@ public partial class GraphicsViewControlPage : ContentPage
 
     private void OnSetDrawableType(string drawableType)
     {
-        if (Enum.TryParse(drawableType, out DrawableType result))
-        {
-            _viewModel.DrawableType = result;
-            graphicsView.Invalidate();
-        }
+        _viewModel.DrawableType = drawableType;
+        graphicsView.Invalidate();
     }
 
-    private void OnResetClicked(object sender, EventArgs e)
+    private void OnResetClicked()
     {
-        _viewModel = new GraphicsViewFeatureMatrixViewModel();
+        _viewModel = new GraphicsViewViewModel();
         BindingContext = _viewModel;
+        graphicsView.BackgroundColor = _viewModel.BackgroundColor;
+        graphicsView.IsVisible = _viewModel.IsVisible;
+        graphicsView.IsEnabled = _viewModel.IsEnabled;
+        graphicsView.FlowDirection = _viewModel.FlowDirection;
         graphicsView.Invalidate();
+    }
+
+    private async void NavigateToOptionsPage_Clicked()
+    {
+        await Navigation.PushAsync(new GraphicsViewOptionsPage(_viewModel));
     }
 }
