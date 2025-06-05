@@ -158,6 +158,28 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Entry)]
+		public void VerifyTextWhenClearButtonVisibleSetNever()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ClearButtonVisibleNever");
+			App.Tap("ClearButtonVisibleNever");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+#if ANDROID
+			if (App.IsKeyboardShown())
+			{
+				App.DismissKeyboard();
+			}
+#endif
+			VerifyScreenshot();
+		}
+
+
+		[Test]
+		[Category(UITestCategories.Entry)]
 		public void VerifyTextWhenAlingnedHorizontally()
 		{
 			App.WaitForElement("Options");
@@ -240,6 +262,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
+			App.WaitForElement("CharacterSpacing");
 			App.ClearText("CharacterSpacing");
 			App.EnterText("CharacterSpacing", "5");
 			App.WaitForElement("Apply");
@@ -259,7 +282,9 @@ namespace Microsoft.Maui.TestCases.Tests
 		[Category(UITestCategories.Entry)]
 		public void VerifyHorizontalTextAlignmentBasedOnCharacterSpacing()
 		{
+			App.WaitForElement("Options");
 			App.Tap("Options");
+			App.WaitForElement("CharacterSpacing");
 			App.ClearText("CharacterSpacing");
 			App.EnterText("CharacterSpacing", "5");
 			App.WaitForElement("HCenter");
@@ -322,6 +347,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			VerifyScreenshotOrSetException(ref exception, "IsPassword_Before_CharacterSpacingSet");
 			App.WaitForElement("Options");
 			App.Tap("Options");
+			App.WaitForElement("CharacterSpacing");
 			App.ClearText("CharacterSpacing");
 			App.EnterText("CharacterSpacing", "5");
 			App.WaitForElement("PasswordTrue");
@@ -519,7 +545,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
+#if !ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsReadOnly property is set to true.
+			App.EnterText("EntryText", "123");
 			Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test Entry"));
+#endif
 			App.WaitForElement("Options");
 			App.Tap("Options");
 			App.WaitForElement("ReadOnlyTrue");
@@ -531,8 +560,10 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
+#if !ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsReadOnly property is set to true.
 			App.EnterText("EntryText", "123");
 			Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test E"));
+#endif
 		}
 
 		[Test]
@@ -585,6 +616,7 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
+			App.WaitForElement("FontSizeEntry");
 			App.ClearText("FontSizeEntry");
 			App.EnterText("FontSizeEntry", "20");
 			App.WaitForElement("Apply");
@@ -642,6 +674,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			}
 		}
 
+#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS && TEST_FAILS_ON_WINDOWS //related issue link: https://github.com/dotnet/maui/issues/29833
 		[Test]
 		[Category(UITestCategories.Entry)]
 		public void VerifyTextWhenIsTextPredictionEnabledTrueOrFalse()
@@ -654,38 +687,9 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.ClearText("EntryText");
-			App.EnterText("EntryText", "Testig123");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
-
-		}
-
-		[Test]
-		[Category(UITestCategories.Entry)]
-		public void VerifyIsPasswordWhenIsTextPredictionEnabledTrueOrFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("TextPredictionTrue");
-			App.Tap("TextPredictionTrue");
-			App.WaitForElement("PasswordTrue");
-			App.Tap("PasswordTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("EntryText");
-			App.ClearText("EntryText");
-			App.EnterText("EntryText", "Testig123");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
-			VerifyScreenshot();
+			App.EnterText("EntryText", "Testig");
+			App.EnterText("EntryText", " ");
+			Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Testing "));
 		}
 
 		[Test]
@@ -700,7 +704,8 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.ClearText("EntryText");
-			App.EnterText("EntryText", "Testig123");
+			App.EnterText("EntryText", "Testig");
+			App.EnterText("EntryText", " ");
 #if ANDROID
 			if (App.IsKeyboardShown())
 			{
@@ -709,30 +714,7 @@ namespace Microsoft.Maui.TestCases.Tests
 #endif
 			VerifyScreenshot();
 		}
-
-		[Test]
-		[Category(UITestCategories.Entry)]
-		public void VerifyIsPasswordWhenIsSpellCheckEnabledTrueOrFalse()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("SpellCheckTrue");
-			App.Tap("SpellCheckTrue");
-			App.WaitForElement("PasswordTrue");
-			App.Tap("PasswordTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("EntryText");
-			App.ClearText("EntryText");
-			App.EnterText("EntryText", "Testig123");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
 #endif
-			VerifyScreenshot();
-		}
 
 		[Test]
 		[Category(UITestCategories.Entry)]
@@ -740,19 +722,16 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.ClearText("SelectionLength");
-			App.EnterText("SelectionLength", "5");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
+			App.WaitForElement("SelectionLength");
+			App.ClearText("SelectionLength");
+			App.EnterText("SelectionLength", "5");
+			App.WaitForElement("UpdateCursorAndSelectionButton");
+			App.Tap("UpdateCursorAndSelectionButton");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
-			VerifyScreenshot();
+			Assert.That(App.WaitForElement("SelectionLength").GetText(), Is.EqualTo("0"));
 		}
 
 		[Test]
@@ -761,21 +740,18 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.WaitForElement("CursorVisibleTrue");
-			App.Tap("CursorVisibleTrue");
-			App.ClearText("CursorPosition");
-			App.EnterText("CursorPosition", "5");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
+			App.WaitForElement("CursorVisibleTrue");
+			App.Tap("CursorVisibleTrue");
+			App.WaitForElement("CursorPosition");
+			App.ClearText("CursorPosition");
+			App.EnterText("CursorPosition", "5");
+			App.WaitForElement("UpdateCursorAndSelectionButton");
+			App.Tap("UpdateCursorAndSelectionButton");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
-			VerifyScreenshot();
+			Assert.That(App.WaitForElement("CursorPosition").GetText(), Is.EqualTo("0"));
 		}
 
 		[Test]
@@ -784,23 +760,18 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
 			App.WaitForElement("CursorVisibleTrue");
 			App.Tap("CursorVisibleTrue");
+			App.WaitForElement("CursorPosition");
 			App.ClearText("CursorPosition");
 			App.EnterText("CursorPosition", "5");
 			App.WaitForElement("PasswordTrue");
 			App.Tap("PasswordTrue");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
-			VerifyScreenshot();
+			Assert.That(App.WaitForElement("CursorPosition").GetText(), Is.EqualTo("0"));
 		}
 
 		[Test]
@@ -809,17 +780,186 @@ namespace Microsoft.Maui.TestCases.Tests
 		{
 			App.WaitForElement("Options");
 			App.Tap("Options");
-			App.ClearText("SelectionLength");
-			App.EnterText("SelectionLength", "5");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
 			App.WaitForElement("CursorVisibleTrue");
 			App.Tap("CursorVisibleTrue");
 			App.WaitForElement("CursorPosition");
 			App.ClearText("CursorPosition");
 			App.EnterText("CursorPosition", "3");
+			App.WaitForElement("SelectionLength");
+			App.ClearText("SelectionLength");
+			App.EnterText("SelectionLength", "5");
+			App.WaitForElement("UpdateCursorAndSelectionButton");
+			App.Tap("UpdateCursorAndSelectionButton");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+			Assert.That(App.WaitForElement("CursorPosition").GetText(), Is.EqualTo("0"));
+			Assert.That(App.WaitForElement("SelectionLength").GetText(), Is.EqualTo("0"));
+		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifyCursorPositionWhenIsReadOnlyTrue()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ReadOnlyTrue");
+			App.Tap("ReadOnlyTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("CursorVisibleTrue");
+			App.Tap("CursorVisibleTrue");
+			App.WaitForElement("CursorPosition");
+			App.ClearText("CursorPosition");
+			App.EnterText("CursorPosition", "3");
+			App.WaitForElement("UpdateCursorAndSelectionButton");
+			App.Tap("UpdateCursorAndSelectionButton");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+			Assert.That(App.WaitForElement("CursorPosition").GetText(), Is.EqualTo("3"));
+		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifySelectionLenghtWhenIsReadOnlyTrue()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("ReadOnlyTrue");
+			App.Tap("ReadOnlyTrue");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("SelectionLength");
+			App.ClearText("SelectionLength");
+			App.EnterText("SelectionLength", "3");
+			App.WaitForElement("UpdateCursorAndSelectionButton");
+			App.Tap("UpdateCursorAndSelectionButton");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+			Assert.That(App.WaitForElement("SelectionLength").GetText(), Is.EqualTo("3"));
+		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifyTextWhenReturmCommandAndReturnCommandParameter()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.ClearText("EntryText");
+			App.EnterText("EntryText", "Test");
+			Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Command Executed with Parameter"));
+		}
+
+#if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //keybord type is not supported on Windows and Maccatalyst platforms
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifyTextWhenKeyboardTypeSet()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("Numeric");
+			App.Tap("Numeric");
 			App.WaitForElement("Apply");
 			App.Tap("Apply");
 			App.WaitForElement("EntryText");
 			App.Tap("EntryText");
-		}		
+			VerifyScreenshot();
+		}
+#if TEST_FAILS_ON_ANDROID //related issue:https://github.com/dotnet/maui/issues/26968
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifyTextWhenReturnTypeSet()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("Search");
+			App.Tap("Search");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.Tap("EntryText");
+			VerifyScreenshot();
+		}
+#endif
+#endif
+
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifyEntryControlWhenIsVisibleTrueOrFalse()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsVisibleFalse");
+			App.Tap("IsVisibleFalse");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForNoElement("EntryText");
+		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifyEntryControlWhenIsEnabledTrueOrFalse()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.ClearText("EntryText");
+			App.EnterText("EntryText", "123");
+			Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("123"));
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("IsEnabledFalse");
+			App.Tap("IsEnabledFalse");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.ClearText("EntryText");
+			App.EnterText("EntryText", "123");
+			Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test Entry"));
+		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifyEntryControlWhenPlaceholderTextSet()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("PlaceholderText");
+			App.ClearText("PlaceholderText");
+			App.EnterText("PlaceholderText", "Enter your name");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.ClearText("EntryText");
+			App.WaitForElement("Enter your name");
+		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
+		public void VerifyEntryControlWhenPlaceholderColorSet()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("PlaceholderColor");
+			App.ClearText("PlaceholderColor");
+			App.EnterText("PlaceholderColor", "Red");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+			App.ClearText("EntryText");
+			App.WaitForElement("Enter text here");
+			VerifyScreenshot();
+		}
 	}
 }

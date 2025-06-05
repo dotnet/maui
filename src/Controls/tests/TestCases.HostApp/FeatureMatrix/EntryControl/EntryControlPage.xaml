@@ -1,38 +1,83 @@
 ﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:DataType="local:EntryViewModel"
              x:Class="Maui.Controls.Sample.EntryControlMainPage">
-    <StackLayout Padding="20">
-        <Label Text="Entry Control"
-               FontSize="20"
-               HorizontalOptions="Center"/>
+       <StackLayout Padding="20">
+              <Label Text="Entry Control"
+                     FontSize="20"
+                     HorizontalOptions="Center"/>
 
-        <local:UITestEntry x:Name="EntryControl"
-                           Text="{Binding Text}"
-                           Placeholder="Enter some text"
-                           AutomationId="EntryText"
-                           ClearButtonVisibility="WhileEditing"
-                           HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
-                           VerticalTextAlignment="{Binding VerticalTextAlignment}"
-                           IsPassword="{Binding IsPassword}"
-                           FontSize="{Binding FontSize}"
-                           CharacterSpacing="{Binding CharacterSpacing}"
-                           TextColor="{Binding TextColor}"
-                           IsReadOnly="{Binding IsReadOnly}"
-                           IsTextPredictionEnabled="{Binding IsTextPredictionEnabled}"
-                           IsSpellCheckEnabled="{Binding IsSpellCheckEnabled}"
-                           MaxLength="{Binding MaxLength}"
-                           SelectionLength="{Binding SelectionLength}"
-                           IsCursorVisible="{Binding IsCursorVisible}"
-                           CursorPosition="{Binding CursorPosition}"
-                           ReturnType="{Binding ReturnType}"
-                           Keyboard="{Binding Keyboard}"
-                           FontFamily="{Binding FontFamily}"
-                           HeightRequest="100"/>
-    </StackLayout>
+              <local:UITestEntry x:Name="EntryControl"
+                                 Text="{Binding Text}"
+                                 Placeholder="{Binding Placeholder}"
+                                 PlaceholderColor="{Binding PlaceholderColor}"
+                                 TextColor="{Binding TextColor}"
+                                 ClearButtonVisibility="{Binding ClearButtonVisibility}"
+                                 HorizontalTextAlignment="{Binding HorizontalTextAlignment}"
+                                 VerticalTextAlignment="{Binding VerticalTextAlignment}"
+                                 IsPassword="{Binding IsPassword}"
+                                 FontSize="{Binding FontSize}"
+                                 CharacterSpacing="{Binding CharacterSpacing}"
+                                 IsReadOnly="{Binding IsReadOnly}"
+                                 IsTextPredictionEnabled="{Binding IsTextPredictionEnabled}"
+                                 IsSpellCheckEnabled="{Binding IsSpellCheckEnabled}"
+                                 MaxLength="{Binding MaxLength}"
+                                 SelectionLength="{Binding SelectionLength}"
+                                 IsCursorVisible="{Binding IsCursorVisible}"
+                                 CursorPosition="{Binding CursorPosition}"
+                                 ReturnType="{Binding ReturnType}"
+                                 ReturnCommand="{Binding ReturnCommand}"
+                                 ReturnCommandParameter="{Binding Text}"
+                                 Keyboard="{Binding Keyboard}"
+                                 FontFamily="{Binding FontFamily}"
+                                 IsVisible="{Binding IsVisible}"
+                                 IsEnabled="{Binding IsEnabled}"
+                                 FlowDirection="{Binding FlowDirection}"
+                                 HeightRequest="100"
+                                 AutomationId="EntryText"/>
 
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Options"
-                     Clicked="NavigateToOptionsPage_Clicked"></ToolbarItem>
-    </ContentPage.ToolbarItems>
+
+              <Label Text="IsCursorVisible:"
+                     FontSize="11"/>
+              <StackLayout Orientation="Horizontal"
+                           Spacing="3">
+                     <RadioButton x:Name="IsCursorVisibleTrue"
+                                  Content="True"
+                                  FontSize="11"
+                                  GroupName="CursorVisible"
+                                  AutomationId="CursorVisibleTrue"
+                                  CheckedChanged="IsCursorVisibleTrueOrFalse_Clicked"/>
+                     <RadioButton x:Name="IsCursorVisibleFalse"
+                                  Content="False"
+                                  IsChecked="True"
+                                  FontSize="11"
+                                  GroupName="CursorVisible"
+                                  AutomationId="CursorVisibleFalse"
+                                  CheckedChanged="IsCursorVisibleTrueOrFalse_Clicked"/>
+              </StackLayout>
+              <Label Text="Selection Length:"
+                     FontSize="11"/>
+              <local:UITestEntry x:Name="SelectionLengthEntry"
+                                 Text="{Binding SelectionLength}"
+                                 AutomationId="SelectionLength"
+                                 IsCursorVisible="False"
+                                 TextChanged="SelectionLength_Clicked"/>
+              <Label Text="Cursor position:"
+                     FontSize="11"/>
+              <local:UITestEntry x:Name="CursorPositionEntry"
+                                 Text="{Binding CursorPosition}"
+                                 AutomationId="CursorPosition"
+                                 IsCursorVisible="False"/>
+
+              <Button Text="Update Cursor Selection"
+                      FontSize="11"
+                      Clicked="OnUpdateCursorAndSelectionClicked"
+                      AutomationId="UpdateCursorAndSelectionButton"/>
+       </StackLayout>
+
+       <ContentPage.ToolbarItems>
+              <ToolbarItem Text="Options"
+                           Clicked="NavigateToOptionsPage_Clicked"></ToolbarItem>
+       </ContentPage.ToolbarItems>
 </ContentPage>

@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls;
+using System.Windows.Input;
 
 namespace Maui.Controls.Sample
 {
@@ -9,6 +10,8 @@ namespace Maui.Controls.Sample
     {
         private string _text = "Test Entry";
         private Color _textColor = Colors.Black;
+        private string _placeholder = "Enter text here";
+        private Color _placeholderColor = Colors.Gray;
         private double _fontSize = 14;
         private TextAlignment _horizontalTextAlignment = TextAlignment.Start;
         private TextAlignment _verticalTextAlignment = TextAlignment.Center;
@@ -24,8 +27,25 @@ namespace Maui.Controls.Sample
         private bool _isSpellCheckEnabled = false;
         private Keyboard _keyboard = Keyboard.Default;
         private string _fontFamily = null;
+        private bool isVisible = true;
+        private bool _isEnabled = true;
+        private ClearButtonVisibility _clearButtonVisibility = ClearButtonVisibility.WhileEditing;
+        private FlowDirection _flowDirection = FlowDirection.LeftToRight;
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public ICommand ReturnCommand { get; set; }
+        public EntryViewModel()
+        {
+            ReturnCommand = new Command<string>(
+                execute: (entryText) =>
+                {
+                    if (entryText == "Test")
+                    {
+                        Text = "Command Executed with Parameter";
+                    }
+                }
+            );
+        }
         public string Text
         {
             get => _text;
@@ -36,6 +56,23 @@ namespace Maui.Controls.Sample
         {
             get => _textColor;
             set { _textColor = value; OnPropertyChanged(); }
+        }
+
+        public string Placeholder
+        {
+            get => _placeholder;
+            set { _placeholder = value; OnPropertyChanged(); }
+        }
+        public Color PlaceholderColor
+        {
+            get => _placeholderColor;
+            set { _placeholderColor = value; OnPropertyChanged(); }
+        }
+
+        public ClearButtonVisibility ClearButtonVisibility
+        {
+            get => _clearButtonVisibility;
+            set { _clearButtonVisibility = value; OnPropertyChanged(); }
         }
 
         public double FontSize
@@ -110,10 +147,29 @@ namespace Maui.Controls.Sample
             get => _isSpellCheckEnabled;
             set { _isSpellCheckEnabled = value; OnPropertyChanged(); }
         }
+
+        public bool IsVisible
+        {
+            get => isVisible;
+            set { isVisible = value; OnPropertyChanged(); }
+        }
+
+        public bool IsEnabled
+        {
+            get => _isEnabled;
+            set { _isEnabled = value; OnPropertyChanged(); }
+        }
+
         public Keyboard Keyboard
         {
             get => _keyboard;
             set { _keyboard = value; OnPropertyChanged(); }
+        }
+
+        public FlowDirection FlowDirection
+        {
+            get => _flowDirection;
+            set { _flowDirection = value; OnPropertyChanged(); }
         }
 
         public string FontFamily

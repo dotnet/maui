@@ -27,6 +27,34 @@ namespace Maui.Controls.Sample
             }
         }
 
+        private void PlaceholderEntry_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (BindingContext is EntryViewModel vm)
+            {
+                vm.Placeholder = e.NewTextValue;
+            }
+        }
+        private void PlaceholderColorButton_Clicked(object sender, EventArgs e)
+        {
+            if (sender is Button button)
+            {
+                _viewModel.PlaceholderColor = button.BackgroundColor;
+            }
+        }
+
+        private void ClearButtonVisibility_CheckedChanged(object sender, CheckedChangedEventArgs e)
+        {
+            if (sender == ClearButtonWhileEditing)
+            {
+                _viewModel.ClearButtonVisibility = ClearButtonVisibility.WhileEditing;
+            }
+            else if (sender == ClearButtonNever)
+            {
+                _viewModel.ClearButtonVisibility = ClearButtonVisibility.Never;
+            }
+        }
+
+
         private void HorizontalAlignmentButton_Clicked(object sender, EventArgs e)
         {
             if (sender is Button button)
@@ -88,33 +116,6 @@ namespace Maui.Controls.Sample
             if (int.TryParse(MaxLengthEntry.Text, out int maxLength))
             {
                 _viewModel.MaxLength = maxLength;
-            }
-        }
-
-        private void SelectionLength_Clicked(object sender, EventArgs e)
-        {
-            if (int.TryParse(SelectionLengthEntry.Text, out int selectionLength))
-            {
-                _viewModel.SelectionLength = selectionLength;
-            }
-        }
-        private void CursorPositionButton_Clicked(object sender, EventArgs e)
-        {
-            if (int.TryParse(CursorPositionEntry.Text, out int cursorPosition))
-            {
-                _viewModel.CursorPosition = cursorPosition;
-            }
-        }
-
-        private void IsCursorVisibleTrueOrFalse_Clicked(object sender, EventArgs e)
-        {
-            if (IsCursorVisibleTrue.IsChecked)
-            {
-                _viewModel.IsCursorVisible = true;
-            }
-            else if (IsCursorVisibleFalse.IsChecked)
-            {
-                _viewModel.IsCursorVisible = false;
             }
         }
 
@@ -189,6 +190,38 @@ namespace Maui.Controls.Sample
         private void FontFamilyEntry_TextChanged(object sender, TextChangedEventArgs e)
         {
             _viewModel.FontFamily = FontFamilyEntry.Text;
+        }
+
+        private void FlowDirection_CheckedChanged(object sender, CheckedChangedEventArgs e)
+        {
+            if (sender is CheckBox checkBox)
+            {
+                _viewModel.FlowDirection = checkBox.IsChecked ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+            }
+        }
+
+        private void IsVisibleTrueOrFalse_Clicked(object sender, EventArgs e)
+        {
+            if (IsVisibleTrue.IsChecked)
+            {
+                _viewModel.IsVisible = true;
+            }
+            else if (IsVisibleFalse.IsChecked)
+            {
+                _viewModel.IsVisible = false;
+            }
+        }
+
+        private void IsEnabledTrueOrFalse_Clicked(object sender, EventArgs e)
+        {
+            if (IsEnabledTrue.IsChecked)
+            {
+                _viewModel.IsEnabled = true;
+            }
+            else if (IsEnabledFalse.IsChecked)
+            {
+                _viewModel.IsEnabled = false;
+            }
         }
     }
 }
