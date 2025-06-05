@@ -79,6 +79,7 @@ using Compatibility = Microsoft.Maui.Controls.Compatibility;
 
 [assembly: XmlnsPrefix("http://schemas.microsoft.com/dotnet/2021/maui", "maui")]
 [assembly: XmlnsPrefix("http://schemas.microsoft.com/dotnet/2021/maui/design", "d")]
+[assembly: XmlnsPrefix("http://schemas.microsoft.com/winfx/2009/xaml", "x")]
 
 [assembly: StyleProperty("background-color", typeof(VisualElement), nameof(VisualElement.BackgroundColorProperty))]
 [assembly: StyleProperty("background", typeof(VisualElement), nameof(VisualElement.BackgroundProperty))]

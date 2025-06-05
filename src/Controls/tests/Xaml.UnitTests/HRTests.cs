@@ -7,6 +7,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 	[TestFixture]
 	public class HRTests
 	{
+		[SetUp]
+		public void SetUp()
+		{
+			Application.Current = null;
+		}
+
 		[TearDown]
 		public void TearDown()
 		{

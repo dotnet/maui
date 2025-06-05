@@ -23,6 +23,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			[TestCase(true), TestCase(false)]
 			public void AllowCtorArgsForValueTypes(bool useCompiledXaml)
 			{
+				if (useCompiledXaml)
+					MockCompiler.Compile(typeof(Unreported003));
+
 				var page = new Unreported003(useCompiledXaml);
 			}
 		}

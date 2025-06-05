@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Storage;
 using UIKit;
 using WebKit;
 using RectangleF = CoreGraphics.CGRect;
@@ -203,7 +204,7 @@ namespace Microsoft.Maui.Handlers
 					// 2.c. Return the body
 					if (bytes?.Length > 0)
 					{
-						urlSchemeTask.DidReceiveData(NSData.FromArray(bytes));
+						urlSchemeTask.DidReceiveData(bytes);
 					}
 
 					// 2.d. Finish the task
@@ -217,7 +218,7 @@ namespace Microsoft.Maui.Handlers
 				logger?.LogDebug("Request for {Url} was not handled.", url);
 			}
 
-			private async Task<(byte[]? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string url, ILogger? logger)
+			private async Task<(NSData? ResponseBytes, string? ContentType, int StatusCode)> GetResponseBytesAsync(string url, ILogger? logger)
 			{
 				if (Handler is null)
 				{
@@ -229,11 +230,22 @@ namespace Microsoft.Maui.Handlers
 
 				if (new Uri(url) is Uri uri && AppOriginUri.IsBaseOf(uri))
 				{
-					var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('\\', '/');
+					var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString();
 
 					var bundleRootDir = Path.Combine(NSBundle.MainBundle.ResourcePath, Handler.VirtualView.HybridRoot!);
 
-					// 1. Try special InvokeDotNet path
+					// 1.a. Try the special "_framework/hybridwebview.js" path
+					if (relativePath == HybridWebViewDotJsPath)
+					{
+						logger?.LogDebug("Request for {Url} will return the hybrid web view script.", url);
+						var jsStream = GetEmbeddedStream(HybridWebViewDotJsPath);
+						if (jsStream is not null)
+						{
+							return (NSData.FromStream(jsStream), ContentType: "application/javascript", StatusCode: 200);
+						}
+					}
+
+					// 1.b. Try special InvokeDotNet path
 					if (relativePath == InvokeDotNetPath)
 					{
 						logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", url);
@@ -243,7 +255,7 @@ namespace Microsoft.Maui.Handlers
 						var contentBytes = await Handler.InvokeDotNetAsync(invokeQueryString);
 						if (contentBytes is not null)
 						{
-							return (contentBytes, "application/json", StatusCode: 200);
+							return (NSData.FromArray(contentBytes), "application/json", StatusCode: 200);
 						}
 					}
 
@@ -252,7 +264,7 @@ namespace Microsoft.Maui.Handlers
 					// 2. If nothing found yet, try to get static content from the asset path
 					if (string.IsNullOrEmpty(relativePath))
 					{
-						relativePath = Handler.VirtualView.DefaultFile!.Replace('\\', '/');
+						relativePath = Handler.VirtualView.DefaultFile;
 						contentType = "text/html";
 					}
 					else
@@ -264,14 +276,15 @@ namespace Microsoft.Maui.Handlers
 						}
 					}
 
-					var assetPath = Path.Combine(bundleRootDir, relativePath);
+					var assetPath = Path.Combine(bundleRootDir, relativePath!);
+					assetPath = FileSystemUtils.NormalizePath(assetPath);
 
 					if (File.Exists(assetPath))
 					{
 						// 2.a. If something was found, return the content
 						logger?.LogDebug("Request for {Url} will return an app package file.", url);
 
-						return (File.ReadAllBytes(assetPath), contentType, StatusCode: 200);
+						return (NSData.FromFile(assetPath), contentType, StatusCode: 200);
 					}
 				}
 
