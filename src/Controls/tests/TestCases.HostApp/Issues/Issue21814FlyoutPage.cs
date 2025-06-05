@@ -2,7 +2,7 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, "21814_FlyoutPage", "Add better parameters for navigation args", PlatformAffected.All)]
+	[Issue(IssueTracker.Github, "21814_FlyoutPage", "Add better parameters for navigation args (FlyoutPage)", PlatformAffected.All)]
     public class Issue21814FlyoutPage : FlyoutPage
     {
         private readonly NavigationPage _navigationPage;
@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample.Issues
 
     public class Issue21814FlyoutMenuPage : ContentPage
     {
-        private readonly Issue21814FlyoutPage _parentPage;
+        readonly Issue21814FlyoutPage _parentPage;
 
         public Issue21814FlyoutMenuPage(Issue21814FlyoutPage parentPage)
         {
@@ -75,16 +75,16 @@ namespace Maui.Controls.Sample.Issues
         {
             Title = "Item 1";
             
-            _onNavigatedToLabel = new Label { Text = "-" };
-            _onNavigatingFromLabel = new Label { Text = "-" };
-            _onNavigatedFromLabel = new Label { Text = "-" };
+            _onNavigatedToLabel = new Label { AutomationId = "FlyoutItem1OnNavigatedToLabel", Text = "-" };
+            _onNavigatingFromLabel = new Label { AutomationId = "FlyoutItem1OnNavigatingFromLabel", Text = "-" };
+            _onNavigatedFromLabel = new Label { AutomationId = "FlyoutItem1OnNavigatedFromLabel", Text = "-" };
             
             Content = new StackLayout
             {
 	            Padding = 20,
 	            Children =
 	            {
-		            new Label { Text = "Item 1", FontAttributes = FontAttributes.Bold, FontSize = 18 },
+		            new Label { AutomationId = "FlyoutContent1", Text = "Item 1", FontAttributes = FontAttributes.Bold, FontSize = 18 },
 		            new Label { Text = "OnNavigated", FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 12)},
 		            _onNavigatedToLabel,
 		            new Label { Text = "OnNavigatingFrom", FontAttributes = FontAttributes.Bold },
@@ -130,16 +130,16 @@ namespace Maui.Controls.Sample.Issues
         {
             Title = "Item 2";
             
-            _onNavigatedToLabel = new Label { Text = "-" };
-            _onNavigatingFromLabel = new Label { Text = "-" };
-            _onNavigatedFromLabel = new Label { Text = "-" };
+            _onNavigatedToLabel = new Label { AutomationId = "FlyoutItem2OnNavigatedToLabel", Text = "-" };
+            _onNavigatingFromLabel = new Label { AutomationId = "FlyoutItem2OnNavigatingFromLabel", Text = "-" };
+            _onNavigatedFromLabel = new Label { AutomationId = "FlyoutItem2OnNavigatedFromLabel", Text = "-" };
             
             Content = new StackLayout
             {
 	            Padding = 20,
 	            Children =
 	            {
-		            new Label { Text = "Item 2", FontAttributes = FontAttributes.Bold, FontSize = 18 },
+		            new Label { AutomationId = "FlyoutContent2", Text = "Item 2", FontAttributes = FontAttributes.Bold, FontSize = 18 },
 		            new Label { Text = "OnNavigated", FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 12)},
 		            _onNavigatedToLabel,
 		            new Label { Text = "OnNavigatingFrom", FontAttributes = FontAttributes.Bold },
@@ -185,16 +185,16 @@ namespace Maui.Controls.Sample.Issues
         {
             Title = "Item 3";
             
-            _onNavigatedToLabel = new Label { Text = "-" };
-            _onNavigatingFromLabel = new Label { Text = "-" };
-            _onNavigatedFromLabel = new Label { Text = "-" };
+            _onNavigatedToLabel = new Label { AutomationId = "FlyoutItem3OnNavigatedToLabel", Text = "-" };
+            _onNavigatingFromLabel = new Label { AutomationId = "FlyoutItem3OnNavigatingFromLabel", Text = "-" };
+            _onNavigatedFromLabel = new Label { AutomationId = "FlyoutItem3OnNavigatedFromLabel", Text = "-" };
             
             Content = new StackLayout
             {
 	            Padding = 20,
 	            Children =
 	            {
-		            new Label { Text = "Item 3", FontAttributes = FontAttributes.Bold, FontSize = 18 },
+		            new Label { AutomationId = "FlyoutContent3", Text = "Item 3", FontAttributes = FontAttributes.Bold, FontSize = 18 },
 		            new Label { Text = "OnNavigated", FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 12)},
 		            _onNavigatedToLabel,
 		            new Label { Text = "OnNavigatingFrom", FontAttributes = FontAttributes.Bold },
