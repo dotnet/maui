@@ -931,6 +931,19 @@ namespace Microsoft.Maui.TestCases.Tests
 
 		[Test]
 		[Category(UITestCategories.Entry)]
+		public void VerifyEntryControlWhenFlowDirectionSet()
+		{
+			App.WaitForElement("Options");
+			App.Tap("Options");
+			App.WaitForElement("FlowDirectionRightToLeft");
+			App.Tap("FlowDirectionRightToLeft");
+			App.WaitForElement("Apply");
+			App.Tap("Apply");
+			App.WaitForElement("EntryText");
+		}
+
+		[Test]
+		[Category(UITestCategories.Entry)]
 		public void VerifyEntryControlWhenPlaceholderTextSet()
 		{
 			App.WaitForElement("Options");

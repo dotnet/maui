@@ -13,8 +13,8 @@
              ColumnSpacing="15">
               <!-- Left Column -->
               <StackLayout Grid.Column="0"
-                           Padding="3"
-                           Spacing="3">
+                           Padding="2"
+                           Spacing="2">
 
                      <Label Text="Font Size:"
                             FontSize="11"/>
@@ -25,7 +25,7 @@
                      <Label Text="Horizontal Alignment:"
                             FontSize="11"/>
                      <StackLayout Orientation="Horizontal"
-                                  Spacing="3">
+                                  Spacing="2">
                             <Button Text="Start"
                                     AutomationId="HStart"
                                     Clicked="HorizontalAlignmentButton_Clicked"/>
@@ -40,7 +40,7 @@
                      <Label Text="Vertical Alignment:"
                             FontSize="11"/>
                      <StackLayout Orientation="Horizontal"
-                                  Spacing="3">
+                                  Spacing="2">
                             <Button Text="Start"
                                     AutomationId="VStart"
                                     Clicked="VerticalAlignmentButton_Clicked"/>
@@ -55,7 +55,7 @@
                      <Label Text="IsPassword:"
                             FontSize="11"/>
                      <StackLayout Orientation="Horizontal"
-                                  Spacing="3">
+                                  Spacing="2">
                             <RadioButton x:Name="IsPasswordTrue"
                                          Content="True"
                                          FontSize="11"
@@ -74,7 +74,7 @@
                      <Label Text="IsReadOnly:"
                             FontSize="11"/>
                      <StackLayout Orientation="Horizontal"
-                                  Spacing="3">
+                                  Spacing="2">
                             <RadioButton x:Name="IsReadOnlyTrue"
                                          Content="True"
                                          FontSize="11"
@@ -93,7 +93,7 @@
                      <Label Text="IsTextPredictionEnabled:"
                             FontSize="11"/>
                      <StackLayout Orientation="Horizontal"
-                                  Spacing="3">
+                                  Spacing="2">
                             <RadioButton x:Name="IsTextPredictionEnabledTrue"
                                          Content="True"
                                          FontSize="11"
@@ -112,7 +112,7 @@
                      <Label Text="IsSpellCheckEnabled:"
                             FontSize="11"/>
                      <StackLayout Orientation="Horizontal"
-                                  Spacing="3">
+                                  Spacing="2">
                             <RadioButton x:Name="IsSpellCheckEnabledTrue"
                                          Content="True"
                                          FontSize="11"
@@ -130,7 +130,7 @@
 
                      <Label Text="Flow Direction:"
                             FontSize="11"/>
-                     <HorizontalStackLayout Spacing="3">
+                     <HorizontalStackLayout Spacing="2">
                             <RadioButton x:Name="FlowDirectionLeftToRight"
                                          Content="LTR"
                                          GroupName="FlowDirection"
@@ -151,7 +151,7 @@
                      <Label Text="IsVisible:"
                             FontSize="11"/>
                      <StackLayout Orientation="Horizontal"
-                                  Spacing="3">
+                                  Spacing="2">
                             <RadioButton x:Name="IsVisibleTrue"
                                          Content="True"
                                          IsChecked="True"
@@ -170,7 +170,7 @@
                      <Label Text="IsEnabled:"
                             FontSize="11"/>
                      <StackLayout Orientation="Horizontal"
-                                  Spacing="3">
+                                  Spacing="2">
                             <RadioButton x:Name="IsEnabledTrue"
                                          Content="True"
                                          FontSize="11"
@@ -189,7 +189,7 @@
                      <Label Text="Clear Button Visibility:"
                             FontSize="11"/>
                      <StackLayout Orientation="Horizontal"
-                                  Spacing="3">
+                                  Spacing="2">
                             <RadioButton x:Name="ClearButtonWhileEditing"
                                          Content="While Editing"
                                          IsChecked="True"
@@ -207,12 +207,12 @@
               </StackLayout>
 
               <StackLayout Grid.Column="1"
-                           Padding="3"
-                           Spacing="3">
+                           Padding="2"
+                           Spacing="2">
                      <Label Text="Text Color:"
                             FontSize="11"/>
                      <StackLayout Orientation="Horizontal"
-                                  Spacing="3">
+                                  Spacing="2">
                             <Button Text="Black"
                                     BackgroundColor="Black"
                                     TextColor="White"
@@ -230,7 +230,7 @@
                      <Label Text="Placeholder Color:"
                             FontSize="11"/>
                      <StackLayout Orientation="Horizontal"
-                                  Spacing="3">
+                                  Spacing="2">
                             <Button Text="Grey"
                                     BackgroundColor="Grey"
                                     TextColor="White"
@@ -255,7 +255,7 @@
                      <Label Text="ReturnType"
                             FontSize="11"/>
                      <StackLayout Orientation="Horizontal"
-                                  Spacing="3">
+                                  Spacing="2">
                             <Button Text="Default"
                                     AutomationId="Default"
                                     Clicked="ReturnTypeButton_Clicked"/>
@@ -268,7 +268,7 @@
                      </StackLayout>
 
                      <StackLayout Orientation="Horizontal"
-                                  Spacing="3">
+                                  Spacing="2">
                             <Button Text="Go"
                                     AutomationId="Go"
                                     Clicked="ReturnTypeButton_Clicked"/>
