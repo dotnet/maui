@@ -2,7 +2,7 @@ using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues
 {
-	[Issue(IssueTracker.Github, "21814_TabbedPage", "Add better parameters for navigation args", PlatformAffected.All)]
+	[Issue(IssueTracker.Github, "21814_TabbedPage", "Add better parameters for navigation args (TabbedPage)", PlatformAffected.All)]
 	public class Issue21814TabbedPage : TabbedPage
 	{
 		public Issue21814TabbedPage()
@@ -26,16 +26,16 @@ namespace Maui.Controls.Sample.Issues
 		{
 			Title = "Tab 1";
 			
-			_onNavigatedToLabel = new Label { Text = "-" };
-			_onNavigatingFromLabel = new Label { Text = "-" };
-			_onNavigatedFromLabel = new Label { Text = "-" };
+			_onNavigatedToLabel = new Label { AutomationId = "Tab1OnNavigatedToLabel", Text = "-" };
+			_onNavigatingFromLabel = new Label { AutomationId = "Tab1OnNavigatingFromLabel", Text = "-" };
+			_onNavigatedFromLabel = new Label { AutomationId = "Tab1OnNavigatedFromLabel", Text = "-" };
 			
 			Content = new StackLayout
 			{
 				Padding = 20,
 				Children =
 				{
-					new Label { Text = "Tab 1 Content", FontSize = 18 },
+					new Label { AutomationId = "Tab1Content", Text = "Tab 1 Content", FontSize = 18 },
 					new Label { Text = "OnNavigated", FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 12)},
 					_onNavigatedToLabel,
 					new Label { Text = "OnNavigatingFrom", FontAttributes = FontAttributes.Bold },
@@ -81,16 +81,16 @@ namespace Maui.Controls.Sample.Issues
 		{
 			Title = "Tab 2";
 			
-			_onNavigatedToLabel = new Label { Text = "-" };
-			_onNavigatingFromLabel = new Label { Text = "-" };
-			_onNavigatedFromLabel = new Label { Text = "-" };
+			_onNavigatedToLabel = new Label { AutomationId = "Tab2OnNavigatedToLabel", Text = "-" };
+			_onNavigatingFromLabel = new Label { AutomationId = "Tab2OnNavigatingFromLabel", Text = "-" };
+			_onNavigatedFromLabel = new Label { AutomationId = "Tab2OnNavigatedFromLabel", Text = "-" };
 			
 			Content = new StackLayout
 			{
 				Padding = 20,
 				Children =
 				{
-					new Label { Text = "Tab 2 Content", FontSize = 18 },
+					new Label { AutomationId = "Tab2Content", Text = "Tab 2 Content", FontSize = 18 },
 					new Label { Text = "OnNavigated", FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 12)},
 					_onNavigatedToLabel,
 					new Label { Text = "OnNavigatingFrom", FontAttributes = FontAttributes.Bold },
@@ -136,16 +136,16 @@ namespace Maui.Controls.Sample.Issues
 		{
 			Title = "Tab 3";
 			
-			_onNavigatedToLabel = new Label { Text = "-" };
-			_onNavigatingFromLabel = new Label { Text = "-" };
-			_onNavigatedFromLabel = new Label { Text = "-" };
+			_onNavigatedToLabel = new Label { AutomationId = "Tab3OnNavigatedToLabel", Text = "-" };
+			_onNavigatingFromLabel = new Label { AutomationId = "Tab3OnNavigatingFromLabel", Text = "-" };
+			_onNavigatedFromLabel = new Label { AutomationId = "Tab3OnNavigatedFromLabel", Text = "-" };
 			
 			Content = new StackLayout
 			{
 				Padding = 20,
 				Children =
 				{
-					new Label { Text = "Tab 3 Content", FontSize = 18 },
+					new Label { AutomationId = "Tab3Content", Text = "Tab 3 Content", FontSize = 18 },
 					new Label { Text = "OnNavigated", FontAttributes = FontAttributes.Bold, Margin = new Thickness(0, 12)},
 					_onNavigatedToLabel,
 					new Label { Text = "OnNavigatingFrom", FontAttributes = FontAttributes.Bold },
