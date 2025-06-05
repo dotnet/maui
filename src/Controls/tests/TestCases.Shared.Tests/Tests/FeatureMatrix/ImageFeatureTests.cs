@@ -62,7 +62,7 @@ public class ImageFeatureTests : UITest
 		App.Tap(SourceTypeUri);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ImageControl");
+		App.WaitForElement("ImageControl", timeout: TimeSpan.FromSeconds(3));
 		VerifyScreenshot();
 	}
 
@@ -127,7 +127,7 @@ public class ImageFeatureTests : UITest
 		App.Tap(SourceTypeUri);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ImageControl");
+		App.WaitForElement("ImageControl", timeout: TimeSpan.FromSeconds(3));
 		VerifyScreenshot();
 	}
 
@@ -192,7 +192,7 @@ public class ImageFeatureTests : UITest
 		App.Tap(SourceTypeUri);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ImageControl");
+		App.WaitForElement("ImageControl", timeout: TimeSpan.FromSeconds(3));
 		VerifyScreenshot();
 	}
 
@@ -256,7 +256,7 @@ public class ImageFeatureTests : UITest
 		App.Tap(SourceTypeUri);
 		App.WaitForElement(Apply);
 		App.Tap(Apply);
-		App.WaitForElement("ImageControl");
+		App.WaitForElement("ImageControl", timeout: TimeSpan.FromSeconds(3));
 		VerifyScreenshot();
 	}
 
@@ -277,6 +277,7 @@ public class ImageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 #endif
+
 	[Test]
 	[Category(UITestCategories.Image)]
 	public void VerifyImageAspect_CenterWithImageSourceFromFontImage()
@@ -344,6 +345,7 @@ public class ImageFeatureTests : UITest
 		App.WaitForNoElement("ImageControl");
 	}
 
+#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29812
 	[Test]
 	[Category(UITestCategories.Image)]
 	public void VerifyImageWithShadow()
@@ -360,7 +362,8 @@ public class ImageFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
-#if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/29817
+// Issue Link: https://github.com/dotnet/maui/issues/29817
+	[Test]
 	[Category(UITestCategories.Image)]
 	public void VerifyImageFlowDirectionRTL()
 	{
