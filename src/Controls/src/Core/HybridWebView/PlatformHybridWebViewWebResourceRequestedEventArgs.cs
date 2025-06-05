@@ -11,6 +11,9 @@ namespace Microsoft.Maui.Controls;
 public class PlatformHybridWebViewWebResourceRequestedEventArgs
 {
 #if WINDOWS
+
+	IReadOnlyDictionary<string, string>? _headers;
+
 	internal PlatformHybridWebViewWebResourceRequestedEventArgs(
 		global::Microsoft.Web.WebView2.Core.CoreWebView2 sender,
 		global::Microsoft.Web.WebView2.Core.CoreWebView2WebResourceRequestedEventArgs eventArgs)
@@ -53,49 +56,12 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 
 	internal string? GetRequestMethod() => Request.Method;
 
-	internal IReadOnlyDictionary<string, string>? GetRequestHeaders() => new WrappedHeadersDictionary(Request.Headers);
-
-	class WrappedHeadersDictionary : IReadOnlyDictionary<string, string>
-	{
-		private global::Microsoft.Web.WebView2.Core.CoreWebView2HttpRequestHeaders _headers;
-
-		public WrappedHeadersDictionary(global::Microsoft.Web.WebView2.Core.CoreWebView2HttpRequestHeaders headers)
-		{
-			_headers = headers;
-		}
-
-		public string this[string key] =>
-			_headers.Contains(key)
-				? _headers.GetHeader(key)
-				: throw new KeyNotFoundException($"The key '{key}' was not found.");
-
-		public IEnumerable<string> Keys =>
-			_headers.Select(header => header.Key);
-
-		public IEnumerable<string> Values =>
-			_headers.Select(header => header.Value);
-
-		public int Count => _headers.Count();
-
-		public bool ContainsKey(string key) => _headers.Contains(key);
-		
-		public bool TryGetValue(string key, out string value)
-		{
-			if (_headers.Contains(key))
-			{
-				value = _headers.GetHeader(key);
-				return true;
-			}
-			value = string.Empty;
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<string, string>> GetEnumerator() => _headers.GetEnumerator();
-
-		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-	}
+	internal IReadOnlyDictionary<string, string> GetRequestHeaders() =>
+		_headers ??= new Dictionary<string, string>(Request.Headers, StringComparer.OrdinalIgnoreCase);
 
 #elif IOS || MACCATALYST
+
+	IReadOnlyDictionary<string, string>? _headers;
 
 	internal PlatformHybridWebViewWebResourceRequestedEventArgs(
 		global::WebKit.WKWebView sender,
@@ -139,61 +105,30 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 
 	internal string? GetRequestMethod() => Request.HttpMethod;
 
-	internal IReadOnlyDictionary<string, string>? GetRequestHeaders() => new WrappedHeadersDictionary(Request.Headers);
+	internal IReadOnlyDictionary<string, string> GetRequestHeaders() =>
+		_headers ??= CreateHeadersDictionary();
 
-	class WrappedHeadersDictionary : IReadOnlyDictionary<string, string>
+	Dictionary<string, string> CreateHeadersDictionary()
 	{
-		Foundation.NSDictionary _headers;
-
-		public WrappedHeadersDictionary(Foundation.NSDictionary headers)
+		var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		if (Request.Headers is { } rh)
 		{
-			_headers = headers;
-		}
-
-		public string this[string key] =>
-			 TryGetValue(key, out var value)
-				? value
-				: throw new KeyNotFoundException($"The key '{key}' was not found.");
-
-		public IEnumerable<string> Keys => _headers.Keys.Select(k => k.ToString());
-
-		public IEnumerable<string> Values => _headers.Values.Select(v => v.ToString());
-
-		public int Count => (int)_headers.Count;
-
-		public bool ContainsKey(string key)
-		{
-			using var nskey = new Foundation.NSString(key);
-			return _headers.ContainsKey(nskey);
-		}
-
-		public bool TryGetValue(string key, out string value)
-		{
-			using var nsKey = new Foundation.NSString(key);
-			if (_headers.ContainsKey(nsKey))
+			foreach (var key in rh.Keys)
 			{
-				value = _headers[nsKey].ToString();
-				return true;
-			}
-			value = string.Empty;
-			return false;
-		}
-
-		public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
-		{
-			foreach (var pair in _headers)
-			{
-				yield return new KeyValuePair<string, string>(pair.Key.ToString(), pair.Value.ToString());
+				if (key is Foundation.NSString keyString)
+				{
+					headers[keyString] = rh[keyString].ToString();
+				}
 			}
 		}
-
-		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+		return headers;
 	}
 
 #elif ANDROID
 
 	Action<global::Android.Webkit.WebResourceResponse?> _setResponse;
-	private global::Android.Webkit.WebResourceResponse? _response;
+	global::Android.Webkit.WebResourceResponse? _response;
+	IReadOnlyDictionary<string, string>? _headers;
 
 	internal PlatformHybridWebViewWebResourceRequestedEventArgs(
 		global::Android.Webkit.WebView sender,
@@ -228,9 +163,9 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 
 	/// <summary>
 	/// Gets or sets the native response to return to the web view.
-	/// 
+	///
 	/// This property must be set to a valid response if the <see cref="HybridWebViewWebResourceRequestedEventArgs.Handled"/> property is set to true.
-	/// 
+	///
 	/// This is only available on Android.
 	/// </summary>
 	public global::Android.Webkit.WebResourceResponse? Response
@@ -247,7 +182,10 @@ public class PlatformHybridWebViewWebResourceRequestedEventArgs
 
 	internal string? GetRequestMethod() => Request.Method;
 
-	internal IReadOnlyDictionary<string, string>? GetRequestHeaders() => Request.RequestHeaders?.AsReadOnly();
+	internal IReadOnlyDictionary<string, string> GetRequestHeaders() =>
+		_headers ??= Request.RequestHeaders is { } rh
+			? new Dictionary<string, string>(rh, StringComparer.OrdinalIgnoreCase)
+			: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
 #else
 
