@@ -401,82 +401,50 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory]
 		[InlineData("")]
 		[InlineData("Async")]
-		public async Task InvokeJavaScriptMethodThatThrowsNumber(string type)
-		{
-#if ANDROID
-			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
-			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+		public Task InvokeJavaScriptMethodThatThrowsNumber(string type) =>
+			RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 1, ex =>
 			{
-				return;
-			}
-#endif
-
-			var ex = await RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 1);
-			Assert.Equal("InvokeJavaScript threw an exception: 777.777", ex.Message);
-			Assert.Equal("777.777", ex.InnerException.Message);
-			Assert.Null(ex.InnerException.Data["JavaScriptErrorName"]);
-			Assert.NotNull(ex.InnerException.StackTrace);
-		}
+				Assert.Equal("InvokeJavaScript threw an exception: 777.777", ex.Message);
+				Assert.Equal("777.777", ex.InnerException.Message);
+				Assert.Null(ex.InnerException.Data["JavaScriptErrorName"]);
+				Assert.NotNull(ex.InnerException.StackTrace);
+			});
 
 		[Theory]
 		[InlineData("")]
 		[InlineData("Async")]
-		public async Task InvokeJavaScriptMethodThatThrowsString(string type)
-		{
-#if ANDROID
-			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
-			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+		public Task InvokeJavaScriptMethodThatThrowsString(string type) =>
+			RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 2, ex =>
 			{
-				return;
-			}
-#endif
-
-			var ex = await RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 2);
-			Assert.Equal("InvokeJavaScript threw an exception: String: 777.777", ex.Message);
-			Assert.Equal("String: 777.777", ex.InnerException.Message);
-			Assert.Null(ex.InnerException.Data["JavaScriptErrorName"]);
-			Assert.NotNull(ex.InnerException.StackTrace);
-		}
+				Assert.Equal("InvokeJavaScript threw an exception: String: 777.777", ex.Message);
+				Assert.Equal("String: 777.777", ex.InnerException.Message);
+				Assert.Null(ex.InnerException.Data["JavaScriptErrorName"]);
+				Assert.NotNull(ex.InnerException.StackTrace);
+			});
 
 		[Theory]
 		[InlineData("")]
 		[InlineData("Async")]
-		public async Task InvokeJavaScriptMethodThatThrowsError(string type)
-		{
-#if ANDROID
-			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
-			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+		public Task InvokeJavaScriptMethodThatThrowsError(string type) =>
+			RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 3, ex =>
 			{
-				return;
-			}
-#endif
-
-			var ex = await RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 3);
-			Assert.Equal("InvokeJavaScript threw an exception: Generic Error: 777.777", ex.Message);
-			Assert.Equal("Generic Error: 777.777", ex.InnerException.Message);
-			Assert.Equal("Error", ex.InnerException.Data["JavaScriptErrorName"]);
-			Assert.NotNull(ex.InnerException.StackTrace);
-		}
+				Assert.Equal("InvokeJavaScript threw an exception: Generic Error: 777.777", ex.Message);
+				Assert.Equal("Generic Error: 777.777", ex.InnerException.Message);
+				Assert.Equal("Error", ex.InnerException.Data["JavaScriptErrorName"]);
+				Assert.NotNull(ex.InnerException.StackTrace);
+			});
 
 		[Theory]
 		[InlineData("")]
 		[InlineData("Async")]
-		public async Task InvokeJavaScriptMethodThatThrowsTypedNumber(string type)
-		{
-#if ANDROID
-			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
-			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+		public Task InvokeJavaScriptMethodThatThrowsTypedNumber(string type) =>
+			RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 4, ex =>
 			{
-				return;
-			}
-#endif
-
-			var ex = await RunExceptionTest("EvaluateMeWithParamsThatThrows" + type, 4);
-			Assert.Contains("undefined", ex.Message, StringComparison.OrdinalIgnoreCase);
-			Assert.Contains("undefined", ex.InnerException.Message, StringComparison.OrdinalIgnoreCase);
-			Assert.Equal("TypeError", ex.InnerException.Data["JavaScriptErrorName"]);
-			Assert.NotNull(ex.InnerException.StackTrace);
-		}
+				Assert.Contains("undefined", ex.Message, StringComparison.OrdinalIgnoreCase);
+				Assert.Contains("undefined", ex.InnerException.Message, StringComparison.OrdinalIgnoreCase);
+				Assert.Equal("TypeError", ex.InnerException.Data["JavaScriptErrorName"]);
+				Assert.NotNull(ex.InnerException.StackTrace);
+			});
 
 		[Fact]
 		public Task RequestsCanBeInterceptedAndCustomDataReturned() =>
@@ -558,6 +526,12 @@ namespace Microsoft.Maui.DeviceTests
 		public Task RequestsCanBeInterceptedAndCustomDataReturnedForDifferentHosts(string uriBase, string function) =>
 			RunTest(async (hybridWebView) =>
 			{
+				// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+				if (OperatingSystem.IsAndroid() && !OperatingSystem.IsAndroidVersionAtLeast(25))
+				{
+					return;
+				}
+
 				hybridWebView.WebResourceRequested += (sender, e) =>
 				{
 					if (new Uri(uriBase).IsBaseOf(e.Uri) && !e.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
@@ -608,6 +582,12 @@ namespace Microsoft.Maui.DeviceTests
 		public Task RequestsCanBeInterceptedAndHeadersAddedForDifferentHosts(string uriBase, string function) =>
 			RunTest(async (hybridWebView) =>
 			{
+				// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+				if (OperatingSystem.IsAndroid() && !OperatingSystem.IsAndroidVersionAtLeast(25))
+				{
+					return;
+				}
+
 				const string ExpectedHeaderValue = "My Header Value";
 
 				hybridWebView.WebResourceRequested += (sender, e) =>
@@ -761,6 +741,12 @@ namespace Microsoft.Maui.DeviceTests
 		public Task RequestsCanBeInterceptedAndCaseInsensitiveHeadersRead(string uriBase, string function) =>
 			RunTest(async (hybridWebView) =>
 			{
+				// NOTE: skip this test on older Android devices because it is not currently supported on these versions
+				if (OperatingSystem.IsAndroid() && !OperatingSystem.IsAndroidVersionAtLeast(25))
+				{
+					return;
+				}
+
 				var headerValues = new Dictionary<string, string>();
 
 				hybridWebView.WebResourceRequested += (sender, e) =>
@@ -812,38 +798,32 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal("Matthew", headerValues["X-ECHO-name"]);
 			});
 
-		async Task<Exception> RunExceptionTest(string method, int errorType)
-		{
-			Exception exception = null;
-
-			await RunTest(async (hybridWebView) =>
+		Task RunExceptionTest(string method, int errorType, Action<Exception> test) =>
+			RunTest(async (hybridWebView) =>
 			{
 				var x = 123.456m;
 				var y = 654.321m;
 
-				exception = await Assert.ThrowsAnyAsync<Exception>(() =>
+				var exception = await Assert.ThrowsAnyAsync<Exception>(() =>
 					hybridWebView.InvokeJavaScriptAsync<decimal>(
 						method,
 						HybridWebViewTestContext.Default.Decimal,
 						[x, y, errorType],
 						[HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Decimal, HybridWebViewTestContext.Default.Int32]));
-			});
 
-			return exception;
-		}
+				test(exception);
+			});
 
 		Task RunTest(Func<HybridWebView, Task> test) =>
 			RunTest(null, test);
 
 		async Task RunTest(string defaultFile, Func<HybridWebView, Task> test)
 		{
-#if ANDROID
 			// NOTE: skip this test on older Android devices because it is not currently supported on these versions
-			if (!System.OperatingSystem.IsAndroidVersionAtLeast(24))
+			if (OperatingSystem.IsAndroid() && !OperatingSystem.IsAndroidVersionAtLeast(24))
 			{
 				return;
 			}
-#endif
 
 			SetupBuilder();
 
