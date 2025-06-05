@@ -33,6 +33,7 @@
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="$(XamarinGooglePlayServicesMaps)" />
+    <PackageReference Include="Xamarin.AndroidX.Transition" />
   </ItemGroup>
 
   <ItemGroup>
