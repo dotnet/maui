@@ -643,22 +643,24 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			bool headerOrFooterChanged = false;
-			if (_emptyViewAdapter.Header != structuredItemsView.Header || _emptyViewAdapter.HeaderTemplate != structuredItemsView.HeaderTemplate)
+			bool headerChanged = _emptyViewAdapter.Header != structuredItemsView.Header ||
+										_emptyViewAdapter.HeaderTemplate != structuredItemsView.HeaderTemplate;
+
+			bool footerChanged = _emptyViewAdapter.Footer != structuredItemsView.Footer ||
+										_emptyViewAdapter.FooterTemplate != structuredItemsView.FooterTemplate;
+			if (headerChanged)
 			{
 				_emptyViewAdapter.Header = structuredItemsView.Header;
 				_emptyViewAdapter.HeaderTemplate = structuredItemsView.HeaderTemplate;
-				headerOrFooterChanged = true;
 			}
 
-			if (_emptyViewAdapter.Footer != structuredItemsView.Footer || _emptyViewAdapter.FooterTemplate != structuredItemsView.FooterTemplate)
+			if (footerChanged)
 			{
 				_emptyViewAdapter.Footer = structuredItemsView.Footer;
 				_emptyViewAdapter.FooterTemplate = structuredItemsView.FooterTemplate;
-				headerOrFooterChanged = true;
 			}
 
-			if (headerOrFooterChanged)
+			if (headerChanged || footerChanged)
 			{
 				_emptyViewAdapter.EmptyView = ItemsView?.EmptyView;
 				_emptyViewAdapter.EmptyViewTemplate = ItemsView?.EmptyViewTemplate;
