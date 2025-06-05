@@ -3,7 +3,6 @@ Microsoft.Maui.Controls.NavigatedFromEventArgs.NavigationType.get -> Microsoft.M
 Microsoft.Maui.Controls.NavigatedToEventArgs.NavigationType.get -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigatingFromEventArgs.NavigationType.get -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigationType
-Microsoft.Maui.Controls.NavigationType.Initialize = 6 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigationType.Insert = 3 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigationType.Pop = 1 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigationType.PopToRoot = 2 -> Microsoft.Maui.Controls.NavigationType
