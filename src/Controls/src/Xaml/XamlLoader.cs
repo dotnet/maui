@@ -59,8 +59,23 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public static void Load(object view, string xaml, Assembly rootAssembly, bool useDesignProperties)
 		{
+			rootAssembly ??= view.GetType().Assembly;
+
+			var allowImplicitXmlns = rootAssembly.CustomAttributes.Any(a =>
+				   a.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.Internals.AllowImplicitXmlnsDeclarationAttribute"
+				&& (a.ConstructorArguments.Count == 0 || a.ConstructorArguments[0].Value is bool b && b));
+
+			var nsmgr = new XmlNamespaceManager(new NameTable());
+			if (allowImplicitXmlns)
+			{
+				nsmgr.AddNamespace("", XamlParser.DefaultImplicitUri);
+				foreach (var xmlnsPrefix in XamlParser.GetXmlnsPrefixAttributes())
+					nsmgr.AddNamespace(xmlnsPrefix.Prefix, xmlnsPrefix.XmlNamespace);
+			}
 			using (var textReader = new StringReader(xaml))
-			using (var reader = XmlReader.Create(textReader))
+			using (var reader = XmlReader.Create(textReader,
+										new XmlReaderSettings { ConformanceLevel = allowImplicitXmlns ? ConformanceLevel.Fragment : ConformanceLevel.Document },
+										new XmlParserContext(nsmgr.NameTable, nsmgr, null, XmlSpace.None)))
 			{
 				while (reader.Read())
 				{
@@ -82,7 +97,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					Visit(rootnode, new HydrationContext
 					{
 						RootElement = view,
-						RootAssembly = rootAssembly ?? view.GetType().Assembly,
+						RootAssembly = rootAssembly,
 						ExceptionHandler = doNotThrow ? ehandler : (Action<Exception>)null
 					}, useDesignProperties);
 
