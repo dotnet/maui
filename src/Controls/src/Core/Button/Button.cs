@@ -8,7 +8,6 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 
 using Microsoft.Maui.Graphics;
-using static Microsoft.Maui.Controls.CleanupTracker;
 
 namespace Microsoft.Maui.Controls
 {
@@ -18,12 +17,6 @@ namespace Microsoft.Maui.Controls
 	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public partial class Button : View, IFontElement, ITextElement, IBorderElement, IButtonController, IElementConfiguration<Button>, IPaddingElement, IImageController, IViewController, IButtonElement, ICommandElement, IImageElement, IButton, ITextButton, IImageButton
 	{
-		internal CleanupTracker CleanupTracker
-		{
-			get;
-			set;
-		}
-
 		const double DefaultSpacing = 10;
 
 		/// <summary>
@@ -622,6 +615,12 @@ namespace Microsoft.Maui.Controls
 			var textString = DebuggerDisplayHelpers.GetDebugText(nameof(Text), Text);
 			var commandText = DebuggerDisplayHelpers.GetDebugText(nameof(Command), Command, false);
 			return $"{base.GetDebuggerDisplay()}, {textString}, {commandText}";
+		}
+
+		WeakCommandSubscription ICommandElement.CleanupTracker
+		{
+			get;
+			set;
 		}
 	}
 }
