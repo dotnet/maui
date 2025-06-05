@@ -24,12 +24,16 @@ public partial class Maui25608_2
 	class Test
 	{
 		EventHandler<BindingBaseErrorEventArgs> _bindingFailureHandler;
+		bool enableDiagnosticsInitialState;
+			
 
 		[SetUp]
 		public void Setup()
 		{
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
+			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
+			RuntimeFeature.EnableDiagnostics = true;
 		}
 
 		[TearDown]
@@ -39,6 +43,7 @@ public partial class Maui25608_2
 			{
 				BindingDiagnostics.BindingFailed -= _bindingFailureHandler;
 			}
+			RuntimeFeature.EnableDiagnostics = enableDiagnosticsInitialState;			
 
 			AppInfo.SetCurrent(null);
 		}

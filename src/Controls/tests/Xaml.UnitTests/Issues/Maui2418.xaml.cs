@@ -15,6 +15,21 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		[TestFixture]
 		class Tests
 		{
+			bool enableDiagnosticsInitialState;
+			
+			[SetUp]
+			public void Setup()
+			{
+				enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
+				RuntimeFeature.EnableDiagnostics = true;
+			}
+
+			[TearDown]
+			public void TearDown()
+			{
+				RuntimeFeature.EnableDiagnostics = enableDiagnosticsInitialState;			
+			}
+
 			[Test]
 			public void SourceInfoIsRelative([Values(false)] bool useCompiledXaml)
 			{
