@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls
 
 		internal Task CurrentNavigationTask { get; set; }
 
-		internal NavigationType NavigationType { get; set; } = NavigationType.Initialize;
+		internal NavigationType NavigationType { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='Peek']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]

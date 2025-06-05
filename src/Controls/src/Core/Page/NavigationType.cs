@@ -7,6 +7,5 @@ public enum NavigationType
 	PopToRoot,
 	Insert,
 	Remove,
-	Replace,
-	Initialize
+	Replace
 }
