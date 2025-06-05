@@ -68,12 +68,12 @@ interface DotNetInvokeResult {
         }
 
         // Determine the mechanism to receive messages from the host application.
-        if (window.chrome?.webview?.addEventListener) {
+        if (window.chrome && window.chrome.webview && window.chrome.webview.addEventListener) {
             // Windows WebView2
             window.chrome.webview.addEventListener('message', (arg: any) => {
                 dispatchHybridWebViewMessage(arg.data);
             });
-        } else if (window.webkit?.messageHandlers?.webwindowinterop) {
+        } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
             // iOS and MacCatalyst WKWebView
             // @ts-ignore - We are extending the global object here
             window.external = {
@@ -89,10 +89,10 @@ interface DotNetInvokeResult {
         }
 
         // Determine the function to use to send messages to the host application.
-        if (window.chrome?.webview) {
+        if (window.chrome && window.chrome.webview) {
             // Windows WebView2
             sendMessageFunction = msg => window.chrome.webview.postMessage(msg);
-        } else if (window.webkit?.messageHandlers?.webwindowinterop) {
+        } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.webwindowinterop) {
             // iOS and MacCatalyst WKWebView
             sendMessageFunction = msg => window.webkit.messageHandlers.webwindowinterop.postMessage(msg);
         } else if (window.hybridWebViewHost) {
