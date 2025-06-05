@@ -50,6 +50,12 @@ public class SimpleTemplateTest : BaseTemplateTests
 			};
 		}
 
+		// We only have these packs for Android
+		if (additionalDotNetBuildParams.Contains("UseMonoRuntime=false", StringComparison.OrdinalIgnoreCase))
+		{
+			OnlyAndroid(projectFile);
+		}
+
 		var buildProps = BuildProps;
 
 		if (additionalDotNetBuildParams is not "" and not null)
