@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Graphics.Platform
 		public static IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
 			// Use original stream if it's seekable, else copy to memory stream
-			var seekableStream = stream. CanSeek ? stream : new MemoryStream();
+			var seekableStream = stream.CanSeek ? stream : new MemoryStream();
 			if (!stream.CanSeek)
 			{
 				stream.CopyTo(seekableStream);
