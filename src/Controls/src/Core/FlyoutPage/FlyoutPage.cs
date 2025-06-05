@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls
 
 				var previousDetail = _detail;
 				// TODO MAUI refine this to fire earlier
-				_detail?.SendNavigatingFrom(new NavigatingFromEventArgs(previousDetail, NavigationType.PageSwap));
+				_detail?.SendNavigatingFrom(new NavigatingFromEventArgs(previousDetail, NavigationType.Replace));
 
 				OnPropertyChanging();
 				if (_detail != null)
@@ -69,8 +69,8 @@ namespace Microsoft.Maui.Controls
 					_detail?.SendAppearing();
 				}
 
-				previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(_detail, NavigationType.PageSwap));
-				_detail?.SendNavigatedTo(new NavigatedToEventArgs(previousDetail, NavigationType.PageSwap));
+				previousDetail?.SendNavigatedFrom(new NavigatedFromEventArgs(_detail, NavigationType.Replace));
+				_detail?.SendNavigatedTo(new NavigatedToEventArgs(previousDetail, NavigationType.Replace));
 			}
 		}
 
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Controls
 				// TODO MAUI refine this to fire earlier
 				var previousFlyout = _flyout;
 				// TODO MAUI refine this to fire earlier
-				_flyout?.SendNavigatingFrom(new NavigatingFromEventArgs(_flyout, NavigationType.PageSwap));
+				_flyout?.SendNavigatingFrom(new NavigatingFromEventArgs(_flyout, NavigationType.Replace));
 
 				OnPropertyChanging();
 				if (_flyout != null)
@@ -124,8 +124,8 @@ namespace Microsoft.Maui.Controls
 					_flyout?.SendAppearing();
 				}
 
-				previousFlyout?.SendNavigatedFrom(new NavigatedFromEventArgs(_flyout, NavigationType.PageSwap));
-				_flyout?.SendNavigatedTo(new NavigatedToEventArgs(previousFlyout, NavigationType.PageSwap));
+				previousFlyout?.SendNavigatedFrom(new NavigatedFromEventArgs(_flyout, NavigationType.Replace));
+				_flyout?.SendNavigatedTo(new NavigatedToEventArgs(previousFlyout, NavigationType.Replace));
 			}
 		}
 

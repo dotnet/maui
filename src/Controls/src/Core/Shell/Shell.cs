@@ -1568,7 +1568,7 @@ namespace Microsoft.Maui.Controls
 			if (_previousPage != null)
 				_previousPage.PropertyChanged -= OnCurrentPagePropertyChanged;
 
-			NavigationType navigationType = NavigationType.PageSwap;
+			NavigationType navigationType = NavigationType.Replace;
 
 			switch (args.Source)
 			{
@@ -1576,13 +1576,13 @@ namespace Microsoft.Maui.Controls
 					navigationType = NavigationType.Pop;
 					break;
 				case ShellNavigationSource.ShellItemChanged:
-					navigationType = NavigationType.PageSwap;
+					navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.ShellSectionChanged:
-					navigationType = NavigationType.PageSwap;
+					navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.ShellContentChanged:
-					navigationType = NavigationType.PageSwap;
+					navigationType = NavigationType.Replace;
 					break;
 				case ShellNavigationSource.Push:
 					navigationType = NavigationType.Push;
@@ -1622,7 +1622,7 @@ namespace Microsoft.Maui.Controls
 
 			if (!args.Cancelled)
 			{
-				NavigationType navigationType = NavigationType.PageSwap;
+				NavigationType navigationType = NavigationType.Replace;
 
 				switch (args.Source)
 				{
@@ -1630,13 +1630,13 @@ namespace Microsoft.Maui.Controls
 						navigationType = NavigationType.Pop;
 						break;
 					case ShellNavigationSource.ShellItemChanged:
-						navigationType = NavigationType.PageSwap;
+						navigationType = NavigationType.Replace;
 						break;
 					case ShellNavigationSource.ShellSectionChanged:
-						navigationType = NavigationType.PageSwap;
+						navigationType = NavigationType.Replace;
 						break;
 					case ShellNavigationSource.ShellContentChanged:
-						navigationType = NavigationType.PageSwap;
+						navigationType = NavigationType.Replace;
 						break;
 					case ShellNavigationSource.Push:
 						navigationType = NavigationType.Push;

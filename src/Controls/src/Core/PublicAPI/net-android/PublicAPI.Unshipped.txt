@@ -29,7 +29,6 @@ Microsoft.Maui.Controls.NavigatingFromEventArgs.NavigationType.get -> Microsoft.
 Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigationType.Initialize = 6 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigationType.Insert = 3 -> Microsoft.Maui.Controls.NavigationType
-Microsoft.Maui.Controls.NavigationType.PageSwap = 5 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigationType.Pop = 1 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigationType.PopToRoot = 2 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigationType.Push = 0 -> Microsoft.Maui.Controls.NavigationType
@@ -53,6 +52,7 @@ Microsoft.Maui.Controls.ILineHeightElement
 Microsoft.Maui.Controls.ILineHeightElement.LineHeight.get -> double
 Microsoft.Maui.Controls.ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue) -> void
 Microsoft.Maui.Controls.Internals.TextTransformUtilities
+Microsoft.Maui.Controls.NavigationType.Replace = 5 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Request.get -> Android.Webkit.IWebResourceRequest!
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Response.get -> Android.Webkit.WebResourceResponse?

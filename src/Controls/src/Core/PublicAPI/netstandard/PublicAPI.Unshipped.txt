@@ -29,7 +29,6 @@ Microsoft.Maui.Controls.NavigatingFromEventArgs.NavigationType.get -> Microsoft.
 Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigationType.Initialize = 6 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigationType.Insert = 3 -> Microsoft.Maui.Controls.NavigationType
-Microsoft.Maui.Controls.NavigationType.PageSwap = 5 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigationType.Pop = 1 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigationType.PopToRoot = 2 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.NavigationType.Push = 0 -> Microsoft.Maui.Controls.NavigationType
@@ -68,6 +67,7 @@ Microsoft.Maui.Controls.LayoutConstraint.Fixed = Microsoft.Maui.Controls.LayoutC
 Microsoft.Maui.Controls.LayoutConstraint.HorizontallyFixed = 1 -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.None = 0 -> Microsoft.Maui.Controls.LayoutConstraint
 Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed = 2 -> Microsoft.Maui.Controls.LayoutConstraint
+Microsoft.Maui.Controls.NavigationType.Replace = 5 -> Microsoft.Maui.Controls.NavigationType
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.ShadowTypeConverter
 Microsoft.Maui.Controls.ShadowTypeConverter.ShadowTypeConverter() -> void
