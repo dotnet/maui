@@ -16,8 +16,12 @@ public class Issue21814FlyoutPage : _IssuesUITest
 	[Test]
 	[Category(UITestCategories.Navigation)]
 	[Category(UITestCategories.FlyoutPage)]
-	public void VerifyFlyoutPageNavigationEventArgs()
+	public void VerifyFlyoutPageInitialNavigationEventArgs()
 	{
 		App.WaitForElement("FlyoutContent1");
+		
+		App.WaitForElement("FlyoutItem1OnNavigatedToLabel");
+		var navigatedTo = App.FindElement("FlyoutItem1OnNavigatedToLabel").GetText();
+		Assert.That(navigatedTo, Is.EqualTo("PreviousPage: Null, NavigationType: Push"));
 	}
 }
