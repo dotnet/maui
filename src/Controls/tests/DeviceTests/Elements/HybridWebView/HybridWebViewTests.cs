@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
@@ -611,7 +612,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				hybridWebView.WebResourceRequested += (sender, e) =>
 				{
-					if (new Uri(uriBase).IsBaseOf(e.Uri))
+					if (new Uri(uriBase).IsBaseOf(e.Uri) && !e.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
 					{
 #if WINDOWS
 						// Add the desired header for Windows by modifying the request
@@ -783,6 +784,21 @@ namespace Microsoft.Maui.DeviceTests
 						{ headerValues["X-ECHO-name"] = e.Headers["X-ECHO-name"]; }
 						catch (Exception ex)
 						{ headerValues["X-ECHO-name"] = ex.Message; }
+
+						// If the request is for the app:// resources, we return an empty response
+						// because the tests are not doing anything with the response.
+						if (e.Uri.Scheme == "app")
+						{
+							var headers = new Dictionary<string, string>
+							{
+								["Content-Type"] = "application/json",
+								["Access-Control-Allow-Origin"] = "*",
+								["Access-Control-Allow-Headers"] = "*",
+								["Access-Control-Allow-Methods"] = "GET",
+							};
+							e.SetResponse(200, "OK", headers, new MemoryStream(Encoding.UTF8.GetBytes("{}")));
+							e.Handled = true;
+						}
 					}
 				};
 
