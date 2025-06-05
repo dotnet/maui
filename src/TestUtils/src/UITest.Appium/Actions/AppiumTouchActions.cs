@@ -221,12 +221,12 @@ namespace UITest.Appium
 		CommandResponse TouchAndHold(IDictionary<string, object> parameters)
 		{
 			var element = GetAppiumElement(parameters["element"]);
-			
+
 			if (element == null)
 			{
 				return CommandResponse.FailedEmptyResponse;
 			}
-			
+
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 			var longPress = new ActionSequence(touchDevice, 0);
 
