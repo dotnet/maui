@@ -47,6 +47,7 @@ public class Issue29727 : ContentPage
 		var collectionView = new CollectionView
 		{
 			ItemsSource = Items,
+			ItemsLayout = new GridItemsLayout(ItemsLayoutOrientation.Vertical),
 			AutomationId = "TestCollectionView",
 			ItemTemplate = new DataTemplate(() =>
 			{
