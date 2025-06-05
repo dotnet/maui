@@ -34,9 +34,6 @@ public class SimpleTemplateTest : BaseTemplateTests
 		Assert.IsTrue(DotnetInternal.New(id, projectDir, framework, additionalDotNetNewParams),
 			$"Unable to create template {id}. Check test output for errors.");
 
-		// TODO: remove this if as we should be able to build tizen net8
-		if (framework != DotNetPrevious)
-			EnableTizen(projectFile);
 
 		if (shouldPack)
 			FileUtilities.ReplaceInFile(projectFile,
