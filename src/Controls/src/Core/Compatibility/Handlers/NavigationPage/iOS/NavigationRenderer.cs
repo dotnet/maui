@@ -644,19 +644,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var pageContainer = CreateViewControllerForPage(page);
 			var target = nvh.ViewController.ParentViewController;
-			ViewControllers = ViewControllers.Insert(ViewControllers.IndexOf(target), pageContainer);
+			var index = ViewControllers.IndexOf(target);
+			ViewControllers = ViewControllers.Insert(index, pageContainer);
 
-			int index = -1;
-			for (int i = 0; i < ViewControllers.Length; i++)
-			{
-				if (ViewControllers[i] is ParentingViewController pvc && pvc.Child == before)
-				{
-					index = i;
-					break;
-				}
-			}
 			// Update the flyout icon when the root page changes
-			if (index == 1)
+			if (index == 0)
 			{
 				GetParentingViewController()?.UpdateLeftBarButtonItem();
 			}
