@@ -108,78 +108,82 @@
         const json = JSON.stringify(errorObj);
         sendMessageToDotNet('__InvokeJavaScriptFailed', taskId + '|' + json);
     }
-    const HybridWebView = {
-        /*
-         * Send a raw message to the .NET host application.
-         * The message is sent directly and not processed or serialized.
-         *
-         * @param message The message to send to the .NET host application.
-         */
-        SendRawMessage: function (message) {
-            sendMessageToDotNet('__RawMessage', message);
-        },
-        /*
-         * Invoke a .NET method on the InvokeJavaScriptTarget instance.
-         * The method name and parameters are serialized and sent to the .NET host application.
-         *
-         * @param methodName The name of the .NET method to invoke.
-         * @param paramValues The parameters to pass to the .NET method. If the method takes no parameters, this can be omitted.
-         *
-         * @returns A promise that resolves with the result of the .NET method invocation.
-         */
-        InvokeDotNet: async function (methodName, paramValues) {
-            const body = {
-                MethodName: methodName
-            };
-            // if parameters were provided, serialize them first
-            if (paramValues !== undefined) {
-                if (!Array.isArray(paramValues)) {
-                    paramValues = [paramValues];
-                }
-                for (let i = 0; i < paramValues.length; i++) {
-                    paramValues[i] = JSON.stringify(paramValues[i]);
-                }
-                if (paramValues.length > 0) {
-                    body.ParamValues = paramValues;
-                }
+    /*
+     * Send a raw message to the .NET host application.
+     * The message is sent directly and not processed or serialized.
+     *
+     * @param message The message to send to the .NET host application.
+     */
+    function sendRawMessage(message) {
+        sendMessageToDotNet('__RawMessage', message);
+    }
+    /*
+     * Invoke a .NET method on the InvokeJavaScriptTarget instance.
+     * The method name and parameters are serialized and sent to the .NET host application.
+     *
+     * @param methodName The name of the .NET method to invoke.
+     * @param paramValues The parameters to pass to the .NET method. If the method takes no parameters, this can be omitted.
+     *
+     * @returns A promise that resolves with the result of the .NET method invocation.
+     */
+    async function invokeDotNet(methodName, paramValues) {
+        const body = {
+            MethodName: methodName
+        };
+        // if parameters were provided, serialize them first
+        if (paramValues !== undefined) {
+            if (!Array.isArray(paramValues)) {
+                paramValues = [paramValues];
             }
-            const message = JSON.stringify(body);
-            const requestUrl = `${window.location.origin}/__hwvInvokeDotNet?data=${encodeURIComponent(message)}`;
-            const rawResponse = await fetch(requestUrl, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-            const response = await rawResponse.json();
-            if (!response) {
-                return null;
+            for (let i = 0; i < paramValues.length; i++) {
+                paramValues[i] = JSON.stringify(paramValues[i]);
             }
-            if (response.IsJson) {
-                return JSON.parse(response.Result);
-            }
-            return response.Result;
-        },
-        /*
-         * Invoke a JavaScript method from the .NET host application.
-         * This method is called from the HybridWebViewHandler and is not intended to be used by user applications.
-         *
-         * @param taskId The task ID that was provided by the .NET host application.
-         * @param methodName The JavaScript method to invoke in the global scope.
-         * @param args The arguments to pass to the JavaScript method.
-         *
-         * @returns A promise.
-         */
-        __InvokeJavaScript: async function (taskId, methodName, args) {
-            try {
-                const result = await methodName(...args);
-                invokeJavaScriptCallbackInDotNet(taskId, result);
-            }
-            catch (ex) {
-                console.error(ex);
-                invokeJavaScriptFailedInDotNet(taskId, ex);
+            if (paramValues.length > 0) {
+                body.ParamValues = paramValues;
             }
         }
+        const message = JSON.stringify(body);
+        const requestUrl = `${window.location.origin}/__hwvInvokeDotNet?data=${encodeURIComponent(message)}`;
+        const rawResponse = await fetch(requestUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        const response = await rawResponse.json();
+        if (!response) {
+            return null;
+        }
+        if (response.IsJson) {
+            return JSON.parse(response.Result);
+        }
+        return response.Result;
+    }
+    /*
+     * Invoke a JavaScript method from the .NET host application.
+     * This method is called from the HybridWebViewHandler and is not intended to be used by user applications.
+     *
+     * @param taskId The task ID that was provided by the .NET host application.
+     * @param methodName The JavaScript method to invoke in the global scope.
+     * @param args The arguments to pass to the JavaScript method.
+     *
+     * @returns A promise.
+     */
+    async function invokeJavaScript(taskId, methodName, args) {
+        try {
+            const result = await methodName(...args);
+            invokeJavaScriptCallbackInDotNet(taskId, result);
+        }
+        catch (ex) {
+            console.error(ex);
+            invokeJavaScriptFailedInDotNet(taskId, ex);
+        }
+    }
+    // Define the public API of the HybridWebView control.
+    const HybridWebView = {
+        SendRawMessage: sendRawMessage,
+        InvokeDotNet: invokeDotNet,
+        __InvokeJavaScript: invokeJavaScript
     };
     // Make the following APIs available in global scope for invocation from JS
     // @ts-ignore - We are extending the global object here
