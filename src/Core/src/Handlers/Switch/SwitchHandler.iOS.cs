@@ -63,20 +63,37 @@ namespace Microsoft.Maui.Handlers
 
 			ISwitch? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
 
+			WeakReference<UISwitch>? _platformView;
+
+			UISwitch? PlatformView => _platformView is not null && _platformView.TryGetTarget(out var p) ? p : null;
+
 			NSObject? _willEnterForegroundObserver;
 			NSObject? _windowDidBecomeKeyObserver;
 
 			public void Connect(ISwitch virtualView, UISwitch platformView)
 			{
 				_virtualView = new(virtualView);
+				_platformView = new(platformView);
 				platformView.ValueChanged += OnControlValueChanged;
 
 #if MACCATALYST
 				_windowDidBecomeKeyObserver = NSNotificationCenter.DefaultCenter.AddObserver(
-					new NSString("NSWindowDidBecomeKeyNotification"), _ => UpdateTrackOffColor(platformView));
+					new NSString("NSWindowDidBecomeKeyNotification"), _ =>
+					{
+						if (PlatformView is not null)
+						{
+							UpdateTrackOffColor(PlatformView);
+						}
+					});
 #elif IOS
 				_willEnterForegroundObserver = NSNotificationCenter.DefaultCenter.AddObserver(
-					UIApplication.WillEnterForegroundNotification, _ => UpdateTrackOffColor(platformView));
+					UIApplication.WillEnterForegroundNotification, _ =>
+					{
+						if (PlatformView is not null)
+						{
+							UpdateTrackOffColor(PlatformView);
+						}
+					});
 #endif
 			}
 
