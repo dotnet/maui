@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			args = base.ComputeVisibleIndexes(args, orientation, advancing);
 
-			if (ItemsView.Loop)
+			if (ItemsView.Loop && ItemCount > 0)
 			{
 				args.FirstVisibleItemIndex %= ItemCount;
 				args.CenterItemIndex %= ItemCount;
@@ -157,6 +157,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			return args;
+		}
+
+		protected override void UpdateEmptyViewVisibility()
+		{
+			if (ItemsView.Loop)
+			{
+				bool isEmpty = (CollectionViewSource?.View?.Count ?? 0) == 0;
+				var targetTemplate = isEmpty ? null : CarouselItemsViewTemplate;
+				if (ListViewBase.ItemTemplate != targetTemplate)
+				{
+					ListViewBase.ItemTemplate = targetTemplate;
+				}
+			}
+
+			base.UpdateEmptyViewVisibility();
 		}
 
 		ListViewBase CreateCarouselListLayout(ItemsLayoutOrientation layoutOrientation)
