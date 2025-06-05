@@ -31,7 +31,7 @@ parameters:
     - 'ScrollView,SearchBar,Shape,Slider,SoftInput,Stepper,Switch,SwipeView'
     - 'Shell'
     - 'TabbedPage,TableView,TimePicker,TitleView,ToolbarItem'
-    - 'Shadow,ViewBaseTests,Visual,WebView,Window'
+    - 'ViewBaseTests,Visual,WebView,Window'
 
   projects:
     - name: name

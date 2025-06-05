@@ -417,7 +417,7 @@ namespace Microsoft.Maui.Platform
 
 		bool IsBorderDashed()
 		{
-			return _strokeDash != null;
+			return _strokeDash != null && _strokeDashOffset > 0;
 		}
 	}
 }

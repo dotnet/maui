@@ -57,9 +57,9 @@ namespace Microsoft.Maui.Handlers
 			}
 
 #pragma warning disable RS0030 // Do not use banned APIs; Panel.Children is banned for performance reasons. MauiPanel might not be used everywhere though.
-			var oldParentChildren = ContainerView.Parent is MauiPanel mauiPanel
+			var oldParentChildren = PlatformView.Parent is MauiPanel mauiPanel
 				? mauiPanel.CachedChildren
-				: (ContainerView.Parent as Panel)?.Children;
+				: (PlatformView.Parent as Panel)?.Children;
 #pragma warning restore RS0030 // Do not use banned APIs
 
 			var oldIndex = oldParentChildren?.IndexOf(ContainerView);

@@ -410,8 +410,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var text = backButtonHandler.GetPropertyIfSet(BackButtonBehavior.TextOverrideProperty, String.Empty);
 			var command = backButtonHandler.GetPropertyIfSet<ICommand>(BackButtonBehavior.CommandProperty, null);
 			bool isEnabled = _shell.Toolbar.BackButtonEnabled;
-			//Add the FlyoutIcon only if the FlyoutBehavior is Flyout
-			var image = _flyoutBehavior == FlyoutBehavior.Flyout ? GetFlyoutIcon(backButtonHandler, page) : null;
+			var image = GetFlyoutIcon(backButtonHandler, page);
 			var backButtonVisible = _toolbar.BackButtonVisible;
 
 			DrawerArrowDrawable icon = null;

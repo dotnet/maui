@@ -38,7 +38,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			UpdateHorizontalTextAlignment();
 			UpdateVerticalTextAlignment();
 			UpdateInputType();
-			UpdateCharacterSpacing();
 		}
 
 		protected virtual void SearchHandlerPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -90,17 +89,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else if (e.Is(SearchHandler.QueryProperty))
 			{
 				UpdateText();
-			}
-			else if (e.Is(SearchHandler.CharacterSpacingProperty))
-			{
-				UpdateCharacterSpacing();
-			}
-		}
-		void UpdateCharacterSpacing()
-		{
-			if (_editText is not null)
-			{
-				_editText.LetterSpacing = _searchHandler.CharacterSpacing.ToEm();
 			}
 		}
 

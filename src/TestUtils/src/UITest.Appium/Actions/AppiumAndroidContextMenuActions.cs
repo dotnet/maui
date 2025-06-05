@@ -48,11 +48,6 @@ namespace UITest.Appium
 			{
 				var appiumElement = GetAppiumElement(element);
 
-				if (appiumElement == null)
-				{
-					return CommandResponse.FailedEmptyResponse;
-				}
-
 				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
 				var longPress = new ActionSequence(touchDevice, 0);
 

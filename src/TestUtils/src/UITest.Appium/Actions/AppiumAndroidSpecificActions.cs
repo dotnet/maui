@@ -61,17 +61,9 @@ namespace UITest.Appium
 			if (_appiumApp.Driver is AndroidDriver androidDriver)
 			{
 				// Toggle airplane mode on device.
-				var currentConnectivity = androidDriver.ExecuteScript("mobile:getConnectivity") as IDictionary<string, object>;
+				androidDriver.ToggleAirplaneMode();
 
-				if (currentConnectivity is not null && currentConnectivity.TryGetValue("airplaneMode", out var currentState))
-				{
-					bool newState = !(bool)currentState;
-
-					var connectivityParams = new Dictionary<string, object> { { "airplaneMode", newState } };
-					androidDriver.ExecuteScript("mobile:setConnectivity", connectivityParams);
-
-					return CommandResponse.SuccessEmptyResponse;
-				}
+				return CommandResponse.SuccessEmptyResponse;
 			}
 
 			return CommandResponse.FailedEmptyResponse;
@@ -81,18 +73,9 @@ namespace UITest.Appium
 		{
 			if (_appiumApp.Driver is AndroidDriver androidDriver)
 			{
-				// Toggle device data.
-				var currentConnectivity = androidDriver.ExecuteScript("mobile:getConnectivity") as IDictionary<string, object>;
+				androidDriver.ToggleData();
 
-				if (currentConnectivity is not null && currentConnectivity.TryGetValue("data", out var currentState))
-				{
-					bool newState = !(bool)currentState;
-
-					var connectivityParams = new Dictionary<string, object> { { "data", newState } };
-					androidDriver.ExecuteScript("mobile:setConnectivity", connectivityParams);
-
-					return CommandResponse.SuccessEmptyResponse;
-				}
+				return CommandResponse.SuccessEmptyResponse;
 			}
 
 			return CommandResponse.FailedEmptyResponse;
@@ -102,18 +85,10 @@ namespace UITest.Appium
 		{
 			if (_appiumApp.Driver is AndroidDriver androidDriver)
 			{
-				// Switch the state of the WiFi service
-				var currentConnectivity = androidDriver.ExecuteScript("mobile:getConnectivity") as IDictionary<string, object>;
+				// Switch the state of the wifi service
+				androidDriver.ToggleWifi();
 
-				if (currentConnectivity is not null && currentConnectivity.TryGetValue("wifi", out var currentState))
-				{
-					bool newState = !(bool)currentState;
-
-					var connectivityParams = new Dictionary<string, object> { { "wifi", newState } };
-					androidDriver.ExecuteScript("mobile:setConnectivity", connectivityParams);
-
-					return CommandResponse.SuccessEmptyResponse;
-				}
+				return CommandResponse.SuccessEmptyResponse;
 			}
 
 			return CommandResponse.FailedEmptyResponse;
