@@ -1,4 +1,6 @@
 using System;
+using System.Threading.Tasks;
+using System.Windows.Input;
 using Xunit;
 using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
@@ -7,6 +9,49 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class ButtonUnitTest : VisualElementCommandSourceTests<Button>
 	{
+		[Fact]
+		public async Task ButtonWithCommandBindingCanBeGarbageCollected()
+		{
+			// Create a view model with a Command
+			var command = new CommandWithoutWeakEventHandler();
+			WeakReference buttonWeakRef;
+			WeakReference proxyWeakRef;
+			WeakReference proxyProxyWeakRef;
+
+			// Create a button in a separate scope to ensure no references remain
+			{
+				var button = new Button();
+				button.Command = command;
+
+				// Create a weak reference to the button
+				buttonWeakRef = new WeakReference(button);
+				proxyWeakRef = new WeakReference(button.CleanupTracker);
+				proxyProxyWeakRef = new WeakReference(button.CleanupTracker?.Proxy);
+				await TestHelpers.Collect();
+
+				// Make sure everything is still alive if the button is still in scope
+				Assert.True(buttonWeakRef.IsAlive);
+				Assert.True(proxyWeakRef.IsAlive);
+				Assert.True(proxyProxyWeakRef.IsAlive);
+			}			
+			
+			Assert.False(await buttonWeakRef.WaitForCollect());
+			Assert.False(await proxyWeakRef.WaitForCollect());
+			Assert.False(await proxyProxyWeakRef.WaitForCollect());
+		}
+
+		class CommandWithoutWeakEventHandler : ICommand
+		{
+			public event EventHandler CanExecuteChanged;
+
+			public bool CanExecute(object parameter) => true;
+
+			public void Execute(object parameter) { }
+
+			public void ChangeCanExecute() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+
 		[Fact]
 		public void MeasureInvalidatedOnTextChange()
 		{
