@@ -28,13 +28,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				buttonWeakRef = new WeakReference(button);
 				proxyWeakRef = new WeakReference(((ICommandElement)button).CleanupTracker);
 				proxyProxyWeakRef = new WeakReference(((ICommandElement)button).CleanupTracker?.Proxy);
+				
+				await TestHelpers.Collect();
 				await TestHelpers.Collect();
 
 				// Make sure everything is still alive if the button is still in scope
+				// We need to reference the button here again to keep it alive 
+				// awaiting a Task appears to move us to a new scope and causes the button to be collected
+				Assert.NotNull(button);
 				Assert.True(buttonWeakRef.IsAlive);
 				Assert.True(proxyWeakRef.IsAlive);
 				Assert.True(proxyProxyWeakRef.IsAlive);
-			}			
+			}
+	
 			
 			Assert.False(await buttonWeakRef.WaitForCollect());
 			Assert.False(await proxyWeakRef.WaitForCollect());
@@ -71,8 +77,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				proxyWeakRef = new WeakReference(((ICommandElement)button).CleanupTracker);
 				proxyProxyWeakRef = new WeakReference(((ICommandElement)button).CleanupTracker?.Proxy);
 				await TestHelpers.Collect();
+				await TestHelpers.Collect();
 
 				// Make sure everything is still alive if the button is still in scope
+				// We need to reference the button here again to keep it alive 
+				// awaiting a Task appears to move us to a new scope and causes the button to be collected
+				Assert.NotNull(button);
 				Assert.True(buttonWeakRef.IsAlive);
 				Assert.True(proxyWeakRef.IsAlive);
 				Assert.True(proxyProxyWeakRef.IsAlive);
