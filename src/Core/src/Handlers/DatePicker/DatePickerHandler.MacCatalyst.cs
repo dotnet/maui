@@ -75,6 +75,11 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
+		public static partial void MapIsOpen(IDatePickerHandler handler, IDatePicker datePicker)
+		{
+
+		}
+
 		void SetVirtualViewDate()
 		{
 			if (VirtualView is null)

@@ -95,6 +95,13 @@
                 Time="{x:Null}"/>
             <Button Text="Set to null" Clicked="SetTimePickerToNull" />
             <Button Text="Set to now" Clicked="SetTimePickerToNow" />
+            <Label      
+                Text="IsOpen"
+                Style="{StaticResource Headline}"/>
+            <TimePicker
+                x:Name="IsOpenTimePicker"/>
+            <Button Text="Open TimePicker" Clicked="OnOpenClicked" />
+            <Button Text="Close TimePicker" Clicked="OnCloseClicked" />
     </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
