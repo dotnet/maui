@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (double.IsInfinity(width))
 					return width;
 
-				itemWidth = (int)(width - Context?.ToPixels(VirtualView.PeekAreaInsets.Left) - Context?.ToPixels(VirtualView.PeekAreaInsets.Right) - Context?.ToPixels(listItemsLayout.ItemSpacing));
+				itemWidth = (int)(width - Context?.ToPixels(VirtualView.PeekAreaInsets.Left) - Context?.ToPixels(VirtualView.PeekAreaInsets.Right));
 			}
 
 			return itemWidth;
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				if (double.IsInfinity(height))
 					return height;
 
-				itemHeight = (int)(height - Context?.ToPixels(VirtualView.PeekAreaInsets.Top) - Context?.ToPixels(VirtualView.PeekAreaInsets.Bottom) - Context?.ToPixels(listItemsLayout.ItemSpacing));
+				itemHeight = (int)(height - Context?.ToPixels(VirtualView.PeekAreaInsets.Top) - Context?.ToPixels(VirtualView.PeekAreaInsets.Bottom));
 			}
 
 			return itemHeight;
