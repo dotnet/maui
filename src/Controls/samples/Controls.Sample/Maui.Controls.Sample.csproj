@@ -78,7 +78,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\Embedded\*" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
-    <MauiAsset Include="..\..\..\Core\src\Handlers\HybridWebView\HybridWebView.js" LogicalName="HybridSamplePage\scripts\HybridWebView.js" />
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
     <MauiIcon Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" />
