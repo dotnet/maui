@@ -1,4 +1,3 @@
-#if !ANDROID
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 using UITest.Appium;
@@ -18,19 +17,15 @@ public class Issue21375 : _IssuesUITest
     public void SelectedItemsShowSelected ()
     {
         var collectionView = App.WaitForElement("collectionView");
-        var centerX = collectionView.GetRect().X + (collectionView.GetRect().Width / 2);
-        var firstItemY = collectionView.GetRect().Y + 25;
-        var secondItemY = collectionView.GetRect().Y + 75;
-        var thirdItemY = collectionView.GetRect().Y + 125;
 
-        App.TapCoordinates(centerX, firstItemY);
+        App.Tap("Item 1");
         App.WaitForElement("calculateButton").Tap();
 
         VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_single");
 
         App.WaitForElement("multipleButton").Tap();
-        App.TapCoordinates(centerX, secondItemY);
-        App.TapCoordinates(centerX, thirdItemY);
+        App.Tap("Item 2");
+        App.Tap("Item 3");
         App.WaitForElement("calculateButton").Tap();
 
         VerifyScreenshot(TestContext.CurrentContext.Test.MethodName + "_multiple");
@@ -53,4 +48,4 @@ public class Issue21375 : _IssuesUITest
 
     }
 }
-#endif
+
