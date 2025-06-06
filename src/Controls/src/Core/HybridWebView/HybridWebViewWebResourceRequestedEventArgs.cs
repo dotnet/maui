@@ -50,13 +50,13 @@ public class HybridWebViewWebResourceRequestedEventArgs
 	/// Gets the headers associated with the request.
 	/// </summary>
 	public IReadOnlyDictionary<string, string> Headers =>
-		_headers ??= PlatformArgs?.GetRequestHeaders() ?? new Dictionary<string, string>();
+		_headers ??= PlatformArgs?.GetRequestHeaders() ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
 	/// <summary>
 	/// Gets the query parameters from the URI.
 	/// </summary>
 	public IReadOnlyDictionary<string, string> QueryParameters =>
-		_queryParams ??= WebUtils.ParseQueryString(Uri, false) ?? new Dictionary<string, string>();
+		_queryParams ??= WebUtils.ParseQueryString(Uri, false) ?? new Dictionary<string, string>(StringComparer.Ordinal);
 
 	/// <summary>
 	/// Gets or sets a value indicating whether the request has been handled.
