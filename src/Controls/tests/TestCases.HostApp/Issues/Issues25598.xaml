@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue25598">
+    <VerticalStackLayout 
+            Padding="30,0"
+            Spacing="25">
+        <Button
+            AutomationId="AddItemButton"
+            Margin="0,20,0,0"
+            Command="{Binding AddRandomItemCommand}"
+            Text="Add Random Item"/>
+
+        <Button
+            AutomationId="RemoveItemButton"
+            Command="{Binding RemoveCurrentItemCommand}"
+            CommandParameter="{Binding Source={x:Reference carouselView}, Path=Position}"
+            Text="Remove Current Item"/>
+        <Grid
+            x:Name="cvGrid"
+            Margin="5,0"
+            RowDefinitions="Auto,50,Auto"
+            BackgroundColor="Transparent"
+            HorizontalOptions="FillAndExpand">
+            <Label
+                Grid.Row="0"
+                FontSize="24"
+                Text="CarouselView + IndicatorView using DataTemplate!"/>
+            <CarouselView
+                x:Name="carouselView"
+                Grid.Row="1"
+                HorizontalOptions="FillAndExpand"
+                IndicatorView="indicatorView"
+                IsScrollAnimated="True"
+                ItemsSource="{Binding Items}"
+                ItemsUpdatingScrollMode="KeepScrollOffset"
+                VerticalOptions="EndAndExpand"
+                VerticalScrollBarVisibility="Default">
+                <CarouselView.ItemTemplate>
+                    <DataTemplate>
+                        <Label
+                            FontSize="18"
+                            HorizontalOptions="Center"
+                            Text="{Binding .}"
+                            VerticalOptions="CenterAndExpand"/>
+                    </DataTemplate>
+                </CarouselView.ItemTemplate>
+            </CarouselView>
+
+            <IndicatorView
+                x:Name="indicatorView"
+                Grid.Row="2"
+                HorizontalOptions="Center"
+                IndicatorColor="White"
+                SelectedIndicatorColor="#2040a0">
+                <IndicatorView.IndicatorTemplate>
+                    <DataTemplate>
+                        <Border
+                            BackgroundColor="Transparent"
+                            HeightRequest="20"
+                            Stroke="Black"
+                            WidthRequest="20">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="5"/>
+                            </Border.StrokeShape>
+                        </Border>
+                    </DataTemplate>
+                </IndicatorView.IndicatorTemplate>
+            </IndicatorView>
+        </Grid>
+        <Grid
+            x:Name="cvGrid2"
+            Margin="5,0"
+            RowDefinitions="Auto,50,Auto"
+            BackgroundColor="Transparent"
+            HorizontalOptions="FillAndExpand">
+            <Label
+                Grid.Row="0"
+                FontSize="24"
+                Text="CarouselView + IndicatorView NOT USING DataTemplate!"/>
+            <CarouselView
+                x:Name="carouselView2"
+                Grid.Row="1"
+                HorizontalOptions="FillAndExpand"
+                IndicatorView="indicatorView2"
+                IsScrollAnimated="True"
+                ItemsSource="{Binding Items}"
+                ItemsUpdatingScrollMode="KeepScrollOffset"
+                VerticalOptions="EndAndExpand"
+                VerticalScrollBarVisibility="Default">
+                <CarouselView.ItemTemplate>
+                    <DataTemplate>
+                        <Label
+                            FontSize="18"
+                            HorizontalOptions="Center"
+                            Text="{Binding .}"
+                            VerticalOptions="CenterAndExpand"/>
+                    </DataTemplate>
+                </CarouselView.ItemTemplate>
+            </CarouselView>
+
+            <IndicatorView
+                x:Name="indicatorView2"
+                Grid.Row="2"
+                HorizontalOptions="Center"
+                IndicatorColor="Black"
+                IndicatorsShape="Square"
+                SelectedIndicatorColor="#2040a0"/>
+        </Grid>
+    </VerticalStackLayout>
+</ContentPage>
