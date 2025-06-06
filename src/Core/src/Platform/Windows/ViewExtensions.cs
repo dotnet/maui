@@ -270,6 +270,18 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateToolTip(this FrameworkElement platformView, ToolTip? tooltip)
 		{
 			ToolTipService.SetToolTip(platformView, tooltip?.Content);
+			
+			// Set delay if specified
+			if (tooltip?.Delay.HasValue == true)
+			{
+				ToolTipService.SetInitialShowDelay(platformView, tooltip.Delay.Value);
+			}
+			
+			// Set duration if specified
+			if (tooltip?.Duration.HasValue == true)
+			{
+				ToolTipService.SetShowDuration(platformView, tooltip.Duration.Value);
+			}
 		}
 
 		/// <summary>

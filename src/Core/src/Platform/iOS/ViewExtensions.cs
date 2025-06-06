@@ -651,6 +651,11 @@ namespace Microsoft.Maui.Platform
 				{
 					interaction.DefaultToolTip = text;
 				}
+
+				// Note: UIToolTipInteraction doesn't have built-in delay/duration properties
+				// The delay and duration would need to be implemented with custom gesture handling
+				// or timing mechanisms, which may require more complex implementation.
+				// For now, the basic tooltip functionality with content is maintained.
 			}
 		}
 
