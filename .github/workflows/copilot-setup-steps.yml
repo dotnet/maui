@@ -17,7 +17,7 @@ jobs:
 
       - name: Add local .NET to PATH
         shell: pwsh
-        run: echo "D:\a\maui\maui\.dotnet" >> $GITHUB_PATH
+        run: echo "${{ github.workspace }}\.dotnet" >> $GITHUB_PATH
 
       # - name: Prepare it all
       #   shell: pwsh
