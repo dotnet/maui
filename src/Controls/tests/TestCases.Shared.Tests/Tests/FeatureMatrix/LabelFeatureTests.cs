@@ -343,7 +343,7 @@ public class LabelFeatureTests : UITest
 #endif
 
 #if TEST_FAILS_ON_WINDOWS // Issue Link: https://github.com/dotnet/maui/issues/27828
-    [Test, Order(18)]
+	[Test, Order(18)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithFormattedTextWhenFontSize()
 	{
@@ -875,7 +875,7 @@ public class LabelFeatureTests : UITest
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_IOS // Issue Link: https://github.com/dotnet/maui/issues/20372,  https://github.com/dotnet/maui/issues/29672, https://github.com/dotnet/maui/issues/29668 
-    [Test, Order(44)]
+	[Test, Order(44)]
 	[Category(UITestCategories.Label)]
 	public void VerifyLabelWithTextAndTextType()
 	{

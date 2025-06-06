@@ -305,7 +305,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				_navigationRootManager = modalContext.GetNavigationRootManager();
 				_navigationRootManager.Connect(_modal, modalContext);
-				
+
 				UpdateBackgroundColor();
 
 				var rootView = _navigationRootManager?.RootView ??
@@ -313,16 +313,16 @@ namespace Microsoft.Maui.Controls.Platform
 
 				if (IsAnimated)
 				{
-					_ = new GenericGlobalLayoutListener((listener,view) =>
+					_ = new GenericGlobalLayoutListener((listener, view) =>
 					{
 						listener.Invalidate();
-						if(view is not null)
+						if (view is not null)
 						{
 							var animation = AnimationUtils.LoadAnimation(view.Context, Resource.Animation.nav_modal_default_enter_anim)!;
 							view.StartAnimation(animation);
 							animation.AnimationEnd += OnAnimationEnded;
 						}
-					},_navigationRootManager.RootView);
+					}, _navigationRootManager.RootView);
 				}
 				return rootView;
 			}
@@ -332,7 +332,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 
 				animation.AnimationEnd -= OnAnimationEnded;
-			    FireAnimationEnded();
+				FireAnimationEnded();
 			}
 
 			public override void OnCreate(Bundle? savedInstanceState)
@@ -352,7 +352,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				int width = ViewGroup.LayoutParams.MatchParent;
 				int height = ViewGroup.LayoutParams.MatchParent;
-				dialog.Window.SetLayout(width, height);		
+				dialog.Window.SetLayout(width, height);
 			}
 
 			public override void OnDismiss(IDialogInterface dialog)
