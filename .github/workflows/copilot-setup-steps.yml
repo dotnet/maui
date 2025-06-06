@@ -19,4 +19,5 @@ jobs:
 
       - name: Run a pre-work build
         shell: pwsh
+        continue-on-error: true
         run: .\build.ps1
