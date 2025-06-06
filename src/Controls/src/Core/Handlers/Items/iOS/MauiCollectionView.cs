@@ -1,11 +1,17 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+using System.Threading;
 using CoreGraphics;
+using Foundation;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items;
 
-internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
+internal partial class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 {
 	bool _invalidateParentWhenMovedToWindow;
 
@@ -13,14 +19,52 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IP
 
 	internal bool NeedsCellLayout { get; set; }
 
+	public override CGPoint ContentOffset
+	{
+		get => base.ContentOffset;
+		set
+		{
+			if (IsUIKitInterferingWithKeyboardAutoManagerScroll())
+			{
+				// UIKit is trying to mess up with our keyboard auto scroll manger, so we ignore it.
+				return;
+			}
+
+			base.ContentOffset = value;
+		}
+	}
+
 	public MauiCollectionView(CGRect frame, UICollectionViewLayout layout) : base(frame, layout)
 	{
 	}
 
 	public override void ScrollRectToVisible(CGRect rect, bool animated)
 	{
-		if (!KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling)
-			base.ScrollRectToVisible(rect, animated);
+		if (KeyboardAutoManagerScroll.IsKeyboardAutoScrollAnimating)
+		{
+			// UIKit is trying to mess up with our keyboard auto scroll manger, so we ignore it.
+			return;
+		}
+
+		base.ScrollRectToVisible(rect, animated);
+	}
+
+	public override void SetContentOffset(CGPoint contentOffset, bool animated)
+	{
+		if (KeyboardAutoManagerScroll.IsKeyboardAutoScrollAnimating)
+		{
+			// UIKit is trying to mess up with our keyboard auto scroll manger, so we ignore it.
+			return;
+		}
+		
+		// Auto scrolling messes up with CV1, so we can leverage this only in CV2.
+		if (KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling && CollectionViewLayout is not UICollectionViewFlowLayout)
+		{
+			KeyboardAutoManagerScroll.EnsureTextViewCursorIsVisible();
+			return;
+		}
+
+		base.SetContentOffset(contentOffset, animated);
 	}
 
 	void IPlatformMeasureInvalidationController.InvalidateAncestorsMeasuresWhenMovedToWindow()
@@ -75,4 +119,32 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IP
 	{
 		void MovedToWindow(UIView view);
 	}
+	
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	static bool IsUIKitInterferingWithKeyboardAutoManagerScroll()
+	{
+		// Using `NSThread.NativeCallStack` is not ideal due to its performance cost and reliance on native internals.
+		// However, it's currently the only reliable way to detect interference from UIKit's internal keyboard animation handling.
+		// To avoid unnecessary overhead, we restrict this check to our own controlled animation scopes only.
+		if (KeyboardAutoManagerScroll.IsKeyboardAutoScrollAnimating)
+		{
+			var stackTrace = NSThread.NativeCallStack;
+			var stackTraceLength = stackTrace.Length;
+			var regex = IsUIKitKeyboardManagerAutoScrollRegex();
+			for (int i = 0; i < stackTraceLength; i++)
+			{
+				var call = stackTrace[i];
+				if (regex.IsMatch(call))
+				{
+					// UIKit is trying to mess up with our content offset, so we ignore it.
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	[GeneratedRegex("(UIAutoRespondingScrollViewControllerKeyboardSupport|_restoreOrAdjustContentOffsetIfNecessaryWithInsets)")]
+	private static partial Regex IsUIKitKeyboardManagerAutoScrollRegex();
 }

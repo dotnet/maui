@@ -30,7 +30,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		bool _initialized;
 		bool _laidOut;
-		bool _needsSupplementaryViewsLayout = true;
 		bool _isEmpty = true;
 		bool _emptyViewDisplayed;
 		bool _disposed;
@@ -199,14 +198,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void ViewWillLayoutSubviews()
 		{
-			if (CollectionView is MauiCollectionView { NeedsCellLayout: true } mauiCollectionView)
-			{
-				InvalidateLayoutIfItemsMeasureChanged();
-				mauiCollectionView.NeedsCellLayout = false;
-				_needsSupplementaryViewsLayout = true;
-			}
-
-			if (KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling || IsRefreshing())
+			if (KeyboardAutoManagerScroll.IsKeyboardAutoScrollAnimating)
 			{
 				base.ViewWillLayoutSubviews();
 				return;
@@ -214,13 +206,25 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			
 			ConstrainItemsToBounds();
 
+			var mauiCollectionView = CollectionView as MauiCollectionView;
+			var needsCellLayout = mauiCollectionView?.NeedsCellLayout is true;
+			if (needsCellLayout)
+			{
+				InvalidateLayoutIfItemsMeasureChanged();
+				mauiCollectionView.NeedsCellLayout = false;
+			}
+
 			base.ViewWillLayoutSubviews();
 
-			if (!_laidOut || _needsSupplementaryViewsLayout)
+			if (needsCellLayout || !_laidOut)
 			{
-				MeasureSupplementaryViews();
-				LayoutSupplementaryViews();
-				_needsSupplementaryViewsLayout = false;
+				// We don't want to mess up with ContentOffset while refreshing, given that's also gonna cause
+				// a change in the content's offset Y.
+				if (!IsRefreshing() && !KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling)
+				{
+					MeasureSupplementaryViews();
+					LayoutSupplementaryViews();
+				}
 			}
 
 			InvalidateMeasureIfContentSizeChanged();
@@ -258,7 +262,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				var layoutInvalidationContext = new UICollectionViewFlowLayoutInvalidationContext();
 				layoutInvalidationContext.InvalidateItems(invalidatedPaths.ToArray());
-				CollectionView.CollectionViewLayout.InvalidateLayout(layoutInvalidationContext);
+				CollectionView.CollectionViewLayout.InvalidateLayout();
 			}
 		}
 
