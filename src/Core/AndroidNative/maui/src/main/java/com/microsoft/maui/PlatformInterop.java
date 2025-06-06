@@ -38,7 +38,6 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.TintTypedArray;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 import androidx.window.layout.WindowMetricsCalculator;
