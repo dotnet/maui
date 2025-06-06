@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 public class LabelViewModel : INotifyPropertyChanged
 {
@@ -23,7 +23,8 @@ public class LabelViewModel : INotifyPropertyChanged
 		get => _text;
 		set
 		{
-			if (_text == value) return;
+			if (_text == value)
+				return;
 			_text = value;
 			OnPropertyChanged(nameof(Text));
 		}
@@ -35,7 +36,8 @@ public class LabelViewModel : INotifyPropertyChanged
 		get => _formattedText;
 		set
 		{
-			if (_formattedText == value) return;
+			if (_formattedText == value)
+				return;
 			_formattedText = value;
 			OnPropertyChanged(nameof(FormattedText));
 		}
