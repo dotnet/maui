@@ -241,7 +241,7 @@ namespace Microsoft.Maui.TestCases.Tests
 					case TestDevice.iOS:
 						var platformVersion = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("platformVersion")
 							?? throw new InvalidOperationException("platformVersion capability is missing or null.");
-						var device = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName") 
+						var device = (string?)((AppiumApp)App).Driver.Capabilities.GetCapability("deviceName")
 							?? throw new InvalidOperationException("deviceName capability is missing or null.");
 
 						if (device.Contains(" Xs", StringComparison.OrdinalIgnoreCase) && platformVersion == _defaultiOSVersion)
