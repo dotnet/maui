@@ -4,13 +4,13 @@ on: workflow_dispatch
 
 jobs:
   copilot-setup-steps:
-    runs-on: windows-latest
+    runs-on: macos-latest
     permissions:
       contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Prepare it all
+      - name: Run a pre-work build
         shell: pwsh
         run: .\build.ps1
