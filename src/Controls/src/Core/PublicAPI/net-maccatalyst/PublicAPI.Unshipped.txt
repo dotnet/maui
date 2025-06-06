@@ -17,6 +17,19 @@ Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.SetResponse(i
 Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.SetResponse(int code, string! reason, System.Collections.Generic.IReadOnlyDictionary<string!, string!>? headers, System.Threading.Tasks.Task<System.IO.Stream?>! contentTask) -> void
 Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgs.Uri.get -> System.Uri!
 Microsoft.Maui.Controls.HybridWebViewWebResourceRequestedEventArgsExtensions
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions.EnableArrangePassTracking.get -> bool
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions.EnableArrangePassTracking.set -> void
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions.EnableMeasurePassTracking.get -> bool
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions.EnableMeasurePassTracking.set -> void
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions.LayoutTrackingOptions() -> void
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions.TrackPerElement.get -> bool
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions.TrackPerElement.set -> void
+Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions
+Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions
+Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.Layout.get -> Microsoft.Maui.Controls.Performance.LayoutTrackingOptions!
+Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.Layout.set -> void
+Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.PerformanceMonitoringOptions() -> void
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Request.get -> Foundation.NSUrlRequest!
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Sender.get -> WebKit.WKWebView!
@@ -44,6 +57,8 @@ override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertFrom(System.Compo
 override Microsoft.Maui.Controls.ShadowTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object! value) -> object!
 override Microsoft.Maui.Controls.ShadowTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value, System.Type? destinationType) -> object!
+static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.AddPerformanceMonitoring(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!>? configure = null) -> Microsoft.Maui.Hosting.MauiAppBuilder!
+static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.ConfigureLayout(this Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions! options, System.Action<Microsoft.Maui.Controls.Performance.LayoutTrackingOptions!>! configure) -> Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!
 ~Microsoft.Maui.Controls.XmlnsDefinitionAttribute.XmlnsDefinitionAttribute(string xmlNamespace, string target) -> void
 ~override Microsoft.Maui.Controls.Compatibility.AbsoluteLayout.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void
 ~override Microsoft.Maui.Controls.Compatibility.Grid.ComputeConstraintForView(Microsoft.Maui.Controls.View view) -> void

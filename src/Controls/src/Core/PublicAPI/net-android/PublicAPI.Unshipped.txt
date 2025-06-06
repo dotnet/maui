@@ -42,6 +42,19 @@ Microsoft.Maui.Controls.ILineHeightElement
 Microsoft.Maui.Controls.ILineHeightElement.LineHeight.get -> double
 Microsoft.Maui.Controls.ILineHeightElement.OnLineHeightChanged(double oldValue, double newValue) -> void
 Microsoft.Maui.Controls.Internals.TextTransformUtilities
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions.EnableArrangePassTracking.get -> bool
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions.EnableArrangePassTracking.set -> void
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions.EnableMeasurePassTracking.get -> bool
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions.EnableMeasurePassTracking.set -> void
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions.LayoutTrackingOptions() -> void
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions.TrackPerElement.get -> bool
+Microsoft.Maui.Controls.Performance.LayoutTrackingOptions.TrackPerElement.set -> void
+Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions
+Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions
+Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.Layout.get -> Microsoft.Maui.Controls.Performance.LayoutTrackingOptions!
+Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.Layout.set -> void
+Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions.PerformanceMonitoringOptions() -> void
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Request.get -> Android.Webkit.IWebResourceRequest!
 Microsoft.Maui.Controls.PlatformHybridWebViewWebResourceRequestedEventArgs.Response.get -> Android.Webkit.WebResourceResponse?
@@ -68,6 +81,8 @@ Microsoft.Maui.Controls.LayoutConstraint.VerticallyFixed = 2 -> Microsoft.Maui.C
 Microsoft.Maui.Controls.TimeChangedEventArgs.NewTime.get -> System.TimeSpan?
 Microsoft.Maui.Controls.TimeChangedEventArgs.OldTime.get -> System.TimeSpan?
 Microsoft.Maui.Controls.TimeChangedEventArgs.TimeChangedEventArgs(System.TimeSpan? oldTime, System.TimeSpan? newTime) -> void
+static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.AddPerformanceMonitoring(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!>? configure = null) -> Microsoft.Maui.Hosting.MauiAppBuilder!
+static Microsoft.Maui.Controls.Performance.PerformanceMonitoringExtensions.ConfigureLayout(this Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions! options, System.Action<Microsoft.Maui.Controls.Performance.LayoutTrackingOptions!>! configure) -> Microsoft.Maui.Controls.Performance.PerformanceMonitoringOptions!
 ~Microsoft.Maui.Controls.ITextElement.OnTextColorPropertyChanged(Microsoft.Maui.Graphics.Color oldValue, Microsoft.Maui.Graphics.Color newValue) -> void
 ~Microsoft.Maui.Controls.ITextElement.TextColor.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.ITextElement.UpdateFormsText(string original, Microsoft.Maui.TextTransform transform) -> string

@@ -14,6 +14,7 @@ using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Controls.Performance;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Hosting;
@@ -300,6 +301,17 @@ namespace Maui.Controls.Sample
 				}
 			});
 
+			// Add performance monitoring
+			appBuilder.AddPerformanceMonitoring(options =>
+			{
+				options.ConfigureLayout(layout =>
+				{
+					layout.EnableMeasurePassTracking = true;
+					layout.EnableArrangePassTracking = true;
+					layout.TrackPerElement = true;
+				});
+			});
+			
 			return appBuilder.Build();
 		}
 	}
