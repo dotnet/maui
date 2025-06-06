@@ -73,6 +73,7 @@ Microsoft.Maui.Platform.MauiHybridWebView.SendRawMessage(string! rawMessage) -> 
 *REMOVED*Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan time) -> void
 Microsoft.Maui.Platform.MauiTimePicker.UpdateTime(System.TimeSpan? time) -> void
 Microsoft.Maui.Platform.MauiWKWebView.ContentProcessDidTerminate(WebKit.WKWebView! webView) -> void
+Microsoft.Maui.Platform.UIApplicationExtensions
 Microsoft.Maui.Platform.UIWindowExtensions
 Microsoft.Maui.TextAlignment.Justify = 3 -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.WebProcessTerminatedEventArgs
@@ -115,6 +116,8 @@ static Microsoft.Maui.Platform.ElementExtensions.ToUIViewController(this Microso
 static Microsoft.Maui.Platform.TextInputExtensions.GetCursorPosition(this UIKit.IUITextInput! platformView, int cursorOffset = 0) -> int
 static Microsoft.Maui.Platform.TextInputExtensions.GetSelectedTextLength(this UIKit.IUITextInput! platformView) -> int
 static Microsoft.Maui.Platform.TextInputExtensions.SetTextRange(this UIKit.IUITextInput! platformView, int start, int selectedTextLength) -> void
+static Microsoft.Maui.Platform.UIApplicationExtensions.GetKeyWindow(this UIKit.UIApplication! application) -> UIKit.UIWindow?
+static Microsoft.Maui.Platform.UIApplicationExtensions.GetWindow(this UIKit.UIApplication! application) -> Microsoft.Maui.IWindow?
 static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindow? platformWindow) -> Microsoft.Maui.IWindow?
 static Microsoft.Maui.Platform.UIWindowExtensions.GetWindow(this UIKit.UIWindowScene? windowScene) -> Microsoft.Maui.IWindow?
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
