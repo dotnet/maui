@@ -67,12 +67,12 @@ if (!$FeedUrl) {
 if ([string]::IsNullOrEmpty($NuGetIncludeFilters) -or "$NuGetIncludeFilters" -eq "skip") {
   $includeFilters = @()
 } else {
-  $includeFilters = "$NuGetIncludeFilters" -split ";" | Where-Object { $_ } | % { $_.Trim() }
+  $includeFilters = "$NuGetIncludeFilters" -split ";" | Where-Object { $_ } | ForEach-Object { $_.Trim() }
 }
 if ([string]::IsNullOrEmpty($NuGetExcludeFilters) -or "$NuGetExcludeFilters" -eq "skip") {
   $excludeFilters = @()
 } else {
-  $excludeFilters = "$NuGetExcludeFilters" -split ";" | Where-Object { $_ } | % { $_.Trim() }
+  $excludeFilters = "$NuGetExcludeFilters" -split ";" | Where-Object { $_ } | ForEach-Object { $_.Trim() }
 }
 
 $nupkgs = (Get-ChildItem -Path "$NuGetSearchPath" -Filter *.nupkg -Recurse -Include $includeFilters -Exclude $excludeFilters)
@@ -90,6 +90,8 @@ $nugetApiKeysExceedingQuota = [System.Collections.Generic.List[string]]::new()
 $nugetApiKeyIndex = 1
 
 foreach ($nupkg in $nupkgs) {
+  # Only push packages if the environment variable PUSH_PACKAGES is set to "true".
+  # If not set or set to any other value, the script performs a dry run and does not push packages.
   if ( $env:PUSH_PACKAGES -ne "true" ) {
     Write-Host "`tdry run, not pushing $($nupkg.FullName)"
     continue
