@@ -4,7 +4,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	internal static class UIApplicationExtensions
+	public static class UIApplicationExtensions
 	{
 		internal static UIEdgeInsets GetSafeAreaInsetsForWindow(this UIApplication application)
 		{
