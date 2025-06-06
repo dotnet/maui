@@ -14,3 +14,13 @@ jobs:
       - name: Run a pre-work build
         shell: pwsh
         run: .\build.ps1
+
+      - name: Add local .NET to PATH
+        shell: pwsh
+        run: echo "D:\a\maui\maui\.dotnet" >> $GITHUB_PATH
+
+      # - name: Prepare it all
+      #   shell: pwsh
+      #   run: |
+      #     dotnet workload install maui macos --source https://api.nuget.org/v3/index.json
+      #     .\build.ps1 --workloads=global
