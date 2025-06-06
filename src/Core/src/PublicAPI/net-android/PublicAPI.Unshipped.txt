@@ -112,3 +112,7 @@ override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessib
 override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessibilityEventUnchecked(Android.Views.View? host, Android.Views.Accessibility.AccessibilityEvent? e) -> void
 *REMOVED*override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View! host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat! info) -> void
 override Microsoft.Maui.Platform.MauiAccessibilityDelegateCompat.OnInitializeAccessibilityNodeInfo(Android.Views.View? host, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
+Microsoft.Maui.ToolTip.Delay.get -> int?
+Microsoft.Maui.ToolTip.Delay.set -> void
+Microsoft.Maui.ToolTip.Duration.get -> int?
+Microsoft.Maui.ToolTip.Duration.set -> void
