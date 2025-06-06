@@ -114,7 +114,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			var label4 = new Label()
 			{
+#pragma warning disable CS0612 // Type or member is obsolete
 				TextType = TextType.Html,
+#pragma warning restore CS0612 // Type or member is obsolete
 				Text = "<h1>This is label tests.</h1>",
 				CharacterSpacing = 5d,
 				LineHeight = 1.5d,

@@ -11,9 +11,11 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateText(this UILabel platformLabel, Label label)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			switch (label.TextType)
 			{
 				case TextType.Html:
+#pragma warning restore CS0618 // Type or member is obsolete
 					platformLabel.UpdateTextHtml(label);
 					break;
 
@@ -31,6 +33,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 					break;
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

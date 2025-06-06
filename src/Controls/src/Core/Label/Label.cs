@@ -113,6 +113,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		/// <summary>Bindable property for <see cref="TextType"/>.</summary>
+		[Obsolete("HTML text formatting is discontinued.")]
 		public static readonly BindableProperty TextTypeProperty = BindableProperty.Create(nameof(TextType), typeof(TextType), typeof(Label), TextType.Text,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureIfLabelSizeable());
 
@@ -237,6 +238,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='TextType']/Docs/*" />
+		[Obsolete("HTML text formatting is discontinued.")]
 		public TextType TextType
 		{
 			get => (TextType)GetValue(TextTypeProperty);

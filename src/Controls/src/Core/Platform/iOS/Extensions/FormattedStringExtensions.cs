@@ -137,8 +137,9 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				return;
 			}
-
+#pragma warning disable CS0612 // Type or member is obsolete
 			if (element.TextType == TextType.Html)
+#pragma warning restore CS0612 // Type or member is obsolete			
 			{
 				return;
 			}

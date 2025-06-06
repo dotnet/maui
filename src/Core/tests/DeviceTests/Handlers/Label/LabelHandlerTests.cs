@@ -303,7 +303,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var label = new LabelStub()
 			{
+#pragma warning disable CS0612 // Type or member is obsolete
 				TextType = TextType.Html,
+#pragma warning restore CS0612 // Type or member is obsolete
 				Text = "<h2><strong>Test1&nbsp;</strong>Test2</h2>"
 			};
 

@@ -82,7 +82,9 @@ namespace Maui.Controls.Sample.Issues
 				Text = $"Item{count}",
 				AutomationId = $"Item{count}",
 				Background = Brush.Yellow,
+#pragma warning disable CS0612 // Type or member is obsolete
 				TextType = TextType.Html
+#pragma warning restore CS0612 // Type or member is obsolete
 			};
 	}
 }
