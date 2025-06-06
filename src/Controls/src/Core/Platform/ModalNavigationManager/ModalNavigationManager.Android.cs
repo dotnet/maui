@@ -24,11 +24,12 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		ViewGroup? _modalParentView;
 		bool _navAnimationInProgress;
-		internal const string CloseContextActionsSignalName = "Xamarin.CloseContextActions";
 		AAnimation? _dismissAnimation;
 		bool _platformActivated;
 
 		readonly Stack<string> _modals = [];
+
+		internal event EventHandler? RequestCloseContextActions;
 
 		partial void InitializePlatform()
 		{
@@ -106,10 +107,7 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				_navAnimationInProgress = value;
 
-#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-				if (value)
-					MessagingCenter.Send(this, CloseContextActionsSignalName);
-#pragma warning restore CS0618 // Type or member is obsolete
+				RequestCloseContextActions?.Invoke(this, EventArgs.Empty);
 			}
 		}
 
