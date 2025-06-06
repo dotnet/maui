@@ -38,8 +38,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.TintTypedArray;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.fragment.app.FragmentActivity;
-import androidx.lifecycle.Lifecycle;
+
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
 import androidx.window.layout.WindowMetricsCalculator;
@@ -78,26 +77,7 @@ public class PlatformInterop {
      */
     public static boolean isContextDestroyed(Context context) {
         Activity activity = getActivity(context);
-        if (activity instanceof FragmentActivity) {
-            FragmentActivity fragmentActivity = (FragmentActivity) activity;
-            
-            // Check if activity is finishing or destroyed
-            if (fragmentActivity.isFinishing() || fragmentActivity.isDestroyed()) {
-                return true;
-            }
-
-            // Check lifecycle state
-            try {
-                if (fragmentActivity.getLifecycle().getCurrentState() == Lifecycle.State.DESTROYED) {
-                    return true;
-                }
-            } catch (Exception e) {
-                // Log warning if there's an exception getting the lifecycle state, consider it destroyed
-                logger.w("Exception checking lifecycle state, assuming destroyed", e);
-                return true;
-            }
-        } else if (activity != null) {
-            // For regular Activity, check if finishing or destroyed
+        if (activity != null) {
             if (activity.isFinishing() || activity.isDestroyed()) {
                 return true;
             }
