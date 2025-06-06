@@ -4,7 +4,7 @@ on: workflow_dispatch
 
 jobs:
   copilot-setup-steps:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
