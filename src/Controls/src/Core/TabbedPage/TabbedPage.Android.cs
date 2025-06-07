@@ -98,5 +98,10 @@ namespace Microsoft.Maui.Controls
 		{
 			view._tabbedPageManager?.UpdateSwipePaging();
 		}
+
+		internal static void MapOffscreenPageLimit(ITabbedViewHandler handler, TabbedPage view)
+		{
+			view._tabbedPageManager?.UpdateOffscreenPageLimit();
+		}
 	}
 }
