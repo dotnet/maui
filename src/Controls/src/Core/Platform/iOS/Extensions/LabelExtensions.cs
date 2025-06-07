@@ -11,10 +11,12 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateText(this UILabel platformLabel, Label label)
 		{
+			var text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+			
 			switch (label.TextType)
 			{
 				case TextType.Html:
-					platformLabel.UpdateTextHtml(label);
+					platformLabel.UpdateTextHtml(text);
 					break;
 
 				default:
@@ -27,7 +29,7 @@ namespace Microsoft.Maui.Controls.Platform
 							platformLabel.AttributedText = null;
 						}
 
-						platformLabel.Text = TextTransformUtilites.GetTransformedText(label.Text, label.TextTransform);
+						platformLabel.Text = text;
 					}
 					break;
 			}
