@@ -31,13 +31,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void Setup()
 			{
 				enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
-				RuntimeFeature.EnableDiagnostics = true;
+				RuntimeFeature.EnableMauiDiagnostics = true;
 			}
 
 			[TearDown]
 			public void TearDown()
 			{
-				RuntimeFeature.EnableDiagnostics = enableDiagnosticsInitialState;
+				RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;
 				VisualDiagnostics.VisualTreeChanged -= OnVTChanged;
 			}
 

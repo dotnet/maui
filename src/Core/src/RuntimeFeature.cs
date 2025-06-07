@@ -14,6 +14,8 @@ namespace Microsoft.Maui
 	/// </remarks>
 	static class RuntimeFeature
 	{
+		const string FeatureSwitchPrefix = "Microsoft.Maui.RuntimeFeature.";
+
 		const bool IsIVisualAssemblyScanningEnabledByDefault = false;
 		const bool IsShellSearchResultsRendererDisplayMemberNameSupportedByDefault = true;
 		const bool IsQueryPropertyAttributeSupportedByDefault = true;
@@ -21,73 +23,70 @@ namespace Microsoft.Maui
 		const bool AreBindingInterceptorsSupportedByDefault = true;
 		const bool IsXamlCBindingWithSourceCompilationEnabledByDefault = false;
 		const bool IsHybridWebViewSupportedByDefault = true;
-<<<<<<< HEAD
 		const bool SupportNamescopesByDefault = true;
 		const string FeatureSwitchPrefix = "Microsoft.Maui.RuntimeFeature";
-=======
 		const bool EnableDiagnosticsByDefault = false;
->>>>>>> b2393753db (Turn Visual and Binding diags on EnableDiagnostics)
 
 #pragma warning disable IL4000 // Return value does not match FeatureGuardAttribute 'System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute'. 
 #if NET9_0_OR_GREATER
-		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled")]
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsIVisualAssemblyScanningEnabled)}")]
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
 #endif
 		public static bool IsIVisualAssemblyScanningEnabled =>
-			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled", out bool isEnabled)
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsIVisualAssemblyScanningEnabled)}", out bool isEnabled)
 				? isEnabled
 				: IsIVisualAssemblyScanningEnabledByDefault;
 
 #if NET9_0_OR_GREATER
-		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported")]
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsShellSearchResultsRendererDisplayMemberNameSupported)}")]
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
 #endif
 		public static bool IsShellSearchResultsRendererDisplayMemberNameSupported
-			=> AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsShellSearchResultsRendererDisplayMemberNameSupported", out bool isSupported)
+			=> AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsShellSearchResultsRendererDisplayMemberNameSupported)}", out bool isSupported)
 				? isSupported
 				: IsShellSearchResultsRendererDisplayMemberNameSupportedByDefault;
 
 #if NET9_0_OR_GREATER
-		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported")]
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsQueryPropertyAttributeSupported)}")]
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
 #endif
 		public static bool IsQueryPropertyAttributeSupported =>
-			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsQueryPropertyAttributeSupported", out bool isSupported)
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsQueryPropertyAttributeSupported)}", out bool isSupported)
 				? isSupported
 				: IsQueryPropertyAttributeSupportedByDefault;
 
 #if NET9_0_OR_GREATER
-		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported")]
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsImplicitCastOperatorsUsageViaReflectionSupported)}")]
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
 #endif
 		public static bool IsImplicitCastOperatorsUsageViaReflectionSupported =>
-			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsImplicitCastOperatorsUsageViaReflectionSupported", out bool isSupported)
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsImplicitCastOperatorsUsageViaReflectionSupported)}", out bool isSupported)
 				? isSupported
 				: IsImplicitCastOperatorsUsageViaReflectionSupportedByDefault;
 
 #if NET9_0_OR_GREATER
-		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported")]
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(AreBindingInterceptorsSupported)}")]
 #endif
 		public static bool AreBindingInterceptorsSupported =>
-			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.AreBindingInterceptorsSupported", out bool areSupported)
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(AreBindingInterceptorsSupported)}", out bool areSupported)
 				? areSupported
 				: AreBindingInterceptorsSupportedByDefault;
 
 #if NET9_0_OR_GREATER
-		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled")]
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsXamlCBindingWithSourceCompilationEnabled)}")]
 #endif
 		public static bool IsXamlCBindingWithSourceCompilationEnabled =>
-			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsXamlCBindingWithSourceCompilationEnabled", out bool areSupported)
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsXamlCBindingWithSourceCompilationEnabled)}", out bool areSupported)
 				? areSupported
 				: IsXamlCBindingWithSourceCompilationEnabledByDefault;
 
 #if NET9_0_OR_GREATER
-		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported")]
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(IsHybridWebViewSupported)}")]
 		[FeatureGuard(typeof(RequiresUnreferencedCodeAttribute))]
 		[FeatureGuard(typeof(RequiresDynamicCodeAttribute))]
 #endif
 		public static bool IsHybridWebViewSupported =>
-			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsHybridWebViewSupported", out bool isSupported)
+			AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(IsHybridWebViewSupported)}", out bool isSupported)
 				? isSupported
 				: IsHybridWebViewSupportedByDefault;
 
@@ -105,21 +104,29 @@ namespace Microsoft.Maui
 		}
 
 #if NET9_0_OR_GREATER
-		[FeatureSwitchDefinition("Microsoft.Maui.RuntimeFeature.EnableDiagnostics")]
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(EnableDiagnostics)}")]
 #endif
-		public static bool EnableDiagnostics
+		public static bool EnableDiagnostics => AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(EnableDiagnostics)}", out bool isEnabled)
+				? isEnabled
+				: EnableDiagnosticsByDefault;
+
+
+#if NET9_0_OR_GREATER
+		[FeatureSwitchDefinition($"{FeatureSwitchPrefix}.{nameof(EnableMauiDiagnostics)}")]
+#endif
+		public static bool EnableMauiDiagnostics
 		{
 			get
 			{
-				return AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.EnableDiagnostics", out bool isEnabled)
+				return AppContext.TryGetSwitch($"{FeatureSwitchPrefix}.{nameof(EnableMauiDiagnostics)}", out bool isEnabled)
 				? isEnabled
-				: EnableDiagnosticsByDefault;
+				: EnableDiagnostics;
 			}
 			internal set
 			{
 				// This property is internal settable to allow tests to enable diagnostics.
 				// It should not be set in production code.
-				AppContext.SetSwitch("Microsoft.Maui.RuntimeFeature.EnableDiagnostics", value);
+				AppContext.SetSwitch($"{FeatureSwitchPrefix}.{nameof(EnableMauiDiagnostics)}", value);
 			}
 		}
 #pragma warning restore IL4000

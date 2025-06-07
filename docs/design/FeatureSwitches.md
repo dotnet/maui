@@ -85,3 +85,15 @@ With (upcoming) sourcegen XAML inflation, the xaml infrastructure no longer need
 Having this off reduce method body size, making them faster to JIT, and release the pressure on the GC as there are way less allocations.
 
 As of NET10.0, the default is `true` so full compatibility is maintained, but might be changed in the future.
+
+## EnableDiagnostics
+
+Turn on various diagnostics at runtime and Maui level.
+
+Defaults to `false`
+
+## EnableMauiDiagnostics
+
+Enable VisualDiagnostics and BindingDiagnostics
+
+Defaults to `EnableDiagnostics`
