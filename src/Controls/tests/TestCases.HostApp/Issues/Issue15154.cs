@@ -5,53 +5,53 @@ public class Issue15154 : Shell
 {
 	public Issue15154()
 	{
-        this.Items.Add(new ShellContent
-        {
-            Title = "EmptyView Template with behavior with height",
-            ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
-        });
-        
-        this.Items.Add(new ShellContent
-        {
-            Title = "EmptyView Template Grid",
-            ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
-        });
-        
-        this.Items.Add(new ShellContent
-        {
-            Title = "EmptyView Template Grid with behavior with height",
-            ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
-        });
-        
-        this.Items.Add(new ShellContent
-        {
-            Title = "EmptyView Template Grid with behavior without height",
-            ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
-        });
-        
-        this.Items.Add(new ShellContent
-        {
-            Title = "EmptyView Text ScrollView",
-            ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
-        });
-        
-        this.Items.Add(new ShellContent
-        {
-            Title = "EmptyView Template ScrollView",
-            ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
-        });
-        
-        this.Items.Add(new ShellContent
-        {
-            Title = "EmptyView Text ScrollView with behavior with height",
-            ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
-        });
-        
-        this.Items.Add(new ShellContent
-        {
-            Title = "EmptyView Text ScrollView without behavior with height",
-            ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
-        });
+		this.Items.Add(new ShellContent
+		{
+			Title = "EmptyView Template with behavior with height",
+			ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
+		});
+
+		this.Items.Add(new ShellContent
+		{
+			Title = "EmptyView Template Grid",
+			ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
+		});
+
+		this.Items.Add(new ShellContent
+		{
+			Title = "EmptyView Template Grid with behavior with height",
+			ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
+		});
+
+		this.Items.Add(new ShellContent
+		{
+			Title = "EmptyView Template Grid with behavior without height",
+			ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
+		});
+
+		this.Items.Add(new ShellContent
+		{
+			Title = "EmptyView Text ScrollView",
+			ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
+		});
+
+		this.Items.Add(new ShellContent
+		{
+			Title = "EmptyView Template ScrollView",
+			ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
+		});
+
+		this.Items.Add(new ShellContent
+		{
+			Title = "EmptyView Text ScrollView with behavior with height",
+			ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
+		});
+
+		this.Items.Add(new ShellContent
+		{
+			Title = "EmptyView Text ScrollView without behavior with height",
+			ContentTemplate = new DataTemplate(typeof(Issue15154_MainPage))
+		});
 	}
 
 	public class Issue15154_MainPage : ContentPage
