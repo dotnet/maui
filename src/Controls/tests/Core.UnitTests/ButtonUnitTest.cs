@@ -1,4 +1,7 @@
 using System;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Microsoft.Maui.Controls.Internals;
 using Xunit;
 using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
@@ -7,6 +10,90 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class ButtonUnitTest : VisualElementCommandSourceTests<Button>
 	{
+		[Fact]
+		public async Task ButtonWithCommandBindingCanBeGarbageCollected()
+		{
+			// Create a view model with a Command
+			var command = new CommandWithoutWeakEventHandler();
+			WeakReference buttonWeakRef;
+			WeakReference proxyWeakRef;
+			WeakReference proxyProxyWeakRef;
+
+			// Create a button in a separate scope to ensure no references remain
+			{
+				var button = new Button();
+				button.Command = command;
+
+				// Create a weak reference to the button
+				buttonWeakRef = new WeakReference(button);
+				proxyWeakRef = new WeakReference(((ICommandElement)button).CleanupTracker);
+				proxyProxyWeakRef = new WeakReference(((ICommandElement)button).CleanupTracker?.Proxy);
+				
+				await TestHelpers.Collect();
+				await TestHelpers.Collect();
+
+				// Make sure everything is still alive if the button is still in scope
+				// We need to reference the button here again to keep it alive 
+				// awaiting a Task appears to move us to a new scope and causes the button to be collected
+				Assert.NotNull(button);
+				Assert.True(buttonWeakRef.IsAlive);
+				Assert.True(proxyWeakRef.IsAlive);
+				Assert.True(proxyProxyWeakRef.IsAlive);
+			}
+	
+			
+			Assert.False(await buttonWeakRef.WaitForCollect());
+			Assert.False(await proxyWeakRef.WaitForCollect());
+			Assert.False(await proxyProxyWeakRef.WaitForCollect());
+		}
+
+		class CommandWithoutWeakEventHandler : ICommand
+		{
+			public event EventHandler CanExecuteChanged;
+
+			public bool CanExecute(object parameter) => true;
+
+			public void Execute(object parameter) { }
+
+			public void ChangeCanExecute() => CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		[Fact]
+		public async Task ButtonWithWeakEventHandlerIsntCollectedTooEarly()
+		{
+			// Create a view model with a Command
+			var command = new Command(() => { });
+			WeakReference buttonWeakRef;
+			WeakReference proxyWeakRef;
+			WeakReference proxyProxyWeakRef;
+
+			// Create a button in a separate scope to ensure no references remain
+			{
+				var button = new Button();
+				button.Command = command;
+
+				// Create a weak reference to the button
+				buttonWeakRef = new WeakReference(button);
+				proxyWeakRef = new WeakReference(((ICommandElement)button).CleanupTracker);
+				proxyProxyWeakRef = new WeakReference(((ICommandElement)button).CleanupTracker?.Proxy);
+				await TestHelpers.Collect();
+				await TestHelpers.Collect();
+
+				// Make sure everything is still alive if the button is still in scope
+				// We need to reference the button here again to keep it alive 
+				// awaiting a Task appears to move us to a new scope and causes the button to be collected
+				Assert.NotNull(button);
+				Assert.True(buttonWeakRef.IsAlive);
+				Assert.True(proxyWeakRef.IsAlive);
+				Assert.True(proxyProxyWeakRef.IsAlive);
+			}			
+			
+			Assert.False(await buttonWeakRef.WaitForCollect());
+			Assert.False(await proxyWeakRef.WaitForCollect());
+			Assert.False(await proxyProxyWeakRef.WaitForCollect());
+		}
+
+
 		[Fact]
 		public void MeasureInvalidatedOnTextChange()
 		{
