@@ -1,4 +1,5 @@
 using Microsoft.Maui.Graphics;
+using System.Diagnostics;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;
 #elif __ANDROID__
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Handlers
 	/// </summary>
 	/// <remarks>Handlers map virtual views (.NET MAUI layer) to controls on each platform (iOS, Android, Windows, macOS, etc.), which are known as platform views.
 	/// Handlers are also responsible for instantiating the underlying platform view, and mapping the cross-platform control API to the platform view API. </remarks>
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public abstract partial class ViewHandler : ElementHandler, IViewHandler
 	{
 		/// <summary>
@@ -535,6 +537,21 @@ namespace Microsoft.Maui.Handlers
 			if (view is IToolTipElement tooltipContainer)
 				handler.ToPlatform().UpdateToolTip(tooltipContainer.ToolTip);
 #endif
+		}
+
+		/// <summary>
+		/// Provides a string representation of the current object for debugging purposes.
+		/// </summary>
+		/// <remarks>
+		/// This method is used by the <see cref="DebuggerDisplayAttribute"/> to display
+		/// a concise and informative string representation of the <see cref="ViewHandler"/> instance
+		/// during debugging sessions.
+		/// </remarks>
+		/// <returns>A string containing the type name and key properties of the object.</returns>
+		private protected virtual string GetDebuggerDisplay()
+		{
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(VirtualView), VirtualView, nameof(PlatformView), PlatformView);
+			return $"{GetType().FullName}: {debugText}";
 		}
 	}
 }

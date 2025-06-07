@@ -578,6 +578,36 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
+		[Fact("Dont leak with Animation")]
+		public async Task ModalPageDontLeakWithAnimation()
+		{
+			SetupBuilder();
+			var references = new List<WeakReference>();
+
+
+			var page = new ContentPage();
+			var window = new Window(page);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				var modalPage = new ContentPage
+				{
+					Content = new Label { Text = "Modal Content" }
+				};
+				await page.Navigation.PushModalAsync(modalPage, true);
+				await OnLoadedAsync(modalPage);
+
+				references.Add(new WeakReference(modalPage));
+				references.Add(new WeakReference(modalPage.Handler));
+				references.Add(new WeakReference(modalPage.Handler.PlatformView));
+
+				await page.Navigation.PopModalAsync();
+				await OnUnloadedAsync(modalPage);
+			});
+
+			await AssertionExtensions.WaitForGC(references.ToArray());
+		}
+
 		class PageTypes : IEnumerable<object[]>
 		{
 			public IEnumerator<object[]> GetEnumerator()
