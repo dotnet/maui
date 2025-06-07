@@ -150,3 +150,4 @@ static readonly Microsoft.Maui.Controls.TitleBar.TitleProperty -> Microsoft.Maui
 static readonly Microsoft.Maui.Controls.TitleBar.TrailingContentProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.Window.TitleBarProperty -> Microsoft.Maui.Controls.BindableProperty!
 virtual Microsoft.Maui.Controls.Application.ActivateWindow(Microsoft.Maui.Controls.Window! window) -> void
+override Microsoft.Maui.Controls.GraphicsView.OnBindingContextChanged() -> void
