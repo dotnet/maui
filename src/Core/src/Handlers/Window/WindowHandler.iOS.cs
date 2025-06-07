@@ -1,5 +1,6 @@
 ﻿using System;
 using Foundation;
+using Microsoft.Maui.Devices;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -7,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class WindowHandler : ElementHandler<IWindow, UIWindow>
 	{
 		readonly WindowProxy _proxy = new();
+		DisplayOrientation _previousOrientation;
 
 		protected override void ConnectHandler(UIWindow platformView)
 		{
@@ -20,6 +22,8 @@ namespace Microsoft.Maui.Handlers
 			else
 			{
 				UpdateVirtualViewFrame(platformView);
+				 _previousOrientation = VirtualView.GetOrientation();
+				DeviceDisplay.Current.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 			}
 		}
 
@@ -29,7 +33,11 @@ namespace Microsoft.Maui.Handlers
 			{
 				_proxy.Disconnect();
 			}
-
+			else
+            {
+                DeviceDisplay.Current.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+            }
+			
 			base.DisconnectHandler(platformView);
 		}
 
@@ -121,6 +129,16 @@ namespace Microsoft.Maui.Handlers
 			if (args is DisplayDensityRequest request)
 			{
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
+			}
+		}
+
+		 void OnMainDisplayInfoChanged(object? sender, DisplayInfoChangedEventArgs e)
+		{
+			// Only update frame when orientation actually changes, not for other display events.
+			if (_previousOrientation != e.DisplayInfo.Orientation)
+			{
+				_previousOrientation = e.DisplayInfo.Orientation;
+				UpdateVirtualViewFrame(PlatformView);
 			}
 		}
 
