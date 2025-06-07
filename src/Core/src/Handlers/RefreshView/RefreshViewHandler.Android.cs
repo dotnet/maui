@@ -9,6 +9,8 @@ namespace Microsoft.Maui.Handlers
 			return new MauiSwipeRefreshLayout(Context);
 		}
 
+		public override bool NeedsContainer => base.NeedsContainer || PlatformView?.Height == 0;
+
 		protected override void ConnectHandler(MauiSwipeRefreshLayout platformView)
 		{
 			base.ConnectHandler(platformView);
