@@ -33,7 +33,7 @@ public partial class Maui25608_2
 			Application.SetCurrentApplication(new MockApplication());
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
-			RuntimeFeature.EnableDiagnostics = true;
+			RuntimeFeature.EnableMauiDiagnostics = true;
 		}
 
 		[TearDown]
@@ -43,7 +43,7 @@ public partial class Maui25608_2
 			{
 				BindingDiagnostics.BindingFailed -= _bindingFailureHandler;
 			}
-			RuntimeFeature.EnableDiagnostics = enableDiagnosticsInitialState;			
+			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;			
 
 			AppInfo.SetCurrent(null);
 		}

@@ -32,13 +32,13 @@ public partial class Maui17222 : ContentPage
 		{
 			AppInfo.SetCurrent(new MockAppInfo());
 			enableDiagnosticsInitialState = RuntimeFeature.EnableDiagnostics;
-			RuntimeFeature.EnableDiagnostics = true;
+			RuntimeFeature.EnableMauiDiagnostics = true;
 		}
 
 		[TearDown]
 		public void TearDown()
 		{
-			RuntimeFeature.EnableDiagnostics = enableDiagnosticsInitialState;			
+			RuntimeFeature.EnableMauiDiagnostics = enableDiagnosticsInitialState;			
 			AppInfo.SetCurrent(null);
 		}
 
