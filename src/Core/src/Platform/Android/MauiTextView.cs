@@ -3,11 +3,17 @@ using Android.Content;
 using Android.Text;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
 {
 	public class MauiTextView : PlatformAppCompatTextView
 	{
+		private Layout? _cachedLayout;
+		private string? _lastText;
+		private int _lastAvailableWidth;
+		private int _lastTotalPadding;
+
 		public MauiTextView(Context context) : base(context)
 		{
 		}
@@ -20,20 +26,30 @@ namespace Microsoft.Maui.Platform
 		}
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
-			if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.AtMost && Layout is not null)
+			if (MeasureSpec.GetMode(widthMeasureSpec) == MeasureSpecMode.AtMost && !string.IsNullOrEmpty(Text))
 			{
-				// Ensure the Layout is valid and measured before reading LineCount or GetLineWidth(i) to avoid unnecessary calculations.
-				if (Layout.Width > 0)
-				{
-					// Calculate the total width needed based on text content plus padding
-					int contentWidth = (int)Math.Ceiling(GetMaxLineWidth(Layout));
-					int totalPadding = CompoundPaddingLeft + CompoundPaddingRight;
-					int requiredWidth = contentWidth + totalPadding;
+				int availableWidth = MeasureSpec.GetSize(widthMeasureSpec);
+				int totalPadding = CompoundPaddingLeft + CompoundPaddingRight;
 
-					// Constrain to maximum available width from original spec
-					int availableWidth = MeasureSpec.GetSize(widthMeasureSpec);
-					int desiredWidth = Math.Min(requiredWidth, availableWidth);
-					widthMeasureSpec = MeasureSpec.MakeMeasureSpec(desiredWidth, MeasureSpecMode.AtMost);
+				if (availableWidth > totalPadding)
+				{
+					// Only create new layout if text, width or padding changed
+					if (_lastText != Text || _lastAvailableWidth != availableWidth || _lastTotalPadding != totalPadding || _cachedLayout is null)
+					{
+						_cachedLayout = TextLayoutUtils.CreateLayout(Text, Paint, availableWidth - totalPadding, Android.Text.Layout.Alignment.AlignNormal);
+						_lastText = Text;
+						_lastAvailableWidth = availableWidth;
+						_lastTotalPadding = totalPadding;
+					}
+					// since the original issue 27614 occurs when the text is multiline, we only apply custom width measurement for multiline text
+					if (_cachedLayout.LineCount > 1)
+					{
+						int contentWidth = (int)Math.Ceiling(GetMaxLineWidth(_cachedLayout));
+						int requiredWidth = contentWidth + totalPadding;
+						int desiredWidth = Math.Min(requiredWidth, availableWidth);
+						widthMeasureSpec = MeasureSpec.MakeMeasureSpec(desiredWidth, MeasureSpecMode.AtMost);
+					}
+
 				}
 			}
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
