@@ -1,13 +1,15 @@
 ﻿#nullable disable
+using System;
+
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public partial class CarouselViewHandler
 	{
-		public CarouselViewHandler() : base(Mapper)
+		public CarouselViewHandler() : base(Mapper,CommandMapper)
 		{
 
 		}
-		public CarouselViewHandler(PropertyMapper mapper = null) : base(mapper ?? Mapper)
+		public CarouselViewHandler(PropertyMapper mapper = null) : base(mapper ?? Mapper, CommandMapper)
 		{
 
 		}
@@ -22,6 +24,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			[Controls.CarouselView.IsBounceEnabledProperty.PropertyName] = MapIsBounceEnabled,
 			[Controls.CarouselView.PositionProperty.PropertyName] = MapPosition,
 			[Controls.CarouselView.CurrentItemProperty.PropertyName] = MapCurrentItem
+		};
+
+		//TODO Make this public in .NET10
+		internal static CommandMapper<CarouselView, CarouselViewHandler> CommandMapper = new(ViewCommandMapper)
+		{
+			[nameof(Controls.CarouselView.ItemsLayout.PropertyChanged)] = MapItemsLayoutPropertyChanged
 		};
 	}
 }
