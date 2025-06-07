@@ -47,7 +47,7 @@ public partial class CollectionViewFeatureMainPage : ContentPage
 		await Navigation.PushAsync(new CollectionViewSelectionPage());
 	}
 
-	
+
 	private async void OnItemsSourceButtonClicked(object sender, EventArgs e)
 	{
 		await Navigation.PushAsync(new CollectionViewItemsSourcePage());
