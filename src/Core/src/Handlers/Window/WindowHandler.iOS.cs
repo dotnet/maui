@@ -6,16 +6,19 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, UIWindow>
 	{
-		readonly WindowProxy _proxy = new();
+		readonly WindowProxy _windowProxy = new();
+		readonly FrameObserverProxy _frameObserverProxy = new();
 
 		protected override void ConnectHandler(UIWindow platformView)
 		{
 			base.ConnectHandler(platformView);
 
+			_frameObserverProxy.Connect(VirtualView, platformView);
+
 			// For newer Mac Catalyst versions, we want to wait until we get effective window dimensions from the platform.
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
 			{
-				_proxy.Connect(VirtualView, platformView);
+				_windowProxy.Connect(VirtualView, platformView);
 			}
 			else
 			{
@@ -27,7 +30,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
 			{
-				_proxy.Disconnect();
+				_windowProxy.Disconnect();
+				_frameObserverProxy.Disconnect(platformView);
 			}
 
 			base.DisconnectHandler(platformView);
@@ -166,6 +170,44 @@ namespace Microsoft.Maui.Handlers
 					virtualView.FrameChanged(newRectangle);
 				}
 			}
+		}
+
+		class FrameObserverProxy
+		{
+			WeakReference<IWindow>? _virtualView;
+			WeakReference<UIWindow>? _platformView;
+
+			IDisposable? _frameObserver;
+
+			IWindow? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+
+			UIWindow? PlatformView => _platformView is not null && _platformView.TryGetTarget(out var v) ? v : null;
+
+			public void Connect(IWindow virtualView, UIWindow platformView)
+			{
+				_virtualView = new(virtualView);
+				_platformView = new(platformView);
+
+				_frameObserver = platformView.AddObserver("frame", Foundation.NSKeyValueObservingOptions.New, FrameAction);
+			}
+
+			public void Disconnect(UIWindow platformView)
+			{
+				_virtualView = null;
+				_platformView = null;
+
+				_frameObserver?.Dispose();
+			}
+
+			public void Update()
+			{
+				if (VirtualView is IWindow virtualView && PlatformView is UIWindow platformView)
+				{
+					virtualView.FrameChanged(platformView.Frame.ToRectangle());
+				}
+			}
+
+			void FrameAction(Foundation.NSObservedChange obj) => Update();
 		}
 	}
 }
