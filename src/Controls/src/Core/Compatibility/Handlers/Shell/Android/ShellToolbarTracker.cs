@@ -164,8 +164,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (isEnabled)
 			{
 				if (backButtonHandler?.Command != null)
+				{
 					backButtonHandler.Command.Execute(backButtonHandler.CommandParameter);
-				else if (CanNavigateBack)
+					backButtonHandler.SendClicked();
+				}
+				else if (!backButtonHandler.SendClicked() && CanNavigateBack)
 					OnNavigateBack();
 				else
 					_shell.FlyoutIsPresented = !_shell.FlyoutIsPresented;

@@ -127,11 +127,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 					if (command != null)
 					{
+						behavior.SendClicked();
 						if (command.CanExecute(commandParameter))
 						{
 							command.Execute(commandParameter);
 						}
 
+						return false;
+					}
+					else if (behavior.SendClicked())
+					{
 						return false;
 					}
 
