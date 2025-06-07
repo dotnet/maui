@@ -30,6 +30,8 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>This method is used to pseudo-override the SizeThatFits() on the UIButton since we cannot override the UIButton class.</remarks>
 		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureStart);
+			
 			var button = this;
 
 			var platformButton = Handler?.PlatformView as UIButton;
@@ -146,7 +148,11 @@ namespace Microsoft.Maui.Controls
 							Math.Min(buttonContentHeight, heightConstraint));
 
 			// Rounding the values up to the nearest whole number to match UIView.SizeThatFits
-			return new Size((int)Math.Ceiling(returnSize.Width), (int)Math.Ceiling(returnSize.Height));
+			var size = new Size((int)Math.Ceiling(returnSize.Width), (int)Math.Ceiling(returnSize.Height));
+			
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformMeasureEnd);
+			
+			return size;
 		}
 
 		/// <summary>
@@ -156,6 +162,8 @@ namespace Microsoft.Maui.Controls
 		/// <returns>Returns a <see cref="Size"/> representing the width and height of the button.</returns>
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
 		{
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformArrangeStart);
+
 			bounds = this.ComputeFrame(bounds);
 
 			var platformButton = Handler?.PlatformView as UIButton;
@@ -163,6 +171,8 @@ namespace Microsoft.Maui.Controls
 			// Layout the image and title of the button
 			LayoutButton(platformButton, this, bounds);
 
+			TriggerLayoutPassEvent(Controls.LayoutPassEvent.CrossPlatformArrangeEnd);
+			
 			return new Size(bounds.Width, bounds.Height);
 		}
 
