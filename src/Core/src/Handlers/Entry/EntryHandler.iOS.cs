@@ -70,8 +70,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholderColor(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdatePlaceholder(entry);
 
-		public static void MapIsReadOnly(IEntryHandler handler, IEntry entry) =>
-			handler.PlatformView?.UpdateIsReadOnly(entry);
+		public static void MapIsReadOnly(IEntryHandler handler, IEntry entry)
+		{
+			if (handler.PlatformView is MauiTextField textField)
+			{
+				textField.IsReadOnly = entry.IsReadOnly;
+			}
+		}
 
 		public static void MapKeyboard(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateKeyboard(entry);
@@ -202,8 +207,16 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString) =>
-				VirtualView?.TextWithinMaxLength(textField.Text, range, replacementString) ?? false;
+			bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString)
+			{
+				if (VirtualView == null || textField?.Text == null)
+					return false;
+
+				bool withinMaxLength = VirtualView.TextWithinMaxLength(textField.Text, range, replacementString);
+				bool isEditable = !VirtualView.IsReadOnly;
+
+				return withinMaxLength && isEditable;
+			}
 
 			void OnSelectionChanged(object? sender, EventArgs e)
 			{
