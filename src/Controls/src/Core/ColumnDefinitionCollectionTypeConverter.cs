@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> destinationType == typeof(string);
 
+		static TypeConverter converter = new Converters.GridLengthTypeConverter();
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -24,7 +25,6 @@ namespace Microsoft.Maui.Controls
 			if (strValue != null)
 			{
 				var lengths = strValue.Split(',');
-				var converter = new GridLengthTypeConverter();
 				var definitions = new ColumnDefinition[lengths.Length];
 				for (var i = 0; i < lengths.Length; i++)
 					definitions[i] = new ColumnDefinition { Width = (GridLength)converter.ConvertFromInvariantString(lengths[i]) };
@@ -39,7 +39,6 @@ namespace Microsoft.Maui.Controls
 		{
 			if (value is not ColumnDefinitionCollection cdc)
 				throw new NotSupportedException();
-			var converter = new GridLengthTypeConverter();
 			return string.Join(", ", cdc.Select(cd => converter.ConvertToInvariantString(cd.Width)));
 		}
 	}
