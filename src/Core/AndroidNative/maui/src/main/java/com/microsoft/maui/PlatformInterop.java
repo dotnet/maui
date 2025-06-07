@@ -296,6 +296,18 @@ public class PlatformInterop {
         }
     }
 
+    private static RequestManager safeGlideWith(Context context) {
+        // Check if context is an Activity and if it's destroyed
+        if (context instanceof Activity) {
+            Activity activity = (Activity) context;
+            if (activity.isDestroyed()) {
+                // Use application context as fallback to avoid IllegalArgumentException
+                return Glide.with(activity.getApplicationContext());
+            }
+        }
+        return Glide.with(context);
+    }
+
     private static void prepare(RequestBuilder<Drawable> builder, MauiTarget target, boolean cachingEnabled, ImageLoaderCallback callback) {
         // A special value to work around https://github.com/dotnet/maui/issues/6783 where targets
         // are actually re-used if all the variables are the same.
@@ -363,8 +375,7 @@ public class PlatformInterop {
     }
 
     public static void loadImageFromFile(Context context, String file, ImageLoaderCallback callback) {
-        RequestBuilder<Drawable> builder = Glide
-            .with(context)
+        RequestBuilder<Drawable> builder = safeGlideWith(context)
             .load(file);
         load(builder, context, true, callback, file);
     }
@@ -375,23 +386,20 @@ public class PlatformInterop {
             callback.onComplete(false, null, null);
             return;
         }
-        RequestBuilder<Drawable> builder = Glide
-            .with(context)
+        RequestBuilder<Drawable> builder = safeGlideWith(context)
             .load(androidUri);
         load(builder, context, cachingEnabled, callback, androidUri);
     }
 
     public static void loadImageFromStream(Context context, InputStream inputStream, ImageLoaderCallback callback) {
-        RequestBuilder<Drawable> builder = Glide
-            .with(context)
+        RequestBuilder<Drawable> builder = safeGlideWith(context)
             .load(inputStream);
         load(builder, context, false, callback, inputStream);
     }
 
     public static void loadImageFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
         FontModel fontModel = new FontModel(color, glyph, textSize, typeface);
-        RequestBuilder<Drawable> builder = Glide
-            .with(context)
+        RequestBuilder<Drawable> builder = safeGlideWith(context)
             .load(fontModel)
             .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL);
         load(builder, context, true, callback, fontModel);
