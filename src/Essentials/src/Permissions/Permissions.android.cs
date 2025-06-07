@@ -449,6 +449,24 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class Photos : BasePlatformPermission
 		{
+			public override (string androidPermission, bool isRuntime)[] RequiredPermissions
+			{
+				get
+				{
+					var permissions = new List<(string, bool)>();
+
+#if __ANDROID_34__
+					if (OperatingSystem.IsAndroidVersionAtLeast(34))
+					{
+						// Use the new READ_MEDIA_VISUAL_USER_SELECTED permission on Android 14+
+						if (IsDeclaredInManifest("android.permission.READ_MEDIA_VISUAL_USER_SELECTED"))
+							permissions.Add(("android.permission.READ_MEDIA_VISUAL_USER_SELECTED", true));
+					}
+#endif
+
+					return permissions.ToArray();
+				}
+			}
 		}
 
 		public partial class PhotosAddOnly : BasePlatformPermission
