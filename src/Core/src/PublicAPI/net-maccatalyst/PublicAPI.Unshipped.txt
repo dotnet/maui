@@ -90,3 +90,7 @@ override Microsoft.Maui.Handlers.WindowHandler.DisconnectHandler(UIKit.UIWindow!
 override Microsoft.Maui.Handlers.ImageButtonHandler.SetupContainer() -> void
 *REMOVED*override Microsoft.Maui.Platform.WrapperView.SetNeedsLayout() -> void
 *REMOVED*override Microsoft.Maui.Platform.MauiView.SetNeedsLayout() -> void
+Microsoft.Maui.ToolTip.Delay.get -> int?
+Microsoft.Maui.ToolTip.Delay.set -> void
+Microsoft.Maui.ToolTip.Duration.get -> int?
+Microsoft.Maui.ToolTip.Duration.set -> void

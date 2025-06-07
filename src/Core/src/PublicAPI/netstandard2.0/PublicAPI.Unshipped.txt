@@ -64,3 +64,7 @@ static Microsoft.Maui.Keyboard.Password.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.Keyboard.Time.get -> Microsoft.Maui.Keyboard!
 static Microsoft.Maui.ViewExtensions.DisconnectHandlers(this Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
+Microsoft.Maui.ToolTip.Delay.get -> int?
+Microsoft.Maui.ToolTip.Delay.set -> void
+Microsoft.Maui.ToolTip.Duration.get -> int?
+Microsoft.Maui.ToolTip.Duration.set -> void
