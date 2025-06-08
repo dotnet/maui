@@ -48,10 +48,10 @@ public class Issue29472 : ContentPage
 			RowSpacing = 15,
 			RowDefinitions =
 			{
-				new RowDefinition { Height = GridLength.Auto },                      
-                new RowDefinition { Height = GridLength.Auto },                      
-                new RowDefinition { Height = GridLength.Star }, 
-            }
+				new RowDefinition { Height = GridLength.Auto },
+				new RowDefinition { Height = GridLength.Auto },
+				new RowDefinition { Height = GridLength.Star },
+			}
 		};
 
 		grid.Add(descriptionLabel, 0, 0);

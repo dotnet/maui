@@ -85,7 +85,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.WaitForElement("OffsetXEntry");
 			App.ClearText("OffsetXEntry");
 			App.EnterText("OffsetXEntry", "0");
-			
+
 			App.ClearText("OffsetYEntry");
 			App.EnterText("OffsetYEntry", "0");
 

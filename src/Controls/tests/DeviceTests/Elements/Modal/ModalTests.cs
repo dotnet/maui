@@ -594,7 +594,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Content = new Label { Text = "Modal Content" }
 				};
-				await page.Navigation.PushModalAsync(modalPage,true);
+				await page.Navigation.PushModalAsync(modalPage, true);
 				await OnLoadedAsync(modalPage);
 
 				references.Add(new WeakReference(modalPage));
