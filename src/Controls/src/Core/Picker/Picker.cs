@@ -265,7 +265,7 @@ namespace Microsoft.Maui.Controls
 		void OnItemsSourceChanged(IList oldValue, IList newValue)
 		{
 			// Unsubscribe from old items
-			if (oldValue != null)
+			if (oldValue != null && ItemDisplayBinding is not null)
 			{
 				foreach (var item in oldValue)
 				{
@@ -276,7 +276,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 			// Subscribe to new items
-			if (newValue != null)
+			if (newValue != null && ItemDisplayBinding is not null)
 			{
 				foreach (var item in newValue)
 				{
@@ -324,7 +324,7 @@ namespace Microsoft.Maui.Controls
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			// Unsubscribe from removed items
-			if (e.OldItems != null)
+			if (e.OldItems != null && ItemDisplayBinding is not null)
 			{
 				foreach (var item in e.OldItems)
 				{
@@ -335,7 +335,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 			// Subscribe to added items
-			if (e.NewItems != null)
+			if (e.NewItems != null && ItemDisplayBinding is not null)
 			{
 				foreach (var item in e.NewItems)
 				{
