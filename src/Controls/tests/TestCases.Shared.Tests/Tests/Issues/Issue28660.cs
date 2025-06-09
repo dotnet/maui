@@ -16,7 +16,8 @@ public class Issue28660 : _IssuesUITest
 	[Category(UITestCategories.Label)]
 	public void ShouldPreventLabelTextCroppingWithWidthRequest()
 	{
-		App.WaitForElement("Label");
+		App.WaitForElement("ChangeLabelTextButton");
+		App.Tap("ChangeLabelTextButton");
 		VerifyScreenshot();
 	}
 }
