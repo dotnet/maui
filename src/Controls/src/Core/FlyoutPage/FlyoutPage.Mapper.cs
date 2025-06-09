@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.iOSSpecific.Page.PrefersStatusBarHiddenProperty), MapPrefersPrefersStatusBarHiddenProperty);
 #endif
 #if WINDOWS
-			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapseStyleProperty), MapStyle);
+			FlyoutViewHandler.Mapper.ReplaceMapping<IFlyoutView, IFlyoutViewHandler>(nameof(PlatformConfiguration.WindowsSpecific.FlyoutPage.CollapseStyleProperty), MapCollapseStyle);
 #endif
 		}
 
@@ -36,9 +36,10 @@ namespace Microsoft.Maui.Controls
 #endif
 
 #if WINDOWS
-		internal static void MapStyle(IFlyoutViewHandler handler, IFlyoutView view)
+		internal static void MapCollapseStyle(IFlyoutViewHandler handler, IFlyoutView view)
 		{
-			if (view is BindableObject bindable && handler.PlatformView is Microsoft.Maui.Platform.RootNavigationView navigationView && view.FlyoutBehavior == FlyoutBehavior.Flyout)
+			var flyoutLayoutBehavior = (view as FlyoutPage)?.FlyoutLayoutBehavior;
+			if (view is BindableObject bindable && handler.PlatformView is Microsoft.Maui.Platform.RootNavigationView navigationView && flyoutLayoutBehavior == FlyoutLayoutBehavior.Popover)
 			{
 				var collapseStyle = PlatformConfiguration.WindowsSpecific.FlyoutPage.GetCollapseStyle(bindable);
 				switch (collapseStyle)
