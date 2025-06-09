@@ -156,8 +156,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
 		{
-			var virtualView = PlatformHandler?.VirtualView as View ?? 
-			                  template.CreateContent(bindingContext, itemsView) as View;
+			View virtualView = null;
+			if (CurrentTemplate != template)
+			{
+				CurrentTemplate = template;
+				virtualView = template.CreateContent(bindingContext, itemsView) as View;
+			}
+			else if (PlatformHandler?.VirtualView is View existingView)
+			{
+				virtualView = existingView;
+			}
 
 			BindVirtualView(virtualView, bindingContext, itemsView, false);
 		}
