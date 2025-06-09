@@ -141,6 +141,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 			}
 
+			if (_bottomView.Background is ColorDrawable background && appearance is IShellAppearanceElement apperanceElement)
+			{
+				background.Color = apperanceElement.EffectiveTabBarBackgroundColor?.ToPlatform() ?? ShellRenderer.DefaultBottomNavigationViewBackgroundColor.ToPlatform();
+			}
 			_appearanceSet = true;
 			_appearanceTracker.SetAppearance(_bottomView, appearance);
 		}
