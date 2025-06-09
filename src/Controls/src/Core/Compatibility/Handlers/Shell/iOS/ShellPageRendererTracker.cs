@@ -398,7 +398,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				//Add the FlyoutIcon only if the FlyoutBehavior is Flyout
 				if (_flyoutBehavior == FlyoutBehavior.Flyout)
 				{
-					image = _context.Shell.FlyoutIcon;
+					image = shell.FlyoutIcon;
 				}
 			}
 
