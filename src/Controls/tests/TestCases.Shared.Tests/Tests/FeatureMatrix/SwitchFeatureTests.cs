@@ -132,7 +132,7 @@ public class SwitchFeatureTests : UITest
         App.Tap("IsToggledTrueButton");
         App.WaitForElement("Apply");
         App.Tap("Apply");
-        Task.Delay(4000).Wait();
+        App.WaitForNoElement("SwitchControl");
         // VerifyScreenshot();
     }
 

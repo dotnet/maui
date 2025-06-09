@@ -7,10 +7,10 @@ namespace Maui.Controls.Sample;
 public class SwitchViewModel : INotifyPropertyChanged
 {
     private Color _backgroundColor = Colors.White;
-    private FlowDirection _flowDirection = default;
+    private FlowDirection _flowDirection = FlowDirection.LeftToRight;
     private bool _isEnabled = true;
     private bool _isVisible = true;
-    private bool _isToggled = default;
+    private bool _isToggled = false;
     private Color _onColor = Colors.SkyBlue;
     private float _shadowOpacity = 0f;
     private Color _thumbColor = Colors.DarkBlue;
