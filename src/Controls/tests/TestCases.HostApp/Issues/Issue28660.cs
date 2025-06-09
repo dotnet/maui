@@ -5,27 +5,85 @@ public class Issue28660 : ContentPage
 {
 	public Issue28660()
 	{
-		Content = new VerticalStackLayout
+		var label = new Label()
+		{
+			Text = "At any time, but not later than one month before the expiration date.",
+			AutomationId = "WithoutExplicitLabelSize",
+			FontSize = 16,
+		};
+
+		VerticalStackLayout layout = new VerticalStackLayout
 		{
 			WidthRequest = 350,
 			Children =
 			{
 				new Label
 				{
-					Text="At any time, but not later than one month before the expiration date.",
-					WidthRequest=100.94,
+					Text="With Background Color",
 					FontSize = 16,
-					BackgroundColor = Colors.Pink,
-					AutomationId = "Label",
+					FontAttributes = FontAttributes.Bold,
 				},
 				new Label
 				{
 					Text="At any time, but not later than one month before the expiration date.",
 					WidthRequest=100.94,
 					FontSize = 16,
-					AutomationId = "Label",
+					Background = Colors.Pink,
+					AutomationId = "WithBackgroundColorLabel",
+				},
+				new Label
+				{
+					Text="With explicit width request",
+					FontSize = 16,
+					FontAttributes = FontAttributes.Bold,
+
+				},
+				new Label
+				{
+					Text="At any time, but not later than one month before the expiration date.",
+					WidthRequest=100.94,
+					FontSize = 16,
+					AutomationId = "ExplicitLabelSize",
+				},
+				new Label
+				{
+					Text="With explicit height request",
+					FontSize = 16,
+					FontAttributes = FontAttributes.Bold,
+
+				},
+				new Label
+				{
+					Text="At any time, but not later than one month before the expiration date.",
+					HeightRequest=100,
+					FontSize = 16,
+					AutomationId = "ExplicitLabelSize",
+				},
+				new Label
+				{
+					Text="Without explicit width and height request",
+					FontSize = 16,
+					FontAttributes = FontAttributes.Bold,
+				},
+				label,
+				new Button
+				{
+					Text = "Change label text",
+					AutomationId = "ChangeLabelTextButton",
+					FontSize = 16,
+					FontAttributes = FontAttributes.Bold,
+					Command = new Command(() =>
+					{
+						label.Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed eiusmod tempor incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquid ex ea commodi consequat. Quis aute iure reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint obcaecat cupiditat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+					})
 				}
 			}
+		};
+
+		Content = new ScrollView
+		{
+			Content = layout,
+			AutomationId = "ScrollView"
 		};
 	}
 }
