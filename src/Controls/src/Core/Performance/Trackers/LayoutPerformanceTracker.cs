@@ -7,7 +7,6 @@ namespace Microsoft.Maui.Controls.Performance
 {
 	internal class LayoutPerformanceTracker : ILayoutPerformanceTracker
 	{
-		readonly Meter _meter;
 		readonly Counter<long> _measurePassCount;
 		readonly Histogram<double> _measureDuration;
 		readonly Counter<long> _arrangePassCount;
@@ -28,24 +27,22 @@ namespace Microsoft.Maui.Controls.Performance
 
 		LayoutTrackingOptions _options = new();
 
-		public LayoutPerformanceTracker(IMeterFactory meterFactory)
+		public LayoutPerformanceTracker(Meter meter)
 		{
-			_meter = meterFactory.Create("Microsoft.Maui.Layout");
-
-			_measurePassCount = _meter.CreateCounter<long>(
+			_measurePassCount = meter.CreateCounter<long>(
 				"maui.layout.measure.count",
 				unit: "ops",
 				description: "Number of layout measure passes");
-			_measureDuration = _meter.CreateHistogram<double>(
+			_measureDuration = meter.CreateHistogram<double>(
 				"maui.layout.measure.duration",
 				unit: "ms",
 				description: "Duration of layout measure passes");
 
-			_arrangePassCount = _meter.CreateCounter<long>(
+			_arrangePassCount = meter.CreateCounter<long>(
 				"maui.layout.arrange.count",
 				unit: "ops",
 				description: "Number of layout arrange passes");
-			_arrangeDuration = _meter.CreateHistogram<double>(
+			_arrangeDuration = meter.CreateHistogram<double>(
 				"maui.layout.arrange.duration",
 				unit: "ms",
 				description: "Duration of layout arrange passes");

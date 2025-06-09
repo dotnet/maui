@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.Metrics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 
@@ -24,7 +25,11 @@ namespace Microsoft.Maui.Controls.Performance
         {
             var options = new PerformanceMonitoringOptions();
             configure?.Invoke(options);
-
+            
+            // Register the Meter
+            var meter = new Meter("Microsoft.Maui");
+            builder.Services.AddSingleton(meter);
+            
             // Register core services
             builder.Services.AddSingleton<IPerformanceProfiler, PerformanceProfiler>();
             builder.Services.AddSingleton<ILayoutPerformanceTracker, LayoutPerformanceTracker>();
