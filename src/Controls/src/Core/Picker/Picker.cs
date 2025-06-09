@@ -371,7 +371,13 @@ namespace Microsoft.Maui.Controls
 		}
 		void OnPickerItemPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			ResetItems();
+			if (ItemDisplayBinding is Binding binding && !string.IsNullOrEmpty(binding.Path))
+			{
+				if (e.PropertyName == binding.Path)
+				{
+					ResetItems();
+				}
+			}
 		}
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
