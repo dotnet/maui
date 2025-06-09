@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items2
 			return cell;
 		}
 
-		public override nint GetItemsCount(UICollectionView collectionView, nint section) => LoopItemsSource.LoopCount;
+		public override nint GetItemsCount(UICollectionView collectionView, nint section) => LoopItemsSource.Loop ? LoopItemsSource.LoopCount : LoopItemsSource.ItemCount;
 
 		void InitializeCarouselViewLoopManager()
 		{
