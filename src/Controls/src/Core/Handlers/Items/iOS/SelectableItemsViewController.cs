@@ -45,6 +45,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// Called by Forms to mark an item selected 
 		internal void SelectItem(object selectedItem)
 		{
+			if (ItemsView?.ItemsSource is null)
+			{
+				return;
+			}
+
 			var index = GetIndexForItem(selectedItem);
 
 			if (index.Section > -1 && index.Item > -1)
@@ -60,6 +65,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// Called by Forms to clear the native selection
 		internal void ClearSelection()
 		{
+			if (ItemsView?.ItemsSource is null)
+			{
+				return;
+			}
+	
 			var selectedItemIndexes = CollectionView.GetIndexPathsForSelectedItems();
 
 			foreach (var index in selectedItemIndexes)
