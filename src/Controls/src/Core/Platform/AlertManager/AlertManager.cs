@@ -21,7 +21,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public void Subscribe()
 		{
-			var context = _window.MauiContext;
+			var context = _window.Handler?.MauiContext;
+
+			if (context is null)
+			{
+				return;
+			}
 
 			if (_subscription is not null)
 			{
@@ -38,7 +43,6 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_subscription is null)
 			{
 				context.CreateLogger<AlertManager>()?.LogWarning("Warning - Unable to create alert manager subscription.");
-				return;
 			}
 		}
 

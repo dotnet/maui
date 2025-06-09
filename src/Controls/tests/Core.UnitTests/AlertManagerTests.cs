@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var (window, sub) = CreateStubbedWindow();
 
-			var page = new ContentPage { IsBusy = true };
+			var page = new ContentPage { IsBusy = true, Handler = Substitute.For<IViewHandler>() };
 			window.Page = page;
 
 			((IPageController)page).SendAppearing();
