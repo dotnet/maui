@@ -67,9 +67,6 @@
 
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <PackageReference Include="Xamarin.AndroidX.DynamicAnimation" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
     <AndroidResource Include="Compatibility\Android\Resources\layout\flyoutcontent.axml" />
     <AndroidResource Include="Compatibility\Android\Resources\layout\shellcontent.axml" />
   </ItemGroup>
