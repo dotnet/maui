@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemSelected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			if (ItemsView is null || ItemsView.ItemsSource is null)
+			if (ItemsView?.ItemsSource is null)
 			{
 				return;
 			}
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		// _Only_ called if the user initiates the selection change; will not be called for programmatic selection
 		public override void ItemDeselected(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			if (ItemsView is null || ItemsView.ItemsSource is null)
+			if (ItemsView?.ItemsSource is null)
 			{
 				return;
 			}
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal void UpdatePlatformSelection()
 		{
-			if (ItemsView is null || ItemsView.ItemsSource is null)
+			if (ItemsView?.ItemsSource is null)
 			{
 				return;
 			}
