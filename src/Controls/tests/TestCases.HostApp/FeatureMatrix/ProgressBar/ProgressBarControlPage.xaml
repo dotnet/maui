@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.ProgressBarControlMainPage"
+             x:DataType="local:ProgressBarViewModel"
+             Title="ProgressBarFeature">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                     Clicked="NavigateToOptionsPage_Clicked"
+                     AutomationId="Options"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid Padding="20"
+          RowDefinitions="*, Auto"
+          ColumnDefinitions="0.5*, 0.5*"
+          RowSpacing="10">
+
+        <!-- ProgressBar Control -->
+        <ProgressBar x:Name="progressBar"
+                     Grid.Row="0"
+                     Grid.Column="0"
+                     Grid.ColumnSpan="2"
+                     VerticalOptions="Center"
+                     Progress="{Binding Progress}"
+                     ProgressColor="{Binding ProgressColor}"
+                     BackgroundColor="{Binding BackgroundColor}"
+                     IsVisible="{Binding IsVisible}"
+                     FlowDirection="{Binding FlowDirection}"
+                     AutomationId="ProgressBarControl">
+            <ProgressBar.Shadow>
+                <Shadow Brush="Purple"
+                        Offset="0,0"
+                        Radius="20"
+                        Opacity="{Binding ShadowOpacity}"/>
+            </ProgressBar.Shadow>
+        </ProgressBar>
+
+        <Label Grid.Row="1"
+               Grid.Column="0"
+               Text="Progress:"
+               FontSize="16"
+               HorizontalOptions="Center"
+               VerticalTextAlignment="Center"/>
+        <Label Grid.Row="1"
+               Grid.Column="1"
+               Text="{Binding Progress, StringFormat='{0:F2}'}"
+               FontSize="16"
+               HorizontalOptions="Center"
+               VerticalTextAlignment="Center"
+               AutomationId="ProgressValueLabel"/>
+    </Grid>
+</ContentPage>
