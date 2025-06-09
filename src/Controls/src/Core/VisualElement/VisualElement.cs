@@ -1582,14 +1582,10 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				bool isSelected = this.IsElementInSelectedState();
-				if (IsPointerOver)
-				{
-					VisualStateManager.GoToState(this, isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.PointerOver);
-				}
-				else
-				{
-					VisualStateManager.GoToState(this, isSelected ? VisualStateManager.CommonStates.Selected : VisualStateManager.CommonStates.Normal);
-				}
+				string targetState = isSelected ? VisualStateManager.CommonStates.Selected
+												: (IsPointerOver ? VisualStateManager.CommonStates.PointerOver : VisualStateManager.CommonStates.Normal);
+
+				VisualStateManager.GoToState(this, targetState);
 			}
 
 			if (IsEnabled)
