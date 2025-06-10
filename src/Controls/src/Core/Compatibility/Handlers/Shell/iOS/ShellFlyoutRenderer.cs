@@ -215,11 +215,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.ViewDidLayoutSubviews();
 
-			if (IsOpen && TapoffView is not null && TapoffView.Frame != View.Bounds)
-			{
-				TapoffView.Frame = View.Bounds;
-			}
-
 			if (_flyoutAnimation == null)
 				LayoutSidebar(false);
 		}
@@ -336,6 +331,22 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
+		void SetTapoffViewConstraints()
+		{
+			if (TapoffView is null)
+				return;
+
+			TapoffView.TranslatesAutoresizingMaskIntoConstraints = false;
+
+			NSLayoutConstraint.ActivateConstraints(new[]
+			{
+				TapoffView.TopAnchor.ConstraintEqualTo(View.TopAnchor),
+				TapoffView.BottomAnchor.ConstraintEqualTo(View.BottomAnchor),
+				TapoffView.LeadingAnchor.ConstraintEqualTo(View.LeadingAnchor),
+				TapoffView.TrailingAnchor.ConstraintEqualTo(View.TrailingAnchor)
+			});
+		}
+
 		void AddTapoffView()
 		{
 			if (TapoffView != null)
@@ -345,6 +356,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			TapoffView.Layer.Opacity = 0;
 			View.InsertSubviewBelow(TapoffView, Flyout.ViewController.View);
 			UpdateTapoffViewBackgroundColor();
+			SetTapoffViewConstraints();
 			var recognizer = new UITapGestureRecognizer(t =>
 			{
 				IsOpen = false;
