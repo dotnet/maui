@@ -305,7 +305,7 @@ namespace Microsoft.Maui.Controls
 		void OnItemsSourceChanged(IList oldValue, IList newValue)
 		{
 			// Unsubscribe from old items
-			if (oldValue != null && ItemDisplayBinding is not null)
+			if (oldValue != null)
 			{
 				foreach (var item in oldValue)
 				{
@@ -400,7 +400,7 @@ namespace Microsoft.Maui.Controls
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			// Unsubscribe from removed items
-			if (e.OldItems != null && ItemDisplayBinding is not null)
+			if (e.OldItems != null)
 			{
 				foreach (var item in e.OldItems)
 				{
