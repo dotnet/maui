@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls.Performance;
 /// Represents aggregated performance statistics for layout operations,
 /// including measure and arrange passes.
 /// </summary>
-internal class LayoutStats
+public class LayoutStats
 {
 	/// <summary>
 	/// Gets or sets the total number of measure passes performed.
@@ -12,27 +12,17 @@ internal class LayoutStats
 	public long MeasurePassCount { get; set; }
 
 	/// <summary>
-	/// Gets or sets the average duration (in milliseconds) of measure passes.
+	/// Gets or sets the duration (in milliseconds) of measure passes.
 	/// </summary>
-	public double AverageMeasureDuration { get; set; }
-
-	/// <summary>
-	/// Gets or sets the peak (maximum) duration (in milliseconds) of any single measure pass.
-	/// </summary>
-	public double PeakMeasureDuration { get; set; }
-
+	public double MeasureDuration { get; set; }
+	
 	/// <summary>
 	/// Gets or sets the total number of arrange passes performed.
 	/// </summary>
 	public long ArrangePassCount { get; set; }
 
 	/// <summary>
-	/// Gets or sets the average duration (in milliseconds) of arrange passes.
+	/// Gets or sets the duration (in milliseconds) of arrange passes.
 	/// </summary>
-	public double AverageArrangeDuration { get; set; }
-
-	/// <summary>
-	/// Gets or sets the peak (maximum) duration (in milliseconds) of any single arrange pass.
-	/// </summary>
-	public double PeakArrangeDuration { get; set; }
+	public double ArrangeDuration { get; set; }
 }

@@ -12,22 +12,22 @@ namespace Microsoft.Maui.Controls.Performance
 		readonly Counter<long> _arrangePassCount;
 		readonly Histogram<double> _arrangeDuration;
 
+		readonly IPerformanceWarningManager _warningManager;
+		
 		// Aggregation fields
 		long _totalMeasurePasses;
-		double _measureDurationSumMs;
-		double _peakMeasureDurationMs;
-
+		double _totalMeasureDuration;
+		
 		long _totalArrangePasses;
-		double _arrangeDurationSumMs;
-		double _peakArrangeDurationMs;
-
+		double _totalArrangeDuration;
+		
 		// List of subscribers for layout‐update callbacks
 		readonly List<Action<LayoutUpdate>> _subscribers = new List<Action<LayoutUpdate>>();
 		readonly object _subscriberLock = new object();
 
 		LayoutTrackingOptions _options = new();
 
-		public LayoutPerformanceTracker(Meter meter)
+		public LayoutPerformanceTracker(Meter meter, IPerformanceWarningManager? warningManager = null)
 		{
 			_measurePassCount = meter.CreateCounter<long>(
 				"maui.layout.measure.count",
@@ -46,6 +46,8 @@ namespace Microsoft.Maui.Controls.Performance
 				"maui.layout.arrange.duration",
 				unit: "ms",
 				description: "Duration of layout arrange passes");
+			
+			_warningManager = warningManager ?? new PerformanceWarningManager();
 		}
 
 		/// <summary>
@@ -53,12 +55,16 @@ namespace Microsoft.Maui.Controls.Performance
 		/// </summary>
 		/// <param name="options">Options to control layout tracking behavior.</param>
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="options"/> is null.</exception>
-
 		public void Configure(LayoutTrackingOptions options)
 		{
 			_options = options ?? throw new ArgumentNullException(nameof(options));
 		}
 
+		/// <summary>
+		/// Gets the configured layout tracking options.
+		/// </summary>
+		public LayoutTrackingOptions Options => _options;
+		
 		/// <summary>
 		/// Gets the layout performance statistics.
 		/// </summary>
@@ -68,11 +74,9 @@ namespace Microsoft.Maui.Controls.Performance
 			return new LayoutStats
 			{
 				MeasurePassCount = _totalMeasurePasses,
-				AverageMeasureDuration = _measureDurationSumMs / Math.Max(1, _totalMeasurePasses),
-				PeakMeasureDuration = _peakMeasureDurationMs,
+				MeasureDuration = _totalMeasureDuration,
 				ArrangePassCount = _totalArrangePasses,
-				AverageArrangeDuration = _arrangeDurationSumMs / Math.Max(1, _totalArrangePasses),
-				PeakArrangeDuration = _peakArrangeDurationMs
+				ArrangeDuration = _totalArrangeDuration,
 			};
 		}
 
@@ -82,7 +86,9 @@ namespace Microsoft.Maui.Controls.Performance
 		public void SubscribeToLayoutUpdates(Action<LayoutUpdate> callback)
 		{
 			if (callback == null)
+			{
 				throw new ArgumentNullException(nameof(callback));
+			}
 
 			lock (_subscriberLock)
 			{
@@ -93,16 +99,16 @@ namespace Microsoft.Maui.Controls.Performance
 		/// <summary>
 		/// Record a Measure pass of the layout engine.
 		/// </summary>
-		public void RecordMeasurePass(long durationMs, string? element = null)
+		public void RecordMeasurePass(double duration, string? element = null)
 		{
 			if (!_options.EnableMeasurePassTracking)
+			{
 				return;
+			}
 
 			// Update aggregation fields
 			_totalMeasurePasses++;
-			_measureDurationSumMs += durationMs;
-			if (durationMs > _peakMeasureDurationMs)
-				_peakMeasureDurationMs = durationMs;
+			_totalMeasureDuration = duration;
 
 			// Record metrics
 			var tags = new TagList();
@@ -112,32 +118,33 @@ namespace Microsoft.Maui.Controls.Performance
 			}
 
 			_measurePassCount.Add(1, tags);
-			_measureDuration.Record(durationMs, tags);
-
-			// Publish LayoutUpdate (convert ms to nanoseconds for TotalTime)
-			var totalNanoseconds = durationMs * 1_000_000;
+			_measureDuration.Record(duration, tags);
+			
 			var update = new LayoutUpdate(
 				LayoutPassType.Measure,
-				totalNanoseconds,
+				duration,
 				element ?? string.Empty,
 				DateTime.UtcNow);
 
 			PublishLayoutUpdate(update);
+			
+			// Check layout thresholds and generate warnings
+			CheckLayoutThresholds(duration, element);
 		}
 
 		/// <summary>
 		/// Record an Arrange pass of the layout engine.
 		/// </summary>
-		public void RecordArrangePass(long durationMs, string? element = null)
+		public void RecordArrangePass(double duration, string? element = null)
 		{
 			if (!_options.EnableArrangePassTracking)
+			{
 				return;
+			}
 
 			// Update aggregation fields
 			_totalArrangePasses++;
-			_arrangeDurationSumMs += durationMs;
-			if (durationMs > _peakArrangeDurationMs)
-				_peakArrangeDurationMs = durationMs;
+			_totalArrangeDuration = duration;
 
 			// Record metrics
 			var tags = new TagList();
@@ -147,17 +154,19 @@ namespace Microsoft.Maui.Controls.Performance
 			}
 
 			_arrangePassCount.Add(1, tags);
-			_arrangeDuration.Record(durationMs, tags);
-
-			// Publish LayoutUpdate (convert ms to nanoseconds for TotalTime)
-			var totalNanoseconds = durationMs * 1_000_000;
+			_arrangeDuration.Record(duration, tags);
+			
+			// Publish LayoutUpdate
 			var update = new LayoutUpdate(
 				LayoutPassType.Arrange,
-				totalNanoseconds,
+				duration,
 				element ?? string.Empty,
 				DateTime.UtcNow);
 
 			PublishLayoutUpdate(update);
+			
+			// Check layout thresholds and generate warnings
+			CheckLayoutThresholds(duration, element);
 		}
 
 		/// <summary>
@@ -182,6 +191,31 @@ namespace Microsoft.Maui.Controls.Performance
 					// Swallow exceptions from subscribers to avoid breaking the tracker.
 				}
 			}
+		}
+
+		/// <summary>
+		/// Check measure pass performance and generate warnings if thresholds are exceeded.
+		/// </summary>
+		void CheckLayoutThresholds(double duration, string? element)
+		{
+			const string category = "Layout";
+
+			var warningOptions = _warningManager.Options;
+			LayoutThresholds layoutThresholds = warningOptions.Thresholds.Layout;
+			
+			_warningManager.CheckThreshold(
+				category,
+				"ArrangePassDuration",
+				duration,
+				layoutThresholds.LayoutMaxArrangeTime.TotalMilliseconds,
+				$"Arrange pass for {element ?? "unknown element"} took {duration}ms. Consider simplifying layout or using more efficient containers.");
+			
+			_warningManager.CheckThreshold(
+				category,
+				"MeasurePassDuration",
+				duration,
+				layoutThresholds.LayoutMaxMeasureTime.TotalMilliseconds,
+				$"Measure pass for {element ?? "unknown element"} took {duration}ms. Consider simplifying layout or using more efficient containers.");
 		}
 	}
 }

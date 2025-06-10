@@ -8,5 +8,7 @@ public class PerformanceMonitoringOptions
 	/// <summary>
 	/// Options for layout‐engine tracking.
 	/// </summary>
-	public LayoutTrackingOptions Layout { get; set; } = new LayoutTrackingOptions();
+	public LayoutTrackingOptions Layout { get; set; } = new();
+	
+	public WarningOptions Warnings { get; set; } = new();
 }

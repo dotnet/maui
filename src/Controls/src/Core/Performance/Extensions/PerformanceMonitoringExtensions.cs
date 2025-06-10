@@ -34,10 +34,22 @@ namespace Microsoft.Maui.Controls.Performance
             builder.Services.AddSingleton<IPerformanceProfiler, PerformanceProfiler>();
             builder.Services.AddSingleton<ILayoutPerformanceTracker, LayoutPerformanceTracker>();
 
+            // Register warning manager with configuration
+            builder.Services.AddSingleton<IPerformanceWarningManager>(_ =>
+            {
+	            var warningManager = new PerformanceWarningManager();
+                
+	            // Configure warnings
+	            warningManager.Configure(options.Warnings);
+                
+	            return warningManager;
+            });
+            
             // Configure options
             builder.Services.Configure<PerformanceMonitoringOptions>(opt =>
             {
                 opt.Layout = options.Layout;
+                opt.Warnings = options.Warnings;
             });
 
             return builder;
@@ -58,6 +70,21 @@ namespace Microsoft.Maui.Controls.Performance
         {
             configure(options.Layout);
             return options;
+        }  
+        
+        /// <summary>
+        /// Configures performance warning settings by applying custom options.
+        /// Allows modification of warning thresholds and severity levels.
+        /// </summary>
+        /// <param name="options">The <see cref="PerformanceMonitoringOptions"/> instance to configure.</param>
+        /// <param name="configure">An action to modify <see cref="WarningOptions"/>.</param>
+        /// <returns>The updated <see cref="PerformanceMonitoringOptions"/> instance.</returns>
+        public static PerformanceMonitoringOptions ConfigureWarnings(
+	        this PerformanceMonitoringOptions options,
+	        Action<WarningOptions> configure)
+        {
+	        configure?.Invoke(options.Warnings);
+	        return options;
         }
     }
 }

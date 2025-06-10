@@ -310,6 +310,20 @@ namespace Maui.Controls.Sample
 					layout.EnableArrangePassTracking = true;
 					layout.TrackPerElement = true;
 				});
+
+				options.ConfigureWarnings(warning =>
+				{
+					warning.Enable = true;
+					warning.MinimumLevel = PerformanceWarningLevel.Info;
+					warning.Thresholds = new PerformanceThresholds
+					{
+						Layout = new LayoutThresholds
+						{
+							LayoutMaxArrangeTime = TimeSpan.FromMilliseconds(1),
+							LayoutMaxMeasureTime = TimeSpan.FromMilliseconds(1)
+						}
+					};
+				});
 			});
 			
 			return appBuilder.Build();

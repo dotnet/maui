@@ -6,8 +6,13 @@ namespace Microsoft.Maui.Controls.Performance;
 /// Defines an interface for tracking the performance of layout operations such as
 /// measure and arrange passes within the layout system.
 /// </summary>
-internal interface ILayoutPerformanceTracker
+public interface ILayoutPerformanceTracker
 {
+	/// <summary>
+	/// Gets the current layout tracking options.
+	/// </summary>
+	LayoutTrackingOptions Options { get; }
+	
 	/// <summary>
 	/// Configures the layout tracking behavior using the provided options.
 	/// </summary>
@@ -31,12 +36,12 @@ internal interface ILayoutPerformanceTracker
 	/// </summary>
 	/// <param name="duration">The duration of the measure pass in milliseconds.</param>
 	/// <param name="element">An optional string representing the type of element measured.</param>
-	void RecordMeasurePass(long duration, string? element = null);
+	void RecordMeasurePass(double duration, string? element = null);
 
 	/// <summary>
 	/// Records an arrange pass with the specified duration and optional element type.
 	/// </summary>
 	/// <param name="duration">The duration of the arrange pass in milliseconds.</param>
 	/// <param name="element">An optional string representing the type of element arranged.</param>
-	void RecordArrangePass(long duration, string? element = null);
+	void RecordArrangePass(double duration, string? element = null);
 }
