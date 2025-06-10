@@ -171,6 +171,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Picker))]
 	[InlineData(typeof(Polygon))]
 	[InlineData(typeof(Polyline))]
+	[InlineData(typeof(ProgressBar))]
 	[InlineData(typeof(RadioButton))]
 	[InlineData(typeof(Rectangle))]
 	[InlineData(typeof(RefreshView))]
