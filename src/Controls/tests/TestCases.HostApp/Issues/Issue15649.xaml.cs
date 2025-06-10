@@ -1,4 +1,4 @@
-namespace Controls.TestCases.HostApp.Issues;
+namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 15649, "Updating a ControlTemplate at runtime for a Content Page is not working.", PlatformAffected.All)]
 public partial class Issue15649 : ContentPage
