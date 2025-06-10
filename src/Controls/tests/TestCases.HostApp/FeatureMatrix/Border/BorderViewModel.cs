@@ -78,8 +78,6 @@ public class BorderViewModel : INotifyPropertyChanged
 			}
 		}
 	}
-
-	public string StrokeDashArrayAsString => StrokeDashArray != null ? string.Join(",", StrokeDashArray) : string.Empty;
 	private DoubleCollection _strokeDashArray = null;
 	public DoubleCollection StrokeDashArray
 	{
@@ -90,7 +88,6 @@ public class BorderViewModel : INotifyPropertyChanged
 			{
 				_strokeDashArray = value;
 				OnPropertyChanged(nameof(StrokeDashArray));
-				OnPropertyChanged(nameof(StrokeDashArrayAsString));
 			}
 		}
 	}
