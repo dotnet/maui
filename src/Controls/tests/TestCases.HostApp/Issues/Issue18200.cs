@@ -10,7 +10,7 @@ public class Issue18200 : TestFlyoutPage
 	protected override void Init()
     {
 		// Set the platform-specific collapse style (equivalent to your NewPage1.xaml.cs)
-		this.On<Windows>().SetCollapseStyle(CollapseStyle.Partial);
+		this.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().SetCollapseStyle(CollapseStyle.Partial);
 
         // Set the flyout page properties
         FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover;
@@ -25,6 +25,7 @@ public class Issue18200 : TestFlyoutPage
         var page1Button = new Button
         {
             Text = "Page1",
+			AutomationId = "FlyoutItem",
             HorizontalOptions = LayoutOptions.Start,
             VerticalOptions = LayoutOptions.Center
         };
@@ -69,11 +70,11 @@ public class Issue18200 : TestFlyoutPage
 
     private void OnCollapseStyleValueChanged(object sender, EventArgs e)
     {
-		var currentCollapseStyle = this.On<Windows>().GetCollapseStyle();
+		var currentCollapseStyle = this.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().GetCollapseStyle();
 		var newCollapseStyle = currentCollapseStyle == CollapseStyle.Full 
 			? CollapseStyle.Partial 
 			: CollapseStyle.Full;
 		
-		this.On<Windows>().SetCollapseStyle(newCollapseStyle);
+		this.On<Microsoft.Maui.Controls.PlatformConfiguration.Windows>().SetCollapseStyle(newCollapseStyle);
     }
 }

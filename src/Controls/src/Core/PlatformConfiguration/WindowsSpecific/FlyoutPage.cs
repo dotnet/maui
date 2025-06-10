@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		static void OnCollapseStylePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 #if WINDOWS
-			if (bindable is Microsoft.Maui.Controls.FlyoutPage flyoutPage)
+			if (bindable is Microsoft.Maui.Controls.FlyoutPage flyoutPage && flyoutPage.Handler is not null)
 			{
 				flyoutPage.Handler.UpdateValue(nameof(CollapseStyleProperty));
 			}
