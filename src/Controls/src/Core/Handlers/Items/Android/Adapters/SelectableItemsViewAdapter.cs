@@ -60,7 +60,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void MarkPlatformSelection(SelectableItemsView selectableItemsView)
 		{
 			if (_currentViewHolders.Count == 0)
+			{
 				return;
+			}
 
 			HashSet<object> selectedSet;
 			switch (selectableItemsView.SelectionMode)
