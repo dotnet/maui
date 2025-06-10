@@ -77,7 +77,7 @@ public partial class ImageOptionsPage : ContentPage
 				case "Uri":
 					_viewModel.Source = new UriImageSource
 					{
-						Uri = new Uri("https://github.com/dotnet/maui/raw/main/src/Controls/samples/Controls.Sample/Resources/Images/photo.jpg"),
+						Uri = new Uri("https://aka.ms/campus.jpg"),
 						CachingEnabled = true,
 						CacheValidity = TimeSpan.MaxValue // Effectively infinite cache
 					};

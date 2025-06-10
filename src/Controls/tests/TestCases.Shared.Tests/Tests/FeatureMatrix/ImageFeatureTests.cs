@@ -21,6 +21,8 @@ public class ImageFeatureTests : UITest
 	public const string IsVisibleFalseRadio = "IsVisibleFalseRadio";
 	public const string FlowDirectionRTL = "FlowDirectionRTL";
 	public const string ShadowCheckBox = "ShadowCheckBox";
+	public const string IsAnimationTrue = "IsAnimationTrue";
+	public const string IsAnimationFalse = "IsAnimationFalse";
 
 
 	public ImageFeatureTests(TestDevice device)
@@ -377,5 +379,31 @@ public class ImageFeatureTests : UITest
 		App.Tap(Apply);
 		App.WaitForElement("ImageControl");
 		VerifyScreenshot();
+	}
+
+	[Test]
+	[Category(UITestCategories.Image)]
+	public void VerifyImageWithAnimation()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IsAnimationTrue);
+		App.Tap(IsAnimationTrue);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageControl");
+	}
+	
+	[Test]
+	[Category(UITestCategories.Image)]
+	public void VerifyImageWithoutAnimation()
+	{
+		App.WaitForElement(Options);
+		App.Tap(Options);
+		App.WaitForElement(IsAnimationFalse);
+		App.Tap(IsAnimationFalse);
+		App.WaitForElement(Apply);
+		App.Tap(Apply);
+		App.WaitForElement("ImageControl");
 	}
 }
