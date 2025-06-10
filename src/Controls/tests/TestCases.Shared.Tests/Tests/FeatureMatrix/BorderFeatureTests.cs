@@ -411,6 +411,7 @@ public class BorderFeatureTests : UITest
 		VerifyScreenshot();
 	}
 
+#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // For more information, see : https://github.com/dotnet/maui/issues/29898
 	[Test]
 	[Category(UITestCategories.Border)]
 	public void Border_StrokeColorWithDashArrayAndOffset()
@@ -434,6 +435,6 @@ public class BorderFeatureTests : UITest
 		App.Tap("Apply");
 		VerifyScreenshot();
 	}
-
+#endif
 
 }
