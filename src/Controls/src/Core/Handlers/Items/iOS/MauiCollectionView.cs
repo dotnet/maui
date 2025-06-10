@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items;
 
-internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
+public class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IPlatformMeasureInvalidationController
 {
 	bool _invalidateParentWhenMovedToWindow;
 
@@ -13,8 +13,12 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IP
 
 	internal bool NeedsCellLayout { get; set; }
 
-	public MauiCollectionView(CGRect frame, UICollectionViewLayout layout) : base(frame, layout)
+	public MauiCollectionView(CGRect frame, UICollectionViewLayout layout, ICustomMauiCollectionViewDelegate? customDelegate = null) : base(frame, layout)
 	{
+		if (customDelegate is not null)
+		{
+			SetCustomDelegate(customDelegate);
+		}
 	}
 
 	public override void ScrollRectToVisible(CGRect rect, bool animated)
@@ -65,13 +69,13 @@ internal class MauiCollectionView : UICollectionView, IUIViewLifeCycleEvents, IP
 		}
 	}
 
-	internal void SetCustomDelegate(ICustomMauiCollectionViewDelegate customDelegate)
+	public void SetCustomDelegate(ICustomMauiCollectionViewDelegate customDelegate)
 	{
 		_customDelegate = new WeakReference<ICustomMauiCollectionViewDelegate>(customDelegate);
 	}
 
 
-	internal interface ICustomMauiCollectionViewDelegate
+	public interface ICustomMauiCollectionViewDelegate
 	{
 		void MovedToWindow(UIView view);
 	}
