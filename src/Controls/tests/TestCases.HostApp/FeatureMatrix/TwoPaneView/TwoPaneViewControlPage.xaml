@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.TwoPaneViewControlMainPage"
+             xmlns:foldable="clr-namespace:Microsoft.Maui.Controls.Foldable;assembly=Microsoft.Maui.Controls.Foldable"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:DataType="local:TwoPaneViewViewModel"
+             Title="TwoPaneViewControlPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Options"
+                     Clicked="NavigateToOptionsPage_Clicked"
+                     AutomationId="Options"/>
+    </ContentPage.ToolbarItems>
+    <Grid>
+        <!-- TwoPaneView -->
+        <foldable:TwoPaneView x:Name="MyTwoPaneView"
+                              Grid.Row="1"
+                              Pane1Length="1*"
+                              Pane2Length="1*"
+                              MinTallModeHeight="500"
+                              MinWideModeWidth="700"
+                              TallModeConfiguration="TopBottom"
+                              WideModeConfiguration="LeftRight"
+                              PanePriority="Pane1">
+            <foldable:TwoPaneView.Pane1>
+                <Frame BackgroundColor="#f0f8ff"
+                       Margin="10"
+                       Padding="20"
+                       BorderColor="#ccddff"
+                       HasShadow="True">
+                    <Label Text="Pane 1 Content"
+                           FontSize="18"
+                           HorizontalOptions="Center"/>
+                </Frame>
+            </foldable:TwoPaneView.Pane1>
+
+            <foldable:TwoPaneView.Pane2>
+                <Frame BackgroundColor="#fff0f5"
+                       Margin="10"
+                       Padding="20"
+                       BorderColor="#ffccdd"
+                       HasShadow="True">
+                    <Label Text="Pane 2 Content"
+                           FontSize="18"
+                           HorizontalOptions="Center"/>
+                </Frame>
+            </foldable:TwoPaneView.Pane2>
+        </foldable:TwoPaneView>
+    </Grid>
+</ContentPage>

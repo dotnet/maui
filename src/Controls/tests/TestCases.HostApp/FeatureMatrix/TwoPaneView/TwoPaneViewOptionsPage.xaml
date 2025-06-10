@@ -1,0 +1,57 @@
+<!-- TwoPaneViewOptionsPage.xaml -->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample"
+             x:Class="Maui.Controls.Sample.TwoPaneViewOptionsPage"
+             x:DataType="local:TwoPaneViewViewModel"
+             Title="TwoPaneView Options">
+
+    <VerticalStackLayout Padding="25"
+            Spacing="20">
+        <Label Text="TwoPaneView Configuration"
+               FontSize="24"
+               FontAttributes="Bold"
+               HorizontalOptions="Center"
+               Margin="0,0,0,20"/>
+
+        <!-- MinTallModeHeight -->
+        <Label Text="MinTallModeHeight"
+                FontAttributes="Bold"/>
+        <Slider x:Name="TallModeSlider"
+                Maximum="1000"
+                Minimum="0"
+                ValueChanged="OnTallModeHeightChanged"/>
+        <Label x:Name="TallModeHeightValue"
+                Text="500px"/>
+
+        <!-- MinWideModeWidth -->
+        <Label Text="MinWideModeWidth"
+                FontAttributes="Bold"/>
+        <Slider x:Name="WideModeSlider"
+                Maximum="1500"
+                Minimum="0"
+                ValueChanged="OnWideModeWidthChanged"/>
+        <Label x:Name="WideModeWidthValue"
+                Text="700px"/>
+
+        <!-- Pane1Length -->
+        <Label Text="Pane1Length"
+                FontAttributes="Bold"/>
+        <Slider x:Name="Pane1LengthSlider"
+                Maximum="2"
+                Minimum="0.5"
+                ValueChanged="OnPane1LengthChanged"/>
+        <Label x:Name="Pane1LengthValue"
+                Text="1*"/>
+
+        <!-- Pane2Length -->
+        <Label Text="Pane2Length"
+                FontAttributes="Bold"/>
+        <Slider x:Name="Pane2LengthSlider"
+                Maximum="2"
+                Minimum="0.5"
+                ValueChanged="OnPane2LengthChanged"/>
+        <Label x:Name="Pane2LengthValue"
+                Text="1*"/>
+    </VerticalStackLayout>
+</ContentPage>
