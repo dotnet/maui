@@ -29,16 +29,9 @@ public class Issue18200 : TestFlyoutPage
             VerticalOptions = LayoutOptions.Center
         };
 
-        var page2Button = new Button
-        {
-            Text = "Page2",
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center
-        };
-
         flyoutPage.Content = new VerticalStackLayout
         {
-            Children = { page1Button, page2Button }
+            Children = { page1Button }
         };
 
         // Create the detail content
@@ -51,7 +44,7 @@ public class Issue18200 : TestFlyoutPage
         _button = new Button
         {
             Text = "Change Collapse Style",
-            AutomationId = "ToggleFlyoutLayoutBehavior"
+            AutomationId = "CollapseStyleButton",
         };
         _button.Clicked += OnCollapseStyleValueChanged;
 
