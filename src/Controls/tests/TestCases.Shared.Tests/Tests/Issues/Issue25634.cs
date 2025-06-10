@@ -12,6 +12,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 
 		public override string Issue => "Picker ItemDisplayBinding doesn't support MVVM properly";
 
+		[Test]
+		[Category(UITestCategories.Picker)]
 		public void VerifyPickerItemDisplayBindingValue()
 		{
 			App.WaitForElement("PickerButton");
