@@ -49,14 +49,28 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (activityIndicatorView is null)
 					{
+						var overlay = new UIView(rootView.Bounds)
+						{
+							UserInteractionEnabled = false,
+							AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight,
+						};
+
 						activityIndicatorView = new UIActivityIndicatorView(UIActivityIndicatorViewStyle.Large)
 						{
 							UserInteractionEnabled = false,
 							HidesWhenStopped = true,
-							Frame = rootView.Bounds,
-							AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight
+							TranslatesAutoresizingMaskIntoConstraints = false
 						};
-						rootView.AddSubview(activityIndicatorView);
+
+						overlay.AddSubview(activityIndicatorView);
+
+						NSLayoutConstraint.ActivateConstraints(
+						[
+							activityIndicatorView.CenterXAnchor.ConstraintEqualTo(overlay.CenterXAnchor),
+							activityIndicatorView.CenterYAnchor.ConstraintEqualTo(overlay.CenterYAnchor)
+						]);
+
+						rootView.AddSubview(overlay);
 					}
 
 					if (!activityIndicatorView.IsAnimating)
