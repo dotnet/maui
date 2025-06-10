@@ -26,30 +26,39 @@ public class EntryFeatureTests : UITest
 	{
 		Exception? exception = null;
 		App.WaitForElement("Entry Control");
-		App.Tap("EntryText");
-#if ANDROID
+		App.Tap("EntryText");		App.Tap("EntryText");
+#if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
 			if (App.IsKeyboardShown())
-			{
 				App.DismissKeyboard();
-			}
 #endif
-		VerifyScreenshotOrSetException(ref exception, "ClearButtonVisiblityButton_TextPresent");
+
+#if IOS
+		// On iOS, the virtual keyboard appears inconsistent with keyboard characters casing, can cause flaky test results. As this test verifying only the entry clear button color, crop the bottom portion of the screenshot to exclude the keyboard.
+		// Using DismissKeyboard() would unfocus the control in iOS, so we're using cropping instead to maintain focus during testing.
+		VerifyScreenshotOrSetException(ref exception, "ClearButtonVisiblityButton_TextPresent", cropBottom: 1200);
+#else
+			VerifyScreenshotOrSetException(ref exception, "ClearButtonVisiblityButton_TextPresent");
+#endif
 		App.WaitForElement("EntryText");
 		App.ClearText("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
+#if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
 			if (App.IsKeyboardShown())
-			{
 				App.DismissKeyboard();
-			}
 #endif
+
+#if IOS
+		// On iOS, the virtual keyboard appears inconsistent with keyboard characters casing, can cause flaky test results. As this test verifying only the entry clear button color, crop the bottom portion of the screenshot to exclude the keyboard.
+		// Using DismissKeyboard() would unfocus the control in iOS, so we're using cropping instead to maintain focus during testing.
+		VerifyScreenshotOrSetException(ref exception, "ClearButtonVisiblityButton_TextEmpty", cropBottom: 1200);
+#else
 		VerifyScreenshotOrSetException(ref exception, "ClearButtonVisiblityButton_TextEmpty");
+#endif
 		if (exception != null)
 		{
 			throw exception;
 		}
 	}
-
 
 	[Test]
 	[Category(UITestCategories.Entry)]
@@ -63,13 +72,18 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
+#if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
 			if (App.IsKeyboardShown())
-			{
 				App.DismissKeyboard();
-			}
 #endif
-		VerifyScreenshot();
+
+#if IOS
+		// On iOS, the virtual keyboard appears inconsistent with keyboard characters casing, can cause flaky test results. As this test verifying only the entry clear button color, crop the bottom portion of the screenshot to exclude the keyboard.
+		// Using DismissKeyboard() would unfocus the control in iOS, so we're using cropping instead to maintain focus during testing.
+		VerifyScreenshot(cropBottom: 1200);
+#else
+			VerifyScreenshot();
+#endif
 	}
 
 	[Test]
@@ -84,13 +98,18 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
+#if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
 			if (App.IsKeyboardShown())
-			{
 				App.DismissKeyboard();
-			}
 #endif
-		VerifyScreenshot();
+
+#if IOS
+		// On iOS, the virtual keyboard appears inconsistent with keyboard characters casing, can cause flaky test results. As this test verifying only the entry clear button color, crop the bottom portion of the screenshot to exclude the keyboard.
+		// Using DismissKeyboard() would unfocus the control in iOS, so we're using cropping instead to maintain focus during testing.
+		VerifyScreenshot(cropBottom: 1200);
+#else
+			VerifyScreenshot();
+#endif
 	}
 
 	[Test]
@@ -105,13 +124,18 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
+#if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
 			if (App.IsKeyboardShown())
-			{
 				App.DismissKeyboard();
-			}
 #endif
-		VerifyScreenshot();
+
+#if IOS
+		// On iOS, the virtual keyboard appears inconsistent with keyboard characters casing, can cause flaky test results. As this test verifying only the entry clear button color, crop the bottom portion of the screenshot to exclude the keyboard.
+		// Using DismissKeyboard() would unfocus the control in iOS, so we're using cropping instead to maintain focus during testing.
+		VerifyScreenshot(cropBottom: 1200);
+#else
+			VerifyScreenshot();
+#endif
 	}
 
 	[Test]
@@ -126,13 +150,18 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
+#if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
 			if (App.IsKeyboardShown())
-			{
 				App.DismissKeyboard();
-			}
 #endif
-		VerifyScreenshot();
+
+#if IOS
+		// On iOS, the virtual keyboard appears inconsistent with keyboard characters casing, can cause flaky test results. As this test verifying only the entry clear button color, crop the bottom portion of the screenshot to exclude the keyboard.
+		// Using DismissKeyboard() would unfocus the control in iOS, so we're using cropping instead to maintain focus during testing.
+		VerifyScreenshot(cropBottom: 1200);
+#else
+			VerifyScreenshot();
+#endif
 	}
 
 	[Test]
@@ -147,13 +176,18 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
+#if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
 			if (App.IsKeyboardShown())
-			{
 				App.DismissKeyboard();
-			}
 #endif
-		VerifyScreenshot();
+
+#if IOS
+		// On iOS, the virtual keyboard appears inconsistent with keyboard characters casing, can cause flaky test results. As this test verifying only the entry clear button color, crop the bottom portion of the screenshot to exclude the keyboard.
+		// Using DismissKeyboard() would unfocus the control in iOS, so we're using cropping instead to maintain focus during testing.
+		VerifyScreenshot(cropBottom: 1200);
+#else
+			VerifyScreenshot();
+#endif
 	}
 
 	[Test]
@@ -168,13 +202,18 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
+#if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
 			if (App.IsKeyboardShown())
-			{
 				App.DismissKeyboard();
-			}
 #endif
-		VerifyScreenshot();
+
+#if IOS
+		// On iOS, the virtual keyboard appears inconsistent with keyboard characters casing, can cause flaky test results. As this test verifying only the entry clear button color, crop the bottom portion of the screenshot to exclude the keyboard.
+		// Using DismissKeyboard() would unfocus the control in iOS, so we're using cropping instead to maintain focus during testing.
+		VerifyScreenshot(cropBottom: 1200);
+#else
+			VerifyScreenshot();
+#endif
 	}
 
 
@@ -190,12 +229,7 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
+		App.DismissKeyboard();
 		VerifyScreenshot();
 	}
 
@@ -210,12 +244,7 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
+		App.DismissKeyboard();
 		VerifyScreenshot();
 	}
 
@@ -231,9 +260,9 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.ClearText("EntryText");
-#if ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsReadOnly property is set to true.
-			App.EnterText("EntryText", "123");
-			Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test Entry"));
+#if !ANDROID // On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsReadOnly property is set to true.
+		App.EnterText("EntryText", "123");
+		Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test Entry"));
 #endif
 	}
 
@@ -249,13 +278,8 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}	
-#endif
-		VerifyScreenshot();
+		App.DismissKeyboard();
+			VerifyScreenshot();
 	}
 
 	[Test]
@@ -271,13 +295,8 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
-		VerifyScreenshot();
+		App.DismissKeyboard();
+			VerifyScreenshot();
 	}
 
 	[Test]
@@ -295,13 +314,8 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
-		VerifyScreenshot();
+		App.DismissKeyboard();
+			VerifyScreenshot();
 	}
 
 	[Test]
@@ -319,13 +333,8 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
-		VerifyScreenshot();
+		App.DismissKeyboard();
+			VerifyScreenshot();
 	}
 
 	[Test]
@@ -341,12 +350,7 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
+		App.DismissKeyboard();
 		VerifyScreenshotOrSetException(ref exception, "IsPassword_Before_CharacterSpacingSet");
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -359,12 +363,7 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
+		App.DismissKeyboard();
 		VerifyScreenshotOrSetException(ref exception, "IsPassword_After_CharacterSpacingSet");
 		if (exception != null)
 		{
@@ -387,12 +386,7 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
+		App.DismissKeyboard();
 		VerifyScreenshot();
 	}
 
@@ -408,13 +402,8 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
-		VerifyScreenshot();
+		App.DismissKeyboard();
+			VerifyScreenshot();
 	}
 
 	[Test]
@@ -433,13 +422,8 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
-		VerifyScreenshot();
+		App.DismissKeyboard();
+			VerifyScreenshot();
 	}
 
 	[Test]
@@ -454,13 +438,8 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
-		VerifyScreenshot();
+		App.DismissKeyboard();
+			VerifyScreenshot();
 	}
 
 	[Test]
@@ -477,12 +456,7 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
+		App.DismissKeyboard();
 		VerifyScreenshot();
 	}
 
@@ -498,6 +472,7 @@ public class EntryFeatureTests : UITest
 		Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test Entry"));
 		App.WaitForElement("Options");
 		App.Tap("Options");
+		App.WaitForElement("MaxLength");
 		App.ClearText("MaxLength");
 		App.EnterText("MaxLength", "6");
 		App.WaitForElement("Apply");
@@ -519,6 +494,7 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
+		App.DismissKeyboard();
 		VerifyScreenshotOrSetException(ref exception, "IsPassword_Before_MaxLengthSet");
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -530,6 +506,7 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
+		App.DismissKeyboard();
 		VerifyScreenshotOrSetException(ref exception, "IsPassword_After_MaxLengthSet");
 		if (exception != null)
 		{
@@ -583,13 +560,8 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
-		VerifyScreenshot();
+		App.DismissKeyboard();
+			VerifyScreenshot();
 	}
 
 	[Test]
@@ -604,12 +576,7 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
+		App.DismissKeyboard();
 		VerifyScreenshot();
 	}
 
@@ -626,12 +593,7 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
+		App.DismissKeyboard();
 		VerifyScreenshot();
 	}
 
@@ -648,12 +610,7 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
+		App.DismissKeyboard();
 		VerifyScreenshotOrSetException(ref exception, "FontSize_Default");
 		App.WaitForElement("Options");
 		App.Tap("Options");
@@ -664,12 +621,7 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-#if ANDROID
-			if (App.IsKeyboardShown())
-			{
-				App.DismissKeyboard();
-			}
-#endif
+		App.DismissKeyboard();
 		VerifyScreenshotOrSetException(ref exception, "FontSize_20");
 		if (exception != null)
 		{
@@ -709,13 +661,18 @@ public class EntryFeatureTests : UITest
 			App.ClearText("EntryText");
 			App.EnterText("EntryText", "Testig");
 			App.EnterText("EntryText", " ");
-#if ANDROID
+#if ANDROID // Skip keyboard on Android to address CI flakiness, Keyboard is not needed validation.
 			if (App.IsKeyboardShown())
-			{
 				App.DismissKeyboard();
-			}
 #endif
+
+#if IOS
+			// On iOS, the virtual keyboard appears inconsistent with keyboard characters casing, can cause flaky test results. As this test verifying only the entry clear button color, crop the bottom portion of the screenshot to exclude the keyboard.
+			// Using DismissKeyboard() would unfocus the control in iOS, so we're using cropping instead to maintain focus during testing.
+			VerifyScreenshot(cropBottom: 1200);  
+#else
 			VerifyScreenshot();
+#endif
 		}
 #endif
 
@@ -745,8 +702,6 @@ public class EntryFeatureTests : UITest
 		App.Tap("Options");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("CursorVisibleTrue");
-		App.Tap("CursorVisibleTrue");
 		App.WaitForElement("CursorPosition");
 		App.ClearText("CursorPosition");
 		App.EnterText("CursorPosition", "5");
@@ -763,15 +718,15 @@ public class EntryFeatureTests : UITest
 	{
 		App.WaitForElement("Options");
 		App.Tap("Options");
+		App.WaitForElement("PasswordTrue");
+		App.Tap("PasswordTrue");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("CursorVisibleTrue");
-		App.Tap("CursorVisibleTrue");
 		App.WaitForElement("CursorPosition");
 		App.ClearText("CursorPosition");
 		App.EnterText("CursorPosition", "5");
-		App.WaitForElement("PasswordTrue");
-		App.Tap("PasswordTrue");
+		App.WaitForElement("UpdateCursorAndSelectionButton");
+		App.Tap("UpdateCursorAndSelectionButton");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
 		Assert.That(App.WaitForElement("CursorPosition").GetText(), Is.EqualTo("10"));
@@ -785,8 +740,6 @@ public class EntryFeatureTests : UITest
 		App.Tap("Options");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("CursorVisibleTrue");
-		App.Tap("CursorVisibleTrue");
 		App.WaitForElement("CursorPosition");
 		App.ClearText("CursorPosition");
 		App.EnterText("CursorPosition", "3");
@@ -811,8 +764,6 @@ public class EntryFeatureTests : UITest
 		App.Tap("ReadOnlyTrue");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("CursorVisibleTrue");
-		App.Tap("CursorVisibleTrue");
 		App.WaitForElement("CursorPosition");
 		App.ClearText("CursorPosition");
 		App.EnterText("CursorPosition", "3");
@@ -854,39 +805,42 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("EntryText");
 		App.ClearText("EntryText");
 		App.EnterText("EntryText", "Test");
+		App.Tap("EntryText");
+		App.PressEnter();
 		Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Command Executed with Parameter"));
 	}
 
 #if TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS //keybord type is not supported on Windows and Maccatalyst platforms
-		[Test]
-		[Category(UITestCategories.Entry)]
-		public void VerifyTextWhenKeyboardTypeSet()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("Numeric");
-			App.Tap("Numeric");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("EntryText");
-			App.Tap("EntryText");
-			VerifyScreenshot();
-		}
+	[Test]
+	[Category(UITestCategories.Entry)]
+	public void VerifyTextWhenKeyboardTypeSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Numeric");
+		App.Tap("Numeric");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("EntryText");
+		App.Tap("EntryText");
+		VerifyScreenshot();
+	}
+
 #if TEST_FAILS_ON_ANDROID //related issue:https://github.com/dotnet/maui/issues/26968
-		[Test]
-		[Category(UITestCategories.Entry)]
-		public void VerifyTextWhenReturnTypeSet()
-		{
-			App.WaitForElement("Options");
-			App.Tap("Options");
-			App.WaitForElement("Search");
-			App.Tap("Search");
-			App.WaitForElement("Apply");
-			App.Tap("Apply");
-			App.WaitForElement("EntryText");
-			App.Tap("EntryText");
-			VerifyScreenshot();
-		}
+	[Test]
+	[Category(UITestCategories.Entry)]
+	public void VerifyTextWhenReturnTypeSet()
+	{
+		App.WaitForElement("Options");
+		App.Tap("Options");
+		App.WaitForElement("Search");
+		App.Tap("Search");
+		App.WaitForElement("Apply");
+		App.Tap("Apply");
+		App.WaitForElement("EntryText");
+		App.Tap("EntryText");
+		VerifyScreenshot();
+	}
 #endif
 #endif
 
@@ -928,8 +882,10 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.ClearText("EntryText");
+#if !ANDROID// On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsEnabled property is set to false.
 		App.EnterText("EntryText", "123");
 		Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test Entry"));
+#endif
 	}
 
 	[Test]
@@ -958,7 +914,8 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.ClearText("EntryText");
-		App.WaitForElement("Enter your name");
+		App.DismissKeyboard();
+		VerifyScreenshot();
 	}
 
 	[Test]
@@ -973,7 +930,7 @@ public class EntryFeatureTests : UITest
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
 		App.ClearText("EntryText");
-		App.WaitForElement("Enter text here");
+		App.DismissKeyboard();
 		VerifyScreenshot();
 	}
 }

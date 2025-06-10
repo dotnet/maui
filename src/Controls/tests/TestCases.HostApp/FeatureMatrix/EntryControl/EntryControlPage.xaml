@@ -3,12 +3,14 @@
              xmlns:local="clr-namespace:Maui.Controls.Sample"
              x:DataType="local:EntryViewModel"
              x:Class="Maui.Controls.Sample.EntryControlMainPage">
-       <StackLayout Padding="20">
+       <StackLayout Padding="20"
+                    Spacing="8">
               <Label Text="Entry Control"
                      FontSize="20"
                      HorizontalOptions="Center"/>
 
-              <local:UITestEntry x:Name="EntryControl"
+              <local:UITestEntry x:Name="EntryControl" 
+                                 IsCursorVisible="False"  
                                  Text="{Binding Text}"
                                  Placeholder="{Binding Placeholder}"
                                  PlaceholderColor="{Binding PlaceholderColor}"
@@ -24,7 +26,6 @@
                                  IsSpellCheckEnabled="{Binding IsSpellCheckEnabled}"
                                  MaxLength="{Binding MaxLength}"
                                  SelectionLength="{Binding SelectionLength}"
-                                 IsCursorVisible="{Binding IsCursorVisible}"
                                  CursorPosition="{Binding CursorPosition}"
                                  ReturnType="{Binding ReturnType}"
                                  ReturnCommand="{Binding ReturnCommand}"
@@ -37,25 +38,6 @@
                                  HeightRequest="100"
                                  AutomationId="EntryText"/>
 
-
-              <Label Text="IsCursorVisible:"
-                     FontSize="11"/>
-              <StackLayout Orientation="Horizontal"
-                           Spacing="3">
-                     <RadioButton x:Name="IsCursorVisibleTrue"
-                                  Content="True"
-                                  FontSize="11"
-                                  GroupName="CursorVisible"
-                                  AutomationId="CursorVisibleTrue"
-                                  CheckedChanged="IsCursorVisibleTrueOrFalse_Clicked"/>
-                     <RadioButton x:Name="IsCursorVisibleFalse"
-                                  Content="False"
-                                  IsChecked="True"
-                                  FontSize="11"
-                                  GroupName="CursorVisible"
-                                  AutomationId="CursorVisibleFalse"
-                                  CheckedChanged="IsCursorVisibleTrueOrFalse_Clicked"/>
-              </StackLayout>
               <Label Text="Selection Length:"
                      FontSize="11"/>
               <local:UITestEntry x:Name="SelectionLengthEntry"

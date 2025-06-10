@@ -33,9 +33,6 @@ namespace Maui.Controls.Sample
 			BindingContext = _viewModel = new EntryViewModel();
 			_viewModel.Text = "Test Entry";
 			_viewModel.Placeholder = "Enter text here";
-			IsCursorVisibleFalse.IsChecked = true;
-			IsCursorVisibleTrue.IsChecked = false;
-			_viewModel.IsCursorVisible = false;
 			await Navigation.PushAsync(new EntryOptionsPage(_viewModel));
 		}
 
@@ -44,18 +41,6 @@ namespace Maui.Controls.Sample
 			if (int.TryParse(CursorPositionEntry.Text, out int cursorPosition))
 			{
 				_viewModel.CursorPosition = cursorPosition;
-			}
-		}
-
-		private void IsCursorVisibleTrueOrFalse_Clicked(object sender, EventArgs e)
-		{
-			if (IsCursorVisibleTrue.IsChecked)
-			{
-				_viewModel.IsCursorVisible = true;
-			}
-			else if (IsCursorVisibleFalse.IsChecked)
-			{
-				_viewModel.IsCursorVisible = false;
 			}
 		}
 
