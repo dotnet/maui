@@ -13,7 +13,17 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		/// <summary>Bindable property for <see cref="CollapseStyle"/>.</summary>
 		public static readonly BindableProperty CollapseStyleProperty =
 			BindableProperty.CreateAttached("CollapseStyle", typeof(CollapseStyle),
-				typeof(FlyoutPage), CollapseStyle.Full);
+				typeof(FlyoutPage), CollapseStyle.Full, propertyChanged: OnCollapseStylePropertyChanged);
+
+		static void OnCollapseStylePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+#if WINDOWS
+			if (bindable is Microsoft.Maui.Controls.FlyoutPage flyoutPage)
+			{
+				flyoutPage.Handler.UpdateValue(nameof(CollapseStyleProperty));
+			}
+#endif
+		}
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetCollapseStyle'][1]/Docs/*" />
 		public static CollapseStyle GetCollapseStyle(BindableObject element)
