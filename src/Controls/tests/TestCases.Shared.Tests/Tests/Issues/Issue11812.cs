@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
