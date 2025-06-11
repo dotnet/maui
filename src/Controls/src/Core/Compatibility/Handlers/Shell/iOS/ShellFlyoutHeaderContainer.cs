@@ -34,21 +34,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		public override void LayoutSubviews()
-		{
-			if (!UpdateSafeAreaMargin())
-				base.LayoutSubviews();
-
-			OnHeaderSizeChanged();
-		}
-
 		public override void SafeAreaInsetsDidChange()
 		{
 			UpdateSafeAreaMargin();
 			base.SafeAreaInsetsDidChange();
 		}
 
-		bool UpdateSafeAreaMargin()
+		void UpdateSafeAreaMargin()
 		{
 			var safeArea = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
 
@@ -64,12 +56,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						safeArea.Right,
 						safeArea.Bottom);
 
-				OnHeaderSizeChanged();
-				return true;
+				OnPlatformMeasureInvalidated();
 			}
-
-			return false;
-
 		}
 	}
 }
