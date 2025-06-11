@@ -293,7 +293,9 @@ namespace Microsoft.Maui.Graphics
 			{
 				_borderPathEffect = null;
 				if (_borderPaint != null)
+				{
 					_borderPaint.SetPathEffect(null);
+				}
 			}
 			else
 			{
