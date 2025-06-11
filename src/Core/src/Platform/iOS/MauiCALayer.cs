@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Platform
 
 				_strokeDash = dashArray;
 			}
-			else if (borderDashArray == null)
+			else if (borderDashArray is null)
 			{
 				_strokeDash = null;
 			}
