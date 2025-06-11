@@ -2565,7 +2565,7 @@ namespace UITest.Appium
 			}
 			else if (app is AppiumWindowsApp)
 			{
-				app.WaitForElement(AppiumQuery.ByName("Busy"), timeout: timeout);
+				app.WaitForElement("LottiePlayer", timeout: timeout);
 			}
 		}
 
@@ -2586,7 +2586,7 @@ namespace UITest.Appium
 			}
 			else if (app is AppiumWindowsApp)
 			{
-				app.WaitForNoElement(AppiumQuery.ByName("Busy"), timeout: timeout);
+				app.WaitForNoElement("LottiePlayer", timeout: timeout);
 			}
 		}
 	}
