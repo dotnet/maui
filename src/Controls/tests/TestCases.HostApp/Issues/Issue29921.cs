@@ -1,11 +1,11 @@
 ﻿namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.Github, 29920, "Flyout icon not replaced after root page change", PlatformAffected.iOS)]
-public class IssueDummy : FlyoutPage
+[Issue(IssueTracker.Github, 29921, "Flyout icon not replaced after root page change", PlatformAffected.iOS)]
+public class Issue29921 : FlyoutPage
 {
-	public IssueDummy()
+	public Issue29921()
 	{
-		Detail = new NavigationPage(new DummyPage1());
+		Detail = new NavigationPage(new Issue29921Page1());
 		Flyout = new ContentPage
 		{
 			Title = "Flyout Page",
@@ -21,9 +21,9 @@ public class IssueDummy : FlyoutPage
 	}
 }
 
-public class DummyPage1 : ContentPage
+public class Issue29921Page1 : ContentPage
 {
-	public DummyPage1()
+	public Issue29921Page1()
 	{
 		Title = "Page 1";
 		var insertBeforeButton = new Button { Text = "Insert Page Before", AutomationId = "InsertPageButton" };
@@ -40,14 +40,14 @@ public class DummyPage1 : ContentPage
 	{
 		if (Parent is NavigationPage navPage)
 		{
-			navPage.Navigation.InsertPageBefore(new DummyPage2(), navPage.RootPage);
+			navPage.Navigation.InsertPageBefore(new Issue29921Page2(), navPage.RootPage);
 		}
 	}
 }
 
-public class DummyPage2 : ContentPage
+public class Issue29921Page2 : ContentPage
 {
-	public DummyPage2()
+	public Issue29921Page2()
 	{
 		Title = "Page 2";
 		Content = new StackLayout
