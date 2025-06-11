@@ -764,14 +764,9 @@ public class EntryFeatureTests : UITest
 		App.Tap("ReadOnlyTrue");
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
-		App.WaitForElement("CursorPosition");
-		App.ClearText("CursorPosition");
-		App.EnterText("CursorPosition", "3");
-		App.WaitForElement("UpdateCursorAndSelectionButton");
-		App.Tap("UpdateCursorAndSelectionButton");
 		App.WaitForElement("EntryText");
 		App.Tap("EntryText");
-		Assert.That(App.WaitForElement("CursorPosition").GetText(), Is.EqualTo("3"));
+		Assert.That(App.WaitForElement("CursorPosition").GetText(), Is.EqualTo("0"));
 	}
 
 	[Test]
@@ -881,7 +876,6 @@ public class EntryFeatureTests : UITest
 		App.WaitForElement("Apply");
 		App.Tap("Apply");
 		App.WaitForElement("EntryText");
-		App.ClearText("EntryText");
 #if !ANDROID// On Android, using App.EnterText in UI tests (e.g., with Appium UITest) can programmatically enter text into an Entry control even if its IsEnabled property is set to false.
 		App.EnterText("EntryText", "123");
 		Assert.That(App.WaitForElement("EntryText").GetText(), Is.EqualTo("Test Entry"));

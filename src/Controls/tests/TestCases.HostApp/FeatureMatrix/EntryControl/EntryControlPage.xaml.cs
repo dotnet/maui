@@ -33,6 +33,9 @@ namespace Maui.Controls.Sample
 			BindingContext = _viewModel = new EntryViewModel();
 			_viewModel.Text = "Test Entry";
 			_viewModel.Placeholder = "Enter text here";
+			_viewModel.CursorPosition = 0;
+			_viewModel.SelectionLength = 0;
+			EntryControl.PropertyChanged += UpdateEntryControl;
 			await Navigation.PushAsync(new EntryOptionsPage(_viewModel));
 		}
 
