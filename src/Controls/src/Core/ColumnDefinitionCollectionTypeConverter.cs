@@ -28,19 +28,26 @@ namespace Microsoft.Maui.Controls
 			if (strValue.Length == 0)
 				return new ColumnDefinitionCollection();
 
-#if NETSTANDARD2_1_OR_GREATER
+#if NET6_0_OR_GREATER
 			var unsplit = (ReadOnlySpan<char>)strValue;
-#else
-			var unsplit = strValue;
-#endif
-			var lengths = unsplit.Split(',');
-
-			var definitions = new List<ColumnDefinition>(lengths.Length);
-			for (var i = 0; i < lengths.Length; i++)
+			var count = unsplit.Count(',') + 1;
+			var definitions = new List<ColumnDefinition>(count);
+			foreach (var range in unsplit.Split(','))
 			{
-				var length = GridLengthTypeConverter.ParseStringToGridLength(lengths[i]);
+				var length = GridLengthTypeConverter.ParseStringToGridLength(unsplit[range]);
 				definitions.Add(new ColumnDefinition(length));
 			}
+#else
+			var lengths = strValue.Split(',');
+			var count = lengths.Length;
+			var definitions = new List<ColumnDefinition>(count);
+			foreach (var lengthStr in lengths)
+			{
+				var length = GridLengthTypeConverter.ParseStringToGridLength(lengthStr);
+				definitions.Add(new ColumnDefinition(length));
+			}
+#endif
+
 			return new ColumnDefinitionCollection(definitions, copy: false);
 		}
 

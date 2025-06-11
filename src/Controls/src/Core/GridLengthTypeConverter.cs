@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 			return ParseStringToGridLength(strValue);
 		}
 
-#if NETSTANDARD2_1_OR_GREATER
+#if NET6_0_OR_GREATER
 		internal static GridLength ParseStringToGridLength(ReadOnlySpan<char> value)
 #else
 		internal static GridLength ParseStringToGridLength(string value)
@@ -41,14 +41,14 @@ namespace Microsoft.Maui.Controls
 				if (value.Length == 1 && value[0] == '*')
 					return GridLength.Star;
 
-#if NETSTANDARD2_1_OR_GREATER
+#if NET6_0_OR_GREATER
 				var lastChar = value[^1];
 #else
     			var lastChar = value[value.Length - 1];
 #endif
 				if (lastChar == '*')
 				{
-#if NETSTANDARD2_1_OR_GREATER
+#if NET6_0_OR_GREATER
 					var prefix = value[..^1];
 #else
 					var prefix = value.Substring(0, value.Length - 1);
