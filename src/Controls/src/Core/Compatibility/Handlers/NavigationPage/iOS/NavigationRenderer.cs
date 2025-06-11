@@ -24,7 +24,6 @@ using PageUIStatusBarAnimation = Microsoft.Maui.Controls.PlatformConfiguration.i
 using PointF = CoreGraphics.CGPoint;
 using RectangleF = CoreGraphics.CGRect;
 using SizeF = CoreGraphics.CGSize;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
