@@ -270,6 +270,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (_searchHandler != null)
 				{
 					_searchHandler.PropertyChanged -= SearchHandlerPropertyChanged;
+				}
+				if (_editText != null)
+				{
 					_editText.FocusChange -= EditTextFocusChange;
 				}
 				_searchHandler = null;
