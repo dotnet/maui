@@ -9,6 +9,12 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override MauiLabel CreatePlatformView() => new MauiLabel();
 
+		protected override void DisconnectHandler(MauiLabel platformView)
+		{
+			platformView.RemoveHtmlGesture();
+			base.DisconnectHandler(platformView);
+		}
+
 		public override bool NeedsContainer =>
 			VirtualView?.Background != null ||
 			base.NeedsContainer;
@@ -19,6 +25,7 @@ namespace Microsoft.Maui.Handlers
 
 			handler.ToPlatform().UpdateBackground(label);
 		}
+		
 
 		public static void MapText(ILabelHandler handler, ILabel label)
 		{
