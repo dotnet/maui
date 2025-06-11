@@ -8,7 +8,7 @@ public class Issue29919 : ContentPage
 		var stack = new StackLayout();
 		var label = new Label
 		{
-			Text = "VerticalStackLayout and HorizontalStackLayout should not crash with HeightRequest set to 0.",
+			Text = "VerticalStackLayout and HorizontalStackLayout should not crash when WidthRequest or HeightRequest is explicitly set to 0, respectively.",
 			AutomationId = "29919DescriptionLabel",
 		};
 
