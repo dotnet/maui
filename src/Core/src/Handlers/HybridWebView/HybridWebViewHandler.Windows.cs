@@ -171,9 +171,21 @@ namespace Microsoft.Maui.Handlers
 
 			if (new Uri(requestUri) is Uri uri && AppOriginUri.IsBaseOf(uri))
 			{
-				var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString().Replace('/', '\\');
+				var relativePath = AppOriginUri.MakeRelativeUri(uri).ToString();
 
-				// 1. Try special InvokeDotNet path
+				// 1.a. Try the special "_framework/hybridwebview.js" path
+				if (relativePath == HybridWebViewDotJsPath)
+				{
+					logger?.LogDebug("Request for {Url} will return the hybrid web view script.", url);
+					var jsStream = GetEmbeddedStream(HybridWebViewDotJsPath);
+					if (jsStream is not null)
+					{
+						var ras = await CopyContentToRandomAccessStreamAsync(jsStream);
+						return (Stream: ras, ContentType: "application/javascript", StatusCode: 200, Reason: "OK");
+					}
+				}
+
+				// 1.b. Try special InvokeDotNet path
 				if (relativePath == InvokeDotNetPath)
 				{
 					logger?.LogDebug("Request for {Url} will be handled by the .NET method invoker.", url);

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -79,14 +80,24 @@ public static class SourceGeneratorDriver
 
 	private static MetadataReference[] GetMauiReferences()
 	{
+		string dotNetAssemblyPath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
+
 		if (MauiReferences == null)
 		{
 			MauiReferences = new[]
 			{
 				MetadataReference.CreateFromFile(typeof(InternalsVisibleToAttribute).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(Color).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(Button).Assembly.Location),
-				MetadataReference.CreateFromFile(typeof(BindingExtension).Assembly.Location),
+				// .NET assemblies are finicky and need to be loaded in a special way.
+				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "mscorlib.dll")),
+				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.dll")),
+				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Core.dll")),
+				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Private.CoreLib.dll")),
+				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.Runtime.dll")),
+				MetadataReference.CreateFromFile(Path.Combine(dotNetAssemblyPath, "System.ObjectModel.dll")),
+				MetadataReference.CreateFromFile(typeof(Color).Assembly.Location),						//Graphics
+				MetadataReference.CreateFromFile(typeof(Button).Assembly.Location),						//Controls
+				MetadataReference.CreateFromFile(typeof(BindingExtension).Assembly.Location),			//Xaml
+				MetadataReference.CreateFromFile(typeof(Thickness).Assembly.Location),					//Core
 			};
 		}
 		return MauiReferences;
