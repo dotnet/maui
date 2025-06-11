@@ -431,6 +431,12 @@ namespace Microsoft.Maui.Platform
 		{
 			string? text = tooltip?.Content?.ToString();
 			TooltipCompat.SetTooltipText(view, text);
+			
+			// Note: Android's TooltipCompat.SetTooltipText doesn't support delay/duration parameters.
+			// The delay and duration properties would require custom implementation using 
+			// View.OnLongClickListener, PopupWindow, or similar mechanisms to provide
+			// full timing control, which is beyond the scope of the basic TooltipCompat API.
+			// For now, the basic tooltip functionality with content is maintained.
 		}
 
 		public static void RemoveFromParent(this AView view)
