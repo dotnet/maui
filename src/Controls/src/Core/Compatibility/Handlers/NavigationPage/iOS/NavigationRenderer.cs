@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _disposed;
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext;
+		EventHandler _movedToWindow;
 		public static IPropertyMapper<NavigationPage, NavigationRenderer> Mapper = new PropertyMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewMapper)
 		{
 			[PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName] = NavigationPage.MapPrefersLargeTitles,
@@ -1959,8 +1960,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return (Current.Handler as IPlatformViewHandler)?.ViewController;
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
-		EventHandler _movedToWindow;
 		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
 		{
 			add => _movedToWindow += value;
