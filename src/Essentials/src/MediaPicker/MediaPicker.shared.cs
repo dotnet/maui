@@ -25,6 +25,10 @@ namespace Microsoft.Maui.Media
 		[Obsolete("Switch to PickPhotosAsync which also allows multiple selections.")]
 		Task<FileResult?> PickPhotoAsync(MediaPickerOptions? options = null);
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		Task<List<FileResult>> PickPhotosAsync(MediaPickerOptions? options = null);
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 		/// <summary>
 		/// Opens the media browser to select photos.
 		/// </summary>
@@ -52,6 +56,10 @@ namespace Microsoft.Maui.Media
 		/// <remarks>When using <see cref="MediaPickerOptions.SelectionLimit"/> on this overload, it will <b>not</b> have effect.</remarks>
 		[Obsolete("Switch to PickVideosAsync which also allows multiple selections.")]
 		Task<FileResult?> PickVideoAsync(MediaPickerOptions? options = null);
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		Task<List<FileResult>> PickVideosAsync(MediaPickerOptions? options = null);
+#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		/// <summary>
 		/// Opens the media browser to select videos.
