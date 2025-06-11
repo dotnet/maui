@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample.Issues
 {
 	[Issue(IssueTracker.Github, 25634, "Picker ItemDisplayBinding doesn't support MVVM properly", PlatformAffected.All)]
-	public partial class Issue25634 : ContentPage
+	public class Issue25634 : ContentPage
 	{
 		public ObservableCollection<Issue25634_Model> People { get; private set; } = new()
 		{
@@ -15,10 +15,33 @@ namespace Maui.Controls.Sample.Issues
 			new Issue25634_Model { FirstName = "Sam", LastName = "Johnson" }
 		};
 
+		Picker picker;
+
 		public Issue25634()
 		{
-			InitializeComponent();
 			BindingContext = this;
+			
+			picker = new Picker();
+			picker.SetBinding(Picker.ItemsSourceProperty, nameof(People));
+			picker.ItemDisplayBinding = new Binding("LastName");
+			
+			var button = new Button 
+			{ 
+				Text = "Click", 
+				AutomationId = "PickerButton" 
+			};
+			button.Clicked += Button_Clicked;
+			
+			var stackLayout = new VerticalStackLayout
+			{
+				Padding = new Thickness(30, 0),
+				Spacing = 25
+			};
+			stackLayout.Children.Add(picker);
+			stackLayout.Children.Add(button);
+			
+			Content = stackLayout;
+			
 			picker.SelectedItem = People[0];
 		}
 
@@ -72,5 +95,4 @@ namespace Maui.Controls.Sample.Issues
 }
 
 
-    
-    
+
