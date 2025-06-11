@@ -86,5 +86,13 @@ namespace Microsoft.Maui.Controls
 
 			return RemoveLogicalChild(ct.InternalChildren[index], index);
 		}
+
+		void IControlTemplated.AddLogicalChild(Element element)
+		{
+			if (!InternalChildren.Contains(element))
+			{
+				InternalChildren.Add(element);
+			}
+		}
 	}
 }

@@ -96,9 +96,10 @@ namespace Microsoft.Maui.Controls
 			{
 				if (args.NewItems != null)
 				{
-					foreach (Element item in args.NewItems)
+					for (var i = 0; i < args.NewItems.Count; i++)
 					{
-						AddLogicalChild(item);
+						var item = (Element)args.NewItems[i];
+						InsertLogicalChild(args.NewStartingIndex + i, item);
 					}
 				}
 
