@@ -287,8 +287,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnItemsSourceChanged(IList oldValue, IList newValue)
 		{
-			// Unsubscribe from old items
-			if (oldValue != null)
+			if (oldValue is not null)
 			{
 				foreach (var item in oldValue)
 				{
@@ -298,8 +297,7 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-			// Subscribe to new items
-			if (newValue != null && ItemDisplayBinding is not null)
+			if (newValue is not null && ItemDisplayBinding is not null)
 			{
 				foreach (var item in newValue)
 				{
@@ -375,15 +373,14 @@ namespace Microsoft.Maui.Controls
 			{
 				if (e.PropertyName == binding.Path)
 				{
-					ResetItems();
+					//ResetItems();
 				}
 			}
 		}
 
 		void CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
-			// Unsubscribe from removed items
-			if (e.OldItems != null)
+			if (e.OldItems is not null)
 			{
 				foreach (var item in e.OldItems)
 				{
@@ -393,8 +390,7 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 			}
-			// Subscribe to added items
-			if (e.NewItems != null && ItemDisplayBinding is not null)
+			if (e.NewItems is not null && ItemDisplayBinding is not null)
 			{
 				foreach (var item in e.NewItems)
 				{
