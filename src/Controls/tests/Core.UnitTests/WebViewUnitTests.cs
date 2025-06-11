@@ -125,6 +125,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void TestEnableJavaScript()
+		{
+			var defaultWebView = new WebView();
+
+			var enableJavaScriptWebView = new WebView();
+			enableJavaScriptWebView.On<Android>().SetJavaScriptEnabled(false);
+
+			Assert.True(defaultWebView.On<Android>().IsJavaScriptEnabled());
+			Assert.False(enableJavaScriptWebView.On<Android>().IsJavaScriptEnabled());
+		}
+
+		[Fact]
 		public void TestDisplayZoomControls()
 		{
 			var defaultWebView = new WebView();
