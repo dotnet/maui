@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -297,7 +297,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(data.Count == 30);
 			});
 		}
-		
+
 		[Fact]
 		public async Task VerifyGroupCollectionDoesntLeak()
 		{

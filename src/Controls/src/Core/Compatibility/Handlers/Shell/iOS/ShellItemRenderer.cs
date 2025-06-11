@@ -75,7 +75,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					ShellItem.SetValueFromRenderer(ShellItem.CurrentItemProperty, renderer.ShellSection);
 					CurrentRenderer = renderer;
-					MoreNavigationController?.PopToRootViewController(false);
 				}
 
 				if (ReferenceEquals(value, MoreNavigationController))
@@ -439,7 +438,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (ShellItemController == null)
 				return;
 
-			if (OperatingSystemMacCatalyst18Workaround.IsMacCatalystVersionAtLeast18() || OperatingSystem.IsIOSVersionAtLeast(18))
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(18) || OperatingSystem.IsIOSVersionAtLeast(18))
 			{
 				TabBarHidden = !ShellItemController.ShowTabs;
 			}

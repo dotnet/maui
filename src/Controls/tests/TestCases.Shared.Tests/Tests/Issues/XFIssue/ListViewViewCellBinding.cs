@@ -18,8 +18,8 @@ public class ListViewViewCellBinding : _IssuesUITest
 	public void ListViewViewCellBindingTestsAllElementsPresent()
 	{
 		App.WaitForElement("Remove");
-		App.WaitForElement( "Add");
-		App.WaitForElement( "1");
+		App.WaitForElement("Add");
+		App.WaitForElement("1");
 		App.WaitForElement("100.0");
 		App.WaitForElement("2");
 		App.WaitForElement("200.0");
@@ -31,6 +31,7 @@ public class ListViewViewCellBinding : _IssuesUITest
 
 	public void ListViewViewCellBindingTestsAddListItem()
 	{
+		App.WaitForElement("Add");
 		App.Tap("Add");
 		App.WaitForElement("4");
 		App.WaitForElement("400.0");
@@ -40,6 +41,7 @@ public class ListViewViewCellBinding : _IssuesUITest
 
 	public void ListViewViewCellBindingTestsRemoveListItem()
 	{
+		App.WaitForElement("Remove");
 		App.Tap("Remove");
 		App.WaitForNoElement("1");
 		App.WaitForNoElement("100.0");

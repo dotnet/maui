@@ -46,6 +46,15 @@ namespace Microsoft.Maui.DeviceTests
 			return characterSpacing;
 		}
 
+		Task<bool> GetPlatformIsVisible(LabelHandler labelHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformLabel(labelHandler);
+				return !nativeView.Hidden;
+			});
+		}
+
 		double GetPlatformLineHeight(LabelHandler labelHandler)
 		{
 			var attributedText = GetPlatformLabel(labelHandler).AttributedText;
@@ -60,6 +69,14 @@ namespace Microsoft.Maui.DeviceTests
 			return textDecorations;
 		}
 
+		Task<float> GetPlatformOpacity(LabelHandler labelHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformLabel(labelHandler);
+				return (float)nativeView.Alpha;
+			});
+		}
 		public static IEnumerable<object[]> GetCharacterSpacingWithLineHeightWithTextDecorationsWorksTestData()
 		{
 			var label1 = new Label()

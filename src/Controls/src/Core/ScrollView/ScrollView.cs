@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
+
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -477,14 +478,10 @@ namespace Microsoft.Maui.Controls
 			return bounds.Size;
 		}
 
-		private protected override void InvalidateMeasureLegacy(InvalidationTrigger trigger, int depth, int depthLeveltoInvalidate)
-		{
-			base.InvalidateMeasureLegacy(trigger, depth, 1);
-		}
-
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"Content = {Content}, {base.GetDebuggerDisplay()}";
+			var debugText = DebuggerDisplayHelpers.GetDebugText(nameof(Content), Content);
+			return $"{base.GetDebuggerDisplay()}, {debugText}";
 		}
 	}
 }

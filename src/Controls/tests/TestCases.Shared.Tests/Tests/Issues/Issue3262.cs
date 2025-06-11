@@ -1,4 +1,7 @@
-﻿using NUnit.Framework;
+﻿#if TEST_FAILS_ON_ANDROID && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST && TEST_FAILS_ON_WINDOWS
+//Some tests occasionally fail because cookies are not updated. This issue is difficult to replicate locally and occurs very rarely, even in CI. 
+//It causes flakiness, so now ignore this test. Issue Link: https://github.com/dotnet/maui/issues/27854
+using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -14,8 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public override string Issue => "Adding Cookies ability to a WebView...";
 
 		[Test]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27854")]
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -24,13 +26,13 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27854")]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void ChangeDuringNavigating()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
 			// add a couple cookies
+			App.WaitForElement("ChangeDuringNavigating");
 			App.Tap("ChangeDuringNavigating");
 			ValidateSuccess();
 			App.Tap("ChangeDuringNavigating");
@@ -38,9 +40,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27854")]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void AddAdditionalCookieToWebView()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -52,9 +53,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27854")]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void SetToOneCookie()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -63,9 +63,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27854")]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -77,9 +76,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		}
 
 		[Test]
+		[FlakyTest("Issue to reenable this test: https://github.com/dotnet/maui/issues/27854")]
 		[Category(UITestCategories.Compatibility)]
-		[FailsOnMacWhenRunningOnXamarinUITest]
-		[FailsOnWindowsWhenRunningOnXamarinUITest]
 		public void RemoveAllTheCookiesIAdded()
 		{
 			App.WaitForElement("SuccessfullPageLoadLabel");
@@ -94,29 +92,24 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		{
 			try
 			{
-				App.WaitForElement("SuccessCookiesLabel");
+				App.WaitForElement("SuccessCookiesLabel", timeout: TimeSpan.FromSeconds(4));
 			}
 			catch
 			{
 				App.Tap("DisplayAllCookies");
+				// Tapping "DisplayAllCookies" opens a display alert. Leaving this popup open can cause subsequent test failures.
+				// To prevent this, we take a screenshot of the cookies and then tap the "Cancel" button to close the popup before proceeding with further test cases.
+				App.Screenshot("Cookies");
+				App.Tap("Cancel");
 				throw;
 			}
 		}
 
-		public override void TestSetup()
+		protected override void FixtureSetup()
 		{
-			base.TestSetup();
-
-			try
-			{
-				App.WaitForElement("NoInternetAccessLabel", timeout: TimeSpan.FromSeconds(1));
-				Assert.Inconclusive("This device doesn't have internet access");
-			}
-			catch (TimeoutException)
-			{
-				// Element not found within timeout, assume internet is available
-				// Continue with the test
-			}
+			base.FixtureSetup();
+			VerifyInternetConnectivity();
 		}
 	}
 }
+#endif

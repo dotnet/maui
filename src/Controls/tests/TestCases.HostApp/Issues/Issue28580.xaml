@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Maui.Controls.Sample.Issues"
+             x:Class="Maui.Controls.Sample.Issues.Issue28580">
+    <Grid Padding="30">
+        <CollectionView>
+            <CollectionView.Header>
+                <Border
+                    Stroke="Black"
+                    Margin="0">
+                    <Grid
+                        ColumnDefinitions="*,Auto"
+                        ColumnSpacing="5">
+                        <Label
+                            Grid.Column="1"
+                            Text="add new"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            VerticalTextAlignment="Center"/>
+
+                        <Label
+                            Grid.Column="0"
+                            Text="+"
+                            HorizontalOptions="End"
+                            VerticalOptions="Center"
+                            VerticalTextAlignment="Center"/>
+                    </Grid>
+                </Border>
+            </CollectionView.Header>
+
+            <CollectionView.Footer>
+                <Border
+                    Stroke="Black"
+                    Margin="0">
+                    <Grid
+                        ColumnDefinitions="*,Auto"
+                        ColumnSpacing="5">
+                        <Label
+                            Grid.Column="1"
+                            Text="add new"
+                            AutomationId="labelInFooter"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            VerticalTextAlignment="Center"/>
+
+                        <Label
+                            Grid.Column="0"
+                            Text="+"
+                            HorizontalOptions="End"
+                            VerticalOptions="Center"
+                            VerticalTextAlignment="Center"/>
+                    </Grid>
+                </Border>
+            </CollectionView.Footer>
+        </CollectionView>
+    </Grid>
+</ContentPage> 

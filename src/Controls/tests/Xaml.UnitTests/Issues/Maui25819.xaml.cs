@@ -40,14 +40,14 @@ public partial class Maui25819 : ContentPage
 			AppInfo.SetCurrent(null);
 		}
 
-		
+
 		[Test]
-		public void DoesntThrow([Values]bool inflator)
+		public void DoesntThrow([Values] bool inflator)
 		{
 			MockCompiler.Compile(typeof(Maui25819));
 			var layout = new Maui25819(inflator);
 			layout.BindingContext = new Maui25819UserDataViewModel();
-            Assert.That(layout.label0.Text, Is.EqualTo("2023"));
+			Assert.That(layout.label0.Text, Is.EqualTo("2023"));
 		}
 	}
 }
@@ -79,15 +79,15 @@ public partial class Maui25819UserDataViewModel : INotifyPropertyChanged
 
 public class Maui25819UsersDataModel
 {
-    public Maui25819InstalmentPlans InstalmentPlans { get; set; } = new();
+	public Maui25819InstalmentPlans InstalmentPlans { get; set; } = new();
 }
 
 public class Maui25819InstalmentPlans
 {
-    public Maui25819InstalmentPlan[] InstalmentPlan { get; set; } = [];
+	public Maui25819InstalmentPlan[] InstalmentPlan { get; set; } = [];
 }
 
 public class Maui25819InstalmentPlan
 {
-    public string FinancialYear { get; set; } = string.Empty;
+	public string FinancialYear { get; set; } = string.Empty;
 }

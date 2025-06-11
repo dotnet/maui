@@ -34,5 +34,23 @@ namespace Microsoft.Maui.DeviceTests
 			var control = searchBarHandler.QueryEditor;
 			return control.GetCursorPosition();
 		}
+
+		Task<float> GetPlatformOpacity(SearchBarHandler searchBarHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(searchBarHandler);
+				return (float)nativeView.Alpha;
+			});
+		}
+
+		Task<bool> GetPlatformIsVisible(SearchBarHandler searchBarHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformControl(searchBarHandler);
+				return !nativeView.Hidden;
+			});
+		}
 	}
 }

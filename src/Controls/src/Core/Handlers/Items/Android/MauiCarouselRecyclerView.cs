@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Collections.Generic;
 using Android.Content;
@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		CarouselViewLoopManager _carouselViewLoopManager;
 		int _oldPosition;
 		int _gotoPosition = -1;
+		int _scrollToCounter = 0;
 		bool _noNeedForScroll;
 		bool _initialized;
 		bool _isVisible;
@@ -183,6 +184,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_carouselViewLoopManager == null)
 				return;
 
+			_scrollToCounter++;
+
 			// Special case here
 			// We could have a race condition where we are scrolling our collection to center the first item
 			// And at the same time the user is requesting we go to a particular item
@@ -224,6 +227,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var carouselPosition = Carousel.Position;
 			var currentItemPosition = observableItemsSource.GetPosition(Carousel.CurrentItem);
 			var count = observableItemsSource.Count;
+			var savedScrollToCounter = _scrollToCounter;
 
 			bool removingCurrentElement = currentItemPosition == -1;
 			bool removingLastElement = e.OldStartingIndex == count;
@@ -267,15 +271,37 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
+			// While Modifying the collection we should consider the ItemsUpdatingScrollMode to update the position
+			if (Carousel.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+			{
+				if (count == 0)
+				{
+					carouselPosition = 0;
+				}
+				else
+				{
+					carouselPosition = count - 1;
+				}
+
+			}
+			else if (Carousel.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				carouselPosition = 0;
+			}
+
 			Carousel.
 				Handler.
 				MauiContext.
 				GetDispatcher()
 					.Dispatch(() =>
 					{
-
-						SetCurrentItem(carouselPosition);
-						UpdatePosition(carouselPosition);
+						// If someone called explicit ScrollTo before the dispatched
+						// callback was delivered then don't override it.
+						if (_scrollToCounter == savedScrollToCounter)
+						{
+							SetCurrentItem(carouselPosition);
+							UpdatePosition(carouselPosition);
+						}
 
 						//If we are adding or removing the last item we need to update
 						//the inset that we give to items so they are centered
@@ -603,8 +629,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					var viewHolder = (ViewHolder)ItemsViewAdapter.CreateViewHolder(this, viewType);
 					ItemsViewAdapter.BindViewHolder(viewHolder, 0);
 					viewHolder.ItemView.Measure(widthMeasureSpec, heightMeasureSpec);
-					widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredWidth);
-					heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredHeight);
+
+					if (widthMeasureSpec.GetMode() == MeasureSpecMode.Unspecified)
+					{
+						widthMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredWidth);
+					}
+
+					if (heightMeasureSpec.GetMode() == MeasureSpecMode.Unspecified)
+					{
+						heightMeasureSpec = MeasureSpecMode.Exactly.MakeMeasureSpec(viewHolder.ItemView.MeasuredHeight);
+					}
 				}
 			}
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);

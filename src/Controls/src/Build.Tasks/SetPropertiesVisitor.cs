@@ -312,6 +312,75 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 							foreach (var instruction in instructions)
 								yield return instruction;
+
+							//extension.Typedbinding.Mode = extension.Mode;
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "Mode"));
+							yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase"), propertyName: "Mode"));
+							// extension.TypedBinding.Converter = extension.Converter;
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "Converter"));
+							yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "TypedBindingBase"), propertyName: "Converter"));
+							// extension.TypedBinding.ConverterParameter = extensionConverterParameter;
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "ConverterParameter"));
+							yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "TypedBindingBase"), propertyName: "ConverterParameter"));
+							// // extension.TypedBinding.StringFormat = extensionStringFormat;
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "StringFormat"));
+							yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase"), propertyName: "StringFormat"));
+
+							if (bindingExtensionType.Value.Item3 == "BindingExtension")
+							{
+								// // extension.TypedBinding.Source = extension.Source;
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "Source"));
+								yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "TypedBindingBase"), propertyName: "Source"));
+								// extension.TypedBinding.UpdateSourceEventName = extension.UpdateSourceEventName;
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "UpdateSourceEventName"));
+								yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "TypedBindingBase"), propertyName: "UpdateSourceEventName"));
+								// extension.TypedBinding.FallbackValue = extension.FallbackValue;
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "FallbackValue"));
+								yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase"), propertyName: "FallbackValue"));
+								// extension.TypedBinding.TargetNullValue = extension.TargetNullValue;
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TargetNullValue"));
+								yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase"), propertyName: "TargetNullValue"));
+							}
+							else //TemplateBindingExtension
+							{
+								// extension.TypedBinding.Source = RelativeBindingSource.TemplatedParent,
+								yield return Create(Ldloc, vardefref.VariableDefinition);
+								yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+								yield return Create(Call, module.ImportPropertyGetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "RelativeBindingSource"), propertyName: "TemplatedParent", isStatic: true));
+								yield return Create(Callvirt, module.ImportPropertySetterReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Internals", "TypedBindingBase"), propertyName: "Source"));
+							}
+
+							//var binding = extension.TypedBinding;
+							yield return Create(Ldloc, vardefref.VariableDefinition);
+							yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, bindingExtensionType.Value, propertyName: "TypedBinding"));
+							vardefref.VariableDefinition = new VariableDefinition(module.ImportReference(genericArguments.First()));
+
+							yield return Create(Stloc, vardefref.VariableDefinition);
+							yield break;
 						}
 					}
 					else
@@ -323,8 +392,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				var markExt = markupExtension.ResolveCached(context.Cache);
 				var provideValueInfo = markExt.Methods.First(md => md.Name == "ProvideValue");
 				var provideValue = module.ImportReference(provideValueInfo);
-				provideValue =
-					module.ImportReference(provideValue.ResolveGenericParameters(markupExtension, module));
+				provideValue = module.ImportReference(provideValue.ResolveGenericParameters(markupExtension, module));
 
 				vardefref.VariableDefinition = new VariableDefinition(module.ImportReference(genericArguments.First()));
 				foreach (var instruction in context.Variables[node].LoadAs(context.Cache, markupExtension, module))
@@ -334,8 +402,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				else
 					foreach (var instruction in node.PushServiceProvider(context, requiredServiceType, bpRef, propertyRef, propertyDeclaringTypeRef))
 						yield return instruction;
-				yield return Instruction.Create(OpCodes.Callvirt, provideValue);
-				yield return Instruction.Create(OpCodes.Stloc, vardefref.VariableDefinition);
+				yield return Create(Callvirt, provideValue);
+				yield return Create(Stloc, vardefref.VariableDefinition);
 			}
 			else if (context.Variables[node].VariableType.ImplementsInterface(context.Cache, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "IMarkupExtension"))))
 			{
@@ -594,7 +662,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				return GetParent(node) is IElementNode parentNode
 					&& node.TryGetPropertyName(parentNode, out XmlName propertyName)
-					&& parentNode.XmlType.TryGetTypeReference(context.Cache, module, (IXmlLineInfo)node, out TypeReference parentTypeRef)
+					&& parentNode.XmlType.TryGetTypeReference(context.Cache, module, (IXmlLineInfo)node, false, out TypeReference parentTypeRef)
 					&& parentTypeRef.ResolveCached(context.Cache) is TypeDefinition parentType
 					&& parentType.GetProperty(context.Cache, pd => pd.Name == propertyName.LocalName, out var propertyDeclaringTypeRef) is PropertyDefinition propertyDef
 					&& propertyDef.CustomAttributes.Any(ca => ca.AttributeType.FullName == "Microsoft.Maui.Controls.Xaml.DoesNotInheritDataTypeAttribute");
@@ -683,7 +751,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					{
 						if (previousPartTypeRef.IsArray)
 							previousPartTypeRef = previousPartTypeRef.GetElementType();
-						
+
 						previousPartTypeRef.ResolveCached(context.Cache);
 					}
 
@@ -1342,6 +1410,25 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 		static bool CanSetValue(FieldReference bpRef, bool attached, INode node, IXmlLineInfo iXmlLineInfo, ILContext context)
 		{
+			static bool CanSetValue(TypeReference bpTypeRef, VariableDefinition varValue, ILContext context, IXmlLineInfo iXmlLineInfo)
+			{
+				// If it's an attached BP, there's no second chance to handle IMarkupExtensions, so we try here.
+				// Worst case scenario ? InvalidCastException at runtime
+				if (varValue.VariableType.FullName == "System.Object")
+					return true;
+				var implicitOperator = varValue.VariableType.GetImplicitOperatorTo(context.Cache, bpTypeRef, context.Body.Method.Module);
+				if (implicitOperator != null)
+					return true;
+
+				//as we're in the SetValue Scenario, we can accept value types, they'll be boxed
+				if (varValue.VariableType.IsValueType && bpTypeRef.FullName == "System.Object")
+					return true;
+
+				if (varValue.VariableType.InheritsFromOrImplements(context.Cache, bpTypeRef) || varValue.VariableType.FullName == "System.Object")
+					return true;
+				return false;
+			}
+
 			var module = context.Body.Method.Module;
 
 			if (bpRef == null)
@@ -1356,21 +1443,22 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (!context.Variables.TryGetValue(elementNode, out VariableDefinition varValue))
 				return false;
 
+
 			var bpTypeRef = bpRef.GetBindablePropertyType(context.Cache, iXmlLineInfo, module);
-			// If it's an attached BP, there's no second chance to handle IMarkupExtensions, so we try here.
-			// Worst case scenario ? InvalidCastException at runtime
-			if (varValue.VariableType.FullName == "System.Object")
-				return true;
-			var implicitOperator = varValue.VariableType.GetImplicitOperatorTo(context.Cache, bpTypeRef, module);
-			if (implicitOperator != null)
+
+			if (CanSetValue(bpTypeRef, varValue, context, iXmlLineInfo))
 				return true;
 
-			//as we're in the SetValue Scenario, we can accept value types, they'll be boxed
-			if (varValue.VariableType.IsValueType && bpTypeRef.FullName == "System.Object")
-				return true;
+			if (bpTypeRef.ResolveCached(context.Cache).FullName == "System.Nullable`1")
+			{
+				bpTypeRef = ((GenericInstanceType)bpTypeRef).GenericArguments[0];
+				if (CanSetValue(bpTypeRef, varValue, context, iXmlLineInfo))
+					return true;
+			}
 
-			return varValue.VariableType.InheritsFromOrImplements(context.Cache, bpTypeRef) || varValue.VariableType.FullName == "System.Object";
+			return false;
 		}
+
 
 		static bool CanGetValue(VariableDefinition parent, FieldReference bpRef, bool attached, IXmlLineInfo iXmlLineInfo, ILContext context, out TypeReference propertyType)
 		{
@@ -1415,32 +1503,37 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				var @else = Create(OpCodes.Nop);
 				var endif = Create(OpCodes.Nop);
 
-				if (context.Variables[elementNode].VariableType.FullName == "System.Object")
+
+				var varValue = context.Variables[elementNode];
+				if (varValue.VariableType.FullName == "System.Object")
 				{
 					//if(value != null && value.GetType().IsAssignableFrom(typeof(BindingBase)))
-					yield return Create(Ldloc, context.Variables[elementNode]);
+					yield return Create(Ldloc, varValue);
 					yield return Create(Brfalse, @else);
-
 					yield return Create(Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "BindingBase")));
 					yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
-					yield return Create(Ldloc, context.Variables[elementNode]);
+					yield return Create(Ldloc, varValue);
 					yield return Create(Callvirt, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Object"), methodName: "GetType", paramCount: 0));
 					yield return Create(Callvirt, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "IsAssignableFrom", parameterTypes: new[] { ("mscorlib", "System", "Type") }));
 					yield return Create(Brfalse, @else);
 					//then
-					yield return Create(Ldloc, context.Variables[elementNode]);
+					yield return Create(Ldloc, varValue);
 					yield return Create(Br, endif);
 					//else
 					yield return @else;
 				}
 				var bpTypeRef = bpRef.GetBindablePropertyType(context.Cache, iXmlLineInfo, module);
-				foreach (var instruction in context.Variables[elementNode].LoadAs(context.Cache, bpTypeRef, module))
+				foreach (var instruction in varValue.LoadAs(context.Cache, bpTypeRef, module))
 					yield return instruction;
 				if (bpTypeRef.IsValueType)
+				{
+					if (bpTypeRef.ResolveCached(context.Cache).FullName == "System.Nullable`1"
+						&& TypeRefComparer.Default.Equals(varValue.VariableType, ((GenericInstanceType)bpTypeRef).GenericArguments[0]))
+						bpTypeRef = ((GenericInstanceType)bpTypeRef).GenericArguments[0];
 					yield return Create(Box, module.ImportReference(bpTypeRef));
-
+				}
 				//endif
-				if (context.Variables[elementNode].VariableType.FullName == "System.Object")
+				if (varValue.VariableType.FullName == "System.Object")
 					yield return endif;
 
 			}

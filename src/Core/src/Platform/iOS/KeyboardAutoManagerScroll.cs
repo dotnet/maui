@@ -24,7 +24,7 @@ public static class KeyboardAutoManagerScroll
 	static CGPoint StartingContentOffset;
 	static UIEdgeInsets StartingScrollIndicatorInsets;
 	static UIEdgeInsets StartingContentInsets;
-	static CGRect KeyboardFrame = CGRect.Empty;
+	internal static CGRect KeyboardFrame = CGRect.Empty;
 	static CGPoint TopViewBeginOrigin = new(nfloat.MaxValue, nfloat.MaxValue);
 	static readonly CGPoint InvalidPoint = new(nfloat.MaxValue, nfloat.MaxValue);
 	static double AnimationDuration = 0.25;
@@ -184,7 +184,7 @@ public static class KeyboardAutoManagerScroll
 	{
 		notification.UserInfo?.SetAnimationDuration();
 
-		if (LastScrollView is not null)
+		if (LastScrollView?.Window is not null)
 		{
 			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, AnimateHidingKeyboard, () => { });
 		}
@@ -368,10 +368,7 @@ public static class KeyboardAutoManagerScroll
 		}
 		else
 		{
-			if (OperatingSystem.IsIOSVersionAtLeast(13, 0))
-				statusBarHeight = window.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? 0;
-			else
-				statusBarHeight = UIApplication.SharedApplication.StatusBarFrame.Height;
+			statusBarHeight = window.WindowScene?.StatusBarManager?.StatusBarFrame.Height ?? 0;
 
 			navigationBarAreaHeight = statusBarHeight;
 		}
@@ -805,7 +802,11 @@ public static class KeyboardAutoManagerScroll
 
 		var bottomScrollIndicatorInset = bottomInset;
 
-		bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
+		// When the superview is a MauiCollectionView and the scrollView is a MauiTextView, we do not want to consider the Bottom Inset
+		// reserved for the Footer.
+		bool isMauiTextViewInCV = scrolledView is UITextView && LastScrollView is UICollectionView;
+
+		bottomInset = isMauiTextViewInCV ? bottomInset : nfloat.Max(StartingContentInsets.Bottom, bottomInset);
 		bottomScrollIndicatorInset = nfloat.Max(StartingScrollIndicatorInsets.Bottom, bottomScrollIndicatorInset);
 
 		if (OperatingSystem.IsIOSVersionAtLeast(11, 0))

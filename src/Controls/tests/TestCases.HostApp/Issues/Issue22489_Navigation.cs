@@ -6,7 +6,7 @@ namespace Maui.Controls.Sample.Issues;
 
 public class Issue22489_Navigation : NavigationPage
 {
-    public Issue22489_Navigation()
+	public Issue22489_Navigation()
 	{
 		Navigation.PushAsync(new Issue24489_2());
 	}

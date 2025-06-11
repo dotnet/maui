@@ -16,8 +16,8 @@ namespace Microsoft.Maui.Handlers
 			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
 			{
 				_proxy.Connect(VirtualView, platformView);
-			} 
-			else 
+			}
+			else
 			{
 				UpdateVirtualViewFrame(platformView);
 			}
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(UIWindow platformView)
 		{
-			if (OperatingSystem.IsMacCatalystVersionAtLeast(16)) 
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(16))
 			{
 				_proxy.Disconnect();
 			}
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					var newRectangle = newGeometry.SystemFrame.ToRectangle();
 
-					if (double.IsNaN(newRectangle.X) || double.IsNaN(newRectangle.Y) || double.IsNaN(newRectangle.Width) || double.IsNaN(newRectangle.Height)) 
+					if (double.IsNaN(newRectangle.X) || double.IsNaN(newRectangle.Y) || double.IsNaN(newRectangle.Width) || double.IsNaN(newRectangle.Height))
 					{
 						return;
 					}

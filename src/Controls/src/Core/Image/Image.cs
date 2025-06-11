@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 
+
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="Type[@FullName='Microsoft.Maui.Controls.Image']/Docs/*" />
@@ -108,7 +109,8 @@ namespace Microsoft.Maui.Controls
 
 		private protected override string GetDebuggerDisplay()
 		{
-			return $"Source = {Source}, {base.GetDebuggerDisplay()}";
+			var sourceText = DebuggerDisplayHelpers.GetDebugText(nameof(Source), Source);
+			return $"{base.GetDebuggerDisplay()}, {sourceText}";
 		}
 	}
 }

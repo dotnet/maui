@@ -11,7 +11,7 @@ public class Issue8741 : _IssuesUITest
 	}
 
 	public override string Issue => "[Bug] [Shell] [Android] ToolbarItem Enabled/Disabled behavior does not work for Shell apps";
- 
+
 	[Test]
 	[Category(UITestCategories.Shell)]
 	public void Issue8741Test()
@@ -23,21 +23,21 @@ public class Issue8741 : _IssuesUITest
 		// Additionally, the test scenario has already been validated through tap actions, so the color comparison was deemed unnecessary.
 		//var toolbarItemColorValue = GetToolbarItemColorValue();
 		//int disabledAlpha = GetAlphaValue(toolbarItemColorValue);
- 
+
 		Assert.That(App.WaitForElement("ClickCount").ReadText(), Is.EqualTo("0"));
- 
+
 		App.Tap("ToggleEnabled");
 		App.Tap("Add");
- 
+
 		//toolbarItemColorValue = GetToolbarItemColorValue();
 		//int enabledAlpha = GetAlphaValue(toolbarItemColorValue);
 		//Assert.That(disabledAlpha, Is.LessThan(enabledAlpha));
- 
+
 		Assert.That(App.WaitForElement("ClickCount").ReadText(), Is.EqualTo("1"));
- 
+
 		App.Tap("ToggleEnabled");
 		App.Tap("Add");
- 
+
 		Assert.That(App.WaitForElement("ClickCount").ReadText(), Is.EqualTo("1"));
 	}
 }

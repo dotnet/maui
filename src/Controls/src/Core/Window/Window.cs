@@ -392,6 +392,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (oldValue is TitleBar prevTitleBar)
 				{
+					prevTitleBar.Cleanup();
 					self.RemoveLogicalChild(prevTitleBar);
 				}
 
@@ -430,7 +431,13 @@ namespace Microsoft.Maui.Controls
 		void SendWindowDisppearing()
 		{
 			if (Navigation.ModalStack.Count == 0)
+			{
 				Page?.SendDisappearing();
+			}
+			else if (Navigation.ModalStack.Count > 0)
+			{
+				Navigation.ModalStack[Navigation.ModalStack.Count - 1]?.SendDisappearing();
+			}
 
 			IsActivated = false;
 		}

@@ -10,9 +10,9 @@ public class ShellItemIsVisible : _IssuesUITest
 	public ShellItemIsVisible(TestDevice testDevice) : base(testDevice)
 	{
 	}
-    const string TitlePage="Item Title Page";
-    const string TopTab1="Top Tab 1";
-    const string TopTab2="Top Tab 2";
+	const string TitlePage = "Item Title Page";
+	const string TopTab1 = "Top Tab 1";
+	const string TopTab2 = "Top Tab 2";
 
 	public override string Issue => "Shell Items IsVisible Test";
 
@@ -33,7 +33,7 @@ public class ShellItemIsVisible : _IssuesUITest
 		App.WaitForElement("Item1 Flyout");
 		App.Tap("Item1 Flyout");
 		App.WaitForElementTillPageNavigationSettled(TitlePage);
-		App.TapTab(TitlePage,true);
+		App.TapTab(TitlePage, true);
 		App.WaitForElementTillPageNavigationSettled("ToggleItem1");
 		App.Tap("ToggleItem1");
 		App.WaitForElement("Welcome to Tab 1");

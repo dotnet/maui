@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -16,11 +17,20 @@ namespace Microsoft.Maui.DeviceTests
 
 		Task<string> GetPlatformText(ButtonHandler buttonHandler)
 		{
-			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).CurrentTitle);
+			return InvokeOnMainThreadAsync(() => GetPlatformButton(buttonHandler).CurrentTitle!);
 		}
 
 		UILineBreakMode GetPlatformLineBreakMode(ButtonHandler buttonHandler) =>
 			GetPlatformButton(buttonHandler).TitleLabel.LineBreakMode;
+
+		Task<bool> GetPlatformIsVisible(ButtonHandler buttonHandler)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var nativeView = GetPlatformButton(buttonHandler);
+				return !nativeView.Hidden;
+			});
+		}
 
 		[Fact("Clicked works after GC")]
 		public async Task ClickedWorksAfterGC()
@@ -77,6 +87,25 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(button.Width < gridWidth, $"Button shouldn't occupy entire layout width. Expected: {gridWidth}<, was {button.Width}");
 			Assert.True(button.Height < gridHeight, $"Button shouldn't occupy entire layout height. Expected: {gridHeight}<, was {button.Height}");
+		}
+
+		[Fact]
+		[Description("The CornerRadius of a Button should match with native CornerRadius")]
+		public async Task ButtonCornerRadius()
+		{
+			var button = new Button
+			{
+				CornerRadius = 15,
+			};
+			var expectedValue = button.CornerRadius;
+
+			var handler = await CreateHandlerAsync<ButtonHandler>(button);
+			var nativeView = GetPlatformButton(handler);
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformCornerRadius = nativeView.Layer.CornerRadius;
+				Assert.Equal(expectedValue, platformCornerRadius);
+			});
 		}
 	}
 }

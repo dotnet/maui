@@ -20,7 +20,7 @@ namespace Microsoft.Maui.IntegrationTests.Android
 
 		public bool AcceptLicenses(out string acceptLicenseOutput)
 		{
-			acceptLicenseOutput = ToolRunner.Run(new ProcessStartInfo(SdkManagerTool,  "--licenses"), out int exitCode, timeoutInSeconds: 30, inputAction: (p) =>
+			acceptLicenseOutput = ToolRunner.Run(new ProcessStartInfo(SdkManagerTool, "--licenses"), out int exitCode, timeoutInSeconds: 30, inputAction: (p) =>
 			{
 				for (int i = 0; i < 10; i++)
 				{

@@ -1,5 +1,5 @@
-﻿using Microsoft.Maui.Controls;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Issues
 {

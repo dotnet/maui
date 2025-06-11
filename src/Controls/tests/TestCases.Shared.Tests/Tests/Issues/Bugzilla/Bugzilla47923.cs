@@ -1,4 +1,4 @@
-﻿# if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // This test uses a vector image resources which applicable only for Android.
+﻿#if TEST_FAILS_ON_WINDOWS && TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // This test uses a vector image resources which applicable only for Android.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -13,7 +13,7 @@ public class Bugzilla47923 : _IssuesUITest
 
 	public override string Issue => "Vectors don\'t work in Images, and work badly in Buttons";
 
-	
+
 	[Test]
 	[Category(UITestCategories.ListView)]
 	public void Bugzilla47923Test()

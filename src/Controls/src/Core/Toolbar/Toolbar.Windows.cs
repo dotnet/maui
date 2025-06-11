@@ -65,13 +65,12 @@ namespace Microsoft.Maui.Controls
 				button.SetAutomationPropertiesName(item);
 				button.SetAutomationPropertiesAccessibilityView(item);
 				button.SetAutomationPropertiesHelpText(item);
-				button.UpdateTextColor(BarTextColor);
-
 				button.SetAutomationPropertiesLabeledBy(item, null);
 
 				ToolbarItemOrder order = item.Order == ToolbarItemOrder.Default ? ToolbarItemOrder.Primary : item.Order;
 				if (order == ToolbarItemOrder.Primary)
 				{
+					button.UpdateTextColor(BarTextColor);
 					commandBar.PrimaryCommands.Add(button);
 				}
 				else
@@ -88,7 +87,7 @@ namespace Microsoft.Maui.Controls
 
 		internal void OnToolbarItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
-			if (Handler.PlatformView is not MauiToolbar wh)
+			if (Handler?.PlatformView is not MauiToolbar wh)
 				return;
 
 			var commandBar = wh.CommandBar;

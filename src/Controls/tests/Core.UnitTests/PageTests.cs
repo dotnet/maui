@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -295,13 +296,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void BusySentWhenBusyPageAppears()
+		public async Task BusySentWhenBusyPageAppears()
 		{
+			TaskCompletionSource tcs = new TaskCompletionSource();
 			var sent = false;
 			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) =>
 			{
 				Assert.True(b);
 				sent = true;
+				tcs.SetResult();
 			});
 
 			var page = new ContentPage { IsBusy = true, IsPlatformEnabled = true };
@@ -310,12 +313,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			_ = new TestWindow(page);
 
+			await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
 			Assert.True(sent, "Busy message not sent when visible");
 		}
 
 		[Fact]
-		public void BusySentWhenBusyPageDisappears()
+		public async Task BusySentWhenBusyPageDisappears()
 		{
+			TaskCompletionSource tcs = new TaskCompletionSource();
 			var page = new ContentPage { IsBusy = true };
 			_ = new TestWindow(page);
 			((IPageController)page).SendAppearing();
@@ -325,18 +331,26 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				Assert.False(b);
 				sent = true;
+				tcs.SetResult();
 			});
 
 			((IPageController)page).SendDisappearing();
+
+			await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
 			Assert.True(sent, "Busy message not sent when visible");
 		}
 
 		[Fact]
-		public void BusySentWhenVisiblePageSetToBusy()
+		public async Task BusySentWhenVisiblePageSetToBusy()
 		{
 			var sent = false;
-			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) => sent = true);
+			TaskCompletionSource tcs = new TaskCompletionSource();
+			MessagingCenter.Subscribe<Page, bool>(this, Page.BusySetSignalName, (p, b) =>
+			{
+				sent = true;
+				tcs.SetResult();
+			});
 
 			var page = new ContentPage();
 			_ = new TestWindow(page);
@@ -345,6 +359,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(sent, "Busy message sent appearing while not busy");
 
 			page.IsBusy = true;
+
+			await tcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
 			Assert.True(sent, "Busy message not sent when visible");
 		}
@@ -551,16 +567,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void MeasureInvalidatedPropagatesUpTree()
+		public void MeasureInvalidatedPropagatesUpTreeWithCompatibilityLayouts()
 		{
-			var label = new Label()
+			var label = new LabelInvalidateMeasureCheck
 			{
 				IsPlatformEnabled = true
 			};
 
-			var scrollView = new ScrollViewInvalidationMeasureCheck()
+			var scrollView = new ScrollViewInvalidationMeasureCheck
 			{
-				Content = new VerticalStackLayout()
+				Content = new Compatibility.StackLayout
 				{
 					Children = { new ContentView { Content = label, IsPlatformEnabled = true } },
 					IsPlatformEnabled = true
@@ -568,74 +584,171 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsPlatformEnabled = true
 			};
 
-			var page = new InvalidatePageInvalidateMeasureCheck()
+			var page = new InvalidatePageInvalidateMeasureCheck
 			{
 				Content = scrollView
 			};
 
-			var window = new TestWindow(page);
+			// Set up the window
+			_ = new TestWindow(page);
 
-			int fired = 0;
-			page.MeasureInvalidated += (sender, args) =>
-			{
-				fired++;
-			};
-
+			// Reset counters
+			label.InvalidateMeasureCount = 0;
+			label.PlatformInvalidateMeasureCount = 0;
 			page.InvalidateMeasureCount = 0;
+			page.PlatformInvalidateMeasureCount = 0;
 			scrollView.InvalidateMeasureCount = 0;
+			scrollView.PlatformInvalidateMeasureCount = 0;
+
+			// Invalidate the label
 			label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
-			Assert.Equal(1, fired);
-			Assert.Equal(0, page.InvalidateMeasureCount);
-			Assert.Equal(0, scrollView.InvalidateMeasureCount);
-			page.Content.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			Assert.Equal(1, label.InvalidateMeasureCount);
+			Assert.Equal(1, label.PlatformInvalidateMeasureCount);
 			Assert.Equal(1, page.InvalidateMeasureCount);
+			Assert.Equal(0, page.PlatformInvalidateMeasureCount);
+			Assert.Equal(1, scrollView.InvalidateMeasureCount);
+			Assert.Equal(0, scrollView.PlatformInvalidateMeasureCount);
+
+			// Invalidate page content
+			page.Content.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+			Assert.Equal(2, page.InvalidateMeasureCount);
+			Assert.Equal(0, page.PlatformInvalidateMeasureCount);
+		}
+
+		[Theory]
+		[InlineData(true, 0)]
+		[InlineData(false, 1)]
+		public void MeasureInvalidatedPropagatesUpTreeOnAppSwitch(bool skipMeasureInvalidatedPropagation, int expectedAncestorMeasureInvalidatedEvents)
+		{
+			try
+			{
+				VisualElement.SkipMeasureInvalidatedPropagation = skipMeasureInvalidatedPropagation;
+
+				var label = new LabelInvalidateMeasureCheck { IsPlatformEnabled = true };
+
+				var contentView = new ContentViewInvalidationMeasureCheck { Content = label, IsPlatformEnabled = true };
+
+				var scrollView = new ScrollViewInvalidationMeasureCheck
+				{
+					// VerticalStackLayout is not a CompatibilityLayout so it will not propagate the MeasureInvalidated
+					// event up the tree unless VisualElement.IsMeasureInvalidatedPropagationEnabled switch is set to true
+					Content = new VerticalStackLayout
+					{
+						Children = { contentView },
+						IsPlatformEnabled = true
+					},
+					IsPlatformEnabled = true
+				};
+
+				var page = new InvalidatePageInvalidateMeasureCheck { Content = scrollView };
+
+				// Set up the window
+				_ = new TestWindow(page);
+
+				// Reset counters
+				label.InvalidateMeasureCount = 0;
+				label.PlatformInvalidateMeasureCount = 0;
+				contentView.InvalidateMeasureCount = 0;
+				contentView.PlatformInvalidateMeasureCount = 0;
+				scrollView.InvalidateMeasureCount = 0;
+				scrollView.PlatformInvalidateMeasureCount = 0;
+				page.InvalidateMeasureCount = 0;
+				page.PlatformInvalidateMeasureCount = 0;
+
+				// Invalidate the label
+				label.InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+				Assert.Equal(1, label.InvalidateMeasureCount);
+				Assert.Equal(1, label.PlatformInvalidateMeasureCount);
+				Assert.Equal(1, contentView.InvalidateMeasureCount);
+				Assert.Equal(0, contentView.PlatformInvalidateMeasureCount);
+				Assert.Equal(expectedAncestorMeasureInvalidatedEvents, scrollView.InvalidateMeasureCount);
+				Assert.Equal(0, scrollView.PlatformInvalidateMeasureCount);
+				Assert.Equal(expectedAncestorMeasureInvalidatedEvents, page.InvalidateMeasureCount);
+				Assert.Equal(0, page.PlatformInvalidateMeasureCount);
+			}
+			finally
+			{
+				VisualElement.SkipMeasureInvalidatedPropagation = false;
+			}
 		}
 
 		class LabelInvalidateMeasureCheck : Label
 		{
+			public int PlatformInvalidateMeasureCount { get; set; }
 			public int InvalidateMeasureCount { get; set; }
 
 			public LabelInvalidateMeasureCheck()
 			{
-
+				MeasureInvalidated += (sender, args) =>
+				{
+					InvalidateMeasureCount++;
+				};
 			}
 
-			internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
+			internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
 			{
 				base.InvalidateMeasureInternal(trigger);
-				InvalidateMeasureCount++;
+				PlatformInvalidateMeasureCount++;
+			}
+		}
+
+		class ContentViewInvalidationMeasureCheck : ContentView
+		{
+			public int PlatformInvalidateMeasureCount { get; set; }
+			public int InvalidateMeasureCount { get; set; }
+
+			public ContentViewInvalidationMeasureCheck()
+			{
+				MeasureInvalidated += (sender, args) =>
+				{
+					InvalidateMeasureCount++;
+				};
+			}
+
+			internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
+			{
+				base.InvalidateMeasureInternal(trigger);
+				PlatformInvalidateMeasureCount++;
 			}
 		}
 
 		class ScrollViewInvalidationMeasureCheck : ScrollView
 		{
+			public int PlatformInvalidateMeasureCount { get; set; }
 			public int InvalidateMeasureCount { get; set; }
 
 			public ScrollViewInvalidationMeasureCheck()
 			{
-
+				MeasureInvalidated += (sender, args) =>
+				{
+					InvalidateMeasureCount++;
+				};
 			}
 
-			internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
+			internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
 			{
 				base.InvalidateMeasureInternal(trigger);
-				InvalidateMeasureCount++;
+				PlatformInvalidateMeasureCount++;
 			}
 		}
 
 		class InvalidatePageInvalidateMeasureCheck : ContentPage
 		{
+			public int PlatformInvalidateMeasureCount { get; set; }
 			public int InvalidateMeasureCount { get; set; }
 
 			public InvalidatePageInvalidateMeasureCheck()
 			{
-
+				MeasureInvalidated += (sender, args) =>
+				{
+					InvalidateMeasureCount++;
+				};
 			}
 
-			internal override void InvalidateMeasureInternal(InvalidationEventArgs trigger)
+			internal override void InvalidateMeasureInternal(InvalidationTrigger trigger)
 			{
 				base.InvalidateMeasureInternal(trigger);
-				InvalidateMeasureCount++;
+				PlatformInvalidateMeasureCount++;
 			}
 		}
 	}

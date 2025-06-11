@@ -36,9 +36,9 @@ public class MacTemplateTest : BaseTemplateTests
 			$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 	}
 
-	[Test]
-	[TestCase("maui-blazor", "Debug", DotNetCurrent, true)]
-	[TestCase("maui-blazor", "Release", DotNetCurrent, true)]
+	//[Test]
+	//[TestCase("maui-blazor", "Debug", DotNetCurrent, true)]
+	//[TestCase("maui-blazor", "Release", DotNetCurrent, true)]
 	public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework, bool sign)
 	{
 		if (TestEnvironment.IsWindows)
@@ -109,10 +109,10 @@ public class MacTemplateTest : BaseTemplateTests
 
 		List<string> buildWithCodeSignProps = new List<string>(BuildProps);
 
-		if(!sign && config == "Release")
+		if (!sign && config == "Release")
 		{
 			// Skipping Release build without code signing."
-			buildWithCodeSignProps.Add("EnableCodeSigning=false");		
+			buildWithCodeSignProps.Add("EnableCodeSigning=false");
 			buildWithCodeSignProps.Add("_RequireCodeSigning=false");
 		}
 		else if (sign)

@@ -155,6 +155,11 @@ namespace UITest.Appium
 		{
 			var element = GetAppiumElement(parameters["element"]);
 
+			if (element == null)
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
 			var sequence = new ActionSequence(touchDevice, 0);
 			sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
@@ -189,6 +194,11 @@ namespace UITest.Appium
 		{
 			var element = GetAppiumElement(parameters["element"]);
 
+			if (element == null)
+			{
+				return CommandResponse.FailedEmptyResponse;
+			}
+
 			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Mouse);
 			var longPress = new ActionSequence(touchDevice, 0);
 
@@ -199,17 +209,6 @@ namespace UITest.Appium
 			_appiumApp.Driver.PerformActions(new List<ActionSequence> { longPress });
 
 			return CommandResponse.SuccessEmptyResponse;
-		}
-
-		CommandResponse TapCoordinates(IDictionary<string, object> parameters)
-		{
-			if (parameters.TryGetValue("x", out var x) &&
-				parameters.TryGetValue("y", out var y))
-			{
-				return ClickCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
-			}
-
-			return CommandResponse.FailedEmptyResponse;
 		}
 
 		static AppiumElement? GetAppiumElement(object element)

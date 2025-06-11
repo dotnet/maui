@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST	  //When clicking Button0 (the first button) incorrectly centers it in the ScrollView instead of maintaining its left alignment.
+﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST   //When clicking Button0 (the first button) incorrectly centers it in the ScrollView instead of maintaining its left alignment.                                                                                                                                 
 //Issue Link: https://github.com/dotnet/maui/issues/26760
 using NUnit.Framework;
 using NUnit.Framework.Legacy;

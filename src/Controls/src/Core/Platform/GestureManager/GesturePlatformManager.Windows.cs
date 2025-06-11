@@ -311,14 +311,14 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_element == value)
 					return;
 
-				if (_element is View && ElementGestureRecognizers is {} gestureRecognizersBefore)
+				if (_element is View && ElementGestureRecognizers is { } gestureRecognizersBefore)
 				{
 					gestureRecognizersBefore.CollectionChanged -= _collectionChangedHandler;
 				}
 
 				_element = value;
 
-				if (_element is View && ElementGestureRecognizers is {} gestureRecognizersAfter)
+				if (_element is View && ElementGestureRecognizers is { } gestureRecognizersAfter)
 				{
 					gestureRecognizersAfter.CollectionChanged += _collectionChangedHandler;
 				}
@@ -406,6 +406,18 @@ namespace Microsoft.Maui.Controls.Platform
 					_container.ManipulationCompleted -= OnManipulationCompleted;
 					_container.PointerCanceled -= OnPointerCanceled;
 				}
+
+				if (Element is View && ElementGestureRecognizers is { } gestureRecognizers)
+				{
+					if (gestureRecognizers.FirstGestureOrDefault<DragGestureRecognizer>() is { } dragGesture)
+					{
+						dragGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+					}
+					if (gestureRecognizers.FirstGestureOrDefault<DropGestureRecognizer>() is { } dropGesture)
+					{
+						dropGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+					}
+				}
 			}
 		}
 
@@ -425,7 +437,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			ClearContainerEventHandlers();
 
-			if (_element is View && ElementGestureRecognizers is {} gestureRecognizers)
+			if (_element is View && ElementGestureRecognizers is { } gestureRecognizers)
 			{
 				gestureRecognizers.CollectionChanged -= _collectionChangedHandler;
 			}
@@ -469,7 +481,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				return;
 			}
-			
+
 			_isPanning = true;
 
 			foreach (IPanGestureController recognizer in view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>().Where(g => g.TouchPoints == _fingers.Count))
@@ -571,7 +583,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (_fingers.Contains(id))
 					_fingers.Remove(id);
 			}
-			
+
 			SwipeComplete(true);
 			PinchComplete(true);
 		}
@@ -822,26 +834,36 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			bool canDrag = gestures.FirstGestureOrDefault<DragGestureRecognizer>()?.CanDrag ?? false;
-			bool allowDrop = gestures.FirstGestureOrDefault<DropGestureRecognizer>()?.AllowDrop ?? false;
+			DragGestureRecognizer? dragGesture = gestures.FirstGestureOrDefault<DragGestureRecognizer>();
+			DropGestureRecognizer? dropGesture = gestures.FirstGestureOrDefault<DropGestureRecognizer>();
 
-			if (canDrag)
+			if (dragGesture is not null)
 			{
-				_subscriptionFlags |= SubscriptionFlags.ContainerDragEventsSubscribed;
+				dragGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+				dragGesture.PropertyChanged += HandleDragAndDropGesturePropertyChanged;
 
-				_container.CanDrag = true;
-				_container.DragStarting += HandleDragStarting;
-				_container.DropCompleted += HandleDropCompleted;
+				if (dragGesture.CanDrag && ((_subscriptionFlags & SubscriptionFlags.ContainerDragEventsSubscribed) == 0))
+				{
+					_subscriptionFlags |= SubscriptionFlags.ContainerDragEventsSubscribed;
+					_container.CanDrag = true;
+					_container.DragStarting += HandleDragStarting;
+					_container.DropCompleted += HandleDropCompleted;
+				}
 			}
 
-			if (allowDrop)
+			if (dropGesture is not null)
 			{
-				_subscriptionFlags |= SubscriptionFlags.ContainerDropEventsSubscribed;
-				
-				_container.AllowDrop = true;
-				_container.DragOver += HandleDragOver;
-				_container.Drop += HandleDrop;
-				_container.DragLeave += HandleDragLeave;
+				dropGesture.PropertyChanged -= HandleDragAndDropGesturePropertyChanged;
+				dropGesture.PropertyChanged += HandleDragAndDropGesturePropertyChanged;
+
+				if (dropGesture.AllowDrop && ((_subscriptionFlags & SubscriptionFlags.ContainerDropEventsSubscribed) == 0))
+				{
+					_subscriptionFlags |= SubscriptionFlags.ContainerDropEventsSubscribed;
+					_container.AllowDrop = true;
+					_container.DragOver += HandleDragOver;
+					_container.Drop += HandleDrop;
+					_container.DragLeave += HandleDragLeave;
+				}
 			}
 		}
 
@@ -981,6 +1003,15 @@ namespace Microsoft.Maui.Controls.Platform
 		void HandleDoubleTapped(object sender, DoubleTappedRoutedEventArgs doubleTappedRoutedEventArgs)
 		{
 			doubleTappedRoutedEventArgs.Handled = true;
+		}
+
+		void HandleDragAndDropGesturePropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName == DragGestureRecognizer.CanDragProperty.PropertyName ||
+				e.PropertyName == DropGestureRecognizer.AllowDropProperty.PropertyName)
+			{
+				UpdateDragAndDropGestureRecognizers();
+			}
 		}
 
 		DragEventArgs ToDragEventArgs(UI.Xaml.DragEventArgs e, PlatformDragEventArgs platformArgs)

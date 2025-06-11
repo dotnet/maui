@@ -22,8 +22,8 @@ public class Bugzilla37841 : _IssuesUITest
 		App.WaitForElement(Generate);
 		App.Tap(Generate);
 
-        App.WaitForTextToBePresentInElement(entrycell, "12345");
-	    App.WaitForTextToBePresentInElement(textcell, "6789");
+		App.WaitForTextToBePresentInElement(entrycell, "12345");
+		App.WaitForTextToBePresentInElement(textcell, "6789");
 		App.Tap(Generate);
 
 		App.WaitForTextToBePresentInElement(entrycell, "112358");

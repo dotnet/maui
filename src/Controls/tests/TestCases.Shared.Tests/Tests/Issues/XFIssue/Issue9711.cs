@@ -7,30 +7,33 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue9711 : _IssuesUITest
 {
-    public Issue9711(TestDevice testDevice) : base(testDevice)
-    {
-    }
+	public Issue9711(TestDevice testDevice) : base(testDevice)
+	{
+	}
 
-    public override string Issue => "[Bug] iOS Failed to marshal the Objective-C object HeaderWrapperView";
- 
-    [Test]
-    [Category(UITestCategories.ListView)]
-    public void TestTappingHeaderDoesNotCrash()
-    {
-        // Usually, tapping one header is sufficient to produce the exception.
-        // However, sometimes it takes two taps, and rarely, three.  If the app
-        // crashes, one of the RunningApp queries will throw, failing the test.
- 
-        Assert.DoesNotThrowAsync(async () => 
-        {
-            App.Tap("Group2");
-            await Task.Delay(3000);
-            App.Tap("Group1");
-            await Task.Delay(3000);
-            App.Tap("Group0");
-            await Task.Delay(3000);
-            App.WaitForElement("9711TestListView");
-        });
-    }
+	public override string Issue => "[Bug] iOS Failed to marshal the Objective-C object HeaderWrapperView";
+
+	[Test]
+	[Category(UITestCategories.ListView)]
+	public void TestTappingHeaderDoesNotCrash()
+	{
+		// Usually, tapping one header is sufficient to produce the exception.
+		// However, sometimes it takes two taps, and rarely, three.  If the app
+		// crashes, one of the RunningApp queries will throw, failing the test.
+
+		Assert.DoesNotThrowAsync(async () =>
+		{
+			App.WaitForElement("Group2");
+			App.Tap("Group2");
+			await Task.Delay(3000);
+			App.WaitForElement("Group1");
+			App.Tap("Group1");
+			await Task.Delay(3000);
+			App.WaitForElement("Group0");
+			App.Tap("Group0");
+			await Task.Delay(3000);
+			App.WaitForElement("9711TestListView");
+		});
+	}
 }
 #endif

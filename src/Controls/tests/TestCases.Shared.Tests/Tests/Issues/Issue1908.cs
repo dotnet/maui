@@ -1,5 +1,4 @@
-﻿#if ANDROID
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
 
@@ -19,8 +18,8 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		public void Issue1908Test()
 		{
 			App.WaitForElement("OASIS1");
-			App.Screenshot("For manual review. Images load");
+			App.WaitForElement("OASIS2");
+			App.WaitForElement("OASIS1");
 		}
 	}
 }
-#endif

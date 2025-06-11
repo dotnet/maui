@@ -10,12 +10,13 @@ public class Issue3318 : TestContentPage
 		var stackLayout = new StackLayout();
 
 		var list = Enumerable.Range(0, 40).Select(c => $"Item {c}").ToArray();
-		var listview = new ListView { 
+		var listview = new ListView
+		{
 			ItemsSource = list,
 			ItemTemplate = new DataTemplate(() =>
 			{
 				var viewCell = new ViewCell();
-				var itemTemplateLabel = new Label() { HeightRequest = 30};
+				var itemTemplateLabel = new Label() { HeightRequest = 30 };
 				itemTemplateLabel.SetBinding(Label.TextProperty, new Binding("."));
 				itemTemplateLabel.SetBinding(Label.AutomationIdProperty, new Binding("."));
 				viewCell.View = itemTemplateLabel;

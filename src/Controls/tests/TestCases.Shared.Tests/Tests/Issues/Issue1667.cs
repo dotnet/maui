@@ -31,7 +31,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			Assert.That(result, Is.EqualTo("0"));
 		}
 
-// This test is iOS-specific due to platform-specific cursor color setting in the sample.
+		// This test is iOS-specific due to platform-specific cursor color setting in the sample.
 		// Note: Visual validation of cursor color is required as automation is challenging
 		// due to cursor blinking, which prevents reliable image comparison.
 		[Test]

@@ -30,31 +30,30 @@ internal class InvocationParser
 
 	private Result<InterceptedMethodType> VerifyCorrectOverloadBindingCreate(InvocationExpressionSyntax invocation, CancellationToken t)
 	{
-		var argumentList = invocation.ArgumentList.Arguments;
-
 		var symbol = _context.SemanticModel.GetSymbolInfo(invocation.Expression).Symbol;
-		if ((symbol?.ContainingType?.Name != "Binding" && symbol?.ContainingType?.Name != "BindingBase")
-			|| symbol?.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
+		if (symbol is not null)
 		{
-			return Result<InterceptedMethodType>.Failure(DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation()));
+			// If the symbol is available, ensure it is the expected method.
+			if (symbol is not IMethodSymbol methodSymbol
+				|| methodSymbol.Name != "Create"
+				|| (methodSymbol.ContainingType?.Name != "Binding" && methodSymbol.ContainingType?.Name != "BindingBase")
+				|| methodSymbol.ContainingType?.ContainingNamespace.ToDisplayString() is not "Microsoft.Maui.Controls")
+			{
+				return Result<InterceptedMethodType>.Failure(DiagnosticsFactory.SuboptimalSetBindingOverload(invocation.GetLocation()));
+			}
 		}
-
-		if (argumentList.Count == 0)
+		else
 		{
-			throw new ArgumentOutOfRangeException(nameof(invocation));
-		}
+			// It is not possible to resolve the method symbol when the bindable object (the first argument or the object that the extension method
+			// is called on) is referenced by a field that will be generated via XamlG based on the x:Name attributes. In that case, this source generator
+			// cannot see the outputs of the other source generator and we have incomplete information about the method invocation and we can only work with
+			// the syntax tree and not the semantic model.
+			var argumentsList = invocation.ArgumentList.Arguments;
 
-		var firstArgument = argumentList[0].Expression;
-		if (firstArgument is IdentifierNameSyntax)
-		{
-			var type = _context.SemanticModel.GetTypeInfo(firstArgument, cancellationToken: t).Type;
-			if (type != null && type.Name == "Func")
+			var firstArgument = argumentsList[0].Expression; // Guaranteed to have at least one argument (checked by the caller)
+			if (firstArgument is not LambdaExpressionSyntax)
 			{
 				return Result<InterceptedMethodType>.Failure(DiagnosticsFactory.GetterIsNotLambda(firstArgument.GetLocation()));
-			}
-			else // String and Binding
-			{
-				return Result<InterceptedMethodType>.Failure(DiagnosticsFactory.SuboptimalSetBindingOverload(firstArgument.GetLocation()));
 			}
 		}
 

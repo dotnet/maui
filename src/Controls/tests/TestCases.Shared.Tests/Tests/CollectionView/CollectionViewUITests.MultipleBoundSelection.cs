@@ -1,4 +1,4 @@
-﻿#if TEST_FAILS_ON_IOS && TEST_FAILS_ON_CATALYST // Multiselection not working in Catalyst and iOS, Issue: https://github.com/dotnet/maui/issues/26942 & https://github.com/dotnet/maui/issues/26943
+﻿#if TEST_FAILS_ON_CATALYST // Multiselection not working in Catalyst , Issue: https://github.com/dotnet/maui/issues/26942 
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.TestCases.Tests
 			App.Tap("Item 0");
 
 			// 6. Test setting the selection directly with CollectionView.SelectedItems
-			App.WaitForElement("DirectUpdate"); 
+			App.WaitForElement("DirectUpdate");
 			App.Tap("DirectUpdate");
 			App.WaitForElement("Selected: Item 0, Item 3");
 		}

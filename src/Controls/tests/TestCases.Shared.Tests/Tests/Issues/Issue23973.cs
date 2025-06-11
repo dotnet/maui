@@ -1,4 +1,3 @@
-#if !MACCATALYST // MACCATALYST doesn't support VerifyScreenshot tests
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -19,7 +18,6 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			VerifyScreenshot();
 		}
 
-#if !WINDOWS
 		[Test]
 		[Category(UITestCategories.Navigation)]
 		public void VerifyTransparentModalShowsPageBeneathModal()
@@ -28,7 +26,5 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 			App.Tap("PushTransparentModal");
 			VerifyScreenshot();
 		}
-#endif
 	}
 }
-#endif

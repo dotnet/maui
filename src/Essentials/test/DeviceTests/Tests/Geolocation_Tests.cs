@@ -17,10 +17,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			await MainThread.InvokeOnMainThreadAsync(async () =>
 			{
-				await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+				await Permissions.RequestAsync<Permissions.LocationWhenInUse>().ConfigureAwait(false);
 			});
 
-			var location = await Geolocation.GetLastKnownLocationAsync();
+			var location = await Geolocation.GetLastKnownLocationAsync().ConfigureAwait(false);
 
 			Assert.NotNull(location);
 
@@ -42,10 +42,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			await MainThread.InvokeOnMainThreadAsync(async () =>
 			{
-				await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+				await Permissions.RequestAsync<Permissions.LocationWhenInUse>().ConfigureAwait(false);
 			});
 
-			var location = await Geolocation.GetLocationAsync();
+			var location = await Geolocation.GetLocationAsync().ConfigureAwait(false);
 
 			Assert.NotNull(location);
 
@@ -67,12 +67,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			await MainThread.InvokeOnMainThreadAsync(async () =>
 			{
-				await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+				await Permissions.RequestAsync<Permissions.LocationWhenInUse>().ConfigureAwait(false);
 			});
 
 			var request = new GeolocationRequest(GeolocationAccuracy.Best);
 			request.RequestFullAccuracy = true;
-			var location = await Geolocation.GetLocationAsync(request);
+			var location = await Geolocation.GetLocationAsync(request).ConfigureAwait(false);
 
 			Assert.NotNull(location);
 
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			await MainThread.InvokeOnMainThreadAsync(async () =>
 			{
-				await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+				await Permissions.RequestAsync<Permissions.LocationWhenInUse>().ConfigureAwait(false);
 			});
 
 			var request = new GeolocationListeningRequest(GeolocationAccuracy.Best);

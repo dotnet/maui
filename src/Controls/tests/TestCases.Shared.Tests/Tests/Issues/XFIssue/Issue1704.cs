@@ -6,10 +6,10 @@ namespace Microsoft.Maui.TestCases.Tests.Issues;
 
 public class Issue1704 : _IssuesUITest
 {
-	const string OnLoad="On Load";
-	const string OnStart ="On Start";
-	const string Source="Source";
-	const string Misc="Misc";
+	const string OnLoad = "On Load";
+	const string OnStart = "On Start";
+	const string Source = "Source";
+	const string Misc = "Misc";
 
 	public Issue1704(TestDevice testDevice) : base(testDevice)
 	{
@@ -26,13 +26,13 @@ public class Issue1704 : _IssuesUITest
 		App.WaitForTabElement(OnStart);
 		App.WaitForTabElement(Source);
 		App.WaitForTabElement(Misc);
-	
+
 		App.TapTab(OnLoad);
 		App.TapTab(OnStart);
 		App.WaitForElement("Start Animation");
 		App.Tap("Start Animation");
 		App.Tap("Stop Animation");
-	
+
 		App.TapTab(Misc);
 		App.WaitForElement("Start Animation");
 		App.Tap("Start Animation");

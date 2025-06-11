@@ -7,9 +7,10 @@
         <Label
             x:Name="TestLabel"
             AutomationId="TestLabel" />
+            <!-- Set the RowHeight to enable scrolling on the Windows platform -->
         <ListView 
             AutomationId="TestListView"
-            Grid.Row="1" 
+            Grid.Row="1" RowHeight="40"
             Scrolled="OnListViewScrolled">
             <ListView.ItemsSource>
                 <x:Array Type="{x:Type x:String}">

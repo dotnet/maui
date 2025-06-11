@@ -17,7 +17,7 @@ namespace Microsoft.Maui.TestCases.Tests.Issues
 		[Category(UITestCategories.Compatibility)]
 		public void DoesNotCrash()
 		{
-			App.WaitForElement("Animate");	
+			App.WaitForElement("Animate");
 			App.Tap("Animate");
 			App.WaitForElement("Success");
 		}

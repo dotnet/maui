@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
+    <MauiImage Include="Resources\Images\white.png" Link="Resources\Images\white_tab.png"  BaseSize="23,23" />
     <MauiImage Remove="Resources\Images\red-embedded.png" />
     <None Remove="Resources\Images\red-embedded.png" />
     <EmbeddedResource Include="Resources\Images\red-embedded.png" LogicalName="red-embedded.png" />
@@ -32,6 +33,7 @@
     <!-- Raw Assets for HybridWebView tests (removes the "Resources\Raw" prefix, to mimic what project templates do) -->
     <None Remove="Resources\Raw\**" />
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    <MauiAsset Include="..\..\..\Core\src\Handlers\HybridWebView\HybridWebView.js" LogicalName="HybridTestRoot\scripts\HybridWebView.js" />
   </ItemGroup>
 
   <PropertyGroup>

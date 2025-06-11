@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android.Enums;
@@ -89,6 +90,20 @@ namespace UITest.Appium
 				{ "element", element },
 			});
 			return (string?)response.Value;
+		}
+
+		public static bool TryGetText(this IUIElement element, [NotNullWhen(true)] out string? text)
+		{
+			try
+			{
+				text = GetText(element);
+				return text is not null;
+			}
+			catch
+			{
+				text = null;
+				return false;
+			}
 		}
 
 		public static string? ReadText(this IUIElement element)
@@ -799,7 +814,8 @@ namespace UITest.Appium
 			while (true)
 			{
 				var element = app.FindElements(automationId).FirstOrDefault();
-				if (element != null && (element.GetText()?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false))
+
+				if (element is not null && element.TryGetText(out var s) && s.Contains(text, StringComparison.OrdinalIgnoreCase))
 				{
 					return true;
 				}
@@ -1643,11 +1659,6 @@ namespace UITest.Appium
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		public static void SetLightTheme(this IApp app)
 		{
-			if (app is AppiumCatalystApp)
-			{
-				throw new InvalidOperationException($"SetLightTheme is not supported");
-			}
-
 			app.CommandExecutor.Execute("setLightTheme", ImmutableDictionary<string, object>.Empty);
 		}
 
@@ -1657,11 +1668,6 @@ namespace UITest.Appium
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		public static void SetDarkTheme(this IApp app)
 		{
-			if (app is AppiumCatalystApp)
-			{
-				throw new InvalidOperationException($"SetDarkTheme is not supported");
-			}
-
 			app.CommandExecutor.Execute("setDarkTheme", ImmutableDictionary<string, object>.Empty);
 		}
 
@@ -1764,6 +1770,32 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Triggers the SwipeBackNavigation, simulating the default swipe-back navigation.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// /// <exception cref="InvalidOperationException">SwipeBackNavigation is only supported on <see cref="AppiumIOSApp"/> and <see cref="AppiumAndroidApp"/>.</exception>
+		public static void SwipeBackNavigation(this IApp app)
+		{
+			if (app is not AppiumIOSApp && app is not AppiumAndroidApp)
+			{
+				throw new InvalidOperationException($"Interactive Pop Gesture is only supported on AppiumIOSAppp and AppiumAndroidApp");
+			}
+
+			if (app is AppiumIOSApp)
+			{
+				app.CommandExecutor.Execute("interactivePopGesture", ImmutableDictionary<string, object>.Empty);
+			}
+			else if (app is AppiumAndroidApp)
+			{
+				var response = app.CommandExecutor.Execute("checkIfGestureNavigationIsEnabled", new Dictionary<string, object>());
+				if (response?.Value is bool gestureNavigationIsEnabled && gestureNavigationIsEnabled)
+					SwipeLeftToRight(app);
+				else
+					Back(app);
+			}
+		}
+
+		/// <summary>
 		/// Start recording screen.
 		/// Functionality that's only available on Android, iOS and Windows.
 		/// </summary>
@@ -1830,16 +1862,16 @@ namespace UITest.Appium
 		/// <summary>
 		/// Switch the System animations state.
 		/// Optimize and accelerate tests, eliminating animations entirely when Appium is executing tests, as they serve no practical purpose in this context.
-		/// Functionality that's only available on Android.
+		/// Functionality that's only available on Android and Catalyst.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="enableSystemAnimations">Enable/disable the system animations.</param>
-		/// <exception cref="InvalidOperationException">ToggleSystemAnimations is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		/// <exception cref="InvalidOperationException">ToggleSystemAnimations is only supported on <see cref="AppiumAndroidApp"/> and <see cref="AppiumCatalystApp"/>.</exception>
 		public static void ToggleSystemAnimations(this IApp app, bool enableSystemAnimations)
 		{
-			if (app is not AppiumAndroidApp)
+			if (app is not AppiumAndroidApp && app is not AppiumCatalystApp)
 			{
-				throw new InvalidOperationException($"ToggleSystemAnimations is only supported on AppiumAndroidApp");
+				throw new InvalidOperationException($"ToggleSystemAnimations is not supported");
 			}
 
 			app.CommandExecutor.Execute("toggleSystemAnimations", new Dictionary<string, object>()
@@ -1872,7 +1904,7 @@ namespace UITest.Appium
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="performanceDataType">The available performance data types(cpuinfo | batteryinfo | networkinfo | memoryinfo).</param>
-		/// <exception cref="InvalidOperationException">ToggleWifi is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		/// <exception cref="InvalidOperationException">GetPerformanceData is only supported on <see cref="AppiumAndroidApp"/>.</exception>
 		/// <returns>The information of the system related to the performance.</returns>
 		public static IList<object> GetPerformanceData(this IApp app, string performanceDataType)
 		{
@@ -1892,6 +1924,24 @@ namespace UITest.Appium
 			}
 
 			throw new InvalidOperationException($"Could not get the performance data");
+		}
+
+		/// <summary>
+		/// Gets the information of the system state regarding memory.
+		/// Functionality that's only available on Android.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <returns>The information of the system related to the memory performance.</returns>
+		/// <exception cref="InvalidOperationException">GetPerformanceData is only supported on <see cref="AppiumAndroidApp"/>.</exception>
+		public static IReadOnlyDictionary<string, int> GetPerformanceMemoryInfo(this IApp app)
+		{
+			var performanceData = GetPerformanceData(app, "memoryinfo");
+			var countersTitles = (object?[])performanceData[0];
+			var countersStrings = (object?[])performanceData[1];
+			var data = countersTitles.Zip(countersStrings)
+				.Where(x => x is { First: string, Second: string })
+				.ToDictionary(x => (string)x.First!, x => int.TryParse((string)x.Second!, out var value) ? value : 0);
+			return data;
 		}
 
 		/// <summary>
@@ -1998,7 +2048,7 @@ namespace UITest.Appium
 		/// </param>
 		public static void TapDisplayAlertButton(this IApp app, string text, int buttonIndex = 0)
 		{
-			if(app is AppiumCatalystApp)
+			if (app is AppiumCatalystApp)
 			{
 				app.WaitForElement(AppiumQuery.ById($"action-button--{999 - buttonIndex}"));
 				app.Tap(AppiumQuery.ById($"action-button--{999 - buttonIndex}"));
@@ -2105,6 +2155,38 @@ namespace UITest.Appium
 					else
 					{
 						app.WaitForElement(automationId);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		/// Waits for the flyout icon to disappear in the app.
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <param name="automationId">The automation ID of the flyout icon (default is an empty string).</param>
+		/// <param name="isShell">Indicates whether the app is using Shell navigation (default is true).</param>
+		public static void WaitForNoFlyoutIcon(this IApp app, string automationId = "", bool isShell = true)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForNoElement(AppiumQuery.ByXPath("//android.widget.ImageButton[@content-desc=\"Open navigation drawer\"]"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp || app is AppiumWindowsApp)
+			{
+				if (isShell)
+				{
+					app.WaitForNoElement("OK");
+				}
+				if (!isShell)
+				{
+					if (app is AppiumWindowsApp)
+					{
+						app.WaitForNoElement(AppiumQuery.ByAccessibilityId("TogglePaneButton"));
+					}
+					else
+					{
+						app.WaitForNoElement(automationId);
 					}
 				}
 			}
@@ -2231,6 +2313,42 @@ namespace UITest.Appium
 			app.TapInFlyout(flyoutItem, false);
 		}
 
+
+		/// <summary>
+		/// Toggles the visibility of secondary toolbar items.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void ToggleSecondaryToolbarItems(this IApp app)
+		{
+			if (app is not AppiumAndroidApp && app is not AppiumWindowsApp)
+			{
+				throw new InvalidOperationException($"ToggleSecondaryToolbarItems is not supported");
+			}
+
+			app.CommandExecutor.Execute("toggleSecondaryToolbarItems", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Waits for the "More" button in the app, with platform-specific logic for Android and Windows.
+		/// This method does not currently support iOS and macOS platforms, where the "More" button is not shown.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void WaitForMoreButton(this IApp app)
+		{
+			if (app is AppiumAndroidApp)
+			{
+				app.WaitForElement(AppiumQuery.ByXPath("//android.widget.ImageView[@content-desc=\"More options\"]"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				app.WaitForElement(AppiumQuery.ByAccessibilityId("MoreButton"));
+			}
+			else
+			{
+				throw new InvalidOperationException($"WaitForMoreButton is not supported on this platform.");
+			}
+		}
+
 		/// <summary>
 		/// Taps the "More" button in the app, with platform-specific logic for Android and Windows.
 		/// This method does not currently support iOS and macOS platforms, where the "More" button is not shown.
@@ -2274,18 +2392,41 @@ namespace UITest.Appium
 			app.Tap(tabName);
 		}
 
-		/// <summary>
-		/// Waits for a tab element with the specified name to appear and for page navigation to settle.
-		/// </summary>
-		/// <param name="app">The IApp instance.</param>
-		/// <param name="tabName">The name of the tab to wait for.</param>
-		/// <remarks>
-		/// For Android apps, the tab name is converted to uppercase before searching.
-		/// </remarks>
+		/// <summary>
+		/// Waits for a tab element with the specified name to appear and for page navigation to settle.
+		/// </summary>
+		/// <param name="app">The IApp instance.</param>
+		/// <param name="tabName">The name of the tab to wait for.</param>
+		/// <remarks>
+		/// For Android apps, the tab name is converted to uppercase before searching.
+		/// </remarks>
 		public static IUIElement WaitForTabElement(this IApp app, string tabName)
 		{
 			tabName = app is AppiumAndroidApp ? tabName.ToUpperInvariant() : tabName;
 			return app.WaitForElementTillPageNavigationSettled(tabName);
+		}
+
+		/// <summary>
+		/// Activates the context menu for the specified element.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector of the Slider element to update.</param>
+		public static void ActivateContextMenu(this IApp app, string marked)
+		{
+			var element = FindElement(app, marked);
+			app.CommandExecutor.Execute("activateContextMenu", new Dictionary<string, object>
+ 			{
+ 				{ "element", element },
+ 			});
+		}
+
+		/// <summary>
+		/// Dismisses the context menu.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void DismissContextMenu(this IApp app)
+		{
+			app.CommandExecutor.Execute("dismissContextMenu", new Dictionary<string, object>());
 		}
 
 		static IUIElement Wait(Func<IUIElement?> query,
@@ -2372,6 +2513,39 @@ namespace UITest.Appium
 			var startupArg = config.GetProperty<Dictionary<string, string>>("TestConfigurationArgs") ?? new Dictionary<string, string>();
 			startupArg.Add(key, value);
 			config.SetProperty("TestConfigurationArgs", startupArg);
+		}
+
+		/// <summary>
+		/// Gets the search handler element for the shell.
+		/// This method is used to find the search handler element in the app.
+		/// It uses different queries based on the app type (Android, iOS, Catalyst, or Windows).
+		/// </summary>
+		/// <param name="app">The IApp instance representing the application.</param>
+		/// <returns>The search handler element for the shell.</returns>
+		public static IUIElement GetShellSearchHandler(this IApp app)
+		{
+			IUIElement? element = null;
+
+			if (app is AppiumAndroidApp)
+			{
+				element = app.WaitForElement(AppiumQuery.ByXPath("//android.widget.EditText"));
+			}
+			else if (app is AppiumIOSApp || app is AppiumCatalystApp)
+			{
+				element = app.WaitForElement(AppiumQuery.ByXPath("//XCUIElementTypeSearchField"));
+			}
+			else if (app is AppiumWindowsApp)
+			{
+				element = app.WaitForElement("TextBox");
+			}
+
+			// Ensure the element is not null before returning
+			if (element is null)
+			{
+				throw new InvalidOperationException("SearchHandler element not found.");
+			}
+
+			return element;
 		}
 	}
 }

@@ -202,8 +202,12 @@ namespace Microsoft.Maui.Controls.Compatibility
 			SizeRequest size = base.Measure(widthConstraint - Padding.HorizontalThickness, heightConstraint - Padding.VerticalThickness, flags);
 #pragma warning restore CS0618 // Type or member is obsolete
 #pragma warning disable CS0618 // Type or member is obsolete
-			return new SizeRequest(new Size(size.Request.Width + Padding.HorizontalThickness, size.Request.Height + Padding.VerticalThickness),
-				new Size(size.Minimum.Width + Padding.HorizontalThickness, size.Minimum.Height + Padding.VerticalThickness));
+			var request = new Size(size.Request.Width + Padding.HorizontalThickness, size.Request.Height + Padding.VerticalThickness);
+			var minimum = new Size(size.Minimum.Width + Padding.HorizontalThickness, size.Minimum.Height + Padding.VerticalThickness);
+
+			DesiredSize = request;
+
+			return new SizeRequest(request, minimum);
 #pragma warning restore CS0618 // Type or member is obsolete
 		}
 #pragma warning restore CS0672 // Member overrides obsolete member
@@ -320,12 +324,17 @@ namespace Microsoft.Maui.Controls.Compatibility
 		[Obsolete("Use InvalidateMeasure depending on your scenario")]
 		protected virtual void InvalidateLayout()
 		{
-			_hasDoneLayout = false;
+			SetNeedsLayout();
 			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 			if (!_hasDoneLayout)
 			{
 				ForceLayout();
 			}
+		}
+
+		void SetNeedsLayout()
+		{
+			_hasDoneLayout = false;
 		}
 
 		/// <summary>
@@ -341,10 +350,18 @@ namespace Microsoft.Maui.Controls.Compatibility
 		[Obsolete("Use ArrangeOverride")]
 		protected abstract void LayoutChildren(double x, double y, double width, double height);
 
-		internal override void OnChildMeasureInvalidatedInternal(VisualElement child, InvalidationTrigger trigger, int depth)
+		internal override void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
-			// TODO: once we remove old Xamarin public signatures we can invoke `OnChildMeasureInvalidated(VisualElement, InvalidationTrigger)` directly
-			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger, depth));
+			SetNeedsLayout();
+			InvalidateMeasureCache();
+
+			OnChildMeasureInvalidated(child, new InvalidationEventArgs(trigger));
+
+			var propagatedTrigger = GetPropagatedTrigger(trigger);
+			InvokeMeasureInvalidated(propagatedTrigger);
+
+			// Behavior of legacy layouts is to always propagate the measure invalidation to the parent
+			(Parent as VisualElement)?.OnChildMeasureInvalidated(this, propagatedTrigger);
 		}
 
 		/// <summary>
@@ -356,19 +373,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		/// <remarks>This method has a default implementation and application developers must call the base implementation.</remarks>
 		protected void OnChildMeasureInvalidated(object sender, EventArgs e)
 		{
-			var depth = 0;
-			InvalidationTrigger trigger;
-			if (e is InvalidationEventArgs args)
-			{
-				trigger = args.Trigger;
-				depth = args.CurrentInvalidationDepth;
-			}
-			else
-			{
-				trigger = InvalidationTrigger.Undefined;
-			}
-
-			OnChildMeasureInvalidated((VisualElement)sender, trigger, depth);
 			OnChildMeasureInvalidated();
 		}
 
@@ -542,55 +546,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 			child.Layout(region);
 		}
 
-		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger, int depth)
-		{
-			IReadOnlyList<Element> children = LogicalChildrenInternal;
-			int count = children.Count;
-			for (var index = 0; index < count; index++)
-			{
-				if (LogicalChildrenInternal[index] is VisualElement v && v.IsVisible && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
-				{
-					return;
-				}
-			}
-
-			if (child is View view)
-			{
-				// we can ignore the request if we are either fully constrained or when the size request changes and we were already fully constrained
-				if ((trigger == InvalidationTrigger.MeasureChanged && view.Constraint == LayoutConstraint.Fixed) ||
-					(trigger == InvalidationTrigger.SizeRequestChanged && view.ComputedConstraint == LayoutConstraint.Fixed))
-				{
-					return;
-				}
-				if (trigger == InvalidationTrigger.HorizontalOptionsChanged || trigger == InvalidationTrigger.VerticalOptionsChanged)
-				{
-					ComputeConstraintForView(view);
-				}
-			}
-
-			InvalidateMeasureLegacy(trigger, depth, int.MaxValue);
-		}
-
-		// This lets us override the rules for invalidation on MAUI controls that unfortunately still inheirt from the legacy layout
-		private protected virtual void InvalidateMeasureLegacy(InvalidationTrigger trigger, int depth, int depthLeveltoInvalidate)
-		{
-			if (depth <= depthLeveltoInvalidate)
-			{
-				if (trigger == InvalidationTrigger.RendererReady)
-				{
-					InvalidateMeasureInternal(new InvalidationEventArgs(InvalidationTrigger.RendererReady, depth));
-				}
-				else
-				{
-					InvalidateMeasureInternal(new InvalidationEventArgs(InvalidationTrigger.MeasureChanged, depth));
-				}
-			}
-			else
-			{
-				FireMeasureChanged(trigger, depth);
-			}
-		}
-
 		internal override void OnIsVisibleChanged(bool oldValue, bool newValue)
 		{
 			base.OnIsVisibleChanged(oldValue, newValue);
@@ -706,19 +661,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 				}
 			}
 			return true;
-		}
-
-		protected override void InvalidateMeasureOverride()
-		{
-			base.InvalidateMeasureOverride();
-
-			foreach (var child in ((IElementController)this).LogicalChildren)
-			{
-				if (child is IView fe)
-				{
-					fe.InvalidateMeasure();
-				}
-			}
 		}
 
 		protected override Size ArrangeOverride(Rect bounds)

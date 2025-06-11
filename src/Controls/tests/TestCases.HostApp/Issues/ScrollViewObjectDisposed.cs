@@ -7,37 +7,42 @@
 		const string Instructions = "Tap the button. If the app does not crash and the red label displays \"Success\", this test has passed.";
 		const string Success = "Success";
 		const string TestButtonId = "TestButtonId";
-
-		readonly Label _status = new Label() { Text = "Test is running...", BackgroundColor = Colors.Red, TextColor = Colors.White };
-		readonly ScrollView _scroll = new ScrollView();
+		Label _status;
+		ScrollView _scroll;
 
 		public ScrollViewObjectDisposed()
 		{
-			_scroll.Content = _status;
-
 			InitTest();
 		}
 
 		void InitTest()
 		{
-			Button nextButton = new Button { Text = "Next", AutomationId = TestButtonId };
-			nextButton.Clicked += NextButton_Clicked;
+			_status = new Label() { Text = "Test is running...", BackgroundColor = Colors.Red, TextColor = Colors.White };
 
-			StackLayout stack = new StackLayout
+			_scroll = new ScrollView
 			{
-				Children = { new Label { Text = Instructions }, _scroll, nextButton }
+				Content = _status
 			};
 
-			Content = stack;
+			Button nextButton = new Button { Text = "Next", AutomationId = TestButtonId };
+			nextButton.Clicked += NextButton_Clicked;
+			var stack = new StackLayout
+			{
+				Children =
+				{
+					new Label { Text = Instructions },
+					_scroll,
+					nextButton
+				}
+			};
+			this.Content = stack;
 		}
-
 		void NextButton_Clicked(object sender, EventArgs e)
 		{
 			_status.Text = string.Empty;
-
 			InitTest();
-
 			_status.Text = Success;
 		}
 	}
 }
+

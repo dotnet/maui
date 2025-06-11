@@ -1,5 +1,3 @@
-﻿#if TEST_FAILS_ON_WINDOWS // When using App.Tap to interact with tab items which placed in the more section, the action targets the corner of the tabs, Line No 24
-// which doesn't trigger navigation on Windows. Windows requires tapping directly on the tab title text.
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -36,6 +34,10 @@ public class Issue6784 : _IssuesUITest
 		App.Tap("Tab 4");
 		App.WaitForElement("More");
 		App.Tap("More");
+		// On iOS and Mac Catalyst, the first 'more' tab goes back to tab 11, the second click goes to the 'more' menu
+#if IOS || MACCATALYST
+		App.Tap("More");
+#endif
 		App.WaitForElement("Tab 12");
 		App.Tap("Tab 12");
 	}
@@ -54,7 +56,6 @@ public class Issue6784 : _IssuesUITest
 		Assert.That(App.FindElements("Edit").Count(), Is.EqualTo(1));
 #else
 		Assert.That(App.FindElements("Edit").Count(), Is.EqualTo(0));
-#endif	
+#endif
 	}
 }
-#endif

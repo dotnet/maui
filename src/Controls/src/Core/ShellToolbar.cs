@@ -90,7 +90,12 @@ namespace Microsoft.Maui.Controls
 				backButtonVisible = _backButtonBehavior.IsVisible;
 			}
 
-			_drawerToggleVisible = stack.Count <= 1;
+			var flyoutBehavior = (_shell as IFlyoutView).FlyoutBehavior;
+#if WINDOWS
+			_drawerToggleVisible = flyoutBehavior is FlyoutBehavior.Flyout;
+#else
+			_drawerToggleVisible = stack.Count <= 1 && flyoutBehavior is FlyoutBehavior.Flyout;
+#endif
 			BackButtonVisible = backButtonVisible && stack.Count > 1;
 			BackButtonEnabled = _backButtonBehavior?.IsEnabled ?? true;
 			ToolbarItems = _toolbarTracker.ToolbarItems;
@@ -103,7 +108,6 @@ namespace Microsoft.Maui.Controls
 				if (_shell.IsSet(Shell.NavBarIsVisibleProperty))
 					return (bool)_shell.GetValue(Shell.NavBarIsVisibleProperty);
 
-				var flyoutBehavior = (_shell as IFlyoutView).FlyoutBehavior;
 #if WINDOWS
 				return (!String.IsNullOrEmpty(Title) ||
 					TitleView != null ||
