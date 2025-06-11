@@ -59,6 +59,25 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(SelectedTabColorProperty, value);
 		}
 
+		/// <summary>
+		/// Determines whether the navigation stack should be reset to the root when the currently selected tab is reselected.
+		/// </summary>
+		public static readonly BindableProperty PopToRootOnTabReselectProperty = BindableProperty.Create("PopToRootOnTabReselect", typeof(bool), typeof(TabbedPage), false);
+
+		/// <summary>
+		/// Gets a value indicating whether the navigation stack should be reset to the root when the currently selected tab is reselected.
+		/// </summary>
+		/// <param name="element">The object that controls tab navigation behavior.</param>
+		/// <returns><see langword="true"/> if the navigation stack should reset to the root on tab reselection; otherwise, <see langword="false"/>.</returns>
+		public static bool GetPopToRootOnTabReselect(BindableObject element) => (bool)element.GetValue(PopToRootOnTabReselectProperty);
+
+		/// <summary>
+		/// Sets a value indicating whether the navigation stack should be reset to the root when the currently selected tab is reselected.
+		/// </summary>
+		/// <param name="element">The object that controls tab navigation behavior.</param>
+		/// <param name="value"><see langword="true"/> to reset the navigation stack to the root on tab reselection; otherwise, <see langword="false"/>.</param>
+		public static void SetPopToRootOnTabReselect(BindableObject element, bool value) => element.SetValue(PopToRootOnTabReselectProperty, value);
+
 		protected override Page CreateDefault(object item)
 		{
 			var page = new Page();
