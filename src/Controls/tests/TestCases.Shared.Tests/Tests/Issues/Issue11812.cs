@@ -16,6 +16,6 @@ public class Issue11812 : _IssuesUITest
 	{
 		App.WaitForElement("TestButton");
 		App.Tap("TestButton");
-		App.WaitForElement("TestLabel");
+		App.WaitForElement("TestButton");
 	}
 }

@@ -44,9 +44,11 @@ namespace Microsoft.Maui.Handlers
 			if (handler.VirtualView.PresentedContent is IView view)
 			{
 				var platformView = view.ToPlatform(handler.MauiContext);
-				//Ensure the view is detached from any existing parent before adding it
-				var parent = platformView.Parent as Android.Views.ViewGroup;
-				parent?.RemoveView(platformView);
+				// Ensure the view is detached from any existing parent before adding it
+				if (platformView.Parent is Android.Views.ViewGroup oldParent)
+				{
+					oldParent.RemoveView(platformView);
+				}
 
 				handler.PlatformView.AddView(platformView);
 			}

@@ -6,7 +6,6 @@ namespace Maui.Controls.Sample.Issues;
 [Issue(IssueTracker.Github, 11812, "Setting Content of ContentView through style would crash on parent change", PlatformAffected.Android)]
 public class Issue11812 : ContentPage
 {
-	Label _countLabel;
 	ContentView _mainContentView;
 	Issue11812ViewModel _viewModel;
 	public Issue11812()
@@ -21,10 +20,6 @@ public class Issue11812 : ContentPage
 		};
 		button.Clicked += OnButtonClicked;
 
-		_countLabel = new Label();
-		_countLabel.AutomationId = "TestLabel";
-		_countLabel.SetBinding(Label.TextProperty, "Count");
-
 		_mainContentView = new ContentView();
 		_mainContentView.SetBinding(ContentView.ContentProperty, "Content.InnerContentView");
 
@@ -36,7 +31,6 @@ public class Issue11812 : ContentPage
 			Children =
 			{
 				button,
-				_countLabel,
 				_mainContentView
 			}
 		};
@@ -45,7 +39,6 @@ public class Issue11812 : ContentPage
 	}
 	private void OnButtonClicked(object sender, EventArgs e)
 	{
-		_viewModel.Count++;
 		_viewModel.Content = new Issue11812Model()
 		{
 			InnerContentView = new Issue11812InnerContentView() { BackgroundColor = Colors.Red }
@@ -101,19 +94,6 @@ public class Issue11812ViewModel : INotifyPropertyChanged
 			if (_content != value)
 			{
 				_content = value;
-				OnPropertyChanged();
-			}
-		}
-	}
-	private int _count;
-	public int Count
-	{
-		get => _count;
-		set
-		{
-			if (_count != value)
-			{
-				_count = value;
 				OnPropertyChanged();
 			}
 		}
