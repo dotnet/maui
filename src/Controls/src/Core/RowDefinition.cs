@@ -1,6 +1,5 @@
 #nullable disable
 using System;
-using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -18,7 +17,7 @@ namespace Microsoft.Maui.Controls
 
 		public RowDefinition(GridLength height)
 		{
-			SetValueCore(HeightProperty, height, SetValueFlags.None, SetValuePrivateFlags.Default, SetterSpecificity.LowestAppliedValue);
+			SetValue(HeightProperty, height);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="//Member[@MemberName='Height']/Docs/*" />
