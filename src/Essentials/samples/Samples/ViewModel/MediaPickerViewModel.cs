@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -15,6 +17,9 @@ namespace Samples.ViewModel
 
 		bool showPhoto;
 		bool showVideo;
+		int pickerSelectionLimit = 1;
+		private ObservableCollection<ImageSource> photoList = [];
+		private bool showMultiplePhotos;
 
 		public MediaPickerViewModel()
 		{
@@ -33,16 +38,34 @@ namespace Samples.ViewModel
 
 		public ICommand CaptureVideoCommand { get; }
 
+		public int PickerSelectionLimit
+		{
+			get => pickerSelectionLimit;
+			set => SetProperty(ref pickerSelectionLimit, value);
+		}
+
 		public bool ShowPhoto
 		{
 			get => showPhoto;
 			set => SetProperty(ref showPhoto, value);
 		}
 
+		public bool ShowMultiplePhotos
+		{
+			get => showMultiplePhotos;
+			set => SetProperty(ref showMultiplePhotos, value);
+		}
+
 		public bool ShowVideo
 		{
 			get => showVideo;
 			set => SetProperty(ref showVideo, value);
+		}
+
+		public ObservableCollection<ImageSource> PhotoList
+		{
+			get => photoList;
+			set => SetProperty(ref photoList, value);
 		}
 
 		public ImageSource PhotoSource
@@ -61,7 +84,11 @@ namespace Samples.ViewModel
 		{
 			try
 			{
-				var photo = await MediaPicker.PickPhotoAsync();
+				var photo = await MediaPicker.PickPhotosAsync(new MediaPickerOptions
+				{
+					Title = "Pick a photo",
+					SelectionLimit = PickerSelectionLimit,
+				});
 
 				await LoadPhotoAsync(photo);
 
@@ -93,11 +120,15 @@ namespace Samples.ViewModel
 		{
 			try
 			{
-				var video = await MediaPicker.PickVideoAsync();
+				var video = await MediaPicker.PickVideoAsync(new MediaPickerOptions
+				{
+					Title = "Pick a video",
+					SelectionLimit = PickerSelectionLimit,
+				});
 
 				await LoadVideoAsync(video);
 
-				Console.WriteLine($"PickVideoAsync COMPLETED: {PhotoSource}");
+				Console.WriteLine($"PickVideoAsync COMPLETED: {VideoSource}");
 			}
 			catch (Exception ex)
 			{
@@ -123,8 +154,7 @@ namespace Samples.ViewModel
 
 		async Task LoadPhotoAsync(FileResult photo)
 		{
-			// canceled
-			if (photo == null)
+			if (photo is null)
 			{
 				PhotoSource = null;
 				return;
@@ -134,7 +164,30 @@ namespace Samples.ViewModel
 			PhotoSource = ImageSource.FromStream(() => stream);
 
 			ShowVideo = false;
+			ShowMultiplePhotos = false;
 			ShowPhoto = true;
+		}
+
+		async Task LoadPhotoAsync(List<FileResult> photo)
+		{
+			PhotoList.Clear();
+
+			// canceled
+			if (photo is null || photo.Count == 0)
+			{
+				PhotoSource = null;
+				return;
+			}
+
+			foreach (var item in photo)
+			{
+				var stream = await item.OpenReadAsync();
+				PhotoList.Add(ImageSource.FromStream(() => stream));
+			}
+
+			ShowVideo = false;
+			ShowPhoto = false;
+			ShowMultiplePhotos = true;
 		}
 
 		async Task LoadVideoAsync(FileResult video)
@@ -155,6 +208,7 @@ namespace Samples.ViewModel
 
 		public override void OnDisappearing()
 		{
+			PhotoList?.Clear();
 			PhotoSource = null;
 			VideoSource = null;
 

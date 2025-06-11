@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
@@ -24,8 +25,14 @@ namespace Microsoft.Maui.Media
 		public Task<FileResult> PickPhotoAsync(MediaPickerOptions options)
 			=> PickAsync(options, true);
 
+		public Task<List<FileResult>> PickPhotosAsync(MediaPickerOptions options)
+			=> throw new FeatureNotSupportedException("Multiple photo selection is not supported on Android. Use PickPhotoAsync instead.");
+
 		public Task<FileResult> PickVideoAsync(MediaPickerOptions options)
 			=> PickAsync(options, false);
+
+		public Task<List<FileResult>> PickVideosAsync(MediaPickerOptions options)
+			=> throw new FeatureNotSupportedException("Multiple video selection is not supported on Android. Use PickVideoAsync instead.");
 
 		public async Task<FileResult> PickAsync(MediaPickerOptions options, bool photo)
 			=> IsPhotoPickerAvailable
