@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace Maui.Controls.Sample.Issues;
 
 [Issue(IssueTracker.Github, 11812, "Setting Content of ContentView through style would crash on parent change", PlatformAffected.Android)]
-public partial class Issue11812 : ContentPage
+public class Issue11812 : ContentPage
 {
 	Label _countLabel;
 	ContentView _mainContentView;
