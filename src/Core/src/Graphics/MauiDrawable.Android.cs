@@ -289,7 +289,11 @@ namespace Microsoft.Maui.Graphics
 		public void SetBorderDash(float[]? strokeDashArray, double strokeDashOffset)
 		{
 			if (strokeDashArray is null || strokeDashArray.Length == 0)
+			{
 				_borderPathEffect = null;
+				if (_borderPaint != null)
+					_borderPaint.SetPathEffect(null);
+			}
 			else
 			{
 				float[] strokeDash = new float[strokeDashArray.Length];
