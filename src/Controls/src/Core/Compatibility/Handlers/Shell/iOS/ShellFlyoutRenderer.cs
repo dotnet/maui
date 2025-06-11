@@ -1,7 +1,6 @@
 #nullable disable
 using System;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
