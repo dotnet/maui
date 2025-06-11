@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample.Pages
 			
 			var layoutStats = _performanceProfiler.Layout.GetStats();
 			LayoutStatsLabelTitle.Text = "Layout Performance Stats";
-			LayoutStatsLabel.Text = $"ArrangeDuration: {layoutStats.ArrangePassCount}, AverageArrangeDuration: {layoutStats.ArrangeDuration}, MeasurePassCount: {layoutStats.MeasurePassCount}, MeasureDuration: {layoutStats.MeasureDuration}";
+			LayoutStatsLabel.Text = $"ArrangeDuration: {layoutStats.ArrangeDuration}, MeasureDuration: {layoutStats.MeasureDuration}";
 		}
 	}
 }

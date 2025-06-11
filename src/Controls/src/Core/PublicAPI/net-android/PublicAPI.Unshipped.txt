@@ -95,13 +95,9 @@ Microsoft.Maui.Controls.Performance.LayoutPassType.Measure = 0 -> Microsoft.Maui
 Microsoft.Maui.Controls.Performance.LayoutStats
 Microsoft.Maui.Controls.Performance.LayoutStats.ArrangeDuration.get -> double
 Microsoft.Maui.Controls.Performance.LayoutStats.ArrangeDuration.set -> void
-Microsoft.Maui.Controls.Performance.LayoutStats.ArrangePassCount.get -> long
-Microsoft.Maui.Controls.Performance.LayoutStats.ArrangePassCount.set -> void
 Microsoft.Maui.Controls.Performance.LayoutStats.LayoutStats() -> void
 Microsoft.Maui.Controls.Performance.LayoutStats.MeasureDuration.get -> double
 Microsoft.Maui.Controls.Performance.LayoutStats.MeasureDuration.set -> void
-Microsoft.Maui.Controls.Performance.LayoutStats.MeasurePassCount.get -> long
-Microsoft.Maui.Controls.Performance.LayoutStats.MeasurePassCount.set -> void
 Microsoft.Maui.Controls.Performance.LayoutThresholds
 Microsoft.Maui.Controls.Performance.LayoutThresholds.LayoutMaxArrangeTime.get -> System.TimeSpan
 Microsoft.Maui.Controls.Performance.LayoutThresholds.LayoutMaxArrangeTime.set -> void

@@ -7,19 +7,13 @@ namespace Microsoft.Maui.Controls.Performance
 {
 	internal class LayoutPerformanceTracker : ILayoutPerformanceTracker
 	{
-		readonly Counter<long> _measurePassCount;
-		readonly Histogram<double> _measureDuration;
-		readonly Counter<long> _arrangePassCount;
-		readonly Histogram<double> _arrangeDuration;
+		readonly Histogram<double> _measureDurationHistogram;
+		readonly Histogram<double> _arrangeDurationHistogram;
 
 		readonly IPerformanceWarningManager _warningManager;
 		
-		// Aggregation fields
-		long _totalMeasurePasses;
-		double _totalMeasureDuration;
-		
-		long _totalArrangePasses;
-		double _totalArrangeDuration;
+		double _measureDuration;
+		double _arrangeDuration;
 		
 		// List of subscribers for layout‐update callbacks
 		readonly List<Action<LayoutUpdate>> _subscribers = new List<Action<LayoutUpdate>>();
@@ -29,20 +23,12 @@ namespace Microsoft.Maui.Controls.Performance
 
 		public LayoutPerformanceTracker(Meter meter, IPerformanceWarningManager? warningManager = null)
 		{
-			_measurePassCount = meter.CreateCounter<long>(
-				"maui.layout.measure.count",
-				unit: "ops",
-				description: "Number of layout measure passes");
-			_measureDuration = meter.CreateHistogram<double>(
+			_measureDurationHistogram = meter.CreateHistogram<double>(
 				"maui.layout.measure.duration",
 				unit: "ms",
 				description: "Duration of layout measure passes");
 
-			_arrangePassCount = meter.CreateCounter<long>(
-				"maui.layout.arrange.count",
-				unit: "ops",
-				description: "Number of layout arrange passes");
-			_arrangeDuration = meter.CreateHistogram<double>(
+			_arrangeDurationHistogram = meter.CreateHistogram<double>(
 				"maui.layout.arrange.duration",
 				unit: "ms",
 				description: "Duration of layout arrange passes");
@@ -73,10 +59,8 @@ namespace Microsoft.Maui.Controls.Performance
 		{
 			return new LayoutStats
 			{
-				MeasurePassCount = _totalMeasurePasses,
-				MeasureDuration = _totalMeasureDuration,
-				ArrangePassCount = _totalArrangePasses,
-				ArrangeDuration = _totalArrangeDuration,
+				MeasureDuration = _measureDuration,
+				ArrangeDuration = _arrangeDuration,
 			};
 		}
 
@@ -107,8 +91,7 @@ namespace Microsoft.Maui.Controls.Performance
 			}
 
 			// Update fields
-			_totalMeasurePasses++;
-			_totalMeasureDuration = duration;
+			_measureDuration = duration;
 
 			// Record metrics
 			var tags = new TagList();
@@ -117,8 +100,7 @@ namespace Microsoft.Maui.Controls.Performance
 				tags.Add("element.type", element);
 			}
 
-			_measurePassCount.Add(1, tags);
-			_measureDuration.Record(duration, tags);
+			_measureDurationHistogram.Record(duration, tags);
 			
 			var update = new LayoutUpdate(
 				LayoutPassType.Measure,
@@ -142,9 +124,8 @@ namespace Microsoft.Maui.Controls.Performance
 				return;
 			}
 
-			// Update aggregation fields
-			_totalArrangePasses++;
-			_totalArrangeDuration = duration;
+			// Update fields
+			_arrangeDuration = duration;
 
 			// Record metrics
 			var tags = new TagList();
@@ -153,8 +134,7 @@ namespace Microsoft.Maui.Controls.Performance
 				tags.Add("element.type", element);
 			}
 
-			_arrangePassCount.Add(1, tags);
-			_arrangeDuration.Record(duration, tags);
+			_arrangeDurationHistogram.Record(duration, tags);
 			
 			// Publish LayoutUpdate
 			var update = new LayoutUpdate(
