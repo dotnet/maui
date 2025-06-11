@@ -13,7 +13,7 @@ public class Issue19831 : _IssuesUITest
 		: base(device)
 	{ }
 
-    [Test]
+	[Test]
 	[Category(UITestCategories.ListView)]
 	public void ActionModeMenuShouldNotBeVisibleAfterSwitchingTab()
 	{

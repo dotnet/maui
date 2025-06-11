@@ -556,6 +556,58 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if WINDOWS || MACCATALYST
+		[Fact]
+		public async Task DisappearingEventFiresWhenWindowClosedWithModal()
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage();
+			var modalPage = new ContentPage();
+			bool disappearingTriggered = false;
+			modalPage.Disappearing += (_, _) => disappearingTriggered = true;
+			var window = new Window(rootPage);
+			await rootPage.Navigation.PushModalAsync(modalPage);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async handler =>
+			{
+				await OnLoadedAsync(modalPage);
+				Application.Current?.CloseWindow(window);
+			});
+
+			Assert.True(disappearingTriggered);
+		}
+#endif
+
+		[Fact("Dont leak with Animation")]
+		public async Task ModalPageDontLeakWithAnimation()
+		{
+			SetupBuilder();
+			var references = new List<WeakReference>();
+
+
+			var page = new ContentPage();
+			var window = new Window(page);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async handler =>
+			{
+				var modalPage = new ContentPage
+				{
+					Content = new Label { Text = "Modal Content" }
+				};
+				await page.Navigation.PushModalAsync(modalPage, true);
+				await OnLoadedAsync(modalPage);
+
+				references.Add(new WeakReference(modalPage));
+				references.Add(new WeakReference(modalPage.Handler));
+				references.Add(new WeakReference(modalPage.Handler.PlatformView));
+
+				await page.Navigation.PopModalAsync();
+				await OnUnloadedAsync(modalPage);
+			});
+
+			await AssertionExtensions.WaitForGC(references.ToArray());
+		}
+
 		class PageTypes : IEnumerable<object[]>
 		{
 			public IEnumerator<object[]> GetEnumerator()
